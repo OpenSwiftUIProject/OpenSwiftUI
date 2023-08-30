@@ -6,68 +6,64 @@
 
 // Identifier: _2FFD16F575FFD9B8AC17BCAE09549F2
 // Introduced by iOS 14.0
-// Updated to iOS 15.0
+// Updated to iOS 15.5
 
 import UIKit
 
 // MARK: InterfaceIdiomType
 
-internal protocol InterfaceIdiomType {
+protocol InterfaceIdiomType {
     static func accepts<I>(_ type: I.Type) -> Bool where I: InterfaceIdiomType
 }
 
 extension InterfaceIdiomType {
-    internal static func accepts<I>(_ type: I.Type) -> Bool where I: InterfaceIdiomType {
+    static func accepts(_ type: (some InterfaceIdiomType).Type) -> Bool {
         self.self == type
     }
 }
 
-internal enum InterfaceIdiom {
-}
+enum InterfaceIdiom {}
 
 extension InterfaceIdiom {
-    internal struct TouchBar: InterfaceIdiomType {}
-    internal struct Pad: InterfaceIdiomType {}
-    internal struct Watch: InterfaceIdiomType {}
-    internal struct TV: InterfaceIdiomType {}
-    internal struct Phone: InterfaceIdiomType {}
-    internal struct Mac: InterfaceIdiomType {}
-    internal struct CarPlay: InterfaceIdiomType {}
+    struct TouchBar: InterfaceIdiomType {}
+    struct Pad: InterfaceIdiomType {}
+    struct Watch: InterfaceIdiomType {}
+    struct TV: InterfaceIdiomType {}
+    struct Phone: InterfaceIdiomType {}
+    struct Mac: InterfaceIdiomType {}
+    struct CarPlay: InterfaceIdiomType {}
+    struct Vision: InterfaceIdiomType {}
 }
 
 // MARK: AnyInterfaceIdiomType
 
-internal struct AnyInterfaceIdiomType: Equatable {
-    internal static func == (lhs: AnyInterfaceIdiomType, rhs: AnyInterfaceIdiomType) -> Bool {
-        lhs.base.isEqual(to: rhs.base)
-    }
-    
+struct AnyInterfaceIdiomType {
     fileprivate let base: AnyInterfaceIdiomTypeBox.Type
 }
 
-extension InterfaceIdiom {
-    internal struct Input: ViewInput {
-        internal typealias Value = AnyInterfaceIdiomType?
-        internal static var defaultValue: AnyInterfaceIdiomType? = nil
+extension AnyInterfaceIdiomType: Equatable {
+    static func == (lhs: AnyInterfaceIdiomType, rhs: AnyInterfaceIdiomType) -> Bool {
+        lhs.base.isEqual(to: rhs.base)
     }
 }
 
-extension UIUserInterfaceIdiom {
-    internal var idiom: AnyInterfaceIdiomType? {
-        // TODO: Align with iOS 15.0 We should add visionOS(6) later
-        switch rawValue {
-        case UIUserInterfaceIdiom.unspecified.rawValue: return nil
-        case UIUserInterfaceIdiom.phone.rawValue: return AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Phone>.self)
-        case UIUserInterfaceIdiom.pad.rawValue: return AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Pad>.self)
-        case UIUserInterfaceIdiom.tv.rawValue: return AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.TV>.self)
-        case UIUserInterfaceIdiom.carPlay.rawValue: return AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.CarPlay>.self)
-        // There is no UIUserInterfaceIdiom.watch exposed currently
-        case 4: return AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Watch>.self)
-        // UIUserInterfaceIdiom.mac.rawValue
-        case 5: return AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Mac>.self)
-        default: return nil
-        }
-    }
+extension AnyInterfaceIdiomType {
+    @inline(__always)
+    static var touchBar: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.TouchBar>.self) }
+    @inline(__always)
+    static var pad: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Pad>.self) }
+    @inline(__always)
+    static var watch: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Watch>.self) }
+    @inline(__always)
+    static var tv: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.TV>.self) }
+    @inline(__always)
+    static var phone: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Phone>.self) }
+    @inline(__always)
+    static var mac: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Mac>.self) }
+    @inline(__always)
+    static var carplay: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.CarPlay>.self) }
+    @inline(__always)
+    static var vision: AnyInterfaceIdiomType { AnyInterfaceIdiomType(base: InterfaceIdiomTypeBox<InterfaceIdiom.Vision>.self) }
 }
 
 // MARK: - InterfaceIdiomTypeBox
@@ -84,10 +80,35 @@ private struct InterfaceIdiomTypeBox<IdiomType>: AnyInterfaceIdiomTypeBox where 
     }
 }
 
-
 // MARK: - AnyInterfaceIdiomTypeBox
 
 private protocol AnyInterfaceIdiomTypeBox {
     static func isEqual(to: AnyInterfaceIdiomTypeBox.Type) -> Bool
     static func accepts<I>(_ type: I.Type) -> Bool where I: InterfaceIdiomType
+}
+
+// MARK: - Internal API
+
+extension InterfaceIdiom {
+    struct Input: ViewInput {
+        typealias Value = AnyInterfaceIdiomType?
+        static var defaultValue: AnyInterfaceIdiomType? = nil
+        static var targetValue: AnyInterfaceIdiomType = .phone
+    }
+}
+
+extension UIUserInterfaceIdiom {
+    var idiom: AnyInterfaceIdiomType? {
+        switch rawValue {
+        case UIUserInterfaceIdiom.unspecified.rawValue: return nil
+        case UIUserInterfaceIdiom.phone.rawValue: return .phone
+        case UIUserInterfaceIdiom.pad.rawValue: return .pad
+        case UIUserInterfaceIdiom.tv.rawValue: return .tv
+        case UIUserInterfaceIdiom.carPlay.rawValue: return .carplay
+        case 4: return .watch // There is no UIUserInterfaceIdiom.watch exposed currently
+        case 5: return .mac // iOS 14 UIUserInterfaceIdiom.mac.rawValue
+        case 6: return .vision // iOS 17 UIUserInterfaceIdiom.vision.rawValue
+        default: return nil
+        }
+    }
 }
