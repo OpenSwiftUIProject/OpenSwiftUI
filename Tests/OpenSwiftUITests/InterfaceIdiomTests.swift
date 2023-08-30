@@ -1,14 +1,25 @@
 //
 //  InterfaceIdiomTests.swift
-//  
+//
 //
 //  Created by Kyle on 2023/8/30.
 //
 
-import XCTest
 @testable import OpenSwiftUI
+import XCTest
 
 final class InterfaceIdiomTests: XCTestCase {
+    func testIdiomEqual() throws {
+        XCTAssertEqual(AnyInterfaceIdiomType.phone, AnyInterfaceIdiomType.phone)
+        XCTAssertNotEqual(AnyInterfaceIdiomType.phone, AnyInterfaceIdiomType.touchBar)
+    }
+    
+    func testIdiomAccepts() throws {
+        XCTAssertTrue(InterfaceIdiom.Phone.accepts(InterfaceIdiom.Phone.self))
+        XCTAssertFalse(InterfaceIdiom.Phone.accepts(InterfaceIdiom.CarPlay.self))
+    }
+    
+    #if canImport(UIKit)
     func testInterfaceIdiom() throws {
         XCTAssertEqual(
             UIUserInterfaceIdiom.unspecified.idiom,
@@ -47,18 +58,7 @@ final class InterfaceIdiomTests: XCTestCase {
             )
         }
     }
-    
-    func testIdiomEqual() throws {
-        XCTAssertEqual(AnyInterfaceIdiomType.phone, AnyInterfaceIdiomType.phone)
-        XCTAssertNotEqual(AnyInterfaceIdiomType.phone, AnyInterfaceIdiomType.touchBar)
-    }
-    
-    func testIdiomAccepts() throws {
-        XCTAssertTrue(InterfaceIdiom.Phone.accepts(InterfaceIdiom.Phone.self))
-        XCTAssertFalse(InterfaceIdiom.Phone.accepts(InterfaceIdiom.CarPlay.self))
-    }
-    
-    
+
     func testInterfaceIdiomInput() throws {
         XCTAssertNil(InterfaceIdiom.Input.defaultValue)
         let idiom = UIDevice.current.userInterfaceIdiom.idiom
@@ -66,4 +66,5 @@ final class InterfaceIdiomTests: XCTestCase {
         XCTAssertEqual(InterfaceIdiom.Input.defaultValue, idiom)
         XCTAssertEqual(InterfaceIdiom.Input.targetValue, .phone)
     }
+    #endif
 }

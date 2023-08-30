@@ -8,8 +8,6 @@
 // Introduced by iOS 14.0
 // Updated to iOS 15.5
 
-import UIKit
-
 // MARK: InterfaceIdiomType
 
 protocol InterfaceIdiomType {
@@ -97,6 +95,9 @@ extension InterfaceIdiom {
     }
 }
 
+#if canImport(UIKit)
+import UIKit
+
 extension UIUserInterfaceIdiom {
     var idiom: AnyInterfaceIdiomType? {
         switch rawValue {
@@ -112,3 +113,4 @@ extension UIUserInterfaceIdiom {
         }
     }
 }
+#endif
