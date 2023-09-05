@@ -16,16 +16,22 @@ let package = Package(
             name: "OpenSwiftUI",
             targets: ["OpenSwiftUI"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
+    ],
     targets: [
         .target(name: "AttributeGraph"),
         .target(
             name: "OpenSwiftUI",
-            dependencies: ["AttributeGraph"],
+            dependencies: [
+                "AttributeGraph",
+                .product(name: "OpenCombine", package: "OpenCombine")
+            ],
             linkerSettings: [
                 // TODO: Add a xcframework of all OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
                 // This only works for macOS build since the host OS(macOS) only have a binary slice for macOS platform.
-                .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"]),
-                .linkedFramework("AttributeGraph"),
+                .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])),
+                .linkedFramework("AttributeGraph", .when(platforms: [.macOS])),
             ]
         ),
         .testTarget(
