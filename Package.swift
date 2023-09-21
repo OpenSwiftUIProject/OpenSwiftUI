@@ -10,7 +10,7 @@ let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
 let package = Package(
     name: "OpenSwiftUI",
-    platforms: [.iOS(.v13), .macOS(.v10_15)],
+    platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
     products: [
         .library(
             name: "OpenSwiftUI",

@@ -1,12 +1,11 @@
 //
 //  InterfaceIdiom.swift
-//
+//  OpenSwiftUI
 //
 //  Created by Kyle-Ye on 2023/8/28.
-
-// Identifier: _2FFD16F575FFD9B8AC17BCAE09549F2
-// Introduced by iOS 14.0
-// Updated to iOS 15.5
+//  Lastest Version: iOS 15.5
+//  Status: Complete
+//  ID: 2FFD16F575FFD9B8AC17BCAE09549F2
 
 // MARK: InterfaceIdiomType
 
