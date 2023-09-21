@@ -17,10 +17,10 @@ public struct ButtonStyleConfiguration {
             fatalError()
         }
     }
-//
-//    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
-//    public let role: ButtonRole?
-//    
+
+    @available(iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0, *)
+    public let role: ButtonRole?
+    
     public let label: ButtonStyleConfiguration.Label
     public let isPressed: Bool
 }
