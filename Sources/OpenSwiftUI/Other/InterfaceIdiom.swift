@@ -2,7 +2,7 @@
 //  InterfaceIdiom.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle-Ye on 2023/8/28.
+//  Created by Kyle on 2023/8/28.
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 //  ID: 2FFD16F575FFD9B8AC17BCAE09549F2
