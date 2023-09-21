@@ -28,3 +28,9 @@ extension Never: View {
     
     public typealias Body = Never
 }
+
+extension View {
+    func bodyError() -> Never {
+        fatalError("body() should not be called on \(Self.self)")
+    }
+}
