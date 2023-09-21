@@ -1,12 +1,12 @@
 //
-//  ButtonStyleConfiguration.swift
+//  PrimitiveButtonStyleConfiguration.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/9/21.
+//  Created by Kyle on 2023/9/22.
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-public struct ButtonStyleConfiguration {
+public struct PrimitiveButtonStyleConfiguration {
     public struct Label: ViewAlias {
         public typealias Body = Never
     }
@@ -17,13 +17,18 @@ public struct ButtonStyleConfiguration {
     // 0 Bit
     public let label: Label
 
-    // 0x2 - 1 Bit
-    public let isPressed: Bool
+    public func trigger() {
+        action()
+    }
+
+    // 0x8
+    @inline(__always)
+    let action: () -> Void
 
     @inline(__always)
-    init(isPressed: Bool, role: ButtonRole?) {
+    init(role: ButtonRole?, action: @escaping () -> Void) {
         self.label = Label()
-        self.isPressed = isPressed
+        self.action = action
         self.role = role
     }
 }
