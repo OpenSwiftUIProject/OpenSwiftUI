@@ -9,6 +9,6 @@ import OpenSwiftUI
 
 struct ContentView: View {
     var body: some View {
-        fatalError()
+        EmptyView()
     }
 }
