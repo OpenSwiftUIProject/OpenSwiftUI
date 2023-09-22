@@ -1,0 +1,6 @@
+module CGtk [system] {
+  header "header.h"
+  link "gtk-4"
+
+  export *
+}

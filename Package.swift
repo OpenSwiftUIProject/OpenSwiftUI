@@ -21,6 +21,15 @@ let package = Package(
     ],
     targets: [
         .target(name: "AttributeGraph"),
+        // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
+        .systemLibrary(
+            name: "CGTK",
+            pkgConfig: "gtk4",
+            providers: [
+                .brew(["gtk4"]),
+                .apt(["libgtk-4-dev clang"]),
+            ]
+        ),
         .target(
             name: "OpenSwiftUI",
             dependencies: [
@@ -28,7 +37,7 @@ let package = Package(
                 .product(name: "OpenCombine", package: "OpenCombine")
             ],
             linkerSettings: [
-                // TODO: Add a xcframework of all OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
+                // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
                 // This only works for macOS build since the host OS(macOS) only have a binary slice for macOS platform.
                 .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])),
                 .linkedFramework("AttributeGraph", .when(platforms: [.macOS])),
