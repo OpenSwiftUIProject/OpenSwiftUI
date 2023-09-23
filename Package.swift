@@ -30,9 +30,11 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
+        .target(name: "OpenSwiftUIShims"),
         .target(
             name: "OpenSwiftUI",
             dependencies: [
+                "OpenSwiftUIShims",
                 "AttributeGraph",
                 .product(name: "OpenCombine", package: "OpenCombine")
             ],
