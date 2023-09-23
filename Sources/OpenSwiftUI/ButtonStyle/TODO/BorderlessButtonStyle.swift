@@ -45,22 +45,22 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
     }
 }
 
-//struct OpacityButtonHighlightModifier: ViewModifier {
-//    var highlighted: Bool
-//
+struct OpacityButtonHighlightModifier: ViewModifier {
+    var highlighted: Bool
+
 //    @Environment(\.colorScheme)
 //    var colorScheme: ColorScheme
-//
+
 //    fileprivate var pressedOpacity: Double {
 //        switch colorScheme {
 //        case .light: 0.2
 //        case .dark: 0.4
 //        }
 //    }
-//
-//    func body(content: Content) -> some View {
-//        content
+
+    func body(content: Content) -> some View {
+        content
 //            .opacity(highlighted ? pressedOpacity : 1.0)
 //            .contentShape(Rectangle(), eoFill: false)
-//    }
-//}
+    }
+}
