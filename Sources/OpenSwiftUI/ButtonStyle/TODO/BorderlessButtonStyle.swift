@@ -40,8 +40,51 @@ extension PrimitiveButtonStyle where Self == BorderlessButtonStyle {
 }
 
 private struct BorderlessButtonStyleBase: ButtonStyle {
-    func makeBody(configuration: Configuration) -> some View {
+    @inline(__always)
+    fileprivate init() {}
+
+//    @Environment(\.keyboardShortcut)
+//    private var keyboardShortcut: KeyboardShortcut?
+//
+//    @Environment(\.controlSize)
+//    private var controlSize: ControlSize
+//
+//    @Environment(\.isEnabled)
+//    private var isEnable: Bool
+
+    private var isDefault: Bool {
+        let keyboardShortcut = KeyboardShortcut.defaultAction
+        return keyboardShortcut == .defaultAction
+    }
+    private var defaultFont: Font {
+        let controlSize = ControlSize.regular
+        let style: Font.TextStyle = switch controlSize {
+        case .mini: .subheadline
+        case .small: .subheadline
+        case .regular: .body
+        case .large: .body
+        case .extraLarge: .body
+        }
+        let font = Font(provider: Font.TextStyleProvider(
+            textStyle: style,
+            design: .default,
+            weight: isDefault ? .regular : .semibold)
+        )
+        return font
+    }
+
+//    internal var accessibilityShowButtonShapes: Bool
+
+    fileprivate func makeBody(configuration: Configuration) -> some View {
         EmptyView()
+//        HStack {
+//            configuration.label
+//        }
+//        .font(defaultFont)
+//        .multilineTextAlignment(.center)
+//        .buttonDefaultRenderingMode()
+//        .defaultForegroundColor(configuration.role == .destructive ? .red : .accentColor)
+        .modifier(OpacityButtonHighlightModifier(highlighted: configuration.isPressed))
     }
 }
 
