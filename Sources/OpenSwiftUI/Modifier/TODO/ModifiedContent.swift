@@ -7,12 +7,23 @@
 
 import Foundation
 
+extension View {
+    @inlinable
+    @inline(__always)
+    public func modifier<T>(_ modifier: T) -> ModifiedContent<Self, T> {
+        .init(content: self, modifier: modifier)
+    }
+}
+
 @frozen
 public struct ModifiedContent<Content, Modifier> {
     public typealias Body = Never
     public var content: Content
     public var modifier: Modifier
-    @inlinable public init(content: Content, modifier: Modifier) {
+
+    @inlinable
+    @inline(__always)
+    public init(content: Content, modifier: Modifier) {
         self.content = content
         self.modifier = modifier
     }
@@ -24,16 +35,16 @@ extension ModifiedContent: Equatable where Content: Equatable, Modifier: Equatab
     }
 }
 
-// extension ModifiedContent : View where Content : View, Modifier : ViewModifier {
-//  public static func _makeView(view: _GraphValue<ModifiedContent<Content, Modifier>>, inputs: _ViewInputs) -> _ViewOutputs
-//  public static func _makeViewList(view: _GraphValue<ModifiedContent<Content, Modifier>>, inputs: _ViewListInputs) -> _ViewListOutputs
-//  public static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
-//  @_Concurrency.MainActor(unsafe) public var body: ModifiedContent<Content, Modifier>.Body {
-//    get
-//  }
-// }
+extension ModifiedContent: View where Content: View, Modifier: ViewModifier {
+    //  public static func _makeView(view: _GraphValue<ModifiedContent<Content, Modifier>>, inputs: _ViewInputs) -> _ViewOutputs
+    //  public static func _makeViewList(view: _GraphValue<ModifiedContent<Content, Modifier>>, inputs: _ViewListInputs) -> _ViewListOutputs
+    //  public static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
+    public var body: ModifiedContent<Content, Modifier>.Body {
+        bodyError()
+    }
+}
 
-// extension ModifiedContent : ViewModifier where Content : ViewModifier, Modifier : ViewModifier {
+extension ModifiedContent: ViewModifier where Content: ViewModifier, Modifier: ViewModifier {
 //    public static func _makeView(modifier: _GraphValue<ModifiedContent<Content, Modifier>>, inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
 //
 //    }
@@ -43,10 +54,11 @@ extension ModifiedContent: Equatable where Content: Equatable, Modifier: Equatab
 //    public static func _viewListCount(inputs: _ViewListCountInputs, body: (_ViewListCountInputs) -> Int?) -> Int? {
 //
 //    }
-// }
+}
 
 extension ViewModifier {
     @inlinable
+    @inline(__always)
     public func concat<T>(_ modifier: T) -> ModifiedContent<Self, T> {
         .init(content: self, modifier: modifier)
     }

@@ -6,4 +6,11 @@
 //  Lastest Version: iOS 15.5
 //  Status: Empty
 
-protocol ViewInputBoolFlag {}
+protocol ViewInputBoolFlag: ViewInputPredicate {}
+
+extension ViewInputBoolFlag {
+    // FIXME
+    static func evaluate(inputs: _GraphInputs) -> Bool {
+        true
+    }
+}
