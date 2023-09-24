@@ -18,6 +18,18 @@
 		</dict>
 		<dict>
 			<key>LibraryIdentifier</key>
+			<string>ios-arm64e</string>
+			<key>LibraryPath</key>
+			<string>AttributeGraph.framework</string>
+			<key>SupportedArchitectures</key>
+			<array>
+				<string>arm64e</string>
+			</array>
+			<key>SupportedPlatform</key>
+			<string>ios</string>
+		</dict>
+		<dict>
+			<key>LibraryIdentifier</key>
 			<string>ios-arm64_x86_64-simulator</string>
 			<key>LibraryPath</key>
 			<string>AttributeGraph.framework</string>
