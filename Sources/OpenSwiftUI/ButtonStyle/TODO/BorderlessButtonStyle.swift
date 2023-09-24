@@ -83,7 +83,7 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
 //        .font(defaultFont)
 //        .multilineTextAlignment(.center)
 //        .buttonDefaultRenderingMode()
-//        .defaultForegroundColor(configuration.role == .destructive ? .red : .accentColor)
+//        .defaultForegroundColor(isEnable ? (configuration.role == .destructive ? .red : .accentColor) : .gray)
         .modifier(OpacityButtonHighlightModifier(highlighted: configuration.isPressed))
     }
 }
