@@ -20,7 +20,8 @@ let package = Package(
         .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
     ],
     targets: [
-        .target(name: "AttributeGraph"),
+        // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
+        .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
         .systemLibrary(
             name: "CGTK",
@@ -37,12 +38,6 @@ let package = Package(
                 "OpenSwiftUIShims",
                 "AttributeGraph",
                 .product(name: "OpenCombine", package: "OpenCombine")
-            ],
-            linkerSettings: [
-                // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
-                // This only works for macOS build since the host OS(macOS) only have a binary slice for macOS platform.
-                .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])),
-                .linkedFramework("AttributeGraph", .when(platforms: [.macOS])),
             ]
         ),
         .testTarget(

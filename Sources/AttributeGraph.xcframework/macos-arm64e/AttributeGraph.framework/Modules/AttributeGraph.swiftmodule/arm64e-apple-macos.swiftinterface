@@ -1,0 +1,41 @@
+// swift-interface-format-version: 1.0
+// swift-compiler-version: Apple Swift version 5.7.2 (swiftlang-5.7.2.135.5 clang-1400.0.29.51)
+// swift-module-flags: -target arm64e-apple-macos12.0 -enable-objc-interop -enable-library-evolution -swift-version 5 -enforce-exclusivity=checked -O -module-name AttributeGraph
+// swift-module-flags-ignorable: -enable-bare-slash-regex
+@_exported import AttributeGraph
+import Foundation
+import Swift
+import _Concurrency
+import _StringProcessing
+@frozen @propertyWrapper @dynamicMemberLookup public struct Attribute<Value> : Swift.Hashable, Swift.Equatable, Swift.CustomStringConvertible {
+  public var identifier: AttributeGraph.AGAttribute
+  public var wrappedValue: Value {
+    get
+    set
+  }
+  
+  @inlinable public init(identifier: AttributeGraph.AGAttribute) {
+        self.identifier = identifier
+    }
+  
+  @inlinable public init(_ attribute: AttributeGraph.Attribute<Value>) {
+        self = attribute
+    }
+  
+  public subscript<Member>(dynamicMember keyPath: Swift.KeyPath<Value, Member>) -> AttributeGraph.Attribute<Member> {
+    get
+  }
+
+  public subscript<Member>(keyPath: Swift.KeyPath<Value, Member>) -> AttributeGraph.Attribute<Member> {
+    get
+  }
+  
+  public var description: Swift.String {
+    get
+  }
+  public static func == (lhs: AttributeGraph.Attribute<Value>, rhs: AttributeGraph.Attribute<Value>) -> Swift.Bool
+  public func hash(into hasher: inout Swift.Hasher)
+  public var hashValue: Swift.Int {
+    get
+  }
+}

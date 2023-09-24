@@ -1,1 +1,1 @@
-struct _GraphInputs {}
+public struct _GraphInputs {}
