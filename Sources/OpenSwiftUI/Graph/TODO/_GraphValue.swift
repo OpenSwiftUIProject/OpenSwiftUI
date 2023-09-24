@@ -1,4 +1,8 @@
+#if OPENSWIFTUI_USE_AG
 @_implementationOnly import AttributeGraph
+#else
+@_implementationOnly import OpenGraph
+#endif
 import Foundation
 
 public struct _GraphValue<Value> {

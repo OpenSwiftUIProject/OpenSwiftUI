@@ -22,6 +22,11 @@ let package = Package(
     targets: [
         // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
         .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
+        // FIXME: Merge into one target
+        // OpenGraph is a C++ & Swift mix target.
+        // The SwiftPM support for such usage is still in progress.
+        .target(name: "_OpenGraph"),
+        .target(name: "OpenGraph", dependencies: ["_OpenGraph"]),
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
         .systemLibrary(
             name: "CGTK",
@@ -37,6 +42,7 @@ let package = Package(
             dependencies: [
                 "OpenSwiftUIShims",
                 "AttributeGraph",
+                "OpenGraph",
                 .product(name: "OpenCombine", package: "OpenCombine")
             ]
         ),
