@@ -6,7 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
-
 public struct _ViewModifier_Content<T: ViewModifier>: PrimitiveView {
 //    public static func _makeView(view: _GraphValue<_ViewModifier_Content<Modifier>>, inputs: _ViewInputs) -> _ViewOutputs
 //    public static func _makeViewList(view: _GraphValue<_ViewModifier_Content<Modifier>>, inputs: _ViewListInputs) -> _ViewListOutputs
