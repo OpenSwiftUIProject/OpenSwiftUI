@@ -19,6 +19,9 @@ public struct Font: Hashable {
     public static func == (lhs: Font, rhs: Font) -> Bool {
         lhs.provider == rhs.provider
     }
+
+    // FIXME
+    public static let body = Font(provider: TextStyleProvider(textStyle: .body, design: .default))
 }
 
 @usableFromInline

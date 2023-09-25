@@ -9,5 +9,6 @@
 public protocol EnvironmentKey {
     associatedtype Value
 
+    @inline(__always)
     static var defaultValue: Value { get }
 }

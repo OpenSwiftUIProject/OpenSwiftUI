@@ -80,11 +80,11 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
 //        HStack {
 //            configuration.label
 //        }
-//        .font(defaultFont)
+          .defaultFont(defaultFont)
 //        .multilineTextAlignment(.center)
 //        .buttonDefaultRenderingMode()
 //        .defaultForegroundColor(isEnable ? (configuration.role == .destructive ? .red : .accentColor) : .gray)
-        .modifier(OpacityButtonHighlightModifier(highlighted: configuration.isPressed))
+          .modifier(OpacityButtonHighlightModifier(highlighted: configuration.isPressed))
     }
 }
 
