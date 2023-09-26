@@ -7,7 +7,11 @@
 //  Status: WIP
 
 import Foundation
+#if OPENSWIFTUI_USE_COMBINE
+import Combine
+#else
 import OpenCombine
+#endif
 
 class AnyFallbackDelegateBox {
     var delegate: NSObject? { nil }
