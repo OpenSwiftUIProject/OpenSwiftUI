@@ -8,7 +8,7 @@
 
 import Foundation
 
-//@_typeEraser(AnyView)
+@_typeEraser(AnyView)
 public protocol View {
     //  static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
     //  static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
