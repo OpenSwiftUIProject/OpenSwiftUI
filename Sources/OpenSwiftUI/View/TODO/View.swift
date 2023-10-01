@@ -10,13 +10,26 @@ import Foundation
 
 @_typeEraser(AnyView)
 public protocol View {
-    //  static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
-    //  static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
-    //  static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
+    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
+    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
+    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
     associatedtype Body: View
     
     @ViewBuilder
     var body: Self.Body { get }
+}
+
+// FIXME
+extension View {
+    public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        .init()
+    }
+    public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        .init()
+    }
+    public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        nil
+    }
 }
 
 extension Never: View {

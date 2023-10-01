@@ -1,0 +1,2 @@
+public struct _ViewListInputs {
+}

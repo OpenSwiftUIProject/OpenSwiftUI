@@ -27,7 +27,7 @@ public struct AnyView : PrimitiveView {
         return nil
     }
 //  public static func _makeView(view: _GraphValue<SwiftUI.AnyView>, inputs: _ViewInputs) -> _ViewOutputs
-//  public static func _makeViewList(view: SwiftUI._GraphValue<AnyView>, inputs: _ViewListInputs) -> _ViewListOutputs
+//  public static func _makeViewList(view: _GraphValue<AnyView>, inputs: _ViewListInputs) -> _ViewListOutputs
   public typealias Body = Never
 }
 
