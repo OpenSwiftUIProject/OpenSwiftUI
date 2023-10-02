@@ -8,6 +8,7 @@
 //  ID: 5A14269649C60F846422EA0FA4C5E535
 
 import Foundation
+@_implementationOnly import OpenSwiftUIShims
 
 // MARK: _ViewDebug
 
@@ -84,9 +85,34 @@ extension _ViewDebug {
 
         var childData: [_ViewDebug.Data]
 
-        // TODO
+        // FIXME
         private func serializedProperties() -> [SerializedProperty] {
-            []
+            let attributeBlock: (_ for: Any, _ label: String?, _ reflectDepth: Int) -> SerializedAttribute = { value, label, reflectDepth in
+                SerializedAttribute(type: Any.self)
+            }
+
+            let block: (Property, Any) -> SerializedProperty? = { key, value in
+                if key == .value {
+                    let attribute = attributeBlock(value, nil, 0)
+                    if attribute.name != nil {
+
+                    } else {
+
+                    }
+                } else {
+
+                }
+                let attribute = SerializedAttribute(type: Any.self)
+                let property = SerializedProperty(id: 0, attribute: attribute)
+                return property
+            }
+            var properties: [SerializedProperty] = []
+            for (key, value) in data {
+                if let property = block(key, value) {
+                    properties.append(property)
+                }
+            }
+            return properties
         }
     }
 }
@@ -115,8 +141,46 @@ extension _ViewDebug.Data {
 
 extension _ViewDebug.Data {
     private struct SerializedAttribute: Encodable {
+        // TODO
+        static func serialize(value: Any) -> Any? {
+            // Mirror API
+            nil
+        }
+
+        init(type anyType: Any.Type) {
+            name = nil
+            type = String(reflecting: anyType)
+            readableType = "" // TODO: /*OGTypeID(anyType).description*/
+            flags = [
+                conformsToProtocol(anyType, _viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _viewModifierProtocolDescriptor()) ? .viewModifier : [],
+            ]
+            value = nil
+            subattributes = nil
+        }
+
+        init(value inputValue: Any, serializeValue: Bool, label: String?, subattributes inputSubattributes: [SerializedAttribute]) {
+            name = label
+            let anyType = Swift.type(of: inputValue)
+            type = String(reflecting: anyType)
+            readableType = "" // TODO: /*OGTypeID(anyType).description*/
+            flags = [
+                conformsToProtocol(anyType, _viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _viewModifierProtocolDescriptor()) ? .viewModifier : [],
+            ]
+            if serializeValue {
+                value = SerializedAttribute.serialize(value: inputValue)
+            } else {
+                value = nil
+            }
+            subattributes = inputSubattributes
+        }
+
         struct Flags: OptionSet, Encodable {
             let rawValue: Int
+
+            static let view = Flags(rawValue: 1 << 0)
+            static let viewModifier = Flags(rawValue: 1 << 1)
         }
 
         let name: String?
