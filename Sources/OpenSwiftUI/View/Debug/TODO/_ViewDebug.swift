@@ -9,6 +9,18 @@
 
 import Foundation
 
+// MARK: _ViewDebug
+
+extension _ViewDebug {
+    fileprivate static var properties = Properties()
+    fileprivate static var isInitialized = false
+
+    // TODO:
+    fileprivate static func reallyWrap(_: inout _ViewOutputs, value _: _GraphValue<some Any>, inputs _: UnsafePointer<_ViewInputs>) {}
+}
+
+// MARK: _ViewDebug.Property
+
 public enum _ViewDebug {
     public enum Property: UInt32, Hashable {
         case type
@@ -39,9 +51,31 @@ public enum _ViewDebug {
         public static let displayList = Property(rawValue: 1 << Property.displayList.rawValue)
         public static let all = Property(rawValue: 0xFFFF_FFFF)
     }
+}
 
-    public struct Data {
-        enum CodingKeys {
+// MARK: _ViewDebug.Data
+
+extension _ViewDebug {
+    public struct Data: Encodable {
+        public func encode(to encoder: Encoder) throws {
+            var container: KeyedEncodingContainer<_ViewDebug.Data.CodingKeys> = encoder.container(keyedBy: _ViewDebug.Data.CodingKeys.self)
+            try container.encode(serializedProperties(), forKey: .properties)
+            try container.encode(childData, forKey: .children)
+        }
+
+        public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
+            let encoder = JSONEncoder()
+            encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
+            do {
+                let data = try encoder.encode(viewDebugData)
+                return data
+            } catch {
+                let dic = ["error": error.localizedDescription]
+                return try? encoder.encode(dic)
+            }
+        }
+
+        enum CodingKeys: CodingKey {
             case properties
             case children
         }
@@ -49,20 +83,68 @@ public enum _ViewDebug {
         var data: [Property: Any]
 
         var childData: [_ViewDebug.Data]
+
+        // TODO
+        private func serializedProperties() -> [SerializedProperty] {
+            []
+        }
     }
 }
 
-extension _ViewDebug {
-    fileprivate static var properties = Properties()
-    fileprivate static var isInitialized = false
+// MARK: _ViewDebug.Data.SerializedProperty
+
+extension _ViewDebug.Data {
+    private struct SerializedProperty: Encodable {
+        let id: UInt32
+        let attribute: SerializedAttribute
+
+        enum CodingKeys: CodingKey {
+            case id
+            case attribute
+        }
+
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(id, forKey: .id)
+            try container.encode(attribute, forKey: .attribute)
+        }
+    }
 }
 
-// extension _ViewDebug {
-//  public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data?
-// }
+// MARK: _ViewDebug.Data.SerializedAttribute
 
-// extension _ViewDebug.Data: Encodable {
-//    public func encode(to encoder: Encoder) throws {
-//
-//    }
-// }
+extension _ViewDebug.Data {
+    private struct SerializedAttribute: Encodable {
+        struct Flags: OptionSet, Encodable {
+            let rawValue: Int
+        }
+
+        let name: String?
+        let type: String
+        let readableType: String
+        let flags: Flags
+        let value: Any?
+        let subattributes: [SerializedAttribute]?
+        
+        enum CodingKeys: CodingKey {
+            case name
+            case type
+            case readableType
+            case flags
+            case value
+            case subattributes
+        }
+        
+        func encode(to encoder: Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encodeIfPresent(name, forKey: .name)
+            try container.encode(type, forKey: .type)
+            try container.encode(readableType, forKey: .readableType)
+            try container.encode(flags, forKey: .flags)
+            if let value = value as? Encodable {
+                try container.encodeIfPresent(value, forKey: .value)
+            }
+            try container.encodeIfPresent(subattributes, forKey: .subattributes)
+        }
+    }
+}
