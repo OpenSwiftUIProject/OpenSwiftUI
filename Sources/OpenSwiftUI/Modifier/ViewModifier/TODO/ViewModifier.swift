@@ -14,7 +14,7 @@ public protocol ViewModifier {
     associatedtype Body: View
 
     @ViewBuilder
-    func body(content: Self.Content) -> Self.Body
+    func body(content: Content) -> Body
 
     typealias Content = _ViewModifier_Content<Self>
 }
