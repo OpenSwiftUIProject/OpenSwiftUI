@@ -32,6 +32,8 @@ extension _ViewDebug {
 
     // TODO:
     fileprivate static func reallyWrap(_: inout _ViewOutputs, value _: _GraphValue<some Any>, inputs _: UnsafePointer<_ViewInputs>) {}
+
+    fileprivate static func appendDebugData(from: Int/*AGTreeElement*/ , to: [_ViewDebug.Data]) {}
 }
 
 // MARK: _ViewDebug.Property
@@ -110,8 +112,10 @@ extension _ViewDebug {
         }
 
         // TODO
+        // Mirror API
         private func serializedAttribute(for _: Any, label _: String?, reflectionDepth _: Int) -> SerializedAttribute? {
             nil
+
         }
 
         private func unwrapped(_ value: Any) -> Any? {

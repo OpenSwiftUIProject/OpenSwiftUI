@@ -5,6 +5,7 @@ import UIKit
 @available(watchOS, unavailable)
 open class _UIHostingView<Content>: UIView where Content: View {
     public final func _viewDebugData() -> [_ViewDebug.Data] {
+        // viewGraph._viewDebugData()
         []
     }
 }
