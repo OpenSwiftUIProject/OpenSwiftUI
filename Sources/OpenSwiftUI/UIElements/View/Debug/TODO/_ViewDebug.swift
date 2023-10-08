@@ -113,8 +113,13 @@ extension _ViewDebug {
 
         // TODO
         // Mirror API
-        private func serializedAttribute(for _: Any, label _: String?, reflectionDepth _: Int) -> SerializedAttribute? {
-            nil
+        private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
+            let unwrapped = unwrapped(value)
+
+            return nil
+
+            let mirror = Mirror(reflecting: value)
+//            mirror.displayStyle = .tuple
 
         }
 
