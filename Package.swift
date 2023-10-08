@@ -12,9 +12,8 @@ let package = Package(
     name: "OpenSwiftUI",
     platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
     products: [
-        .library(
-            name: "OpenSwiftUI",
-            targets: ["OpenSwiftUI"]),
+        .library(name: "OpenGraph", targets: ["OpenGraph", "_OpenGraph"]),
+        .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
     dependencies: [
         .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),

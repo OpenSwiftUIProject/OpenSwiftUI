@@ -28,7 +28,11 @@ public struct AnyView : PrimitiveView {
     }
 //  public static func _makeView(view: _GraphValue<SwiftUI.AnyView>, inputs: _ViewInputs) -> _ViewOutputs
 //  public static func _makeViewList(view: _GraphValue<AnyView>, inputs: _ViewListInputs) -> _ViewListOutputs
-  public typealias Body = Never
+
+    // WIP
+    init<V: View>(_ view: V, id: UniqueID?) {
+        storage = .init(id: nil)
+    }
 }
 
 @_hasMissingDesignatedInitializers
@@ -45,9 +49,4 @@ class AnyViewStorageBase {
     init(id: UniqueID?) {
         self.id = id
     }
-}
-
-
-struct UniqueID {
-  let value : Int
 }

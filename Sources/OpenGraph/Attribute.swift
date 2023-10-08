@@ -1,4 +1,4 @@
-@_implementationOnly import _OpenGraph
+@_exported import _OpenGraph
 
 @propertyWrapper
 public struct Attribute<A> {
