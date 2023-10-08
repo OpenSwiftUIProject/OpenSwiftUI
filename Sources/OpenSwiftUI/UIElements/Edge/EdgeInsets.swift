@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2023/10/8.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Blocked by Animatable
 
 import Foundation
 
@@ -54,7 +54,6 @@ import Foundation
         if insets.bottom < bottom { bottom = insets.bottom }
         if insets.trailing < trailing { trailing = insets.trailing }
     }
-//  codingProxy
 }
 
 extension EdgeInsets {
@@ -98,8 +97,7 @@ extension NSDirectionalEdgeInsets {
 }
 #endif
 
-
-extension EdgeInsets/*: Animatable, _VectorMath*/ {
+extension EdgeInsets /*: Animatable, _VectorMath */ {
 //    public typealias AnimatableData = AnimatablePair<CGFloat, AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>>>
 //    public var animatableData: EdgeInsets.AnimatableData {
 //        @inlinable get {
@@ -118,16 +116,36 @@ extension EdgeInsets/*: Animatable, _VectorMath*/ {
 
 // MARK: - EdgeInsets + CodableByProxy
 
-//struct CodableEdgeInsets: CodableProxy {
-//    typealias Base = EdgeInsets
-//    var base : EdgeInsets
-//}
-//
-//extension EdgeInsets : CodableByProxy {
-//    typealias CodingProxy = CodableEdgeInsets
-//
-//}
+struct CodableEdgeInsets: CodableProxy {
+    var base: EdgeInsets
+
+    @inline(__always)
+    init(base: EdgeInsets) { self.base = base }
+
+    init(from decoder: Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let top = try container.decode(CGFloat.self)
+        let leading = try container.decode(CGFloat.self)
+        let bottom = try container.decode(CGFloat.self)
+        let trailing = try container.decode(CGFloat.self)
+        base = EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
+    }
+    
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(base.top)
+        try container.encode(base.leading)
+        try container.encode(base.bottom)
+        try container.encode(base.trailing)
+    }
+}
+
+extension EdgeInsets: CodableByProxy {
+    var codingProxy: CodableEdgeInsets { CodableEdgeInsets(base: self) }
+
+    static func unwrap(codingProxy: CodableEdgeInsets) -> EdgeInsets { codingProxy.base }
+}
 
 // MARK: - Sendable
 
-extension EdgeInsets : Sendable {}
+extension EdgeInsets: Sendable {}
