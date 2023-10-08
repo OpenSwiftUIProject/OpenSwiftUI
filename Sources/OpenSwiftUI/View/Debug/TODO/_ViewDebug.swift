@@ -12,6 +12,20 @@ import Foundation
 
 // MARK: _ViewDebug
 
+public enum _ViewDebug {
+    public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
+        let encoder = JSONEncoder()
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
+        do {
+            let data = try encoder.encode(viewDebugData)
+            return data
+        } catch {
+            let dic = ["error": error.localizedDescription]
+            return try? encoder.encode(dic)
+        }
+    }
+}
+
 extension _ViewDebug {
     fileprivate static var properties = Properties()
     fileprivate static var isInitialized = false
@@ -22,7 +36,7 @@ extension _ViewDebug {
 
 // MARK: _ViewDebug.Property
 
-public enum _ViewDebug {
+extension _ViewDebug {
     public enum Property: UInt32, Hashable {
         case type
         case value
@@ -64,18 +78,6 @@ extension _ViewDebug {
             try container.encode(childData, forKey: .children)
         }
 
-        public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
-            let encoder = JSONEncoder()
-            encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
-            do {
-                let data = try encoder.encode(viewDebugData)
-                return data
-            } catch {
-                let dic = ["error": error.localizedDescription]
-                return try? encoder.encode(dic)
-            }
-        }
-
         enum CodingKeys: CodingKey {
             case properties
             case children
@@ -85,34 +87,39 @@ extension _ViewDebug {
 
         var childData: [_ViewDebug.Data]
 
-        // FIXME
         private func serializedProperties() -> [SerializedProperty] {
-            let attributeBlock: (_ for: Any, _ label: String?, _ reflectDepth: Int) -> SerializedAttribute = { value, label, reflectDepth in
-                SerializedAttribute(type: Any.self)
-            }
-
-            let block: (Property, Any) -> SerializedProperty? = { key, value in
+            data.compactMap { key, value -> SerializedProperty? in
                 if key == .value {
-                    let attribute = attributeBlock(value, nil, 0)
-                    if attribute.name != nil {
-
+                    if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 6) {
+                        return SerializedProperty(id: key.rawValue, attribute: attribute)
                     } else {
-
+                        return nil
                     }
+                } else if key == .type {
+                    let type = value as? Any.Type ?? type(of: value)
+                    let attribute = SerializedAttribute(type: type)
+                    return SerializedProperty(id: 0, attribute: attribute)
                 } else {
+                    if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 4) {
+                        return SerializedProperty(id: key.rawValue, attribute: attribute)
+                    } else {
+                        return nil
+                    }
+                }
+            }
+        }
 
-                }
-                let attribute = SerializedAttribute(type: Any.self)
-                let property = SerializedProperty(id: 0, attribute: attribute)
-                return property
+        // TODO
+        private func serializedAttribute(for _: Any, label _: String?, reflectionDepth _: Int) -> SerializedAttribute? {
+            nil
+        }
+
+        private func unwrapped(_ value: Any) -> Any? {
+            if let value = value as? ValueWrapper {
+                return value.wrappedValue
+            } else {
+                return nil
             }
-            var properties: [SerializedProperty] = []
-            for (key, value) in data {
-                if let property = block(key, value) {
-                    properties.append(property)
-                }
-            }
-            return properties
         }
     }
 }
@@ -140,9 +147,10 @@ extension _ViewDebug.Data {
 // MARK: _ViewDebug.Data.SerializedAttribute
 
 extension _ViewDebug.Data {
+    // Size: 0x60
     private struct SerializedAttribute: Encodable {
-        // TODO
-        static func serialize(value: Any) -> Any? {
+        // TODO:
+        static func serialize(value _: Any) -> Any? {
             // Mirror API
             nil
         }
@@ -209,6 +217,20 @@ extension _ViewDebug.Data {
                 try container.encodeIfPresent(value, forKey: .value)
             }
             try container.encodeIfPresent(subattributes, forKey: .subattributes)
+        }
+    }
+}
+
+private protocol ValueWrapper {
+    var wrappedValue: Any? { get }
+}
+
+extension Optional {
+    var wrappedValue: Any? {
+        if case let .some(wrapped) = self {
+            return wrapped
+        } else {
+            return nil
         }
     }
 }
