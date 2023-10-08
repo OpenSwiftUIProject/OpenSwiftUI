@@ -38,6 +38,8 @@ public enum Edge: Int8, CaseIterable {
     }
 }
 
+// MARK: Edge + CodableByProxy
+
 extension Edge /*: CodableByProxy */ {
     static func unwrap(codingProxy: Int8) -> Edge {
         Edge(rawValue: codingProxy) ?? .top
