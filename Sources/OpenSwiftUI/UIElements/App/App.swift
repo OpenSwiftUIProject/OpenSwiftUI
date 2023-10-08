@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 public protocol App {
     associatedtype Body: Scene
     @SceneBuilder var body: Self.Body { get }

@@ -5,8 +5,6 @@
 //  Created by Kyle on 2023/9/24.
 //
 
-import Foundation
-
 extension View {
     @inlinable
     @inline(__always)

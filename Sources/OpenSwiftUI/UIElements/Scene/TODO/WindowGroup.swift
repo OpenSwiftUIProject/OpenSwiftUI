@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
-import Foundation
-
 @frozen
 public struct LocalizedStringKey {}
 

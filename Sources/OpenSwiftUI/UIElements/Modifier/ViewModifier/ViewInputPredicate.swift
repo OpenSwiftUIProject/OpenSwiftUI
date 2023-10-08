@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 protocol ViewInputPredicate {
     static func evaluate(inputs: _GraphInputs) -> Bool
 }

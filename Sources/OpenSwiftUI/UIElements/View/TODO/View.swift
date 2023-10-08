@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
-import Foundation
-
 @_typeEraser(AnyView)
 public protocol View {
     static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs

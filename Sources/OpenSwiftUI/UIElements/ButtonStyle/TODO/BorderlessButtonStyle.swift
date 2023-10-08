@@ -7,8 +7,6 @@
 //  Status: WIP
 //  ID: 8946ABD13E6925C5D5FDD316D4A45F59
 
-import Foundation
-
 public struct BorderlessButtonStyle : PrimitiveButtonStyle, ButtonStyleConvertible {
 
     /// Creates a borderless button style.

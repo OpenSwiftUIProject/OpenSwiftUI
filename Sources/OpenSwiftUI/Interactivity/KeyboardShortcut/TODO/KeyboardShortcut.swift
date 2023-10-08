@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Blocked by EnvironmentValues
 
-import Foundation
-
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 public struct KeyboardShortcut {

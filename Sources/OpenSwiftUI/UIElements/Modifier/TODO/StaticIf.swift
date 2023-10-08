@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
-import Foundation
-
 struct StaticIf<A, B, C> where A: ViewInputPredicate {
     var trueBody: B
     var falseBody: C

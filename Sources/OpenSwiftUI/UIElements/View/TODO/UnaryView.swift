@@ -6,6 +6,4 @@
 //  Lastest Version: iOS 15.5
 //  Status: Empty
 
-import Foundation
-
 protocol UnaryView: View {}

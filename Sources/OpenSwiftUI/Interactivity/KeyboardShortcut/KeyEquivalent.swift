@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 public struct KeyEquivalent {

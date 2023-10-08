@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 @available(iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, *)
 @frozen public struct EventModifiers: OptionSet {
     public let rawValue: Int

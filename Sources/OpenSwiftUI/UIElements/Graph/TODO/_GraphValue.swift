@@ -3,7 +3,6 @@
 #else
 @_implementationOnly import OpenGraph
 #endif
-import Foundation
 
 public struct _GraphValue<Value> {
     var value: Attribute<Value>

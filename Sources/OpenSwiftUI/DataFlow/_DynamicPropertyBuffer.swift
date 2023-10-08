@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 public struct _DynamicPropertyBuffer {
     var buf: UnsafeMutableRawPointer
     var size: Int32
