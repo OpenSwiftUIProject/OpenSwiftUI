@@ -12,7 +12,14 @@ public struct Environment<Value>: DynamicProperty {
     @usableFromInline
     @frozen
     enum Content {
+        // Layout:
+        // - [+0x0] = keypath
+        // - [+0x8]b = 0
         case keyPath(KeyPath<EnvironmentValues, Value>)
+
+        // Layout:
+        // - [+0x0] = value
+        // - [+0x8]b = 1
         case value(Value)
     }
 
