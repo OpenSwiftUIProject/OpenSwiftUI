@@ -26,6 +26,7 @@ let package = Package(
         // The SwiftPM support for such usage is still in progress.
         .target(name: "_OpenGraph"),
         .target(name: "OpenGraph", dependencies: ["_OpenGraph"]),
+        .testTarget(name: "OpenGraphTests", dependencies: ["OpenGraph"]),
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
         .systemLibrary(
             name: "CGTK",
@@ -45,8 +46,6 @@ let package = Package(
                 .product(name: "OpenCombine", package: "OpenCombine")
             ]
         ),
-        .testTarget(
-            name: "OpenSwiftUITests",
-            dependencies: ["OpenSwiftUI"]),
+        .testTarget(name: "OpenSwiftUITests", dependencies: ["OpenSwiftUI"]),
     ]
 )
