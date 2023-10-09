@@ -28,8 +28,8 @@ extension PrimitiveButtonStyle where Self == PlainButtonStyle {
 }
 
 private struct PlainButtonStyleBase: ButtonStyle {
-//    @Environment(\.isEnabled)
-//    private var isEnabled: Bool
+    @Environment(\.isEnabled)
+    private var isEnabled: Bool
 
     fileprivate func makeBody(configuration _: Configuration) -> some View {
 //        HStack {

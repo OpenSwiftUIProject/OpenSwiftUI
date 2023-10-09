@@ -47,8 +47,8 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
 //    @Environment(\.controlSize)
 //    private var controlSize: ControlSize
 //
-//    @Environment(\.isEnabled)
-//    private var isEnable: Bool
+    @Environment(\.isEnabled)
+    private var isEnable: Bool
 
     private var isDefault: Bool {
         let keyboardShortcut = KeyboardShortcut.defaultAction
@@ -89,8 +89,8 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
 struct OpacityButtonHighlightModifier: ViewModifier {
     var highlighted: Bool
 
-//    @Environment(\.colorScheme)
-//    var colorScheme: ColorScheme
+    @Environment(\.colorScheme)
+    var colorScheme: ColorScheme
 
 //    fileprivate var pressedOpacity: Double {
 //        switch colorScheme {
