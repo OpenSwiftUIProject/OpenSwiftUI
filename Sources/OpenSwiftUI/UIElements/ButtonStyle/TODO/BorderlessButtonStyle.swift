@@ -20,8 +20,8 @@ public struct BorderlessButtonStyle : PrimitiveButtonStyle, ButtonStyleConvertib
     /// - Parameter configuration : The properties of the button.
     public func makeBody(configuration: Configuration) -> some View {
         EmptyView()
-//        Button(configuration)
-//            // FIXME: AccessibilityButtonShapeModifier is missing
+//        AccessibilityButtonShapeModifier()
+//            .body(content: Button(configuration))
 //            .buttonStyle(buttonStyleRepresentation)
     }
 
