@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2023/10/8.
 //  Lastest Version: iOS 15.5
-//  Status: Blocked by Animatable
+//  Status: Complete
 
 import Foundation
 
@@ -97,21 +97,21 @@ extension NSDirectionalEdgeInsets {
 }
 #endif
 
-extension EdgeInsets /*: Animatable, _VectorMath */ {
-//    public typealias AnimatableData = AnimatablePair<CGFloat, AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>>>
-//    public var animatableData: EdgeInsets.AnimatableData {
-//        @inlinable get {
-//            .init(top, .init(leading, .init(bottom, trailing)))
-//        }
-//        @inlinable set {
-//            let top = newValue[].0
-//            let leading = newValue[].1[].0
-//            let (bottom, trailing) = newValue[].1[].1[]
-//            self = .init(
-//                top: top, leading: leading, bottom: bottom, trailing: trailing
-//            )
-//        }
-//    }
+extension EdgeInsets: Animatable, _VectorMath {
+    @inlinable
+    public var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>>> {
+        get {
+            .init(top, .init(leading, .init(bottom, trailing)))
+        }
+        set {
+            let top = newValue[].0
+            let leading = newValue[].1[].0
+            let (bottom, trailing) = newValue[].1[].1[]
+            self = .init(
+                top: top, leading: leading, bottom: bottom, trailing: trailing
+            )
+        }
+    }
 }
 
 // MARK: - EdgeInsets + CodableByProxy
