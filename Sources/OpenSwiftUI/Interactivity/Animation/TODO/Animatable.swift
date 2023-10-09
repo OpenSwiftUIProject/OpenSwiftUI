@@ -4,7 +4,9 @@
 //
 //  Created by Kyle on 2023/10/9.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Blocked by Graph
+
+// MARK: - Animatable
 
 public protocol Animatable {
     associatedtype AnimatableData: VectorArithmetic
@@ -12,14 +14,10 @@ public protocol Animatable {
     static func _makeAnimatable(value: inout _GraphValue<Self>, inputs: _GraphInputs)
 }
 
-extension ViewModifier where Self: Animatable {
-    public static func _makeView(modifier _: _GraphValue<Self>, inputs _: _ViewInputs, body _: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
-        .init()
-    }
+// MARK: - Animateble + Extension
 
-    public static func _makeViewList(modifier _: _GraphValue<Self>, inputs _: _ViewListInputs, body _: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs) -> _ViewListOutputs {
-        .init()
-    }
+extension Animatable {
+    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
 }
 
 extension Animatable where Self: VectorArithmetic {
@@ -40,6 +38,40 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
     public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
 }
 
-extension Animatable {
-    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
+#if canImport(CoreGraphics)
+
+// MARK: - Animatable + CoreGraphics
+
+import CoreGraphics
+
+extension CGPoint: Animatable {
+    public var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        @inlinable
+        get { .init(x, y) }
+        @inlinable
+        set { (x, y) = newValue[] }
+    }
 }
+
+extension CGSize: Animatable {
+    public var animatableData: AnimatablePair<CGFloat, CGFloat> {
+        @inlinable
+        get { .init(width, height) }
+        @inlinable
+        set { (width, height) = newValue[] }
+    }
+}
+
+extension CGRect: Animatable {
+    public var animatableData: AnimatablePair<CGPoint.AnimatableData, CGSize.AnimatableData> {
+        @inlinable
+        get {
+            .init(origin.animatableData, size.animatableData)
+        }
+        @inlinable
+        set {
+            (origin.animatableData, size.animatableData) = newValue[]
+        }
+    }
+}
+#endif
