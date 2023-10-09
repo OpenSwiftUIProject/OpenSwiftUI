@@ -2,6 +2,8 @@
 
 OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://developer.apple.com/documentation/swiftui)
 
+> "Everything is open source, if you can read assembly" 😀
+
 The implementation on Darwin platfrom may contain reverse engineered code from Apple. You should not use this in production environment nor distribute it freely. And such code's property and license is preserved by Apple's SwiftUI team.
 
 The implementation on non-Darwin platfrom (Linux/Android/Windows) is licensed under MIT.
