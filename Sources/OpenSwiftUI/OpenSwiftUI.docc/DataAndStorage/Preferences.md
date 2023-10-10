@@ -10,6 +10,11 @@ When you use the ``OpenSwiftUI/PreferenceKey`` protocol to define a custom prefe
 
 ## Topics
 
+### Setting preferences
+
+- ``OpenSwiftUI/View/preference(key:value:)``
+- ``OpenSwiftUI/View/transformPreference(_:_:)``
+
 ### Creating custom preferences
 
 - ``OpenSwiftUI/PreferenceKey``
