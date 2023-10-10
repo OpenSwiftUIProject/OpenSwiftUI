@@ -4,10 +4,10 @@
 
 ### Implementing an app
 
-- ``body``
-- ``Body``
+- ``OpenSwiftUI/App/body-swift.property``
+- ``OpenSwiftUI/App/Body-swift.associatedtype``
 
 ### Running an app
 
-- ``init()``
-- ``main()``
+- ``OpenSwiftUI/App/init()``
+- ``OpenSwiftUI/App/main()``
