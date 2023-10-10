@@ -114,7 +114,7 @@ extension EdgeInsets: Animatable, _VectorMath {
     }
 }
 
-// MARK: - EdgeInsets + CodableByProxy
+// MARK: - CodableEdgeInsets
 
 struct CodableEdgeInsets: CodableProxy {
     var base: EdgeInsets
@@ -139,6 +139,8 @@ struct CodableEdgeInsets: CodableProxy {
         try container.encode(base.trailing)
     }
 }
+
+// MARK: - EdgeInsets + CodableByProxy
 
 extension EdgeInsets: CodableByProxy {
     var codingProxy: CodableEdgeInsets { CodableEdgeInsets(base: self) }
