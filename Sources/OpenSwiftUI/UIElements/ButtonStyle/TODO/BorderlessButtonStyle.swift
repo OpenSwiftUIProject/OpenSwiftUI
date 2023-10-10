@@ -7,10 +7,9 @@
 //  Status: WIP
 //  ID: 8946ABD13E6925C5D5FDD316D4A45F59
 
-public struct BorderlessButtonStyle : PrimitiveButtonStyle, ButtonStyleConvertible {
-
+public struct BorderlessButtonStyle: PrimitiveButtonStyle, ButtonStyleConvertible {
     /// Creates a borderless button style.
-    public init() { }
+    public init() {}
 
     /// Creates a view that represents the body of a button.
     ///
@@ -25,7 +24,7 @@ public struct BorderlessButtonStyle : PrimitiveButtonStyle, ButtonStyleConvertib
 //            .buttonStyle(buttonStyleRepresentation)
     }
 
-    internal var buttonStyleRepresentation: some ButtonStyle {
+    var buttonStyleRepresentation: some ButtonStyle {
         BorderlessButtonStyleBase()
     }
 
@@ -54,6 +53,7 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
         let keyboardShortcut = KeyboardShortcut.defaultAction
         return keyboardShortcut == .defaultAction
     }
+
     private var defaultFont: Font {
         let controlSize = ControlSize.regular
         let style: Font.TextStyle = switch controlSize {
@@ -66,8 +66,8 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
         let font = Font(provider: Font.TextStyleProvider(
             textStyle: style,
             design: .default,
-            weight: isDefault ? .regular : .semibold)
-        )
+            weight: isDefault ? .regular : .semibold
+        ))
         return font
     }
 
@@ -78,11 +78,11 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
 //        HStack {
 //            configuration.label
 //        }
-          .defaultFont(defaultFont)
+                .defaultFont(defaultFont)
 //        .multilineTextAlignment(.center)
 //        .buttonDefaultRenderingMode()
 //        .defaultForegroundColor(isEnable ? (configuration.role == .destructive ? .red : .accentColor) : .gray)
-          .modifier(OpacityButtonHighlightModifier(highlighted: configuration.isPressed))
+                .modifier(OpacityButtonHighlightModifier(highlighted: configuration.isPressed))
     }
 }
 
@@ -92,16 +92,16 @@ struct OpacityButtonHighlightModifier: ViewModifier {
     @Environment(\.colorScheme)
     var colorScheme: ColorScheme
 
-//    fileprivate var pressedOpacity: Double {
-//        switch colorScheme {
-//        case .light: 0.2
-//        case .dark: 0.4
-//        }
-//    }
+    fileprivate var pressedOpacity: Double {
+        switch colorScheme {
+        case .light: 0.2
+        case .dark: 0.4
+        }
+    }
 
     func body(content: Content) -> some View {
         content
-//            .opacity(highlighted ? pressedOpacity : 1.0)
+            .opacity(highlighted ? pressedOpacity : 1.0)
 //            .contentShape(Rectangle(), eoFill: false)
     }
 }
