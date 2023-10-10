@@ -6,6 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
+/// A geometric angle whose value you access in either radians or degrees.
 @frozen
 public struct Angle {
     public var radians: Double

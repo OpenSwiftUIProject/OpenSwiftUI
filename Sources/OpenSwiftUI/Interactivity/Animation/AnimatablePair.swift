@@ -6,7 +6,9 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-@frozen public struct AnimatablePair<First, Second>: VectorArithmetic where First: VectorArithmetic, Second: VectorArithmetic {
+/// A pair of animatable values, which is itself animatable.
+@frozen
+public struct AnimatablePair<First, Second>: VectorArithmetic where First: VectorArithmetic, Second: VectorArithmetic {
     public var first: First
     public var second: Second
     
