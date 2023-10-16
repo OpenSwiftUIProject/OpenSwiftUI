@@ -44,7 +44,8 @@ let package = Package(
                 // "AttributeGraph",
                 "OpenGraph",
                 .product(name: "OpenCombine", package: "OpenCombine")
-            ]
+            ],
+            swiftSettings: [.unsafeFlags(["-enable-library-evolution"])]
         ),
         .testTarget(name: "OpenSwiftUITests", dependencies: ["OpenSwiftUI"]),
     ]
