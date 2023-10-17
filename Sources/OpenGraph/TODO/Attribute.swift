@@ -1,4 +1,4 @@
-@_exported import _OpenGraph
+import _OpenGraph
 
 @propertyWrapper
 public struct Attribute<A> {
