@@ -8,25 +8,23 @@ let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
+let openSwiftUITarget = Target.target(
+    name: "OpenSwiftUI",
+    dependencies: [
+        "OpenSwiftUIShims",
+    ],
+    swiftSettings: [
+        .unsafeFlags(["-enable-library-evolution"]),
+    ]
+)
+
 let package = Package(
     name: "OpenSwiftUI",
     platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
     products: [
-        .library(name: "OpenGraph", targets: ["OpenGraph", "_OpenGraph"]),
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0"),
-    ],
     targets: [
-        // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
-        // .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
-        // FIXME: Merge into one target
-        // OpenGraph is a C++ & Swift mix target.
-        // The SwiftPM support for such usage is still in progress.
-        .target(name: "_OpenGraph"),
-        .target(name: "OpenGraph", dependencies: ["_OpenGraph"]),
-        .testTarget(name: "OpenGraphTests", dependencies: ["OpenGraph"]),
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
         .systemLibrary(
             name: "CGTK",
@@ -36,17 +34,54 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
+        // C Shims for OpenSwiftUI
         .target(name: "OpenSwiftUIShims"),
-        .target(
-            name: "OpenSwiftUI",
-            dependencies: [
-                "OpenSwiftUIShims",
-                // "AttributeGraph",
-                "OpenGraph",
-                .product(name: "OpenCombine", package: "OpenCombine")
-            ],
-            swiftSettings: [.unsafeFlags(["-enable-library-evolution"])]
-        ),
+        openSwiftUITarget,
         .testTarget(name: "OpenSwiftUITests", dependencies: ["OpenSwiftUI"]),
     ]
 )
+
+let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
+
+if useAG {
+    // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
+    package.targets.append(
+        .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework")
+    )
+    openSwiftUITarget.dependencies.append(
+        "AttributeGraph"
+    )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_USE_AG"))
+    openSwiftUITarget.swiftSettings = swiftSettings
+} else {
+    package.products.append(
+        .library(name: "OpenGraph", targets: ["OpenGraph", "_OpenGraph"])
+    )
+    let targets: [Target] = [
+        // FIXME: Merge into one target
+        // OpenGraph is a C++ & Swift mix target.
+        // The SwiftPM support for such usage is still in progress.
+        .target(name: "_OpenGraph"),
+        .target(name: "OpenGraph", dependencies: ["_OpenGraph"]),
+        .testTarget(name: "OpenGraphTests", dependencies: ["OpenGraph"]),
+    ]
+    package.targets.append(contentsOf: targets)
+    openSwiftUITarget.dependencies.append(
+        "OpenGraph"
+    )
+}
+
+let useCombine = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_COMBINE"] != nil
+if useCombine {
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_USE_COMBINE"))
+    openSwiftUITarget.swiftSettings = swiftSettings
+} else {
+    package.dependencies.append(
+        .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0")
+    )
+    openSwiftUITarget.dependencies.append(
+        .product(name: "OpenCombine", package: "OpenCombine")
+    )
+}

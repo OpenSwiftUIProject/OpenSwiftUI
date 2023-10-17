@@ -11,6 +11,7 @@
 #endif
 
 #import "AGAttribute.h"
+#import "AGUniqueID.h"
 
 FOUNDATION_EXPORT double AGAttributeVersionNumber;
 FOUNDATION_EXPORT const unsigned char AGAttributeVersionString[];
