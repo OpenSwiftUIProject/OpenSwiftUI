@@ -39,3 +39,25 @@ import _StringProcessing
     get
   }
 }
+public protocol _AttributeBody {
+  static func _destroySelf(_ value: Swift.UnsafeMutableRawPointer)
+  static var _hasDestroySelf: Swift.Bool { get }
+  static func _updateDefault(_ value: Swift.UnsafeMutableRawPointer)
+}
+extension AttributeGraph._AttributeBody {
+  public static func _destroySelf(_ value: Swift.UnsafeMutableRawPointer)
+  public static var _hasDestroySelf: Swift.Bool {
+    get
+  }
+  public static func _updateDefault(_ value: Swift.UnsafeMutableRawPointer)
+}
+public protocol Rule : AttributeGraph._AttributeBody {
+  associatedtype Value
+  static var initialValue: Self.Value? { get }
+  var value: Self.Value { get }
+}
+extension AttributeGraph.Rule {
+  public static var initialValue: Self.Value? {
+    get
+  }
+}

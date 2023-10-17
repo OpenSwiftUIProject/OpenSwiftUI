@@ -1,3 +1,5 @@
+import _OpenGraph
+
 public protocol Rule: _AttributeBody {
     associatedtype Value
     static var initialValue: Value? { get }
@@ -5,10 +7,18 @@ public protocol Rule: _AttributeBody {
 }
 
 extension Rule {
-    public static var initialValue: Value? {
-        // TODO
-        nil
+    public static var initialValue: Value? { nil }
+
+    // TODO
+    public static func _update(_ value: UnsafeMutableRawPointer, attribute: OGAttribute) {
+        
     }
 
-    // TODO: More extension here
+    // TODO
+    public static func _updateDefault(_ value: UnsafeMutableRawPointer) {
+
+    }
+
+//    public var attribute: Attribute<Value>
+//    public var context: RuleContext<Value>
 }

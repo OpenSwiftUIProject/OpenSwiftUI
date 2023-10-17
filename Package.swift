@@ -45,9 +45,14 @@ let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
 
 if useAG {
     // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
-    package.targets.append(
-        .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework")
-    )
+    let targets: [Target] = [
+        .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
+        .testTarget(
+            name: "AttributeGraphTests",
+            dependencies: ["AttributeGraph"]
+        ),
+    ]
+    package.targets.append(contentsOf: targets)
     openSwiftUITarget.dependencies.append(
         "AttributeGraph"
     )
