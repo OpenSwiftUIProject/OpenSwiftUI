@@ -20,9 +20,9 @@ struct UniqueID: Hashable {
     @inline(__always)
     init() {
         #if OPENSWIFTUI_USE_AG
-        self.value = Int(AGMakeUniqueID().rawValue)
+        self.value = Int(AGMakeUniqueID())
         #else
-        self.value = Int(OGMakeUniqueID().rawValue)
+        self.value = Int(OGMakeUniqueID())
         #endif
     }
 

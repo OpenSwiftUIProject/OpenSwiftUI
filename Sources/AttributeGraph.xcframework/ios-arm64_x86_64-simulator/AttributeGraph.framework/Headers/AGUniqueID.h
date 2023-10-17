@@ -9,7 +9,7 @@
 #define AGMakeUniqueID_hpp
 
 #include <CoreFoundation/CoreFoundation.h>
-typedef long long AGUniqueID __attribute__((swift_wrapper(struct)));
+typedef long long AGUniqueID;
 
 CF_EXTERN_C_BEGIN
 CF_EXPORT

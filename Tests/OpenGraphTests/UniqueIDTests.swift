@@ -10,7 +10,7 @@ import OpenGraph
 
 final class UniqueIDTests: XCTestCase {
     func testUniqueID() throws {
-        XCTAssertEqual(OGMakeUniqueID().rawValue, 1)
-        XCTAssertEqual(OGMakeUniqueID().rawValue, 2)
+        XCTAssertEqual(OGMakeUniqueID(), 1)
+        XCTAssertEqual(OGMakeUniqueID(), 2)
     }
 }

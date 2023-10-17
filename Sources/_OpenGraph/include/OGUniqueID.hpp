@@ -9,7 +9,7 @@
 #define OGMakeUniqueID_hpp
 
 #include <CoreFoundation/CoreFoundation.h>
-typedef long long OGUniqueID __attribute__((swift_wrapper(struct)));
+typedef long long OGUniqueID;
 
 CF_EXTERN_C_BEGIN
 CF_EXPORT
