@@ -42,11 +42,10 @@ let package = Package(
 )
 
 let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
-
 if useAG {
-    // TODO: Add a xcframework of all Apple OS's system AttributeGraph binary or add OpenAttributeGraph source implementation
     let targets: [Target] = [
         .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
+        // FIXME: The binary of AG for macOS is copied from dyld shared cache and it will cause a link error when running. Use iOS Simulator to run this target as a temporary workaround
         .testTarget(
             name: "AttributeGraphTests",
             dependencies: ["AttributeGraph"]
