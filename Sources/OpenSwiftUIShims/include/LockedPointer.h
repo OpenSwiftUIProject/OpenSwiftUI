@@ -8,9 +8,32 @@
 #ifndef LockedPointer_h
 #define LockedPointer_h
 
-#include <stdio.h>
+#include <OpenFoundation/OpenFoundation.h>
+
+#if __has_include(<os/lock.h>)
 #include <os/lock.h>
-#include <CoreFoundation/CoreFoundation.h>
+#define OPENSWIFTUI_LOCK_T os_unfair_lock
+#define OPENSWIFTUI_LOCK_INIT OS_UNFAIR_LOCK_INIT
+#define OPENSWIFTUI_LOCK_LOCK(lock) os_unfair_lock_lock(lock)
+#define OPENSWIFTUI_LOCK_UNLOCK(lock) os_unfair_lock_unlock(lock)
+#elif TARGET_OS_LINUX
+#define OPENSWIFTUI_LOCK_T int32_t
+#include <stdint.h>
+#include <unistd.h>
+OF_INLINE void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+  while (__sync_val_compare_and_swap(lock, 0, ~0) != 0) {
+    sleep(0);
+  }
+}
+
+OF_INLINE void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+  __sync_synchronize();
+  *lock = 0;
+}
+#define OPENSWIFTUI_LOCK_INIT 0
+#define OPENSWIFTUI_LOCK_LOCK(lock) __OPENSWIFTUI_Lock(lock)
+#define OPENSWIFTUI_LOCK_UNLOCK(lock) __OPENSWIFTUI_Unlock(lock)
+#endif
 
 /**
  |<--------lock-------->|    padding    |<--------data---------->|
@@ -20,7 +43,7 @@
  |<------------------LockedPointerData------------------->|
  */
 typedef struct LockedPointerData_s {
-    os_unfair_lock lock;
+    OPENSWIFTUI_LOCK_T lock;
     uint32_t offset;
 } LockedPointerData;
 

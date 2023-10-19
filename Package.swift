@@ -34,8 +34,13 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
+        // CoreFoundation alternative for cross-platform
+        .target(name: "OpenFoundation"),
         // C Shims for OpenSwiftUI
-        .target(name: "OpenSwiftUIShims"),
+        .target(
+            name: "OpenSwiftUIShims",
+            dependencies: ["OpenFoundation"]
+        ),
         openSwiftUITarget,
         .testTarget(name: "OpenSwiftUITests", dependencies: ["OpenSwiftUI"]),
     ]
@@ -66,9 +71,18 @@ if useAG {
         // FIXME: Merge into one target
         // OpenGraph is a C++ & Swift mix target.
         // The SwiftPM support for such usage is still in progress.
-        .target(name: "_OpenGraph"),
-        .target(name: "OpenGraph", dependencies: ["_OpenGraph"]),
-        .testTarget(name: "OpenGraphTests", dependencies: ["OpenGraph"]),
+        .target(
+            name: "_OpenGraph",
+            dependencies: ["OpenFoundation"]
+        ),
+        .target(
+            name: "OpenGraph",
+            dependencies: ["_OpenGraph"]
+        ),
+        .testTarget(
+            name: "OpenGraphTests",
+            dependencies: ["OpenGraph"]
+        ),
     ]
     package.targets.append(contentsOf: targets)
     openSwiftUITarget.dependencies.append(

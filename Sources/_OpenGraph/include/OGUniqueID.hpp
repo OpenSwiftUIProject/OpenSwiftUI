@@ -8,12 +8,12 @@
 #ifndef OGMakeUniqueID_hpp
 #define OGMakeUniqueID_hpp
 
-#include <CoreFoundation/CoreFoundation.h>
+#include <OpenFoundation/OpenFoundation.h>
 typedef long long OGUniqueID;
 
-CF_EXTERN_C_BEGIN
-CF_EXPORT
+OF_EXTERN_C_BEGIN
+OF_EXPORT
 OGUniqueID OGMakeUniqueID(void);
-CF_EXTERN_C_END
+OF_EXTERN_C_END
 
 #endif /* OGMakeUniqueID_hpp */

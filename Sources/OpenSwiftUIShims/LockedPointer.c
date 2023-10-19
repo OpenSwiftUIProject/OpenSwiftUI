@@ -5,7 +5,8 @@
 //  Created by Kyle on 2023/10/19.
 //
 
-#import "LockedPointer.h"
+#include "LockedPointer.h"
+#include <stdlib.h>
 
 LockedPointer _LockedPointerCreate(size_t size, size_t alignment) {
     // alignment is expected to be a power of 2.
@@ -22,7 +23,7 @@ LockedPointer _LockedPointerCreate(size_t size, size_t alignment) {
 
     LockedPointer ptr = malloc(size + offset);
     if (ptr == NULL) { abort(); }
-    ptr->lock = OS_UNFAIR_LOCK_INIT;
+    ptr->lock = OPENSWIFTUI_LOCK_INIT;
     ptr->offset = (uint32_t)offset;
     return ptr;
 }
@@ -36,9 +37,9 @@ void _LockedPointerDelete(LockedPointer ptr) {
 }
 
 void _LockedPointerUnlock(LockedPointer ptr) {
-    os_unfair_lock_unlock(&ptr->lock);
+    OPENSWIFTUI_LOCK_UNLOCK(&ptr->lock);
 }
 
 void _LockedPointerLock(LockedPointer ptr) {
-    os_unfair_lock_lock(&ptr->lock);
+    OPENSWIFTUI_LOCK_LOCK(&ptr->lock);
 }

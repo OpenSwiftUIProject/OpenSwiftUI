@@ -8,16 +8,16 @@
 #ifndef ProtocolDescriptor_h
 #define ProtocolDescriptor_h
 
-#import <Foundation/Foundation.h>
+#include <OpenFoundation/OpenFoundation.h>
 
-NS_ASSUME_NONNULL_BEGIN
+OF_ASSUME_NONNULL_BEGIN
 
-FOUNDATION_EXPORT
+OF_EXPORT
 const void *_viewProtocolDescriptor(void);
 
-FOUNDATION_EXPORT
+OF_EXPORT
 const void *_viewModifierProtocolDescriptor(void);
 
-NS_ASSUME_NONNULL_END
+OF_ASSUME_NONNULL_END
 
 #endif /* ProtocolDescriptor_h */
