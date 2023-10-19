@@ -19,7 +19,7 @@ final class InterfaceIdiomTests: XCTestCase {
         XCTAssertFalse(InterfaceIdiom.Phone.accepts(InterfaceIdiom.CarPlay.self))
     }
     
-    #if canImport(UIKit)
+    #if os(iOS) || os(tvOS)
     func testInterfaceIdiom() throws {
         XCTAssertEqual(
             UIUserInterfaceIdiom.unspecified.idiom,
@@ -45,13 +45,14 @@ final class InterfaceIdiomTests: XCTestCase {
             UIUserInterfaceIdiom(rawValue: 4)?.idiom,
             .watch
         )
-        if #available(iOS 14, *) {
+
+        if #available(iOS 14, tvOS 14, *) {
             XCTAssertEqual(
                 UIUserInterfaceIdiom.mac.idiom,
                 .mac
             )
         }
-        if #available(iOS 17, *) {
+        if #available(iOS 17, tvOS 17, *) {
             XCTAssertEqual(
                 UIUserInterfaceIdiom.vision.idiom,
                 .vision

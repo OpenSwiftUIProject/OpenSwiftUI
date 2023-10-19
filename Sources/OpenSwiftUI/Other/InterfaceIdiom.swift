@@ -94,7 +94,7 @@ extension InterfaceIdiom {
     }
 }
 
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS)
 import UIKit
 
 extension UIUserInterfaceIdiom {

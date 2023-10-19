@@ -26,7 +26,7 @@
 
 extension EventModifiers: Sendable {}
 
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS)
 import UIKit
 
 extension EventModifiers {

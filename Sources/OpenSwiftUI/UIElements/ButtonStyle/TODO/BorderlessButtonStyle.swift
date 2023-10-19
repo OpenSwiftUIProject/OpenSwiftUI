@@ -7,6 +7,7 @@
 //  Status: WIP
 //  ID: 8946ABD13E6925C5D5FDD316D4A45F59
 
+@available(tvOS, unavailable)
 public struct BorderlessButtonStyle: PrimitiveButtonStyle, ButtonStyleConvertible {
     /// Creates a borderless button style.
     public init() {}
@@ -32,10 +33,12 @@ public struct BorderlessButtonStyle: PrimitiveButtonStyle, ButtonStyleConvertibl
 //    private var controlTint: Color?
 }
 
+@available(tvOS, unavailable)
 extension PrimitiveButtonStyle where Self == BorderlessButtonStyle {
     public static var borderless: BorderlessButtonStyle { BorderlessButtonStyle() }
 }
 
+@available(tvOS, unavailable)
 private struct BorderlessButtonStyleBase: ButtonStyle {
     @inline(__always)
     fileprivate init() {}
@@ -50,8 +53,13 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
     private var isEnable: Bool
 
     private var isDefault: Bool {
+        #if os(watchOS)
+        // TODO
+        false
+        #else
         let keyboardShortcut = KeyboardShortcut.defaultAction
         return keyboardShortcut == .defaultAction
+        #endif
     }
 
     private var defaultFont: Font {

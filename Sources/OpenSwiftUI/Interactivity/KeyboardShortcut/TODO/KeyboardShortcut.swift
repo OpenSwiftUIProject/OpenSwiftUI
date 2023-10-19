@@ -30,6 +30,9 @@ public struct KeyboardShortcut {
     public var key: KeyEquivalent
     public var modifiers: EventModifiers
     public var localization: Localization
+
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
     public init(_ key: KeyEquivalent, modifiers: EventModifiers = .command) {
         self.key = key
         self.modifiers = modifiers
@@ -45,9 +48,11 @@ public struct KeyboardShortcut {
     }
 }
 
-#if canImport(UIKit)
+#if os(iOS) || os(tvOS)
 import UIKit
 
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
 extension KeyboardShortcut {
     init?(_ command: UIKeyCommand) {
         guard let input = command.input else {

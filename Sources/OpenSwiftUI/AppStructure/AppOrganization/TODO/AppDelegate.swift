@@ -7,7 +7,7 @@
 //  Status: WIP
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04
 
-#if os(iOS)
+#if os(iOS) || os(tvOS)
 import UIKit
 class AppDelegate: UIResponder {
     var fallbackDelegate: UIApplicationDelegate?
@@ -26,6 +26,11 @@ class AppDelegate: UIResponder {
         let canSelfRespond = AppDelegate.instancesRespond(to: aSelector)
         return canDelegateRespond || canSelfRespond
     }
+}
+#elseif os(watchOS)
+import WatchKit
+class AppDelegate {
+    
 }
 #elseif os(macOS)
 import AppKit

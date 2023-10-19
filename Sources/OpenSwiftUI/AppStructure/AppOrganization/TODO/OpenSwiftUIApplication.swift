@@ -7,17 +7,18 @@
 //  Status: WIP
 //  ID: ACC2C5639A7D76F611E170E831FCA491
 
-#if os(iOS)
+#if os(iOS) || os(tvOS)
 import UIKit
-fileprivate final class OpenSwiftUIApplicationp: UIApplication {
+private final class OpenSwiftUIApplication: UIApplication {
     @objc override init() {
         super.init()
     }
 }
-
+#elseif os(watchOS)
+import WatchKit
 #elseif os(macOS)
 import AppKit
-private final class OpenSwiftUIApplicationp: NSApplication {
+private final class OpenSwiftUIApplication: NSApplication {
     @objc override init() {
         super.init()
     }
@@ -28,6 +29,7 @@ private final class OpenSwiftUIApplicationp: NSApplication {
 }
 #endif
 
+@available(watchOS 7.0, *)
 func runApp(_ app: some App) -> Never {
     let graph = AppGraph(app: app)
     graph.startProfilingIfNecessary()
@@ -36,13 +38,19 @@ func runApp(_ app: some App) -> Never {
     KitRendererCommon()
 }
 
+@available(watchOS 7.0, *)
 private func KitRendererCommon() -> Never {
     let argc = CommandLine.argc
     let argv = CommandLine.unsafeArgv
-    let principalClassName = NSStringFromClass(OpenSwiftUIApplicationp.self)
+    #if os(iOS) || os(tvOS) || os(macOS)
+    let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
+    #endif
+
     let delegateClassName = NSStringFromClass(AppDelegate.self)
-    #if os(iOS)
+    #if os(iOS) || os(tvOS)
     let code = UIApplicationMain(argc, argv, principalClassName, delegateClassName)
+    #elseif os(watchOS)
+    let code = WKApplicationMain(argc, argv, delegateClassName)
     #elseif os(macOS)
     // FIXME
     let code = NSApplicationMain(argc, argv)
