@@ -1,5 +1,9 @@
 # OpenSwiftUI
 
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FKyle-Ye%2FOpenSwiftUI%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/Kyle-Ye/OpenSwiftUI)
+
+[![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FKyle-Ye%2FOpenSwiftUI%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/Kyle-Ye/OpenSwiftUI)
+
 OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://developer.apple.com/documentation/swiftui)
 
 > "Everything is open source, if you can read assembly" 😀
