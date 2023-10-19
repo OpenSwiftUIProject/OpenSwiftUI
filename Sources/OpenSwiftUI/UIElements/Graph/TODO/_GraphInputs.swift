@@ -12,7 +12,10 @@ public struct _GraphInputs {
 //    var transaction: Attribute<Transaction>
     var changedDebugProperties: _ViewDebug.Properties
     var options: Options
+    // FIXME: Compile crash on Linux
+    #if !os(Linux)
     var mergedInputs: Set<OGAttribute>
+    #endif
 }
 
 extension _GraphInputs {

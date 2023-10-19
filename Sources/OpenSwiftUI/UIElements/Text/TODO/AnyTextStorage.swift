@@ -8,9 +8,8 @@
 
 import Foundation
 
-@_hasMissingDesignatedInitializers
 @usableFromInline
 class AnyTextStorage {
-    @objc
+    /*@objc*/
     deinit {}
 }

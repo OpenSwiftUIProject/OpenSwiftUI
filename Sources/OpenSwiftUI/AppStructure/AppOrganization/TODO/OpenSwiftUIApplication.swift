@@ -27,14 +27,18 @@ private final class OpenSwiftUIApplication: NSApplication {
         fatalError("init(coder:) has not been implemented")
     }
 }
+#else
+import Foundation
 #endif
 
 @available(watchOS 7.0, *)
 func runApp(_ app: some App) -> Never {
+    #if canImport(Darwin)
     let graph = AppGraph(app: app)
     graph.startProfilingIfNecessary()
 //    graph.instantiate()
     AppGraph.shared = graph
+    #endif
     KitRendererCommon()
 }
 
@@ -42,11 +46,14 @@ func runApp(_ app: some App) -> Never {
 private func KitRendererCommon() -> Never {
     let argc = CommandLine.argc
     let argv = CommandLine.unsafeArgv
+
+    #if canImport(Darwin)
     #if os(iOS) || os(tvOS) || os(macOS)
     let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
     #endif
-
     let delegateClassName = NSStringFromClass(AppDelegate.self)
+    #endif
+
     #if os(iOS) || os(tvOS)
     let code = UIApplicationMain(argc, argv, principalClassName, delegateClassName)
     #elseif os(watchOS)
@@ -54,6 +61,8 @@ private func KitRendererCommon() -> Never {
     #elseif os(macOS)
     // FIXME
     let code = NSApplicationMain(argc, argv)
+    #elseif os(Linux)
+    let code: Int32 = 1
     #endif
     exit(code)
 }

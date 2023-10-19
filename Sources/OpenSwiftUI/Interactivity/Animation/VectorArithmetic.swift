@@ -57,8 +57,8 @@ extension Double: VectorArithmetic {
     }
 }
 
-#if canImport(CoreFoundation)
-import CoreFoundation
+#if canImport(CoreGraphics)
+import CoreGraphics
 extension CGFloat: VectorArithmetic {
     @_transparent
     public mutating func scale(by rhs: Double) { self *= CGFloat(rhs) }

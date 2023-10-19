@@ -6,6 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
+#if canImport(Darwin)
 import Foundation
 #if OPENSWIFTUI_USE_COMBINE
 import Combine
@@ -48,3 +49,4 @@ class FallbackDelegateBox<Delegate: NSObject>: AnyFallbackDelegateBox {
         }
     }
 }
+#endif

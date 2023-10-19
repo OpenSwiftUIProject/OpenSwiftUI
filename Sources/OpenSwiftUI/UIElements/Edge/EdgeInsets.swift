@@ -6,7 +6,8 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
+#if canImport(CoreGraphics)
+import CoreGraphics
 
 @frozen public struct EdgeInsets: Equatable {
     public var top: CGFloat
@@ -151,3 +152,4 @@ extension EdgeInsets: CodableByProxy {
 // MARK: - Sendable
 
 extension EdgeInsets: Sendable {}
+#endif

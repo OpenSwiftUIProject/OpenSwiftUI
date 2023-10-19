@@ -35,10 +35,9 @@ public struct AnyView : PrimitiveView {
     }
 }
 
-@_hasMissingDesignatedInitializers
 @usableFromInline
 class AnyViewStorageBase {
-    @objc
+    /*@objc*/
     @usableFromInline
     deinit {
 

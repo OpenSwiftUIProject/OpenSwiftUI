@@ -6,6 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Empty
 
+#if canImport(CoreGraphics)
 import CoreGraphics
 
 @frozen
@@ -66,3 +67,4 @@ public struct Text: Equatable {
 }
 
 extension Text: PrimitiveView, UnaryView {}
+#endif
