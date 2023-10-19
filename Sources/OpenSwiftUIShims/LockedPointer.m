@@ -7,7 +7,6 @@
 
 #import "LockedPointer.h"
 
-// TODO: 汇编对照下，加单元测试
 LockedPointer _LockedPointerCreate(size_t size, size_t alignment) {
     // alignment is expected to be a power of 2.
     // If alignment > 8,
