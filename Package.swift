@@ -24,6 +24,9 @@ let package = Package(
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
+    dependencies: [
+        .package(url: "https://github.com/Kyle-Ye/OpenFoundation", from: "0.0.1"),
+    ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
         .systemLibrary(
@@ -34,12 +37,10 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
-        // CoreFoundation alternative for cross-platform
-        .target(name: "OpenFoundation"),
         // C Shims for OpenSwiftUI
         .target(
             name: "OpenSwiftUIShims",
-            dependencies: ["OpenFoundation"]
+            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
         openSwiftUITarget,
         .testTarget(name: "OpenSwiftUITests", dependencies: ["OpenSwiftUI"]),
@@ -73,7 +74,7 @@ if useAG {
         // The SwiftPM support for such usage is still in progress.
         .target(
             name: "_OpenGraph",
-            dependencies: ["OpenFoundation"]
+            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
         .target(
             name: "OpenGraph",
