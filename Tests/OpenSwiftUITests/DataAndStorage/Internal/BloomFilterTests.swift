@@ -37,11 +37,12 @@ final class BloomFilterTests: XCTestCase {
         // 1 &<< (value &>> 0x04): 1 &<< 0 -> 0x0000_0000_0000_0001
         XCTAssertEqual(BloomFilter(hashValue: 0).value, 0x0000_0000_0000_0001)
 
+        #if arch(x86_64) || arch(arm64)
         // hashValue: 0x00000001dfa19ae0
         // 1 &<< (value &>> 0x10): 1 &<< 0x21 -> 0x0000_0002_0000_0000
         // 1 &<< (value &>> 0x0a): 1 &<< 0x26 -> 0x0000_0040_0000_0000
         // 1 &<< (value &>> 0x04): 1 &<< 0x2e -> 0x0000_4000_0000_0000
         XCTAssertEqual(BloomFilter(hashValue: 0x00000001dfa19ae0).value, 0x0000_4042_0000_0000)
-
+        #endif
     }
 }
