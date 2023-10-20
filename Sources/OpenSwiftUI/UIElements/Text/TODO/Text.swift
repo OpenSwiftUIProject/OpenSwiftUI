@@ -6,8 +6,11 @@
 //  Lastest Version: iOS 15.5
 //  Status: Empty
 
-#if canImport(CoreGraphics)
+#if canImport(Darwin)
 import CoreGraphics
+#elseif os(Linux)
+import Foundation
+#endif
 
 @frozen
 public struct Text: Equatable {
@@ -67,4 +70,3 @@ public struct Text: Equatable {
 }
 
 extension Text: PrimitiveView, UnaryView {}
-#endif

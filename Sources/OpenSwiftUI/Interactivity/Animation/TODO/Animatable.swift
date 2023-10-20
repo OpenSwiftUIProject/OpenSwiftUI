@@ -38,11 +38,13 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
     public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
 }
 
-#if canImport(CoreGraphics)
+#if canImport(Darwin)
+import CoreGraphics
+#elseif os(Linux)
+import Foundation
+#endif
 
 // MARK: - Animatable + CoreGraphics
-
-import CoreGraphics
 
 extension CGPoint: Animatable {
     public var animatableData: AnimatablePair<CGFloat, CGFloat> {
@@ -74,4 +76,3 @@ extension CGRect: Animatable {
         }
     }
 }
-#endif
