@@ -8,6 +8,9 @@ let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
+// https://github.com/llvm/llvm-project/issues/48757
+let clangEnumFixSetting = CSetting.unsafeFlags(["-Wno-elaborated-enum-base"], .when(platforms: [.linux]))
+
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
@@ -74,11 +77,13 @@ if useAG {
         // The SwiftPM support for such usage is still in progress.
         .target(
             name: "_OpenGraph",
-            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
+            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")],
+            cSettings: [clangEnumFixSetting]
         ),
         .target(
             name: "OpenGraph",
-            dependencies: ["_OpenGraph"]
+            dependencies: ["_OpenGraph"],
+            cSettings: [clangEnumFixSetting]
         ),
         .testTarget(
             name: "OpenGraphTests",

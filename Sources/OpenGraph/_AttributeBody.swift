@@ -13,9 +13,7 @@ public protocol _AttributeBody {
     static var _hasDestroySelf: Bool { get }
     static func _updateDefault(_ value: UnsafeMutableRawPointer)
     static var comparisonMode: OGComparisonMode { get }
-    #if !os(Linux)
     static var flags: OGAttributeTypeFlags { get }
-    #endif
 }
 
 extension _AttributeBody {
@@ -30,7 +28,6 @@ extension _AttributeBody {
     public static func _updateDefault(_ value: UnsafeMutableRawPointer) {}
 
     public static var comparisonMode: OGComparisonMode { ._2 }
-    #if !os(Linux)
+
     public static var flags: OGAttributeTypeFlags { ._8 }
-    #endif
 }
