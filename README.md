@@ -6,19 +6,21 @@
 
 OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://developer.apple.com/documentation/swiftui)
 
-> "Everything is open source, if you can read assembly" 😀
+The project is for the following purposes:
+- Build GUI app on non-Apple platform (eg. Linux & Windows)
+- Diagnose and debug SwfitUI issues on Apple platform
 
-The implementation on Darwin platfrom may contain reverse engineered code from Apple. You should not use this in production environment nor distribute it freely. And such code's property and license is preserved by Apple's SwiftUI team.
-
-The implementation on non-Darwin platfrom (Linux/Android/Windows) is licensed under MIT.
-
-The project's goal is to stay close to the original API as possible.
+And the API design is to stay the same as the original SwiftUI API as possible.
 
 Currently, this project is in early development.
 
 ## Usage
 
-See Example folder and try it with ExampleApp.
+See Example folder and try it with ExampleApp
+
+## License
+
+See LICENSE file - MIT
 
 ## Related Projects
 
