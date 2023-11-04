@@ -12,3 +12,10 @@ protocol Projection: Hashable {
     func get(base: Base) -> Projected
     func set(base: inout Base, newValue: Projected)
 }
+
+extension WritableKeyPath: Projection {
+    typealias Base = Root
+    typealias Projected = Value
+    func get(base: Root) -> Value { base[keyPath: self] }
+    func set(base: inout Root, newValue: Value) { base[keyPath: self] = newValue }
+}
