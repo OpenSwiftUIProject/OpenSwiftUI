@@ -5,16 +5,28 @@ public struct Binding<Value> {
     var location: AnyLocation<Value>
     private var _value: Value
 
-    init(value: Value, location: AnyLocation<Value>, transaction: Transaction = Transaction()) {
-        self.transaction = transaction
-        self.location = location
-        self._value = value
+    public init(get: @escaping () -> Value, set: @escaping (Value) -> Void) {
+        let location = FunctionalLocation(getValue: get) { value, _ in set(value) }
+        let box = LocationBox(location: location)
+        self.init(value: get(), location: box)
+    }
+
+    public init(get: @escaping () -> Value, set: @escaping (Value, Transaction) -> Void) {
+        let location = FunctionalLocation(getValue: get, setValue: set)
+        let box = LocationBox(location: location)
+        self.init(value: get(), location: box)
     }
 
     public static func constant(_ value: Value) -> Binding<Value> {
         let location = ConstantLocation(value: value)
         let box = LocationBox(location: location)
         return Binding(value: value, location: box)
+    }
+
+    init(value: Value, location: AnyLocation<Value>, transaction: Transaction = Transaction()) {
+        self.transaction = transaction
+        self.location = location
+        self._value = value
     }
 
     public var wrappedValue: Value {

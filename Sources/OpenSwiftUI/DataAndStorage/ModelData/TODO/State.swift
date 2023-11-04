@@ -45,7 +45,8 @@ public struct State<Value>: DynamicProperty {
 }
 
 extension State where Value: ExpressibleByNilLiteral {
-    @inlinable public init() {
+    @inlinable
+    public init() {
         self.init(wrappedValue: nil)
     }
 }
