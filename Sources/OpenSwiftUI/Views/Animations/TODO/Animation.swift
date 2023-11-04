@@ -5,4 +5,6 @@ public struct Animation: Equatable {
         // TODO
         true
     }
+
+    public static var `default` = Animation()
 }

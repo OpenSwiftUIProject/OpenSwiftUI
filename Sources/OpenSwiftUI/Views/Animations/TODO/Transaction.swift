@@ -18,20 +18,21 @@ public struct Transaction {
     }
 }
 
-//extension Transaction {
+extension Transaction {
     // Blocked by PropertyList implementation
 //    public init(animation: Animation?) {
 //
 //    }
-//    public var animation: Animation? {
-//        get {}
-//        set {}
-//    }
+    // TODO
+    public var animation: Animation? {
+        get { nil }
+        set { }
+    }
 //    public var disablesAnimations: Bool {
 //        get
 //        set
 //    }
-//}
+}
 
 //extension Transaction {
 //    public var isContinuous: Bool {
