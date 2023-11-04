@@ -13,3 +13,9 @@ protocol Location {
     func set(_ value: Value, transaction: Transaction)
     func update() -> (Value, Bool)
 }
+
+extension Location {
+    func update() -> (Value, Bool) {
+        (get(), true)
+    }
+}
