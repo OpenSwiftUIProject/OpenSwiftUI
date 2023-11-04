@@ -53,6 +53,23 @@ public struct Binding<Value> {
     }
 }
 
+ extension Binding {
+    public init<V>(_ base: Binding<V>) where Value == V? {
+        self = base.projecting(BindingOperations.ToOptional())
+    }
+
+    public init?(_ base: Binding<Value?>) {
+        guard let _ = base.wrappedValue else {
+            return nil
+        }
+        self = base.projecting(BindingOperations.ForceUnwrapping())
+    }
+
+    public init<V>(_ base: Binding<V>) where Value == AnyHashable, V : Hashable {
+        self = base.projecting(BindingOperations.ToAnyHashable())
+    }
+ }
+
 extension Binding: Identifiable where Value: Identifiable {
     public var id: Value.ID { wrappedValue.id }
     public typealias ID = Value.ID
