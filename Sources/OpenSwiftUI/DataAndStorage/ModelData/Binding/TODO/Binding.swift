@@ -53,7 +53,7 @@ public struct Binding<Value> {
     }
 }
 
- extension Binding {
+extension Binding {
     public init<V>(_ base: Binding<V>) where Value == V? {
         self = base.projecting(BindingOperations.ToOptional())
     }
@@ -65,10 +65,10 @@ public struct Binding<Value> {
         self = base.projecting(BindingOperations.ForceUnwrapping())
     }
 
-    public init<V>(_ base: Binding<V>) where Value == AnyHashable, V : Hashable {
+    public init(_ base: Binding<some Hashable>) where Value == AnyHashable {
         self = base.projecting(BindingOperations.ToAnyHashable())
     }
- }
+}
 
 extension Binding: Identifiable where Value: Identifiable {
     public var id: Value.ID { wrappedValue.id }
@@ -139,8 +139,8 @@ extension Binding {
     }
 }
 
-extension Binding : DynamicProperty {
-    // TODO
+extension Binding: DynamicProperty {
+    // TODO:
     //    public static func _makeProperty<V>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<V>, fieldOffset: Int, inputs: inout _GraphInputs) {
     //    }
 }

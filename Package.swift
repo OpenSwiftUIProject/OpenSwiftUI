@@ -109,3 +109,17 @@ if useCombine {
         .product(name: "OpenCombine", package: "OpenCombine")
     )
 }
+
+let useOSLog = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_OS_LOG"] != nil
+if useOSLog {
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_USE_OS_LOG"))
+    openSwiftUITarget.swiftSettings = swiftSettings
+} else {
+    package.dependencies.append(
+        .package(url: "https://github.com/apple/swift-log", from: "1.5.3")
+    )
+    openSwiftUITarget.dependencies.append(
+        .product(name: "Logging", package: "swift-log")
+    )
+}
