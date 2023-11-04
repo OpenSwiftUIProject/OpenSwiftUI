@@ -23,10 +23,28 @@ public protocol DynamicProperty {
 }
 
 extension DynamicProperty {
-    // TODO
     public static func _makeProperty<V>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<V>, fieldOffset: Int, inputs: inout _GraphInputs) {
-        
+        makeEmbeddedProperties(in: &buffer, container: container, fieldOffset: fieldOffset, inputs: &inputs)
+        // TODO
+        buffer.append(EmbeddedDynamicPropertyBox<Self>(), fieldOffset: fieldOffset)
     }
+
+    static func makeEmbeddedProperties<V>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<V>, fieldOffset: Int, inputs: inout _GraphInputs) -> () {
+        let fields = DynamicPropertyCache.fields(of: self)
+        // TODO
+        buffer.addFields(fields, container: container, inputs: &inputs, baseOffset: fieldOffset)
+    }
+
     public mutating func update() {}
     public static var _propertyBehaviors: UInt32 { 0 }
+}
+
+private struct EmbeddedDynamicPropertyBox<Value: DynamicProperty>: DynamicPropertyBox {
+    typealias Property = Value
+    func destroy() {}
+    func reset() {}
+    func update(property: inout Value, phase _: _GraphInputs.Phase) -> Bool {
+        property.update()
+        return false
+    }
 }
