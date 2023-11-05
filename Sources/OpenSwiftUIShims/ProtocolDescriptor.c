@@ -1,11 +1,11 @@
 //
-//  ProtocolDescriptor.m
+//  ProtocolDescriptor.c
 //  
 //
 //  Created by Kyle on 2023/10/3.
 //
 
-#import "ProtocolDescriptor.h"
+#include "ProtocolDescriptor.h"
 
 OF_EXPORT
 const void *$s11OpenSwiftUI4ViewMp;
