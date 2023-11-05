@@ -14,4 +14,12 @@ class LocationBox<L: Location>: AnyLocation<L.Value> {
     init(location: L) {
         self.location = location
     }
+
+    override func get() -> L.Value {
+        location.get()
+    }
+
+    override func set(_ value: L.Value, transaction: Transaction) {
+        location.set(value, transaction: transaction)
+    }
 }

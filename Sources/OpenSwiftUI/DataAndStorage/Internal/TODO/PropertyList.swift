@@ -49,6 +49,10 @@ extension PropertyList {
         /*@objc*/
         @usableFromInline
         deinit {}
+
+        func byPrepending(_ element: Element?) -> Element {
+            self
+        }
     }
 }
 

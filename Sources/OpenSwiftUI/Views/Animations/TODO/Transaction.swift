@@ -7,6 +7,8 @@
 //  Status: Empty
 //  ID: 39EC6D46662E6D7A6963F5C611934B0A
 
+internal import OpenSwiftUIShims
+
 @frozen
 public struct Transaction {
     @usableFromInline
@@ -34,19 +36,19 @@ extension Transaction {
 //    }
 }
 
-//extension Transaction {
+// extension Transaction {
 //    public var isContinuous: Bool {
 //        get
 //        set
 //    }
-//}
+// }
 //
-//extension Transaction {
+// extension Transaction {
 //    public var _scrollViewAnimates: _ScrollViewAnimationMode {
 //        get
 //        set
 //    }
-//}
+// }
 
 protocol TransactionKey {
     associatedtype Value
@@ -55,4 +57,16 @@ protocol TransactionKey {
 
 private struct AnimationKey: TransactionKey {
     static let defaultValue: Animation? = nil
+}
+
+public func withTransaction<Result>(
+    _ transaction: Transaction,
+    _ body: () throws -> Result
+) rethrows -> Result {
+    try withExtendedLifetime(transaction) {
+        let data = _threadTransactionData()
+        defer { _setThreadTransactionData(data) }
+        _setThreadTransactionData(transaction.plist.elements.map { Unmanaged.passUnretained($0).toOpaque() })
+        return try body()
+    }
 }
