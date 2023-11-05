@@ -46,9 +46,9 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
 //    @Environment(\.keyboardShortcut)
 //    private var keyboardShortcut: KeyboardShortcut?
 //
-//    @Environment(\.controlSize)
-//    private var controlSize: ControlSize
-//
+    @Environment(\.controlSize)
+    private var controlSize: ControlSize
+
     @Environment(\.isEnabled)
     private var isEnable: Bool
 
@@ -63,7 +63,6 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
     }
 
     private var defaultFont: Font {
-        let controlSize = ControlSize.regular
         let style: Font.TextStyle = switch controlSize {
         case .mini: .subheadline
         case .small: .subheadline

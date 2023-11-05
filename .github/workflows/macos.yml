@@ -1,0 +1,54 @@
+name: macOS 
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  macos_test:
+    name: Execute tests on macOS
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            xcode-version: "15.0"   # Swift 5.9.0
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Swift version
+        run: swift --version
+      - name: Build and run tests in debug mode with coverage
+        run: |
+          swift test \
+            -c debug \
+            -Xswiftc -warnings-as-errors \
+            --enable-code-coverage \
+            --build-path .build-test-debug
+          xcrun llvm-cov show \
+            -instr-profile=.build-test-debug/debug/codecov/default.profdata \
+            .build-test-debug/debug/OpenSwiftUIPackageTests.xctest/Contents/MacOS/OpenSwiftUIPackageTests \
+            > coverage.txt
+      - name: Build and run tests in debug mode with TSan
+        run: |
+          swift test \
+          -c debug \
+          --sanitize thread \
+          -Xswiftc -warnings-as-errors \
+          --build-path .build-test-debug-sanitize-thread
+      - name: Build and run tests in release mode
+        run: |
+          swift test \
+            -c release \
+            -Xswiftc -warnings-as-errors \
+            --enable-code-coverage \
+            --build-path .build-test-release
+      - uses: codecov/codecov-action@v3
+        with:
+          verbose: true
