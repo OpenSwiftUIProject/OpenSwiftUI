@@ -7,8 +7,6 @@
 //  Status: WIP
 //  ID: A96961F3546506F21D8995C6092F15B5
 
-import Foundation
-
 @frozen
 public struct AnyView : PrimitiveView {
     var storage: AnyViewStorageBase

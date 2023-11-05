@@ -8,7 +8,7 @@
 //  ID: 5A14269649C60F846422EA0FA4C5E535
 
 import Foundation
-@_implementationOnly import OpenSwiftUIShims
+internal import OpenSwiftUIShims
 
 // MARK: _ViewDebug
 

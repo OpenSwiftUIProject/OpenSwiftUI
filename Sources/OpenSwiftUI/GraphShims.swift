@@ -1,5 +1,5 @@
 #if OPENSWIFTUI_USE_AG
-@_implementationOnly import AttributeGraph
+internal import AttributeGraph
 
 typealias OGAttribute = AGAttribute
 typealias OGUniqueID = AGUniqueID

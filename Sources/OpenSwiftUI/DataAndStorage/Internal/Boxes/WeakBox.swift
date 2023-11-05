@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 struct WeakBox<A: AnyObject> {
     weak var base: A?
 }

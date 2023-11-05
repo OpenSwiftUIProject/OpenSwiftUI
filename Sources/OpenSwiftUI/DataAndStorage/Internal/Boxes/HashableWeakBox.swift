@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 struct HashableWeakBox<A: AnyObject>: Hashable {
     weak var base: A?
 

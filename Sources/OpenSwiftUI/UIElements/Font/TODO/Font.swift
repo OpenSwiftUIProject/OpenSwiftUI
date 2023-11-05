@@ -1,4 +1,8 @@
+#if canImport(Darwin)
+import CoreGraphics
+#elseif os(Linux)
 import Foundation
+#endif
 
 @frozen
 public struct Font: Hashable {

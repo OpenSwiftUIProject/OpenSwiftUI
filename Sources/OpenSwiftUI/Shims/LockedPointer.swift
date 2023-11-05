@@ -6,7 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-@_implementationOnly import OpenSwiftUIShims
+internal import OpenSwiftUIShims
 
 extension LockedPointer {
     @_transparent

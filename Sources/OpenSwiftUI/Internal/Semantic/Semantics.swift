@@ -6,8 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-@_implementationOnly import OpenSwiftUIShims
+internal import OpenSwiftUIShims
 
 struct Semantics: CustomStringConvertible, Comparable, Hashable {
     var description: String {

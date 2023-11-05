@@ -7,7 +7,7 @@
 //  Status: Complete
 //  ID: 6C985860B64B768EC9A2691B5DBA71A0
 
-@_implementationOnly import OpenSwiftUIShims
+internal import OpenSwiftUIShims
 
 extension View {
     func buttonDefaultRenderingMode() -> some View {

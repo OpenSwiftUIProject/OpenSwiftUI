@@ -17,7 +17,7 @@ let openSwiftUITarget = Target.target(
         "OpenSwiftUIShims",
     ],
     swiftSettings: [
-        .unsafeFlags(["-enable-library-evolution"]),
+        .enableExperimentalFeature("AccessLevelOnImport"),
     ]
 )
 
