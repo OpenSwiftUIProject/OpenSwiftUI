@@ -1,5 +1,3 @@
-import Foundation
-
 @frozen
 public struct _PreferenceWritingModifier<Key>: ViewModifier where Key: PreferenceKey {
     public var value: Key.Value

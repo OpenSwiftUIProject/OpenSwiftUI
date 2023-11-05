@@ -12,7 +12,7 @@
 /// preference into a single value visible to its ancestors.
 public protocol PreferenceKey {
     /// The type of value produced by this preference.
-    associatedtype Value // PWT+0x8
+    associatedtype Value
 
     /// The default value of the preference.
     ///
@@ -20,7 +20,7 @@ public protocol PreferenceKey {
     /// value. Combining child views may remove an implicit value produced by
     /// using the default. This means that `reduce(value: &x, nextValue:
     /// {defaultValue})` shouldn't change the meaning of `x`.
-    static var defaultValue: Value { get } // PWT+0x10
+    static var defaultValue: Value { get }
 
     /// Combines a sequence of values by modifying the previously-accumulated
     /// value with the result of a closure that provides the next value.
@@ -33,11 +33,11 @@ public protocol PreferenceKey {
     ///   - value: The value accumulated through previous calls to this method.
     ///     The implementation should modify this value.
     ///   - nextValue: A closure that returns the next value in the sequence.
-    static func reduce(value: inout Value, nextValue: () -> Value) // PWT+0x18
+    static func reduce(value: inout Value, nextValue: () -> Value)
 
-    static var _includesRemovedValues: Bool { get } // PWT+0x20
+    static var _includesRemovedValues: Bool { get }
 
-    static var _isReadableByHost: Bool { get } // PWT+0x28
+    static var _isReadableByHost: Bool { get }
 }
 
 extension PreferenceKey where Value: ExpressibleByNilLiteral {

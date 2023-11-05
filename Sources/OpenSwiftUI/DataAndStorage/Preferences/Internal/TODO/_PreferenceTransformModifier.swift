@@ -1,5 +1,3 @@
-import Foundation
-
 @frozen
 public struct _PreferenceTransformModifier<Key>: ViewModifier where Key: PreferenceKey {
     public var transform: (inout Key.Value) -> Void
