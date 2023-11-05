@@ -46,15 +46,11 @@ public struct State<Value> {
         }
         return Binding(value: value, location: _location)
     }
-
-
 }
 
 extension State: DynamicProperty {
-    // TODO
-    //    public static func _makeProperty(in _: inout _DynamicPropertyBuffer, container _: _GraphValue<some Any>, fieldOffset _: Swift.Int, inputs _: inout _GraphInputs) {
-    //
-    //    }
+    // TODO:
+    public static func _makeProperty(in _: inout _DynamicPropertyBuffer, container _: _GraphValue<some Any>, fieldOffset _: Swift.Int, inputs _: inout _GraphInputs) {}
 }
 
 extension State where Value: ExpressibleByNilLiteral {

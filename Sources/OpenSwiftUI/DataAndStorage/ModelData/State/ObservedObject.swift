@@ -11,7 +11,6 @@ import Combine
 #else
 import OpenCombine
 #endif
-internal import OpenSwiftUIShims
 
 @propertyWrapper
 @frozen
