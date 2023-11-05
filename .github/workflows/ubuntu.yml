@@ -1,0 +1,45 @@
+name: Ubuntu 
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ubuntu_test:
+    name: Execute tests on Ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        swift_version: ["5.9.1"]
+    runs-on: ubuntu-22.04
+    container: swift:${{ matrix.swift_version }}-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Building and running tests in debug mode with coverage
+        run: |
+          swift test \
+            -c debug \
+            -Xswiftc -warnings-as-errors \
+            --enable-code-coverage \
+            --build-path .build-test-debug
+          llvm-cov show \
+            -instr-profile=.build-test-debug/debug/codecov/default.profdata \
+            .build-test-debug/debug/OpenSwiftUIPackageTests.xctest \
+            > coverage.txt
+      - name: Building and running tests in debug mode with TSan
+        run: |
+          swift test \
+            -c debug \
+            --sanitize thread \
+            --build-path .build-test-debug-sanitize-thread
+      - name: Building and running tests in release mode
+        run: |
+          swift test \
+            -c release \
+            -Xswiftc -warnings-as-errors \
+            --build-path .build-test-release
+      - uses: codecov/codecov-action@v3
+        with:
+          verbose: true

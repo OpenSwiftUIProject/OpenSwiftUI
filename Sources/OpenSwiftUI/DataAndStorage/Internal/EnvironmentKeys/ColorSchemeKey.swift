@@ -7,8 +7,6 @@
 //  Status: WIP
 //  ID: 387C753F3FFD2899BCB77252214CFCC6
 
-import Foundation
-
 //private struct SystemColorSchemeModifier {}
 
 private struct ColorSchemeKey: EnvironmentKey {

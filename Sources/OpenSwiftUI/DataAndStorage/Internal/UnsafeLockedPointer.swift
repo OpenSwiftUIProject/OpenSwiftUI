@@ -6,7 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Blocked by StoredLocationBase
 
-@_implementationOnly import OpenSwiftUIShims
+internal import OpenSwiftUIShims
 
 // TODO: caller StoredLocationBase
 @propertyWrapper

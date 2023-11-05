@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: TODO
 
-import Foundation
-
 class LocationBox<L: Location>: AnyLocation<L.Value> {
     var location: L
     @UnsafeLockedPointer

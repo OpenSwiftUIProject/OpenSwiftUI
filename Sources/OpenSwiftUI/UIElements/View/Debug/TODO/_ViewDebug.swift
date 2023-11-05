@@ -8,7 +8,7 @@
 //  ID: 5A14269649C60F846422EA0FA4C5E535
 
 import Foundation
-@_implementationOnly import OpenSwiftUIShims
+internal import OpenSwiftUIShims
 
 // MARK: _ViewDebug
 
@@ -114,11 +114,11 @@ extension _ViewDebug {
         // TODO
         // Mirror API
         private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
-            let unwrapped = unwrapped(value)
+//            let unwrapped = unwrapped(value)
 
             return nil
 
-            let mirror = Mirror(reflecting: value)
+//            let mirror = Mirror(reflecting: value)
 //            mirror.displayStyle = .tuple
 
         }

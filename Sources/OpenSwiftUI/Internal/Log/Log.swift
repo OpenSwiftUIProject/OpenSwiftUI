@@ -25,7 +25,7 @@ public let dso = { () -> UnsafeMutableRawPointer in
 }()
 #endif
 #else
-@_implementationOnly import Logging
+internal import Logging
 #endif
 
 enum Log {

@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 @propertyWrapper
 final class MutableBox<A> {
     var value: A

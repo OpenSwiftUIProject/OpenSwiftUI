@@ -7,9 +7,9 @@
 //  Status: Complete
 
 #if OPENSWIFTUI_USE_AG
-@_implementationOnly import AttributeGraph
+internal import AttributeGraph
 #else
-@_implementationOnly import OpenGraph
+internal import OpenGraph
 #endif
 
 struct UniqueID: Hashable {

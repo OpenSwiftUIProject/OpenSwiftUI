@@ -53,11 +53,20 @@ final class LockedPointerTests: XCTestCase {
     }
 
     func testLocking() {
+        #if canImport(os)
         let pointer = LockedPointer(type: Int.self)
         XCTAssertEqual(pointer.rawValue.pointee.lock._os_unfair_lock_opaque, 0)
         pointer.lock()
         XCTAssertNotEqual(pointer.rawValue.pointee.lock._os_unfair_lock_opaque, 0)
         pointer.unlock()
         XCTAssertEqual(pointer.rawValue.pointee.lock._os_unfair_lock_opaque, 0)
+        #else
+        let pointer = LockedPointer(type: Int.self)
+        XCTAssertEqual(pointer.rawValue.pointee.lock, 0)
+        pointer.lock()
+        XCTAssertNotEqual(pointer.rawValue.pointee.lock, 0)
+        pointer.unlock()
+        XCTAssertEqual(pointer.rawValue.pointee.lock, 0)
+        #endif
     }
 }

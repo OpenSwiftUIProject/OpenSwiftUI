@@ -9,9 +9,9 @@
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C
 
 #if OPENSWIFTUI_USE_AG
-@_implementationOnly import AttributeGraph
+internal import AttributeGraph
 #else
-@_implementationOnly import OpenGraph
+internal import OpenGraph
 #endif
 
 @frozen

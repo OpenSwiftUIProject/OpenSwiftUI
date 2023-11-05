@@ -6,8 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-import Foundation
-
 struct Indirect<A> {
     var box : MutableBox<A>
 

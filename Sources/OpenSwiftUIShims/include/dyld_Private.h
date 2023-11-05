@@ -8,6 +8,7 @@
 #ifndef dyld_Private_h
 #define dyld_Private_h
 
+#include <OpenFoundation/OpenFoundation.h>
 #include <stdlib.h>
 #include <stdbool.h>
 
@@ -18,6 +19,7 @@ typedef struct {
     uint32_t        version;
 } dyld_build_version_t;
 
+// Always return true on non-Darwin platform
 extern bool dyld_program_sdk_at_least(dyld_build_version_t version);
 
 #endif /* dyld_Private_h */
