@@ -6,7 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-protocol Location {
+protocol Location<Value> {
     associatedtype Value
     var wasRead: Bool { get set }
     func get() -> Value
