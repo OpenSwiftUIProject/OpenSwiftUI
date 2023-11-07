@@ -23,6 +23,18 @@ struct LocationProjectionCache {
             return box
         }
     }
+
+    // MARK: OpenSwiftUI Addition
+    // For OpenSwiftUITest
+    func checkReference<P: Projection, L: Location>(for projection: P, on location: L) -> Bool where P.Base == L.Value {
+        if let entry = cache[AnyHashable(projection)],
+           let box = entry.box,
+           box is AnyLocation<P.Projected> {
+            true
+        } else {
+            false
+        }
+    }
 }
 
 private struct ProjectedLocation<L: Location, P: Projection>: Location where P.Base == L.Value {

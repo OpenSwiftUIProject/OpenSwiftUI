@@ -10,7 +10,7 @@ struct ConstantLocation<Value>: Location {
     var value: Value
     var wasRead: Bool {
         get { true }
-        set {}
+        nonmutating set {}
     }
     func get() -> Value { value }
     func set(_: Value, transaction _: Transaction) {}

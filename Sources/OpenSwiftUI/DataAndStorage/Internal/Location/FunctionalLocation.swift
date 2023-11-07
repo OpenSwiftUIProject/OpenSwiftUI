@@ -11,7 +11,7 @@ struct FunctionalLocation<Value>: Location {
     var setValue: (Value, Transaction) -> Void
     var wasRead: Bool {
         get { true }
-        set {}
+        nonmutating set {}
     }
     func get() -> Value { getValue() }
     func set(_ value: Value, transaction: Transaction) { setValue(value, transaction) }
