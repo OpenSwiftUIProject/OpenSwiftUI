@@ -4,6 +4,8 @@
 
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FKyle-Ye%2FOpenSwiftUI%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/Kyle-Ye/OpenSwiftUI)
 
+[![codecov](https://codecov.io/gh/Kyle-Ye/OpenSwiftUI/graph/badge.svg?token=S63P3YUCAJ)](https://codecov.io/gh/Kyle-Ye/OpenSwiftUI)
+
 OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://developer.apple.com/documentation/swiftui)
 
 The project is for the following purposes:
