@@ -20,6 +20,12 @@ let openSwiftUITarget = Target.target(
         .enableExperimentalFeature("AccessLevelOnImport"),
     ]
 )
+let openSwiftUITestTarget = Target.testTarget(
+    name: "OpenSwiftUITests",
+    dependencies: [
+        "OpenSwiftUI",
+    ]
+)
 
 let package = Package(
     name: "OpenSwiftUI",
@@ -46,7 +52,7 @@ let package = Package(
             dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
         openSwiftUITarget,
-        .testTarget(name: "OpenSwiftUITests", dependencies: ["OpenSwiftUI"]),
+        openSwiftUITestTarget,
     ]
 )
 
@@ -57,7 +63,10 @@ if useAG {
         // FIXME: The binary of AG for macOS is copied from dyld shared cache and it will cause a link error when running. Use iOS Simulator to run this target as a temporary workaround
         .testTarget(
             name: "AttributeGraphTests",
-            dependencies: ["AttributeGraph"]
+            dependencies: [
+                "AttributeGraph",
+                .product(name: "Testing", package: "swift-testing"),
+            ]
         ),
     ]
     package.targets.append(contentsOf: targets)
@@ -87,7 +96,10 @@ if useAG {
         ),
         .testTarget(
             name: "OpenGraphTests",
-            dependencies: ["OpenGraph"]
+            dependencies: [
+                "OpenGraph",
+                .product(name: "Testing", package: "swift-testing"),
+            ]
         ),
     ]
     package.targets.append(contentsOf: targets)
@@ -121,5 +133,20 @@ if useOSLog {
     )
     openSwiftUITarget.dependencies.append(
         .product(name: "Logging", package: "swift-log")
+    )
+}
+
+// Remove this when swift-testing is 1.0.0
+let disableSwiftTesting = ProcessInfo.processInfo.environment["OPENSWIFTUI_DISABLE_SWIFT_TESTING"] != nil
+if !disableSwiftTesting {
+    var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_USE_SWIFT_TESTING"))
+    openSwiftUITestTarget.swiftSettings = swiftSettings
+    package.dependencies.append(
+        // TODO: use `from` when a new version beside 0.1.0 is released
+        .package(url: "https://github.com/apple/swift-testing", branch: "main")
+    )
+    openSwiftUITestTarget.dependencies.append(
+        .product(name: "Testing", package: "swift-testing")
     )
 }

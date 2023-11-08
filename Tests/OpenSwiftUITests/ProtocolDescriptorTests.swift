@@ -4,11 +4,14 @@
 //
 //  Created by Kyle on 2023/10/3.
 //
+
+#if OPENSWIFTUI_USE_SWIFT_TESTING
 @testable import OpenSwiftUI
 import OpenSwiftUIShims
-import XCTest
+import Testing
 
-final class ProtocolDescriptorTests: XCTestCase {
+struct ProtocolDescriptorTests {
+    @Test
     func testExample() throws {
         struct ContentView: View {
             var body: some View {
@@ -22,10 +25,10 @@ final class ProtocolDescriptorTests: XCTestCase {
             }
         }
 
-        XCTAssertTrue(conformsToProtocol(ContentView.self, _viewProtocolDescriptor()))
-        XCTAssertFalse(conformsToProtocol(ContentView.self, _viewModifierProtocolDescriptor()))
-
-        XCTAssertFalse(conformsToProtocol(ContentViewModifier.self, _viewProtocolDescriptor()))
-        XCTAssertTrue(conformsToProtocol(ContentViewModifier.self, _viewModifierProtocolDescriptor()))
+        #expect(conformsToProtocol(ContentView.self, _viewProtocolDescriptor()))
+        #expect(!conformsToProtocol(ContentView.self, _viewModifierProtocolDescriptor()))
+        #expect(!conformsToProtocol(ContentViewModifier.self, _viewProtocolDescriptor()))
+        #expect(conformsToProtocol(ContentViewModifier.self, _viewModifierProtocolDescriptor()))
     }
 }
+#endif
