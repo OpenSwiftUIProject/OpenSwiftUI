@@ -1,8 +1,8 @@
 //
 //  ContentView.swift
-//  ExampleApp
+//  Example
 //
-//  Created by Kyle on 2023/9/22.
+//  Created by Kyle on 2023/11/9.
 //
 
 import OpenSwiftUI
