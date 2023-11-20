@@ -8,29 +8,28 @@
 #if OPENSWIFTUI_USE_SWIFT_TESTING
 @testable import OpenSwiftUI
 import Testing
+import Foundation
 
 struct BloomFilterTests {
-    @Test
+    #if os(macOS)
+    @Test("Bloom Filter's init", .enabled(if: ProcessInfo.processInfo.operatingSystemVersionString == "14.0"))
     func testInitType() throws {
-        #if os(macOS)
         // hashValue: 0x1dd382138
         // 1 &<< (value &>> 0x10): 1 &<< 0x38 -> 0x0100_0000_0000_0000
         // 1 &<< (value &>> 0x0a): 1 &<< 0x08 -> 0x0000_0000_0000_0100
         // 1 &<< (value &>> 0x94): 1 &<< 0x13 -> 0x0000_0000_0008_0000
         try initTypeHelper(Int.self, expectedTypeValue: 0x1_DD38_2138, expectedValue: 0x0100_0000_0008_0100, message: "macOS 14.0")
-        #elseif os(iOS)
-        try initTypeHelper(Int.self, expectedTypeValue: 0x1_DF10_D1E0, expectedValue: 0x0010_0000_4001_0000, message: "iOS 15.5 Simulator")
-        #endif
     }
+    #elseif os(iOS) && targetEnvironment(simulator)
+    @Test("Bloom Filter's init", .enabled(if: ProcessInfo.processInfo.operatingSystemVersionString == "15.5"))
+    func testInitType() throws {
+        try initTypeHelper(Int.self, expectedTypeValue: 0x1_DF10_D1E0, expectedValue: 0x0010_0000_4001_0000, message: "iOS 15.5 Simulator")
+    }
+    #endif
 
     private func initTypeHelper(_ type: Any.Type, expectedTypeValue: Int, expectedValue: UInt, message: StaticString = "") throws {
         let typeValue = Int(bitPattern: unsafeBitCast(type, to: OpaquePointer.self))
-        guard typeValue == expectedTypeValue else {
-            withKnownIssue {
-                throw "The OS version is not covered. Please run it under \(message)"
-            }
-            return
-        }
+        #expect(typeValue == expectedTypeValue, "The OS version is not covered. Please run it under \(message)")
         #expect(BloomFilter(type: type).value == expectedValue)
     }
 
@@ -51,6 +50,4 @@ struct BloomFilterTests {
         #endif
     }
 }
-
-extension String: Error {}
 #endif
