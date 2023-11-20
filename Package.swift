@@ -26,6 +26,12 @@ let openSwiftUITestTarget = Target.testTarget(
         "OpenSwiftUI",
     ]
 )
+let openSwiftUICompatibilityTestTarget = Target.testTarget(
+    name: "OpenSwiftUICompatibilityTests",
+    dependencies: [
+        "OpenSwiftUI",
+    ]
+)
 
 let package = Package(
     name: "OpenSwiftUI",
@@ -53,6 +59,7 @@ let package = Package(
         ),
         openSwiftUITarget,
         openSwiftUITestTarget,
+        openSwiftUICompatibilityTestTarget,
     ]
 )
 
@@ -149,4 +156,11 @@ if !disableSwiftTesting {
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
+}
+
+let compatibilityTest = ProcessInfo.processInfo.environment["OPENSWIFTUI_COMPATIBILITY_TEST"] != nil
+if compatibilityTest {
+    var swiftSettings: [SwiftSetting] = (openSwiftUICompatibilityTestTarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
+    openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
 }
