@@ -72,7 +72,6 @@ if useAG {
             name: "AttributeGraphTests",
             dependencies: [
                 "AttributeGraph",
-                .product(name: "Testing", package: "swift-testing"),
             ]
         ),
     ]
@@ -105,7 +104,6 @@ if useAG {
             name: "OpenGraphTests",
             dependencies: [
                 "OpenGraph",
-                .product(name: "Testing", package: "swift-testing"),
             ]
         ),
     ]
@@ -144,8 +142,8 @@ if useOSLog {
 }
 
 // Remove this when swift-testing is 1.0.0
-let disableSwiftTesting = ProcessInfo.processInfo.environment["OPENSWIFTUI_DISABLE_SWIFT_TESTING"] != nil
-if !disableSwiftTesting {
+let useSwiftTesting = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_SWIFT_TESTING"] != nil
+if useSwiftTesting {
     var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
     swiftSettings.append(.define("OPENSWIFTUI_USE_SWIFT_TESTING"))
     openSwiftUITestTarget.swiftSettings = swiftSettings
