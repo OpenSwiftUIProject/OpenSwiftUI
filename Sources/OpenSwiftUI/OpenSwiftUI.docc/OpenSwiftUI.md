@@ -27,3 +27,7 @@ You can integrate OpenSwiftUI views with objects from the [UIKit](https://develo
 ### Views
 
 - <doc:Animations>
+
+### Event Handling
+
+- <doc:SystemEvents>
