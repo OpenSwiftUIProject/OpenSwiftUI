@@ -15,9 +15,21 @@ let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
         "OpenSwiftUIShims",
+        "CoreServices",
+        "UIKitCore",
     ],
     swiftSettings: [
         .enableExperimentalFeature("AccessLevelOnImport"),
+    ],
+    linkerSettings: [
+        .unsafeFlags(
+            [systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"],
+            .when(platforms: [.iOS], configuration: .debug)
+        ),
+        .linkedFramework(
+            "CoreServices",
+            .when(platforms: [.iOS], configuration: .debug)
+        ),
     ]
 )
 let openSwiftUITestTarget = Target.testTarget(
@@ -35,7 +47,7 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
 
 let package = Package(
     name: "OpenSwiftUI",
-    platforms: [.iOS(.v13), .macOS(.v10_15), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
+    platforms: [.iOS(.v13), .macOS(.v10_15), .macCatalyst(.v13), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
@@ -57,6 +69,8 @@ let package = Package(
             name: "OpenSwiftUIShims",
             dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
+        .target(name: "CoreServices", path: "PrivateFrameworks/CoreServices"),
+        .target(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore"),
         openSwiftUITarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
