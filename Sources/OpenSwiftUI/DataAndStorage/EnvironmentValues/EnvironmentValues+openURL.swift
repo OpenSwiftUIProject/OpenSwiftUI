@@ -4,24 +4,17 @@
 //
 //  Created by Kyle on 2023/11/26.
 //  Lastest Version: iOS 15.5
-//  Status: Complete
+//  Status: WIP
 
-#if os(iOS)
+#if canImport(Darwin)
+#if os(iOS) || os(tvOS)
 import UIKit
+#if DEBUG
+private import UIKitCore
+private import CoreServices
 #endif
-
-struct OpenURLActionKey: EnvironmentKey {
-    static let defaultValue = OpenURLAction(
-        handler: .system { url, completion in
-            #if os(iOS)
-            UIApplication.shared.open(url, options: [:], completionHandler: completion)
-            #else
-            fatalError("Unimplemented")
-            #endif
-        },
-        isDefault: false
-    )
-}
+#endif
+#endif
 
 extension EnvironmentValues {
     /// An action that opens a URL.
@@ -83,12 +76,62 @@ extension EnvironmentValues {
     /// For example, a view that uses the action declared above
     /// receives `true` when calling the action, because the
     /// handler always returns ``OpenURLAction/Result/handled``.
+    // MARK: - TODO
     public var openURL: OpenURLAction {
-        get {
-            self[OpenURLActionKey.self]
-        }
-        set {
-            self[OpenURLActionKey.self] = newValue
-        }
+        get { _openURL }
+        set { _openURL = newValue }
     }
+
+    var _openURL: OpenURLAction {
+        get { self[OpenURLActionKey.self] }
+        set { self[OpenURLActionKey.self] = newValue }
+    }
+    // MARK: TODO -
+
+    var _openSensitiveURL: OpenURLAction {
+        get { self[OpenSensitiveURLActionKey.self] }
+        set { self[OpenSensitiveURLActionKey.self] = newValue }
+    }
+}
+
+struct OpenURLActionKey: EnvironmentKey {
+    static let defaultValue = OpenURLAction(
+        handler: .system { url, completion in
+            #if os(iOS) || os(tvOS) || os(visionOS)
+            UIApplication.shared.open(url, options: [:], completionHandler: completion)
+            #elseif os(macOS)
+            fatalError("Unimplemented")
+            #else
+            fatalError("Unimplemented")
+            #endif
+        },
+        isDefault: false
+    )
+}
+
+struct OpenSensitiveURLActionKey: EnvironmentKey {
+    static let defaultValue = OpenURLAction(
+        handler: .system { url, completion in
+            #if DEBUG && os(iOS)
+            let config = _LSOpenConfiguration()
+            config.isSensitive = true
+            let scene = UIApplication.shared.connectedScenes.first
+            config.targetConnectionEndpoint = scene?._currentOpenApplicationEndpoint
+            guard let workspace = LSApplicationWorkspace.default() else {
+                return
+            }
+            workspace.open(url, configuration: config, completionHandler: completion)
+            #else
+            fatalError("Unimplemented")
+            #endif
+        },
+        isDefault: false
+    )
+}
+
+struct HostingViewOpenURLActionKey: EnvironmentKey {
+    static let defaultValue = OpenURLAction(
+        handler: .custom({ .systemAction($0)}, fallback: nil),
+        isDefault: true
+    )
 }
