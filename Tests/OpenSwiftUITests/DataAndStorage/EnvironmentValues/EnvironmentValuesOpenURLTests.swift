@@ -9,9 +9,9 @@ import XCTest
 @testable import OpenSwiftUI
 
 final class EnvironmentValuesOpenURLTests: XCTestCase {
-    #if DEBUG
-    func testOpenSensitiveURLActionKey() throws {
-        let value = OpenSensitiveURLActionKey.defaultValue
+    #if os(iOS) || os(macOS) || os(tvOS)
+    func testOpenURLActionKey() {
+        let value = OpenURLActionKey.defaultValue
         value.callAsFunction(URL(string: "https://example.com")!)
     }
     #endif

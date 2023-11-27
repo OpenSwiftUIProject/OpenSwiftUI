@@ -13,6 +13,8 @@ import UIKit
 private import UIKitCore
 private import CoreServices
 #endif
+#elseif os(macOS)
+import AppKit
 #endif
 #endif
 
@@ -97,10 +99,12 @@ extension EnvironmentValues {
 struct OpenURLActionKey: EnvironmentKey {
     static let defaultValue = OpenURLAction(
         handler: .system { url, completion in
-            #if os(iOS) || os(tvOS) || os(visionOS)
+            #if os(iOS) || os(tvOS)
             UIApplication.shared.open(url, options: [:], completionHandler: completion)
             #elseif os(macOS)
-            fatalError("Unimplemented")
+            NSWorkspace.shared.open(url, configuration: .init()) { application, error in
+                completion(error != nil)
+            }
             #else
             fatalError("Unimplemented")
             #endif
