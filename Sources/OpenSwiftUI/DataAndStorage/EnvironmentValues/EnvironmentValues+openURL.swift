@@ -84,13 +84,13 @@ extension EnvironmentValues {
         set { _openURL = newValue }
     }
 
-    var _openURL: OpenURLAction {
+    public var _openURL: OpenURLAction {
         get { self[OpenURLActionKey.self] }
         set { self[OpenURLActionKey.self] = newValue }
     }
     // MARK: TODO -
 
-    var _openSensitiveURL: OpenURLAction {
+    public var _openSensitiveURL: OpenURLAction {
         get { self[OpenSensitiveURLActionKey.self] }
         set { self[OpenSensitiveURLActionKey.self] = newValue }
     }
