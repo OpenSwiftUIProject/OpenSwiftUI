@@ -59,6 +59,7 @@ public struct Link<Label>: View where Label: View {
         self.destination = LinkDestination(configuration: configuration)
     }
 
+    // TODO: Accessibility
     public var body: some View {
         Button {
             destination.open()
