@@ -78,17 +78,32 @@ extension EnvironmentValues {
     /// For example, a view that uses the action declared above
     /// receives `true` when calling the action, because the
     /// handler always returns ``OpenURLAction/Result/handled``.
-    // MARK: - TODO
     public var openURL: OpenURLAction {
         get { _openURL }
         set { _openURL = newValue }
     }
 
     public var _openURL: OpenURLAction {
-        get { self[OpenURLActionKey.self] }
+        get {
+            let action = self[OpenURLActionKey.self]
+            let hostingAction = self[HostingViewOpenURLActionKey.self]
+            guard let hostingAction else {
+                return action
+            }
+            guard !action.isDefault else {
+                return hostingAction
+            }
+            guard case let .custom(customResultBlock, _) = action.handler,
+                  case let .system(systemHandler) = hostingAction.handler else {
+                return action
+            }
+            return OpenURLAction(
+                handler: .custom(customResultBlock, fallback: systemHandler),
+                isDefault: false
+            )
+        }
         set { self[OpenURLActionKey.self] = newValue }
     }
-    // MARK: TODO -
 
     public var _openSensitiveURL: OpenURLAction {
         get { self[OpenSensitiveURLActionKey.self] }
@@ -102,14 +117,14 @@ struct OpenURLActionKey: EnvironmentKey {
             #if os(iOS) || os(tvOS)
             UIApplication.shared.open(url, options: [:], completionHandler: completion)
             #elseif os(macOS)
-            NSWorkspace.shared.open(url, configuration: .init()) { application, error in
+            NSWorkspace.shared.open(url, configuration: .init()) { _, error in
                 completion(error != nil)
             }
             #else
             fatalError("Unimplemented")
             #endif
         },
-        isDefault: false
+        isDefault: true
     )
 }
 
@@ -129,13 +144,10 @@ struct OpenSensitiveURLActionKey: EnvironmentKey {
             fatalError("Unimplemented")
             #endif
         },
-        isDefault: false
+        isDefault: true
     )
 }
 
 struct HostingViewOpenURLActionKey: EnvironmentKey {
-    static let defaultValue = OpenURLAction(
-        handler: .custom({ .systemAction($0)}, fallback: nil),
-        isDefault: true
-    )
+    static let defaultValue: OpenURLAction? = nil
 }

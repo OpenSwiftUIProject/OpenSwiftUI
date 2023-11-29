@@ -71,7 +71,7 @@ import Foundation
 public struct OpenURLAction {
     enum Handler {
         case system((URL, @escaping (Bool) -> Void) -> Void)
-        case custom((URL) -> Result, fallback: ((URL, (Bool) -> Void) -> Void)?)
+        case custom((URL) -> Result, fallback: ((URL, @escaping (Bool) -> Void) -> Void)?)
     }
 
     let handler: Handler
@@ -257,15 +257,12 @@ extension OpenURLAction {
             } else {
                 systemHandler(url, completion)
             }
-        case let .custom(customHandler, fallback: fallbackHandler):
-            let result = customHandler(url)
+        case let .custom(customResultBlock, fallback: fallbackHandler):
+            let result = customResultBlock(url)
             switch result.actionResult {
             case let .systemAction(optionalURL):
-                if let fallbackHandler {
-                    fallbackHandler(optionalURL ?? url, completion)
-                } else {
-                    OpenURLActionKey.defaultValue._open(optionalURL ?? url, completion: completion)
-                }
+                let handler = fallbackHandler ?? OpenURLActionKey.defaultValue._open(_:completion:)
+                handler(optionalURL ?? url, completion)
             case .handled:
                 completion(true)
             case .discarded:
