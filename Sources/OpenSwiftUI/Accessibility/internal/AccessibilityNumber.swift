@@ -13,7 +13,14 @@ struct AccessibilityNumber {
 }
 
 extension AccessibilityNumber: AccessibilityValue {
+    var localizedDescription: String? {
+        NumberFormatter.localizedString(from: value, number: .decimal)
+    }
+    var displayDescription: String? { localizedDescription }
     var value: NSNumber { base }
+    var minValue: NSNumber? { nil }
+    var maxValue: NSNumber? { nil }
+    static var type: AnyAccessibilityValueType { .number }
 }
 
 extension AccessibilityNumber: ExpressibleByFloatLiteral {

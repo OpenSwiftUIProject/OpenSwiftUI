@@ -19,17 +19,6 @@ protocol AccessibilityValue: Equatable {
     static var type: AnyAccessibilityValueType { get }
 }
 
-extension AccessibilityValue where PlatformValue: NSNumber {
-    var localizedDescription: String? {
-        NumberFormatter.localizedString(from: value, number: .decimal)
-    }
-
-    var displayDescription: String? {
-        NumberFormatter.localizedString(from: value, number: .decimal)
-    }
-
-    var minValue: NSNumber? { nil }
-    var maxValue: NSNumber? { nil }
+extension AccessibilityValue {
     var step: NSNumber? { nil }
-    static var type: AnyAccessibilityValueType { .number }
 }
