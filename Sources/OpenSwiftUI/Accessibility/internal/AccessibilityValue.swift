@@ -20,5 +20,36 @@ protocol AccessibilityValue: Equatable {
 }
 
 extension AccessibilityValue {
-    var step: NSNumber? { nil }
+    var minValue: PlatformValue? { nil }
+    var maxValue: PlatformValue? { nil }
+    var step: PlatformValue? { nil }
+}
+
+extension AccessibilityValue where PlatformValue: CustomStringConvertible {
+    var localizedDescription: String? { value.description }
+    var displayDescription: String? { value.description }
+}
+
+extension AccessibilityValue where Self == Self.PlatformValue {
+    var value: PlatformValue { self }
+}
+
+extension Int: AccessibilityValue {
+    typealias PlatformValue = Int
+    static var type: AnyAccessibilityValueType { .int }
+}
+
+extension Double: AccessibilityValue {
+    typealias PlatformValue = Double
+    static var type: AnyAccessibilityValueType { .number }
+}
+
+extension Bool: AccessibilityValue {
+    typealias PlatformValue = Bool
+    static var type: AnyAccessibilityValueType { .bool }
+}
+
+extension String: AccessibilityValue {
+    typealias PlatformValue = String
+    static var type: AnyAccessibilityValueType { .string }
 }

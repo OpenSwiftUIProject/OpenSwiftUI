@@ -9,6 +9,90 @@
 
 import Foundation
 
+// MARK: - AbstractAnyAccessibilityValue
+
+private protocol AbstractAnyAccessibilityValue: Codable {
+    var localizedDescription: String? { get }
+    var displayDescription: String? { get }
+    var value: Any { get }
+    var minValue: Any? { get }
+    var maxValue: Any? { get }
+    var step: Any? { get }
+    var type: AnyAccessibilityValueType { get }
+    func `as`<Value: AccessibilityValue>(_ type: Value.Type) -> Value?
+    func isEqual(to value: AbstractAnyAccessibilityValue) -> Bool
+}
+
+// MARK: - AnyAccessibilityValue
+
+struct AnyAccessibilityValue/*: AbstractAnyAccessibilityValue*/ {
+    private var base: AbstractAnyAccessibilityValue
+
+    init<Value: Codable & AccessibilityValue>(_ base: Value) {
+        self.base = ConcreteBase(base: base)
+    }
+}
+
+extension AnyAccessibilityValue: Equatable {
+    static func == (lhs: AnyAccessibilityValue, rhs: AnyAccessibilityValue) -> Bool {
+        lhs.base.isEqual(to: rhs.base)
+    }
+}
+
+extension AnyAccessibilityValue: Codable {
+    private enum Keys: CodingKey {
+        case type
+        case value
+    }
+
+    init(from decoder: Decoder) throws {
+        let container = try decoder.container(keyedBy: Keys.self)
+        let type = try container.decode(AnyAccessibilityValueType.self, forKey: .type)
+        switch type {
+        case .int: base = try container.decode(ConcreteBase<Int>.self, forKey: .value)
+        case .double: base = try container.decode(ConcreteBase<Double>.self, forKey: .value)
+        case .bool: base = try container.decode(ConcreteBase<Bool>.self, forKey: .value)
+        case .string: base = try container.decode(ConcreteBase<String>.self, forKey: .value)
+        case .boundedNumber: base = try container.decode(ConcreteBase<AccessibilityBoundedNumber>.self, forKey: .value)
+        case .number: base = try container.decode(ConcreteBase<AccessibilityNumber>.self, forKey: .value)
+        }
+    }
+
+    func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: Keys.self)
+        try container.encode(base.type, forKey: .type)
+        try base.encode(to: container.superEncoder(forKey: .value))
+    }
+}
+
+// MARK: AnyAccessibilityValue.ConcreateBase
+
+extension AnyAccessibilityValue {
+    fileprivate struct ConcreteBase<Base> where Base: Codable, Base: AccessibilityValue {
+        var base: Base
+    }
+}
+
+extension AnyAccessibilityValue.ConcreteBase: Codable {}
+extension AnyAccessibilityValue.ConcreteBase: Equatable {}
+extension AnyAccessibilityValue.ConcreteBase: AbstractAnyAccessibilityValue {
+    var localizedDescription: String? { base.localizedDescription }
+    var displayDescription: String? { base.displayDescription }
+    var value: Any { base.value }
+    var minValue: Any? { base.minValue }
+    var maxValue: Any? { base.maxValue }
+    var step: Any? { base.step }
+    var type: AnyAccessibilityValueType { Base.type }
+    func `as`<Value>(_ type: Value.Type) -> Value? where Value : AccessibilityValue {
+        base as? Value
+    }
+    func isEqual(to value: AbstractAnyAccessibilityValue) -> Bool {
+        base == (value as? Self)?.base
+    }
+}
+
+// MARK: - AccessibilityBoundedNumber
+
 struct AccessibilityBoundedNumber {
     var number: AccessibilityNumber
     var lowerBound: AccessibilityNumber?
