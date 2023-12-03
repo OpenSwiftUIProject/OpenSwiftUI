@@ -25,10 +25,10 @@ private protocol AbstractAnyAccessibilityValue: Codable {
 
 // MARK: - AnyAccessibilityValue
 
-struct AnyAccessibilityValue/*: AbstractAnyAccessibilityValue*/ {
+struct AnyAccessibilityValue {
     private var base: AbstractAnyAccessibilityValue
 
-    init<Value: Codable & AccessibilityValue>(_ base: Value) {
+    init(_ base: some Codable & AccessibilityValue) {
         self.base = ConcreteBase(base: base)
     }
 }
@@ -65,6 +65,23 @@ extension AnyAccessibilityValue: Codable {
     }
 }
 
+extension AnyAccessibilityValue: AbstractAnyAccessibilityValue {
+    var localizedDescription: String? { base.localizedDescription }
+    var displayDescription: String? { base.displayDescription }
+    var value: Any { base.value }
+    var minValue: Any? { base.minValue }
+    var maxValue: Any? { base.maxValue }
+    var step: Any? { base.step }
+    var type: AnyAccessibilityValueType { base.type }
+    func `as`<Value>(_ type: Value.Type) -> Value? where Value: AccessibilityValue {
+        base.as(type)
+    }
+
+    fileprivate func isEqual(to value: AbstractAnyAccessibilityValue) -> Bool {
+        base.isEqual(to: value)
+    }
+}
+
 // MARK: AnyAccessibilityValue.ConcreateBase
 
 extension AnyAccessibilityValue {
@@ -83,9 +100,10 @@ extension AnyAccessibilityValue.ConcreteBase: AbstractAnyAccessibilityValue {
     var maxValue: Any? { base.maxValue }
     var step: Any? { base.step }
     var type: AnyAccessibilityValueType { Base.type }
-    func `as`<Value>(_ type: Value.Type) -> Value? where Value : AccessibilityValue {
+    func `as`<Value>(_: Value.Type) -> Value? where Value: AccessibilityValue {
         base as? Value
     }
+
     func isEqual(to value: AbstractAnyAccessibilityValue) -> Bool {
         base == (value as? Self)?.base
     }
@@ -99,9 +117,22 @@ struct AccessibilityBoundedNumber {
     var upperBound: AccessibilityNumber?
     var stride: AccessibilityNumber?
 
-    // TODO
-    init?<S: Strideable>(for value: S, in range: ClosedRange<S>?, by stride: S.Stride?) {
-        return nil
+    init?<S: Strideable>(for value: S, in range: ClosedRange<S>?, by strideValue: S.Stride?) {
+        let clampedValue = range.map { value.clamped(to: $0) }
+        let newValue = clampedValue ?? value
+        guard let numericValue = newValue as? AccessibilityNumeric,
+              let numberValue = numericValue.asNumber() else {
+            return nil
+        }
+        number = numberValue
+        if let range {
+            lowerBound = range.minimumValue?.asNumber()
+            upperBound = range.maximumValue?.asNumber()
+        }
+        if let strideValue,
+           let numericStride = strideValue as? AccessibilityNumeric {
+            stride = numericStride.asNumber()
+        }
     }
 }
 
