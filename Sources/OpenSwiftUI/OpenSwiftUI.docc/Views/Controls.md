@@ -13,3 +13,11 @@ Use these built-in controls and indicators when composing custom views, and styl
 ### Linking to other content
 
 - ``Link``
+
+### Sizing controls
+
+- ``View/controlSize(_:)``
+
+- ``EnvironmentValues/controlSize``
+
+- ``ControlSize``

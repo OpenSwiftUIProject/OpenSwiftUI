@@ -96,10 +96,3 @@ extension Font {
     }
 }
 
-public enum ControlSize: Hashable, CaseIterable, Sendable {
-    case mini
-    case small
-    case regular
-    case large
-    case extraLarge
-}

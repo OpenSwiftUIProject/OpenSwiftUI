@@ -1,10 +1,10 @@
 //
-//  EnvironmentValues+OpenURLActionKey.swift
+//  OpenURLActionKey.swift
 //  OpenSwiftUI
 //
 //  Created by Kyle on 2023/11/26.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Complete
 
 #if canImport(Darwin)
 #if os(iOS) || os(tvOS)
@@ -17,6 +17,47 @@ private import CoreServices
 import AppKit
 #endif
 #endif
+
+struct OpenURLActionKey: EnvironmentKey {
+    static let defaultValue = OpenURLAction(
+        handler: .system { url, completion in
+            #if os(iOS) || os(tvOS)
+            UIApplication.shared.open(url, options: [:], completionHandler: completion)
+            #elseif os(macOS)
+            NSWorkspace.shared.open(url, configuration: .init()) { _, error in
+                completion(error != nil)
+            }
+            #else
+            fatalError("Unimplemented")
+            #endif
+        },
+        isDefault: true
+    )
+}
+
+struct OpenSensitiveURLActionKey: EnvironmentKey {
+    static let defaultValue = OpenURLAction(
+        handler: .system { url, completion in
+            #if DEBUG && os(iOS)
+            let config = _LSOpenConfiguration()
+            config.isSensitive = true
+            let scene = UIApplication.shared.connectedScenes.first
+            config.targetConnectionEndpoint = scene?._currentOpenApplicationEndpoint
+            guard let workspace = LSApplicationWorkspace.default() else {
+                return
+            }
+            workspace.open(url, configuration: config, completionHandler: completion)
+            #else
+            fatalError("Unimplemented")
+            #endif
+        },
+        isDefault: true
+    )
+}
+
+struct HostingViewOpenURLActionKey: EnvironmentKey {
+    static let defaultValue: OpenURLAction? = nil
+}
 
 extension EnvironmentValues {
     /// An action that opens a URL.
@@ -109,45 +150,4 @@ extension EnvironmentValues {
         get { self[OpenSensitiveURLActionKey.self] }
         set { self[OpenSensitiveURLActionKey.self] = newValue }
     }
-}
-
-struct OpenURLActionKey: EnvironmentKey {
-    static let defaultValue = OpenURLAction(
-        handler: .system { url, completion in
-            #if os(iOS) || os(tvOS)
-            UIApplication.shared.open(url, options: [:], completionHandler: completion)
-            #elseif os(macOS)
-            NSWorkspace.shared.open(url, configuration: .init()) { _, error in
-                completion(error != nil)
-            }
-            #else
-            fatalError("Unimplemented")
-            #endif
-        },
-        isDefault: true
-    )
-}
-
-struct OpenSensitiveURLActionKey: EnvironmentKey {
-    static let defaultValue = OpenURLAction(
-        handler: .system { url, completion in
-            #if DEBUG && os(iOS)
-            let config = _LSOpenConfiguration()
-            config.isSensitive = true
-            let scene = UIApplication.shared.connectedScenes.first
-            config.targetConnectionEndpoint = scene?._currentOpenApplicationEndpoint
-            guard let workspace = LSApplicationWorkspace.default() else {
-                return
-            }
-            workspace.open(url, configuration: config, completionHandler: completion)
-            #else
-            fatalError("Unimplemented")
-            #endif
-        },
-        isDefault: true
-    )
-}
-
-struct HostingViewOpenURLActionKey: EnvironmentKey {
-    static let defaultValue: OpenURLAction? = nil
 }
