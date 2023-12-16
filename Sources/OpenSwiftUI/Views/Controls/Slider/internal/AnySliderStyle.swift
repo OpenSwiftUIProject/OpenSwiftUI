@@ -12,9 +12,6 @@ protocol SliderStyle {
     func body(configuration: Slider<SliderStyleLabel, SliderStyleValueLabel>) -> Self.Body
 }
 
-struct SliderStyleLabel: ViewAlias {}
-struct SliderStyleValueLabel: ViewAlias {}
-
 private class AnyStyleBox {
     func body(configuration _: Slider<SliderStyleLabel, SliderStyleValueLabel>) -> AnyView {
         fatalError("")

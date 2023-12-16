@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2023/11/28.
 //  Lastest Version: iOS 15.5
-//  Status: Blocked by Text
+//  Status: Blocked by Text and Accessibility
 
 import Foundation
 

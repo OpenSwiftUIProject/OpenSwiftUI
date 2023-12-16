@@ -4,13 +4,23 @@
 //
 //  Created by Kyle on 2023/12/14.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Blocked by Accessibility
 //  ID: F045F16106E380A820CC0B639278A953
 
 @available(tvOS, unavailable)
 public struct Slider<Label, ValueLabel>: View where Label: View, ValueLabel: View {
     public var body: some View {
-        fatalError("Unimplemented")
+        style.body(configuration: .init(self))
+            .viewAlias(SliderStyleLabel.self) {
+                label.accessibilityLabel()
+            }
+            .viewAlias(SliderMinimumValueLabel.self) {
+                _minimumValueLabel.accessibilityLabel()
+            }
+            .viewAlias(SliderMaximumValueLabel.self) {
+                _maximumValueLabel.accessibilityLabel()
+            }
+        // TODO: Accessibility
     }
 
     @Binding var value: Double
@@ -241,8 +251,24 @@ extension Slider where ValueLabel == EmptyView {
 
 // MARK: Internal
 
+struct SliderStyleLabel: ViewAlias {}
+struct SliderStyleValueLabel: ViewAlias {}
 struct SliderMinimumValueLabel: ViewAlias {}
 struct SliderMaximumValueLabel: ViewAlias {}
+
+extension Slider {
+    init(_ slider: Slider<some View, some View>) where Label == SliderStyleLabel, ValueLabel == SliderStyleValueLabel {
+        _value = slider.$value
+        onEditingChanged = slider.onEditingChanged
+        skipDistance = slider.skipDistance
+        discreteValueCount = slider.discreteValueCount
+        _minimumValueLabel = SliderStyleValueLabel()
+        _maximumValueLabel = SliderStyleValueLabel()
+        hasCustomMinMaxValueLabels = slider.hasCustomMinMaxValueLabels
+        label = SliderStyleLabel()
+        accessibilityValue = slider.accessibilityValue
+    }
+}
 
 extension Slider {
     init<Value>(
