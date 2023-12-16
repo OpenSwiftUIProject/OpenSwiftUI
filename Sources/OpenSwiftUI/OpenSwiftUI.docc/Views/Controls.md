@@ -14,6 +14,10 @@ Use these built-in controls and indicators when composing custom views, and styl
 
 - ``Link``
 
+### Getting numeric inputs
+
+- ``Slider``
+
 ### Sizing controls
 
 - ``View/controlSize(_:)``

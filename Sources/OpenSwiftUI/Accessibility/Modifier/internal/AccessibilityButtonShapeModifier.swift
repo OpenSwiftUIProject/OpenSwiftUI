@@ -7,14 +7,8 @@
 //  Status: WIP
 //  ID: 0D3243EDC3DD4D641848661DCC354D4B
 
-struct AccessibilityButtonShapeModifier<V: View>: AccessibilityConfigurationModifier {
-    typealias Configuration = Never
-    typealias Content = V
-
-    // deleted method
-    var configuration: Never { fatalError() }
-
-    func body(content: V) -> some View {
+struct AccessibilityButtonShapeModifier<Content: View>: AccessibilityConfigurationModifier {
+    func body(content: Content) -> some View {
         content.modifier(Child())
     }
 
