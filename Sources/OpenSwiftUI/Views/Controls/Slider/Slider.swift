@@ -116,11 +116,11 @@ extension Slider {
     ///   - value: The selected value within `bounds`.
     ///   - bounds: The range of the valid values. Defaults to `0...1`.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///   - minimumValueLabel: A view that describes `bounds.lowerBound`.
-    ///   - maximumValueLabel: A view that describes `bounds.lowerBound`.
+    ///   - maximumValueLabel: A view that describes `bounds.upperBound`.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///
     /// The `value` of the created instance is equal to the position of
@@ -156,11 +156,11 @@ extension Slider {
     ///   - bounds: The range of the valid values. Defaults to `0...1`.
     ///   - step: The distance between each valid value.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///   - minimumValueLabel: A view that describes `bounds.lowerBound`.
-    ///   - maximumValueLabel: A view that describes `bounds.lowerBound`.
+    ///   - maximumValueLabel: A view that describes `bounds.upperBound`.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///
     /// The `value` of the created instance is equal to the position of
@@ -200,7 +200,7 @@ extension Slider where ValueLabel == EmptyView {
     ///   - value: The selected value within `bounds`.
     ///   - bounds: The range of the valid values. Defaults to `0...1`.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///   - onEditingChanged: A callback for when editing begins and ends.
@@ -234,7 +234,7 @@ extension Slider where ValueLabel == EmptyView {
     ///   - bounds: The range of the valid values. Defaults to `0...1`.
     ///   - step: The distance between each valid value.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///   - onEditingChanged: A callback for when editing begins and ends.
@@ -343,9 +343,9 @@ extension Slider {
     ///   - bounds: The range of the valid values. Defaults to `0...1`.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///   - minimumValueLabel: A view that describes `bounds.lowerBound`.
-    ///   - maximumValueLabel: A view that describes `bounds.lowerBound`.
+    ///   - maximumValueLabel: A view that describes `bounds.upperBound`.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///
@@ -385,9 +385,9 @@ extension Slider {
     ///   - step: The distance between each valid value.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///   - minimumValueLabel: A view that describes `bounds.lowerBound`.
-    ///   - maximumValueLabel: A view that describes `bounds.lowerBound`.
+    ///   - maximumValueLabel: A view that describes `bounds.upperBound`.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///
@@ -430,7 +430,7 @@ extension Slider where ValueLabel == EmptyView {
     ///   - bounds: The range of the valid values. Defaults to `0...1`.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///
@@ -459,7 +459,7 @@ extension Slider where ValueLabel == EmptyView {
             label: label()
         )
     }
-    
+
     /// Creates a slider to select a value from a given range, subject to a
     /// step increment, which displays the provided label.
     ///
@@ -469,7 +469,7 @@ extension Slider where ValueLabel == EmptyView {
     ///   - step: The distance between each valid value.
     ///   - onEditingChanged: A callback for when editing begins and ends.
     ///   - label: A `View` that describes the purpose of the instance. Not all
-    ///     slider styles show the label, but even in those cases, SwiftUI
+    ///     slider styles show the label, but even in those cases, OpenSwiftUI
     ///     uses the label for accessibility. For example, VoiceOver uses the
     ///     label to identify the purpose of the slider.
     ///
