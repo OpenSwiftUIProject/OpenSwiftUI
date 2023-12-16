@@ -13,7 +13,7 @@ enum AnyAccessibilityValueType: UInt, Codable {
     case string
 //    case disclosure
 //    case toggle
-//    case slider
+    case slider
 //    case stepper
 //    case progress
     case boundedNumber
