@@ -129,7 +129,9 @@ extension Slider {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
+    #if !OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
     @_alwaysEmitIntoClient
+    #endif
     public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
@@ -138,6 +140,18 @@ extension Slider {
         @ViewBuilder maximumValueLabel: () -> ValueLabel,
         onEditingChanged: @escaping (Bool) -> Void = { _ in }
     ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+        #if OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
+        self.init(
+            value: value,
+            in: bounds,
+            step: nil,
+            onEditingChanged: onEditingChanged,
+            minimumValueLabel: minimumValueLabel(),
+            maximumValueLabel: maximumValueLabel(),
+            customMinMaxValueLabels: true,
+            label: label()
+        )
+        #else
         self.init(
             value: value,
             in: bounds,
@@ -146,6 +160,7 @@ extension Slider {
             maximumValueLabel: maximumValueLabel(),
             label: label
         )
+        #endif
     }
 
     /// Creates a slider to select a value from a given range, subject to a
@@ -169,7 +184,9 @@ extension Slider {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
+    #if !OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
     @_alwaysEmitIntoClient
+    #endif
     public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
@@ -179,6 +196,18 @@ extension Slider {
         @ViewBuilder maximumValueLabel: () -> ValueLabel,
         onEditingChanged: @escaping (Bool) -> Void = { _ in }
     ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+        #if OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
+        self.init(
+            value: value,
+            in: bounds,
+            step: step,
+            onEditingChanged: onEditingChanged,
+            minimumValueLabel: minimumValueLabel(),
+            maximumValueLabel: maximumValueLabel(),
+            customMinMaxValueLabels: true,
+            label: label()
+        )
+        #else
         self.init(
             value: value,
             in: bounds,
@@ -188,6 +217,7 @@ extension Slider {
             maximumValueLabel: maximumValueLabel(),
             label: label
         )
+        #endif
     }
 }
 
@@ -211,19 +241,34 @@ extension Slider where ValueLabel == EmptyView {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
+    #if !OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
     @_alwaysEmitIntoClient
+    #endif
     public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V> = 0 ... 1,
         @ViewBuilder label: () -> Label,
         onEditingChanged: @escaping (Bool) -> Void = { _ in }
     ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+        #if OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
+        self.init(
+            value: value,
+            in: bounds,
+            step: nil,
+            onEditingChanged: onEditingChanged,
+            minimumValueLabel: EmptyView(),
+            maximumValueLabel: EmptyView(),
+            customMinMaxValueLabels: false,
+            label: label()
+        )
+        #else
         self.init(
             value: value,
             in: bounds,
             onEditingChanged: onEditingChanged,
             label: label
         )
+        #endif
     }
 
     /// Creates a slider to select a value from a given range, subject to a
@@ -245,7 +290,9 @@ extension Slider where ValueLabel == EmptyView {
     /// The slider calls `onEditingChanged` when editing begins and ends. For
     /// example, on iOS, editing begins when the user starts to drag the thumb
     /// along the slider's track.
+    #if !OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
     @_alwaysEmitIntoClient
+    #endif
     public init<V>(
         value: Binding<V>,
         in bounds: ClosedRange<V>,
@@ -253,6 +300,18 @@ extension Slider where ValueLabel == EmptyView {
         @ViewBuilder label: () -> Label,
         onEditingChanged: @escaping (Bool) -> Void = { _ in }
     ) where V: BinaryFloatingPoint, V.Stride: BinaryFloatingPoint {
+        #if OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS
+        self.init(
+            value: value,
+            in: bounds,
+            step: step,
+            onEditingChanged: onEditingChanged,
+            minimumValueLabel: EmptyView(),
+            maximumValueLabel: EmptyView(),
+            customMinMaxValueLabels: false,
+            label: label()
+        )
+        #else
         self.init(
             value: value,
             in: bounds,
@@ -260,6 +319,7 @@ extension Slider where ValueLabel == EmptyView {
             onEditingChanged: onEditingChanged,
             label: label
         )
+        #endif
     }
 }
 

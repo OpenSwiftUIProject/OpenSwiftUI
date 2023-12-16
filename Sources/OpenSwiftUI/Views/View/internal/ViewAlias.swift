@@ -12,11 +12,17 @@ protocol ViewAlias: PrimitiveView {
 }
 
 extension View {
-    func viewAlias<Alias: ViewAlias, Source: View>(_ alias: Alias.Type, _ source: () -> Source) -> some View {
+    func viewAlias<Alias: ViewAlias, Source: View>(
+        _ alias: Alias.Type,
+        _ source: () -> Source
+    ) -> some View {
         modifier(StaticSourceWriter<Alias, Source>(source: source()))
     }
 
-    func viewAlias<Alias: ViewAlias, Source: View>(_ alias: Alias.Type, _ source: () -> Source?) -> some View {
+    func viewAlias<Alias: ViewAlias, Source: View>(
+        _ alias: Alias.Type,
+        _ source: () -> Source?
+    ) -> some View {
         modifier(OptionalSourceWriter<Alias, Source>(source: source()))
     }
 }

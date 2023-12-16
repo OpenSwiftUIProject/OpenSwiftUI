@@ -20,6 +20,7 @@ let openSwiftUITarget = Target.target(
     ],
     swiftSettings: [
         .enableExperimentalFeature("AccessLevelOnImport"),
+        .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS")
     ],
     linkerSettings: [
         .unsafeFlags(
@@ -36,13 +37,15 @@ let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
         "OpenSwiftUI",
-    ]
+    ],
+    exclude: ["README.md"]
 )
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
     dependencies: [
         "OpenSwiftUI",
-    ]
+    ],
+    exclude: ["README.md"]
 )
 
 let package = Package(
