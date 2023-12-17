@@ -17,7 +17,9 @@ public protocol Animatable {
 // MARK: - Animateble + Extension
 
 extension Animatable {
-    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
+    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {
+        // TODO
+    }
 }
 
 extension Animatable where Self: VectorArithmetic {
@@ -35,7 +37,9 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
         set {}
     }
 
-    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
+    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {
+        // TODO
+    }
 }
 
 #if canImport(Darwin)
