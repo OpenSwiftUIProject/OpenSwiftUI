@@ -1,9 +1,13 @@
 @Tutorials(name: "Introducing OpenSwiftUI") {
     @Intro(title: "Introducing OpenSwiftUI") {
-        OpenSwiftUI is a modern way to declare user interfaces for any Apple platform, Linux and Windows. Create beautiful, dynamic apps faster than ever before.
+        OpenSwiftUI is a modern way to declare user interfaces for any Apple
+        platform, Linux and Windows. Create beautiful, dynamic apps faster than
+        ever before.
     }
     
     @Chapter(name: "OpenSwiftUI Essentials") {
-        Learn how to use OpenSwiftUI to compose rich views out of simple ones, set up data flow, and build the navigation while watching it unfold in Xcode’s preview.
+        Learn how to use OpenSwiftUI to compose rich views out of simple ones,
+        set up data flow, and build the navigation while watching it unfold in
+        Xcode’s preview.
     }
 }

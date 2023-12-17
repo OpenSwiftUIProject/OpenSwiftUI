@@ -8,17 +8,24 @@
 
 // MARK: - Edge
 
+/// An enumeration to indicate one edge of a rectangle.
 @frozen
 public enum Edge: Int8, CaseIterable {
-    case top, leading, bottom, trailing
+    case top
+    case leading
+    case bottom
+    case trailing
+
+    /// An efficient set of Edges.
     @frozen
     public struct Set: OptionSet {
         public typealias Element = Set
 
         public let rawValue: Int8
 
-        @inline(__always)
-        public init(rawValue: Int8) { self.rawValue = rawValue }
+        public init(rawValue: Int8) {
+            self.rawValue = rawValue
+        }
 
         public static let top = Set(.top)
         public static let leading = Set(.leading)
@@ -28,10 +35,9 @@ public enum Edge: Int8, CaseIterable {
         public static let horizontal: Set = [.leading, .trailing]
         public static let vertical: Set = [.top, .bottom]
 
-        @inline(__always)
+        /// Creates an instance containing just e
         public init(_ e: Edge) { self.init(rawValue: 1 << e.rawValue) }
 
-        @inline(__always)
         func contains(_ edge: Edge) -> Bool {
             contains(.init(edge))
         }
@@ -50,11 +56,13 @@ extension Edge: CodableByProxy {
 
 // MARK: - HorizontalEdge and VerticalEdge
 
+/// An edge on the horizontal axis.
 @frozen
 public enum HorizontalEdge: Int8, CaseIterable, Codable {
     case leading
     case trailing
-    @frozen public struct Set: OptionSet {
+    @frozen
+    public struct Set: OptionSet {
         public typealias Element = Set
         public let rawValue: Int8
         public init(rawValue: Int8) { self.rawValue = rawValue }
@@ -73,7 +81,8 @@ public enum HorizontalEdge: Int8, CaseIterable, Codable {
 public enum VerticalEdge: Int8, CaseIterable, Codable {
     case top
     case bottom
-    @frozen public struct Set: OptionSet {
+    @frozen
+    public struct Set: OptionSet {
         public typealias Element = Set
         public let rawValue: Int8
         public init(rawValue: Int8) { self.rawValue = rawValue }
