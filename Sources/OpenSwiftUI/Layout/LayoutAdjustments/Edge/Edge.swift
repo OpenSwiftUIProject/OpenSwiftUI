@@ -57,19 +57,36 @@ extension Edge: CodableByProxy {
 // MARK: - HorizontalEdge and VerticalEdge
 
 /// An edge on the horizontal axis.
+///
+/// Use a horizontal edge for tasks like setting a swipe action with the
+/// ``View/swipeActions(edge:allowsFullSwipe:content:)``
+/// view modifier. The positions of the leading and trailing edges
+/// depend on the locale chosen by the user.
 @frozen
 public enum HorizontalEdge: Int8, CaseIterable, Codable {
+    /// The leading edge.
     case leading
+
+    /// The trailing edge.
     case trailing
+
+    /// An efficient set of `HorizontalEdge`s.
     @frozen
     public struct Set: OptionSet {
         public typealias Element = Set
         public let rawValue: Int8
         public init(rawValue: Int8) { self.rawValue = rawValue }
+
+        /// A set containing only the leading horizontal edge.
         public static let leading = Set(.leading)
+
+        /// A set containing only the trailing horizontal edge.
         public static let trailing = Set(.trailing)
+
+        /// A set containing the leading and trailing horizontal edges.
         public static let all: Set = [.leading, .trailing]
 
+        /// Creates an instance containing just `e`.
         public init(_ e: HorizontalEdge) { self.init(rawValue: 1 << e.rawValue) }
 
         @inline(__always)
@@ -77,19 +94,32 @@ public enum HorizontalEdge: Int8, CaseIterable, Codable {
     }
 }
 
+/// An edge on the vertical axis.
 @frozen
 public enum VerticalEdge: Int8, CaseIterable, Codable {
+    /// The top edge.
     case top
+
+    /// The bottom edge.
     case bottom
+
+    /// An efficient set of `VerticalEdge`s.
     @frozen
     public struct Set: OptionSet {
         public typealias Element = Set
         public let rawValue: Int8
         public init(rawValue: Int8) { self.rawValue = rawValue }
+        
+        /// A set containing only the top vertical edge.
         public static let top = Set(.top)
+
+        /// A set containing only the bottom vertical edge.
         public static let bottom = Set(.bottom)
+
+        /// A set containing the top and bottom vertical edges.
         public static let all: Set = [.top, .bottom]
 
+        /// Creates an instance containing just `e`
         public init(_ e: VerticalEdge) { self.init(rawValue: 1 << e.rawValue) }
 
         @inline(__always)
