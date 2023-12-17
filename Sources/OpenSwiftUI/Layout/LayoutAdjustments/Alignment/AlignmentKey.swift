@@ -25,14 +25,19 @@ struct AlignmentKey: Hashable, Comparable {
         var types: [AlignmentID.Type]
     }
 
-    init(id: AlignmentID.Type, axis: Axis) {
-        if let bits = AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] {
-            self.bits = bits
+    init(id: AlignmentID.Type, axis _: Axis) {
+        let index: UInt
+        if let value = AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] {
+            index = value
         } else {
-            let bits = UInt(AlignmentKey.typeCache.types.count)
+            index = UInt(AlignmentKey.typeCache.types.count)
             AlignmentKey.typeCache.types.append(id)
-            AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] = bits
-            self.bits = bits
+            AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] = index
         }
+        bits = index * 2 + 3
+    }
+
+    var id: AlignmentID.Type {
+        AlignmentKey.typeCache.types[Int(bits / 2 - 1)]
     }
 }
