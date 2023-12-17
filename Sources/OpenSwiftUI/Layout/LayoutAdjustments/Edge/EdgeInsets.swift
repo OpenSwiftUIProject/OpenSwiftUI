@@ -12,7 +12,9 @@ import CoreGraphics
 import Foundation
 #endif
 
-@frozen public struct EdgeInsets: Equatable {
+/// The inset distances for the sides of a rectangle.
+@frozen
+public struct EdgeInsets: Equatable {
     public var top: CGFloat
     public var leading: CGFloat
     public var bottom: CGFloat
@@ -75,6 +77,7 @@ import UIKit
 import AppKit
 #endif
 extension EdgeInsets {
+    /// Create edge insets from the equivalent NSDirectionalEdgeInsets.
     @inline(__always)
     @available(watchOS, unavailable)
     public init(_ nsEdgeInsets: NSDirectionalEdgeInsets) {

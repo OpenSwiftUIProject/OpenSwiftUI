@@ -49,7 +49,7 @@ extension Angle: Hashable, Comparable {
     }
 }
 
-extension Angle: Animatable, _VectorMath {
+extension Angle: _VectorMath {
     public var animatableData: Double {
         get { radians * 128.0 }
         set { radians = newValue / 128.0 }

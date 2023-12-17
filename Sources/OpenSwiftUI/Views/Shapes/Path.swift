@@ -9,7 +9,8 @@
 
 // MARK: - Path[Empty]
 
-struct Path {}
+/// The outline of a 2D shape.
+public struct Path {}
 
 // MARK: - CodablePath[WIP]
 
