@@ -157,3 +157,9 @@ extension AlignmentID {
         parentValue = (value * n + childValue) / (n + 1.0)
     }
 }
+
+protocol FrameAlignment: AlignmentID {}
+
+extension FrameAlignment {
+    static func _combineExplicit(childValue _: CGFloat, _: Int, into _: inout CGFloat?) {}
+}
