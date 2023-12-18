@@ -1,0 +1,47 @@
+name: iOS 
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ios_test:
+    name: Execute tests on iOS
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-13
+            xcode-version: "15.0"   # Swift 5.9.0
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Swift version
+        run: swift --version
+      - name: Build in release mode
+        run: |
+          xcodebuild build \
+            -scheme OpenSwiftUI \
+            -configuration Release \
+            -sdk iphonesimulator \
+            -destination "platform=iOS Simulator" \
+            -derivedDataPath .build-release-iOS
+        # OTHER_SWIFT_FLAGS="-warnings-as-errors" \ OpenCombine will emit warning in xcodebuild
+
+    # Test is currently not supported due to the link issue to PrivateFramework
+    #   - name: Build and run tests in release mode
+    #     run: |
+    #       xcodebuild build \
+    #         -scheme OpenSwiftUI \
+    #         -configuration Release \
+    #         -sdk iphonesimulator \
+    #         -destination "platform=iOS Simulator" \
+    #         -enableCodeCoverage YES \
+    #         OTHER_SWIFT_FLAGS="-warnings-as-errors" \
+    #         -derivedDataPath .build-test-debug
