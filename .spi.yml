@@ -1,4 +1,10 @@
 version: 1
 builder:
   configs:
-    - documentation_targets: [OpenSwiftUI]
+    - swift_version: 5.9
+      documentation_targets: [OpenSwiftUI]
+      customDocumentationParameters: [
+        --source-service, github,
+        --source-service-base-url, https://github.com/Kyle-Ye/OpenSwiftUI/blob/main,
+        --checkout-path, .
+      ]

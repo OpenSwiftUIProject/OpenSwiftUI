@@ -16,7 +16,7 @@ class AppDelegate: UIResponder {
     @objc override init() {
         fallbackDelegate = nil
         super.init()
-        guard let delegateBox = AppGraph.delegateBox else {
+        guard let _ = AppGraph.delegateBox else {
             return
         }
     }
