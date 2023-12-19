@@ -12,6 +12,7 @@
 
 #import "AGAttribute.h"
 #import "AGUniqueID.h"
+#import "AGComparisonMode.h"
 
 FOUNDATION_EXPORT double AGAttributeVersionNumber;
 FOUNDATION_EXPORT const unsigned char AGAttributeVersionString[];
