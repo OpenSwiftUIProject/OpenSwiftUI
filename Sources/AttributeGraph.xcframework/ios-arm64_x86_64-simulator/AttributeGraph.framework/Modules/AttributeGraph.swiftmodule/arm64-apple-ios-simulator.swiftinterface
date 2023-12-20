@@ -43,6 +43,7 @@ public protocol _AttributeBody {
   static func _destroySelf(_ value: Swift.UnsafeMutableRawPointer)
   static var _hasDestroySelf: Swift.Bool { get }
   static func _updateDefault(_ value: Swift.UnsafeMutableRawPointer)
+  static var comparisonMode: AGComparisonMode { get }
 }
 extension AttributeGraph._AttributeBody {
   public static func _destroySelf(_ value: Swift.UnsafeMutableRawPointer)
@@ -50,6 +51,7 @@ extension AttributeGraph._AttributeBody {
     get
   }
   public static func _updateDefault(_ value: Swift.UnsafeMutableRawPointer)
+  public static var comparisonMode: AGComparisonMode { get }
 }
 public protocol Rule : AttributeGraph._AttributeBody {
   associatedtype Value
@@ -61,3 +63,4 @@ extension AttributeGraph.Rule {
     get
   }
 }
+public func compareValues<A>(_ lhs: A, _ rhs: A, mode: AGComparisonMode = ._3) -> Swift.Bool

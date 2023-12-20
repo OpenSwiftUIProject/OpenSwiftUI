@@ -6,10 +6,13 @@
 //
 
 import XCTest
+#if OPENGRAPH_COMPATIBILITY_TEST
 import AttributeGraph
+#else
+import OpenGraph
+#endif
 
 final class RuleTests: XCTestCase {
-
     func testRuleInitialValue() throws {
         struct A: Rule {
             typealias Value = Int
