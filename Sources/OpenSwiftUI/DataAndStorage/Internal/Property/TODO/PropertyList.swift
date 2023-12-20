@@ -7,6 +7,12 @@
 //  Status: Empty
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
+#if OPENSWIFTUI_USE_AG
+internal import AttributeGraph
+#else
+internal import OpenGraph
+#endif
+
 @usableFromInline
 @frozen
 struct PropertyList: CustomStringConvertible {
@@ -16,17 +22,37 @@ struct PropertyList: CustomStringConvertible {
     @inlinable
     init() { elements = nil }
   
+    // TODO: See Element implementatation
     @usableFromInline
     var description: String {
-        "TODO"
+        var description = "["
+        var elements = elements
+        while let element = elements {
+            description.append(element.description)
+            elements = element.after
+            if elements != nil {
+                description.append(", ")
+            }
+        }
+        description.append("]")
+        return description
+    }
+
+    // TODO
+    subscript<Key: PropertyKey>(_ key: Key.Type) -> Key.Value {
+        get { fatalError("TODO") }
+        set { fatalError("TODO") }
     }
 }
 
 extension PropertyList {
     @usableFromInline
     class Element: CustomStringConvertible {
+        // 0x10
         let keyType: Any.Type
+        // 0x18
         let before: Element?
+        // 0x20
         let after: Element?
         let length: Int
         let keyFilter: BloomFilter
@@ -59,6 +85,49 @@ extension PropertyList {
 // extension PropertyList {
 //    class Tracker {
 //        @UnsafeLockedPointer
-//        var data: TrackerData
+//        var data: TrackerData // 0x10
 //    }
 // }
+
+
+private struct TrackerData {
+    var plistID: UniqueID
+    var values: [ObjectIdentifier : AnyTrackedValue]
+    var derivedValues: [ObjectIdentifier : AnyTrackedValue]
+    var invalidValues: [AnyTrackedValue]
+    var unrecordedDependencies: Bool
+}
+
+
+private protocol AnyTrackedValue {
+    func unwrap<Value>() -> Value
+    func hasMatchingValue(in: PropertyList) -> Bool
+}
+
+private struct TrackedValue<Key: PropertyKey>: AnyTrackedValue {
+    var value: Key.Value
+
+    func unwrap<Value>() -> Value {
+        value as! Value
+    }
+
+    func hasMatchingValue(in plist: PropertyList) -> Bool {
+        compareValues(value, plist[Key.self])
+    }
+}
+
+private struct DerivedValue<Key: DerivedPropertyKey>: AnyTrackedValue {
+    var value: Key.Value
+
+    func unwrap<Value>() -> Value {
+        value as! Value
+    }
+
+    func hasMatchingValue(in plist: PropertyList) -> Bool {
+        value == Key.value(in: plist)
+    }
+}
+
+private struct EmptyKey: PropertyKey {
+    static var defaultValue: Void { () }
+}
