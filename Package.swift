@@ -55,7 +55,8 @@ let package = Package(
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Kyle-Ye/OpenFoundation", from: "0.0.1"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -80,84 +81,18 @@ let package = Package(
     ]
 )
 
-// FIXME: The binary of AG for macOS is copied from dyld shared cache and it will cause a link error when running. Use iOS Simulator to run this target as a temporary workaround
-let graphCompatibilityTest = ProcessInfo.processInfo.environment["OPENGRAPH_COMPATIBILITY_TEST"] != nil
-let openGraphCompatibilityTestTarget = Target.testTarget(
-    name: "OpenGraphCompatibilityTests",
-    dependencies: [
-        graphCompatibilityTest ? "AttributeGraph" : "OpenGraph",
-    ],
-    exclude: ["README.md"],
-    swiftSettings: graphCompatibilityTest ? [
-        .define("OPENGRAPH_COMPATIBILITY_TEST")
-    ] : []
-)
-package.targets.append(openGraphCompatibilityTestTarget)
-
-let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
+//let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
+let useAG = true
 if useAG {
-    if !graphCompatibilityTest {
-        let targets: [Target] = [
-            // FIXME: Merge into one target
-            // OpenGraph is a C++ & Swift mix target.
-            // The SwiftPM support for such usage is still in progress.
-            .target(
-                name: "_OpenGraph",
-                dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")],
-                cSettings: [clangEnumFixSetting]
-            ),
-            .target(
-                name: "OpenGraph",
-                dependencies: ["_OpenGraph"],
-                cSettings: [clangEnumFixSetting]
-            ),
-        ]
-        package.targets.append(contentsOf: targets)
-    }
-    let targets: [Target] = [
-        .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
-    ]
-    package.targets.append(contentsOf: targets)
     openSwiftUITarget.dependencies.append(
-        "AttributeGraph"
+        .product(name: "AttributeGraph", package: "OpenGraph")
     )
     var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
     swiftSettings.append(.define("OPENSWIFTUI_USE_AG"))
     openSwiftUITarget.swiftSettings = swiftSettings
 } else {
-    if graphCompatibilityTest {
-        let targets: [Target] = [
-            .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
-        ]
-        package.targets.append(contentsOf: targets)
-    }
-    package.products.append(
-        .library(name: "OpenGraph", targets: ["OpenGraph", "_OpenGraph"])
-    )
-    let targets: [Target] = [
-        // FIXME: Merge into one target
-        // OpenGraph is a C++ & Swift mix target.
-        // The SwiftPM support for such usage is still in progress.
-        .target(
-            name: "_OpenGraph",
-            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")],
-            cSettings: [clangEnumFixSetting]
-        ),
-        .target(
-            name: "OpenGraph",
-            dependencies: ["_OpenGraph"],
-            cSettings: [clangEnumFixSetting]
-        ),
-        .testTarget(
-            name: "OpenGraphTests",
-            dependencies: [
-                "OpenGraph",
-            ]
-        ),
-    ]
-    package.targets.append(contentsOf: targets)
     openSwiftUITarget.dependencies.append(
-        "OpenGraph"
+        .product(name: "OpenGraph", package: "OpenGraph")
     )
 }
 
