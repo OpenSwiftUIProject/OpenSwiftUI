@@ -8,7 +8,7 @@
 //  Status: WIP
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C
 
-#if OPENSWIFTUI_USE_AG
+#if OPENSWIFTUI_ATTRIBUTEGRAPH
 internal import AttributeGraph
 #else
 internal import OpenGraph

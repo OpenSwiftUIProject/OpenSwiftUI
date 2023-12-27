@@ -5,7 +5,7 @@
 //  Created by Kyle on 2023/11/8.
 //
 
-#if OPENSWIFTUI_USE_SWIFT_TESTING
+#if OPENSWIFTUI_SWIFT_TESTING
 import Testing
 import XCTest
 

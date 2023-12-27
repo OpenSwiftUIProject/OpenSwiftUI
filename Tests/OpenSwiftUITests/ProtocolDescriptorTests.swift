@@ -7,13 +7,13 @@
 
 @testable import OpenSwiftUI
 import OpenSwiftUIShims
-#if OPENSWIFTUI_USE_SWIFT_TESTING
+#if OPENSWIFTUI_SWIFT_TESTING
 import Testing
 #else
 import XCTest
 #endif
 
-#if OPENSWIFTUI_USE_SWIFT_TESTING
+#if OPENSWIFTUI_SWIFT_TESTING
 struct ProtocolDescriptorTests {
     @Test
     func testExample() throws {

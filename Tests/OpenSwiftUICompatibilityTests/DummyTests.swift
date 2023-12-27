@@ -6,7 +6,7 @@
 //
 
 import XCTest
-#if OPENSWIFTUI_COMPATIBILITY_TEST
+#if OPENSWIFTUI_SWIFTUI_COMPATIBILITY_TEST
 import SwiftUI
 #else
 import OpenSwiftUI

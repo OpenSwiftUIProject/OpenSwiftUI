@@ -50,7 +50,14 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
 
 let package = Package(
     name: "OpenSwiftUI",
-    platforms: [.iOS(.v13), .macOS(.v10_15), .macCatalyst(.v13), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .macCatalyst(.v13),
+        .tvOS(.v13),
+        .watchOS(.v6),
+        .visionOS(.v1),
+    ],
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
@@ -81,14 +88,30 @@ let package = Package(
     ]
 )
 
-//let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
-let useAG = true
-if useAG {
+func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
+    guard let value = ProcessInfo.processInfo.environment[key] else {
+        return defaultValue
+    }
+    if value == "1" {
+        return true
+    } else if value == "0" {
+        return false
+    } else {
+        return defaultValue
+    }
+}
+
+#if os(macOS)
+let attributeGraphCondition = envEnable("OPENSWIFTUI_ATTRIBUTEGRAPH", default: true)
+#else
+let attributeGraphCondition = envEnable("OPENSWIFTUI_ATTRIBUTEGRAPH")
+#endif
+if attributeGraphCondition {
     openSwiftUITarget.dependencies.append(
         .product(name: "AttributeGraph", package: "OpenGraph")
     )
     var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_AG"))
+    swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
     openSwiftUITarget.swiftSettings = swiftSettings
 } else {
     openSwiftUITarget.dependencies.append(
@@ -96,52 +119,57 @@ if useAG {
     )
 }
 
-let useCombine = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_COMBINE"] != nil
-if useCombine {
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_COMBINE"))
-    openSwiftUITarget.swiftSettings = swiftSettings
-} else {
+#if os(macOS)
+let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE")
+#else
+let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: true)
+#endif
+if openCombineCondition {
     package.dependencies.append(
-        .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0")
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
     )
     openSwiftUITarget.dependencies.append(
         .product(name: "OpenCombine", package: "OpenCombine")
     )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+    openSwiftUITarget.swiftSettings = swiftSettings
 }
 
-let useOSLog = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_OS_LOG"] != nil
-if useOSLog {
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_OS_LOG"))
-    openSwiftUITarget.swiftSettings = swiftSettings
-} else {
+#if os(macOS)
+let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG")
+#else
+let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: true)
+#endif
+if swiftLogCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-log", from: "1.5.3")
     )
     openSwiftUITarget.dependencies.append(
         .product(name: "Logging", package: "swift-log")
     )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
+    openSwiftUITarget.swiftSettings = swiftSettings
 }
 
-// Remove this when swift-testing is 1.0.0
-let useSwiftTesting = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_SWIFT_TESTING"] != nil
-if useSwiftTesting {
-    var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_SWIFT_TESTING"))
-    openSwiftUITestTarget.swiftSettings = swiftSettings
+// Remove the check when swift-testing reaches 1.0.0
+let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING")
+if swiftTestingCondition {
     package.dependencies.append(
-        // TODO: use `from` when a new version beside 0.1.0 is released
-        .package(url: "https://github.com/apple/swift-testing", branch: "main")
+        .package(url: "https://github.com/apple/swift-testing", from: "0.2.0")
     )
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_SWIFT_TESTING"))
+    openSwiftUITestTarget.swiftSettings = swiftSettings
 }
 
-let compatibilityTest = ProcessInfo.processInfo.environment["OPENSWIFTUI_COMPATIBILITY_TEST"] != nil
-if compatibilityTest {
+let swiftUICompatibilityTestCondition = envEnable("OPENSWIFTUI_SWIFTUI_COMPATIBILITY_TEST")
+if swiftUICompatibilityTestCondition {
     var swiftSettings: [SwiftSetting] = (openSwiftUICompatibilityTestTarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
+    swiftSettings.append(.define("OPENSWIFTUI_SWIFTUI_COMPATIBILITY_TEST"))
     openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
 }

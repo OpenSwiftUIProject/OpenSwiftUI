@@ -8,10 +8,10 @@
 
 #if canImport(Darwin)
 import Foundation
-#if OPENSWIFTUI_USE_COMBINE
-import Combine
-#else
+#if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
+#else
+import Combine
 #endif
 
 class AnyFallbackDelegateBox {
