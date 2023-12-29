@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - os: macos-13
-            xcode-version: "15.0"   # Swift 5.9.0
+            xcode-version: "15.1"   # Swift 5.9.2
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -28,20 +28,25 @@ jobs:
         run: |
           xcodebuild build \
             -scheme OpenSwiftUI \
-            -configuration Release \
-            -sdk iphonesimulator \
-            -destination "platform=iOS Simulator" \
-            -derivedDataPath .build-release-iOS
-        # OTHER_SWIFT_FLAGS="-warnings-as-errors" \ OpenCombine will emit warning in xcodebuild
-
-    # Test is currently not supported due to the link issue to PrivateFramework
-    #   - name: Build and run tests in release mode
-    #     run: |
-    #       xcodebuild build \
-    #         -scheme OpenSwiftUI \
-    #         -configuration Release \
-    #         -sdk iphonesimulator \
-    #         -destination "platform=iOS Simulator" \
-    #         -enableCodeCoverage YES \
-    #         OTHER_SWIFT_FLAGS="-warnings-as-errors" \
-    #         -derivedDataPath .build-test-debug
+            -configuration Debug \
+            -destination "platform=iOS-Simulator" \
+            -derivedDataPath .build-test-debug
+            # OpenSwiftUI-Package is not listed currently
+            # OTHER_SWIFT_FLAGS="-warnings-as-errors" \ AccessLevelOnImport will cause build warning via xcodebuild
+        env:
+          OPENSWIFTUI_ATTRIBUTEGRAPH: 0
+      # Test is currently not supported due to the link issue to PrivateFramework
+      # - name: Build and run tests in debug mode with coverage
+      #   run: |
+      #     xcodebuild test \
+      #       -scheme OpenSwiftUI-Package \
+      #       -configuration Debug \
+      #       -destination "platform=iOS-Simulator" \
+      #       -enableCodeCoverage=YES \
+      #       -derivedDataPath .build-test-debug
+      #       # OTHER_SWIFT_FLAGS="-warnings-as-errors"
+      #     profdata_file_path=$(find . -path "*.build-test-debug/Build/ProfileData*Coverage.profdata" -type f)
+      #     xcrun llvm-cov show \
+      #       -instr-profile=$profdata_file_path \
+      #       .build-test-debug/Build/Products/Debug/OpenSwiftUITests.xctest/Contents/MacOS/OpenSwiftUITests \
+      #       > coverage.txt

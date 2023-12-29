@@ -8,9 +8,6 @@ let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
-// https://github.com/llvm/llvm-project/issues/48757
-let clangEnumFixSetting = CSetting.unsafeFlags(["-Wno-elaborated-enum-base"], .when(platforms: [.linux]))
-
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
@@ -60,7 +57,8 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", from: "0.0.1"),
+        // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -107,9 +105,13 @@ if attributeGraphCondition {
     openSwiftUITarget.dependencies.append(
         .product(name: "AttributeGraph", package: "OpenGraph")
     )
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    var swiftSettings = openSwiftUITarget.swiftSettings ?? []
     swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
     openSwiftUITarget.swiftSettings = swiftSettings
+    var linkerSettings = openSwiftUITarget.linkerSettings ?? []
+    linkerSettings.append(.unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])))
+    linkerSettings.append(.linkedFramework("AttributeGraph", .when(platforms: [.macOS])))
+    openSwiftUITarget.linkerSettings = linkerSettings
 } else {
     openSwiftUITarget.dependencies.append(
         .product(name: "OpenGraph", package: "OpenGraph")
