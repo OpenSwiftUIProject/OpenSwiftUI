@@ -14,8 +14,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
-        "branch" : "main",
-        "revision" : "52266b713cf60eb23f4d7113fade9a79f4f47ff9"
+        "revision" : "4adbc0e5d44f1a5861a97b942d903635e25c9e00",
+        "version" : "0.0.1"
       }
     }
   ],

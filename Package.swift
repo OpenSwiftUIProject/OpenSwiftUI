@@ -42,9 +42,6 @@ let openSwiftUITestTarget = Target.testTarget(
 )
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
-    dependencies: [
-        "OpenSwiftUI",
-    ],
     exclude: ["README.md"]
 )
 
@@ -63,7 +60,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", from: "0.0.1"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -167,9 +164,11 @@ if swiftTestingCondition {
     openSwiftUITestTarget.swiftSettings = swiftSettings
 }
 
-let swiftUICompatibilityTestCondition = envEnable("OPENSWIFTUI_SWIFTUI_COMPATIBILITY_TEST")
-if swiftUICompatibilityTestCondition {
+let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
+if compatibilityTestCondition {
     var swiftSettings: [SwiftSetting] = (openSwiftUICompatibilityTestTarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_SWIFTUI_COMPATIBILITY_TEST"))
+    swiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
     openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
+} else {
+    openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
 }
