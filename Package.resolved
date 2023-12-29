@@ -1,30 +1,21 @@
 {
   "pins" : [
     {
-      "identity" : "opencombine",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenCombine/OpenCombine.git",
-      "state" : {
-        "revision" : "8576f0d579b27020beccbccc3ea6844f3ddfc2c2",
-        "version" : "0.14.0"
-      }
-    },
-    {
       "identity" : "openfoundation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Kyle-Ye/OpenFoundation",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenFoundation",
       "state" : {
-        "revision" : "72404a9e51d314af915b13430cf9b928a1654714",
-        "version" : "0.0.1"
+        "revision" : "cd2cdb300d53e3e68fda8b690a703a7c5096d9d0",
+        "version" : "0.0.2"
       }
     },
     {
-      "identity" : "swift-log",
+      "identity" : "opengraph",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-log",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
-        "revision" : "532d8b529501fb73a2455b179e0bbb6d49b652ed",
-        "version" : "1.5.3"
+        "branch" : "main",
+        "revision" : "6835ce0972f40ef76f1214dc0efc75ec19082631"
       }
     }
   ],

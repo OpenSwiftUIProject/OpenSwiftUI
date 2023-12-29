@@ -7,7 +7,7 @@
 //  Status: Empty
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
-#if OPENSWIFTUI_USE_AG
+#if OPENSWIFTUI_ATTRIBUTEGRAPH
 internal import AttributeGraph
 #else
 internal import OpenGraph

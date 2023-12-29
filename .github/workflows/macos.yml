@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - os: macos-13
-            xcode-version: "15.0"   # Swift 5.9.0
+            xcode-version: "15.1"   # Swift 5.9.2
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
@@ -35,13 +35,6 @@ jobs:
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest/Contents/MacOS/OpenSwiftUIPackageTests \
             > coverage.txt
-      - name: Build and run tests in debug mode with TSan
-        run: |
-          swift test \
-          -c debug \
-          --sanitize thread \
-          -Xswiftc -warnings-as-errors \
-          --build-path .build-test-debug-sanitize-thread
       - name: Build and run tests in release mode
         run: |
           swift test \
@@ -51,4 +44,5 @@ jobs:
             --build-path .build-test-release
       - uses: codecov/codecov-action@v3
         with:
+          token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true

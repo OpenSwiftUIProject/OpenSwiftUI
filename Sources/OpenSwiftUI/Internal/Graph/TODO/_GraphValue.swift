@@ -1,4 +1,4 @@
-#if OPENSWIFTUI_USE_AG
+#if OPENSWIFTUI_ATTRIBUTEGRAPH
 internal import AttributeGraph
 #else
 internal import OpenGraph

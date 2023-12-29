@@ -7,13 +7,13 @@
 
 @testable import OpenSwiftUI
 import Foundation
-#if OPENSWIFTUI_USE_SWIFT_TESTING
+#if OPENSWIFTUI_SWIFT_TESTING
 import Testing
 #else
 import XCTest
 #endif
 
-#if OPENSWIFTUI_USE_SWIFT_TESTING
+#if OPENSWIFTUI_SWIFT_TESTING
 struct BloomFilterTests {
     #if os(macOS)
     @Test("Bloom Filter's init", .enabled(if: ProcessInfo.processInfo.operatingSystemVersionString == "14.0"))

@@ -6,10 +6,10 @@
 //  Lastest Version: iOS 15.5
 //  Status: Blocked by PropertyList.Element
 
-#if OPENSWIFTUI_USE_COMBINE
-import Combine
-#else
+#if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
+#else
+import Combine
 #endif
 internal import OpenSwiftUIShims
 

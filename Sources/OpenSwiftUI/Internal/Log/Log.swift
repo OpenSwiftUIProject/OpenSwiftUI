@@ -6,7 +6,9 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-#if OPENSWIFTUI_USE_OS_LOG
+#if OPENSWIFTUI_SWIFT_LOG
+internal import Logging
+#else
 import os
 #if DEBUG
 public let dso = { () -> UnsafeMutableRawPointer in
@@ -24,8 +26,6 @@ public let dso = { () -> UnsafeMutableRawPointer in
     return UnsafeMutableRawPointer(mutating: #dsohandle)
 }()
 #endif
-#else
-internal import Logging
 #endif
 
 enum Log {
@@ -37,7 +37,18 @@ enum Log {
         print("\(message()) at \(file):\(line)")
     }
 
-    #if OPENSWIFTUI_USE_OS_LOG
+    #if OPENSWIFTUI_SWIFT_LOG
+    static var runtimeIssuesLog = Logger(label: "OpenSwiftUI")
+    
+    @_transparent
+    @inline(__always)
+    static func runtimeIssues(
+        _ message: @autoclosure () -> StaticString,
+        _ args: @autoclosure () -> [CVarArg] = []
+    ) {
+        runtimeIssuesLog.log(level: .critical, "\(message())")
+    }
+    #else
     static var runtimeIssuesLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
 
     @_transparent
@@ -55,17 +66,6 @@ enum Log {
         #else
         os_log(.fault, log: runtimeIssuesLog, message(), args())
         #endif
-    }
-    #else
-    static var runtimeIssuesLog = Logger(label: "OpenSwiftUI")
-    
-    @_transparent
-    @inline(__always)
-    static func runtimeIssues(
-        _ message: @autoclosure () -> StaticString,
-        _ args: @autoclosure () -> [CVarArg] = []
-    ) {
-        runtimeIssuesLog.log(level: .critical, "\(message())")
     }
     #endif
 }

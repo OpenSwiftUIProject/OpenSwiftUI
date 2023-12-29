@@ -8,9 +8,6 @@ let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
-// https://github.com/llvm/llvm-project/issues/48757
-let clangEnumFixSetting = CSetting.unsafeFlags(["-Wno-elaborated-enum-base"], .when(platforms: [.linux]))
-
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
@@ -42,20 +39,26 @@ let openSwiftUITestTarget = Target.testTarget(
 )
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
-    dependencies: [
-        "OpenSwiftUI",
-    ],
     exclude: ["README.md"]
 )
 
 let package = Package(
     name: "OpenSwiftUI",
-    platforms: [.iOS(.v13), .macOS(.v10_15), .macCatalyst(.v13), .tvOS(.v13), .watchOS(.v6), .visionOS(.v1)],
+    platforms: [
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .macCatalyst(.v13),
+        .tvOS(.v13),
+        .watchOS(.v6),
+        .visionOS(.v1),
+    ],
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/Kyle-Ye/OpenFoundation", from: "0.0.1"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
+        // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -80,133 +83,94 @@ let package = Package(
     ]
 )
 
-// FIXME: The binary of AG for macOS is copied from dyld shared cache and it will cause a link error when running. Use iOS Simulator to run this target as a temporary workaround
-let graphCompatibilityTest = ProcessInfo.processInfo.environment["OPENGRAPH_COMPATIBILITY_TEST"] != nil
-let openGraphCompatibilityTestTarget = Target.testTarget(
-    name: "OpenGraphCompatibilityTests",
-    dependencies: [
-        graphCompatibilityTest ? "AttributeGraph" : "OpenGraph",
-    ],
-    exclude: ["README.md"],
-    swiftSettings: graphCompatibilityTest ? [
-        .define("OPENGRAPH_COMPATIBILITY_TEST")
-    ] : []
-)
-package.targets.append(openGraphCompatibilityTestTarget)
+func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
+    guard let value = ProcessInfo.processInfo.environment[key] else {
+        return defaultValue
+    }
+    if value == "1" {
+        return true
+    } else if value == "0" {
+        return false
+    } else {
+        return defaultValue
+    }
+}
 
-let useAG = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_AG"] != nil
-if useAG {
-    if !graphCompatibilityTest {
-        let targets: [Target] = [
-            // FIXME: Merge into one target
-            // OpenGraph is a C++ & Swift mix target.
-            // The SwiftPM support for such usage is still in progress.
-            .target(
-                name: "_OpenGraph",
-                dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")],
-                cSettings: [clangEnumFixSetting]
-            ),
-            .target(
-                name: "OpenGraph",
-                dependencies: ["_OpenGraph"],
-                cSettings: [clangEnumFixSetting]
-            ),
-        ]
-        package.targets.append(contentsOf: targets)
-    }
-    let targets: [Target] = [
-        .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
-    ]
-    package.targets.append(contentsOf: targets)
+#if os(macOS)
+let attributeGraphCondition = envEnable("OPENSWIFTUI_ATTRIBUTEGRAPH", default: true)
+#else
+let attributeGraphCondition = envEnable("OPENSWIFTUI_ATTRIBUTEGRAPH")
+#endif
+if attributeGraphCondition {
     openSwiftUITarget.dependencies.append(
-        "AttributeGraph"
+        .product(name: "AttributeGraph", package: "OpenGraph")
     )
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_AG"))
+    var swiftSettings = openSwiftUITarget.swiftSettings ?? []
+    swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
     openSwiftUITarget.swiftSettings = swiftSettings
+    var linkerSettings = openSwiftUITarget.linkerSettings ?? []
+    linkerSettings.append(.unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])))
+    linkerSettings.append(.linkedFramework("AttributeGraph", .when(platforms: [.macOS])))
+    openSwiftUITarget.linkerSettings = linkerSettings
 } else {
-    if graphCompatibilityTest {
-        let targets: [Target] = [
-            .binaryTarget(name: "AttributeGraph", path: "Sources/AttributeGraph.xcframework"),
-        ]
-        package.targets.append(contentsOf: targets)
-    }
-    package.products.append(
-        .library(name: "OpenGraph", targets: ["OpenGraph", "_OpenGraph"])
-    )
-    let targets: [Target] = [
-        // FIXME: Merge into one target
-        // OpenGraph is a C++ & Swift mix target.
-        // The SwiftPM support for such usage is still in progress.
-        .target(
-            name: "_OpenGraph",
-            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")],
-            cSettings: [clangEnumFixSetting]
-        ),
-        .target(
-            name: "OpenGraph",
-            dependencies: ["_OpenGraph"],
-            cSettings: [clangEnumFixSetting]
-        ),
-        .testTarget(
-            name: "OpenGraphTests",
-            dependencies: [
-                "OpenGraph",
-            ]
-        ),
-    ]
-    package.targets.append(contentsOf: targets)
     openSwiftUITarget.dependencies.append(
-        "OpenGraph"
+        .product(name: "OpenGraph", package: "OpenGraph")
     )
 }
 
-let useCombine = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_COMBINE"] != nil
-if useCombine {
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_COMBINE"))
-    openSwiftUITarget.swiftSettings = swiftSettings
-} else {
+#if os(macOS)
+let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE")
+#else
+let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: true)
+#endif
+if openCombineCondition {
     package.dependencies.append(
-        .package(url: "https://github.com/OpenCombine/OpenCombine.git", from: "0.14.0")
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
     )
     openSwiftUITarget.dependencies.append(
         .product(name: "OpenCombine", package: "OpenCombine")
     )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+    openSwiftUITarget.swiftSettings = swiftSettings
 }
 
-let useOSLog = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_OS_LOG"] != nil
-if useOSLog {
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_OS_LOG"))
-    openSwiftUITarget.swiftSettings = swiftSettings
-} else {
+#if os(macOS)
+let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG")
+#else
+let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: true)
+#endif
+if swiftLogCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-log", from: "1.5.3")
     )
     openSwiftUITarget.dependencies.append(
         .product(name: "Logging", package: "swift-log")
     )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
+    openSwiftUITarget.swiftSettings = swiftSettings
 }
 
-// Remove this when swift-testing is 1.0.0
-let useSwiftTesting = ProcessInfo.processInfo.environment["OPENSWIFTUI_USE_SWIFT_TESTING"] != nil
-if useSwiftTesting {
-    var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_USE_SWIFT_TESTING"))
-    openSwiftUITestTarget.swiftSettings = swiftSettings
+// Remove the check when swift-testing reaches 1.0.0
+let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING")
+if swiftTestingCondition {
     package.dependencies.append(
-        // TODO: use `from` when a new version beside 0.1.0 is released
-        .package(url: "https://github.com/apple/swift-testing", branch: "main")
+        .package(url: "https://github.com/apple/swift-testing", from: "0.2.0")
     )
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
+    var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
+    swiftSettings.append(.define("OPENSWIFTUI_SWIFT_TESTING"))
+    openSwiftUITestTarget.swiftSettings = swiftSettings
 }
 
-let compatibilityTest = ProcessInfo.processInfo.environment["OPENSWIFTUI_COMPATIBILITY_TEST"] != nil
-if compatibilityTest {
+let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
+if compatibilityTestCondition {
     var swiftSettings: [SwiftSetting] = (openSwiftUICompatibilityTestTarget.swiftSettings ?? [])
     swiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
     openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
+} else {
+    openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
 }
