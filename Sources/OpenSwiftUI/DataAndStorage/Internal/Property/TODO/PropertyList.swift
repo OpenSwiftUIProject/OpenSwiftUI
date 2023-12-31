@@ -48,56 +48,128 @@ struct PropertyList: CustomStringConvertible {
 extension PropertyList {
     @usableFromInline
     class Element: CustomStringConvertible {
-        // 0x10
         let keyType: Any.Type
-        // 0x18
         let before: Element?
-        // 0x20
         let after: Element?
         let length: Int
         let keyFilter: BloomFilter
-        let id: UniqueID
+        let id = OGUniqueID()
 
-        init(keyType: Any.Type, before: Element?, after: Element?, length: Int, keyFilter: BloomFilter, id: UniqueID) {
+        init(keyType: Any.Type, before: Element?, after: Element?) {
             self.keyType = keyType
             self.before = before
             self.after = after
+            var keyFilter = BloomFilter(type: keyType)
+            var length = 0
+            if let before {
+                length = before.length + 1
+                keyFilter.value |= before.keyFilter.value
+            }
+            if let after {
+                length += after.length
+                keyFilter.value |= after.keyFilter.value
+            }
             self.length = length
             self.keyFilter = keyFilter
-            self.id = id
         }
 
         @usableFromInline
-        var description: String {
-            ""
-        }
+        var description: String { fatalError() }
 
-        /*@objc*/
         @usableFromInline
         deinit {}
-
-        func byPrepending(_ element: Element?) -> Element {
-            self
+        
+        func matches(_: Element, ignoredTypes _: inout Set<ObjectIdentifier>) -> Bool {
+            fatalError()
+        }
+        
+        func copy(before _: Element?, after _: Element?) -> Element {
+            fatalError()
+        }
+        
+        final func byPrepending(_ element: Element?) -> Element {
+            guard let element else {
+                return self
+            }
+            if let before {
+            } else {}
+            return self
+        }
         }
     }
 }
 
-// extension PropertyList {
-//    class Tracker {
-//        @UnsafeLockedPointer
-//        var data: TrackerData // 0x10
-//    }
-// }
+private class TypedElement<Key: PropertyKey>: PropertyList.Element {
+    var value: Key.Value
+    
+    init(value: Key.Value, before: PropertyList.Element?, after: PropertyList.Element?) {
+        self.value = value
+        super.init(keyType: Key.self, before: before, after: after)
+    }
+    
+    override var description: String {
+        "\(Key.self) = \(value)"
+    }
+    
+    override func matches(_ element: PropertyList.Element, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
+        guard let typedElement = element as? TypedElement<Key> else {
+            return false
+        }
+        
+        guard !ignoredTypes.contains(ObjectIdentifier(Key.self)) else {
+            return true
+        }
+        guard compareValues(value, typedElement.value, mode: ._3) else {
+            return false
+        }
+        ignoredTypes.insert(ObjectIdentifier(Key.self))
+        return true
+    }
+        
+    override func copy(before: PropertyList.Element?, after: PropertyList.Element?) -> PropertyList.Element {
+        TypedElement(value: value, before: before, after: after)
+    }
+}
 
+extension PropertyList {
+    class Tracker {
+        @UnsafeLockedPointer
+        private var data: TrackerData
+        
+        init() {
+            _data = UnsafeLockedPointer(wrappedValue: .init(
+                plistID: .zero,
+                values: [:],
+                derivedValues: [:],
+                invalidValues: [],
+                unrecordedDependencies: false
+            ))
+        }
+        
+        deinit {
+            $data.destroy()
+        }
+        
+        func initializeValues(from _: PropertyList) {
+        }
+        
+        func invalidateValue(for _: (some PropertyKey).Type, from _: PropertyList, to _: PropertyList) {}
+        
+        func invalidateAllValues(from _: PropertyList, to _: PropertyList) {}
+    
+        func hasDifferentUsedValues(_: PropertyList) -> Bool {
+            .random()
+        }
+    }
+}
 
 private struct TrackerData {
     var plistID: UniqueID
-    var values: [ObjectIdentifier : AnyTrackedValue]
-    var derivedValues: [ObjectIdentifier : AnyTrackedValue]
+    var values: [ObjectIdentifier: AnyTrackedValue]
+    var derivedValues: [ObjectIdentifier: AnyTrackedValue]
     var invalidValues: [AnyTrackedValue]
     var unrecordedDependencies: Bool
 }
-
 
 private protocol AnyTrackedValue {
     func unwrap<Value>() -> Value
