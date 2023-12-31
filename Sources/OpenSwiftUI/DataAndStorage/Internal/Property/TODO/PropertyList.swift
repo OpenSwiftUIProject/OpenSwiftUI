@@ -13,6 +13,8 @@ internal import AttributeGraph
 internal import OpenGraph
 #endif
 
+// MARK: - PropertyList
+
 @usableFromInline
 @frozen
 struct PropertyList: CustomStringConvertible {
@@ -38,12 +40,25 @@ struct PropertyList: CustomStringConvertible {
         return description
     }
 
-    // TODO
-    subscript<Key: PropertyKey>(_ key: Key.Type) -> Key.Value {
+    // TODO:
+    subscript<Key: PropertyKey>(_ keyType: Key.Type) -> Key.Value {
         get { fatalError("TODO") }
         set { fatalError("TODO") }
     }
+    
+    func mayNotBeEqual(to: PropertyList) -> Bool {
+        let equalResult: Bool
+        if let elements {
+            var ignoredTypes = Set<ObjectIdentifier>()
+            equalResult = elements.isEqual(to: to.elements, ignoredTypes: &ignoredTypes)
+        } else {
+            equalResult = to.elements == nil
+        }
+        return !equalResult
+    }
 }
+
+// MARK: - PropertyList.Element
 
 extension PropertyList {
     @usableFromInline
@@ -74,12 +89,16 @@ extension PropertyList {
         }
 
         @usableFromInline
-        var description: String { fatalError() }
-
-        @usableFromInline
         deinit {}
         
+        @usableFromInline
+        var description: String { fatalError() }
+        
         func matches(_: Element, ignoredTypes _: inout Set<ObjectIdentifier>) -> Bool {
+            fatalError()
+        }
+        
+        func hasMatchingValue(in _: Unmanaged<Element>?) -> Bool {
             fatalError()
         }
         
@@ -91,13 +110,78 @@ extension PropertyList {
             guard let element else {
                 return self
             }
-            if let before {
-            } else {}
-            return self
+            return if before != nil {
+                TypedElement<EmptyKey>(value: EmptyKey.defaultValue, before: element, after: self)
+            } else {
+                copy(before: element, after: after)
+            }
         }
+        
+        final func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
+            guard let element else {
+                return false
+            }
+            guard length == element.length else {
+                return false
+            }
+            guard self !== element else {
+                return true
+            }
+            guard matches(element, ignoredTypes: &ignoredTypes) else {
+                return false
+            }
+            var element1 = self
+            var element2 = element
+            repeat {
+                if let before1 = element1.before {
+                    guard before1.isEqual(to: element2.before, ignoredTypes: &ignoredTypes) else {
+                        return false
+                    }
+                } else {
+                    guard element2.before == nil else {
+                        return false
+                    }
+                }
+                if let after1 = element1.after {
+                    guard let after2 = element2.after else {
+                        return false
+                    }
+                    guard after1 !== after2 else {
+                        return true
+                    }
+                    guard after1.isEqual(to: after2, ignoredTypes: &ignoredTypes) else {
+                        return false
+                    }
+                    element1 = after1
+                    element2 = after2
+                } else {
+                    return element.after == nil
+                }
+            } while(true)
+        }
+        
+        final func forEach(_ body: (
+            _ element: Unmanaged<Element>,
+            _ stop: inout Bool
+        ) -> Void) {
+            var element = self
+            var stop = false
+            repeat {
+                if let before = element.before {
+                    before.forEach(body)
+                }
+                body(.passUnretained(element), &stop)
+                guard !stop else { break }
+                guard let after = element.after else {
+                    break
+                }
+                element = after
+            } while(true)
         }
     }
 }
+
+// MARK: - TypedElement
 
 private class TypedElement<Key: PropertyKey>: PropertyList.Element {
     var value: Key.Value
@@ -115,7 +199,6 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
         guard let typedElement = element as? TypedElement<Key> else {
             return false
         }
-        
         guard !ignoredTypes.contains(ObjectIdentifier(Key.self)) else {
             return true
         }
@@ -130,6 +213,8 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
         TypedElement(value: value, before: before, after: after)
     }
 }
+
+// MARK: - PropertyList.Tracker
 
 extension PropertyList {
     class Tracker {
@@ -163,6 +248,8 @@ extension PropertyList {
     }
 }
 
+// MARK: - TrackerData
+
 private struct TrackerData {
     var plistID: UniqueID
     var values: [ObjectIdentifier: AnyTrackedValue]
@@ -170,6 +257,8 @@ private struct TrackerData {
     var invalidValues: [AnyTrackedValue]
     var unrecordedDependencies: Bool
 }
+
+// MARK: - AnyTrackedValue
 
 private protocol AnyTrackedValue {
     func unwrap<Value>() -> Value
