@@ -1,15 +1,17 @@
 //
 //  EnvironmentValuesOpenURLTests.swift
-//  
+//
 //
 //  Created by Kyle on 2023/11/28.
 //
 
-import XCTest
+import Foundation
 @testable import OpenSwiftUI
+import Testing
 
-final class EnvironmentValuesOpenURLTests: XCTestCase {
+struct EnvironmentValuesOpenURLTests {
     #if os(iOS) || os(macOS) || os(tvOS)
+    @Test
     func testOpenURLActionKey() {
         let value = OpenURLActionKey.defaultValue
         value.callAsFunction(URL(string: "https://example.com")!)

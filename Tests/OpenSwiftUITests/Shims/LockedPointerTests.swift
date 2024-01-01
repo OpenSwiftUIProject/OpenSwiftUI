@@ -7,10 +7,11 @@
 
 @testable import OpenSwiftUI
 import OpenSwiftUIShims
-import XCTest
+import Testing
 
-final class LockedPointerTests: XCTestCase {
-    func testAlignmentOffset() throws {
+struct LockedPointerTests {
+    @Test
+    func alignmentOffset() {
         // The alignment of a struct type is the maximum alignment out of all its properties.
         // Between an Int and a Bool, the Int has a larger alignment value of 8, so the struct uses it.
         struct A {
@@ -25,19 +26,19 @@ final class LockedPointerTests: XCTestCase {
             let v1: SIMD3<Int>
             let v2: Bool
         }
+        
+        #expect(MemoryLayout<A>.size == 9)
+        #expect(MemoryLayout<A>.stride == 16)
+        #expect(MemoryLayout<A>.alignment == 8)
 
-        XCTAssertEqual(MemoryLayout<A>.size, 9)
-        XCTAssertEqual(MemoryLayout<A>.stride, 16)
-        XCTAssertEqual(MemoryLayout<A>.alignment, 8)
-
-        XCTAssertEqual(MemoryLayout<B>.size, 16)
-        XCTAssertEqual(MemoryLayout<B>.stride, 16)
-        XCTAssertEqual(MemoryLayout<B>.alignment, 8)
-
-        XCTAssertEqual(MemoryLayout<C>.size, 33)
-        XCTAssertEqual(MemoryLayout<C>.stride, 48)
-        XCTAssertEqual(MemoryLayout<C>.alignment, 16)
-
+        #expect(MemoryLayout<B>.size == 16)
+        #expect(MemoryLayout<B>.stride == 16)
+        #expect(MemoryLayout<B>.alignment == 8)
+        
+        #expect(MemoryLayout<C>.size == 33)
+        #expect(MemoryLayout<C>.stride == 48)
+        #expect(MemoryLayout<C>.alignment == 16)
+        
         let p1 = LockedPointer(type: A.self)
         let p2 = LockedPointer(type: B.self)
         let p3 = LockedPointer(type: C.self)
@@ -46,27 +47,27 @@ final class LockedPointerTests: XCTestCase {
             p2.delete()
             p3.delete()
         }
-
-        XCTAssertEqual(p1.rawValue.pointee.offset, 8)
-        XCTAssertEqual(p2.rawValue.pointee.offset, 8)
-        XCTAssertEqual(p3.rawValue.pointee.offset, 16)
+        #expect(p1.rawValue.pointee.offset == 8)
+        #expect(p2.rawValue.pointee.offset == 8)
+        #expect(p3.rawValue.pointee.offset == 16)
     }
 
-    func testLocking() {
+    @Test
+    func locking() {
         #if canImport(os)
         let pointer = LockedPointer(type: Int.self)
-        XCTAssertEqual(pointer.rawValue.pointee.lock._os_unfair_lock_opaque, 0)
+        #expect(pointer.rawValue.pointee.lock._os_unfair_lock_opaque == 0)
         pointer.lock()
-        XCTAssertNotEqual(pointer.rawValue.pointee.lock._os_unfair_lock_opaque, 0)
+        #expect(pointer.rawValue.pointee.lock._os_unfair_lock_opaque != 0)
         pointer.unlock()
-        XCTAssertEqual(pointer.rawValue.pointee.lock._os_unfair_lock_opaque, 0)
+        #expect(pointer.rawValue.pointee.lock._os_unfair_lock_opaque == 0)
         #else
         let pointer = LockedPointer(type: Int.self)
-        XCTAssertEqual(pointer.rawValue.pointee.lock, 0)
+        #expect(pointer.rawValue.pointee.lock == 0)
         pointer.lock()
-        XCTAssertNotEqual(pointer.rawValue.pointee.lock, 0)
+        #expect(pointer.rawValue.pointee.lock != 0)
         pointer.unlock()
-        XCTAssertEqual(pointer.rawValue.pointee.lock, 0)
+        #expect(pointer.rawValue.pointee.lock == 0)
         #endif
     }
 }

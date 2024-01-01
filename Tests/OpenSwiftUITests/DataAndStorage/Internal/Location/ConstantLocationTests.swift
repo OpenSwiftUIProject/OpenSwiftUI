@@ -6,16 +6,17 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class ConstantLocationTests: XCTestCase {
-    func testConstantLocation() throws {
+struct ConstantLocationTests {
+    @Test
+    func constantLocation() throws {
         let location = ConstantLocation(value: 0)
-        XCTAssertEqual(location.wasRead, true)
-        XCTAssertEqual(location.get(), 0)
+        #expect(location.wasRead == true)
+        #expect(location.get() == 0)
         location.wasRead = false
         location.set(1, transaction: .init())
-        XCTAssertEqual(location.wasRead, true)
-        XCTAssertEqual(location.get(), 0)
+        #expect(location.wasRead == true)
+        #expect(location.get() == 0)
     }
 }

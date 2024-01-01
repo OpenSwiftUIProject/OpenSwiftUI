@@ -17,6 +17,24 @@
         "branch" : "main",
         "revision" : "6835ce0972f40ef76f1214dc0efc75ec19082631"
       }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-syntax.git",
+      "state" : {
+        "revision" : "6ad4ea24b01559dde0773e3d091f1b9e36175036",
+        "version" : "509.0.2"
+      }
+    },
+    {
+      "identity" : "swift-testing",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-testing",
+      "state" : {
+        "revision" : "56f3c5086bcb6c88680f48aeba7222617ed088d3",
+        "version" : "0.2.0"
+      }
     }
   ],
   "version" : 2

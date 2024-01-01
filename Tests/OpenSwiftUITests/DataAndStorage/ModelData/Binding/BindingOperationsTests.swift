@@ -6,9 +6,9 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class BindingOperationsTests: XCTestCase {
-    func testForceUnwrapping() throws {
-    }
+struct BindingOperationsTests {
+    @Test
+    func forceUnwrapping() {}
 }

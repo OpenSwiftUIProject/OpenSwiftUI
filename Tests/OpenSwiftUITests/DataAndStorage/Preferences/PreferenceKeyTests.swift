@@ -6,9 +6,9 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class PreferenceKeyTests: XCTestCase {
+struct PreferenceKeyTests {
     struct DemoKey: PreferenceKey {
         struct Value: ExpressibleByNilLiteral {
             var value = 0
@@ -21,12 +21,12 @@ final class PreferenceKeyTests: XCTestCase {
         }
     }
 
-    func testPreferenceKeyReduce() throws {
+    @Test
+    func preferenceKeyReduce() throws {
         var value = DemoKey.defaultValue
         DemoKey.reduce(value: &value) {
             DemoKey.Value(value: 3)
         }
-        // Migrate to use swift-test
-        XCTAssertEqual(value.value, 3)
+        #expect(value.value == 3)
     }
 }

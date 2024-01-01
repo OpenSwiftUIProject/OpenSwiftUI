@@ -6,29 +6,23 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class AccessibilityBoundedNumberTests: XCTestCase {
-    func testBoundedNumberLocalizedDescription() throws {
-        if let boundedNumber = AccessibilityBoundedNumber(for: 4.5, in: 3.0...16.0, by: 0.1) {
-            XCTAssertEqual(boundedNumber.localizedDescription, "4.5") //decimal case
-        } else {
-            XCTFail("Failed to init bounded number")
-        }
-        if let boundedNumber = AccessibilityBoundedNumber(for: 4.5, in: 1.0...101.0, by: 0.1) {
-            XCTAssertEqual(boundedNumber.localizedDescription, "4%") // .percent case
-        } else {
-            XCTFail("Failed to init bounded number")
-        }
-        if let boundedNumber = AccessibilityBoundedNumber(for: 1.5, in: 1.3...2.3, by: 0.1) {
-            XCTAssertEqual(boundedNumber.localizedDescription, "1.5") // .decimal case
-        } else {
-            XCTFail("Failed to init bounded number")
-        }
-        if let boundedNumber = AccessibilityBoundedNumber(for: 1.5, in: 1.0...2.0, by: 0.1) {
-            XCTAssertEqual(boundedNumber.localizedDescription, "150%") // .percent case
-        } else {
-            XCTFail("Failed to init bounded number")
-        }
+struct AccessibilityBoundedNumberTests {
+    @Test(arguments: [
+        (4.5, 3.0 ... 16.0, 0.1,"4.5"),
+        (4.5, 1.0 ... 101.0, 0.1,"4%"),
+        (1.5, 1.3 ... 2.3, 0.1,"1.5"),
+        (1.5, 1.0 ... 2.0, 0.1,"150%"),
+
+    ])
+    func boundedNumberLocalizedDescription(
+        value: Double,
+        range: ClosedRange<Double>,
+        strideValue: Double,
+        expectedDescription: String
+    ) throws {
+        let boundedNumber = try #require(AccessibilityBoundedNumber(for: value, in: range, by: strideValue))
+        #expect(boundedNumber.localizedDescription == expectedDescription)
     }
 }

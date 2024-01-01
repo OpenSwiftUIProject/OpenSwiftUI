@@ -6,10 +6,11 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class LocationTests: XCTestCase {
-    func testLocation() throws {
+struct LocationTests {
+    @Test
+    func location() {
         struct L: Location {
             typealias Value = Int
             var wasRead = false
@@ -18,7 +19,6 @@ final class LocationTests: XCTestCase {
         }
         let location = L()
         let (value, result) = location.update()
-        XCTAssertEqual(value, 0)
-        XCTAssertEqual(result, true)
+        #expect((value, result) == (0, true))
     }
 }

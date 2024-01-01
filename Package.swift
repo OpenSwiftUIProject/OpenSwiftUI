@@ -78,7 +78,6 @@ let package = Package(
         .target(name: "CoreServices", path: "PrivateFrameworks/CoreServices"),
         .target(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore"),
         openSwiftUITarget,
-        openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
     ]
 )
@@ -153,7 +152,7 @@ if swiftLogCondition {
 }
 
 // Remove the check when swift-testing reaches 1.0.0
-let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING")
+let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING", default: true)
 if swiftTestingCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-testing", from: "0.2.0")
@@ -161,9 +160,7 @@ if swiftTestingCondition {
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
-    var swiftSettings: [SwiftSetting] = (openSwiftUITestTarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_SWIFT_TESTING"))
-    openSwiftUITestTarget.swiftSettings = swiftSettings
+    package.targets.append(openSwiftUITestTarget)
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")

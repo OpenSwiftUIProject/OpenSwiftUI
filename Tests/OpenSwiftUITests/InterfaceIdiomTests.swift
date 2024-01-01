@@ -6,66 +6,49 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
+#if canImport(UIKit)
+import UIKit
+#endif
 
-final class InterfaceIdiomTests: XCTestCase {
-    func testIdiomEqual() throws {
-        XCTAssertEqual(AnyInterfaceIdiomType.phone, AnyInterfaceIdiomType.phone)
-        XCTAssertNotEqual(AnyInterfaceIdiomType.phone, AnyInterfaceIdiomType.touchBar)
+struct InterfaceIdiomTests {
+    @Test
+    func idiomEqual() {
+        #expect(AnyInterfaceIdiomType.phone == .phone)
+        #expect(AnyInterfaceIdiomType.phone != .touchBar)
     }
     
-    func testIdiomAccepts() throws {
-        XCTAssertTrue(InterfaceIdiom.Phone.accepts(InterfaceIdiom.Phone.self))
-        XCTAssertFalse(InterfaceIdiom.Phone.accepts(InterfaceIdiom.CarPlay.self))
+    @Test
+    func idiomAccepts() throws {
+        #expect(InterfaceIdiom.Phone.accepts(InterfaceIdiom.Phone.self) == true)
+        #expect(InterfaceIdiom.Phone.accepts(InterfaceIdiom.CarPlay.self) == false)
     }
     
     #if os(iOS) || os(tvOS)
-    func testInterfaceIdiom() throws {
-        XCTAssertEqual(
-            UIUserInterfaceIdiom.unspecified.idiom,
-            nil
-        )
-        XCTAssertEqual(
-            UIUserInterfaceIdiom.phone.idiom,
-            .phone
-        )
-        XCTAssertEqual(
-            UIUserInterfaceIdiom.pad.idiom,
-            .pad
-        )
-        XCTAssertEqual(
-            UIUserInterfaceIdiom.tv.idiom,
-            .tv
-        )
-        XCTAssertEqual(
-            UIUserInterfaceIdiom.carPlay.idiom,
-            .carplay
-        )
-        XCTAssertEqual(
-            UIUserInterfaceIdiom(rawValue: 4)?.idiom,
-            .watch
-        )
-
+    @Test
+    func interfaceIdiom() throws {
+        #expect(UIUserInterfaceIdiom.unspecified.idiom == nil)
+        #expect(UIUserInterfaceIdiom.phone.idiom == .phone)
+        #expect(UIUserInterfaceIdiom.pad.idiom == .pad)
+        #expect(UIUserInterfaceIdiom.tv.idiom == .tv)
+        #expect(UIUserInterfaceIdiom.carPlay.idiom == .carplay)
+        #expect(UIUserInterfaceIdiom(rawValue: 4)?.idiom == .watch)
         if #available(iOS 14, tvOS 14, *) {
-            XCTAssertEqual(
-                UIUserInterfaceIdiom.mac.idiom,
-                .mac
-            )
+            #expect(UIUserInterfaceIdiom.mac.idiom == .mac)
         }
         if #available(iOS 17, tvOS 17, *) {
-            XCTAssertEqual(
-                UIUserInterfaceIdiom.vision.idiom,
-                .vision
-            )
+            #expect(UIUserInterfaceIdiom.vision.idiom == .vision)
         }
     }
 
-    func testInterfaceIdiomInput() throws {
-        XCTAssertNil(InterfaceIdiom.Input.defaultValue)
+    @Test
+    func interfaceIdiomInput() {
+        #expect(InterfaceIdiom.Input.defaultValue == nil)
         let idiom = UIDevice.current.userInterfaceIdiom.idiom
         InterfaceIdiom.Input.defaultValue = idiom
-        XCTAssertEqual(InterfaceIdiom.Input.defaultValue, idiom)
-        XCTAssertEqual(InterfaceIdiom.Input.targetValue, .phone)
+        
+        #expect(InterfaceIdiom.Input.defaultValue == idiom)
+        #expect(InterfaceIdiom.Input.targetValue == .phone)
     }
     #endif
 }

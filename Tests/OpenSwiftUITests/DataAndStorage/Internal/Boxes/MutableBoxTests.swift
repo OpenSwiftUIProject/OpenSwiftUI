@@ -1,17 +1,18 @@
 //
 //  MutableBoxTests.swift
-//  
+//
 //
 //  Created by Kyle on 2023/10/17.
 //
 
-import XCTest
 @testable import OpenSwiftUI
+import Testing
 
-final class MutableBoxTests: XCTestCase {
-    func testExample() throws {
+struct MutableBoxTests {
+    @Test
+    func wrappedValue() {
         @MutableBox var box = 3
         $box.wrappedValue = 4
-        XCTAssertEqual(box, 4)
+        #expect(box == 4)
     }
 }

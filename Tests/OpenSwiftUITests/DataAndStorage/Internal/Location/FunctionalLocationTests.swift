@@ -6,10 +6,11 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class FunctionalLocationTests: XCTestCase {
-    func testFunctionalLocation() throws {
+struct FunctionalLocationTests {
+    @Test
+    func functionalLocation() {
         class V {
             var count = 0
         }
@@ -19,12 +20,11 @@ final class FunctionalLocationTests: XCTestCase {
         } setValue: { newCount, _ in
             value.count = newCount * newCount
         }
-
-        XCTAssertEqual(location.wasRead, true)
-        XCTAssertEqual(location.get(), 0)
+        #expect(location.wasRead == true)
+        #expect(location.get() == 0)
         location.wasRead = false
         location.set(2, transaction: .init())
-        XCTAssertEqual(location.wasRead, true)
-        XCTAssertEqual(location.get(), 4)
+        #expect(location.wasRead == true)
+        #expect(location.get() == 4)
     }
 }

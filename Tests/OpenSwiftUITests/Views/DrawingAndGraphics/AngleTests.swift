@@ -6,39 +6,42 @@
 //
 
 import OpenSwiftUI
-import XCTest
+import Testing
 
-final class AngleTests: XCTestCase {
+struct AngleTests {
     private func helper(radians: Double, degrees: Double) {
         let a1 = Angle(radians: radians)
-        XCTAssertEqual(a1.radians, radians)
-        XCTAssertEqual(a1.degrees, degrees)
-        XCTAssertEqual(a1.animatableData, radians * 128)
+        #expect(a1.radians == radians)
+        #expect(a1.degrees == degrees)
+        #expect(a1.animatableData == radians * 128)
         let a2 = Angle(degrees: degrees)
-        XCTAssertEqual(a2.radians, radians)
-        XCTAssertEqual(a2.degrees, degrees)
-        XCTAssertEqual(a1, a2)
-        XCTAssertEqual(a1.animatableData * 2, (a2 * 2).animatableData)
+        #expect(a2.radians == radians)
+        #expect(a2.degrees == degrees)
+        #expect(a1 == a2)
+        #expect(a1.animatableData * 2 == (a2 * 2).animatableData)
         var a3 = a1
         a3.animatableData *= 2
         var a4 = a1
         a4.radians *= 2
-        XCTAssertEqual(a3, a4)
+        #expect(a3 == a4)
     }
 
-    func testZero() {
+    @Test
+    func zero() {
         helper(radians: .zero, degrees: .zero)
     }
 
-    func testRightAngle() {
+    @Test
+    func rightAngle() {
         helper(radians: .pi / 2, degrees: 90)
     }
 
-    func testHalfCircle() {
+    @Test
+    func halfCircle() {
         helper(radians: .pi, degrees: 180)
     }
 
-    func testCircle() {
+    func circle() {
         helper(radians: .pi * 2, degrees: 360)
     }
 }
