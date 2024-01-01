@@ -24,36 +24,42 @@ struct PropertyList: CustomStringConvertible {
     @inlinable
     init() { elements = nil }
   
-    // TODO: See Element implementatation
     @usableFromInline
     var description: String {
-        var description = "["
-        var elements = elements
-        while let element = elements {
-            description.append(element.description)
-            elements = element.after
-            if elements != nil {
-                description.append(", ")
-            }
-        }
-        description.append("]")
-        return description
+        // TODO
+        "[]"
     }
     
-    // TODO
     func forEach<Key: PropertyKey>(keyType: Key.Type, _ body: (Key.Value, inout Swift.Bool) -> Void) {
         guard let elements else {
             return
         }
         elements.forEach { element, stop in
-            // TODO
+            fatalError("TODO")
         }
     }
 
-    // TODO:
     subscript<Key: PropertyKey>(_ keyType: Key.Type) -> Key.Value {
-        get { fatalError("TODO") }
-        set { fatalError("TODO") }
+        get {
+            withExtendedLifetime(keyType) {
+                guard let result = find(.passUnretained(elements!), key: keyType) else {
+                    return Key.defaultValue
+                }
+                return result.takeUnretainedValue().value
+            }
+        }
+        set {
+            if let result = find(.passUnretained(elements!), key: keyType) {
+                guard !compareValues(
+                    newValue,
+                    result.takeUnretainedValue().value,
+                    mode: ._3
+                ) else {
+                    return
+                }
+            }
+            elements = TypedElement<Key>(value: newValue, before: nil, after: elements)
+        }
     }
     
     func mayNotBeEqual(to: PropertyList) -> Bool {
@@ -66,6 +72,28 @@ struct PropertyList: CustomStringConvertible {
         }
         return !equalResult
     }
+    
+    mutating func merge(_ plist: PropertyList) {
+        fatalError("TODO")
+    }
+    
+    mutating private func override(with plist: PropertyList) {
+        if let element = elements {
+            elements = element.byPrepending(plist.elements)
+        } else {
+            elements = plist.elements
+        }
+    }
+}
+
+// MARK: - PropertyList Help functions
+
+private func find<Key: PropertyKey>(
+    _: Unmanaged<PropertyList.Element>?,
+    key: Key.Type,
+    keyFilter: BloomFilter = BloomFilter(type: Key.self)
+) -> Unmanaged<TypedElement<Key>>? {
+    fatalError("TODO")
 }
 
 // MARK: - PropertyList.Element
@@ -325,7 +353,7 @@ extension PropertyList {
     }
 }
 
-// MARK: - PropertyList.Tracker Helper function
+// MARK: - PropertyList.Tracker Helper functions
 
 @_transparent
 @inline(__always)
@@ -361,12 +389,11 @@ private func match(data: TrackerData, from: PropertyList, to: PropertyList) -> U
 }
 
 private func move(_ values: inout [ObjectIdentifier: any AnyTrackedValue], to invalidValues: inout [any AnyTrackedValue]) {
-    // TODO
+    fatalError("TODO")
 }
 
 private func compare(_ values: [ObjectIdentifier: any AnyTrackedValue], against plist: PropertyList) -> Bool {
-    // TODO
-    .random()
+    fatalError("TODO")
 }
 
 // MARK: - TrackerData
