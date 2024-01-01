@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2023/10/18.
 //  Lastest Version: iOS 15.5
-//  Status: Empty
+//  Status: WIP
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
 #if OPENSWIFTUI_ATTRIBUTEGRAPH
@@ -39,6 +39,16 @@ struct PropertyList: CustomStringConvertible {
         description.append("]")
         return description
     }
+    
+    // TODO
+    func forEach<Key: PropertyKey>(keyType: Key.Type, _ body: (Key.Value, inout Swift.Bool) -> Void) {
+        guard let elements else {
+            return
+        }
+        elements.forEach { element, stop in
+            // TODO
+        }
+    }
 
     // TODO:
     subscript<Key: PropertyKey>(_ keyType: Key.Type) -> Key.Value {
@@ -68,7 +78,7 @@ extension PropertyList {
         let after: Element?
         let length: Int
         let keyFilter: BloomFilter
-        let id = OGUniqueID()
+        let id = UniqueID()
 
         init(keyType: Any.Type, before: Element?, after: Element?) {
             self.keyType = keyType
@@ -235,25 +245,136 @@ extension PropertyList {
             $data.destroy()
         }
         
-        func initializeValues(from _: PropertyList) {
+        func value<Key: PropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
+            $data.withMutableData { data in
+                guard match(data: data, plist: plist) else {
+                    data.unrecordedDependencies = true
+                    return plist[keyType]
+                }
+                if let trackedValue = data.values[ObjectIdentifier(Key.self)] {
+                    return trackedValue.unwrap()
+                } else {
+                    let value = plist[keyType]
+                    let trackedValue = TrackedValue<Key>(value: value)
+                    data.values[ObjectIdentifier(Key.self)] = trackedValue
+                    return value
+                }
+            }
         }
         
-        func invalidateValue(for _: (some PropertyKey).Type, from _: PropertyList, to _: PropertyList) {}
+        func initializeValues(from: PropertyList) {
+            data.plistID = from.elements?.id ?? .zero
+        }
         
-        func invalidateAllValues(from _: PropertyList, to _: PropertyList) {}
+        func invalidateValue<Key: PropertyKey>(for keyType: Key.Type, from: PropertyList, to: PropertyList) {
+            $data.withMutableData { data in
+                guard let id = match(data: data, from: from, to: to) else {
+                    return
+                }
+                let removedValue = data.values.removeValue(forKey: ObjectIdentifier(Key.self))
+                if let removedValue {
+                    data.invalidValues.append(removedValue)
+                }
+                move(&data.derivedValues, to: &data.invalidValues)
+                data.plistID = id
+            }
+        }
+
+        func invalidateAllValues(from: PropertyList, to: PropertyList) {
+            $data.withMutableData { data in
+                guard let id = match(data: data, from: from, to: to) else {
+                    return
+                }
+                move(&data.values, to: &data.invalidValues)
+                move(&data.derivedValues, to: &data.invalidValues)
+                data.plistID = id
+            }
+        }
+        
+        func reset() {
+            $data.withMutableData { data in
+                data.plistID = .zero
+                data.values.removeAll(keepingCapacity: true)
+                data.derivedValues.removeAll(keepingCapacity: true)
+                data.invalidValues.removeAll(keepingCapacity: true)
+                data.unrecordedDependencies = false
+            }
+        }
     
-        func hasDifferentUsedValues(_: PropertyList) -> Bool {
-            .random()
+        func hasDifferentUsedValues(_ plist: PropertyList) -> Bool {
+            let data = data
+            guard !data.unrecordedDependencies else {
+                return true
+            }
+            guard match(data: data, plist: plist) else {
+                return false
+            }
+            guard compare(data.values, against: plist) else {
+                return true
+            }
+            guard compare(data.derivedValues, against: plist) else {
+                return true
+            }
+            for invalidValue in data.invalidValues {
+                guard invalidValue.hasMatchingValue(in: plist) else {
+                    return true
+                }
+            }
+            return false
         }
     }
+}
+
+// MARK: - PropertyList.Tracker Helper function
+
+@_transparent
+@inline(__always)
+private func match(data: TrackerData, plist: PropertyList) -> Bool {
+    if let elements = plist.elements,
+       data.plistID == elements.id {
+        true
+    } else if plist.elements == nil, data.plistID == .zero {
+        true
+    } else {
+        false
+    }
+}
+
+@_transparent
+@inline(__always)
+private func match(data: TrackerData, from: PropertyList, to: PropertyList) -> UniqueID? {
+    if let fromElement = from.elements,
+       fromElement.id == data.plistID {
+        if let toElement = to.elements {
+            toElement.id != data.plistID ? toElement.id : nil
+        } else {
+            data.plistID != .zero ? .zero : nil
+        }
+    } else if from.elements == nil,
+              data.plistID == .zero,
+              let toElement = to.elements,
+              toElement.id != data.plistID {
+        toElement.id
+    } else {
+        nil
+    }
+}
+
+private func move(_ values: inout [ObjectIdentifier: any AnyTrackedValue], to invalidValues: inout [any AnyTrackedValue]) {
+    // TODO
+}
+
+private func compare(_ values: [ObjectIdentifier: any AnyTrackedValue], against plist: PropertyList) -> Bool {
+    // TODO
+    .random()
 }
 
 // MARK: - TrackerData
 
 private struct TrackerData {
     var plistID: UniqueID
-    var values: [ObjectIdentifier: AnyTrackedValue]
-    var derivedValues: [ObjectIdentifier: AnyTrackedValue]
+    var values: [ObjectIdentifier: any AnyTrackedValue]
+    var derivedValues: [ObjectIdentifier: any AnyTrackedValue]
     var invalidValues: [AnyTrackedValue]
     var unrecordedDependencies: Bool
 }
