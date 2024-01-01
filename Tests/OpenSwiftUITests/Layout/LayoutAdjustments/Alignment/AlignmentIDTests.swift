@@ -6,35 +6,44 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
+#if canImport(Darwin)
+import CoreGraphics
+#elseif os(Linux)
+import Foundation
+#endif
 
-final class AlignmentIDTests: XCTestCase {
+struct AlignmentIDTests {
     private struct TestAlignment: AlignmentID {
         static func defaultValue(in _: ViewDimensions) -> CGFloat { .zero }
     }
 
-    func testCombineExplicitLinear() throws {
+    @Test
+    func combineExplicitLinear() throws {
         var value: CGFloat?
-        (0 ... 10).forEach { n in
+        try (0 ... 10).forEach { n in
             TestAlignment._combineExplicit(
                 childValue: .init(n),
                 n,
                 into: &value
             )
-            XCTAssertEqual(value!, CGFloat(n) / 2, accuracy: 0.0001)
+            let value = try #require(value)
+            #expect(abs(value - CGFloat(n) / 2) <= 0.0001)
         }
     }
 
-    func testCombineExplicitSame() throws {
+    @Test
+    func combineExplicitSame() throws {
         var value: CGFloat?
         let child = CGFloat.random(in: 0.0 ... 100.0)
-        (0 ... 10).forEach { n in
+        try (0 ... 10).forEach { n in
             TestAlignment._combineExplicit(
                 childValue: child,
                 n,
                 into: &value
             )
-            XCTAssertEqual(value!, child, accuracy: 0.0001)
+            let value = try #require(value)
+            #expect(abs(value - child) <= 0.0001)
         }
     }
 }

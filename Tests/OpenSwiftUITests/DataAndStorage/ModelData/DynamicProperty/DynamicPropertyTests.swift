@@ -6,8 +6,9 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class DynamicPropertyTests: XCTestCase {
-    func testExample() throws {}
+struct DynamicPropertyTests {
+    @Test
+    func example() {}
 }

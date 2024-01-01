@@ -5,17 +5,18 @@
 //  Created by Kyle on 2023/11/8.
 //
 
-import XCTest
 @testable import OpenSwiftUI
+import Testing
 
-final class LocationBoxTests: XCTestCase {
-    func testBasicLocationBox() throws {
+struct LocationBoxTests {
+    @Test
+    func basicLocationBox() throws {
         class MockLocation: Location {
-            private var value: Int = 0
-            var wasRead: Bool = false
+            private var value = 0
+            var wasRead = false
             typealias Value = Int
             func get() -> Value { value }
-            func set(_ value: Int, transaction: Transaction) { self.value = value }
+            func set(_ value: Int, transaction _: Transaction) { self.value = value }
             func update() -> (Int, Bool) {
                 defer { value += 1 }
                 return (value, value == 0)
@@ -25,41 +26,41 @@ final class LocationBoxTests: XCTestCase {
         let location = MockLocation()
         let box = LocationBox(location: location)
 
-        XCTAssertEqual(location.wasRead, false)
-        XCTAssertEqual(box.wasRead, false)
+        #expect(location.wasRead == false)
+        #expect(box.wasRead == false)
         location.wasRead = true
-        XCTAssertEqual(location.wasRead, true)
-        XCTAssertEqual(box.wasRead, true)
+        #expect(location.wasRead == true)
+        #expect(box.wasRead == true)
         box.wasRead = false
-        XCTAssertEqual(location.wasRead, false)
-        XCTAssertEqual(box.wasRead, false)
+        #expect(location.wasRead == false)
+        #expect(box.wasRead == false)
 
-        XCTAssertEqual(location.get(), 0)
-        XCTAssertEqual(box.get(), 0)
+        #expect(location.get() == 0)
+        #expect(box.get() == 0)
         location.set(3, transaction: .init())
-        XCTAssertEqual(location.get(), 3)
-        XCTAssertEqual(box.get(), 3)
+        #expect(location.get() == 3)
+        #expect(box.get() == 3)
         box.set(0, transaction: .init())
-        XCTAssertEqual(location.get(), 0)
-        XCTAssertEqual(box.get(), 0)
+        #expect(location.get() == 0)
+        #expect(box.get() == 0)
 
         let (value, result) = box.update()
-        XCTAssertEqual(location.get(), 1)
-        XCTAssertEqual(value, 0)
-        XCTAssertEqual(result, true)
+        #expect((value, result) == (0, true))
+        #expect(location.get() == 1)
     }
 
-    func testProjecting() {
+    @Test
+    func projecting() {
         struct V {
             var count = 0
         }
 
         class MockLocation: Location {
             private var value = V()
-            var wasRead: Bool = false
+            var wasRead = false
             typealias Value = V
             func get() -> Value { value }
-            func set(_ value: Value, transaction: Transaction) { self.value = value }
+            func set(_ value: Value, transaction _: Transaction) { self.value = value }
             func update() -> (Value, Bool) {
                 defer { value.count += 1 }
                 return (value, value.count == 0)
@@ -70,12 +71,12 @@ final class LocationBoxTests: XCTestCase {
         let box = LocationBox(location: location)
 
         let keyPath: WritableKeyPath = \V.count
-        XCTAssertEqual(box.cache.checkReference(for: keyPath, on: location), false)
+        #expect(box.cache.checkReference(for: keyPath, on: location) == false)
         let newLocation = box.projecting(keyPath)
-        XCTAssertEqual(box.cache.checkReference(for: keyPath, on: location), true)
-        XCTAssertEqual(location.get().count, 0)
+        #expect(box.cache.checkReference(for: keyPath, on: location) == true)
+        #expect(location.get().count == 0)
         _ = box.update()
-        XCTAssertEqual(location.get().count, 1)
-        XCTAssertEqual(newLocation.get(), 1)
+        #expect(location.get().count == 1)
+        #expect(newLocation.get() == 1)
     }
 }

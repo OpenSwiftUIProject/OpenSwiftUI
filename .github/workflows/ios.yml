@@ -29,8 +29,8 @@ jobs:
           xcodebuild build \
             -scheme OpenSwiftUI \
             -configuration Debug \
+            -skipMacroValidation -skipPackagePluginValidation \
             -destination "platform=iOS-Simulator" \
-            -derivedDataPath .build-test-debug
             # OpenSwiftUI-Package is not listed currently
             # OTHER_SWIFT_FLAGS="-warnings-as-errors" \ AccessLevelOnImport will cause build warning via xcodebuild
         env:

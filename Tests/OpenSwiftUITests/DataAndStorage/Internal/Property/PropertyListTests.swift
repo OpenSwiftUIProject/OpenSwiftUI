@@ -6,11 +6,12 @@
 //
 
 @testable import OpenSwiftUI
-import XCTest
+import Testing
 
-final class PropertyListTests: XCTestCase {
-    func testDescription() throws {
+struct PropertyListTests {
+    @Test
+    func description() throws {
         let plist = PropertyList()
-        XCTAssertEqual(plist.description, "[]")
+        #expect(plist.description == "[]")
     }
 }

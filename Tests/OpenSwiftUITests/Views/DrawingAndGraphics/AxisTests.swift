@@ -6,21 +6,22 @@
 //
 
 import OpenSwiftUI
-import XCTest
+import Testing
 
-final class AxisTests: XCTestCase {
-    func testExample() {
+struct AxisTests {
+    @Test
+    func example() {
         let h = Axis.horizontal
         let v = Axis.vertical
-        XCTAssertEqual(Axis.allCases, [h, v])
-        XCTAssertEqual(h.rawValue, 0)
-        XCTAssertEqual(v.rawValue, 1)
+        #expect(Axis.allCases == [h, v])
+        #expect(h.rawValue == 0)
+        #expect(v.rawValue == 1)
 
-        XCTAssertEqual(h.description, "horizontal")
-        XCTAssertEqual(v.description, "vertical")
-
+        #expect(h.description == "horizontal")
+        #expect(v.description == "vertical")
+        
         let hs = Axis.Set.horizontal
         let vs = Axis.Set.vertical
-        XCTAssertFalse(hs.contains(vs))
+        #expect(hs.contains(vs) == false)
     }
 }

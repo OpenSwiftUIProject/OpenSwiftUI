@@ -1,27 +1,29 @@
 //
 //  UnsafeLockedPointerTests.swift
-//  
+//
 //
 //  Created by Kyle on 2023/10/19.
 //
 
-import XCTest
 @testable import OpenSwiftUI
+import Testing
 
-final class UnsafeLockedPointerTests: XCTestCase {
-    func testBasic() {
+struct UnsafeLockedPointerTests {
+    @Test
+    func basic() {
         let pointer = UnsafeLockedPointer(wrappedValue: 2)
         defer { pointer.destroy() }
-        XCTAssertEqual(pointer.wrappedValue, 2)
+        #expect(pointer.wrappedValue == 2)
         pointer.wrappedValue = 3
-        XCTAssertEqual(pointer.wrappedValue, 3)
+        #expect(pointer.wrappedValue == 3)
     }
 
-    func testPropertyWrapper() {
+    @Test
+    func propertyWrapper() {
         @UnsafeLockedPointer var value = 2
         defer { $value.destroy() }
-        XCTAssertEqual(value, 2)
+        #expect(value == 2)
         $value.wrappedValue = 3
-        XCTAssertEqual(value, 3)
+        #expect(value == 3)
     }
 }
