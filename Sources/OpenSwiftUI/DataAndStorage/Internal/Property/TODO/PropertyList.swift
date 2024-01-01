@@ -84,10 +84,10 @@ extension PropertyList {
             self.keyType = keyType
             self.before = before
             self.after = after
+            var length = 1
             var keyFilter = BloomFilter(type: keyType)
-            var length = 0
             if let before {
-                length = before.length + 1
+                length += before.length
                 keyFilter.value |= before.keyFilter.value
             }
             if let after {
