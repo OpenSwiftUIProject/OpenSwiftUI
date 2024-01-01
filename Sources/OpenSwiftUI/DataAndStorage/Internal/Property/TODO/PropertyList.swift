@@ -35,7 +35,11 @@ struct PropertyList: CustomStringConvertible {
             return
         }
         elements.forEach { element, stop in
-            fatalError("TODO")
+            let element = element.takeUnretainedValue()
+            guard element.keyType == Key.self else {
+                return
+            }
+            body((element as! TypedElement<Key>).value, &stop)
         }
     }
 
