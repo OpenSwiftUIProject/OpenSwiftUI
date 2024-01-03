@@ -22,4 +22,10 @@ struct BloomFilter: Equatable {
         let pointer = unsafeBitCast(type, to: OpaquePointer.self)
         self.init(hashValue: Int(bitPattern: pointer))
     }
+    
+    @_transparent
+    @inline(__always)
+    func match(_ filter: BloomFilter) -> Bool {
+        (value & filter.value) == value
+    }
 }
