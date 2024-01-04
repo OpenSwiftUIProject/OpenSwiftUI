@@ -28,6 +28,8 @@ struct AlignmentIDTests {
                 into: &value
             )
             let value = try #require(value)
+            // TODO: use swift-numerics
+            // https://github.com/apple/swift-testing/issues/165
             #expect(abs(value - CGFloat(n) / 2) <= 0.0001)
         }
     }
