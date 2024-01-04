@@ -27,6 +27,29 @@ struct EnvironmentValuesTest {
     
     @Test
     func descriptionWithoutTracker() throws {
+        #if os(macOS) && OPENSWIFTUI_COMPATIBILITY_TEST
+        // FIXME: The env.description will always be "[]" on macOS 13
+        if #unavailable(macOS 14) {
+            var env = EnvironmentValues()
+            #expect(env.description == "[]")
+            var bool = env[BoolKey.self]
+            #expect(bool == BoolKey.defaultValue)
+            #expect(env.description == "[]")
+            
+            env[BoolKey.self] = bool
+            #expect(env.description == "[]")
+            
+            env[BoolKey.self] = !bool
+            bool = env[BoolKey.self]
+            #expect(bool == !BoolKey.defaultValue)
+            #expect(env.description == "[]")
+            
+            let value = 1
+            env[IntKey.self] = value
+            #expect(env.description == "[]")
+            return
+        }
+        #endif
         var env = EnvironmentValues()
         #expect(env.description == "[]")
         
