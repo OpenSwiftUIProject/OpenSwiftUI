@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:Benchmarks}",
+            "name": "Debug OpenSwiftUIBenchmark",
+            "program": "${workspaceFolder:Benchmarks}/.build/debug/OpenSwiftUIBenchmark",
+            "preLaunchTask": "swift: Build Debug OpenSwiftUIBenchmark"
+        },
+        {
+            "type": "lldb",
+            "request": "launch",
+            "sourceLanguages": [
+                "swift"
+            ],
+            "args": [],
+            "cwd": "${workspaceFolder:Benchmarks}",
+            "name": "Release OpenSwiftUIBenchmark",
+            "program": "${workspaceFolder:Benchmarks}/.build/release/OpenSwiftUIBenchmark",
+            "preLaunchTask": "swift: Build Release OpenSwiftUIBenchmark"
+        }
+    ]
+}
