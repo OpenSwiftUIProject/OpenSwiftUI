@@ -22,6 +22,28 @@ struct VersionSeed: CustomStringConvertible {
     static var invalid: VersionSeed { VersionSeed(value: .max) }
     
     var isValid: Bool { value != VersionSeed.invalid.value }
+    
+    @_transparent
+    @inline(__always)
+    func merge(_ seed: VersionSeed) -> VersionSeed {
+        VersionSeed(value: merge32(value, seed.value))
+    }
+}
+
+private func merge32(_ a: UInt32, _ b: UInt32) -> UInt32 {
+    let a = UInt64(a)
+    let b = UInt64(b)
+    var c = b
+    c &+= .max ^ (c &<< 32)
+    c &+= a &<< 32
+    c ^= (c &>> 22)
+    c &+= .max ^ (c &<< 13)
+    c ^= (c &>> 8)
+    c &+= (c &<< 3)
+    c ^= (c >> 15)
+    c &+= .max ^ (c &<< 27)
+    c ^= (c &>> 31)
+    return UInt32(truncatingIfNeeded: c)
 }
 
 struct VersionSeedTracker<Key: HostPreferenceKey> {
