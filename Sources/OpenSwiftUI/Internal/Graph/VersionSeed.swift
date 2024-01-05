@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2024/1/5.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Complete
 //  ID: 1B00D77CE2C80F9C0F5A59FDEA30ED6B
 
 struct VersionSeed: CustomStringConvertible {
@@ -31,12 +31,19 @@ struct VersionSeedTracker<Key: HostPreferenceKey> {
 struct VersionSeedSetTracker {
     private var values: [Value]
     
-    func addPreference<Key: HostPreferenceKey>(_ keyType: Key.Type) {
-        
+    mutating func addPreference<Key: HostPreferenceKey>(_: Key.Type) {
+        values.append(Value(key: _AnyPreferenceKey<Key>.self, seed: .invalid))
     }
     
-    func updateSeeds(to: PreferenceList) {
-        
+    mutating func updateSeeds(to preferences: PreferenceList) {
+        for index in values.indices {
+            var visitor = UpdateSeedVisitor(preferences: preferences, seed: nil)
+            values[index].key.visitKey(&visitor)
+            guard let seed = visitor.seed else {
+                continue
+            }
+            values[index].seed = seed
+        }
     }
 }
 
@@ -53,7 +60,7 @@ extension VersionSeedSetTracker {
         var seed: VersionSeed
         var matches: Bool?
         
-        mutating func visit<Key>(key: Key.Type) where Key : PreferenceKey {
+        mutating func visit(key: (some PreferenceKey).Type) {
             let valueSeed = preferences[key].seed
             matches = seed.isValid && valueSeed.isValid && seed.value == valueSeed.value
         }
@@ -63,7 +70,7 @@ extension VersionSeedSetTracker {
         let preferences: PreferenceList
         var seed: VersionSeed?
     
-        mutating func visit<Key>(key: Key.Type) where Key : PreferenceKey {
+        mutating func visit(key: (some PreferenceKey).Type) {
             seed = preferences[key].seed
         }
     }
