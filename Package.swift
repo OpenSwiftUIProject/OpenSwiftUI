@@ -78,7 +78,6 @@ let package = Package(
         .target(name: "CoreServices", path: "PrivateFrameworks/CoreServices"),
         .target(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore"),
         openSwiftUITarget,
-        openSwiftUICompatibilityTestTarget,
     ]
 )
 
@@ -161,6 +160,10 @@ if swiftTestingCondition {
         .product(name: "Testing", package: "swift-testing")
     )
     package.targets.append(openSwiftUITestTarget)
+    openSwiftUICompatibilityTestTarget.dependencies.append(
+        .product(name: "Testing", package: "swift-testing")
+    )
+    package.targets.append(openSwiftUICompatibilityTestTarget)
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")

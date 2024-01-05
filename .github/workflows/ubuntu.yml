@@ -21,6 +21,7 @@ jobs:
         run: |
           swift test \
             -c debug \
+            --filter OpenSwiftUITests \
             -Xswiftc -warnings-as-errors \
             --enable-code-coverage \
             --build-path .build-test-debug
@@ -32,6 +33,7 @@ jobs:
         run: |
           swift test \
             -c release \
+            --filter OpenSwiftUITests \
             -Xswiftc -warnings-as-errors \
             --build-path .build-test-release
       - uses: codecov/codecov-action@v3

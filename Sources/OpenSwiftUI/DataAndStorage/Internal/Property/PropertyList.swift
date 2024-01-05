@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2023/10/18.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Blocked by merge
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
 #if OPENSWIFTUI_ATTRIBUTEGRAPH
@@ -26,8 +26,19 @@ struct PropertyList: CustomStringConvertible {
   
     @usableFromInline
     var description: String {
-        // TODO
-        "[]"
+        var description = "["
+        var shouldAddSeparator = false
+        elements?.forEach { element, stop in
+            let element = element.takeUnretainedValue()
+            if shouldAddSeparator {
+                description.append(", ")
+            } else {
+                shouldAddSeparator = true
+            }
+            description.append(element.description)
+        }
+        description.append("]")
+        return description
     }
     
     func forEach<Key: PropertyKey>(keyType: Key.Type, _ body: (Key.Value, inout Swift.Bool) -> Void) {
@@ -46,14 +57,14 @@ struct PropertyList: CustomStringConvertible {
     subscript<Key: PropertyKey>(_ keyType: Key.Type) -> Key.Value {
         get {
             withExtendedLifetime(keyType) {
-                guard let result = find(.passUnretained(elements!), key: keyType) else {
+                guard let result = find(elements.map { .passUnretained($0) }, key: keyType) else {
                     return Key.defaultValue
                 }
                 return result.takeUnretainedValue().value
             }
         }
         set {
-            if let result = find(.passUnretained(elements!), key: keyType) {
+            if let result = find(elements.map { .passUnretained($0) }, key: keyType) {
                 guard !compareValues(
                     newValue,
                     result.takeUnretainedValue().value,
@@ -93,11 +104,30 @@ struct PropertyList: CustomStringConvertible {
 // MARK: - PropertyList Help functions
 
 private func find<Key: PropertyKey>(
-    _: Unmanaged<PropertyList.Element>?,
+    _ element: Unmanaged<PropertyList.Element>?,
     key: Key.Type,
     keyFilter: BloomFilter = BloomFilter(type: Key.self)
 ) -> Unmanaged<TypedElement<Key>>? {
-    fatalError("TODO")
+    guard var element else {
+        return nil
+    }
+    repeat {
+        guard keyFilter.match(element.flatMap(\.keyFilter)) else {
+            return nil
+        }
+        if let before = element.map(\.before),
+            let result = find(before, key: key, keyFilter: keyFilter) {
+            return result
+        }
+        if element.flatMap(\.keyType) == Key.self {
+            return element.map { $0 as? TypedElement<Key> }
+        }
+        guard let after = element.map(\.after) else {
+            break
+        }
+        element = after
+    } while(true)
+    return nil
 }
 
 // MARK: - PropertyList.Element
@@ -393,11 +423,18 @@ private func match(data: TrackerData, from: PropertyList, to: PropertyList) -> U
 }
 
 private func move(_ values: inout [ObjectIdentifier: any AnyTrackedValue], to invalidValues: inout [any AnyTrackedValue]) {
-    fatalError("TODO")
+    guard !values.isEmpty else { return }
+    invalidValues.append(contentsOf: values.values)
+    values.removeAll(keepingCapacity: true)
 }
 
 private func compare(_ values: [ObjectIdentifier: any AnyTrackedValue], against plist: PropertyList) -> Bool {
-    fatalError("TODO")
+    for (_, value) in values {
+        guard value.hasMatchingValue(in: plist) else {
+            return false
+        }
+    }
+    return true
 }
 
 // MARK: - TrackerData
