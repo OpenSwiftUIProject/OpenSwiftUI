@@ -7,5 +7,5 @@
 //  Status: Complete
 
 protocol PreferenceKeyVisitor {
-    func visit<Key: PreferenceKey>(key: Key.Type)
+    mutating func visit<Key: PreferenceKey>(key: Key.Type)
 }
