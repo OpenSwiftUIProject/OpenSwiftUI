@@ -26,7 +26,13 @@ struct VersionSeed: CustomStringConvertible {
     @_transparent
     @inline(__always)
     func merge(_ seed: VersionSeed) -> VersionSeed {
-        VersionSeed(value: merge32(value, seed.value))
+        if isValid, seed.value == .zero {
+            self
+        } else if value == .zero, seed.isValid {
+            seed
+        } else {
+            VersionSeed(value: merge32(value, seed.value))
+        }
     }
 }
 
