@@ -1,0 +1,1 @@
+- CoreServices is based on iOS 15.5 SDK

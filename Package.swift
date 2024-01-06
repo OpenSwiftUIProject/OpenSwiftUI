@@ -8,6 +8,13 @@ let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
+/// Returns a URL of the private framework's tbd URL
+func tbdURL(for framework: String) -> URL {
+    URL(filePath: #filePath)
+        .deletingLastPathComponent()
+        .appending(components: "PrivateFrameworks", framework, "\(framework).tbd")
+}
+
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
@@ -21,14 +28,7 @@ let openSwiftUITarget = Target.target(
         .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     ],
     linkerSettings: [
-        .unsafeFlags(
-            [systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"],
-            .when(platforms: [.iOS], configuration: .debug)
-        ),
-        .linkedFramework(
-            "CoreServices",
-            .when(platforms: [.iOS], configuration: .debug)
-        ),
+        .unsafeFlags([tbdURL(for: "UIKitCore").path()], .when(platforms: [.iOS])),
     ]
 )
 let openSwiftUITestTarget = Target.testTarget(
@@ -76,7 +76,7 @@ let package = Package(
             name: "OpenSwiftUIShims",
             dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
-        .target(name: "CoreServices", path: "PrivateFrameworks/CoreServices"),
+        .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         .target(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore"),
         openSwiftUITarget,
     ]
