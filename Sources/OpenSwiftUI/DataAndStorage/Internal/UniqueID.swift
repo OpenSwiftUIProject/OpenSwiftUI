@@ -6,11 +6,7 @@
 //  Lastest Version: iOS 15.5
 //  Status: Complete
 
-#if OPENSWIFTUI_ATTRIBUTEGRAPH
-internal import AttributeGraph
-#else
-internal import OpenGraph
-#endif
+internal import OpenGraphShims
 
 struct UniqueID: Hashable {
     static let zero = UniqueID(value: 0)
@@ -19,11 +15,7 @@ struct UniqueID: Hashable {
 
     @inline(__always)
     init() {
-        #if OPENSWIFTUI_ATTRIBUTEGRAPH
-        self.value = Int(AGMakeUniqueID())
-        #else
-        self.value = Int(OGMakeUniqueID())
-        #endif
+        value = Int(makeUniqueID())
     }
 
     private init(value: Int) {

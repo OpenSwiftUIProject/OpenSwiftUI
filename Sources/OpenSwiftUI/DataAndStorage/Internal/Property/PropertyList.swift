@@ -7,11 +7,7 @@
 //  Status: Blocked by merge
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
-#if OPENSWIFTUI_ATTRIBUTEGRAPH
-internal import AttributeGraph
-#else
-internal import OpenGraph
-#endif
+internal import OpenGraphShims
 
 // MARK: - PropertyList
 

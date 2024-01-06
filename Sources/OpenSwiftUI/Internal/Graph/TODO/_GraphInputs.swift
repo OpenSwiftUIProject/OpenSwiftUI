@@ -1,8 +1,4 @@
-#if OPENSWIFTUI_ATTRIBUTEGRAPH
-internal import AttributeGraph
-#else
-internal import OpenGraph
-#endif
+internal import OpenGraphShims
 
 public struct _GraphInputs {
 //    var customInputs: PropertyList
