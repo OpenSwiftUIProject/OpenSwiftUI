@@ -4,27 +4,76 @@
 //
 //  Created by Kyle on 2023/1/5.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Complete
 //  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD
 
-struct PreferenceList {
+struct PreferenceList: CustomStringConvertible {
     private var first: PreferenceNode?
-        
+    
     subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Value<Key.Value> {
-        get { fatalError("TODO") }
-        set { fatalError("TODO") }
+        get {
+            guard let first,
+                  let node = first.find(key: keyType) else {
+                return Value(value: keyType.defaultValue, seed: .zero)
+            }
+            return Value(value: node.value, seed: node.seed)
+        }
+        set {
+            if let first,
+               let _ = first.find(key: keyType) {
+                removeValue(for: keyType)
+            }
+            first = _PreferenceNode<Key>(value: newValue.value, seed: newValue.seed, next: first)
+        }
     }
     
+    mutating func removeValue<Key: PreferenceKey>(for keyType: Key.Type) {
+        let first = first
+        self.first = nil
+        first?.forEach { node in
+            guard node.keyType != keyType else {
+                return
+            }
+            self.first = node.copy(next: self.first)
+        }
+    }
+
     func valueIfPresent<Key: PreferenceKey>(_ keyType: Key.Type) -> Value<Key.Value>? {
-        fatalError("TODO")
+        guard let first else {
+            return nil
+        }
+        return first.find(key: keyType).map { node in
+            Value(value: node.value, seed: node.seed)
+        }
     }
     
-    func modifyValue() {
-        fatalError("TODO")
+    func contains<Key: PreferenceKey>(_ keyType: Key.Type) -> Bool {
+        first?.find(key: keyType) != nil
     }
     
-    func removeValue() {
-        fatalError("TODO")
+    mutating func modifyValue<Key: PreferenceKey>(for keyType: Key.Type, transform: Value < (inout Key.Value) -> Void>) {
+        var value = self[keyType]
+        value.seed = value.seed.merge(transform.seed)
+        transform.value(&value.value)
+        removeValue(for: keyType)
+        first = _PreferenceNode<Key>(value: value.value, seed: value.seed, next: first)
+    }
+    
+    var description: String {
+        var description = "\((first?.mergedSeed ?? .zero).description): ["
+        var currentNode = first
+        var shouldAddSeparator = false
+        while let node = currentNode {
+            if shouldAddSeparator {
+                description.append(", ")
+            } else {
+                shouldAddSeparator = true
+            }
+            description.append(node.description)
+            currentNode = node.next
+        }
+        description.append("]")
+        return description
     }
 }
 
@@ -44,17 +93,16 @@ private class PreferenceNode: CustomStringConvertible {
     init(keyType: Any.Type, seed: VersionSeed, next: PreferenceNode?) {
         self.keyType = keyType
         self.seed = seed
-        let seedResult: VersionSeed
-        if let next {
-            seedResult = next.mergedSeed.merge(seed)
+        let seedResult: VersionSeed = if let next {
+            next.mergedSeed.merge(seed)
         } else {
-            seedResult = seed
+            seed
         }
         self.mergedSeed = seedResult
         self.next = next
     }
     
-    final func forEach(_ body:(PreferenceNode) -> ()) {
+    final func forEach(_ body: (PreferenceNode) -> Void) {
         var node = self
         repeat {
             body(node)
@@ -82,9 +130,9 @@ private class PreferenceNode: CustomStringConvertible {
         return nil
     }
     
-    func find(from: PreferenceNode?) -> PreferenceNode? { fatalError() }
-    func combine(from: PreferenceNode?, next: PreferenceNode?) -> PreferenceNode? { fatalError() }
-    func copy(next: PreferenceNode?) -> PreferenceNode { fatalError() }
+    func find(from _: PreferenceNode?) -> PreferenceNode? { fatalError() }
+    func combine(from _: PreferenceNode?, next _: PreferenceNode?) -> PreferenceNode? { fatalError() }
+    func copy(next _: PreferenceNode?) -> PreferenceNode { fatalError() }
     var description: String { fatalError() }
 }
 
