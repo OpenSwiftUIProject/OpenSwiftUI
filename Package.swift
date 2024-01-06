@@ -91,16 +91,13 @@ let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
 
 extension Target {
     func addAGSettings() {
+        // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
+        // "could not determine executable path for bundle 'AttributeGraph.framework'"
         dependencies.append(.product(name: "AttributeGraph", package: "OpenGraph"))
 
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
-
-        var linkerSettings = linkerSettings ?? []
-        linkerSettings.append(.unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])))
-        linkerSettings.append(.linkedFramework("AttributeGraph", .when(platforms: [.macOS])))
-        self.linkerSettings = linkerSettings
     }
 }
 
