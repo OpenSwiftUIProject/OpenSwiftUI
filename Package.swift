@@ -145,7 +145,7 @@ if swiftLogCondition {
 let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING", default: true)
 if swiftTestingCondition {
     package.dependencies.append(
-        .package(url: "https://github.com/apple/swift-testing", from: "0.2.0")
+        .package(url: "https://github.com/apple/swift-testing", from: "0.3.0")
     )
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
