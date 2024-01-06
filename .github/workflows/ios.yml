@@ -33,20 +33,11 @@ jobs:
             -destination "platform=iOS-Simulator" \
             # OpenSwiftUI-Package is not listed currently
             # OTHER_SWIFT_FLAGS="-warnings-as-errors" \ AccessLevelOnImport will cause build warning via xcodebuild
-        env:
-          OPENGRAPH_ATTRIBUTEGRAPH: 0
-      # Test is currently not supported due to the link issue to PrivateFramework
-      # - name: Build and run tests in debug mode with coverage
-      #   run: |
-      #     xcodebuild test \
-      #       -scheme OpenSwiftUI-Package \
-      #       -configuration Debug \
-      #       -destination "platform=iOS-Simulator" \
-      #       -enableCodeCoverage=YES \
-      #       -derivedDataPath .build-test-debug
-      #       # OTHER_SWIFT_FLAGS="-warnings-as-errors"
-      #     profdata_file_path=$(find . -path "*.build-test-debug/Build/ProfileData*Coverage.profdata" -type f)
-      #     xcrun llvm-cov show \
-      #       -instr-profile=$profdata_file_path \
-      #       .build-test-debug/Build/Products/Debug/OpenSwiftUITests.xctest/Contents/MacOS/OpenSwiftUITests \
-      #       > coverage.txt
+      - name: Build and run tests in debug mode
+        run: |
+          xcodebuild test \
+            -scheme OpenSwiftUI \
+            -configuration Debug \
+            -skipMacroValidation -skipPackagePluginValidation \
+            -destination "platform=iOS-Simulator" \
+            # OTHER_SWIFT_FLAGS="-warnings-as-errors"

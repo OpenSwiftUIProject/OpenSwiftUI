@@ -13,7 +13,6 @@ let openSwiftUITarget = Target.target(
     dependencies: [
         "OpenSwiftUIShims",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
-        .target(name: "UIKitCore", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: [
@@ -67,7 +66,6 @@ let package = Package(
             dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
-        .binaryTarget(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore.xcframework"),
         openSwiftUITarget,
     ]
 )
@@ -155,11 +153,11 @@ if swiftTestingCondition {
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
-//    package.targets.append(openSwiftUITestTarget)
+    package.targets.append(openSwiftUITestTarget)
     openSwiftUICompatibilityTestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
-//    package.targets.append(openSwiftUICompatibilityTestTarget)
+    package.targets.append(openSwiftUICompatibilityTestTarget)
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")

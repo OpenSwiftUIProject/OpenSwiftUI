@@ -10,7 +10,6 @@
 #if os(iOS) || os(tvOS)
 import UIKit
 #if os(iOS)
-private import UIKitCore
 private import CoreServices
 #endif
 #elseif os(macOS)
@@ -42,8 +41,12 @@ struct OpenSensitiveURLActionKey: EnvironmentKey {
             #if os(iOS)
             let config = _LSOpenConfiguration()
             config.isSensitive = true
-            let scene = UIApplication.shared.connectedScenes.first
-            config.targetConnectionEndpoint = scene?._currentOpenApplicationEndpoint
+            let selector = Selector(("_currentOpenApplicationEndpoint"))
+            if let scene = UIApplication.shared.connectedScenes.first,
+               scene.responds(to: selector),
+               let endpoint = scene.perform(selector) {
+                config.targetConnectionEndpoint = endpoint.takeRetainedValue()
+            }
             guard let workspace = LSApplicationWorkspace.default() else {
                 return
             }

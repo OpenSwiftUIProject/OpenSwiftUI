@@ -1,7 +1,3 @@
 - CoreServices
     - Header file source is https://developer.limneos.net + iOS 15.2.1
     - Other file is from iOS 15.5 SDK
-- UIKitCore
-    - Header file source is https://developer.limneos.net + iOS 15.2.1
-    - iOS's tbd is from https://github.com/xybp888/iOS-SDKs/blob/master/iPhoneOS15.5.sdk/System/Library/PrivateFrameworks/UIKitCore.framework/UIKitCore.tbd
-    - iOS Simulator's tbd is build by `tbd -p --ignore-weak-def-syms -r -v4 "/Library/Developer/CoreSimulator/Profiles/Runtimes/iOS 15.5.simruntime/Contents/Resources/RuntimeRoot/System/Library/PrivateFrameworks/UIKitCore.framework" -o ./`

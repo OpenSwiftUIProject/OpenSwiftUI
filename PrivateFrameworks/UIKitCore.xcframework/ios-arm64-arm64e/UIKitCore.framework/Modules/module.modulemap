@@ -1,5 +1,0 @@
-framework module UIKitCore [extern_c] {
-  umbrella header "UIKitCore.h"
-  export *
-  module * { export * }
-}
