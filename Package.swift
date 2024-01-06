@@ -12,23 +12,12 @@ let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
         "OpenSwiftUIShims",
-        "CoreServices",
-        "UIKitCore",
+        .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: [
         .enableExperimentalFeature("AccessLevelOnImport"),
         .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
-    ],
-    linkerSettings: [
-        .unsafeFlags(
-            [systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"],
-            .when(platforms: [.iOS], configuration: .debug)
-        ),
-        .linkedFramework(
-            "CoreServices",
-            .when(platforms: [.iOS], configuration: .debug)
-        ),
     ]
 )
 let openSwiftUITestTarget = Target.testTarget(
@@ -76,8 +65,7 @@ let package = Package(
             name: "OpenSwiftUIShims",
             dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
-        .target(name: "CoreServices", path: "PrivateFrameworks/CoreServices"),
-        .target(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore"),
+        .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         openSwiftUITarget,
     ]
 )
@@ -103,16 +91,13 @@ let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
 
 extension Target {
     func addAGSettings() {
+        // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
+        // "could not determine executable path for bundle 'AttributeGraph.framework'"
         dependencies.append(.product(name: "AttributeGraph", package: "OpenGraph"))
 
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
-
-        var linkerSettings = linkerSettings ?? []
-        linkerSettings.append(.unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])))
-        linkerSettings.append(.linkedFramework("AttributeGraph", .when(platforms: [.macOS])))
-        self.linkerSettings = linkerSettings
     }
 }
 
