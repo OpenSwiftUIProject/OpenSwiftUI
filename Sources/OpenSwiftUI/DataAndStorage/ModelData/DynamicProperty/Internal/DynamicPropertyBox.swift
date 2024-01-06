@@ -11,9 +11,9 @@ protocol DynamicPropertyBox<Property>: DynamicProperty {
     func destroy()
     func reset()
     func update(property: inout Property, phase: _GraphInputs.Phase) -> Bool
-    func getState<S>(type: S.Type) -> Binding<S>?
+    func getState<Value>(type: Value.Type) -> Binding<Value>?
 }
 
-extension DynamicProperty {
-    func getState<S>(type: S.Type) -> Binding<S>? { nil }
+extension DynamicPropertyBox {
+    func getState<Value>(type _: Value.Type) -> Binding<Value>? { nil }
 }

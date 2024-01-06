@@ -38,7 +38,7 @@ enum Log {
     }
 
     #if OPENSWIFTUI_SWIFT_LOG
-    static var runtimeIssuesLog = Logger(label: "OpenSwiftUI")
+    static let runtimeIssuesLog = Logger(label: "OpenSwiftUI")
     
     @_transparent
     @inline(__always)
@@ -49,7 +49,7 @@ enum Log {
         runtimeIssuesLog.log(level: .critical, "\(message())")
     }
     #else
-    static var runtimeIssuesLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
+    static let runtimeIssuesLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
 
     @_transparent
     @inline(__always)
