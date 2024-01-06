@@ -9,7 +9,7 @@
 #if canImport(Darwin)
 #if os(iOS) || os(tvOS)
 import UIKit
-#if DEBUG
+#if os(iOS)
 private import UIKitCore
 private import CoreServices
 #endif
@@ -36,9 +36,10 @@ struct OpenURLActionKey: EnvironmentKey {
 }
 
 struct OpenSensitiveURLActionKey: EnvironmentKey {
+    
     static let defaultValue = OpenURLAction(
         handler: .system { url, completion in
-            #if DEBUG && os(iOS)
+            #if os(iOS)
             let config = _LSOpenConfiguration()
             config.isSensitive = true
             let scene = UIApplication.shared.connectedScenes.first

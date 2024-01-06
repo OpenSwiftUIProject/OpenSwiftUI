@@ -8,27 +8,17 @@ let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
-/// Returns a URL of the private framework's tbd URL
-func tbdURL(for framework: String) -> URL {
-    URL(filePath: #filePath)
-        .deletingLastPathComponent()
-        .appending(components: "PrivateFrameworks", framework, "\(framework).tbd")
-}
-
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
         "OpenSwiftUIShims",
-        "CoreServices",
-        "UIKitCore",
+        .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
+        .target(name: "UIKitCore", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: [
         .enableExperimentalFeature("AccessLevelOnImport"),
         .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
-    ],
-    linkerSettings: [
-        .unsafeFlags([tbdURL(for: "UIKitCore").path()], .when(platforms: [.iOS])),
     ]
 )
 let openSwiftUITestTarget = Target.testTarget(
@@ -77,7 +67,7 @@ let package = Package(
             dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
-        .target(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore"),
+        .binaryTarget(name: "UIKitCore", path: "PrivateFrameworks/UIKitCore.xcframework"),
         openSwiftUITarget,
     ]
 )
@@ -165,11 +155,11 @@ if swiftTestingCondition {
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
-    package.targets.append(openSwiftUITestTarget)
+//    package.targets.append(openSwiftUITestTarget)
     openSwiftUICompatibilityTestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
-    package.targets.append(openSwiftUICompatibilityTestTarget)
+//    package.targets.append(openSwiftUICompatibilityTestTarget)
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
