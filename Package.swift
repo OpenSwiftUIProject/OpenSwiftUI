@@ -14,6 +14,7 @@ let openSwiftUITarget = Target.target(
         "OpenSwiftUIShims",
         "CoreServices",
         "UIKitCore",
+        .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: [
         .enableExperimentalFeature("AccessLevelOnImport"),
@@ -95,25 +96,30 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
 }
 
 #if os(macOS)
-let attributeGraphCondition = envEnable("OPENSWIFTUI_ATTRIBUTEGRAPH", default: true)
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: true)
 #else
-let attributeGraphCondition = envEnable("OPENSWIFTUI_ATTRIBUTEGRAPH")
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
 #endif
+
+extension Target {
+    func addAGSettings() {
+        dependencies.append(.product(name: "AttributeGraph", package: "OpenGraph"))
+
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
+        self.swiftSettings = swiftSettings
+
+        var linkerSettings = linkerSettings ?? []
+        linkerSettings.append(.unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])))
+        linkerSettings.append(.linkedFramework("AttributeGraph", .when(platforms: [.macOS])))
+        self.linkerSettings = linkerSettings
+    }
+}
+
 if attributeGraphCondition {
-    openSwiftUITarget.dependencies.append(
-        .product(name: "AttributeGraph", package: "OpenGraph")
-    )
-    var swiftSettings = openSwiftUITarget.swiftSettings ?? []
-    swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
-    openSwiftUITarget.swiftSettings = swiftSettings
-    var linkerSettings = openSwiftUITarget.linkerSettings ?? []
-    linkerSettings.append(.unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])))
-    linkerSettings.append(.linkedFramework("AttributeGraph", .when(platforms: [.macOS])))
-    openSwiftUITarget.linkerSettings = linkerSettings
-} else {
-    openSwiftUITarget.dependencies.append(
-        .product(name: "OpenGraph", package: "OpenGraph")
-    )
+    openSwiftUITarget.addAGSettings()
+    openSwiftUITestTarget.addAGSettings()
+    openSwiftUICompatibilityTestTarget.addAGSettings()
 }
 
 #if os(macOS)

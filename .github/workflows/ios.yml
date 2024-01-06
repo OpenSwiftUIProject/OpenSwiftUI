@@ -34,7 +34,7 @@ jobs:
             # OpenSwiftUI-Package is not listed currently
             # OTHER_SWIFT_FLAGS="-warnings-as-errors" \ AccessLevelOnImport will cause build warning via xcodebuild
         env:
-          OPENSWIFTUI_ATTRIBUTEGRAPH: 0
+          OPENGRAPH_ATTRIBUTEGRAPH: 0
       # Test is currently not supported due to the link issue to PrivateFramework
       # - name: Build and run tests in debug mode with coverage
       #   run: |
