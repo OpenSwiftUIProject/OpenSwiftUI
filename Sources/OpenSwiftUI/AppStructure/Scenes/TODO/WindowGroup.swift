@@ -6,7 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
-#if canImport(Darwin)
 @frozen
 public struct LocalizedStringKey {}
 
@@ -58,4 +57,3 @@ public struct WindowGroup<Content>: Scene where Content: View {
 
     var id: String?
 }
-#endif
