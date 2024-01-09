@@ -30,7 +30,7 @@ extension _BenchmarkHost {
         false
     }
     
-    public func _performScrollTest(startOffset _: CoreGraphics.CGFloat, iterations _: Int, delta _: CoreGraphics.CGFloat, length _: CoreGraphics.CGFloat, completion _: (() -> Void)?) {}
+    public func _performScrollTest(startOffset _: CGFloat, iterations _: Int, delta _: CGFloat, length _: CGFloat, completion _: (() -> Void)?) {}
 
     public func measureAction(action: () -> Void) -> Double {
         #if canImport(QuartzCore)
