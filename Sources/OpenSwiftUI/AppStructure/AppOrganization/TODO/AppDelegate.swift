@@ -7,9 +7,20 @@
 //  Status: WIP
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04
 
-#if os(iOS) || os(tvOS)
+#if os(iOS)
 import UIKit
-class AppDelegate: UIResponder {
+typealias DelegateBaseClass = UIResponder
+#elseif os(macOS)
+import AppKit
+typealias DelegateBaseClass = NSResponder
+#else
+import Foundation
+// FIXME: Temporarily use NSObject as a placeholder
+typealias DelegateBaseClass = NSObject
+#endif
+
+class AppDelegate: DelegateBaseClass {
+    #if os(iOS)
     var fallbackDelegate: UIApplicationDelegate?
     
     // WIP
@@ -26,14 +37,5 @@ class AppDelegate: UIResponder {
         let canSelfRespond = AppDelegate.instancesRespond(to: aSelector)
         return canDelegateRespond || canSelfRespond
     }
+    #endif
 }
-#elseif os(watchOS)
-import WatchKit
-class AppDelegate {
-    
-}
-#elseif os(macOS)
-import AppKit
-class AppDelegate {
-}
-#endif
