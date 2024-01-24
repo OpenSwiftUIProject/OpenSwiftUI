@@ -1,0 +1,28 @@
+name: Wasm 
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  wasmer_test:
+    name: Execute tests on WASM
+    strategy:
+      fail-fast: false
+      matrix:
+        swift_version: ["5.9.1"]
+        os: [ubuntu-22.04]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: swiftwasm/setup-swiftwasm@v1
+        with:
+          swift-version: wasm-${{ matrix.swift_version }}-RELEASE
+      - name: build
+        run: |
+          swift build
+      - name: test
+        run: |
+          swift test

@@ -14,6 +14,7 @@ OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://develo
 |[![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml)|
 |[![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml)|
 |[![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml)|
+|[![Wasm](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/wasm.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/wasm.yml)|
 
 The project is for the following purposes:
 - Build GUI app on non-Apple platform (eg. Linux & Windows)
