@@ -17,15 +17,36 @@ struct DynamicPropertyCache {
         if let fields = cache.value[ObjectIdentifier(type)] {
             return fields
         }
-        let kind = OGTypeID(type).kind
-        switch kind {
+        let fields: Fields
+        let typeID = OGTypeID(type)
+        switch typeID.kind {
         case .enum, .optional:
-            break
+            var taggedFields: [TaggedFields] = []
+            _ = typeID.forEachField(options: [._2, ._4]) { name, index, fieldType in
+                var fields: [Field] = []
+                let tupleType = OGTupleType(fieldType)
+                for index in tupleType.indices {
+                    guard let dynamicPropertyType = tupleType.type(at: index) as? DynamicProperty.Type else {
+                        break
+                    }
+                    let offset = tupleType.offset(at: index)
+                    let field = Field(type: dynamicPropertyType, offset: offset, name: name)
+                    fields.append(field)
+                }
+                if !fields.isEmpty {
+                    let taggedField = TaggedFields(tag: index, fields: fields)
+                    taggedFields.append(taggedField)
+                }
+                return true
+            }
+            fields = Fields(layout: .sum(type, taggedFields))
+            // TODO
         default:
+            fatalError("TODO")
             break
         }
         Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", ["TODO"])
-        return .init(layout: .product([]))
+        return fields
     }
 }
 
@@ -59,6 +80,5 @@ extension DynamicPropertyCache {
     struct TaggedFields {
         var tag: Int
         var fields: [Field]
-        var name: UnsafePointer<Int8>?
     }
 }
