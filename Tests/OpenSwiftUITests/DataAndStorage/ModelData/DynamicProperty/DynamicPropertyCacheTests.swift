@@ -27,18 +27,25 @@ final class DynamicPropertyCacheTests: XCTestCase {
             print("\(s) \(index) \(type)")
             return true
         }
-        var f: DynamicPropertyCache.Fields? = DynamicPropertyCache.Fields(layout: .product(.init()))
+        var f: DynamicPropertyCache.Fields? = nil
+        f = DynamicPropertyCache.Fields(layout: .product(.init()))
         f!.behaviors = .init(rawValue: 0x7)
         withUnsafeBytes(of: &f) { pointer in
-            let b = pointer.baseAddress!
-            print(b)
+            print(pointer.baseAddress!)
         }
         f = nil
         withUnsafeBytes(of: &f) { pointer in
-            let b = pointer.baseAddress!
-            print(b)
+            print(pointer.baseAddress!)
         }
-        
+        f = DynamicPropertyCache.Fields(layout: .sum(Int.self, []))
+        f!.behaviors = .init(rawValue: 0x7)
+        withUnsafeBytes(of: &f) { pointer in
+            print(pointer.baseAddress!)
+        }
+        f = nil
+        withUnsafeBytes(of: &f) { pointer in
+            print(pointer.baseAddress!)
+        }
         print(result)
     }
 }
