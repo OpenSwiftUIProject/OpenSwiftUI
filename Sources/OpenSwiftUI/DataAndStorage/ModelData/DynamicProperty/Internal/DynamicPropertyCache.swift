@@ -18,6 +18,7 @@ struct DynamicPropertyCache {
             return fields
         }
         let fields: Fields
+        defer { cache.value[ObjectIdentifier(type)] = fields }
         let typeID = OGTypeID(type)
         switch typeID.kind {
         case .enum, .optional:
@@ -61,9 +62,21 @@ extension DynamicPropertyCache {
         }
         
         init(layout: Layout) {
+            var behaviors: UInt32 = 0
+            switch layout {
+            case let .product(fields):
+                for field in fields {
+                    behaviors |= field.type._propertyBehaviors
+                }
+            case let .sum(_, taggedFields):
+                for taggedField in taggedFields {
+                    for field in taggedField.fields {
+                        behaviors |= field.type._propertyBehaviors
+                    }
+                }
+            }
             self.layout = layout
-            // FIXME
-            self.behaviors = .init(rawValue: 0)
+            self.behaviors = .init(rawValue: behaviors)
         }
     }
 }
