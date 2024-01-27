@@ -45,11 +45,6 @@ let package = Package(
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
     ],
-    dependencies: [
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
-        // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
-    ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
         .systemLibrary(
@@ -164,4 +159,18 @@ if compatibilityTestCondition {
     openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
 } else {
     openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
+}
+
+let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
+if useLocalDeps {
+    package.dependencies += [
+        .package(path: "../OpenFoundation"),
+        .package(path: "../OpenGraph"),
+    ]
+} else {
+    package.dependencies += [
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
+        // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
+    ]
 }
