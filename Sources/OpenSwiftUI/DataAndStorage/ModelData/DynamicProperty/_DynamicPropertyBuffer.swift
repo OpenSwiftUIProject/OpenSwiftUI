@@ -47,7 +47,7 @@ public struct _DynamicPropertyBuffer {
                     inputs: &inputs
                 )
             }
-        case let .sum(type, taggedFields):
+        case let .sum(_, taggedFields):
             guard !taggedFields.isEmpty else {
                 return
             }
