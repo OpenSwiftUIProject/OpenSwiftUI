@@ -1,5 +1,5 @@
 //
-//  _DynamicPropertyBuffer.swift
+//  DynamicPropertyBuffer.swift
 //  OpenSwiftUI
 //
 //  Created by Kyle on 2023/9/24.
@@ -29,7 +29,6 @@ public struct _DynamicPropertyBuffer {
         self.init()
         addFields(fields, container: container, inputs: &inputs, baseOffset: baseOffset)
     }
-
 
     mutating func addFields<Value>(
         _ fields: DynamicPropertyCache.Fields,
