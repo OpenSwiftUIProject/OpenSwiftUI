@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["wasm-5.9.1-RELEASE", "wasm-DEVELOPMENT-SNAPSHOT-2024-01-22-a"]
+        swift_version: ["wasm-5.9.1-RELEASE"]
         os: [ubuntu-22.04]
         include:
           - swift_version: "wasm-5.9.1-RELEASE"
