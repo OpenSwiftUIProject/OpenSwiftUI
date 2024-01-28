@@ -63,8 +63,7 @@ struct PropertyList: CustomStringConvertible {
             if let result = find(elements.map { .passUnretained($0) }, key: keyType) {
                 guard !compareValues(
                     newValue,
-                    result.takeUnretainedValue().value,
-                    mode: ._3
+                    result.takeUnretainedValue().value
                 ) else {
                     return
                 }
@@ -270,7 +269,7 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
         guard !ignoredTypes.contains(ObjectIdentifier(Key.self)) else {
             return true
         }
-        guard compareValues(value, typedElement.value, mode: ._3) else {
+        guard compareValues(value, typedElement.value) else {
             return false
         }
         ignoredTypes.insert(ObjectIdentifier(Key.self))
