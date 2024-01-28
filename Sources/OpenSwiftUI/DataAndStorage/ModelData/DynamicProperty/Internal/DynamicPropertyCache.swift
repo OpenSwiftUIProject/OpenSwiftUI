@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2024/1/10.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Complete
 //  ID: 49D2A32E637CD497C6DE29B8E060A506
 
 internal import OpenGraphShims
@@ -12,18 +12,16 @@ internal import OpenGraphShims
 struct DynamicPropertyCache {
     private static var cache = MutableBox([ObjectIdentifier: Fields]())
     
-    // TODO
     static func fields(of type: Any.Type) -> Fields {
         if let fields = cache.value[ObjectIdentifier(type)] {
             return fields
         }
         let fields: Fields
-        defer { cache.value[ObjectIdentifier(type)] = fields }
         let typeID = OGTypeID(type)
         switch typeID.kind {
         case .enum, .optional:
             var taggedFields: [TaggedFields] = []
-            _ = typeID.forEachField(options: [._2, ._4]) { name, index, fieldType in
+            _ = typeID.forEachField(options: [._2, ._4]) { name, offset, fieldType in
                 var fields: [Field] = []
                 let tupleType = OGTupleType(fieldType)
                 for index in tupleType.indices {
@@ -35,18 +33,31 @@ struct DynamicPropertyCache {
                     fields.append(field)
                 }
                 if !fields.isEmpty {
-                    let taggedField = TaggedFields(tag: index, fields: fields)
+                    let taggedField = TaggedFields(tag: offset, fields: fields)
                     taggedFields.append(taggedField)
                 }
                 return true
             }
             fields = Fields(layout: .sum(type, taggedFields))
-            // TODO
+        case .struct, .tuple:
+            var fieldArray: [Field] = []
+            _ = typeID.forEachField(options: [._2]) { name, offset, fieldType in
+                guard let dynamicPropertyType = fieldType as? DynamicProperty.Type else {
+                    return true
+                }
+                let field = Field(type: dynamicPropertyType, offset: offset, name: name)
+                fieldArray.append(field)
+                return true
+            }
+            fields = Fields(layout: .product(fieldArray))
         default:
-            fatalError("TODO")
+            fields = Fields(layout: .product([]))
             break
         }
-        Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", ["TODO"])
+        if fields.behaviors.contains(.init(rawValue: 3)) {
+            Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", [_typeName(type)])
+        }
+        cache.value[ObjectIdentifier(type)] = fields
         return fields
     }
 }
