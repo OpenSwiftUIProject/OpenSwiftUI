@@ -9,6 +9,8 @@
 
 internal import OpenGraphShims
 
+// MARK: - DynamicPropertyCache
+
 struct DynamicPropertyCache {
     private static var cache = MutableBox([ObjectIdentifier: Fields]())
     
@@ -62,6 +64,8 @@ struct DynamicPropertyCache {
     }
 }
 
+// MARK: - DynamicPropertyCache.Fields
+
 extension DynamicPropertyCache {
     struct Fields {
         var layout: Layout
@@ -92,6 +96,8 @@ extension DynamicPropertyCache {
     }
 }
 
+// MARK: - DynamicPropertyCache.Field
+
 extension DynamicPropertyCache {
     struct Field {
         var type: DynamicProperty.Type
@@ -100,9 +106,58 @@ extension DynamicPropertyCache {
     }
 }
 
+// MARK: - DynamicPropertyCache.TaggedFields
+
 extension DynamicPropertyCache {
     struct TaggedFields {
         var tag: Int
         var fields: [Field]
+    }
+}
+
+// MARK: - EmbeddedDynamicPropertyBox
+
+private struct EmbeddedDynamicPropertyBox<Value: DynamicProperty>: DynamicPropertyBox {
+    typealias Property = Value
+    func destroy() {}
+    func reset() {}
+    func update(property: inout Property, phase _: _GraphInputs.Phase) -> Bool {
+        property.update()
+        return false
+    }
+}
+
+extension DynamicProperty {
+    public static func _makeProperty<Value>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<Value>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) {
+        makeEmbeddedProperties(
+            in: &buffer,
+            container: container,
+            fieldOffset: fieldOffset,
+            inputs: &inputs
+        )
+        buffer.append(
+            EmbeddedDynamicPropertyBox<Self>(),
+            fieldOffset: fieldOffset
+        )
+    }
+
+    static func makeEmbeddedProperties<Value>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<Value>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) -> () {
+        let fields = DynamicPropertyCache.fields(of: self)
+        buffer.addFields(
+            fields,
+            container: container,
+            inputs: &inputs,
+            baseOffset: fieldOffset
+        )
     }
 }
