@@ -14,7 +14,7 @@ jobs:
       matrix:
         include:
           - os: macos-13
-            xcode-version: "15.1"   # Swift 5.9.2
+            xcode-version: "15.2"   # Swift 5.9.2
     runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
