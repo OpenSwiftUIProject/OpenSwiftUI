@@ -54,7 +54,6 @@ struct DynamicPropertyCache {
             fields = Fields(layout: .product(fieldArray))
         default:
             fields = Fields(layout: .product([]))
-            break
         }
         if fields.behaviors.contains(.init(rawValue: 3)) {
             Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", [_typeName(type)])

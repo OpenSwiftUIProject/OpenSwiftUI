@@ -7,6 +7,8 @@
 //  Status: WIP
 //  ID: 68550FF604D39F05971FE35A26EE75B0
 
+internal import OpenGraphShims
+
 private let nullPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(unsafeBitCast(0, to: AnyObject.self)).toOpaque()
 
 public struct _DynamicPropertyBuffer {
@@ -56,6 +58,24 @@ public struct _DynamicPropertyBuffer {
     
     func append(_: some DynamicPropertyBox, fieldOffset _: Int) {
         // TODO
+    }
+    
+    func destroy() {
+        // TODO
+    }
+    
+    func reset() {
+        // TODO
+    }
+    
+    func getState<Value>(type: Value.Type) -> Binding<Value>? {
+        // TODO
+        return nil
+    }
+    
+    func update(container: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
+        // TODO
+        return false
     }
 }
 
@@ -111,6 +131,8 @@ private class BoxVTableBase {
     }
 }
 
+// MARK: - BoxVTable
+
 private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
     override class func moveInitialize(ptr destination: UnsafeMutableRawPointer, from: UnsafeMutableRawPointer) {
         let fromBoxPointer = from.assumingMemoryBound(to: Box.self)
@@ -146,5 +168,68 @@ private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
     override class func getState<Value>(ptr: UnsafeMutableRawPointer, type: Value.Type) -> Binding<Value>? {
         let boxPointer = ptr.assumingMemoryBound(to: Box.self)
         return boxPointer.pointee.getState(type: type)
+    }
+}
+
+// MARK: - EnumVTable
+
+private struct EnumBox {
+    var cases: [(tag: Int, links: _DynamicPropertyBuffer)]
+    var active: (tag: Swift.Int, index: Swift.Int)?
+}
+
+private class EnumVTable<Enum>: BoxVTableBase {
+    override class func moveInitialize(ptr destination: UnsafeMutableRawPointer, from: UnsafeMutableRawPointer) {
+        let fromBoxPointer = from.assumingMemoryBound(to: EnumBox.self)
+        let destinationBoxPointer = destination.assumingMemoryBound(to: EnumBox.self)
+        destinationBoxPointer.initialize(to: fromBoxPointer.move())
+    }
+        
+    override class func deinitialize(ptr: UnsafeMutableRawPointer) {
+        let boxPointer = ptr.assumingMemoryBound(to: EnumBox.self)
+        for (_, links) in boxPointer.pointee.cases {
+            links.destroy()
+        }
+    }
+    
+    override class func reset(ptr: UnsafeMutableRawPointer) {
+        let boxPointer = ptr.assumingMemoryBound(to: EnumBox.self)
+        guard let (_, index) = boxPointer.pointee.active else {
+            return
+        }
+        boxPointer.pointee.cases[index].links.reset()
+        boxPointer.pointee.active = nil
+    }
+    
+    
+    override class func update(ptr: UnsafeMutableRawPointer, property: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
+        var isUpdated = false
+        withUnsafeMutablePointerToEnumCase(of: property.assumingMemoryBound(to: Enum.self)) { tag, type, pointer in
+            let boxPointer = ptr.assumingMemoryBound(to: EnumBox.self)
+            if let (activeTag, index) = boxPointer.pointee.active, activeTag != tag {
+                boxPointer.pointee.cases[index].links.reset()
+                boxPointer.pointee.active = nil
+                isUpdated = true
+            } 
+            if boxPointer.pointee.active == nil {
+                guard let matchedIndex = boxPointer.pointee.cases.firstIndex(where: { $0.tag == tag }) else {
+                    return
+                }
+                boxPointer.pointee.active = (tag, matchedIndex)
+                isUpdated = true
+            }
+            if let (_, index) = boxPointer.pointee.active {
+                isUpdated = boxPointer.pointee.cases[index].links.update(container: pointer, phase: phase)
+            }
+        }
+        return isUpdated
+    }
+    
+    override class func getState<Value>(ptr: UnsafeMutableRawPointer, type: Value.Type) -> Binding<Value>? {
+        let boxPointer = ptr.assumingMemoryBound(to: EnumBox.self)
+        guard let (_, index) = boxPointer.pointee.active else {
+            return nil
+        }
+        return boxPointer.pointee.cases[index].links.getState(type: type)
     }
 }
