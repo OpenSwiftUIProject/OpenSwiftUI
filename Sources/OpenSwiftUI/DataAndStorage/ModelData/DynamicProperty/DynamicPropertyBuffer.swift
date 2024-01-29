@@ -48,11 +48,36 @@ public struct _DynamicPropertyBuffer {
                     inputs: &inputs
                 )
             }
-        case let .sum(_, taggedFields):
+        case let .sum(type, taggedFields):
             guard !taggedFields.isEmpty else {
                 return
             }
-            // TODO
+            let size = MemoryLayout<(Item, EnumBox)>.stride
+            let pointer = allocate(bytes: size)
+            func project<Enum>(type: Enum.Type) {
+                pointer
+                    .assumingMemoryBound(to: Item.self)
+                    .initialize(to: Item(vtable: EnumVTable<Enum>.self, size: size, fieldOffset: baseOffset))
+            }
+            _openExistential(type, do: project)
+            pointer
+                .advanced(by: MemoryLayout<Item>.size)
+                .assumingMemoryBound(to: EnumBox.self)
+                .initialize(to: EnumBox(
+                    cases: taggedFields.map { taggedField in
+                        (
+                            taggedField.tag,
+                            _DynamicPropertyBuffer(
+                                fields: DynamicPropertyCache.Fields(layout: .product(taggedField.fields)),
+                                container: container,
+                                inputs: &inputs,
+                                baseOffset: 0
+                            )
+                        )
+                    },
+                    active: nil
+                ))
+            _count &+= 1
         }
     }
     
@@ -77,6 +102,14 @@ public struct _DynamicPropertyBuffer {
         // TODO
         return false
     }
+    
+    private func allocate(bytes: Int) -> UnsafeMutableRawPointer {
+        fatalError("TODO")
+    }
+    
+    private func allocateSlow(bytes: Int) -> UnsafeMutableRawPointer {
+        fatalError("TODO")
+    }
 }
 
 extension _DynamicPropertyBuffer {
@@ -85,19 +118,16 @@ extension _DynamicPropertyBuffer {
         var size: Int32
         var _fieldOffsetAndLastChanged: UInt32
         
-        init(vtable: BoxVTableBase, size: Int, fieldOffset: Int) {
-            
-            fatalError("TODO")
-            
-//            self.vtable = vtable
-//            self.size = size
-//            self._fieldOffsetAndLastChanged = _fieldOffsetAndLastChanged
-//            if size < 0 {
-//                
-//            } else {
-//                
-//            }
+        // FIXME
+        init(vtable: BoxVTableBase.Type, size: Int, fieldOffset: Int) {
+            self.vtable = vtable
+            self.size = Int32(size)
+            self._fieldOffsetAndLastChanged = UInt32(fieldOffset)
         }
+        
+//        var fieldOffset: Int {}
+//        var lastChanged: Bool
+        
     }
 }
 
