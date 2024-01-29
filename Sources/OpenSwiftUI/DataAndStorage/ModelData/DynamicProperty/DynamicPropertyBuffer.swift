@@ -104,10 +104,20 @@ public struct _DynamicPropertyBuffer {
     }
     
     private func allocate(bytes: Int) -> UnsafeMutableRawPointer {
-        fatalError("TODO")
+        var count = _count
+        var ptr = buf
+        while(count > 0) {
+            ptr = ptr.advanced(by: Int(ptr.assumingMemoryBound(to: Item.self).pointee.size))
+            count &-= 1
+        }
+        return if Int(size)-buf.distance(to: ptr) >= bytes {
+            ptr
+        } else {
+            allocateSlow(bytes: bytes, ptr: ptr)
+        }
     }
     
-    private func allocateSlow(bytes: Int) -> UnsafeMutableRawPointer {
+    private func allocateSlow(bytes: Int, ptr: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer {
         fatalError("TODO")
     }
 }
