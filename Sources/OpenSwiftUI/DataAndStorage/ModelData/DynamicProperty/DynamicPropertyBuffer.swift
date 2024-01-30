@@ -4,7 +4,7 @@
 //
 //  Created by Kyle on 2023/9/24.
 //  Lastest Version: iOS 15.5
-//  Status: WIP
+//  Status: Complete
 //  ID: 68550FF604D39F05971FE35A26EE75B0
 
 internal import OpenGraphShims
@@ -12,9 +12,9 @@ internal import OpenGraphShims
 private let nullPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(unsafeBitCast(0, to: AnyObject.self)).toOpaque()
 
 public struct _DynamicPropertyBuffer {
-    var buf: UnsafeMutableRawPointer
-    var size: Int32
-    var _count: Int32
+    private(set) var buf: UnsafeMutableRawPointer
+    private(set) var size: Int32
+    private(set) var _count: Int32
     
     init() {
         buf = nullPtr
@@ -81,39 +81,101 @@ public struct _DynamicPropertyBuffer {
         }
     }
     
-    func append(_: some DynamicPropertyBox, fieldOffset _: Int) {
-        // TODO
+    mutating func append<Box: DynamicPropertyBox>(_ box: Box, fieldOffset: Int) {
+        let size = MemoryLayout<(Item, Box)>.stride
+        let pointer = allocate(bytes: size)
+        let item = Item(vtable: BoxVTable<Box>.self, size: size, fieldOffset: fieldOffset)
+        pointer
+            .assumingMemoryBound(to: Item.self)
+            .initialize(to: item)
+        pointer
+            .advanced(by: MemoryLayout<Item>.size)
+            .assumingMemoryBound(to: Box.self)
+            .initialize(to: box)
+        _count &+= 1
     }
     
     func destroy() {
-        // TODO
+        precondition(_count >= 0)
+        var count = _count
+        var pointer = buf
+        while(count > 0) {
+            let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+            let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
+            itemPointer.pointee.vtable.deinitialize(ptr: boxPointer)
+            // TODO: OSSignpost
+            pointer += Int(itemPointer.pointee.size)
+            count &-= 1
+        }
+        if size > 0 {
+            buf.deallocate()
+        }
     }
     
     func reset() {
-        // TODO
+        precondition(_count >= 0)
+        var count = _count
+        var pointer = buf
+        while(count > 0) {
+            let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+            let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
+            itemPointer.pointee.vtable.reset(ptr: boxPointer)
+            pointer += Int(itemPointer.pointee.size)
+            count &-= 1
+        }
     }
     
     func getState<Value>(type: Value.Type) -> Binding<Value>? {
-        // TODO
+        precondition(_count >= 0)
+        var count = _count
+        var pointer = buf
+        while(count > 0) {
+            let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+            let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
+            if let binding = itemPointer.pointee.vtable.getState(ptr: boxPointer, type: type) {
+                return binding
+            }
+            pointer += Int(itemPointer.pointee.size)
+            count &-= 1
+        }
         return nil
     }
     
     func update(container: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
-        // TODO
-        return false
+        precondition(_count >= 0)
+        var isUpdated = false
+        var count = _count
+        var pointer = buf
+        while(count > 0) {
+            let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+            let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
+            let propertyPointer = container.advanced(by: Int(itemPointer.pointee.fieldOffset))
+            let updateResult = itemPointer.pointee.vtable.update(
+                ptr: boxPointer,
+                property: propertyPointer,
+                phase: phase
+            )
+            itemPointer.pointee.lastChanged = updateResult
+            isUpdated = isUpdated || updateResult
+            pointer += Int(itemPointer.pointee.size)
+            count &-= 1
+        }
+        return isUpdated
     }
     
     private mutating func allocate(bytes: Int) -> UnsafeMutableRawPointer {
+        precondition(_count >= 0)
         var count = _count
-        var ptr = buf
+        var pointer = buf
         while(count > 0) {
-            ptr = ptr.advanced(by: Int(ptr.assumingMemoryBound(to: Item.self).pointee.size))
+            let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+            pointer += Int(itemPointer.pointee.size)
             count &-= 1
         }
-        return if Int(size)-buf.distance(to: ptr) >= bytes {
-            ptr
+        return if Int(size)-buf.distance(to: pointer) >= bytes {
+            pointer
         } else {
-            allocateSlow(bytes: bytes, ptr: ptr)
+            allocateSlow(bytes: bytes, ptr: pointer)
         }
     }
     
@@ -156,20 +218,34 @@ public struct _DynamicPropertyBuffer {
 
 extension _DynamicPropertyBuffer {
     private struct Item {
-        var vtable: BoxVTableBase.Type
-        var size: Int32
-        var _fieldOffsetAndLastChanged: UInt32
-        
-        // FIXME
         init(vtable: BoxVTableBase.Type, size: Int, fieldOffset: Int) {
             self.vtable = vtable
             self.size = Int32(size)
-            self._fieldOffsetAndLastChanged = UInt32(fieldOffset)
+            self._fieldOffsetAndLastChanged = UInt32(Int32(fieldOffset))
         }
         
-//        var fieldOffset: Int {}
-//        var lastChanged: Bool
+        private(set) var vtable: BoxVTableBase.Type
+        private(set) var size: Int32
+        private var _fieldOffsetAndLastChanged: UInt32
         
+        @inline(__always)
+        private static var fieldOffsetMask: UInt32 { 0x7FFF_FFFF }
+        var fieldOffset: Int32 {
+            Int32(bitPattern: _fieldOffsetAndLastChanged & Item.fieldOffsetMask)
+        }
+        
+        @inline(__always)
+        private static var lastChangedMask: UInt32 { 0x8000_0000 }
+        var lastChanged: Bool {
+            get { (_fieldOffsetAndLastChanged & Item.fieldOffsetMask) == Item.fieldOffsetMask }
+            set {
+                if newValue {
+                    _fieldOffsetAndLastChanged |= Item.lastChangedMask
+                } else {
+                    _fieldOffsetAndLastChanged &= ~Item.lastChangedMask
+                }
+            }
+        }
     }
 }
 
