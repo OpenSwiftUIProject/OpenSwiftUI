@@ -44,7 +44,7 @@ public struct _DynamicPropertyBuffer {
                 field.type._makeProperty(
                     in: &self,
                     container: container,
-                    fieldOffset: field.offset + baseOffset,
+                    fieldOffset: field.offset &+ baseOffset,
                     inputs: &inputs
                 )
             }
@@ -103,7 +103,7 @@ public struct _DynamicPropertyBuffer {
         return false
     }
     
-    private func allocate(bytes: Int) -> UnsafeMutableRawPointer {
+    private mutating func allocate(bytes: Int) -> UnsafeMutableRawPointer {
         var count = _count
         var ptr = buf
         while(count > 0) {
@@ -117,8 +117,40 @@ public struct _DynamicPropertyBuffer {
         }
     }
     
-    private func allocateSlow(bytes: Int, ptr: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer {
-        fatalError("TODO")
+    private mutating func allocateSlow(bytes: Int, ptr: UnsafeMutableRawPointer) -> UnsafeMutableRawPointer {
+        let oldSize = Int(size)
+        var allocSize = max(oldSize &* 2, 64)
+        let expectedSize = oldSize + bytes
+        while(allocSize < expectedSize) {
+            allocSize &*= 2
+        }
+        let allocatedBuffer = UnsafeMutableRawPointer.allocate(
+            byteCount: allocSize,
+            alignment: .zero
+        )
+        var count = UInt(_count)
+        var newBuffer = allocatedBuffer
+        var oldBuffer = buf
+        while (count > 0) {
+            let newItemPointer = newBuffer.assumingMemoryBound(to: Item.self)
+            let oldItemPointer = oldBuffer.assumingMemoryBound(to: Item.self)
+            newItemPointer.initialize(to: oldItemPointer.pointee)
+            oldItemPointer.pointee.vtable.moveInitialize(
+                ptr: newBuffer.advanced(by: MemoryLayout<Item>.size),
+                from: oldBuffer.advanced(by: MemoryLayout<Item>.size)
+            )
+            let itemSize = Int(oldItemPointer.pointee.size)
+            newBuffer += itemSize
+            oldBuffer += itemSize
+            count &-= 1
+        }
+        oldBuffer = buf
+        if size > 0 {
+            oldBuffer.deallocate()
+        }
+        buf = allocatedBuffer
+        size = Int32(allocSize)
+        return allocatedBuffer.advanced(by: oldBuffer.distance(to: ptr))
     }
 }
 
