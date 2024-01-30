@@ -54,7 +54,7 @@ public struct _DynamicPropertyBuffer {
             }
             let size = MemoryLayout<(Item, EnumBox)>.stride
             let pointer = allocate(bytes: size)
-            func project<Enum>(type: Enum.Type) {
+            func project<Enum>(type _: Enum.Type) {
                 pointer
                     .assumingMemoryBound(to: Item.self)
                     .initialize(to: Item(vtable: EnumVTable<Enum>.self, size: size, fieldOffset: baseOffset))
@@ -99,7 +99,7 @@ public struct _DynamicPropertyBuffer {
         precondition(_count >= 0)
         var count = _count
         var pointer = buf
-        while(count > 0) {
+        while count > 0 {
             let itemPointer = pointer.assumingMemoryBound(to: Item.self)
             let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
             itemPointer.pointee.vtable.deinitialize(ptr: boxPointer)
@@ -116,7 +116,7 @@ public struct _DynamicPropertyBuffer {
         precondition(_count >= 0)
         var count = _count
         var pointer = buf
-        while(count > 0) {
+        while count > 0 {
             let itemPointer = pointer.assumingMemoryBound(to: Item.self)
             let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
             itemPointer.pointee.vtable.reset(ptr: boxPointer)
@@ -129,7 +129,7 @@ public struct _DynamicPropertyBuffer {
         precondition(_count >= 0)
         var count = _count
         var pointer = buf
-        while(count > 0) {
+        while count > 0 {
             let itemPointer = pointer.assumingMemoryBound(to: Item.self)
             let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
             if let binding = itemPointer.pointee.vtable.getState(ptr: boxPointer, type: type) {
@@ -146,7 +146,7 @@ public struct _DynamicPropertyBuffer {
         var isUpdated = false
         var count = _count
         var pointer = buf
-        while(count > 0) {
+        while count > 0 {
             let itemPointer = pointer.assumingMemoryBound(to: Item.self)
             let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
             let propertyPointer = container.advanced(by: Int(itemPointer.pointee.fieldOffset))
@@ -167,12 +167,12 @@ public struct _DynamicPropertyBuffer {
         precondition(_count >= 0)
         var count = _count
         var pointer = buf
-        while(count > 0) {
+        while count > 0 {
             let itemPointer = pointer.assumingMemoryBound(to: Item.self)
             pointer += Int(itemPointer.pointee.size)
             count &-= 1
         }
-        return if Int(size)-buf.distance(to: pointer) >= bytes {
+        return if Int(size) - buf.distance(to: pointer) >= bytes {
             pointer
         } else {
             allocateSlow(bytes: bytes, ptr: pointer)
@@ -183,7 +183,7 @@ public struct _DynamicPropertyBuffer {
         let oldSize = Int(size)
         var allocSize = max(oldSize &* 2, 64)
         let expectedSize = oldSize + bytes
-        while(allocSize < expectedSize) {
+        while allocSize < expectedSize {
             allocSize &*= 2
         }
         let allocatedBuffer = UnsafeMutableRawPointer.allocate(
@@ -193,7 +193,7 @@ public struct _DynamicPropertyBuffer {
         var count = UInt(_count)
         var newBuffer = allocatedBuffer
         var oldBuffer = buf
-        while (count > 0) {
+        while count > 0 {
             let newItemPointer = newBuffer.assumingMemoryBound(to: Item.self)
             let oldItemPointer = oldBuffer.assumingMemoryBound(to: Item.self)
             newItemPointer.initialize(to: oldItemPointer.pointee)
@@ -349,16 +349,15 @@ private class EnumVTable<Enum>: BoxVTableBase {
         boxPointer.pointee.active = nil
     }
     
-    
     override class func update(ptr: UnsafeMutableRawPointer, property: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
         var isUpdated = false
-        withUnsafeMutablePointerToEnumCase(of: property.assumingMemoryBound(to: Enum.self)) { tag, type, pointer in
+        withUnsafeMutablePointerToEnumCase(of: property.assumingMemoryBound(to: Enum.self)) { tag, _, pointer in
             let boxPointer = ptr.assumingMemoryBound(to: EnumBox.self)
             if let (activeTag, index) = boxPointer.pointee.active, activeTag != tag {
                 boxPointer.pointee.cases[index].links.reset()
                 boxPointer.pointee.active = nil
                 isUpdated = true
-            } 
+            }
             if boxPointer.pointee.active == nil {
                 guard let matchedIndex = boxPointer.pointee.cases.firstIndex(where: { $0.tag == tag }) else {
                     return
