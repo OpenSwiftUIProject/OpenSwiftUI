@@ -4,7 +4,8 @@
 //
 //  Created by Kyle on 2023/11/5.
 //  Lastest Version: iOS 15.5
-//  Status: Blocked by DynamicProperty
+//  Status: Complete
+//  ID: 5436F2B399369BE3B016147A5F8FE9F2
 
 /// A property wrapper type that can read and write a value owned by a source of
 /// truth.
@@ -297,9 +298,55 @@ extension Binding {
 }
 
 extension Binding: DynamicProperty {
-    // TODO:
-    //    public static func _makeProperty<V>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<V>, fieldOffset: Int, inputs: inout _GraphInputs) {
-    //    }
+    private struct ScopedLocation: Location {
+        var base: AnyLocation<Value>
+        var wasRead: Bool
+        
+        init(base: AnyLocation<Value>) {
+            self.base = base
+            self.wasRead = base.wasRead
+        }
+        
+        func get() -> Value {
+            base.get()
+        }
+        
+        func set(_ value: Value, transaction: Transaction) {
+            base.set(value, transaction: transaction)
+        }
+        
+        func update() -> (Value, Bool) {
+            base.update()
+        }
+    }
+    
+    private struct Box: DynamicPropertyBox {
+        var location: LocationBox<ScopedLocation>?
+
+        typealias Property = Binding
+        func destroy() {}
+        func reset() {}
+        mutating func update(property: inout Property, phase: _GraphInputs.Phase) -> Bool {
+            if let location {
+                if location.location.base !== property.location {
+                    self.location = LocationBox(location: ScopedLocation(base: property.location))
+                    if location.wasRead {
+                        self.location!.wasRead = true
+                    }
+                }
+            } else {
+                location = LocationBox(location: ScopedLocation(base: property.location))
+            }
+            let (value, isUpdated) = location!.update()
+            property.location = location!
+            property._value = value
+            return isUpdated ? location!.wasRead : false
+        }
+    }
+    
+    public static func _makeProperty<V>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<V>, fieldOffset: Int, inputs: inout _GraphInputs) {
+        buffer.append(Box(), fieldOffset: fieldOffset)
+    }
 }
 
 // MARK: - Binding Internal API
