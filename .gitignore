@@ -11,3 +11,4 @@ Example/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 /Benchmarks/.build
 /Example/.build
 Example/Package.resolved
+TODO.md
