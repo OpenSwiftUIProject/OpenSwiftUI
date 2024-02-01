@@ -1,5 +1,24 @@
-class FocusStoreLocation<A: Hashable>/*: Location*/ {
-    init() { fatalError() }
+class FocusStoreLocation<A: Hashable>: AnyLocation<A> {
+    override var wasRead: Bool {
+        get {
+            _wasRead
+        }
+        set {
+            _wasRead = newValue
+        }
+    }
+    
+    override func get() -> A {
+        fatalError("TODO")
+    }
+    
+    override func set(_ value: A, transaction: Transaction) {
+        fatalError("TODO")
+    }
+    
+    typealias Value = A
+    
+    override init() { fatalError() }
     
     var store: FocusStore
     weak var host: GraphHost?
