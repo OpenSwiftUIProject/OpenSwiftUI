@@ -8,7 +8,7 @@
 //  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD
 
 struct PreferenceList: CustomStringConvertible {
-    private var first: PreferenceNode?
+    fileprivate var first: PreferenceNode?
     
     subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Value<Key.Value> {
         get {
@@ -172,5 +172,36 @@ private class _PreferenceNode<Key: PreferenceKey>: PreferenceNode {
         
     override var description: String {
         "\(Key.self) = \(value)"
+    }
+}
+
+extension HostPreferencesKey {
+    static var defaultValue: PreferenceList {
+        PreferenceList()
+    }
+    
+    static func reduce(value: inout PreferenceList, nextValue: () -> PreferenceList) {
+        let newValue = nextValue()
+        guard let newFirst = newValue.first else {
+            return
+        }
+        guard let first = value.first else {
+            value.first = newFirst
+            return
+        }
+        value.first = nil
+        first.forEach { node in
+            if let mergedNode = node.combine(from: newFirst, next: value.first) {
+                value.first = mergedNode
+            } else {
+                value.first = node.copy(next: value.first)
+            }
+        }
+        newFirst.forEach { node in
+            guard node.find(from: first) == nil else {
+                return
+            }
+            value.first = node.copy(next: value.first)
+        }
     }
 }
