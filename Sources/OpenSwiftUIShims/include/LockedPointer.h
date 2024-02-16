@@ -8,7 +8,7 @@
 #ifndef LockedPointer_h
 #define LockedPointer_h
 
-#include <OpenFoundation/OpenFoundation.h>
+#include "OpenSwiftUIBase.h"
 
 #if __has_include(<os/lock.h>)
 #include <os/lock.h>
@@ -20,13 +20,15 @@
 #define OPENSWIFTUI_LOCK_T int32_t
 #include <stdint.h>
 #include <unistd.h>
-OF_INLINE void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+OPENSWIFTUI_INLINE
+void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
   while (__sync_val_compare_and_swap(lock, 0, ~0) != 0) {
     sleep(0);
   }
 }
 
-OF_INLINE void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+OPENSWIFTUI_INLINE
+void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
   __sync_synchronize();
   *lock = 0;
 }

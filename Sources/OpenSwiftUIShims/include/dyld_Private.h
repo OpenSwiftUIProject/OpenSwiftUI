@@ -8,9 +8,7 @@
 #ifndef dyld_Private_h
 #define dyld_Private_h
 
-#include <OpenFoundation/OpenFoundation.h>
-#include <stdlib.h>
-#include <stdbool.h>
+#include "OpenSwiftUIBase.h"
 
 typedef uint32_t dyld_platform_t;
 

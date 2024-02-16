@@ -7,18 +7,18 @@
 
 #include "ProtocolDescriptor.h"
 
-OF_EXPORT
+OPENSWIFTUI_EXPORT
 const void *$s11OpenSwiftUI4ViewMp;
 
-OF_EXPORT
+OPENSWIFTUI_EXPORT
 const void *_viewProtocolDescriptor(void) {
     return &$s11OpenSwiftUI4ViewMp;
 }
 
-OF_EXPORT
+OPENSWIFTUI_EXPORT
 const void *$s11OpenSwiftUI12ViewModifierMp;
 
-OF_EXPORT
+OPENSWIFTUI_EXPORT
 const void *_viewModifierProtocolDescriptor(void) {
     return &$s11OpenSwiftUI12ViewModifierMp;
 }

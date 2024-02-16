@@ -57,8 +57,7 @@ let package = Package(
         ),
         // C Shims for OpenSwiftUI
         .target(
-            name: "OpenSwiftUIShims",
-            dependencies: [.product(name: "OpenFoundation", package: "OpenFoundation")]
+            name: "OpenSwiftUIShims"
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         openSwiftUITarget,
@@ -164,12 +163,10 @@ if compatibilityTestCondition {
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 if useLocalDeps {
     package.dependencies += [
-        .package(path: "../OpenFoundation"),
         .package(path: "../OpenGraph"),
     ]
 } else {
     package.dependencies += [
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenFoundation", from: "0.0.1"),
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
     ]
