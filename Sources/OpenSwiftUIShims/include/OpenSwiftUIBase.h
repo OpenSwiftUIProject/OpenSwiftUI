@@ -11,16 +11,7 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
-#ifdef __APPLE__
-#include <TargetConditionals.h>
-#ifndef TARGET_OS_DARWIN
-#define TARGET_OS_DARWIN TARGET_OS_MAC
-#endif
-#else
-#ifndef TARGET_OS_DARWIN
-#define TARGET_OS_DARWIN 0
-#endif
-#endif
+#include "OpenSwiftUITargetConditionals.h"
 
 #if defined(__cplusplus)
 #define OPENSWIFTUI_INLINE inline
@@ -44,7 +35,7 @@
 #define OPENSWIFTUI_ASSUME_NONNULL_END
 #endif
 
-#if TARGET_OS_WIN32
+#if OPENSWIFTUI_TARGET_OS_WIN32
     #if defined(__cplusplus)
         #define _OPENSWIFTUI_EXTERN extern "C"
     #else

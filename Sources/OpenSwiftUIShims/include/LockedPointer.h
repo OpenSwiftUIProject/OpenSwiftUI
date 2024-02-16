@@ -16,7 +16,7 @@
 #define OPENSWIFTUI_LOCK_INIT OS_UNFAIR_LOCK_INIT
 #define OPENSWIFTUI_LOCK_LOCK(lock) os_unfair_lock_lock(lock)
 #define OPENSWIFTUI_LOCK_UNLOCK(lock) os_unfair_lock_unlock(lock)
-#elif TARGET_OS_LINUX
+#elif OPENSWIFTUI_TARGET_OS_LINUX
 #define OPENSWIFTUI_LOCK_T int32_t
 #include <stdint.h>
 #include <unistd.h>
