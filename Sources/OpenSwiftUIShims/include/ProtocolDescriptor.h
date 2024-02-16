@@ -8,16 +8,16 @@
 #ifndef ProtocolDescriptor_h
 #define ProtocolDescriptor_h
 
-#include <OpenFoundation/OpenFoundation.h>
+#include "OpenSwiftUIBase.h"
 
-OF_ASSUME_NONNULL_BEGIN
+OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-OF_EXPORT
+OPENSWIFTUI_EXPORT
 const void *_viewProtocolDescriptor(void);
 
-OF_EXPORT
+OPENSWIFTUI_EXPORT
 const void *_viewModifierProtocolDescriptor(void);
 
-OF_ASSUME_NONNULL_END
+OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* ProtocolDescriptor_h */
