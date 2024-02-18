@@ -59,7 +59,7 @@ extension Double: VectorArithmetic {
 
 #if canImport(Darwin)
 import CoreGraphics
-#elseif os(Linux)
+#else
 import Foundation
 #endif
 

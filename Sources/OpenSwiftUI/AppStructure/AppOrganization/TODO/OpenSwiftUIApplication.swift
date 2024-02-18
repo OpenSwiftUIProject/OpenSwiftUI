@@ -61,12 +61,13 @@ private func KitRendererCommon() -> Never {
     #elseif os(macOS)
     // FIXME
     let code = NSApplicationMain(argc, argv)
-    #elseif os(Linux)
+    #else
     let code: Int32 = 1
     #endif
     exit(code)
 }
 
+#if canImport(Darwin)
 func currentAppName() -> String {
     if let name = Bundle.main.localizedValue(for: "CFBundleDisplayName") {
         return name
@@ -90,3 +91,4 @@ extension Bundle {
         }
     }
 }
+#endif

@@ -9,7 +9,7 @@ public struct _GraphInputs {
     var changedDebugProperties: _ViewDebug.Properties
     var options: _GraphInputs.Options
     // FIXME: Compile crash on Linux
-    #if !os(Linux)
+    #if canImport(Darwin)
     var mergedInputs: Set<OGAttribute>
     #endif
 }
