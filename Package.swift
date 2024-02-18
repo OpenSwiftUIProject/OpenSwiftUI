@@ -27,6 +27,13 @@ let openSwiftUITestTarget = Target.testTarget(
     ],
     exclude: ["README.md"]
 )
+let openSwiftUITempTestTarget = Target.testTarget(
+    name: "OpenSwiftUITempTests",
+    dependencies: [
+        "OpenSwiftUI",
+    ],
+    exclude: ["README.md"]
+)
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
     exclude: ["README.md"]
@@ -98,6 +105,7 @@ extension Target {
 if attributeGraphCondition {
     openSwiftUITarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
+    openSwiftUITempTestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
 }
 
@@ -146,6 +154,12 @@ if swiftTestingCondition {
         .product(name: "Testing", package: "swift-testing")
     )
     package.targets.append(openSwiftUITestTarget)
+    
+    openSwiftUITempTestTarget.dependencies.append(
+        .product(name: "Testing", package: "swift-testing")
+    )
+    package.targets.append(openSwiftUITempTestTarget)
+    
     openSwiftUICompatibilityTestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
     )
