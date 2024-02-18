@@ -4,9 +4,33 @@
 import Foundation
 import PackageDescription
 
-let isXcodeEnv = ProcessInfo.processInfo.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
+func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
+    guard let value = Context.environment[key] else {
+        return defaultValue
+    }
+    if value == "1" {
+        return true
+    } else if value == "0" {
+        return false
+    } else {
+        return defaultValue
+    }
+}
+
+let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
+
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
+
+var sharedSwiftSettings: [SwiftSetting] = [
+    .enableExperimentalFeature("AccessLevelOnImport"),
+    .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
+]
+
+let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv)
+if warningsAsErrorsCondition {
+    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
+}
 
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
@@ -15,28 +39,28 @@ let openSwiftUITarget = Target.target(
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
-    swiftSettings: [
-        .enableExperimentalFeature("AccessLevelOnImport"),
-        .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
-    ]
+    swiftSettings: sharedSwiftSettings
 )
 let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
         "OpenSwiftUI",
     ],
-    exclude: ["README.md"]
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
 )
 let openSwiftUITempTestTarget = Target.testTarget(
     name: "OpenSwiftUITempTests",
     dependencies: [
         "OpenSwiftUI",
     ],
-    exclude: ["README.md"]
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
 )
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
-    exclude: ["README.md"]
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
 )
 
 let package = Package(
@@ -70,19 +94,6 @@ let package = Package(
         openSwiftUITarget,
     ]
 )
-
-func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
-    guard let value = ProcessInfo.processInfo.environment[key] else {
-        return defaultValue
-    }
-    if value == "1" {
-        return true
-    } else if value == "0" {
-        return false
-    } else {
-        return defaultValue
-    }
-}
 
 #if os(macOS)
 let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: true)
