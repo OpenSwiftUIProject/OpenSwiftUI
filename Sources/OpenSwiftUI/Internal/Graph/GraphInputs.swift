@@ -9,13 +9,19 @@ public struct _GraphInputs {
     var changedDebugProperties: _ViewDebug.Properties
     var options: _GraphInputs.Options
     // FIXME: Compile crash on Linux
+    // https://github.com/apple/swift/issues/71086
     #if canImport(Darwin)
     var mergedInputs: Set<OGAttribute>
     #endif
+    
+    subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
+        get { customInputs[type] }
+        set { customInputs[type] = newValue }
+    }
 }
 
 extension _GraphInputs {
-    struct Phase {
+    struct Phase: Equatable {
         let value: UInt32
     }
 }
