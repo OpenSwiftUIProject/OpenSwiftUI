@@ -5,6 +5,9 @@
 //  Created by Kyle on 2023/11/2.
 //  Lastest Version: iOS 15.5
 //  Status: Complete
+//  ID: 49D2A32E637CD497C6DE29B8E060A506
+
+internal import OpenGraphShims
 
 /// An interface for a stored variable that updates an external property of a
 /// view.
@@ -93,5 +96,66 @@ extension BodyAccessor {
             // TODO
         }
         fatalError("TODO")
+    }
+}
+
+// MARK: - RuleThreadFlags
+
+private protocol RuleThreadFlags {
+    static var value: OGAttributeTypeFlags { get }
+}
+
+private struct AsyncThreadFlags: RuleThreadFlags {
+    static var value: OGAttributeTypeFlags { .init(rawValue: 1 << 5) }
+}
+
+private struct MainThreadFlags: RuleThreadFlags {
+    static var value: OGAttributeTypeFlags { ._8 }
+}
+
+
+// MARK: - StaticBody
+
+private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
+    let accessor: Accessor
+    @Attribute
+    var container: Accessor.Container
+    
+    init(accessor: Accessor, container: Attribute<Accessor.Container>) {
+        self.accessor = accessor
+        self._container = container
+    }
+    
+    func updateValue() {
+        accessor.updateBody(of: container, changed: true)
+    }
+    
+    var description: String {
+        "\(Accessor.Body.self)"
+    }
+    
+    static var flags: OGAttributeTypeFlags {
+        ThreadFlags.value
+    }
+    
+    static var container: Any.Type {
+        Accessor.Container.self
+    }
+    
+    static func buffer<Value>(as type: Value.Type, attribute: OGAttribute) -> _DynamicPropertyBuffer? {
+        nil
+    }
+    
+    static func value<Value>(as type: Value.Type, attribute: OGAttribute) -> Value? {
+        // TODO
+        nil
+    }
+    
+    static func metaProperties<Value>(as type: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+        guard container != type else {
+            return []
+        }
+        // TODO
+        return []
     }
 }
