@@ -116,7 +116,7 @@ private struct MainThreadFlags: RuleThreadFlags {
 
 // MARK: - StaticBody
 
-private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
+private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>: CustomStringConvertible, BodyAccessorRule/*, StatefulRule*/ {
     let accessor: Accessor
     @Attribute
     var container: Accessor.Container
@@ -147,15 +147,16 @@ private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> 
     }
     
     static func value<Value>(as type: Value.Type, attribute: OGAttribute) -> Value? {
-        // TODO
-        nil
+        guard container == type else {
+            return nil
+        }
+        return (attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container as! Value)
     }
     
     static func metaProperties<Value>(as type: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
-        guard container != type else {
+        guard container == type else {
             return []
         }
-        // TODO
-        return []
+        return [("@self", attribute.info.body.assumingMemoryBound(to: Self.self).pointee._container.identifier)]
     }
 }
