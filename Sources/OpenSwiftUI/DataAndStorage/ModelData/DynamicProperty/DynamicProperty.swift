@@ -29,8 +29,69 @@ public protocol DynamicProperty {
     mutating func update()
 }
 
+// MARK: Default implementation for DynamicProperty
+
 extension DynamicProperty {
+    public static func _makeProperty<Value>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<Value>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) {
+        makeEmbeddedProperties(
+            in: &buffer,
+            container: container,
+            fieldOffset: fieldOffset,
+            inputs: &inputs
+        )
+        buffer.append(
+            EmbeddedDynamicPropertyBox<Self>(),
+            fieldOffset: fieldOffset
+        )
+    }
+    
     public static var _propertyBehaviors: UInt32 { 0 }
     
     public mutating func update() {}
+}
+
+// MARK: - EmbeddedDynamicPropertyBox
+
+private struct EmbeddedDynamicPropertyBox<Value: DynamicProperty>: DynamicPropertyBox {
+    typealias Property = Value
+    func destroy() {}
+    func reset() {}
+    func update(property: inout Property, phase _: _GraphInputs.Phase) -> Bool {
+        property.update()
+        return false
+    }
+}
+
+extension DynamicProperty {
+    static func makeEmbeddedProperties<Value>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<Value>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) -> () {
+        let fields = DynamicPropertyCache.fields(of: self)
+        buffer.addFields(
+            fields,
+            container: container,
+            inputs: &inputs,
+            baseOffset: fieldOffset
+        )
+    }
+}
+
+extension BodyAccessor {
+    func makeBody(container: _GraphValue<Container>, inputs: inout _GraphInputs, fields: DynamicPropertyCache.Fields) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
+        guard Body.self != Never.self else {
+            fatalError("\(Body.self) may not have Body == Never")
+        }
+        withUnsafeMutablePointer(to: &inputs) { inputs in
+            // TODO
+        }
+        fatalError("TODO")
+    }
 }
