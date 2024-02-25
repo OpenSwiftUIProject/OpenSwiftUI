@@ -8,14 +8,20 @@ public struct _GraphInputs {
     var transaction: Attribute<Transaction>
     var changedDebugProperties: _ViewDebug.Properties
     var options: _GraphInputs.Options
-    // FIXME: Compile crash on Linux
+    // FIXME: Compile crash on non-Darwin platform
+    // https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/39
     #if canImport(Darwin)
     var mergedInputs: Set<OGAttribute>
     #endif
+    
+    subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
+        get { customInputs[type] }
+        set { customInputs[type] = newValue }
+    }
 }
 
 extension _GraphInputs {
-    struct Phase {
+    struct Phase: Equatable {
         let value: UInt32
     }
 }
