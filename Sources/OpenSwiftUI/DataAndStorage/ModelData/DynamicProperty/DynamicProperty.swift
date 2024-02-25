@@ -76,7 +76,7 @@ extension DynamicProperty {
         container: _GraphValue<Value>,
         fieldOffset: Int,
         inputs: inout _GraphInputs
-    ) -> () {
+    ) {
         let fields = DynamicPropertyCache.fields(of: self)
         buffer.addFields(
             fields,
@@ -88,14 +88,45 @@ extension DynamicProperty {
 }
 
 extension BodyAccessor {
-    func makeBody(container: _GraphValue<Container>, inputs: inout _GraphInputs, fields: DynamicPropertyCache.Fields) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
+    func makeBody(
+        container: _GraphValue<Container>,
+        inputs: inout _GraphInputs,
+        fields: DynamicPropertyCache.Fields
+    ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
         guard Body.self != Never.self else {
             fatalError("\(Body.self) may not have Body == Never")
         }
-        withUnsafeMutablePointer(to: &inputs) { inputs in
-            // TODO
+        return withUnsafeMutablePointer(to: &inputs) { inputsPointer in
+            func project<Flags: RuleThreadFlags>(flags _: Flags.Type) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
+                let buffer = _DynamicPropertyBuffer(
+                    fields: fields,
+                    container: container,
+                    inputs: &inputsPointer.pointee
+                )
+                if buffer._count == 0 {
+                    buffer.destroy()
+                    let body = StaticBody<Self, Flags>(
+                        accessor: self,
+                        container: container.value
+                    )
+                    return (_GraphValue(body), nil)
+                } else {
+                    let body = DynamicBody<Self, Flags>(
+                        accessor: self,
+                        container: container.value,
+                        phase: inputsPointer.pointee.phase,
+                        links: buffer,
+                        resetSeed: 0
+                    )
+                    return (_GraphValue(body), buffer)
+                }
+            }
+            if fields.behaviors.contains(.asyncThread) {
+                return project(flags: AsyncThreadFlags.self)
+            } else {
+                return project(flags: MainThreadFlags.self)
+            }
         }
-        fatalError("TODO")
     }
 }
 
@@ -166,4 +197,40 @@ extension StaticBody: BodyAccessorRule {
 
 extension StaticBody: CustomStringConvertible {
     var description: String { "\(Accessor.Body.self)" }
+}
+
+// MARK: - DynamicBody
+
+// TODO
+private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
+    let accessor: Accessor
+    @Attribute
+    var container: Accessor.Container
+    @Attribute
+    var phase: _GraphInputs.Phase
+    var links: _DynamicPropertyBuffer
+    var resetSeed: UInt32
+    
+    init(
+        accessor: Accessor,
+        container: Attribute<Accessor.Container>,
+        phase: Attribute<_GraphInputs.Phase>,
+        links: _DynamicPropertyBuffer,
+        resetSeed: UInt32
+    ) {
+        fatalError("TODO")
+//        self.accessor = accessor
+//        self._container = container
+//        self._phase = phase
+//        self.links = links
+//        self.resetSeed = resetSeed
+    }
+}
+
+extension DynamicBody: StatefulRule {
+    typealias Value = Accessor.Body
+
+    func updateValue() {
+        // TODO
+    }
 }

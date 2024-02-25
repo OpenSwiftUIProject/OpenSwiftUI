@@ -22,8 +22,14 @@ public struct _GraphValue<Value>: Equatable {
     init(_ value: Attribute<Value>) {
         self.value = value
     }
-//    init(_ value: Rule)
-//    init(_ value: StatefulRule)
+    
+    init<R: Rule>(_ rule: R) where R.Value == Value {
+        fatalError("TODO")
+    }
+    
+    init<R: StatefulRule>(_ rule: R) where R.Value == Value {
+        fatalError("TODO")
+    }
 
     subscript<Member>(offset body: (inout Value) -> PointerOffset<Value, Member>) -> _GraphValue<Member> {
         .init(value[offset: body])

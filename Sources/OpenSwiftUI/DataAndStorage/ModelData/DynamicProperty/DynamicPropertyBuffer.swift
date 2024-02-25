@@ -26,7 +26,7 @@ public struct _DynamicPropertyBuffer {
         fields: DynamicPropertyCache.Fields,
         container: _GraphValue<Value>,
         inputs: inout _GraphInputs,
-        baseOffset: Int
+        baseOffset: Int = 0
     ) {
         self.init()
         addFields(fields, container: container, inputs: &inputs, baseOffset: baseOffset)

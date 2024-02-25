@@ -8,4 +8,5 @@
 
 struct DynamicPropertyBehaviors: OptionSet {
     let rawValue: UInt32
+    static var asyncThread: DynamicPropertyBehaviors { .init(rawValue: 1 << 0) }
 }
