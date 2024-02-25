@@ -14,6 +14,7 @@ import Glibc
 #elseif os(WASI)
 import WASILibc
 #endif
+internal import OpenGraphShims
 
 final class AppGraph: GraphHost {
     static var shared: AppGraph? = nil
@@ -21,12 +22,11 @@ final class AppGraph: GraphHost {
     
     private struct LaunchProfileOptions: OptionSet {
         let rawValue: Int32
-        
-        static var enable: LaunchProfileOptions { .init(rawValue: 1 << 1) }
+        static var profile: LaunchProfileOptions { .init(rawValue: 1 << 1) }
     }
     
     private lazy var launchProfileOptions: LaunchProfileOptions = {
-        let env = getenv("SWIFTUI_PROFILE_LAUNCH")
+        let env = getenv("OPENSWIFTUI_PROFILE_LAUNCH")
         if let env {
             return .init(rawValue: atoi(env))
         } else {
@@ -44,9 +44,8 @@ final class AppGraph: GraphHost {
         guard !didCollectLaunchProfile else {
             return
         }
-        
-        if launchProfileOptions.contains(.enable) {
-            // AGGraphStartProfiling
+        if launchProfileOptions.contains(.profile) {
+            OGGraph.startProfiling()
         }
     }
     
@@ -55,13 +54,12 @@ final class AppGraph: GraphHost {
             return
         }
         didCollectLaunchProfile = true
-        
-        if launchProfileOptions.contains(.enable) {
-            // AGGraphStopProfiling
+        if launchProfileOptions.contains(.profile) {
+            OGGraph.stopProfiling()
         }
-        
-        if launchProfileOptions.rawValue != 0 {
-            // AGGraphArchiveJSON
+        if !launchProfileOptions.isEmpty {
+            // /tmp/graph.ag-gzon
+            OGGraph.archiveJSON(name: nil)
         }
     }
 }
