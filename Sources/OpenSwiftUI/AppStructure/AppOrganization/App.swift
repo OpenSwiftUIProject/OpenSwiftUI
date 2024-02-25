@@ -67,7 +67,6 @@
 ///         }
 ///     }
 ///
-@available(watchOS 7.0, *)
 public protocol App {
     /// The type of scene representing the content of the app.
     ///
@@ -108,7 +107,6 @@ public protocol App {
     init()
 }
 
-@available(watchOS 7.0, *)
 extension App {
     /// Initializes and runs the app.
     ///
