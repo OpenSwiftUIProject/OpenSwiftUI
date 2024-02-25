@@ -106,17 +106,16 @@ private protocol RuleThreadFlags {
 }
 
 private struct AsyncThreadFlags: RuleThreadFlags {
-    static var value: OGAttributeTypeFlags { .init(rawValue: 1 << 5) }
+    static var value: OGAttributeTypeFlags { .asyncThread }
 }
 
 private struct MainThreadFlags: RuleThreadFlags {
-    static var value: OGAttributeTypeFlags { ._8 }
+    static var value: OGAttributeTypeFlags { .mainThread }
 }
-
 
 // MARK: - StaticBody
 
-private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>: CustomStringConvertible, BodyAccessorRule/*, StatefulRule*/ {
+private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
     @Attribute
     var container: Accessor.Container
@@ -125,19 +124,23 @@ private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>:
         self.accessor = accessor
         self._container = container
     }
-    
+}
+
+extension StaticBody: StatefulRule {
+    typealias Value = Accessor.Body
+
     func updateValue() {
         accessor.updateBody(of: container, changed: true)
     }
-    
-    var description: String {
-        "\(Accessor.Body.self)"
-    }
-    
+}
+
+extension StaticBody: _AttributeBody {
     static var flags: OGAttributeTypeFlags {
         ThreadFlags.value
     }
-    
+}
+
+extension StaticBody: BodyAccessorRule {
     static var container: Any.Type {
         Accessor.Container.self
     }
@@ -159,4 +162,8 @@ private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>:
         }
         return [("@self", attribute.info.body.assumingMemoryBound(to: Self.self).pointee._container.identifier)]
     }
+}
+
+extension StaticBody: CustomStringConvertible {
+    var description: String { "\(Accessor.Body.self)" }
 }
