@@ -87,6 +87,9 @@ extension DynamicProperty {
     }
 }
 
+// FIXME: Compile crash on non-ObjectiveC platform
+// https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/39
+#if canImport(Darwin)
 extension BodyAccessor {
     func makeBody(
         container: _GraphValue<Container>,
@@ -234,3 +237,4 @@ extension DynamicBody: StatefulRule {
         // TODO
     }
 }
+#endif

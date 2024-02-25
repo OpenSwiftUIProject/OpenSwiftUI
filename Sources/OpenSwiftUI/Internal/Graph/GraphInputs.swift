@@ -8,8 +8,8 @@ public struct _GraphInputs {
     var transaction: Attribute<Transaction>
     var changedDebugProperties: _ViewDebug.Properties
     var options: _GraphInputs.Options
-    // FIXME: Compile crash on Linux
-    // https://github.com/apple/swift/issues/71086
+    // FIXME: Compile crash on non-Darwin platform
+    // https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/39
     #if canImport(Darwin)
     var mergedInputs: Set<OGAttribute>
     #endif
