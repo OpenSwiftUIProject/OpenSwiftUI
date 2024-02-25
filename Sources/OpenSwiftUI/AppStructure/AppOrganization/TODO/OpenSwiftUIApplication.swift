@@ -31,18 +31,14 @@ private final class OpenSwiftUIApplication: NSApplication {
 import Foundation
 #endif
 
-@available(watchOS 7.0, *)
 func runApp(_ app: some App) -> Never {
-    #if canImport(Darwin)
     let graph = AppGraph(app: app)
     graph.startProfilingIfNecessary()
-//    graph.instantiate()
+    graph.instantiate()
     AppGraph.shared = graph
-    #endif
     KitRendererCommon()
 }
 
-@available(watchOS 7.0, *)
 private func KitRendererCommon() -> Never {
     let argc = CommandLine.argc
     let argv = CommandLine.unsafeArgv

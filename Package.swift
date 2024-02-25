@@ -70,7 +70,7 @@ let package = Package(
         .macOS(.v10_15),
         .macCatalyst(.v13),
         .tvOS(.v13),
-        .watchOS(.v6),
+        .watchOS(.v7), // WKApplicationMain is available for watchOS 7.0+
         .visionOS(.v1),
     ],
     products: [

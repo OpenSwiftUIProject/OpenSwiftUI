@@ -35,24 +35,30 @@ extension _BenchmarkHost {
     public func _started(test: _PerformanceTest) {
         #if os(iOS)
         UIApplication.shared.startedTest(test.name)
+        #elseif os(macOS)
+        NSApplication.shared.startedTest(test.name)
         #else
-        fatalError("TODO")
+        fatalError("Unimplemented for other platform")
         #endif
     }
 
     public func _finished(test: _PerformanceTest) {
         #if os(iOS)
         UIApplication.shared.finishedTest(test.name)
+        #elseif os(macOS)
+        NSApplication.shared.finishedTest(test.name)
         #else
-        fatalError("TODO")
+        fatalError("Unimplemented for other platform")
         #endif
     }
 
     public func _failed(test: _PerformanceTest) {
         #if os(iOS)
         UIApplication.shared.failedTest(test.name, withFailure: nil)
+        #elseif os(macOS)
+        NSApplication.shared.failedTest(test.name, withFailure: nil)
         #else
-        fatalError("TODO")
+        fatalError("Unimplemented for other platform")
         #endif
     }
 }

@@ -53,7 +53,6 @@ extension View {
     }
 }
 
-@available(iOS 13.0, *)
 extension View {
     @inline(__always)
     func defaultFont(_ font: Font?) -> some View {

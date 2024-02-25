@@ -6,7 +6,6 @@
 //  Lastest Version: iOS 15.5
 //  Status: WIP
 
-#if canImport(Darwin)
 import Foundation
 #if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
@@ -39,6 +38,10 @@ class FallbackDelegateBox<Delegate: NSObject>: AnyFallbackDelegateBox {
     }
     
     override var delegate: NSObject? {
+        // FIXME: error: constructing an object of class type 'Delegate' with a metatype value must use a 'required' initializer
+        #if !canImport(Darwin)
+        return nil
+        #else
         switch storage {
         case let .type(type):
             let delegate = type.init()
@@ -47,6 +50,6 @@ class FallbackDelegateBox<Delegate: NSObject>: AnyFallbackDelegateBox {
         case let .instance(delegate):
             return delegate
         }
+        #endif
     }
 }
-#endif
