@@ -35,8 +35,16 @@ final class AppGraph: GraphHost {
     }()
     
     var didCollectLaunchProfile: Bool = false
+
+    // TODO
+    init(app: some App) {
+        let data = GraphHost.Data()
+        super.init(data: data)
+    }
     
-    init(app _: some App) {}
+    // MARK: - Override Methods
+
+    // MARK: - Profile related
     
     func extendedLaunchTestName() -> String? { nil }
     

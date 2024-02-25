@@ -32,12 +32,10 @@ import Foundation
 #endif
 
 func runApp(_ app: some App) -> Never {
-    #if canImport(Darwin)
     let graph = AppGraph(app: app)
     graph.startProfilingIfNecessary()
-//    graph.instantiate()
+    graph.instantiate()
     AppGraph.shared = graph
-    #endif
     KitRendererCommon()
 }
 
