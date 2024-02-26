@@ -12,5 +12,6 @@ struct Time: Comparable, Hashable {
         lhs.seconds < rhs.seconds
     }
 
-    static var infinity: Time { Time(seconds: .infinity) }
+    static let zero = Time(seconds: .zero)
+    static let infinity = Time(seconds: .infinity)
 }
