@@ -35,7 +35,7 @@ if warningsAsErrorsCondition {
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
-        "OpenSwiftUIShims",
+        "COpenSwiftUI",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
@@ -86,9 +86,8 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
-        // C Shims for OpenSwiftUI
         .target(
-            name: "OpenSwiftUIShims"
+            name: "COpenSwiftUI"
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         openSwiftUITarget,

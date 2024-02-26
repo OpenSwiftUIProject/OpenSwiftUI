@@ -2,8 +2,7 @@
 //  Edge.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/10/8.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: Complete
 
 // MARK: - Edge

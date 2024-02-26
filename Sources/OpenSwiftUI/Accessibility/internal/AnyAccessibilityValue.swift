@@ -2,8 +2,7 @@
 //  AnyAccessibilityValue.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/12/2.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: 333660CD735494DA92CEC2878E6C8CC5
 

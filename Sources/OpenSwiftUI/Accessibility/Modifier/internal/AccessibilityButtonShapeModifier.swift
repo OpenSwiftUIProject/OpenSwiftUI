@@ -2,8 +2,7 @@
 //  AccessibilityButtonShapeModifier.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/10/9.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: 0D3243EDC3DD4D641848661DCC354D4B
 

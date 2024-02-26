@@ -2,8 +2,7 @@
 //  TestIDView.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/1/9.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 
 internal import OpenGraphShims

@@ -2,8 +2,7 @@
 //  ViewGeometry.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/12/17.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: Complete
 
 import Foundation
