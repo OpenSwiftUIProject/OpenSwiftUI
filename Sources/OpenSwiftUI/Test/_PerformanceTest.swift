@@ -2,8 +2,7 @@
 //  _PerformanceTest.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/1/9.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 
 #if os(iOS)
@@ -12,7 +11,7 @@ import UIKit
 import AppKit
 #endif
 
-internal import OpenSwiftUIShims
+internal import COpenSwiftUI
 
 public protocol _PerformanceTest: _Test {
     var name: String { get }

@@ -2,8 +2,7 @@
 //  AccessibilityConfigurationModifier.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/10/9.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: Complete
 
 protocol AccessibilityConfigurationModifier {

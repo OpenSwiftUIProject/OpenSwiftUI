@@ -2,8 +2,7 @@
 //  AlignmentKey.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2023/12/17.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: Complete
 //  ID: E20796D15DD3D417699102559E024115
 

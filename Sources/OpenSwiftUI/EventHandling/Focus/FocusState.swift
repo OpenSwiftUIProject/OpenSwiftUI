@@ -2,8 +2,7 @@
 //  FocusState.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2024/2/1.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: 274D264A38B51DC68ACC48A91353B7D0
 

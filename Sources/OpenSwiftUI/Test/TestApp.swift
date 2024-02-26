@@ -2,8 +2,7 @@
 //  TestApp.swift
 //  OpenSwiftUI
 //
-//  Created by Kyle on 2024/1/9.
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: A519B5B95CA8FF4E3445832668F0B2D2
 
