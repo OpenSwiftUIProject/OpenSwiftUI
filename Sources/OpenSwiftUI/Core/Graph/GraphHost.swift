@@ -6,18 +6,19 @@
 //  Status: WIP
 //  ID: 30C09FF16BC95EC5173809B57186CAC3
 
+internal import COpenSwiftUI
 internal import OpenGraphShims
 
 class GraphHost {
     var data: Data
     var isInstantiated: Bool
-//    var hostPreferenceValues: OptionalAttribute<PreferenceList>
-//    var lastHostPreferencesSeed: VersionSeed
-//    var pendingTransactions: [AsyncTransaction]
-//    var inTransaction: Bool
-//    var continuations: [() -> ()]
-//    var mayDeferUpdate: Bool
-//    var removedState: RemovedState
+    var hostPreferenceValues: OptionalAttribute<PreferenceList>
+    var lastHostPreferencesSeed: VersionSeed
+    private var pendingTransactions: [AsyncTransaction]
+    var inTransaction: Bool
+    var continuations: [() -> ()]
+    var mayDeferUpdate: Bool
+    var removedState: RemovedState
     
     // FIXME
     static var isUpdating = false
@@ -30,6 +31,7 @@ class GraphHost {
         self.data = data
         isInstantiated = false
         // TODO
+        fatalError("TODO")
     }
     
     func invalidate() {
@@ -108,5 +110,33 @@ extension GraphHost {
     // TODO
     struct RemovedState: OptionSet {
         let rawValue: UInt8
+    }
+}
+
+// MARK: - AsyncTransaction
+
+private final class AsyncTransaction {
+    let transaction: Transaction
+    var mutations: [GraphMutation] = []
+    
+    init(_ transaction: Transaction) {
+        self.transaction = transaction
+    }
+    
+    func append<Mutation: GraphMutation>(_ mutation: Mutation) {
+        // ``GraphMutation/combine`` is mutating function
+        // So we use ``Array.subscript/_modify`` instead of ``Array.last/getter`` to mutate inline
+        if !mutations.isEmpty, mutations[mutations.count-1].combine(with: mutation) {
+            return
+        }
+        mutations.append(mutation)
+    }
+    
+    func apply() {
+        withTransaction(transaction) {
+            for mutation in mutations {
+                mutation.apply()
+            }
+        }
     }
 }
