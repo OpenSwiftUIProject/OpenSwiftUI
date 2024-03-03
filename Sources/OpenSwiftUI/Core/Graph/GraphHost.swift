@@ -39,7 +39,7 @@ class GraphHost {
             // data.globalSubgraph.apply
             isInstantiated = false
         }
-        if let graph = data.graph {
+        if let _ = data.graph {
             data.globalSubgraph.invalidate()
             // graph.context = nil
             // graph.invalidate()

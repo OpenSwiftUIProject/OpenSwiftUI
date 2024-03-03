@@ -19,6 +19,8 @@ struct EmptyGraphMutation: GraphMutation {
     }
 }
 
+// FIXME: #39
+#if canImport(Darwin)
 struct InvalidatingGraphMutation: GraphMutation {
     let attribute: OGWeakAttribute
     
@@ -33,6 +35,7 @@ struct InvalidatingGraphMutation: GraphMutation {
         return mutation.attribute == attribute
     }
 }
+#endif
 
 struct CustomGraphMutation: GraphMutation {
     let body: () -> Void
