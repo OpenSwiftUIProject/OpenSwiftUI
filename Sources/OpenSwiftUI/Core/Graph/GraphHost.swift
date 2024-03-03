@@ -35,7 +35,16 @@ class GraphHost {
     }
     
     func invalidate() {
-        // TODO
+        if isInstantiated {
+            // data.globalSubgraph.apply
+            isInstantiated = false
+        }
+        if let graph = data.graph {
+            data.globalSubgraph.invalidate()
+            // graph.context = nil
+            // graph.invalidate()
+            data.graph = nil
+        }
     }
     
     var graphDelegate: GraphDelegate? { nil }
