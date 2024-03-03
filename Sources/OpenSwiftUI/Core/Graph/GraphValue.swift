@@ -3,43 +3,39 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: WIP
+//  Status: Complete
 
 internal import OpenGraphShims
 
 public struct _GraphValue<Value>: Equatable {
-    public subscript<U>(keyPath keyPath: KeyPath<Value, U>) -> _GraphValue<U> {
-        _GraphValue<U>(value[keyPath: keyPath])
-    }
-
-    public static func == (a: _GraphValue<Value>, b: _GraphValue<Value>) -> Bool {
-        a.value == b.value
-    }
-
     var value: Attribute<Value>
-
+    
     init(_ value: Attribute<Value>) {
         self.value = value
     }
     
     init<R: Rule>(_ rule: R) where R.Value == Value {
-        fatalError("TODO")
+        value = Attribute(rule)
     }
     
     init<R: StatefulRule>(_ rule: R) where R.Value == Value {
-        fatalError("TODO")
-    }
-
-    subscript<Member>(offset body: (inout Value) -> PointerOffset<Value, Member>) -> _GraphValue<Member> {
-        .init(value[offset: body])
-    }
-    
-    subscript<Member>(keyPath: KeyPath<Value, Member>) -> _GraphValue<Member> {
-        .init(value[keyPath: keyPath])
+        value = Attribute(rule)
     }
     
     func unsafeBitCast<V>(to type: V.Type) -> _GraphValue<V> {
-        .init(value.unsafeBitCast(to: type))
+        _GraphValue<V>(value.unsafeBitCast(to: type))
+    }
+    
+    public subscript<Member>(keyPath: KeyPath<Value, Member>) -> _GraphValue<Member> {
+        _GraphValue<Member>(value[keyPath: keyPath])
+    }
+    
+    subscript<Member>(offset body: (inout Value) -> PointerOffset<Value, Member>) -> _GraphValue<Member> {
+        _GraphValue<Member>(value[offset: body])
+    }
+
+    public static func == (a: _GraphValue<Value>, b: _GraphValue<Value>) -> Bool {
+        a.value == b.value
     }
 }
 
