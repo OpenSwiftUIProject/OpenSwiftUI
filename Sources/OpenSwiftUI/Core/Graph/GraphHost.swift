@@ -2,7 +2,7 @@
 //  GraphHost.swift
 //  OpenSwiftUI
 //
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: 30C09FF16BC95EC5173809B57186CAC3
 
@@ -11,38 +11,50 @@ internal import OpenGraphShims
 
 class GraphHost {
     var data: Data
-    var isInstantiated: Bool
+    var isInstantiated = false
     var hostPreferenceValues: OptionalAttribute<PreferenceList>
-    var lastHostPreferencesSeed: VersionSeed
-    private var pendingTransactions: [AsyncTransaction]
-    var inTransaction: Bool
-    var continuations: [() -> ()]
-    var mayDeferUpdate: Bool
-    var removedState: RemovedState
+    var lastHostPreferencesSeed: VersionSeed = .invalid
+    private var pendingTransactions: [AsyncTransaction] = []
+    var inTransaction = false
+    var continuations: [() -> Void] = []
+    var mayDeferUpdate = true
+    var removedState: RemovedState = []
     
     // FIXME
     static var isUpdating = false
     
     private static let sharedGraph = OGGraph()
 
-    // MARK: - non final methods
+    // MARK: - inheritable methods
     
     init(data: Data) {
+        if !Thread.isMainThread {
+            Log.runtimeIssues("calling into OpenSwiftUI on a non-main thread is not supported")
+        }
+        hostPreferenceValues = OptionalAttribute()
         self.data = data
-        isInstantiated = false
-        // TODO
-        fatalError("TODO")
+        OGGraph.setUpdateCallback(graph) { [weak self] in
+            guard let self,
+                  let graphDelegate
+            else { return }
+            graphDelegate.updateGraph { _ in }
+        }
+        OGGraph.setInvalidationCallback(graph) { [weak self] attribute in
+            guard let self else { return }
+            graphInvalidation(from: attribute)
+        }
+        graph.setGraphHost(self)
     }
     
     func invalidate() {
         if isInstantiated {
-            // data.globalSubgraph.apply
+            data.globalSubgraph.willInvalidate(isInserted: false)
             isInstantiated = false
         }
-        if let _ = data.graph {
+        if let graph = data.graph {
             data.globalSubgraph.invalidate()
-            // graph.context = nil
-            // graph.invalidate()
+            graph.context = nil
+            graph.invalidate()
             data.graph = nil
         }
     }
@@ -56,6 +68,13 @@ class GraphHost {
     
     // MARK: - final methods
     
+    deinit {
+        invalidate()
+        // TODO
+    }
+    
+    final var graph: OGGraph { data.graph! }
+
     final func instantiate() {
         guard !isInstantiated else {
             return
@@ -63,6 +82,10 @@ class GraphHost {
         graphDelegate?.updateGraph { _ in }
         instantiateOutputs()
         isInstantiated = true
+    }
+    
+    final func graphInvalidation(from attribute: OGAttribute?) {
+        // TODO
     }
 }
 
@@ -147,5 +170,17 @@ private final class AsyncTransaction {
                 mutation.apply()
             }
         }
+    }
+}
+
+// MARK: - OGGraph + Extension
+
+extension OGGraph {
+    final func graphHost() -> GraphHost {
+        context!.assumingMemoryBound(to: GraphHost.self).pointee
+    }
+    
+    fileprivate final func setGraphHost(_ graphHost: GraphHost) {
+        context = UnsafeRawPointer(Unmanaged.passUnretained(graphHost).toOpaque())
     }
 }
