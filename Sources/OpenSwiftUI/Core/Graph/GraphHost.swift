@@ -13,20 +13,30 @@ private let waitingForPreviewThunks = EnvironmentHelper.value(for: "XCODE_RUNNIN
 private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 
 class GraphHost {
-    var data: Data
-    var isInstantiated = false
-    var hostPreferenceValues: OptionalAttribute<PreferenceList>
-    var lastHostPreferencesSeed: VersionSeed = .invalid
+    private(set) var data: Data
+    private(set) var isInstantiated = false
+    private(set) var hostPreferenceValues: OptionalAttribute<PreferenceList>
+    private(set) var lastHostPreferencesSeed: VersionSeed = .invalid
     private var pendingTransactions: [AsyncTransaction] = []
-    var inTransaction = false
-    var continuations: [() -> Void] = []
-    var mayDeferUpdate = true
-    var removedState: RemovedState = []
+    private(set) var inTransaction = false
+    private(set) var continuations: [() -> Void] = []
+    private(set) var mayDeferUpdate = true
+    private(set) var removedState: RemovedState = []
+        
+    private static let sharedGraph = OGGraph()
+    
+    static var currentHost: GraphHost {
+        if let currentAttribute = OGAttribute.current {
+            currentAttribute.graph.graphHost()
+        } else if let currentSubgraph = OGSubgraph.current {
+            currentSubgraph.graph.graphHost()
+        } else {
+            fatalError("no current graph host")
+        }
+    }
     
     // FIXME
     static var isUpdating = false
-    
-    private static let sharedGraph = OGGraph()
 
     // MARK: - inheritable methods
     
