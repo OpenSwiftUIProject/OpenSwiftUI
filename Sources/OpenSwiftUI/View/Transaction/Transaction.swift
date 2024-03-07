@@ -24,6 +24,10 @@ public struct Transaction {
     
     @usableFromInline
     var plist: PropertyList
+    
+    @inline(__always)
+    @inlinable
+    var isEmpty: Bool { plist.elements == nil }
 }
 
 extension Transaction {

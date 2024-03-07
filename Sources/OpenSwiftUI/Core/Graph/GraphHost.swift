@@ -85,6 +85,31 @@ class GraphHost {
     }
     
     final func graphInvalidation(from attribute: OGAttribute?) {
+        guard let attribute else {
+            graphDelegate?.graphDidChange()
+            return
+        }
+        let host = attribute.graph.graphHost()
+        let transaction = host.data.transaction
+        mayDeferUpdate = mayDeferUpdate ? host.mayDeferUpdate : false
+        if transaction.isEmpty {
+            graphDelegate?.graphDidChange()
+        } else {
+            asyncTransaction(
+                transaction,
+                mutation: EmptyGraphMutation(), 
+                style: ._1,
+                mayDeferUpdate: true
+            )
+        }
+    }
+    
+    final func asyncTransaction<Mutation: GraphMutation>(
+        _ transaction: Transaction,
+        mutation: Mutation,
+        style: _GraphMutation_Style,
+        mayDeferUpdate: Bool
+    ) {
         // TODO
     }
 }
