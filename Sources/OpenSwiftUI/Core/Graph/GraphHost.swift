@@ -9,6 +9,9 @@
 internal import COpenSwiftUI
 internal import OpenGraphShims
 
+private let waitingForPreviewThunks = EnvironmentHelper.value(for: "XCODE_RUNNING_FOR_PREVIEWS") != 0
+private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
+
 class GraphHost {
     var data: Data
     var isInstantiated = false
@@ -70,11 +73,9 @@ class GraphHost {
     
     deinit {
         invalidate()
-        // TODO
+        blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
     }
     
-    final var graph: OGGraph { data.graph! }
-
     final func instantiate() {
         guard !isInstantiated else {
             return
@@ -83,6 +84,28 @@ class GraphHost {
         instantiateOutputs()
         isInstantiated = true
     }
+    
+    final func instantiateIfNeeded() {
+        guard !isInstantiated else {
+            return
+        }
+        if waitingForPreviewThunks {
+            if !blockedGraphHosts.contains(where: { $0.takeUnretainedValue() === self }) {
+                blockedGraphHosts.append(.passUnretained(self))
+            }
+        } else {
+            instantiate()
+        }
+    }
+    
+    final func uninstantiate(immediately: Bool) {
+        guard isInstantiated else {
+            return
+        }
+        // TODO
+    }
+    
+    final var graph: OGGraph { data.graph! }
     
     final func graphInvalidation(from attribute: OGAttribute?) {
         guard let attribute else {
