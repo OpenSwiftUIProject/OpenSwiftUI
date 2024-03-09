@@ -28,6 +28,7 @@ class GraphHost {
     // MARK: - static properties and methods
     
     static var currentHost: GraphHost {
+        #if canImport(Darwin)
         if let currentAttribute = OGAttribute.current {
             currentAttribute.graph.graphHost()
         } else if let currentSubgraph = OGSubgraph.current {
@@ -35,6 +36,9 @@ class GraphHost {
         } else {
             fatalError("no current graph host")
         }
+        #else
+        fatalError("Compiler issue on Linux. See #39")
+        #endif
     }
     
     static var isUpdating: Bool {
@@ -59,9 +63,11 @@ class GraphHost {
     // MARK: - inheritable methods
     
     init(data: Data) {
+        #if canImport(Darwin)
         if !Thread.isMainThread {
             Log.runtimeIssues("calling into OpenSwiftUI on a non-main thread is not supported")
         }
+        #endif
         hostPreferenceValues = OptionalAttribute()
         self.data = data
         OGGraph.setUpdateCallback(graph) { [weak self] in
@@ -70,10 +76,12 @@ class GraphHost {
             else { return }
             graphDelegate.updateGraph { _ in }
         }
+        #if canImport(Darwin)
         OGGraph.setInvalidationCallback(graph) { [weak self] attribute in
             guard let self else { return }
             graphInvalidation(from: attribute)
         }
+        #endif
         graph.setGraphHost(self)
     }
     
@@ -201,8 +209,9 @@ class GraphHost {
         }
         // TODO
     }
-        
+    
     final func graphInvalidation(from attribute: OGAttribute?) {
+        #if canImport(Darwin)
         guard let attribute else {
             graphDelegate?.graphDidChange()
             return
@@ -220,6 +229,7 @@ class GraphHost {
                 mayDeferUpdate: true
             )
         }
+        #endif
     }
     
     // MARK: - Transaction

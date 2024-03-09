@@ -1,11 +1,5 @@
 internal import OpenGraphShims
 
-// FIXME: Compile crash on non-Darwin platform
-// https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/39
-#if !canImport(Darwin)
-typealias OGAttribute = UInt32
-#endif
-
 public struct _GraphInputs {
     var customInputs: PropertyList
     var time: Attribute<Time>
@@ -14,8 +8,11 @@ public struct _GraphInputs {
     var transaction: Attribute<Transaction>
     var changedDebugProperties: _ViewDebug.Properties
     var options: _GraphInputs.Options
+    #if canImport(Darwin) // FIXME: See #39
     var mergedInputs: Set<OGAttribute>
+    #endif
     
+    #if canImport(Darwin)
     init(customInputs: PropertyList = PropertyList(),
          time: Attribute<Time>,
          cachedEnvironment: MutableBox<CachedEnvironment>,
@@ -33,6 +30,25 @@ public struct _GraphInputs {
         self.options = options
         self.mergedInputs = mergedInputs
     }
+    #else // FIXME: See #39
+    init(customInputs: PropertyList = PropertyList(),
+         time: Attribute<Time>,
+         cachedEnvironment: MutableBox<CachedEnvironment>,
+         phase: Attribute<Phase>,
+         transaction: Attribute<Transaction>,
+         changedDebugProperties: _ViewDebug.Properties = [],
+         options: _GraphInputs.Options = []/*,
+         mergedInputs: Set<OGAttribute> = []*/) {
+        self.customInputs = customInputs
+        self.time = time
+        self.cachedEnvironment = cachedEnvironment
+        self.phase = phase
+        self.transaction = transaction
+        self.changedDebugProperties = changedDebugProperties
+        self.options = options
+        /* self.mergedInputs = mergedInputs */
+    }
+    #endif
     
     subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
         get { customInputs[type] }
