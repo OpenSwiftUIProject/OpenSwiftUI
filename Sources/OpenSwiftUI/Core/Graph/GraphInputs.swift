@@ -42,7 +42,7 @@ public struct _GraphInputs {
 
 extension _GraphInputs {
     struct Phase: Equatable {
-        let value: UInt32
+        var value: UInt32
     }
 }
 
@@ -50,4 +50,8 @@ extension _GraphInputs {
     struct Options: OptionSet {
         let rawValue: UInt32
     }
+}
+
+extension _GraphInputs {
+    typealias ConstantID = Int
 }

@@ -104,9 +104,67 @@ class GraphHost {
         blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
     }
     
+    // MARK: - data
+    
     final var graph: OGGraph { data.graph! }
     final var graphInputs: _GraphInputs { data.inputs }
+    
+    final func setTime(_ time: Time) {
+        guard data.time == time else {
+            return
+        }
+        data.time = time
+        timeDidChange()
+    }
+    
     final var environment: EnvironmentValues { data.environment }
+    
+    final func setEnvironment(_ environment: EnvironmentValues) {
+        data.environment = environment
+    }
+    
+    final func setPhase(_ phase: _GraphInputs.Phase) {
+        data.phase = phase
+    }
+    
+    // TODO: _ArchivedViewHost.reset()
+    final func incrementPhase() {
+        var data = data
+        data.phase.value += 2
+        graphDelegate?.graphDidChange()
+    }
+    
+    final func preferenceValues() -> PreferenceList {
+        instantiateIfNeeded()
+        return hostPreferenceValues.value ?? PreferenceList()
+    }
+    
+    final func preferenceValue<Key: HostPreferenceKey>(_ key: Key.Type) -> Key.Value {
+        fatalError("TODO")
+    }
+    
+    final func addPreference<Key: HostPreferenceKey>(_ key: Key.Type) {
+        fatalError("TODO")
+    }
+    
+    final func updatePreferences() -> Bool {
+        fatalError("TODO")
+    }
+    
+    final func updateRemovedState() {
+        fatalError("TODO")
+    }
+    
+    final func intern<Value>(_ value: Value, id: _GraphInputs.ConstantID) -> Attribute<Value> {
+        fatalError("TODO")
+    }
+    
+    final func setNeedsUpdate(mayDeferUpdate: Bool) {
+        fatalError("TODO")
+    }
+    
+    // MARK: - instantiate and uninstantiate
+    
     final var isValid: Bool { data.graph != nil }
     final var isUpdating: Bool {
         guard let graph = data.graph else {
