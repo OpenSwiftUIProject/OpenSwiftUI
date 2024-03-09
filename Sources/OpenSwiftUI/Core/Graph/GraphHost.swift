@@ -114,7 +114,6 @@ class GraphHost {
         }
         return graph.counter(for: ._6) != 0
     }
-    final var hasPendingTransactions: Bool { !pendingTransactions.isEmpty }
     
     final func instantiate() {
         guard !isInstantiated else {
@@ -165,6 +164,10 @@ class GraphHost {
         }
     }
     
+    // MARK: - Transaction
+        
+    final var hasPendingTransactions: Bool { !pendingTransactions.isEmpty }
+
     final func asyncTransaction<Mutation: GraphMutation>(
         _ transaction: Transaction,
         mutation: Mutation,
@@ -172,6 +175,40 @@ class GraphHost {
         mayDeferUpdate: Bool
     ) {
         // TODO
+    }
+    
+    final func flushTransactions() {
+        guard isValid else {
+            return
+        }
+        guard !pendingTransactions.isEmpty else {
+            return
+        }
+        let transactions = pendingTransactions
+        pendingTransactions = []
+        for _ in transactions {
+            instantiateIfNeeded()
+            // TODO
+        }
+        graphDelegate?.graphDidChange()
+        mayDeferUpdate = true
+    }
+    
+    final func continueTransaction(_ body: @escaping () -> Void) {
+        var host = self
+        while(!host.inTransaction) {
+            guard let parent = host.parentHost else {
+                asyncTransaction(
+                    Transaction(),
+                    mutation: CustomGraphMutation(body: body),
+                    style: ._1,
+                    mayDeferUpdate: true
+                )
+                return
+            }
+            host = parent
+        }
+        host.continuations.append(body)
     }
 }
 
@@ -270,6 +307,8 @@ extension OGGraph {
         context = UnsafeRawPointer(Unmanaged.passUnretained(graphHost).toOpaque())
     }
 }
+
+// MARK: - GlobalTransaction
 
 private final class GlobalTransaction {
     let hostProvider: TransactionHostProvider
