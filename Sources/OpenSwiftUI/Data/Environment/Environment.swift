@@ -11,25 +11,20 @@ public struct Environment<Value>: DynamicProperty {
     @usableFromInline
     @frozen
     enum Content {
-        // Layout:
-        // - [+0x0] = keypath
-        // - [+0x8]b = 0
         case keyPath(KeyPath<EnvironmentValues, Value>)
-
-        // Layout:
-        // - [+0x0] = value
-        // - [+0x8]b = 1
         case value(Value)
     }
 
     @usableFromInline
     var content: Content
 
-    @inlinable public init(_ keyPath: KeyPath<EnvironmentValues, Value>) {
+    @inlinable
+    public init(_ keyPath: KeyPath<EnvironmentValues, Value>) {
         content = .keyPath(keyPath)
     }
 
-    @inlinable public var wrappedValue: Value {
+    @inlinable
+    public var wrappedValue: Value {
         switch content {
         case let .value(value):
             return value
@@ -38,14 +33,12 @@ public struct Environment<Value>: DynamicProperty {
         }
     }
 
-    // WIP
     @usableFromInline
     func error() -> Never {
-        fatalError()
+        fatalError("Reading Environment<\(Value.self)> outside View.body")
     }
 
-    // WIP
     public static func _makeProperty<V>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<V>, fieldOffset: Int, inputs: inout _GraphInputs) {
-
+        // TODO
     }
 }
