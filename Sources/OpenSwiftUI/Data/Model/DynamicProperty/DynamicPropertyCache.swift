@@ -14,7 +14,7 @@ struct DynamicPropertyCache {
     private static var cache = MutableBox([ObjectIdentifier: Fields]())
     
     static func fields(of type: Any.Type) -> Fields {
-        if let fields = cache.value[ObjectIdentifier(type)] {
+        if let fields = cache.wrappedValue[ObjectIdentifier(type)] {
             return fields
         }
         let fields: Fields
@@ -57,7 +57,7 @@ struct DynamicPropertyCache {
         if fields.behaviors.contains(.init(rawValue: 3)) {
             Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", [_typeName(type)])
         }
-        cache.value[ObjectIdentifier(type)] = fields
+        cache.wrappedValue[ObjectIdentifier(type)] = fields
         return fields
     }
 }
