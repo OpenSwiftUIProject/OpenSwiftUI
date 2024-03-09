@@ -1,9 +1,10 @@
 //
-//  EnvironmentValues+sliderStyle.swift
+//  SliderStyleKey.swift
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
 //  Status: Complete
+//  ID: F0F8A8741F68A968D995328632123C18
 
 private struct SliderStyleKey: EnvironmentKey {
     static let defaultValue = AnySliderStyle.default

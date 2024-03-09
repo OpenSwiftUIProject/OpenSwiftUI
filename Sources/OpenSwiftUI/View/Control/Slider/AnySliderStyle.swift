@@ -17,7 +17,7 @@ private class AnyStyleBox {
     }
 }
 
-private class StyleBox<Base: SliderStyle>: AnyStyleBox {
+private final class StyleBox<Base: SliderStyle>: AnyStyleBox {
     let base: Base
 
     init(base: Base) {
