@@ -13,6 +13,8 @@ private let waitingForPreviewThunks = EnvironmentHelper.value(for: "XCODE_RUNNIN
 private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 
 class GraphHost {
+    // MARK: - Properties
+    
     private(set) var data: Data
     private(set) var isInstantiated = false
     private(set) var hostPreferenceValues: OptionalAttribute<PreferenceList>
@@ -22,8 +24,8 @@ class GraphHost {
     private(set) var continuations: [() -> Void] = []
     private(set) var mayDeferUpdate = true
     private(set) var removedState: RemovedState = []
-        
-    private static let sharedGraph = OGGraph()
+
+    // MARK: - static properties and methods
     
     static var currentHost: GraphHost {
         if let currentAttribute = OGAttribute.current {
@@ -35,9 +37,25 @@ class GraphHost {
         }
     }
     
-    // FIXME
-    static var isUpdating = false
-
+    static var isUpdating: Bool {
+        sharedGraph.counter(for: ._7) != 0
+    }
+    
+    static func globalTransaction<Mutation: GraphMutation>(
+        _ transaction: Transaction,
+        mutation: Mutation,
+        hostProvider: TransactionHostProvider
+    ) {
+        fatalError("TODO")
+    }
+    
+    private static func flushGlobalTransactions() {
+        fatalError("TODO")
+    }
+    
+    private static let sharedGraph = OGGraph()
+    private static var pendingGlobalTransactions: [GlobalTransaction] = []
+    
     // MARK: - inheritable methods
     
     init(data: Data) {
@@ -86,6 +104,18 @@ class GraphHost {
         blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
     }
     
+    final var graph: OGGraph { data.graph! }
+    final var graphInputs: _GraphInputs { data.inputs }
+    final var environment: EnvironmentValues { data.environment }
+    final var isValid: Bool { data.graph != nil }
+    final var isUpdating: Bool {
+        guard let graph = data.graph else {
+            return false
+        }
+        return graph.counter(for: ._6) != 0
+    }
+    final var hasPendingTransactions: Bool { !pendingTransactions.isEmpty }
+    
     final func instantiate() {
         guard !isInstantiated else {
             return
@@ -114,9 +144,7 @@ class GraphHost {
         }
         // TODO
     }
-    
-    final var graph: OGGraph { data.graph! }
-    
+        
     final func graphInvalidation(from attribute: OGAttribute?) {
         guard let attribute else {
             graphDelegate?.graphDidChange()
@@ -240,5 +268,13 @@ extension OGGraph {
     
     fileprivate final func setGraphHost(_ graphHost: GraphHost) {
         context = UnsafeRawPointer(Unmanaged.passUnretained(graphHost).toOpaque())
+    }
+}
+
+private final class GlobalTransaction {
+    let hostProvider: TransactionHostProvider
+
+    init(transaction _: Transaction, hostProvider: TransactionHostProvider) {
+        self.hostProvider = hostProvider
     }
 }
