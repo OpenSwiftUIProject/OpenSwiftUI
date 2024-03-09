@@ -2,47 +2,98 @@
 //  GraphHost.swift
 //  OpenSwiftUI
 //
-//  Lastest Version: iOS 15.5
+//  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: 30C09FF16BC95EC5173809B57186CAC3
 
 internal import COpenSwiftUI
 internal import OpenGraphShims
 
+private let waitingForPreviewThunks = EnvironmentHelper.value(for: "XCODE_RUNNING_FOR_PREVIEWS") != 0
+private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
+
 class GraphHost {
-    var data: Data
-    var isInstantiated: Bool
-    var hostPreferenceValues: OptionalAttribute<PreferenceList>
-    var lastHostPreferencesSeed: VersionSeed
-    private var pendingTransactions: [AsyncTransaction]
-    var inTransaction: Bool
-    var continuations: [() -> ()]
-    var mayDeferUpdate: Bool
-    var removedState: RemovedState
+    // MARK: - Properties
     
-    // FIXME
-    static var isUpdating = false
+    private(set) var data: Data
+    private(set) var isInstantiated = false
+    private(set) var hostPreferenceValues: OptionalAttribute<PreferenceList>
+    private(set) var lastHostPreferencesSeed: VersionSeed = .invalid
+    private var pendingTransactions: [AsyncTransaction] = []
+    private(set) var inTransaction = false
+    private(set) var continuations: [() -> Void] = []
+    private(set) var mayDeferUpdate = true
+    private(set) var removedState: RemovedState = []
+
+    // MARK: - static properties and methods
+    
+    static var currentHost: GraphHost {
+        #if canImport(Darwin)
+        if let currentAttribute = OGAttribute.current {
+            currentAttribute.graph.graphHost()
+        } else if let currentSubgraph = OGSubgraph.current {
+            currentSubgraph.graph.graphHost()
+        } else {
+            fatalError("no current graph host")
+        }
+        #else
+        fatalError("Compiler issue on Linux. See #39")
+        #endif
+    }
+    
+    static var isUpdating: Bool {
+        sharedGraph.counter(for: ._7) != 0
+    }
+    
+    static func globalTransaction<Mutation: GraphMutation>(
+        _ transaction: Transaction,
+        mutation: Mutation,
+        hostProvider: TransactionHostProvider
+    ) {
+        fatalError("TODO")
+    }
+    
+    private static func flushGlobalTransactions() {
+        fatalError("TODO")
+    }
     
     private static let sharedGraph = OGGraph()
-
-    // MARK: - non final methods
+    private static var pendingGlobalTransactions: [GlobalTransaction] = []
+    
+    // MARK: - inheritable methods
     
     init(data: Data) {
+        #if canImport(Darwin)
+        if !Thread.isMainThread {
+            Log.runtimeIssues("calling into OpenSwiftUI on a non-main thread is not supported")
+        }
+        #endif
+        hostPreferenceValues = OptionalAttribute()
         self.data = data
-        isInstantiated = false
-        // TODO
-        fatalError("TODO")
+        OGGraph.setUpdateCallback(graph) { [weak self] in
+            guard let self,
+                  let graphDelegate
+            else { return }
+            graphDelegate.updateGraph { _ in }
+        }
+        #if canImport(Darwin)
+        OGGraph.setInvalidationCallback(graph) { [weak self] attribute in
+            guard let self else { return }
+            graphInvalidation(from: attribute)
+        }
+        #endif
+        graph.setGraphHost(self)
     }
     
     func invalidate() {
         if isInstantiated {
-            // data.globalSubgraph.apply
+            data.globalSubgraph.willInvalidate(isInserted: false)
             isInstantiated = false
         }
-        if let _ = data.graph {
+        if let graph = data.graph {
             data.globalSubgraph.invalidate()
-            // graph.context = nil
-            // graph.invalidate()
+            graph.context = nil
+            graph.invalidate()
             data.graph = nil
         }
     }
@@ -56,6 +107,80 @@ class GraphHost {
     
     // MARK: - final methods
     
+    deinit {
+        invalidate()
+        blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
+    }
+    
+    // MARK: - data
+    
+    final var graph: OGGraph { data.graph! }
+    final var graphInputs: _GraphInputs { data.inputs }
+    
+    final func setTime(_ time: Time) {
+        guard data.time == time else {
+            return
+        }
+        data.time = time
+        timeDidChange()
+    }
+    
+    final var environment: EnvironmentValues { data.environment }
+    
+    final func setEnvironment(_ environment: EnvironmentValues) {
+        data.environment = environment
+    }
+    
+    final func setPhase(_ phase: _GraphInputs.Phase) {
+        data.phase = phase
+    }
+    
+    // TODO: _ArchivedViewHost.reset()
+    final func incrementPhase() {
+        var data = data
+        data.phase.value += 2
+        graphDelegate?.graphDidChange()
+    }
+    
+    final func preferenceValues() -> PreferenceList {
+        instantiateIfNeeded()
+        return hostPreferenceValues.value ?? PreferenceList()
+    }
+    
+    final func preferenceValue<Key: HostPreferenceKey>(_ key: Key.Type) -> Key.Value {
+        fatalError("TODO")
+    }
+    
+    final func addPreference<Key: HostPreferenceKey>(_ key: Key.Type) {
+        fatalError("TODO")
+    }
+    
+    final func updatePreferences() -> Bool {
+        fatalError("TODO")
+    }
+    
+    final func updateRemovedState() {
+        fatalError("TODO")
+    }
+    
+    final func intern<Value>(_ value: Value, id: _GraphInputs.ConstantID) -> Attribute<Value> {
+        fatalError("TODO")
+    }
+    
+    final func setNeedsUpdate(mayDeferUpdate: Bool) {
+        fatalError("TODO")
+    }
+    
+    // MARK: - instantiate and uninstantiate
+    
+    final var isValid: Bool { data.graph != nil }
+    final var isUpdating: Bool {
+        guard let graph = data.graph else {
+            return false
+        }
+        return graph.counter(for: ._6) != 0
+    }
+    
     final func instantiate() {
         guard !isInstantiated else {
             return
@@ -63,6 +188,95 @@ class GraphHost {
         graphDelegate?.updateGraph { _ in }
         instantiateOutputs()
         isInstantiated = true
+    }
+    
+    final func instantiateIfNeeded() {
+        guard !isInstantiated else {
+            return
+        }
+        if waitingForPreviewThunks {
+            if !blockedGraphHosts.contains(where: { $0.takeUnretainedValue() === self }) {
+                blockedGraphHosts.append(.passUnretained(self))
+            }
+        } else {
+            instantiate()
+        }
+    }
+    
+    final func uninstantiate(immediately: Bool) {
+        guard isInstantiated else {
+            return
+        }
+        // TODO
+    }
+    
+    final func graphInvalidation(from attribute: OGAttribute?) {
+        #if canImport(Darwin)
+        guard let attribute else {
+            graphDelegate?.graphDidChange()
+            return
+        }
+        let host = attribute.graph.graphHost()
+        let transaction = host.data.transaction
+        mayDeferUpdate = mayDeferUpdate ? host.mayDeferUpdate : false
+        if transaction.isEmpty {
+            graphDelegate?.graphDidChange()
+        } else {
+            asyncTransaction(
+                transaction,
+                mutation: EmptyGraphMutation(), 
+                style: ._1,
+                mayDeferUpdate: true
+            )
+        }
+        #endif
+    }
+    
+    // MARK: - Transaction
+        
+    final var hasPendingTransactions: Bool { !pendingTransactions.isEmpty }
+
+    final func asyncTransaction<Mutation: GraphMutation>(
+        _ transaction: Transaction,
+        mutation: Mutation,
+        style: _GraphMutation_Style,
+        mayDeferUpdate: Bool
+    ) {
+        // TODO
+    }
+    
+    final func flushTransactions() {
+        guard isValid else {
+            return
+        }
+        guard !pendingTransactions.isEmpty else {
+            return
+        }
+        let transactions = pendingTransactions
+        pendingTransactions = []
+        for _ in transactions {
+            instantiateIfNeeded()
+            // TODO
+        }
+        graphDelegate?.graphDidChange()
+        mayDeferUpdate = true
+    }
+    
+    final func continueTransaction(_ body: @escaping () -> Void) {
+        var host = self
+        while(!host.inTransaction) {
+            guard let parent = host.parentHost else {
+                asyncTransaction(
+                    Transaction(),
+                    mutation: CustomGraphMutation(body: body),
+                    style: ._1,
+                    mayDeferUpdate: true
+                )
+                return
+            }
+            host = parent
+        }
+        host.continuations.append(body)
     }
 }
 
@@ -147,5 +361,27 @@ private final class AsyncTransaction {
                 mutation.apply()
             }
         }
+    }
+}
+
+// MARK: - OGGraph + Extension
+
+extension OGGraph {
+    final func graphHost() -> GraphHost {
+        context!.assumingMemoryBound(to: GraphHost.self).pointee
+    }
+    
+    fileprivate final func setGraphHost(_ graphHost: GraphHost) {
+        context = UnsafeRawPointer(Unmanaged.passUnretained(graphHost).toOpaque())
+    }
+}
+
+// MARK: - GlobalTransaction
+
+private final class GlobalTransaction {
+    let hostProvider: TransactionHostProvider
+
+    init(transaction _: Transaction, hostProvider: TransactionHostProvider) {
+        self.hostProvider = hostProvider
     }
 }

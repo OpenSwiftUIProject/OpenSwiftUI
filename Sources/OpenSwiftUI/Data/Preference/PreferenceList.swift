@@ -9,6 +9,8 @@
 struct PreferenceList: CustomStringConvertible {
     fileprivate var first: PreferenceNode?
     
+    init() {}
+    
     subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Value<Key.Value> {
         get {
             guard let first,

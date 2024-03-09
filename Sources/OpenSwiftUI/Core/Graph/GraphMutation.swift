@@ -48,3 +48,8 @@ struct CustomGraphMutation: GraphMutation {
         false
     }
 }
+
+enum _GraphMutation_Style {
+    case _0
+    case _1
+}

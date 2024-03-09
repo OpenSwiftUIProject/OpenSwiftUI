@@ -37,3 +37,8 @@ struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObj
         base[keyPath: keyPath] = value
     }
 }
+
+extension ObservableObjectLocation: TransactionHostProvider {
+    // TODO
+    var mutationHost: GraphHost? { nil }
+}
