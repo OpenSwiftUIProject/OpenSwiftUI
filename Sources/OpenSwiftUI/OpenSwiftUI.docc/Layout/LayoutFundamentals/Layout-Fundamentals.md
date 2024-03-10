@@ -15,3 +15,8 @@ custom layout containers, see <doc:Custom-Layout>. For design guidance, see
 [Layout](https://developer.apple.com/design/human-interface-guidelines/foundations/layout) in the Human Interface Guidelines.
 
 ## Topics
+
+### Separators
+
+- ``Spacer``
+- ``Divider``
