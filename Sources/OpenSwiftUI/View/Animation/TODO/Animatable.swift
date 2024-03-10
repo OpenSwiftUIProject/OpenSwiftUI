@@ -41,11 +41,7 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
     }
 }
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 // MARK: - Animatable + CoreGraphics
 

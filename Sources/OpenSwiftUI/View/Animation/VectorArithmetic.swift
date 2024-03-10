@@ -56,11 +56,7 @@ extension Double: VectorArithmetic {
     }
 }
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 extension CGFloat: VectorArithmetic {
     @_transparent

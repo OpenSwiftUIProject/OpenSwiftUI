@@ -5,11 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 /// A view's size and alignment guides in its own coordinate space.
 ///

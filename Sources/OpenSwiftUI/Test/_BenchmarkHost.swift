@@ -6,11 +6,7 @@
 //  Status: Complete
 //  ID: 3E629D505F0A70F29ACFC010AA42C6E0
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 #if canImport(QuartzCore)
 import QuartzCore

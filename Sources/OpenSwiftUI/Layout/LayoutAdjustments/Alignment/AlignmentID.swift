@@ -5,11 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 /// A type that you use to create custom alignment guides.
 ///

@@ -1,10 +1,6 @@
 //  ID: CE19A3CEA6B9730579C42CE4C3071E74
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 struct ViewTransform {
     private var chunks: ContiguousArray<Chunk>
