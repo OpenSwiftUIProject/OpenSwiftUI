@@ -1,8 +1,4 @@
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 @frozen
 public struct _HStackLayout {

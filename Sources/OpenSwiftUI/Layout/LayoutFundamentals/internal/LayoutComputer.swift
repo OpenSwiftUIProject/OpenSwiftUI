@@ -5,11 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 // TODO:
 struct LayoutComputer: Equatable {

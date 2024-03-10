@@ -5,11 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Empty
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 @frozen
 public struct Text: Equatable {

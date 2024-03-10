@@ -5,11 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 /// The inset distances for the sides of a rectangle.
 @frozen

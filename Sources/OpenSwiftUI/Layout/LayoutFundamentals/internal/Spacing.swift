@@ -6,11 +6,7 @@
 //  Status: TODO
 //  ID: 127A76D3C8081D0134153BE9AE746714
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 struct Spacing {
     // TODO

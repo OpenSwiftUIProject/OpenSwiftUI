@@ -7,11 +7,7 @@
 
 @testable import OpenSwiftUI
 import Testing
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 struct AlignmentIDTests {
     private struct TestAlignment: AlignmentID {

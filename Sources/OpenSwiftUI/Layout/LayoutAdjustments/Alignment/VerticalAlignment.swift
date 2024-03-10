@@ -6,11 +6,7 @@
 //  Status: Complete
 //  ID: E20796D15DD3D417699102559E024115
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 /// An alignment position along the vertical axis.
 ///

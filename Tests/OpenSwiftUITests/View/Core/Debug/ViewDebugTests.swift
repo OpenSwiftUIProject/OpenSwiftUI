@@ -7,11 +7,7 @@
 
 @testable import OpenSwiftUI
 import Testing
-#if canImport(Darwin)
-import CoreGraphics
-#else
 import Foundation
-#endif
 
 struct ViewDebugTests {
     @Test(.disabled("Skip the test until we finish the implementation of _ViewDebug"))
