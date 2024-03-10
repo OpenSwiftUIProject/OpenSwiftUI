@@ -8,12 +8,14 @@
 
 #import <Foundation/Foundation.h>
 
+NS_ASSUME_NONNULL_BEGIN
 @interface _LSOpenConfiguration : NSObject
 @property(assign, getter=isSensitive,nonatomic) BOOL sensitive;
 @property(nonatomic, retain, nullable) id targetConnectionEndpoint;
--(nonnull instancetype)init;
+-(instancetype)init;
 -(BOOL)isSensitive;
 -(void)setSensitive:(BOOL)sensitive;
--(void)setTargetConnectionEndpoint:(id)endpoint ;
--(id)targetConnectionEndpoint;
+-(void)setTargetConnectionEndpoint:(nullable id)endpoint ;
+-(nullable id)targetConnectionEndpoint;
 @end
+NS_ASSUME_NONNULL_END
