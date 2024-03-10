@@ -8,7 +8,7 @@
 struct Indirect<A> {
     var box : MutableBox<A>
 
-    var value: A { box.value }
+    var value: A { box.wrappedValue }
 }
 
 extension Indirect: Equatable where A: Equatable {

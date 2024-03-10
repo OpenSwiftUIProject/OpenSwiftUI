@@ -7,7 +7,7 @@
 
 @propertyWrapper
 final class MutableBox<A> {
-    var value: A
+    private var value: A
 
     var wrappedValue: A {
         get { value }

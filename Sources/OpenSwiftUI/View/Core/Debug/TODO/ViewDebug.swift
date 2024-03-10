@@ -56,16 +56,16 @@ extension _ViewDebug {
             self.rawValue = rawValue
         }
 
-        public static let type = Property(rawValue: 1 << Property.type.rawValue)
-        public static let value = Property(rawValue: 1 << Property.value.rawValue)
-        public static let transform = Property(rawValue: 1 << Property.transform.rawValue)
-        public static let position = Property(rawValue: 1 << Property.position.rawValue)
-        public static let size = Property(rawValue: 1 << Property.size.rawValue)
-        public static let environment = Property(rawValue: 1 << Property.environment.rawValue)
-        public static let phase = Property(rawValue: 1 << Property.phase.rawValue)
-        public static let layoutComputer = Property(rawValue: 1 << Property.layoutComputer.rawValue)
-        public static let displayList = Property(rawValue: 1 << Property.displayList.rawValue)
-        public static let all = Property(rawValue: 0xFFFF_FFFF)
+        public static let type = Properties(rawValue: 1 << Property.type.rawValue)
+        public static let value = Properties(rawValue: 1 << Property.value.rawValue)
+        public static let transform = Properties(rawValue: 1 << Property.transform.rawValue)
+        public static let position = Properties(rawValue: 1 << Property.position.rawValue)
+        public static let size = Properties(rawValue: 1 << Property.size.rawValue)
+        public static let environment = Properties(rawValue: 1 << Property.environment.rawValue)
+        public static let phase = Properties(rawValue: 1 << Property.phase.rawValue)
+        public static let layoutComputer = Properties(rawValue: 1 << Property.layoutComputer.rawValue)
+        public static let displayList = Properties(rawValue: 1 << Property.displayList.rawValue)
+        public static let all = Properties(rawValue: 0xFFFF_FFFF)
     }
 }
 
