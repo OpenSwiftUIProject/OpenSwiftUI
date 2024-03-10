@@ -6,19 +6,24 @@
 //  Status: WIP
 //  ID: C424ABD9FC88B2DFD0B7B2319F2E7987
 
+import Foundation
 internal import OpenGraphShims
 
 struct CachedEnvironment {
     var environment: Attribute<EnvironmentValues>
     private var items: [Item]
+    #if canImport(Darwin)
     private var constants: [HashableConstant: OGAttribute]
+    #endif
     private var animatedFrame: AnimatedFrame?
     // private var resolvedFgStyles: [ResolvedFgStyle : Swift<_ShapeStyle_Resolved.ResolvedFg>]
     
     init(_ environment: Attribute<EnvironmentValues>) {
         self.environment = environment
         items = []
+        #if canImport(Darwin)
         constants = [:]
+        #endif
         animatedFrame = nil
         // resolvedFgStyles = [:]
     }
@@ -41,7 +46,9 @@ struct CachedEnvironment {
 extension CachedEnvironment {
     private struct Item {
         var key: PartialKeyPath<EnvironmentValues>
+        #if canImport(Darwin)
         var value: OGAttribute
+        #endif
     }
 }
 
