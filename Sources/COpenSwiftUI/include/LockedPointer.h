@@ -1,8 +1,9 @@
 //
 //  LockedPointer.h
-//  
+//  OpenSwiftUI
 //
-//
+//  Audited for RELEASE_2021
+//  Status: Complete
 
 #ifndef LockedPointer_h
 #define LockedPointer_h

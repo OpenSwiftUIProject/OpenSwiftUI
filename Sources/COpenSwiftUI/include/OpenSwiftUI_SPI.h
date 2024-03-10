@@ -2,7 +2,8 @@
 //  OpenSwiftUI_SPI.h
 //  OpenSwiftUI
 //
-//
+//  Audited for RELEASE_2021
+//  Status: WIP
 
 #ifndef OpenSwiftUI_SPI_h
 #define OpenSwiftUI_SPI_h
