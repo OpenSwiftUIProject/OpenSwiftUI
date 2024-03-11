@@ -1,8 +1,9 @@
 //
 //  TLS.h
-//  
+//  OpenSwiftUI
 //
-//
+//  Audited for RELEASE_2021
+//  Status: Complete
 
 #ifndef TLS_h
 #define TLS_h

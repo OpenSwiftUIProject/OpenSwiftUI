@@ -1,8 +1,9 @@
 //
 //  OpenSwiftUIBase.h
-//  
+//  OpenSwiftUI
 //
-//
+//  Audited for RELEASE_2021
+//  Status: Complete
 
 #ifndef OpenSwiftUIBase_h
 #define OpenSwiftUIBase_h

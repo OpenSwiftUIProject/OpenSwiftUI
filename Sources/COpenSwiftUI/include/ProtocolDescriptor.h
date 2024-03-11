@@ -1,8 +1,9 @@
 //
 //  ProtocolDescriptor_h
+//  OpenSwiftUI
 //
-//
-//
+//  Audited for RELEASE_2021
+//  Status: WIP
 
 #ifndef ProtocolDescriptor_h
 #define ProtocolDescriptor_h

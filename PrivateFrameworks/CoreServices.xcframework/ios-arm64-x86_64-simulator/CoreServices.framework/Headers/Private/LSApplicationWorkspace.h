@@ -9,8 +9,9 @@
 #import <Foundation/Foundation.h>
 #import "_LSOpenConfiguration.h"
 
+NS_ASSUME_NONNULL_BEGIN
 @interface LSApplicationWorkspace : NSObject
 +(nullable instancetype)defaultWorkspace;
--(void)openURL:(nonnull NSURL *)url configuration:(nonnull _LSOpenConfiguration *)config completionHandler:(void (^ _Nonnull)(BOOL))completion;
-
+-(void)openURL:(NSURL *)url configuration:(_LSOpenConfiguration *)config completionHandler:(void (^)(BOOL))completion;
 @end
+NS_ASSUME_NONNULL_END
