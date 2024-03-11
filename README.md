@@ -28,6 +28,20 @@ Currently, this project is in early development.
 
 See Example folder and try it with ExampleApp
 
+## Build
+
+### Build without testing framework
+
+```
+./Scripts/build
+```
+
+### Build with Library Evolution
+
+```
+./Scripts/openswiftui_swiftinterface
+```
+
 ## License
 
 See LICENSE file - MIT
