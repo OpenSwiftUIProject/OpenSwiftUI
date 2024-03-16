@@ -63,6 +63,11 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
+let swiftBinPath = Context.environment["_"] ?? ""
+let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
+let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
+let includePath = SDKPath.appending("/usr/lib/swift_static")
+
 let package = Package(
     name: "OpenSwiftUI",
     platforms: [
@@ -87,7 +92,11 @@ let package = Package(
             ]
         ),
         .target(
-            name: "COpenSwiftUI"
+            name: "COpenSwiftUI",
+            cSettings: [
+                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
+                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+            ]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         openSwiftUITarget,
@@ -195,4 +204,10 @@ if useLocalDeps {
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
     ]
+}
+
+extension [Platform] {
+    static var nonDarwinPlatforms: [Platform] {
+        [.linux, .android, .wasi, .openbsd, .windows]
+    }
 }

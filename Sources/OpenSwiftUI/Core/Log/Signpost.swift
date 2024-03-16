@@ -6,7 +6,9 @@
 //  Status: WIP
 //  ID: 34756F646CF7AC3DBE2A8E0B344C962F
 
+#if canImport(os)
 import os.signpost
+#endif
 
 struct Signpost {
     private let style: Style

@@ -8,6 +8,7 @@
 import COpenSwiftUI
 import Testing
 
+#if canImport(Darwin)
 final class MovableLockTests {
     let lock: MovableLock
 
@@ -31,3 +32,4 @@ final class MovableLockTests {
         #expect(lock.isOuterMostOwner() == false)
     }
 }
+#endif
