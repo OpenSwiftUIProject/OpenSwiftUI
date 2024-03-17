@@ -1,5 +1,5 @@
 //
-//  _UIGraphicsView.swift
+//  UIGraphicsView.swift
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
@@ -9,7 +9,7 @@
 internal import COpenSwiftUI
 import UIKit
 
-class _UIGraphicsView: UIView {
+class _UIGraphicsView: UIView {    
     override func _shouldAnimateProperty(withKey key: String) -> Bool {
         if layer.hasBeenCommitted() {
             super._shouldAnimateProperty(withKey: key)
