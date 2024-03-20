@@ -12,6 +12,10 @@ extension ViewRendererHost {
     func stopProfiling() {
         fatalError("TODO")
     }
+    
+    func render(interval: Double, updateDisplayList: Bool = true) {
+        // TODO
+    }
 }
 
 

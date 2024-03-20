@@ -17,6 +17,10 @@ open class _UIHostingView<Content>: UIView where Content: View {
     var inheritedEnvironment: EnvironmentValues?
     var environmentOverride: EnvironmentValues?
     weak var viewController: UIHostingController<Content>?
+    var displayLink: DisplayLink?
+    var lastRenderTime: Time = .zero
+    var canAdvanceTimeAutomatically = true
+    var allowLayoutWhenNotVisible = false
     var isEnteringForeground = false
     
     public init(rootView: Content) {
@@ -50,6 +54,23 @@ open class _UIHostingView<Content>: UIView where Content: View {
     
     open override func layoutSubviews() {
         super.layoutSubviews()
+        guard updatesWillBeVisible || allowLayoutWhenNotVisible else {
+            return
+        }
+        guard canAdvanceTimeAutomatically else {
+            return
+        }
+        Update.lock.withLock {
+            cancelAsyncRendering()
+            let interval: Double
+            if let displayLink, displayLink.willRender {
+                interval = .zero
+            } else {
+                interval = renderInterval(timestamp: .now) / UIAnimationDragCoefficient()
+            }
+            render(interval: interval)
+            allowLayoutWhenNotVisible = false
+        }
     }
     
     var updatesWillBeVisible: Bool {
@@ -70,6 +91,21 @@ open class _UIHostingView<Content>: UIView where Content: View {
             return environment.scenePhase != .background
         }
     }
+    
+    func cancelAsyncRendering() {
+        Update.lock.withLock {
+            displayLink?.cancelAsyncRendering()
+        }
+    }
+    
+    private func renderInterval(timestamp: Time) -> Double {
+        if lastRenderTime == .zero || lastRenderTime > timestamp {
+            lastRenderTime = timestamp - .microseconds(1)
+        }
+        let interval = timestamp - lastRenderTime
+        lastRenderTime = timestamp
+        return interval.seconds
+    }
 }
 
 extension _UIHostingView: ViewRendererHost {
@@ -82,4 +118,8 @@ extension UITraitCollection {
         EnvironmentValues()
     }
 }
+
+@_silgen_name("UIAnimationDragCoefficient")
+private func UIAnimationDragCoefficient() -> Double
+
 #endif
