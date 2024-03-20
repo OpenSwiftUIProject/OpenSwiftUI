@@ -63,7 +63,7 @@ enum Update {
         }
     }
     
-    @inlinable
+    @inline(__always)
     static func dispatchActions() {
         // FIXME
         for action in actions {
@@ -71,7 +71,7 @@ enum Update {
         }
     }
     
-    @inlinable
+    @inline(__always)
     static func syncMain(_ body: () -> Void) {
         // TODO
         fatalError("TODO")

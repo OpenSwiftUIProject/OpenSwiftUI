@@ -14,6 +14,8 @@ import UIKit
 @MainActor(unsafe)
 open class _UIHostingView<Content>: UIView where Content: View {
     private var _rootView: Content
+    var viewGraph: ViewGraph
+    var isRendering: Bool = false
     var inheritedEnvironment: EnvironmentValues?
     var environmentOverride: EnvironmentValues?
     weak var viewController: UIHostingController<Content>?
@@ -26,6 +28,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
     public init(rootView: Content) {
         // TODO
         _rootView = rootView
+        viewGraph = ViewGraph(rootViewType: Content.self, requestedOutputs: []) // Fixme
         // TODO
         // FIXME
         super.init(frame: .zero)
@@ -109,7 +112,6 @@ open class _UIHostingView<Content>: UIView where Content: View {
 }
 
 extension _UIHostingView: ViewRendererHost {
-    
 }
 
 extension UITraitCollection {
