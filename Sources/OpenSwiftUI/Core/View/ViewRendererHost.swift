@@ -1,20 +1,37 @@
-protocol ViewRendererHost {
-    // TODO
-    var viewGraph: ViewGraph { get set }
+//
+//  ViewRendererHost.swift
+//  OpenSwiftUI
+//
+//  Audited for RELEASE_2021
+//  Status: WIP
+
+internal import OpenGraphShims
+
+protocol ViewRendererHost: ViewGraphDelegate {
+    var viewGraph: ViewGraph { get }
+    var propertiesNeedingUpdate: ViewRendererHostProperties { get set }
     var isRendering: Bool { get set }
+    func requestUpdate(after: Double)
 }
 
 extension ViewRendererHost {
     func invalidateProperties(_ properties: ViewRendererHostProperties, mayDeferUpdate: Bool) {
-        fatalError("TODO")
+        Update.lock.withLock {
+            guard !propertiesNeedingUpdate.contains(properties) else {
+                return
+            }
+            propertiesNeedingUpdate.insert(properties)
+            viewGraph.setNeedsUpdate(mayDeferUpdate: mayDeferUpdate)
+            requestUpdate(after: .zero)
+        }
     }
     
     func startProfiling() {
-        fatalError("TODO")
+        OGGraph.startProfiling(viewGraph.graph)
     }
     
     func stopProfiling() {
-        fatalError("TODO")
+        OGGraph.stopProfiling(viewGraph.graph)
     }
     
     func render(interval: Double, updateDisplayList: Bool = true) {
@@ -25,7 +42,7 @@ extension ViewRendererHost {
         }
         // TODO
         viewGraph.flushTransactions()
-        // updateOutputs
+        viewGraph.updateOutputs()
     }
 }
 
