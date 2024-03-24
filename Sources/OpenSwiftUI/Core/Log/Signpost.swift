@@ -24,6 +24,8 @@ struct Signpost {
         }
     }
     
+    static let render = Signpost(style: .kdebug(0), stability: .published)
+    static let renderUpdate = Signpost(style: .kdebug(0), stability: .published)
     static let viewHost = Signpost(style: .kdebug(0), stability: .published)
 }
 

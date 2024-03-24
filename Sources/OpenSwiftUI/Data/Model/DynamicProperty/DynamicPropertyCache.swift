@@ -55,7 +55,7 @@ struct DynamicPropertyCache {
             fields = Fields(layout: .product([]))
         }
         if fields.behaviors.contains(.init(rawValue: 3)) {
-            Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", [_typeName(type)])
+            Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", ["\(type)"])
         }
         cache.wrappedValue[ObjectIdentifier(type)] = fields
         return fields

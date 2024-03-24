@@ -9,6 +9,7 @@ internal import OpenGraphShims
 
 protocol ViewRendererHost: ViewGraphDelegate {
     var viewGraph: ViewGraph { get }
+    var currentTimestamp: Time { get set }
     var propertiesNeedingUpdate: ViewRendererHostProperties { get set }
     var isRendering: Bool { get set }
     func requestUpdate(after: Double)
@@ -40,12 +41,22 @@ extension ViewRendererHost {
         guard !isRendering else {
             return
         }
-        // TODO
-        viewGraph.flushTransactions()
-        viewGraph.updateOutputs()
+        let update = { [self] in
+            currentTimestamp.advancing(by: interval)
+            let time = currentTimestamp
+            viewGraph.flushTransactions()
+            // Signpost.renderUpdate
+            // TODO
+            viewGraph.updateOutputs(at: time)
+        }
+        if Signpost.render.isEnabled {
+            // TODO: Signpost related
+            update()
+        } else {
+            update()
+        }
     }
 }
-
 
 struct ViewRendererHostProperties: OptionSet {
     let rawValue: UInt16

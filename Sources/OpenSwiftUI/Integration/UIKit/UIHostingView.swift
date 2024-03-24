@@ -112,6 +112,59 @@ open class _UIHostingView<Content>: UIView where Content: View {
 }
 
 extension _UIHostingView: ViewRendererHost {
+    var currentTimestamp: Time {
+        get {
+            fatalError("TODO")
+        }
+        set {
+            fatalError("TODO")
+        }
+    }
+    
+    var propertiesNeedingUpdate: ViewRendererHostProperties {
+        get {
+            fatalError("TODO")
+        }
+        set {
+            fatalError("TODO")
+        }
+    }
+    
+    func requestUpdate(after: Double) {
+        // TODO
+    }
+    
+    func modifyViewInputs(_ inputs: inout _ViewInputs) {
+        // TODO
+    }
+    
+    func updateViewGraph<Value>(body: (ViewGraph) -> Value) -> Value {
+        fatalError("TODO")
+    }
+    
+    func outputsDidChange(outputs: ViewGraph.Outputs) {
+        // TODO
+    }
+    
+    func focusDidChange() {
+        // TODO
+    }
+    
+    func rootTransform() -> ViewTransform {
+        fatalError("TODO")
+    }
+    
+    func updateGraph<V>(body: (GraphHost) -> V) -> V {
+        fatalError("TODO")
+    }
+    
+    func graphDidChange() {
+        // TODO
+    }
+    
+    func preferencesDidChange() {
+        // TODO
+    }
 }
 
 extension UITraitCollection {

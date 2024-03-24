@@ -3,12 +3,11 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: WIP
-
+//  Status: Complete
 
 import Foundation
 
 struct SizeThatFitsObserver {
     var proposal: _ProposedSize
-//    var callback: 
+    var callback: (CGSize, CGSize) -> Void
 }
