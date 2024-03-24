@@ -44,6 +44,7 @@ final class ViewGraph: GraphHost {
     // TODO
     
     init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
+        #if canImport(Darwin)
         self.rootViewType = rootViewType
         self.requestedOutputs = requestedOutputs
         
@@ -66,6 +67,9 @@ final class ViewGraph: GraphHost {
         }
         super.init(data: data)
         OGSubgraph.current = nil
+        #else
+        fatalError("TOOD")
+        #endif
     }
     
     @inline(__always)
@@ -81,6 +85,7 @@ final class ViewGraph: GraphHost {
     }
     
     private func updateOutputs() {
+        #if canImport(Darwin)
         instantiateIfNeeded()
         
         let oldCachedSizeThatFits = cachedSizeThatFits
@@ -130,6 +135,7 @@ final class ViewGraph: GraphHost {
             fatalError("TODO")
         }
         mainUpdates &-= 1
+        #endif
     }
     
     private func updateObservedSizeThatFits() -> Bool {

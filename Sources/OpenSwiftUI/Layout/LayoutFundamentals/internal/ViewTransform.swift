@@ -1,6 +1,5 @@
 //  ID: CE19A3CEA6B9730579C42CE4C3071E74
 
-#if canImport(Darwin)
 import Foundation
 
 struct ViewTransform {
@@ -42,7 +41,9 @@ extension ViewTransform {
 extension ViewTransform {
     enum Item/*: Codable*/ {
         case translation(CGSize)
+        #if canImport(Darwin)
         case affineTransform(CGAffineTransform, inverse: Bool)
+        #endif
         case projectionTransform(ProjectionTransform, inverse: Bool)
         case coordinateSpace(name: AnyHashable)
         case sizedSpace(name: AnyHashable, size: CGSize)
@@ -51,8 +52,7 @@ extension ViewTransform {
         enum CodingKeys: CodingKey {
             case translation
             case affineTransform
-             case projection
+            case projection
         }
     }
 }
-#endif
