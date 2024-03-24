@@ -13,7 +13,7 @@ final class ViewGraph: GraphHost {
     let rootViewType: Any.Type
     let makeRootView: (OGAttribute, _ViewInputs) -> _ViewOutputs
     weak var delegate: ViewGraphDelegate?
-    var centersRootView: Bool
+    var centersRootView: Bool = true
     let rootView: OGAttribute
     @Attribute var rootTransform: ViewTransform
     @Attribute var zeroPoint: ViewOrigin
@@ -25,7 +25,7 @@ final class ViewGraph: GraphHost {
     @Attribute var dimensions: ViewSize
     @Attribute var updateSeed: UInt32
     // TODO
-    var cachedSizeThatFits: CGSize
+    var cachedSizeThatFits: CGSize = .invalidValue
     var sizeThatFitsObserver: SizeThatFitsObserver? {
         didSet {
             guard let _ = sizeThatFitsObserver else {
@@ -37,15 +37,35 @@ final class ViewGraph: GraphHost {
         }
     }
     var requestedOutputs: Outputs
-    var disabledOutputs: Outputs
-    var mainUpdates: Int
-    var needsFocusUpdate: Bool
-    var nextUpdate: NextUpdate
+    var disabledOutputs: Outputs = []
+    var mainUpdates: Int = 0
+    var needsFocusUpdate: Bool = false
+    var nextUpdate: (views: NextUpdate, gestures: NextUpdate) = (NextUpdate(time: .infinity), NextUpdate(time: .infinity))
+    // TODO
     
-    init<Body: View>(rootViewType type: Body.Type, requestedOutputs: Outputs) {
-        rootViewType = type
-        fatalError("TODO")
-//        super.init(data: Data())
+    init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
+        self.rootViewType = rootViewType
+        self.requestedOutputs = requestedOutputs
+        
+        let data = GraphHost.Data()
+        OGSubgraph.current = data.globalSubgraph
+        rootView = Attribute(type: Body.self).identifier
+        _rootTransform = Attribute(RootTransform())
+        _zeroPoint = Attribute(value: .zero)
+        // TODO
+        _proposedSize = Attribute(value: .zero)
+        // TODO
+        _rootGeometry = Attribute(RootGeometry()) // FIXME
+        _position = _rootGeometry.origin()
+        _dimensions = _rootGeometry.size()
+        _updateSeed = Attribute(value: .zero)
+        // FIXME
+        makeRootView = { view, inputs in
+            let rootView = _GraphValue<Body>(view.unsafeCast(to: Body.self))
+            return Body._makeView(view: rootView, inputs: inputs)
+        }
+        super.init(data: data)
+        OGSubgraph.current = nil
     }
     
     @inline(__always)
@@ -107,7 +127,7 @@ final class ViewGraph: GraphHost {
                 delegate?.focusDidChange()
             }
         } else {
-            // TODO
+            fatalError("TODO")
         }
         mainUpdates &-= 1
     }
@@ -125,6 +145,26 @@ final class ViewGraph: GraphHost {
     // MARK: - Override Methods
     
     override var graphDelegate: GraphDelegate? { delegate }
+    override var parentHost: GraphHost? {
+        // TODO: _preferenceBridge
+        nil
+    }
+    
+    override func instantiateOutputs() {
+        // TODO
+    }
+    
+    override func uninstantiateOutputs() {
+        // TODO
+    }
+    
+    override func timeDidChange() {
+        // TODO
+    }
+    
+    override func isHiddenForReuseDidChange() {
+        // TODO
+    }
 }
 
 extension ViewGraph {
@@ -132,6 +172,13 @@ extension ViewGraph {
         var time: Time
         var _interval: Double
         var reasons: Set<UInt32>
+        
+        @inline(__always)
+        init(time: Time) {
+            self.time = time
+            _interval = .infinity
+            reasons = []
+        }
     }
 }
 
@@ -140,5 +187,22 @@ extension ViewGraph {
         let rawValue: UInt8
         
         static var layout: Outputs { .init(rawValue: 1 << 4) }
+    }
+}
+
+private struct RootTransform: Rule {
+    var value: ViewTransform {
+        let graph = GraphHost.currentHost as! ViewGraph
+        guard let delegate = graph.delegate else {
+            return ViewTransform()
+        }
+        return delegate.rootTransform()
+    }
+}
+
+struct RootGeometry: Rule {
+    var value: ViewGeometry {
+        // FIXME
+        .zero
     }
 }

@@ -11,4 +11,4 @@ cd $OPENSWIFTUI_ROOT
 
 export OPENSWIFTUI_SWIFT_TESTING=0
 export OPENGRAPH_SWIFT_TESTING=0
-swift build -c release -Xswiftc -emit-module-interface -Xswiftc -enable-library-evolution
+swift build -Xswiftc -emit-module-interface -Xswiftc -enable-library-evolution
