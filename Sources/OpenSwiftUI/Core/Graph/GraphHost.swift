@@ -20,8 +20,8 @@ class GraphHost {
     private(set) var hostPreferenceValues: OptionalAttribute<PreferenceList>
     private(set) var lastHostPreferencesSeed: VersionSeed = .invalid
     private var pendingTransactions: [AsyncTransaction] = []
-    private(set) var inTransaction = false
-    private(set) var continuations: [() -> Void] = []
+    /*private(set)*/ var inTransaction = false
+    /*private(set)*/ var continuations: [() -> Void] = []
     private(set) var mayDeferUpdate = true
     private(set) var removedState: RemovedState = []
 
@@ -156,7 +156,8 @@ class GraphHost {
     }
     
     final func updatePreferences() -> Bool {
-        fatalError("TODO")
+        // fatalError("TODO")
+        return false
     }
     
     final func updateRemovedState() {

@@ -181,6 +181,9 @@ public struct ViewDimensions {
     subscript(explicit key: AlignmentKey) -> CGFloat? {
         guideComputer.delegate.explicitAlignment(key, at: size)
     }
+    
+    @inline(__always)
+    static var zero: ViewDimensions { ViewDimensions(guideComputer: .defaultValue, size: .zero) }
 }
 
 extension ViewDimensions: Equatable {}

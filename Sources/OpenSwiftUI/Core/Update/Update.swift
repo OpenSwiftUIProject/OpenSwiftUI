@@ -19,7 +19,7 @@ extension MovableLock {
 
 enum Update {
     static let trackHost: AnyObject = TraceHost()
-    private static let lock = MovableLock.create()
+    static let lock = MovableLock.create()
     private static var depth = 0
     private static var actions: [() -> Void] = []
     
@@ -63,7 +63,7 @@ enum Update {
         }
     }
     
-    @inlinable
+    @inline(__always)
     static func dispatchActions() {
         // FIXME
         for action in actions {
@@ -71,7 +71,7 @@ enum Update {
         }
     }
     
-    @inlinable
+    @inline(__always)
     static func syncMain(_ body: () -> Void) {
         // TODO
         fatalError("TODO")
