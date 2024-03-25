@@ -19,14 +19,8 @@ class ViewController: UINavigationController {
     }
 }
 
-struct ContentView: UIViewRepresentable {
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .red
-        return view
-    }
-    
-    func updateUIView(_ uiView: UIView, context: Context) {
-        print("Update UIView")
+struct ContentView: View {
+    var body: some View {
+        EmptyView()
     }
 }

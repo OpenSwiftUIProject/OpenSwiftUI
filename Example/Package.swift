@@ -17,11 +17,12 @@ let package = Package(
     name: "Example",
     platforms: [
         .macOS(.v10_15),
+        .iOS(.v13),
     ],
     products: [.executable(name: "Example", targets: ["Example"])],
     dependencies: [
         .package(path: "../"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
+        .package(path: "../../OpenGraph")
     ],
     targets: [
         exampleTarget,
