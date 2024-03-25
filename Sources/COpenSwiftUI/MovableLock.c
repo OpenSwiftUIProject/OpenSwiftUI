@@ -95,7 +95,7 @@ void _MovableLockSyncMain(MovableLock lock, const void *context, void (*function
             pthread_cond_signal_thread_np(&lock->cond1, lock->main);
         } else if (!lock->unknown4) {
             lock->unknown4 = true;
-            dispatch_async_f(dispatch_get_main_queue(), lock, &sync_main_callback);
+            dispatch_async_f(dispatch_get_main_queue(), lock, (dispatch_function_t)&sync_main_callback);
             if (lock->unknown5) {
                 pthread_cond_signal_thread_np(&lock->cond1, lock->main);
             }
