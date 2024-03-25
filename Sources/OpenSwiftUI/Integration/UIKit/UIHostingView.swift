@@ -15,6 +15,8 @@ import UIKit
 open class _UIHostingView<Content>: UIView where Content: View {
     private var _rootView: Content
     var viewGraph: ViewGraph
+    var currentTimestamp: Time = .zero
+    var propertiesNeedingUpdate: ViewRendererHostProperties = []
     var isRendering: Bool = false
     var inheritedEnvironment: EnvironmentValues?
     var environmentOverride: EnvironmentValues?
@@ -112,24 +114,6 @@ open class _UIHostingView<Content>: UIView where Content: View {
 }
 
 extension _UIHostingView: ViewRendererHost {
-    var currentTimestamp: Time {
-        get {
-            fatalError("TODO")
-        }
-        set {
-            fatalError("TODO")
-        }
-    }
-    
-    var propertiesNeedingUpdate: ViewRendererHostProperties {
-        get {
-            fatalError("TODO")
-        }
-        set {
-            fatalError("TODO")
-        }
-    }
-    
     func requestUpdate(after: Double) {
         // TODO
     }

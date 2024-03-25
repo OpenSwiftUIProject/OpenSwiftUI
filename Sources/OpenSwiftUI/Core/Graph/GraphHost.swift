@@ -137,7 +137,6 @@ class GraphHost {
     
     // TODO: _ArchivedViewHost.reset()
     final func incrementPhase() {
-        var data = data
         data.phase.value += 2
         graphDelegate?.graphDidChange()
     }
