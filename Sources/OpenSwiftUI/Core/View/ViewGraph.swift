@@ -165,7 +165,7 @@ final class ViewGraph: GraphHost {
     }
     
     override func timeDidChange() {
-        // TODO
+        nextUpdate.views = NextUpdate(time: .infinity)
     }
     
     override func isHiddenForReuseDidChange() {
@@ -184,6 +184,20 @@ extension ViewGraph {
             self.time = time
             _interval = .infinity
             reasons = []
+        }
+        
+        // TODO: AnimatorState.nextUpdate
+        mutating func interval(_ value: Double, reason: UInt32?) {
+            if value == .zero {
+                if _interval > 1 / 60 {
+                    _interval = .infinity
+                }
+            } else {
+                _interval = min(value, _interval)
+            }
+            if let reason {
+                reasons.insert(reason)
+            }
         }
     }
 }
