@@ -9,8 +9,8 @@
 internal import OpenGraphShims
 
 struct PreferencesOutputs {
-    private var preferences: [KeyValue]
-    private var debugProperties: _ViewDebug.Properties
+    private var preferences: [KeyValue] = []
+    private var debugProperties: _ViewDebug.Properties = []
     
     subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Attribute<Key.Value>? {
         get {

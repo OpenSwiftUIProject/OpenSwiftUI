@@ -46,7 +46,15 @@ class PreferenceBridge {
     }
     
     func addHostValue(_ value: Attribute<PreferenceList>, for: Attribute<PreferenceKeys>) {
-        
+        guard let combiner = _hostPreferencesCombiner.attribute else {
+            return
+        }
+        combiner.mutateBody(
+            as: HostPreferencesCombiner.self,
+            invalidating: true
+        ) { combiner in
+            // TODO
+        }
     }
     
     func addChild(_ child: ViewGraph) {
