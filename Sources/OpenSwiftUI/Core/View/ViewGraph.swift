@@ -41,6 +41,13 @@ final class ViewGraph: GraphHost {
     var mainUpdates: Int = 0
     var needsFocusUpdate: Bool = false
     var nextUpdate: (views: NextUpdate, gestures: NextUpdate) = (NextUpdate(time: .infinity), NextUpdate(time: .infinity))
+    private weak var _preferenceBridge: PreferenceBridge?
+    var preferenceBridge: PreferenceBridge? {
+        get { _preferenceBridge }
+        // FIXME: TO BE CONFIRMED
+        set { setPreferenceBridge(to: newValue, isInvalidating: newValue == nil) }
+    }
+    var bridgedPreferences: [(AnyPreferenceKey.Type, OGAttribute)] = []
     // TODO
     
     init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
@@ -146,6 +153,14 @@ final class ViewGraph: GraphHost {
     private func updateRequestedOutputs() -> Outputs {
         // TODO
         return []
+    }
+    
+    func clearPreferenceBridge() {
+        setPreferenceBridge(to: nil, isInvalidating: true)
+    }
+    
+    private func setPreferenceBridge(to bridge: PreferenceBridge?, isInvalidating: Bool) {
+        // TODO
     }
     
     // MARK: - Override Methods

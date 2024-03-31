@@ -1,4 +1,7 @@
+internal import OpenGraphShims
+
 public struct _ViewOutputs {
-//    var preferences : PreferencesOutputs
-//    var _layoutComputer : OptionalAttribute<LayoutComputer>
+    var preferences : PreferencesOutputs
+    @OptionalAttribute
+    var layoutComputer: LayoutComputer?
 }

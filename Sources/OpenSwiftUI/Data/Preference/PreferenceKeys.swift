@@ -6,11 +6,9 @@
 //  Status: Complete
 
 struct PreferenceKeys {
-    private var keys: [AnyPreferenceKey.Type]
+    private var keys: [AnyPreferenceKey.Type] = []
     
-    init() {
-        self.keys = []
-    }
+    init() {}
 }
 
 extension PreferenceKeys: RandomAccessCollection, MutableCollection {
@@ -23,14 +21,6 @@ extension PreferenceKeys: RandomAccessCollection, MutableCollection {
     
     mutating func add(_ key: AnyPreferenceKey.Type) {
         keys.append(key)
-    }
-    
-    func contains<Key: PreferenceKey>(_: Key.Type) -> Bool {
-        contains(_AnyPreferenceKey<Key>.self)
-    }
-    
-    func contains(_ key: AnyPreferenceKey.Type) -> Bool {
-        keys.contains { $0 == key }
     }
     
     mutating func remove<Key: PreferenceKey>(_: Key.Type) {
@@ -46,11 +36,34 @@ extension PreferenceKeys: RandomAccessCollection, MutableCollection {
         }
     }
     
+    func contains<Key: PreferenceKey>(_: Key.Type) -> Bool {
+        contains(_AnyPreferenceKey<Key>.self)
+    }
+    
+    func contains(_ key: AnyPreferenceKey.Type) -> Bool {
+        keys.contains { $0 == key }
+    }
+    
     var isEmpty: Bool { keys.isEmpty }
 
     subscript(position: Int) -> AnyPreferenceKey.Type {
         get { keys[position] }
         set { keys[position] = newValue }
+    }
+    
+    mutating func merge(_ preferenceKeys: PreferenceKeys) {
+        for key in preferenceKeys.keys {
+            guard !contains(key) else {
+                continue
+            }
+            add(key)
+        }
+    }
+    
+    func merging(_ preferenceKeys: PreferenceKeys) -> PreferenceKeys {
+        var result = self
+        result.merge(preferenceKeys)
+        return result
     }
 }
 
