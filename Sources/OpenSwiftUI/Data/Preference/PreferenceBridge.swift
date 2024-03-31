@@ -21,6 +21,78 @@ class PreferenceBridge {
         viewGraph = GraphHost.currentHost as! ViewGraph
     }
     
+    func addValue(_ value: OGAttribute, for keyType: AnyPreferenceKey.Type) {
+        struct AddValue: PreferenceKeyVisitor {
+            var combiner: OGAttribute
+            var value: OGAttribute
+            func visit<Key: PreferenceKey>(key: Key.Type) {
+                combiner.mutateBody(
+                    as: PreferenceCombiner<Key>.self,
+                    invalidating: true
+                ) { combiner in
+                    combiner.attributes.append(WeakAttribute(base: OGWeakAttribute(value)))
+                }
+            }
+        }
+        guard let bridgedPreference = bridgedPreferences.first(where: { $0.key == keyType }) else {
+            return
+        }
+        guard let combiner = bridgedPreference.combiner.attribute else {
+            return
+        }
+        var visitor = AddValue(combiner: combiner, value: value)
+        keyType.visitKey(&visitor)
+        viewGraph.graphInvalidation(from: value)
+    }
+    
+    func addHostValue(_ value: Attribute<PreferenceList>, for: Attribute<PreferenceKeys>) {
+        
+    }
+    
+    func addChild(_ child: ViewGraph) {
+        
+    }
+    
+    func removeValue(_ value: OGAttribute, for keyType: AnyPreferenceKey.Type, isInvalidating: Bool) {
+        struct RemoveValue: PreferenceKeyVisitor {
+            var combiner: OGAttribute
+            var value: OGAttribute
+            var changed = false
+            mutating func visit<Key: PreferenceKey>(key: Key.Type) {
+                combiner.mutateBody(
+                    as: PreferenceCombiner<Key>.self,
+                    invalidating: true
+                ) { combiner in
+                    guard let index = combiner.attributes.firstIndex(where: { $0.attribute?.identifier == value }) else {
+                        return
+                    }
+                    combiner.attributes.remove(at: index)
+                    changed = true
+                }
+            }
+        }
+        guard let bridgedPreference = bridgedPreferences.first(where: { $0.key == keyType }) else {
+            return
+        }
+        guard let combiner = bridgedPreference.combiner.attribute else {
+            return
+        }
+        var visitor = RemoveValue(combiner: combiner, value: value)
+        keyType.visitKey(&visitor)
+        if visitor.changed {
+            viewGraph.graphInvalidation(from: isInvalidating ? nil : value)
+        }
+    }
+    
+//    func removeHostValue
+//    func removeChild
+    
+    func removedStateDidChange() {
+        for child in children {
+            child.takeUnretainedValue().updateRemovedState()
+        }
+    }
+    
     func invalidate() {
         requestedPreferences = PreferenceKeys()
         bridgedViewInputs = PropertyList()
@@ -38,7 +110,16 @@ class PreferenceBridge {
         // TODO
     }
     
-//    wrapOutputs(_: inout SwiftUI.PreferencesOutputs, inputs: SwiftUI._ViewInputs) -> ()
+    func wrapOutputs(_ outputs: inout PreferencesOutputs, inputs: _ViewInputs) {
+        struct MakeCombiner: PreferenceKeyVisitor {
+            var result: OGAttribute?
+            
+            func visit<Key>(key: Key.Type) where Key : PreferenceKey {
+                // TODO
+            }
+        }
+        // TODO
+    }
 }
 
 extension PreferenceBridge {
@@ -62,10 +143,6 @@ private struct MergePreferenceKeys: Rule, AsyncAttribute {
     }
 }
 
-//
-
-
-//; struct SwiftUI.PreferenceBridge.moveValue.AddValue {
-//                            ;     var combiner: __C.AGAttribute
-//                            ;     var value: __C.AGAttribute
-//                            ; }
+struct PreferenceCombiner<Key: PreferenceKey> {
+    var attributes: [WeakAttribute<Key.Value>]
+}
