@@ -15,7 +15,7 @@ struct PreferenceList: CustomStringConvertible {
         get {
             guard let first,
                   let node = first.find(key: keyType) else {
-                return Value(value: keyType.defaultValue, seed: .zero)
+                return Value(value: keyType.defaultValue, seed: .empty)
             }
             return Value(value: node.value, seed: node.seed)
         }
@@ -54,14 +54,14 @@ struct PreferenceList: CustomStringConvertible {
     
     mutating func modifyValue<Key: PreferenceKey>(for keyType: Key.Type, transform: Value < (inout Key.Value) -> Void>) {
         var value = self[keyType]
-        value.seed = value.seed.merge(transform.seed)
+        value.seed.merge(transform.seed)
         transform.value(&value.value)
         removeValue(for: keyType)
         first = _PreferenceNode<Key>(value: value.value, seed: value.seed, next: first)
     }
     
     var description: String {
-        var description = "\((first?.mergedSeed ?? .zero).description): ["
+        var description = "\((first?.mergedSeed ?? .empty).description): ["
         var currentNode = first
         var shouldAddSeparator = false
         while let node = currentNode {
@@ -82,6 +82,11 @@ extension PreferenceList {
     struct Value<V> {
         var value: V
         var seed: VersionSeed
+        
+        init(value: V, seed: VersionSeed) {
+            self.value = value
+            self.seed = seed
+        }
     }
 }
 
@@ -94,12 +99,7 @@ private class PreferenceNode: CustomStringConvertible {
     init(keyType: Any.Type, seed: VersionSeed, next: PreferenceNode?) {
         self.keyType = keyType
         self.seed = seed
-        let seedResult: VersionSeed = if let next {
-            next.mergedSeed.merge(seed)
-        } else {
-            seed
-        }
-        self.mergedSeed = seedResult
+        self.mergedSeed = next?.mergedSeed.merging(seed) ?? seed
         self.next = next
     }
     
@@ -156,7 +156,7 @@ private class _PreferenceNode<Key: PreferenceKey>: PreferenceNode {
                 var value = self.value
                 var seed = self.seed
                 Key.reduce(value: &value) {
-                    seed = seed.merge(node.seed)
+                    seed.merge(node.seed)
                     return (node as! _PreferenceNode).value
                 }
                 return _PreferenceNode(value: value, seed: seed, next: next)

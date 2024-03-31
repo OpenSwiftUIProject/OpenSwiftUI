@@ -11,27 +11,43 @@ struct VersionSeed: CustomStringConvertible {
     
     var description: String {
         switch value {
-        case VersionSeed.zero.value: "empty"
+        case VersionSeed.empty.value: "empty"
         case VersionSeed.invalid.value: "invalid"
         default: value.description
         }
     }
     
-    static var zero: VersionSeed { VersionSeed(value: .zero) }
-    static var invalid: VersionSeed { VersionSeed(value: .max) }
+    @inline(__always)
+    static var empty: VersionSeed { VersionSeed(value: .zero) }
     
-    var isValid: Bool { value != VersionSeed.invalid.value }
+    @inline(__always)
+    static var invalid: VersionSeed { VersionSeed(value: .max) }
+        
+    @inline(__always)
+    var isInvalid: Bool { value == VersionSeed.invalid.value }
+    
+    @inline(__always)
+    var isEmpty: Bool { value == VersionSeed.empty.value }
     
     @_transparent
     @inline(__always)
-    func merge(_ seed: VersionSeed) -> VersionSeed {
-        if isValid, seed.value == .zero {
-            self
-        } else if value == .zero, seed.isValid {
-            seed
-        } else {
-            VersionSeed(value: merge32(value, seed.value))
+    mutating func merge(_ other: VersionSeed) {
+        guard !isInvalid, !other.isEmpty else {
+            return
         }
+        guard !isEmpty, !other.isInvalid else {
+            self = other
+            return
+        }
+        self = VersionSeed(value: merge32(value, other.value))
+    }
+    
+    @_transparent
+    @inline(__always)
+    func merging(_ seed: VersionSeed) -> VersionSeed {
+        var newValue = self
+        newValue.merge(seed)
+        return newValue
     }
 }
 
@@ -87,9 +103,9 @@ extension VersionSeedSetTracker {
         var seed: VersionSeed
         var matches: Bool?
         
-        mutating func visit(key: (some PreferenceKey).Type) {
+        mutating func visit<Key: PreferenceKey>(key: Key.Type) {
             let valueSeed = preferences[key].seed
-            matches = seed.isValid && valueSeed.isValid && seed.value == valueSeed.value
+            matches = !seed.isInvalid && !valueSeed.isInvalid && seed.value == valueSeed.value
         }
     }
     

@@ -21,13 +21,13 @@ struct VersionSeedTests {
     
     @Test(arguments: [
         (0x0000_0000, 0x0000_0000, 0x0000_0000),
-        (0xFFFF_FFFF, 0x0000_0000, 0x17F8_3A02),
-        (0xFFFF_FFFF, 0xFFFF_FFFF, 0x3258_2C16),
+        (0xFFFF_FFFF, 0x0000_0000, 0xFFFF_FFFF),
+        (0xFFFF_FFFF, 0xFFFF_FFFF, 0xFFFF_FFFF),
         (0xAABB_CCDD, 0x0000_0000, 0xAABB_CCDD),
         (0x0000_0000, 0xAABB_CCDD, 0xAABB_CCDD),
         (0xAABB_CCDD, 0xAABB_CCDD, 0x1AAD_F11C),
-        (0xFFFF_FFFF, 0xAABB_CCDD, 0x4C96_0643),
-        (0xAABB_CCDD, 0xFFFF_FFFF, 0x13DA_25CE),
+        (0xFFFF_FFFF, 0xAABB_CCDD, 0xFFFF_FFFF),
+        (0xAABB_CCDD, 0xFFFF_FFFF, 0xFFFF_FFFF),
         (0x0000_0001, 0x0001_0000, 0x8621_ACD2),
         (0x0001_0000, 0x0000_0001, 0xD5E2_C632),
         (0x1000_0000, 0x0000_0001, 0xE6E8_7354),
@@ -36,7 +36,7 @@ struct VersionSeedTests {
     func merge(_ a: UInt32, _ b: UInt32, _ c: UInt32) {
         let seedA = VersionSeed(value: a)
         let seedB = VersionSeed(value: b)
-        #expect(seedA.merge(seedB).value == c)
+        #expect(seedA.merging(seedB).value == c)
     }
 }
 

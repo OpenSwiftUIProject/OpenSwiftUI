@@ -39,15 +39,15 @@ struct PreferenceListTests {
     func subscriptAndDescriptionWithZeroSeed() {
         var list = PreferenceList()
         #expect(list.description == "empty: []")
-        list[IntKey.self] = PreferenceList.Value(value: 1, seed: .zero)
+        list[IntKey.self] = PreferenceList.Value(value: 1, seed: .empty)
         #expect(list.description == "empty: [IntKey = 1]")
-        list[DoubleKey.self] = PreferenceList.Value(value: 1.0, seed: .zero)
+        list[DoubleKey.self] = PreferenceList.Value(value: 1.0, seed: .empty)
         #expect(list.description == "empty: [DoubleKey = 1.0, IntKey = 1]")
-        list[IntKey.self] = PreferenceList.Value(value: 2, seed: .zero)
+        list[IntKey.self] = PreferenceList.Value(value: 2, seed: .empty)
         #expect(list.description == "empty: [IntKey = 2, DoubleKey = 1.0]")
-        list[DoubleKey.self] = PreferenceList.Value(value: 1.0, seed: .zero)
+        list[DoubleKey.self] = PreferenceList.Value(value: 1.0, seed: .empty)
         #expect(list.description == "empty: [DoubleKey = 1.0, IntKey = 2]")
-        list[EnumKey.self] = PreferenceList.Value(value: .a, seed: .zero)
+        list[EnumKey.self] = PreferenceList.Value(value: .a, seed: .empty)
         #expect(list.description == "empty: [EnumKey = a, DoubleKey = 1.0, IntKey = 2]")
     }
     
