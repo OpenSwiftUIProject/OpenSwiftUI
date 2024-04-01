@@ -76,6 +76,31 @@ struct PreferenceList: CustomStringConvertible {
         description.append("]")
         return description
     }
+    
+    @inline(__always)
+    mutating func merge(_ other: PreferenceList) {
+        guard let otherFirst = other.first else {
+            return
+        }
+        guard let selfFirst = first else {
+            first = otherFirst
+            return
+        }
+        first = nil
+        selfFirst.forEach { node in
+            if let mergedNode = node.combine(from: otherFirst, next: first) {
+                first = mergedNode
+            } else {
+                first = node.copy(next: first)
+            }
+        }
+        otherFirst.forEach { node in
+            guard node.find(from: selfFirst) == nil else {
+                return
+            }
+            first = node.copy(next: first)
+        }
+    }
 }
 
 extension PreferenceList {
@@ -173,36 +198,5 @@ private class _PreferenceNode<Key: PreferenceKey>: PreferenceNode {
         
     override var description: String {
         "\(Key.self) = \(value)"
-    }
-}
-
-extension HostPreferencesKey {
-    static var defaultValue: PreferenceList {
-        PreferenceList()
-    }
-    
-    static func reduce(value: inout PreferenceList, nextValue: () -> PreferenceList) {
-        let newValue = nextValue()
-        guard let newFirst = newValue.first else {
-            return
-        }
-        guard let first = value.first else {
-            value.first = newFirst
-            return
-        }
-        value.first = nil
-        first.forEach { node in
-            if let mergedNode = node.combine(from: newFirst, next: value.first) {
-                value.first = mergedNode
-            } else {
-                value.first = node.copy(next: value.first)
-            }
-        }
-        newFirst.forEach { node in
-            guard node.find(from: first) == nil else {
-                return
-            }
-            value.first = node.copy(next: value.first)
-        }
     }
 }
