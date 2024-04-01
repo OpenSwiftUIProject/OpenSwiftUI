@@ -4,6 +4,7 @@
 //
 //  Audited for RELEASE_2021
 //  Status: Complete
+//  ID: 6C396F98EFDD04A6B58F2F9112448013
 
 extension View {
     /// Sets a value for the given preference.
@@ -19,5 +20,19 @@ extension View {
     @inlinable
     public func transformPreference<K>(_ key: K.Type = K.self, _ callback: @escaping (inout K.Value) -> Void) -> some View where K : PreferenceKey {
         modifier(_PreferenceTransformModifier<K>(transform: callback))
+    }
+}
+
+extension EnvironmentValues {
+    private struct PreferenceBridgeKey: EnvironmentKey {
+        struct Value {
+            weak var value: PreferenceBridge?
+        }
+        static let defaultValue: Value = Value()
+    }
+
+    var preferenceBridge: PreferenceBridge? {
+        get { self[PreferenceBridgeKey.self].value }
+        set { self[PreferenceBridgeKey.self] = PreferenceBridgeKey.Value(value: newValue) }
     }
 }

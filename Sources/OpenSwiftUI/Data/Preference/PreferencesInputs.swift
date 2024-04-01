@@ -8,7 +8,7 @@
 internal import OpenGraphShims
 
 struct PreferencesInputs {
-    var keys: PreferenceKeys
+    private(set) var keys: PreferenceKeys
     var hostKeys: Attribute<PreferenceKeys>
 
     mutating func add<Key: PreferenceKey>(_ key: Key.Type) {
@@ -21,5 +21,10 @@ struct PreferencesInputs {
     
     func contains<Key: PreferenceKey>(_ key: Key.Type) -> Bool {
         keys.contains(key)
+    }
+    
+    @inline(__always)
+    mutating func merge(_ preferenceKeys: PreferenceKeys) {
+        keys.merge(preferenceKeys)
     }
 }

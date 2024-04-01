@@ -12,6 +12,14 @@ struct PreferencesOutputs {
     private var preferences: [KeyValue] = []
     private var debugProperties: _ViewDebug.Properties = []
     
+    func contains<Key: PreferenceKey>(_ key: Key.Type) -> Bool {
+        contains(_AnyPreferenceKey<Key>.self)
+    }
+    
+    func contains(_ key: AnyPreferenceKey.Type) -> Bool {
+        preferences.contains { $0.key == key }
+    }
+    
     subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Attribute<Key.Value>? {
         get {
             let value = self[anyKey: _AnyPreferenceKey<Key>.self]
