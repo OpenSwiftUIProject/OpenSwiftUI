@@ -383,7 +383,6 @@ extension PropertyList {
 
 // MARK: - PropertyList.Tracker Helper functions
 
-@_transparent
 @inline(__always)
 private func match(data: TrackerData, plist: PropertyList) -> Bool {
     if let elements = plist.elements,
@@ -396,7 +395,6 @@ private func match(data: TrackerData, plist: PropertyList) -> Bool {
     }
 }
 
-@_transparent
 @inline(__always)
 private func match(data: TrackerData, from: PropertyList, to: PropertyList) -> UniqueID? {
     if let fromElement = from.elements,

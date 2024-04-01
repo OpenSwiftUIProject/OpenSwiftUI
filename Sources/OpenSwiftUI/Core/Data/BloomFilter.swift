@@ -22,7 +22,6 @@ struct BloomFilter: Equatable {
         self.init(hashValue: Int(bitPattern: pointer))
     }
     
-    @_transparent
     @inline(__always)
     func match(_ filter: BloomFilter) -> Bool {
         (value & filter.value) == value
