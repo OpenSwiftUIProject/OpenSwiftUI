@@ -150,7 +150,3 @@ private struct MergePreferenceKeys: Rule, AsyncAttribute {
         return result
     }
 }
-
-struct PreferenceCombiner<Key: PreferenceKey> {
-    var attributes: [WeakAttribute<Key.Value>]
-}
