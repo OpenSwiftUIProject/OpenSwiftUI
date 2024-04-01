@@ -11,16 +11,17 @@ internal import OpenGraphShims
 struct PreferencesOutputs {
     private var preferences: [KeyValue] = []
     private var debugProperties: _ViewDebug.Properties = []
-    
-    func contains<Key: PreferenceKey>(_ key: Key.Type) -> Bool {
+
+    func contains<Key: PreferenceKey>(_: Key.Type) -> Bool {
         contains(_AnyPreferenceKey<Key>.self)
     }
-    
+
     func contains(_ key: AnyPreferenceKey.Type) -> Bool {
         preferences.contains { $0.key == key }
     }
-    
-    subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Attribute<Key.Value>? {
+
+    #if canImport(Darwin) // FIXME: See #39
+    subscript<Key: PreferenceKey>(_: Key.Type) -> Attribute<Key.Value>? {
         get {
             let value = self[anyKey: _AnyPreferenceKey<Key>.self]
             return value.map { Attribute(identifier: $0) }
@@ -29,7 +30,7 @@ struct PreferencesOutputs {
             self[anyKey: _AnyPreferenceKey<Key>.self] = newValue?.identifier
         }
     }
-    
+
     subscript(anyKey keyType: AnyPreferenceKey.Type) -> OGAttribute? {
         get { preferences.first { $0.key == keyType }?.value }
         set {
@@ -51,11 +52,19 @@ struct PreferencesOutputs {
             }
         }
     }
+    #else
+    subscript<Key: PreferenceKey>(_: Key.Type) -> Attribute<Key.Value>? {
+        get { fatalError("See #39") }
+        set { fatalError("See #39") }
+    }
+    #endif
 }
 
 extension PreferencesOutputs {
     private struct KeyValue {
         var key: AnyPreferenceKey.Type
+        #if canImport(Darwin) // FIXME: See #39
         var value: OGAttribute
+        #endif
     }
 }

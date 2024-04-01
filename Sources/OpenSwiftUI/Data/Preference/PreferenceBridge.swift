@@ -25,7 +25,8 @@ final class PreferenceBridge {
     init() {
         viewGraph = GraphHost.currentHost as! ViewGraph
     }
-
+    
+    #if canImport(Darwin) // FIXME: See #39
     func addValue(_ value: OGAttribute, for keyType: AnyPreferenceKey.Type) {
         struct AddValue: PreferenceKeyVisitor {
             var combiner: OGAttribute
@@ -191,6 +192,7 @@ final class PreferenceBridge {
             }
         }
     }
+    #endif
 }
 
 private struct MergePreferenceKeys: Rule, AsyncAttribute {

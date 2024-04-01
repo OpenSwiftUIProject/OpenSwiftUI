@@ -42,6 +42,7 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
         @WeakAttribute var values: PreferenceList?
     }
 
+    #if canImport(Darwin) // FIXME: See #39
     mutating func addChild(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
         let weakKeys = OGWeakAttribute(keys.identifier)
         let weakValues = OGWeakAttribute(values.identifier)
@@ -52,6 +53,7 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
             children.append(child)
         }
     }
+    #endif
 
     private struct CombineValues: PreferenceKeyVisitor {
         var children: [Child]

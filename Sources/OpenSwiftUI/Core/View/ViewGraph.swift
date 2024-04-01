@@ -47,7 +47,9 @@ final class ViewGraph: GraphHost {
         // FIXME: TO BE CONFIRMED
         set { setPreferenceBridge(to: newValue, isInvalidating: newValue == nil) }
     }
+    #if canImport(Darwin) // FIXME: See #39
     var bridgedPreferences: [(AnyPreferenceKey.Type, OGAttribute)] = []
+    #endif
     // TODO
     
     init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
