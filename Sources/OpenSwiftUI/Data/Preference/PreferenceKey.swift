@@ -48,3 +48,9 @@ extension PreferenceKey {
 
     public static var _isReadableByHost: Bool { false }
 }
+
+protocol HostPreferenceKey: PreferenceKey {}
+
+extension HostPreferenceKey {
+    static var _isReadableByHost: Bool { true }
+}

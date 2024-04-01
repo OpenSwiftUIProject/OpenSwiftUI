@@ -9,6 +9,10 @@ internal import OpenGraphShims
 
 protocol AsyncAttribute: _AttributeBody {}
 
+extension AsyncAttribute {
+    static var flags: OGAttributeTypeFlags { [] }
+}
+
 extension Attribute {
     func syncMainIfReferences<V>(do body: (Value) -> V) -> V {
         fatalError("TODO")

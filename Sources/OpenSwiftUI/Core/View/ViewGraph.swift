@@ -41,6 +41,15 @@ final class ViewGraph: GraphHost {
     var mainUpdates: Int = 0
     var needsFocusUpdate: Bool = false
     var nextUpdate: (views: NextUpdate, gestures: NextUpdate) = (NextUpdate(time: .infinity), NextUpdate(time: .infinity))
+    private weak var _preferenceBridge: PreferenceBridge?
+    var preferenceBridge: PreferenceBridge? {
+        get { _preferenceBridge }
+        // FIXME: TO BE CONFIRMED
+        set { setPreferenceBridge(to: newValue, isInvalidating: newValue == nil) }
+    }
+    #if canImport(Darwin) // FIXME: See #39
+    var bridgedPreferences: [(AnyPreferenceKey.Type, OGAttribute)] = []
+    #endif
     // TODO
     
     init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
@@ -148,6 +157,14 @@ final class ViewGraph: GraphHost {
         return []
     }
     
+    func clearPreferenceBridge() {
+        setPreferenceBridge(to: nil, isInvalidating: true)
+    }
+    
+    private func setPreferenceBridge(to bridge: PreferenceBridge?, isInvalidating: Bool) {
+        // TODO
+    }
+    
     // MARK: - Override Methods
     
     override var graphDelegate: GraphDelegate? { delegate }
@@ -165,7 +182,7 @@ final class ViewGraph: GraphHost {
     }
     
     override func timeDidChange() {
-        // TODO
+        nextUpdate.views = NextUpdate(time: .infinity)
     }
     
     override func isHiddenForReuseDidChange() {
@@ -184,6 +201,20 @@ extension ViewGraph {
             self.time = time
             _interval = .infinity
             reasons = []
+        }
+        
+        // TODO: AnimatorState.nextUpdate
+        mutating func interval(_ value: Double, reason: UInt32?) {
+            if value == .zero {
+                if _interval > 1 / 60 {
+                    _interval = .infinity
+                }
+            } else {
+                _interval = min(value, _interval)
+            }
+            if let reason {
+                reasons.insert(reason)
+            }
         }
     }
 }

@@ -1,4 +1,12 @@
+internal import OpenGraphShims
+
 public struct _ViewOutputs {
-//    var preferences : PreferencesOutputs
-//    var _layoutComputer : OptionalAttribute<LayoutComputer>
+    private var preferences = PreferencesOutputs()
+    @OptionalAttribute
+    var layoutComputer: LayoutComputer?
+    
+    subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Attribute<Key.Value>? {
+        get { preferences[keyType] }
+        set { preferences[keyType] = newValue }
+    }
 }
