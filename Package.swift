@@ -1,4 +1,4 @@
-// swift-tools-version: 5.9
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import Foundation
@@ -18,6 +18,7 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
 }
 
 let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
+let development = envEnable("OPENSWIFTUI_DEVELOPMENT", default: false)
 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
@@ -27,7 +28,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
 ]
 
-let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv)
+let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
     sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
 }
@@ -167,7 +168,7 @@ let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING", default: true
 if swiftTestingCondition {
     package.dependencies.append(
         // Fix it to be 0.3.0 before we bump to Swift 5.10
-        .package(url: "https://github.com/apple/swift-testing", exact: "0.3.0")
+        .package(url: "https://github.com/apple/swift-testing", exact: "0.6.0")
     )
     openSwiftUITestTarget.dependencies.append(
         .product(name: "Testing", package: "swift-testing")
