@@ -40,13 +40,16 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
     struct Child {
         @WeakAttribute var keys: PreferenceKeys?
         @WeakAttribute var values: PreferenceList?
+
+        init(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
+            _keys = WeakAttribute(keys)
+            _values = WeakAttribute(values)
+        }
     }
 
     #if canImport(Darwin) // FIXME: See #39
     mutating func addChild(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
-        let weakKeys = OGWeakAttribute(keys.identifier)
-        let weakValues = OGWeakAttribute(values.identifier)
-        let child = Child(keys: .init(base: weakKeys), values: .init(base: weakValues))
+        let child = Child(keys: keys, values: values)
         if let index = children.firstIndex(where: { $0.$keys == keys }) {
             children[index] = child
         } else {

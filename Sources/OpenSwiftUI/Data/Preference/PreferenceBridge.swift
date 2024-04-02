@@ -92,6 +92,7 @@ final class PreferenceBridge {
         ) { combiner in
             combiner.addChild(keys: keys, values: values)
         }
+        viewGraph.graphInvalidation(from: combiner.identifier)
     }
 
     func removeHostValue(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool) {
