@@ -3,12 +3,12 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: Empty
+//  Status: WIP
 
-public struct EmptyView: View {
+public struct EmptyView: PrimitiveView {
     public init() {}
-
-    public var body: some View {
-        fatalError()
+    
+    public static func _makeView(view: _GraphValue<EmptyView>, inputs: _ViewInputs) -> _ViewOutputs {
+        _ViewOutputs()
     }
 }
