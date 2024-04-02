@@ -12,8 +12,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.9.2"]
+        swift_version: ["5.10"]
     runs-on: ubuntu-22.04
+    env:
+      OPENSWIFTUI_WERROR: 1
+      OPENSWIFTUI_SWIFT_TESTING: 1
+      OPENGRAPH_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 1
     container: swift:${{ matrix.swift_version }}-jammy
     steps:
       - uses: actions/checkout@v4

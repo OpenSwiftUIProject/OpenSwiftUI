@@ -13,9 +13,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - os: macos-13
-            xcode-version: "15.2"   # Swift 5.9.2
+          - os: macos-14
+            xcode-version: "15.3"   # Swift 5.10
     runs-on: ${{ matrix.os }}
+    env:
+      OPENSWIFTUI_WERROR: 1
+      OPENSWIFTUI_SWIFT_TESTING: 1
+      OPENGRAPH_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
