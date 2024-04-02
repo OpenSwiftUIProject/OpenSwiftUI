@@ -47,6 +47,16 @@ struct VersionSeed: CustomStringConvertible {
         newValue.merge(seed)
         return newValue
     }
+    
+    @inline(__always)
+    static func == (lhs: VersionSeed, rhs: VersionSeed) -> Bool {
+        lhs.value == rhs.value
+    }
+    
+    @inline(__always)
+    static func != (lhs: VersionSeed, rhs: VersionSeed) -> Bool {
+        lhs.value != rhs.value
+    }
 }
 
 private func merge32(_ a: UInt32, _ b: UInt32) -> UInt32 {
