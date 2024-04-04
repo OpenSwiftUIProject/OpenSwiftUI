@@ -19,7 +19,7 @@
 ///     }
 ///
 /// Assemble the view's body by combining one or more of the built-in views
-/// provided by SwiftUI, like the ``Text`` instance in the example above, plus
+/// provided by OpenSwiftUI, like the ``Text`` instance in the example above, plus
 /// other custom views that you define, into a hierarchy of views. For more
 /// information about creating custom views, see <doc:Declaring-a-Custom-View>.
 ///
@@ -43,10 +43,6 @@
 /// custom view modifiers for easy reuse.
 @_typeEraser(AnyView)
 public protocol View {
-    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
-    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
-    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
-
     /// The type of view representing the body of this view.
     ///
     /// When you create a custom view, Swift infers this type from your
@@ -71,18 +67,30 @@ public protocol View {
     @ViewBuilder
     @MainActor
     var body: Self.Body { get }
+    
+    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
+    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
+    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
 }
 
-// FIXME
 extension View {
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        .init()
+        makeView(view: view, inputs: inputs)
     }
+    
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        // TODO
         .init()
     }
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        // TODO
         nil
+    }
+}
+
+extension View {
+    static func makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        fatalError("TODO")
     }
 }
 
