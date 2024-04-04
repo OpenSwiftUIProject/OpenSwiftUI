@@ -186,6 +186,7 @@ final class ViewGraph: GraphHost {
     }
     
     override func instantiateOutputs() {
+        #if canImport(Darwin)
         let outputs = self.data.globalSubgraph.apply {
             let graphInputs = graphInputs
             var inputs = _ViewInputs(
@@ -224,9 +225,11 @@ final class ViewGraph: GraphHost {
         }
         // TODO
         makePreferenceOutlets(outputs: outputs)
+        #endif
     }
     
     override func uninstantiateOutputs() {
+        #if canImport(Darwin)
         removePreferenceOutlets(isInvalidating: false)
         $rootGeometry.mutateBody(
             as: RootGeometry.self,
@@ -241,6 +244,7 @@ final class ViewGraph: GraphHost {
 //        $rootLayoutComputer = nil
 //        $rootDisplayList = nil
         hostPreferenceValues = OptionalAttribute()
+        #endif
     }
     
     override func timeDidChange() {
