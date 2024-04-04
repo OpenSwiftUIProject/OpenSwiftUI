@@ -7,5 +7,5 @@ public struct _ViewInputs {
     var position: Attribute<ViewOrigin>
     var containerPosition: Attribute<ViewOrigin>
     var size: Attribute<ViewSize>
-    // var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
+    var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
 }

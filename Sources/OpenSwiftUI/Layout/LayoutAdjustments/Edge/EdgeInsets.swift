@@ -65,7 +65,31 @@ extension EdgeInsets {
     }
 }
 
+extension CGSize {
+    @inline(__always)
+    func inset(by insets: EdgeInsets) -> CGSize {
+        CGSize(
+            width: max(width - insets.leading - insets.trailing, 0),
+            height: max(height - insets.top - insets.bottom, 0)
+        )
+    }
+    
+    func outset(by insets: EdgeInsets) -> CGSize {
+        CGSize(
+            width: max(width + insets.leading + insets.trailing, 0),
+            height: max(height + insets.top + insets.bottom, 0)
+        )
+    }
+}
+
+// MARK: - Sendable
+
+extension EdgeInsets: Sendable {}
+
 #if canImport(Darwin)
+
+// MARK: - UIKit/AppKit integration
+
 #if canImport(UIKit)
 import UIKit
 #elseif canImport(AppKit)
@@ -98,6 +122,8 @@ extension NSDirectionalEdgeInsets {
     }
 }
 #endif
+
+// MARK: - EdgeInsets + Animatable
 
 extension EdgeInsets: Animatable, _VectorMath {
     @inlinable
@@ -149,7 +175,3 @@ extension EdgeInsets: CodableByProxy {
 
     static func unwrap(codingProxy: CodableEdgeInsets) -> EdgeInsets { codingProxy.base }
 }
-
-// MARK: - Sendable
-
-extension EdgeInsets: Sendable {}
