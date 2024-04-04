@@ -10,6 +10,9 @@ internal import OpenGraphShims
 import Foundation
 
 final class ViewGraph: GraphHost {
+    @inline(__always)
+    static var current: ViewGraph { GraphHost.currentHost as! ViewGraph }
+    
     let rootViewType: Any.Type
     let makeRootView: (OGAttribute, _ViewInputs) -> _ViewOutputs
     weak var delegate: ViewGraphDelegate?
@@ -65,7 +68,7 @@ final class ViewGraph: GraphHost {
         // TODO
         _proposedSize = Attribute(value: .zero)
         // TODO
-        _rootGeometry = Attribute(RootGeometry()) // FIXME
+        _rootGeometry = Attribute(RootGeometry(proposedSize: _proposedSize))
         _position = _rootGeometry.origin()
         _dimensions = _rootGeometry.size()
         _updateSeed = Attribute(value: .zero)
@@ -165,6 +168,15 @@ final class ViewGraph: GraphHost {
         // TODO
     }
     
+    private func makePreferenceOutlets(outputs: _ViewOutputs) {
+        // TODO
+    }
+    
+    private func removePreferenceOutlets(isInvalidating: Bool) {
+        // TODO
+    }
+    
+    
     // MARK: - Override Methods
     
     override var graphDelegate: GraphDelegate? { delegate }
@@ -174,11 +186,43 @@ final class ViewGraph: GraphHost {
     }
     
     override func instantiateOutputs() {
+        let outputs = self.data.globalSubgraph.apply {
+            var inputs = _ViewInputs(
+                base: graphInputs,
+                preferences: .init(keys: .init(), hostKeys: .init(identifier: .nil)),
+                transform: $rootTransform,
+                position: $position,
+                containerPosition: $zeroPoint,
+                size: .init(identifier: .nil)
+            ) // FIXME
+            return makeRootView(rootView, inputs)
+        }
+        $rootGeometry.mutateBody(
+            as: RootGeometry.self,
+            invalidating: true
+        ) { rootGeometry in
+            rootGeometry.$childLayoutComputer = outputs.$layoutComputer
+        }
+        
         // TODO
+        makePreferenceOutlets(outputs: outputs)
     }
     
     override func uninstantiateOutputs() {
-        // TODO
+        removePreferenceOutlets(isInvalidating: false)
+        $rootGeometry.mutateBody(
+            as: RootGeometry.self,
+            invalidating: true
+        ) { rootGeometry in
+            rootGeometry.$layoutDirection = nil
+            rootGeometry.$childLayoutComputer = nil
+        }
+//        $rootPlatformList = nil
+//        $rootResponders = nil
+//        $rootAccessibilityNodes = nil
+//        $rootLayoutComputer = nil
+//        $rootDisplayList = nil
+        hostPreferenceValues = OptionalAttribute()
     }
     
     override func timeDidChange() {
@@ -229,17 +273,76 @@ extension ViewGraph {
 
 private struct RootTransform: Rule {
     var value: ViewTransform {
-        let graph = GraphHost.currentHost as! ViewGraph
-        guard let delegate = graph.delegate else {
+        guard let delegate = ViewGraph.current.delegate else {
             return ViewTransform()
         }
         return delegate.rootTransform()
     }
 }
 
-struct RootGeometry: Rule {
+struct RootGeometry: Rule, AsyncAttribute {
+    @OptionalAttribute var layoutDirection: LayoutDirection?
+    @Attribute var proposedSize: ViewSize
+    @OptionalAttribute var safeAreaInsets: _SafeAreaInsetsModifier?
+    @OptionalAttribute var childLayoutComputer: LayoutComputer?
+    
+    // |←--------------------------proposedSize.value.width--------------------------→|  (0, 0)
+    // ┌──────────────────────────────────────────────────────────────────────────────┐  ┌─────────> x
+    // │     (x: insets.leading, y: insets.top)                                       |  │
+    // │     ↓                                                                        |  |
+    // |     |←--------------------------proposal.width--------------------------→|   |  |
+    // │     ┌────────────┬───────────────────────────────────────────────────────┐   |  |
+    // │     |████████████|                                                       |   │  ↓ y
+    // │     |████████████|                                                       |   │  eg.
+    // │     ├────────────┘                                                       │   |  proposedSize = (width: 80, height: 30)
+    // |     |←----------→|                                                       |   |  insets = (
+    // │     |fittingSize.width                                                   |   |    top: 4,
+    // │     |                                                                    |   │    leading: 6,
+    // |     | (x: insets.leading + (proposal.width  - fittingSize.width ) * 0.5, |   |    bottom: 2,
+    // |     |  y: insets.top     + (proposal.height - fittingSize.height) * 0.5) |   |    trailing: 4
+    // |     |                           ↓                                        |   |  )
+    // │     |                           ┌────────────┐                           │   |  proposal = (width: 70, height: 24)
+    // │     |                           |████████████|                           │   |  fitting = (width: 14, height: 4)
+    // │     |                           |████████████|                           |   │
+    // │     |                           └────────────┘                           |   │  Result:
+    // │     |                                                                    |   │  center: false + left
+    // │     |                                                                    |   │  x: insets.leading = 6
+    // │     |                                                                    |   │  y: insets.top = 4
+    // │     |                                                                    |   │
+    // │     |                                                                    |   │  center: false + right
+    // │     |                                                                    |   │  x: insets.leading = proposedSize.width-(i.l+f.w)
+    // │     |                                                                    |   │  y: insets.top = 4
+    // │     |                                                                    |   │
+    // │     |                                                                    |   │  center: true + left
+    // │     └────────────────────────────────────────────────────────────────────┘   |  x: i.l+(p.width-f.width)*0.5=34
+    // |                                                                              |  y: i.t+(p.height-f.height)*0.5=14
+    // └──────────────────────────────────────────────────────────────────────────────┘
     var value: ViewGeometry {
-        // FIXME
-        .zero
+        let layoutComputer = childLayoutComputer ?? .defaultValue
+        let insets = safeAreaInsets?.insets ?? EdgeInsets()
+        let proposal = proposedSize.value.inset(by: insets)
+        let fittingSize = layoutComputer.delegate.sizeThatFits(_ProposedSize(size: proposal))
+        
+        var x = insets.leading
+        var y = insets.top
+        if ViewGraph.current.centersRootView {
+            x += (proposal.width - fittingSize.width) * 0.5
+            y += (proposal.height - fittingSize.height) * 0.5
+        }
+        
+        let layoutDirection = layoutDirection ?? .leftToRight
+        switch layoutDirection {
+        case .leftToRight:
+            break
+        case .rightToLeft:
+            x = proposedSize.value.width - CGRect(origin: CGPoint(x: x, y: y), size: fittingSize).maxX
+        }
+        return ViewGeometry(
+            origin: ViewOrigin(value: CGPoint(x: x, y: y)),
+            dimensions: ViewDimensions(
+                guideComputer: layoutComputer,
+                size: ViewSize(value: fittingSize, _proposal: proposal)
+            )
+        )
     }
 }

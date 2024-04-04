@@ -17,7 +17,7 @@ class GraphHost {
     
     private(set) var data: Data
     private(set) var isInstantiated = false
-    private(set) var hostPreferenceValues: OptionalAttribute<PreferenceList>
+   /* private(set)*/ var hostPreferenceValues: OptionalAttribute<PreferenceList>
     private(set) var lastHostPreferencesSeed: VersionSeed = .invalid
     private var pendingTransactions: [AsyncTransaction] = []
     /*private(set)*/ var inTransaction = false
