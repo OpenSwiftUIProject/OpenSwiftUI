@@ -187,14 +187,33 @@ final class ViewGraph: GraphHost {
     
     override func instantiateOutputs() {
         let outputs = self.data.globalSubgraph.apply {
+            let graphInputs = graphInputs
             var inputs = _ViewInputs(
                 base: graphInputs,
-                preferences: .init(keys: .init(), hostKeys: .init(identifier: .nil)),
+                preferences: PreferencesInputs(hostKeys: data.$hostPreferenceKeys),
                 transform: $rootTransform,
                 position: $position,
                 containerPosition: $zeroPoint,
-                size: .init(identifier: .nil)
-            ) // FIXME
+                size: $dimensions,
+                safeAreaInsets: OptionalAttribute()
+            )
+            if requestedOutputs.contains(.layout) {
+                // FIXME
+                inputs.base.options.formUnion(.init(rawValue: 0xe2))
+            }
+            requestedOutputs.addRequestedPreferences(to: &inputs)
+            _preferenceBridge?.wrapInputs(&inputs)
+            _ViewDebug.instantiateIfNeeded()
+            delegate?.modifyViewInputs(&inputs)
+            // TODO
+            $rootGeometry.mutateBody(
+                as: RootGeometry.self,
+                invalidating: true
+            ) { rootGeometry in
+                // FIXME
+                rootGeometry.$layoutDirection = inputs.base.cachedEnvironment.wrappedValue.attribute(keyPath: \.layoutDirection)
+            }
+            // TOOD
             return makeRootView(rootView, inputs)
         }
         $rootGeometry.mutateBody(
@@ -203,7 +222,6 @@ final class ViewGraph: GraphHost {
         ) { rootGeometry in
             rootGeometry.$childLayoutComputer = outputs.$layoutComputer
         }
-        
         // TODO
         makePreferenceOutlets(outputs: outputs)
     }
@@ -267,7 +285,27 @@ extension ViewGraph {
     struct Outputs: OptionSet {
         let rawValue: UInt8
         
+        static var _0: Outputs { .init(rawValue: 1 << 0) }
+        static var _1: Outputs { .init(rawValue: 1 << 1) }
+        static var _2: Outputs { .init(rawValue: 1 << 2) }
+        static var _3: Outputs { .init(rawValue: 1 << 3) }
         static var layout: Outputs { .init(rawValue: 1 << 4) }
+        
+        fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
+            inputs.preferences.add(HostPreferencesKey.self)
+            if contains(._0) {
+                inputs.preferences.add(DisplayList.Key.self)
+            }
+            if contains(._2) {
+//                inputs.preferences.add(ViewRespondersKey.self)
+            }
+            if contains(._1) {
+//                inputs.preferences.add(PlatformItemList.Key.self)
+            }
+            if contains(._3) {
+//                inputs.preferences.add(AccessibilityNodesKe.self)
+            }
+        }
     }
 }
 

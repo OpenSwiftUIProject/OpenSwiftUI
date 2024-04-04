@@ -10,6 +10,12 @@ internal import OpenGraphShims
 struct PreferencesInputs {
     private(set) var keys: PreferenceKeys
     var hostKeys: Attribute<PreferenceKeys>
+    
+    @inline(__always)
+    init(hostKeys: Attribute<PreferenceKeys>) {
+        self.keys = PreferenceKeys()
+        self.hostKeys = hostKeys
+    }
 
     mutating func add<Key: PreferenceKey>(_ key: Key.Type) {
         keys.add(key)

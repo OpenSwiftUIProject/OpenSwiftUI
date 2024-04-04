@@ -28,6 +28,16 @@ struct CachedEnvironment {
         // resolvedFgStyles = [:]
     }
     
+    mutating func attribute<Value>(keyPath: KeyPath<EnvironmentValues, Value>) -> Attribute<Value> {
+        if let item = items.first(where: { $0.key == keyPath }) {
+            return Attribute(identifier: item.value)
+        } else {
+            let value = environment[keyPath: keyPath]
+            items.append(Item(key: keyPath, value: value.identifier))
+            return value
+        }
+    }
+    
     func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
         fatalError("TODO")
     }
