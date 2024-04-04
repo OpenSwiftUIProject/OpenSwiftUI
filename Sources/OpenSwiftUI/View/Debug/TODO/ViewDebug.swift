@@ -26,9 +26,21 @@ public enum _ViewDebug {
 }
 
 extension _ViewDebug {
-    fileprivate static var properties = Properties()
-    fileprivate static var isInitialized = false
+    private static var properties = Properties()
+    private static var isInitialized = false
 
+    @inline(__always)
+    static func instantiateIfNeeded() {
+        if !isInitialized {
+            let debugValue = UInt32(bitPattern: EnvironmentHelper.value(for: "SWIFTUI_VIEW_DEBUG"))
+            properties = Properties(rawValue: debugValue)
+            isInitialized = true
+        }
+        if !properties.isEmpty {
+            // OGSubgraphSetShouldRecordTree()
+        }
+    }
+    
     // TODO:
     fileprivate static func reallyWrap(_: inout _ViewOutputs, value _: _GraphValue<some Any>, inputs _: UnsafePointer<_ViewInputs>) {}
 

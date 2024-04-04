@@ -101,6 +101,9 @@ struct PreferenceList: CustomStringConvertible {
             first = node.copy(next: first)
         }
     }
+    
+    @inline(__always)
+    var mergedSeed: VersionSeed? { first?.mergedSeed }
 }
 
 extension PreferenceList {

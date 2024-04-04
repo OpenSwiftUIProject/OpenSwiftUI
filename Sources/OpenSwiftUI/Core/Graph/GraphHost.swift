@@ -17,7 +17,7 @@ class GraphHost {
     
     private(set) var data: Data
     private(set) var isInstantiated = false
-    private(set) var hostPreferenceValues: OptionalAttribute<PreferenceList>
+   /* private(set)*/ var hostPreferenceValues: OptionalAttribute<PreferenceList>
     private(set) var lastHostPreferencesSeed: VersionSeed = .invalid
     private var pendingTransactions: [AsyncTransaction] = []
     /*private(set)*/ var inTransaction = false
@@ -147,16 +147,33 @@ class GraphHost {
     }
     
     final func preferenceValue<Key: HostPreferenceKey>(_ key: Key.Type) -> Key.Value {
-        fatalError("TODO")
+        if data.hostPreferenceKeys.contains(key) {
+            return preferenceValues()[key].value
+        } else {
+            defer { removePreference(key) }
+            addPreference(key)
+            return preferenceValues()[key].value
+        }
     }
-    
+
     final func addPreference<Key: HostPreferenceKey>(_ key: Key.Type) {
-        fatalError("TODO")
+        OGGraph.withoutUpdate {
+            data.hostPreferenceKeys.add(key)
+        }
     }
-    
+
+    final func removePreference<Key: HostPreferenceKey>(_ key: Key.Type) {
+        OGGraph.withoutUpdate {
+            data.hostPreferenceKeys.remove(key)
+        }
+    }
+
     final func updatePreferences() -> Bool {
-        // fatalError("TODO")
-        return false
+        let seed = hostPreferenceValues.value?.mergedSeed ?? .empty
+        let lastSeed = lastHostPreferencesSeed
+        let didUpdate = seed.isInvalid || lastSeed.isInvalid || (seed != lastSeed)
+        lastHostPreferencesSeed = seed
+        return didUpdate
     }
     
     final func updateRemovedState() {
@@ -203,11 +220,11 @@ class GraphHost {
         }
     }
     
-    final func uninstantiate(immediately: Bool) {
+    final func uninstantiate(immediately _: Bool) {
         guard isInstantiated else {
             return
         }
-        // TODO
+        // TODO:
     }
     
     final func graphInvalidation(from attribute: OGAttribute?) {
@@ -224,7 +241,7 @@ class GraphHost {
         } else {
             asyncTransaction(
                 transaction,
-                mutation: EmptyGraphMutation(), 
+                mutation: EmptyGraphMutation(),
                 style: ._1,
                 mayDeferUpdate: true
             )
@@ -264,7 +281,7 @@ class GraphHost {
     
     final func continueTransaction(_ body: @escaping () -> Void) {
         var host = self
-        while(!host.inTransaction) {
+        while !host.inTransaction {
             guard let parent = host.parentHost else {
                 asyncTransaction(
                     Transaction(),
@@ -349,7 +366,7 @@ private final class AsyncTransaction {
     func append<Mutation: GraphMutation>(_ mutation: Mutation) {
         // ``GraphMutation/combine`` is mutating function
         // So we use ``Array.subscript/_modify`` instead of ``Array.last/getter`` to mutate inline
-        if !mutations.isEmpty, mutations[mutations.count-1].combine(with: mutation) {
+        if !mutations.isEmpty, mutations[mutations.count - 1].combine(with: mutation) {
             return
         }
         mutations.append(mutation)

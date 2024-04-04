@@ -28,6 +28,20 @@ struct CachedEnvironment {
         // resolvedFgStyles = [:]
     }
     
+    mutating func attribute<Value>(keyPath: KeyPath<EnvironmentValues, Value>) -> Attribute<Value> {
+        #if canImport(Darwin)
+        if let item = items.first(where: { $0.key == keyPath }) {
+            return Attribute(identifier: item.value)
+        } else {
+            let value = environment[keyPath: keyPath]
+            items.append(Item(key: keyPath, value: value.identifier))
+            return value
+        }
+        #else
+        fatalError("See #39")
+        #endif
+    }
+    
     func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
         fatalError("TODO")
     }
@@ -46,7 +60,7 @@ struct CachedEnvironment {
 extension CachedEnvironment {
     private struct Item {
         var key: PartialKeyPath<EnvironmentValues>
-        #if canImport(Darwin)
+        #if canImport(Darwin) // See #39
         var value: OGAttribute
         #endif
     }
