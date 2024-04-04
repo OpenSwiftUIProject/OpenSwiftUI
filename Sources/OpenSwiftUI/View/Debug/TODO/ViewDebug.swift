@@ -8,6 +8,7 @@
 
 import Foundation
 internal import COpenSwiftUI
+internal import OpenGraphShims
 
 // MARK: _ViewDebug
 
@@ -32,12 +33,12 @@ extension _ViewDebug {
     @inline(__always)
     static func instantiateIfNeeded() {
         if !isInitialized {
-            let debugValue = UInt32(bitPattern: EnvironmentHelper.value(for: "SWIFTUI_VIEW_DEBUG"))
+            let debugValue = UInt32(bitPattern: EnvironmentHelper.value(for: "OPENSWIFTUI_VIEW_DEBUG"))
             properties = Properties(rawValue: debugValue)
             isInitialized = true
         }
         if !properties.isEmpty {
-            // OGSubgraphSetShouldRecordTree()
+            OGSubgraph.setShouldRecordTree()
         }
     }
     
