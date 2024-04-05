@@ -6,7 +6,7 @@ public struct _GraphInputs {
     var cachedEnvironment: MutableBox<CachedEnvironment>
     var phase: Attribute<_GraphInputs.Phase>
     var transaction: Attribute<Transaction>
-    var changedDebugProperties: _ViewDebug.Properties
+    private var changedDebugProperties: _ViewDebug.Properties
     private var options: _GraphInputs.Options
     #if canImport(Darwin) // FIXME: See #39
     var mergedInputs: Set<OGAttribute>
@@ -55,6 +55,8 @@ public struct _GraphInputs {
         set { customInputs[type] = newValue }
     }
     
+    // MARK: - cachedEnvironment
+    
     @inline(__always)
     func detechedEnvironmentInputs() -> Self {
         var newInputs = self
@@ -62,7 +64,22 @@ public struct _GraphInputs {
         return newInputs
     }
     
-    // MARK: Options
+    @inline(__always)
+    mutating func updateCachedEnvironment(_ box: MutableBox<CachedEnvironment>) {
+        cachedEnvironment = box
+        changedDebugProperties.insert(.environment)
+    }
+    
+    // MARK: - changedDebugProperties
+    
+    @inline(__always)
+    func withEmptyChangedDebugPropertiesInputs<R>(_ body: (_GraphInputs) -> R) -> R {
+        var inputs = self
+        inputs.changedDebugProperties = []
+        return body(inputs)
+    }
+    
+    // MARK: - options
     
     @inline(__always)
     var enableLayout: Bool {

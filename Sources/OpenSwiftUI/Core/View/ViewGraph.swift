@@ -215,8 +215,9 @@ final class ViewGraph: GraphHost {
                 as: RootGeometry.self,
                 invalidating: true
             ) { rootGeometry in
-                // FIXME
-                rootGeometry.$layoutDirection = inputs.base.cachedEnvironment.wrappedValue.attribute(keyPath: \.layoutDirection)
+                inputs.withMutableCachedEnviroment {
+                    rootGeometry.$layoutDirection = $0.attribute(keyPath: \.layoutDirection)
+                }
             }
             // TOOD
             return makeRootView(rootView, inputs)

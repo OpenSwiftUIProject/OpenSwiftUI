@@ -10,15 +10,16 @@ internal import OpenGraphShims
 
 extension View {
     static func makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        var inputs = inputs
-        inputs.base.changedDebugProperties = []
         let fields = DynamicPropertyCache.fields(of: Self.self)
-        let (body, buffer) = makeBody(view: view, inputs: &inputs.base, fields: fields)
-        OGSubgraph.beginTreeElement(value: body.value, flags: 0)
-        var outputs = Body._makeView(view: body, inputs: inputs)
-        if OGSubgraph.shouldRecordTree {
-            _ViewDebug.reallyWrap(&outputs, value: body, inputs: &inputs) // FIXME
-            OGSubgraph.endTreeElement(value: body.value)
+        var inputs = inputs
+        let (body, buffer) = inputs.withMutateGraphInputs { inputs in
+            makeBody(view: view, inputs: &inputs, fields: fields)
+        }
+        let outputs = _ViewDebug.makeView(
+            view: body,
+            inputs: inputs
+        ) { view, inputs in
+            Body._makeView(view: body, inputs: inputs)
         }
         if let buffer {
             buffer.traceMountedProperties(to: body, fields: fields)

@@ -1,7 +1,7 @@
 internal import OpenGraphShims
 
 public struct _ViewInputs {
-    var base: _GraphInputs
+    private var base: _GraphInputs
     var preferences: PreferencesInputs
     var transform: Attribute<ViewTransform>
     var position: Attribute<ViewOrigin>
@@ -9,11 +9,22 @@ public struct _ViewInputs {
     var size: Attribute<ViewSize>
     var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
     
-    @inline(__always)
-    func detechedEnvironmentInputs() -> Self {
-        var newInputs = self
-        newInputs.base = self.base.detechedEnvironmentInputs()
-        return newInputs
+    init(
+        base: _GraphInputs,
+        preferences: PreferencesInputs,
+        transform: Attribute<ViewTransform>,
+        position: Attribute<ViewOrigin>,
+        containerPosition: Attribute<ViewOrigin>,
+        size: Attribute<ViewSize>,
+        safeAreaInsets: OptionalAttribute<SafeAreaInsets>
+    ) {
+        self.base = base
+        self.preferences = preferences
+        self.transform = transform
+        self.position = position
+        self.containerPosition = containerPosition
+        self.size = size
+        self.safeAreaInsets = safeAreaInsets
     }
     
     func makeIndirectOutputs() -> _ViewOutputs {
@@ -36,7 +47,56 @@ public struct _ViewInputs {
         }
         return outputs
     }
-        
+    
+    // MARK: - base
+    
+    @inline(__always)
+    mutating func withMutateGraphInputs<R>(_ body: (inout _GraphInputs) -> R) -> R {
+        body(&base)
+    }
+    
+    // MARK: - base.customInputs
+    
+    @inline(__always)
+    func withCustomInputs<R>(_ body: (PropertyList) -> R) -> R {
+        body(base.customInputs)
+    }
+    
+    @inline(__always)
+    mutating func withMutableCustomInputs<R>(_ body: (inout PropertyList) -> R) -> R {
+        body(&base.customInputs)
+    }
+    
+    // MARK: - base.cachedEnvironment
+    
+    @inline(__always)
+    func withCachedEnviroment<R>(_ body: (CachedEnvironment) -> R) -> R {
+        body(base.cachedEnvironment.wrappedValue)
+    }
+    
+    @inline(__always)
+    func withMutableCachedEnviroment<R>(_ body: (inout CachedEnvironment) -> R) -> R {
+        body(&base.cachedEnvironment.wrappedValue)
+    }
+    
+    @inline(__always)
+    func detechedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.base = self.base.detechedEnvironmentInputs()
+        return newInputs
+    }
+    
+    // MARK: - base.changedDebugProperties
+    
+    @inline(__always)
+    func withEmptyChangedDebugPropertiesInputs<R>(_ body: (_ViewInputs) -> R) -> R {
+        var newInputs = self
+        return base.withEmptyChangedDebugPropertiesInputs {
+            newInputs.base = $0
+            return body(newInputs)
+        }
+    }
+    
     // MARK: Options
         
     @inline(__always)

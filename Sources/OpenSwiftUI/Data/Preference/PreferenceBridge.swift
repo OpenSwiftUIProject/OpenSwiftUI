@@ -152,7 +152,7 @@ final class PreferenceBridge {
     }
 
     func wrapInputs(_ inputs: inout _ViewInputs) {
-        inputs.base.customInputs = bridgedViewInputs
+        inputs.withMutableCustomInputs { $0 = bridgedViewInputs }
         inputs.preferences.merge(requestedPreferences)
         inputs.preferences.hostKeys = Attribute(MergePreferenceKeys(lhs: inputs.preferences.hostKeys, rhs: _hostPreferenceKeys))
     }
@@ -165,7 +165,7 @@ final class PreferenceBridge {
                 result = Attribute(PreferenceCombiner<Key>(attributes: [])).identifier
             }
         }
-        bridgedViewInputs = inputs.base.customInputs
+        inputs.withCustomInputs { bridgedViewInputs = $0 }
         for key in inputs.preferences.keys {
             if key == _AnyPreferenceKey<HostPreferencesKey>.self {
                 let combiner = Attribute(HostPreferencesCombiner(

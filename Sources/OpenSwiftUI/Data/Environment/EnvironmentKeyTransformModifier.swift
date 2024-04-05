@@ -27,8 +27,7 @@ public struct _EnvironmentKeyTransformModifier<Value>: PrimitiveViewModifier, _G
         )
         let attribute = Attribute(childEnvironment)
         let cachedEnvironment = CachedEnvironment(attribute)  
-        inputs.cachedEnvironment = MutableBox(cachedEnvironment)
-        inputs.changedDebugProperties.insert(.environment)
+        inputs.updateCachedEnvironment(MutableBox(cachedEnvironment))
     }
 }
 

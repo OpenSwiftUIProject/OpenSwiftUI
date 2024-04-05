@@ -70,7 +70,7 @@ class AnyViewStorageBase {
     fileprivate var canTransition: Bool { fatalError() }
     fileprivate func matches(_ other: AnyViewStorageBase) -> Bool { fatalError() }
     fileprivate func makeChild(
-        uniqueID: UInt32,
+        uniqueId: UInt32,
         container: Attribute<AnyViewInfo>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
@@ -102,6 +102,21 @@ private final class AnyViewStorage<V: View>: AnyViewStorageBase {
     
     override func matches(_ other: AnyViewStorageBase) -> Bool {
         other is AnyViewStorage<V>
+    }
+    
+    override func makeChild(
+        uniqueId: UInt32,
+        container: Attribute<AnyViewInfo>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        let child = AnyViewChild<V>(info: container, uniqueId: uniqueId)
+        let graphValue = _GraphValue(Attribute(child))
+        return _ViewDebug.makeView(
+            view: graphValue,
+            inputs: inputs
+        ) { view, inputs in
+            V._makeView(view: view, inputs: inputs)
+        }
     }
     
     override func child<Value>() -> Value { view as! Value }
@@ -155,7 +170,11 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
         parentSubgraph.addChild(childGraph)
         return childGraph.apply {
             let childInputs = inputs.detechedEnvironmentInputs()
-            let childOutputs = storage.makeChild(uniqueID: uniqueId, container: current.unsafeCast(to: AnyViewInfo.self), inputs: childInputs)
+            let childOutputs = storage.makeChild(
+                uniqueId: uniqueId,
+                container: current.unsafeCast(to: AnyViewInfo.self),
+                inputs: childInputs
+            )
             outputs.attachIndirectOutputs(to: childOutputs)
             return AnyViewInfo(item: storage, subgraph: childGraph, uniqueID: uniqueId)
         }
@@ -167,4 +186,28 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
         subgraph.willInvalidate(isInserted: true)
         subgraph.invalidate()
     }
+}
+
+private struct AnyViewChild<V: View>: StatefulRule, AsyncAttribute {
+    @Attribute var info: AnyViewInfo
+    let uniqueId: UInt32
+    
+    typealias Value = V
+    
+    func updateValue() {
+        guard uniqueId == info.uniqueID else {
+            return
+        }
+        value = info.item.child()
+    }
+}
+
+extension AnyViewChild: CustomStringConvertible {
+    var description: String { "\(V.self)" }
+}
+
+// TODO
+private struct AnyViewChildList<V: View> {
+    @Attribute var view: AnyView
+    var id: UniqueID?
 }
