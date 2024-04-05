@@ -6,8 +6,10 @@
 //  Status: WIP
 //  ID: A96961F3546506F21D8995C6092F15B5
 
+internal import OpenGraphShims
+
 @frozen
-public struct AnyView : PrimitiveView {
+public struct AnyView: PrimitiveView {
     var storage: AnyViewStorageBase
     // WIP
     public init<V>(_ view: V) where V : View {
@@ -34,15 +36,47 @@ public struct AnyView : PrimitiveView {
 
 @usableFromInline
 class AnyViewStorageBase {
-    /*@objc*/
-    @usableFromInline
-    deinit {
-
-    }
-
-    let id : UniqueID?
-
+    let id: UniqueID?
+    
     init(id: UniqueID?) {
         self.id = id
+    }
+    
+    private var type: Any.Type { fatalError() }
+    private var canTransition: Bool { fatalError() }
+    private func matches(_ other: AnyViewStorageBase) -> Bool { fatalError() }
+    private func makeChild(
+        uniqueID: UInt32,
+        container: Attribute<AnyViewInfo>,
+        inputs: _ViewInputs
+    ) { fatalError() }
+    func child<Value>() -> Value { fatalError() }
+    private func makeViewList(
+        view: _GraphValue<AnyView>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        fatalError()
+    }
+    private func visitContent<Vistor: ViewVisitor>(_ visitor: inout Vistor) {
+        fatalError()
+    }
+}
+
+private struct AnyViewInfo {
+    var item: AnyViewStorageBase
+    var subgraph: OGSubgraph
+    var uniqueID: UInt32
+}
+
+private struct AnyViewContainer: StatefulRule, AsyncAttribute {
+    @Attribute var view: Attribute<AnyView>
+    let inputs: _ViewInputs
+    let outputs: _ViewOutputs
+    let parentSubgraph: OGSubgraph
+    
+    typealias Value = AnyViewInfo
+    
+    func updateValue() {
+        
     }
 }
