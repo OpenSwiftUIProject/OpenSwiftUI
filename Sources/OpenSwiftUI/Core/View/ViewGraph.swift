@@ -28,6 +28,8 @@ final class ViewGraph: GraphHost {
     @Attribute var dimensions: ViewSize
     @Attribute var updateSeed: UInt32
     // TODO
+    @Attribute var defaultLayoutComputer: LayoutComputer
+    // TODO
     var cachedSizeThatFits: CGSize = .invalidValue
     var sizeThatFitsObserver: SizeThatFitsObserver? {
         didSet {
@@ -72,6 +74,8 @@ final class ViewGraph: GraphHost {
         _position = _rootGeometry.origin()
         _dimensions = _rootGeometry.size()
         _updateSeed = Attribute(value: .zero)
+        // TODO
+        _defaultLayoutComputer = Attribute(value: .defaultValue)
         // FIXME
         makeRootView = { view, inputs in
             let rootView = _GraphValue<Body>(view.unsafeCast(to: Body.self))
@@ -200,7 +204,7 @@ final class ViewGraph: GraphHost {
             )
             if requestedOutputs.contains(.layout) {
                 // FIXME
-                inputs.base.options.formUnion(.init(rawValue: 0xe2))
+                // inputs.base.options.formUnion(.init(rawValue: 0xe2))
             }
             requestedOutputs.addRequestedPreferences(to: &inputs)
             _preferenceBridge?.wrapInputs(&inputs)
@@ -211,8 +215,9 @@ final class ViewGraph: GraphHost {
                 as: RootGeometry.self,
                 invalidating: true
             ) { rootGeometry in
-                // FIXME
-                rootGeometry.$layoutDirection = inputs.base.cachedEnvironment.wrappedValue.attribute(keyPath: \.layoutDirection)
+                inputs.withMutableCachedEnviroment {
+                    rootGeometry.$layoutDirection = $0.attribute(keyPath: \.layoutDirection)
+                }
             }
             // TOOD
             return makeRootView(rootView, inputs)

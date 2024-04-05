@@ -8,6 +8,7 @@
 
 import Foundation
 internal import COpenSwiftUI
+internal import OpenGraphShims
 
 // MARK: _ViewDebug
 
@@ -32,17 +33,39 @@ extension _ViewDebug {
     @inline(__always)
     static func instantiateIfNeeded() {
         if !isInitialized {
-            let debugValue = UInt32(bitPattern: EnvironmentHelper.value(for: "SWIFTUI_VIEW_DEBUG"))
+            let debugValue = UInt32(bitPattern: EnvironmentHelper.value(for: "OPENSWIFTUI_VIEW_DEBUG"))
             properties = Properties(rawValue: debugValue)
             isInitialized = true
         }
         if !properties.isEmpty {
-            // OGSubgraphSetShouldRecordTree()
+            OGSubgraph.setShouldRecordTree()
         }
     }
     
-    // TODO:
-    fileprivate static func reallyWrap(_: inout _ViewOutputs, value _: _GraphValue<some Any>, inputs _: UnsafePointer<_ViewInputs>) {}
+    @_transparent
+    @inline(__always)
+    static func makeView<Value>(
+        view: _GraphValue<Value>,
+        inputs: _ViewInputs,
+        body: (_ view: _GraphValue<Value>, _ inputs: _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        if OGSubgraph.shouldRecordTree {
+            OGSubgraph.beginTreeElement(value: view.value, flags: 0)
+        }
+        var outputs = inputs.withEmptyChangedDebugPropertiesInputs { inputs in
+            body(view, inputs)
+        }
+        if OGSubgraph.shouldRecordTree {
+            _ViewDebug.reallyWrap(&outputs, value: view, inputs: &inputs)
+            OGSubgraph.endTreeElement(value: view.value)
+        }
+        return outputs
+    }
+    
+    private static func reallyWrap<Value>(_: inout _ViewOutputs, value: _GraphValue<Value>, inputs _: UnsafePointer<_ViewInputs>) {
+        // TODO
+    }
 
     fileprivate static func appendDebugData(from: Int/*AGTreeElement*/ , to: [_ViewDebug.Data]) {}
 }

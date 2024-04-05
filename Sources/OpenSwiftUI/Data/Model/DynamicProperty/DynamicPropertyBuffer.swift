@@ -213,6 +213,10 @@ public struct _DynamicPropertyBuffer {
         size = Int32(allocSize)
         return allocatedBuffer.advanced(by: oldBuffer.distance(to: ptr))
     }
+    
+    func traceMountedProperties<Value>(to value: _GraphValue<Value>, fields: DynamicPropertyCache.Fields) {
+        // TODO: Signpost related
+    }
 }
 
 extension _DynamicPropertyBuffer {

@@ -52,12 +52,39 @@ struct PreferencesOutputs {
             }
         }
     }
+
+    @inline(__always)
+    func forEach(body: (
+        _ key: AnyPreferenceKey.Type,
+        _ value: OGAttribute
+    ) throws -> Void
+    ) rethrows {
+        try preferences.forEach { try body($0.key, $0.value) }
+    }
+    
+    @inline(__always)
+    func first(where predicate: (
+        _ key: AnyPreferenceKey.Type,
+        _ value: OGAttribute
+    ) throws -> Bool
+    ) rethrows -> (key: AnyPreferenceKey.Type, value: OGAttribute)? {
+        try preferences
+            .first { try predicate($0.key, $0.value) }
+            .map { ($0.key, $0.value) }
+    }
+    
     #else
     subscript<Key: PreferenceKey>(_: Key.Type) -> Attribute<Key.Value>? {
         get { fatalError("See #39") }
         set { fatalError("See #39") }
     }
     #endif
+    
+    mutating func appendPreference<Key: PreferenceKey>(key: Key.Type, value: Attribute<Key.Value>) {
+        #if canImport(Darwin)
+        preferences.append(KeyValue(key: _AnyPreferenceKey<Key>.self, value: value.identifier))
+        #endif
+    }
 }
 
 extension PreferencesOutputs {

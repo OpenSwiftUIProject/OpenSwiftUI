@@ -181,7 +181,10 @@ class GraphHost {
     }
     
     final func intern<Value>(_ value: Value, id: _GraphInputs.ConstantID) -> Attribute<Value> {
-        fatalError("TODO")
+        let id = id.internID
+        return data.globalSubgraph.apply {
+            data.inputs.intern(value, id: id.internID)
+        }
     }
     
     final func setNeedsUpdate(mayDeferUpdate: Bool) {
@@ -385,7 +388,7 @@ private final class AsyncTransaction {
 
 extension OGGraph {
     final func graphHost() -> GraphHost {
-        context!.assumingMemoryBound(to: GraphHost.self).pointee
+        unsafeBitCast(context, to: GraphHost.self)
     }
     
     fileprivate final func setGraphHost(_ graphHost: GraphHost) {

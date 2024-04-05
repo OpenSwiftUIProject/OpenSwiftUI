@@ -42,8 +42,19 @@ struct CachedEnvironment {
         #endif
     }
     
-    func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
-        fatalError("TODO")
+    mutating func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
+        #if canImport(Darwin)
+        let constant = HashableConstant(value, id: id)
+        if let identifier = constants[constant] {
+            return Attribute(identifier: identifier)
+        } else {
+            let attribute = Attribute(value: value)
+            constants[constant] = attribute.identifier
+            return attribute
+        }
+        #else
+        fatalError("See #39")
+        #endif
     }
     
     func animatePosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {

@@ -19,7 +19,7 @@
 ///     }
 ///
 /// Assemble the view's body by combining one or more of the built-in views
-/// provided by SwiftUI, like the ``Text`` instance in the example above, plus
+/// provided by OpenSwiftUI, like the ``Text`` instance in the example above, plus
 /// other custom views that you define, into a hierarchy of views. For more
 /// information about creating custom views, see <doc:Declaring-a-Custom-View>.
 ///
@@ -43,15 +43,17 @@
 /// custom view modifiers for easy reuse.
 @_typeEraser(AnyView)
 public protocol View {
-    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
-    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
-    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
-
     /// The type of view representing the body of this view.
     ///
     /// When you create a custom view, Swift infers this type from your
     /// implementation of the required ``View/body-swift.property`` property.
     associatedtype Body: View
+    
+    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
+    
+    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
+    
+    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
     
     /// The content and behavior of the view.
     ///
@@ -73,24 +75,25 @@ public protocol View {
     var body: Self.Body { get }
 }
 
-// FIXME
 extension View {
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        .init()
+        makeView(view: view, inputs: inputs)
     }
+    
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        .init()
+        fatalError("TODO")
     }
+    
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
-        nil
+        Body._viewListCount(inputs: inputs)
     }
 }
 
+
+// MARK: - Never + View
+
 extension Never: View {
-    public var body: Never {
-        // FIXME: should be "brk #1"
-        fatalError()
-    }
+    public var body: Never { self }
 }
 
 extension View {

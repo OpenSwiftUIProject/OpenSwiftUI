@@ -6,8 +6,8 @@ public struct _GraphInputs {
     var cachedEnvironment: MutableBox<CachedEnvironment>
     var phase: Attribute<_GraphInputs.Phase>
     var transaction: Attribute<Transaction>
-    var changedDebugProperties: _ViewDebug.Properties
-    var options: _GraphInputs.Options
+    private var changedDebugProperties: _ViewDebug.Properties
+    private var options: _GraphInputs.Options
     #if canImport(Darwin) // FIXME: See #39
     var mergedInputs: Set<OGAttribute>
     #endif
@@ -54,6 +54,38 @@ public struct _GraphInputs {
         get { customInputs[type] }
         set { customInputs[type] = newValue }
     }
+    
+    // MARK: - cachedEnvironment
+    
+    @inline(__always)
+    func detechedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+        return newInputs
+    }
+    
+    @inline(__always)
+    mutating func updateCachedEnvironment(_ box: MutableBox<CachedEnvironment>) {
+        cachedEnvironment = box
+        changedDebugProperties.insert(.environment)
+    }
+    
+    // MARK: - changedDebugProperties
+    
+    @inline(__always)
+    func withEmptyChangedDebugPropertiesInputs<R>(_ body: (_GraphInputs) -> R) -> R {
+        var inputs = self
+        inputs.changedDebugProperties = []
+        return body(inputs)
+    }
+    
+    // MARK: - options
+    
+    @inline(__always)
+    var enableLayout: Bool {
+        get { options.contains(.enableLayout) }
+        // TODO: setter
+    }
 }
 
 extension _GraphInputs {
@@ -65,9 +97,20 @@ extension _GraphInputs {
 extension _GraphInputs {
     struct Options: OptionSet {
         let rawValue: UInt32
+        
+        static var enableLayout: Options { Options(rawValue: 1 << 1) }
     }
 }
 
 extension _GraphInputs {
     typealias ConstantID = Int
+    
+    func intern<Value>(_ value: Value, id: ConstantID) -> Attribute<Value> {
+        cachedEnvironment.wrappedValue.intern(value, id: id.internID)
+    }
+}
+
+extension _GraphInputs.ConstantID {
+    @inline(__always)
+    var internID: Self { self & 0x1 }
 }
