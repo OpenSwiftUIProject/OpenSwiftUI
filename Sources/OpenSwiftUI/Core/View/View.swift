@@ -49,6 +49,12 @@ public protocol View {
     /// implementation of the required ``View/body-swift.property`` property.
     associatedtype Body: View
     
+    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
+    
+    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
+    
+    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
+    
     /// The content and behavior of the view.
     ///
     /// When you implement a custom view, you must implement a computed
@@ -67,10 +73,6 @@ public protocol View {
     @ViewBuilder
     @MainActor
     var body: Self.Body { get }
-    
-    static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
-    static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
-    static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
 }
 
 extension View {
@@ -79,26 +81,19 @@ extension View {
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        // TODO
-        .init()
-    }
-    public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
-        // TODO
-        nil
-    }
-}
-
-extension View {
-    static func makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         fatalError("TODO")
     }
+    
+    public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        Body._viewListCount(inputs: inputs)
+    }
 }
 
+
+// MARK: - Never + View
+
 extension Never: View {
-    public var body: Never {
-        // FIXME: should be "brk #1"
-        fatalError()
-    }
+    public var body: Never { self }
 }
 
 extension View {

@@ -41,9 +41,9 @@ extension _ViewDebug {
             OGSubgraph.setShouldRecordTree()
         }
     }
-    
+        
     // TODO:
-    fileprivate static func reallyWrap(_: inout _ViewOutputs, value _: _GraphValue<some Any>, inputs _: UnsafePointer<_ViewInputs>) {}
+    /*private*/ static func reallyWrap<Value>(_: inout _ViewOutputs, value: _GraphValue<Value>, inputs _: UnsafePointer<_ViewInputs>) {}
 
     fileprivate static func appendDebugData(from: Int/*AGTreeElement*/ , to: [_ViewDebug.Data]) {}
 }
