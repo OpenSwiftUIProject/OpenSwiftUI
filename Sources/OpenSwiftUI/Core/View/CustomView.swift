@@ -11,6 +11,7 @@ internal import OpenGraphShims
 extension View {
     static func makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         var inputs = inputs
+        inputs.base.changedDebugProperties = []
         let fields = DynamicPropertyCache.fields(of: Self.self)
         let (body, buffer) = makeBody(view: view, inputs: &inputs.base, fields: fields)
         OGSubgraph.beginTreeElement(value: body.value, flags: 0)

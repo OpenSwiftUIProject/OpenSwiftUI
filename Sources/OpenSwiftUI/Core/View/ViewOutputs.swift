@@ -9,4 +9,12 @@ public struct _ViewOutputs {
         get { preferences[keyType] }
         set { preferences[keyType] = newValue }
     }
+    
+    func attachIndirectOutputs(to outputs: _ViewOutputs) {
+        // TODO
+    }
+    
+    func detachIndirectOutputs() {
+        // TODO
+    }
 }

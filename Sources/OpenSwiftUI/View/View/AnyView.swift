@@ -42,22 +42,24 @@ class AnyViewStorageBase {
         self.id = id
     }
     
-    private var type: Any.Type { fatalError() }
-    private var canTransition: Bool { fatalError() }
-    private func matches(_ other: AnyViewStorageBase) -> Bool { fatalError() }
-    private func makeChild(
+    fileprivate var type: Any.Type { fatalError() }
+    fileprivate var canTransition: Bool { fatalError() }
+    fileprivate func matches(_ other: AnyViewStorageBase) -> Bool { fatalError() }
+    fileprivate func makeChild(
         uniqueID: UInt32,
         container: Attribute<AnyViewInfo>,
         inputs: _ViewInputs
-    ) { fatalError() }
+    ) -> _ViewOutputs {
+        fatalError()
+    }
     func child<Value>() -> Value { fatalError() }
-    private func makeViewList(
+    fileprivate func makeViewList(
         view: _GraphValue<AnyView>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
         fatalError()
     }
-    private func visitContent<Vistor: ViewVisitor>(_ visitor: inout Vistor) {
+    fileprivate func visitContent<Vistor: ViewVisitor>(_ visitor: inout Vistor) {
         fatalError()
     }
 }
@@ -69,7 +71,7 @@ private struct AnyViewInfo {
 }
 
 private struct AnyViewContainer: StatefulRule, AsyncAttribute {
-    @Attribute var view: Attribute<AnyView>
+    @Attribute var view: AnyView
     let inputs: _ViewInputs
     let outputs: _ViewOutputs
     let parentSubgraph: OGSubgraph
@@ -77,6 +79,38 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
     typealias Value = AnyViewInfo
     
     func updateValue() {
-        
+        let view = view
+        let newInfo: AnyViewInfo
+        if hasValue {
+            let oldInfo = value
+            if oldInfo.item.matches(view.storage) {
+                newInfo = oldInfo
+            } else {
+                eraseItem(info: oldInfo)
+                newInfo = makeItem(view.storage, uniqueId: oldInfo.uniqueID + 1)
+            }
+        } else {
+            newInfo = makeItem(view.storage, uniqueId: 0)
+        }
+        value = newInfo
+    }
+    
+    func makeItem(_ storage: AnyViewStorageBase, uniqueId: UInt32) -> AnyViewInfo {
+        let current = OGAttribute.current!
+        let childGraph = OGSubgraph(graph: parentSubgraph.graph)
+        parentSubgraph.addChild(childGraph)
+        return childGraph.apply {
+            var childInputs = inputs.detechedEnvironmentInputs()
+            let childOutputs = storage.makeChild(uniqueID: uniqueId, container: current.unsafeCast(to: AnyViewInfo.self), inputs: childInputs)
+            outputs.attachIndirectOutputs(to: childOutputs)
+            return AnyViewInfo(item: storage, subgraph: childGraph, uniqueID: uniqueId)
+        }
+    }
+    
+    func eraseItem(info: AnyViewInfo) {
+        outputs.detachIndirectOutputs()
+        let subgraph = info.subgraph
+        subgraph.willInvalidate(isInserted: true)
+        subgraph.invalidate()
     }
 }

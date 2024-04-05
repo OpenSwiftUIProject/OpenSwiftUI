@@ -8,4 +8,11 @@ public struct _ViewInputs {
     var containerPosition: Attribute<ViewOrigin>
     var size: Attribute<ViewSize>
     var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
+    
+    @inline(__always)
+    func detechedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.base = self.base.detechedEnvironmentInputs()
+        return newInputs
+    }
 }

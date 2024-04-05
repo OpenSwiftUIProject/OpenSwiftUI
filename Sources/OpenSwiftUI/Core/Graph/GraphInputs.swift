@@ -50,6 +50,13 @@ public struct _GraphInputs {
     }
     #endif
     
+    @inline(__always)
+    func detechedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+        return newInputs
+    }
+    
     subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
         get { customInputs[type] }
         set { customInputs[type] = newValue }
