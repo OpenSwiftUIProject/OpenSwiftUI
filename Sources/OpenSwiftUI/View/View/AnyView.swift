@@ -41,11 +41,15 @@ public struct AnyView: PrimitiveView {
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         let outputs = inputs.makeIndirectOutputs()
         let parent = OGSubgraph.current!
-        
         let container = AnyViewContainer(view: view.value, inputs: inputs, outputs: outputs, parentSubgraph: parent)
         let containerAttribute = Attribute(container)
-        // TODO
-        return .init()
+        outputs.forEach { key, value in
+            value.indirectDependency = containerAttribute.identifier
+        }
+        if let layoutComputer = outputs.$layoutComputer {
+            layoutComputer.identifier.indirectDependency = containerAttribute.identifier
+        }
+        return outputs
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
@@ -127,7 +131,7 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
         let childGraph = OGSubgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(childGraph)
         return childGraph.apply {
-            var childInputs = inputs.detechedEnvironmentInputs()
+            let childInputs = inputs.detechedEnvironmentInputs()
             let childOutputs = storage.makeChild(uniqueID: uniqueId, container: current.unsafeCast(to: AnyViewInfo.self), inputs: childInputs)
             outputs.attachIndirectOutputs(to: childOutputs)
             return AnyViewInfo(item: storage, subgraph: childGraph, uniqueID: uniqueId)

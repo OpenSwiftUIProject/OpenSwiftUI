@@ -2,8 +2,7 @@ internal import OpenGraphShims
 
 public struct _ViewOutputs {
     private var preferences = PreferencesOutputs()
-    @OptionalAttribute
-    var layoutComputer: LayoutComputer?
+    @OptionalAttribute var layoutComputer: LayoutComputer?
     
     subscript<Key: PreferenceKey>(_ keyType: Key.Type) -> Attribute<Key.Value>? {
         get { preferences[keyType] }
@@ -53,5 +52,14 @@ public struct _ViewOutputs {
             return
         }
         $layoutComputer = layoutComputer()
+    }
+    
+    @inline(__always)
+    func forEach(body: (
+        _ key: AnyPreferenceKey.Type,
+        _ value: OGAttribute
+    ) throws -> Void
+    ) rethrows {
+        try preferences.forEach(body: body)
     }
 }
