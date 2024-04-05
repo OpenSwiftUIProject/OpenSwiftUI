@@ -388,7 +388,7 @@ private final class AsyncTransaction {
 
 extension OGGraph {
     final func graphHost() -> GraphHost {
-        context!.assumingMemoryBound(to: GraphHost.self).pointee
+        unsafeBitCast(context, to: GraphHost.self)
     }
     
     fileprivate final func setGraphHost(_ graphHost: GraphHost) {
