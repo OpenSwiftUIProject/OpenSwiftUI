@@ -7,7 +7,7 @@ public struct _GraphInputs {
     var phase: Attribute<_GraphInputs.Phase>
     var transaction: Attribute<Transaction>
     var changedDebugProperties: _ViewDebug.Properties
-    var options: _GraphInputs.Options
+    private var options: _GraphInputs.Options
     #if canImport(Darwin) // FIXME: See #39
     var mergedInputs: Set<OGAttribute>
     #endif
@@ -50,6 +50,11 @@ public struct _GraphInputs {
     }
     #endif
     
+    subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
+        get { customInputs[type] }
+        set { customInputs[type] = newValue }
+    }
+    
     @inline(__always)
     func detechedEnvironmentInputs() -> Self {
         var newInputs = self
@@ -57,9 +62,12 @@ public struct _GraphInputs {
         return newInputs
     }
     
-    subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
-        get { customInputs[type] }
-        set { customInputs[type] = newValue }
+    // MARK: Options
+    
+    @inline(__always)
+    var enableLayout: Bool {
+        get { options.contains(.enableLayout) }
+        // TODO: setter
     }
 }
 
@@ -72,9 +80,20 @@ extension _GraphInputs {
 extension _GraphInputs {
     struct Options: OptionSet {
         let rawValue: UInt32
+        
+        static var enableLayout: Options { Options(rawValue: 1 << 1) }
     }
 }
 
 extension _GraphInputs {
     typealias ConstantID = Int
+    
+    func intern<Value>(_ value: Value, id: ConstantID) -> Attribute<Value> {
+        cachedEnvironment.wrappedValue.intern(value, id: id.internID)
+    }
+}
+
+extension _GraphInputs.ConstantID {
+    @inline(__always)
+    var internID: Self { self & 0x1 }
 }

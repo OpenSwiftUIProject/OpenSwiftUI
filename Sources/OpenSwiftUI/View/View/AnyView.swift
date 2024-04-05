@@ -11,9 +11,9 @@ internal import OpenGraphShims
 @frozen
 public struct AnyView: PrimitiveView {
     var storage: AnyViewStorageBase
-    // WIP
-    public init<V>(_ view: V) where V : View {
-        storage = .init(id: nil)
+
+    public init<V>(_ view: V) where V: View {
+        self.init(view, id: nil)
     }
 
     @_alwaysEmitIntoClient
@@ -23,14 +23,34 @@ public struct AnyView: PrimitiveView {
 
     // WIP
     public init?(_fromValue value: Any) {
-        return nil
+        fatalError("TODO")
     }
-//  public static func _makeView(view: _GraphValue<SwiftUI.AnyView>, inputs: _ViewInputs) -> _ViewOutputs
-//  public static func _makeViewList(view: _GraphValue<AnyView>, inputs: _ViewListInputs) -> _ViewListOutputs
-
-    // WIP
+    
     init<V: View>(_ view: V, id: UniqueID?) {
-        storage = .init(id: nil)
+        if let anyView = view as? AnyView {
+            storage = anyView.storage
+        } else {
+            storage = AnyViewStorage(view: view, id: id)
+        }
+    }
+    
+    func visitContent<Visitor: ViewVisitor>(_ visitor: inout Visitor) {
+        storage.visitContent(&visitor)
+    }
+    
+    public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        let outputs = inputs.makeIndirectOutputs()
+        let parent = OGSubgraph.current!
+        
+        let container = AnyViewContainer(view: view.value, inputs: inputs, outputs: outputs, parentSubgraph: parent)
+        let containerAttribute = Attribute(container)
+        // TODO
+        return .init()
+    }
+    
+    public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        // TODO
+        .init()
     }
 }
 
@@ -61,6 +81,13 @@ class AnyViewStorageBase {
     }
     fileprivate func visitContent<Vistor: ViewVisitor>(_ visitor: inout Vistor) {
         fatalError()
+    }
+}
+
+private class AnyViewStorage<V: View>: AnyViewStorageBase {
+    init(view: V, id: UniqueID?) {
+        // TODO
+        super.init(id: id)
     }
 }
 

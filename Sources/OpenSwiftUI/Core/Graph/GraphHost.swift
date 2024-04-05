@@ -181,7 +181,10 @@ class GraphHost {
     }
     
     final func intern<Value>(_ value: Value, id: _GraphInputs.ConstantID) -> Attribute<Value> {
-        fatalError("TODO")
+        let id = id.internID
+        return data.globalSubgraph.apply {
+            data.inputs.intern(value, id: id.internID)
+        }
     }
     
     final func setNeedsUpdate(mayDeferUpdate: Bool) {

@@ -15,4 +15,33 @@ public struct _ViewInputs {
         newInputs.base = self.base.detechedEnvironmentInputs()
         return newInputs
     }
+    
+    func makeIndirectOutputs() -> _ViewOutputs {
+        struct AddPreferenceVisitor: PreferenceKeyVisitor {
+            var outputs = _ViewOutputs()
+            mutating func visit<Key: PreferenceKey>(key: Key.Type) {
+                let source = ViewGraph.current.intern(Key.defaultValue, id: 0)
+                let indirect = IndirectAttribute(source: source)
+                outputs.appendPreference(key: Key.self, value: Attribute(identifier: indirect.identifier))
+            }
+        }
+        var visitor = AddPreferenceVisitor()
+        preferences.keys.forEach { key in
+            key.visitKey(&visitor)
+        }
+        var outputs = visitor.outputs
+        outputs.setLayoutComputer(self) {
+            let indirect = IndirectAttribute(source: ViewGraph.current.$defaultLayoutComputer)
+            return Attribute(identifier: indirect.identifier)
+        }
+        return outputs
+    }
+        
+    // MARK: Options
+        
+    @inline(__always)
+    var enableLayout: Bool {
+        get { base.enableLayout }
+        // TODO: setter
+    }
 }
