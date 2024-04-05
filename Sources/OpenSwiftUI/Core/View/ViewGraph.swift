@@ -229,6 +229,7 @@ final class ViewGraph: GraphHost {
             rootGeometry.$childLayoutComputer = outputs.$layoutComputer
         }
         // TODO
+        hostPreferenceValues.projectedValue = outputs.hostPreferences
         makePreferenceOutlets(outputs: outputs)
         #endif
     }

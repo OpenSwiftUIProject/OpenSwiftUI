@@ -173,7 +173,7 @@ final class PreferenceBridge {
                     values: OptionalAttribute(base: AnyOptionalAttribute(outputs[anyKey: key])),
                     children: []
                 ))
-                outputs[anyKey: key] = combiner.identifier
+                outputs.hostPreferences = combiner
                 $hostPreferenceKeys = inputs.preferences.hostKeys
                 $hostPreferencesCombiner = combiner
             } else {
