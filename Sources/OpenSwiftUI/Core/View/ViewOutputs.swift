@@ -10,6 +10,7 @@ public struct _ViewOutputs {
     }
     
     func attachIndirectOutputs(to targetOutputs: _ViewOutputs) {
+        #if canImport(Darwin)
         preferences.forEach { key, value in
             guard let targetValue = targetOutputs.preferences.first(where: { targetKey, _ in
                 targetKey == key
@@ -22,9 +23,11 @@ public struct _ViewOutputs {
            let source = targetOutputs.$layoutComputer?.identifier {
             identifier.source = source
         }
+        #endif
     }
     
     func detachIndirectOutputs() {
+        #if canImport(Darwin)
         struct ResetPreference: PreferenceKeyVisitor {
             var dst: OGAttribute
             func visit<Key: PreferenceKey>(key: Key.Type) {
@@ -40,6 +43,7 @@ public struct _ViewOutputs {
         if let layoutComputer = $layoutComputer {
             layoutComputer.identifier.source = (layoutComputer.graph.graphHost() as! ViewGraph).$defaultLayoutComputer.identifier
         }
+        #endif
     }
     
     mutating func appendPreference<Key: PreferenceKey>(key: Key.Type, value: Attribute<Key.Value>) {
@@ -54,6 +58,7 @@ public struct _ViewOutputs {
         $layoutComputer = layoutComputer()
     }
     
+    #if canImport(Darwin)
     @inline(__always)
     func forEach(body: (
         _ key: AnyPreferenceKey.Type,
@@ -62,4 +67,5 @@ public struct _ViewOutputs {
     ) rethrows {
         try preferences.forEach(body: body)
     }
+    #endif
 }

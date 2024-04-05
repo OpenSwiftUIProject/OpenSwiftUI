@@ -21,8 +21,15 @@ public struct AnyView: PrimitiveView {
         self.init(view)
     }
 
-    // WIP
     public init?(_fromValue value: Any) {
+        struct Visitor: ViewTypeVisitor {
+            var value: Any
+            var view: AnyView?
+            
+            mutating func visit<V: View>(type: V.Type) {
+                view = AnyView(value as! V)
+            }
+        }
         fatalError("TODO")
     }
     
@@ -39,6 +46,7 @@ public struct AnyView: PrimitiveView {
     }
     
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        #if canImport(Darwin)
         let outputs = inputs.makeIndirectOutputs()
         let parent = OGSubgraph.current!
         let container = AnyViewContainer(view: view.value, inputs: inputs, outputs: outputs, parentSubgraph: parent)
@@ -50,6 +58,9 @@ public struct AnyView: PrimitiveView {
             layoutComputer.identifier.indirectDependency = containerAttribute.identifier
         }
         return outputs
+        #else
+        fatalError("See #39")
+        #endif
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
@@ -165,6 +176,7 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
     }
     
     func makeItem(_ storage: AnyViewStorageBase, uniqueId: UInt32) -> AnyViewInfo {
+        #if canImport(Darwin)
         let current = OGAttribute.current!
         let childGraph = OGSubgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(childGraph)
@@ -178,6 +190,9 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
             outputs.attachIndirectOutputs(to: childOutputs)
             return AnyViewInfo(item: storage, subgraph: childGraph, uniqueID: uniqueId)
         }
+        #else
+        fatalError("#See #39")
+        #endif
     }
     
     func eraseItem(info: AnyViewInfo) {

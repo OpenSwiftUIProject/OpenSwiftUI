@@ -81,7 +81,9 @@ struct PreferencesOutputs {
     #endif
     
     mutating func appendPreference<Key: PreferenceKey>(key: Key.Type, value: Attribute<Key.Value>) {
+        #if canImport(Darwin)
         preferences.append(KeyValue(key: _AnyPreferenceKey<Key>.self, value: value.identifier))
+        #endif
     }
 }
 

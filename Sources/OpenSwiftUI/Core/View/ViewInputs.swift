@@ -28,6 +28,7 @@ public struct _ViewInputs {
     }
     
     func makeIndirectOutputs() -> _ViewOutputs {
+        #if canImport(Darwin)
         struct AddPreferenceVisitor: PreferenceKeyVisitor {
             var outputs = _ViewOutputs()
             mutating func visit<Key: PreferenceKey>(key: Key.Type) {
@@ -46,6 +47,9 @@ public struct _ViewInputs {
             return Attribute(identifier: indirect.identifier)
         }
         return outputs
+        #else
+        fatalError("See #39")
+        #endif
     }
     
     // MARK: - base

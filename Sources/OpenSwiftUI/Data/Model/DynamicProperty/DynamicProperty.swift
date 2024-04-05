@@ -86,15 +86,13 @@ extension DynamicProperty {
     }
 }
 
-// FIXME: Compile crash on non-ObjectiveC platform
-// https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/39
-#if canImport(Darwin)
 extension BodyAccessor {
     func makeBody(
         container: _GraphValue<Container>,
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
+        #if canImport(Darwin)
         guard Body.self != Never.self else {
             fatalError("\(Body.self) may not have Body == Never")
         }
@@ -129,6 +127,9 @@ extension BodyAccessor {
                 return project(flags: MainThreadFlags.self)
             }
         }
+        #else
+        fatalError("See #39")
+        #endif
     }
 }
 
@@ -150,8 +151,7 @@ private struct MainThreadFlags: RuleThreadFlags {
 
 private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
-    @Attribute
-    var container: Accessor.Container
+    @Attribute var container: Accessor.Container
     
     init(accessor: Accessor, container: Attribute<Accessor.Container>) {
         self.accessor = accessor
@@ -172,6 +172,8 @@ extension StaticBody: _AttributeBody {
         ThreadFlags.value
     }
 }
+
+#if canImport(Darwin)
 
 extension StaticBody: BodyAccessorRule {
     static var container: Any.Type {
@@ -196,6 +198,8 @@ extension StaticBody: BodyAccessorRule {
         return [("@self", attribute.info.body.assumingMemoryBound(to: Self.self).pointee._container.identifier)]
     }
 }
+
+#endif
 
 extension StaticBody: CustomStringConvertible {
     var description: String { "\(Accessor.Body.self)" }
@@ -236,4 +240,3 @@ extension DynamicBody: StatefulRule {
         // TODO
     }
 }
-#endif
