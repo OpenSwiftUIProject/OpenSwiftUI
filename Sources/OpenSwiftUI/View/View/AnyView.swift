@@ -88,10 +88,33 @@ class AnyViewStorageBase {
     }
 }
 
-private class AnyViewStorage<V: View>: AnyViewStorageBase {
+private final class AnyViewStorage<V: View>: AnyViewStorageBase {
+    let view: V
+    
     init(view: V, id: UniqueID?) {
-        // TODO
+        self.view = view
         super.init(id: id)
+    }
+    
+    override var type: Any.Type { V.self }
+    
+    override var canTransition: Bool { id != nil }
+    
+    override func matches(_ other: AnyViewStorageBase) -> Bool {
+        other is AnyViewStorage<V>
+    }
+    
+    override func child<Value>() -> Value { view as! Value }
+    
+    // TODO
+//    override func makeViewList(
+//        view: _GraphValue<AnyView>,
+//        inputs: _ViewListInputs
+//    ) -> _ViewListOutputs {
+//    }
+    
+    override func visitContent<Vistor>(_ visitor: inout Vistor) where Vistor : ViewVisitor {
+        visitor.visit(view)
     }
 }
 
