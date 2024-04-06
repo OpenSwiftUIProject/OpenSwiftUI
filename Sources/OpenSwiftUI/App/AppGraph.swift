@@ -65,3 +65,16 @@ final class AppGraph: GraphHost {
         }
     }
 }
+
+private struct AppBodyAccessor<Container: App>: BodyAccessor {
+    typealias Body = Container.Body
+    
+    func updateBody(of container: Container, changed: Bool) {
+        guard changed else {
+            return
+        }
+        setBody {
+            container.body
+        }
+    }
+}
