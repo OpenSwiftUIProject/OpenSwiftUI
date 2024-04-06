@@ -13,10 +13,10 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 OPENSWIFTUI_EXPORT
-const void *_viewProtocolDescriptor(void);
+const void *_OpenSwiftUI_viewProtocolDescriptor(void);
 
 OPENSWIFTUI_EXPORT
-const void *_viewModifierProtocolDescriptor(void);
+const void *_OpenSwiftUI_viewModifierProtocolDescriptor(void);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

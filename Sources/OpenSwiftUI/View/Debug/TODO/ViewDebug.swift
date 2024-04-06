@@ -201,10 +201,10 @@ extension _ViewDebug.Data {
         init(type anyType: Any.Type) {
             name = nil
             type = String(reflecting: anyType)
-            readableType = "" // TODO: /*OGTypeID(anyType).description*/
+            readableType = OGTypeID(anyType).description
             flags = [
-                conformsToProtocol(anyType, _viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _viewModifierProtocolDescriptor()) ? .viewModifier : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
             ]
             value = nil
             subattributes = nil
@@ -214,10 +214,10 @@ extension _ViewDebug.Data {
             name = label
             let anyType = Swift.type(of: inputValue)
             type = String(reflecting: anyType)
-            readableType = "" // TODO: /*OGTypeID(anyType).description*/
+            readableType = OGTypeID(anyType).description
             flags = [
-                conformsToProtocol(anyType, _viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _viewModifierProtocolDescriptor()) ? .viewModifier : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
             ]
             if serializeValue {
                 value = SerializedAttribute.serialize(value: inputValue)
