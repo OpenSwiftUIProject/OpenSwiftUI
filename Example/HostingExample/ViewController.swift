@@ -6,10 +6,10 @@
 //
 
 import UIKit
-#if !OPENSWIFTUI
-import SwiftUI
-#else
+#if OPENSWIFTUI
 import OpenSwiftUI
+#else
+import SwiftUI
 #endif
 
 class ViewController: UINavigationController {
