@@ -14,16 +14,21 @@ Currently, this project is in early development.
 
 You can find the API [documentation](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI/main/documentation/openswiftui) here.
 
-> [!IMPORTANT]
-> Please **DO NOT** use this package in production environment on Apple platform
-> (eg. App Store and Mac App Store) since this package use a lot of hidden and
-> private API here.
+> [!WARNING]
+> This package use a lot of hidden API and private framework on Apple platform.
+>
+> Please **DO NOT** use this package in Apple's production environment(eg. App Store).
 > 
-> It may break your build or crash your app at any future SDK/OS update.
+> Otherwize it may break your build or crash your app at any future SDK/OS update.
 
 ## Usage
 
 See Example folder and try it with ExampleApp
+
+> [!IMPORTANT]  
+> Clone OpenGraph in the same directory before running the example.
+>
+> See [Example/README.md](Example/README.md) for more detail.
 
 ## Build
 
@@ -62,10 +67,12 @@ for various platforms:
 [^4]: Build is supported. Test is not supported yet dut to upstream issue.
 
 > [!NOTE]
-> Due to the current limited implementation level of OpenGraph.
-> It is only API compatible with AttributeGraph.
+> The cross-platform OpenGraph is not fully implemented.
 >
-> Most of the core feature is only available on Apple platform built with AttributeGraph varient.
+> It is only API compatible with AttributeGraph now.
+>
+> So most of the core feature is only available on Apple platform built with
+> AttributeGraph varient.
 
 ## License
 
