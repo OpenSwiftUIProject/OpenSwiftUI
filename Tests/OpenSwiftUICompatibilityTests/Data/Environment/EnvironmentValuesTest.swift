@@ -5,11 +5,6 @@
 //  Created by Kyle on 2023/11/21.
 //
 
-#if OPENSWIFTUI_COMPATIBILITY_TEST
-import SwiftUI
-#else
-import OpenSwiftUI
-#endif
 import Testing
 
 struct EnvironmentValuesTest {

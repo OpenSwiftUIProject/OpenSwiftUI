@@ -23,10 +23,10 @@ struct ProtocolDescriptorTests {
                 EmptyView()
             }
         }
-
-        #expect(conformsToProtocol(ContentView.self, _viewProtocolDescriptor()))
-        #expect(!conformsToProtocol(ContentView.self, _viewModifierProtocolDescriptor()))
-        #expect(!conformsToProtocol(ContentViewModifier.self, _viewProtocolDescriptor()))
-        #expect(conformsToProtocol(ContentViewModifier.self, _viewModifierProtocolDescriptor()))
+        
+        #expect(conformsToProtocol(ContentView.self, _OpenSwiftUI_viewProtocolDescriptor()))
+        #expect(!conformsToProtocol(ContentView.self, _OpenSwiftUI_viewModifierProtocolDescriptor()))
+        #expect(!conformsToProtocol(ContentViewModifier.self, _OpenSwiftUI_viewProtocolDescriptor()))
+        #expect(conformsToProtocol(ContentViewModifier.self, _OpenSwiftUI_viewModifierProtocolDescriptor()))
     }
 }
