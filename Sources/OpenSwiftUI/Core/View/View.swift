@@ -71,7 +71,7 @@ public protocol View {
     /// For more information about composing views and a view hierarchy,
     /// see <doc:Declaring-a-Custom-View>.
     @ViewBuilder
-    @MainActor
+    @MainActor(unsafe)
     var body: Self.Body { get }
 }
 
