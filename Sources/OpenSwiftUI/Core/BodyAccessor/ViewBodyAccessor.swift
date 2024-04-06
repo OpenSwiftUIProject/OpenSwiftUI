@@ -3,15 +3,17 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: WIP
+//  Status: Complete
 
 struct ViewBodyAccessor<Container: View>: BodyAccessor {
     typealias Body = Container.Body
     
-    func updateBody(of: Container, changed: Bool) {
+    func updateBody(of container: Container, changed: Bool) {
         guard changed else {
             return
         }
-        // TODO
+        setBody {
+            container.body
+        }
     }
 }

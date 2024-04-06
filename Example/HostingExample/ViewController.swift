@@ -21,6 +21,6 @@ class ViewController: UINavigationController {
 
 struct ContentView: View {
     var body: some View {
-        EmptyView()
+        AnyView(EmptyView())
     }
 }

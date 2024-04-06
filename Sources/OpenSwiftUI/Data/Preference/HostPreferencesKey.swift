@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: 7429200566949B8FB892A77E01A988C8
 
+internal import OpenGraphShims
+
 struct HostPreferencesKey: PreferenceKey {
     static var defaultValue: PreferenceList {
         PreferenceList()
@@ -23,5 +25,21 @@ extension HostPreferencesKey {
     static func makeNodeID() -> UInt32 {
         defer { nodeId &+= 1 }
         return nodeId
+    }
+}
+
+extension _ViewOutputs {
+    @inline(__always)
+    var hostPreferences: Attribute<PreferenceList>? {
+        get { self[HostPreferencesKey.self] }
+        set { self[HostPreferencesKey.self] = newValue }
+    }
+}
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var hostPreferences: Attribute<PreferenceList>? {
+        get { self[HostPreferencesKey.self] }
+        set { self[HostPreferencesKey.self] = newValue }
     }
 }
