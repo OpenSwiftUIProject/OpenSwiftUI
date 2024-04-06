@@ -6,7 +6,7 @@
 //
 
 import UIKit
-#if !OEPNSWIFTUI
+#if !OPENSWIFTUI
 import SwiftUI
 #else
 import OpenSwiftUI
