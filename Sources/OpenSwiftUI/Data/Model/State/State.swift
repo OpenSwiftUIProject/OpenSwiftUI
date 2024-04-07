@@ -3,8 +3,10 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: Blocked by DynamicProperty
+//  Status: Complete
 //  ID: 08168374F4710A99DCB15B5E8768D632
+
+internal import OpenGraphShims
 
 /// A property wrapper type that can read and write a value managed by OpenSwiftUI.
 ///
@@ -206,11 +208,6 @@ public struct State<Value> {
     }
 }
 
-extension State: DynamicProperty {
-    // TODO:
-    public static func _makeProperty(in _: inout _DynamicPropertyBuffer, container _: _GraphValue<some Any>, fieldOffset _: Swift.Int, inputs _: inout _GraphInputs) {}
-}
-
 extension State where Value: ExpressibleByNilLiteral {
     /// Creates a state property without an initial value.
     ///
@@ -237,3 +234,43 @@ extension State {
         }
     }
 }
+
+extension State: DynamicProperty {
+    public static func _makeProperty<V>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container _: _GraphValue<V>,
+        fieldOffset: Int,
+        inputs _: inout _GraphInputs
+    ) {
+        let attribute = Attribute(value: ())
+        let box = StatePropertyBox<Value>(signal: WeakAttribute(attribute))
+        buffer.append(box, fieldOffset: fieldOffset)
+    }
+}
+
+// TOOD
+class StoredLocation<V> {}
+
+// TODO
+private struct StatePropertyBox<Value>: DynamicPropertyBox {
+    let signal: WeakAttribute<Void>
+    var location: StoredLocation<Value>?
+
+    typealias Property = State<Value>
+
+    func destroy() {}
+    
+    mutating func reset() { location = nil }
+    
+    mutating func update(property: inout State<Value>, phase: _GraphInputs.Phase) -> Bool {
+        // TODO
+
+        false
+    }
+
+    func getState<Value>(type: Value.Type) -> Binding<Value>? {
+        // TODO
+        nil
+    }
+}
+
