@@ -41,7 +41,7 @@ public struct _ViewOutputs {
             key.visitKey(&visitor)
         }
         if let layoutComputer = $layoutComputer {
-            layoutComputer.identifier.source = (layoutComputer.graph.graphHost() as! ViewGraph).$defaultLayoutComputer.identifier
+            layoutComputer.identifier.source = unsafeDowncast(layoutComputer.graph.graphHost(), to: ViewGraph.self).$defaultLayoutComputer.identifier
         }
         #endif
     }
