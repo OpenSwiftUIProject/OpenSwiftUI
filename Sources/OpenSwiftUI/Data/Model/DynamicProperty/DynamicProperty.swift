@@ -147,6 +147,8 @@ private struct MainThreadFlags: RuleThreadFlags {
     static var value: OGAttributeTypeFlags { .mainThread }
 }
 
+#if canImport(Darwin)
+
 // MARK: - StaticBody
 
 private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
@@ -165,55 +167,43 @@ extension StaticBody: StatefulRule {
     func updateValue() {
         accessor.updateBody(of: container, changed: true)
     }
+    
+    static var flags: OGAttributeTypeFlags { ThreadFlags.value }
 }
-
-extension StaticBody: _AttributeBody {
-    static var flags: OGAttributeTypeFlags {
-        ThreadFlags.value
-    }
-}
-
-#if canImport(Darwin)
 
 extension StaticBody: BodyAccessorRule {
     static var container: Any.Type {
         Accessor.Container.self
     }
     
-    static func buffer<Value>(as type: Value.Type, attribute: OGAttribute) -> _DynamicPropertyBuffer? {
+    static func value<Value>(as _: Value.Type, attribute: OGAttribute) -> Value? {
+        guard container == Value.self else {
+            return nil
+        }
+        return unsafeBitCast(attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container, to: Value.self)
+    }
+    
+    static func buffer<Value>(as _: Value.Type, attribute _: OGAttribute) -> _DynamicPropertyBuffer? {
         nil
     }
     
-    static func value<Value>(as type: Value.Type, attribute: OGAttribute) -> Value? {
-        guard container == type else {
-            return nil
-        }
-        return (attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container as! Value)
-    }
-    
-    static func metaProperties<Value>(as type: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
-        guard container == type else {
+    static func metaProperties<Value>(as _: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+        guard container == Value.self else {
             return []
         }
         return [("@self", attribute.info.body.assumingMemoryBound(to: Self.self).pointee._container.identifier)]
     }
 }
-
-#endif
-
 extension StaticBody: CustomStringConvertible {
     var description: String { "\(Accessor.Body.self)" }
 }
 
 // MARK: - DynamicBody
 
-// TODO
 private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
-    @Attribute
-    var container: Accessor.Container
-    @Attribute
-    var phase: _GraphInputs.Phase
+    @Attribute var container: Accessor.Container
+    @Attribute var phase: _GraphInputs.Phase
     var links: _DynamicPropertyBuffer
     var resetSeed: UInt32
     
@@ -224,19 +214,69 @@ private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>
         links: _DynamicPropertyBuffer,
         resetSeed: UInt32
     ) {
-        fatalError("TODO")
-//        self.accessor = accessor
-//        self._container = container
-//        self._phase = phase
-//        self.links = links
-//        self.resetSeed = resetSeed
+        self.accessor = accessor
+        self._container = container
+        self._phase = phase
+        self.links = links
+        self.resetSeed = resetSeed
     }
 }
 
 extension DynamicBody: StatefulRule {
     typealias Value = Accessor.Body
 
-    func updateValue() {
-        // TODO
+    mutating func updateValue() {
+        if resetSeed != phase.seed {
+            links.reset()
+            resetSeed = phase.seed
+        }
+        var (container, containerChanged) = $container.changedValue()
+        let linkChanged = withUnsafeMutablePointer(to: &container) {
+            links.update(container: $0, phase: phase)
+        }
+        let changed = linkChanged || containerChanged || !hasValue
+        accessor.updateBody(of: container, changed: changed)
+    }
+    
+    static var flags: OGAttributeTypeFlags { ThreadFlags.value }
+}
+
+extension DynamicBody: ObservedAttribute {
+    func destroy() { links.destroy() }
+}
+
+extension DynamicBody: BodyAccessorRule {
+    static var container: Any.Type {
+        Accessor.Container.self
+    }
+    
+    static func value<Value>(as _: Value.Type, attribute: OGAttribute) -> Value? {
+        guard container == Value.self else {
+            return nil
+        }
+        return unsafeBitCast(attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container, to: Value.self)
+    }
+    
+    static func buffer<Value>(as _: Value.Type, attribute: OGAttribute) -> _DynamicPropertyBuffer? {
+        guard container == Value.self else {
+            return nil
+        }
+        return attribute.info.body.assumingMemoryBound(to: Self.self).pointee.links
+    }
+    
+    static func metaProperties<Value>(as _: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+        guard container == Value.self else {
+            return []
+        }
+        return [
+            ("@self", attribute.info.body.assumingMemoryBound(to: Self.self).pointee._container.identifier),
+            ("@identity", attribute.info.body.assumingMemoryBound(to: Self.self).pointee._phase.identifier)
+        ]
     }
 }
+
+extension DynamicBody: CustomStringConvertible {
+    var description: String { "\(Accessor.Body.self)" }
+}
+
+#endif
