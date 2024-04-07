@@ -6,7 +6,7 @@ OpenSwiftUI is an open source implementation of Apple's [SwiftUI](https://develo
 
 The project is for the following purposes:
 - Build GUI app on non-Apple platform (eg. Linux & Windows)
-- Diagnose and debug SwfitUI issues on Apple platform
+- Diagnose and debug SwiftUI issues on Apple platform
 
 And the API design is to stay the same as the original SwiftUI API as possible.
 
