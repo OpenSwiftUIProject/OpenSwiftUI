@@ -336,10 +336,10 @@ extension Binding: DynamicProperty {
             } else {
                 location = LocationBox(location: ScopedLocation(base: property.location))
             }
-            let (value, isUpdated) = location!.update()
+            let (value, changed) = location!.update()
             property.location = location!
             property._value = value
-            return isUpdated ? location!.wasRead : false
+            return changed ? location!.wasRead : false
         }
     }
     

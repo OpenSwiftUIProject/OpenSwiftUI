@@ -91,6 +91,13 @@ public struct _GraphInputs {
 extension _GraphInputs {
     struct Phase: Equatable {
         var value: UInt32
+        
+        @inline(__always)
+        var seed: UInt32 {
+            get { value >> 1 }
+            // TODO
+            // set
+        }
     }
 }
 

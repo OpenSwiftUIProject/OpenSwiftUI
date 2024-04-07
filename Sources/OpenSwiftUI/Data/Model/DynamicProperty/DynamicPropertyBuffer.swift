@@ -142,7 +142,7 @@ public struct _DynamicPropertyBuffer {
     
     func update(container: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
         precondition(_count >= 0)
-        var isUpdated = false
+        var changed = false
         var count = _count
         var pointer = buf
         while count > 0 {
@@ -155,11 +155,11 @@ public struct _DynamicPropertyBuffer {
                 phase: phase
             )
             itemPointer.pointee.lastChanged = updateResult
-            isUpdated = isUpdated || updateResult
+            changed = changed || updateResult
             pointer += Int(itemPointer.pointee.size)
             count &-= 1
         }
-        return isUpdated
+        return changed
     }
     
     private mutating func allocate(bytes: Int) -> UnsafeMutableRawPointer {
@@ -309,11 +309,11 @@ private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
     ) -> Bool {
         let boxPointer = ptr.assumingMemoryBound(to: Box.self)
         let propertyPointer = property.assumingMemoryBound(to: Box.Property.self)
-        let isUpdated = boxPointer.pointee.update(property: &propertyPointer.pointee, phase: phase)
-        if isUpdated {
+        let changed = boxPointer.pointee.update(property: &propertyPointer.pointee, phase: phase)
+        if changed {
             // TODO: OSSignpost
         }
-        return isUpdated
+        return changed
     }
     
     override class func getState<Value>(ptr: UnsafeMutableRawPointer, type: Value.Type) -> Binding<Value>? {
@@ -353,26 +353,26 @@ private class EnumVTable<Enum>: BoxVTableBase {
     }
     
     override class func update(ptr: UnsafeMutableRawPointer, property: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
-        var isUpdated = false
+        var changed = false
         withUnsafeMutablePointerToEnumCase(of: property.assumingMemoryBound(to: Enum.self)) { tag, _, pointer in
             let boxPointer = ptr.assumingMemoryBound(to: EnumBox.self)
             if let (activeTag, index) = boxPointer.pointee.active, activeTag != tag {
                 boxPointer.pointee.cases[index].links.reset()
                 boxPointer.pointee.active = nil
-                isUpdated = true
+                changed = true
             }
             if boxPointer.pointee.active == nil {
                 guard let matchedIndex = boxPointer.pointee.cases.firstIndex(where: { $0.tag == tag }) else {
                     return
                 }
                 boxPointer.pointee.active = (tag, matchedIndex)
-                isUpdated = true
+                changed = true
             }
             if let (_, index) = boxPointer.pointee.active {
-                isUpdated = boxPointer.pointee.cases[index].links.update(container: pointer, phase: phase)
+                changed = boxPointer.pointee.cases[index].links.update(container: pointer, phase: phase)
             }
         }
-        return isUpdated
+        return changed
     }
     
     override class func getState<Value>(ptr: UnsafeMutableRawPointer, type: Value.Type) -> Binding<Value>? {
