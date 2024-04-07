@@ -184,7 +184,7 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
                 newInfo = oldInfo
             } else {
                 eraseItem(info: oldInfo)
-                newInfo = makeItem(view.storage, uniqueId: oldInfo.uniqueID + 1)
+                newInfo = makeItem(view.storage, uniqueId: oldInfo.uniqueID &+ 1)
             }
         } else {
             newInfo = makeItem(view.storage, uniqueId: 0)
