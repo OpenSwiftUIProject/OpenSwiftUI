@@ -1,12 +1,9 @@
 //
 //  SliderTests.swift
-//  
-//
-//  Created by Kyle on 2023/12/16.
-//
+//  OpenSwiftUITests
 
-import Testing
 @testable import OpenSwiftUI
+import Testing
 
 struct SliderTests {
     @Test

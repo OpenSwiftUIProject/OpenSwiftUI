@@ -1,9 +1,6 @@
 //
 //  InterfaceIdiomTests.swift
-//
-//
-//  Created by Kyle on 2023/8/30.
-//
+//  OpenSwiftUITests
 
 @testable import OpenSwiftUI
 import Testing
