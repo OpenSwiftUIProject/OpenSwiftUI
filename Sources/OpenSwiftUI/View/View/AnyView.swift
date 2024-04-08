@@ -34,20 +34,13 @@ public struct AnyView: PrimitiveView {
         guard let conformace = TypeConformance<ViewDescriptor>(type(of: value)) else {
             return nil
         }
-        // FIXME: pass a structure like the following to _OpenSwiftUI_callVisitViewType1 and remove _OpenSwiftUI_callVisitViewType
-        // x0 = pointer
-        // x1 = View.self
-        // x2 = PWT V: View.self
-        // pointer+0x0 -> pointer+0x18
-        // pointer+0x8 -> Visitor.self
-        // pointer+0x10 -> PWT Visitor: ViewTypeVisitor
-        // pointer+0x18~0x37 -> visitor.value
-        // pointer+0x38 -> visitor.view
-        var visitor: any ViewTypeVisitor = Visitor(value: value)
-        withUnsafeMutablePointer(to: &visitor) { value in
-            _OpenSwiftUI_callVisitViewType1(value, conformace.metadata, conformace.conformance)
+        // Audited for RELEASE_2023
+        var visitor = Visitor(value: value)
+        withUnsafePointer(to: conformace) { pointer in
+            let type = UnsafeRawPointer(pointer).assumingMemoryBound(to: (any View.Type).self)
+            visitor.visit(type: type.pointee)
         }
-        self = (visitor as! Visitor).view!
+        self = visitor.view!
     }
     
     init<V: View>(_ view: V, id: UniqueID?) {
@@ -242,13 +235,4 @@ extension AnyViewChild: CustomStringConvertible {
 private struct AnyViewChildList<V: View> {
     @Attribute var view: AnyView
     var id: UniqueID?
-}
-
-@_silgen_name("_OpenSwiftUI_callVisitViewType1")
-func visitViewType(_ visitor: UnsafeMutablePointer<any ViewTypeVisitor>, type: UnsafeRawPointer, pwt: UnsafeRawPointer)
-
-// Called by _OpenSwiftUI_callVisitViewType2 as a temporary workaround implementation
-@_silgen_name("_OpenSwiftUI_callVisitViewType")
-func visit<V: View>(_ visitor: UnsafeMutablePointer<any ViewTypeVisitor>, type: V.Type) {
-    visitor.pointee.visit(type: V.self)
 }

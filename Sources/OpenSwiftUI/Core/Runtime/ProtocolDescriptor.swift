@@ -42,7 +42,7 @@ struct TupleTypeDescription<PD: ProtocolDescriptor> {
         contentTypes = tupleType.indices.compactMap { index in
             let type = tupleType.type(at: index)
             guard let comformance = TypeConformance<PD>(type) else {
-                print("Ignoring invalid type, type \(type) at index \(index)")
+                print("Ignoring invalid type at index \(index), type \(type)")
                 return nil
             }
             return (index, comformance)

@@ -5,7 +5,6 @@
 //  Created by Kyle on 2023/12/17.
 //
 
-import OpenSwiftUI
 import Testing
 
 struct AngleTests {
