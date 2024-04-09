@@ -16,9 +16,11 @@ struct GraphHostTests {
 
         graphHost.setTime(Time.infinity)
         #expect(graphHost.data.time.seconds == Time.infinity.seconds)
-
+        
+        #if canImport(QuartzCore)
         let timeNow = Time.now
         graphHost.setTime(timeNow)
         #expect(graphHost.data.time.seconds == timeNow.seconds)
+        #endif
     }
 }
