@@ -248,10 +248,6 @@ extension State: DynamicProperty {
     }
 }
 
-// TOOD
-class StoredLocation<V> {}
-
-// TODO
 private struct StatePropertyBox<Value>: DynamicPropertyBox {
     let signal: WeakAttribute<Void>
     var location: StoredLocation<Value>?
@@ -264,11 +260,10 @@ private struct StatePropertyBox<Value>: DynamicPropertyBox {
     
     mutating func update(property: inout State<Value>, phase: _GraphInputs.Phase) -> Bool {
         // TODO
-
         false
     }
 
-    func getState<Value>(type: Value.Type) -> Binding<Value>? {
+    func getState<V>(type: V.Type) -> Binding<V>? {
         // TODO
         nil
     }
