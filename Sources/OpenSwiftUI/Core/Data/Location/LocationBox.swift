@@ -27,8 +27,8 @@ class LocationBox<L: Location>: AnyLocation<L.Value> {
         location.set(value, transaction: transaction)
     }
 
-    override func projecting<P>(_ p: P) -> AnyLocation<P.Projected> where L.Value == P.Base, P : Projection {
-        cache.reference(for: p, on: location)
+    override func projecting<P: Projection>(_ projection: P) -> AnyLocation<P.Projected> where L.Value == P.Base {
+        cache.reference(for: projection, on: location)
     }
 
     override func update() -> (L.Value, Bool) {
