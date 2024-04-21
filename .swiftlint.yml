@@ -1,0 +1,219 @@
+### Global configuration
+
+# Enable rules which are not in the default set
+opt_in_rules:
+  - anyobject_protocol                             # Prefer using `AnyObject` over `class` for class-only protocols.
+  - block_based_kvo                                   # Prefer the new block based KVO API with keypaths when using Swift 3.2 or later.
+  - class_delegate_protocol                           # Delegate protocols should be class-only so they can be weakly referenced.
+  - closing_brace                                     # Closing brace with closing parenthesis should not have any whitespaces in the middle.
+  #  - closure_body_length                            # Closure bodies should not span too many lines.
+  - closure_end_indentation                           # Closure end should have the same indentation as the line that started it.
+  - closure_parameter_position                        # Closure parameters should be on the same line as opening brace.
+  - closure_spacing                                   # Closure expressions should have a single space inside each brace.
+  - collection_alignment                              # All elements in a collection literal should be vertically aligned
+  - colon                                             # Colons should be next to the identifier when specifying a type and next to the key in dictionary literals.
+  - comma                                             # There should be no space before and one after any comma.
+  - compiler_protocol_init                            # The initializers declared in compiler protocols such as `ExpressibleByArrayLiteral` shouldn't be called directly.
+  #  - conditional_returns_on_newline                 # Conditional statements should always return on the next line
+  - contains_over_filter_count                        # Prefer `contains` over comparing `filter(where:).count` to 0.
+  - contains_over_filter_is_empty                     # Prefer `contains` over using `filter(where:).isEmpty`
+  - contains_over_first_not_nil                       # Prefer `contains` over `first(where:) != nil` and `firstIndex(where:) != nil`.
+  - contains_over_range_nil_comparison                # Prefer `contains` over `range(of:) != nil` and `range(of:) == nil`.
+  - control_statement                                 # `if`, `for`, `guard`, `switch`, `while`, and `catch` statements shouldn't unnecessarily wrap their conditionals or arguments in parentheses.
+  #  - convenience_type                                  # Types used for hosting only static members should be implemented as a caseless enum to avoid instantiation.
+  - custom_rules                                      # Create custom rules by providing a regex string. Optionally specify what syntax kinds to match against, the severity level, and what message to display.
+  - cyclomatic_complexity                             # Complexity of function bodies should be limited.
+  - deployment_target                                 # Availability checks or attributes shouldn't be using older versions that are satisfied by the deployment target.
+  - discarded_notification_center_observer            # When registering for a notification using a block, the opaque observer that is returned should be stored so it can be removed later.
+  - discouraged_direct_init                           # Discouraged direct initialization of types that can be harmful.
+  - discouraged_object_literal                        # Prefer initializers over object literals.
+  #  - discouraged_optional_boolean                   # Prefer non-optional booleans over optional booleans.
+  #  - discouraged_optional_collection                # Prefer empty collection over optional collection.
+  - duplicate_enum_cases                              # Enum can't contain multiple cases with the same name.
+  - duplicate_imports                                 # Imports should be unique.
+  - dynamic_inline                                    # Avoid using 'dynamic' and '@inline(__always)' together.
+  - empty_collection_literal                          # Prefer checking `isEmpty` over comparing collection to an empty array or dictionary literal.
+  - empty_count                                       # Prefer checking `isEmpty` over comparing `count` to zero.
+  #  - empty_enum_arguments                           # Arguments can be omitted when matching enums with associated types if they are not used.
+  - empty_parameters                                  # Prefer `() -> ` over `Void -> `.
+  - empty_parentheses_with_trailing_closure           # When using trailing closures, empty parentheses should be avoided after the method call.
+  #  - empty_string                                   # Prefer checking `isEmpty` over comparing `string` to an empty string literal.
+  #  - empty_xctest_method                            # Empty XCTest method should be avoided.
+  - enum_case_associated_values_count                 # Number of associated values in an enum case should be low
+  #  - expiring_todo                                  # TODOs and FIXMEs should be resolved prior to their expiry date.
+  #  - explicit_acl                                   # All declarations should specify Access Control Level keywords explicitly.
+  # - explicit_enum_raw_value                           # Enums should be explicitly assigned their raw values.
+  - explicit_init                                     # Explicitly calling .init() should be avoided.
+  #  - explicit_self                                  # Instance variables and functions should be explicitly accessed with 'self.'.
+  #- explicit_top_level_acl                            # Top-level declarations should specify Access Control Level keywords explicitly.
+  #  - explicit_type_interface                        # Properties should have a type interface
+  #  - extension_access_modifier                      # Prefer to use extension access modifiers
+  - fallthrough                                       # Fallthrough should be avoided.
+  - fatal_error_message                               # A fatalError call should have a message.
+  #  - file_header                                    # Header comments should be consistent with project patterns. The SWIFTLINT_CURRENT_FILENAME placeholder can optionally be used in the required and forbidden patterns. It will be replaced by the real file name.
+  - file_length                                       # Files should not span too many lines.
+  #  - file_name                                      # File name should match a type or extension declared in the file (if any).
+  - file_name_no_space                                # File name should not contain any whitespace.
+  #  - file_types_order                               # Specifies how the types within a file should be ordered.
+  - first_where                                       # Prefer using `.first(where:)` over `.filter { }.first` in collections.
+  - flatmap_over_map_reduce                           # Prefer `flatMap` over `map` followed by `reduce([], +)`.
+  - for_where                                         # `where` clauses are preferred over a single `if` inside a `for`.
+  - force_cast                                        # Force casts should be avoided.
+  - force_try                                         # Force tries should be avoided.
+  - force_unwrapping                                  # Force unwrapping should be avoided.
+  #  - function_body_length                           # Functions bodies should not span too many lines.
+  #  - function_default_parameter_at_end              # Prefer to locate parameters with defaults toward the end of the parameter list.
+  - function_parameter_count                          # Number of function parameters should be low.
+  - generic_type_name                                 # Generic type name should only contain alphanumeric characters, start with an uppercase character and span between 1 and 20 characters in length.
+  - identical_operands                                # Comparing two identical operands is likely a mistake.
+  - implicit_getter                                   # Computed read-only properties and subscripts should avoid using the get keyword.
+  #  - implicit_return                                # Prefer implicit returns in closures, functions and getters.
+  - implicitly_unwrapped_optional                     # Implicitly unwrapped optionals should be avoided when possible.
+  #  - indentation_width                              # Indent code using either one tab or the configured amount of spaces, unindent to match previous indentations. Don't indent the first line.
+  - inert_defer                                       # If defer is at the end of its parent scope, it will be executed right where it is anyway.
+  #  - is_disjoint                                    # Prefer using `Set.isDisjoint(with:)` over `Set.intersection(_:).isEmpty`.
+  #  - joined_default_parameter                       # Discouraged explicit usage of the default separator.
+  #  - large_tuple                                    # Tuples shouldn't have too many members. Create a custom type instead.
+  - last_where                                        # Prefer using `.last(where:)` over `.filter { }.last` in collections.
+  - leading_whitespace                                # Files should not contain leading whitespace.
+  - legacy_cggeometry_functions                       # Struct extension properties and methods are preferred over legacy functions
+  - legacy_constant                                   # Struct-scoped constants are preferred over legacy global constants.
+  - legacy_constructor                                # Swift constructors are preferred over legacy convenience functions.
+  - legacy_hashing                                    # Prefer using the `hash(into:)` function instead of overriding `hashValue`
+  - legacy_multiple                                   # Prefer using the `isMultiple(of:)` function instead of using the remainder operator (`%`).
+  - legacy_nsgeometry_functions                       # Struct extension properties and methods are preferred over legacy functions
+  - legacy_random                                     # Prefer using `type.random(in:)` over legacy functions.
+  - let_var_whitespace                                # Let and var should be separated from other statements by a blank line.
+  - lower_acl_than_parent                             # Ensure definitions have a lower access control level than their enclosing parent
+  - mark                                              # MARK comment should be in valid format. e.g. '// MARK: ...' or '// MARK: - ...'
+  - modifier_order                                    # Modifier order should be consistent.
+  - multiline_arguments                               # Arguments should be either on the same line, or one per line.
+  - multiline_arguments_brackets                      # Multiline arguments should have their surrounding brackets in a new line.
+  - multiline_function_chains                         # Chained function calls should be either on the same line, or one per line.
+  - multiline_literal_brackets                        # Multiline literals should have their surrounding brackets in a new line.
+  - multiple_closures_with_trailing_closure           # Trailing closure syntax should not be used when passing more than one closure argument.
+  - nesting                                           # Types should be nested at most 1 level deep, and statements should be nested at most 5 levels deep.
+  - no_fallthrough_only                               # Fallthroughs can only be used if the `case` contains at least one other statement.
+  - no_space_in_method_call                           # Don't add a space between the method name and the parentheses.
+  - opening_brace                                     # Opening braces should be preceded by a single space and on the same line as the declaration.
+  - operator_usage_whitespace                         # Operators should be surrounded by a single whitespace when they are being used.
+  - operator_whitespace                               # Operators should be surrounded by a single whitespace when defining them.
+  #  - optional_enum_case_matching                    # Matching an enum case against an optional enum without '?' is supported on Swift 5.1 and above.
+  - orphaned_doc_comment                              # A doc comment should be attached to a declaration.
+  - override_in_extension                             # Extensions shouldn't override declarations.
+  - private_over_fileprivate                          # Prefer `private` over `fileprivate` declarations.
+  #  - private_unit_test                              # Unit tests marked private are silently skipped.
+  #  - prohibited_interface_builder                   # Creating views using Interface Builder should be avoided.
+  #  - prohibited_super_call                          # Some methods should not call super
+  - protocol_property_accessors_order                 # When declaring properties in protocols, the order of accessors should be `get set`.
+  #  - quick_discouraged_call                         # Discouraged call inside 'describe' and/or 'context' block.
+  #  - quick_discouraged_focused_test                 # Discouraged focused test. Other tests won't run while this one is focused.
+  #  - quick_discouraged_pending_test                 # Discouraged pending test. This test won't run while it's marked as pending.
+  #  - raw_value_for_camel_cased_codable_enum         # Camel cased cases of Codable String enums should have raw value.
+  #  - reduce_boolean                                 # Prefer using `.allSatisfy()` or `.contains()` over `reduce(true)` or `reduce(false)`
+  #  - reduce_into                                    # Prefer `reduce(into:_:)` over `reduce(_:_:)` for copy-on-write types
+  - redundant_discardable_let                         # Prefer `_ = foo()` over `let _ = foo()` when discarding a result from a function.
+  #  - redundant_nil_coalescing                       # nil coalescing operator is only evaluated if the lhs is nil, coalescing operator with nil as rhs is redundant
+  - redundant_objc_attribute                          # Objective-C attribute (@objc) is redundant in declaration.
+  - redundant_optional_initialization                 # Initializing an optional variable with nil is redundant.
+  - redundant_set_access_control                      # Property setter access level shouldn't be explicit if it's the same as the variable access level.
+  #  - redundant_type_annotation                      # Variables should not have redundant type annotation
+  #  - redundant_void_return                          # Returning Void in a function declaration is redundant.
+  #  - required_deinit                                # Classes should have an explicit deinit method.
+  #  - required_enum_case                             # Enums conforming to a specified protocol must implement a specific case(s).
+  - return_arrow_whitespace                           # Return arrow and return type should be separated by a single space or on a separate line.
+  - shorthand_operator                                # Prefer shorthand operators (+=, -=, *=, /=) over doing the operation and assigning.
+  #  - single_test_class                              # Test files should contain a single QuickSpec or XCTestCase class.
+  - sorted_first_last                                 # Prefer using `min()` or `max()` over `sorted().first` or `sorted().last`
+  #  - sorted_imports                                 # Imports should be sorted.
+  - statement_position                                # Else and catch should be on the same line, one space after the previous declaration.
+  #  - static_operator                                # Operators should be declared as static functions, not free functions.
+  #  - strict_fileprivate                             # `fileprivate` should be avoided.
+  #  - strong_iboutlet                                # @IBOutlets shouldn't be declared as weak.
+  - superfluous_disable_command                       # SwiftLint 'disable' commands are superfluous when the disabled rule would not have triggered a violation in the disabled region. Use " - " if you wish to document a command.
+  - switch_case_alignment                             # Case statements should vertically align with their enclosing switch statement, or indented if configured otherwise.
+  #  - switch_case_on_newline                         # Cases inside a switch should always be on a newline
+  #  - syntactic_sugar                                # Shorthand syntactic sugar should be used, i.e. [Int] instead of Array<Int>.
+  - todo                                              # TODOs and FIXMEs should be resolved.
+  #  - toggle_bool                                    # Prefer `someBool.toggle()` over `someBool = !someBool`.
+  #  - trailing_closure                               # Trailing closure syntax should be used whenever possible.
+  - trailing_comma                                    # Trailing commas in arrays and dictionaries should be avoided/enforced.
+  - trailing_newline                                  # Files should have a single trailing newline.
+  - trailing_semicolon                                # Lines should not have trailing semicolons.
+  - trailing_whitespace                               # Lines should not have trailing whitespace.
+  #  - type_body_length                               # Type bodies should not span too many lines.
+  #  - type_contents_order                            # Specifies the order of subtypes, properties, methods & more within a type.
+  - type_name                                         # Type name should only contain alphanumeric characters, start with an uppercase character and span between 3 and 40 characters in length.
+  #  - unavailable_function                           # Unimplemented functions should be marked as unavailable.
+  - unneeded_break_in_switch                          # Avoid using unneeded break statements.
+  - unneeded_parentheses_in_closure_argument          # Parentheses are not needed when declaring closure arguments.
+  #  - unowned_variable_capture                          # Prefer capturing references as weak to avoid potential crashes.
+  #  - untyped_error_in_catch                         # Catch statements should not declare error variables without type casting.
+  - unused_capture_list                               # Unused reference in a capture list should be removed.
+  - unused_closure_parameter                          # Unused parameter in a closure should be replaced with _.
+  - unused_control_flow_label                         # Unused control flow label should be removed.
+  - unused_declaration                                # Declarations should be referenced at least once within all files linted.
+  - unused_enumerated                                 # When the index or the item is not used, `.enumerated()` can be removed.
+  - unused_import                                     # All imported modules should be required to make the file compile.
+  - unused_optional_binding                           # Prefer `!= nil` over `let _ =`
+  - unused_setter_value                               # Setter value is not used.
+  - valid_ibinspectable                               # @IBInspectable should be applied to variables only, have its type explicit and be of a supported type
+  - vertical_parameter_alignment                      # Function parameters should be aligned vertically if they're in multiple lines in a declaration.
+  - vertical_parameter_alignment_on_call              # Function parameters should be aligned vertically if they're in multiple lines in a method call.
+  - vertical_whitespace                               # Limit vertical whitespace to a single empty line.
+  #  - vertical_whitespace_between_cases              # Include a single empty line between switch cases.
+  #  - vertical_whitespace_closing_braces             # Don't include vertical whitespace (empty line) before closing braces.
+  #  - vertical_whitespace_opening_braces             # Don't include vertical whitespace (empty line) after opening braces.
+  - void_return                                       # Prefer `-> Void` over `-> ()`.
+  - weak_delegate                                     # Delegates should be weak to avoid reference cycles.
+  #  - xct_specific_matcher                           # Prefer specific XCTest matchers over `XCTAssertEqual` and `XCTAssertNotEqual`
+  - xctfail_message                                   # An XCTFail call should include a description of the assertion.
+  - yoda_condition                                    # The variable should be placed on the left, the constant on the right of a comparison operator.
+
+# Disable rules which are in the default set
+disabled_rules:
+
+# Excluded paths (takes precedence over 'included')
+excluded: # paths to ignore during linting. Takes precedence over `included`.
+ - Docs
+ - Example
+ - PrivateFrameworks
+ - Tests
+ 
+# Rules use by 'swiftlint analyze' (experimental)
+analyzer_rules:
+
+# Reporter type (xcode, json, csv, checkstyle, junit, html, emoji, sonarqube, markdown)
+reporter: "xcode"
+
+### Rule specific configuration
+
+# make it difficult to forget
+force_unwrapping: error
+force_cast: error
+implicitly_unwrapped_optional: error
+multiline_arguments: error
+multiline_arguments_brackets: error
+multiline_function_chains: error
+multiline_literal_brackets: error
+multiple_closures_with_trailing_closure: error
+no_space_in_method_call: error
+private_outlet: error
+private_action: error
+private_over_fileprivate: error
+
+cyclomatic_complexity:
+  - 20 # warning
+  - 30 # error
+type_body_length:
+  - 450 # warning
+  - 600 # error
+function_body_length:
+  - 100 # warning
+  - 200 # error
+file_length:
+  - 600 # warning
+  - 1000 # error
+
+vertical_whitespace:
+  max_empty_lines: 2

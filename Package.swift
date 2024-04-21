@@ -212,3 +212,15 @@ extension [Platform] {
         [.linux, .android, .wasi, .openbsd, .windows]
     }
 }
+
+let swiftLintCondtition = envEnable("OPENSWIFTUI_SWIFTLINT", default: isXcodeEnv && development)
+if swiftLintCondtition {
+    package.dependencies.append(
+        .package(url: "https://github.com/Kyle-Ye/SwiftLint.git", branch: "main")
+    )
+    var plugins = openSwiftUITarget.plugins ?? []
+    plugins.append(
+        .plugin(name: "SwiftLintBuildToolPlugin", package: "SwiftLint")
+    )
+    openSwiftUITarget.plugins = plugins
+}
