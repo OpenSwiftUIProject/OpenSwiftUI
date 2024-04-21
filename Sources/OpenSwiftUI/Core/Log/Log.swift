@@ -27,6 +27,7 @@ public let dso = { () -> UnsafeMutableRawPointer in
 #endif
 #endif
 
+@usableFromInline
 enum Log {
     static func internalWarning(
         _ message: @autoclosure () -> String,
@@ -48,8 +49,11 @@ enum Log {
         runtimeIssuesLog.log(level: .critical, "\(message())")
     }
     #else
-    static let runtimeIssuesLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
-
+    
+    // Audited for RELEASE_2023
+    @usableFromInline
+    static var runtimeIssuesLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
+    
     @_transparent
     @inline(__always)
     static func runtimeIssues(
@@ -57,11 +61,10 @@ enum Log {
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
         #if DEBUG
-        let message = message()
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-        )(.fault, dso, runtimeIssuesLog, message, args())
+        )(.fault, dso, runtimeIssuesLog, message(), args())
         #else
         os_log(.fault, log: runtimeIssuesLog, message(), args())
         #endif

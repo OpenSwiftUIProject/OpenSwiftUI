@@ -7,6 +7,11 @@
 //  ID: 7B48F30970137591804EEB8D0D309152
 
 internal import OpenGraphShims
+#if OPENSWIFTUI_SWIFT_LOG
+internal import Logging
+#else
+import os
+#endif
 
 /// A property wrapper that reads a value from a view's environment.
 ///
@@ -189,12 +194,38 @@ public struct Environment<Value>: DynamicProperty {
     ///         }
     ///     }
     ///
+    // Audited for RELEASE_2023
     @inlinable
     public var wrappedValue: Value {
         switch content {
         case let .value(value):
             return value
         case let .keyPath(keyPath):
+            #if OPENSWIFTUI_SWIFT_LOG
+            Log.runtimeIssuesLog.log(level: .critical, """
+                    Accessing Environment<\(Value.self)>'s value outside of \
+                    being installed on a View. \
+                    This will always read the default value \
+                    and will not update.
+                    """)
+            #else
+            if #available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *) {
+                os_log(.fault, log: Log.runtimeIssuesLog, """
+                    Accessing Environment<\(Value.self)>'s value outside of \
+                    being installed on a View. \
+                    This will always read the default value \
+                    and will not update.
+                    """)
+            } else {
+                os_log(.fault, log: Log.runtimeIssuesLog, """
+                    Accessing Environment's value outside of being \
+                    installed on a View. \
+                    This will always read the default value \
+                    and will not update.
+                    """)
+            }
+            #endif
+            // not bound to a view, return the default value.
             return EnvironmentValues()[keyPath: keyPath]
         }
     }
