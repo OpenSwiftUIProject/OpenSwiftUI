@@ -118,7 +118,7 @@ class GraphHost {
     final var graphInputs: _GraphInputs { data.inputs }
     
     final func setTime(_ time: Time) {
-        guard data.time == time else {
+        guard data.time != time else {
             return
         }
         data.time = time
