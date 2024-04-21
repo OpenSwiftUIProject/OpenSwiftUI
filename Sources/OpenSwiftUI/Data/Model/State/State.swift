@@ -3,8 +3,10 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: Blocked by DynamicProperty
+//  Status: Complete
 //  ID: 08168374F4710A99DCB15B5E8768D632
+
+internal import OpenGraphShims
 
 /// A property wrapper type that can read and write a value managed by OpenSwiftUI.
 ///
@@ -206,11 +208,6 @@ public struct State<Value> {
     }
 }
 
-extension State: DynamicProperty {
-    // TODO:
-    public static func _makeProperty(in _: inout _DynamicPropertyBuffer, container _: _GraphValue<some Any>, fieldOffset _: Swift.Int, inputs _: inout _GraphInputs) {}
-}
-
 extension State where Value: ExpressibleByNilLiteral {
     /// Creates a state property without an initial value.
     ///
@@ -235,5 +232,51 @@ extension State {
         } else {
             return _location.get()
         }
+    }
+}
+
+extension State: DynamicProperty {
+    public static func _makeProperty<V>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container _: _GraphValue<V>,
+        fieldOffset: Int,
+        inputs _: inout _GraphInputs
+    ) {
+        let attribute = Attribute(value: ())
+        let box = StatePropertyBox<Value>(signal: WeakAttribute(attribute))
+        buffer.append(box, fieldOffset: fieldOffset)
+    }
+}
+
+private struct StatePropertyBox<Value>: DynamicPropertyBox {
+    let signal: WeakAttribute<Void>
+    var location: StoredLocation<Value>?
+
+    typealias Property = State<Value>
+    func destroy() {}
+    mutating func reset() { location = nil }
+    mutating func update(property: inout State<Value>, phase: _GraphInputs.Phase) -> Bool {
+        let locationChanged = location == nil
+        if location == nil {
+            location = property._location as? StoredLocation ?? StoredLocation(
+                initialValue: property._value,
+                host: .currentHost,
+                signal: signal
+            )
+        }
+        let signalChanged = signal.changedValue()?.changed ?? false
+        property._value = location!.updateValue
+        property._location = location!
+        return (signalChanged ? location!.wasRead : false) || locationChanged
+    }
+    func getState<V>(type _: V.Type) -> Binding<V>? {
+        guard Value.self == V.self,
+              let location
+        else {
+            return nil
+        }
+        let value = location.get()
+        let binding = Binding(value: value, location: location)
+        return binding as? Binding<V>
     }
 }

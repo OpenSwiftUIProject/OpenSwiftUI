@@ -6,6 +6,7 @@
 //  Status: Blocked by merge
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
+internal import COpenSwiftUI
 internal import OpenGraphShims
 
 // MARK: - PropertyList
@@ -18,6 +19,11 @@ struct PropertyList: CustomStringConvertible {
   
     @inlinable
     init() { elements = nil }
+    
+    @inline(__always)
+    init(elements: Element?) {
+        self.elements = elements
+    }
   
     @usableFromInline
     var description: String {
@@ -86,11 +92,21 @@ struct PropertyList: CustomStringConvertible {
         fatalError("TODO")
     }
     
-    mutating private func override(with plist: PropertyList) {
+    mutating func override(with plist: PropertyList) {
         if let element = elements {
             elements = element.byPrepending(plist.elements)
         } else {
             elements = plist.elements
+        }
+    }
+    
+    @inline(__always)
+    static var current: PropertyList {
+        if let data = _threadTransactionData() {
+            // FIXME: swift_dynamicCastClassUnconditional
+            PropertyList(elements: data.assumingMemoryBound(to: Element.self).pointee)
+        } else {
+            PropertyList()
         }
     }
 }

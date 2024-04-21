@@ -16,7 +16,7 @@ class AnyLocation<Value>: AnyLocationBase {
     }
     func get() -> Value { fatalError() }
     func set(_ value: Value, transaction: Transaction) { fatalError() }
-    func projecting<P>(_ p: P) -> AnyLocation<P.Projected> where P: Projection, P.Base == Value {
+    func projecting<P: Projection>(_ p: P) -> AnyLocation<P.Projected> where Value == P.Base {
         fatalError()
     }
     func update() -> (Value, Bool) { fatalError() }
