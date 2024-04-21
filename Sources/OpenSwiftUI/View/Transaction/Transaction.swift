@@ -22,12 +22,26 @@ public struct Transaction {
         plist = PropertyList()
     }
     
+    @inline(__always)
+    init(plist: PropertyList) {
+        self.plist = plist
+    }
+    
     @usableFromInline
     var plist: PropertyList
     
     @inline(__always)
-    @inlinable
     var isEmpty: Bool { plist.elements == nil }
+    
+    @inline(__always)
+    mutating func override(_ transaction: Transaction) {
+        plist.override(with: transaction.plist)
+    }
+    
+    @inline(__always)
+    static var current: Transaction {
+        Transaction(plist: .current)
+    }
 }
 
 extension Transaction {
@@ -55,9 +69,10 @@ public func withTransaction<Result>(
     _ body: () throws -> Result
 ) rethrows -> Result {
     try withExtendedLifetime(transaction) {
-        let data = _threadTransactionData()
-        defer { _setThreadTransactionData(data) }
-        _setThreadTransactionData(transaction.plist.elements.map { Unmanaged.passUnretained($0).toOpaque() })
+        let oldData = _threadTransactionData()
+        defer { _setThreadTransactionData(oldData) }
+        let data = transaction.plist.elements.map { Unmanaged.passUnretained($0).toOpaque() }        
+        _setThreadTransactionData(data)
         return try body()
     }
 }

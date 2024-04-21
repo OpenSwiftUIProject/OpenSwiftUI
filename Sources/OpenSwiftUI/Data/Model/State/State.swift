@@ -253,19 +253,30 @@ private struct StatePropertyBox<Value>: DynamicPropertyBox {
     var location: StoredLocation<Value>?
 
     typealias Property = State<Value>
-
     func destroy() {}
-    
     mutating func reset() { location = nil }
-    
     mutating func update(property: inout State<Value>, phase: _GraphInputs.Phase) -> Bool {
-        // TODO
-        false
+        let locationChanged = location == nil
+        if location == nil {
+            location = property._location as? StoredLocation ?? StoredLocation(
+                initialValue: property._value,
+                host: .currentHost,
+                signal: signal
+            )
+        }
+        let signalChanged = signal.changedValue()?.changed ?? false
+        property._value = location!.updateValue
+        property._location = location!
+        return (signalChanged ? location!.wasRead : false) || locationChanged
     }
-
-    func getState<V>(type: V.Type) -> Binding<V>? {
-        // TODO
-        nil
+    func getState<V>(type _: V.Type) -> Binding<V>? {
+        guard Value.self == V.self,
+              let location
+        else {
+            return nil
+        }
+        let value = location.get()
+        let binding = Binding(value: value, location: location)
+        return binding as? Binding<V>
     }
 }
-

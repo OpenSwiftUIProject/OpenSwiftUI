@@ -22,7 +22,7 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
         }
     }
     
-    private struct BeginUpdate: GraphMutation {
+    fileprivate struct BeginUpdate: GraphMutation {
         weak var box: StoredLocationBase<Value>?
         
         func apply() {
@@ -56,21 +56,19 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
         super.init()
     }
     
-    private var isValid: Bool {
-        true
-    }
+    fileprivate var isValid: Bool { true }
     
     // MARK: - abstract method
     
-    private var isUpdating: Bool {
+    fileprivate var isUpdating: Bool {
         fatalError("abstract")
     }
     
-    private func commit(transaction: Transaction, mutation: BeginUpdate) {
+    fileprivate func commit(transaction: Transaction, mutation: BeginUpdate) {
         fatalError("abstract")
     }
     
-    private func notifyObservers() {
+    fileprivate func notifyObservers() {
         fatalError("abstract")
     }
     
@@ -96,7 +94,7 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
             }
             return
         }
-        let _ = $data.withMutableData { data in
+        let shouldCommit = $data.withMutableData { data in
             guard !compareValues(data.currentValue, value) else {
                 return false
             }
@@ -104,7 +102,18 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
             data.currentValue = value
             return true
         }
-        // TODO
+        guard shouldCommit else {
+            return
+        }
+        var newTransaction = transaction
+        newTransaction.override(.current)
+        performOnMainThread { [weak self] in
+            guard let self else {
+                return
+            }
+            let update = BeginUpdate(box: self)
+            commit(transaction: newTransaction, mutation: update)
+        }
     }
     
     override func projecting<P: Projection>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base {
@@ -130,10 +139,38 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
     
     private final func beginUpdate() {
         data.savedValue.removeFirst()
+        notifyObservers()
     }
 }
 
-// TODO
 final class StoredLocation<Value>: StoredLocationBase<Value> {
+    weak var host: GraphHost?
+    @WeakAttribute var signal: Void?
     
+    init(initialValue value: Value, host: GraphHost?, signal: WeakAttribute<Void>) {
+        self.host = host
+        _signal = signal
+        super.init(initialValue: value)
+    }
+    
+    override fileprivate var isValid: Bool {
+        host?.isValid ?? false
+    }
+    
+    override fileprivate var isUpdating: Bool {
+        host?.isUpdating ?? false
+    }
+    
+    override fileprivate func commit(transaction: Transaction, mutation: StoredLocationBase<Value>.BeginUpdate) {
+        host?.asyncTransaction(
+            transaction,
+            mutation: mutation,
+            style: ._1,
+            mayDeferUpdate: true
+        )
+    }
+    
+    override fileprivate func notifyObservers() {
+        $signal?.invalidateValue()
+    }
 }
