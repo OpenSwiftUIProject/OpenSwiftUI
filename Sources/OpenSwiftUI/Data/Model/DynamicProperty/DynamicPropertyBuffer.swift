@@ -217,6 +217,19 @@ public struct _DynamicPropertyBuffer {
     func traceMountedProperties<Value>(to value: _GraphValue<Value>, fields: DynamicPropertyCache.Fields) {
         // TODO: Signpost related
     }
+    
+    func applyChanged(to body: (Int) -> Void) {        
+        var index = 0
+        var pointer = buf
+        while index < _count {
+            let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+            if itemPointer.pointee.lastChanged {
+                body(Int(itemPointer.pointee.fieldOffset))
+            }
+            index &+= 1
+            pointer += Int(itemPointer.pointee.size)
+        }
+    }
 }
 
 extension _DynamicPropertyBuffer {
