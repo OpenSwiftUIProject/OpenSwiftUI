@@ -36,11 +36,6 @@
 		278A032B2BD6DE3D00ED4DAE /* SwiftUI-release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "SwiftUI-release.xcconfig"; sourceTree = "<group>"; };
 		278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
 		278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = HostingExample.xcconfig; sourceTree = "<group>"; };
-		278A03302BD6E0ED00ED4DAE /* common.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = common.xcconfig; sourceTree = "<group>"; };
-		278A03312BD6E0ED00ED4DAE /* debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = debug.xcconfig; sourceTree = "<group>"; };
-		278A03322BD6E0ED00ED4DAE /* OpenSwiftUI.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = OpenSwiftUI.xcconfig; sourceTree = "<group>"; };
-		278A03332BD6E0ED00ED4DAE /* release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = release.xcconfig; sourceTree = "<group>"; };
-		278A03342BD6E0ED00ED4DAE /* SwiftUI.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = SwiftUI.xcconfig; sourceTree = "<group>"; };
 		27B7FC802BB31FF500272BA5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		27CD0B492AFC8D37003665EB /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CD0B4C2AFC8D37003665EB /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
@@ -86,7 +81,6 @@
 		278A032C2BD6DE3D00ED4DAE /* Shared */ = {
 			isa = PBXGroup;
 			children = (
-				278A03352BD6E0ED00ED4DAE /* basic */,
 				278A03282BD6DE3D00ED4DAE /* OpenSwiftUI-debug.xcconfig */,
 				278A03292BD6DE3D00ED4DAE /* OpenSwiftUI-release.xcconfig */,
 				278A032A2BD6DE3D00ED4DAE /* SwiftUI-debug.xcconfig */,
@@ -104,18 +98,6 @@
 			);
 			name = Configurations;
 			path = ../Configurations;
-			sourceTree = "<group>";
-		};
-		278A03352BD6E0ED00ED4DAE /* basic */ = {
-			isa = PBXGroup;
-			children = (
-				278A03302BD6E0ED00ED4DAE /* common.xcconfig */,
-				278A03312BD6E0ED00ED4DAE /* debug.xcconfig */,
-				278A03322BD6E0ED00ED4DAE /* OpenSwiftUI.xcconfig */,
-				278A03332BD6E0ED00ED4DAE /* release.xcconfig */,
-				278A03342BD6E0ED00ED4DAE /* SwiftUI.xcconfig */,
-			);
-			path = basic;
 			sourceTree = "<group>";
 		};
 		27CD0B402AFC8D37003665EB = {
