@@ -1,0 +1,2 @@
+#include "basic/OpenSwiftUI.xcconfig"
+#include "basic/debug.xcconfig"

@@ -1,0 +1,2 @@
+#include "basic/SwiftUI.xcconfig"
+#include "basic/release.xcconfig"
