@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if OPENSWIFTUI_SWIFT_LOG
-internal import Logging
+import Logging
 #else
 import os
 #if DEBUG
@@ -38,10 +38,10 @@ enum Log {
     }
 
     #if OPENSWIFTUI_SWIFT_LOG
+    @usableFromInline
     static let runtimeIssuesLog = Logger(label: "OpenSwiftUI")
     
     @_transparent
-    @inline(__always)
     static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
@@ -55,7 +55,6 @@ enum Log {
     static var runtimeIssuesLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
     @_transparent
-    @inline(__always)
     static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []

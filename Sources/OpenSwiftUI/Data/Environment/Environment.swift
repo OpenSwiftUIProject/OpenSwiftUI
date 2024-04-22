@@ -8,7 +8,7 @@
 
 internal import OpenGraphShims
 #if OPENSWIFTUI_SWIFT_LOG
-internal import Logging
+import Logging
 #else
 import os
 #endif
