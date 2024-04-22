@@ -251,8 +251,7 @@ public struct Environment<Value>: DynamicProperty {
 }
 
 private struct EnvironmentBox<Value>: DynamicPropertyBox {
-    @Attribute<EnvironmentValues>
-    var environment: EnvironmentValues
+    @Attribute var environment: EnvironmentValues
     var keyPath: KeyPath<EnvironmentValues, Value>?
     var value: Value?
     

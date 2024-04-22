@@ -22,9 +22,9 @@ extension SemanticFeature {
 }
 
 struct _SemanticFeature_v2: SemanticFeature {
-    static var introduced: Semantics { .v2_3 }
+    static var introduced: Semantics { .v2 }
 }
 
 struct _SemanticFeature_v3: SemanticFeature {
-    static var introduced: Semantics { .v3_2 }
+    static var introduced: Semantics { .v3 }
 }

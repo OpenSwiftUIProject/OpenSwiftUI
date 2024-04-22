@@ -1,8 +1,7 @@
 //
-//  _ConditionalContent.swift
+//  ConditionalContent.swift
 //  OpenSwiftUI
 //
-//  Updated by Kyle on 2023/10/8.
 //  Audited for RELEASE_2021
 //  Status: WIP
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C
@@ -27,13 +26,23 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
     init(storage: Storage) {
         self.storage = storage
     }
-    //    public static func _makeView(view: _GraphValue<_ConditionalContent<TrueContent, FalseContent>>, inputs: _ViewInputs) -> _ViewOutputs
+    
+    public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        if _SemanticFeature_v2.isEnable {
+            return makeImplicitRoot(view: view, inputs: inputs)
+        } else {
+            return AnyView._makeView(
+                view: _GraphValue(ChildView(content: view.value)),
+                inputs: inputs
+            )
+        }
+    }
+    
     //    public static func _makeViewList(view: _GraphValue<_ConditionalContent<TrueContent, FalseContent>>, inputs: _ViewListInputs) -> _ViewListOutputs
     //    public static func _viewListCount(inputs: _ViewListCountInputs) -> Swift.Int?
     
-    private struct ChildView {
-        @Attribute
-        var content: _ConditionalContent
+    private struct ChildView: Rule, AsyncAttribute {
+        @Attribute var content: _ConditionalContent
 
         let ids: (UniqueID, UniqueID)
 
