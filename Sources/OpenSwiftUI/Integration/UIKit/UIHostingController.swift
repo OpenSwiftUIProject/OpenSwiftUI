@@ -8,7 +8,8 @@ open class UIHostingController<Content> : UIViewController where Content : View 
     var host: _UIHostingView<Content>
     
     override open dynamic var keyCommands: [UIKeyCommand]? {
-        fatalError("Unimplemented")
+        // TODO
+        nil
     }
     
     public init(rootView: Content) {

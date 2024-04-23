@@ -180,6 +180,13 @@ final class ViewGraph: GraphHost {
         // TODO
     }
     
+    func setRootView<V: View>(_ view: V) {
+        #if canImport(Darwin)
+        @Attribute(identifier: rootView)
+        var rootView: V
+        rootView = view
+        #endif
+    }
     
     // MARK: - Override Methods
     

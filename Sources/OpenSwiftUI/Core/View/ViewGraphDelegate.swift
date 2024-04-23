@@ -12,3 +12,13 @@ protocol ViewGraphDelegate: GraphDelegate {
     func focusDidChange()
     func rootTransform() -> ViewTransform
 }
+
+extension ViewGraphDelegate {
+    func updateGraph<V>(body: (GraphHost) -> V) -> V {
+        updateViewGraph(body: body)
+    }
+    
+    func rootTransform() -> ViewTransform {
+        ViewTransform()
+    }
+}
