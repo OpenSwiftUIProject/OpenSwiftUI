@@ -7,6 +7,7 @@
 
 internal import COpenSwiftUI
 internal import OpenGraphShims
+import Foundation
 
 extension MovableLock {
     @inline(__always)
@@ -43,6 +44,13 @@ enum Update {
         lock.unlock()
     }
     
+    @inline(__always)
+    static func perform<Value>(_ body: () -> Value) -> Value {
+        begin()
+        defer { end() }
+        return body()
+    }
+    
     static func enqueueAction(_ action: @escaping () -> Void) {
         begin()
         actions.append(action)
@@ -73,11 +81,24 @@ enum Update {
     
     @inline(__always)
     static func syncMain(_ body: () -> Void) {
-        // TODO
-        fatalError("TODO")
+        if Thread.isMainThread {
+            body()
+        } else {
+            withoutActuallyEscaping(body) { escapableBody in
+                MovableLock.syncMain(lock: lock) {
+                    AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier).update(body: escapableBody)
+                }
+            }
+        }
     }
 }
 
 extension Update {
     private class TraceHost {}
+}
+
+// FIXME: migrate to use @_extern(c, "xx") in Swift 6
+extension MovableLock {
+    @_silgen_name("_MovableLockSyncMain")
+    static func syncMain(lock: MovableLock ,body: @escaping () -> Void)
 }

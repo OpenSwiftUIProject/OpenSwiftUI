@@ -16,7 +16,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
     private var _rootView: Content
     var viewGraph: ViewGraph
     var currentTimestamp: Time = .zero
-    var propertiesNeedingUpdate: ViewRendererHostProperties = []
+    var propertiesNeedingUpdate: ViewRendererHostProperties = [.rootView] // FIXME
     var isRendering: Bool = false
     var inheritedEnvironment: EnvironmentValues?
     var environmentOverride: EnvironmentValues?
@@ -34,11 +34,28 @@ open class _UIHostingView<Content>: UIView where Content: View {
         // TODO
         // FIXME
         super.init(frame: .zero)
+        
+        initializeViewGraph()
+        // TODO
     }
     
     @available(*, unavailable)
     public required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    func setRootView(_ view: Content, transaction: Transaction) {
+        _rootView = view
+        let mutation = CustomGraphMutation { [weak self] in
+            guard let self else { return }
+            updateRootView()
+        }
+        viewGraph.asyncTransaction(
+            transaction,
+            mutation: mutation,
+            style: ._1,
+            mayDeferUpdate: true
+        )
     }
     
     var rootView: Content {
@@ -49,7 +66,10 @@ open class _UIHostingView<Content>: UIView where Content: View {
         }
     }
     
-    
+    func makeRootView() -> some View {
+        _UIHostingView.makeRootView(rootView/*.modifier(EditModeScopeModifier(editMode: .default))*/)
+    }
+        
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     final public func _viewDebugData() -> [_ViewDebug.Data] {
@@ -114,16 +134,19 @@ open class _UIHostingView<Content>: UIView where Content: View {
 }
 
 extension _UIHostingView: ViewRendererHost {
+    func addImplicitPropertiesNeedingUpdate(to _: inout ViewRendererHostProperties) {}
+
+    func updateRootView() {
+        let rootView = makeRootView()
+        viewGraph.setRootView(rootView)
+    }
+    
     func requestUpdate(after: Double) {
         // TODO
     }
     
     func modifyViewInputs(_ inputs: inout _ViewInputs) {
         // TODO
-    }
-    
-    func updateViewGraph<Value>(body: (ViewGraph) -> Value) -> Value {
-        fatalError("TODO")
     }
     
     func outputsDidChange(outputs: ViewGraph.Outputs) {
@@ -135,10 +158,6 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     func rootTransform() -> ViewTransform {
-        fatalError("TODO")
-    }
-    
-    func updateGraph<V>(body: (GraphHost) -> V) -> V {
         fatalError("TODO")
     }
     

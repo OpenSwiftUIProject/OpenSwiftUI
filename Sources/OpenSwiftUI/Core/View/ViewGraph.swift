@@ -180,6 +180,11 @@ final class ViewGraph: GraphHost {
         // TODO
     }
     
+    func setRootView<V: View>(_ view: V) {
+        @Attribute(identifier: rootView)
+        var rootView: V
+        rootView = view
+    }
     
     // MARK: - Override Methods
     

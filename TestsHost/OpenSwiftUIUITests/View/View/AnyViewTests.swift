@@ -30,5 +30,20 @@ final class AnyViewTests: XCTestCase {
         window.makeKeyAndVisible()
         vc.view.layoutSubviews()
     }
+    
+    // @Test("BodyAccessor crash for non empty View instance", .bug("#81", relationship: .verifiesFix))
+    func testBasicAnyViewWithProperty() throws {
+        struct ContentView: View {
+            var name = ""
+            var body: some View {
+                AnyView(EmptyView())
+            }
+        }
+        let vc = UIHostingController(rootView: ContentView())
+        let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
+        window.rootViewController = vc
+        window.makeKeyAndVisible()
+        vc.view.layoutSubviews()
+    }
 }
 #endif
