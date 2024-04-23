@@ -253,7 +253,7 @@ extension _DynamicPropertyBuffer {
         @inline(__always)
         private static var lastChangedMask: UInt32 { 0x8000_0000 }
         var lastChanged: Bool {
-            get { (_fieldOffsetAndLastChanged & Item.fieldOffsetMask) == Item.fieldOffsetMask }
+            get { (_fieldOffsetAndLastChanged & Item.lastChangedMask) == Item.lastChangedMask }
             set {
                 if newValue {
                     _fieldOffsetAndLastChanged |= Item.lastChangedMask
