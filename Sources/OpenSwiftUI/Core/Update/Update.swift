@@ -86,7 +86,11 @@ enum Update {
         } else {
             withoutActuallyEscaping(body) { escapableBody in
                 MovableLock.syncMain(lock: lock) {
+                    #if canImport(Darwin)
                     AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier).update(body: escapableBody)
+                    #else
+                    fatalError("See #39")
+                    #endif
                 }
             }
         }
