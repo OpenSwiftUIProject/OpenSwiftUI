@@ -42,6 +42,13 @@ let openSwiftUITarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
+let openSwiftUIExtensionTarget = Target.target(
+    name: "OpenSwiftUIExtension",
+    dependencies: [
+        "OpenSwiftUI",
+    ],
+    swiftSettings: sharedSwiftSettings
+)
 let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
@@ -80,7 +87,7 @@ let package = Package(
         .visionOS(.v1),
     ],
     products: [
-        .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"]),
+        .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -101,6 +108,7 @@ let package = Package(
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         openSwiftUITarget,
+        openSwiftUIExtensionTarget,
     ]
 )
 
