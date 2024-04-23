@@ -81,6 +81,10 @@ enum Update {
     
     @inline(__always)
     static func syncMain(_ body: () -> Void) {
+        #if os(WASI)
+        // FIXME: See #76
+        body()
+        #else
         if Thread.isMainThread {
             body()
         } else {
@@ -94,6 +98,7 @@ enum Update {
                 }
             }
         }
+        #endif
     }
 }
 
