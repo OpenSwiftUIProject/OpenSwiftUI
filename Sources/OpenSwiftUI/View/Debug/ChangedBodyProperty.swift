@@ -27,7 +27,7 @@ func printChangedBodyProperties<Body>(of type: Body.Type) {
     if properties.isEmpty {
         result.append(": unchanged.")
     } else {
-        result.append(": \(properties.joined(separator: " ,")) changed.")
+        result.append(": \(properties.joined(separator: ", ")) changed.")
     }
     print(result)
 }
