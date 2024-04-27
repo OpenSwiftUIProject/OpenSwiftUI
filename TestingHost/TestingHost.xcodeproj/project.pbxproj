@@ -35,12 +35,12 @@
 		278A033E2BD6E19D00ED4DAE /* SwiftUI-debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "SwiftUI-debug.xcconfig"; sourceTree = "<group>"; };
 		278A033F2BD6E19D00ED4DAE /* SwiftUI-release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "SwiftUI-release.xcconfig"; sourceTree = "<group>"; };
 		278A03432BD6E19D00ED4DAE /* OpenSwiftUIUITests.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = OpenSwiftUIUITests.xcconfig; sourceTree = "<group>"; };
-		278A03442BD6E19D00ED4DAE /* TestHost.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = TestHost.xcconfig; sourceTree = "<group>"; };
+		278A03442BD6E19D00ED4DAE /* TestingHost.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = TestingHost.xcconfig; sourceTree = "<group>"; };
 		278A03522BD6E45300ED4DAE /* AnyViewTests.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = AnyViewTests.swift; sourceTree = "<group>"; };
 		278A03552BD6E45300ED4DAE /* FB13341321.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = FB13341321.swift; sourceTree = "<group>"; };
-		27CD0BBB2AFC91FA003665EB /* TestsHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestsHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		27CD0BBB2AFC91FA003665EB /* TestingHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestingHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CD0BC22AFC91FB003665EB /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
-		27CD0BC42AFC91FB003665EB /* TestsHost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TestsHost.entitlements; sourceTree = "<group>"; };
+		27CD0BC42AFC91FB003665EB /* TestingHost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = TestingHost.entitlements; sourceTree = "<group>"; };
 		27CD0BC62AFC91FB003665EB /* Preview Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = "Preview Assets.xcassets"; sourceTree = "<group>"; };
 		27CD0BE12AFC924A003665EB /* OpenSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CD0BF02AFC9347003665EB /* OpenSwiftUI */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenSwiftUI; path = ..; sourceTree = "<group>"; };
@@ -84,7 +84,7 @@
 			children = (
 				278A03402BD6E19D00ED4DAE /* Shared */,
 				278A03432BD6E19D00ED4DAE /* OpenSwiftUIUITests.xcconfig */,
-				278A03442BD6E19D00ED4DAE /* TestHost.xcconfig */,
+				278A03442BD6E19D00ED4DAE /* TestingHost.xcconfig */,
 			);
 			name = Configurations;
 			path = ../Configurations;
@@ -120,7 +120,7 @@
 			children = (
 				278A03452BD6E19D00ED4DAE /* Configurations */,
 				27CD0BF02AFC9347003665EB /* OpenSwiftUI */,
-				27CD0BBD2AFC91FA003665EB /* TestsHost */,
+				27CD0BBD2AFC91FA003665EB /* TestingHost */,
 				278A03562BD6E45300ED4DAE /* OpenSwiftUIUITests */,
 				27CD0BBC2AFC91FA003665EB /* Products */,
 				27CD0BF12AFC939F003665EB /* Frameworks */,
@@ -130,21 +130,21 @@
 		27CD0BBC2AFC91FA003665EB /* Products */ = {
 			isa = PBXGroup;
 			children = (
-				27CD0BBB2AFC91FA003665EB /* TestsHost.app */,
+				27CD0BBB2AFC91FA003665EB /* TestingHost.app */,
 				27CD0BE12AFC924A003665EB /* OpenSwiftUIUITests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
 		};
-		27CD0BBD2AFC91FA003665EB /* TestsHost */ = {
+		27CD0BBD2AFC91FA003665EB /* TestingHost */ = {
 			isa = PBXGroup;
 			children = (
 				278A03052BD6C8F500ED4DAE /* TestAppDelegate.swift */,
 				27CD0BC22AFC91FB003665EB /* Assets.xcassets */,
-				27CD0BC42AFC91FB003665EB /* TestsHost.entitlements */,
+				27CD0BC42AFC91FB003665EB /* TestingHost.entitlements */,
 				27CD0BC52AFC91FB003665EB /* Preview Content */,
 			);
-			path = TestsHost;
+			path = TestingHost;
 			sourceTree = "<group>";
 		};
 		27CD0BC52AFC91FB003665EB /* Preview Content */ = {
@@ -165,9 +165,9 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
-		27CD0BBA2AFC91FA003665EB /* TestsHost */ = {
+		27CD0BBA2AFC91FA003665EB /* TestingHost */ = {
 			isa = PBXNativeTarget;
-			buildConfigurationList = 27CD0BCA2AFC91FB003665EB /* Build configuration list for PBXNativeTarget "TestsHost" */;
+			buildConfigurationList = 27CD0BCA2AFC91FB003665EB /* Build configuration list for PBXNativeTarget "TestingHost" */;
 			buildPhases = (
 				27CD0BB72AFC91FA003665EB /* Sources */,
 				27CD0BB82AFC91FA003665EB /* Frameworks */,
@@ -177,12 +177,12 @@
 			);
 			dependencies = (
 			);
-			name = TestsHost;
+			name = TestingHost;
 			packageProductDependencies = (
 				27CD0BF42AFC93A7003665EB /* OpenSwiftUI */,
 			);
 			productName = TestsHost;
-			productReference = 27CD0BBB2AFC91FA003665EB /* TestsHost.app */;
+			productReference = 27CD0BBB2AFC91FA003665EB /* TestingHost.app */;
 			productType = "com.apple.product-type.application";
 		};
 		27CD0BE02AFC924A003665EB /* OpenSwiftUIUITests */ = {
@@ -227,7 +227,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 27CD0BB62AFC91FA003665EB /* Build configuration list for PBXProject "TestsHost" */;
+			buildConfigurationList = 27CD0BB62AFC91FA003665EB /* Build configuration list for PBXProject "TestingHost" */;
 			compatibilityVersion = "Xcode 14.0";
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
@@ -244,7 +244,7 @@
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
-				27CD0BBA2AFC91FA003665EB /* TestsHost */,
+				27CD0BBA2AFC91FA003665EB /* TestingHost */,
 				27CD0BE02AFC924A003665EB /* OpenSwiftUIUITests */,
 			);
 		};
@@ -292,7 +292,7 @@
 /* Begin PBXTargetDependency section */
 		27CD0BE82AFC924A003665EB /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
-			target = 27CD0BBA2AFC91FA003665EB /* TestsHost */;
+			target = 27CD0BBA2AFC91FA003665EB /* TestingHost */;
 			targetProxy = 27CD0BE72AFC924A003665EB /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
@@ -364,14 +364,14 @@
 		};
 		278A03472BD6E1E700ED4DAE /* SwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestHost.xcconfig */;
+			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestingHost.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TestsHost/TestsHost.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"TestsHost/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TestingHost/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -488,14 +488,14 @@
 		};
 		278A034D2BD6E23500ED4DAE /* OpenSwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestHost.xcconfig */;
+			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestingHost.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TestsHost/TestsHost.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"TestsHost/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TestingHost/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -612,14 +612,14 @@
 		};
 		278A03502BD6E23700ED4DAE /* OpenSwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestHost.xcconfig */;
+			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestingHost.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TestsHost/TestsHost.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"TestsHost/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TestingHost/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -736,14 +736,14 @@
 		};
 		27CD0BCB2AFC91FB003665EB /* SwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestHost.xcconfig */;
+			baseConfigurationReference = 278A03442BD6E19D00ED4DAE /* TestingHost.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
-				CODE_SIGN_ENTITLEMENTS = TestsHost/TestsHost.entitlements;
+				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
-				DEVELOPMENT_ASSET_PATHS = "\"TestsHost/Preview Content\"";
+				DEVELOPMENT_ASSET_PATHS = "\"TestingHost/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -797,7 +797,7 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
-		27CD0BB62AFC91FA003665EB /* Build configuration list for PBXProject "TestsHost" */ = {
+		27CD0BB62AFC91FA003665EB /* Build configuration list for PBXProject "TestingHost" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				27CD0BC82AFC91FB003665EB /* SwiftUIDebug */,
@@ -808,7 +808,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = SwiftUIDebug;
 		};
-		27CD0BCA2AFC91FB003665EB /* Build configuration list for PBXNativeTarget "TestsHost" */ = {
+		27CD0BCA2AFC91FB003665EB /* Build configuration list for PBXNativeTarget "TestingHost" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				27CD0BCB2AFC91FB003665EB /* SwiftUIDebug */,
