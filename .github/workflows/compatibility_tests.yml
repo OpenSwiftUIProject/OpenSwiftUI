@@ -8,7 +8,7 @@ on:
 
 jobs:
   compatibility_tests_macos:
-    name: Execute compatibility tests
+    name: Execute compatibility tests for macOS
     strategy:
       fail-fast: false
       matrix:
@@ -39,5 +39,47 @@ jobs:
         run: |
           swift test \
             --build-path .build-compatibility-test-debug
+        env:
+          OPENSWIFTUI_COMPATIBILITY_TEST: 1
+  compatibility_tests_ios:
+    name: Execute compatibility tests for iOS
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: macos-14
+            xcode-version: "15.3"   # Swift 5.10
+    runs-on: ${{ matrix.os }}
+    env:
+      OPENSWIFTUI_WERROR: 1
+      OPENSWIFTUI_SWIFT_TESTING: 1
+      OPENGRAPH_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_SWIFT_LOG: 0
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Swift version
+        run: swift --version
+      - name: Run compatibility tests on OpenSwiftUI + iOS
+        run: |
+          xcodebuild test \
+          -scheme OpenSwiftUI \
+          -configuration Debug \
+          -destination "platform=iOS-Simulator" \
+          -skipMacroValidation \
+          -skipPackagePluginValidation
+        env:
+          OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      - name: Run compatibility tests on SwiftUI + iOS
+        run: |
+          xcodebuild test \
+          -scheme OpenSwiftUI \
+          -configuration Debug \
+          -destination "platform=iOS-Simulator" \
+          -skipMacroValidation \
+          -skipPackagePluginValidation
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1

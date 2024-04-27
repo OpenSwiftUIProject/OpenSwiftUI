@@ -7,7 +7,7 @@ on:
     branches: [main]
 
 jobs:
-  wasmer_test:
+  wasm_test:
     name: Execute tests on WASM
     strategy:
       fail-fast: false
