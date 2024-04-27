@@ -11,10 +11,10 @@ import Foundation
 
 extension MovableLock {
     @inline(__always)
-    func withLock<R>(_ body: () -> R) -> R {
+    func withLock<R>(_ body: () throws -> R) rethrows -> R {
         lock()
         defer { unlock() }
-        return body()
+        return try body()
     }
 }
 
@@ -57,17 +57,15 @@ enum Update {
         end()
     }
     
-    static func ensure<Value>(_ body: () -> Value) throws -> Value {
-        lock.withLock {
+    static func ensure<Value>(_ body: () throws -> Value) rethrows -> Value {
+        try lock.withLock {
             if depth == 0 {
                 begin()
+                defer { end() }
+                return try body()
+            } else {
+                return try body()
             }
-            defer {
-                if depth == 0 {
-                    end()
-                }
-            }
-            return body()
         }
     }
     

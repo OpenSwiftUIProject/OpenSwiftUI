@@ -49,8 +49,7 @@ final class ViewGraph: GraphHost {
     private weak var _preferenceBridge: PreferenceBridge?
     var preferenceBridge: PreferenceBridge? {
         get { _preferenceBridge }
-        // FIXME: TO BE CONFIRMED
-        set { setPreferenceBridge(to: newValue, isInvalidating: newValue == nil) }
+        set { setPreferenceBridge(to: newValue, isInvalidating: false) }
     }
     #if canImport(Darwin) // FIXME: See #39
     var bridgedPreferences: [(AnyPreferenceKey.Type, OGAttribute)] = []
@@ -86,6 +85,10 @@ final class ViewGraph: GraphHost {
         #else
         fatalError("TOOD")
         #endif
+    }
+    
+    deinit {
+        removePreferenceOutlets(isInvalidating: true)
     }
     
     @inline(__always)
@@ -166,10 +169,6 @@ final class ViewGraph: GraphHost {
     
     func clearPreferenceBridge() {
         setPreferenceBridge(to: nil, isInvalidating: true)
-    }
-    
-    private func setPreferenceBridge(to bridge: PreferenceBridge?, isInvalidating: Bool) {
-        // TODO
     }
     
     private func makePreferenceOutlets(outputs: _ViewOutputs) {
@@ -266,6 +265,24 @@ final class ViewGraph: GraphHost {
     
     override func isHiddenForReuseDidChange() {
         // TODO
+    }
+}
+
+extension ViewGraph {
+    fileprivate func setPreferenceBridge(to bridge: PreferenceBridge?, isInvalidating: Bool) {
+        // TODO
+    }
+}
+
+extension PreferenceBridge {
+    func invalidate() {
+        requestedPreferences = PreferenceKeys()
+        bridgedViewInputs = PropertyList()
+        for child in children {
+            let viewGraph = child.takeRetainedValue()
+            viewGraph.setPreferenceBridge(to: nil, isInvalidating: true)
+            child.release()
+        }
     }
 }
 

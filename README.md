@@ -51,11 +51,12 @@ for various platforms:
 
 | **Platform** | **CI Status** | **Support Status** | Build | Test | Deploy |
 |-|:-|-|-|-|-|
-| **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) [![Compatibility tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ |
+| **SwiftUI Compatibility** | [![Compatibility tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml) | | | | |
+| **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ |
 | **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅ |
 | **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ |
-| **Wasm** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️ *[^4] | ✅ | ❌ | ❌ |
-| **Windows** | | Not supported yet | ❌ | ❌ | ❌ |
+| **Wasm** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/wasm.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/wasm.yml) | ⭐️ *[^4] | ✅ | ❌ | ❌ |
+| **Windows** | None | Not supported yet | ❌ | ❌ | ❌ |
 
 
 [^1]: AppKit and other UI framework backend is not intergrated yet.

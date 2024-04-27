@@ -96,6 +96,11 @@ extension ViewRendererHost {
             // TODO:
         }
     }
+    
+    func invalidate() {
+        viewGraph.delegate = nil
+        // TODO: Signpost.viewHost
+    }
 }
 
 struct ViewRendererHostProperties: OptionSet {
