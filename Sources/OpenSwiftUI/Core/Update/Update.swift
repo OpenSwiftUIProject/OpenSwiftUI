@@ -61,13 +61,11 @@ enum Update {
         try lock.withLock {
             if depth == 0 {
                 begin()
+                defer { end() }
+                return try body()
+            } else {
+                return try body()
             }
-            defer {
-                if depth == 0 {
-                    end()
-                }
-            }
-            return try body()
         }
     }
     
