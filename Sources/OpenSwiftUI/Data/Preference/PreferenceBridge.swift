@@ -10,7 +10,7 @@ internal import OpenGraphShims
 
 final class PreferenceBridge {
     unowned let viewGraph: ViewGraph
-    private var children: [Unmanaged<ViewGraph>] = []
+    private(set) var children: [Unmanaged<ViewGraph>] = []
     var requestedPreferences = PreferenceKeys()
     var bridgedViewInputs = PropertyList()
     @WeakAttribute var hostPreferenceKeys: PreferenceKeys?
@@ -138,16 +138,6 @@ final class PreferenceBridge {
         for child in children {
             let viewGraph = child.takeUnretainedValue()
             viewGraph.updateRemovedState()
-        }
-    }
-
-    func invalidate() {
-        requestedPreferences = PreferenceKeys()
-        bridgedViewInputs = PropertyList()
-        for child in children {
-            let viewGraph = child.takeRetainedValue()
-            viewGraph.preferenceBridge = nil
-            child.release()
         }
     }
 
