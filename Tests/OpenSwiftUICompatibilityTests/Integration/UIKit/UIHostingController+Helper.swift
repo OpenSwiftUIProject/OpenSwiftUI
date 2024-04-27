@@ -13,4 +13,21 @@ extension UIHostingController {
         view.layoutSubviews()
     }
 }
+
+// FIXME: A workaround to bypass the Issue #87
+func workaroundIssue87(_ vc: UIViewController) {
+    if compatibilityTestEnabled {
+        return
+    } else {
+        // TODO: Use swift-test exist test feature to detect the crash instead or sliently workaroun it
+        CrashWorkaround.shared.objects.append(vc)
+    }
+}
+
+private final class CrashWorkaround {
+    private init() {}
+    static let shared = CrashWorkaround()
+    var objects: [Any?] = []
+}
+
 #endif

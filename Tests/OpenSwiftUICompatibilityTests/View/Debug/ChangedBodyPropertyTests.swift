@@ -22,6 +22,7 @@ struct ChangedBodyPropertyTests {
         #if os(iOS)
         let vc = UIHostingController(rootView: ContentView())
         vc.triggerLayout()
+        workaroundIssue87(vc)
         #endif
     }
     
@@ -38,6 +39,7 @@ struct ChangedBodyPropertyTests {
         #if os(iOS)
         let vc = UIHostingController(rootView: ContentView())
         vc.triggerLayout()
+        workaroundIssue87(vc)
         #endif
     }
     
@@ -54,6 +56,7 @@ struct ChangedBodyPropertyTests {
         #if os(iOS)
         let vc = UIHostingController(rootView: ContentView())
         vc.triggerLayout()
+        workaroundIssue87(vc)
         #endif
     }
 }

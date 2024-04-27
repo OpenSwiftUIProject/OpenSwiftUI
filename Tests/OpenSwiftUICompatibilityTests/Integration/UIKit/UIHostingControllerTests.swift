@@ -18,6 +18,7 @@ struct UIHostingControllerTests {
         }
         let vc = UIHostingController(rootView: ContentView())
         vc.triggerLayout()
+        workaroundIssue87(vc)
     }
     
     @Test("BodyAccessor crash for non empty View instance", .bug("#81", relationship: .verifiesFix))
@@ -30,6 +31,7 @@ struct UIHostingControllerTests {
         }
         let vc = UIHostingController(rootView: ContentView())
         vc.triggerLayout()
+        workaroundIssue87(vc)
     }
 }
 #endif
