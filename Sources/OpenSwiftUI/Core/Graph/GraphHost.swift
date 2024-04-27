@@ -15,15 +15,15 @@ private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 class GraphHost {
     // MARK: - Properties
     
-    private(set) var data: Data
-    private(set) var isInstantiated = false
-   /* private(set)*/ var hostPreferenceValues: OptionalAttribute<PreferenceList>
-    private(set) var lastHostPreferencesSeed: VersionSeed = .invalid
-    private var pendingTransactions: [AsyncTransaction] = []
-    /*private(set)*/ var inTransaction = false
-    /*private(set)*/ var continuations: [() -> Void] = []
-    private(set) var mayDeferUpdate = true
-    private(set) var removedState: RemovedState = []
+    private(set) final var data: Data
+    private(set) final var isInstantiated = false
+   /* private(set)*/ final var hostPreferenceValues: OptionalAttribute<PreferenceList>
+    private(set) final var lastHostPreferencesSeed: VersionSeed = .invalid
+    private final var pendingTransactions: [AsyncTransaction] = []
+    /*private(set)*/ final var inTransaction = false
+    /*private(set)*/ final var continuations: [() -> Void] = []
+    private(set) final var mayDeferUpdate = true
+    private(set) final var removedState: RemovedState = []
 
     // MARK: - static properties and methods
     
