@@ -8,10 +8,12 @@ import UIKit
 
 @MainActor
 struct UIHostingControllerTests {
-    @Test("BodyAccessor crash for non empty View instance", .bug("#81", relationship: .verifiesFix))
-    func testBasicAnyViewWithProperty() throws {
+    @Test(
+        "Attribute setter crash for basic AnyView",
+        .bug("https://github.com/OpenSwiftUIProject/OpenGraph/issues/58", relationship: .verifiesFix)
+    )
+    func testBasicAnyView() throws {
         struct ContentView: View {
-            var name = ""
             var body: some View {
                 AnyView(EmptyView())
             }
@@ -20,9 +22,12 @@ struct UIHostingControllerTests {
         vc.triggerLayout()
         workaroundIssue87(vc)
     }
-    
-    @Test("BodyAccessor crash for non empty View instance", .bug("#81", relationship: .verifiesFix))
-    func basicAnyViewWithProperty() throws {
+
+    @Test(
+        "BodyAccessor crash for non empty View instance",
+        .bug("#81", relationship: .verifiesFix)
+    )
+    func testBasicAnyViewWithProperty() throws {
         struct ContentView: View {
             var name = ""
             var body: some View {
