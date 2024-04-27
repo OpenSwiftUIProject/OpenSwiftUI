@@ -11,7 +11,6 @@ import UIKit
 
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor(unsafe)
 open class _UIHostingView<Content>: UIView where Content: View {
     private var _rootView: Content
     var viewGraph: ViewGraph
@@ -42,6 +41,18 @@ open class _UIHostingView<Content>: UIView where Content: View {
     @available(*, unavailable)
     public required init?(coder _: NSCoder) {
         fatalError("init(coder:) has not been implemented")
+    }
+    
+    deinit {
+        updateRemovedState()
+        NotificationCenter.default.removeObserver(self)
+        clearDeisplayLink()
+        clearUpdateTimer()
+        invalidate()
+        Update.ensure {
+            viewGraph.preferenceBridge = nil
+            viewGraph.invalidate()
+        }
     }
     
     func setRootView(_ view: Content, transaction: Transaction) {
@@ -131,6 +142,14 @@ open class _UIHostingView<Content>: UIView where Content: View {
         lastRenderTime = timestamp
         return interval.seconds
     }
+    
+    // TODO
+    func clearDeisplayLink() {
+    }
+    
+    // TODO
+    func clearUpdateTimer() {
+    }
 }
 
 extension _UIHostingView: ViewRendererHost {
@@ -166,6 +185,10 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     func preferencesDidChange() {
+        // TODO
+    }
+    
+    func updateRemovedState() {
         // TODO
     }
 }
