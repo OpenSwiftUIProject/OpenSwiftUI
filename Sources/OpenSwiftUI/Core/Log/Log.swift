@@ -7,6 +7,13 @@
 
 #if OPENSWIFTUI_SWIFT_LOG
 import Logging
+extension Logger {
+    init(subsystem: String, category: String) {
+        var logger = Logger(label: subsystem)
+        logger[metadataKey: "category"] = MetadataValue.string(category)
+        self = logger
+    }
+}
 #else
 import os
 #if DEBUG
