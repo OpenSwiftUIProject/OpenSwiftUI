@@ -61,11 +61,51 @@ extension ViewModifier where Body == Never {
     public func body(content _: Content) -> Never {
         bodyError()
     }
-    //    static func _viewListCount(inputs: _ViewListCountInputs, body: (_ViewListCountInputs) -> Int?) -> Int?
+    
+    public static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        body(inputs)
+    }
+}
+
+extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
+    public static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        inputs.withMutateGraphInputs { inputs in
+            _makeInputs(modifier: modifier, inputs: &inputs)
+        }
+        let outputs = body(_Graph(), inputs)
+        return outputs
+    }
+    
+    public static func _makeViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        inputs.withMutateGraphInputs { inputs in
+            _makeInputs(modifier: modifier, inputs: &inputs)
+        }
+        let outputs = body(_Graph(), inputs)
+        return outputs
+    }
+
+    public static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        body(inputs)
+    }
 }
 
 extension ViewModifier {
-    @inline(__always)
     func bodyError() -> Never {
         fatalError("body() should not be called on \(Self.self)")
     }
