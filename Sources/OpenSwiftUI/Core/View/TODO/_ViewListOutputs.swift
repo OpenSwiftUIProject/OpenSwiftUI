@@ -1,2 +1,0 @@
-public struct _ViewListOutputs {
-}

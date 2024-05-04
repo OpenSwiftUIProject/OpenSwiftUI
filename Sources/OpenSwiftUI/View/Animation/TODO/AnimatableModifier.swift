@@ -15,7 +15,7 @@ extension AnimatableModifier {
     }
 
     public static func _makeViewList(modifier _: _GraphValue<Self>, inputs _: _ViewListInputs, body _: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs) -> _ViewListOutputs {
-        .init()
+        fatalError("TODO")
     }
 }
 
@@ -25,6 +25,6 @@ extension ViewModifier where Self: Animatable {
     }
 
     public static func _makeViewList(modifier _: _GraphValue<Self>, inputs _: _ViewListInputs, body _: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs) -> _ViewListOutputs {
-        .init()
+        fatalError("TODO")
     }
 }

@@ -13,7 +13,7 @@ public struct EmptyView: PrimitiveView {
     }
     
     public static func _makeViewList(view: _GraphValue<EmptyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        .init() // FIXME
+        fatalError("TODO")
     }
     
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
