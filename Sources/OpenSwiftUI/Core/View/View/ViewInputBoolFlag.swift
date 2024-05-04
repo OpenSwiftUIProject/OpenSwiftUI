@@ -5,11 +5,9 @@
 //  Audited for RELEASE_2021
 //  Status: Empty
 
-protocol ViewInputBoolFlag: ViewInputPredicate {}
+protocol ViewInputBoolFlag: ViewInput, ViewInputFlag where Value == Bool, Input == Self {}
 
 extension ViewInputBoolFlag {
-    // FIXME
-    static func evaluate(inputs: _GraphInputs) -> Bool {
-        true
-    }
+    static var defaultValue: Bool { false }
+    static var value: Bool { true }
 }
