@@ -1,3 +1,10 @@
+//
+//  ViewInputs.swift
+//  OpenSwiftUI
+//
+//  Audited for RELEASE_2021
+//  Status: WIP
+
 internal import OpenGraphShims
 
 public struct _ViewInputs {
