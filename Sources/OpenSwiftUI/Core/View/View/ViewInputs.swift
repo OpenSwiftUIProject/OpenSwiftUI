@@ -34,6 +34,12 @@ public struct _ViewInputs {
         self.safeAreaInsets = safeAreaInsets
     }
     
+    mutating func append<Input: ViewInput, Value>(_ value: Value, to type: Input.Type) where Input.Value == [Value] {
+        var values = base[type]
+        values.append(value)
+        base[type] = values
+    }
+    
     func makeIndirectOutputs() -> _ViewOutputs {
         #if canImport(Darwin)
         struct AddPreferenceVisitor: PreferenceKeyVisitor {

@@ -1,5 +1,5 @@
 //
-//  _ViewModifier_Content.swift
+//  ViewModifier_Content.swift
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
