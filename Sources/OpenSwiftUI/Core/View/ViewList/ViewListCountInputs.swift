@@ -15,6 +15,12 @@ public struct _ViewListCountInputs {
         set { customInputs[type] = newValue }
     }
     
+    mutating func append<Input: GraphInput, Value>(_ value: Value, to type: Input.Type) where Input.Value == [Value]  {
+        var values = self[type]
+        values.append(value)
+        self[type] = values
+    }
+    
     mutating func popLast<Input: GraphInput, Value>(_ type: Input.Type) -> Value? where Input.Value == [Value]  {
         var values = self[type]
         guard let value = values.popLast() else {
@@ -22,11 +28,5 @@ public struct _ViewListCountInputs {
         }
         self[type] = values
         return value
-    }
-    
-    mutating func append<Input: GraphInput, Value>(_ value: Value, to type: Input.Type) where Input.Value == [Value]  {
-        var values = self[type]
-        values.append(value)
-        self[type] = values
     }
 }

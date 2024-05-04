@@ -40,6 +40,15 @@ public struct _ViewInputs {
         base[type] = values
     }
     
+    mutating func popLast<Input: ViewInput, Value>(_ type: Input.Type) -> Value? where Input.Value == [Value]  {
+        var values = base[type]
+        guard let value = values.popLast() else {
+            return nil
+        }
+        base[type] = values
+        return value
+    }
+    
     func makeIndirectOutputs() -> _ViewOutputs {
         #if canImport(Darwin)
         struct AddPreferenceVisitor: PreferenceKeyVisitor {
