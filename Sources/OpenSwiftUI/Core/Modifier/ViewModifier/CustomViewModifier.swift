@@ -95,7 +95,7 @@ public struct _ViewModifier_Content<Modifier: ViewModifier>: PrimitiveView {
         case let .view(makeViewBody):
             return makeViewBody(_Graph(), inputs)
         case let .list(makeViewListBody):
-            fatalError("TODO")
+            fatalError("TODO: \(String(describing: makeViewListBody))")
         }
     }
     

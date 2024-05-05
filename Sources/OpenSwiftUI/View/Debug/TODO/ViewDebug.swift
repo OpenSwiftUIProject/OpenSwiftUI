@@ -10,6 +10,31 @@ import Foundation
 internal import COpenSwiftUI
 internal import OpenGraphShims
 
+// MARK: View and ViewModifier
+
+extension View {
+    static func makeDebuggableViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        OGSubgraph.beginTreeElement(value: view.value, flags: 1)
+        defer { OGSubgraph.endTreeElement(value: view.value) }
+        return _makeViewList(view: view, inputs: inputs)
+    }
+}
+
+extension ViewModifier {
+    static func makeDebuggableViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        OGSubgraph.beginTreeElement(value: modifier.value, flags: 1)
+        defer { OGSubgraph.endTreeElement(value: modifier.value) }
+        return _makeViewList(modifier: modifier, inputs: inputs, body: body)
+    }
+}
+
 // MARK: _ViewDebug
 
 public enum _ViewDebug {
@@ -42,7 +67,6 @@ extension _ViewDebug {
         }
     }
     
-    @_transparent
     @inline(__always)
     static func makeView<Value>(
         view: _GraphValue<Value>,
@@ -50,9 +74,7 @@ extension _ViewDebug {
         body: (_ view: _GraphValue<Value>, _ inputs: _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
         var inputs = inputs
-        if OGSubgraph.shouldRecordTree {
-            OGSubgraph.beginTreeElement(value: view.value, flags: 0)
-        }
+        OGSubgraph.beginTreeElement(value: view.value, flags: 0)
         var outputs = inputs.withEmptyChangedDebugPropertiesInputs { inputs in
             body(view, inputs)
         }
