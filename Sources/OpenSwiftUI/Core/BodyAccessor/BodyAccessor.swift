@@ -10,7 +10,7 @@ internal import OpenGraphShims
 protocol BodyAccessor<Container, Body> {
     associatedtype Container
     associatedtype Body
-    func updateBody(of: Container, changed: Bool)
+    func updateBody(of container: Container, changed: Bool)
 }
 
 extension BodyAccessor {

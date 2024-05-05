@@ -8,7 +8,7 @@
 internal import OpenGraphShims
 
 public struct _ViewListInputs {
-    var base: _GraphInputs
+    private var base: _GraphInputs
     var implicitID: Int
     var options: _ViewListInputs.Options
     @OptionalAttribute
@@ -17,5 +17,12 @@ public struct _ViewListInputs {
     
     struct Options: OptionSet {
         let rawValue: Int
+    }
+    
+    // MARK: - base
+    
+    @inline(__always)
+    mutating func withMutateGraphInputs<R>(_ body: (inout _GraphInputs) -> R) -> R {
+        body(&base)
     }
 }
