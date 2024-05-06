@@ -7,6 +7,10 @@
 
 internal import OpenGraphShims
 
+/// The input (aka inherited) attributes supplied to each view. Most
+/// view types will only actually wire a small number of these into
+/// their node. Doesn't include the view itself, which is passed
+/// separately.
 public struct _ViewInputs {
     private var base: _GraphInputs
     var preferences: PreferencesInputs

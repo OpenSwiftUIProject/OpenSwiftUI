@@ -7,6 +7,9 @@
 
 internal import OpenGraphShims
 
+/// A transient reference to a value in the view hierarchy's dataflow
+/// graph. "Transient" means that these values must never be stored,
+/// only passed around while initializing views.
 public struct _GraphValue<Value>: Equatable {
     var value: Attribute<Value>
     
@@ -26,6 +29,8 @@ public struct _GraphValue<Value>: Equatable {
         _GraphValue<V>(value.unsafeBitCast(to: type))
     }
     
+    /// Returns the value created by fetching the property at `keyPath`
+    /// of `self`.
     public subscript<Member>(keyPath: KeyPath<Value, Member>) -> _GraphValue<Member> {
         _GraphValue<Member>(value[keyPath: keyPath])
     }

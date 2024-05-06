@@ -1,5 +1,6 @@
 internal import OpenGraphShims
 
+/// The output (aka synthesized) attributes returned by each view.
 public struct _ViewOutputs {
     private var preferences = PreferencesOutputs()
     @OptionalAttribute var layoutComputer: LayoutComputer?

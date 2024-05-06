@@ -14,6 +14,8 @@ internal import OpenGraphShims
 /// The view gives values to these properties prior to recomputing the view's
 /// ``View/body-swift.property``.
 public protocol DynamicProperty {
+    /// Creates an instance of the dynamic `View` property
+    /// represented by `self`.
     static func _makeProperty<Value>(
         in buffer: inout _DynamicPropertyBuffer,
         container: _GraphValue<Value>,

@@ -7,6 +7,7 @@
 
 internal import OpenGraphShims
 
+/// Output values from `View._makeViewList()`.
 public struct _ViewListOutputs {
     var views: Views
     var nextImplicitID: Int

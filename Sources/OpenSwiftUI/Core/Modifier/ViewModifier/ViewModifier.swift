@@ -49,8 +49,10 @@
 ///  caption in blue text surrounded by a rounded
 ///  rectangle.](OpenSwiftUI-View-ViewModifier.png)
 public protocol ViewModifier {
+    /// The type of view representing the body.
     associatedtype Body: View
     
+    /// Makes a new view using the view modifier and inputs that you provide.
     static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
@@ -63,11 +65,14 @@ public protocol ViewModifier {
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs
 
+    /// The number of views that `_makeViewList()` would produce, or
+    /// nil if unknown.
     static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int?
     
+    /// The content view type passed to `body()`.
     typealias Content = _ViewModifier_Content<Self>
     
     /// Gets the current body of the caller.

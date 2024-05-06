@@ -5,6 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
+/// Protocol for modifiers that only modify their children's inputs.
 public protocol _GraphInputsModifier {
     static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs)
 }

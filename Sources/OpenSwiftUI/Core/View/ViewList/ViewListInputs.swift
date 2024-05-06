@@ -7,6 +7,7 @@
 
 internal import OpenGraphShims
 
+/// Input values to `View._makeViewList()`.
 public struct _ViewListInputs {
     private var base: _GraphInputs
     var implicitID: Int

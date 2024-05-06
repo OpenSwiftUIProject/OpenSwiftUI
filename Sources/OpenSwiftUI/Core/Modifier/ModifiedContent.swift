@@ -111,6 +111,8 @@ extension ModifiedContent: ViewModifier where Content: ViewModifier, Modifier: V
 }
 
 extension ViewModifier {
+    /// Returns a new modifier that is the result of concatenating
+    /// `self` with `modifier`.
     @inlinable
     @inline(__always)
     public func concat<T>(_ modifier: T) -> ModifiedContent<Self, T> {

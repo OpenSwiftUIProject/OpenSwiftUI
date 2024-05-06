@@ -8,6 +8,7 @@
 
 internal import OpenGraphShims
 
+/// View content that shows one of two possible children.
 @frozen
 public struct _ConditionalContent<TrueContent, FalseContent> {
     @usableFromInline

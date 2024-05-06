@@ -5,6 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
+/// Input values to `View._viewListCount()`.
 public struct _ViewListCountInputs {
     var customInputs : PropertyList
     var options : _ViewListInputs.Options
