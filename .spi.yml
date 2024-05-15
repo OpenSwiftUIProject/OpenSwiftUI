@@ -1,5 +1,4 @@
 version: 1
 builder:
   configs:
-    - swift_version: 5.9
-      documentation_targets: [OpenSwiftUI]
+    - documentation_targets: [OpenSwiftUI]
