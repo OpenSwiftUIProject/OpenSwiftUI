@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: WIP
+//  Status: Blocked by _makeViewList
 //  ID: 8817D3B1C81ADA2B53E3500D727F785A
 
 // MARK: - AppearanceActionModifier
@@ -79,6 +79,7 @@ extension AppearanceEffect: StatefulRule {
     typealias Value = Void
     
     mutating func updateValue() {
+        #if canImport(Darwin)
         if node.attribute == nil {
             node.attribute = .current
         }
@@ -89,8 +90,13 @@ extension AppearanceEffect: StatefulRule {
         }
         lastValue = modifier
         appeared()
+        #else
+        fatalError("See #39")
+        #endif
     }
 }
+
+#if canImport(Darwin) // See #39
 
 // MARK: AppearanceEffect + RemovableAttribute
 
@@ -114,6 +120,7 @@ extension AppearanceEffect: RemovableAttribute {
         nodeAttribute.graph.graphHost().graphInvalidation(from: nil)
     }
 }
+#endif
 
 // MARK: - View Extension
 
