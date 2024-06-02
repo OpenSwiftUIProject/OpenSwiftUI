@@ -18,7 +18,7 @@ struct Semantics: CustomStringConvertible, Comparable, Hashable {
     
     var value: UInt32
 
-    static let forced: Semantics? = {
+    static var forced: Semantics? = {
         if dyld_program_sdk_at_least(.init(semantics: firstRelease)) {
             return nil
         } else {
@@ -38,7 +38,10 @@ struct Semantics: CustomStringConvertible, Comparable, Hashable {
 extension dyld_build_version_t {
     @inline(__always)
     init(_ value: UInt64) {
-        self.init(platform: dyld_platform_t(value), version: UInt32(value >> 32))
+        self.init(
+            platform: dyld_platform_t(value & 0xFFFF_FFFF),
+            version: UInt32((value >> 32) & 0xFFFF_FFFF)
+        )
     }
 
     @inline(__always)
