@@ -71,9 +71,24 @@ enum Update {
     
     @inline(__always)
     static func dispatchActions() {
-        // FIXME
-        for action in actions {
-            action()
+        guard !actions.isEmpty else {
+            return
+        }
+
+        let actions = Update.actions
+        Update.actions = []
+        performOnMainThread {
+            // TODO: Signpost.postUpdateActions
+            begin()
+            for action in actions {
+                let oldDepth = depth
+                action()
+                let newDepth = depth
+                if newDepth != oldDepth {
+                    fatalError("Action caused unbalanced updates.")
+                }
+            }
+            end()
         }
     }
     
@@ -107,5 +122,5 @@ extension Update {
 // FIXME: migrate to use @_extern(c, "xx") in Swift 6
 extension MovableLock {
     @_silgen_name("_MovableLockSyncMain")
-    static func syncMain(lock: MovableLock ,body: @escaping () -> Void)
+    static func syncMain(lock: MovableLock, body: @escaping () -> Void)
 }
