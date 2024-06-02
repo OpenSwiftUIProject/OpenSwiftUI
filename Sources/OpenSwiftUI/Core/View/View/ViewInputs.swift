@@ -116,6 +116,12 @@ public struct _ViewInputs {
         return newInputs
     }
     
+    // MARK: - base.phase
+    @inline(__always)
+    var phase: Attribute<_GraphInputs.Phase> {
+        base.phase
+    }
+    
     // MARK: - base.changedDebugProperties
     
     @inline(__always)
