@@ -18,7 +18,7 @@ struct Semantics: CustomStringConvertible, Comparable, Hashable {
     
     var value: UInt32
 
-    static let forced: Semantics? = {
+    static var forced: Semantics? = {
         if dyld_program_sdk_at_least(.init(semantics: firstRelease)) {
             return nil
         } else {
