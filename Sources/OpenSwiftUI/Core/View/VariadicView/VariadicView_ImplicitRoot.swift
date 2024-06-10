@@ -5,20 +5,20 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-protocol _VariadicView_AnyImplicitRoot {
-    func visitType<Visitor: _VariadicView_ImplicitRootVisitor>(visitor: inout Visitor)
+package protocol _VariadicView_AnyImplicitRoot {
+    static func visitType<V>(visitor: inout V) where V: _VariadicView_ImplicitRootVisitor
 }
 
-protocol _VariadicView_ImplicitRootVisitor {
-    func visit<Root: _VariadicView_ImplicitRoot>(type: Root.Type)
+package protocol _VariadicView_ImplicitRootVisitor {
+    mutating func visit<R>(type: R.Type) where R: _VariadicView_ImplicitRoot
 }
 
-protocol _VariadicView_ImplicitRoot: _VariadicView_AnyImplicitRoot, _VariadicView_ViewRoot {
+package protocol _VariadicView_ImplicitRoot: _VariadicView_AnyImplicitRoot, _VariadicView_ViewRoot {
     static var implicitRoot: Self { get }
 }
 
 extension _VariadicView_ImplicitRoot {
-    func visitType<Visitor: _VariadicView_ImplicitRootVisitor>(visitor: inout Visitor) {
+    package func visitType<Visitor: _VariadicView_ImplicitRootVisitor>(visitor: inout Visitor) {
         visitor.visit(type: Self.self)
     }
 }

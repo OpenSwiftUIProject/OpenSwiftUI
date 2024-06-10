@@ -16,6 +16,10 @@ extension _VariadicView_Root {
     public static var _viewListOptions: Int {
         0
     }
+    
+    package static var viewListOptions: _ViewListInputs.Options {
+        .init(rawValue: _viewListOptions)
+    }
 
     public static func _viewListCount(
         inputs _: _ViewListCountInputs,
