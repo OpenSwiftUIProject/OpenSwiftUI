@@ -7,9 +7,16 @@
 
 // MARK: - Animatable
 
+/// A type that describes how to animate a property of a view.
 public protocol Animatable {
+    /// The type defining the data to animate.
     associatedtype AnimatableData: VectorArithmetic
+    
+    /// The data to animate.
     var animatableData: AnimatableData { get set }
+    
+    /// Replaces `value` with an animated version of the value, using
+    /// `inputs`.
     static func _makeAnimatable(value: inout _GraphValue<Self>, inputs: _GraphInputs)
 }
 
