@@ -23,10 +23,63 @@ let development = envEnable("OPENSWIFTUI_DEVELOPMENT", default: false)
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
+let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2021
+let platforms: [SupportedPlatform] = switch releaseVersion {
+case 2023:
+    [
+        .iOS(.v17),
+        .macOS(.v14),
+        .macCatalyst(.v17),
+        .tvOS(.v17),
+        .watchOS(.v9),
+        .visionOS(.v1),
+    ]
+case 2022:
+    [
+        .iOS(.v16),
+        .macOS(.v13),
+        .macCatalyst(.v16),
+        .tvOS(.v16),
+        .watchOS(.v8),
+    ]
+case 2021:
+    [
+        .iOS(.v15),
+        .macOS(.v12),
+        .macCatalyst(.v15),
+        .tvOS(.v15),
+        .watchOS(.v7),
+    ]
+default:
+    [
+        .iOS(.v13),
+        .macOS(.v10_15),
+        .macCatalyst(.v13),
+        .tvOS(.v13),
+        .watchOS(.v7), // WKApplicationMain is available for watchOS 7.0+
+        .visionOS(.v1),
+    ]
+}
+
 var sharedSwiftSettings: [SwiftSetting] = [
     .enableExperimentalFeature("AccessLevelOnImport"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
+    .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
 ]
+
+switch releaseVersion {
+    case 2023:
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2023_API"))
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2022_API"))
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2021_API"))
+    case 2022:
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2022_API"))
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2021_API"))
+    case 2021:
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2021_API"))
+    default:
+        break
+}
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
@@ -78,14 +131,7 @@ let includePath = SDKPath.appending("/usr/lib/swift_static")
 
 let package = Package(
     name: "OpenSwiftUI",
-    platforms: [
-        .iOS(.v13),
-        .macOS(.v10_15),
-        .macCatalyst(.v13),
-        .tvOS(.v13),
-        .watchOS(.v7), // WKApplicationMain is available for watchOS 7.0+
-        .visionOS(.v1),
-    ],
+    platforms: platforms,
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
     ],
