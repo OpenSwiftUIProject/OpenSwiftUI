@@ -5,6 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
+import Foundation
 #if canImport(CoreGraphics)
 import CoreGraphics
 #else
