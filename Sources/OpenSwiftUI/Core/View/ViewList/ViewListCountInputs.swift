@@ -7,9 +7,9 @@
 
 /// Input values to `View._viewListCount()`.
 public struct _ViewListCountInputs {
-    var customInputs : PropertyList
-    var options : _ViewListInputs.Options
-    var baseOptions : _GraphInputs.Options
+    var customInputs: PropertyList
+    var options: _ViewListInputs.Options
+    var baseOptions: _GraphInputs.Options
     
     subscript<Input: GraphInput>(_ type: Input.Type) -> Input.Value {
         get { customInputs[type] }

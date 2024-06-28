@@ -12,8 +12,7 @@ public struct _ViewListInputs {
     private var base: _GraphInputs
     var implicitID: Int
     var options: _ViewListInputs.Options
-    @OptionalAttribute
-    var traits: ViewTraitCollection?
+    @OptionalAttribute var traits: ViewTraitCollection?
     var traitKeys: ViewTraitKeys?
     
     struct Options: OptionSet {
