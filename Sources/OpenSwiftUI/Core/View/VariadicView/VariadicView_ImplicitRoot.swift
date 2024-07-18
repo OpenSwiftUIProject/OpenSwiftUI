@@ -6,11 +6,11 @@
 //  Status: Complete
 
 protocol _VariadicView_AnyImplicitRoot {
-    func visitType<Visitor: _VariadicView_ImplicitRootVisitor>(visitor: inout Visitor)
+    static func visitType<Visitor: _VariadicView_ImplicitRootVisitor>(visitor: inout Visitor)
 }
 
 protocol _VariadicView_ImplicitRootVisitor {
-    func visit<Root: _VariadicView_ImplicitRoot>(type: Root.Type)
+    mutating func visit<Root: _VariadicView_ImplicitRoot>(type: Root.Type)
 }
 
 protocol _VariadicView_ImplicitRoot: _VariadicView_AnyImplicitRoot, _VariadicView_ViewRoot {
