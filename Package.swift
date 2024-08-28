@@ -25,7 +25,17 @@ let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2021
 let platforms: [SupportedPlatform] = switch releaseVersion {
-case 2023:
+case 2024:
+    #if swift(>=6.0)
+    [
+        .iOS(.v18),
+        .macOS(.v15),
+        .macCatalyst(.v18),
+        .tvOS(.v18),
+        .watchOS(.v10),
+        .visionOS(.v2),
+    ]
+    #else // FIXME: Remove when we bump to Swift 6.0
     [
         .iOS(.v17),
         .macOS(.v14),
@@ -34,14 +44,7 @@ case 2023:
         .watchOS(.v9),
         .visionOS(.v1),
     ]
-case 2022:
-    [
-        .iOS(.v16),
-        .macOS(.v13),
-        .macCatalyst(.v16),
-        .tvOS(.v16),
-        .watchOS(.v8),
-    ]
+    #endif
 case 2021:
     [
         .iOS(.v15),
@@ -67,18 +70,10 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
 ]
 
-switch releaseVersion {
-    case 2023:
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2023_API"))
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2022_API"))
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2021_API"))
-    case 2022:
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2022_API"))
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2021_API"))
-    case 2021:
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_2021_API"))
-    default:
-        break
+if releaseVersion >= 2021 {
+    for year in 2021 ... releaseVersion {
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))
+    }
 }
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
