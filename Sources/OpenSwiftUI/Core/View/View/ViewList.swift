@@ -199,6 +199,10 @@ package struct _ViewList_ID {
         var implicitID: Int32
         var explicitID: AnyHashable?
     }
+    
+    mutating func bind(explicitID: AnyHashable, owner: OGAttribute, isUnary: Bool) {
+        explicitIDs.append(.init(id: explicitID, owner: owner, isUnary: isUnary))
+    }
 }
 
 // MARK: - IndirectMap
@@ -347,7 +351,7 @@ class _ViewList_Subgraph {
     
     init(subgraph: OGSubgraph) {
         self.subgraph = subgraph
-        self.refcount = 1 // TODO
+        self.refcount = 1
     }
     
     func invalidate() {}
@@ -376,6 +380,29 @@ extension _ViewList_Subgraph {
         }
         subgraph.willInvalidate(isInserted: isInserted)
         subgraph.invalidate()
+    }
+    
+    @inlinable
+    func wrapping(_ elements: _ViewList_Elements) -> _ViewList_Elements {
+        SubgraphElements(base: elements, subgraph: self)
+    }
+}
+
+// TODO
+private struct SubgraphElements: _ViewList_Elements {
+    let base: _ViewList_Elements
+    let subgraph: _ViewList_Subgraph
+    
+    var count: Int {
+        fatalError("TODO")
+    }
+    
+    func makeElements(from start: inout Int, inputs: _ViewInputs, indirectMap: _ViewList_IndirectMap?, body: (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)) -> (_ViewOutputs?, Bool) {
+        fatalError("TODO")
+    }
+    
+    func tryToReuseElement(at index: Int, by other: any _ViewList_Elements, at otherIndex: Int, indirectMap: _ViewList_IndirectMap, testOnly: Bool) -> Bool {
+        fatalError("TODO")
     }
 }
 

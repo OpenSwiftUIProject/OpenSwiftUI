@@ -264,7 +264,6 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
         fatalError("TODO")
     }
     
-    // TODO
     final class Item: _ViewList_Subgraph {
         let type: Any.Type
         let owner: OGAttribute
@@ -274,7 +273,6 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
         let allItems: MutableBox<[Unmanaged<Item>]>
         
         init(type: Any.Type, owner: OGAttribute, list: Attribute<ViewList>, id: UniqueID, isUnary: Bool, subgraph: OGSubgraph, allItems: MutableBox<[Unmanaged<Item>]>) {
-            fatalError("TODO")
             self.type = type
             self.owner = owner
             _list = list
@@ -282,7 +280,21 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
             self.isUnary = isUnary
             self.allItems = allItems
             super.init(subgraph: subgraph)
-            allItems.value.append(.passUnretained(self))
+            allItems.wrappedValue.append(.passUnretained(self))
+        }
+        
+        override func invalidate() {
+            for (index, item) in allItems.wrappedValue.enumerated() {
+                guard item == .passUnretained(self) else {
+                    continue
+                }
+                allItems.wrappedValue.remove(at: index)
+                break
+            }
+        }
+        
+        func bindID(_ id: inout _ViewList_ID) {
+            id.bind(explicitID: AnyHashable(self.id), owner: owner, isUnary: isUnary)
         }
     }
     
@@ -294,15 +306,16 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
         let lastTransaction: TransactionID
     }
     
-//    struct WrappedIDs: Sequence {
-//        let base: _ViewList_ID.Views
-//        let item: Item
-//    }
-//    
     // TODO
+    struct WrappedIDs/*: Sequence*/ {
+        let base: _ViewList_ID.Views
+        let item: Item
+    }
+    
     struct Transform: _ViewList_SublistTransform_Item {
         func apply(sublist: inout _ViewList_Sublist) {
-            <#code#>
+            item.bindID(&sublist.id)
+            sublist.elements = item.wrapping(sublist.elements)
         }
         
         var item: Item
