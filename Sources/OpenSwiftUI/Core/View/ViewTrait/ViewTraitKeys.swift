@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-struct ViewTraitKeys {
+package struct ViewTraitKeys {
     var types: Set<ObjectIdentifier>
     var isDataDependent: Bool
     

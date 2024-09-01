@@ -57,8 +57,8 @@ public struct _VStackLayout {
 }
 
 extension _HStackLayout: _VariadicView_ImplicitRoot {
-    static var implicitRoot: _HStackLayout { _HStackLayout() }
+    package static var implicitRoot: _HStackLayout { _HStackLayout() }
 }
 extension _VStackLayout: _VariadicView_ImplicitRoot {
-    static var implicitRoot: _VStackLayout { _VStackLayout() }
+    package static var implicitRoot: _VStackLayout { _VStackLayout() }
 }

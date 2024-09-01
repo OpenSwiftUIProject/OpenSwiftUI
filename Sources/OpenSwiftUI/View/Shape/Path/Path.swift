@@ -328,8 +328,6 @@ extension Path {
         private func clearCache() {
             bounds.cache = nil
         }
-        #else
-        #error("Unimplemented")
         #endif
     }
 }
