@@ -249,3 +249,62 @@ private struct AnyViewChildList<V: View>: StatefulRule, AsyncAttribute {
         return
     }
 }
+
+// TODO
+private struct AnyViewList: StatefulRule, AsyncAttribute {
+    @Attribute var view: AnyView
+    let inputs: _ViewListInputs
+    let parentSubgraph: OGSubgraph
+    let allItems: MutableBox<[Unmanaged<Item>]>
+    var lastItem: Item?
+    
+    typealias Value = AnyView // FIXME
+    
+    func updateValue() {
+        fatalError("TODO")
+    }
+    
+    // TODO
+    final class Item: _ViewList_Subgraph {
+        let type: Any.Type
+        let owner: OGAttribute
+        @Attribute var list: ViewList
+        let id: UniqueID
+        let isUnary: Bool
+        let allItems: MutableBox<[Unmanaged<Item>]>
+        
+        init(type: Any.Type, owner: OGAttribute, list: Attribute<ViewList>, id: UniqueID, isUnary: Bool, subgraph: OGSubgraph, allItems: MutableBox<[Unmanaged<Item>]>) {
+            fatalError("TODO")
+            self.type = type
+            self.owner = owner
+            _list = list
+            self.id = id
+            self.isUnary = isUnary
+            self.allItems = allItems
+            super.init(subgraph: subgraph)
+            allItems.value.append(.passUnretained(self))
+        }
+    }
+    
+    // TODO
+    struct WrappedList {
+        let base: ViewList
+        let item: Item
+        let lastID: UniqueID?
+        let lastTransaction: TransactionID
+    }
+    
+//    struct WrappedIDs: Sequence {
+//        let base: _ViewList_ID.Views
+//        let item: Item
+//    }
+//    
+    // TODO
+    struct Transform: _ViewList_SublistTransform_Item {
+        func apply(sublist: inout _ViewList_Sublist) {
+            <#code#>
+        }
+        
+        var item: Item
+    }
+}

@@ -76,3 +76,7 @@ public func withTransaction<Result>(
         return try body()
     }
 }
+
+struct TransactionID {
+    var id: Int
+}

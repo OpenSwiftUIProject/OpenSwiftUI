@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: 70E71091E926A1B09B75AAEB38F5AA3F
 
+import Foundation
 package import OpenGraphShims
 
 // MARK: - _ViewListInputs
@@ -121,14 +122,82 @@ public struct _ViewListCountInputs {
 
 // MARK: - _ViewList_ID
 
-struct _ViewList_ID {
+package struct _ViewList_ID {
     var _index: Int32
     var implicitID: Int32
     private var explicitIDs: [Explicit]
-}
-
-extension _ViewList_ID {
-    private struct Explicit {
+    
+    package class Views {
+        let isDataDependent: Bool
+        var endIndex: Int { fatalError() }
+        subscript(index: Int) -> _ViewList_ID { fatalError() }
+        func isEqual(to other: Views) -> Bool { fatalError() }
+        init(isDataDependent: Bool) {
+            self.isDataDependent = isDataDependent
+        }
+        // func withDataDependency() -> Views {}
+    }
+    
+    final class _Views<Base>: Views where Base: Equatable, Base: RandomAccessCollection, Base.Element == _ViewList_ID, Base.Index == Int {
+        let base: Base
+        
+        init(_ base: Base, isDataDependent: Bool) {
+            self.base = base
+            super.init(isDataDependent: isDataDependent)
+        }
+        override var endIndex: Int {
+            base.endIndex
+        }
+        
+        override subscript(index: Int) -> _ViewList_ID {
+            base[index]
+        }
+        
+        override func isEqual(to other: _ViewList_ID.Views) -> Bool {
+            guard let other = other as? Self else { return false }
+            return base == other.base
+        }
+    }
+    
+    final class JoinedViews: Views {
+        let views: [(views: Views, endOffset: Int)]
+        let count: Int
+        
+        init(_ views: [Views], isDataDependent: Bool) {
+            var offset = 0
+            var result: [(views: Views, endOffset: Int)] = []
+            for (index, view) in views.enumerated() {
+                offset += views.distance(from: 0, to: view.endIndex)
+                result.append((view, offset))
+            }
+            self.views = result
+            count = offset
+            super.init(isDataDependent: isDataDependent)
+        }
+        
+        override var endIndex: Int {
+            views.endIndex
+        }
+        
+        override subscript(index: Int) -> _ViewList_ID {
+            fatalError("TODO")
+        }
+        
+        override func isEqual(to other: _ViewList_ID.Views) -> Bool {
+            fatalError("TODO")
+        }
+    }
+    
+    private struct Explicit: Equatable {
+        let id: AnyHashable
+        let owner: OGAttribute
+        let isUnary: Bool
+    }
+    
+    struct Canonical {
+        var _index: Int32
+        var implicitID: Int32
+        var explicitID: AnyHashable?
     }
 }
 
@@ -312,7 +381,7 @@ extension _ViewList_Subgraph {
 
 // MARK: - _ViewList_View
 
-struct _ViewList_View {
+package struct _ViewList_View {
     var elements: _ViewList_Elements
     var id: _ViewList_ID
     var index: Int
@@ -320,6 +389,64 @@ struct _ViewList_View {
     var contentSubgraph: OGSubgraph
 }
 
+// MARK: - _ViewList_Sublist
+
+struct _ViewList_Sublist {
+    var start: Int
+    var count: Int
+    var id: _ViewList_ID
+    var elements: _ViewList_Elements
+    var traits: ViewTraitCollection
+    var list: Attribute<ViewList>?
+}
+
+struct _ViewList_SublistTransform {
+    var items: [any _ViewList_SublistTransform_Item]
+}
+
+
+protocol _ViewList_SublistTransform_Item {
+    func apply(sublist: inout _ViewList_Sublist)
+}
+
+// MARK: - ViewList
+
+protocol ViewList {
+    func count(style: _ViewList_IteratorStyle) -> Int
+    func estimatedCount(style: _ViewList_IteratorStyle) -> Int
+    var traitKeys: ViewTraitKeys? { get }
+    var viewIDs: _ViewList_ID.Views? { get }
+    var traits: ViewTraitCollection { get }
+    func applyNodes(from index: inout Int, style: _ViewList_IteratorStyle, list: _GraphValue<ViewList>?, transform: inout _ViewList_SublistTransform, to body: (inout Int, _ViewList_IteratorStyle, _ViewList_Node, inout _ViewList_SublistTransform) -> Bool) -> Bool
+    func edit(forID id: _ViewList_ID, since transaction: TransactionID) -> _ViewList_Edit?
+    func firstOffset<OtherID>(forID id: OtherID, style: _ViewList_IteratorStyle) -> Int? where OtherID: Hashable
+}
+
+// MARK: - ViewListVisitor
+
+protocol ViewListVisitor {
+    mutating func visit(view: _ViewList_View, traits: ViewTraitCollection) -> Bool
+}
+
+// MARK: - _ViewList_IteratorStyle
+
 // TODO
-package protocol ViewList {
+struct _ViewList_IteratorStyle: Equatable {
+    var value: UInt
+    
+    func alignToPreviousGranularityMultiple(_ value: inout Int) {
+        fatalError("TODO")
+    }
+}
+
+enum _ViewList_Edit: Equatable {
+    case inserted
+    case removed
+}
+
+enum _ViewList_Node {
+    case list(any ViewList, Attribute<any ViewList>?)
+    case sublist(_ViewList_Sublist)
+    //  case group(_ViewList_Group)
+    //  case section(_ViewList_Section)
 }
