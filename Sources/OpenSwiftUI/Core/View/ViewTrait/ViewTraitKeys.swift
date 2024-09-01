@@ -2,18 +2,34 @@
 //  ViewTraitKeys.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
 
 package struct ViewTraitKeys {
-    var types: Set<ObjectIdentifier>
-    var isDataDependent: Bool
+    package var types: Set<ObjectIdentifier>
+    package var isDataDependent: Bool
     
-    mutating func insert<Key: _ViewTraitKey>(_ type: Key.Type) {
+    package init() {
+        types = []
+        isDataDependent = false
+    }
+    
+    package func contains<T>(_ type: T.Type) -> Bool where T: _ViewTraitKey{
+        types.contains(ObjectIdentifier(type))
+    }
+    
+    package mutating func insert<T>(_ type: T.Type) where T: _ViewTraitKey {
         types.insert(ObjectIdentifier(type))
     }
     
-    func contains<Key: _ViewTraitKey>(_ type: Key.Type) -> Bool {
-        types.contains(ObjectIdentifier(type))
+    package mutating func formUnion(_ other: ViewTraitKeys) {
+        types.formUnion(other.types)
+        isDataDependent = isDataDependent || other.isDataDependent
+    }
+
+    package func withDataDependent() -> ViewTraitKeys {
+        var copy = self
+        copy.isDataDependent = true
+        return copy
     }
 }
