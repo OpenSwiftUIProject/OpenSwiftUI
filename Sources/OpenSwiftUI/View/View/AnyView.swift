@@ -131,6 +131,7 @@ private final class AnyViewStorage<V: View>: AnyViewStorageBase {
     ) -> _ViewOutputs {
         let child = AnyViewChild<V>(info: container, uniqueId: uniqueId)
         let graphValue = _GraphValue(Attribute(child))
+        // FIXME
         return _ViewDebug.makeView(
             view: graphValue,
             inputs: inputs
@@ -141,12 +142,15 @@ private final class AnyViewStorage<V: View>: AnyViewStorageBase {
     
     override func child<Value>() -> Value { view as! Value }
     
-    // TODO
-//    override func makeViewList(
-//        view: _GraphValue<AnyView>,
-//        inputs: _ViewListInputs
-//    ) -> _ViewListOutputs {
-//    }
+    override func makeViewList(
+        view: _GraphValue<AnyView>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        let childList = AnyViewChildList<V>(view: view.value, id: id)
+        let childListAttribute = Attribute(childList)
+        childListAttribute.value = self.view
+        return V.makeDebuggableViewList(view: _GraphValue(childListAttribute), inputs: inputs)
+    }
     
     override func visitContent<Vistor>(_ visitor: inout Vistor) where Vistor : ViewVisitor {
         visitor.visit(view)
@@ -230,8 +234,18 @@ extension AnyViewChild: CustomStringConvertible {
     var description: String { "\(V.self)" }
 }
 
-// TODO
-private struct AnyViewChildList<V: View> {
+private struct AnyViewChildList<V: View>: StatefulRule, AsyncAttribute {
+    typealias Value = V
+    
     @Attribute var view: AnyView
     var id: UniqueID?
+    
+    func updateValue() {
+        guard let storage = view.storage as? AnyViewStorage<V>,
+            storage.id == id else {
+            return
+        }
+        value = storage.view
+        return
+    }
 }
