@@ -78,7 +78,8 @@ extension _ViewDebug {
         }
     }
     
-    @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
+    // Fix -werror issue
+    // @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
     @inline(__always)
     static func makeView<Value>(
         view: _GraphValue<Value>,

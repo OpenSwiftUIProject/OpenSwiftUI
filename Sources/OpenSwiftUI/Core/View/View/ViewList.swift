@@ -166,7 +166,7 @@ package struct _ViewList_ID {
         init(_ views: [Views], isDataDependent: Bool) {
             var offset = 0
             var result: [(views: Views, endOffset: Int)] = []
-            for (index, view) in views.enumerated() {
+            for view in views {
                 offset += views.distance(from: 0, to: view.endIndex)
                 result.append((view, offset))
             }
