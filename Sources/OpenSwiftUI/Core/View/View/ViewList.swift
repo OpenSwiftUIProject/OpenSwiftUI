@@ -190,7 +190,9 @@ package struct _ViewList_ID {
     
     private struct Explicit: Equatable {
         let id: AnyHashable
+        #if canImport(Darwin)
         let owner: OGAttribute
+        #endif
         let isUnary: Bool
     }
     
@@ -200,9 +202,11 @@ package struct _ViewList_ID {
         var explicitID: AnyHashable?
     }
     
+    #if canImport(Darwin)
     mutating func bind(explicitID: AnyHashable, owner: OGAttribute, isUnary: Bool) {
         explicitIDs.append(.init(id: explicitID, owner: owner, isUnary: isUnary))
     }
+    #endif
 }
 
 // MARK: - IndirectMap

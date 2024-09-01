@@ -16,7 +16,7 @@ final package class MutableBox<T> {
 
     @inlinable
     convenience package init(wrappedValue value: T) {
-        self.value = value
+        self.init(value)
     }
     
     @inlinable
