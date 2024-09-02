@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct _ProposedSize: Hashable {
+public struct _ProposedSize: Hashable {
     var width: CGFloat?
     var height: CGFloat?
     

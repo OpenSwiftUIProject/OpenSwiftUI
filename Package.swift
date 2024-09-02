@@ -45,7 +45,7 @@ case 2024:
         .visionOS(.v1),
     ]
     #endif
-case 2021:
+case 2021: // iOS 15.5
     [
         .iOS(.v15),
         .macOS(.v12),
