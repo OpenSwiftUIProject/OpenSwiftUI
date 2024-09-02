@@ -57,3 +57,13 @@ struct PlatformViewRepresentableContext<RepresentableType: PlatformViewRepresent
     var values: PlatformViewRepresentableValues
     let coordinator: RepresentableType.Coordinator
 }
+
+
+// TODO
+class PlatformViewCoordinator: NSObject {
+//    var weakDispatchUpdate: (()->Void) -> Void
+    
+    override init() {
+        super.init()
+    }
+}
