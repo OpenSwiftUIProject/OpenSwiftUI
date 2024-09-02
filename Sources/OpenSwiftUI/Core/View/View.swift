@@ -85,7 +85,7 @@ extension View {
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        fatalError("TODO")
+        makeViewList(view: view, inputs: inputs)
     }
     
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {

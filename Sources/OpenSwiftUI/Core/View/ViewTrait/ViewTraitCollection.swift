@@ -6,7 +6,11 @@
 //  Status: WIP
 //  ID: 9929B476764059557433A108298EE66F
 
-struct ViewTraitCollection {
+package struct ViewTraitCollection {
+    package init() {
+        self.storage = []
+    }
+    
     private var storage: [any AnyViewTrait]
     
     private struct AnyTrait<Key: _ViewTraitKey>: AnyViewTrait {

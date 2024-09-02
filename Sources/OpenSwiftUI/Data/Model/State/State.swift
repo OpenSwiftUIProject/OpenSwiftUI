@@ -89,9 +89,11 @@ internal import OpenGraphShims
 @frozen
 @propertyWrapper
 public struct State<Value> {
+    /// The current or initial (if box == nil) value of the state
     @usableFromInline
     var _value: Value
 
+    /// The value's location, or nil if not yet known.
     @usableFromInline
     var _location: AnyLocation<Value>?
 

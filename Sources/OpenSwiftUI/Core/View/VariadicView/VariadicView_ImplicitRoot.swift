@@ -18,7 +18,7 @@ package protocol _VariadicView_ImplicitRoot: _VariadicView_AnyImplicitRoot, _Var
 }
 
 extension _VariadicView_ImplicitRoot {
-    package func visitType<Visitor: _VariadicView_ImplicitRootVisitor>(visitor: inout Visitor) {
+    package static func visitType<V>(visitor: inout V) where V: _VariadicView_ImplicitRootVisitor {
         visitor.visit(type: Self.self)
     }
 }

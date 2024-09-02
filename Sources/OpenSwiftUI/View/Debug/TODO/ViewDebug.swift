@@ -13,7 +13,18 @@ internal import OpenGraphShims
 // MARK: View and ViewModifier
 
 extension View {
-    static func makeDebuggableViewList(
+    @inline(__always)
+    nonisolated
+    package static func makeDebuggableView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        fatalError("TODO")
+    }
+    
+    @inline(__always)
+    nonisolated
+    package static func makeDebuggableViewList(
         view: _GraphValue<Self>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
@@ -67,6 +78,8 @@ extension _ViewDebug {
         }
     }
     
+    // Fix -werror issue
+    // @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
     @inline(__always)
     static func makeView<Value>(
         view: _GraphValue<Value>,
@@ -112,16 +125,21 @@ extension _ViewDebug {
         public init(rawValue: UInt32) {
             self.rawValue = rawValue
         }
+        
+        @inlinable
+        package init(_ property: Property) {
+            self.init(rawValue: 1 << property.rawValue)
+        }
 
-        public static let type = Properties(rawValue: 1 << Property.type.rawValue)
-        public static let value = Properties(rawValue: 1 << Property.value.rawValue)
-        public static let transform = Properties(rawValue: 1 << Property.transform.rawValue)
-        public static let position = Properties(rawValue: 1 << Property.position.rawValue)
-        public static let size = Properties(rawValue: 1 << Property.size.rawValue)
-        public static let environment = Properties(rawValue: 1 << Property.environment.rawValue)
-        public static let phase = Properties(rawValue: 1 << Property.phase.rawValue)
-        public static let layoutComputer = Properties(rawValue: 1 << Property.layoutComputer.rawValue)
-        public static let displayList = Properties(rawValue: 1 << Property.displayList.rawValue)
+        public static let type = Properties(.type)
+        public static let value = Properties(.value)
+        public static let transform = Properties(.transform)
+        public static let position = Properties(.position)
+        public static let size = Properties(.size)
+        public static let environment = Properties(.environment)
+        public static let phase = Properties(.phase)
+        public static let layoutComputer = Properties(.layoutComputer)
+        public static let displayList = Properties(.displayList)
         public static let all = Properties(rawValue: 0xFFFF_FFFF)
     }
 }

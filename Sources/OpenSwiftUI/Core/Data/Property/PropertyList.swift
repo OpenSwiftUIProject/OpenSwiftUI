@@ -11,6 +11,7 @@ internal import OpenGraphShims
 
 // MARK: - PropertyList
 
+/// A mutable container of key-value pairs
 @usableFromInline
 @frozen
 struct PropertyList: CustomStringConvertible {
