@@ -448,7 +448,7 @@ protocol ViewList {
     var traitKeys: ViewTraitKeys? { get }
     var viewIDs: _ViewList_ID.Views? { get }
     var traits: ViewTraitCollection { get }
-    func applyNodes(from index: inout Int, style: _ViewList_IteratorStyle, list: _GraphValue<ViewList>?, transform: inout _ViewList_SublistTransform, to body: (inout Int, _ViewList_IteratorStyle, _ViewList_Node, inout _ViewList_SublistTransform) -> Bool) -> Bool
+    func applyNodes(from index: inout Int, style: _ViewList_IteratorStyle, list: Attribute<ViewList>?, transform: inout _ViewList_SublistTransform, to body: (inout Int, _ViewList_IteratorStyle, _ViewList_Node, inout _ViewList_SublistTransform) -> Bool) -> Bool
     func edit(forID id: _ViewList_ID, since transaction: TransactionID) -> _ViewList_Edit?
     func firstOffset<OtherID>(forID id: OtherID, style: _ViewList_IteratorStyle) -> Int? where OtherID: Hashable
 }
