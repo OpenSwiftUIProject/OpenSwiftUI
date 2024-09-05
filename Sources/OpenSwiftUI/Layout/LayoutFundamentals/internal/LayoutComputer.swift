@@ -80,9 +80,42 @@ extension LayoutComputer {
 
 // MARK: LayoutComputer + EngineDelegate
 
-// TODO
 extension LayoutComputer {
-    class EngineDelegate: Delegate {}
+    class EngineDelegate<Engine: LayoutEngineProtocol>: Delegate {
+        var engine: Engine
+
+        init(engine: Engine) {
+            self.engine = engine
+        }
+
+        override func layoutPriority() -> Double {
+            engine.layoutPriority()
+        }
+
+        override func ignoresAutomaticPadding() -> Bool {
+            engine.ignoresAutomaticPadding()
+        }
+
+        override func requiresSpacingProjection() -> Bool {
+            engine.requiresSpacingProjection()
+        }
+
+        override func spacing() -> Spacing {
+            engine.spacing()
+        }
+
+        override func sizeThatFits(_ size: _ProposedSize) -> CGSize {
+            engine.sizeThatFits(size)
+        }
+
+        override func childGeometries(at size: ViewSize, origin: CGPoint) -> [ViewGeometry] {
+            engine.childGeometries(at: size, origin: origin)
+        }
+
+        override func explicitAlignment(_ key: AlignmentKey, at size: ViewSize) -> CGFloat? {
+            engine.explicitAlignment(key, at: size)
+        }
+    }
 }
 
 protocol LayoutEngineProtocol {
