@@ -7,6 +7,7 @@
 
 import Foundation
 internal import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 protocol ContentResponder {
     func contains(points: [CGPoint], size: CGSize) -> BitVector64
@@ -17,11 +18,8 @@ protocol ContentResponder {
 extension ContentResponder {
     func contains(points: [CGPoint], size: CGSize) -> BitVector64 {
         guard !points.isEmpty else { return BitVector64() }
-        #if OPENSWIFTUI_RELEASE_2024
-        // TODO: mapBool
-        #else
-        fatalError("TODO")
-        #endif
+        let rect = CGRect(origin: .zero, size: size)
+        return points.mapBool { rect.contains($0) }
     }
     
     func contentPath(size: CGSize) -> Path {

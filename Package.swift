@@ -81,10 +81,18 @@ if warningsAsErrorsCondition {
     sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
 }
 
+let openSwiftUICoreTarget = Target.target(
+    name: "OpenSwiftUICore",
+    dependencies: [
+        .product(name: "OpenGraphShims", package: "OpenGraph"),
+    ],
+    swiftSettings: sharedSwiftSettings
+)
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
         "COpenSwiftUI",
+        "OpenSwiftUICore",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
@@ -95,6 +103,14 @@ let openSwiftUIExtensionTarget = Target.target(
     dependencies: [
         "OpenSwiftUI",
     ],
+    swiftSettings: sharedSwiftSettings
+)
+let openSwiftUICoreTestTarget = Target.testTarget(
+    name: "OpenSwiftUICoreTests",
+    dependencies: [
+        "OpenSwiftUICore",
+    ],
+    exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
 let openSwiftUITestTarget = Target.testTarget(
@@ -148,6 +164,7 @@ let package = Package(
             ]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
+        openSwiftUICoreTarget,
         openSwiftUITarget,
         openSwiftUIExtensionTarget,
     ]
@@ -164,15 +181,37 @@ extension Target {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'AttributeGraph.framework'"
         dependencies.append(.product(name: "AttributeGraph", package: "OpenGraph"))
-
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
+        self.swiftSettings = swiftSettings
+    }
+
+    func addOpenCombineSettings() {
+        dependencies.append(.product(name: "OpenCombine", package: "OpenCombine"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+        self.swiftSettings = swiftSettings
+    }
+
+    func addSwiftLogSettings() {
+        dependencies.append(.product(name: "Logging", package: "swift-log"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
+        self.swiftSettings = swiftSettings
+    }
+
+    func addSwiftTestingSettings() {
+        dependencies.append(.product(name: "Testing", package: "swift-testing"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_SWIFT_TESTING"))
         self.swiftSettings = swiftSettings
     }
 }
 
 if attributeGraphCondition {
+    openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
+    openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUITempTestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
@@ -187,12 +226,8 @@ if openCombineCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
     )
-    openSwiftUITarget.dependencies.append(
-        .product(name: "OpenCombine", package: "OpenCombine")
-    )
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
-    openSwiftUITarget.swiftSettings = swiftSettings
+    openSwiftUICoreTarget.addOpenCombineSettings()
+    openSwiftUITarget.addOpenCombineSettings()
 }
 
 #if os(macOS)
@@ -204,12 +239,8 @@ if swiftLogCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-log", from: "1.5.3")
     )
-    openSwiftUITarget.dependencies.append(
-        .product(name: "Logging", package: "swift-log")
-    )
-    var swiftSettings: [SwiftSetting] = (openSwiftUITarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
-    openSwiftUITarget.swiftSettings = swiftSettings
+    openSwiftUICoreTarget.addSwiftLogSettings()
+    openSwiftUITarget.addSwiftLogSettings()
 }
 
 // Remove the check when swift-testing reaches 1.0.0
@@ -219,19 +250,14 @@ if swiftTestingCondition {
         // Fix it to be 0.3.0 before we bump to Swift 5.10
         .package(url: "https://github.com/apple/swift-testing", exact: "0.6.0")
     )
-    openSwiftUITestTarget.dependencies.append(
-        .product(name: "Testing", package: "swift-testing")
-    )
+    openSwiftUICoreTestTarget.addSwiftTestingSettings()
+    openSwiftUITestTarget.addSwiftTestingSettings()
+    openSwiftUITempTestTarget.addSwiftTestingSettings()
+    openSwiftUICompatibilityTestTarget.addSwiftTestingSettings()
+
+    package.targets.append(openSwiftUICoreTestTarget)
     package.targets.append(openSwiftUITestTarget)
-    
-    openSwiftUITempTestTarget.dependencies.append(
-        .product(name: "Testing", package: "swift-testing")
-    )
     package.targets.append(openSwiftUITempTestTarget)
-    
-    openSwiftUICompatibilityTestTarget.dependencies.append(
-        .product(name: "Testing", package: "swift-testing")
-    )
     package.targets.append(openSwiftUICompatibilityTestTarget)
 }
 
