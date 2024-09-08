@@ -52,10 +52,6 @@ public struct AnyShapeStyle: ShapeStyle {
 package class AnyShapeStyleBox {
     package func apply(to shape: inout _ShapeStyle_Shape) {}
     package func isEqual(to other: AnyShapeStyleBox) -> Bool { false }
-    
-    @objc
-    @usableFromInline
-    deinit {}
 }
 
 // ID: ABC85937500395B09974756E9F651929
