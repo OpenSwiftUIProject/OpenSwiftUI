@@ -1,5 +1,12 @@
+//
+//  ShapeView.swift
+//  OpenSwiftUI
+//
+//  Audited for RELEASE_2021
+//  Status: WIP
+
 @frozen
-public struct _ShapeView<Content, Style>: PrimitiveView where Content : Shape, Style: ShapeStyle {
+public struct _ShapeView<Content, Style>: /*ShapeStyledLeafView, */UnaryView, PrimitiveView where Content: Shape, Style: ShapeStyle {
     public var shape: Content
     public var style: Style
     public var fillStyle: FillStyle
@@ -11,10 +18,7 @@ public struct _ShapeView<Content, Style>: PrimitiveView where Content : Shape, S
         self.fillStyle = fillStyle
     }
 
-    
     public static func _makeView(view: _GraphValue<_ShapeView<Content, Style>>, inputs: _ViewInputs) -> _ViewOutputs {
         fatalError("TODO")
     }
-
-    public typealias Body = Never
 }
