@@ -111,7 +111,7 @@ extension Color.Resolved {
         case .sRGBLinear:
             self.init(linearRed: red, linearGreen: green, linearBlue: blue, opacity: opacity)
         case .displayP3:
-            self.init(linearDisplayP3Red: sRGBToLinear(red), green: sRGBToLinear(green), blue: sRGBToLinear(blue), opacity: opacity)
+            self.init(displayP3Red: red, green: green, blue: blue, opacity: opacity)
         }
     }
 
@@ -149,23 +149,30 @@ extension Color.Resolved {
 }
 
 extension Color.Resolved {
-    init(linearDisplayP3Red: Float, green: Float, blue: Float, opacity: Float = 1) {
-        fatalError("TODO")
+    package init(linearDisplayP3Red: Float, green: Float, blue: Float, opacity: Float = 1) {
+        // Convert from Display P3 to sRGB linear color space
+        let linearRed = linearDisplayP3Red * 1.2249 + green * -0.2247
+        let linearGreen = linearDisplayP3Red * -0.0420 + green * 1.0419
+        let linearBlue = linearDisplayP3Red * -0.0197 + green * -0.0786 + blue * 1.0979
+        self.init(linearRed: linearRed, linearGreen: linearGreen, linearBlue: linearBlue, opacity: opacity)
     }
 
-    init(displayP3Red: Float, green: Float, blue: Float, opacity: Float = 1) {
-        fatalError("TODO")
+    package init(displayP3Red: Float, green: Float, blue: Float, opacity: Float = 1) {
+        self.init(linearDisplayP3Red: sRGBToLinear(displayP3Red), green: sRGBToLinear(green), blue: sRGBToLinear(blue), opacity: opacity)
     }
 
-    
-//  package init(linearDisplayP3Red red: Float, green: Float, blue: Float, opacity a: Float = 1)
-//  package init(displayP3Red red: Float, green: Float, blue: Float, opacity: Float = 1)
-//  package var linearDisplayP3Components: (Float, Float, Float) {
-//    get
-//  }
-//  package var displayP3Components: (Float, Float, Float) {
-//    get
-//  }
+    package var linearDisplayP3Components: (Float, Float, Float) {
+        // Convert from sRGB linear color space to Display P3
+        let linearDisplayP3Red = linearRed * 0.8225 + linearGreen * 0.1774
+        let linearDisplayP3Green = linearRed * 0.0332 + linearGreen * 0.9669
+        let linearDisplayP3Blue = linearRed * 0.0171 + linearGreen * 0.0724 + blue * 0.9108
+        return (linearDisplayP3Red, linearDisplayP3Green, linearDisplayP3Blue)
+    }
+
+    package var displayP3Components: (Float, Float, Float) {
+        let linearDisplayP3Components = linearDisplayP3Components
+        return (sRGBFromLinear(linearDisplayP3Components.0), sRGBFromLinear(linearDisplayP3Components.1), sRGBFromLinear(linearDisplayP3Components.2))
+    }
 }
 
 //extension Color.Resolved: Codable {
