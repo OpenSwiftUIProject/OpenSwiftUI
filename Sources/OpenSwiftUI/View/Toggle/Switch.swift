@@ -9,9 +9,6 @@
 #if os(iOS)
 import UIKit
 
-// FIXME
-struct Color {}
-
 private struct Switch: UIViewRepresentable {
     typealias UIViewType = UISwitch
     typealias Coordinator = PlatformSwitchCoordinator
