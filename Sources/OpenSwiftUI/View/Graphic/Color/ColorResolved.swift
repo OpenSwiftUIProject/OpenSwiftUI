@@ -7,9 +7,9 @@
 
 import Foundation
 
-extension Color {
-    // MARK: - Color.Resolved
-    
+// MARK: - Color.Resolved
+
+extension Color {    
     @frozen
     public struct Resolved: Hashable {
         public var linearRed: Float
@@ -59,6 +59,8 @@ extension Color.Resolved/*: ResolvedPaint*/ {
 //    static leafProtobufTag: CodableResolvedPaint.Tag?
 }
 
+// MARK: - Color.Resolved + ShapeStyle
+
 extension Color.Resolved: ShapeStyle/*, PrimitiveShapeStyle*/ {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         fatalError("TODO")
@@ -73,21 +75,55 @@ extension Color.Resolved: CustomStringConvertible {
     }
 }
 
-//extension Color.Resolved : Animatable {
-//  public typealias AnimatableData = AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>>
-//  package static var legacyInterpolation: Bool
-//  public var animatableData: Color.Resolved.AnimatableData {
-//    get
-//    set
-//  }
-//}
-//extension Color.ResolvedVibrant : Animatable {
-//  package typealias AnimatableData = AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>>
-//  package var animatableData: Color.ResolvedVibrant.AnimatableData {
-//    get
-//    set
-//  }
-//}
+// MARK: - Color.Resolved + Animatable
+
+extension Color.Resolved : Animatable {
+    package static var legacyInterpolation: Bool = {
+        // TODO: Semantic.v6
+        return false
+    }()
+
+    public var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
+        get {
+            if Self.legacyInterpolation {
+                // ResolvedGradient.Color.Space.convertIn(self)
+                fatalError("TODO")
+            } else {
+                let factor: Float = 128.0
+                return AnimatablePair(linearRed * factor, AnimatablePair(linearGreen * factor, AnimatablePair(linearBlue * factor, opacity * factor)))
+            }
+        }
+
+        set {
+            let factor: Float = 0.0078125
+            if Self.legacyInterpolation {
+                // ResolvedGradient.Color.Space.convertOut(self)
+                fatalError("TODO")
+            } else {
+                linearRed = newValue.first * factor
+                linearGreen = newValue.second.first * factor
+                linearBlue = newValue.second.second.first * factor
+                opacity = newValue.second.second.second * factor
+            }
+        }
+    }
+}
+
+extension Color.ResolvedVibrant : Animatable {
+    package var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
+        get {
+            let factor: Float = 128.0
+            return AnimatablePair(scale * factor, AnimatablePair(bias.0 * factor, AnimatablePair(bias.1 * factor, bias.2 * factor)))
+        }
+        set {
+            let factor: Float = 0.0078125
+            scale = newValue.first * factor
+            bias = (newValue.second.first * factor, newValue.second.second.first * factor, newValue.second.second.second * factor)
+        }
+    }
+}
+
+// MARK: - Color.Resolved + extension
 
 extension Color.Resolved {
     package static let clear: Color.Resolved = Color.Resolved(linearRed: 0, linearGreen: 0, linearBlue: 0, opacity: 0)
@@ -148,6 +184,8 @@ extension Color.Resolved {
     }
 }
 
+// MARK: - Color.Resolved + Display P3
+
 extension Color.Resolved {
     package init(linearDisplayP3Red: Float, green: Float, blue: Float, opacity: Float = 1) {
         // Convert from Display P3 to sRGB linear color space
@@ -175,23 +213,42 @@ extension Color.Resolved {
     }
 }
 
-//extension Color.Resolved: Codable {
-//  public func encode(to encoder: any Encoder) throws
-//  public init(from decoder: any Decoder) throws
-//}
+// MARK: - Color.Resolved + Codable
+extension Color.Resolved: Codable {
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.unkeyedContainer()
+        try container.encode(red)
+        try container.encode(green)
+        try container.encode(blue)
+        try container.encode(opacity)
+    }
 
-//extension Color.Resolved : ProtobufMessage {
+    public init(from decoder: any Decoder) throws {
+        var container = try decoder.unkeyedContainer()
+        let red = try container.decode(Float.self)
+        let green = try container.decode(Float.self)
+        let blue = try container.decode(Float.self)
+        let opacity = try container.decode(Float.self)
+        self.init(red: red, green: green, blue: blue, opacity: opacity)
+    }
+}
+
+// MARK: - Color.Resolved + ProtobufMessage
+
+//extension Color.Resolved: ProtobufMessage {
 //  package func encode(to encoder: inout ProtobufEncoder)
 //  package init(from decoder: inout ProtobufDecoder) throws
 //}
+
+// MARK: - Util method
 
 func sRGBFromLinear(_ linear: Float) -> Float {
     let nonNegativeLinear = linear > 0 ? linear : -linear
     let result = if nonNegativeLinear <= 0.0031308 {
         nonNegativeLinear * 12.92
     } else if nonNegativeLinear == 1.0 {
-        1.0
-    } else {}
+        Float(1.0)
+    } else {
         pow(nonNegativeLinear, 1.0 / 2.4) * 1.055 - 0.055
     }
     return linear > 0 ? result : -result
@@ -202,7 +259,7 @@ func sRGBToLinear(_ sRGB: Float) -> Float {
     let result = if nonNegativeSRGB <= 0.04045 {
         nonNegativeSRGB * 0.0773994
     } else if nonNegativeSRGB == 1.0 {
-        1.0
+        Float(1.0)
     } else {
         pow(nonNegativeSRGB * 0.947867 + 0.0521327, 2.4)
     }

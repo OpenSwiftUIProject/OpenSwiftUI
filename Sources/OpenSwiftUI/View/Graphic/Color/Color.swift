@@ -111,7 +111,7 @@ extension Color {
 }
 
 package func HSBToRGB(hue: Double, saturation: Double, brightness: Double) -> (red: Double, green: Double, blue: Double) {
-
+    fatalError("TODO")
 }
 
 
