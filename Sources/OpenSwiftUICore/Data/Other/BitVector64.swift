@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: WIP
+//  Status: Complete
 
 import Foundation
 
@@ -23,8 +23,16 @@ public struct BitVector64: OptionSet {
     
     @_spi(ForOpenSwiftUIOnly)
     package subscript(index: Int) -> Bool {
-        get { fatalError("TODO") }
-        set { fatalError("TODO") }
+        get {
+            rawValue & (1 << UInt(index)) != 0
+        }
+        set {
+            if newValue {
+                rawValue |= 1 << UInt(index)
+            } else {
+                rawValue &= ~(1 << UInt(index))
+            }
+        }
     }
 }
 
@@ -34,27 +42,10 @@ extension BitVector64: Sendable {}
 
 extension Array {
     package func mapBool(_ predicate: (Element) -> Bool) -> BitVector64 {
-        fatalError("TODO")
-    }
-}
-
-package struct BitVector: MutableCollection, RandomAccessCollection {
-    package init(count: Int) {
-        fatalError("TODO")
-    }
-    
-    @inlinable
-    package var startIndex: Int {
-        fatalError("TODO")
-    }
-    
-    package var endIndex: Int {
-        fatalError("TODO")
-    }
-    
-    @inlinable
-    package subscript(index: Int) -> Bool {
-        get { fatalError("TODO") }
-        set { fatalError("TODO") }
+        var result = BitVector64()
+        for (index, element) in enumerated() {
+            result[index] = predicate(element)
+        }
+        return result
     }
 }
