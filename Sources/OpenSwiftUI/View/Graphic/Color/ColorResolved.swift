@@ -109,7 +109,7 @@ extension Color.Resolved : Animatable {
     }
 }
 
-extension Color.ResolvedVibrant : Animatable {
+extension Color.ResolvedVibrant: Animatable {
     package var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
         get {
             let factor: Float = 128.0
