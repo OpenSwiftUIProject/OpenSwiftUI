@@ -28,9 +28,9 @@ extension Color {
             Color.Resolved(linearRed: linearRed, linearGreen: linearGreen, linearBlue: linearBlue, opacity: opacity * self.opacity)
         }
         
-        package func over(_ s: Resolved) -> Color.Resolved {
-            fatalError("TODO")
-        }
+//        package func over(_ s: Resolved) -> Color.Resolved {
+//            fatalError("TODO")
+//        }
     }
     
     package struct ResolvedVibrant: Equatable {
