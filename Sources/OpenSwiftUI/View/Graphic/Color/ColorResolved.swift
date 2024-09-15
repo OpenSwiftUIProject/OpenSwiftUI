@@ -71,7 +71,13 @@ extension Color.Resolved: ShapeStyle/*, PrimitiveShapeStyle*/ {
 
 extension Color.Resolved: CustomStringConvertible {
     public var description: String {
-        "TODO"
+        String(
+            format: "#%02X%02X%02X%02X",
+            Int(red * 255.0 + 0.5),
+            Int(green * 255.0 + 0.5),
+            Int(blue * 255.0 + 0.5),
+            Int(opacity * 255.0 + 0.5)
+        )
     }
 }
 
@@ -187,6 +193,20 @@ extension Color.Resolved {
 // MARK: - Color.Resolved + Display P3
 
 extension Color.Resolved {
+    // SwiftUI iOS 18:
+    // lienarRed: 0.07322389539
+    // red: 0.2999999982
+    // Output: #4C4C4C4D
+    
+    // OpenSwiftUI
+    // lienarRed: 0.07323897
+    // red: 0.3
+    // Output: #4D4D4D4D
+    /// OpenSwiftUI's implementation gives more accurate result.
+    /// But in case we need to match SwiftUI implementation on iOS 18, we can set this flag to true.
+    @_spi(ForTestOnly)
+    public static var _alignWithSwiftUIImplementation = false
+    
     package init(linearDisplayP3Red: Float, green: Float, blue: Float, opacity: Float = 1) {
         // Convert from Display P3 to sRGB linear color space
         let linearRed = linearDisplayP3Red * 1.2249 + green * -0.2247
@@ -257,11 +277,15 @@ func sRGBFromLinear(_ linear: Float) -> Float {
 func sRGBToLinear(_ sRGB: Float) -> Float {
     let nonNegativeSRGB = sRGB > 0 ? sRGB : -sRGB
     let result = if nonNegativeSRGB <= 0.04045 {
-        nonNegativeSRGB * 0.0773994
+        nonNegativeSRGB * (1 / 12.92)
     } else if nonNegativeSRGB == 1.0 {
         Float(1.0)
     } else {
-        pow(nonNegativeSRGB * 0.947867 + 0.0521327, 2.4)
+        if Color.Resolved._alignWithSwiftUIImplementation {
+            pow(nonNegativeSRGB * (1 / 1.055) + 0.055 * (1 / 1.055), 2.4)
+        } else {
+            pow((nonNegativeSRGB + 0.055) / 1.055, 2.4)
+        }
     }
     return sRGB > 0 ? result : -result
 }
