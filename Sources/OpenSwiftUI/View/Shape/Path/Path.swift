@@ -147,7 +147,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     ///
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     public init(roundedRect rect: CGRect, cornerRadii: RectangleCornerRadii, style: RoundedCornerStyle = .continuous) {
-        // TODO
+        fatalError("TODO")
     }
     #endif
     
@@ -276,19 +276,19 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
 extension Path {
     @usableFromInline
     final package class PathBox: Equatable {
-        #if OPENSWIFTUI_RELEASE_2024 // Also on RELEASE_2023
-        private var kind: Kind
-//        var data: PathData
-        private init() {
-            kind = .buffer
-            // TODO
-        }
-        private enum Kind: UInt8 {
-            case cgPath
-            case rbPath
-            case buffer
-        }
-        #elseif OPENSWIFTUI_RELEASE_2021
+//        #if OPENSWIFTUI_RELEASE_2024 // Also on RELEASE_2023
+//        private var kind: Kind
+////        var data: PathData
+//        private init() {
+//            kind = .buffer
+//            // TODO
+//        }
+//        private enum Kind: UInt8 {
+//            case cgPath
+//            case rbPath
+//            case buffer
+//        }
+//        #elseif OPENSWIFTUI_RELEASE_2021
         let cgPath: CGMutablePath
         var bounds: UnsafeAtomicLazy<CGRect>
         
@@ -328,7 +328,7 @@ extension Path {
         private func clearCache() {
             bounds.cache = nil
         }
-        #endif
+//        #endif
     }
 }
 

@@ -23,3 +23,5 @@ extension Shape where Self == Rectangle {
         Rectangle()
     }
 }
+
+public struct RectangleCornerRadii {}

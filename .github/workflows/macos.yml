@@ -12,9 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-14
-            xcode-version: "15.3"   # Swift 5.10
+        os: [macos-14]
+        xcode-version: [15.3]
+        release: [2021, 2024]
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
@@ -22,6 +22,7 @@ jobs:
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode

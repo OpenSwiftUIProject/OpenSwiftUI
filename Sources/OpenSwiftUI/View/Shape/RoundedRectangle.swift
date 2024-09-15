@@ -27,4 +27,3 @@ public struct RoundedRectangle: Shape {
 
     public typealias Body = _ShapeView<RoundedRectangle, ForegroundStyle>
 }
-
