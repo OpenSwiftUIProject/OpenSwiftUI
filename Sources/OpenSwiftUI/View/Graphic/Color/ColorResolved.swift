@@ -6,6 +6,8 @@
 //  Status: WIP
 
 import Foundation
+import OpenSwiftUICore
+internal import COpenSwiftUI
 
 // MARK: - Color.Resolved
 
@@ -289,3 +291,23 @@ func sRGBToLinear(_ sRGB: Float) -> Float {
     }
     return sRGB > 0 ? result : -result
 }
+
+#if canImport(Darwin)
+
+// MARK: - Color.Resolved + platformColor
+
+extension Color.Resolved {
+    package init?(platformColor: AnyObject) {
+        var red: CGFloat = 0
+        var green: CGFloat = 0
+        var blue: CGFloat = 0
+        var alpha: CGFloat = 0
+        let result = CoreColorPlatformColorGetComponents(isAppKitBased(), platformColor, &red, &green, &blue, &alpha)
+        if result {
+            self.init(red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
+        } else {
+            return nil
+        }
+    }
+}
+#endif
