@@ -138,11 +138,22 @@
 #define OPENSWIFTUI_TARGET_OS_MAC          OPENSWIFTUI_TARGET_OS_DARWIN
 #define OPENSWIFTUI_TARGET_OS_OSX          OPENSWIFTUI_TARGET_OS_DARWIN
 
+/* OpenSwiftUI Addition Begin */
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+#include <TargetConditionals.h>
+#define OPENSWIFTUI_TARGET_OS_IPHONE        TARGET_OS_IPHONE
+#define OPENSWIFTUI_TARGET_OS_IOS           TARGET_OS_IOS
+#define OPENSWIFTUI_TARGET_OS_WATCH         TARGET_OS_WATCH
+#define OPENSWIFTUI_TARGET_OS_TV            TARGET_OS_TV
+#else
 // iOS, watchOS, and tvOS are not supported
 #define OPENSWIFTUI_TARGET_OS_IPHONE        0
 #define OPENSWIFTUI_TARGET_OS_IOS           0
 #define OPENSWIFTUI_TARGET_OS_WATCH         0
 #define OPENSWIFTUI_TARGET_OS_TV            0
+#endif
+
+/* OpenSwiftUI Addition End */
 
 #if __x86_64__
 #define OPENSWIFTUI_TARGET_CPU_PPC          0
