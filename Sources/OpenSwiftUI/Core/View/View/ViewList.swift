@@ -211,17 +211,17 @@ package struct _ViewList_ID {
 
 // MARK: - IndirectMap
 
-#if OPENSWIFTUI_RELEASE_2024
-final package class IndirectAttributeMap {
-    final package let subgraph: Subgraph
-    final package var map: [AnyAttribute: AnyAttribute]
-    
-    package init(subgraph: Subgraph) {
-        self.subgraph = subgraph
-        self.map = [:]
-    }
-}
-#elseif OPENSWIFTUI_RELEASE_2021
+//#if OPENSWIFTUI_RELEASE_2024
+//final package class IndirectAttributeMap {
+//    final package let subgraph: OGSubgraph
+//    // final package var map: [AnyAttribute: AnyAttribute]
+//    
+//    package init(subgraph: OGSubgraph) {
+//        self.subgraph = subgraph
+//        // self.map = [:]
+//    }
+//}
+//#elseif OPENSWIFTUI_RELEASE_2021
 final package class _ViewList_IndirectMap {
     final package let subgraph: OGSubgraph
     
@@ -236,37 +236,37 @@ final package class _ViewList_IndirectMap {
         #endif
     }
 }
-#endif
+//#endif
 
 // MARK: - _ViewList_Elements
 
 package protocol _ViewList_Elements {
     typealias Body = (_ViewInputs, @escaping Self.MakeElement) -> (_ViewOutputs?, Swift.Bool)
     typealias MakeElement = (_ViewInputs) -> _ViewOutputs
-    #if OPENSWIFTUI_RELEASE_2024
-    typealias Release = _ViewList_ReleaseElements
-    #elseif OPENSWIFTUI_RELEASE_2021
+//    #if OPENSWIFTUI_RELEASE_2024
+//    typealias Release = _ViewList_ReleaseElements
+//    #elseif OPENSWIFTUI_RELEASE_2021
     typealias Release = () -> Void
-    #endif
+//    #endif
     
     var count: Int { get }
     
-    #if OPENSWIFTUI_RELEASE_2024
-    func makeElements(
-        from start: inout Int,
-        inputs: _ViewInputs,
-        indirectMap: IndirectAttributeMap?,
-        body: Body
-    ) -> (_ViewOutputs?, Bool)
-    
-    func tryToReuseElement(
-        at index: Int,
-        by other: any  _ViewList_Elements,
-        at otherIndex: Int,
-        indirectMap: IndirectAttributeMap,
-        testOnly: Bool
-    ) -> Bool
-    #elseif OPENSWIFTUI_RELEASE_2021
+//    #if OPENSWIFTUI_RELEASE_2024
+//    func makeElements(
+//        from start: inout Int,
+//        inputs: _ViewInputs,
+//        indirectMap: IndirectAttributeMap?,
+//        body: Body
+//    ) -> (_ViewOutputs?, Bool)
+//    
+//    func tryToReuseElement(
+//        at index: Int,
+//        by other: any  _ViewList_Elements,
+//        at otherIndex: Int,
+//        indirectMap: IndirectAttributeMap,
+//        testOnly: Bool
+//    ) -> Bool
+//    #elseif OPENSWIFTUI_RELEASE_2021
     func makeElements(
         from start: inout Int,
         inputs: _ViewInputs,
@@ -281,7 +281,7 @@ package protocol _ViewList_Elements {
         indirectMap: _ViewList_IndirectMap,
         testOnly: Bool
     ) -> Bool
-    #endif
+//    #endif
     
     func retain() -> Release
 }

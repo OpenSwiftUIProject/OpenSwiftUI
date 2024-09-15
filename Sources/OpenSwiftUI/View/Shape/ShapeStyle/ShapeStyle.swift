@@ -105,10 +105,16 @@ public protocol ShapeStyle {
     /// When you create a custom shape style, Swift infers this type
     /// from your implementation of the required `resolve` function.
     @_weakLinked
-    associatedtype Resolved: ShapeStyle = Swift.Never
+    associatedtype Resolved: ShapeStyle = Never
     
     /// Evaluate to a resolved shape style given the current `environment`.
     func resolve(in environment: EnvironmentValues) -> Self.Resolved
+}
+
+extension Never: ShapeStyle {
+    public static func _makeView(view: _GraphValue<Never>, inputs: _ViewInputs) -> _ViewOutputs {
+        fatalError()
+    }
 }
 #elseif OPENSWIFTUI_RELEASE_2021
 /// A color or pattern to use when rendering a shape.
@@ -199,6 +205,18 @@ extension ShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {}
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {}
 }
+
+#if OPENSWIFTUI_RELEASE_2024
+
+extension ShapeStyle where Resolved == Never {
+    public func resolve(in: EnvironmentValues) -> Self.Resolved {
+        fatalError()
+    }
+    
+    public static func _apply(to type: inout _ShapeStyle_ShapeType) {}
+}
+
+#endif
 
 #if OPENSWIFTUI_RELEASE_2024
 
