@@ -6,9 +6,10 @@
 //  Status: WIP
 //  ID: 3A792CB70CFCF892676D7ADF8BCA260F
 
-#if canImport(Darwin)
 import Foundation
+#if canImport(Darwin)
 import CoreGraphics
+#endif
 
 /// A representation of a color that adapts to a given context.
 ///
@@ -118,6 +119,8 @@ package func HSBToRGB(hue: Double, saturation: Double, brightness: Double) -> (r
 extension Color.RGBColorSpace: Hashable {}
 extension Color.RGBColorSpace: Equatable {}
 
+#if canImport(Darwin)
+
 // MARK: - CGColor + Color
 
 extension Color {
@@ -141,6 +144,7 @@ extension Color {
 //    staticColor
 //}
 
+#endif
 
 
 // MARK: - ColorProvider
@@ -148,14 +152,18 @@ extension Color {
 package protocol ColorProvider: Hashable {
     func resolve(in environment: EnvironmentValues) -> Color.Resolved
     func apply(color: Color, to shape: inout _ShapeStyle_Shape)
+    #if canImport(Darwin)
     var staticColor: CGColor? { get }
+    #endif
     var kitColor: AnyObject? { get }
     var colorDescription: String { get }
     func opacity(at level: Int, environment: EnvironmentValues) -> Float
 }
 
 extension ColorProvider {
+    #if canImport(Darwin)
     package var staticColor: CGColor? { nil }
+    #endif
     package var kitColor: AnyObject? { nil }
     package var colorDescription: String { String(describing: self) }
     package func opacity(at level: Int, environment: EnvironmentValues) -> Float {
@@ -176,10 +184,3 @@ package class AnyColorBox: AnyShapeStyleBox {
 
 
 //private CustomColorProvider
-
-
-
-
-#else
-public struct Color {}
-#endif
