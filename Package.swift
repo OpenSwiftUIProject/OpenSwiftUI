@@ -84,6 +84,7 @@ if warningsAsErrorsCondition {
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
+        "COpenSwiftUI",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: sharedSwiftSettings
@@ -145,6 +146,7 @@ let package = Package(
     platforms: platforms,
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
+        .library(name: "COpenSwiftUI", targets: ["COpenSwiftUI"]),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
