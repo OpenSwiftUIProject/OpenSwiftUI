@@ -26,8 +26,7 @@ BOOL CoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CG
     }
     #if OPENSWIFTUI_TARGET_OS_OSX
     if (system) {
-        id colorSpace =
-        NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
+        id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         NSColor *nameSpaceColor = [color colorUsingColorSpace:colorSpace];
         if (nameSpaceColor) {
             [nameSpaceColor getRed:red green:green blue: blue alpha: alpha];
@@ -46,6 +45,12 @@ NSObject *CorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFl
     if (!colorClass) {
         return nil;
     }
+    #if OPENSWIFTUI_TARGET_OS_OSX
+    if (system) {
+        id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
+        return [colorClass colorWithColorSpace:colorSpace components:(CGFloat[]){red, green, blue, alpha} count:4];
+    }
+    #endif
     return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
 }
 
