@@ -21,24 +21,32 @@ BOOL CoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CG
         return NO;
     }
     Class colorClass = CoreColorClass(system);
-    if (colorClass) {
-        #if OPENSWIFTUI_TARGET_OS_OSX
-        if (system) {
-            id colorSpace =
-            NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
-            NSColor *nameSpaceColor = [color colorUsingColorSpace:colorSpace];
-            if (nameSpaceColor) {
-                [nameSpaceColor getRed:red green:green blue: blue alpha: alpha];
-                return YES;
-            } else {
-                return NO;
-            }
-        }
-        #endif
-        return ((BOOL (*)(id, SEL))[color methodForSelector:@selector(getRed:green:blue:alpha:)])(color, @selector(getRed:green:blue:alpha:));
-    } else {
+    if (!colorClass) {
         return NO;
     }
+    #if OPENSWIFTUI_TARGET_OS_OSX
+    if (system) {
+        id colorSpace =
+        NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
+        NSColor *nameSpaceColor = [color colorUsingColorSpace:colorSpace];
+        if (nameSpaceColor) {
+            [nameSpaceColor getRed:red green:green blue: blue alpha: alpha];
+            return YES;
+        } else {
+            return NO;
+        }
+    }
+    #endif
+    // NOTE: Fix Mac Catalyst selector type issue
+    return ((BOOL (*)(id, SEL))[color methodForSelector:@selector(getRed:green:blue:alpha:)])(color, @selector(getRed:green:blue:alpha:));
+}
+
+NSObject *CorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
+    Class colorClass = CoreColorClass(system);
+    if (!colorClass) {
+        return nil;
+    }
+    return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
 }
 
 Class CoreColorGetKitColorClass(BOOL system) {
@@ -95,7 +103,7 @@ Class NSColorSpaceClass(void) {
 
 @implementation CoreColor
 
-+ (id)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor {
++ (NSObject *)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor {
     Class colorClass = CoreColorClass(system);
     if (colorClass) {
         return [colorClass colorWithCGColor: cgColor];
@@ -104,72 +112,72 @@ Class NSColorSpaceClass(void) {
     }
 }
 
-+ (id)blackColorWithSystem:(BOOL)system {
++ (NSObject *)blackColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass blackColor];
 }
 
-+ (id)systemRedColorWithSystem:(BOOL)system {
++ (NSObject *)systemRedColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemRedColor];
 }
 
-+ (id)systemOrangeColorWithSystem:(BOOL)system {
++ (NSObject *)systemOrangeColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemOrangeColor];
 }
 
-+ (id)systemYellowColorWithSystem:(BOOL)system {
++ (NSObject *)systemYellowColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemYellowColor];
 }
 
-+ (id)systemGreenColorWithSystem:(BOOL)system {
++ (NSObject *)systemGreenColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemGreenColor];
 }
 
-+ (id)systemTealColorWithSystem:(BOOL)system {
++ (NSObject *)systemTealColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemTealColor];
 }
 
-+ (id)systemMintColorWithSystem:(BOOL)system {
++ (NSObject *)systemMintColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemMintColor];
 }
 
-+ (id)systemCyanColorWithSystem:(BOOL)system {
++ (NSObject *)systemCyanColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemCyanColor];
 }
 
-+ (id)systemBlueColorWithSystem:(BOOL)system {
++ (NSObject *)systemBlueColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemBlueColor];
 }
 
-+ (id)systemIndigoColorWithSystem:(BOOL)system {
++ (NSObject *)systemIndigoColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemIndigoColor];
 }
 
-+ (id)systemPurpleColorWithSystem:(BOOL)system {
++ (NSObject *)systemPurpleColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemPurpleColor];
 }
 
-+ (id)systemPinkColorWithSystem:(BOOL)system {
++ (NSObject *)systemPinkColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemPinkColor];
 }
 
-+ (id)systemBrownColorWithSystem:(BOOL)system {
++ (NSObject *)systemBrownColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemBrownColor];
 }
 
-+ (id)systemGrayColorWithSystem:(BOOL)system {
++ (NSObject *)systemGrayColorWithSystem:(BOOL)system {
     Class colorClass = CoreColorClass(system);
     return [colorClass systemGrayColor];
 }

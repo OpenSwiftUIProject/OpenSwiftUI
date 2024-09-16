@@ -23,25 +23,28 @@ OPENSWIFTUI_EXPORT
 BOOL CoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha);
 
 OPENSWIFTUI_EXPORT
-Class CoreColorGetKitColorClass(BOOL isAppKitBased);
+NSObject  * _Nullable CorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
+
+OPENSWIFTUI_EXPORT
+Class CoreColorGetKitColorClass(BOOL system);
 
 @interface CoreColor : NSObject
 
-+ (id)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor;
-+ (id)blackColorWithSystem:(BOOL)system;
-+ (id)systemRedColorWithSystem:(BOOL)system;
-+ (id)systemOrangeColorWithSystem:(BOOL)system;
-+ (id)systemYellowColorWithSystem:(BOOL)system;
-+ (id)systemGreenColorWithSystem:(BOOL)system;
-+ (id)systemTealColorWithSystem:(BOOL)system;
-+ (id)systemMintColorWithSystem:(BOOL)system;
-+ (id)systemCyanColorWithSystem:(BOOL)system;
-+ (id)systemBlueColorWithSystem:(BOOL)system;
-+ (id)systemIndigoColorWithSystem:(BOOL)system;
-+ (id)systemPurpleColorWithSystem:(BOOL)system;
-+ (id)systemPinkColorWithSystem:(BOOL)system;
-+ (id)systemBrownColorWithSystem:(BOOL)system;
-+ (id)systemGrayColorWithSystem:(BOOL)system;
++ (nullable NSObject *)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor;
++ (nullable NSObject *)blackColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemRedColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemOrangeColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemYellowColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemGreenColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemTealColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemMintColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemCyanColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemBlueColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemIndigoColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemPurpleColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemPinkColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemBrownColorWithSystem:(BOOL)system;
++ (nullable NSObject *)systemGrayColorWithSystem:(BOOL)system;
 
 - (instancetype)initWithCGColor:(CGColorRef)cgColor;
 - (void)set;
