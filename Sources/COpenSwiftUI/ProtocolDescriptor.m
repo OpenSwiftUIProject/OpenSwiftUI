@@ -1,5 +1,7 @@
 //
 //  ProtocolDescriptor.c
+//  FIXME: Use ProtocolDescriptor.m due to COpenSwiftUICore module contains ObjC symbol.
+//  Solution: Move down to COpenSwiftUICore module.
 //  COpenSwiftUI
 
 
