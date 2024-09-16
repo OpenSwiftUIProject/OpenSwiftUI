@@ -309,5 +309,14 @@ extension Color.Resolved {
             return nil
         }
     }
+
+    // ID: 4330A474F53D66045762501ED6F8A749
+    private static let cache: ObjectCache<Color.Resolved, NSObject> = ObjectCache { resolved in
+        CoreColor.platformColor(resolvedColor: resolved)!
+    }
+    
+    package var kitColor: NSObject {
+        Self.cache[self]
+    }
 }
 #endif
