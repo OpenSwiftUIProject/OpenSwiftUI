@@ -8,4 +8,8 @@
 bool dyld_program_sdk_at_least(dyld_build_version_t version) {
     return true;
 }
+
+dyld_platform_t dyld_get_active_platform(void) {
+    return 0;
+}
 #endif
