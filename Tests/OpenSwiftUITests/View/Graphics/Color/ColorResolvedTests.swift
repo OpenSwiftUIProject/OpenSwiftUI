@@ -2,6 +2,8 @@
 //  ColorResolvedTests.swift
 //  OpenSwiftUITests
 
+#if canImport(Darwin)
+
 @testable import OpenSwiftUI
 import Testing
 
@@ -17,3 +19,4 @@ struct ColorResolvedTests {
         #expect(r3.kitColor !== r1.kitColor)
     }
 }
+#endif
