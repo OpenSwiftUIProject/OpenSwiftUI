@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: WIP
 
-internal import COpenSwiftUI
+internal import COpenSwiftUICore
 
 @inlinable
 @inline(__always)

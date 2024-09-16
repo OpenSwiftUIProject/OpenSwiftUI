@@ -84,7 +84,7 @@ if warningsAsErrorsCondition {
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
-        "COpenSwiftUI",
+        "COpenSwiftUICore",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: sharedSwiftSettings
@@ -104,6 +104,14 @@ let openSwiftUIExtensionTarget = Target.target(
     dependencies: [
         "OpenSwiftUI",
     ],
+    swiftSettings: sharedSwiftSettings
+)
+let openSwiftUICoreTestTarget = Target.testTarget(
+    name: "OpenSwiftUICoreTests",
+    dependencies: [
+        "OpenSwiftUICore",
+    ],
+    exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
 let openSwiftUITestTarget = Target.testTarget(
@@ -153,6 +161,16 @@ let package = Package(
         ),
         .target(
             name: "COpenSwiftUI",
+            dependencies: [
+                "COpenSwiftUICore",
+            ],
+            cSettings: [
+                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
+                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+            ]
+        ),
+        .target(
+            name: "COpenSwiftUICore",
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
@@ -206,6 +224,7 @@ extension Target {
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
+    openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUITempTestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
@@ -244,10 +263,12 @@ if swiftTestingCondition {
         // Fix it to be 0.3.0 before we bump to Swift 5.10
         .package(url: "https://github.com/apple/swift-testing", exact: "0.6.0")
     )
+    openSwiftUICoreTestTarget.addSwiftTestingSettings()
     openSwiftUITestTarget.addSwiftTestingSettings()
     openSwiftUITempTestTarget.addSwiftTestingSettings()
     openSwiftUICompatibilityTestTarget.addSwiftTestingSettings()
 
+    package.targets.append(openSwiftUICoreTestTarget)
     package.targets.append(openSwiftUITestTarget)
     package.targets.append(openSwiftUITempTestTarget)
     package.targets.append(openSwiftUICompatibilityTestTarget)
