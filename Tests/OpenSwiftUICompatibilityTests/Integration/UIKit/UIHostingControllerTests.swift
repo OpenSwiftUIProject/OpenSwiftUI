@@ -9,10 +9,19 @@ import UIKit
 @MainActor
 struct UIHostingControllerTests {
     @Test(
-        "Attribute setter crash for basic AnyView",
-        .bug("https://github.com/OpenSwiftUIProject/OpenGraph/issues/58", relationship: .verifiesFix)
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
+            id: 58,
+            "[verifiesFix]: Attribute setter crash for basic AnyView"
+        )
     )
     func testBasicAnyView() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var body: some View {
                 AnyView(EmptyView())
@@ -24,10 +33,19 @@ struct UIHostingControllerTests {
     }
 
     @Test(
-        "BodyAccessor crash for non empty View instance",
-        .bug("#81", relationship: .verifiesFix)
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
+            id: 81,
+            "[verifiesFix]: BodyAccessor crash for non empty View instance"
+        )
     )
     func testBasicAnyViewWithProperty() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var name = ""
             var body: some View {

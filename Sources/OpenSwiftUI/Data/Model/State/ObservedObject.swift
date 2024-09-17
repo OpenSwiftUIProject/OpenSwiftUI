@@ -163,7 +163,8 @@ public struct ObservedObject<ObjectType> where ObjectType: ObservableObject {
     /// When you change a wrapped value, you can access the new value
     /// immediately. However, OpenSwiftUI updates views that display the value
     /// asynchronously, so the interface might not update immediately.
-    @MainActor(unsafe)
+    @MainActor
+    @preconcurrency
     public var wrappedValue: ObjectType
 
     /// A projection of the observed object that creates bindings to its
@@ -183,7 +184,8 @@ public struct ObservedObject<ObjectType> where ObjectType: ObservableObject {
     ///         }
     ///     }
     ///
-    @MainActor(unsafe)
+    @MainActor
+    @preconcurrency
     public var projectedValue: ObservedObject<ObjectType>.Wrapper {
         .init(root: wrappedValue)
     }

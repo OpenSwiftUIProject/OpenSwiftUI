@@ -5,7 +5,18 @@
 @testable import OpenSwiftUI
 import Testing
 
-struct SemanticFeatureTests {
+@MainActor
+final class SemanticFeatureTests {
+    private let originalValue: Semantics?
+    
+    init() {
+        originalValue = Semantics.forced
+    }
+    
+    deinit {
+        Semantics.forced = originalValue
+    }
+    
     /// Represent a minimum version
     struct SemanticFeature1: SemanticFeature {
         static var introduced: Semantics { .init(value: 0x0000_0000) }

@@ -13,12 +13,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-14]
-        xcode-version: [15.3]
+        xcode-version: [16.0]
         release: [2021, 2024]
+        ios-version: ["18.0"]
+        include:
+          - ios-version: "18.0"
+            ios-simulator-name: "iPhone 16 Pro"
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
-      OPENSWIFTUI_SWIFT_TESTING: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
@@ -31,19 +34,19 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Swift version
         run: swift --version
-      - name: Build in release mode
+      - name: Build test target in debug mode
         run: |
           xcodebuild build \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS-Simulator" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
             -skipPackagePluginValidation
-      - name: Build and run tests in debug mode
+      - name: Run test target in debug mode
         run: |
           xcodebuild test \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS-Simulator" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
             -skipPackagePluginValidation

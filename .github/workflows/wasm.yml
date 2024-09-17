@@ -12,9 +12,12 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.10.0-RELEASE"]
+        swift_version: ["5.10.0-RELEASE", "6.0-SNAPSHOT-2024-08-30-a"]
         os: [ubuntu-22.04]
         extra_params: [""]
+        include:
+          - swift_version: "6.0-SNAPSHOT-2024-08-30-a"
+            continue-on-error: true
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
@@ -30,6 +33,7 @@ jobs:
       - name: build
         run: |
           swift build --triple wasm32-unknown-wasi ${{ matrix.extra_params }}
+        continue-on-error: ${{ matrix.continue-on-error }}
       # Blocked by upstream support for WASM. See https://github.com/apple/swift-testing/issues/228
       # - name: test
       #   run: |

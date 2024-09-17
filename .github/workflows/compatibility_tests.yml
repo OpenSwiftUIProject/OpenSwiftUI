@@ -12,15 +12,15 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        include:
-          - os: macos-14
-            xcode-version: "15.3"   # Swift 5.10
+        os: [macos-14]
+        xcode-version: ["16.0"]
+        release: [2024]
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
-      OPENSWIFTUI_SWIFT_TESTING: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -46,15 +46,19 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
+        os: [macos-14]
+        xcode-version: ["16.0"]
+        release: [2024]
+        ios-version: ["18.0"]
         include:
-          - os: macos-14
-            xcode-version: "15.3"   # Swift 5.10
+          - ios-version: "18.0"
+            ios-simulator-name: "iPhone 16 Pro"
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
-      OPENSWIFTUI_SWIFT_TESTING: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -68,7 +72,7 @@ jobs:
           xcodebuild test \
           -scheme OpenSwiftUI \
           -configuration Debug \
-          -destination "platform=iOS-Simulator" \
+          -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation
         env:
@@ -78,7 +82,7 @@ jobs:
           xcodebuild test \
           -scheme OpenSwiftUI \
           -configuration Debug \
-          -destination "platform=iOS-Simulator" \
+          -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation
         env:

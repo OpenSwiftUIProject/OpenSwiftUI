@@ -1,5 +1,5 @@
 {
-  "originHash" : "9749b5257cf4f28f086bdeac0424718c7ae499aeea22fdc45686fac00d8d561d",
+  "originHash" : "cdf36bf15198d7bcb885a48608be3523149b364fdff48359b2fb61e43ce7833b",
   "pins" : [
     {
       "identity" : "opengraph",
@@ -7,25 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "58961e8c7fb7528a89dcd77a3a28a950f1791f1f"
-      }
-    },
-    {
-      "identity" : "swift-syntax",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-syntax.git",
-      "state" : {
-        "revision" : "fa8f95c2d536d6620cc2f504ebe8a6167c9fc2dd",
-        "version" : "510.0.1"
-      }
-    },
-    {
-      "identity" : "swift-testing",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-testing",
-      "state" : {
-        "revision" : "8097dd8bcf7f2ed85f8aa8883635ce413012f53b",
-        "version" : "0.6.0"
+        "revision" : "ec8ca116219e95b227937898835af5b49a011d71"
       }
     }
   ],

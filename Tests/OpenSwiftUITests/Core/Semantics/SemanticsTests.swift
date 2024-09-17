@@ -5,6 +5,7 @@
 @testable import OpenSwiftUI
 import Testing
 
+@MainActor
 struct SemanticsTests {
     @Test
     func forced() {

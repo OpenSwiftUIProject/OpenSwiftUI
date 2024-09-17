@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 5.10
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import Foundation
@@ -25,20 +25,17 @@ let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2021
 let platforms: [SupportedPlatform] = switch releaseVersion {
-case 2024: // iOS 18.0
-    // FIXME: non-Darwin platform nightly Swift 6 compiler have not add the latest OS yet
-    #if canImport(Darwin)
+case 2024:
+    #if swift(>=6.0)
     [
         .iOS(.v18),
-        // FIXME: temporary lower the requirement since there is no macOS 15 CI yet.
-        // .macOS(.v15),
-        .macOS(.v14),
+        .macOS(.v15),
         .macCatalyst(.v18),
         .tvOS(.v18),
         .watchOS(.v10),
         .visionOS(.v2),
     ]
-    #else
+    #else // FIXME: Remove when we bump to Swift 6.0
     [
         .iOS(.v17),
         .macOS(.v14),
@@ -71,7 +68,6 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableExperimentalFeature("AccessLevelOnImport"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
-    .swiftLanguageMode(.v5),
     .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
 
@@ -177,10 +173,6 @@ let package = Package(
         openSwiftUICoreTarget,
         openSwiftUITarget,
         openSwiftUIExtensionTarget,
-        
-        openSwiftUICoreTestTarget,
-        openSwiftUITestTarget,
-        openSwiftUICompatibilityTestTarget,
     ]
 )
 
@@ -211,6 +203,13 @@ extension Target {
         dependencies.append(.product(name: "Logging", package: "swift-log"))
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
+        self.swiftSettings = swiftSettings
+    }
+
+    func addSwiftTestingSettings() {
+        dependencies.append(.product(name: "Testing", package: "swift-testing"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_SWIFT_TESTING"))
         self.swiftSettings = swiftSettings
     }
 }
@@ -247,6 +246,22 @@ if swiftLogCondition {
     )
     openSwiftUICoreTarget.addSwiftLogSettings()
     openSwiftUITarget.addSwiftLogSettings()
+}
+
+// Remove the check when swift-testing reaches 1.0.0
+let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING", default: true)
+if swiftTestingCondition {
+    package.dependencies.append(
+        // Fix it to be 0.3.0 before we bump to Swift 5.10
+        .package(url: "https://github.com/apple/swift-testing", exact: "0.6.0")
+    )
+    openSwiftUICoreTestTarget.addSwiftTestingSettings()
+    openSwiftUITestTarget.addSwiftTestingSettings()
+    openSwiftUICompatibilityTestTarget.addSwiftTestingSettings()
+
+    package.targets.append(openSwiftUICoreTestTarget)
+    package.targets.append(openSwiftUITestTarget)
+    package.targets.append(openSwiftUICompatibilityTestTarget)
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")

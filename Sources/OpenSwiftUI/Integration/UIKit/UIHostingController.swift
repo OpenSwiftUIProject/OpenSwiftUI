@@ -3,7 +3,8 @@ import UIKit
 
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor(unsafe)
+@MainActor
+@preconcurrency
 open class UIHostingController<Content> : UIViewController where Content : View {
     var host: _UIHostingView<Content>
     
