@@ -72,6 +72,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
     .swiftLanguageMode(.v5),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
 
 if releaseVersion >= 2021 {

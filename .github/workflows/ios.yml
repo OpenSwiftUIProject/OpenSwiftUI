@@ -34,18 +34,10 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Swift version
         run: swift --version
-      - name: Build in release mode
-        run: |
-          xcodebuild build \
-            -scheme OpenSwiftUI \
-            -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation
       - name: Build and run tests in debug mode
         run: |
           xcodebuild test \
-            -scheme OpenSwiftUI \
+            -scheme OpenSwiftUITests \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \

@@ -68,6 +68,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableExperimentalFeature("AccessLevelOnImport"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
 
 if releaseVersion >= 2021 {

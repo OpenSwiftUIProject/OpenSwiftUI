@@ -45,23 +45,52 @@ struct EnvironmentValuesTest {
             return
         }
         #endif
+        func compareDictDescription(result: String, initial: String, expectNew: String) {
+            #if canImport(Darwin)
+            guard #available(iOS 16.0, macOS 13.0, *) else {
+                #expect(result == expectNew)
+                return
+            }
+            guard initial != "[]" else {
+                #expect(result == expectNew)
+                return
+            }
+            guard let expectNewContent = expectNew.wholeMatch(of: /\[(.*)\]/)?.output.1 else {
+                Issue.record("Non empty string and does not contain [] in expectNew")
+                return
+            }
+            if expectNewContent.isEmpty {
+                #expect(result == initial)
+            } else {
+                let expectResult = "[\(expectNewContent), " + initial.dropFirst()
+                #expect(result == expectResult)
+            }
+            #else
+            #expect(result == expectNew)
+            #endif
+        }
+        
         var env = EnvironmentValues()
-        #expect(env.description == "[]")
+        
+        let initialDescription = env.description
+        if #unavailable(iOS 18, macOS 15) {
+            #expect(env.description == "[]")
+        }
         
         var bool = env[BoolKey.self]
         #expect(bool == BoolKey.defaultValue)
-        #expect(env.description == "[]")
+        compareDictDescription(result: env.description, initial: initialDescription, expectNew: "[]")
         
         env[BoolKey.self] = bool
-        #expect(env.description == "[\(BoolKey.name) = \(bool)]")
+        compareDictDescription(result: env.description, initial: initialDescription, expectNew: "[\(BoolKey.name) = \(bool)]")
         
         env[BoolKey.self] = !bool
         bool = env[BoolKey.self]
         #expect(bool == !BoolKey.defaultValue)
-        #expect(env.description == "[\(BoolKey.name) = \(bool), \(BoolKey.name) = \(BoolKey.defaultValue)]")
+        compareDictDescription(result: env.description, initial: initialDescription, expectNew: "[\(BoolKey.name) = \(bool), \(BoolKey.name) = \(BoolKey.defaultValue)]")
         
         let value = 1
         env[IntKey.self] = value
-        #expect(env.description == "[\(IntKey.name) = \(value), \(BoolKey.name) = \(bool), \(BoolKey.name) = \(BoolKey.defaultValue)]")
+        compareDictDescription(result: env.description, initial: initialDescription, expectNew: "[\(IntKey.name) = \(value), \(BoolKey.name) = \(bool), \(BoolKey.name) = \(BoolKey.defaultValue)]")
     }
 }
