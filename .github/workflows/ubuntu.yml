@@ -14,6 +14,9 @@ jobs:
       matrix:
         # swift_version: ["5.10"]
         container: ["swift:5.10-jammy", "swiftlang/swift:nightly-6.0-jammy"]
+        include:
+          - container: "swiftlang/swift:nightly-6.0-jammy"
+            continue-on-error: true
     runs-on: ubuntu-22.04
     env:
       OPENSWIFTUI_WERROR: 1
@@ -37,6 +40,8 @@ jobs:
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest \
             > coverage.txt
+        continue-on-error: ${{ matrix.continue-on-error }}
+        id: debug-test
       - name: Building and running tests in release mode
         run: |
           swift test \
@@ -44,7 +49,12 @@ jobs:
             --filter OpenSwiftUITests \
             -Xswiftc -warnings-as-errors \
             --build-path .build-test-release
+        continue-on-error: ${{ matrix.continue-on-error }}
+        id: release-test
+        if: steps.debug-test.outcome == 'success'
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
+        continue-on-error: true
+        if: steps.debug-test.outcome == 'success'
