@@ -30,7 +30,9 @@ case 2024: // iOS 18.0
     #if canImport(Darwin)
     [
         .iOS(.v18),
-        .macOS(.v15),
+        // FIXME: temporary lower the requirement since there is no macOS 15 CI yet.
+        // .macOS(.v15),
+        .macOS(.v14),
         .macCatalyst(.v18),
         .tvOS(.v18),
         .watchOS(.v10),
