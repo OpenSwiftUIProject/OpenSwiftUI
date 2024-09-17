@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.10.0-RELEASE"]
+        swift_version: ["5.10.0-RELEASE", "6.0-SNAPSHOT-2024-08-30-a"]
         os: [ubuntu-22.04]
         extra_params: [""]
     runs-on: ${{ matrix.os }}

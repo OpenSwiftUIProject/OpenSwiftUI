@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.10"]
+        swift_version: ["5.10", "nightly-6.0"]
     runs-on: ubuntu-22.04
     env:
       OPENSWIFTUI_WERROR: 1
