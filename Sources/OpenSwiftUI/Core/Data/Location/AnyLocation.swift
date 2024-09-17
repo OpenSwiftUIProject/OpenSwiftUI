@@ -16,7 +16,7 @@ class AnyLocationBase {}
 /// not access the graph concurrently (`get` should not be called while graph
 /// is updating, for example).
 @usableFromInline
-class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
+class AnyLocation<Value>: AnyLocationBase {
     var wasRead: Bool {
         get { fatalError() }
         set { fatalError() }

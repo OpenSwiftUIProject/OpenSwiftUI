@@ -25,7 +25,7 @@ let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2021
 let platforms: [SupportedPlatform] = switch releaseVersion {
-case 2024:
+case 2024: // iOS 18.0
     [
         .iOS(.v18),
         .macOS(.v15),

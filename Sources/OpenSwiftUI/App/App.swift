@@ -93,7 +93,8 @@ public protocol App {
     /// Swift infers the app's ``OpenSwiftUI/App/Body-swift.associatedtype``
     /// associated type based on the scene provided by the `body` property.
     @SceneBuilder
-    @MainActor(unsafe)
+    @MainActor
+    @preconcurrency
     var body: Self.Body { get }
 
     /// Creates an instance of the app using the body that you define for its
@@ -102,7 +103,8 @@ public protocol App {
     /// Swift synthesizes a default initializer for structures that don't
     /// provide one. You typically rely on the default initializer for
     /// your app.
-    @MainActor(unsafe)
+    @MainActor
+    @preconcurrency
     init()
 }
 
@@ -115,7 +117,8 @@ extension App {
     /// the app. OpenSwiftUI provides a
     /// default implementation of the method that manages the launch process in
     /// a platform-appropriate way.
-    @MainActor(unsafe)
+    @MainActor
+    @preconcurrency
     public static func main() {
         let app = Self()
         runApp(app)

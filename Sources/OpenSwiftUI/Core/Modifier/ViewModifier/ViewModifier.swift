@@ -80,7 +80,8 @@ public protocol ViewModifier {
     /// `content` is a proxy for the view that will have the modifier
     /// represented by `Self` applied to it.
     @ViewBuilder
-    @MainActor(unsafe)
+    @MainActor
+    @preconcurrency
     func body(content: Content) -> Body
 }
 
