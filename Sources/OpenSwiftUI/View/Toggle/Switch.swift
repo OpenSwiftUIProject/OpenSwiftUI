@@ -29,7 +29,7 @@ private struct Switch: UIViewRepresentable {
     func updateUIView(_ uiView: UISwitch, context: Context) {
         let isOn = isOn
         let animated: Bool
-        if let animation = context.transaction.animation, !context.transaction.disablesAnimations {
+        if let _ = context.transaction.animation, !context.transaction.disablesAnimations {
             animated = true
         } else {
             animated = false
@@ -38,7 +38,7 @@ private struct Switch: UIViewRepresentable {
         uiView.preferredStyle = .sliding
         
         let color: UIColor?
-        if let tint {
+        if let _ = tint {
             // TODO: Resolve the color from the environment
             color = nil
         } else {
