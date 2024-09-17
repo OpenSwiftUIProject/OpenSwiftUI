@@ -9,8 +9,11 @@ import UIKit
 @MainActor
 struct UIHostingControllerTests {
     @Test(
-        "Attribute setter crash for basic AnyView",
-        .bug("https://github.com/OpenSwiftUIProject/OpenGraph/issues/58", relationship: .verifiesFix)
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
+            id: 58,
+            "[verifiesFix]: Attribute setter crash for basic AnyView"
+        )
     )
     func testBasicAnyView() throws {
         struct ContentView: View {
@@ -24,8 +27,11 @@ struct UIHostingControllerTests {
     }
 
     @Test(
-        "BodyAccessor crash for non empty View instance",
-        .bug("#81", relationship: .verifiesFix)
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
+            id: 81,
+            "[verifiesFix]: BodyAccessor crash for non empty View instance"
+        )
     )
     func testBasicAnyViewWithProperty() throws {
         struct ContentView: View {
