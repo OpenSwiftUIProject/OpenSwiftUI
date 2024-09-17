@@ -20,18 +20,23 @@
 #define OPENSWIFTUI_LOCK_T int32_t
 #include <stdint.h>
 #include <unistd.h>
-OPENSWIFTUI_INLINE
-void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
-  while (__sync_val_compare_and_swap(lock, 0, ~0) != 0) {
-    sleep(0);
-  }
-}
 
-OPENSWIFTUI_INLINE
-void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
-  __sync_synchronize();
-  *lock = 0;
-}
+// FIXME: Revert me after we fix ProtocolDescriptor.m issue / multiple definition of '__OPENSWIFTUI_Lock'
+//OPENSWIFTUI_INLINE
+//void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+//  while (__sync_val_compare_and_swap(lock, 0, ~0) != 0) {
+//    sleep(0);
+//  }
+//}
+//
+//OPENSWIFTUI_INLINE
+//void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+//  __sync_synchronize();
+//  *lock = 0;
+//}
+void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock);
+void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock);
+
 #define OPENSWIFTUI_LOCK_INIT 0
 #define OPENSWIFTUI_LOCK_LOCK(lock) __OPENSWIFTUI_Lock(lock)
 #define OPENSWIFTUI_LOCK_UNLOCK(lock) __OPENSWIFTUI_Unlock(lock)

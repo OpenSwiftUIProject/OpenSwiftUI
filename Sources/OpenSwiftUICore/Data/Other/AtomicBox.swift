@@ -8,6 +8,11 @@
 
 import Foundation
 
+// FIXME:
+// Replace with Swift's Mutex and Atomic to simplify cross-platform maintain cost
+// https://github.com/swiftlang/swift-evolution/blob/main/proposals/0433-mutex.md
+// https://github.com/swiftlang/swift-evolution/blob/main/proposals/0410-atomics.md
+#if canImport(Darwin)
 private final class AtomicBuffer<Value>: ManagedBuffer<os_unfair_lock_s, Value> {
     static func allocate(value: Value) -> AtomicBuffer<Value> {
         let buffer = AtomicBuffer.create(minimumCapacity: 1) { buffer in
@@ -19,6 +24,19 @@ private final class AtomicBuffer<Value>: ManagedBuffer<os_unfair_lock_s, Value> 
         return unsafeDowncast(buffer, to: AtomicBuffer<Value>.self)
     }
 }
+#else
+private final class AtomicBuffer<Value>: ManagedBuffer<NSLock, Value> {
+    static func allocate(value: Value) -> AtomicBuffer<Value> {
+        let buffer = AtomicBuffer.create(minimumCapacity: 1) { buffer in
+            NSLock()
+        }
+        buffer.withUnsafeMutablePointerToElements { pointer in
+            pointer.initialize(to: value)
+        }
+        return unsafeDowncast(buffer, to: AtomicBuffer<Value>.self)
+    }
+}
+#endif
 
 @propertyWrapper
 package struct AtomicBox<Value> {
@@ -31,13 +49,23 @@ package struct AtomicBox<Value> {
     @inline(__always)
     package var wrappedValue: Value {
         get {
+            #if canImport(Darwin)
             os_unfair_lock_lock(&buffer.header)
             defer { os_unfair_lock_unlock(&buffer.header) }
+            #else
+            buffer.header.lock()
+            defer { buffer.header.unlock() }
+            #endif
             return buffer.withUnsafeMutablePointerToElements { $0.pointee }
         }
         nonmutating _modify {
+            #if canImport(Darwin)
             os_unfair_lock_lock(&buffer.header)
             defer { os_unfair_lock_unlock(&buffer.header) }
+            #else
+            buffer.header.lock()
+            defer { buffer.header.unlock() }
+            #endif
             yield &buffer.withUnsafeMutablePointerToElements { $0 }.pointee
         }
     }

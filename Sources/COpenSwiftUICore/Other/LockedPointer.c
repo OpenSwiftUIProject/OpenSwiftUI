@@ -7,6 +7,19 @@
 #include "LockedPointer.h"
 #include <stdlib.h>
 
+#if !__has_include(<os/lock.h>)
+void __OPENSWIFTUI_Lock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+  while (__sync_val_compare_and_swap(lock, 0, ~0) != 0) {
+    sleep(0);
+  }
+}
+
+void __OPENSWIFTUI_Unlock(volatile OPENSWIFTUI_LOCK_T * _Nonnull lock) {
+  __sync_synchronize();
+  *lock = 0;
+}
+#endif
+
 LockedPointer _LockedPointerCreate(size_t size, size_t alignment) {
     // alignment is expected to be a power of 2.
     // If alignment > 8,

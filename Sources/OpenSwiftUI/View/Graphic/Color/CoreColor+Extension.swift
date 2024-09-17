@@ -3,8 +3,9 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2024
-//  Status: WIP
+//  Status: Complete
 
+#if canImport(Darwin)
 import COpenSwiftUICore
 
 extension CoreColor {
@@ -71,3 +72,4 @@ extension CoreColor {
     #endif
 }
 
+#endif
