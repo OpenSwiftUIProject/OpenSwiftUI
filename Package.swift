@@ -26,6 +26,8 @@ let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2021
 let platforms: [SupportedPlatform] = switch releaseVersion {
 case 2024: // iOS 18.0
+    // FIXME: non-Darwin platform nightly Swift 6 compiler have not add the latest OS yet
+    #if canImport(Darwin)
     [
         .iOS(.v18),
         .macOS(.v15),
@@ -34,6 +36,16 @@ case 2024: // iOS 18.0
         .watchOS(.v10),
         .visionOS(.v2),
     ]
+    #else
+    [
+        .iOS(.v17),
+        .macOS(.v14),
+        .macCatalyst(.v17),
+        .tvOS(.v17),
+        .watchOS(.v9),
+        .visionOS(.v1),
+    ]
+    #endif
 case 2021: // iOS 15.5
     [
         .iOS(.v15),

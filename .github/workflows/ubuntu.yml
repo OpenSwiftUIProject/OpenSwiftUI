@@ -12,7 +12,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.10", "nightly-6.0"]
+        # swift_version: ["5.10"]
+        container: ["swift:5.10-jammy", "swiftlang/swift:nightly-6.0-jammy"]
     runs-on: ubuntu-22.04
     env:
       OPENSWIFTUI_WERROR: 1
@@ -20,7 +21,8 @@ jobs:
       OPENGRAPH_ATTRIBUTEGRAPH: 0
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 1
-    container: swift:${{ matrix.swift_version }}-jammy
+    # container: swift:${{ matrix.swift_version }}-jammy
+    container: ${{ matrix.container }}
     steps:
       - uses: actions/checkout@v4
       - name: Building and running tests in debug mode with coverage
