@@ -8,6 +8,12 @@ import Testing
 struct AppearanceActionModifierTests {
     @Test
     func appear() async throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var confirmation: Confirmation
 

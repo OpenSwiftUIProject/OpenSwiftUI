@@ -35,6 +35,12 @@ struct ChangedBodyPropertyTests {
     #endif
     @Test
     func zeroPropertyView() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var body: some View {
                 let _ = Self._logChanges()
@@ -56,6 +62,12 @@ struct ChangedBodyPropertyTests {
     #endif
     @Test
     func propertyView() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var name = ""
             var body: some View {
@@ -78,6 +90,12 @@ struct ChangedBodyPropertyTests {
     #endif
     @Test
     func statePropertyView() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             @State var name = ""
             var body: some View {

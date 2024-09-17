@@ -16,6 +16,12 @@ struct UIHostingControllerTests {
         )
     )
     func testBasicAnyView() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var body: some View {
                 AnyView(EmptyView())
@@ -34,6 +40,12 @@ struct UIHostingControllerTests {
         )
     )
     func testBasicAnyViewWithProperty() throws {
+        guard #unavailable(iOS 18) else {
+            withKnownIssue {
+                Issue.record("Known crash issue on iOS 18")
+            }
+            return
+        }
         struct ContentView: View {
             var name = ""
             var body: some View {
