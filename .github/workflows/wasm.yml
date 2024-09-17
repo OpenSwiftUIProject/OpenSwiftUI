@@ -12,9 +12,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.10-RELEASE"]
+        swift_version: ["5.10.0-RELEASE"]
         os: [ubuntu-22.04]
-        extra_params: []
+        extra_params: [""]
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
