@@ -40,11 +40,11 @@ struct VersionSeedTests {
     }
 }
 
-extension UInt32: CustomTestStringConvertible {
+extension VersionSeed: CustomTestStringConvertible {
     public var testDescription: String { hex }
     private var hex: String {
-        let high = UInt16(truncatingIfNeeded: self &>> 16)
-        let low = UInt16(truncatingIfNeeded: self)
+        let high = UInt16(truncatingIfNeeded: value &>> 16)
+        let low = UInt16(truncatingIfNeeded: value)
         return String(format: "0x%04X_%04X", high, low)
     }
 }
