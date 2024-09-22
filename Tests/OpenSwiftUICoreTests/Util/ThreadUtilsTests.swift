@@ -30,7 +30,9 @@ struct ThreadUtilsTests {
             }
             let result = try await group.reduce(0, +)
             #expect(result == 7)
-            #expect(box.value == ThreadUtilsTests.defaultValue)
+            await MainActor.run {
+                #expect(box.value == ThreadUtilsTests.defaultValue)
+            }
         }
     }
 }
