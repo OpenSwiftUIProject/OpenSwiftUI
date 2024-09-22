@@ -95,7 +95,7 @@ public struct _DynamicPropertyBuffer {
     }
     
     func destroy() {
-        precondition(_count >= 0)
+        Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
         while count > 0 {
@@ -112,7 +112,7 @@ public struct _DynamicPropertyBuffer {
     }
     
     func reset() {
-        precondition(_count >= 0)
+        Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
         while count > 0 {
@@ -125,7 +125,7 @@ public struct _DynamicPropertyBuffer {
     }
     
     func getState<Value>(type: Value.Type) -> Binding<Value>? {
-        precondition(_count >= 0)
+        Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
         while count > 0 {
@@ -141,7 +141,7 @@ public struct _DynamicPropertyBuffer {
     }
     
     func update(container: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
-        precondition(_count >= 0)
+        Swift.precondition(_count >= 0)
         var changed = false
         var count = _count
         var pointer = buf
@@ -163,7 +163,7 @@ public struct _DynamicPropertyBuffer {
     }
     
     private mutating func allocate(bytes: Int) -> UnsafeMutableRawPointer {
-        precondition(_count >= 0)
+        Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
         while count > 0 {
