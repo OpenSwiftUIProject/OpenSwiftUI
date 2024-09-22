@@ -107,7 +107,7 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
         }
         var newTransaction = transaction
         newTransaction.override(.current)
-        performOnMainThread { [weak self] in
+        onMainThread { [weak self] in
             guard let self else {
                 return
             }
