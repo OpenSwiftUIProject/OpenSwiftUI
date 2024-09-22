@@ -43,7 +43,10 @@
 #include <stdint.h>
 #include <stdbool.h>
 #include <sys/cdefs.h>
+
+#if OPENSWIFTUI_TARGET_OS_OSX
 #include <sys/kdebug.h>
+#endif
 
 #include <Availability.h>
 
@@ -69,7 +72,7 @@
 *
 * On error, -1 will be returned and errno will indicate the error.
 */
-int kdebug_trace(uint32_t code, uint64_t arg1, uint64_t arg2, uint64_t arg3,
+OPENSWIFTUI_EXPORT int kdebug_trace(uint32_t code, uint64_t arg1, uint64_t arg2, uint64_t arg3,
    uint64_t arg4)
 __OSX_AVAILABLE(10.10) __IOS_AVAILABLE(8.2);
 
@@ -137,7 +140,7 @@ __OSX_AVAILABLE(10.10) __IOS_AVAILABLE(8.2);
 * EFAULT
 *      `str` is an invalid address or NULL when `str_id` is 0.
 */
-extern uint64_t kdebug_trace_string(uint32_t debugid, uint64_t str_id,
+OPENSWIFTUI_EXPORT uint64_t kdebug_trace_string(uint32_t debugid, uint64_t str_id,
    const char *str)
 __OSX_AVAILABLE(10.11) __IOS_AVAILABLE(9.0);
 
@@ -156,7 +159,7 @@ __OSX_AVAILABLE(10.11) __IOS_AVAILABLE(9.0);
 * If tracing is enabled for the code at the time of the check, 1
 * will be returned. Otherwise, 0 will be returned.
 */
-extern bool kdebug_is_enabled(uint32_t code)
+OPENSWIFTUI_EXPORT bool kdebug_is_enabled(uint32_t code)
 __OSX_AVAILABLE(10.12) __IOS_AVAILABLE(10.0)
 __WATCHOS_AVAILABLE(3.0) __TVOS_AVAILABLE(10.0);
 
