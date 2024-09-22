@@ -12,11 +12,11 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["5.10.0-RELEASE", "6.0-SNAPSHOT-2024-08-30-a"]
+        swift_version: ["5.10.0-RELEASE", "6.0-SNAPSHOT-2024-09-18-a"]
         os: [ubuntu-22.04]
         extra_params: [""]
         include:
-          - swift_version: "6.0-SNAPSHOT-2024-08-30-a"
+          - swift_version: "6.0-SNAPSHOT-2024-09-18-a"
             continue-on-error: true
     runs-on: ${{ matrix.os }}
     env:
