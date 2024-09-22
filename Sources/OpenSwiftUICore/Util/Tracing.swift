@@ -34,12 +34,12 @@ enum Tracing {
         } else {
             #if canImport(Darwin)
             var info = Dl_info()
-            guard dladdr(nominalDescriptor, &info) == 0 else {
+            guard dladdr(nominalDescriptor, &info) != 0 else {
                 return unknown
             }
             let name = (String(cString: info.dli_fname) as NSString).lastPathComponent
             moduleLookupCache.value[nominalDescriptor] = name
-            return unknown
+            return name
             #else
             // TODO: [Easy] Add a C layer to import dladdr on non-Darwin Swift platform
             // See https://forums.swift.org/t/dladdr-and-the-clang-importer/26379/11
