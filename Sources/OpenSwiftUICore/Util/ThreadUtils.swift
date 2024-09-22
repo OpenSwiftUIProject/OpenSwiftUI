@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-import Foundation
+@preconcurrency import Foundation
 
 final package class ThreadSpecific<T> {
     var key: pthread_key_t
@@ -15,6 +15,9 @@ final package class ThreadSpecific<T> {
         key = 0
         self.defaultValue = defaultValue
         pthread_key_create(&key) { pointer in
+            #if !canImport(Darwin)
+            guard let pointer else { return }
+            #endif
             pointer.withMemoryRebound(to: Any.self, capacity: 1) { ptr in
                 ptr.deinitialize(count: 1)
                 ptr.deallocate()
@@ -56,7 +59,10 @@ package func onMainThread(do body: @escaping () -> Void) {
     if Thread.isMainThread {
         body()
     } else {
-        RunLoop.main.perform(inModes: [.common], block: body)
+        RunLoop.main.perform(inModes: [.common]) {
+            // Workaround the @Senable warning
+            body()
+        }
     }
     #endif
 }

@@ -47,7 +47,7 @@ package enum Log {
         #if OPENSWIFTUI_SWIFT_LOG
         internalErrorsLog.debug("\(message()) \(file) \(line)")
         #else
-        #if DEBUG
+        #if DEBUG && OPENSWIFTUI_SUPPORT_2022_API
         os_log(.default, log: internalErrorsLog, "%s %s: %s", message(), file.description, line.description)
         #endif
         #endif
@@ -82,8 +82,8 @@ package enum Log {
         #else
         #if OPENSWIFTUI_SUPPORT_2022_API
         os_log(.fault, log: internalErrorsLog, "%s %s: %s", message(), file.description, line.description)
-        print("\(message()) - \(file): - please file a bug report")
         #endif
+        print("\(message()) - \(file): - please file a bug report")
         #endif
     }
     

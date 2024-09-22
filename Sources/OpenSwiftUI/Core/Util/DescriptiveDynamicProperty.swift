@@ -1,20 +1,9 @@
 //
-//  Tracing.swift
+//  DescriptiveDynamicProperty.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
-//  Status: WIP
-//  ID: D59B7A281FFF29619A43A3D8F551CCE1
-
-// MARK: - Tracing
-
-enum Tracing {
-    static func libraryName(defining _: Any.Type) -> String {
-        // TODO:
-        ""
-    }
-//    private static moduleLookupCache: ThreadSpecific<[UnsafeRawPointer : String]>
-}
+//  Created by Kyle on 2024/9/22.
+//
 
 // MARK: - DescriptiveDynamicProperty
 
