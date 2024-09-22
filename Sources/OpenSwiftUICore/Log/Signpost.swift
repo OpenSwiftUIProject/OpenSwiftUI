@@ -101,8 +101,8 @@ package struct Signpost {
         #if canImport(Darwin)
         switch style {
         case let .kdebug(code):
-            return kdebug_is_enabled(UInt32(code))
-        case let .os_log(name):
+            return kdebug_is_enabled(UInt32(OSSignpostType.event.rawValue & 0xfc) | (UInt32(code) << 2) & 0x3fc | 0x14110000)
+        case .os_log:
             guard kdebug_is_enabled(UInt32(OSSignpostType.event.rawValue & 0xfc) | 0x14110000) else {
                 return false
             }
@@ -115,44 +115,107 @@ package struct Signpost {
     
     // TODO
     @_transparent
-    @inline(__always)
-    package func traceInterval<R>(
-        object: AnyObject? = nil,
+    package func traceInterval<T>(
+        object: AnyObject?,
         _ message: StaticString?,
-        closure: () -> R
-    ) -> R {
+        closure: () -> T
+    ) -> T {
         guard isEnabled else {
             return closure()
         }
-        // TODO
-        return closure()
+        let id = OSSignpostID.makeExclusiveID(object)
+        switch style {
+        case let .kdebug(code):
+            kdebug_trace(UInt32(code) << 2 | (UInt32(OSSignpostType.begin.rawValue & 0xfc) | 0x14110000), id.rawValue, 0, 0, 0)
+            defer { kdebug_trace(UInt32(code) << 2 | (UInt32(OSSignpostType.end.rawValue & 0xfc) | 0x14110000), id.rawValue, 0, 0, 0) }
+            return closure()
+        case let .os_log(name):
+            if let message {
+                os_signpost(.begin, log: _signpostLog, name: name, signpostID: id, message, [])
+            } else {
+                os_signpost(.begin, log: _signpostLog, name: name, signpostID: id)
+            }
+            defer { os_signpost(.end, log: _signpostLog, name: name, signpostID: id) }
+            return closure()
+        }
     }
     
-    // TODO
     @_transparent
-    @inline(__always)
-    package func traceInterval<R>(
+    package func traceInterval<T>(
         object: AnyObject? = nil,
-        _ message: StaticString?,
-        _ arguments: @autoclosure () -> [CVarArg],
-        closure: () -> R
-    ) -> R {
+        _ message: StaticString,
+        _ args: @autoclosure () -> [any CVarArg],
+        closure: () -> T
+    ) -> T {
         guard isEnabled else {
             return closure()
         }
-        // TODO
-        return closure()
+        let id = OSSignpostID.makeExclusiveID(object)
+        switch style {
+        case let .kdebug(code):
+            // FIXME: _primitive
+            print(code)
+            return closure()
+        case let .os_log(name):
+            os_signpost(.begin, log: _signpostLog, name: name, signpostID: id, message, args())
+            defer { os_signpost(.end, log: _signpostLog, name: name, signpostID: id) }
+            return closure()
+        }
     }
+    
+    @_transparent
+    package func traceEvent(
+        type: OSSignpostType,
+        object: AnyObject?,
+        _ message: StaticString,
+        _ args: @autoclosure () -> [any CVarArg]
+    ) {
+        guard isEnabled else {
+            return
+        }
+        #if canImport(Darwin)
+        let id = OSSignpostID.makeExclusiveID(object)
+        let args = args()
+
+        switch style {
+        case let .kdebug(code):
+            // FIXME: _primitive
+            print(code)
+            return
+        case let .os_log(name):
+            os_signpost(type, log: _signpostLog, name: name, signpostID: id, message, args)
+        }
+        #endif
+    }
+    
+    #if canImport(Darwin)
+    private func _primitive(
+        _ type: OSSignpostType,
+        log: OSLog,
+        signpostID: OSSignpostID,
+        _ message: StaticString?,
+        _ arguments: [any CVarArg]?
+    ) {
+        // TODO
+    }
+    #endif
 }
 
-// TODO
-@_transparent
-@inline(__always)
-package func traceRuleBody<R>(_ type: Any.Type, body: () -> R) -> R {
-    Signpost.bodyInvoke.traceInterval(
-        "%{public}@.body [in %{public}@]",
-        [OGTypeID(type).description, Tracing.libraryName(defining: type)]
-    ) {
-        body()
+#if canImport(Darwin)
+extension OSSignpostID {
+    private static let continuation = OSSignpostID(0x0ea89ce2)
+    
+    @inline(__always)
+    static func makeExclusiveID(_ object: AnyObject?) -> OSSignpostID {
+        if let object {
+            OSSignpostID(log: _signpostLog, object: object)
+        } else {
+            .exclusive
+        }
     }
+}
+#endif
+
+private func withKDebugValues(_ code: UInt32, _ args: [(any CVarArg)?], closure: (([UInt64]) -> Void)) {
+    // TODO
 }

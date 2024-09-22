@@ -18,9 +18,13 @@ import WASILibc
 #endif
 internal import OpenGraphShims
 import Foundation
+internal import COpenSwiftUICore
+#if canImport(Darwin)
+import os.log
+#endif
 
 enum Tracing {
-    private static var moduleLookupCache = ThreadSpecific<[UnsafeRawPointer : String]>([:])
+    private static var moduleLookupCache = ThreadSpecific<[UnsafeRawPointer: String]>([:])
     
     static func libraryName(defining type: Any.Type) -> String {
         let unknown = "ModuleUnknown"
@@ -49,4 +53,28 @@ enum Tracing {
     static func nominalTypeName(_ type: Any.Type) -> String {
         OGTypeID(type).description
     }
+}
+
+@_transparent
+package func traceBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
+    #if canImport(Darwin)
+    // Signpost.bodyInvoke.traceInterval
+    guard kdebug_is_enabled(UInt32(OSSignpostType.event.rawValue) & 0xF8 | 0x1411_0014) else {
+        return body()
+    }
+    // TODO: OGTypeID(type).description, Tracing.libraryName(defining: v)
+    return body()
+    #else
+    body()
+    #endif
+}
+
+@_transparent
+package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
+    #if canImport(Darwin)
+    // TODO:
+    return body()
+    #else
+    body()
+    #endif
 }
