@@ -77,7 +77,7 @@ enum Update {
 
         let actions = Update.actions
         Update.actions = []
-        performOnMainThread {
+        onMainThread {
             // TODO: Signpost.postUpdateActions
             begin()
             for action in actions {

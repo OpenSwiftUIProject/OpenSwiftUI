@@ -1,5 +1,5 @@
 {
-  "originHash" : "5ab08033fa312aa04f0cf9d4751edd41156f13745ec663a3da48d38ca11c507b",
+  "originHash" : "093c1851811a8423bb946386b7901adf094aa28258f12ae335ef9ee3a59018c7",
   "pins" : [
     {
       "identity" : "opengraph",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "3e9b6463ef2abec08269c86dea3b97f3cb0225ee"
+        "revision" : "7f22fb5948bb6bc77603f5496a9881622041d3bb"
       }
     }
   ],
