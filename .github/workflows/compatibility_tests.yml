@@ -32,12 +32,14 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
           swift test \
+            --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
           swift test \
+            --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
@@ -69,6 +71,7 @@ jobs:
         run: swift --version
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
+          # FIXME: xcodebuild will run all test targets.
           xcodebuild test \
           -scheme OpenSwiftUI \
           -configuration Debug \

@@ -123,6 +123,7 @@ package struct Signpost {
         guard isEnabled else {
             return closure()
         }
+        #if canImport(Darwin)
         let id = OSSignpostID.makeExclusiveID(object)
         switch style {
         case let .kdebug(code):
@@ -138,6 +139,9 @@ package struct Signpost {
             defer { os_signpost(.end, log: _signpostLog, name: name, signpostID: id) }
             return closure()
         }
+        #else
+        return closure()
+        #endif
     }
     
     @_transparent
@@ -150,6 +154,7 @@ package struct Signpost {
         guard isEnabled else {
             return closure()
         }
+        #if canImport(Darwin)
         let id = OSSignpostID.makeExclusiveID(object)
         switch style {
         case let .kdebug(code):
@@ -161,8 +166,12 @@ package struct Signpost {
             defer { os_signpost(.end, log: _signpostLog, name: name, signpostID: id) }
             return closure()
         }
+        #else
+        return closure()
+        #endif
     }
     
+    #if canImport(Darwin)
     @_transparent
     package func traceEvent(
         type: OSSignpostType,
@@ -173,7 +182,6 @@ package struct Signpost {
         guard isEnabled else {
             return
         }
-        #if canImport(Darwin)
         let id = OSSignpostID.makeExclusiveID(object)
         let args = args()
 
@@ -185,8 +193,8 @@ package struct Signpost {
         case let .os_log(name):
             os_signpost(type, log: _signpostLog, name: name, signpostID: id, message, args)
         }
-        #endif
     }
+    #endif
     
     #if canImport(Darwin)
     private func _primitive(

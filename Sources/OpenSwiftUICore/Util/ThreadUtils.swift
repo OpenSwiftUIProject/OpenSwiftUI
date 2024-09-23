@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-@preconcurrency import Foundation
+import Foundation
 
 final package class ThreadSpecific<T> {
     var key: pthread_key_t
@@ -54,7 +54,7 @@ final package class ThreadSpecific<T> {
 package func onMainThread(do body: @escaping () -> Void) {
     #if os(WASI)
     // See #76: Thread and RunLoopMode.common is not available on WASI currently
-    block()
+    body()
     #else
     if Thread.isMainThread {
         body()
@@ -68,7 +68,9 @@ package func onMainThread(do body: @escaping () -> Void) {
 }
 
 package func mainThreadPrecondition() {
+    #if !os(WASI)
     guard Thread.isMainThread else {
         fatalError("calling into OpenSwiftUI on a non-main thread is not supported")
     }
+    #endif
 }
