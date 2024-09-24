@@ -73,7 +73,7 @@ private class PlatformSwitchCoordinator: PlatformViewCoordinator {
 
     @objc
     func isOnChanged(_ sender: UISwitch) {
-        Update.perform {
+        Update.dispatchImmediately {
             _isOn.wrappedValue = sender.isOn
         }
         sender.setOn(_isOn.wrappedValue, animated: true)
