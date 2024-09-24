@@ -22,14 +22,14 @@ final class MovableLockTests {
     
     @Test
     func owner() {
-        #expect(lock.isOwner() == false)
-        #expect(lock.isOuterMostOwner() == false)
+        #expect(lock.isOwner == false)
+        #expect(lock.isOuterMostOwner == false)
         lock.lock()
-        #expect(lock.isOwner() == true)
-        #expect(lock.isOuterMostOwner() == true)
+        #expect(lock.isOwner == true)
+        #expect(lock.isOuterMostOwner == true)
         lock.unlock()
-        #expect(lock.isOwner() == false)
-        #expect(lock.isOuterMostOwner() == false)
+        #expect(lock.isOwner == false)
+        #expect(lock.isOuterMostOwner == false)
     }
 }
 #endif

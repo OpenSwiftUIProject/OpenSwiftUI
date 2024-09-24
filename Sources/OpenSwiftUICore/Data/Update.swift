@@ -44,7 +44,7 @@ package enum Update {
     }
     
     package static var isOwner: Bool {
-        _lock.isOwner()
+        _lock.isOwner
     }
     
     package static func wait() {
