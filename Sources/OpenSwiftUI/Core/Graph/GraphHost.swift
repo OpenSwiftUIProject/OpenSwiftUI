@@ -9,7 +9,7 @@
 internal import COpenSwiftUI
 internal import OpenGraphShims
 
-private let waitingForPreviewThunks = EnvironmentHelper.value(for: "XCODE_RUNNING_FOR_PREVIEWS") != 0
+private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
 private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 
 class GraphHost {
