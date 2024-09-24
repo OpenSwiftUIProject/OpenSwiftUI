@@ -8,12 +8,7 @@ import Testing
 import OpenSwiftUI
 #endif
 
-struct ColorResolvedTests {
-    init() {
-        #if !OPENSWIFTUI_COMPATIBILITY_TEST
-        #endif
-    }
-    
+struct ColorResolvedTests {    
     @Test(arguments: [
         (Color.RGBColorSpace.sRGB, 0, 0, 0, 0, "#00000000", "#00000000"),
         (Color.RGBColorSpace.sRGB, 0.01, 0.02, 0.03, 0.04, "#0305080A", "#0305080A"),
