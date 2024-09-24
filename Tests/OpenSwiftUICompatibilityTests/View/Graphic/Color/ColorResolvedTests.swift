@@ -11,7 +11,6 @@ import OpenSwiftUI
 struct ColorResolvedTests {
     init() {
         #if !OPENSWIFTUI_COMPATIBILITY_TEST
-        Color.Resolved._alignWithSwiftUIImplementation = false
         #endif
     }
     
@@ -52,11 +51,15 @@ struct ColorResolvedTests {
         let resolved = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
         #expect(resolved.description == swiftUIExpected)
         #else
-        let resolved = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
-        #expect(resolved.description == openSwiftUIExpected)
-        Color.Resolved._alignWithSwiftUIImplementation = true
-        let resolved2 = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
-        #expect(resolved2.description == swiftUIExpected)
+        Update.locked {
+            Color.Resolved._alignWithSwiftUIImplementation = false
+            let resolved = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
+            #expect(resolved.description == openSwiftUIExpected)
+            
+            Color.Resolved._alignWithSwiftUIImplementation = true
+            let resolved2 = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
+            #expect(resolved2.description == swiftUIExpected)
+        }
         #endif
     }
 }
