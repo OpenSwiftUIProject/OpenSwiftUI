@@ -21,7 +21,7 @@ protocol ViewRendererHost: ViewGraphDelegate {
 
 extension ViewRendererHost {
     func updateViewGraph<Value>(body: (ViewGraph) -> Value) -> Value {
-        Update.perform {
+        Update.dispatchImmediately {
             OGGraph.withoutUpdate {
                 updateGraph()
                 return body(viewGraph)
@@ -37,7 +37,7 @@ extension ViewRendererHost {
     }
     
     func invalidateProperties(_ properties: ViewRendererHostProperties, mayDeferUpdate: Bool) {
-        Update.lock.withLock {
+        Update.locked {
             guard !propertiesNeedingUpdate.contains(properties) else {
                 return
             }
@@ -56,7 +56,7 @@ extension ViewRendererHost {
     }
     
     func render(interval: Double, updateDisplayList: Bool = true) {
-        Update.perform {
+        Update.dispatchImmediately {
             guard !isRendering else {
                 return
             }

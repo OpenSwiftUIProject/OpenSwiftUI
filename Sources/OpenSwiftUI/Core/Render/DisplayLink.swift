@@ -43,7 +43,7 @@ final class DisplayLink: NSObject {
     }
     
     func invalidate() {
-        Update.lock.withLock {
+        Update.locked {
             // TODO
         }
     }

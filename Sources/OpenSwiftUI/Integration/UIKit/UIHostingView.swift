@@ -96,7 +96,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
         guard canAdvanceTimeAutomatically else {
             return
         }
-        Update.lock.withLock {
+        Update.locked {
             cancelAsyncRendering()
             let interval: Double
             if let displayLink, displayLink.willRender {
@@ -129,7 +129,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
     }
     
     func cancelAsyncRendering() {
-        Update.lock.withLock {
+        Update.locked {
             displayLink?.cancelAsyncRendering()
         }
     }
