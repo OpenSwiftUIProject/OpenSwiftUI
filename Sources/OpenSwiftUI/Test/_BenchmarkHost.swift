@@ -12,7 +12,7 @@ import Foundation
 import QuartzCore
 #endif
 
-private let enableProfiler = EnvironmentHelper.value(for: "OPENSWIFTUI_PROFILE_BENCHMARKS") != 0
+private let enableProfiler = EnvironmentHelper.bool(for: "OPENSWIFTUI_PROFILE_BENCHMARKS")
 
 public protocol _BenchmarkHost: AnyObject {
     func _renderForTest(interval: Double)

@@ -1,3 +1,10 @@
+//
+//  EnvironmentHelper.swift
+//  OpenSwiftUICore
+//
+//  Audited for RELEASE_2024
+//  Status: Complete
+
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -8,15 +15,19 @@ import WASILibc
 #error("Unsupported Platform")
 #endif
 
-enum EnvironmentHelper {
+package enum EnvironmentHelper {
     @_transparent
-    @inline(__always)
-    static func value(for key: String) -> Int32 {
+    package static func int32(for key: String) -> Int32 {
         key.withCString { string in
             guard let env = getenv(string) else {
                 return 0
             }
             return atoi(env)
-        }        
+        }
+    }
+    
+    @_transparent
+    package static func bool(for key: String) -> Bool {
+        int32(for: key) != 0
     }
 }

@@ -25,7 +25,7 @@ final class AppGraph: GraphHost {
     }
     
     private lazy var launchProfileOptions = LaunchProfileOptions(
-        rawValue: EnvironmentHelper.value(for: "OPENSWIFTUI_PROFILE_LAUNCH")
+        rawValue: EnvironmentHelper.int32(for: "OPENSWIFTUI_PROFILE_LAUNCH")
     )
     
     var didCollectLaunchProfile: Bool = false
