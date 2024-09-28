@@ -125,7 +125,7 @@ package struct LocationProjectionCache {
     var cache: [AnyHashable: WeakBox<AnyLocationBase>]
     
     package mutating func reference<P, L>(for projection: P, on location: L) -> AnyLocation<P.Projected> where P: Projection, L: Location, P.Base == L.Value {
-        if let box = cache[projection as AnyHashable],
+        if let box = cache[projection],
            let base = box.base,
            let result = base as? AnyLocation<P.Projected> {
             return result

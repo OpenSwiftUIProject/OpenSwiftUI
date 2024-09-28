@@ -1,11 +1,8 @@
 //
 //  PropertyListTests.swift
-//
-//
-//  Created by Kyle on 2024/1/1.
-//
+//  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUI
+import OpenSwiftUICore
 import Testing
 
 struct PropertyListTests {

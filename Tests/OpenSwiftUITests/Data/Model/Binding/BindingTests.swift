@@ -1,10 +1,8 @@
 //
 //  BindingTests.swift
-//
-//
-//  Created by Kyle on 2024/2/1.
-//
+//  OpenSwiftUITests
 
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUI
 @testable import OpenSwiftUI
 import Testing
 
@@ -103,6 +101,10 @@ struct BindingTests {
     @Test("Test Binding.init?(_:)")
     func initWithBindingOptionalValue() {
         struct FunctionalLocationWithWasRead<Value>: Location {
+            static func == (lhs: FunctionalLocationWithWasRead<Value>, rhs: FunctionalLocationWithWasRead<Value>) -> Bool {
+                false
+            }
+            
             var getValue: () -> Value
             var setValue: (Value, Transaction) -> Void
             var wasRead = false
@@ -114,7 +116,7 @@ struct BindingTests {
         }
         
         let wrapper = Wrapper()
-        let location = LocationBox(location: FunctionalLocationWithWasRead(getValue: {
+        let location = LocationBox(FunctionalLocationWithWasRead(getValue: {
             wrapper.storage
         }, setValue: { newValue, _ in
             wrapper.storage = newValue

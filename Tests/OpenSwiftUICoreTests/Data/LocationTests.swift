@@ -1,14 +1,25 @@
 //
-//  LocationBoxTests.swift
-//
-//
-//  Created by Kyle on 2023/11/8.
-//
+//  LocationTests.swift
+//  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@testable import OpenSwiftUICore
 import Testing
 
-struct LocationBoxTests {
+struct LocationTests {
+    @Test
+    func location() {
+        struct L: Location {
+            typealias Value = Int
+            var wasRead = false
+            func get() -> Int { 0 }
+            func set(_: Int, transaction _: Transaction) {}
+        }
+        let location = L()
+        let (value, result) = location.update()
+        #expect((value, result) == (0, true))
+    }
+    
     @Test
     func basicLocationBox() throws {
         class MockLocation: Location {
@@ -21,10 +32,13 @@ struct LocationBoxTests {
                 defer { value += 1 }
                 return (value, value == 0)
             }
+            static func == (lhs: MockLocation, rhs: MockLocation) -> Bool {
+                lhs.value == rhs.value
+            }
         }
 
         let location = MockLocation()
-        let box = LocationBox(location: location)
+        let box = LocationBox(location)
 
         #expect(location.wasRead == false)
         #expect(box.wasRead == false)
@@ -50,7 +64,7 @@ struct LocationBoxTests {
     }
 
     @Test
-    func projecting() {
+    func boxProjectingAndCache() {
         struct V {
             var count = 0
         }
@@ -65,18 +79,26 @@ struct LocationBoxTests {
                 defer { value.count += 1 }
                 return (value, value.count == 0)
             }
+            static func == (lhs: MockLocation, rhs: MockLocation) -> Bool {
+                lhs.value.count == rhs.value.count
+            }
         }
 
         let location = MockLocation()
-        let box = LocationBox(location: location)
+        let box = LocationBox(location)
 
         let keyPath: WritableKeyPath = \V.count
-        #expect(box.cache.checkReference(for: keyPath, on: location) == false)
+        #expect(box.cache.cache.isEmpty == true)
         let newLocation = box.projecting(keyPath)
-        #expect(box.cache.checkReference(for: keyPath, on: location) == true)
+        #expect(box.cache.cache.isEmpty == false)
         #expect(location.get().count == 0)
         _ = box.update()
+        #expect(box.get().count == 1)
         #expect(location.get().count == 1)
         #expect(newLocation.get() == 1)
+        
+        #expect(box.cache.cache.isEmpty == false)
+        box.cache.reset()
+        #expect(box.cache.cache.isEmpty == true)
     }
 }
