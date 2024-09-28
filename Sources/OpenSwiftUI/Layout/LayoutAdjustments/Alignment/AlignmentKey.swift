@@ -16,7 +16,7 @@ struct AlignmentKey: Hashable, Comparable {
         lhs.bits < rhs.bits
     }
 
-    @UnsafeLockedPointer
+    @AtomicBox
     private static var typeCache = TypeCache(typeIDs: [:], types: [])
 
     struct TypeCache {

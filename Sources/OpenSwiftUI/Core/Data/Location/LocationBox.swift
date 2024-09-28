@@ -7,7 +7,7 @@
 
 class LocationBox<L: Location>: AnyLocation<L.Value> {
     var location: L
-    @UnsafeLockedPointer
+    @AtomicBox
     var cache = LocationProjectionCache()
 
     init(location: L) {

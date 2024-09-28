@@ -2,21 +2,21 @@
 //  UniqueID.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
 
 internal import OpenGraphShims
 
-struct UniqueID: Hashable {
-    static let zero = UniqueID(value: 0)
-
-    let value: Int
-
-    @inline(__always)
-    init() {
+package struct UniqueID: Hashable {
+    @inlinable
+    package init() {
         value = Int(makeUniqueID())
     }
-
+    
+    package static let invalid = UniqueID(value: 0)
+    
+    let value: Int
+    
     private init(value: Int) {
         self.value = value
     }

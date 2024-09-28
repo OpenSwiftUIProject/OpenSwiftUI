@@ -6,7 +6,7 @@
 //  Status: WIP
 
 struct UnsafeAtomicLazy<Data>: Destroyable {
-    @UnsafeLockedPointer
+    @AtomicBox
     var cache: Data?
     
     func read(_ block: () -> Data) -> Data {
@@ -14,6 +14,6 @@ struct UnsafeAtomicLazy<Data>: Destroyable {
     }
 
     func destroy() {
-        _cache.destroy()
+//        _cache.destroy()
     }
 }

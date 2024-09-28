@@ -1,12 +1,9 @@
 //
 //  BloomFilterTests.swift
-//
-//
-//  Created by Kyle on 2023/10/17.
-//
+//  OpenSwiftUICoreTests
 
 import Foundation
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct BloomFilterTests {

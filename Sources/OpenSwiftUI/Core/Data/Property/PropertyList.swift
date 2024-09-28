@@ -6,7 +6,7 @@
 //  Status: Blocked by merge
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
 
-internal import COpenSwiftUI
+internal import COpenSwiftUICore
 internal import OpenGraphShims
 
 // MARK: - PropertyList
@@ -301,12 +301,12 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
 
 extension PropertyList {
     class Tracker {
-        @UnsafeLockedPointer
+        @AtomicBox
         private var data: TrackerData
         
         init() {
-            _data = UnsafeLockedPointer(wrappedValue: .init(
-                plistID: .zero,
+            _data = AtomicBox(wrappedValue: .init(
+                plistID: .invalid,
                 values: [:],
                 derivedValues: [:],
                 invalidValues: [],
@@ -314,12 +314,8 @@ extension PropertyList {
             ))
         }
         
-        deinit {
-            $data.destroy()
-        }
-        
         func value<Key: PropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
-            $data.withMutableData { data in
+            $data.access { data in
                 guard match(data: data, plist: plist) else {
                     data.unrecordedDependencies = true
                     return plist[keyType]
@@ -336,11 +332,11 @@ extension PropertyList {
         }
         
         func initializeValues(from: PropertyList) {
-            data.plistID = from.elements?.id ?? .zero
+            data.plistID = from.elements?.id ?? .invalid
         }
         
         func invalidateValue<Key: PropertyKey>(for keyType: Key.Type, from: PropertyList, to: PropertyList) {
-            $data.withMutableData { data in
+            $data.access { data in
                 guard let id = match(data: data, from: from, to: to) else {
                     return
                 }
@@ -354,7 +350,7 @@ extension PropertyList {
         }
 
         func invalidateAllValues(from: PropertyList, to: PropertyList) {
-            $data.withMutableData { data in
+            $data.access { data in
                 guard let id = match(data: data, from: from, to: to) else {
                     return
                 }
@@ -365,8 +361,8 @@ extension PropertyList {
         }
         
         func reset() {
-            $data.withMutableData { data in
-                data.plistID = .zero
+            $data.access { data in
+                data.plistID = .invalid
                 data.values.removeAll(keepingCapacity: true)
                 data.derivedValues.removeAll(keepingCapacity: true)
                 data.invalidValues.removeAll(keepingCapacity: true)
@@ -405,7 +401,7 @@ private func match(data: TrackerData, plist: PropertyList) -> Bool {
     if let elements = plist.elements,
        data.plistID == elements.id {
         true
-    } else if plist.elements == nil, data.plistID == .zero {
+    } else if plist.elements == nil, data.plistID == .invalid {
         true
     } else {
         false
@@ -419,10 +415,10 @@ private func match(data: TrackerData, from: PropertyList, to: PropertyList) -> U
         if let toElement = to.elements {
             toElement.id != data.plistID ? toElement.id : nil
         } else {
-            data.plistID != .zero ? .zero : nil
+            data.plistID != .invalid ? .invalid : nil
         }
     } else if from.elements == nil,
-              data.plistID == .zero,
+              data.plistID == .invalid,
               let toElement = to.elements,
               toElement.id != data.plistID {
         toElement.id
