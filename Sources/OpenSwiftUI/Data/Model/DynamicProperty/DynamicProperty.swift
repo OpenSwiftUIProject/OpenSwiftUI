@@ -7,6 +7,7 @@
 //  ID: 49D2A32E637CD497C6DE29B8E060A506
 
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// An interface for a stored variable that updates an external property of a
 /// view.

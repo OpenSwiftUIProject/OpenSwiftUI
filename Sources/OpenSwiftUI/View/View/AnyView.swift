@@ -8,6 +8,7 @@
 
 internal import OpenGraphShims
 internal import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 @frozen
 public struct AnyView: PrimitiveView {

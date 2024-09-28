@@ -7,6 +7,7 @@
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C
 
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// View content that shows one of two possible children.
 @frozen
