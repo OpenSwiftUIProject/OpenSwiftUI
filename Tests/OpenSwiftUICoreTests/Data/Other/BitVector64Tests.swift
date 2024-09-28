@@ -2,7 +2,6 @@
 //  BitVector64Tests.swift
 //  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 import Testing
 

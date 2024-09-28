@@ -8,8 +8,9 @@
 
 internal import OpenGraphShims
 internal import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
-class StoredLocationBase<Value>: AnyLocation<Value>, Location {
+class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
     private struct LockedData {
         var currentValue: Value
         var savedValue: [Value]
@@ -38,21 +39,21 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
                 return false
             }
             
-            box.$data.withMutableData { data in
+            box.$data.access { data in
                 _ = data.savedValue.removeFirst()
             }
             return true
         }
     }
     
-    @UnsafeLockedPointer
+    @AtomicBox
     private var data: LockedData
     
     var _wasRead: Bool
     
     init(initialValue value: Value) {
         _wasRead = false
-        _data = UnsafeLockedPointer(wrappedValue: LockedData(currentValue: value, savedValue: []))
+        _data = AtomicBox(wrappedValue: LockedData(currentValue: value, savedValue: []))
         super.init()
     }
     
@@ -89,12 +90,12 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
             return
         }
         guard isValid else {
-            $data.withMutableData { data in
+            $data.access { data in
                 data.savedValue.removeAll()
             }
             return
         }
-        let shouldCommit = $data.withMutableData { data in
+        let shouldCommit = $data.access { data in
             guard !compareValues(data.currentValue, value) else {
                 return false
             }
@@ -128,11 +129,10 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
     // MARK: - final properties and methods
     
     deinit {
-        $data.destroy()
     }
     
     final var updateValue: Value {
-        $data.withMutableData { data in
+        $data.access { data in
             data.savedValue.first ?? data.currentValue
         }
     }
@@ -143,7 +143,7 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
     }
 }
 
-final class StoredLocation<Value>: StoredLocationBase<Value> {
+final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked Sendable {
     weak var host: GraphHost?
     @WeakAttribute var signal: Void?
     

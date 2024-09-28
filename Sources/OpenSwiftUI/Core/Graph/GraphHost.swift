@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 30C09FF16BC95EC5173809B57186CAC3
 
-internal import COpenSwiftUI
+internal import COpenSwiftUICore
 internal import OpenGraphShims
 
 private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
@@ -171,7 +171,7 @@ class GraphHost {
     final func updatePreferences() -> Bool {
         let seed = hostPreferenceValues.value?.mergedSeed ?? .empty
         let lastSeed = lastHostPreferencesSeed
-        let didUpdate = seed.isInvalid || lastSeed.isInvalid || (seed != lastSeed)
+        let didUpdate = seed.isInvalid || lastSeed.isInvalid /*|| (seed != lastSeed)*/
         lastHostPreferencesSeed = seed
         return didUpdate
     }

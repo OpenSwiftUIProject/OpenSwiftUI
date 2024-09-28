@@ -83,7 +83,7 @@ if releaseVersion >= 2021 {
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
-    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
+   sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
 }
 
 let openSwiftUICoreTarget = Target.target(

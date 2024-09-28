@@ -1,8 +1,8 @@
 //
 //  TLS.h
-//  OpenSwiftUI
+//  COpenSwiftUICore
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
 
 #ifndef TLS_h
@@ -15,5 +15,8 @@ void _setThreadTransactionData(void  * _Nullable data);
 
 OPENSWIFTUI_EXPORT
 void * _Nullable _threadTransactionData(void);
+
+OPENSWIFTUI_EXPORT
+uint32_t _threadTransactionID(bool increase);
 
 #endif /* TLS_h */

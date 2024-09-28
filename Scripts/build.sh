@@ -9,6 +9,4 @@ OPENSWIFTUI_ROOT="$(dirname $(dirname $(filepath $0)))"
 
 cd $OPENSWIFTUI_ROOT
 
-export OPENSWIFTUI_SWIFT_TESTING=0
-export OPENGRAPH_SWIFT_TESTING=0
 swift build

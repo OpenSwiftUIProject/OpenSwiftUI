@@ -276,19 +276,33 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
 extension Path {
     @usableFromInline
     final package class PathBox: Equatable {
-//        #if OPENSWIFTUI_RELEASE_2024 // Also on RELEASE_2023
-//        private var kind: Kind
+        #if OPENSWIFTUI_RELEASE_2024 // Also on RELEASE_2023
+        private var kind: Kind
 ////        var data: PathData
-//        private init() {
-//            kind = .buffer
+        private init() {
+            kind = .buffer
 //            // TODO
-//        }
-//        private enum Kind: UInt8 {
-//            case cgPath
-//            case rbPath
-//            case buffer
-//        }
-//        #elseif OPENSWIFTUI_RELEASE_2021
+        }
+        private enum Kind: UInt8 {
+            case cgPath
+            case rbPath
+            case buffer
+        }
+        
+        init(_ path: CGPath) {
+            fatalError("TODO")
+        }
+        
+        init(_ mutablePath: CGMutablePath) {
+            fatalError("TODO")
+        }
+        
+        // FIXME
+        @usableFromInline
+        package static func == (lhs: Path.PathBox, rhs: Path.PathBox) -> Bool {
+            lhs.kind == rhs.kind
+        }
+        #elseif OPENSWIFTUI_RELEASE_2021
         let cgPath: CGMutablePath
         var bounds: UnsafeAtomicLazy<CGRect>
         
@@ -328,7 +342,7 @@ extension Path {
         private func clearCache() {
             bounds.cache = nil
         }
-//        #endif
+        #endif
     }
 }
 

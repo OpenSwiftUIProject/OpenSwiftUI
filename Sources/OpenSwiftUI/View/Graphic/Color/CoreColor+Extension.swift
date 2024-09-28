@@ -6,7 +6,8 @@
 //  Status: Complete
 
 #if canImport(Darwin)
-import COpenSwiftUICore
+import Foundation
+internal import COpenSwiftUICore
 
 extension CoreColor {
     package static func platformColor(resolvedColor: Color.Resolved) -> NSObject? {

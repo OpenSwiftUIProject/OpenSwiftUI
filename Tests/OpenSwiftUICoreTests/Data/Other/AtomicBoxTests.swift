@@ -2,7 +2,7 @@
 //  AtomicBoxTests.swift
 //  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
+import OpenSwiftUICore
 import Testing
 
 struct AtomicBoxTests {

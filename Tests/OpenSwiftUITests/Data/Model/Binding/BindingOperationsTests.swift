@@ -1,9 +1,6 @@
 //
 //  BindingOperationsTests.swift
-//
-//
-//  Created by Kyle on 2023/11/5.
-//
+//  OpenSwiftUITests
 
 @testable import OpenSwiftUI
 import Testing

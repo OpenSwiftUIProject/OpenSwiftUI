@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: 5436F2B399369BE3B016147A5F8FE9F2
 
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
 /// A property wrapper type that can read and write a value owned by a source of
 /// truth.
 ///
@@ -77,7 +79,7 @@ public struct Binding<Value> {
     ///       - newValue: The new value of the binding value.
     public init(get: @escaping () -> Value, set: @escaping (Value) -> Void) {
         let location = FunctionalLocation(getValue: get) { value, _ in set(value) }
-        let box = LocationBox(location: location)
+        let box = LocationBox(location)
         self.init(value: get(), location: box)
     }
 
@@ -93,7 +95,7 @@ public struct Binding<Value> {
     ///       - transaction: The transaction to apply when setting a new value.
     public init(get: @escaping () -> Value, set: @escaping (Value, Transaction) -> Void) {
         let location = FunctionalLocation(getValue: get, setValue: set)
-        let box = LocationBox(location: location)
+        let box = LocationBox(location)
         self.init(value: get(), location: box)
     }
 
@@ -109,7 +111,7 @@ public struct Binding<Value> {
     /// - Parameter value: An immutable value.
     public static func constant(_ value: Value) -> Binding<Value> {
         let location = ConstantLocation(value: value)
-        let box = LocationBox(location: location)
+        let box = LocationBox(location)
         return Binding(value: value, location: box)
     }
 
@@ -328,13 +330,13 @@ extension Binding: DynamicProperty {
         mutating func update(property: inout Property, phase: _GraphInputs.Phase) -> Bool {
             if let location {
                 if location.location.base !== property.location {
-                    self.location = LocationBox(location: ScopedLocation(base: property.location))
+                    self.location = LocationBox(ScopedLocation(base: property.location))
                     if location.wasRead {
                         self.location!.wasRead = true
                     }
                 }
             } else {
-                location = LocationBox(location: ScopedLocation(base: property.location))
+                location = LocationBox(ScopedLocation(base: property.location))
             }
             let (value, changed) = location!.update()
             property.location = location!

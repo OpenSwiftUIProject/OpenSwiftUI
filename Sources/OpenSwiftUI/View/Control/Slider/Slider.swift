@@ -6,6 +6,8 @@
 //  Status: Blocked by Accessibility
 //  ID: F045F16106E380A820CC0B639278A953
 
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
 /// A control for selecting a value from a bounded linear range of values.
 ///
 /// A slider consists of a "thumb" image that the user moves between two

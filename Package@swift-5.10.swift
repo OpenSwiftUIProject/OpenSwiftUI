@@ -249,7 +249,7 @@ if swiftLogCondition {
 }
 
 // Remove the check when swift-testing reaches 1.0.0
-let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING", default: true)
+let swiftTestingCondition = envEnable("OPENSWIFTUI_SWIFT_TESTING")
 if swiftTestingCondition {
     package.dependencies.append(
         // Fix it to be 0.3.0 before we bump to Swift 5.10

@@ -20,7 +20,7 @@ extension Transaction {
     /// - Parameter animation: The animation to perform when the current state
     ///   changes.
     public init(animation: Animation?) {
-        self.plist = PropertyList()
+        self.init()
         self.animation = animation
     }
     
