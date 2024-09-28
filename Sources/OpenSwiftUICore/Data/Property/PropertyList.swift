@@ -84,11 +84,6 @@ package struct PropertyList: CustomStringConvertible {
         get { fatalError("TODO") }
         set { fatalError("TODO") }
     }
-    
-    @inline(__always)
-    init(elements: Element?) {
-        self.elements = elements
-    }
   
     @usableFromInline
     package var description: String {
@@ -133,16 +128,6 @@ package struct PropertyList: CustomStringConvertible {
     
     mutating func merge(_ plist: PropertyList) {
         fatalError("TODO")
-    }
-    
-    @inline(__always)
-    package static var current: PropertyList {
-        if let data = _threadTransactionData() {
-            // FIXME: swift_dynamicCastClassUnconditional
-            PropertyList(elements: data.assumingMemoryBound(to: Element.self).pointee)
-        } else {
-            PropertyList()
-        }
     }
 }
 
