@@ -10,7 +10,7 @@ internal import OpenGraphShims
 internal import COpenSwiftUI
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
-class StoredLocationBase<Value>: AnyLocation<Value>, Location {
+class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
     private struct LockedData {
         var currentValue: Value
         var savedValue: [Value]
@@ -143,7 +143,7 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location {
     }
 }
 
-final class StoredLocation<Value>: StoredLocationBase<Value> {
+final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked Sendable {
     weak var host: GraphHost?
     @WeakAttribute var signal: Void?
     

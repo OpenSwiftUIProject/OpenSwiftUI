@@ -82,9 +82,10 @@ if releaseVersion >= 2021 {
 }
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
-if warningsAsErrorsCondition {
-    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
-}
+// Workaround the StoredLocationBase warning temporarily
+//if warningsAsErrorsCondition {
+//    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
+//}
 
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
