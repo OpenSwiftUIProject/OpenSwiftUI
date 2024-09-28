@@ -5,6 +5,8 @@
 //  Created by Kyle on 2023/10/19.
 //
 
+#if OPENSWIFTUI_RELEASE_2021
+
 @testable import OpenSwiftUICore
 import COpenSwiftUICore
 import Testing
@@ -71,3 +73,5 @@ struct LockedPointerTests {
         #endif
     }
 }
+
+#endif
