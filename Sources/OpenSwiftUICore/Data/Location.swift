@@ -174,3 +174,36 @@ private struct ProjectedLocation<L: Location, P: Projection>: Location where P.B
         return (value, result)
     }
 }
+
+// MARK: - FlattenedCollectionLocation
+
+package struct FlattenedCollectionLocation<Value, Base>: Location where Base: Collection, Base: Equatable, Base.Element: AnyLocation<Value> {
+    package typealias Value = Value
+    
+    package let base: Base
+    
+    package init(base: [AnyLocation<Value>]) {
+        self.base = base as! Base
+    }
+    
+    private var primaryLocation: Base.Element { base.first! }
+    
+    package var wasRead: Bool {
+        get { primaryLocation.wasRead }
+        set { primaryLocation.wasRead = newValue }
+    }
+    
+    package func get() -> Value {
+        primaryLocation.get()
+    }
+    
+    package func set(_ newValue: Value, transaction: Transaction) {
+        for location in base {
+            location.set(newValue, transaction: transaction)
+        }
+    }
+    
+    package func update() -> (Value, Bool) {
+        primaryLocation.update()
+    }
+}
