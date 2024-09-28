@@ -30,7 +30,7 @@ public struct _ViewOutputs {
     func detachIndirectOutputs() {
         #if canImport(Darwin)
         struct ResetPreference: PreferenceKeyVisitor {
-            var dst: OGAttribute
+            var dst: AnyAttribute
             func visit<Key: PreferenceKey>(key: Key.Type) {
                 let graphHost = dst.graph.graphHost()
                 let source = graphHost.intern(Key.defaultValue, id: .zero)
@@ -63,7 +63,7 @@ public struct _ViewOutputs {
     @inline(__always)
     func forEach(body: (
         _ key: AnyPreferenceKey.Type,
-        _ value: OGAttribute
+        _ value: AnyAttribute
     ) throws -> Void
     ) rethrows {
         try preferences.forEach(body: body)

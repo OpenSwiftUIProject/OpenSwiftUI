@@ -46,7 +46,7 @@ package struct CustomGraphMutation: GraphMutation {
 // FIXME: #39
 #if canImport(Darwin)
 struct InvalidatingGraphMutation: GraphMutation {
-    let attribute: OGWeakAttribute
+    let attribute: AnyWeakAttribute
     
     func apply() {
         attribute.attribute?.invalidateValue()

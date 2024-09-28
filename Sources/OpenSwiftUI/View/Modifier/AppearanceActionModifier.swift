@@ -101,7 +101,7 @@ extension AppearanceEffect: StatefulRule {
 // MARK: AppearanceEffect + RemovableAttribute
 
 extension AppearanceEffect: RemovableAttribute {
-    static func willRemove(attribute: OGAttribute) {
+    static func willRemove(attribute: AnyAttribute) {
         let appearancePointer = UnsafeMutableRawPointer(mutating: attribute.info.body)
             .assumingMemoryBound(to: AppearanceEffect.self)
         guard appearancePointer.pointee.lastValue != nil else {
@@ -110,7 +110,7 @@ extension AppearanceEffect: RemovableAttribute {
         appearancePointer.pointee.disappeared()
     }
     
-    static func didReinsert(attribute: OGAttribute) {
+    static func didReinsert(attribute: AnyAttribute) {
         let appearancePointer = UnsafeMutableRawPointer(mutating: attribute.info.body)
             .assumingMemoryBound(to: AppearanceEffect.self)
         guard let nodeAttribute = appearancePointer.pointee.node.attribute else {

@@ -11,7 +11,7 @@ public struct _GraphInputs {
     private var changedDebugProperties: _ViewDebug.Properties
     private var options: _GraphInputs.Options
     #if canImport(Darwin) // FIXME: See #39
-    var mergedInputs: Set<OGAttribute>
+    var mergedInputs: Set<AnyAttribute>
     #endif
     
     #if canImport(Darwin)
@@ -22,7 +22,7 @@ public struct _GraphInputs {
          transaction: Attribute<Transaction>,
          changedDebugProperties: _ViewDebug.Properties = [],
          options: _GraphInputs.Options = [],
-         mergedInputs: Set<OGAttribute> = []) {
+         mergedInputs: Set<AnyAttribute> = []) {
         self.customInputs = customInputs
         self.time = time
         self.cachedEnvironment = cachedEnvironment
@@ -40,7 +40,7 @@ public struct _GraphInputs {
          transaction: Attribute<Transaction>,
          changedDebugProperties: _ViewDebug.Properties = [],
          options: _GraphInputs.Options = []/*,
-         mergedInputs: Set<OGAttribute> = []*/) {
+         mergedInputs: Set<AnyAttribute> = []*/) {
         self.customInputs = customInputs
         self.time = time
         self.cachedEnvironment = cachedEnvironment

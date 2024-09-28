@@ -15,10 +15,10 @@ final class ViewGraph: GraphHost {
     static var current: ViewGraph { GraphHost.currentHost as! ViewGraph }
     
     let rootViewType: Any.Type
-    let makeRootView: (OGAttribute, _ViewInputs) -> _ViewOutputs
+    let makeRootView: (AnyAttribute, _ViewInputs) -> _ViewOutputs
     weak var delegate: ViewGraphDelegate?
     var centersRootView: Bool = true
-    let rootView: OGAttribute
+    let rootView: AnyAttribute
     @Attribute var rootTransform: ViewTransform
     @Attribute var zeroPoint: ViewOrigin
     // TODO
@@ -53,7 +53,7 @@ final class ViewGraph: GraphHost {
         set { setPreferenceBridge(to: newValue, isInvalidating: false) }
     }
     #if canImport(Darwin) // FIXME: See #39
-    var bridgedPreferences: [(AnyPreferenceKey.Type, OGAttribute)] = []
+    var bridgedPreferences: [(AnyPreferenceKey.Type, AnyAttribute)] = []
     #endif
     // TODO
     

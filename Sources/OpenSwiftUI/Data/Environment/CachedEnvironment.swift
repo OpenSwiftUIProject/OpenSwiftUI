@@ -14,7 +14,7 @@ struct CachedEnvironment {
     var environment: Attribute<EnvironmentValues>
     private var items: [Item]
     #if canImport(Darwin)
-    private var constants: [HashableConstant: OGAttribute]
+    private var constants: [HashableConstant: AnyAttribute]
     #endif
     private var animatedFrame: AnimatedFrame?
     // private var resolvedFgStyles: [ResolvedFgStyle : Swift<_ShapeStyle_Resolved.ResolvedFg>]
@@ -73,7 +73,7 @@ extension CachedEnvironment {
     private struct Item {
         var key: PartialKeyPath<EnvironmentValues>
         #if canImport(Darwin) // See #39
-        var value: OGAttribute
+        var value: AnyAttribute
         #endif
     }
 }

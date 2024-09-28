@@ -191,7 +191,7 @@ package struct _ViewList_ID {
     private struct Explicit: Equatable {
         let id: AnyHashable
         #if canImport(Darwin)
-        let owner: OGAttribute
+        let owner: AnyAttribute
         #endif
         let isUnary: Bool
     }
@@ -203,7 +203,7 @@ package struct _ViewList_ID {
     }
     
     #if canImport(Darwin)
-    mutating func bind(explicitID: AnyHashable, owner: OGAttribute, isUnary: Bool) {
+    mutating func bind(explicitID: AnyHashable, owner: AnyAttribute, isUnary: Bool) {
         explicitIDs.append(.init(id: explicitID, owner: owner, isUnary: isUnary))
     }
     #endif
@@ -226,7 +226,7 @@ final package class _ViewList_IndirectMap {
     final package let subgraph: OGSubgraph
     
     #if canImport(Darwin)
-    final package var map: [OGAttribute: OGAttribute]
+    final package var map: [AnyAttribute: AnyAttribute]
     #endif
     
     init(subgraph: OGSubgraph) {

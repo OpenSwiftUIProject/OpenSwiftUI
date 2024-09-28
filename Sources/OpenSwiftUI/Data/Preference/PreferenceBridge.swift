@@ -19,7 +19,7 @@ final class PreferenceBridge {
 
     struct BridgedPreference {
         var key: AnyPreferenceKey.Type
-        var combiner: OGWeakAttribute
+        var combiner: AnyWeakAttribute
     }
 
     init() {
@@ -27,16 +27,16 @@ final class PreferenceBridge {
     }
     
     #if canImport(Darwin) // FIXME: See #39
-    func addValue(_ value: OGAttribute, for keyType: AnyPreferenceKey.Type) {
+    func addValue(_ value: AnyAttribute, for keyType: AnyPreferenceKey.Type) {
         struct AddValue: PreferenceKeyVisitor {
-            var combiner: OGAttribute
-            var value: OGAttribute
+            var combiner: AnyAttribute
+            var value: AnyAttribute
             func visit<Key: PreferenceKey>(key _: Key.Type) {
                 combiner.mutateBody(
                     as: PreferenceCombiner<Key>.self,
                     invalidating: true
                 ) { combiner in
-                    combiner.attributes.append(WeakAttribute(base: OGWeakAttribute(value)))
+                    combiner.attributes.append(WeakAttribute(base: AnyWeakAttribute(value)))
                 }
             }
         }
@@ -51,10 +51,10 @@ final class PreferenceBridge {
         viewGraph.graphInvalidation(from: value)
     }
 
-    func removeValue(_ value: OGAttribute, for keyType: AnyPreferenceKey.Type, isInvalidating: Bool) {
+    func removeValue(_ value: AnyAttribute, for keyType: AnyPreferenceKey.Type, isInvalidating: Bool) {
         struct RemoveValue: PreferenceKeyVisitor {
-            var combiner: OGAttribute
-            var value: OGAttribute
+            var combiner: AnyAttribute
+            var value: AnyAttribute
             var changed = false
             mutating func visit<Key: PreferenceKey>(key _: Key.Type) {
                 combiner.mutateBody(
@@ -149,7 +149,7 @@ final class PreferenceBridge {
 
     func wrapOutputs(_ outputs: inout PreferencesOutputs, inputs: _ViewInputs) {
         struct MakeCombiner: PreferenceKeyVisitor {
-            var result: OGAttribute?
+            var result: AnyAttribute?
 
             mutating func visit<Key>(key _: Key.Type) where Key: PreferenceKey {
                 result = Attribute(PreferenceCombiner<Key>(attributes: [])).identifier
@@ -178,7 +178,7 @@ final class PreferenceBridge {
                 if !requestedPreferences.contains(key) {
                     requestedPreferences.add(key)
                 }
-                bridgedPreferences.append(BridgedPreference(key: key, combiner: OGWeakAttribute(combiner)))
+                bridgedPreferences.append(BridgedPreference(key: key, combiner: AnyWeakAttribute(combiner)))
                 outputs[anyKey: key] = combiner
             }
         }

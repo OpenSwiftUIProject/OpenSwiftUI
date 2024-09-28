@@ -179,18 +179,18 @@ extension StaticBody: BodyAccessorRule {
         Accessor.Container.self
     }
     
-    static func value<Value>(as _: Value.Type, attribute: OGAttribute) -> Value? {
+    static func value<Value>(as _: Value.Type, attribute: AnyAttribute) -> Value? {
         guard container == Value.self else {
             return nil
         }
         return unsafeBitCast(attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container, to: Value.self)
     }
     
-    static func buffer<Value>(as _: Value.Type, attribute _: OGAttribute) -> _DynamicPropertyBuffer? {
+    static func buffer<Value>(as _: Value.Type, attribute _: AnyAttribute) -> _DynamicPropertyBuffer? {
         nil
     }
     
-    static func metaProperties<Value>(as _: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+    static func metaProperties<Value>(as _: Value.Type, attribute: AnyAttribute) -> [(String, AnyAttribute)] {
         guard container == Value.self else {
             return []
         }
@@ -253,21 +253,21 @@ extension DynamicBody: BodyAccessorRule {
         Accessor.Container.self
     }
     
-    static func value<Value>(as _: Value.Type, attribute: OGAttribute) -> Value? {
+    static func value<Value>(as _: Value.Type, attribute: AnyAttribute) -> Value? {
         guard container == Value.self else {
             return nil
         }
         return unsafeBitCast(attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container, to: Value.self)
     }
     
-    static func buffer<Value>(as _: Value.Type, attribute: OGAttribute) -> _DynamicPropertyBuffer? {
+    static func buffer<Value>(as _: Value.Type, attribute: AnyAttribute) -> _DynamicPropertyBuffer? {
         guard container == Value.self else {
             return nil
         }
         return attribute.info.body.assumingMemoryBound(to: Self.self).pointee.links
     }
     
-    static func metaProperties<Value>(as _: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+    static func metaProperties<Value>(as _: Value.Type, attribute: AnyAttribute) -> [(String, AnyAttribute)] {
         guard container == Value.self else {
             return []
         }

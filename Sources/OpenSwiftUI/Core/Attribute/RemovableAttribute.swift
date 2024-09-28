@@ -8,6 +8,6 @@
 internal import OpenGraphShims
 
 protocol RemovableAttribute: _AttributeBody {
-    static func willRemove(attribute: OGAttribute)
-    static func didReinsert(attribute: OGAttribute)
+    static func willRemove(attribute: AnyAttribute)
+    static func didReinsert(attribute: AnyAttribute)
 }

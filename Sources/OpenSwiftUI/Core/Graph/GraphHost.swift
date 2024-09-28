@@ -30,7 +30,7 @@ class GraphHost {
     
     static var currentHost: GraphHost {
         #if canImport(Darwin)
-        if let currentAttribute = OGAttribute.current {
+        if let currentAttribute = AnyAttribute.current {
             currentAttribute.graph.graphHost()
         } else if let currentSubgraph = OGSubgraph.current {
             currentSubgraph.graph.graphHost()
@@ -231,7 +231,7 @@ class GraphHost {
         // TODO:
     }
     
-    final func graphInvalidation(from attribute: OGAttribute?) {
+    final func graphInvalidation(from attribute: AnyAttribute?) {
         #if canImport(Darwin)
         guard let attribute else {
             graphDelegate?.graphDidChange()
