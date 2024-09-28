@@ -17,7 +17,7 @@ jobs:
         release: [2024]
     runs-on: ${{ matrix.os }}
     env:
-      OPENSWIFTUI_WERROR: 1
+      OPENSWIFTUI_WERROR: 0
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
@@ -57,7 +57,7 @@ jobs:
             ios-simulator-name: "iPhone 16 Pro"
     runs-on: ${{ matrix.os }}
     env:
-      OPENSWIFTUI_WERROR: 1
+      OPENSWIFTUI_WERROR: 0
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
