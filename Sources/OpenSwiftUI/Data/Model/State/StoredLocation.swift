@@ -8,6 +8,7 @@
 
 internal import OpenGraphShims
 internal import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 class StoredLocationBase<Value>: AnyLocation<Value>, Location {
     private struct LockedData {

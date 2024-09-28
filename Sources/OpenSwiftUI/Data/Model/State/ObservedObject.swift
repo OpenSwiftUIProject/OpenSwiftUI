@@ -202,7 +202,7 @@ extension ObservedObject: DynamicProperty {
 extension Binding {
     init<ObjectType: ObservableObject>(_ root: ObjectType, keyPath: ReferenceWritableKeyPath<ObjectType, Value>) {
         let location = ObservableObjectLocation(base: root, keyPath: keyPath)
-        let box = LocationBox(location: location)
+        let box = LocationBox(location)
         self.init(value: location.get(), location: box)
     }
 }

@@ -10,7 +10,7 @@ import OpenCombine
 #else
 import Combine
 #endif
-internal import COpenSwiftUI
+internal import COpenSwiftUICore
 
 struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObject {
     let base: Root
@@ -35,6 +35,11 @@ struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObj
         defer { _setThreadTransactionData(data) }
         _setThreadTransactionData(newElement.map { Unmanaged.passUnretained($0).toOpaque() })
         base[keyPath: keyPath] = value
+    }
+    
+    // FIXME
+    static func == (lhs: ObservableObjectLocation<Root, Value>, rhs: ObservableObjectLocation<Root, Value>) -> Bool {
+        lhs.base === rhs.base && lhs.keyPath == rhs.keyPath
     }
 }
 

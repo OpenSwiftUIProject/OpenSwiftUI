@@ -1,11 +1,11 @@
 //
 //  Transaction.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
 
-internal import COpenSwiftUI
+internal import COpenSwiftUICore
 
 /// The context of the current state-processing update.
 ///
@@ -16,41 +16,45 @@ internal import COpenSwiftUI
 /// ``withAnimation(_:_:)``
 @frozen
 public struct Transaction {
+    @usableFromInline
+    package var plist: PropertyList
+    
     /// Creates a transaction.
     @inlinable
     public init() {
         plist = PropertyList()
     }
     
-    @inline(__always)
-    init(plist: PropertyList) {
+    @inlinable
+    package init(plist: PropertyList) {
         self.plist = plist
     }
     
-    @usableFromInline
-    var plist: PropertyList
+    package struct ID: Hashable {
+        var value: UInt32
+    }
     
     @inline(__always)
-    var isEmpty: Bool { plist.elements == nil }
+    package var isEmpty: Bool { plist.elements == nil }
     
     @inline(__always)
-    mutating func override(_ transaction: Transaction) {
+    mutating package func override(_ transaction: Transaction) {
         plist.override(with: transaction.plist)
     }
     
     @inline(__always)
-    static var current: Transaction {
+    package static var current: Transaction {
         Transaction(plist: .current)
     }
 }
 
 extension Transaction {
-    struct Key<K: TransactionKey>: PropertyKey {
-        static var defaultValue: K.Value { K.defaultValue }
+    package struct Key<K: TransactionKey>: PropertyKey {
+        package static var defaultValue: K.Value { K.defaultValue }
     }
 }
 
-protocol TransactionKey {
+package protocol TransactionKey {
     associatedtype Value
     static var defaultValue: Value { get }
 }
@@ -77,6 +81,9 @@ public func withTransaction<Result>(
     }
 }
 
-struct TransactionID {
-    var id: Int
+package struct TransactionID {
+    package var id: Int
+    package init(id: Int) {
+        self.id = id
+    }
 }

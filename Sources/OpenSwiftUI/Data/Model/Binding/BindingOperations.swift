@@ -5,6 +5,8 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
 enum BindingOperations {}
 
 extension BindingOperations {

@@ -1,3 +1,5 @@
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
 class FocusStoreLocation<A: Hashable>: AnyLocation<A> {
     override var wasRead: Bool {
         get {
