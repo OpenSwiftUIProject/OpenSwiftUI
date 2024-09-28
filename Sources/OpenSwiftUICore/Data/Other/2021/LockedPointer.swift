@@ -5,7 +5,9 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-internal import COpenSwiftUI
+#if OPENSWIFTUI_RELEASE_2021
+
+internal import COpenSwiftUICore
 
 extension LockedPointer {
     @_transparent
@@ -39,3 +41,5 @@ extension LockedPointer {
         _LockedPointerDelete(self)
     }
 }
+
+#endif

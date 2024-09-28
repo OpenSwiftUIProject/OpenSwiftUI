@@ -5,6 +5,8 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
+#if OPENSWIFTUI_RELEASE_2021
+
 @propertyWrapper
 class DestroyableBox<A: Destroyable> {
     var wrappedValue: A
@@ -13,3 +15,5 @@ class DestroyableBox<A: Destroyable> {
         self.wrappedValue = wrappedValue
     }
 }
+
+#endif

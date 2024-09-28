@@ -316,7 +316,7 @@ extension Path {
                 return cache
             } else {
                 let boundingBox = cgPath.boundingBoxOfPath
-                bounds.$cache.access { rect in
+                bounds.$cache.withMutableData { rect in
                     if rect == nil {
                         rect = boundingBox
                     }

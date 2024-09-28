@@ -127,7 +127,7 @@ private class PreferenceNode: CustomStringConvertible {
     init(keyType: Any.Type, seed: VersionSeed, next: PreferenceNode?) {
         self.keyType = keyType
         self.seed = seed
-        self.mergedSeed = next?.mergedSeed.merging(seed) ?? seed
+        self.mergedSeed = /*next?.mergedSeed.merging(seed) ??*/ seed
         self.next = next
     }
     

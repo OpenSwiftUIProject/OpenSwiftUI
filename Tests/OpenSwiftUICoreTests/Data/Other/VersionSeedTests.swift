@@ -1,11 +1,8 @@
 //
 //  VersionSeedTests.swift
-//
-//
-//  Created by Kyle on 2024/1/5.
-//
+//  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct VersionSeedTests {
@@ -36,7 +33,9 @@ struct VersionSeedTests {
     func merge(_ a: UInt32, _ b: UInt32, _ c: UInt32) {
         let seedA = VersionSeed(value: a)
         let seedB = VersionSeed(value: b)
-        #expect(seedA.merging(seedB).value == c)
+        var mergedSeed = seedA
+        mergedSeed.merge(seedB)
+        #expect(mergedSeed.value == c)
     }
 }
 
