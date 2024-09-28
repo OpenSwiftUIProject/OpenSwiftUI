@@ -246,7 +246,7 @@ class GraphHost {
             asyncTransaction(
                 transaction,
                 mutation: EmptyGraphMutation(),
-                style: ._1,
+                style: .deferred,
                 mayDeferUpdate: true
             )
         }
@@ -289,8 +289,8 @@ class GraphHost {
             guard let parent = host.parentHost else {
                 asyncTransaction(
                     Transaction(),
-                    mutation: CustomGraphMutation(body: body),
-                    style: ._1,
+                    mutation: CustomGraphMutation(body),
+                    style: .deferred,
                     mayDeferUpdate: true
                 )
                 return

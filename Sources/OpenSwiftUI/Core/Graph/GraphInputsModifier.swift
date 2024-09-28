@@ -2,7 +2,7 @@
 //  _GraphInputsModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
 
 /// Protocol for modifiers that only modify their children's inputs.

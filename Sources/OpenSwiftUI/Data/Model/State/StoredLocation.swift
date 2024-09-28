@@ -165,7 +165,7 @@ final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked Sendabl
         host?.asyncTransaction(
             transaction,
             mutation: mutation,
-            style: ._1,
+            style: .deferred,
             mayDeferUpdate: true
         )
     }
