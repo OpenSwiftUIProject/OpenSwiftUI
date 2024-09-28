@@ -1,6 +1,6 @@
 //
 //  PropertyKey.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
 //  Status: Complete

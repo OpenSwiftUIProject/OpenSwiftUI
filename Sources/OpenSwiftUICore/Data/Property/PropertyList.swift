@@ -3,8 +3,9 @@
 //  OpenSwiftUI
 //
 //  Audited for RELEASE_2021
-//  Status: Blocked by merge
-//  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20
+//  Status: Blocked by merge & WIP in 2024
+//  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (RELEASE_2021)
+//  ID: D64CE6C88E7413721C59A34C0C940F2C (RELEASE_2024)
 
 internal import COpenSwiftUICore
 internal import OpenGraphShims
@@ -14,12 +15,75 @@ internal import OpenGraphShims
 /// A mutable container of key-value pairs
 @usableFromInline
 @frozen
-struct PropertyList: CustomStringConvertible {
+package struct PropertyList: CustomStringConvertible {
+    // FIXME: should be internal
     @usableFromInline
-    var elements: Element?
+    package var elements: Element?
   
     @inlinable
-    init() { elements = nil }
+    package init() {
+        elements = nil
+    }
+    
+    package init(data: AnyObject?) {
+        guard let data else {
+            elements = nil
+            return
+        }
+        elements = (data as! Element)
+    }
+    
+    @inlinable
+    package var data: AnyObject? {
+        elements
+    }
+    
+    @inlinable
+    package var isEmpty: Bool {
+        elements === nil
+    }
+    
+    package var id: UniqueID {
+        elements?.id ?? .invalid
+    }
+    
+    package mutating func override(with other: PropertyList) {
+        if let element = elements {
+            // TO BE AUDITED in 2024
+            elements = element.byPrepending(other.elements)
+        } else {
+            elements = other.elements
+        }
+    }
+    
+    // TO BE AUDITED in 2024 BEGIN
+    
+    package subscript<K>(key: K.Type) -> K.Value where K: PropertyKey {
+        get {
+            withExtendedLifetime(key) {
+                guard let result = find(elements.map { .passUnretained($0) }, key: key) else {
+                    return K.defaultValue
+                }
+                return result.takeUnretainedValue().value
+            }
+        }
+        set {
+            if let result = find(elements.map { .passUnretained($0) }, key: key) {
+                guard !compareValues(
+                    newValue,
+                    result.takeUnretainedValue().value
+                ) else {
+                    return
+                }
+            }
+            elements = TypedElement<K>(value: newValue, before: nil, after: elements)
+        }
+    }
+    
+    package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
+        get { fatalError("TODO") }
+        set { fatalError("TODO") }
+    }
     
     @inline(__always)
     init(elements: Element?) {
@@ -27,7 +91,7 @@ struct PropertyList: CustomStringConvertible {
     }
   
     @usableFromInline
-    var description: String {
+    package var description: String {
         var description = "["
         var shouldAddSeparator = false
         elements?.forEach { element, stop in
@@ -55,28 +119,6 @@ struct PropertyList: CustomStringConvertible {
             body((element as! TypedElement<Key>).value, &stop)
         }
     }
-
-    subscript<Key: PropertyKey>(_ keyType: Key.Type) -> Key.Value {
-        get {
-            withExtendedLifetime(keyType) {
-                guard let result = find(elements.map { .passUnretained($0) }, key: keyType) else {
-                    return Key.defaultValue
-                }
-                return result.takeUnretainedValue().value
-            }
-        }
-        set {
-            if let result = find(elements.map { .passUnretained($0) }, key: keyType) {
-                guard !compareValues(
-                    newValue,
-                    result.takeUnretainedValue().value
-                ) else {
-                    return
-                }
-            }
-            elements = TypedElement<Key>(value: newValue, before: nil, after: elements)
-        }
-    }
     
     func mayNotBeEqual(to: PropertyList) -> Bool {
         let equalResult: Bool
@@ -93,16 +135,8 @@ struct PropertyList: CustomStringConvertible {
         fatalError("TODO")
     }
     
-    mutating func override(with plist: PropertyList) {
-        if let element = elements {
-            elements = element.byPrepending(plist.elements)
-        } else {
-            elements = plist.elements
-        }
-    }
-    
     @inline(__always)
-    static var current: PropertyList {
+    package static var current: PropertyList {
         if let data = _threadTransactionData() {
             // FIXME: swift_dynamicCastClassUnconditional
             PropertyList(elements: data.assumingMemoryBound(to: Element.self).pointee)
@@ -111,6 +145,9 @@ struct PropertyList: CustomStringConvertible {
         }
     }
 }
+
+@available(*, unavailable)
+extension PropertyList: Sendable {}
 
 // MARK: - PropertyList Help functions
 
@@ -145,7 +182,7 @@ private func find<Key: PropertyKey>(
 
 extension PropertyList {
     @usableFromInline
-    class Element: CustomStringConvertible {
+    package class Element: CustomStringConvertible {
         let keyType: Any.Type
         let before: Element?
         let after: Element?
@@ -170,12 +207,9 @@ extension PropertyList {
             self.length = length
             self.keyFilter = keyFilter
         }
-
-        @usableFromInline
-        deinit {}
         
         @usableFromInline
-        var description: String { fatalError() }
+        package var description: String { fatalError() }
         
         func matches(_: Element, ignoredTypes _: inout Set<ObjectIdentifier>) -> Bool {
             fatalError()
@@ -189,7 +223,7 @@ extension PropertyList {
             fatalError()
         }
         
-        final func byPrepending(_ element: Element?) -> Element {
+        final package func byPrepending(_ element: Element?) -> Element {
             guard let element else {
                 return self
             }
@@ -200,7 +234,7 @@ extension PropertyList {
             }
         }
         
-        final func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
+        final package func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
             guard let element else {
                 return false
             }
@@ -300,11 +334,11 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
 // MARK: - PropertyList.Tracker
 
 extension PropertyList {
-    class Tracker {
+    package class Tracker {
         @AtomicBox
         private var data: TrackerData
         
-        init() {
+        package init() {
             _data = AtomicBox(wrappedValue: .init(
                 plistID: .invalid,
                 values: [:],
@@ -314,7 +348,7 @@ extension PropertyList {
             ))
         }
         
-        func value<Key: PropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
+        package func value<Key: PropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
             $data.access { data in
                 guard match(data: data, plist: plist) else {
                     data.unrecordedDependencies = true
@@ -331,11 +365,11 @@ extension PropertyList {
             }
         }
         
-        func initializeValues(from: PropertyList) {
+        package func initializeValues(from: PropertyList) {
             data.plistID = from.elements?.id ?? .invalid
         }
         
-        func invalidateValue<Key: PropertyKey>(for keyType: Key.Type, from: PropertyList, to: PropertyList) {
+        package func invalidateValue<Key: PropertyKey>(for keyType: Key.Type, from: PropertyList, to: PropertyList) {
             $data.access { data in
                 guard let id = match(data: data, from: from, to: to) else {
                     return
@@ -349,7 +383,7 @@ extension PropertyList {
             }
         }
 
-        func invalidateAllValues(from: PropertyList, to: PropertyList) {
+        package func invalidateAllValues(from: PropertyList, to: PropertyList) {
             $data.access { data in
                 guard let id = match(data: data, from: from, to: to) else {
                     return
@@ -360,7 +394,7 @@ extension PropertyList {
             }
         }
         
-        func reset() {
+        package func reset() {
             $data.access { data in
                 data.plistID = .invalid
                 data.values.removeAll(keepingCapacity: true)
@@ -370,7 +404,7 @@ extension PropertyList {
             }
         }
     
-        func hasDifferentUsedValues(_ plist: PropertyList) -> Bool {
+        package func hasDifferentUsedValues(_ plist: PropertyList) -> Bool {
             let data = data
             guard !data.unrecordedDependencies else {
                 return true

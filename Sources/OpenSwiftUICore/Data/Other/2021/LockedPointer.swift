@@ -9,7 +9,7 @@
 
 internal import COpenSwiftUICore
 
-extension LockedPointer {
+package extension LockedPointer {
     @_transparent
     init<Data>(type: Data.Type) {
         self = _LockedPointerCreate(MemoryLayout<Data>.size, MemoryLayout<Data>.alignment)

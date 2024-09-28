@@ -1,11 +1,11 @@
 //
 //  DerivedPropertyKey.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
 
-protocol DerivedPropertyKey {
+package protocol DerivedPropertyKey {
     associatedtype Value: Equatable
     static func value(in: PropertyList) -> Value
 }

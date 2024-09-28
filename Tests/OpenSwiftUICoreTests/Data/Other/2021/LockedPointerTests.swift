@@ -5,8 +5,8 @@
 //  Created by Kyle on 2023/10/19.
 //
 
-@testable import OpenSwiftUI
-import COpenSwiftUI
+@testable import OpenSwiftUICore
+import COpenSwiftUICore
 import Testing
 
 struct LockedPointerTests {
