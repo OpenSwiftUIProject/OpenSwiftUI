@@ -8,6 +8,7 @@
 
 import Foundation
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 struct CachedEnvironment {
     var environment: Attribute<EnvironmentValues>
