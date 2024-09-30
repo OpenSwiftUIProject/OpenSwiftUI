@@ -8,6 +8,7 @@
 
 internal import OpenGraphShims
 import Foundation
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 final class ViewGraph: GraphHost {
     @inline(__always)

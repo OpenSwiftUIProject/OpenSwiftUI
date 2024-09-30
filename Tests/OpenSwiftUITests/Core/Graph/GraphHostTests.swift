@@ -4,6 +4,7 @@
 
 @testable import OpenSwiftUI
 import Testing
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 struct GraphHostTests {
     @Test
@@ -18,7 +19,7 @@ struct GraphHostTests {
         graphHost.setTime(Time.infinity)
         #expect(graphHost.data.time.seconds == Time.infinity.seconds)
         
-        let timeNow = Time.now
+        let timeNow = Time.systemUptime
         graphHost.setTime(timeNow)
         #expect(graphHost.data.time.seconds == timeNow.seconds)
         #endif

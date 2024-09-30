@@ -6,6 +6,7 @@
 //  Status: WIP
 
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 protocol ViewRendererHost: ViewGraphDelegate {
     var viewGraph: ViewGraph { get }
@@ -61,7 +62,7 @@ extension ViewRendererHost {
                 return
             }
             let update = { [self] in
-                currentTimestamp.advancing(by: interval)
+                currentTimestamp += interval
                 let time = currentTimestamp
                 viewGraph.flushTransactions()
                 // Signpost.renderUpdate

@@ -1,3 +1,5 @@
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
 internal import OpenGraphShims
 
 public struct _GraphInputs {
