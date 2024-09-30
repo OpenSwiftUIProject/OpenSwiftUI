@@ -11,6 +11,7 @@ package import OpenGraphShims
 #if canImport(Darwin)
 // TODO: Move down to OpenGraph Package
 package typealias Subgraph = OGSubgraph
+package typealias Graph = OGGraph
 #endif
 
 package final class IndirectAttributeMap {
