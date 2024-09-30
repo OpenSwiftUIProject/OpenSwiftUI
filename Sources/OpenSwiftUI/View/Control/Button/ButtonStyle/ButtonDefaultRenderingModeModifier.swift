@@ -11,7 +11,7 @@ internal import COpenSwiftUI
 extension View {
     func buttonDefaultRenderingMode() -> some View {
         EmptyView()
-            .modifier(StaticIf(ShouldRenderAsTemplate.self, then: ButtonDefaultRenderingModeModifier()))
+//            .modifier(StaticIf(ShouldRenderAsTemplate.self, then: ButtonDefaultRenderingModeModifier()))
     }
 }
 
@@ -22,13 +22,13 @@ private struct ButtonDefaultRenderingModeModifier: ViewModifier {
     }
 }
 
-private struct ShouldRenderAsTemplate: Feature {
-    static var isEnable: Bool {
-        let semantics = Semantics.v2
-        if let forced = Semantics.forced {
-            return forced >= semantics
-        } else {
-            return dyld_program_sdk_at_least(.init(semantics: semantics))
-        }
-    }
-}
+//private struct ShouldRenderAsTemplate: Feature {
+//    static var isEnable: Bool {
+//        let semantics = Semantics.v2
+//        if let forced = Semantics.forced {
+//            return forced >= semantics
+//        } else {
+//            return dyld_program_sdk_at_least(.init(semantics: semantics))
+//        }
+//    }
+//}
