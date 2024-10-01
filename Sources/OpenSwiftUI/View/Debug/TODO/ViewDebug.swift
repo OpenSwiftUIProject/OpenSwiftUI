@@ -48,7 +48,7 @@ extension ViewModifier {
 
 // MARK: _ViewDebug
 
-public enum _ViewDebug {
+extension _ViewDebug {
     public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
         let encoder = JSONEncoder()
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
@@ -63,9 +63,6 @@ public enum _ViewDebug {
 }
 
 extension _ViewDebug {
-    private static var properties = Properties()
-    private static var isInitialized = false
-
     @inline(__always)
     static func instantiateIfNeeded() {
         if !isInitialized {
@@ -105,106 +102,62 @@ extension _ViewDebug {
     fileprivate static func appendDebugData(from: Int/*AGTreeElement*/ , to: [_ViewDebug.Data]) {}
 }
 
-// MARK: _ViewDebug.Property
-
-extension _ViewDebug {
-    public enum Property: UInt32, Hashable {
-        case type
-        case value
-        case transform
-        case position
-        case size
-        case environment
-        case phase
-        case layoutComputer
-        case displayList
-    }
-
-    public struct Properties: OptionSet {
-        public let rawValue: UInt32
-        public init(rawValue: UInt32) {
-            self.rawValue = rawValue
-        }
-        
-        @inlinable
-        package init(_ property: Property) {
-            self.init(rawValue: 1 << property.rawValue)
-        }
-
-        public static let type = Properties(.type)
-        public static let value = Properties(.value)
-        public static let transform = Properties(.transform)
-        public static let position = Properties(.position)
-        public static let size = Properties(.size)
-        public static let environment = Properties(.environment)
-        public static let phase = Properties(.phase)
-        public static let layoutComputer = Properties(.layoutComputer)
-        public static let displayList = Properties(.displayList)
-        public static let all = Properties(rawValue: 0xFFFF_FFFF)
-    }
-}
-
 // MARK: _ViewDebug.Data
 
-extension _ViewDebug {
-    public struct Data: Encodable {
-        public func encode(to encoder: Encoder) throws {
-            var container: KeyedEncodingContainer<_ViewDebug.Data.CodingKeys> = encoder.container(keyedBy: _ViewDebug.Data.CodingKeys.self)
-            try container.encode(serializedProperties(), forKey: .properties)
-            try container.encode(childData, forKey: .children)
-        }
+extension _ViewDebug.Data: Encodable {
+    public func encode(to encoder: Encoder) throws {
+        var container: KeyedEncodingContainer<_ViewDebug.Data.CodingKeys> = encoder.container(keyedBy: _ViewDebug.Data.CodingKeys.self)
+        try container.encode(serializedProperties(), forKey: .properties)
+        try container.encode(childData, forKey: .children)
+    }
 
-        enum CodingKeys: CodingKey {
-            case properties
-            case children
-        }
+    enum CodingKeys: CodingKey {
+        case properties
+        case children
+    }
 
-        var data: [Property: Any]
-
-        var childData: [_ViewDebug.Data]
-
-        private func serializedProperties() -> [SerializedProperty] {
-            data.compactMap { key, value -> SerializedProperty? in
-                if key == .value {
-                    if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 6) {
-                        return SerializedProperty(id: key.rawValue, attribute: attribute)
-                    } else {
-                        return nil
-                    }
-                } else if key == .type {
-                    let type = value as? Any.Type ?? type(of: value)
-                    let attribute = SerializedAttribute(type: type)
-                    return SerializedProperty(id: 0, attribute: attribute)
+    private func serializedProperties() -> [SerializedProperty] {
+        data.compactMap { key, value -> SerializedProperty? in
+            if key == .value {
+                if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 6) {
+                    return SerializedProperty(id: key.rawValue, attribute: attribute)
                 } else {
-                    if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 4) {
-                        return SerializedProperty(id: key.rawValue, attribute: attribute)
-                    } else {
-                        return nil
-                    }
+                    return nil
+                }
+            } else if key == .type {
+                let type = value as? Any.Type ?? type(of: value)
+                let attribute = SerializedAttribute(type: type)
+                return SerializedProperty(id: 0, attribute: attribute)
+            } else {
+                if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 4) {
+                    return SerializedProperty(id: key.rawValue, attribute: attribute)
+                } else {
+                    return nil
                 }
             }
         }
+    }
 
-        // TODO
-        // Mirror API
-        private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
+    // TODO
+    // Mirror API
+    private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
 //            let unwrapped = unwrapped(value)
 
-            return nil
+        return nil
 
 //            let mirror = Mirror(reflecting: value)
 //            mirror.displayStyle = .tuple
 
-        }
+    }
 
-        private func unwrapped(_ value: Any) -> Any? {
-            if let value = value as? ValueWrapper {
-                return value.wrappedValue
-            } else {
-                return nil
-            }
+    private func unwrapped(_ value: Any) -> Any? {
+        if let value = value as? ValueWrapper {
+            return value.wrappedValue
+        } else {
+            return nil
         }
     }
+    
 }
 
 // MARK: _ViewDebug.Data.SerializedProperty
