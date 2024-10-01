@@ -11,4 +11,4 @@ public struct _Graph {
 }
 
 @available(*, unavailable)
-extension _Graph : Swift.Sendable {}
+extension _Graph: Sendable {}
