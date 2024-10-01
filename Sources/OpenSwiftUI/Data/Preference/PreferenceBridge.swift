@@ -195,7 +195,7 @@ private struct MergePreferenceKeys: Rule, AsyncAttribute {
         guard let rhs else {
             return result
         }
-        result.merge(rhs)
+        // result.merge(rhs)
         return result
     }
 }

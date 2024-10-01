@@ -9,6 +9,7 @@
 internal import COpenSwiftUICore
 internal import OpenGraphShims
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(Private) import OpenSwiftUICore
 
 private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
 private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
@@ -170,7 +171,7 @@ class GraphHost {
     }
 
     final func updatePreferences() -> Bool {
-        let seed = hostPreferenceValues.value?.mergedSeed ?? .empty
+        let seed = hostPreferenceValues.value?.seed ?? .empty
         let lastSeed = lastHostPreferencesSeed
         let didUpdate = seed.isInvalid || lastSeed.isInvalid /*|| (seed != lastSeed)*/
         lastHostPreferencesSeed = seed

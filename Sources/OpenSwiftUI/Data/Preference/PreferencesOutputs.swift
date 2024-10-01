@@ -95,3 +95,19 @@ extension PreferencesOutputs {
         #endif
     }
 }
+
+extension _ViewOutputs {
+    @inline(__always)
+    var hostPreferences: Attribute<PreferenceList>? {
+        get { self[HostPreferencesKey.self] }
+        set { self[HostPreferencesKey.self] = newValue }
+    }
+}
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var hostPreferences: Attribute<PreferenceList>? {
+        get { self[HostPreferencesKey.self] }
+        set { self[HostPreferencesKey.self] = newValue }
+    }
+}
