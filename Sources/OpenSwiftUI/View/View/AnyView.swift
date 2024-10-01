@@ -8,6 +8,7 @@
 
 internal import OpenGraphShims
 internal import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 @frozen
 public struct AnyView: PrimitiveView {
@@ -190,7 +191,7 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
     
     func makeItem(_ storage: AnyViewStorageBase, uniqueId: UInt32) -> AnyViewInfo {
         #if canImport(Darwin)
-        let current = OGAttribute.current!
+        let current = AnyAttribute.current!
         let childGraph = OGSubgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(childGraph)
         return childGraph.apply {
@@ -267,7 +268,7 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
     final class Item: _ViewList_Subgraph {
         let type: Any.Type
         #if canImport(Darwin)
-        let owner: OGAttribute
+        let owner: AnyAttribute
         #endif
         @Attribute var list: ViewList
         let id: UniqueID
@@ -275,7 +276,7 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
         let allItems: MutableBox<[Unmanaged<Item>]>
         
         #if canImport(Darwin)
-        init(type: Any.Type, owner: OGAttribute, list: Attribute<ViewList>, id: UniqueID, isUnary: Bool, subgraph: OGSubgraph, allItems: MutableBox<[Unmanaged<Item>]>) {
+        init(type: Any.Type, owner: AnyAttribute, list: Attribute<ViewList>, id: UniqueID, isUnary: Bool, subgraph: OGSubgraph, allItems: MutableBox<[Unmanaged<Item>]>) {
             self.type = type
             self.owner = owner
             _list = list

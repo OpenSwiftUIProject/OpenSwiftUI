@@ -82,7 +82,6 @@ package struct PropertyList: CustomStringConvertible {
     
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
         get { fatalError("TODO") }
-        set { fatalError("TODO") }
     }
   
     @usableFromInline

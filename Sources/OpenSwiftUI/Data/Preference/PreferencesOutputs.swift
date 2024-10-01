@@ -31,7 +31,7 @@ struct PreferencesOutputs {
         }
     }
 
-    subscript(anyKey keyType: AnyPreferenceKey.Type) -> OGAttribute? {
+    subscript(anyKey keyType: AnyPreferenceKey.Type) -> AnyAttribute? {
         get { preferences.first { $0.key == keyType }?.value }
         set {
             if keyType == _AnyPreferenceKey<DisplayList.Key>.self {
@@ -56,7 +56,7 @@ struct PreferencesOutputs {
     @inline(__always)
     func forEach(body: (
         _ key: AnyPreferenceKey.Type,
-        _ value: OGAttribute
+        _ value: AnyAttribute
     ) throws -> Void
     ) rethrows {
         try preferences.forEach { try body($0.key, $0.value) }
@@ -65,9 +65,9 @@ struct PreferencesOutputs {
     @inline(__always)
     func first(where predicate: (
         _ key: AnyPreferenceKey.Type,
-        _ value: OGAttribute
+        _ value: AnyAttribute
     ) throws -> Bool
-    ) rethrows -> (key: AnyPreferenceKey.Type, value: OGAttribute)? {
+    ) rethrows -> (key: AnyPreferenceKey.Type, value: AnyAttribute)? {
         try preferences
             .first { try predicate($0.key, $0.value) }
             .map { ($0.key, $0.value) }
@@ -91,7 +91,7 @@ extension PreferencesOutputs {
     private struct KeyValue {
         var key: AnyPreferenceKey.Type
         #if canImport(Darwin) // FIXME: See #39
-        var value: OGAttribute
+        var value: AnyAttribute
         #endif
     }
 }

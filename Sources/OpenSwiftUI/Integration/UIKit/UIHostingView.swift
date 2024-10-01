@@ -64,7 +64,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
         viewGraph.asyncTransaction(
             transaction,
             mutation: mutation,
-            style: ._1,
+            style: .deferred,
             mayDeferUpdate: true
         )
     }

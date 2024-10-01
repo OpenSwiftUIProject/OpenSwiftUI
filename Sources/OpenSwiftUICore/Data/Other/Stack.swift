@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: Blocked by GraphReusable
+//  Status: Complete
 
 package enum Stack<Value>: Sequence, IteratorProtocol {
     case empty
@@ -104,16 +104,38 @@ extension Stack: Equatable where Value: Equatable {
     }
 }
 
-//extension Stack: GraphReusable where Value: GraphReusable {
-//    @inlinable
-//    package static var isTriviallyReusable: Bool {
-//        Value.isTriviallyReusable
-//    }
-//    
-//    package mutating func makeReusable(indirectMap: IndirectAttributeMap) {
-//        guard !isEmpty else { return }
-//        map { $0.makeReusable(indirectMap: indirectMap) }
-//    }
-//    
-//    package func tryToReuse(by other: Stack<Value>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool
-//}
+extension Stack: GraphReusable where Value: GraphReusable {
+    @inlinable
+    package static var isTriviallyReusable: Bool {
+        Value.isTriviallyReusable
+    }
+    
+    package mutating func makeReusable(indirectMap: IndirectAttributeMap) {
+        guard !isEmpty else { return }
+        self = map { value in
+            var value = value
+            value.makeReusable(indirectMap: indirectMap)
+            return value
+        }
+    }
+    
+    package func tryToReuse(by other: Stack<Value>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
+        var nodeA = self
+        var nodeB = other
+        repeat {
+            let valueA = nodeA.pop()
+            let valueB = nodeB.pop()
+            if let valueA, let valueB {
+                guard valueA.tryToReuse(by: valueB, indirectMap: indirectMap, testOnly: testOnly) else {
+                    return false
+                }
+            } else if valueA == nil, valueB == nil {
+                return true
+            } else {
+                ReuseTrace.traceReuseViewInputsDifferentFailure()
+                return false
+            }
+        } while true
+        return false
+    }
+}

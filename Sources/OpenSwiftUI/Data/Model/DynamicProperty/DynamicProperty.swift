@@ -7,6 +7,7 @@
 //  ID: 49D2A32E637CD497C6DE29B8E060A506
 
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// An interface for a stored variable that updates an external property of a
 /// view.
@@ -178,18 +179,18 @@ extension StaticBody: BodyAccessorRule {
         Accessor.Container.self
     }
     
-    static func value<Value>(as _: Value.Type, attribute: OGAttribute) -> Value? {
+    static func value<Value>(as _: Value.Type, attribute: AnyAttribute) -> Value? {
         guard container == Value.self else {
             return nil
         }
         return unsafeBitCast(attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container, to: Value.self)
     }
     
-    static func buffer<Value>(as _: Value.Type, attribute _: OGAttribute) -> _DynamicPropertyBuffer? {
+    static func buffer<Value>(as _: Value.Type, attribute _: AnyAttribute) -> _DynamicPropertyBuffer? {
         nil
     }
     
-    static func metaProperties<Value>(as _: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+    static func metaProperties<Value>(as _: Value.Type, attribute: AnyAttribute) -> [(String, AnyAttribute)] {
         guard container == Value.self else {
             return []
         }
@@ -228,10 +229,10 @@ extension DynamicBody: StatefulRule {
     typealias Value = Accessor.Body
 
     mutating func updateValue() {
-        if resetSeed != phase.seed {
-            links.reset()
-            resetSeed = phase.seed
-        }
+//        if resetSeed != phase.seed {
+//            links.reset()
+//            resetSeed = phase.seed
+//        }
         var (container, containerChanged) = $container.changedValue()
         let linkChanged = withUnsafeMutablePointer(to: &container) {
             links.update(container: $0, phase: phase)
@@ -252,21 +253,21 @@ extension DynamicBody: BodyAccessorRule {
         Accessor.Container.self
     }
     
-    static func value<Value>(as _: Value.Type, attribute: OGAttribute) -> Value? {
+    static func value<Value>(as _: Value.Type, attribute: AnyAttribute) -> Value? {
         guard container == Value.self else {
             return nil
         }
         return unsafeBitCast(attribute.info.body.assumingMemoryBound(to: Self.self).pointee.container, to: Value.self)
     }
     
-    static func buffer<Value>(as _: Value.Type, attribute: OGAttribute) -> _DynamicPropertyBuffer? {
+    static func buffer<Value>(as _: Value.Type, attribute: AnyAttribute) -> _DynamicPropertyBuffer? {
         guard container == Value.self else {
             return nil
         }
         return attribute.info.body.assumingMemoryBound(to: Self.self).pointee.links
     }
     
-    static func metaProperties<Value>(as _: Value.Type, attribute: OGAttribute) -> [(String, OGAttribute)] {
+    static func metaProperties<Value>(as _: Value.Type, attribute: AnyAttribute) -> [(String, AnyAttribute)] {
         guard container == Value.self else {
             return []
         }

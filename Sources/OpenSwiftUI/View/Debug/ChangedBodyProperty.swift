@@ -164,7 +164,7 @@ func changedBodyProperties<Body>(of type: Body.Type) -> [String] {
             continue
         }
         var properties: [String] = []
-        let attribute = OGAttribute(rawValue: nodeID)
+        let attribute = AnyAttribute(rawValue: nodeID)
         let metaProperties = selfType.metaProperties(as: type, attribute: attribute)
         if !metaProperties.isEmpty, let inputs = dict["inputs"] as? [[String: Any]] {
             for metaProperty in metaProperties {

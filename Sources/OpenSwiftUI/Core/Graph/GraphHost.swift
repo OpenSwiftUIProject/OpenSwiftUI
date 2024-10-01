@@ -30,7 +30,7 @@ class GraphHost {
     
     static var currentHost: GraphHost {
         #if canImport(Darwin)
-        if let currentAttribute = OGAttribute.current {
+        if let currentAttribute = AnyAttribute.current {
             currentAttribute.graph.graphHost()
         } else if let currentSubgraph = OGSubgraph.current {
             currentSubgraph.graph.graphHost()
@@ -138,7 +138,7 @@ class GraphHost {
     
     // TODO: _ArchivedViewHost.reset()
     final func incrementPhase() {
-        data.phase.value += 2
+        // data.phase.value += 2
         graphDelegate?.graphDidChange()
     }
     
@@ -231,7 +231,7 @@ class GraphHost {
         // TODO:
     }
     
-    final func graphInvalidation(from attribute: OGAttribute?) {
+    final func graphInvalidation(from attribute: AnyAttribute?) {
         #if canImport(Darwin)
         guard let attribute else {
             graphDelegate?.graphDidChange()
@@ -246,7 +246,7 @@ class GraphHost {
             asyncTransaction(
                 transaction,
                 mutation: EmptyGraphMutation(),
-                style: ._1,
+                style: .deferred,
                 mayDeferUpdate: true
             )
         }
@@ -289,8 +289,8 @@ class GraphHost {
             guard let parent = host.parentHost else {
                 asyncTransaction(
                     Transaction(),
-                    mutation: CustomGraphMutation(body: body),
-                    style: ._1,
+                    mutation: CustomGraphMutation(body),
+                    style: .deferred,
                     mayDeferUpdate: true
                 )
                 return
@@ -338,12 +338,13 @@ extension GraphHost {
             _phase = phase
             _hostPreferenceKeys = hostPreferenceKeys
             _transaction = transaction
-            inputs = _GraphInputs(
-                time: time,
-                cachedEnvironment: cachedEnvironment,
-                phase: phase,
-                transaction: transaction
-            )
+//            inputs = _GraphInputs(
+//                time: time,
+//                cachedEnvironment: cachedEnvironment,
+//                phase: phase,
+//                transaction: transaction
+//            )
+            fatalError("TODO")
         }
     }
 }
