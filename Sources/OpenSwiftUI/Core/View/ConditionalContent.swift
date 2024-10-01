@@ -30,7 +30,7 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
     }
     
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        if _SemanticFeature_v2.isEnable {
+        if _SemanticFeature_v2.isEnabled {
             makeImplicitRoot(view: view, inputs: inputs)
         } else {
             AnyView._makeView(
