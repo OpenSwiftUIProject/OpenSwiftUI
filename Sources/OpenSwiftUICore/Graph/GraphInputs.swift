@@ -70,7 +70,7 @@ public struct _GraphInputs {
     package private(set) var cachedEnvironment: MutableBox<CachedEnvironment>
     package var phase: Attribute<_GraphInputs.Phase>
     package var transaction: Attribute<Transaction>
-    // package var changedDebugProperties: _ViewDebug.Properties
+    package var changedDebugProperties: _ViewDebug.Properties
     package var options: _GraphInputs.Options
     #if canImport(Darwin)
     package var mergedInputs: Set<AnyAttribute>
@@ -87,7 +87,7 @@ public struct _GraphInputs {
         self.cachedEnvironment = MutableBox(CachedEnvironment(environment))
         self.phase = phase
         self.transaction = transaction
-        // self.changedDebugProperties = []
+        self.changedDebugProperties = []
         self.options = []
         
         #if canImport(Darwin)
@@ -133,7 +133,7 @@ public struct _GraphInputs {
         get { cachedEnvironment.wrappedValue.environment }
         set {
             cachedEnvironment.wrappedValue = CachedEnvironment(newValue)
-            // changedDebugProperties.insert(.environment)
+            changedDebugProperties.insert(.environment)
         }
     }
     
