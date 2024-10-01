@@ -6,6 +6,9 @@
 //  Status: Complete
 //  ID: 6C396F98EFDD04A6B58F2F9112448013
 
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(Private) import OpenSwiftUICore
+
 extension View {
     /// Sets a value for the given preference.
     @inlinable

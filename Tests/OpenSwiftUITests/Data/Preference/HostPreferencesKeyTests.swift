@@ -53,9 +53,9 @@ struct HostPreferencesKeyTests {
     
     @Test
     func nodeID() {
-        let id0 = HostPreferencesKey.makeNodeID()
-        let id1 = HostPreferencesKey.makeNodeID()
-        let id2 = HostPreferencesKey.makeNodeID()
+        let id0 = HostPreferencesKey.makeNodeId()
+        let id1 = HostPreferencesKey.makeNodeId()
+        let id2 = HostPreferencesKey.makeNodeId()
         #expect(id1 == (id0 + 1))
         #expect(id2 == (id1 + 1))
     }

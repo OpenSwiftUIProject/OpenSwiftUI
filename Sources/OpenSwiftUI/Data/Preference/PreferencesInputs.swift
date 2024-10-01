@@ -31,6 +31,6 @@ struct PreferencesInputs {
     
     @inline(__always)
     mutating func merge(_ preferenceKeys: PreferenceKeys) {
-        keys.merge(preferenceKeys)
+        // keys.merge(preferenceKeys)
     }
 }

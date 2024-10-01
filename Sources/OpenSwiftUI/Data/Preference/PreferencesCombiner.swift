@@ -78,7 +78,7 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
                     continue
                 }
                 guard let values = child.$values,
-                      let listValue = values.value.valueIfPresent(key) else {
+                      let listValue = values.value.valueIfPresent(for: key) else {
                     continue
                 }
                 if initialValue {
