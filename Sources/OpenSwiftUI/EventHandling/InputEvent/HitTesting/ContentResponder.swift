@@ -29,13 +29,8 @@ extension ContentResponder {
     func contentPath(size: CGSize, kind: ContentShapeKinds) -> Path {
         if kind == .interaction {
             return contentPath(size: size)
-        } else {
-            let semantics = Semantics.v3
-            let shouldReturnEmptyPath = if let forced = Semantics.forced {
-                forced >= semantics
-            } else {
-                dyld_program_sdk_at_least(.init(semantics: semantics))
-            }
+        } else {            
+            let shouldReturnEmptyPath = _SemanticFeature_v3.isEnabled
             if shouldReturnEmptyPath {
                 return Path()
             } else {

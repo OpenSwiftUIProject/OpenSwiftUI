@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: Blocked by Semantics
+//  Status: Complete
 //  ID: 3C10A6E9BB0D4644A364890A9BD57D68
 
 // MARK: - Location
@@ -113,7 +113,15 @@ final package class LocationBox<L>: AnyLocation<L.Value>, Location, @unchecked S
     
     override final package func isEqual(to other: AnyLocation<L.Value>) -> Bool {
         // TODO: Blocked by Semantics.v5
-        return false
+        if _SemanticFeature_v5.isEnabled {
+            if let otherBox = other as? LocationBox<L> {
+                location == otherBox.location
+            } else {
+                false
+            }
+        } else {
+            other === self
+        }
     }
     
     package typealias Value = L.Value

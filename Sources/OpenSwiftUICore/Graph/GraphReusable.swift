@@ -98,8 +98,9 @@ import Foundation
 import os.log
 #endif
 
-private enum EnableGraphReuseLogging {
-    static var cacheValue: Bool? = nil
+private enum EnableGraphReuseLogging: UserDefaultKeyedFeature {
+    static var key: String { "org.OpenSwiftUIProject.OpenSwiftUI.GraphReuseLogging" }
+    static var cachedValue: Bool?
 }
 
 extension Log {
@@ -109,21 +110,7 @@ extension Log {
     
     static func graphReuse(_ message: @autoclosure () -> String) {
         #if canImport(Darwin)
-        let enable = {
-            if let cacheValue = EnableGraphReuseLogging.cacheValue {
-                return cacheValue
-            } else {
-                if UserDefaults.standard.object(forKey: "org.OpenSwiftUIProject.OpenSwiftUI.GraphReuseLogging") != nil {
-                    let enable = UserDefaults.standard.bool(forKey: "org.OpenSwiftUIProject.OpenSwiftUI.GraphReuseLogging")
-                    EnableGraphReuseLogging.cacheValue = enable
-                    return enable
-                } else {
-                    EnableGraphReuseLogging.cacheValue = false
-                    return false
-                }
-            }
-        }()
-        if enable {
+        if EnableGraphReuseLogging.isEnabled {
             let message = message()
             graphReuseLog.log("\(message)")
         }
