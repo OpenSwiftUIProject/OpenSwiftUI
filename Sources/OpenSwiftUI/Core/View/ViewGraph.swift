@@ -256,7 +256,7 @@ final class ViewGraph: GraphHost {
 //        $rootAccessibilityNodes = nil
 //        $rootLayoutComputer = nil
 //        $rootDisplayList = nil
-        hostPreferenceValues = OptionalAttribute()
+        hostPreferenceValues = WeakAttribute()
         #endif
     }
     

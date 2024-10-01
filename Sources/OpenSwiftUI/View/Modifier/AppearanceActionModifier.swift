@@ -9,6 +9,7 @@
 // MARK: - AppearanceActionModifier
 
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// A modifier that triggers actions when its view appears and disappears.
 @frozen

@@ -11,6 +11,7 @@ import OpenCombine
 import Combine
 #endif
 internal import COpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObject {
     let base: Root

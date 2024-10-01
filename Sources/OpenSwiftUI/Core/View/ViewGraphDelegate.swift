@@ -5,6 +5,8 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
 protocol ViewGraphDelegate: GraphDelegate {
     func modifyViewInputs(_ inputs: inout _ViewInputs)
     func updateViewGraph<Value>(body: (ViewGraph) -> Value) -> Value

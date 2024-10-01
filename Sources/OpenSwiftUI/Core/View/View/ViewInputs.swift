@@ -58,9 +58,10 @@ public struct _ViewInputs {
         struct AddPreferenceVisitor: PreferenceKeyVisitor {
             var outputs = _ViewOutputs()
             mutating func visit<Key: PreferenceKey>(key: Key.Type) {
-                let source = ViewGraph.current.intern(Key.defaultValue, id: 0)
-                let indirect = IndirectAttribute(source: source)
-                outputs.appendPreference(key: Key.self, value: Attribute(identifier: indirect.identifier))
+//                let source = ViewGraph.current.intern(Key.defaultValue, id: 0)
+//                let indirect = IndirectAttribute(source: source)
+//                outputs.appendPreference(key: Key.self, value: Attribute(identifier: indirect.identifier))
+                fatalError()
             }
         }
         var visitor = AddPreferenceVisitor()

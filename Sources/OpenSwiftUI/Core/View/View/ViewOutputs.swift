@@ -1,4 +1,5 @@
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// The output (aka synthesized) attributes returned by each view.
 public struct _ViewOutputs {
