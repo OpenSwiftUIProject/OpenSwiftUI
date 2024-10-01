@@ -7,29 +7,28 @@
 //  ID: C424ABD9FC88B2DFD0B7B2319F2E7987
 
 import Foundation
-internal import OpenGraphShims
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+package import OpenGraphShims
 
-struct CachedEnvironment {
-    var environment: Attribute<EnvironmentValues>
+package struct CachedEnvironment {
+    package var environment: Attribute<EnvironmentValues>
     private var items: [Item]
     #if canImport(Darwin)
     private var constants: [HashableConstant: AnyAttribute]
     #endif
-    private var animatedFrame: AnimatedFrame?
+//    private var animatedFrame: AnimatedFrame?
     // private var resolvedFgStyles: [ResolvedFgStyle : Swift<_ShapeStyle_Resolved.ResolvedFg>]
     
-    init(_ environment: Attribute<EnvironmentValues>) {
+    package init(_ environment: Attribute<EnvironmentValues>) {
         self.environment = environment
         items = []
         #if canImport(Darwin)
         constants = [:]
         #endif
-        animatedFrame = nil
+//        animatedFrame = nil
         // resolvedFgStyles = [:]
     }
     
-    mutating func attribute<Value>(keyPath: KeyPath<EnvironmentValues, Value>) -> Attribute<Value> {
+    package mutating func attribute<Value>(keyPath: KeyPath<EnvironmentValues, Value>) -> Attribute<Value> {
         #if canImport(Darwin)
         if let item = items.first(where: { $0.key == keyPath }) {
             return Attribute(identifier: item.value)
@@ -43,7 +42,7 @@ struct CachedEnvironment {
         #endif
     }
     
-    mutating func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
+    package mutating func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
         #if canImport(Darwin)
         let constant = HashableConstant(value, id: id)
         if let identifier = constants[constant] {
@@ -58,13 +57,13 @@ struct CachedEnvironment {
         #endif
     }
     
-    func animatePosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
-        fatalError("TODO")
-    }
-    
-    func animateSize(for inputs: _ViewInputs) -> Attribute<ViewSize> {
-        fatalError("TODO")
-    }
+//    func animatePosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
+//        fatalError("TODO")
+//    }
+//    
+//    func animateSize(for inputs: _ViewInputs) -> Attribute<ViewSize> {
+//        fatalError("TODO")
+//    }
     
     // func resolvedForegroundStyle() {}
 }
@@ -119,40 +118,40 @@ private struct HashableConstant: Hashable {
     }
 }
 
-private struct AnimatedFrame {
-    let position: Attribute<ViewOrigin>
-    let size: Attribute<ViewSize>
-    let pixelLength: Attribute<CGFloat>
-    let time: Attribute<Time>
-    let transaction: Attribute<Transaction>
-    let viewPhase: Attribute<_GraphInputs.Phase>
-    let animatedFrame: Attribute<ViewFrame>
-    private var _animatedPosition: Attribute<ViewOrigin>?
-    private var _animatedSize: Attribute<ViewSize>?
-    
-    mutating func animatePosition() -> Attribute<ViewOrigin> {
-        guard let _animatedPosition else {
-            // FIXME
-            let animatePosition = animatedFrame.unsafeOffset(
-                at: 0,
-                as:ViewOrigin.self
-            )
-            _animatedPosition = animatePosition
-            return animatePosition
-        }
-        return _animatedPosition
-    }
-    
-    mutating func animateSize() -> Attribute<ViewSize> {
-        guard let _animatedSize else {
-            // FIXME
-            let animatedSize = animatedFrame.unsafeOffset(
-                at: MemoryLayout<ViewOrigin>.size,
-                as: ViewSize.self
-            )
-            _animatedSize = animatedSize
-            return animatedSize
-        }
-        return _animatedSize
-    }
-}
+//private struct AnimatedFrame {
+//    let position: Attribute<ViewOrigin>
+//    let size: Attribute<ViewSize>
+//    let pixelLength: Attribute<CGFloat>
+//    let time: Attribute<Time>
+//    let transaction: Attribute<Transaction>
+//    let viewPhase: Attribute<_GraphInputs.Phase>
+//    let animatedFrame: Attribute<ViewFrame>
+//    private var _animatedPosition: Attribute<ViewOrigin>?
+//    private var _animatedSize: Attribute<ViewSize>?
+//    
+//    mutating func animatePosition() -> Attribute<ViewOrigin> {
+//        guard let _animatedPosition else {
+//            // FIXME
+//            let animatePosition = animatedFrame.unsafeOffset(
+//                at: 0,
+//                as:ViewOrigin.self
+//            )
+//            _animatedPosition = animatePosition
+//            return animatePosition
+//        }
+//        return _animatedPosition
+//    }
+//    
+//    mutating func animateSize() -> Attribute<ViewSize> {
+//        guard let _animatedSize else {
+//            // FIXME
+//            let animatedSize = animatedFrame.unsafeOffset(
+//                at: MemoryLayout<ViewOrigin>.size,
+//                as: ViewSize.self
+//            )
+//            _animatedSize = animatedSize
+//            return animatedSize
+//        }
+//        return _animatedSize
+//    }
+//}

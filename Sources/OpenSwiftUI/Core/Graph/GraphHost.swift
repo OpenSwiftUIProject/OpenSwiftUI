@@ -138,7 +138,7 @@ class GraphHost {
     
     // TODO: _ArchivedViewHost.reset()
     final func incrementPhase() {
-        data.phase.value += 2
+        // data.phase.value += 2
         graphDelegate?.graphDidChange()
     }
     
@@ -338,12 +338,13 @@ extension GraphHost {
             _phase = phase
             _hostPreferenceKeys = hostPreferenceKeys
             _transaction = transaction
-            inputs = _GraphInputs(
-                time: time,
-                cachedEnvironment: cachedEnvironment,
-                phase: phase,
-                transaction: transaction
-            )
+//            inputs = _GraphInputs(
+//                time: time,
+//                cachedEnvironment: cachedEnvironment,
+//                phase: phase,
+//                transaction: transaction
+//            )
+            fatalError("TODO")
         }
     }
 }

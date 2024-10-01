@@ -30,3 +30,8 @@ extension EnvironmentKey where Value: Equatable {
     }
 }
 #endif
+
+package protocol DerivedEnvironmentKey {
+    associatedtype Value: Equatable
+    static func value(in: EnvironmentValues) -> Value
+}

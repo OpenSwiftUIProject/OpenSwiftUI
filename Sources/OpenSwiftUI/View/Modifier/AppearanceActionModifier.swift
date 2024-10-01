@@ -84,10 +84,10 @@ extension AppearanceEffect: StatefulRule {
             node.attribute = .current
         }
         
-        if phase.seed != resetSeed {
-            resetSeed = phase.seed
-            disappeared()
-        }
+//        if phase.seed != resetSeed {
+//            resetSeed = phase.seed
+//            disappeared()
+//        }
         lastValue = modifier
         appeared()
         #else
