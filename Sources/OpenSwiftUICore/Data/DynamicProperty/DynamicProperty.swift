@@ -352,10 +352,10 @@ extension DynamicBody: StatefulRule {
     typealias Value = Accessor.Body
 
     mutating func updateValue() {
-//        if resetSeed != phase.seed {
-//            links.reset()
-//            resetSeed = phase.seed
-//        }
+        if resetSeed != phase.resetSeed {
+            links.reset()
+            resetSeed = phase.resetSeed
+        }
         var (container, containerChanged) = $container.changedValue()
         let linkChanged = withUnsafeMutablePointer(to: &container) {
             links.update(container: $0, phase: phase)
