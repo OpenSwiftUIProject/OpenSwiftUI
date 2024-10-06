@@ -6,7 +6,7 @@
 //
 
 import XCTest
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import OpenGraphShims
 
 final class DynamicPropertyCacheTests: XCTestCase {

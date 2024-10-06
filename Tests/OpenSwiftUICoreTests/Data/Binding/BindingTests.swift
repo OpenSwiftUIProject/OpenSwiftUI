@@ -2,8 +2,8 @@
 //  BindingTests.swift
 //  OpenSwiftUITests
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUI
-@testable import OpenSwiftUI
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@testable import OpenSwiftUICore
 import Testing
 
 struct BindingTests {
