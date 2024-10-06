@@ -96,12 +96,16 @@ public struct _GraphInputs {
     }
     
     package static var invalid: _GraphInputs {
+        #if canImport(Darwin)
         _GraphInputs(
             time: Attribute(identifier: .nil),
             phase: Attribute(identifier: .nil),
             environment: Attribute(identifier: .nil),
             transaction: Attribute(identifier: .nil)
         )
+        #else
+        fatalError("See #39")
+        #endif
     }
     
     package subscript<T>(input: T.Type) -> T.Value where T: GraphInput {

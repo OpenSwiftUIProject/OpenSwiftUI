@@ -112,7 +112,9 @@ open class GraphHost: CustomReflectable {
     package final var graphInputs: _GraphInputs { data.inputs }
     package final var globalSubgraph: Subgraph { data.globalSubgraph }
     package final var rootSubgraph: Subgraph { data.rootSubgraph }
+    #if canImport(Darwin)
     private var constants: [ConstantKey: AnyAttribute] = [:]
+    #endif
     private(set) package final var isInstantiated: Bool = false
     package final var hostPreferenceValues: WeakAttribute<PreferenceList> = WeakAttribute()
     package final var lastHostPreferencesSeed: VersionSeed = .invalid
@@ -220,6 +222,7 @@ open class GraphHost: CustomReflectable {
     }
     
     package final func intern<T>(_ value: T, for type: Any.Type = T.self, id: ConstantID) -> Attribute<T> {
+        #if canImport(Darwin)
         if let attribute = constants[ConstantKey(type: type , id: id)] {
             return Attribute(identifier: attribute)
         } else {
@@ -227,6 +230,9 @@ open class GraphHost: CustomReflectable {
             constants[ConstantKey(type: type, id: id)] = result.identifier
             return result
         }
+        #else
+        fatalError("See #39")
+        #endif
     }
     
     public final var customMirror: Mirror { Mirror(self, children: []) }
