@@ -21,6 +21,7 @@ struct FeatureTests {
         #expect(Feature2.defaultValue == true)
     }
     
+    #if !os(WASI)
     @Test
     func userDefaults() {
         struct Feature1: UserDefaultKeyedFeature {
@@ -38,4 +39,5 @@ struct FeatureTests {
         #expect(Feature1.isEnabled == true)
         UserDefaults.standard.removeObject(forKey: Feature1.key)
     }
+    #endif
 }

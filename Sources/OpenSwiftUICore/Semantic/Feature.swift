@@ -17,10 +17,12 @@ extension Feature {
 }
 
 package protocol UserDefaultKeyedFeature: Feature {
-  static var key: String { get }
-  static var defaultFeatureValue: Bool { get }
-  static var defaults: UserDefaults { get }
-  static var cachedValue: Bool? { get set }
+    static var key: String { get }
+    static var defaultFeatureValue: Bool { get }
+    #if !os(WASI)
+    static var defaults: UserDefaults { get }
+    #endif
+    static var cachedValue: Bool? { get set }
 }
 
 extension UserDefaultKeyedFeature {
@@ -28,6 +30,10 @@ extension UserDefaultKeyedFeature {
         if let cachedValue {
             return cachedValue
         } else {
+            #if os(WASI)
+            cachedValue = defaultFeatureValue
+            return defaultFeatureValue
+            #else
             if defaults.object(forKey: key) != nil {
                 let enable = defaults.bool(forKey: key)
                 cachedValue = enable
@@ -36,11 +42,14 @@ extension UserDefaultKeyedFeature {
                 cachedValue = defaultFeatureValue
                 return defaultFeatureValue
             }
+            #endif
         }
     }
     
     package static var defaultFeatureValue: Bool { false }
+    #if !os(WASI)
     package static var defaults: UserDefaults { .standard }
+    #endif
 }
 
 extension UserDefaultKeyedFeature {
