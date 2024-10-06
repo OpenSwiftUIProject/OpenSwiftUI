@@ -2,10 +2,11 @@
 //  GraphHostTests.swift
 //  OpenSwiftUITests
 
-@testable import OpenSwiftUI
-import Testing
+import OpenSwiftUICore
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+import Testing
 
+@MainActor
 struct GraphHostTests {
     @Test
     func setTimeTest() {
@@ -25,4 +26,3 @@ struct GraphHostTests {
         #endif
     }
 }
-

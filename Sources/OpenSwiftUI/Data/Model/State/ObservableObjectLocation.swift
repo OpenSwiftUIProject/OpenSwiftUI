@@ -44,7 +44,7 @@ struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObj
     }
 }
 
-extension ObservableObjectLocation: TransactionHostProvider {
-    // TODO
-    var mutationHost: GraphHost? { nil }
-}
+//extension ObservableObjectLocation: TransactionHostProvider {
+//    // TODO
+//    var mutationHost: GraphHost? { nil }
+//}
