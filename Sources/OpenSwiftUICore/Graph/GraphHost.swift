@@ -49,7 +49,6 @@ open class GraphHost: CustomReflectable {
         package var rootSubgraph: Subgraph
         package var isRemoved: Bool
         package var isHiddenForReuse: Bool
-        // FIXME: nomutating and _projectedValueProperty
         @Attribute package var time: Time
         @Attribute package var environment: EnvironmentValues
         @Attribute package var phase: _GraphInputs.Phase
@@ -59,7 +58,6 @@ open class GraphHost: CustomReflectable {
         @Attribute package var transactionSeed: UInt32
         package var inputs: _GraphInputs
         
-        // TO BE AUDITED
         package init() {
             let graph = Graph(shared: GraphHost.sharedGraph)
             let globalSubgraph = Subgraph(graph: graph)
@@ -71,6 +69,13 @@ open class GraphHost: CustomReflectable {
             let transaction = Attribute(value: Transaction())
             let updateSeed = Attribute(value: UInt32.zero)
             let transactionSeed = Attribute(value: UInt32.zero)
+            let inputs = _GraphInputs(
+                time: time,
+                phase: phase,
+                environment: environment,
+                transaction: transaction
+            )
+            
             let rootSubgrph = Subgraph(graph: graph)
             globalSubgraph.addChild(rootSubgrph)
             Subgraph.current = nil
@@ -87,13 +92,7 @@ open class GraphHost: CustomReflectable {
             _transaction = transaction
             _updateSeed = updateSeed
             _transactionSeed = transactionSeed
-            // FIXME: CachedEnvironment
-            inputs = _GraphInputs(
-                time: time,
-                phase: phase,
-                environment: environment,
-                transaction: transaction
-            )
+            self.inputs = inputs
         }
         
         package mutating func invalidate() {

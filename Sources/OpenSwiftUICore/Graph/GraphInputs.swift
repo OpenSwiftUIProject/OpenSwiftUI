@@ -87,7 +87,7 @@ public struct _GraphInputs {
         self.cachedEnvironment = MutableBox(CachedEnvironment(environment))
         self.phase = phase
         self.transaction = transaction
-        self.changedDebugProperties = []
+        self.changedDebugProperties = .all
         self.options = []
         
         #if canImport(Darwin)

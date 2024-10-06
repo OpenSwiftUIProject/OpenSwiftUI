@@ -25,7 +25,7 @@ package struct CachedEnvironment {
         constants = [:]
         #endif
 //        animatedFrame = nil
-        // resolvedFgStyles = [:]
+        // resolvedFgStyles = [:] FIXME: 0x100: ?
     }
     
     package mutating func attribute<Value>(keyPath: KeyPath<EnvironmentValues, Value>) -> Attribute<Value> {
