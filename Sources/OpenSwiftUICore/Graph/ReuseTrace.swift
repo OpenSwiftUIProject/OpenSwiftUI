@@ -19,8 +19,8 @@ package struct ReuseTrace {
     
     @inline(__always)
     package static func traceReuseFailure(_ name: UnsafePointer<CChar>) {
-        guard let recorder else { return }
         // TODO
+        // guard let recorder else { return }
         // OGGraphAddTraceEvent
         // recorder.graph.addTraceEvent(name)
     }

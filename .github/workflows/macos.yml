@@ -17,7 +17,7 @@ jobs:
         release: [2021, 2024]
     runs-on: ${{ matrix.os }}
     env:
-      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_WERROR: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0

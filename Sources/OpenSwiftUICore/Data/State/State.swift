@@ -7,7 +7,6 @@
 //  ID: 08168374F4710A99DCB15B5E8768D632
 
 internal import OpenGraphShims
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// A property wrapper type that can read and write a value managed by OpenSwiftUI.
 ///

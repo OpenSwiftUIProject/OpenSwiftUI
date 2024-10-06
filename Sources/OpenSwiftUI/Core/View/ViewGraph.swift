@@ -10,7 +10,7 @@ internal import OpenGraphShims
 import Foundation
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
-final class ViewGraph: GraphHost {
+package final class ViewGraph: GraphHost {
     @inline(__always)
     static var current: ViewGraph { GraphHost.currentHost as! ViewGraph }
     
@@ -190,13 +190,13 @@ final class ViewGraph: GraphHost {
     
     // MARK: - Override Methods
     
-    override var graphDelegate: GraphDelegate? { delegate }
-    override var parentHost: GraphHost? {
+    override package var graphDelegate: GraphDelegate? { delegate }
+    override package var parentHost: GraphHost? {
         // TODO: _preferenceBridge
         nil
     }
     
-    override func instantiateOutputs() {
+    override package func instantiateOutputs() {
         #if canImport(Darwin)
         let outputs = self.data.globalSubgraph.apply {
             let graphInputs = graphInputs
@@ -241,7 +241,7 @@ final class ViewGraph: GraphHost {
         #endif
     }
     
-    override func uninstantiateOutputs() {
+    override package func uninstantiateOutputs() {
         #if canImport(Darwin)
         removePreferenceOutlets(isInvalidating: false)
         $rootGeometry.mutateBody(
@@ -260,11 +260,11 @@ final class ViewGraph: GraphHost {
         #endif
     }
     
-    override func timeDidChange() {
+    override package func timeDidChange() {
         nextUpdate.views = NextUpdate(time: .infinity)
     }
     
-    override func isHiddenForReuseDidChange() {
+    override package func isHiddenForReuseDidChange() {
         // TODO
     }
 }
