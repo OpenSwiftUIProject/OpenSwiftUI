@@ -16,7 +16,7 @@ import WASILibc
 internal import OpenGraphShims
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
-final class AppGraph: GraphHost {
+package final class AppGraph: GraphHost {
     static var shared: AppGraph? = nil
     static var delegateBox: AnyFallbackDelegateBox? = nil
     

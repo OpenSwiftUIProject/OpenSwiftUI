@@ -136,6 +136,5 @@ extension Stack: GraphReusable where Value: GraphReusable {
                 return false
             }
         } while true
-        return false
     }
 }

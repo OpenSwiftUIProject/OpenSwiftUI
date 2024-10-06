@@ -16,11 +16,11 @@ protocol ViewGraphDelegate: GraphDelegate {
 }
 
 extension ViewGraphDelegate {
-    func updateGraph<V>(body: (GraphHost) -> V) -> V {
+    public func updateGraph<V>(body: (GraphHost) -> V) -> V {
         updateViewGraph(body: body)
     }
     
-    func rootTransform() -> ViewTransform {
+    public func rootTransform() -> ViewTransform {
         ViewTransform()
     }
 }

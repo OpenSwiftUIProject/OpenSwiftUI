@@ -5,7 +5,7 @@
 //  Created by Kyle on 2023/11/8.
 //
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct ConstantLocationTests {

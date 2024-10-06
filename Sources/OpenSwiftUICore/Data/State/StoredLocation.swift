@@ -1,26 +1,20 @@
 //
 //  StoredLocation.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: WIP
-//  ID: EBDC911C9EE054BAE3D86F947C24B7C3
+//  ID: EBDC911C9EE054BAE3D86F947C24B7C3 (RELEASE_2021)
+//  ID: 4F21368B1C1680817451AC25B55A8D48 (RELEASE_2024)
 
 internal import OpenGraphShims
-internal import COpenSwiftUI
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+internal import COpenSwiftUICore
 
-class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
-    private struct LockedData {
+package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
+    private struct Data {
         var currentValue: Value
         var savedValue: [Value]
         var cache: LocationProjectionCache
-        
-        init(currentValue: Value, savedValue: [Value], cache: LocationProjectionCache = LocationProjectionCache()) {
-            self.currentValue = currentValue
-            self.savedValue = savedValue
-            self.cache = cache
-        }
     }
     
     fileprivate struct BeginUpdate: GraphMutation {
@@ -47,13 +41,12 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendab
     }
     
     @AtomicBox
-    private var data: LockedData
-    
+    private var data: Data
     var _wasRead: Bool
     
-    init(initialValue value: Value) {
+    package init(initialValue value: Value) {
         _wasRead = false
-        _data = AtomicBox(wrappedValue: LockedData(currentValue: value, savedValue: []))
+        _data = AtomicBox(wrappedValue: Data(currentValue: value, savedValue: [], cache: .init()))
         super.init()
     }
     
@@ -75,16 +68,16 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendab
     
     // MARK: - AnyLocation
     
-    override var wasRead: Bool {
+    override package final var wasRead: Bool {
         get { _wasRead }
         set { _wasRead = newValue }
     }
     
-    override func get() -> Value {
+    override package final func get() -> Value {
         data.currentValue
     }
     
-    override func set(_ value: Value, transaction: Transaction) {
+    override package final func set(_ value: Value, transaction: Transaction) {
         guard !isUpdating else {
             Log.runtimeIssues("Modifying state during view update, this will cause undefined behavior.")
             return
@@ -117,11 +110,11 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendab
         }
     }
     
-    override func projecting<P: Projection>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base {
+    override package final func projecting<P: Projection>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base {
         data.cache.reference(for: projection, on: self)
     }
     
-    override func update() -> (Value, Bool) {
+    override package func update() -> (Value, Bool) {
         _wasRead = true
         return (updateValue, true)
     }
@@ -143,7 +136,7 @@ class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendab
     }
 }
 
-final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked Sendable {
+package final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked Sendable {
     weak var host: GraphHost?
     @WeakAttribute var signal: Void?
     

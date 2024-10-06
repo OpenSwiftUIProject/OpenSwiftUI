@@ -6,8 +6,6 @@
 //  Status: Complete
 //  ID: 5436F2B399369BE3B016147A5F8FE9F2
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
-
 /// A property wrapper type that can read and write a value owned by a source of
 /// truth.
 ///
@@ -66,7 +64,7 @@ public struct Binding<Value> {
     /// The transaction captures the information needed to update the view when
     /// the binding value changes.
     public var transaction: Transaction
-    var location: AnyLocation<Value>
+    package var location: AnyLocation<Value>
     private var _value: Value
 
     /// Creates a binding with closures that read and write the binding value.
@@ -358,7 +356,7 @@ extension Binding: DynamicProperty {
 // MARK: - Binding Internal API
 
 extension Binding {
-    init(value: Value, location: AnyLocation<Value>, transaction: Transaction = Transaction()) {
+    package init(value: Value, location: AnyLocation<Value>, transaction: Transaction = Transaction()) {
         self.transaction = transaction
         self.location = location
         self._value = value
@@ -373,7 +371,7 @@ extension Binding {
         }
     }
 
-    func projecting<P: Projection>(_ p: P) -> Binding<P.Projected> where P.Base == Value {
+    package func projecting<P: Projection>(_ p: P) -> Binding<P.Projected> where P.Base == Value {
         Binding<P.Projected>(value: p.get(base: _value), location: location.projecting(p), transaction: transaction)
     }
 }

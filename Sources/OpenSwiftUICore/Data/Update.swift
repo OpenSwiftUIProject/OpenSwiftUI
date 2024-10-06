@@ -103,16 +103,16 @@ package enum Update {
         if Thread.isMainThread {
             body()
         } else {
+            #if canImport(Darwin)
             withoutActuallyEscaping(body) { escapableBody in
                 let context = AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier)
                 MovableLock.syncMain(lock: _lock) {
-                    #if canImport(Darwin)
                     context.update(body: escapableBody)
-                    #else
-                    fatalError("See #39")
-                    #endif
                 }
             }
+            #else
+            fatalError("See #39")
+            #endif
         }
         #endif
     }

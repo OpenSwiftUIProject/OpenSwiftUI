@@ -192,11 +192,12 @@ private struct MergePreferenceKeys: Rule, AsyncAttribute {
     @WeakAttribute var rhs: PreferenceKeys?
 
     var value: PreferenceKeys {
-        var result = lhs
-        guard let rhs else {
-            return result
-        }
-        // result.merge(rhs)
-        return result
+//        var result = lhs
+//        guard let rhs else {
+//            return result
+//        }
+//        result.merge(rhs)
+//        return result
+        fatalError("TODO")
     }
 }

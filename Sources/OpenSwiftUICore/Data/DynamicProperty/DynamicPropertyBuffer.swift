@@ -15,13 +15,13 @@ public struct _DynamicPropertyBuffer {
     private(set) var size: Int32
     private(set) var _count: Int32
     
-    init() {
+    package init() {
         buf = nullPtr
         size = 0
         _count = 0
     }
     
-    init<Value>(
+    package init<Value>(
         fields: DynamicPropertyCache.Fields,
         container: _GraphValue<Value>,
         inputs: inout _GraphInputs,
@@ -31,7 +31,7 @@ public struct _DynamicPropertyBuffer {
         addFields(fields, container: container, inputs: &inputs, baseOffset: baseOffset)
     }
 
-    mutating func addFields<Value>(
+    package mutating func addFields<Value>(
         _ fields: DynamicPropertyCache.Fields,
         container: _GraphValue<Value>,
         inputs: inout _GraphInputs,
@@ -80,7 +80,7 @@ public struct _DynamicPropertyBuffer {
         }
     }
     
-    mutating func append<Box: DynamicPropertyBox>(_ box: Box, fieldOffset: Int) {
+    package mutating func append<Box: DynamicPropertyBox>(_ box: Box, fieldOffset: Int) {
         let size = MemoryLayout<(Item, Box)>.stride
         let pointer = allocate(bytes: size)
         let item = Item(vtable: BoxVTable<Box>.self, size: size, fieldOffset: fieldOffset)
@@ -94,7 +94,7 @@ public struct _DynamicPropertyBuffer {
         _count &+= 1
     }
     
-    func destroy() {
+    package func destroy() {
         Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
@@ -111,7 +111,7 @@ public struct _DynamicPropertyBuffer {
         }
     }
     
-    func reset() {
+    package func reset() {
         Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
@@ -124,7 +124,7 @@ public struct _DynamicPropertyBuffer {
         }
     }
     
-    func getState<Value>(type: Value.Type) -> Binding<Value>? {
+    package func getState<Value>(type: Value.Type) -> Binding<Value>? {
         Swift.precondition(_count >= 0)
         var count = _count
         var pointer = buf
@@ -140,7 +140,7 @@ public struct _DynamicPropertyBuffer {
         return nil
     }
     
-    func update(container: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
+    package func update(container: UnsafeMutableRawPointer, phase: _GraphInputs.Phase) -> Bool {
         Swift.precondition(_count >= 0)
         var changed = false
         var count = _count
@@ -214,11 +214,11 @@ public struct _DynamicPropertyBuffer {
         return allocatedBuffer.advanced(by: oldBuffer.distance(to: ptr))
     }
     
-    func traceMountedProperties<Value>(to value: _GraphValue<Value>, fields: DynamicPropertyCache.Fields) {
+    package func traceMountedProperties<Value>(to value: _GraphValue<Value>, fields: DynamicPropertyCache.Fields) {
         // TODO: Signpost related
     }
     
-    func applyChanged(to body: (Int) -> Void) {        
+    package func applyChanged(to body: (Int) -> Void) {        
         var index = 0
         var pointer = buf
         while index < _count {
