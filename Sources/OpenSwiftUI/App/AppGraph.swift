@@ -14,6 +14,7 @@ import Glibc
 import WASILibc
 #endif
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 final class AppGraph: GraphHost {
     static var shared: AppGraph? = nil

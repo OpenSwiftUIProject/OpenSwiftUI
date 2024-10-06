@@ -7,6 +7,7 @@
 //  ID: A9FAE381E99529D5274BA37A9BC9B074
 
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 final class PreferenceBridge {
     unowned let viewGraph: ViewGraph

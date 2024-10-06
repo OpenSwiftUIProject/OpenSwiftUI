@@ -87,7 +87,7 @@ public struct _GraphInputs {
         self.cachedEnvironment = MutableBox(CachedEnvironment(environment))
         self.phase = phase
         self.transaction = transaction
-        self.changedDebugProperties = []
+        self.changedDebugProperties = .all
         self.options = []
         
         #if canImport(Darwin)
@@ -285,9 +285,11 @@ public protocol _GraphInputsModifier {
     static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs)
 }
 
-//extension _GraphInputs {
-//    package func intern<T>(_ value: T, id: GraphHost.ConstantID) -> Attribute<T>
-//}
+extension _GraphInputs {
+    package func intern<T>(_ value: T, id: GraphHost.ConstantID) -> Attribute<T> {
+        GraphHost.currentHost.intern(value, id: id)
+    }
+}
 
 // FIXME: TO BE REMOVED
 extension _GraphInputs {
@@ -320,19 +322,4 @@ extension _GraphInputs {
 //        get { options.contains(.enableLayout) }
         // TODO: setter
     }
-}
-
-
-// FIXME
-extension _GraphInputs {
-    package typealias ConstantID = Int
-
-    package func intern<Value>(_ value: Value, id: ConstantID) -> Attribute<Value> {
-        cachedEnvironment.wrappedValue.intern(value, id: id.internID)
-    }
-}
-
-extension _GraphInputs.ConstantID {
-    @inline(__always)
-    package var internID: Self { self & 0x1 }
 }

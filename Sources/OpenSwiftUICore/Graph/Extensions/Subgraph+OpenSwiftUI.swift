@@ -1,7 +1,7 @@
-internal import OpenGraphShims
+package import OpenGraphShims
 
-extension OGSubgraph {
-    func willRemove() {
+extension Subgraph {
+    package func willRemove() {
         #if canImport(Darwin)
         forEach(.removable) { attribute in
             let type = attribute._bodyType
@@ -12,7 +12,7 @@ extension OGSubgraph {
         #endif
     }
 
-    func didReinsert() {
+    package func didReinsert() {
         #if canImport(Darwin)
         forEach(.removable) { attribute in
             let type = attribute._bodyType
@@ -23,7 +23,7 @@ extension OGSubgraph {
         #endif
     }
 
-    func willInvalidate(isInserted: Bool) {
+    package func willInvalidate(isInserted: Bool) {
         #if canImport(Darwin)
         forEach(isInserted ? [.removable, .invalidatable] : [.invalidatable]) { attribute in
             let type = attribute._bodyType

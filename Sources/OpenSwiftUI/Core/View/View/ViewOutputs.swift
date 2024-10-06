@@ -1,4 +1,5 @@
 internal import OpenGraphShims
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 /// The output (aka synthesized) attributes returned by each view.
 public struct _ViewOutputs {
@@ -33,7 +34,7 @@ public struct _ViewOutputs {
             var dst: AnyAttribute
             func visit<Key: PreferenceKey>(key: Key.Type) {
                 let graphHost = dst.graph.graphHost()
-                let source = graphHost.intern(Key.defaultValue, id: .zero)
+                let source = graphHost.intern(Key.defaultValue, id: .defaultValue)
                 dst.source = source.identifier
             }
         }

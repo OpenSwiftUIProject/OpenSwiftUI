@@ -125,7 +125,8 @@ package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollect
     }
     
     package mutating func remove(_ key: AnyPreferenceKey.Type) {
-        keys.removeAll { $0 == key }
+        guard let index = keys.firstIndex(where: { $0 == key }) else { return }
+        keys.remove(at: index)
     }
     
     package mutating func remove<K>(_ key: K.Type) where K: PreferenceKey {
