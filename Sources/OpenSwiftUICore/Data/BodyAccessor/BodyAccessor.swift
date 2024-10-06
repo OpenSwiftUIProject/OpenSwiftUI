@@ -7,14 +7,14 @@
 
 internal import OpenGraphShims
 
-protocol BodyAccessor<Container, Body> {
+package protocol BodyAccessor<Container, Body> {
     associatedtype Container
     associatedtype Body
     func updateBody(of container: Container, changed: Bool)
 }
 
 extension BodyAccessor {
-    func setBody(_ body: () -> Body) {
+    package func setBody(_ body: () -> Body) {
         let value = traceRuleBody(Container.self) {
             OGGraph.withoutUpdate(body)
         }

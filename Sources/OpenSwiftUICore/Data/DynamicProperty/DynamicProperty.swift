@@ -2,12 +2,14 @@
 //  DynamicProperty.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: Complete
-//  ID: 49D2A32E637CD497C6DE29B8E060A506
+//  ID: 49D2A32E637CD497C6DE29B8E060A506 (RELEASE_2021)
+//  ID: A4C1D658B3717A3062FEFC91A812D6EB (RELEASE_2024)
 
 internal import OpenGraphShims
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+
+// MARK: - DynamicProperty
 
 /// An interface for a stored variable that updates an external property of a
 /// view.
@@ -24,6 +26,8 @@ public protocol DynamicProperty {
         inputs: inout _GraphInputs
     )
     
+    /// Describes the static behaviors of the property type. Returns
+    ///  a raw integer value from DynamicPropertyBehaviors.
     static var _propertyBehaviors: UInt32 { get }
     
     /// Updates the underlying value of the stored value.
@@ -34,7 +38,45 @@ public protocol DynamicProperty {
     mutating func update()
 }
 
-// MARK: Default implementation for DynamicProperty
+// MARK: - DynamicPropertyBehaviors
+
+package struct DynamicPropertyBehaviors: OptionSet {
+    package let rawValue: UInt32
+    package static let allowsAsync = DynamicPropertyBehaviors(rawValue: 1 << 0)
+    package static let requiresMainThread  = DynamicPropertyBehaviors(rawValue: 1 << 1)
+    
+    package init(rawValue: UInt32) {
+        self.rawValue = rawValue
+    }
+}
+
+// MARK: - DynamicPropertyBox
+
+package protocol DynamicPropertyBox<Property>: DynamicProperty {
+    associatedtype Property: DynamicProperty
+    mutating func destroy()
+    mutating func reset()
+    mutating func update(property: inout Property, phase: ViewPhase) -> Bool
+    func getState<Value>(type: Value.Type) -> Binding<Value>?
+}
+
+// MARK: - Default implementation for DynamicPropertyBox
+
+extension DynamicPropertyBox {
+    package func destroy() {}
+    package func reset() {}
+    package func getState<S>(type: S.Type = S.self) -> Binding<S>? { nil }
+}
+
+// MARK: - Default implementation for DynamicProperty
+
+private struct EmbeddedDynamicPropertyBox<Value: DynamicProperty>: DynamicPropertyBox {
+    typealias Property = Value
+    func update(property: inout Property, phase _: ViewPhase) -> Bool {
+        property.update()
+        return false
+    }
+}
 
 extension DynamicProperty {
     public static func _makeProperty<Value>(
@@ -55,24 +97,6 @@ extension DynamicProperty {
         )
     }
     
-    public static var _propertyBehaviors: UInt32 { 0 }
-    
-    public mutating func update() {}
-}
-
-// MARK: - EmbeddedDynamicPropertyBox
-
-private struct EmbeddedDynamicPropertyBox<Value: DynamicProperty>: DynamicPropertyBox {
-    typealias Property = Value
-    func destroy() {}
-    func reset() {}
-    func update(property: inout Property, phase _: _GraphInputs.Phase) -> Bool {
-        property.update()
-        return false
-    }
-}
-
-extension DynamicProperty {
     static func makeEmbeddedProperties<Value>(
         in buffer: inout _DynamicPropertyBuffer,
         container: _GraphValue<Value>,
@@ -87,10 +111,109 @@ extension DynamicProperty {
             baseOffset: fieldOffset
         )
     }
+    
+    public mutating func update() {}
+    
+    public static var _propertyBehaviors: UInt32 { 0 }
 }
 
+// MARK: - DynamicPropertyCache [2021]
+
+package struct DynamicPropertyCache {
+    package struct Fields {
+        var layout: Layout
+        package var behaviors: DynamicPropertyBehaviors
+
+        enum Layout {
+            case product([Field])
+            case sum(Any.Type, [TaggedFields])
+        }
+        
+        init(layout: Layout) {
+            var behaviors: UInt32 = 0
+            switch layout {
+            case let .product(fields):
+                for field in fields {
+                    behaviors |= field.type._propertyBehaviors
+                }
+            case let .sum(_, taggedFields):
+                for taggedField in taggedFields {
+                    for field in taggedField.fields {
+                        behaviors |= field.type._propertyBehaviors
+                    }
+                }
+            }
+            self.layout = layout
+            self.behaviors = .init(rawValue: behaviors)
+        }
+    }
+    
+    struct Field {
+        var type: DynamicProperty.Type
+        var offset: Int
+        var name: UnsafePointer<Int8>?
+    }
+    
+    struct TaggedFields {
+        var tag: Int
+        var fields: [Field]
+    }
+    
+    private static var cache = MutableBox([ObjectIdentifier: Fields]())
+    
+    package static func fields(of type: Any.Type) -> Fields {
+        if let fields = cache.wrappedValue[ObjectIdentifier(type)] {
+            return fields
+        }
+        let fields: Fields
+        let typeID = OGTypeID(type)
+        switch typeID.kind {
+        case .enum, .optional:
+            var taggedFields: [TaggedFields] = []
+            _ = typeID.forEachField(options: [._2, ._4]) { name, offset, fieldType in
+                var fields: [Field] = []
+                let tupleType = OGTupleType(fieldType)
+                for index in tupleType.indices {
+                    guard let dynamicPropertyType = tupleType.type(at: index) as? DynamicProperty.Type else {
+                        break
+                    }
+                    let offset = tupleType.offset(at: index)
+                    let field = Field(type: dynamicPropertyType, offset: offset, name: name)
+                    fields.append(field)
+                }
+                if !fields.isEmpty {
+                    let taggedField = TaggedFields(tag: offset, fields: fields)
+                    taggedFields.append(taggedField)
+                }
+                return true
+            }
+            fields = Fields(layout: .sum(type, taggedFields))
+        case .struct, .tuple:
+            var fieldArray: [Field] = []
+            _ = typeID.forEachField(options: [._2]) { name, offset, fieldType in
+                guard let dynamicPropertyType = fieldType as? DynamicProperty.Type else {
+                    return true
+                }
+                let field = Field(type: dynamicPropertyType, offset: offset, name: name)
+                fieldArray.append(field)
+                return true
+            }
+            fields = Fields(layout: .product(fieldArray))
+        default:
+            fields = Fields(layout: .product([]))
+        }
+        if fields.behaviors.contains(.init(rawValue: 3)) {
+            Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", ["\(type)"])
+        }
+        cache.wrappedValue[ObjectIdentifier(type)] = fields
+        return fields
+    }
+}
+
+// TO BE AUDITED
+
 extension BodyAccessor {
-    func makeBody(
+    package func makeBody(
         container: _GraphValue<Container>,
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
@@ -124,7 +247,7 @@ extension BodyAccessor {
                     return (_GraphValue(body), buffer)
                 }
             }
-            if fields.behaviors.contains(.asyncThread) {
+            if fields.behaviors.contains(.allowsAsync) {
                 return project(flags: AsyncThreadFlags.self)
             } else {
                 return project(flags: MainThreadFlags.self)

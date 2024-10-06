@@ -7,8 +7,7 @@
 //  ID: EBDC911C9EE054BAE3D86F947C24B7C3
 
 internal import OpenGraphShims
-internal import COpenSwiftUI
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+internal import COpenSwiftUICore
 
 class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
     private struct LockedData {
