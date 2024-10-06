@@ -1,5 +1,3 @@
 internal import OpenGraphShims
 
-extension OGGraph {
-
-}
+extension Graph {}

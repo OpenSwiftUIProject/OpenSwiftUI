@@ -34,7 +34,7 @@ public struct _ViewOutputs {
             var dst: AnyAttribute
             func visit<Key: PreferenceKey>(key: Key.Type) {
                 let graphHost = dst.graph.graphHost()
-                let source = graphHost.intern(Key.defaultValue, id: .zero)
+                let source = graphHost.intern(Key.defaultValue, id: .defaultValue)
                 dst.source = source.identifier
             }
         }

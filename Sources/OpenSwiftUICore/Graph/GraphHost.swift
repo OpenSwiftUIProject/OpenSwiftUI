@@ -30,6 +30,8 @@ extension GraphDelegate {
     }
 }
 
+private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
+
 // MARK: - GraphHost
 
 @_spi(ForOpenSwiftUIOnly)
@@ -112,14 +114,14 @@ open class GraphHost: CustomReflectable {
     package final var graphInputs: _GraphInputs { data.inputs }
     package final var globalSubgraph: Subgraph { data.globalSubgraph }
     package final var rootSubgraph: Subgraph { data.rootSubgraph }
-    private var constants: [ConstantKey: AnyAttribute]
-    private(set) package final var isInstantiated: Bool
-    package final var hostPreferenceValues: WeakAttribute<PreferenceList>
-    package final var lastHostPreferencesSeed: VersionSeed
-    private var pendingTransactions: [AsyncTransaction]
-    package final var inTransaction: Bool // FIXME
-    package final var continuations: [() -> Void] // FIXME
-    private(set) package final var mayDeferUpdate: Bool
+    private var constants: [ConstantKey: AnyAttribute] = [:]
+    private(set) package final var isInstantiated: Bool = false
+    package final var hostPreferenceValues: WeakAttribute<PreferenceList> = WeakAttribute()
+    package final var lastHostPreferencesSeed: VersionSeed = .invalid
+    private final var pendingTransactions: [AsyncTransaction] = []
+    package final var inTransaction: Bool = false
+    package final var continuations: [() -> Void] = []
+    private(set) package final var mayDeferUpdate: Bool = true
     
     // MARK: - GraphHost.RemovedState
     
@@ -134,22 +136,79 @@ open class GraphHost: CustomReflectable {
         package static let hiddenForReuse = RemovedState(rawValue: 1 << 1)
     }
     
-    package var removedState: RemovedState {
+    package final var removedState: RemovedState = [] {
         didSet {
             updateRemovedState()
         }
     }
     
-//    package static var currentHost
-    
-    package init(data: Data) {
-        self.data = data
-        isInstantiated = false
-        fatalError("TODO")
+    package static var currentHost: GraphHost {
+        #if canImport(Darwin)
+        if let currentAttribute = AnyAttribute.current {
+            currentAttribute.graph.graphHost()
+        } else if let currentSubgraph = Subgraph.current {
+            currentSubgraph.graph.graphHost()
+        } else {
+            fatalError("no current graph host")
+        }
+        #else
+        fatalError("Compiler issue on Linux. See #39")
+        #endif
     }
     
+    package init(data: Data) {
+        mainThreadPrecondition()
+        self.data = data
+        // FIXME: API needs to be updated in OG
+        Graph.setUpdateCallback(graph) { [weak self] in
+            guard let self,
+                  let graphDelegate
+            else { return }
+            graphDelegate.updateGraph { _ in }
+        }
+        #if canImport(Darwin)
+        Graph.setInvalidationCallback(graph) { [weak self] attribute in
+            guard let self else { return }
+            graphInvalidation(from: attribute)
+        }
+        #endif
+        graph.setGraphHost(self)
+    }
     
-    // ...
+    deinit {
+        invalidate()
+        blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
+    }
+    
+    package final func invalidate() {
+        if isInstantiated {
+            globalSubgraph.willInvalidate(isInserted: false)
+            isInstantiated = false
+        }
+        if let graph = data.graph {
+            Update.begin()
+            globalSubgraph.invalidate()
+            graph.context = nil
+            graph.invalidate()
+            data.graph = nil
+            Update.end()
+        }
+    }
+    
+    package static var isUpdating: Bool {
+        sharedGraph.counter(for: ._7) != 0
+    }
+    
+    package final var isUpdating: Bool {
+        guard let graph = data.graph else { return false }
+        return graph.counter(for: ._6) != 0
+    }
+    
+    package final func setNeedsUpdate(mayDeferUpdate: Bool) {
+        self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
+        // Blocked by OGGraphSetNeedsUpdate
+        // data.graph?.setNeedsUpdate()
+    }
 
     // MARK: - GraphHost.ConstantID
     
@@ -162,22 +221,17 @@ open class GraphHost: CustomReflectable {
         case placeholder
     }
     
-    package final func intern<T>(_ value: T, id: ConstantID = .defaultValue) -> Attribute<T> {
-        if let attribute = constants[ConstantKey(type: T.self, id: id)] {
+    package final func intern<T>(_ value: T, for type: Any.Type = T.self, id: ConstantID) -> Attribute<T> {
+        if let attribute = constants[ConstantKey(type: type , id: id)] {
             return Attribute(identifier: attribute)
         } else {
-            globalSubgraph.apply {
-                // graphInputs.intern
-            }
-            fatalError("TODO")
+            let result = globalSubgraph.apply { Attribute(value: value) }
+            constants[ConstantKey(type: type, id: id)] = result.identifier
+            return result
         }
     }
     
-    // ...
-    
-    public final var customMirror: Mirror {
-        fatalError("TODO")
-    }
+    public final var customMirror: Mirror { Mirror(self, children: []) }
     
     open var graphDelegate: GraphDelegate? { nil }
     open var parentHost: GraphHost? { nil }
@@ -215,40 +269,9 @@ private struct ConstantKey: Hashable {
 }
 
 private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
-private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 
 @_spi(ForOpenSwiftUIOnly)
 package extension GraphHost {
-    // MARK: - Properties
-    
-//    private(set) final var data: Data
-//    private(set) final var isInstantiated = false
-//   /* private(set)*/ final var hostPreferenceValues: OptionalAttribute<PreferenceList>
-//    private(set) final var lastHostPreferencesSeed: VersionSeed = .invalid
-//    private final var pendingTransactions: [AsyncTransaction] = []
-//    /*private(set)*/ final var inTransaction = false
-//    /*private(set)*/ final var continuations: [() -> Void] = []
-//    private(set) final var mayDeferUpdate = true
-
-    // MARK: - static properties and methods
-    
-    static var currentHost: GraphHost {
-        #if canImport(Darwin)
-        if let currentAttribute = AnyAttribute.current {
-            currentAttribute.graph.graphHost()
-        } else if let currentSubgraph = OGSubgraph.current {
-            currentSubgraph.graph.graphHost()
-        } else {
-            fatalError("no current graph host")
-        }
-        #else
-        fatalError("Compiler issue on Linux. See #39")
-        #endif
-    }
-    
-    static var isUpdating: Bool {
-        sharedGraph.counter(for: ._7) != 0
-    }
     
 //    static func globalTransaction<Mutation: GraphMutation>(
 //        _ transaction: Transaction,
@@ -263,51 +286,6 @@ package extension GraphHost {
     }
     
     private static var pendingGlobalTransactions: [GlobalTransaction] = []
-    
-    // MARK: - inheritable methods
-    
-//    init(data: Data) {
-//        #if canImport(Darwin)
-//        if !Thread.isMainThread {
-//            Log.runtimeIssues("calling into OpenSwiftUI on a non-main thread is not supported")
-//        }
-//        #endif
-//        hostPreferenceValues = OptionalAttribute()
-//        self.data = data
-//        OGGraph.setUpdateCallback(graph) { [weak self] in
-//            guard let self,
-//                  let graphDelegate
-//            else { return }
-//            graphDelegate.updateGraph { _ in }
-//        }
-//        #if canImport(Darwin)
-//        OGGraph.setInvalidationCallback(graph) { [weak self] attribute in
-//            guard let self else { return }
-//            graphInvalidation(from: attribute)
-//        }
-//        #endif
-//        graph.setGraphHost(self)
-//    }
-    
-    func invalidate() {
-        if isInstantiated {
-//            data.globalSubgraph.willInvalidate(isInserted: false)
-            isInstantiated = false
-        }
-        if let graph = data.graph {
-            data.globalSubgraph.invalidate()
-            graph.context = nil
-            graph.invalidate()
-            data.graph = nil
-        }
-    }
-    
-    // MARK: - final methods
-    
-//    deinit {
-//        invalidate()
-//        blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
-//    }
     
     // MARK: - data
     
@@ -374,25 +352,7 @@ package extension GraphHost {
 //        fatalError("TODO")
 //    }
     
-    final func intern<Value>(_ value: Value, id: _GraphInputs.ConstantID) -> Attribute<Value> {
-        let id = id.internID
-        return data.globalSubgraph.apply {
-            data.inputs.intern(value, id: id.internID)
-        }
-    }
-    
-    final func setNeedsUpdate(mayDeferUpdate: Bool) {
-        fatalError("TODO")
-    }
-    
     // MARK: - instantiate and uninstantiate
-    
-    final var isUpdating: Bool {
-        guard let graph = data.graph else {
-            return false
-        }
-        return graph.counter(for: ._6) != 0
-    }
     
     final func instantiate() {
         guard !isInstantiated else {
