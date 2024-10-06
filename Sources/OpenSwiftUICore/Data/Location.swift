@@ -112,7 +112,6 @@ final package class LocationBox<L>: AnyLocation<L.Value>, Location, @unchecked S
     }
     
     override final package func isEqual(to other: AnyLocation<L.Value>) -> Bool {
-        // TODO: Blocked by Semantics.v5
         if _SemanticFeature_v5.isEnabled {
             if let otherBox = other as? LocationBox<L> {
                 location == otherBox.location
