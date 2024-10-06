@@ -7,6 +7,7 @@
 //  ID: FAF0B683EB49BE9BABC9009857940A1E
 
 #if os(iOS)
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 import UIKit
 
 @available(macOS, unavailable)
@@ -102,7 +103,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
             if let displayLink, displayLink.willRender {
                 interval = .zero
             } else {
-                interval = renderInterval(timestamp: .now) / UIAnimationDragCoefficient()
+                interval = renderInterval(timestamp: .systemUptime) / UIAnimationDragCoefficient()
             }
             render(interval: interval)
             allowLayoutWhenNotVisible = false
@@ -136,11 +137,11 @@ open class _UIHostingView<Content>: UIView where Content: View {
     
     private func renderInterval(timestamp: Time) -> Double {
         if lastRenderTime == .zero || lastRenderTime > timestamp {
-            lastRenderTime = timestamp - .microseconds(1)
+            lastRenderTime = timestamp - 1e-6
         }
         let interval = timestamp - lastRenderTime
         lastRenderTime = timestamp
-        return interval.seconds
+        return interval
     }
     
     // TODO
@@ -180,11 +181,11 @@ extension _UIHostingView: ViewRendererHost {
         fatalError("TODO")
     }
     
-    func graphDidChange() {
+    public func graphDidChange() {
         // TODO
     }
     
-    func preferencesDidChange() {
+    public func preferencesDidChange() {
         // TODO
     }
     
