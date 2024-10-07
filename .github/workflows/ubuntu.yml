@@ -12,16 +12,14 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        swift_version: ["6.0"]
-        include:
-          - container: "swiftlang/swift:nightly-6.0-jammy"
-            continue-on-error: true
+        swift_version: ["6.0.1"]
     runs-on: ubuntu-22.04
     env:
       OPENSWIFTUI_WERROR: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 0
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 1
+      OPENSWIFTUI_SWIFT_CRYPTO: 1
     container: swift:${{ matrix.swift_version }}-jammy
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +35,6 @@ jobs:
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest \
             > coverage.txt
-        continue-on-error: ${{ matrix.continue-on-error }}
         id: debug-test
       - name: Building and running tests in release mode
         run: |
@@ -46,12 +43,8 @@ jobs:
             --filter OpenSwiftUITests \
             -Xswiftc -warnings-as-errors \
             --build-path .build-test-release
-        continue-on-error: ${{ matrix.continue-on-error }}
         id: release-test
-        if: steps.debug-test.outcome == 'success'
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true
-        continue-on-error: true
-        if: steps.debug-test.outcome == 'success'

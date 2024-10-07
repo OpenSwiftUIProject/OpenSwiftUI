@@ -20,6 +20,7 @@ jobs:
       OPENSWIFTUI_WERROR: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
     steps:
       - uses: actions/checkout@v4
@@ -60,6 +61,7 @@ jobs:
       OPENSWIFTUI_WERROR: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
     steps:
       - uses: actions/checkout@v4

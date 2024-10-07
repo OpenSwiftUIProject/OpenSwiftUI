@@ -24,6 +24,7 @@ jobs:
       OPENGRAPH_ATTRIBUTEGRAPH: 0
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 1
+      OPENSWIFTUI_SWIFT_CRYPTO: 1
     steps:
       - uses: actions/checkout@v4
       - uses: swiftwasm/setup-swiftwasm@v1
