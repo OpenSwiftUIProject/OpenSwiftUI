@@ -5,7 +5,7 @@
 //  Created by Kyle on 2023/12/16.
 //
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 import Foundation
 

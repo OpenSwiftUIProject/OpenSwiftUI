@@ -5,7 +5,7 @@
 //  Created by Kyle on 2024/3/16.
 //
 
-import COpenSwiftUI
+import COpenSwiftUICore
 import Testing
 
 #if canImport(Darwin)

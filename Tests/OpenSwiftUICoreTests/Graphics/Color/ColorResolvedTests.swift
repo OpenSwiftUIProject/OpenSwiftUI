@@ -4,7 +4,7 @@
 
 #if canImport(Darwin)
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct ColorResolvedTests {

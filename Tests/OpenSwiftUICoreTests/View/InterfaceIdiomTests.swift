@@ -2,7 +2,7 @@
 //  InterfaceIdiomTests.swift
 //  OpenSwiftUITests
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 #if canImport(UIKit)
 import UIKit

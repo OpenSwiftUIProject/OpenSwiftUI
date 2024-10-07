@@ -1,9 +1,6 @@
 //
 //  ProtocolDescriptor.c
-//  FIXME: Use ProtocolDescriptor.m due to COpenSwiftUICore module contains ObjC symbol.
-//  Solution: Move down to COpenSwiftUICore module.
-//  COpenSwiftUI
-
+//  COpenSwiftUICore
 
 #include "ProtocolDescriptor.h"
 
@@ -13,15 +10,15 @@ void _OpenSwiftUI_callVisitViewType(void *visitor_value,
                                     const void *view_pwt);
 
 OPENSWIFTUI_EXPORT
-const void *$s11OpenSwiftUI4ViewMp;
+const void *$s15OpenSwiftUICore4ViewMp;
 
 const void *_OpenSwiftUI_viewProtocolDescriptor(void) {
-    return &$s11OpenSwiftUI4ViewMp;
+    return &$s15OpenSwiftUICore4ViewMp;
 }
 
 OPENSWIFTUI_EXPORT
-const void *$s11OpenSwiftUI12ViewModifierMp;
+const void *$s15OpenSwiftUICore12ViewModifierMp;
 
 const void *_OpenSwiftUI_viewModifierProtocolDescriptor(void) {
-    return &$s11OpenSwiftUI12ViewModifierMp;
+    return &$s15OpenSwiftUICore12ViewModifierMp;
 }

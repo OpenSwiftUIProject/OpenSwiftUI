@@ -6,7 +6,7 @@
 //  Status: Complete
 
 import OpenGraphShims
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 @Suite

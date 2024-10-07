@@ -30,4 +30,25 @@ struct PreferenceKeyTests {
         #expect(CPreferenceKey.readableName == "C")
         #expect(PreferenceKey.readableName == "PreferenceKeyTests.PreferenceKey")
     }
+    
+    struct DemoKey: OpenSwiftUICore.PreferenceKey {
+        struct Value: ExpressibleByNilLiteral {
+            var value = 0
+            init(nilLiteral _: ()) {}
+            init(value: Int) { self.value = value }
+        }
+
+        static func reduce(value: inout Value, nextValue: () -> Value) {
+            value.value = nextValue().value
+        }
+    }
+
+    @Test
+    func preferenceKeyReduce() throws {
+        var value = DemoKey.defaultValue
+        DemoKey.reduce(value: &value) {
+            DemoKey.Value(value: 3)
+        }
+        #expect(value.value == 3)
+    }
 }

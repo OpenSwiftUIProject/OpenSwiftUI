@@ -5,7 +5,7 @@
 //  Created by Kyle on 2024/2/4.
 //
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct HostPreferencesKeyTests {

@@ -2,7 +2,7 @@
 //  AnyViewTests.swift
 //  OpenSwiftUITests
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct AnyViewTests {

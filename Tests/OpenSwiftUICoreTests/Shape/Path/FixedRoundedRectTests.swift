@@ -2,7 +2,7 @@
 //  FixedRoundedRectTests.swift
 //  OpenSwiftUITests
 
-@testable import OpenSwiftUI
+@testable import OpenSwiftUICore
 import Testing
 
 struct FixedRoundedRectTests {
