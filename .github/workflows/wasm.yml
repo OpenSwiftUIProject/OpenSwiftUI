@@ -18,6 +18,8 @@ jobs:
         include:
           - swift_version: "6.0-SNAPSHOT-2024-09-18-a"
             continue-on-error: true
+          - swift_version: "5.10.0-RELEASE"
+            continue-on-error: false
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
