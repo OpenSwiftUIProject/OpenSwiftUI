@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8
 
+import Foundation
 
 // MARK: - _DisplayList_Identity
 
@@ -66,17 +67,20 @@ package struct DisplayList: Equatable {
     }
     
     package init(_ items: [Item]) {
+        guard !items.isEmpty else {
+            self.init()
+            return
+        }
         fatalError("TODO")
     }
     
     package mutating func append(_ item: Item) {
+        fatalError("TODO")
     }
     
     package mutating func append(contentsOf other: DisplayList) {
-        
-    }
-    
-    // TODO
+        fatalError("TODO")
+    }    
 }
 
 @available(*, unavailable)
@@ -86,37 +90,44 @@ extension DisplayList: Sendable {}
 extension DisplayList.Version: Sendable {}
 
 extension DisplayList {
-//    package typealias Identity = _DisplayList_Identity
-//    package typealias StableIdentity = _DisplayList_StableIdentity
-//    package typealias StableIdentityMap = _DisplayList_StableIdentityMap
-//    package typealias StableIdentityRoot = _DisplayList_StableIdentityRoot
-//    package typealias StableIdentityScope = _DisplayList_StableIdentityScope
-    package struct Item : Equatable {
-//      package var frame: CGRect
-//      package var version: Version
-//      package var value: Item.Value
-//      package var identity: Identity
-//      package enum Value {
-//        case empty
-//        case content(Content)
-//        case effect(Effect, DisplayList)
-//        case states([(StrongHash, DisplayList)])
-//      }
-//      package init(_ value: Item.Value, frame: CGRect, identity: Identity, version: Version)
-//      package static func == (lhs: Item, rhs: Item) -> Bool
-//      package var position: CGPoint {
-//        get
-//      }
-//      package var size: CGSize {
-//        get
-//      }
+    package typealias Identity = _DisplayList_Identity
+    package typealias StableIdentity = _DisplayList_StableIdentity
+    package typealias StableIdentityMap = _DisplayList_StableIdentityMap
+    package typealias StableIdentityRoot = _DisplayList_StableIdentityRoot
+    package typealias StableIdentityScope = _DisplayList_StableIdentityScope
+    
+    package struct Item: Equatable {
+        package var frame: CGRect
+        package var version: Version
+        package var value: Item.Value
+        package var identity: Identity
+        package enum Value {
+            case empty
+            case content(Content)
+            case effect(Effect, DisplayList)
+            case states([(StrongHash, DisplayList)])
+        }
+        package init(_ value: Item.Value, frame: CGRect, identity: Identity, version: Version) {
+            self.frame = frame
+            self.version = version
+            self.value = value
+            self.identity = identity
+        }
+        
+        package static func == (lhs: Item, rhs: Item) -> Bool {
+            lhs.identity == rhs.identity && lhs.version == rhs.version
+        }
+        
+        package var position: CGPoint { frame.origin }
+        package var size: CGSize { frame.size }
     }
-//    package struct Content {
-//      package var value: Content.Value
-//      package var seed: Seed
-//      package enum Value {
+    
+    package struct Content {
+        package var value: Content.Value
+        package var seed: Seed
+        package enum Value {
 //        indirect case backdrop(BackdropEffect)
-//        indirect case color(Color.Resolved)
+            indirect case color(Color.Resolved)
 //        indirect case chameleonColor(fallback: Color.Resolved, filters: [GraphicsFilter])
 //        indirect case image(GraphicsImage)
 //        indirect case shape(Path, AnyResolvedPaint, FillStyle)
@@ -127,20 +138,25 @@ extension DisplayList {
 //        indirect case flattened(DisplayList, CGPoint, RasterizationOptions)
 //        indirect case drawing(any RenderBox.RBDisplayListContents, CGPoint, RasterizationOptions)
 //        indirect case view(any _DisplayList_ViewFactory)
-//        case placeholder(id: Identity)
-//      }
-//      package init(_ value: Content.Value, seed: Seed)
-//    }
+            case placeholder(id: Identity)
+        }
+        package init(_ value: Content.Value, seed: Seed) {
+            self.value = value
+            self.seed = seed
+        }
+    }
+
 //    package typealias ViewFactory = _DisplayList_ViewFactory
-//    package enum Effect {
-//      case identity
-//      case geometryGroup
-//      case compositingGroup
-//      case backdropGroup(Bool)
-//      indirect case archive(ArchiveIDs?)
-//      case properties(Properties)
+    
+    package enum Effect {
+        case identity
+        case geometryGroup
+        case compositingGroup
+        case backdropGroup(Bool)
+        indirect case archive(ArchiveIDs?)
+        case properties(Properties)
 //      indirect case platformGroup(any PlatformGroupFactory)
-//      case opacity(Float)
+        case opacity(Float)
 //      case blendMode(GraphicsBlendMode)
 //      indirect case clip(Path, FillStyle, _: GraphicsContext.ClipOptions = .init())
 //      indirect case mask(DisplayList, _: GraphicsContext.ClipOptions = .init())
@@ -151,28 +167,38 @@ extension DisplayList {
 //      indirect case view(any _DisplayList_ViewFactory)
 //      indirect case accessibility([AccessibilityNodeAttachment])
 //      indirect case platform(PlatformEffect)
-//      indirect case state(StrongHash)
+        indirect case state(StrongHash)
 //      indirect case interpolatorRoot(InterpolatorGroup, contentOrigin: CGPoint, contentOffset: CGSize)
 //      case interpolatorLayer(InterpolatorGroup, serial: UInt32)
 //      indirect case interpolatorAnimation(InterpolatorAnimation)
-//    }
-//    package enum Transform {
-//      case affine(CGAffineTransform)
-//      case projection(ProjectionTransform)
-//      case rotation(_RotationEffect.Data)
-//      case rotation3D(_Rotation3DEffect.Data)
-//    }
+    }
+        
+    package enum Transform {
+        #if canImport(Darwin)
+        case affine(CGAffineTransform)
+        #endif
+        case projection(ProjectionTransform)
+        // case rotation(_RotationEffect.Data)
+        // case rotation3D(_Rotation3DEffect.Data)
+    }
+    
 //    package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
 //    package typealias AnyEffectAnimator = _DisplayList_AnyEffectAnimator
-//    package struct ArchiveIDs {
-//      package var uuid: Foundation.UUID
-//      package var stableIDs: StableIdentityMap
-//      package init(uuid: Foundation.UUID, stableIDs: StableIdentityMap)
-//    }
+    
+    package struct ArchiveIDs {
+        package var uuid: UUID
+        package var stableIDs: StableIdentityMap
+        package init(uuid: UUID, stableIDs: StableIdentityMap) {
+            self.uuid = uuid
+            self.stableIDs = stableIDs
+        }
+    }
+    
 //    package struct InterpolatorAnimation {
 //      package var value: StrongHash?
 //      package var animation: Animation?
 //    }
+    
     package struct Version: Comparable, Hashable {
         package private(set) var value: Int
 
@@ -264,13 +290,80 @@ extension DisplayList {
         private var restored: RestoreOptions = []
         
         package init() {}
-//      package mutating func enter(identity: Identity) -> Index
-//      package mutating func leave(index saved: Index)
-//      package mutating func updateArchive(entering: Bool)
-//      package mutating func skip(list: DisplayList)
-//      package mutating func skip(item: Item)
-//      package mutating func skip(effect: Effect)
-//      package func assertItem(_ item: Item)
+        package mutating func enter(identity: Identity) -> Index {
+            if identity == .none {
+                self.serial &+= 1
+                let copy = self
+                self.restored = []
+                return copy
+            } else {
+                let copy = self
+                self.identity = identity
+                self.serial = 0
+                self.restored = ._1
+                return copy
+            }
+        }
+        
+        package mutating func leave(index saved: Index) {
+            if restored.contains(._4) || saved.restored.contains(._8) {
+                let oldIdentity = identity
+                let oldSerial = serial
+                if restored.contains(._4) {
+                    identity = archiveIdentity
+                    serial = archiveSerial
+                }
+                if restored.contains(._8) {
+                    archiveIdentity = oldIdentity
+                    archiveSerial = oldSerial
+                }
+            }
+            if restored.contains(._1) {
+                identity = saved.identity
+                serial = saved.serial
+            }
+            if restored.contains(._2) {
+                archiveIdentity = saved.archiveIdentity
+                archiveSerial = saved.archiveSerial
+            }
+            restored = saved.restored
+        }
+        
+        package mutating func updateArchive(entering: Bool) {
+            if entering {
+                archiveIdentity = identity
+                archiveSerial = serial
+                identity = .none
+                serial = .zero
+                if !restored.contains([._2, ._4]) {
+                    restored = restored.union([._2, ._4])
+                }
+            } else {
+                // false
+                identity = archiveIdentity
+                serial = archiveSerial
+                archiveIdentity = .none
+                archiveSerial = .zero
+                if !restored.contains([._1, ._8]) {
+                    restored = restored.union([._1, ._8])
+                }
+            }
+        }
+        
+        package mutating func skip(list: DisplayList) {
+            fatalError("TODO")
+        }
+        
+        package mutating func skip(item: Item) {
+            fatalError("TODO")
+        }
+        
+        package mutating func skip(effect: Effect) {
+            
+            fatalError("TODO")
+        }
+        
+        package func assertItem(_ item: Item) {}
         
         package var id: ID {
             ID(identity: identity, serial: serial, archiveIdentity: archiveIdentity, archiveSerial: archiveSerial)
@@ -285,6 +378,11 @@ extension DisplayList {
         
         private struct RestoreOptions: OptionSet {
             let rawValue: UInt8
+            
+            static let _1 = RestoreOptions(rawValue: 1 << 0)
+            static let _2 = RestoreOptions(rawValue: 1 << 1)
+            static let _4 = RestoreOptions(rawValue: 1 << 2)
+            static let _8 = RestoreOptions(rawValue: 1 << 3)
         }
     }
 }
