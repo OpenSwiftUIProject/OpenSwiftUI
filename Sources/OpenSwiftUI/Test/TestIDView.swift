@@ -6,6 +6,7 @@
 //  Status: WIP
 
 internal import OpenGraphShims
+internal import OpenSwiftUICore
 
 struct TestIDView<Content, ID>: PrimitiveView, UnaryView {
     var content: Content

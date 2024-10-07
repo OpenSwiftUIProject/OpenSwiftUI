@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: ACC2C5639A7D76F611E170E831FCA491
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) internal import OpenSwiftUICore
 
 #if os(iOS) || os(tvOS)
 import UIKit

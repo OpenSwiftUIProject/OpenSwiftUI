@@ -8,6 +8,8 @@
 public struct PrimitiveButtonStyleConfiguration {
     public struct Label: ViewAlias {
         public typealias Body = Never
+        
+        package init() {}
     }
 
     // 0x0 - 2 Byte
