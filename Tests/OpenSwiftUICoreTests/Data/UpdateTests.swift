@@ -5,6 +5,7 @@
 import OpenSwiftUICore
 import Testing
 
+#if canImport(Darwin)
 struct UpdateTests {
     @Test
     @MainActor
@@ -37,3 +38,4 @@ struct UpdateTests {
         }
     }
 }
+#endif
