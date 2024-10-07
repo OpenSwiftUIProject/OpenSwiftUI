@@ -99,7 +99,7 @@ extension CodaleByProtobuf {
     }
     
     init(from decoder: any Decoder) throws {
-        var container = try decoder.singleValueContainer()
+        let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
         var protobufDecoder = ProtobufDecoder(data)
         protobufDecoder.userInfo = decoder.userInfo
@@ -126,7 +126,7 @@ package struct ProtobufCodable<Value>: Swift.Codable where Value: ProtobufMessag
     }
 
     package init(from decoder: any Decoder) throws {
-        var container = try decoder.singleValueContainer()
+        let container = try decoder.singleValueContainer()
         let data = try container.decode(Data.self)
         var protobufDecoder = ProtobufDecoder(data)
         protobufDecoder.userInfo = decoder.userInfo
