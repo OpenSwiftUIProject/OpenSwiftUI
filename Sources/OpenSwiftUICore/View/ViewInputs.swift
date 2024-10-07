@@ -9,6 +9,8 @@ internal import OpenGraphShims
 
 package typealias ViewPhase = _GraphInputs.Phase
 
+package protocol ViewInput: GraphInput {}
+
 /// The input (aka inherited) attributes supplied to each view. Most
 /// view types will only actually wire a small number of these into
 /// their node. Doesn't include the view itself, which is passed
