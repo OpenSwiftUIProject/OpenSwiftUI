@@ -266,9 +266,7 @@ if swiftCryptoCondition {
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.8.0")
     )
     openSwiftUICoreTarget.addSwiftCryptoSettings()
-    openSwiftUICoreTestTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
-    openSwiftUITestTarget.addSwiftCryptoSettings()
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")

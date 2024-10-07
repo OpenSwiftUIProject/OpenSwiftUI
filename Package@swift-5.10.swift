@@ -206,6 +206,13 @@ extension Target {
         self.swiftSettings = swiftSettings
     }
 
+    func addSwiftCryptoSettings() {
+        dependencies.append(.product(name: "Crypto", package: "swift-crypto"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_SWIFT_CRYPTO"))
+        self.swiftSettings = swiftSettings
+    }
+    
     func addSwiftTestingSettings() {
         dependencies.append(.product(name: "Testing", package: "swift-testing"))
         var swiftSettings = swiftSettings ?? []
@@ -246,6 +253,19 @@ if swiftLogCondition {
     )
     openSwiftUICoreTarget.addSwiftLogSettings()
     openSwiftUITarget.addSwiftLogSettings()
+}
+
+#if os(macOS)
+let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO")
+#else
+let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: true)
+#endif
+if swiftCryptoCondition {
+    package.dependencies.append(
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.8.0")
+    )
+    openSwiftUICoreTarget.addSwiftCryptoSettings()
+    openSwiftUITarget.addSwiftCryptoSettings()
 }
 
 // Remove the check when swift-testing reaches 1.0.0
