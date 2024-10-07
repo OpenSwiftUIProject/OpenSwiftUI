@@ -47,7 +47,7 @@ package final class ViewGraph: GraphHost {
     var needsFocusUpdate: Bool = false
     var nextUpdate: (views: NextUpdate, gestures: NextUpdate) = (NextUpdate(time: .infinity), NextUpdate(time: .infinity))
     private weak var _preferenceBridge: PreferenceBridge?
-    var preferenceBridge: PreferenceBridge? {
+    package var preferenceBridge: PreferenceBridge? {
         get { _preferenceBridge }
         set { setPreferenceBridge(to: newValue, isInvalidating: false) }
     }
@@ -56,7 +56,7 @@ package final class ViewGraph: GraphHost {
     #endif
     // TODO
     
-    init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
+   package  init<Body: View>(rootViewType: Body.Type, requestedOutputs: Outputs) {
         #if canImport(Darwin)
         self.rootViewType = rootViewType
         self.requestedOutputs = requestedOutputs
@@ -179,7 +179,7 @@ package final class ViewGraph: GraphHost {
         // TODO
     }
     
-    func setRootView<V: View>(_ view: V) {
+    package func setRootView<V: View>(_ view: V) {
         #if canImport(Darwin)
         @Attribute(identifier: rootView)
         var rootView: V

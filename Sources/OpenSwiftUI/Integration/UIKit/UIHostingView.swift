@@ -7,17 +7,17 @@
 //  ID: FAF0B683EB49BE9BABC9009857940A1E
 
 #if os(iOS)
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
 import UIKit
 
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
 open class _UIHostingView<Content>: UIView where Content: View {
     private var _rootView: Content
-    var viewGraph: ViewGraph
-    var currentTimestamp: Time = .zero
-    var propertiesNeedingUpdate: ViewRendererHostProperties = [.rootView] // FIXME
-    var isRendering: Bool = false
+    package var viewGraph: ViewGraph
+    package var currentTimestamp: Time = .zero
+    package var propertiesNeedingUpdate: ViewRendererHostProperties = [.rootView] // FIXME
+    package var isRendering: Bool = false
     var inheritedEnvironment: EnvironmentValues?
     var environmentOverride: EnvironmentValues?
     weak var viewController: UIHostingController<Content>?
@@ -154,30 +154,30 @@ open class _UIHostingView<Content>: UIView where Content: View {
 }
 
 extension _UIHostingView: ViewRendererHost {
-    func addImplicitPropertiesNeedingUpdate(to _: inout ViewRendererHostProperties) {}
+    package func addImplicitPropertiesNeedingUpdate(to _: inout ViewRendererHostProperties) {}
 
-    func updateRootView() {
+    package func updateRootView() {
         let rootView = makeRootView()
         viewGraph.setRootView(rootView)
     }
     
-    func requestUpdate(after: Double) {
+    package func requestUpdate(after: Double) {
         // TODO
     }
     
-    func modifyViewInputs(_ inputs: inout _ViewInputs) {
+    package func modifyViewInputs(_ inputs: inout _ViewInputs) {
         // TODO
     }
     
-    func outputsDidChange(outputs: ViewGraph.Outputs) {
+    package func outputsDidChange(outputs: ViewGraph.Outputs) {
         // TODO
     }
     
-    func focusDidChange() {
+    package func focusDidChange() {
         // TODO
     }
     
-    func rootTransform() -> ViewTransform {
+    package func rootTransform() -> ViewTransform {
         fatalError("TODO")
     }
     

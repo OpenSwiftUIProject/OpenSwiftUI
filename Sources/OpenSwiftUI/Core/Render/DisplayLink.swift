@@ -14,7 +14,7 @@ import UIKit
 import AppKit
 #endif
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) internal import OpenSwiftUICore
 
 final class DisplayLink: NSObject {
     private weak var host: AnyUIHostingView?
