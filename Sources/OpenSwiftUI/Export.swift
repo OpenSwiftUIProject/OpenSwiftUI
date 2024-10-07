@@ -9,4 +9,4 @@
 @_spi(DisplayList_ViewSystem)
 @_spi(SystemUI)
 @_spi(DoNotImport)
-import OpenSwiftUICore
+public import OpenSwiftUICore

@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 274D264A38B51DC68ACC48A91353B7D0
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
 
 @frozen
 @propertyWrapper

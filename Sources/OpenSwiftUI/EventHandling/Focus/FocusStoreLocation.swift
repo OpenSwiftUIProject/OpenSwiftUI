@@ -1,4 +1,4 @@
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) internal import OpenSwiftUICore
 
 class FocusStoreLocation<A: Hashable>: AnyLocation<A>, @unchecked Sendable {
     override var wasRead: Bool {

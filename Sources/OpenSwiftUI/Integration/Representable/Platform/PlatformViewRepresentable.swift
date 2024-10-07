@@ -16,6 +16,8 @@ import Foundation
 typealias PlatformView = Void
 #endif
 
+internal import OpenSwiftUICore
+
 protocol PlatformViewRepresentable: View {
     associatedtype PlatformViewProvider
     associatedtype Coordinator
