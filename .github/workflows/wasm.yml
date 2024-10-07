@@ -18,12 +18,15 @@ jobs:
         include:
           - swift_version: "6.0-SNAPSHOT-2024-09-18-a"
             continue-on-error: true
+          - swift_version: "5.10.0-RELEASE"
+            continue-on-error: false
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1
       OPENGRAPH_ATTRIBUTEGRAPH: 0
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 1
+      OPENSWIFTUI_SWIFT_CRYPTO: 1
     steps:
       - uses: actions/checkout@v4
       - uses: swiftwasm/setup-swiftwasm@v1

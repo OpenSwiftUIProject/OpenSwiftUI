@@ -13,10 +13,10 @@ struct TracingTests {
     @Test(
         .disabled(if: !attributeGraphEnabled, "OGTypeDescription is not implemented yet"),
         arguments: [
-            (type: Int.self as Any.Type, nominalName: "Int"),
-            (type: String.self as Any.Type, nominalName: "String"),
-            (type: Demo.self as Any.Type, nominalName: "TracingTests.Demo"),
-        ]
+            (type: Int.self, nominalName: "Int"),
+            (type: String.self, nominalName: "String"),
+            (type: Demo.self, nominalName: "TracingTests.Demo"),
+        ] as [(Any.Type, String)]
     )
     func name(type: Any.Type, nominalName: String) {
         #expect(Tracing.nominalTypeName(type) == nominalName)
@@ -25,12 +25,12 @@ struct TracingTests {
     @Test(
         .disabled(if: !attributeGraphEnabled, "OGTypeNominalDescriptor is not implemented yet"),
         arguments: [
-            (type: Int.self as Any.Type, libraryName: "libswiftCore.dylib"),
-            (type: String.self as Any.Type, libraryName: "libswiftCore.dylib"),
-            (type: Demo.self as Any.Type, libraryName: "OpenSwiftUICoreTests"),
+            (type: Int.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),
+            (type: String.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),
+            (type: Demo.self as Any.Type, libraryNames: ["OpenSwiftUICoreTests", "OpenSwiftUIPackageTests"]),
         ]
     )
-    func library(type: Any.Type, libraryName: String) {
-        #expect(Tracing.libraryName(defining: type) == libraryName)
+    func library(type: Any.Type, libraryNames: [String]) {
+        #expect(libraryNames.contains(Tracing.libraryName(defining: type)))
     }
 }

@@ -21,6 +21,7 @@ jobs:
       OPENGRAPH_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
     steps:
       - uses: actions/checkout@v4
@@ -35,7 +36,7 @@ jobs:
           swift test \
             -c debug \
             --filter OpenSwiftUITests \
-            -Xswiftc -warnings-as-errors \
+            --filter OpenSwiftUICoreTests \
             --enable-code-coverage \
             --build-path .build-test-debug
           xcrun llvm-cov show \
@@ -47,7 +48,7 @@ jobs:
           swift test \
             -c release \
             --filter OpenSwiftUITests \
-            -Xswiftc -warnings-as-errors \
+            --filter OpenSwiftUICoreTests \
             --enable-code-coverage \
             --build-path .build-test-release
       - uses: codecov/codecov-action@v3
