@@ -3,7 +3,9 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: WIP
+//  Status: Complete
+
+import Foundation
 
 // MARK: - ProtobufMessage
 
@@ -82,21 +84,30 @@ package enum ProtobufFormat {
     }
 }
 
-// MARK: - CoddleByProtobuf [WIP]
+// MARK: - CoddleByProtobuf
 
 package protocol CodaleByProtobuf: Codable, ProtobufMessage {}
 
 extension CodaleByProtobuf {
     func encode(to encoder: any Encoder) throws {
-        fatalError("Blocked by ProtobufEncoder")
+        let data = try ProtobufEncoder.encoding { protobufEncoder in
+            protobufEncoder.userInfo = encoder.userInfo
+            try encode(to: &protobufEncoder)
+        }
+        var container = encoder.singleValueContainer()
+        try container.encode(data)
     }
     
     init(from decoder: any Decoder) throws {
-        fatalError("Blocked by ProtobufDecoder")
+        var container = try decoder.singleValueContainer()
+        let data = try container.decode(Data.self)
+        var protobufDecoder = ProtobufDecoder(data)
+        protobufDecoder.userInfo = decoder.userInfo
+        self = try Self(from: &protobufDecoder)
     }
 }
 
-// MARK: - ProtobufCodable [WIP]
+// MARK: - ProtobufCodable
 
 @propertyWrapper
 package struct ProtobufCodable<Value>: Swift.Codable where Value: ProtobufMessage {
@@ -104,11 +115,22 @@ package struct ProtobufCodable<Value>: Swift.Codable where Value: ProtobufMessag
     package init(wrappedValue: Value) {
         self.wrappedValue = wrappedValue
     }
+
     package func encode(to encoder: any Encoder) throws {
-        fatalError("Blocked by ProtobufEncoder")
+        let data = try ProtobufEncoder.encoding { protobufEncoder in
+            protobufEncoder.userInfo = encoder.userInfo
+            try wrappedValue.encode(to: &protobufEncoder)
+        }
+        var container = encoder.singleValueContainer()
+        try container.encode(data)
     }
+
     package init(from decoder: any Decoder) throws {
-        fatalError("Blocked by ProtobufDecoder")
+        var container = try decoder.singleValueContainer()
+        let data = try container.decode(Data.self)
+        var protobufDecoder = ProtobufDecoder(data)
+        protobufDecoder.userInfo = decoder.userInfo
+        wrappedValue = try Value(from: &protobufDecoder)
     }
 }
 
