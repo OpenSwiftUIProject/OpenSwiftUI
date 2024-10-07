@@ -133,10 +133,10 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
-let swiftBinPath = Context.environment["_"] ?? ""
+let swiftBinPath = Context.environment["_"] ?? "/usr/bin/swift"
 let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
 let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
-let includePath = SDKPath.appending("/usr/lib/swift_static")
+let includePath = SDKPath.appending("/usr/lib/swift")
 
 let package = Package(
     name: "OpenSwiftUI",
