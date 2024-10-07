@@ -5,7 +5,12 @@
 //  Audited for RELEASE_2024
 //  Status: Blocked by OGTypeGetSignature
 
+#if OPENSWIFTUI_SWIFT_CRYPTO
+internal import Crypto
+#elseif canImport(CommonCrypto)
 internal import CommonCrypto
+#endif
+
 import Foundation
 
 package protocol StronglyHashable {
@@ -80,14 +85,33 @@ package struct StrongHash: Hashable, StronglyHashableByBitPattern, Codable, Cust
 }
 
 package struct StrongHasher {
+    #if OPENSWIFTUI_SWIFT_CRYPTO
+    var state: Insecure.SHA1
+    #elseif canImport(CommonCrypto)
     var state: CC_SHA1state_st
+    #endif
+    
     package init() {
+        #if OPENSWIFTUI_SWIFT_CRYPTO
+        state = Insecure.SHA1()
+        #elseif canImport(CommonCrypto)
         var context = CC_SHA1_CTX()
         CC_SHA1_Init(&context)
         state = context
+        #endif
     }
     
     package mutating func finalize() -> StrongHash {
+        #if OPENSWIFTUI_SWIFT_CRYPTO
+        var hash = StrongHash()
+        let digest = state.finalize()
+        digest.withUnsafeBytes { pointer in
+            pointer.withMemoryRebound(to: UInt32.self) { buffer in
+                hash.words = (buffer[0], buffer[1], buffer[2], buffer[3], buffer[4])
+            }
+        }
+        return hash
+        #elseif canImport(CommonCrypto)
         withUnsafeTemporaryAllocation(of: UInt8.self, capacity: 20) { pointer in
             CC_SHA1_Final(pointer.baseAddress, &state)
             var hash = StrongHash()
@@ -96,15 +120,26 @@ package struct StrongHasher {
             }
             return hash
         }
+        #endif
     }
     
+    mutating func combineBytes(_ ptr: UnsafeRawBufferPointer) {
+        #if OPENSWIFTUI_SWIFT_CRYPTO
+        state.update(bufferPointer: ptr)
+        #elseif canImport(CommonCrypto)
+        combineBytes(UnsafeRawPointer(ptr.baseAddress!), count: ptr.count)
+        #endif
+    }
+    
+    #if !OPENSWIFTUI_SWIFT_CRYPTO && canImport(CommonCrypto)
     package mutating func combineBytes(_ ptr: UnsafeRawPointer, count: Int) {
         CC_SHA1_Update(&state, ptr, CC_LONG(count))
     }
+    #endif
     
     package mutating func combineBitPattern<T>(_ x: T) {
-        withUnsafePointer(to: x) { ptr in
-            combineBytes(UnsafeRawPointer(ptr), count: MemoryLayout<T>.size)
+        withUnsafeBytes(of: x) { buffer in
+            combineBytes(buffer)
         }
     }
     
@@ -124,7 +159,7 @@ extension String: StronglyHashable {
         guard !isEmpty else { return }
         let cString = utf8CString
         cString.withUnsafeBufferPointer { buffer in
-            hasher.combineBytes(buffer.baseAddress!, count: cString.count)
+            hasher.combineBytes(UnsafeRawBufferPointer(buffer))
         }
     }
 }
@@ -132,7 +167,7 @@ extension String: StronglyHashable {
 extension Data: StronglyHashable {
     package func hash(into hasher: inout StrongHasher) {
         withUnsafeBytes { (pointer: UnsafeRawBufferPointer) in
-            hasher.combineBytes(pointer.baseAddress!, count: count)
+            hasher.combineBytes(pointer)
         }
     }
 }

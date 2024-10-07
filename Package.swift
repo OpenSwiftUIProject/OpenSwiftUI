@@ -213,6 +213,13 @@ extension Target {
         swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
         self.swiftSettings = swiftSettings
     }
+    
+    func addSwiftCryptoSettings() {
+        dependencies.append(.product(name: "Crypto", package: "swift-crypto"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_SWIFT_CRYPTO"))
+        self.swiftSettings = swiftSettings
+    }
 }
 
 if attributeGraphCondition {
@@ -247,6 +254,21 @@ if swiftLogCondition {
     )
     openSwiftUICoreTarget.addSwiftLogSettings()
     openSwiftUITarget.addSwiftLogSettings()
+}
+
+#if os(macOS)
+let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO")
+#else
+let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: true)
+#endif
+if swiftCryptoCondition {
+    package.dependencies.append(
+        .package(url: "https://github.com/apple/swift-crypto.git", from: "3.8.0")
+    )
+    openSwiftUICoreTarget.addSwiftCryptoSettings()
+    openSwiftUICoreTestTarget.addSwiftCryptoSettings()
+    openSwiftUITarget.addSwiftCryptoSettings()
+    openSwiftUITestTarget.addSwiftCryptoSettings()
 }
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
