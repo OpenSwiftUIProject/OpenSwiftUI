@@ -15,7 +15,7 @@ extension UnsafePointer {
     
     @_transparent
     package static var null: UnsafePointer<Pointee> {
-        UnsafePointer(bitPattern: Int(bitPattern: 0xffff_ffff_ffff_ff00) | (-MemoryLayout<Pointee>.alignment))!
+        UnsafePointer(bitPattern: Int(bitPattern: UInt.max - 0xff) | (-MemoryLayout<Pointee>.alignment))!
     }
 }
 
@@ -29,7 +29,7 @@ extension UnsafeMutablePointer {
     
     @_transparent
     package static var null: UnsafeMutablePointer<Pointee> {
-        UnsafeMutablePointer(bitPattern: Int(bitPattern: 0xffff_ffff_ffff_ff00) | (-MemoryLayout<Pointee>.alignment))!
+        UnsafeMutablePointer(bitPattern: Int(bitPattern: UInt.max - 0xff) | (-MemoryLayout<Pointee>.alignment))!
     }
 }
 
