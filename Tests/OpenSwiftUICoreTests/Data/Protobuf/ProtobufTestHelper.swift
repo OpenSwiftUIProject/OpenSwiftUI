@@ -166,7 +166,15 @@ struct FloatPointMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: float = try decoder.floatField(field)
+            case 2: double = try decoder.doubleField(field)
+            case 3: cgFloat = try decoder.cgFloatField(field)
+            default:
+                try decoder.skipField(field)
+            }
+        }
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {

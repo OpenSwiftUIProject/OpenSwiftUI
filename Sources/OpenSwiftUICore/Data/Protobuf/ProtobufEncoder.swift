@@ -194,31 +194,10 @@ extension ProtobufEncoder {
         let field = Field(tag, wireType: value < 65536.0 ? .fixed32 : .fixed64)
         encodeVarint(field.rawValue)
         if value < 65536.0 {
-            encodeBitwiseCopyable(Float(value))
+            encodeFloat(Float(value))
         } else {
-            encodeBitwiseCopyable(Double(value))
+            encodeDouble(Double(value))
         }
-    }
-    
-    private mutating func encodeData(_ dataBuffer: UnsafeRawBufferPointer) {
-        // Encode LEN
-        let dataBufferCount = dataBuffer.count
-        encodeVarint(UInt(bitPattern: dataBufferCount))
-        guard let baseAddress = dataBuffer.baseAddress,
-              !dataBuffer.isEmpty else {
-            return
-        }
-        let oldSize = size
-        let newSize = size + dataBufferCount
-        
-        let pointer: UnsafeMutableRawPointer
-        if capacity < newSize {
-            pointer = growBufferSlow(to: newSize)
-        } else {
-            size = newSize
-            pointer = buffer.advanced(by: oldSize)
-        }
-        memcpy(pointer, baseAddress, dataBufferCount)
     }
     
     package mutating func dataField(_ tag: UInt, _ value: Data) {
@@ -243,13 +222,6 @@ extension ProtobufEncoder {
         stack.append(size)
         size += 1
         body(&self)
-        endLengthDelimited()
-    }
-    
-    private mutating func encodeMessage<T>(_ value: T) throws where T: ProtobufEncodableMessage {
-        stack.append(size)
-        size += 1
-        try value.encode(to: &self)
         endLengthDelimited()
     }
     
@@ -509,5 +481,37 @@ extension ProtobufEncoder {
     
     package mutating func encodeFloat(_ value: Float) {
         encodeBitwiseCopyable(value)
+    }
+    
+    private mutating func encodeDouble(_ value: Double) {
+        encodeBitwiseCopyable(value)
+    }
+    
+    private mutating func encodeData(_ dataBuffer: UnsafeRawBufferPointer) {
+        // Encode LEN
+        let dataBufferCount = dataBuffer.count
+        encodeVarint(UInt(bitPattern: dataBufferCount))
+        guard let baseAddress = dataBuffer.baseAddress,
+              !dataBuffer.isEmpty else {
+            return
+        }
+        let oldSize = size
+        let newSize = size + dataBufferCount
+        
+        let pointer: UnsafeMutableRawPointer
+        if capacity < newSize {
+            pointer = growBufferSlow(to: newSize)
+        } else {
+            size = newSize
+            pointer = buffer.advanced(by: oldSize)
+        }
+        memcpy(pointer, baseAddress, dataBufferCount)
+    }
+    
+    private mutating func encodeMessage<T>(_ value: T) throws where T: ProtobufEncodableMessage {
+        stack.append(size)
+        size += 1
+        try value.encode(to: &self)
+        endLengthDelimited()
     }
 }

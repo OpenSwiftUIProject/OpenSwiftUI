@@ -50,6 +50,19 @@ struct ProtobufDecoderTests {
         #expect(try "8001000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
     }
     
+    @Test
+    func floatEncode() throws {
+        #expect(try "".decodePBHexString(FloatPointMessage.self) == FloatPointMessage())
+        #expect(try "0d00ff7f47".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 - 1))
+        #expect(try "1100000000e0ffef40".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 - 1))
+        #expect(try "1d00ff7f47".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(cgFloat: 65536.0 - 1))
+        
+        #expect(try "0d80008047".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 + 1))
+        #expect(try "11000000001000f040".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(double: 65536.0 + 1))
+        #expect(try "19000000001000f040".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(cgFloat: 65536.0 + 1))
+    }
+
+    
     // TODO: packed Bool
 
 }

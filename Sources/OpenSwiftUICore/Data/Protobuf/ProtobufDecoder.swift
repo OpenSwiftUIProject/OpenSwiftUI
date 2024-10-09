@@ -40,7 +40,7 @@ package struct ProtobufDecoder {
             guard ptr < end else {
                 throw DecodingError.failed
             }
-            let byte = ptr.load(as: UInt8.self)
+            let byte = ptr.loadUnaligned(as: UInt8.self)
             ptr += 1
             value |= UInt(byte & 0x7f) << shift
             if byte & 0x80 == 0 {
@@ -199,7 +199,7 @@ extension ProtobufDecoder {
         guard newPtr <= end else {
             throw DecodingError.failed
         }
-        let value = ptr.load(as: UInt32.self)
+        let value = ptr.loadUnaligned(as: UInt32.self)
         ptr = newPtr
         return value
     }
@@ -223,9 +223,70 @@ extension ProtobufDecoder {
         guard newPtr <= end else {
             throw DecodingError.failed
         }
-        let value = ptr.load(as: UInt64.self)
+        let value = ptr.loadUnaligned(as: UInt64.self)
         ptr = newPtr
         return value
+    }
+    
+    package mutating func floatField(_ field: ProtobufDecoder.Field) throws -> Float {
+        switch field.wireType {
+        case .lengthDelimited:
+            let offset = try decodeVariant()
+            let offsetPtr = ptr.advanced(by: Int(offset))
+            guard offsetPtr <= end else {
+                throw DecodingError.failed
+            }
+            packedField = Field(field.tag, wireType: .fixed32)
+            packedEnd = offsetPtr
+        case .fixed32:
+            break
+        default:
+            throw DecodingError.failed
+        }
+        let newPtr = ptr.advanced(by: 4)
+        guard newPtr <= end else {
+            throw DecodingError.failed
+        }
+        let value = ptr.loadUnaligned(as: UInt32.self)
+        ptr = newPtr
+        return Float(bitPattern: value)
+    }
+    
+    package mutating func doubleField(_ field: ProtobufDecoder.Field) throws -> Double {
+        switch field.wireType {
+        case .fixed64:
+            break
+        case .lengthDelimited:
+            let offset = try decodeVariant()
+            let offsetPtr = ptr.advanced(by: Int(offset))
+            guard offsetPtr <= end else {
+                throw DecodingError.failed
+            }
+            packedField = Field(field.tag, wireType: .fixed64)
+            packedEnd = offsetPtr
+        case .fixed32:
+            let newPtr = ptr.advanced(by: 4)
+            guard newPtr <= end else {
+                throw DecodingError.failed
+            }
+            let value = ptr.loadUnaligned(as: UInt32.self)
+            ptr = newPtr
+            return Double(Float(bitPattern: value))
+        default:
+            throw DecodingError.failed
+        }
+        let newPtr = ptr.advanced(by: 8)
+        guard newPtr <= end else {
+            throw DecodingError.failed
+        }
+        let value = ptr.loadUnaligned(as: UInt64.self)
+        ptr = newPtr
+        return Double(bitPattern: value)
+    }
+    
+    @inline(__always)
+    package mutating func cgFloatField(_ field: ProtobufDecoder.Field) throws -> CGFloat {
+        try doubleField(field)
     }
     
     // TODO
