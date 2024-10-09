@@ -122,9 +122,7 @@ extension ProtobufEncoder {
     @inline(__always)
     package mutating func enumField<T>(_ tag: UInt, _ value: T, defaultValue: T?) where T: Equatable, T: ProtobufEnum {
         guard value != defaultValue else { return }
-        let field = Field(tag, wireType: .varint)
-        encodeVarint(field.rawValue)
-        encodeVarint(value.protobufValue)
+        enumField(tag, value)
     }
     
     @inline(__always)

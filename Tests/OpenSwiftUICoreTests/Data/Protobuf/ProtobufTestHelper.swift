@@ -23,6 +23,60 @@ struct BoolMessage: ProtobufMessage, Equatable {
     }
 }
 
+struct EnumMessage: ProtobufMessage {
+    enum Value: UInt, ProtobufEnum {
+        var protobufValue: UInt { rawValue }
+        
+        init?(protobufValue: UInt) {
+            self.init(rawValue: protobufValue)
+        }
+        
+        case a, b
+    }
+    
+    var value: Value
+    
+    init(value: Value) {
+        self.value = value
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError()
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.enumField(1, value)
+    }
+}
+
+struct EnumEquatableMessage: ProtobufMessage {
+    enum Value: UInt, ProtobufEnum, Equatable {
+        var protobufValue: UInt { rawValue }
+        
+        init?(protobufValue: UInt) {
+            self.init(rawValue: protobufValue)
+        }
+        
+        case a, b
+    }
+    
+    var value: Value
+    let defaultValue: Value?
+    
+    init(value: Value, defaultValue: Value? = nil) {
+        self.value = value
+        self.defaultValue = defaultValue
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError()
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.enumField(1, value, defaultValue: defaultValue)
+    }
+}
+
 struct IntegerMessage: ProtobufMessage, Equatable {
     var intValue: Int?
     var unsignedIntValue: UInt?
@@ -248,6 +302,18 @@ extension Data {
     
     var hexString: String {
         map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+// MARK: - String + Extension
+
+extension String {
+    func decodePBHexString<T>(_ type: T.Type = T.self) throws -> T where T: ProtobufDecodableMessage {
+        guard let data = Data(hexString: self) else {
+            throw ProtobufDecoder.DecodingError.failed
+        }
+        var decoder = ProtobufDecoder(data)
+        return try T(from: &decoder)
     }
 }
 

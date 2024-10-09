@@ -15,6 +15,14 @@ struct ProtobufEncoderTests {
     }
     
     @Test
+    func enumEncode() throws {
+        #expect((try EnumMessage(value: .a).pbHexString) == "0800")
+        #expect((try EnumMessage(value: .b).pbHexString) == "0801")
+        #expect((try EnumEquatableMessage(value: .a, defaultValue: .a).pbHexString) == "")
+        #expect((try EnumEquatableMessage(value: .b, defaultValue: .a).pbHexString) == "0801")
+    }
+    
+    @Test
     func intEncode() throws {
         #expect((try IntegerMessage(intValue: 1).pbHexString) == "0802")
         #expect((try IntegerMessage(unsignedIntValue: 2).pbHexString) == "1002")
@@ -39,10 +47,6 @@ struct ProtobufEncoderTests {
         #expect((try FloatPointMessage(float: 65536.0 + 1).pbHexString) == "0d80008047")
         #expect((try FloatPointMessage(double: 65536.0 + 1).pbHexString) == "11000000001000f040")
         #expect((try FloatPointMessage(cgFloat: 65536.0 + 1).pbHexString) == "19000000001000f040")
-        
-        print(try FloatPointMessage(float: 65536.0 + 1).pbHexString)
-        print(try FloatPointMessage(double: 65536.0 + 1).pbHexString)
-        print(try FloatPointMessage(cgFloat: 65536.0 + 1).pbHexString)
     }
     
     @Test
