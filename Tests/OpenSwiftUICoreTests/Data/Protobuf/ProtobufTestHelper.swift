@@ -112,6 +112,26 @@ struct DataMessage: ProtobufMessage {
     }
 }
 
+struct PackedIntMessage: ProtobufMessage {
+    var values: [Int]?
+    
+    init(values: [Int]? = nil) {
+        self.values = values
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        if let values {
+            encoder.packedField(1) { encoder in
+                values.forEach { encoder.encodeVarintZZ($0) }
+            }
+        }
+    }
+}
+
 struct StringMessage: ProtobufMessage {
     var string: String?
     

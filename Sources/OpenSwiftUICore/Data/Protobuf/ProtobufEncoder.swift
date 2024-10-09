@@ -54,8 +54,35 @@ package struct ProtobufEncoder {
         return newBuffer + oldSize
     }
     
-    private func endLengthDelimited() {
-//        fatalError("TODO")
+    private mutating func endLengthDelimited() {
+        let lengthPosition = stack.removeLast()
+        // NOTE: I think `size - (lengthPosition + 1)` would be a better implementation
+        // The length should not include the length of the length field itself
+        // Here we use `size - lengthPosition` to align with SwiftUI behavior
+        let length = size - lengthPosition
+        let highBit = 64 - (length | 1).leadingZeroBitCount
+        let count = (highBit + 6) / 7
+        let oldSize = size
+        let newSize = size - 1 + count
+        var pointer: UnsafeMutableRawPointer
+        if capacity < newSize {
+            pointer = growBufferSlow(to: newSize)
+        } else {
+            size = newSize
+            pointer = buffer.advanced(by: oldSize)
+        }
+        let firstLengthBytePointer = pointer.advanced(by: -(length + 1))
+        if count != 1 {
+            memmove(firstLengthBytePointer.advanced(by: count), firstLengthBytePointer.advanced(by: 1), length)
+        }
+        var currentPointer = firstLengthBytePointer
+        var currentValue = length
+        while currentValue >= 0x80 {
+            currentPointer.storeBytes(of: UInt8(currentValue & 0x7F) | 0x80, as: UInt8.self)
+            currentPointer += 1
+            currentValue >>= 7
+        }
+        currentPointer.storeBytes(of: UInt8(currentValue), as: UInt8.self)
     }
 }
 

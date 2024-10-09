@@ -53,7 +53,7 @@ struct ProtobufEncoderTests {
     
     @Test
     func packedEncode() throws {
-        // TODO
+         #expect((try PackedIntMessage(values: [0, 8, 128]).pbHexString) == "0a0500108002") // 0a0400108002
     }
     
     @Test
