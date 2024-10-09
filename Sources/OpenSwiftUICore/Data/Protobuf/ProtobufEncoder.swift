@@ -56,10 +56,7 @@ package struct ProtobufEncoder {
     
     private mutating func endLengthDelimited() {
         let lengthPosition = stack.removeLast()
-        // NOTE: I think `size - (lengthPosition + 1)` would be a better implementation
-        // The length should not include the length of the length field itself
-        // Here we use `size - lengthPosition` to align with SwiftUI behavior
-        let length = size - lengthPosition
+        let length = size - (lengthPosition + 1)
         let highBit = 64 - (length | 1).leadingZeroBitCount
         let count = (highBit + 6) / 7
         let oldSize = size
@@ -250,7 +247,6 @@ extension ProtobufEncoder {
     package mutating func messageField<T>(_ tag: UInt, _ value: T, defaultValue: T) throws where T: Equatable, T: ProtobufEncodableMessage {
         guard value != defaultValue else { return }
         try messageField(tag, value)
-        try encodeMessage(value)
     }
     
     package mutating func messageField<T>(_ tag: UInt, _ value: T) throws where T: ProtobufEncodableMessage {

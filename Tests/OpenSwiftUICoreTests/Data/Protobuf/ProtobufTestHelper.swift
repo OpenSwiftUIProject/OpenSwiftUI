@@ -7,7 +7,7 @@ import OpenSwiftUICore
 
 // MARK: - Message Types
 
-struct BoolMessage: ProtobufMessage {
+struct BoolMessage: ProtobufMessage, Equatable {
     var value: Bool
     
     init(value: Bool) {
@@ -23,7 +23,7 @@ struct BoolMessage: ProtobufMessage {
     }
 }
 
-struct IntegerMessage: ProtobufMessage {
+struct IntegerMessage: ProtobufMessage, Equatable {
     var intValue: Int?
     var unsignedIntValue: UInt?
     var int64Value: Int64?
@@ -66,7 +66,7 @@ struct IntegerMessage: ProtobufMessage {
     }
 }
 
-struct FloatPointMessage: ProtobufMessage {
+struct FloatPointMessage: ProtobufMessage, Equatable {
     var float: Float?
     var double: Double?
     var cgFloat: CGFloat?
@@ -94,7 +94,7 @@ struct FloatPointMessage: ProtobufMessage {
     }
 }
 
-struct DataMessage: ProtobufMessage {
+struct DataMessage: ProtobufMessage, Equatable {
     var data: Data?
     
     init(data: Data? = nil) {
@@ -113,9 +113,9 @@ struct DataMessage: ProtobufMessage {
 }
 
 struct PackedIntMessage: ProtobufMessage {
-    var values: [Int]?
+    var values: [Int]
     
-    init(values: [Int]? = nil) {
+    init(values: [Int]) {
         self.values = values
     }
     
@@ -124,19 +124,17 @@ struct PackedIntMessage: ProtobufMessage {
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        if let values {
-            encoder.packedField(1) { encoder in
-                values.forEach { encoder.encodeVarintZZ($0) }
-            }
+        encoder.packedField(1) { encoder in
+            values.forEach { encoder.encodeVarintZZ($0) }
         }
     }
 }
 
-struct StringMessage: ProtobufMessage {
-    var string: String?
+struct MessageMessage<T>: ProtobufMessage where T: ProtobufMessage {
+    var value: T
     
-    init(string: String? = nil) {
-        self.string = string
+    init(value: T) {
+        self.value = value
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
@@ -144,17 +142,15 @@ struct StringMessage: ProtobufMessage {
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        if let string {
-            try encoder.stringField(1, string)
-        }
+        try encoder.messageField(1, value)
     }
 }
 
-struct CodableMessage<T>: ProtobufMessage where T: Codable, T: Equatable {
-    var value: T?
-    var defaultValue: T
+struct EquatableMessageMessage<T>: ProtobufMessage where T: ProtobufMessage, T: Equatable {
+    var value: T
+    let defaultValue: T
     
-    init(value: T?, defaultValue: T) {
+    init(value: T, defaultValue: T) {
         self.value = value
         self.defaultValue = defaultValue
     }
@@ -164,9 +160,57 @@ struct CodableMessage<T>: ProtobufMessage where T: Codable, T: Equatable {
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        if let value {
-            try encoder.codableField(1, value, defaultValue: defaultValue)
-        }
+        try encoder.messageField(1, value, defaultValue: defaultValue)
+    }
+}
+
+struct StringMessage: ProtobufMessage, Equatable {
+    var string: String
+    
+    init(string: String) {
+        self.string = string
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        try encoder.stringField(1, string)
+    }
+}
+
+struct CodableMessage<T>: ProtobufMessage where T: Codable {
+    var value: T
+    
+    init(value: T) {
+        self.value = value
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        try encoder.codableField(1, value)
+    }
+}
+
+struct EquatableCodableMessage<T>: ProtobufMessage where T: Codable, T: Equatable {
+    var value: T
+    let defaultValue: T
+    
+    init(value: T, defaultValue: T) {
+        self.value = value
+        self.defaultValue = defaultValue
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        try encoder.codableField(1, value, defaultValue: defaultValue)
     }
 }
 

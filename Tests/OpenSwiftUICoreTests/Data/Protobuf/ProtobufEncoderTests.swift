@@ -53,12 +53,22 @@ struct ProtobufEncoderTests {
     
     @Test
     func packedEncode() throws {
-         #expect((try PackedIntMessage(values: [0, 8, 128]).pbHexString) == "0a0500108002") // 0a0400108002
+        #expect((try PackedIntMessage(values: [0, 8, 128]).pbHexString) == "0a0400108002")
+        #expect((try PackedIntMessage(values: [0, 8]).pbHexString) == "0a020010")
     }
     
     @Test
     func messageEncode() throws {
-        // TODO
+        let falseMessage = BoolMessage(value: false)
+        let trueMessage = BoolMessage(value: true)
+        
+        let expectedForFalse = "0a00"
+        let expectedForTrue = "0a020801"
+        
+        #expect((try MessageMessage(value: falseMessage).pbHexString) == expectedForFalse)
+        #expect((try MessageMessage(value: trueMessage).pbHexString) == expectedForTrue)
+        #expect((try EquatableMessageMessage(value: falseMessage, defaultValue: falseMessage).pbHexString) == "")
+        #expect((try EquatableMessageMessage(value: trueMessage, defaultValue: falseMessage).pbHexString) == expectedForTrue)
     }
     
     @Test
@@ -71,8 +81,13 @@ struct ProtobufEncoderTests {
     
     @Test
     func codableEncode() throws {
-        #expect((try CodableMessage(value: 0, defaultValue: 0).pbHexString) == "")
-        #expect((try CodableMessage(value: 1, defaultValue: 0).pbHexString) == "0a2e62706c6973743030a1011001080a000000000000010100000000000000020000000000000000000000000000000c")
+        let expectedForZero = "0a2e62706c6973743030a1011000080a000000000000010100000000000000020000000000000000000000000000000c"
+        let expectedForOne = "0a2e62706c6973743030a1011001080a000000000000010100000000000000020000000000000000000000000000000c"
+        
+        #expect((try CodableMessage(value: 0).pbHexString) == expectedForZero)
+        #expect((try CodableMessage(value: 1).pbHexString) == expectedForOne)
+        #expect((try EquatableCodableMessage(value: 0, defaultValue: 0).pbHexString) == "")
+        #expect((try EquatableCodableMessage(value: 1, defaultValue: 0).pbHexString) == expectedForOne)
     }
     
     @Test
