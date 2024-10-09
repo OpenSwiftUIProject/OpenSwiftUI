@@ -47,7 +47,11 @@ package struct ProtobufEncoder {
     }
     
     private func takeData() -> Data {
-        Data(bytes: buffer, count: size)
+        if let buffer {
+            Data(bytes: buffer, count: size)
+        } else {
+            Data()
+        }
     }
     
     private func encodeData(_ buffer: UnsafeRawBufferPointer) {
