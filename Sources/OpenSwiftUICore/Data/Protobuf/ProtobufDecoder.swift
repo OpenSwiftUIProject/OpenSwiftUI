@@ -289,5 +289,29 @@ extension ProtobufDecoder {
         try doubleField(field)
     }
     
+    package mutating func dataBufferField(_ field: ProtobufDecoder.Field) throws -> UnsafeRawBufferPointer {
+        switch field.wireType {
+        case .lengthDelimited:
+            try decodeDataBuffer()
+        default:
+            throw DecodingError.failed
+        }
+    }
+    
+    package mutating func dataField(_ field: ProtobufDecoder.Field) throws -> Data {
+        switch field.wireType {
+        case .lengthDelimited:
+            let buffer = try decodeDataBuffer()
+            guard let baseAddress = buffer.baseAddress else {
+                return Data()
+            }
+            let startIndex = baseAddress - data.bytes
+            let endIndex = startIndex + buffer.count
+            return (data as Data)[startIndex..<endIndex]
+        default:
+            throw DecodingError.failed
+        }
+    }
+    
     // TODO
 }

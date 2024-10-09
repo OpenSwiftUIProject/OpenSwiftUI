@@ -198,7 +198,13 @@ struct DataMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        guard let field = try decoder.nextField()
+        else {
+            self.init()
+            return
+        }
+        let data = try decoder.dataField(field)
+        self.init(data: data)
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -216,7 +222,19 @@ struct PackedIntMessage: ProtobufMessage {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        var values: [Int] = []
+        while true {
+            guard let field = try decoder.nextField() else {
+                self.init(values: values)
+                return
+            }
+            if field.tag == 1 {
+                let result = try decoder.intField(field)
+                values.append(result)
+            } else {
+                try decoder.skipField(field)
+            }
+        }
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {

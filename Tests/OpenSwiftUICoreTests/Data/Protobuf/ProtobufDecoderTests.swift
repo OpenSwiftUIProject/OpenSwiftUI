@@ -23,7 +23,7 @@ struct ProtobufDecoderTests {
     }
     
     @Test
-    func intEncode() throws {
+    func intDecode() throws {
         #expect(try "".decodePBHexString(IntegerMessage.self) == IntegerMessage())
         #expect(try "0801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "0802".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: 1))
@@ -37,7 +37,7 @@ struct ProtobufDecoderTests {
     }
     
     @Test
-    func skipInvalidTag() throws {
+    func skipInvalidTagDecode() throws {
         #expect(try "38000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "40000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "48000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
@@ -51,7 +51,7 @@ struct ProtobufDecoderTests {
     }
     
     @Test
-    func floatEncode() throws {
+    func floatDecode() throws {
         #expect(try "".decodePBHexString(FloatPointMessage.self) == FloatPointMessage())
         #expect(try "0d00ff7f47".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 - 1))
         #expect(try "1100000000e0ffef40".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 - 1))
@@ -61,8 +61,18 @@ struct ProtobufDecoderTests {
         #expect(try "11000000001000f040".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(double: 65536.0 + 1))
         #expect(try "19000000001000f040".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(cgFloat: 65536.0 + 1))
     }
-
     
-    // TODO: packed Bool
-
+    @Test
+    func dataDecode() throws {
+        #expect(try "".decodePBHexString(DataMessage.self) == DataMessage())
+        #expect(try "0a04ffffffff".decodePBHexString(DataMessage.self) == DataMessage(data: .init(repeating: UInt8(0xFF), count: 4)))
+        #expect(try "0a028888".decodePBHexString(DataMessage.self) == DataMessage(data: .init(repeating: UInt8(0x88), count: 2)))
+    }
+    
+    @Test
+    func packedDecode() throws {
+        #expect(try "".decodePBHexString(PackedIntMessage.self).values == [])
+        #expect(try "0a0400108002".decodePBHexString(PackedIntMessage.self).values == [0, 8, 128])
+        #expect(try "0a020010".decodePBHexString(PackedIntMessage.self).values == [0, 8])
+    }
 }
