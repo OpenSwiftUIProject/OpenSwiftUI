@@ -82,23 +82,23 @@ struct FloatPointMessage: ProtobufMessage {
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        if let float = float {
+        if let float {
             encoder.floatField(1, float)
         }
-        if let double = double {
+        if let double {
             encoder.doubleField(2, double)
         }
-        if let cgFloat = cgFloat {
+        if let cgFloat {
             encoder.cgFloatField(3, cgFloat)
         }
     }
 }
 
-struct UIntMessage: ProtobufMessage {
-    var value: UInt
+struct DataMessage: ProtobufMessage {
+    var data: Data?
     
-    init(value: UInt) {
-        self.value = value
+    init(data: Data? = nil) {
+        self.data = data
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
@@ -106,10 +106,29 @@ struct UIntMessage: ProtobufMessage {
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        encoder.uintField(1, value)
+        if let data {
+            encoder.dataField(1, data)
+        }
     }
 }
 
+struct StringMessage: ProtobufMessage {
+    var string: String?
+    
+    init(string: String? = nil) {
+        self.string = string
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+//        if let string {
+//            encoder.stringField(1, string)
+//        }
+    }
+}
 
 // MARK: - Data + Extension
 

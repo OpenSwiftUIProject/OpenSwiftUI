@@ -44,4 +44,10 @@ struct ProtobufEncoderTests {
         print(try FloatPointMessage(double: 65536.0 + 1).pbHexString)
         print(try FloatPointMessage(cgFloat: 65536.0 + 1).pbHexString)
     }
+    
+    @Test
+    func dataEncode() throws {
+        #expect((try DataMessage(data: .init(repeating: UInt8(0xFF), count: 4)).pbHexString) == "0a04ffffffff")
+        #expect((try DataMessage(data: .init(repeating: UInt8(0x88), count: 2)).pbHexString) == "0a028888")
+    }
 }

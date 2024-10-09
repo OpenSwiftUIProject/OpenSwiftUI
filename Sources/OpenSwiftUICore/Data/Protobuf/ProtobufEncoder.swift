@@ -21,6 +21,14 @@ package struct ProtobufEncoder {
     var stack: [Int] = []
     package var userInfo: [CodingUserInfoKey: Any] = [:]
     
+    private func takeData() -> Data {
+        if let buffer {
+            Data(bytes: buffer, count: size)
+        } else {
+            Data()
+        }
+    }
+    
     package static func encoding(_ body: (inout ProtobufEncoder) throws -> Void) rethrows -> Data {
         var encoder = ProtobufEncoder()
         try body(&encoder)
@@ -44,18 +52,6 @@ package struct ProtobufEncoder {
         size = newSize
         capacity = idealSize
         return newBuffer + oldSize
-    }
-    
-    private func takeData() -> Data {
-        if let buffer {
-            Data(bytes: buffer, count: size)
-        } else {
-            Data()
-        }
-    }
-    
-    private func encodeData(_ buffer: UnsafeRawBufferPointer) {
-        fatalError("TODO")
     }
     
     private func endLengthDelimited() {
@@ -163,21 +159,48 @@ extension ProtobufEncoder {
         }
     }
     
+    private mutating func encodeData(_ dataBuffer: UnsafeRawBufferPointer) {
+        // Encode LEN
+        let dataBufferCount = dataBuffer.count
+        encodeVarint(UInt(bitPattern: dataBufferCount))
+        
+        let oldSize = size
+        let newSize = size + dataBufferCount
+        
+        let pointer: UnsafeMutableRawPointer
+        if capacity < newSize {
+            pointer = growBufferSlow(to: newSize)
+        } else {
+            size = newSize
+            pointer = buffer.advanced(by: oldSize)
+        }
+        memcpy(pointer, dataBuffer.baseAddress, dataBufferCount)
+    }
+    
     package mutating func dataField(_ tag: UInt, _ value: Data) {
-//        let field = Field(tag, wireType: .lengthDelimited)
-//        encodeVarint(field.rawValue)
-//        encodeVarint(UInt(value.count))
-//        encodeBitwiseCopyable(value)
+        value.withUnsafeBytes { buffer in
+            dataField(tag, buffer)
+        }
     }
     
     package mutating func dataField(_ tag: UInt, _ value: UnsafeRawBufferPointer) {
-//        value.isEmpty
-//        let field = Field(tag, wireType: .lengthDelimited)
-//        encodeVarint(field.rawValue)
-//        encodeVarint(UInt(value.count))
-//        encodeBitwiseCopyable(value)
+        guard !value.isEmpty else {
+            return
+        }
+        let field = Field(tag, wireType: .lengthDelimited)
+        encodeVarint(field.rawValue)
+        encodeData(value)
     }
     
+    // packedField
+    // messageField
+    // messageField
+    // messageField
+    // stringField
+    // codableField
+    // codableField
+    // emptyField
+
     // TODO: Implement encoding methods
     
     @inline(__always)
