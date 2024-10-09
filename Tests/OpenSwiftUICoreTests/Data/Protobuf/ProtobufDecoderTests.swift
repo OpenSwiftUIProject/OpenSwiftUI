@@ -6,7 +6,6 @@ import OpenSwiftUICore
 import Testing
 import Foundation
 
-// FIXME: extra () is a workaround for swiftlang/swift-testing#756
 struct ProtobufDecoderTests {
     @Test
     func boolDecode() throws {
@@ -17,9 +16,12 @@ struct ProtobufDecoderTests {
     
     @Test
     func enumEncode() throws {
-        #expect(try "".decodePBHexString(EnumMessage.self).value == .a)
         #expect(try "0800".decodePBHexString(EnumMessage.self).value == .a)
         #expect(try "0801".decodePBHexString(EnumMessage.self).value == .b)
+        
+        #expect(try "".decodePBHexString(EnumEquatableMessage.self).value == .a)
+        #expect(try "0800".decodePBHexString(EnumEquatableMessage.self).value == .a)
+        #expect(try "0801".decodePBHexString(EnumEquatableMessage.self).value == .b)
     }
     
     @Test
@@ -54,7 +56,6 @@ struct ProtobufDecoderTests {
     func floatDecode() throws {
         #expect(try "".decodePBHexString(FloatPointMessage.self) == FloatPointMessage())
         #expect(try "0d00ff7f47".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 - 1))
-        #expect(try "1100000000e0ffef40".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 - 1))
         #expect(try "1d00ff7f47".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(cgFloat: 65536.0 - 1))
         
         #expect(try "0d80008047".decodePBHexString(FloatPointMessage.self) == FloatPointMessage(float: 65536.0 + 1))
@@ -74,5 +75,21 @@ struct ProtobufDecoderTests {
         #expect(try "".decodePBHexString(PackedIntMessage.self).values == [])
         #expect(try "0a0400108002".decodePBHexString(PackedIntMessage.self).values == [0, 8, 128])
         #expect(try "0a020010".decodePBHexString(PackedIntMessage.self).values == [0, 8])
+    }
+    
+    @Test
+    func stringDecode() throws {
+        #expect(try "0a0141".decodePBHexString(StringMessage.self).string == "A")
+        #expect(try "0a0b4f70656e53776966745549".decodePBHexString(StringMessage.self).string == "OpenSwiftUI")
+        #expect(try "0a0ae6b58be8af95f09f918b".decodePBHexString(StringMessage.self).string == "测试👋")
+    }
+    
+    @Test
+    func codableDecode() throws {
+        let expectedForZero = "0a2e62706c6973743030a1011000080a000000000000010100000000000000020000000000000000000000000000000c"
+        let expectedForOne = "0a2e62706c6973743030a1011001080a000000000000010100000000000000020000000000000000000000000000000c"
+        
+        #expect(try expectedForZero.decodePBHexString(CodableMessage.self).value == 0)
+        #expect(try expectedForOne.decodePBHexString(CodableMessage.self).value == 1)
     }
 }

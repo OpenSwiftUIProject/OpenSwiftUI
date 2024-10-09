@@ -32,47 +32,6 @@ package struct ProtobufDecoder {
         self.end = ptr + nsData.length
         self.packedEnd = ptr
     }
-    
-    private mutating func decodeVariant() throws -> UInt {
-        var value: UInt = 0
-        var shift: UInt = 0
-        while true {
-            guard ptr < end else {
-                throw DecodingError.failed
-            }
-            let byte = ptr.loadUnaligned(as: UInt8.self)
-            ptr += 1
-            value |= UInt(byte & 0x7f) << shift
-            if byte & 0x80 == 0 {
-                return value
-            }
-            shift += 7
-        }
-        return 0
-    }
-    
-    private mutating func decodeDataBuffer() throws -> UnsafeRawBufferPointer {
-        let count = try Int(decodeVariant())
-        let oldPtr = ptr
-        let newPtr = ptr.advanced(by: count)
-        guard newPtr <= end else {
-            throw DecodingError.failed
-        }
-        ptr = newPtr
-        return UnsafeRawBufferPointer(start: oldPtr, count: count)
-    }
-    
-    private mutating func beginMessage() throws {
-        fatalError()
-    }
-    
-    private mutating func decodeMessage<T>(_ body: (inout ProtobufEncoder) throws -> T) throws -> T {
-        fatalError()
-    }
-    
-    private mutating func decodeMessage<T>() throws -> T where T: ProtobufDecodableMessage {
-        fatalError()
-    }
 }
 
 extension ProtobufDecoder {
@@ -313,5 +272,81 @@ extension ProtobufDecoder {
         }
     }
     
-    // TODO
+    package mutating func messageField<T>(_ field: ProtobufDecoder.Field) throws -> T where T: ProtobufDecodableMessage {
+        fatalError()
+    }
+    
+    package mutating func messageField<T>(_ field: ProtobufDecoder.Field, _ body: (inout ProtobufDecoder) throws -> T) throws -> T {
+        fatalError()
+    }
+    
+    package mutating func stringField(_ field: ProtobufDecoder.Field) throws -> String {
+        let data = try dataField(field)
+        guard let result = String(data: data, encoding: .utf8) else {
+            throw DecodingError.failed
+        }
+        return result
+    }
+    
+    package mutating func codableField<T>(_ field: ProtobufDecoder.Field) throws -> T where T: Decodable {
+        let data = try dataField(field)
+        return try value(fromBinaryPlist: data)
+    }
+}
+
+extension ProtobufDecoder {
+    private mutating func decodeVariant() throws -> UInt {
+        var value: UInt = 0
+        var shift: UInt = 0
+        while true {
+            guard ptr < end else {
+                throw DecodingError.failed
+            }
+            let byte = ptr.loadUnaligned(as: UInt8.self)
+            ptr += 1
+            value |= UInt(byte & 0x7f) << shift
+            if byte & 0x80 == 0 {
+                return value
+            }
+            shift += 7
+        }
+        return 0
+    }
+    
+    private mutating func decodeDataBuffer() throws -> UnsafeRawBufferPointer {
+        let count = try Int(decodeVariant())
+        let oldPtr = ptr
+        let newPtr = ptr.advanced(by: count)
+        guard newPtr <= end else {
+            throw DecodingError.failed
+        }
+        ptr = newPtr
+        return UnsafeRawBufferPointer(start: oldPtr, count: count)
+    }
+    
+    private mutating func beginMessage() throws {
+        fatalError()
+    }
+    
+    private mutating func decodeMessage<T>(_ body: (inout ProtobufEncoder) throws -> T) throws -> T {
+        fatalError()
+    }
+    
+    private mutating func decodeMessage<T>() throws -> T where T: ProtobufDecodableMessage {
+        fatalError()
+    }
+    
+    func value<T>(fromBinaryPlist data: Data, type: T.Type = T.self) throws -> T where T: Decodable {
+        #if os(WASI)
+        fatalError("PropertyListDecoder is not avaiable on WASI")
+        #else
+        let decoder = PropertyListDecoder()
+        decoder.userInfo = userInfo
+        let resuls = try decoder.decode([T].self, from: data)
+        guard let result = resuls.first else {
+            throw DecodingError.failed
+        }
+        return result
+        #endif
+    }
 }

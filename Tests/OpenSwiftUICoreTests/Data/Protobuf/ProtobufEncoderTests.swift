@@ -18,8 +18,9 @@ struct ProtobufEncoderTests {
     func enumEncode() throws {
         #expect((try EnumMessage(value: .a).pbHexString) == "0800")
         #expect((try EnumMessage(value: .b).pbHexString) == "0801")
-        #expect((try EnumEquatableMessage(value: .a, defaultValue: .a).pbHexString) == "")
-        #expect((try EnumEquatableMessage(value: .b, defaultValue: .a).pbHexString) == "0801")
+        
+        #expect((try EnumEquatableMessage(value: .a).pbHexString) == "")
+        #expect((try EnumEquatableMessage(value: .b).pbHexString) == "0801")
     }
     
     @Test
