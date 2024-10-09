@@ -66,6 +66,34 @@ struct IntegerMessage: ProtobufMessage {
     }
 }
 
+struct FloatPointMessage: ProtobufMessage {
+    var float: Float?
+    var double: Double?
+    var cgFloat: CGFloat?
+    
+    init(float: Float? = nil, double: Double? = nil, cgFloat: CGFloat? = nil) {
+        self.float = float
+        self.double = double
+        self.cgFloat = cgFloat
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        if let float = float {
+            encoder.floatField(1, float)
+        }
+        if let double = double {
+            encoder.doubleField(2, double)
+        }
+        if let cgFloat = cgFloat {
+            encoder.cgFloatField(3, cgFloat)
+        }
+    }
+}
+
 struct UIntMessage: ProtobufMessage {
     var value: UInt
     
