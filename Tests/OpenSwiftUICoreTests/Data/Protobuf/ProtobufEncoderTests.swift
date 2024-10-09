@@ -50,4 +50,12 @@ struct ProtobufEncoderTests {
         #expect((try DataMessage(data: .init(repeating: UInt8(0xFF), count: 4)).pbHexString) == "0a04ffffffff")
         #expect((try DataMessage(data: .init(repeating: UInt8(0x88), count: 2)).pbHexString) == "0a028888")
     }
+    
+    @Test
+    func stringEncode() throws {
+        #expect((try StringMessage(string: "").pbHexString) == "")
+        #expect((try StringMessage(string: "A").pbHexString) == "0a0141")
+        #expect((try StringMessage(string: "OpenSwiftUI").pbHexString) == "0a0b4f70656e53776966745549")
+        #expect((try StringMessage(string: "测试👋").pbHexString) == "0a0ae6b58be8af95f09f918b")
+    }
 }

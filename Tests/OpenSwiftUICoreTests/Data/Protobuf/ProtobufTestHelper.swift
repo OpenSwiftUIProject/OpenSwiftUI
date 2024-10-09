@@ -124,9 +124,9 @@ struct StringMessage: ProtobufMessage {
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-//        if let string {
-//            encoder.stringField(1, string)
-//        }
+        if let string {
+            try encoder.stringField(1, string)
+        }
     }
 }
 

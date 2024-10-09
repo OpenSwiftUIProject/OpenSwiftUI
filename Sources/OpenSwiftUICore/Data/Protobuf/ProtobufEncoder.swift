@@ -55,7 +55,7 @@ package struct ProtobufEncoder {
     }
     
     private func endLengthDelimited() {
-        fatalError("TODO")
+//        fatalError("TODO")
     }
 }
 
@@ -192,24 +192,57 @@ extension ProtobufEncoder {
         encodeData(value)
     }
     
-    // packedField
-    // messageField
-    // messageField
-    // messageField
-    // stringField
-    // codableField
-    // codableField
-    // emptyField
-
-    // TODO: Implement encoding methods
-    
     @inline(__always)
-    package mutating func emptyField(_ tag: UInt) {
+    package mutating func packedField(_ tag: UInt, _ body: (inout ProtobufEncoder) -> Void) {
         let field = Field(tag, wireType: .lengthDelimited)
         encodeVarint(field.rawValue)
-//        encodeVarint(0)
-//        fatalError()
-//        endLengthDelimited()
+        stack.append(size)
+        size += 1
+        body(&self)
+        endLengthDelimited()
+    }
+    
+    @inline(__always)
+    package mutating func messageField(_ tag: UInt, _ body: (inout ProtobufEncoder) throws -> Void) rethrows {
+        fatalError("TODO")
+    }
+    
+    @inline(__always)
+    package mutating func messageField<T>(_ tag: UInt, _ value: T, defaultValue: T) throws where T: Equatable, T : ProtobufEncodableMessage {
+        fatalError("TODO")
+    }
+    
+    package mutating func messageField<T>(_ tag: UInt, _ value: T) throws where T: ProtobufEncodableMessage {
+        fatalError("TODO")
+    }
+    
+    private mutating func stringFieldAlways(_ tag: UInt, _ value: String) throws {
+        guard let data = value.data(using: .utf8) else {
+            throw EncodingError.failed
+        }
+        dataField(tag, data)
+    }
+    
+    @inline(__always)
+    package mutating func stringField(_ tag: UInt, _ value: String, defaultValue: String? = "") throws {
+        guard value != defaultValue else { return }
+        try stringFieldAlways(tag, value)
+    }
+    
+    @inline(__always)
+    package mutating func codableField<T>(_ tag: UInt, _ value: T, defaultValue: T) throws where T: Encodable, T: Equatable {
+        fatalError("TODO")
+    }
+    
+    package mutating func codableField<T>(_ tag: UInt, _ value: T) throws where T: Encodable {
+        fatalError("TODO")
+    }
+    
+    package mutating func emptyField(_ tag: UInt) {
+        let field = Field(tag, wireType: .lengthDelimited)
+        stack.append(size)
+        size += 1
+        endLengthDelimited()
     }
 }
 
