@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: WIP
+//  Status: Complete
 //  ID: C7B3AAD101AF9EA76FC322BD6EF713E6
 
 import Foundation
@@ -85,7 +85,7 @@ extension ProtobufEncoder {
     }
     
     @inline(__always)
-    package mutating func enumField<T>(_ tag: UInt, _ value: T, defaultValue: T?) where T: ProtobufEnum {
+    package mutating func enumField<T>(_ tag: UInt, _ value: T) where T: ProtobufEnum {
         let field = Field(tag, wireType: .varint)
         encodeVarint(field.rawValue)
         encodeVarint(value.protobufValue)
@@ -202,18 +202,34 @@ extension ProtobufEncoder {
         endLengthDelimited()
     }
     
-    @inline(__always)
-    package mutating func messageField(_ tag: UInt, _ body: (inout ProtobufEncoder) throws -> Void) rethrows {
-        fatalError("TODO")
+    private mutating func encodeMessage<T>(_ value: T) throws where T: ProtobufEncodableMessage {
+        stack.append(size)
+        size += 1
+        try value.encode(to: &self)
+        endLengthDelimited()
     }
     
     @inline(__always)
-    package mutating func messageField<T>(_ tag: UInt, _ value: T, defaultValue: T) throws where T: Equatable, T : ProtobufEncodableMessage {
-        fatalError("TODO")
+    package mutating func messageField(_ tag: UInt, _ body: (inout ProtobufEncoder) throws -> Void) rethrows {
+        let field = Field(tag, wireType: .lengthDelimited)
+        encodeVarint(field.rawValue)
+        stack.append(size)
+        size += 1
+        try body(&self)
+        endLengthDelimited()
+    }
+    
+    @inline(__always)
+    package mutating func messageField<T>(_ tag: UInt, _ value: T, defaultValue: T) throws where T: Equatable, T: ProtobufEncodableMessage {
+        guard value != defaultValue else { return }
+        try messageField(tag, value)
+        try encodeMessage(value)
     }
     
     package mutating func messageField<T>(_ tag: UInt, _ value: T) throws where T: ProtobufEncodableMessage {
-        fatalError("TODO")
+        let field = Field(tag, wireType: .lengthDelimited)
+        encodeVarint(field.rawValue)
+        try encodeMessage(value)
     }
     
     private mutating func stringFieldAlways(_ tag: UInt, _ value: String) throws {
@@ -229,17 +245,31 @@ extension ProtobufEncoder {
         try stringFieldAlways(tag, value)
     }
     
+    func binaryPlistData<T>(for value: T) throws -> Data where T: Encodable {
+        let encoder = PropertyListEncoder()
+        encoder.outputFormat = .binary
+        encoder.userInfo = userInfo
+        return try encoder.encode([value])
+    }
+    
     @inline(__always)
     package mutating func codableField<T>(_ tag: UInt, _ value: T, defaultValue: T) throws where T: Encodable, T: Equatable {
-        fatalError("TODO")
+        guard value != defaultValue else { return }
+        try codableField(tag, value)
     }
     
     package mutating func codableField<T>(_ tag: UInt, _ value: T) throws where T: Encodable {
-        fatalError("TODO")
+        let field = Field(tag, wireType: .lengthDelimited)
+        encodeVarint(field.rawValue)
+        let data = try binaryPlistData(for: value)
+        data.withUnsafeBytes { buffer in
+            encodeData(buffer)
+        }
     }
     
     package mutating func emptyField(_ tag: UInt) {
         let field = Field(tag, wireType: .lengthDelimited)
+        encodeVarint(field.rawValue)
         stack.append(size)
         size += 1
         endLengthDelimited()
@@ -253,9 +283,106 @@ extension ProtobufEncoder {
         boolField(tag.rawValue, value, defaultValue: defaultValue)
     }
     
-    // TODO: Implement encoding methods
+    @inline(__always)
+    package mutating func uintField<T>(_ tag: T, _ value: UInt, defaultValue: UInt? = 0) where T: ProtobufTag {
+        uintField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func enumField<T, U>(_ tag: T, _ value: U, defaultValue: U?) where T: ProtobufTag, U: Equatable, U: ProtobufEnum {
+        enumField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func enumField<T, U>(_ tag: T, _ value: U) where T: ProtobufTag, U: ProtobufEnum {
+        enumField(tag.rawValue, value)
+    }
+    
+    @inline(__always)
+    package mutating func uint64Field<T>(_ tag: T, _ value: UInt64, defaultValue: UInt64? = 0) where T: ProtobufTag {
+        uint64Field(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func intField<T>(_ tag: T, _ value: Int, defaultValue: Int? = 0) where T: ProtobufTag {
+        intField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func int64Field<T>(_ tag: T, _ value: Int64, defaultValue: Int64? = 0) where T: ProtobufTag {
+        int64Field(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func fixed32Field<T>(_ tag: T, _ value: UInt32, defaultValue: UInt32? = 0) where T: ProtobufTag {
+        fixed32Field(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func fixed64Field<T>(_ tag: T, _ value: UInt64, defaultValue: UInt64? = 0) where T: ProtobufTag {
+        fixed64Field(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func floatField<T>(_ tag: T, _ value: Float, defaultValue: Float? = 0) where T: ProtobufTag {
+        floatField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func doubleField<T>(_ tag: T, _ value: Double, defaultValue: Double? = 0) where T: ProtobufTag {
+        doubleField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func cgFloatField<T>(_ tag: T, _ value: CGFloat, defaultValue: CGFloat? = 0) where T: ProtobufTag {
+        cgFloatField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func dataField<T>(_ tag: T, _ value: Data) where T: ProtobufTag {
+        dataField(tag.rawValue, value)
+    }
+    
+    @inline(__always)
+    package mutating func dataField<T>(_ tag: T, _ value: UnsafeRawBufferPointer) where T: ProtobufTag {
+        dataField(tag.rawValue, value)
+    }
+    
+    @inline(__always)
+    package mutating func packedField<T>(_ tag: T, _ body: (inout ProtobufEncoder) -> Void) where T: ProtobufTag {
+        packedField(tag.rawValue, body)
+    }
+    
+    @inline(__always)
+    package mutating func messageField<T>(_ tag: T, _ body: (inout ProtobufEncoder) throws -> Void) rethrows where T: ProtobufTag {
+        try messageField(tag.rawValue, body)
+    }
+    
+    @inline(__always)
+    package mutating func messageField<T, U>(_ tag: T, _ value: U, defaultValue: U) throws where T: ProtobufTag, U: Equatable, U: ProtobufEncodableMessage {
+        try messageField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func messageField<T>(_ tag: T, _ value: ProtobufEncodableMessage) throws where T: ProtobufTag {
+        try messageField(tag.rawValue, value)
+    }
+    
+    @inline(__always)
+    package mutating func stringField<T>(_ tag: T, _ value: String, defaultValue: String? = "") throws where T: ProtobufTag {
+        try stringField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func codableField<T>(_ tag: T, _ value: T, defaultValue: T) throws where T: ProtobufTag, T: Encodable, T: Equatable {
+        try codableField(tag.rawValue, value, defaultValue: defaultValue)
+    }
+    
+    @inline(__always)
+    package mutating func codableField<T>(_ tag: T, _ value: T) throws where T: ProtobufTag, T: Encodable {
+        try codableField(tag.rawValue, value)
+    }
 }
-
 
 extension ProtobufEncoder {
     package mutating func encodeVarint(_ value: UInt) {

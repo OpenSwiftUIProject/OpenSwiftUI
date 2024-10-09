@@ -52,10 +52,31 @@ struct ProtobufEncoderTests {
     }
     
     @Test
+    func packedEncode() throws {
+        // TODO
+    }
+    
+    @Test
+    func messageEncode() throws {
+        // TODO
+    }
+    
+    @Test
     func stringEncode() throws {
         #expect((try StringMessage(string: "").pbHexString) == "")
         #expect((try StringMessage(string: "A").pbHexString) == "0a0141")
         #expect((try StringMessage(string: "OpenSwiftUI").pbHexString) == "0a0b4f70656e53776966745549")
         #expect((try StringMessage(string: "测试👋").pbHexString) == "0a0ae6b58be8af95f09f918b")
+    }
+    
+    @Test
+    func codableEncode() throws {
+        #expect((try CodableMessage(value: 0, defaultValue: 0).pbHexString) == "")
+        #expect((try CodableMessage(value: 1, defaultValue: 0).pbHexString) == "0a2e62706c6973743030a1011001080a000000000000010100000000000000020000000000000000000000000000000c")
+    }
+    
+    @Test
+    func emptyEncode() throws {
+        #expect((try EmptyMessage().pbHexString) == "0a00")
     }
 }

@@ -130,6 +130,38 @@ struct StringMessage: ProtobufMessage {
     }
 }
 
+struct CodableMessage<T>: ProtobufMessage where T: Codable, T: Equatable {
+    var value: T?
+    var defaultValue: T
+    
+    init(value: T?, defaultValue: T) {
+        self.value = value
+        self.defaultValue = defaultValue
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        if let value {
+            try encoder.codableField(1, value, defaultValue: defaultValue)
+        }
+    }
+}
+
+struct EmptyMessage: ProtobufMessage {
+    init() {}
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.emptyField(1)
+    }
+}
+
 // MARK: - Data + Extension
 
 extension Data {
