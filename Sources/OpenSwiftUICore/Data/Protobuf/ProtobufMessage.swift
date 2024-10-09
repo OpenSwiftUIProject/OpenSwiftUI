@@ -110,7 +110,7 @@ extension CodaleByProtobuf {
 // MARK: - ProtobufCodable
 
 @propertyWrapper
-package struct ProtobufCodable<Value>: Swift.Codable where Value: ProtobufMessage {
+package struct ProtobufCodable<Value>: Codable where Value: ProtobufMessage {
     package var wrappedValue: Value
     package init(wrappedValue: Value) {
         self.wrappedValue = wrappedValue
