@@ -43,7 +43,26 @@ package struct ProtobufEncoder {
     }
     
     private mutating func growBufferSlow(to newSize: Int) -> UnsafeMutableRawPointer {
+        #if canImport(Darwin)
         let idealSize = malloc_good_size(max(newSize, 0x80))
+        #else
+        func roundUpToPowerOfTwo(_ value: Int) -> Int {
+            guard value > 0 else { return 1 }
+
+            var v = value
+            v -= 1
+            v |= v >> 1
+            v |= v >> 2
+            v |= v >> 4
+            v |= v >> 8
+            v |= v >> 16
+            v |= v >> 32 // For 64-bit systems
+            v += 1
+
+            return v
+        }
+        let idealSize = roundUpToPowerOfTwo(max(newSize, 0x80))
+        #endif
         guard let newBuffer = realloc(buffer, idealSize) else {
             preconditionFailure("memory allocation failed")
         }
@@ -187,7 +206,10 @@ extension ProtobufEncoder {
         // Encode LEN
         let dataBufferCount = dataBuffer.count
         encodeVarint(UInt(bitPattern: dataBufferCount))
-        
+        guard let baseAddress = dataBuffer.baseAddress,
+              !dataBuffer.isEmpty else {
+            return
+        }
         let oldSize = size
         let newSize = size + dataBufferCount
         
@@ -198,7 +220,7 @@ extension ProtobufEncoder {
             size = newSize
             pointer = buffer.advanced(by: oldSize)
         }
-        memcpy(pointer, dataBuffer.baseAddress, dataBufferCount)
+        memcpy(pointer, baseAddress, dataBufferCount)
     }
     
     package mutating func dataField(_ tag: UInt, _ value: Data) {
