@@ -24,6 +24,7 @@ struct ProtobufEncoderTests {
     
     @Test
     func intEncode() throws {
+        #expect((try IntegerMessage(intValue: -1).pbHexString) == "0801")
         #expect((try IntegerMessage(intValue: 1).pbHexString) == "0802")
         #expect((try IntegerMessage(unsignedIntValue: 2).pbHexString) == "1002")
         #expect((try IntegerMessage(int64Value: 3).pbHexString) == "1806")

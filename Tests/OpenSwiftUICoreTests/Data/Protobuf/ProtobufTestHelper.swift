@@ -15,7 +15,12 @@ struct BoolMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        guard let field = try decoder.nextField() else {
+            self.init(value: false)
+            return
+        }
+        let value = try decoder.boolField(field)
+        self.init(value: value)
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -41,7 +46,13 @@ struct EnumMessage: ProtobufMessage {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError()
+        guard let field = try decoder.nextField(),
+                let value: Value = try decoder.enumField(field)
+        else {
+            self.init(value: .a)
+            return
+        }        
+        self.init(value: value)
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -69,7 +80,13 @@ struct EnumEquatableMessage: ProtobufMessage {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError()
+        guard let field = try decoder.nextField(),
+              let value: Value = try decoder.enumField(field)
+        else {
+            self.init(value: .a)
+            return
+        }
+        self.init(value: value)
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -95,7 +112,24 @@ struct IntegerMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                intValue = try decoder.intField(field)
+            case 2:
+                unsignedIntValue = try decoder.uintField(field)
+            case 3:
+                int64Value = Int64(try decoder.intField(field))
+            case 4:
+                unsignedInt64Value = try decoder.uint64Field(field)
+            case 5:
+                int32Value = Int32(bitPattern: try decoder.fixed32Field(field))
+            case 6:
+                unsignedInt32Value = try decoder.fixed32Field(field)
+            default:
+                try decoder.skipField(field)
+            }
+        }
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
