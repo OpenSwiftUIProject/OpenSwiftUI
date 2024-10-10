@@ -73,8 +73,8 @@ struct ProtobufEncoderTests {
         
         #expect((try MessageMessage(value: falseMessage).pbHexString) == expectedForFalse)
         #expect((try MessageMessage(value: trueMessage).pbHexString) == expectedForTrue)
-        #expect((try EquatableMessageMessage(value: falseMessage, defaultValue: falseMessage).pbHexString) == "")
-        #expect((try EquatableMessageMessage(value: trueMessage, defaultValue: falseMessage).pbHexString) == expectedForTrue)
+        #expect((try EquatableMessageMessage(value: falseMessage).pbHexString) == "")
+        #expect((try EquatableMessageMessage(value: trueMessage).pbHexString) == expectedForTrue)
     }
     
     @Test

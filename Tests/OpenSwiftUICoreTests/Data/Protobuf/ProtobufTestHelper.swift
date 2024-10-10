@@ -10,6 +10,10 @@ import OpenSwiftUICore
 struct BoolMessage: ProtobufMessage, Equatable {
     var value: Bool
     
+    init() {
+        self.value = false
+    }
+    
     init(value: Bool) {
         self.value = value
     }
@@ -264,7 +268,16 @@ struct MessageMessage<T>: ProtobufMessage where T: ProtobufMessage {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.messageField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        throw ProtobufDecoder.DecodingError.failed
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -272,21 +285,34 @@ struct MessageMessage<T>: ProtobufMessage where T: ProtobufMessage {
     }
 }
 
-struct EquatableMessageMessage<T>: ProtobufMessage where T: ProtobufMessage, T: Equatable {
+protocol Defaultable {
+    init()
+}
+
+extension BoolMessage: Defaultable {}
+
+struct EquatableMessageMessage<T>: ProtobufMessage where T: ProtobufMessage, T: Equatable, T: Defaultable {
     var value: T
-    let defaultValue: T
     
-    init(value: T, defaultValue: T) {
+    init(value: T) {
         self.value = value
-        self.defaultValue = defaultValue
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.messageField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        value = T()
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        try encoder.messageField(1, value, defaultValue: defaultValue)
+        try encoder.messageField(1, value, defaultValue: .init())
     }
 }
 

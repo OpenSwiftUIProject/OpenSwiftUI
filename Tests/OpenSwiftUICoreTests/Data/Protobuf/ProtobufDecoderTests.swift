@@ -78,6 +78,19 @@ struct ProtobufDecoderTests {
     }
     
     @Test
+    func messageDecode() throws {
+        let expectedForFalse = "0a00"
+        let expectedForTrue = "0a020801"
+
+        #expect(try expectedForFalse.decodePBHexString(MessageMessage<BoolMessage>.self).value.value == false)
+        #expect(try expectedForTrue.decodePBHexString(MessageMessage<BoolMessage>.self).value.value == true)
+
+        #expect(try "".decodePBHexString(EquatableMessageMessage<BoolMessage>.self).value.value == false)
+        #expect(try expectedForFalse.decodePBHexString(EquatableMessageMessage<BoolMessage>.self).value.value == false)
+        #expect(try expectedForTrue.decodePBHexString(EquatableMessageMessage<BoolMessage>.self).value.value == true)
+    }
+    
+    @Test
     func stringDecode() throws {
         #expect(try "0a0141".decodePBHexString(StringMessage.self).string == "A")
         #expect(try "0a0b4f70656e53776966745549".decodePBHexString(StringMessage.self).string == "OpenSwiftUI")

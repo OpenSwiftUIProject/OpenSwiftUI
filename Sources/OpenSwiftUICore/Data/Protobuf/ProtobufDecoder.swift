@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: WIP
+//  Status: Complete
 //  ID: FFA06CAF6B06DC3E21EC75547A0CD421
 
 import Foundation
@@ -273,11 +273,17 @@ extension ProtobufDecoder {
     }
     
     package mutating func messageField<T>(_ field: ProtobufDecoder.Field) throws -> T where T: ProtobufDecodableMessage {
-        fatalError()
+        guard field.wireType == .lengthDelimited else {
+            throw DecodingError.failed
+        }
+        return try decodeMessage()
     }
     
     package mutating func messageField<T>(_ field: ProtobufDecoder.Field, _ body: (inout ProtobufDecoder) throws -> T) throws -> T {
-        fatalError()
+        guard field.wireType == .lengthDelimited else {
+            throw DecodingError.failed
+        }
+        return try decodeMessage(body)
     }
     
     package mutating func stringField(_ field: ProtobufDecoder.Field) throws -> String {
@@ -325,15 +331,25 @@ extension ProtobufDecoder {
     }
     
     private mutating func beginMessage() throws {
-        fatalError()
+        stack.append(end)
+        let count = try Int(decodeVariant())
+        let newPtr = ptr.advanced(by: count)
+        guard newPtr <= end else {
+            throw DecodingError.failed
+        }
+        end = newPtr
     }
     
-    private mutating func decodeMessage<T>(_ body: (inout ProtobufEncoder) throws -> T) throws -> T {
-        fatalError()
+    private mutating func decodeMessage<T>(_ body: (inout ProtobufDecoder) throws -> T) throws -> T {
+        try beginMessage()
+        defer { end = stack.removeLast() }
+        return try body(&self)
     }
     
     private mutating func decodeMessage<T>() throws -> T where T: ProtobufDecodableMessage {
-        fatalError()
+        try beginMessage()
+        defer { end = stack.removeLast() }
+        return try T(from: &self)
     }
     
     func value<T>(fromBinaryPlist data: Data, type: T.Type = T.self) throws -> T where T: Decodable {
