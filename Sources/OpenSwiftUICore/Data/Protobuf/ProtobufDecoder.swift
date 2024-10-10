@@ -304,19 +304,18 @@ extension ProtobufDecoder {
     private mutating func decodeVariant() throws -> UInt {
         var value: UInt = 0
         var shift: UInt = 0
-        while true {
+        var shouldContinue = false
+        repeat {
             guard ptr < end else {
                 throw DecodingError.failed
             }
             let byte = ptr.loadUnaligned(as: UInt8.self)
             ptr += 1
             value |= UInt(byte & 0x7f) << shift
-            if byte & 0x80 == 0 {
-                return value
-            }
             shift += 7
-        }
-        return 0
+            shouldContinue = (byte & 0x80 != 0)
+        } while shouldContinue
+        return value
     }
     
     private mutating func decodeDataBuffer() throws -> UnsafeRawBufferPointer {
