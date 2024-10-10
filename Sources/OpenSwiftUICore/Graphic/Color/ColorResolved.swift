@@ -256,10 +256,31 @@ extension Color.Resolved: Codable {
 
 // MARK: - Color.Resolved + ProtobufMessage
 
-//extension Color.Resolved: ProtobufMessage {
-//  package func encode(to encoder: inout ProtobufEncoder)
-//  package init(from decoder: inout ProtobufDecoder) throws
-//}
+extension Color.Resolved: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) {
+        encoder.floatField(1, red)
+        encoder.floatField(2, green)
+        encoder.floatField(3, blue)
+        encoder.floatField(4, opacity)
+    }
+    
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var red: Float = .zero
+        var green: Float = .zero
+        var blue: Float = .zero
+        var opacity: Float = 1
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: red = try decoder.floatField(field)
+            case 2: green = try decoder.floatField(field)
+            case 3: blue = try decoder.floatField(field)
+            case 4: opacity = try decoder.floatField(field)
+            default: try decoder.skipField(field)
+            }
+        }
+        self.init(red: red, green: green, blue: blue, opacity: opacity)
+    }
+}
 
 // MARK: - Util method
 

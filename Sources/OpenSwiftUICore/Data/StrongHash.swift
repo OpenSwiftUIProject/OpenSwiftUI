@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for RELEASE_2024
-//  Status: Blocked by OGTypeGetSignature
+//  Status: Blocked by OGTypeGetSignature and RBUUID
 
 #if OPENSWIFTUI_SWIFT_CRYPTO
 internal import Crypto
@@ -215,7 +215,41 @@ extension UUID: StronglyHashableByBitPattern {}
 //extension RenderBox.RBUUID {
 //  package init(hash: StrongHash)
 //}
-//extension StrongHash: ProtobufMessage {
-//  package func encode(to encoder: inout ProtobufEncoder)
-//  package init(from decoder: inout ProtobufDecoder) throws
-//}
+
+extension StrongHash: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) {
+        encoder.packedField(1) { encoder in
+            encoder.encodeFixed32(words.0)
+            encoder.encodeFixed32(words.1)
+            encoder.encodeFixed32(words.2)
+            encoder.encodeFixed32(words.3)
+            encoder.encodeFixed32(words.4)
+        }
+    }
+    
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var hash = StrongHash()
+        var count = 0
+        while count < 5 {
+            guard let field = try decoder.nextField() else {
+                self = hash
+                return
+            }
+            if field.tag == 1 {
+                let result = try decoder.fixed32Field(field)
+                switch count {
+                case 0: hash.words.0 = result
+                case 1: hash.words.1 = result
+                case 2: hash.words.2 = result
+                case 3: hash.words.3 = result
+                case 4: hash.words.4 = result
+                default: break
+                }
+                count += 1
+            } else {
+                try decoder.skipField(field)
+            }
+        }
+        self = hash
+    }
+}
