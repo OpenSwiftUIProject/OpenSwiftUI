@@ -10,16 +10,100 @@ import OpenSwiftUICore
 struct BoolMessage: ProtobufMessage, Equatable {
     var value: Bool
     
+    init() {
+        self.value = false
+    }
+    
     init(value: Bool) {
         self.value = value
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.boolField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        value = false
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
         encoder.boolField(1, value)
+    }
+}
+
+struct EnumMessage: ProtobufMessage {
+    enum Value: UInt, ProtobufEnum {
+        var protobufValue: UInt { rawValue }
+        
+        init?(protobufValue: UInt) {
+            self.init(rawValue: protobufValue)
+        }
+        
+        case a, b
+    }
+    
+    var value: Value
+    
+    init(value: Value) {
+        self.value = value
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.enumField(field) ?? .a
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        throw ProtobufDecoder.DecodingError.failed
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.enumField(1, value)
+    }
+}
+
+struct EnumEquatableMessage: ProtobufMessage {
+    enum Value: UInt, ProtobufEnum, Equatable {
+        var protobufValue: UInt { rawValue }
+        
+        init?(protobufValue: UInt) {
+            self.init(rawValue: protobufValue)
+        }
+        
+        case a, b
+    }
+    
+    var value: Value
+    static let defaultValue: Value = .a
+    
+    init(value: Value) {
+        self.value = value
+    }
+    
+    init(from decoder: inout ProtobufDecoder) throws {
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.enumField(field) ?? .a
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        value = Self.defaultValue
+    }
+    
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.enumField(1, value, defaultValue: Self.defaultValue)
     }
 }
 
@@ -41,7 +125,24 @@ struct IntegerMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                intValue = try decoder.intField(field)
+            case 2:
+                unsignedIntValue = try decoder.uintField(field)
+            case 3:
+                int64Value = Int64(try decoder.intField(field))
+            case 4:
+                unsignedInt64Value = try decoder.uint64Field(field)
+            case 5:
+                int32Value = Int32(bitPattern: try decoder.fixed32Field(field))
+            case 6:
+                unsignedInt32Value = try decoder.fixed32Field(field)
+            default:
+                try decoder.skipField(field)
+            }
+        }
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -78,7 +179,15 @@ struct FloatPointMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: float = try decoder.floatField(field)
+            case 2: double = try decoder.doubleField(field)
+            case 3: cgFloat = try decoder.cgFloatField(field)
+            default:
+                try decoder.skipField(field)
+            }
+        }
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -102,7 +211,16 @@ struct DataMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                data = try decoder.dataField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        data = nil
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -120,7 +238,19 @@ struct PackedIntMessage: ProtobufMessage {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        var values: [Int] = []
+        while true {
+            guard let field = try decoder.nextField() else {
+                self.init(values: values)
+                return
+            }
+            if field.tag == 1 {
+                let result = try decoder.intField(field)
+                values.append(result)
+            } else {
+                try decoder.skipField(field)
+            }
+        }
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -138,7 +268,16 @@ struct MessageMessage<T>: ProtobufMessage where T: ProtobufMessage {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.messageField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        throw ProtobufDecoder.DecodingError.failed
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -146,21 +285,34 @@ struct MessageMessage<T>: ProtobufMessage where T: ProtobufMessage {
     }
 }
 
-struct EquatableMessageMessage<T>: ProtobufMessage where T: ProtobufMessage, T: Equatable {
+protocol Defaultable {
+    init()
+}
+
+extension BoolMessage: Defaultable {}
+
+struct EquatableMessageMessage<T>: ProtobufMessage where T: ProtobufMessage, T: Equatable, T: Defaultable {
     var value: T
-    let defaultValue: T
     
-    init(value: T, defaultValue: T) {
+    init(value: T) {
         self.value = value
-        self.defaultValue = defaultValue
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.messageField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        value = T()
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
-        try encoder.messageField(1, value, defaultValue: defaultValue)
+        try encoder.messageField(1, value, defaultValue: .init())
     }
 }
 
@@ -172,7 +324,16 @@ struct StringMessage: ProtobufMessage, Equatable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                string = try decoder.stringField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        throw ProtobufDecoder.DecodingError.failed
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -188,7 +349,16 @@ struct CodableMessage<T>: ProtobufMessage where T: Codable {
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                value = try decoder.codableField(field)
+                return
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        throw ProtobufDecoder.DecodingError.failed
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -217,9 +387,7 @@ struct EquatableCodableMessage<T>: ProtobufMessage where T: Codable, T: Equatabl
 struct EmptyMessage: ProtobufMessage {
     init() {}
     
-    init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
-    }
+    init(from decoder: inout ProtobufDecoder) throws {}
     
     func encode(to encoder: inout ProtobufEncoder) throws {
         encoder.emptyField(1)
@@ -248,6 +416,18 @@ extension Data {
     
     var hexString: String {
         map { String(format: "%02x", $0) }.joined()
+    }
+}
+
+// MARK: - String + Extension
+
+extension String {
+    func decodePBHexString<T>(_ type: T.Type = T.self) throws -> T where T: ProtobufDecodableMessage {
+        guard let data = Data(hexString: self) else {
+            throw ProtobufDecoder.DecodingError.failed
+        }
+        var decoder = ProtobufDecoder(data)
+        return try T(from: &decoder)
     }
 }
 

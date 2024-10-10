@@ -74,15 +74,26 @@ package struct _DisplayList_StableIdentityScope: ViewInput, _ViewTraitKey {
     }
 }
 
-// TODO: Blocked by ProtobufMessage
-//extension _DisplayList_StableIdentity: ProtobufMessage {
-//    package func encode(to encoder: inout ProtobufEncoder) throws
-//    package init(from decoder: inout ProtobufDecoder) throws
-//}
-//extension _DisplayList_StableIdentityMap: ProtobufMessage {
-//    package func encode(to encoder: inout ProtobufEncoder) throws
-//    package init(from decoder: inout ProtobufDecoder) throws
-//}
+extension _DisplayList_StableIdentity: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        try encoder.messageField(1, hash)
+        encoder.uintField(2, UInt(serial))
+    }
+    
+    package init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+}
+
+extension _DisplayList_StableIdentityMap: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        fatalError("TODO")
+    }
+    
+    package init(from decoder: inout ProtobufDecoder) throws {
+        fatalError("TODO")
+    }
+}
 
 // TODO: Blocked by _ViewInputs
 //extension _ViewInputs {
