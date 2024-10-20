@@ -43,13 +43,32 @@ package protocol ViewRendererHost: ViewGraphDelegate {
     var viewGraph: ViewGraph { get }
     var currentTimestamp: Time { get set }
     var propertiesNeedingUpdate: ViewRendererHostProperties { get set }
-    func addImplicitPropertiesNeedingUpdate(to properties: inout ViewRendererHostProperties)
-    var isRendering: Bool { get set }
+    var renderingPhase: ViewRenderingPhase { get set }
+    var externalUpdateCount: Int { get set }
     func updateRootView()
-    func requestUpdate(after: Double)
+    func updateEnvironment()
+    func updateFocusedItem()
+    func updateFocusedValues()
+    func updateTransform()
+    func updateSize()
+    func updateSafeArea()
+    func updateScrollableContainerSize()
+    func updateFocusStore()
+    func updateAccessibilityFocus()
+    func updateAccessibilityFocusStore()
+    func updateAccessibilityEnvironment()
+    func requestUpdate(after delay: Double)
+    func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time
+    func didRender()
 }
 
-// MARK: - ViewRendererHost's default implementation for ViewGraphDelegate
+extension ViewRendererHost {
+    package var isRendering: Bool {
+        fatalError("TODO")
+    }
+}
+
+// TODO: FIXME
 
 extension ViewRendererHost {
     package func updateViewGraph<Value>(body: (ViewGraph) -> Value) -> Value {
@@ -133,4 +152,31 @@ extension ViewRendererHost {
         viewGraph.delegate = nil
         // TODO: Signpost.viewHost
     }
+}
+
+// MARK: - EmptyViewRendererHost
+
+final package class EmptyViewRendererHost: ViewRendererHost {
+    package let viewGraph: ViewGraph
+    package var propertiesNeedingUpdate: ViewRendererHostProperties = []
+    package var renderingPhase: ViewRenderingPhase = .none
+    package var externalUpdateCount: Int = .zero
+    package var currentTimestamp: Time = .zero
+    package init(environment: EnvironmentValues = EnvironmentValues()) {
+        Update.begin()
+        viewGraph = ViewGraph(rootViewType: EmptyView.self, requestedOutputs: [])
+        viewGraph.setEnvironment(environment)
+        initializeViewGraph()
+        Update.end()
+    }
+    package func requestUpdate(after delay: Double) {}
+    package func updateRootView() {}
+    package func updateEnvironment() {}
+    package func updateSize() {}
+    package func updateSafeArea() {}
+    package func updateScrollableContainerSize() {}
+    package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
+        .infinity
+    }
+    package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {}
 }

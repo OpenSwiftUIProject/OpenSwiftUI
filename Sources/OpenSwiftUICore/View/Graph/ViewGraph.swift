@@ -323,25 +323,25 @@ extension ViewGraph {
             self.rawValue = rawValue
         }
         
-        static var _0: Outputs { .init(rawValue: 1 << 0) }
-        static var _1: Outputs { .init(rawValue: 1 << 1) }
-        static var _2: Outputs { .init(rawValue: 1 << 2) }
-        static var _3: Outputs { .init(rawValue: 1 << 3) }
-        static var layout: Outputs { .init(rawValue: 1 << 4) }
+        package static let displayList: ViewGraph.Outputs = .init(rawValue: 1 << 0)
+        package static let platformItemList: ViewGraph.Outputs = .init(rawValue: 1 << 1)
+        package static let viewResponders: ViewGraph.Outputs = .init(rawValue: 1 << 2)
+        package static let layout: ViewGraph.Outputs = .init(rawValue: 1 << 4)
+        package static let focus: ViewGraph.Outputs = .init(rawValue: 1 << 5)
+        package static let all: ViewGraph.Outputs = .init(rawValue: 0xFF)
+        package static let defaults: ViewGraph.Outputs = [.displayList, .viewResponders, .layout, .focus]
         
+        // FIXME
         fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
             inputs.preferences.add(HostPreferencesKey.self)
-            if contains(._0) {
+            if contains(.displayList) {
                 inputs.preferences.add(DisplayList.Key.self)
             }
-            if contains(._2) {
+            if contains(.viewResponders) {
 //                inputs.preferences.add(ViewRespondersKey.self)
             }
-            if contains(._1) {
+            if contains(.platformItemList) {
 //                inputs.preferences.add(PlatformItemList.Key.self)
-            }
-            if contains(._3) {
-//                inputs.preferences.add(AccessibilityNodesKe.self)
             }
         }
     }
