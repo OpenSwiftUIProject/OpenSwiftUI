@@ -64,11 +64,12 @@ extension DisplayList {
             }
             if let renderer {
                 switch configuration.renderer {
-                case .default:
-                    return renderer
-                case .rasterized(let options):
-                    fatalError("Blocked by ViewRasterizer")
-                    return renderer
+                case .default: break
+                case let .rasterized(options):
+                    let rasterizer = renderer as! ViewRasterizer
+                    rasterizer.options = options
+                    rasterizer.renderer.platformViewMode = options.drawsPlatformViews ? .rendered(update: true) : .unsupported
+                    rasterizer.host = host
                 }
             } else {
                 switch configuration.renderer {
@@ -77,11 +78,13 @@ extension DisplayList {
                     // TODO: ViewUpdater
                     renderer = updater
                     state = .updating
-                    return renderer!
-                case .rasterized(let options):
-                    fatalError("Blocked by ViewRasterizer")
+                case let .rasterized(options):
+                    let rasterizer = ViewRasterizer(platform: platform, host: host, rootView: rootView, options: options)
+                    renderer = rasterizer
+                    state = .rasterizing
                 }
             }
+            return renderer!
         }
         
         package func exportedObject(rootView: AnyObject) -> AnyObject? {
@@ -113,6 +116,40 @@ extension DisplayList {
         
         package var viewCacheIsEmpty: Bool {
             renderer?.viewCacheIsEmpty ?? true
+        }
+    }
+    
+    private final class ViewRasterizer: ViewRendererBase {
+        let platform: DisplayList.ViewUpdater.Platform
+        weak var host: ViewRendererHost?
+        var drawingView: AnyObject?
+        var options: _RendererConfiguration.RasterizationOptions
+        let renderer: DisplayList.GraphicsRenderer
+        var seed: DisplayList.Seed
+        var lastContentsScale: CGFloat
+        
+        init(platform: DisplayList.ViewUpdater.Platform, host: ViewRendererHost?, rootView: AnyObject, options: _RendererConfiguration.RasterizationOptions) {
+            fatalError()
+        }
+        
+        var exportedObject: AnyObject? {
+            platform.definition.getRBLayer(drawingView: drawingView!)
+        }
+        
+        func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
+            fatalError("TODO")
+        }
+        
+        func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
+            fatalError("TODO")
+        }
+        
+        func destroy(rootView: AnyObject) {
+            fatalError("TODO")
+        }
+        
+        var viewCacheIsEmpty: Bool {
+            fatalError("TODO")
         }
     }
 }
