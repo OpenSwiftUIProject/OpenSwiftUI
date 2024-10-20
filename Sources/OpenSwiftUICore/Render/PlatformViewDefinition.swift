@@ -75,8 +75,7 @@ extension DisplayList.ViewUpdater.Platform {
     
     @inline(__always)
     var definition: PlatformViewDefinition.Type {
-        let rawValue = self.rawValue & 0xFFFF_FFFF_FFFF_FFFC
-        return unsafeBitCast(rawValue, to: PlatformViewDefinition.Type.self)
+        return unsafeBitCast(rawValue & ~3, to: PlatformViewDefinition.Type.self)
     }
 }
 

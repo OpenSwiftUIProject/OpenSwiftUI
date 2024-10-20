@@ -160,6 +160,7 @@ let package = Package(
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
             ]
         ),
         .target(
@@ -167,6 +168,7 @@ let package = Package(
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
             ]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
