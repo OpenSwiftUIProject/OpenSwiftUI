@@ -1,15 +1,17 @@
 //
 //  PreferenceBridge.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for RELEASE_2021
-//  Status: Complete
-//  ID: A9FAE381E99529D5274BA37A9BC9B074
+//  Audited for RELEASE_2024
+//  Status: TO BE AUDITED
+//  ID: A9FAE381E99529D5274BA37A9BC9B074 (RELEASE_2021)
+//  ID: DF57A19C61B44C613EB77C1D47FC679A (RELEASE_2024)
 
 internal import OpenGraphShims
 
 package final class PreferenceBridge {
-    unowned let viewGraph: ViewGraph
+    weak var viewGraph: ViewGraph?
+    var isValid: Bool = true
     private(set) var children: [Unmanaged<ViewGraph>] = []
     var requestedPreferences = PreferenceKeys()
     var bridgedViewInputs = PropertyList()
@@ -23,8 +25,14 @@ package final class PreferenceBridge {
     }
 
     init() {
-        viewGraph = GraphHost.currentHost as! ViewGraph
+        viewGraph = ViewGraph.current
     }
+    
+    deinit {
+        if isValid { invalidate() }
+    }
+    
+    // FIXME: TO BE AUDITED
     
     #if canImport(Darwin) // FIXME: See #39
     func addValue(_ value: AnyAttribute, for keyType: AnyPreferenceKey.Type) {
@@ -48,7 +56,7 @@ package final class PreferenceBridge {
         }
         var visitor = AddValue(combiner: combiner, value: value)
         keyType.visitKey(&visitor)
-        viewGraph.graphInvalidation(from: value)
+        viewGraph?.graphInvalidation(from: value)
     }
 
     func removeValue(_ value: AnyAttribute, for keyType: AnyPreferenceKey.Type, isInvalidating: Bool) {
@@ -78,7 +86,7 @@ package final class PreferenceBridge {
         var visitor = RemoveValue(combiner: combiner, value: value)
         keyType.visitKey(&visitor)
         if visitor.changed {
-            viewGraph.graphInvalidation(from: isInvalidating ? nil : value)
+            viewGraph?.graphInvalidation(from: isInvalidating ? nil : value)
         }
     }
 
@@ -92,7 +100,7 @@ package final class PreferenceBridge {
         ) { combiner in
             combiner.addChild(keys: keys, values: values)
         }
-        viewGraph.graphInvalidation(from: combiner.identifier)
+        viewGraph?.graphInvalidation(from: combiner.identifier)
     }
 
     func removeHostValue(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool) {
@@ -112,7 +120,7 @@ package final class PreferenceBridge {
             hasRemoved = true
         }
         if hasRemoved {
-            viewGraph.graphInvalidation(from: isInvalidating ? nil : keys.identifier)
+            viewGraph?.graphInvalidation(from: isInvalidating ? nil : keys.identifier)
         }
     }
 

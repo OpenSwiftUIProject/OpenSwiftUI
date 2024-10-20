@@ -22,17 +22,3 @@ extension View {
         modifier(_PreferenceTransformModifier<K>(transform: callback))
     }
 }
-
-extension EnvironmentValues {
-    private struct PreferenceBridgeKey: EnvironmentKey {
-        struct Value {
-            weak var value: PreferenceBridge?
-        }
-        static let defaultValue: Value = Value()
-    }
-
-    var preferenceBridge: PreferenceBridge? {
-        get { self[PreferenceBridgeKey.self].value }
-        set { self[PreferenceBridgeKey.self] = PreferenceBridgeKey.Value(value: newValue) }
-    }
-}

@@ -8,6 +8,7 @@
 #ifndef OpenSwiftUIBase_h
 #define OpenSwiftUIBase_h
 
+#include <CoreFoundation/CoreFoundation.h>
 #include <stdint.h>
 #include <stdbool.h>
 #include <stdio.h>
@@ -66,5 +67,7 @@
 #else
 # define OPENSWIFTUI_SWIFT_NAME(_name)
 #endif
+
+#define OPENSWIFTUI_ENUM CF_ENUM
 
 #endif /* OpenSwiftUIBase_h */

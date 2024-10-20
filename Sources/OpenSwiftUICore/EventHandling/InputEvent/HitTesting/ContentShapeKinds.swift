@@ -2,7 +2,7 @@
 //  ContentShapeKinds.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2023
+//  Audited for RELEASE_2024
 //  Status: Complete
 
 import Foundation
@@ -55,7 +55,6 @@ public struct ContentShapeKinds: OptionSet, Sendable {
     /// When using this kind, only the preview shape will be affected. To
     /// control the shape used to hit-test and start the context menu
     /// presentation, use the `.interaction` kind.
-    @available(tvOS 17.0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     public static let contextMenuPreview: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 2)
@@ -69,10 +68,8 @@ public struct ContentShapeKinds: OptionSet, Sendable {
     /// This kind does not affect the `onHover` modifier.
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
-    @available(tvOS, unavailable)
     public static let hoverEffect: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 3)
 
-    #if OPENSWIFTUI_SUPPORT_2023_API
     /// The kind for accessibility visuals and sorting.
     ///
     /// Setting a content shape with this kind causes the accessibility frame
@@ -85,5 +82,4 @@ public struct ContentShapeKinds: OptionSet, Sendable {
     ///
     /// To control the shape for accessibility and hit-testing, use the `interaction` kind.
     public static let accessibility: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 4)
-    #endif
 }
