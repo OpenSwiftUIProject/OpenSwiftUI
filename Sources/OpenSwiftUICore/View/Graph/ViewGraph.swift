@@ -144,11 +144,11 @@ package final class ViewGraph: GraphHost {
                 sizeThatFitsObserver?.callback(oldCachedSizeThatFits, self.cachedSizeThatFits)
             }
             if !requestedOutputs.isEmpty {
-                delegate?.outputsDidChange(outputs: updatedOutputs)
+//                delegate?.outputsDidChange(outputs: updatedOutputs)
             }
             if needsFocusUpdate {
                 needsFocusUpdate = false
-                delegate?.focusDidChange()
+//                delegate?.focusDidChange()
             }
         } else {
             fatalError("TODO")
