@@ -154,6 +154,44 @@ open class _UIHostingView<Content>: UIView where Content: View {
 }
 
 extension _UIHostingView: ViewRendererHost {
+    package var renderingPhase: OpenSwiftUICore.ViewRenderingPhase {
+        get {
+            fatalError("TODO")
+        }
+        set(newValue) {
+            fatalError("TODO")
+        }
+    }
+    
+    package var externalUpdateCount: Int {
+        get {
+            fatalError("TODO")
+        }
+        set(newValue) {
+            fatalError("TODO")
+        }
+    }
+    
+    package func updateEnvironment() {
+        fatalError("TODO")
+    }
+    
+    package func updateSize() {
+        fatalError("TODO")
+    }
+    
+    package func updateSafeArea() {
+        fatalError("TODO")
+    }
+    
+    package func updateScrollableContainerSize() {
+        fatalError("TODO")
+    }
+    
+    package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
+        fatalError("TODO")
+    }
+    
     package func addImplicitPropertiesNeedingUpdate(to _: inout ViewRendererHostProperties) {}
 
     package func updateRootView() {

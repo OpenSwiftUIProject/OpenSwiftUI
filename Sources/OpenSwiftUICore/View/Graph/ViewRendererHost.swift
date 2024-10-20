@@ -1,10 +1,12 @@
 //
 //  ViewRendererHost.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for RELEASE_2021
+//  Audited for RELEASE_2024
 //  Status: WIP
+//  ID: 76C8A4B3FC8EE0F99045B3425CD62255
 
+import Foundation
 internal import OpenGraphShims
 
 // MARK: - ViewRendererHostProperties
@@ -39,6 +41,8 @@ package enum ViewRenderingPhase {
 @available(*, unavailable)
 extension ViewRenderingPhase: Sendable {}
 
+// MARK: - ViewRendererHost
+
 package protocol ViewRendererHost: ViewGraphDelegate {
     var viewGraph: ViewGraph { get }
     var currentTimestamp: Time { get set }
@@ -64,14 +68,28 @@ package protocol ViewRendererHost: ViewGraphDelegate {
 
 extension ViewRendererHost {
     package var isRendering: Bool {
+        renderingPhase != .none
+    }
+    
+    package func initializeViewGraph() {
+        // viewGraph.delegate = self
+        // TODO: Signpost related
+    }
+    
+    package func invalidate() {
+        // viewGraph.delegate = nil
+        // TODO: Signpost.viewHost
         fatalError("TODO")
     }
-}
-
-// TODO: FIXME
-
-extension ViewRendererHost {
-    package func updateViewGraph<Value>(body: (ViewGraph) -> Value) -> Value {
+    
+//    package static func makeRootView<V>(_ view: V) -> ModifiedContent<V, HitTestBindingModifier> where V: View
+    package static func makeRootView<V: View>(_ view: V) -> some View {
+        view/*.modifier(HitTestBindingModifier())*/
+    }
+    
+    @_spi(ForOpenSwiftUIOnly)
+    public func updateViewGraph<T>(body: (ViewGraph) -> T) -> T {
+        // FIXME
         Update.dispatchImmediately {
             OGGraph.withoutUpdate {
                 updateGraph()
@@ -79,34 +97,56 @@ extension ViewRendererHost {
             }
         }
     }
-}
-
-extension ViewRendererHost {
-    package func initializeViewGraph() {
-        viewGraph.delegate = self
-        // TODO: Signpost related
+    
+    @_spi(ForOpenSwiftUIOnly)
+    public func graphDidChange() {
+        fatalError("TODO")
     }
     
-    package func invalidateProperties(_ properties: ViewRendererHostProperties, mayDeferUpdate: Bool) {
-        Update.locked {
-            guard !propertiesNeedingUpdate.contains(properties) else {
-                return
+    package func didRender() {
+        fatalError("TODO")
+    }
+    
+    @_spi(ForOpenSwiftUIOnly)
+    public func preferencesDidChange() {
+        fatalError("TODO")
+    }
+    
+    package func invalidateProperties(_ props: ViewRendererHostProperties, mayDeferUpdate: Bool = true) {
+        // FIXME
+//        Update.locked {
+//            guard !propertiesNeedingUpdate.contains(properties) else {
+//                return
+//            }
+//            propertiesNeedingUpdate.insert(properties)
+//            viewGraph.setNeedsUpdate(mayDeferUpdate: mayDeferUpdate)
+//            requestUpdate(after: .zero)
+//        }
+    }
+    
+    package func updateGraph() {
+        // FIXME
+        let properties = propertiesNeedingUpdate
+        // addImplicitPropertiesNeedingUpdate(to: &properties)
+        guard !properties.isEmpty else { return }
+        Update.syncMain {
+            func update(_ property: ViewRendererHostProperties, body: () -> Void) {
+                if properties.contains(property) {
+                    propertiesNeedingUpdate.remove(property)
+                }
+                body()
             }
-            propertiesNeedingUpdate.insert(properties)
-            viewGraph.setNeedsUpdate(mayDeferUpdate: mayDeferUpdate)
-            requestUpdate(after: .zero)
+            update(.rootView) { updateRootView() }
+            // TODO:
         }
     }
     
-    package func startProfiling() {
-        OGGraph.startProfiling(viewGraph.graph)
+    package func updateTransform() {
+        fatalError("TODO")
     }
     
-    package func stopProfiling() {
-        OGGraph.stopProfiling(viewGraph.graph)
-    }
-    
-    package func render(interval: Double, updateDisplayList: Bool = true) {
+    package func render(interval: Double = 0, updateDisplayList: Bool = true, targetTimestamp: Time? = nil) {
+        // FIXME
         Update.dispatchImmediately {
             guard !isRendering else {
                 return
@@ -128,29 +168,126 @@ extension ViewRendererHost {
         }
     }
     
-    package static func makeRootView<V: View>(_ view: V) -> some View {
-        view/*.modifier(HitTestBindingModifier())*/
+    package func renderAsync(interval: Double = 0, targetTimestamp: Time?) -> Time? {
+        fatalError("TODO")
     }
     
-    package func updateGraph() {
-        var properties = propertiesNeedingUpdate
-        addImplicitPropertiesNeedingUpdate(to: &properties)
-        guard !properties.isEmpty else { return }
-        Update.syncMain {
-            func update(_ property: ViewRendererHostProperties, body: () -> Void) {
-                if properties.contains(property) {
-                    propertiesNeedingUpdate.remove(property)
-                }
-                body()
-            }
-            update(.rootView) { updateRootView() }
-            // TODO:
+    package func advanceTimeForTest(interval: Double) {
+        fatalError("TODO")
+    }
+    
+    @_spi(Private)
+    public func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {
+        fatalError("TODO")
+    }
+    
+    package func idealSize() -> CGSize { fatalError("TODO") }
+    
+    package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
+        fatalError("TODO")
+    }
+    package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
+        fatalError("TODO")
+    }
+    package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
+        fatalError("TODO")
+    }
+    package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
+        fatalError("TODO")
+    }
+    package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
+        fatalError("TODO")
+    }
+    package var centersRootView: Bool {
+        get { fatalError("TODO") }
+        set { fatalError("TODO") }
+    }
+    
+//    package var responderNode: ResponderNode? {
+//        fatalError("TODO")
+//    }
+    
+    package var isRootHost: Bool {
+        fatalError("TODO")
+    }
+    private var enclosingHosts: [ViewRendererHost] { fatalError("TODO") }
+    package func performExternalUpdate(_ update: () -> Void) { fatalError("TODO") }
+    package func updateFocusedItem() { fatalError("TODO") }
+    package func updateFocusedValues() { fatalError("TODO") }
+    package func updateFocusStore() { fatalError("TODO") }
+    package func updateAccessibilityFocus() { fatalError("TODO") }
+    package func updateAccessibilityFocusStore() { fatalError("TODO") }
+    package func updateAccessibilityEnvironment() { fatalError("TODO") }
+}
+
+// MARK: - ViewRendererHost + Gesture [TODO]
+
+//package let hostingViewCoordinateSpace: CoordinateSpace.ID
+
+//extension ViewRendererHost {
+//    package var nextGestureUpdateTime: Time {
+//        get
+//    }
+//    package func sendEvents(_ events: [EventID : any EventType], rootNode: ResponderNode, at time: Time) -> GesturePhase<Void>
+//    package func resetEvents()
+//    package func gestureCategory() -> GestureCategory?
+//    package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase)
+//}
+
+//extension ViewRendererHost {
+//    package func sendTestEvents(_ events: [EventID : any EventType])
+//    package func resetTestEvents()
+//}
+
+// MARK: - ViewGraph + viewRendererHost
+
+extension ViewGraph {
+    package static var viewRendererHost: (any ViewRendererHost)? {
+        ViewGraph.current.delegate as? ViewRendererHost
+    }
+}
+
+// MARK: - EnvironmentValues + PreferenceBridge
+
+extension EnvironmentValues {
+    private struct PreferenceBridgeKey: EnvironmentKey {
+        struct Value {
+            weak var value: PreferenceBridge?
         }
+        static let defaultValue: Value = Value()
     }
     
-    package func invalidate() {
-        viewGraph.delegate = nil
-        // TODO: Signpost.viewHost
+    package var preferenceBridge: PreferenceBridge? {
+        get { self[PreferenceBridgeKey.self].value }
+        set { self[PreferenceBridgeKey.self].value = newValue }
+    }
+}
+
+// MARK: - ViewRendererHost + rootContentPath [TODO]
+
+extension ViewRendererHost {
+    package func rootContentPath(kind: ContentShapeKinds) -> Path {
+        fatalError("TODO")
+    }
+}
+
+// MARK: - ViewRendererHost + Graph [TODO]
+
+extension ViewRendererHost {
+    package func startProfiling() {
+        Graph.startProfiling(viewGraph.graph)
+    }
+    
+    package func stopProfiling() {
+        Graph.stopProfiling(viewGraph.graph)
+    }
+    
+    package func resetProfile() {
+        // Graph.resetProfile(viewGraph.graph)
+    }
+    
+    package func archiveJSON(name: String? = nil) {
+        // viewGraph.graph.archiveJSON(name: name)
     }
 }
 
