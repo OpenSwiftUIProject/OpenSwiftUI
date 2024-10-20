@@ -103,9 +103,7 @@ extension ViewRendererHost {
         fatalError("TODO")
     }
     
-    package func didRender() {
-        fatalError("TODO")
-    }
+    package func didRender() {}
     
     @_spi(ForOpenSwiftUIOnly)
     public func preferencesDidChange() {
@@ -199,8 +197,8 @@ extension ViewRendererHost {
         fatalError("TODO")
     }
     package var centersRootView: Bool {
-        get { fatalError("TODO") }
-        set { fatalError("TODO") }
+        get { viewGraph.centersRootView }
+        set { viewGraph.centersRootView = newValue }
     }
     
 //    package var responderNode: ResponderNode? {
@@ -212,12 +210,12 @@ extension ViewRendererHost {
     }
     private var enclosingHosts: [ViewRendererHost] { fatalError("TODO") }
     package func performExternalUpdate(_ update: () -> Void) { fatalError("TODO") }
-    package func updateFocusedItem() { fatalError("TODO") }
-    package func updateFocusedValues() { fatalError("TODO") }
-    package func updateFocusStore() { fatalError("TODO") }
-    package func updateAccessibilityFocus() { fatalError("TODO") }
-    package func updateAccessibilityFocusStore() { fatalError("TODO") }
-    package func updateAccessibilityEnvironment() { fatalError("TODO") }
+    package func updateFocusedItem() {}
+    package func updateFocusedValues() {}
+    package func updateFocusStore() {}
+    package func updateAccessibilityFocus() {}
+    package func updateAccessibilityFocusStore() {}
+    package func updateAccessibilityEnvironment() {}
 }
 
 // MARK: - ViewRendererHost + Gesture [TODO]
