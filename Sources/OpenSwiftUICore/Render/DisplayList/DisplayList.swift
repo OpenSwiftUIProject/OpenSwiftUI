@@ -63,15 +63,29 @@ package struct DisplayList: Equatable {
     }
     
     package init(_ item: Item) {
-        fatalError("TODO")
+        switch item.value {
+        case .empty:
+            items = []
+            features = []
+            properties = []
+        default:
+            items = [item]
+            features = item.features
+            properties = item.properties
+        }
     }
     
+    // TO BE VERIFIED
     package init(_ items: [Item]) {
-        guard !items.isEmpty else {
-            self.init()
-            return
+        var features: Features = []
+        var properties: Properties = []
+        for item in items {
+            features.formUnion(item.features)
+            properties.formUnion(item.properties)
         }
-        fatalError("TODO")
+        self.items = items
+        self.features = features
+        self.properties = properties
     }
     
     package mutating func append(_ item: Item) {
@@ -264,7 +278,7 @@ extension DisplayList {
         package static let screencaptureProhibited = Properties(rawValue: 1 << 7)
     }
     
-    package struct Key : PreferenceKey {
+    package struct Key: PreferenceKey {
         package static let _includesRemovedValues: Bool = true
         package static let defaultValue = DisplayList()
         package static func reduce(value: inout DisplayList, nextValue: () -> DisplayList) {
