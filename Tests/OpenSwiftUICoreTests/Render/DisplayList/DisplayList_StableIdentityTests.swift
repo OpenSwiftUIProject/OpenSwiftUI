@@ -5,8 +5,6 @@
 import OpenSwiftUICore
 import Testing
 
-@_spi(Debug) import OpenGraphShims
-
 struct DisplayList_StableIdentityTests {
     @Test
     func formUnion() {        
