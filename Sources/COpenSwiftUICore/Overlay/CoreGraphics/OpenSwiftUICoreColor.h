@@ -1,11 +1,12 @@
 //
-//  CoreColor.h
-//  COpenSwiftUI
+//  OpenSwiftUICoreColor.h
+//  COpenSwiftUICore
+//
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-#ifndef CoreColor_h
-#define CoreColor_h
+#ifndef OpenSwiftUICoreColor_h
+#define OpenSwiftUICoreColor_h
 
 #include "OpenSwiftUIBase.h"
 
@@ -20,15 +21,15 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 OPENSWIFTUI_EXPORT
-BOOL CoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha);
+BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha);
 
 OPENSWIFTUI_EXPORT
-NSObject  * _Nullable CorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
+NSObject  * _Nullable OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
 
 OPENSWIFTUI_EXPORT
-Class CoreColorGetKitColorClass(BOOL system);
+Class OpenSwiftUICoreColorGetKitColorClass(BOOL system);
 
-@interface CoreColor : NSObject
+@interface OpenSwiftUICoreColor : NSObject
 
 + (nullable NSObject *)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor;
 + (nullable NSObject *)blackColorWithSystem:(BOOL)system;
@@ -51,7 +52,7 @@ Class CoreColorGetKitColorClass(BOOL system);
 - (void)setFill;
 - (void)setStroke;
 - (CGColorRef)CGColor;
-- (CoreColor *)colorWithAlphaComponent:(CGFloat)alpha;
+- (OpenSwiftUICoreColor *)colorWithAlphaComponent:(CGFloat)alpha;
 
 @end
 
@@ -59,4 +60,4 @@ OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif
 
-#endif /* CoreColor_h */
+#endif /* OpenSwiftUICoreColor_h */

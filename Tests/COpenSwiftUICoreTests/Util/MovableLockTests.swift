@@ -1,9 +1,6 @@
 //
 //  MovableLockTests.swift
-//
-//
-//  Created by Kyle on 2024/3/16.
-//
+//  COpenSwiftUICoreTests
 
 import COpenSwiftUICore
 import Testing

@@ -1,26 +1,27 @@
 //
-//  CoreColor.h
-//  COpenSwiftUI
+//  OpenSwiftUICoreColor.h
+//  COpenSwiftUICore
+//
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-#include "CoreColor.h"
+#include "OpenSwiftUICoreColor.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
-#include "CoreGraphicsContext.h"
+#include "OpenSwiftUICoreGraphicsContext.h"
 
-Class CoreColorClass(BOOL isAppKitBased);
+Class OpenSwiftUICoreColorClass(BOOL isAppKitBased);
 
 #if OPENSWIFTUI_TARGET_OS_OSX
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace);
 Class NSColorSpaceClass(void);
 #endif
 
-BOOL CoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) {
+BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) {
     if (!color) {
         return NO;
     }
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     if (!colorClass) {
         return NO;
     }
@@ -40,8 +41,8 @@ BOOL CoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CG
     return ((BOOL (*)(id, SEL))[color methodForSelector:@selector(getRed:green:blue:alpha:)])(color, @selector(getRed:green:blue:alpha:));
 }
 
-NSObject *CorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
-    Class colorClass = CoreColorClass(system);
+NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     if (!colorClass) {
         return nil;
     }
@@ -54,11 +55,11 @@ NSObject *CorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFl
     return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
 }
 
-Class CoreColorGetKitColorClass(BOOL system) {
-    CoreColorClass(system);
+Class OpenSwiftUICoreColorGetKitColorClass(BOOL system) {
+    OpenSwiftUICoreColorClass(system);
 }
 
-Class CoreColorClass(BOOL system) {
+Class OpenSwiftUICoreColorClass(BOOL system) {
     static BOOL isValid = false;
     static Class colorClass;
     static dispatch_once_t once;
@@ -101,89 +102,89 @@ Class NSColorSpaceClass(void) {
 }
 #endif
 
-@interface CoreColor () {
+@interface OpenSwiftUICoreColor () {
     CGColorRef _color;
 }
 @end
 
-@implementation CoreColor
+@implementation OpenSwiftUICoreColor
 
 + (NSObject *)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     if (colorClass) {
         return [colorClass colorWithCGColor: cgColor];
     } else {
-        return [[CoreColor alloc] initWithCGColor: cgColor];
+        return [[OpenSwiftUICoreColor alloc] initWithCGColor: cgColor];
     }
 }
 
 + (NSObject *)blackColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass blackColor];
 }
 
 + (NSObject *)systemRedColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemRedColor];
 }
 
 + (NSObject *)systemOrangeColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemOrangeColor];
 }
 
 + (NSObject *)systemYellowColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemYellowColor];
 }
 
 + (NSObject *)systemGreenColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemGreenColor];
 }
 
 + (NSObject *)systemTealColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemTealColor];
 }
 
 + (NSObject *)systemMintColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemMintColor];
 }
 
 + (NSObject *)systemCyanColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemCyanColor];
 }
 
 + (NSObject *)systemBlueColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemBlueColor];
 }
 
 + (NSObject *)systemIndigoColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemIndigoColor];
 }
 
 + (NSObject *)systemPurpleColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemPurpleColor];
 }
 
 + (NSObject *)systemPinkColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemPinkColor];
 }
 
 + (NSObject *)systemBrownColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemBrownColor];
 }
 
 + (NSObject *)systemGrayColorWithSystem:(BOOL)system {
-    Class colorClass = CoreColorClass(system);
+    Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemGrayColor];
 }
 
@@ -199,7 +200,7 @@ Class NSColorSpaceClass(void) {
 }
 
 - (void)set {
-    CGContextRef context = CoreGraphicsContext.current.CGContext;
+    CGContextRef context = OpenSwiftUICoreGraphicsContext.current.CGContext;
     if (!context) {
         return;
     }
@@ -208,7 +209,7 @@ Class NSColorSpaceClass(void) {
 }
 
 - (void)setFill {
-    CGContextRef context = CoreGraphicsContext.current.CGContext;
+    CGContextRef context = OpenSwiftUICoreGraphicsContext.current.CGContext;
     if (!context) {
         return;
     }
@@ -216,7 +217,7 @@ Class NSColorSpaceClass(void) {
 }
 
 - (void)setStroke {
-    CGContextRef context = CoreGraphicsContext.current.CGContext;
+    CGContextRef context = OpenSwiftUICoreGraphicsContext.current.CGContext;
     if (!context) {
         return;
     }
@@ -227,9 +228,9 @@ Class NSColorSpaceClass(void) {
     return _color;
 }
 
-- (CoreColor *)colorWithAlphaComponent:(CGFloat)alpha {
+- (OpenSwiftUICoreColor *)colorWithAlphaComponent:(CGFloat)alpha {
     CGColorRef newColor = CGColorCreateCopyWithAlpha(_color, alpha);
-    CoreColor *color = [[CoreColor alloc] initWithCGColor:newColor];
+    OpenSwiftUICoreColor *color = [[OpenSwiftUICoreColor alloc] initWithCGColor:newColor];
     CGColorRelease(newColor);
     return color;
 }

@@ -1,11 +1,12 @@
 //
-//  CoreGraphicsContext.h
-//  COpenSwiftUI
+//  OpenSwiftUICoreGraphicsContext.h
+//  COpenSwiftUICore
+//
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-#ifndef CoreGraphicsContext_h
-#define CoreGraphicsContext_h
+#ifndef OpenSwiftUICoreGraphicsContext_h
+#define OpenSwiftUICoreGraphicsContext_h
 
 #include "OpenSwiftUIBase.h"
 
@@ -15,9 +16,9 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface CoreGraphicsContext : NSObject
+@interface OpenSwiftUICoreGraphicsContext : NSObject
 
-@property (class, nonatomic, readonly) CoreGraphicsContext *current;
+@property (class, nonatomic, readonly) OpenSwiftUICoreGraphicsContext *current;
 @property (nonatomic, readonly) CGContextRef CGContext;
 
 - (instancetype)initWithCGContext:(CGContextRef)ctx;
@@ -30,4 +31,4 @@ OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif
 
-#endif /* CoreGraphicsContext_h */
+#endif /* OpenSwiftUICoreGraphicsContext_h */

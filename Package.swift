@@ -111,6 +111,14 @@ let openSwiftUIExtensionTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
+let cOpenSwiftUICoreTestTarget = Target.testTarget(
+    name: "cOpenSwiftUICoreTests",
+    dependencies: [
+        "COpenSwiftUICore",
+    ],
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
+)
 let openSwiftUICoreTestTarget = Target.testTarget(
     name: "OpenSwiftUICoreTests",
     dependencies: [
@@ -182,6 +190,7 @@ let package = Package(
         openSwiftUITarget,
         openSwiftUIExtensionTarget,
         
+        cOpenSwiftUICoreTestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
@@ -229,6 +238,8 @@ extension Target {
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
+    
+    cOpenSwiftUICoreTestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
