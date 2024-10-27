@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if os(iOS)
-internal import COpenSwiftUI
+internal import COpenSwiftUICore
 import UIKit
 
 class _UIGraphicsView: UIView {    

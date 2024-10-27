@@ -65,10 +65,11 @@ default:
 }
 
 var sharedSwiftSettings: [SwiftSetting] = [
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
     .enableExperimentalFeature("AccessLevelOnImport"),
+    // .enableUpcomingFeature("InternalImportsByDefault"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
-    .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
 
 if releaseVersion >= 2021 {

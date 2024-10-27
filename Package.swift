@@ -68,11 +68,11 @@ default:
 }
 
 var sharedSwiftSettings: [SwiftSetting] = [
-    .enableExperimentalFeature("AccessLevelOnImport"),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+    // .enableUpcomingFeature("InternalImportsByDefault"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
     .swiftLanguageMode(.v5),
-    .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
 
 if releaseVersion >= 2021 {
@@ -144,7 +144,8 @@ let package = Package(
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
         // FIXME: This will block xcodebuild build(iOS CI) somehow
-        // .library(name: "COpenSwiftUI", targets: ["COpenSwiftUI"]),
+        .library(name: "COpenSwiftUI", targets: ["COpenSwiftUI"]),
+        .library(name: "COpenSwiftUICore", targets: ["COpenSwiftUICore"]),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -169,6 +170,7 @@ let package = Package(
         ),
         .target(
             name: "COpenSwiftUICore",
+            publicHeadersPath: ".",
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
