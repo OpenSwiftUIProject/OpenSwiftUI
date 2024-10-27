@@ -86,6 +86,8 @@ if warningsAsErrorsCondition {
    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
 }
 
+// NOTE: Mac Catalyst should use macOS-varient build of OpenSwiftUICore.framework and Mac Catalyst/UIKitForMac varient of OpenSwiftUI.framework
+// Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `COpenSwiftUICore`.
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [

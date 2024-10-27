@@ -12,7 +12,7 @@
 
 Class OpenSwiftUICoreColorClass(BOOL isAppKitBased);
 
-#if OPENSWIFTUI_TARGET_OS_OSX
+#if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace);
 Class NSColorSpaceClass(void);
 #endif
@@ -25,7 +25,7 @@ BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFlo
     if (!colorClass) {
         return NO;
     }
-    #if OPENSWIFTUI_TARGET_OS_OSX
+    #if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
     if (system) {
         id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         NSColor *nameSpaceColor = [color colorUsingColorSpace:colorSpace];
@@ -46,7 +46,7 @@ NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat 
     if (!colorClass) {
         return nil;
     }
-    #if OPENSWIFTUI_TARGET_OS_OSX
+    #if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
     if (system) {
         id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         return [colorClass colorWithColorSpace:colorSpace components:(CGFloat[]){red, green, blue, alpha} count:4];
@@ -60,19 +60,26 @@ Class OpenSwiftUICoreColorGetKitColorClass(BOOL system) {
 }
 
 Class OpenSwiftUICoreColorClass(BOOL system) {
-    static BOOL isValid = false;
+    static BOOL isValid = true;
     static Class colorClass;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        if (system) {
-            Class class = NSClassFromString(@"NSColor");
-            colorClass = class;
-            isValid = class != nil;
-        } else {
+        #if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
+        if (!system) {
             Class class = NSClassFromString(@"UIColor");
             colorClass = class;
             isValid = class != nil;
         }
+        if (system) {
+            Class class = NSClassFromString(@"NSColor");
+            colorClass = class;
+            isValid = class != nil;
+        }
+        #else
+        Class class = NSClassFromString(@"UIColor");
+        colorClass = class;
+        isValid = class != nil;
+        #endif
     });
     if (isValid) {
         return colorClass;
@@ -81,7 +88,7 @@ Class OpenSwiftUICoreColorClass(BOOL system) {
     }
 }
 
-#if OPENSWIFTUI_TARGET_OS_OSX
+#if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace) {
     Class colorSpaceClass = NSColorSpaceClass();
     if (colorSpaceClass) {

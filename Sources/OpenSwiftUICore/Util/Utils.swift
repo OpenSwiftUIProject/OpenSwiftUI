@@ -15,12 +15,12 @@ func asOptional<Value>(_ value: Value) -> Value? {
     return optionalValue
 }
 
+#if canImport(Darwin)
+
+// NOTE: use runtime check instead of #if targetEnvironment(macCatalyst) here
 @inline(__always)
 package func isCatalyst() -> Bool {
-    #if os(iOS) || os(tvOS) || os(watchOS)
-    false
-    #elseif os(macOS)
-    // NOTE: use runtime check instead of #if targetEnvironment(macCatalyst) here
+    #if os(macOS) || targetEnvironment(macCatalyst)
     _CFMZEnabled()
     #else
     false
@@ -29,22 +29,20 @@ package func isCatalyst() -> Bool {
 
 @inline(__always)
 package func isUIKitBased() -> Bool {
-    #if os(iOS) || os(tvOS) || os(watchOS)
-    true
-    #elseif os(macOS)
+    #if os(macOS) || targetEnvironment(macCatalyst)
     _CFMZEnabled()
     #else
-    false
+    true
     #endif
 }
 
 @inline(__always)
 package func isAppKitBased() -> Bool {
-    #if os(iOS) || os(tvOS) || os(watchOS)
-    false
-    #elseif os(macOS)
+    #if os(macOS) || targetEnvironment(macCatalyst)
     !_CFMZEnabled()
     #else
     false
     #endif
 }
+
+#endif

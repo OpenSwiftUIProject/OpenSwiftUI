@@ -7,6 +7,9 @@
 
 #include "OpenSwiftUIBase.h"
 
+/// Check if Marzipan is enabled.
+///
+/// > Marzipan is the codename of "UIKit for macOS" / Mac Catalyst
 OPENSWIFTUI_EXPORT
 bool _CFMZEnabled(void);
 

@@ -22,46 +22,46 @@ struct DyldPrivateTests {
         if #unavailable(iOS 19) {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DyldIOSVersion.V19_0.rawValue
+                version: DYLD_IOS_VERSION._19_0.rawValue
             )) == false)
             if #unavailable(iOS 18) {
                 #expect(dyld_program_sdk_at_least(.init(
                     platform: dyld_get_active_platform(),
-                    version: DyldIOSVersion.V18_0.rawValue
+                    version: DYLD_IOS_VERSION._18_0.rawValue
                 )) == false)
             } else {
                 #expect(dyld_program_sdk_at_least(.init(
                     platform: dyld_get_active_platform(),
-                    version: DyldIOSVersion.V18_0.rawValue
+                    version: DYLD_IOS_VERSION._18_0.rawValue
                 )) == true)
             }
         } else {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DyldIOSVersion.V19_0.rawValue
+                version: DYLD_IOS_VERSION._19_0.rawValue
             )) == true)
         }
         #elseif os(macOS)
         if #unavailable(macOS 16) {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DyldMacOSXVersion.V16_0.rawValue
+                version: DYLD_MACOSX_VERSION._16_0.rawValue
             )) == false)
             if #unavailable(macOS 15) {
                 #expect(dyld_program_sdk_at_least(.init(
                     platform: dyld_get_active_platform(),
-                    version: DyldMacOSXVersion.V15_0.rawValue
+                    version: DYLD_MACOSX_VERSION._15_0.rawValue
                 )) == false)
             } else {
                 #expect(dyld_program_sdk_at_least(.init(
                     platform: dyld_get_active_platform(),
-                    version: DyldMacOSXVersion.V15_0.rawValue
+                    version: DYLD_MACOSX_VERSION._15_0.rawValue
                 )) == true)
             }
         } else {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DyldMacOSXVersion.V16_0.rawValue
+                version: DYLD_MACOSX_VERSION._16_0.rawValue
             )) == true)
         }
         #else
@@ -82,39 +82,39 @@ struct DyldPrivateTests {
     
     @Test
     func activePlatform() throws {
-        let platform = try #require(DyldPlatform(rawValue: dyld_get_active_platform()))
+        let platform = try #require(DYLD_PLATFORM(rawValue: dyld_get_active_platform()))
 #if canImport(Darwin)
         #if targetEnvironment(macCatalyst)
-            #expect(platform == .macCatalyst)
+            #expect(platform == .MACCATALYST)
         #elseif targetEnvironment(simulator)
             #if os(iOS)
-            #expect(platform == .iOSSimulator)
+            #expect(platform == .IOSSIMULATOR)
             #elseif os(tvOS)
-            #expect(platform == .tvOSSimulator)
+            #expect(platform == .TVOSSIMULATOR)
             #elseif os(watchOS)
-            #expect(platform == .watchOSSimulator)
+            #expect(platform == .WATCHOSSIMULATOR)
             #elseif os(visionOS)
-            #expect(platform == .xROSSimulator)
+            #expect(platform == .XROS_SIMULATOR)
             #else
             fatalError("Unsupported Darwin simulator platform")
             #endif
         #else
             #if os(iOS)
-            #expect(platform == .iOS)
+            #expect(platform == .IOS)
             #elseif os(macOS)
-            #expect(platform == .macOS)
+            #expect(platform == .MACOS)
             #elseif os(tvOS)
-            #expect(platform == .tvOS)
+            #expect(platform == .TVOS)
             #elseif os(watchOS)
-            #expect(platform == .watchOS)
+            #expect(platform == .WATCHOS)
             #elseif os(visionOS)
-            #expect(platform == .xROS)
+            #expect(platform == .XROS)
             #else
             fatalError("Unsupported Darwin platform")
             #endif
         #endif
 #else
-        #expect(platform == .unknown)
+        #expect(platform == .UNKNOWN)
 #endif
     }
 }
