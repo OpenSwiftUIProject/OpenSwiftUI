@@ -10,22 +10,19 @@
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 #include "OpenSwiftUICoreGraphicsContext.h"
 
-Class OpenSwiftUICoreColorClass(BOOL isAppKitBased);
+Class OpenSwiftUICoreColorClass(BOOL system);
 
-#if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
+#if OPENSWIFTUI_TARGET_OS_OSX
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace);
 Class NSColorSpaceClass(void);
 #endif
 
 BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) {
-    if (!color) {
-        return NO;
-    }
     Class colorClass = OpenSwiftUICoreColorClass(system);
     if (!colorClass) {
         return NO;
     }
-    #if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
+    #if OPENSWIFTUI_TARGET_OS_OSX
     if (system) {
         id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         NSColor *nameSpaceColor = [color colorUsingColorSpace:colorSpace];
@@ -35,10 +32,16 @@ BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFlo
         } else {
             return NO;
         }
+    } else {
+        // For OPENSWIFTUI_TARGET_OS_MACCATALYST
+        typedef BOOL (*Func)(id, SEL, CGFloat *, CGFloat *, CGFloat *, CGFloat *);
+        IMP imp = [color methodForSelector:@selector(getRed:green:blue:alpha:)];
+        Func func = (Func)imp;
+        return func(color, @selector(getRed:green:blue:alpha:), red, green, blue, alpha);
     }
+    #else
+    return [color getRed:red green:green blue:blue alpha:alpha];
     #endif
-    // NOTE: Fix Mac Catalyst selector type issue
-    return ((BOOL (*)(id, SEL))[color methodForSelector:@selector(getRed:green:blue:alpha:)])(color, @selector(getRed:green:blue:alpha:));
 }
 
 NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
@@ -46,25 +49,29 @@ NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat 
     if (!colorClass) {
         return nil;
     }
-    #if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
+    #if OPENSWIFTUI_TARGET_OS_OSX
     if (system) {
         id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         return [colorClass colorWithColorSpace:colorSpace components:(CGFloat[]){red, green, blue, alpha} count:4];
+    } else {
+        return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
     }
-    #endif
+    #else
     return [[colorClass alloc] initWithRed:red green:green blue:blue alpha:alpha];
+    #endif
 }
 
-Class OpenSwiftUICoreColorGetKitColorClass(BOOL system) {
+Class _Nullable OpenSwiftUICoreColorGetKitColorClass(BOOL system) {
     OpenSwiftUICoreColorClass(system);
 }
 
-Class OpenSwiftUICoreColorClass(BOOL system) {
+Class _Nullable OpenSwiftUICoreColorClass(BOOL system) {
     static BOOL isValid = true;
+    // FIXME: objc_autoreleaseReturnValue will crash
     static Class colorClass;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        #if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
+        #if OPENSWIFTUI_TARGET_OS_OSX
         if (!system) {
             Class class = NSClassFromString(@"UIColor");
             colorClass = class;
@@ -88,7 +95,7 @@ Class OpenSwiftUICoreColorClass(BOOL system) {
     }
 }
 
-#if OPENSWIFTUI_TARGET_OS_OSX || OPENSWIFTUI_TARGET_OS_MACCATALYST
+#if OPENSWIFTUI_TARGET_OS_OSX
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace) {
     Class colorSpaceClass = NSColorSpaceClass();
     if (colorSpaceClass) {

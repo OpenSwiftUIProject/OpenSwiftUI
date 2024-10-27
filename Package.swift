@@ -86,7 +86,8 @@ if warningsAsErrorsCondition {
    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
 }
 
-// NOTE: Mac Catalyst should use macOS-varient build of OpenSwiftUICore.framework and Mac Catalyst/UIKitForMac varient of OpenSwiftUI.framework
+// NOTE:
+// In macOS: Mac Catalyst App will use macOS-varient build of SwiftUI.framework in /System/Library/Framework and iOS varient of SwiftUI.framework in /System/iOSSupport/System/Library/Framework
 // Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `OpenSwiftUI_SPI`.
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
@@ -118,6 +119,7 @@ let OpenSwiftUI_SPITestTarget = Target.testTarget(
         "OpenSwiftUI_SPI",
         // For ProtocolDescriptor symbol linking
         "OpenSwiftUI",
+        .product(name: "Numerics", package: "swift-numerics")
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
@@ -156,6 +158,9 @@ let package = Package(
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
         // FIXME: This will block xcodebuild build(iOS CI) somehow
         // .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS

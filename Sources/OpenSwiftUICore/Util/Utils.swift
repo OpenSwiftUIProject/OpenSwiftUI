@@ -17,7 +17,8 @@ func asOptional<Value>(_ value: Value) -> Value? {
 
 #if canImport(Darwin)
 
-// NOTE: use runtime check instead of #if targetEnvironment(macCatalyst) here
+// NOTE: use runtime check instead of #if targetEnvironment(macCatalyst)
+// Because Mac Catalyst will use macOS-varient build of OpenSwiftUICore.framework and Mac Catalyst/UIKitForMac varient of OpenSwiftUI.framework
 @inline(__always)
 package func isCatalyst() -> Bool {
     #if os(macOS) || targetEnvironment(macCatalyst)

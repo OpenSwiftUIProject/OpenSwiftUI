@@ -27,7 +27,7 @@ OPENSWIFTUI_EXPORT
 NSObject  * _Nullable OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
 
 OPENSWIFTUI_EXPORT
-Class OpenSwiftUICoreColorGetKitColorClass(BOOL system);
+Class _Nullable OpenSwiftUICoreColorGetKitColorClass(BOOL system);
 
 @interface OpenSwiftUICoreColor : NSObject
 
