@@ -18,7 +18,7 @@ import WASILibc
 #endif
 internal import OpenGraphShims
 import Foundation
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 #if canImport(Darwin)
 import os.log
 #endif

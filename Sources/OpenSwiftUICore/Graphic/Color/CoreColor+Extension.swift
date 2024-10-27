@@ -7,7 +7,7 @@
 
 #if canImport(Darwin)
 import Foundation
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 extension OpenSwiftUICoreColor {
     package static func platformColor(resolvedColor: Color.Resolved) -> NSObject? {

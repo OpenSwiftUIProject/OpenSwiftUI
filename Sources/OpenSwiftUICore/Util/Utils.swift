@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: WIP
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 @inlinable
 @inline(__always)

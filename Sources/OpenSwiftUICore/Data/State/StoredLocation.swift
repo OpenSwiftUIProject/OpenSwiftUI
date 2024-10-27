@@ -8,7 +8,7 @@
 //  ID: 4F21368B1C1680817451AC25B55A8D48 (RELEASE_2024)
 
 internal import OpenGraphShims
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
     private struct Data {

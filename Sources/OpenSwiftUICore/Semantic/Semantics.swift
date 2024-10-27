@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 @inline(__always)
 package func isLinkedOnOrAfter(_ semantics: Semantics) -> Bool {

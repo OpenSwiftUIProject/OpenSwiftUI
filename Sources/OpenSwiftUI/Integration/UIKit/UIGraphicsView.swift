@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if os(iOS)
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 import UIKit
 
 class _UIGraphicsView: UIView {    

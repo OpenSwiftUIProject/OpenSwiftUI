@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 internal import OpenGraphShims
 
 // MARK: - ProtocolDescriptor

@@ -86,7 +86,7 @@ if warningsAsErrorsCondition {
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
-        "COpenSwiftUICore",
+        "OpenSwiftUI_SPI",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: sharedSwiftSettings
@@ -94,7 +94,6 @@ let openSwiftUICoreTarget = Target.target(
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
-        "COpenSwiftUI",
         "OpenSwiftUICore",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
@@ -141,7 +140,7 @@ let package = Package(
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
         // FIXME: This will block xcodebuild build(iOS CI) somehow
-        // .library(name: "COpenSwiftUI", targets: ["COpenSwiftUI"]),
+        // .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -154,18 +153,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "COpenSwiftUI",
-            dependencies: [
-                "COpenSwiftUICore",
-            ],
-            cSettings: [
-                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
-                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
-                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
-            ]
-        ),
-        .target(
-            name: "COpenSwiftUICore",
+            name: "OpenSwiftUI_SPI",
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),

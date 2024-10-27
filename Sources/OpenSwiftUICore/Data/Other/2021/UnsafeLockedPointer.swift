@@ -7,7 +7,7 @@
 
 #if OPENSWIFTUI_RELEASE_2021
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 @propertyWrapper
 package struct UnsafeLockedPointer<Data>: Destroyable {

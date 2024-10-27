@@ -10,7 +10,7 @@
 import Foundation
 
 #if canImport(CoreGraphics)
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 import CoreGraphics
 
 @_silgen_name("__CGPathParseString")

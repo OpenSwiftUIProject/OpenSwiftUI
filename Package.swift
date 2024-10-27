@@ -87,11 +87,11 @@ if warningsAsErrorsCondition {
 }
 
 // NOTE: Mac Catalyst should use macOS-varient build of OpenSwiftUICore.framework and Mac Catalyst/UIKitForMac varient of OpenSwiftUI.framework
-// Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `COpenSwiftUICore`.
+// Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `OpenSwiftUI_SPI`.
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
-        "COpenSwiftUICore",
+        "OpenSwiftUI_SPI",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: sharedSwiftSettings
@@ -99,7 +99,6 @@ let openSwiftUICoreTarget = Target.target(
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
-        "COpenSwiftUI",
         "OpenSwiftUICore",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
@@ -113,10 +112,10 @@ let openSwiftUIExtensionTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
-let cOpenSwiftUICoreTestTarget = Target.testTarget(
-    name: "COpenSwiftUICoreTests",
+let OpenSwiftUI_SPITestTarget = Target.testTarget(
+    name: "OpenSwiftUI_SPITests",
     dependencies: [
-        "COpenSwiftUICore",
+        "OpenSwiftUI_SPI",
         // For ProtocolDescriptor symbol linking
         "OpenSwiftUI",
     ],
@@ -156,8 +155,7 @@ let package = Package(
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
         // FIXME: This will block xcodebuild build(iOS CI) somehow
-        .library(name: "COpenSwiftUI", targets: ["COpenSwiftUI"]),
-        .library(name: "COpenSwiftUICore", targets: ["COpenSwiftUICore"]),
+        // .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -170,18 +168,7 @@ let package = Package(
             ]
         ),
         .target(
-            name: "COpenSwiftUI",
-            dependencies: [
-                "COpenSwiftUICore",
-            ],
-            cSettings: [
-                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
-                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
-                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
-            ]
-        ),
-        .target(
-            name: "COpenSwiftUICore",
+            name: "OpenSwiftUI_SPI",
             publicHeadersPath: ".",
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
@@ -194,7 +181,7 @@ let package = Package(
         openSwiftUITarget,
         openSwiftUIExtensionTarget,
         
-        cOpenSwiftUICoreTestTarget,
+        OpenSwiftUI_SPITestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
@@ -243,7 +230,7 @@ if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
     
-    cOpenSwiftUICoreTestTarget.addAGSettings()
+    OpenSwiftUI_SPITestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
