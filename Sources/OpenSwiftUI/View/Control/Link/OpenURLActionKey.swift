@@ -8,7 +8,7 @@
 #if canImport(Darwin)
 #if os(iOS) || os(tvOS)
 import UIKit
-#if os(iOS)
+#if os(iOS) && !targetEnvironment(macCatalyst)
 private import CoreServices
 #endif
 #elseif os(macOS)
@@ -37,7 +37,7 @@ struct OpenSensitiveURLActionKey: EnvironmentKey {
     
     static let defaultValue = OpenURLAction(
         handler: .system { url, completion in
-            #if os(iOS)
+            #if os(iOS) && !targetEnvironment(macCatalyst)
             let config = _LSOpenConfiguration()
             config.isSensitive = true
             let selector = Selector(("_currentOpenApplicationEndpoint"))
