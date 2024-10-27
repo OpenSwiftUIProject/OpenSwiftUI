@@ -1,6 +1,6 @@
 //
 //  CoreFoundation_Private.h
-//  COpenSwiftUI
+//  COpenSwiftUICore
 
 #ifndef CoreFoundation_Private_h
 #define CoreFoundation_Private_h

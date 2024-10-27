@@ -112,9 +112,11 @@ let openSwiftUIExtensionTarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 let cOpenSwiftUICoreTestTarget = Target.testTarget(
-    name: "cOpenSwiftUICoreTests",
+    name: "COpenSwiftUICoreTests",
     dependencies: [
         "COpenSwiftUICore",
+        // For ProtocolDescriptor symbol linking
+        "OpenSwiftUI",
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings

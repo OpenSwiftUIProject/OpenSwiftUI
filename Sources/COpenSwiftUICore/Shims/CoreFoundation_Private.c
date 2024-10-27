@@ -1,6 +1,6 @@
 //
 //  CoreFoundation_Private.c
-//  COpenSwiftUI
+//  COpenSwiftUICore
 
 #include "CoreFoundation_Private.h"
 #include "dyld_Private.h"
