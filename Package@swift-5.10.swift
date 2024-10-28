@@ -154,6 +154,7 @@ let package = Package(
         ),
         .target(
             name: "OpenSwiftUI_SPI",
+            publicHeadersPath: ".",
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),

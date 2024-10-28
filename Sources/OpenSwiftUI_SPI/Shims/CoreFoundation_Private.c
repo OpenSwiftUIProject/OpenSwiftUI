@@ -5,9 +5,11 @@
 #include "CoreFoundation_Private.h"
 #include "dyld_Private.h"
 
+bool _OpenSwiftUICFMZEnabled(void);
+
 #if !OPENSWIFTUI_TARGET_OS_DARWIN
 bool _CFMZEnabled(void) {
-    return _OpenSwiftUICFMZEnabled;
+    return _OpenSwiftUICFMZEnabled();
 }
 #endif
 
