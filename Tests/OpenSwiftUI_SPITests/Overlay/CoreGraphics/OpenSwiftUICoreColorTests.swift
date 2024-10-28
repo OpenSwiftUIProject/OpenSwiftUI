@@ -98,8 +98,7 @@ struct OpenSwiftUICoreColorTests {
     
     @Test
     func getKitColorClass() {
-        let colorClass = OpenSwiftUICoreColorGetKitColorClass(isAppKitBased())
-        print(colorClass)
+        let colorClass: AnyClass? = OpenSwiftUICoreColorGetKitColorClass(isAppKitBased())
         #if os(macOS)
         #expect(colorClass == NSColor.self)
         #elseif os(iOS)

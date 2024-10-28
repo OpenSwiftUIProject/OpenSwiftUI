@@ -62,12 +62,11 @@ NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat 
 }
 
 Class _Nullable OpenSwiftUICoreColorGetKitColorClass(BOOL system) {
-    OpenSwiftUICoreColorClass(system);
+    return OpenSwiftUICoreColorClass(system);
 }
 
 Class _Nullable OpenSwiftUICoreColorClass(BOOL system) {
     static BOOL isValid = true;
-    // FIXME: objc_autoreleaseReturnValue will crash
     static Class colorClass;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
