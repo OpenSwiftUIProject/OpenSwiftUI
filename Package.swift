@@ -68,11 +68,11 @@ default:
 }
 
 var sharedSwiftSettings: [SwiftSetting] = [
-    .enableExperimentalFeature("AccessLevelOnImport"),
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+    // .enableUpcomingFeature("InternalImportsByDefault"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
     .swiftLanguageMode(.v5),
-    .enableUpcomingFeature("BareSlashRegexLiterals"),
 ]
 
 if releaseVersion >= 2021 {
@@ -86,10 +86,13 @@ if warningsAsErrorsCondition {
    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
 }
 
+// NOTE:
+// In macOS: Mac Catalyst App will use macOS-varient build of SwiftUI.framework in /System/Library/Framework and iOS varient of SwiftUI.framework in /System/iOSSupport/System/Library/Framework
+// Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `OpenSwiftUI_SPI`.
 let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
-        "COpenSwiftUICore",
+        "OpenSwiftUI_SPI",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
     swiftSettings: sharedSwiftSettings
@@ -97,7 +100,6 @@ let openSwiftUICoreTarget = Target.target(
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
-        "COpenSwiftUI",
         "OpenSwiftUICore",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
@@ -109,6 +111,17 @@ let openSwiftUIExtensionTarget = Target.target(
     dependencies: [
         "OpenSwiftUI",
     ],
+    swiftSettings: sharedSwiftSettings
+)
+let OpenSwiftUI_SPITestTarget = Target.testTarget(
+    name: "OpenSwiftUI_SPITests",
+    dependencies: [
+        "OpenSwiftUI_SPI",
+        // For ProtocolDescriptor symbol linking
+        "OpenSwiftUI",
+        .product(name: "Numerics", package: "swift-numerics")
+    ],
+    exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
 let openSwiftUICoreTestTarget = Target.testTarget(
@@ -144,7 +157,10 @@ let package = Package(
     products: [
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
         // FIXME: This will block xcodebuild build(iOS CI) somehow
-        // .library(name: "COpenSwiftUI", targets: ["COpenSwiftUI"]),
+        // .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -157,18 +173,8 @@ let package = Package(
             ]
         ),
         .target(
-            name: "COpenSwiftUI",
-            dependencies: [
-                "COpenSwiftUICore",
-            ],
-            cSettings: [
-                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
-                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
-                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
-            ]
-        ),
-        .target(
-            name: "COpenSwiftUICore",
+            name: "OpenSwiftUI_SPI",
+            publicHeadersPath: ".",
             cSettings: [
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
@@ -180,6 +186,7 @@ let package = Package(
         openSwiftUITarget,
         openSwiftUIExtensionTarget,
         
+        OpenSwiftUI_SPITestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
@@ -227,6 +234,8 @@ extension Target {
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
+    
+    OpenSwiftUI_SPITestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()

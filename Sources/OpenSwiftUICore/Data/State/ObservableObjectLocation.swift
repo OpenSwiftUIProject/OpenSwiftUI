@@ -10,7 +10,7 @@ import OpenCombine
 #else
 import Combine
 #endif
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObject {
     let base: Root

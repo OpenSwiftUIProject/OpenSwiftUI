@@ -7,7 +7,7 @@
 //  ID: A96961F3546506F21D8995C6092F15B5
 
 internal import OpenGraphShims
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 @frozen
 public struct AnyView: PrimitiveView {

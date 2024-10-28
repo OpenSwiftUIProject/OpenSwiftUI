@@ -7,7 +7,7 @@
 //  ID: 34756F646CF7AC3DBE2A8E0B344C962F (RELEASE_2021)
 //  ID: 59349949219F590F26B6A55CEC9D59A2 (RELEASE_2024)
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 internal import OpenGraphShims
 #if canImport(Darwin)
 import os.signpost

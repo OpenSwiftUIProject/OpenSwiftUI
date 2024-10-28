@@ -7,7 +7,7 @@
 //  ID: 30C09FF16BC95EC5173809B57186CAC3 (RELEASE_2021)
 //  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (RELEASE_2024)
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 package import OpenGraphShims
 import Foundation
 

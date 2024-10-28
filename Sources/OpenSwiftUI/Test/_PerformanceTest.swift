@@ -11,7 +11,7 @@ import UIKit
 import AppKit
 #endif
 
-internal import COpenSwiftUI
+internal import OpenSwiftUI_SPI
 
 public protocol _PerformanceTest: _Test {
     var name: String { get }

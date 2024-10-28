@@ -8,7 +8,7 @@
 #if OPENSWIFTUI_RELEASE_2021
 
 @testable import OpenSwiftUICore
-import COpenSwiftUICore
+import OpenSwiftUI_SPI
 import Testing
 
 struct LockedPointerTests {

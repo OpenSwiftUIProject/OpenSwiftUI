@@ -6,7 +6,7 @@
 //  Status: WIP
 
 import Foundation
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 protocol ContentResponder {
     func contains(points: [CGPoint], size: CGSize) -> BitVector64

@@ -7,7 +7,7 @@
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (RELEASE_2021)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (RELEASE_2024)
 
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 internal import OpenGraphShims
 
 // MARK: - PropertyList

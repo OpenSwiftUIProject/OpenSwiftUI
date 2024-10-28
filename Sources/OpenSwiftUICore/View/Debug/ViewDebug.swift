@@ -7,7 +7,7 @@
 
 import Foundation
 internal import OpenGraphShims
-internal import COpenSwiftUICore
+internal import OpenSwiftUI_SPI
 
 public enum _ViewDebug {
     public enum Property: UInt32, Hashable {
