@@ -9,13 +9,13 @@
 import Foundation
 internal import OpenSwiftUI_SPI
 
-extension OpenSwiftUICoreColor {
+extension CoreColor {
     package static func platformColor(resolvedColor: Color.Resolved) -> NSObject? {
         platformColor(red: CGFloat(resolvedColor.red), green: CGFloat(resolvedColor.green), blue: CGFloat(resolvedColor.blue), alpha: CGFloat(resolvedColor.opacity))
     }
     
     package static func platformColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) -> NSObject? {
-        OpenSwiftUICorePlatformColorForRGBA(isAppKitBased(), red, green, blue, alpha)
+        CorePlatformColorForRGBA(system: isAppKitBased() ? .appKit : .uiKit, red: red, green: green, blue: blue, alpha: alpha)
     }
 }
 

@@ -322,7 +322,7 @@ extension Color.Resolved {
         var green: CGFloat = 0
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
-        let result = OpenSwiftUICoreColorPlatformColorGetComponents(isAppKitBased(), platformColor, &red, &green, &blue, &alpha)
+        let result = CoreColorPlatformColorGetComponents(system: isAppKitBased() ? .appKit : .uiKit, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
         if result {
             self.init(red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
         } else {
@@ -332,7 +332,7 @@ extension Color.Resolved {
 
     // ID: 4330A474F53D66045762501ED6F8A749
     private static let cache: ObjectCache<Color.Resolved, NSObject> = ObjectCache { resolved in
-        OpenSwiftUICoreColor.platformColor(resolvedColor: resolved)!
+        CoreColor.platformColor(resolvedColor: resolved)!
     }
     
     package var kitColor: NSObject {

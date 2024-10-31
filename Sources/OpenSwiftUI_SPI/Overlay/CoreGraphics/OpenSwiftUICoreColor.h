@@ -17,35 +17,37 @@
 #else
 #include <AppKit/AppKit.h>
 #endif
+#include "OpenSwiftUICoreSystem.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 OPENSWIFTUI_EXPORT
-BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha);
+BOOL OpenSwiftUICoreColorPlatformColorGetComponents(OpenSwiftUICoreSystem system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) OPENSWIFTUI_SWIFT_NAME(CoreColorPlatformColorGetComponents(system:color:red:green:blue:alpha:));
 
 OPENSWIFTUI_EXPORT
-NSObject  * _Nullable OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha);
+NSObject  * _Nullable OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) OPENSWIFTUI_SWIFT_NAME(CorePlatformColorForRGBA(system:red:green:blue:alpha:));
 
 OPENSWIFTUI_EXPORT
-Class _Nullable OpenSwiftUICoreColorGetKitColorClass(BOOL system);
+Class _Nullable OpenSwiftUICoreColorGetKitColorClass(OpenSwiftUICoreSystem system) OPENSWIFTUI_SWIFT_NAME(CoreColorGetKitColorClass(system:));
 
+OPENSWIFTUI_SWIFT_NAME(CoreColor)
 @interface OpenSwiftUICoreColor : NSObject
 
-+ (nullable NSObject *)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor;
-+ (nullable NSObject *)blackColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemRedColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemOrangeColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemYellowColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemGreenColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemTealColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemMintColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemCyanColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemBlueColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemIndigoColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemPurpleColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemPinkColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemBrownColorWithSystem:(BOOL)system;
-+ (nullable NSObject *)systemGrayColorWithSystem:(BOOL)system;
++ (nullable NSObject *)colorWithSystem:(OpenSwiftUICoreSystem)system cgColor: (CGColorRef)cgColor;
++ (nullable NSObject *)blackColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemRedColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemOrangeColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemYellowColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemGreenColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemTealColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemMintColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemCyanColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemBlueColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemIndigoColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemPurpleColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemPinkColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemBrownColorWithSystem:(OpenSwiftUICoreSystem)system;
++ (nullable NSObject *)systemGrayColorWithSystem:(OpenSwiftUICoreSystem)system;
 
 - (instancetype)initWithCGColor:(CGColorRef)cgColor;
 - (void)set;

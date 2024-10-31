@@ -10,14 +10,14 @@
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 #include "OpenSwiftUICoreGraphicsContext.h"
 
-Class OpenSwiftUICoreColorClass(BOOL system);
+Class OpenSwiftUICoreColorClass(OpenSwiftUICoreSystem system);
 
 #if OPENSWIFTUI_TARGET_OS_OSX
 id NSColorSpaceForCGColorSpace(CGColorSpaceRef cgColorSpace);
 Class NSColorSpaceClass(void);
 #endif
 
-BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) {
+BOOL OpenSwiftUICoreColorPlatformColorGetComponents(OpenSwiftUICoreSystem system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     if (!colorClass) {
         return NO;
@@ -44,13 +44,13 @@ BOOL OpenSwiftUICoreColorPlatformColorGetComponents(BOOL system, id color, CGFlo
     #endif
 }
 
-NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
+NSObject *OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     if (!colorClass) {
         return nil;
     }
     #if OPENSWIFTUI_TARGET_OS_OSX
-    if (system) {
+    if (system == OpenSwiftUICoreSystemAppKit) {
         id colorSpace = NSColorSpaceForCGColorSpace(CGColorSpaceCreateWithName(kCGColorSpaceExtendedSRGB));
         return [colorClass colorWithColorSpace:colorSpace components:(CGFloat[]){red, green, blue, alpha} count:4];
     } else {
@@ -61,22 +61,22 @@ NSObject *OpenSwiftUICorePlatformColorForRGBA(BOOL system, CGFloat red, CGFloat 
     #endif
 }
 
-Class _Nullable OpenSwiftUICoreColorGetKitColorClass(BOOL system) {
+Class _Nullable OpenSwiftUICoreColorGetKitColorClass(OpenSwiftUICoreSystem system) {
     return OpenSwiftUICoreColorClass(system);
 }
 
-Class _Nullable OpenSwiftUICoreColorClass(BOOL system) {
+Class _Nullable OpenSwiftUICoreColorClass(OpenSwiftUICoreSystem system) {
     static BOOL isValid = true;
     static Class colorClass;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
         #if OPENSWIFTUI_TARGET_OS_OSX
-        if (!system) {
+        if (system == OpenSwiftUICoreSystemUIKit) {
             Class class = NSClassFromString(@"UIColor");
             colorClass = class;
             isValid = class != nil;
         }
-        if (system) {
+        if (system == OpenSwiftUICoreSystemAppKit) {
             Class class = NSClassFromString(@"NSColor");
             colorClass = class;
             isValid = class != nil;
@@ -122,7 +122,7 @@ Class NSColorSpaceClass(void) {
 
 @implementation OpenSwiftUICoreColor
 
-+ (NSObject *)colorWithSystem:(BOOL)system cgColor: (CGColorRef)cgColor {
++ (NSObject *)colorWithSystem:(OpenSwiftUICoreSystem)system cgColor: (CGColorRef)cgColor {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     if (colorClass) {
         return [colorClass colorWithCGColor: cgColor];
@@ -131,72 +131,72 @@ Class NSColorSpaceClass(void) {
     }
 }
 
-+ (NSObject *)blackColorWithSystem:(BOOL)system {
++ (NSObject *)blackColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass blackColor];
 }
 
-+ (NSObject *)systemRedColorWithSystem:(BOOL)system {
++ (NSObject *)systemRedColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemRedColor];
 }
 
-+ (NSObject *)systemOrangeColorWithSystem:(BOOL)system {
++ (NSObject *)systemOrangeColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemOrangeColor];
 }
 
-+ (NSObject *)systemYellowColorWithSystem:(BOOL)system {
++ (NSObject *)systemYellowColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemYellowColor];
 }
 
-+ (NSObject *)systemGreenColorWithSystem:(BOOL)system {
++ (NSObject *)systemGreenColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemGreenColor];
 }
 
-+ (NSObject *)systemTealColorWithSystem:(BOOL)system {
++ (NSObject *)systemTealColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemTealColor];
 }
 
-+ (NSObject *)systemMintColorWithSystem:(BOOL)system {
++ (NSObject *)systemMintColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemMintColor];
 }
 
-+ (NSObject *)systemCyanColorWithSystem:(BOOL)system {
++ (NSObject *)systemCyanColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemCyanColor];
 }
 
-+ (NSObject *)systemBlueColorWithSystem:(BOOL)system {
++ (NSObject *)systemBlueColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemBlueColor];
 }
 
-+ (NSObject *)systemIndigoColorWithSystem:(BOOL)system {
++ (NSObject *)systemIndigoColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemIndigoColor];
 }
 
-+ (NSObject *)systemPurpleColorWithSystem:(BOOL)system {
++ (NSObject *)systemPurpleColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemPurpleColor];
 }
 
-+ (NSObject *)systemPinkColorWithSystem:(BOOL)system {
++ (NSObject *)systemPinkColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemPinkColor];
 }
 
-+ (NSObject *)systemBrownColorWithSystem:(BOOL)system {
++ (NSObject *)systemBrownColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemBrownColor];
 }
 
-+ (NSObject *)systemGrayColorWithSystem:(BOOL)system {
++ (NSObject *)systemGrayColorWithSystem:(OpenSwiftUICoreSystem)system {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     return [colorClass systemGrayColor];
 }

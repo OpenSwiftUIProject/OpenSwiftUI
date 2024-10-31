@@ -16,6 +16,7 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+OPENSWIFTUI_SWIFT_NAME(CoreGraphicsContext)
 @interface OpenSwiftUICoreGraphicsContext : NSObject
 
 @property (class, nonatomic, readonly) OpenSwiftUICoreGraphicsContext *current;
