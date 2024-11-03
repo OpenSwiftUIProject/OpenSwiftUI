@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-internal import OpenSwiftUI_SPI
+import OpenSwiftUI_SPI
 
 package protocol SemanticFeature: Feature {
     static var introduced: Semantics { get }

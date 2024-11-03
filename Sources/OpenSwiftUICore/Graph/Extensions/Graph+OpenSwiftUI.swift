@@ -1,3 +1,3 @@
-internal import OpenGraphShims
+import OpenGraphShims
 
 extension Graph {}

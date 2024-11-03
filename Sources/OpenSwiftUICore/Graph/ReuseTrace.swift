@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: WIP
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 package struct ReuseTrace {
     package static func register(graph: Graph) {

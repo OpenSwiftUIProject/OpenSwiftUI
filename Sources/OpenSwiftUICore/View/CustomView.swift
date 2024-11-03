@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 9F92ACD17B554E8AB7D29ABB1E796415
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 extension View {
     static func makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {

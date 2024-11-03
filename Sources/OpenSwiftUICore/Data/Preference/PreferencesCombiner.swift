@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 59D15989E597719355BF0EAE6CB41FF9
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 struct PreferenceCombiner<Key: PreferenceKey>: Rule, AsyncAttribute {
     var attributes: [WeakAttribute<Key.Value>]

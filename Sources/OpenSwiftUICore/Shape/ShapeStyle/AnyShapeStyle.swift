@@ -7,7 +7,7 @@
 //  ID: ABC85937500395B09974756E9F651929
 
 import Foundation
-internal import OpenGraphShims
+import OpenGraphShims
 
 /// A type-erased ShapeStyle value.
 @frozen

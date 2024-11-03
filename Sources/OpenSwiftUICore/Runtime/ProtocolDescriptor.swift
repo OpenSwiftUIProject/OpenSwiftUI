@@ -5,8 +5,8 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-internal import OpenSwiftUI_SPI
-internal import OpenGraphShims
+import OpenSwiftUI_SPI
+import OpenGraphShims
 
 // MARK: - ProtocolDescriptor
 

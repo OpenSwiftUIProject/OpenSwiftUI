@@ -6,7 +6,7 @@
 //  Status: Complete
 
 import Foundation
-internal import OpenGraphShims
+import OpenGraphShims
 
 struct ViewGeometry: Equatable {
     var origin: ViewOrigin

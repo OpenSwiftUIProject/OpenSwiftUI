@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Blocked by PlatformDrawable and GraphicsContext
 
-internal import OpenSwiftUI_SPI
+import OpenSwiftUI_SPI
 #if canImport(Darwin)
 public import QuartzCore
 #endif

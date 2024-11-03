@@ -6,7 +6,7 @@
 //  Status: TODO
 //  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 /// An ad hoc collection of the children of a variadic view.
 public struct _VariadicView_Children {

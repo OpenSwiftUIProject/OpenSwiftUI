@@ -7,7 +7,7 @@
 //  ID: 49D2A32E637CD497C6DE29B8E060A506 (RELEASE_2021)
 //  ID: A4C1D658B3717A3062FEFC91A812D6EB (RELEASE_2024)
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 // MARK: - DynamicProperty
 

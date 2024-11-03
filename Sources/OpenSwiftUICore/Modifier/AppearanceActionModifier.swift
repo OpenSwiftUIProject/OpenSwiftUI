@@ -8,7 +8,7 @@
 
 // MARK: - AppearanceActionModifier
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 /// A modifier that triggers actions when its view appears and disappears.
 @frozen

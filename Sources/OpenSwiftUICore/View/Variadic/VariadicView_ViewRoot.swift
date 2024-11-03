@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 00F12C0E37A19C593ECA0DBD3BE26541
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 /// A type of root that creates a `View` when its result builder is invoked with
 ///  `View`.

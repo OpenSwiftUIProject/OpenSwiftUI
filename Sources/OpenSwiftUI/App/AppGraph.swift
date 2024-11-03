@@ -13,7 +13,7 @@ import Glibc
 #elseif os(WASI)
 import WASILibc
 #endif
-internal import OpenGraphShims
+import OpenGraphShims
 @_spi(ForOpenSwiftUIOnly) package import OpenSwiftUICore
 
 package final class AppGraph: GraphHost {

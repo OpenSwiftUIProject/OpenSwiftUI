@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 package protocol PropertyKey {
     associatedtype Value

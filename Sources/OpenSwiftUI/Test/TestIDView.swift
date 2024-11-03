@@ -5,8 +5,8 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-internal import OpenGraphShims
-internal import OpenSwiftUICore
+import OpenGraphShims
+import OpenSwiftUICore
 
 struct TestIDView<Content, ID>: PrimitiveView, UnaryView {
     var content: Content

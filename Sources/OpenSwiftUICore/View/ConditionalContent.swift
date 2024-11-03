@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 /// View content that shows one of two possible children.
 @frozen

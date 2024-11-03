@@ -10,7 +10,7 @@ package import Foundation
 #else
 import Foundation
 #endif
-internal import OpenSwiftUI_SPI
+import OpenSwiftUI_SPI
 
 // MARK: - Color.Resolved
 

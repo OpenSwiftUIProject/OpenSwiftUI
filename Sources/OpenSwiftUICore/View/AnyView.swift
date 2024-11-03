@@ -6,8 +6,8 @@
 //  Status: WIP
 //  ID: A96961F3546506F21D8995C6092F15B5
 
-internal import OpenGraphShims
-internal import OpenSwiftUI_SPI
+import OpenGraphShims
+import OpenSwiftUI_SPI
 
 @frozen
 public struct AnyView: PrimitiveView {

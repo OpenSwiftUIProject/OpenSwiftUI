@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 package typealias ViewPhase = _GraphInputs.Phase
 

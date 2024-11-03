@@ -6,8 +6,8 @@
 //  Status: WIP
 
 public import Foundation
-internal import OpenGraphShims
-internal import OpenSwiftUI_SPI
+import OpenGraphShims
+import OpenSwiftUI_SPI
 
 public enum _ViewDebug {
     public enum Property: UInt32, Hashable {

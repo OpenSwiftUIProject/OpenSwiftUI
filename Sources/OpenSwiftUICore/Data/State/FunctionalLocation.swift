@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 struct FunctionalLocation<Value>: Location {
     var getValue: () -> Value

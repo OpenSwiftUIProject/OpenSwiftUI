@@ -7,7 +7,7 @@
 
 #if os(iOS)
 
-@_spi(ForOpenSwiftUIOnly) internal import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 protocol AnyUIHostingView: AnyObject {
     func displayLinkTimer(timestamp: Time, isAsyncThread: Bool)

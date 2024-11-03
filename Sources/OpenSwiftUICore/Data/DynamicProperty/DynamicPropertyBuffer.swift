@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 68550FF604D39F05971FE35A26EE75B0
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 private let nullPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(unsafeBitCast(0, to: AnyObject.self)).toOpaque()
 

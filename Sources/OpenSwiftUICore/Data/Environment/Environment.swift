@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 7B48F30970137591804EEB8D0D309152
 
-internal import OpenGraphShims
+import OpenGraphShims
 #if OPENSWIFTUI_SWIFT_LOG
 public import Logging
 #else

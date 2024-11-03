@@ -1,4 +1,4 @@
-internal import OpenGraphShims
+import OpenGraphShims
 
 /// The output (aka synthesized) attributes returned by each view.
 public struct _ViewOutputs {

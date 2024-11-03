@@ -6,7 +6,7 @@
 //  Status: Blocked by syncMainIfReferences
 //  ID: 1DBD4F024EFF0E73A70DB6DD05D5B548
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 @frozen
 public struct _EnvironmentKeyTransformModifier<Value>: PrimitiveViewModifier, _GraphInputsModifier {

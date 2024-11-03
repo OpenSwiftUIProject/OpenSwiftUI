@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: D63C4EB7F2B205694B6515509E76E98B
 
-internal import OpenGraphShims
+import OpenGraphShims
 import Foundation
 
 package final class ViewGraph: GraphHost {

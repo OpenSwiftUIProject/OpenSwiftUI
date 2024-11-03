@@ -6,9 +6,9 @@
 //  Status: Blocked by OGTypeGetSignature and RBUUID
 
 #if OPENSWIFTUI_SWIFT_CRYPTO
-internal import Crypto
+import Crypto
 #elseif canImport(CommonCrypto)
-internal import CommonCrypto
+import CommonCrypto
 #endif
 
 import Foundation

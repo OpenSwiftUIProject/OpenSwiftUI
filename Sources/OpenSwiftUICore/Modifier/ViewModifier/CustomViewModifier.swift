@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 0EAFD5A78D9C0B607C3C0964CF3A3038
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 // MARK: - ViewModifier + Extension
 

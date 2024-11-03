@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 struct PreferencesInputs {
     private(set) var keys: PreferenceKeys

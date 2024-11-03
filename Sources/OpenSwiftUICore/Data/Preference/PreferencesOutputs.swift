@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: A948213B3F0A65E8491149A582CA5C71
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 struct PreferencesOutputs {
     private var preferences: [KeyValue] = []

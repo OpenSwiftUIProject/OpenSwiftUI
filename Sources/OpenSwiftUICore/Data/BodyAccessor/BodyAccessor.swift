@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-internal import OpenGraphShims
+import OpenGraphShims
 
 package protocol BodyAccessor<Container, Body> {
     associatedtype Container

@@ -7,8 +7,8 @@
 //  ID: EA173074DA35FA471DC70643259B7E74 (RELEASE_2021)
 //  ID: 61534957AEEC2EDC447ABDC13B4D426F (RELEASE_2024)
 
-internal import OpenSwiftUI_SPI
-internal import OpenGraphShims
+import OpenSwiftUI_SPI
+import OpenGraphShims
 import Foundation
 
 package enum Update {

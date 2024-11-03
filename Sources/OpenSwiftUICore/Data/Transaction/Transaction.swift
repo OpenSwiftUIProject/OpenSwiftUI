@@ -6,8 +6,8 @@
 //  Status: WIP
 //  ID: B2543BCA257433E04979186A1DC2B6BC
 
-internal import OpenGraphShims
-internal import OpenSwiftUI_SPI
+import OpenGraphShims
+import OpenSwiftUI_SPI
 
 /// The context of the current state-processing update.
 ///
