@@ -3,9 +3,9 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
-import OpenGraphShims
+package import OpenGraphShims
 
 package typealias ViewPhase = _GraphInputs.Phase
 
@@ -17,31 +17,205 @@ package protocol ViewInput: GraphInput {}
 /// separately.
 public struct _ViewInputs {
     package var base: _GraphInputs
-    var preferences: PreferencesInputs
-    var transform: Attribute<ViewTransform>
-    var position: Attribute<ViewOrigin>
-    var containerPosition: Attribute<ViewOrigin>
-    var size: Attribute<ViewSize>
-    var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
     
-    init(
-        base: _GraphInputs,
-        preferences: PreferencesInputs,
-        transform: Attribute<ViewTransform>,
+    package var preferences: PreferencesInputs
+    
+    package var customInputs: PropertyList {
+        get { base.customInputs }
+        set { base.customInputs = newValue }
+    }
+    
+    package subscript<T>(input: T.Type) -> T.Value where T : ViewInput {
+        get { base[input] }
+        set { base[input] = newValue }
+    }
+    
+    package subscript<T>(input: T.Type) -> T.Value where T : ViewInput, T.Value : GraphReusable {
+        get { base[input] }
+        set { base[input] = newValue }
+    }
+    
+    package var time: Attribute<Time> {
+        get { base.time }
+        set { base.time = newValue }
+    }
+    
+    package var environment: Attribute<EnvironmentValues> {
+        get { base.environment }
+        set { base.environment = newValue }
+    }
+    
+    package var viewPhase: Attribute<ViewPhase> {
+        get { base.phase }
+        set { base.phase = newValue }
+    }
+    
+    package var transaction: Attribute<Transaction> {
+        get { base.transaction }
+        set { base.transaction = newValue }
+    }
+    
+    package var transform: Attribute<ViewTransform> {
+        didSet {
+            base.changedDebugProperties.formUnion(.transform)
+        }
+    }
+    
+    package var position: Attribute<ViewOrigin> {
+        didSet {
+            base.changedDebugProperties.formUnion(.position)
+        }
+    }
+    
+    package var containerPosition: Attribute<ViewOrigin>
+    
+    package var size: Attribute<ViewSize> {
+        didSet {
+            base.changedDebugProperties.formUnion(.size)
+        }
+    }
+    
+    package var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
+    
+    package var scrollableContainerSize: OptionalAttribute<ViewSize>
+    
+    // MARK: - base.options
+    
+    package var requestsLayoutComputer: Bool {
+        get { base.options.contains(.viewRequestsLayoutComputer) }
+        set { base.options.setValue(newValue, for: .viewRequestsLayoutComputer) }
+    }
+    
+    package var needsGeometry: Bool {
+        get { base.options.contains(.viewNeedsGeometry) }
+        set { base.options.setValue(newValue, for: .viewNeedsGeometry) }
+    }
+    
+    package var needsDisplayListAccessibility: Bool {
+        get { base.options.contains(.viewDisplayListAccessibility) }
+        set { base.options.setValue(newValue, for: .viewDisplayListAccessibility) }
+    }
+    
+    package var needsAccessibilityGeometry: Bool {
+        get { base.options.contains(.viewNeedsGeometryAccessibility) }
+        set { base.options.setValue(newValue, for: .viewNeedsGeometryAccessibility) }
+    }
+    
+    package var needsAccessibilityViewResponders: Bool {
+        get { base.options.contains(.viewNeedsRespondersAccessibility) }
+        set { base.options.setValue(newValue, for: .viewNeedsRespondersAccessibility) }
+    }
+    
+    package var stackOrientation: Axis? {
+        get {
+            if base.options.contains(.viewStackOrientationIsDefined) {
+                base.options.contains(.viewStackOrientationIsHorizontal) ? .horizontal : .vertical
+            } else {
+                nil
+            }
+        }
+        set {
+            if let newValue {
+                base.options.formUnion(.viewStackOrientationIsDefined)
+                switch newValue {
+                case .horizontal:
+                    base.options.formUnion(.viewStackOrientationIsHorizontal)
+                case .vertical:
+                    base.options.subtract(.viewStackOrientationIsHorizontal)
+                }
+            } else {
+                base.options.subtract([.viewStackOrientationIsDefined, .viewStackOrientationIsHorizontal])
+            }
+        }
+    }
+    
+    package var supportsVFD: Bool {
+        base.options.contains(.supportsVariableFrameDuration)
+    }
+    
+    package var changedDebugProperties: _ViewDebug.Properties {
+        get { base.changedDebugProperties }
+        set { base.changedDebugProperties = newValue }
+    }
+    
+    package init(
+        _ base: _GraphInputs,
         position: Attribute<ViewOrigin>,
-        containerPosition: Attribute<ViewOrigin>,
         size: Attribute<ViewSize>,
-        safeAreaInsets: OptionalAttribute<SafeAreaInsets>
+        transform: Attribute<ViewTransform>,
+        containerPosition: Attribute<ViewOrigin>,
+        hostPreferenceKeys: Attribute<PreferenceKeys>
     ) {
         self.base = base
-        self.preferences = preferences
+        self.preferences = PreferencesInputs(hostKeys: hostPreferenceKeys)
         self.transform = transform
         self.position = position
         self.containerPosition = containerPosition
         self.size = size
-        self.safeAreaInsets = safeAreaInsets
+        self.safeAreaInsets = OptionalAttribute()
+        self.scrollableContainerSize = OptionalAttribute()
     }
     
+    package static func invalidInputs(_ base: _GraphInputs) -> _ViewInputs {
+        _ViewInputs(
+            base,
+            position: Attribute(identifier: .nil),
+            size: Attribute(identifier: .nil),
+            transform: Attribute(identifier: .nil),
+            containerPosition: Attribute(identifier: .nil),
+            hostPreferenceKeys: Attribute(identifier: .nil)
+        )
+    }
+    
+    package func mapEnvironment<T>(_ keyPath: KeyPath<EnvironmentValues, T>) -> Attribute<T> {
+        base.mapEnvironment(keyPath)
+    }
+    
+    package func animatedPosition() -> Attribute<ViewOrigin> {
+        base.cachedEnvironment.wrappedValue.animatedPosition(for: self)
+    }
+    
+    package func animatedSize() -> Attribute<ViewSize> {
+        base.cachedEnvironment.wrappedValue.animatedSize(for: self)
+    }
+    
+    package func animatedCGSize() -> Attribute<CGSize> {
+        base.cachedEnvironment.wrappedValue.animatedCGSize(for: self)
+    }
+    
+    package func intern<T>(_ value: T, id: GraphHost.ConstantID) -> Attribute<T> {
+        base.intern(value, id: id)
+    }
+    
+    package mutating func copyCaches() {
+        base.copyCaches()
+    }
+    
+    package mutating func resetCaches() {
+        base.resetCaches()
+    }
+    
+    package mutating func append<T, U>(_ newValue: U, to _: T.Type) where T: ViewInput, T.Value == Stack<U> {
+        base.append(newValue, to: T.self)
+    }
+    
+    package mutating func append<T, U>(_ newValue: U, to _: T.Type) where T: ViewInput, U: GraphReusable, T.Value == Stack<U> {
+        base.append(newValue, to: T.self)
+    }
+    
+    package mutating func popLast<T, U>(_ key: T.Type) -> U? where T: ViewInput, T.Value == Stack<U> {
+        base.popLast(key)
+    }
+}
+
+@available(*, unavailable)
+extension _ViewInputs: Sendable {}
+
+
+// FIXME: TO BE REMOVED
+
+// @available(*, deprecated, message: "TO BE REMOVED")
+extension _ViewInputs {
     mutating func append<Input: ViewInput, Value>(_ value: Value, to type: Input.Type) where Input.Value == [Value] {
         var values = base[type]
         values.append(value)
@@ -55,32 +229,6 @@ public struct _ViewInputs {
         }
         base[type] = values
         return value
-    }
-    
-    func makeIndirectOutputs() -> _ViewOutputs {
-        #if canImport(Darwin)
-        struct AddPreferenceVisitor: PreferenceKeyVisitor {
-            var outputs = _ViewOutputs()
-            mutating func visit<Key: PreferenceKey>(key: Key.Type) {
-//                let source = ViewGraph.current.intern(Key.defaultValue, id: 0)
-//                let indirect = IndirectAttribute(source: source)
-//                outputs.appendPreference(key: Key.self, value: Attribute(identifier: indirect.identifier))
-                fatalError()
-            }
-        }
-        var visitor = AddPreferenceVisitor()
-        preferences.keys.forEach { key in
-            key.visitKey(&visitor)
-        }
-        var outputs = visitor.outputs
-        outputs.setLayoutComputer(self) {
-            let indirect = IndirectAttribute(source: ViewGraph.current.$defaultLayoutComputer)
-            return Attribute(identifier: indirect.identifier)
-        }
-        return outputs
-        #else
-        fatalError("See #39")
-        #endif
     }
     
     // MARK: - base
@@ -119,30 +267,5 @@ public struct _ViewInputs {
         var newInputs = self
         newInputs.base = self.base.detechedEnvironmentInputs()
         return newInputs
-    }
-    
-    // MARK: - base.phase
-    @inline(__always)
-    var phase: Attribute<_GraphInputs.Phase> {
-        base.phase
-    }
-    
-    // MARK: - base.changedDebugProperties
-    
-    @inline(__always)
-    func withEmptyChangedDebugPropertiesInputs<R>(_ body: (_ViewInputs) -> R) -> R {
-        var newInputs = self
-        return base.withEmptyChangedDebugPropertiesInputs {
-            newInputs.base = $0
-            return body(newInputs)
-        }
-    }
-    
-    // MARK: Options
-        
-    @inline(__always)
-    var enableLayout: Bool {
-        get { base.enableLayout }
-        // TODO: setter
     }
 }

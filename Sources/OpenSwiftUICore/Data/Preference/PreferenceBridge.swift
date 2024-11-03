@@ -151,7 +151,7 @@ package final class PreferenceBridge {
 
     func wrapInputs(_ inputs: inout _ViewInputs) {
         inputs.withMutableCustomInputs { $0 = bridgedViewInputs }
-        inputs.preferences.merge(requestedPreferences)
+        // inputs.preferences.keys.merge(requestedPreferences)
         inputs.preferences.hostKeys = Attribute(MergePreferenceKeys(lhs: inputs.preferences.hostKeys, rhs: _hostPreferenceKeys))
     }
 

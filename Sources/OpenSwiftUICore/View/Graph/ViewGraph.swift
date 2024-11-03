@@ -232,7 +232,7 @@ package final class ViewGraph: GraphHost {
             as: RootGeometry.self,
             invalidating: true
         ) { rootGeometry in
-            rootGeometry.$childLayoutComputer = outputs.$layoutComputer
+            rootGeometry.$childLayoutComputer = outputs.layoutComputer
         }
         // TODO
         hostPreferenceValues.projectedValue = outputs.hostPreferences
