@@ -2,9 +2,11 @@
 //  InterfaceIdiom.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 15.0
 //  Status: Complete
-//  ID: 2FFD16F575FFD9B8AC17BCAE09549F2
+//  ID: 2FFD16F575FFD9B8AC17BCAE09549F23 (SwiftUI)
+
+#if OPENSWIFTUI_RELEASE_2021
 
 // MARK: InterfaceIdiomType
 
@@ -111,4 +113,28 @@ extension UIUserInterfaceIdiom {
         }
     }
 }
+#endif
+
+#elseif OPENSWIFTUI_RELEASE_2024
+
+#if os(iOS) || os(tvOS)
+import OpenSwiftUICore
+import UIKit
+
+extension UIUserInterfaceIdiom {
+    var idiom: AnyInterfaceIdiom? {
+        switch rawValue {
+        case UIUserInterfaceIdiom.phone.rawValue: return AnyInterfaceIdiom(.phone)
+        case UIUserInterfaceIdiom.pad.rawValue: return AnyInterfaceIdiom(.pad)
+        case UIUserInterfaceIdiom.tv.rawValue: return AnyInterfaceIdiom(.tv)
+        case 4: return AnyInterfaceIdiom(.watch) // There is no UIUserInterfaceIdiom.watch exposed currently
+        case UIUserInterfaceIdiom.carPlay.rawValue: return AnyInterfaceIdiom(.carPlay)
+        case UIUserInterfaceIdiom.mac.rawValue: return AnyInterfaceIdiom(.mac)
+        case UIUserInterfaceIdiom.vision.rawValue: return AnyInterfaceIdiom(.vision)
+        default: return nil
+        }
+    }
+}
+#endif
+
 #endif
