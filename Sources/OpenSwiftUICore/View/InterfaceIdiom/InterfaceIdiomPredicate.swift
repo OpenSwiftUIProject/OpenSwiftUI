@@ -29,7 +29,7 @@ extension _GraphInputs {
         } else {
             AnyInterfaceIdiom(.pad)
         }
-        #elseif os(iOS)
+        #elseif os(iOS) || os(visionOS)
         AnyInterfaceIdiom(.phone)
         #else
         fatalError("TODO")
@@ -38,7 +38,7 @@ extension _GraphInputs {
 }
 
 extension AnyInterfaceIdiom {
-    package static func ~= (pattern: some InterfaceIdiom, value: AnyInterfaceIdiom) -> Bool {        
+    package static func ~= (pattern: some InterfaceIdiom, value: AnyInterfaceIdiom) -> Bool {
         value == AnyInterfaceIdiom(pattern)
     }
 }

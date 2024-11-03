@@ -1,8 +1,8 @@
 //
 //  ViewInputs.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
 
 import OpenGraphShims
@@ -16,7 +16,7 @@ package protocol ViewInput: GraphInput {}
 /// their node. Doesn't include the view itself, which is passed
 /// separately.
 public struct _ViewInputs {
-    private var base: _GraphInputs
+    package var base: _GraphInputs
     var preferences: PreferencesInputs
     var transform: Attribute<ViewTransform>
     var position: Attribute<ViewOrigin>

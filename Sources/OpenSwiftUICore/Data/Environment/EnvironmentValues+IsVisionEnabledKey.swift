@@ -7,7 +7,13 @@
 
 extension EnvironmentValues {
     package var isVisionEnabled: Bool {
-        get { false }
+        get {
+            #if os(macOS)
+            false
+            #else
+            self[IsVisionEnabledKey.self]
+            #endif
+        }
         set { self[IsVisionEnabledKey.self] = newValue }
     }
 }

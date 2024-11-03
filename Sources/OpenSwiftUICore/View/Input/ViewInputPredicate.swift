@@ -116,7 +116,11 @@ package struct TypesMatch<Left, Right>: ViewInputPredicate {
 
 package struct IsVisionEnabledPredicate: ViewInputPredicate {
     package static func evaluate(inputs: _GraphInputs) -> Bool {
+        #if os(macOS)
         false
+        #else
+        inputs.interfaceIdiom.accepts(.vision)
+        #endif
     }
     
     package init() {}

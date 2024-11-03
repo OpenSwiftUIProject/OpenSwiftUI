@@ -1,10 +1,10 @@
 //
-//  GraphReusable.swift
+//  GraphReuse.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: Blocked by _GraphInputs
-//  ID: 3E2D3733C4CBF57EC1EA761D02CE8317
+//  ID: 3E2D3733C4CBF57EC1EA761D02CE8317 (SwiftUICore)
 
 package import OpenGraphShims
 
@@ -96,7 +96,7 @@ import Foundation
 import os.log
 #endif
 
-private enum EnableGraphReuseLogging: UserDefaultKeyedFeature {
+private struct EnableGraphReuseLogging: UserDefaultKeyedFeature {
     static var key: String { "org.OpenSwiftUIProject.OpenSwiftUI.GraphReuseLogging" }
     static var cachedValue: Bool?
 }
