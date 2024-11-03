@@ -53,7 +53,7 @@ public struct _ViewOutputs {
     
     @inline(__always)
     mutating func setLayoutComputer(_ inputs: _ViewInputs, _ layoutComputer: () -> Attribute<LayoutComputer>) {
-        guard inputs.enableLayout else {
+        guard inputs.requestsLayoutComputer else {
             return
         }
         $layoutComputer = layoutComputer()

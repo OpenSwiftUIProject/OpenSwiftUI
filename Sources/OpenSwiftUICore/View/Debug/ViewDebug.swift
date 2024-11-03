@@ -148,9 +148,13 @@ extension _ViewDebug {
     ) -> _ViewOutputs {
         var inputs = inputs
         OGSubgraph.beginTreeElement(value: view.value, flags: 0)
-        var outputs = inputs.withEmptyChangedDebugPropertiesInputs { inputs in
-            body(view, inputs)
-        }
+        // FIXME
+//        var outputs = inputs.withEmptyChangedDebugPropertiesInputs { inputs in
+//            body(view, inputs)
+//        }
+        inputs.changedDebugProperties = []
+        var outputs = body(view, inputs)
+        
         if OGSubgraph.shouldRecordTree {
             _ViewDebug.reallyWrap(&outputs, value: view, inputs: &inputs)
             OGSubgraph.endTreeElement(value: view.value)

@@ -57,13 +57,17 @@ package struct CachedEnvironment {
         #endif
     }
     
-//    func animatePosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
-//        fatalError("TODO")
-//    }
-//    
-//    func animateSize(for inputs: _ViewInputs) -> Attribute<ViewSize> {
-//        fatalError("TODO")
-//    }
+    func animatedPosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
+        fatalError("TODO")
+    }
+    
+    func animatedSize(for inputs: _ViewInputs) -> Attribute<ViewSize> {
+        fatalError("TODO")
+    }
+    
+    func animatedCGSize(for inputs: _ViewInputs) -> Attribute<CGSize> {
+        fatalError("TODO")
+    }
     
     // func resolvedForegroundStyle() {}
 }

@@ -27,7 +27,7 @@ public struct _AppearanceActionModifier: PrimitiveViewModifier {
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        let effect = AppearanceEffect(modifier: modifier.value, phase: inputs.phase)
+        let effect = AppearanceEffect(modifier: modifier.value, phase: inputs.viewPhase)
         let attribute = Attribute(effect)
         attribute.flags = [.active, .removable]
         return body(_Graph(), inputs)

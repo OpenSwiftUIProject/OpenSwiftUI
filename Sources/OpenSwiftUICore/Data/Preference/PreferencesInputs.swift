@@ -7,7 +7,7 @@
 
 import OpenGraphShims
 
-struct PreferencesInputs {
+package struct PreferencesInputs {
     private(set) var keys: PreferenceKeys
     var hostKeys: Attribute<PreferenceKeys>
     

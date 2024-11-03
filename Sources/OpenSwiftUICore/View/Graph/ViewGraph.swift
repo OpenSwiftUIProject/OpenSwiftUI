@@ -199,14 +199,14 @@ package final class ViewGraph: GraphHost {
         #if canImport(Darwin)
         let outputs = self.data.globalSubgraph.apply {
             let graphInputs = graphInputs
+            
             var inputs = _ViewInputs(
-                base: graphInputs,
-                preferences: PreferencesInputs(hostKeys: data.$hostPreferenceKeys),
-                transform: $rootTransform,
+                graphInputs,
                 position: $position,
-                containerPosition: $zeroPoint,
                 size: $dimensions,
-                safeAreaInsets: OptionalAttribute()
+                transform: $rootTransform,
+                containerPosition: $zeroPoint,
+                hostPreferenceKeys: data.$hostPreferenceKeys
             )
             if requestedOutputs.contains(.layout) {
                 // FIXME

@@ -5,9 +5,9 @@
 //  Audited for iOS 15.5
 //  Status: Complete
 
-import Foundation
+package import Foundation
 
-struct ViewOrigin: Equatable {
+package struct ViewOrigin: Equatable {
     var value: CGPoint
     
     @inline(__always)
@@ -15,7 +15,7 @@ struct ViewOrigin: Equatable {
 }
 
 extension ViewOrigin: Animatable {
-    var animatableData: AnimatablePair<CGFloat, CGFloat> {
+    package var animatableData: AnimatablePair<CGFloat, CGFloat> {
         get { .init(value.x, value.y) }
         set { value = .init(x: newValue.first, y: newValue.second) }
     }
