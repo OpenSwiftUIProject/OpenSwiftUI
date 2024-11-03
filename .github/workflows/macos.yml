@@ -12,7 +12,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-14]
+        os: [macos-15]
         xcode-version: [16.0]
         release: [2021, 2024]
     runs-on: ${{ matrix.os }}
