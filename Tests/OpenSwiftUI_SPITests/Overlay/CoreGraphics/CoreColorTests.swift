@@ -1,5 +1,5 @@
 //
-//  CoreFoundationPrivateTests.swift
+//  CoreColorTests.swift
 //  OpenSwiftUI_SPITests
 
 import Numerics
@@ -16,7 +16,7 @@ import UIKit
 #endif
 
 @MainActor
-struct OpenSwiftUICoreColorTests {
+struct CoreColorTests {
     @Test
     func platformColorGetComponents() {
         #if os(macOS)
@@ -33,17 +33,17 @@ struct OpenSwiftUICoreColorTests {
         var g: CGFloat = 0
         var b: CGFloat = 0
         var a: CGFloat = 0
-        #expect(OpenSwiftUICoreColorPlatformColorGetComponents(isAppKitBased(), blackColor, &r, &g, &b, &a) == true)
+        #expect(CoreColorPlatformColorGetComponents(system: isAppKitBased() ? .appKit : .uiKit, color: blackColor, red: &r, green: &g, blue: &b, alpha: &a) == true)
         #expect(r.isApproximatelyEqual(to: 0))
         #expect(g.isApproximatelyEqual(to: 0))
         #expect(b.isApproximatelyEqual(to: 0))
         #expect(a.isApproximatelyEqual(to: 1))
-        #expect(OpenSwiftUICoreColorPlatformColorGetComponents(isAppKitBased(), grayColor, &r, &g, &b, &a) == true)
+        #expect(CoreColorPlatformColorGetComponents(system: isAppKitBased() ? .appKit : .uiKit, color: grayColor, red: &r, green: &g, blue: &b, alpha: &a) == true)
         #expect(r.isApproximatelyEqual(to: 0.5))
         #expect(g.isApproximatelyEqual(to: 0.5))
         #expect(b.isApproximatelyEqual(to: 0.5))
         #expect(a.isApproximatelyEqual(to: 1))
-        #expect(OpenSwiftUICoreColorPlatformColorGetComponents(isAppKitBased(), whiteColor, &r, &g, &b, &a) == true)
+        #expect(CoreColorPlatformColorGetComponents(system: isAppKitBased() ? .appKit : .uiKit, color: whiteColor, red: &r, green: &g, blue: &b, alpha: &a) == true)
         #expect(r.isApproximatelyEqual(to: 1))
         #expect(g.isApproximatelyEqual(to: 1))
         #expect(b.isApproximatelyEqual(to: 1))
@@ -52,9 +52,9 @@ struct OpenSwiftUICoreColorTests {
     
     @Test
     func platformColorForRGBA() throws {
-        let blackColorObject = try #require(OpenSwiftUICorePlatformColorForRGBA(isAppKitBased(), 0, 0, 0, 1))
-        let greyColorObject = try #require(OpenSwiftUICorePlatformColorForRGBA(isAppKitBased(), 0.5, 0.5, 0.5, 1))
-        let whiteColorObject = try #require(OpenSwiftUICorePlatformColorForRGBA(isAppKitBased(), 1, 1, 1, 1))
+        let blackColorObject = try #require(CorePlatformColorForRGBA(system: isAppKitBased() ? .appKit : .uiKit, red: 0, green: 0, blue: 0, alpha: 1))
+        let greyColorObject = try #require(CorePlatformColorForRGBA(system: isAppKitBased() ? .appKit : .uiKit, red: 0.5, green: 0.5, blue: 0.5, alpha: 1))
+        let whiteColorObject = try #require(CorePlatformColorForRGBA(system: isAppKitBased() ? .appKit : .uiKit, red: 1, green: 1, blue: 1, alpha: 1))
         #if os(macOS)
         let blackColor = try #require((blackColorObject as? NSColor)?.usingColorSpace(.deviceRGB))
         let greyColor = try #require(greyColorObject as? NSColor)
@@ -98,7 +98,7 @@ struct OpenSwiftUICoreColorTests {
     
     @Test
     func getKitColorClass() {
-        let colorClass: AnyClass? = OpenSwiftUICoreColorGetKitColorClass(isAppKitBased())
+        let colorClass: AnyClass? = CoreColorGetKitColorClass(system: isAppKitBased() ? .appKit : .uiKit)
         #if os(macOS)
         #expect(colorClass == NSColor.self)
         #elseif os(iOS)

@@ -3,7 +3,7 @@
 //  OpenSwiftUI_SPI
 //
 //  Audited for RELEASE_2024
-//  Status: WIP
+//  Status: Complete
 
 #include "OpenSwiftUICoreGraphicsContext.h"
 

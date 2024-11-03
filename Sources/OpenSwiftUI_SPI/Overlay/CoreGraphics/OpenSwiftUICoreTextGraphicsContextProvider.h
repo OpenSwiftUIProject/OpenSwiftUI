@@ -17,6 +17,7 @@
 
 void InitializeCoreTextGraphicsContextProvider(void);
 
+OPENSWIFTUI_SWIFT_NAME(CoreTextGraphicsContextProvider)
 @interface OpenSwiftUICoreTextGraphicsContextProvider : NSObject<NSTextGraphicsContextProvider, NSTextGraphicsContext>
 
 @property (readonly) CGContextRef CGContext;

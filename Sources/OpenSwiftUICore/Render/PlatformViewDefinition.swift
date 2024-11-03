@@ -47,7 +47,7 @@ open class PlatformViewDefinition: @unchecked Sendable {
         }
     }
   
-    open class var system: PlatformViewDefinition.System { .init(base: ._2) }
+    open class var system: PlatformViewDefinition.System { .init(base: .swiftUIView) }
     open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { fatalError() }
     #if canImport(Darwin)
     open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { fatalError() }

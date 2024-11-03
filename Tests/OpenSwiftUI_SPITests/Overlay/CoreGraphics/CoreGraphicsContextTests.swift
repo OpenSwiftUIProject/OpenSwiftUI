@@ -1,5 +1,5 @@
 //
-//  OpenSwiftUICoreGraphicsContextTests.swift
+//  CoreGraphicsContextTests.swift
 //  OpenSwiftUI_SPITests
 
 import OpenSwiftUI_SPI
@@ -10,7 +10,7 @@ import CoreGraphics
 import Foundation
 
 @MainActor
-struct OpenSwiftUICoreGraphicsContextTests {
+struct CoreGraphicsContextTests {
     @Test
     func example() async throws {
         let width = 200
@@ -30,12 +30,12 @@ struct OpenSwiftUICoreGraphicsContextTests {
             fatalError("Could not create CGContext")
         }
 
-        let context = OpenSwiftUICoreGraphicsContext(cgContext: cgContext)
-        #expect(OpenSwiftUICoreGraphicsContext.current == nil)
+        let context = CoreGraphicsContext(cgContext: cgContext)
+        #expect(CoreGraphicsContext.current == nil)
         context.push()
-        #expect(OpenSwiftUICoreGraphicsContext.current != nil)
+        #expect(CoreGraphicsContext.current != nil)
         context.pop()
-        #expect(OpenSwiftUICoreGraphicsContext.current == nil)
+        #expect(CoreGraphicsContext.current == nil)
     }
 }
 
