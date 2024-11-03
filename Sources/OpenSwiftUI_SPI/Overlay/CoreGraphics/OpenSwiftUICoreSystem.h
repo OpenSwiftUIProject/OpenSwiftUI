@@ -11,7 +11,7 @@
 #include "OpenSwiftUIBase.h"
 
 typedef OPENSWIFTUI_ENUM(uint8_t, OpenSwiftUICoreSystem) {
-    OpenSwiftUICoreSystemUIKit ,
+    OpenSwiftUICoreSystemUIKit,
     OpenSwiftUICoreSystemAppKit,
 } OPENSWIFTUI_SWIFT_NAME(CoreSystem);
 

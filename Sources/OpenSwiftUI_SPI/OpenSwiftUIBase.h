@@ -70,4 +70,20 @@
 
 #define OPENSWIFTUI_ENUM CF_ENUM
 
+#ifndef OPENSWIFTUI_IMPLICIT_BRIDGING_ENABLED
+#if __has_feature(arc_cf_code_audited)
+#define OPENSWIFTUI_IMPLICIT_BRIDGING_ENABLED _Pragma("clang arc_cf_code_audited begin")
+#else
+#define OPENSWIFTUI_IMPLICIT_BRIDGING_ENABLED
+#endif
+#endif
+
+#ifndef OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED
+#if __has_feature(arc_cf_code_audited)
+#define OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED _Pragma("clang arc_cf_code_audited end")
+#else
+#define OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED
+#endif
+#endif
+
 #endif /* OpenSwiftUIBase_h */
