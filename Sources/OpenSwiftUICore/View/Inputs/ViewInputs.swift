@@ -231,32 +231,6 @@ extension _ViewInputs {
         return value
     }
     
-    func makeIndirectOutputs() -> _ViewOutputs {
-        #if canImport(Darwin)
-        struct AddPreferenceVisitor: PreferenceKeyVisitor {
-            var outputs = _ViewOutputs()
-            mutating func visit<Key: PreferenceKey>(key: Key.Type) {
-//                let source = ViewGraph.current.intern(Key.defaultValue, id: 0)
-//                let indirect = IndirectAttribute(source: source)
-//                outputs.appendPreference(key: Key.self, value: Attribute(identifier: indirect.identifier))
-                fatalError()
-            }
-        }
-        var visitor = AddPreferenceVisitor()
-        preferences.keys.forEach { key in
-            key.visitKey(&visitor)
-        }
-        var outputs = visitor.outputs
-        outputs.setLayoutComputer(self) {
-            let indirect = IndirectAttribute(source: ViewGraph.current.$defaultLayoutComputer)
-            return Attribute(identifier: indirect.identifier)
-        }
-        return outputs
-        #else
-        fatalError("See #39")
-        #endif
-    }
-    
     // MARK: - base
     
     @inline(__always)

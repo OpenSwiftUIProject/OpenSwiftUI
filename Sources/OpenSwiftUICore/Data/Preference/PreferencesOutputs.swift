@@ -8,9 +8,9 @@
 
 import OpenGraphShims
 
-struct PreferencesOutputs {
+package struct PreferencesOutputs {
     private var preferences: [KeyValue] = []
-    private var debugProperties: _ViewDebug.Properties = []
+    package var debugProperties: _ViewDebug.Properties = []
 
     func contains<Key: PreferenceKey>(_: Key.Type) -> Bool {
         contains(_AnyPreferenceKey<Key>.self)
