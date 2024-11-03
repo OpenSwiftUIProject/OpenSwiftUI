@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 76C8A4B3FC8EE0F99045B3425CD62255
 
-import Foundation
+package import Foundation
 internal import OpenGraphShims
 
 // MARK: - ViewRendererHostProperties

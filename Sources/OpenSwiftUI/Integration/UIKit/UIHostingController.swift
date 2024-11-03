@@ -1,5 +1,5 @@
 #if os(iOS)
-import UIKit
+public import UIKit
 
 @available(macOS, unavailable)
 @available(watchOS, unavailable)

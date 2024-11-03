@@ -7,7 +7,7 @@
 
 import Foundation
 #if OPENSWIFTUI_SWIFT_LOG
-import Logging
+public import Logging
 extension Logger {
     package init(subsystem: String, category: String) {
         var logger = Logger(label: subsystem)
@@ -16,7 +16,7 @@ extension Logger {
     }
 }
 #else
-import os.log
+public import os.log
 
 #if DEBUG
 package let dso = { () -> UnsafeMutableRawPointer in

@@ -6,9 +6,9 @@
 //  Status: Blocked by DynamicProperty
 
 #if OPENSWIFTUI_OPENCOMBINE
-import OpenCombine
+public import OpenCombine
 #else
-import Combine
+public import Combine
 #endif
 
 /// A property wrapper type that instantiates an observable object.

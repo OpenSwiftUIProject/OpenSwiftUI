@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 1F1831D737D24A15A8A759DDE72CEF68
 
-import Foundation
+public import Foundation
 
 /// An action that opens a URL.
 ///

@@ -8,9 +8,9 @@
 
 internal import OpenGraphShims
 #if OPENSWIFTUI_SWIFT_LOG
-import Logging
+public import Logging
 #else
-import os
+public import os
 #endif
 
 /// A property wrapper that reads a value from a view's environment.

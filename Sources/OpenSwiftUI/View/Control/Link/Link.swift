@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Blocked by Text and Accessibility
 
-import Foundation
+public import Foundation
 
 /// A control for navigating to a URL.
 ///

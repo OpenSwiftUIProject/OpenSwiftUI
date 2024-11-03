@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: C7B3AAD101AF9EA76FC322BD6EF713E6
 
-import Foundation
+package import Foundation
 
 /// An object that encodes instances of a data type as protobuf objects.
 package struct ProtobufEncoder {

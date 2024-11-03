@@ -10,7 +10,7 @@
 internal import OpenSwiftUI_SPI
 internal import OpenGraphShims
 #if canImport(Darwin)
-import os.signpost
+package import os.signpost
 #endif
 
 extension Signpost {

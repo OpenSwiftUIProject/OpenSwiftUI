@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-import Foundation
+public import Foundation
 
 /// A type that you use to create custom alignment guides.
 ///

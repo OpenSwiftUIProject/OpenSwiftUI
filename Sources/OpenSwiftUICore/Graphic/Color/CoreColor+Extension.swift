@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if canImport(Darwin)
-import Foundation
+package import Foundation
 internal import OpenSwiftUI_SPI
 
 extension CoreColor {

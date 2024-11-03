@@ -6,7 +6,7 @@
 //  Status: Blocked by RenderBox and GraphicsContext
 //  ID: EFAEDE41CB8C85EF3A6A18DC05438A3C
 
-import Foundation
+package import Foundation
 
 extension DisplayList {
     final package class GraphicsRenderer {

@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: FFA06CAF6B06DC3E21EC75547A0CD421
 
-import Foundation
+package import Foundation
 
 /// An object that decodes instances of a data type from protobuf objects.
 package struct ProtobufDecoder {

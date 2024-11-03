@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: WIP
 
-import Foundation
+public import Foundation
 internal import OpenGraphShims
 internal import OpenSwiftUI_SPI
 

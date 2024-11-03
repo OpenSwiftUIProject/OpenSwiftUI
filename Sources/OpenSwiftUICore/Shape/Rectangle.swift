@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// A rectangular shape aligned inside the frame of the view containing it.
 @frozen

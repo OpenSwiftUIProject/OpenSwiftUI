@@ -5,6 +5,8 @@
 //  Audited for RELEASE_2021
 //  Status: Blocked by Graph
 
+public import Foundation
+
 // MARK: - Animatable
 
 /// A type that describes how to animate a property of a view.
@@ -47,8 +49,6 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
         // TODO
     }
 }
-
-import Foundation
 
 // MARK: - Animatable + CoreGraphics
 

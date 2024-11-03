@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 @frozen
 public struct RoundedRectangle: Shape {

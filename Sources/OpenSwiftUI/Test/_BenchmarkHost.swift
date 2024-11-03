@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 3E629D505F0A70F29ACFC010AA42C6E0
 
-import Foundation
+public import Foundation
 
 #if canImport(QuartzCore)
 import QuartzCore

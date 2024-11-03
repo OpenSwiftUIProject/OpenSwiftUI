@@ -5,9 +5,9 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-import Foundation
+public import Foundation
 #if canImport(CoreGraphics)
-import CoreGraphics
+public import CoreGraphics
 #else
 /// Line join styles
 public enum CGLineJoin: Int32, @unchecked Sendable {

@@ -8,7 +8,7 @@
 
 #if os(iOS)
 @_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
-import UIKit
+public import UIKit
 
 @available(macOS, unavailable)
 @available(watchOS, unavailable)

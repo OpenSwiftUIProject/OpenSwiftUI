@@ -5,9 +5,9 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-import Foundation
+public import Foundation
 #if canImport(QuartzCore)
-import QuartzCore
+public import QuartzCore
 #endif
 
 @frozen
