@@ -7,11 +7,11 @@
 //  ID: 31FD92B70C320DDD253E93C7417D779A RELEASE_2021
 //  ID: 3591905F51357E95FA93E39751507471 RELEASE_2024
 
-import Foundation
+public import Foundation
 
 #if canImport(CoreGraphics)
 internal import OpenSwiftUI_SPI
-import CoreGraphics
+public import CoreGraphics
 
 @_silgen_name("__CGPathParseString")
 private func __CGPathParseString(_ path: CGMutablePath, _ utf8CString: UnsafePointer<CChar>) -> Bool

@@ -40,7 +40,7 @@ extension LayoutDirection: Sendable {}
 #if canImport(UIKit)
 // MARK: - UIKit integration
 
-import UIKit
+public import UIKit
 
 extension LayoutDirection {
     /// Create a direction from its UITraitEnvironmentLayoutDirection equivalent.

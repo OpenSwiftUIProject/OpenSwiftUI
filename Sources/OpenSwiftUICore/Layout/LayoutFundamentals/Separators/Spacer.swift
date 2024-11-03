@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: TODO
 
-import Foundation
+public import Foundation
 
 /// A flexible space that expands along the major axis of its containing stack
 /// layout, or on both axes if not contained in a stack.

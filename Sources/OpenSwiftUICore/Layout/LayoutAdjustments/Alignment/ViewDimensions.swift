@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-import Foundation
+public import Foundation
 
 /// A view's size and alignment guides in its own coordinate space.
 ///

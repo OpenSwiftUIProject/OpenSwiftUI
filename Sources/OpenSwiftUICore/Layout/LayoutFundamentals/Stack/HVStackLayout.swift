@@ -1,4 +1,4 @@
-import Foundation
+public import Foundation
 
 /// A layout that arranges its children in a horizontal line.
 @frozen

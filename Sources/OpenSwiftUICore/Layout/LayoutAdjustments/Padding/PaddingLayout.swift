@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-import Foundation
+public import Foundation
 
 @frozen
 public struct _PaddingLayout: /* UnaryLayout, */ Animatable, PrimitiveViewModifier /* , MultiViewModifier */ {

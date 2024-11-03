@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: WIP
 
-import Foundation
+public import Foundation
 
 /// A 2D shape that you can use when drawing a view.
 ///

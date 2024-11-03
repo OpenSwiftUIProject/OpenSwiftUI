@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Empty
 
-import Foundation
+public import Foundation
 
 @frozen
 public struct Text: Equatable {

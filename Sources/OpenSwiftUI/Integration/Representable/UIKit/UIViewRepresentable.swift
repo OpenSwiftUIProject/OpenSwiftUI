@@ -7,7 +7,7 @@
 
 #if os(iOS)
 
-import UIKit
+public import UIKit
 
 /// A wrapper for a UIKit view that you use to integrate that view into your
 /// OpenSwiftUI view hierarchy.

@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2021
 //  Status: Complete
 
-import Foundation
+public import Foundation
 
 /// The inset distances for the sides of a rectangle.
 @frozen
@@ -91,9 +91,9 @@ extension EdgeInsets: Sendable {}
 // MARK: - UIKit/AppKit integration
 
 #if canImport(UIKit)
-import UIKit
+public import UIKit
 #elseif canImport(AppKit)
-import AppKit
+public import AppKit
 #endif
 extension EdgeInsets {
     /// Create edge insets from the equivalent NSDirectionalEdgeInsets.

@@ -6,7 +6,7 @@
 //  Status: Blocked by ViewUpdater and ViewRasterizer
 //  ID: 21FFA3C7D88AC65BB559906758271BFC
 
-import Foundation
+package import Foundation
 
 protocol ViewRendererBase {
     var platform: DisplayList.ViewUpdater.Platform { get }

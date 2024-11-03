@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8
 
-import Foundation
+package import Foundation
 
 // MARK: - _DisplayList_Identity
 

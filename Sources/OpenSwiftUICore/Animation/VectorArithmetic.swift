@@ -5,6 +5,8 @@
 //  Audited for RELEASE_2023
 //  Status: Complete
 
+public import Foundation
+
 public protocol VectorArithmetic: AdditiveArithmetic {
     mutating func scale(by rhs: Double)
     var magnitudeSquared: Double { get }
@@ -55,8 +57,6 @@ extension Double: VectorArithmetic {
         get { self * self }
     }
 }
-
-import Foundation
 
 extension CGFloat: VectorArithmetic {
     @_transparent

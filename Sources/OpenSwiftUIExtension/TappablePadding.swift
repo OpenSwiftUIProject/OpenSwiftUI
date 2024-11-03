@@ -6,7 +6,7 @@ import Foundation
 
 // FIXME: import OpenSwiftUI
 #if canImport(SwiftUI)
-import SwiftUI
+public import SwiftUI
 
 struct TappablePadding: ViewModifier {
     let edges: Edge.Set

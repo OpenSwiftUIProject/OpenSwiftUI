@@ -5,7 +5,7 @@
 //  Audited for RELEASE_2024
 //  Status: Complete
 
-import Foundation
+package import Foundation
 
 package protocol Feature: ViewInputBoolFlag {
     static var isEnabled: Bool { get }

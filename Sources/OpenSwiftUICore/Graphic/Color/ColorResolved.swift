@@ -5,7 +5,11 @@
 //  Audited for RELEASE_2024
 //  Status: WIP
 
+#if canImport(Darwin)
+package import Foundation
+#else
 import Foundation
+#endif
 internal import OpenSwiftUI_SPI
 
 // MARK: - Color.Resolved

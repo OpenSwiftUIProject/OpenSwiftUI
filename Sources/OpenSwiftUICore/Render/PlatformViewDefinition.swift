@@ -7,7 +7,7 @@
 
 internal import OpenSwiftUI_SPI
 #if canImport(Darwin)
-import QuartzCore
+public import QuartzCore
 #endif
 
 @_spi(DisplayList_ViewSystem)
