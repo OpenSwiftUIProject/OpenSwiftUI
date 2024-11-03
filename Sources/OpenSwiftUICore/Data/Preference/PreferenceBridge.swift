@@ -171,13 +171,13 @@ package final class PreferenceBridge {
                     values: OptionalAttribute(base: AnyOptionalAttribute(outputs[anyKey: key])),
                     children: []
                 ))
-                outputs.hostPreferences = combiner
+                // outputs.hostPreferences = combiner
                 $hostPreferenceKeys = inputs.preferences.hostKeys
                 $hostPreferencesCombiner = combiner
             } else {
-                guard !outputs.contains(key) else {
-                    continue
-                }
+//                guard !outputs.contains(key) else {
+//                    continue
+//                }
                 var visitor = MakeCombiner()
                 key.visitKey(&visitor)
                 guard let combiner = visitor.result else {

@@ -43,4 +43,25 @@ package struct PreferencesInputs {
         }
         return keys.contains(_AnyPreferenceKey<HostPreferencesKey>.self)
     }
+    
+    package func makeIndirectOutputs() -> PreferencesOutputs {
+        struct AddPreference: PreferenceKeyVisitor {
+            var outputs: PreferencesOutputs
+            
+            mutating func visit<K>(key: K.Type) where K: PreferenceKey {
+                let source = ViewGraph.current.intern(K.defaultValue, for: K.self, id: .preferenceKeyDefault)
+                
+                @IndirectAttribute(source: source)
+                var indirect: K.Value
+                
+                outputs.appendPreference(key: K.self, value: $indirect)
+            }
+        }
+        
+        var visitor = AddPreference(outputs: PreferencesOutputs())
+        for key in keys {
+            key.visitKey(&visitor)
+        }
+        return visitor.outputs
+    }
 }

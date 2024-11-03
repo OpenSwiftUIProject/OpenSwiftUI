@@ -2,7 +2,7 @@
 //  ViewOutputs.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: WIP
 
 package import OpenGraphShims
@@ -24,7 +24,7 @@ public struct _ViewOutputs {
         }
         set {
             _layoutComputer = OptionalAttribute(newValue)
-            if preferences.debugProperties.contains(.layoutComputer) {
+            if !preferences.debugProperties.contains(.layoutComputer) {
                 preferences.debugProperties.formUnion(.layoutComputer)
             }
         }
@@ -32,8 +32,8 @@ public struct _ViewOutputs {
     
     #if canImport(Darwin)
     package subscript(anyKey key: any AnyPreferenceKey.Type) -> AnyAttribute? {
-        get { fatalError("TODO") }
-        set { fatalError("TODO") }
+        get { preferences[anyKey: key] }
+        set { preferences[anyKey: key] = newValue }
     }
     #endif
     
@@ -48,7 +48,7 @@ public struct _ViewOutputs {
     
     #if canImport(Darwin)
     package func forEachPreference(_ body: (any AnyPreferenceKey.Type, AnyAttribute) -> Void) {
-        preferences.forEach(body: body)
+        preferences.forEachPreference(body)
     }
     #endif
 }
