@@ -245,18 +245,6 @@ extension _ViewInputs {
         body(&base)
     }
     
-    // MARK: - base.customInputs
-    
-    @inline(__always)
-    func withCustomInputs<R>(_ body: (PropertyList) -> R) -> R {
-        body(base.customInputs)
-    }
-    
-    @inline(__always)
-    mutating func withMutableCustomInputs<R>(_ body: (inout PropertyList) -> R) -> R {
-        body(&base.customInputs)
-    }
-    
     // MARK: - base.cachedEnvironment
     
     @inline(__always)

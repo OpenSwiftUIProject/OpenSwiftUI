@@ -4,8 +4,8 @@
 //
 //  Audited for iOS 18.0
 //  Status: TO BE AUDITED
-//  ID: A9FAE381E99529D5274BA37A9BC9B074 (RELEASE_2021)
-//  ID: DF57A19C61B44C613EB77C1D47FC679A (RELEASE_2024)
+//  ID: A9FAE381E99529D5274BA37A9BC9B074 (SwiftUI)
+//  ID: DF57A19C61B44C613EB77C1D47FC679A (SwiftUICore)
 
 import OpenGraphShims
 
@@ -89,21 +89,33 @@ package final class PreferenceBridge {
             viewGraph?.graphInvalidation(from: isInvalidating ? nil : value)
         }
     }
-
-    func addHostValue(_ values: Attribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
-        guard let combiner = $hostPreferencesCombiner else {
-            return
-        }
-        combiner.mutateBody(
-            as: HostPreferencesCombiner.self,
-            invalidating: true
-        ) { combiner in
-            combiner.addChild(keys: keys, values: WeakAttribute(values))
-        }
-        viewGraph?.graphInvalidation(from: combiner.identifier)
+    
+    package func updateHostValues(_ keys: Attribute<PreferenceKeys>) {
+        fatalError("TODO")
+    }
+    
+    package func addHostValue(_ values: WeakAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+        fatalError("TODO")
+    }
+    
+    package func addHostValue(_ values: OptionalAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+        fatalError("TODO")
     }
 
-    func removeHostValue(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool) {
+//    package func addHostValue(_ values: Attribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+//        guard let combiner = $hostPreferencesCombiner else {
+//            return
+//        }
+//        combiner.mutateBody(
+//            as: HostPreferencesCombiner.self,
+//            invalidating: true
+//        ) { combiner in
+//            combiner.addChild(keys: keys, values: WeakAttribute(values))
+//        }
+//        viewGraph?.graphInvalidation(from: combiner.identifier)
+//    }
+
+    func removeHostValue(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool = false) {
         guard let combiner = $hostPreferencesCombiner else {
             return
         }
@@ -121,73 +133,6 @@ package final class PreferenceBridge {
         }
         if hasRemoved {
             viewGraph?.graphInvalidation(from: isInvalidating ? nil : keys.identifier)
-        }
-    }
-
-    /// Append `child` to `children` property if `child` has not been on `children`.
-    /// - Parameter child: The ``ViewGraph`` instance to be added
-    func addChild(_ child: ViewGraph) {
-        guard !children.contains(where: { $0.takeUnretainedValue() === child }) else {
-            return
-        }
-        children.append(.passUnretained(child))
-    }
-
-    /// Remove `child` from `children` property if `child` has been on `children`
-    /// - Parameter child: The ``ViewGraph`` instance to be removed
-    func removeChild(_ child: ViewGraph) {
-        guard let index = children.firstIndex(where: { $0.takeUnretainedValue() === child }) else {
-            return
-        }
-        children.remove(at: index)
-    }
-
-    func removedStateDidChange() {
-        for child in children {
-            let viewGraph = child.takeUnretainedValue()
-            viewGraph.updateRemovedState()
-        }
-    }
-
-    func wrapInputs(_ inputs: inout _ViewInputs) {
-        inputs.withMutableCustomInputs { $0 = bridgedViewInputs }
-        // inputs.preferences.keys.merge(requestedPreferences)
-        inputs.preferences.hostKeys = Attribute(MergePreferenceKeys(lhs: inputs.preferences.hostKeys, rhs: _hostPreferenceKeys))
-    }
-
-    func wrapOutputs(_ outputs: inout PreferencesOutputs, inputs: _ViewInputs) {
-        struct MakeCombiner: PreferenceKeyVisitor {
-            var result: AnyAttribute?
-
-            mutating func visit<Key>(key _: Key.Type) where Key: PreferenceKey {
-                result = Attribute(PreferenceCombiner<Key>(attributes: [])).identifier
-            }
-        }
-        inputs.withCustomInputs { bridgedViewInputs = $0 }
-        for key in inputs.preferences.keys {
-            if key == _AnyPreferenceKey<HostPreferencesKey>.self {
-                let combiner = Attribute(HostPreferencesCombiner(
-                    keys: inputs.preferences.hostKeys,
-                    values: Attribute(identifier: outputs[anyKey: key] ?? .nil)
-                ))
-//                outputs.hostPreferences = combiner
-                $hostPreferenceKeys = inputs.preferences.hostKeys
-                $hostPreferencesCombiner = combiner
-            } else {
-//                guard !outputs.contains(key) else {
-//                    continue
-//                }
-                var visitor = MakeCombiner()
-                key.visitKey(&visitor)
-                guard let combiner = visitor.result else {
-                    continue
-                }
-                if !requestedPreferences.contains(key) {
-                    requestedPreferences.add(key)
-                }
-                bridgedPreferences.append(BridgedPreference(key: key, combiner: AnyWeakAttribute(combiner)))
-                outputs[anyKey: key] = combiner
-            }
         }
     }
     #endif
