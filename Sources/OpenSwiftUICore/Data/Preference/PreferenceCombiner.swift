@@ -1,15 +1,15 @@
 //
-//  PreferencesCombiner.swift
+//  PreferenceCombiner.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: 59D15989E597719355BF0EAE6CB41FF9 (SwiftUI)
 //  ID: EAF68AEE5E08E2f44FEB886FE6A27001 (SwiftUICore)
 
 package import OpenGraphShims
 
-// MARK: - PreferenceCombiner [TODO]
+// MARK: - PreferenceCombiner
 
 package struct PreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
     package var attributes: [WeakAttribute<K.Value>]
@@ -25,23 +25,21 @@ package struct PreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringConverti
     package static var initialValue: K.Value? {
         K.defaultValue
     }
-
+    
     package var value: K.Value {
-        // TODO: OGGraphGetWeakValue
-        fatalError("TODO")
-//        var value = K.defaultValue
-//        var initialValue = true
-//        for attribute in attributes {
-//            if initialValue {
-//                value = attribute.value ?? K.defaultValue
-//            } else {
-//                K.reduce(value: &value) {
-//                    attribute.value ?? K.defaultValue
-//                }
-//            }
-//            initialValue = false
-//        }
-//        return value
+        var value = K.defaultValue
+        var initialValue = true
+        for attribute in attributes {
+            if initialValue {
+                value = attribute.value ?? K.defaultValue
+            } else {
+                K.reduce(value: &value) {
+                    attribute.value ?? K.defaultValue
+                }
+            }
+            initialValue = false
+        }
+        return value
     }
     
     package var description: String {
@@ -139,15 +137,10 @@ package struct HostPreferencesCombiner: Rule, AsyncAttribute {
     struct Child {
         @WeakAttribute var keys: PreferenceKeys?
         @WeakAttribute var values: PreferenceList?
-
-        init(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
-            _keys = WeakAttribute(keys)
-            _values = WeakAttribute(values)
-        }
     }
 
-    package mutating func addChild(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
-        let child = Child(keys: keys, values: values)
+    package mutating func addChild(keys: Attribute<PreferenceKeys>, values: WeakAttribute<PreferenceList>) {
+        let child = Child(keys: WeakAttribute(keys), values: values)
         if let index = children.firstIndex(where: { $0.$keys == keys }) {
             children[index] = child
         } else {
@@ -210,9 +203,10 @@ package struct HostPreferencesCombiner: Rule, AsyncAttribute {
         }
         var visitor = CombineValues(children: children, values: values)
         let keys = keys
-        for key in keys {
-            key.visitKey(&visitor)
+        guard !keys.isEmpty else {
+            return values
         }
+        keys.forEach { $0.visitKey(&visitor) }
         return visitor.values
     }
 }

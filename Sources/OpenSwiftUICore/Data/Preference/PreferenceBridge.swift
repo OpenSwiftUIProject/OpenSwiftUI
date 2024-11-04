@@ -98,7 +98,7 @@ package final class PreferenceBridge {
             as: HostPreferencesCombiner.self,
             invalidating: true
         ) { combiner in
-            combiner.addChild(keys: keys, values: values)
+            combiner.addChild(keys: keys, values: WeakAttribute(values))
         }
         viewGraph?.graphInvalidation(from: combiner.identifier)
     }
@@ -166,14 +166,13 @@ package final class PreferenceBridge {
         inputs.withCustomInputs { bridgedViewInputs = $0 }
         for key in inputs.preferences.keys {
             if key == _AnyPreferenceKey<HostPreferencesKey>.self {
-//                let combiner = Attribute(HostPreferencesCombiner(
-//                    keys: inputs.preferences.hostKeys,
-//                    values: OptionalAttribute(base: AnyOptionalAttribute(outputs[anyKey: key])),
-//                    children: []
-//                ))
-                // outputs.hostPreferences = combiner
-//                $hostPreferenceKeys = inputs.preferences.hostKeys
-//                $hostPreferencesCombiner = combiner
+                let combiner = Attribute(HostPreferencesCombiner(
+                    keys: inputs.preferences.hostKeys,
+                    values: Attribute(identifier: outputs[anyKey: key] ?? .nil)
+                ))
+//                outputs.hostPreferences = combiner
+                $hostPreferenceKeys = inputs.preferences.hostKeys
+                $hostPreferencesCombiner = combiner
             } else {
 //                guard !outputs.contains(key) else {
 //                    continue
