@@ -5,6 +5,9 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+#if !canImport(Darwin)
+package import Foundation
+#endif
 package import OpenGraphShims
 
 package typealias ViewPhase = _GraphInputs.Phase
@@ -157,6 +160,7 @@ public struct _ViewInputs {
     }
     
     package static func invalidInputs(_ base: _GraphInputs) -> _ViewInputs {
+        #if canImport(Darwin)
         _ViewInputs(
             base,
             position: Attribute(identifier: .nil),
@@ -165,6 +169,9 @@ public struct _ViewInputs {
             containerPosition: Attribute(identifier: .nil),
             hostPreferenceKeys: Attribute(identifier: .nil)
         )
+        #else
+        fatalError("See #39")
+        #endif
     }
     
     package func mapEnvironment<T>(_ keyPath: KeyPath<EnvironmentValues, T>) -> Attribute<T> {

@@ -1,42 +1,141 @@
 //
 //  PreferencesCombiner.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: Complete
-//  ID: 59D15989E597719355BF0EAE6CB41FF9
+//  Audited for iOS 18.0
+//  Status: WIP
+//  ID: 59D15989E597719355BF0EAE6CB41FF9 (SwiftUI)
+//  ID: EAF68AEE5E08E2f44FEB886FE6A27001 (SwiftUICore)
 
-import OpenGraphShims
+package import OpenGraphShims
 
-struct PreferenceCombiner<Key: PreferenceKey>: Rule, AsyncAttribute {
-    var attributes: [WeakAttribute<Key.Value>]
+// MARK: - PreferenceCombiner [TODO]
 
-    init(attributes: [Attribute<Key.Value>]) {
+package struct PreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
+    package var attributes: [WeakAttribute<K.Value>]
+
+    package init() {
+        attributes = []
+    }
+    
+    package init(attributes: [Attribute<K.Value>]) {
         self.attributes = attributes.map { WeakAttribute($0) }
     }
+    
+    package static var initialValue: K.Value? {
+        K.defaultValue
+    }
 
-    var value: Key.Value {
-        var value = Key.defaultValue
-        var initialValue = true
-        for attribute in attributes {
-            if initialValue {
-                value = attribute.value ?? Key.defaultValue
-            } else {
-                Key.reduce(value: &value) {
-                    attribute.value ?? Key.defaultValue
-                }
-            }
-            initialValue = false
+    package var value: K.Value {
+        // TODO: OGGraphGetWeakValue
+        fatalError("TODO")
+//        var value = K.defaultValue
+//        var initialValue = true
+//        for attribute in attributes {
+//            if initialValue {
+//                value = attribute.value ?? K.defaultValue
+//            } else {
+//                K.reduce(value: &value) {
+//                    attribute.value ?? K.defaultValue
+//                }
+//            }
+//            initialValue = false
+//        }
+//        return value
+    }
+    
+    package var description: String {
+        "∪ \(K.readableName)"
+    }
+}
+
+// MARK: - PairwisePreferenceCombinerVisitor
+
+package struct PairwisePreferenceCombinerVisitor: PreferenceKeyVisitor {
+    package let outputs: (_ViewOutputs, _ViewOutputs)
+    package var result: _ViewOutputs = _ViewOutputs()
+
+    package init(outputs: (_ViewOutputs, _ViewOutputs)) {
+        self.outputs = outputs
+    }
+    
+    package mutating func visit<K>(key: K.Type) where K: PreferenceKey {
+        let values = (outputs.0[key], outputs.1[key])
+        if let first = values.0, let second = values.1 {
+            result[key] = Attribute(PairPreferenceCombiner<K>(attributes: (first, second)))
+        } else if let value = values.0 {
+            result[key] = value
+        } else if let value = values.1 {
+            result[key] = value
         }
+    }
+}
+
+// MARK: - MultiPreferenceCombinerVisitor
+
+package struct MultiPreferenceCombinerVisitor: PreferenceKeyVisitor {
+    package let outputs: [PreferencesOutputs]
+    package var result: PreferencesOutputs
+
+    init(outputs: [PreferencesOutputs], result: PreferencesOutputs) {
+        self.outputs = outputs
+        self.result = result
+    }
+    
+    package mutating func visit<K>(key: K.Type) where K: PreferenceKey {
+        let values = outputs.compactMap { $0[K.self] }
+        switch values.count {
+        case 0: break
+        case 1: result[key] = values[0]
+        case 2: result[key] = Attribute(PairPreferenceCombiner<K>(attributes: (values[0], values[1])))
+        default: result[key] = Attribute(PreferenceCombiner<K>(attributes: values))
+        }
+    }
+}
+
+// MARK: - PairPreferenceCombiner
+
+private struct PairPreferenceCombiner<K>: Rule, AsyncAttribute where K: PreferenceKey{
+    private var attributes: (Attribute<K.Value>, Attribute<K.Value>)
+
+    init(attributes: (Attribute<K.Value>, Attribute<K.Value>)) {
+        self.attributes = attributes
+    }
+
+    var value: K.Value {
+        var value = attributes.0.value
+        K.reduce(value: &value) { attributes.1.value }
         return value
     }
 }
 
-struct HostPreferencesCombiner: Rule, AsyncAttribute {
+// MARK: - PreferencesAggregator
+
+package struct PreferencesAggregator<K>: Rule, AsyncAttribute where K: PreferenceKey {
+    package var attributes: [WeakAttribute<K.Value>]
+
+    package init(attributes: [Attribute<K.Value>]) {
+        self.attributes = attributes.map { WeakAttribute($0) }
+    }
+    
+    package var value: [K.Value] {
+        attributes.map { $0.value ?? K.defaultValue }
+    }
+}
+
+// MARK: - HostPreferencesCombiner
+
+package struct HostPreferencesCombiner: Rule, AsyncAttribute {
     @Attribute var keys: PreferenceKeys
     @OptionalAttribute var values: PreferenceList?
     var children: [Child]
 
+    package init(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>?) {
+        _keys = keys
+        _values = OptionalAttribute(values)
+        children = []
+    }
+    
     struct Child {
         @WeakAttribute var keys: PreferenceKeys?
         @WeakAttribute var values: PreferenceList?
@@ -47,8 +146,7 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
         }
     }
 
-    #if canImport(Darwin) // FIXME: See #39
-    mutating func addChild(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
+    package mutating func addChild(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>) {
         let child = Child(keys: keys, values: values)
         if let index = children.firstIndex(where: { $0.$keys == keys }) {
             children[index] = child
@@ -56,7 +154,14 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
             children.append(child)
         }
     }
-    #endif
+    
+    package mutating func removeChild(keys: Attribute<PreferenceKeys>) -> Bool {
+        guard let index = children.firstIndex(where: { $0.$keys == keys }) else {
+            return false
+        }
+        children.remove(at: index)
+        return true
+    }
 
     private struct CombineValues: PreferenceKeyVisitor {
         var children: [Child]
@@ -98,7 +203,7 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
         }
     }
 
-    var value: PreferenceList {
+    package var value: PreferenceList {
         let values = values ?? PreferenceList()
         guard !children.isEmpty else {
             return values
@@ -109,51 +214,5 @@ struct HostPreferencesCombiner: Rule, AsyncAttribute {
             key.visitKey(&visitor)
         }
         return visitor.values
-    }
-}
-
-private struct PairPreferenceCombiner<Key: PreferenceKey>: Rule, AsyncAttribute {
-    private var attributes: (Attribute<Key.Value>, Attribute<Key.Value>)
-
-    init(attributes: (Attribute<Key.Value>, Attribute<Key.Value>)) {
-        self.attributes = attributes
-    }
-
-    var value: Key.Value {
-        var value = attributes.0.value
-        Key.reduce(value: &value) { attributes.1.value }
-        return value
-    }
-}
-
-struct PairwisePreferenceCombinerVisitor: PreferenceKeyVisitor {
-    let outputs: (_ViewOutputs, _ViewOutputs)
-    var result: _ViewOutputs
-
-    mutating func visit<Key: PreferenceKey>(key _: Key.Type) {
-        let values = (outputs.0[Key.self], outputs.1[Key.self])
-
-        if let value1 = values.0, let value2 = values.1 {
-            result[Key.self] = Attribute(PairPreferenceCombiner<Key>(attributes: (value1, value2)))
-        } else if let value = values.0 {
-            result[Key.self] = value
-        } else if let value = values.1 {
-            result[Key.self] = value
-        }
-    }
-}
-
-struct MultiPreferenceCombinerVisitor: PreferenceKeyVisitor {
-    let outputs: [PreferencesOutputs]
-    var result: PreferencesOutputs
-
-    mutating func visit<Key: PreferenceKey>(key _: Key.Type) {
-        let values = outputs.compactMap { $0[Key.self] }
-        switch values.count {
-        case 0: break
-        case 1: result[Key.self] = values[0]
-        case 2: result[Key.self] = Attribute(PairPreferenceCombiner<Key>(attributes: (values[0], values[1])))
-        default: result[Key.self] = Attribute(PreferenceCombiner<Key>(attributes: values))
-        }
     }
 }

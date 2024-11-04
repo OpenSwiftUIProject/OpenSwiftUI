@@ -82,14 +82,17 @@ package struct PreferencesOutputs {
     #endif
     
     package func attachIndirectOutputs(to childOutputs: PreferencesOutputs) {
+        #if canImport(Darwin)
         for preference in preferences {
             for childPreference in childOutputs.preferences where childPreference.key == preference.key {
                 preference.value.source = childPreference.value
             }
         }
+        #endif
     }
     
     package func detachIndirectOutputs() {
+        #if canImport(Darwin)
         struct ResetPreference: PreferenceKeyVisitor {
             var destination: AnyAttribute
             func visit<K>(key: K.Type) where K: PreferenceKey {
@@ -100,6 +103,7 @@ package struct PreferencesOutputs {
             var visitor = ResetPreference(destination: keyValue.value)
             keyValue.key.visitKey(&visitor)
         }
+        #endif
     }
 }
 
