@@ -741,7 +741,6 @@ extension ProtobufEncoder {
         encodeVarintZZ(Int(value))
     }
     
-    #if compiler(>=6.0)
     /// Encodes a bitwise copyable value.
     ///
     /// - Parameters:
@@ -757,23 +756,6 @@ extension ProtobufEncoder {
             buffer.advanced(by: oldSize).storeBytes(of: value, as: T.self)
         }
     }
-    #else // FIXME: Remove this after we drop WASI 5.10 support
-    /// Encodes a bitwise copyable value.
-    ///
-    /// - Parameters:
-    ///   - value: The value to encode.
-    @inline(__always)
-    private mutating func encodeBitwiseCopyable<T>(_ value: T) {
-        let oldSize = size
-        let newSize = oldSize + MemoryLayout<T>.size
-        if capacity < newSize {
-            growBufferSlow(to: newSize).storeBytes(of: value, as: T.self)
-        } else {
-            size = newSize
-            buffer.advanced(by: oldSize).storeBytes(of: value, as: T.self)
-        }
-    }
-    #endif
     
     /// Encodes a boolean value.
     ///
