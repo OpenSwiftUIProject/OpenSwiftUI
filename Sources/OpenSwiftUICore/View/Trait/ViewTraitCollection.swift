@@ -2,7 +2,7 @@
 //  ViewTraitCollection.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 9929B476764059557433A108298EE66F
 

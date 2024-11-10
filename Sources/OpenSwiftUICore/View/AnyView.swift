@@ -2,7 +2,7 @@
 //  AnyView.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: A96961F3546506F21D8995C6092F15B5
 

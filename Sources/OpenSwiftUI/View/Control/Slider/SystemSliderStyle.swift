@@ -2,7 +2,7 @@
 //  SystemSliderStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 8AA246B2E0E916EFA5AD706DCC8A0FE8
 

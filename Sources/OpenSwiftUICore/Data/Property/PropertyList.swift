@@ -2,7 +2,7 @@
 //  PropertyList.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Blocked by merge & WIP in 2024
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (RELEASE_2021)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (RELEASE_2024)

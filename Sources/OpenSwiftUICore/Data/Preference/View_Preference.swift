@@ -2,7 +2,7 @@
 //  View_Preference.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 6C396F98EFDD04A6B58F2F9112448013
 

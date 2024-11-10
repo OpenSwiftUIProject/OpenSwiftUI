@@ -2,7 +2,7 @@
 //  Transaction.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: WIP
 //  ID: B2543BCA257433E04979186A1DC2B6BC
 

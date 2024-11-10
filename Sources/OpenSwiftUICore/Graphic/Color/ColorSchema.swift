@@ -2,7 +2,7 @@
 //  ColorScheme.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 387C753F3FFD2899BCB77252214CFCC6
 

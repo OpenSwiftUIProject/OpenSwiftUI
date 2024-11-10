@@ -2,7 +2,7 @@
 //  GraphHost.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Blocked by transactions
 //  ID: 30C09FF16BC95EC5173809B57186CAC3 (RELEASE_2021)
 //  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (RELEASE_2024)

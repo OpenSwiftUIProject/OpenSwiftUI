@@ -2,7 +2,7 @@
 //  Color.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: WIP
 //  ID: 3A792CB70CFCF892676D7ADF8BCA260F
 

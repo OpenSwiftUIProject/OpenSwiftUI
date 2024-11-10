@@ -2,7 +2,7 @@
 //  AppearanceActionModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Blocked by _makeViewList
 //  ID: 8817D3B1C81ADA2B53E3500D727F785A
 

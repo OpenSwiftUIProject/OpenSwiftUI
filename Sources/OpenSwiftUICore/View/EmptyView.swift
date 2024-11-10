@@ -2,7 +2,7 @@
 //  EmptyView.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// A view that doesn't contain any content.

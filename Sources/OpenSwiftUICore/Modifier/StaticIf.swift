@@ -2,7 +2,7 @@
 //  StaticIf.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 
 struct StaticIf<A, B, C> where A: ViewInputPredicate {

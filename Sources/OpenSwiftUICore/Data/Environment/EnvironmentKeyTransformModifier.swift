@@ -2,7 +2,7 @@
 //  EnvironmentKeyTransformModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Blocked by syncMainIfReferences
 //  ID: 1DBD4F024EFF0E73A70DB6DD05D5B548
 

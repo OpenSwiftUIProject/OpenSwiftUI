@@ -2,7 +2,7 @@
 //  ConditionalContent.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C
 

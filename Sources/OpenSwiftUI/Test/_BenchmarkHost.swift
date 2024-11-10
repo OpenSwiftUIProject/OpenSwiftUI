@@ -2,7 +2,7 @@
 //  _BenchmarkHost.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 3E629D505F0A70F29ACFC010AA42C6E0
 

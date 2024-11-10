@@ -2,7 +2,7 @@
 //  PlatformViewDefinition.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Blocked by PlatformDrawable and GraphicsContext
 
 import OpenSwiftUI_SPI

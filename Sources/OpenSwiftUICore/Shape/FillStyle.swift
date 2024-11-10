@@ -2,7 +2,7 @@
 //  FillStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// A style for rasterizing vector shapes.

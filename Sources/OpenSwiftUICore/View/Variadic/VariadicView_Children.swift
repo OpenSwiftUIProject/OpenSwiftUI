@@ -2,7 +2,7 @@
 //  VariadicView_Children.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: TODO
 //  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3
 

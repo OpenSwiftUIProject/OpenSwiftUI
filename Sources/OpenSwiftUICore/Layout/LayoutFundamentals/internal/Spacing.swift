@@ -2,7 +2,7 @@
 //  Spacing.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: TODO
 //  ID: 127A76D3C8081D0134153BE9AE746714
 

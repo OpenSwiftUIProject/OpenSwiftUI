@@ -2,7 +2,7 @@
 //  PreferenceBridge.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: TO BE AUDITED
 //  ID: A9FAE381E99529D5274BA37A9BC9B074 (RELEASE_2021)
 //  ID: DF57A19C61B44C613EB77C1D47FC679A (RELEASE_2024)

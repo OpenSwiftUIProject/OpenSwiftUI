@@ -2,7 +2,7 @@
 //  ForEach.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 
 /// A structure that computes views on demand from an underlying collection of

@@ -2,7 +2,7 @@
 //  DisplayLink.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: D912470A6161D66810B373079EE9F26A
 

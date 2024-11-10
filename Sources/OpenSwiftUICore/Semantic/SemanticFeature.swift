@@ -2,7 +2,7 @@
 //  SemanticFeature.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Complete
 
 import OpenSwiftUI_SPI

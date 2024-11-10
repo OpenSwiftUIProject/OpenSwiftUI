@@ -2,7 +2,7 @@
 //  SliderStyleKey.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: F0F8A8741F68A968D995328632123C18
 

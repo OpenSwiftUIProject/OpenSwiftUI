@@ -2,7 +2,7 @@
 //  Binding.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 5436F2B399369BE3B016147A5F8FE9F2
 

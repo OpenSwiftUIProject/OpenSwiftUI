@@ -2,7 +2,7 @@
 //  CustomViewModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 0EAFD5A78D9C0B607C3C0964CF3A3038
 

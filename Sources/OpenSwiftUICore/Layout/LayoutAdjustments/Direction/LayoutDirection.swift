@@ -2,7 +2,7 @@
 //  LayoutDirection.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 9DE75C3EAC30FFAB943BCC50F6D5E8C1
 

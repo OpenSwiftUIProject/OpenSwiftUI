@@ -2,7 +2,7 @@
 //  AnySliderStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 22A1D162CC670E67558243600080F90E
 

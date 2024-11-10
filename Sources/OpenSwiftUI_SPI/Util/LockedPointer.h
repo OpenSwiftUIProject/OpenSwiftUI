@@ -2,7 +2,7 @@
 //  LockedPointer.h
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 #ifndef LockedPointer_h

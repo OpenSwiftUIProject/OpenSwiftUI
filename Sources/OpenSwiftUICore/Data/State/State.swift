@@ -2,7 +2,7 @@
 //  State.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 08168374F4710A99DCB15B5E8768D632
 

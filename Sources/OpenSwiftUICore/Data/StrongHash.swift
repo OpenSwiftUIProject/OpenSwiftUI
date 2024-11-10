@@ -2,7 +2,7 @@
 //  StrongHash.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Blocked by OGTypeGetSignature and RBUUID
 
 #if OPENSWIFTUI_SWIFT_CRYPTO

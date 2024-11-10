@@ -2,7 +2,7 @@
 //  PreferencesOutputs.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: A948213B3F0A65E8491149A582CA5C71
 

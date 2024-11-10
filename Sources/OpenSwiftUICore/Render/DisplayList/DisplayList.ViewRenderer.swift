@@ -2,7 +2,7 @@
 //  DisplayList.ViewRenderer.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Blocked by ViewUpdater and ViewRasterizer
 //  ID: 21FFA3C7D88AC65BB559906758271BFC
 

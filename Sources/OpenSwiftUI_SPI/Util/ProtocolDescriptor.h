@@ -2,7 +2,7 @@
 //  ProtocolDescriptor_h
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 
 #ifndef ProtocolDescriptor_h

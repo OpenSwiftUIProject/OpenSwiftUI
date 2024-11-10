@@ -2,7 +2,7 @@
 //  View.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 
 /// A type that represents part of your app's user interface and provides

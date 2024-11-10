@@ -2,7 +2,7 @@
 //  Transaction+Animation.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 39EC6D46662E6D7A6963F5C611934B0A
 

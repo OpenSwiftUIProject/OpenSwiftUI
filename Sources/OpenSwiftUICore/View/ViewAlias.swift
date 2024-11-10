@@ -2,7 +2,7 @@
 //  ViewAlias.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: TODO
 //  ID: D9F7AF928092578A4B8FA861B49E2161
 
