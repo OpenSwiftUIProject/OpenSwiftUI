@@ -1,9 +1,6 @@
 //
 //  AlignmentIDTests.swift
-//
-//
-//  Created by Kyle on 2023/12/16.
-//
+//  OpenSwiftUICoreTests
 
 @testable import OpenSwiftUICore
 import Testing
