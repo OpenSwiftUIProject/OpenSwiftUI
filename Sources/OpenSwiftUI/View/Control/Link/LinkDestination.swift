@@ -2,7 +2,7 @@
 //  LinkDestination.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 85AAA54365DC4DDF1DC8F2FECEF4501A
 

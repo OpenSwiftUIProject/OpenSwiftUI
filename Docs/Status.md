@@ -1,7 +1,8 @@
 # Status Description
 
-Unless specified, the documentation is audited for 2023 release and the
-implementation is audited for iOS 15.5
+Unless specified:
+- when the implementation is audited for 2021 release the documentation is audited for 2023 release.
+- when the implementation is audited for 2024 release the documentation is audited for 2024 release.
 
 ## Empty
 

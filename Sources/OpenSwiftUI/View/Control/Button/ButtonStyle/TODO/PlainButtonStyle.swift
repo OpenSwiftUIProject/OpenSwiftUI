@@ -2,7 +2,7 @@
 //  PlainButtonStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Blocked
 //  ID: AEEE04F3F0E4AB1B61A885733139FBF6
 

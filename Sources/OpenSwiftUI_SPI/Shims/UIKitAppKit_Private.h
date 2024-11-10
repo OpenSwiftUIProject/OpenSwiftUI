@@ -2,7 +2,7 @@
 //  UIKitAppKit_Private.h
 //  OpenSwiftUI_SPI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 
 #ifndef UIKitAppKit_Private_h

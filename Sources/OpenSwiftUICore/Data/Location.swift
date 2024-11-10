@@ -2,7 +2,7 @@
 //  Location.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: 3C10A6E9BB0D4644A364890A9BD57D68
 

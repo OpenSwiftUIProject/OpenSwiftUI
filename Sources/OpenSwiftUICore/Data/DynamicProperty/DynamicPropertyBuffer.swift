@@ -2,7 +2,7 @@
 //  DynamicPropertyBuffer.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 68550FF604D39F05971FE35A26EE75B0
 

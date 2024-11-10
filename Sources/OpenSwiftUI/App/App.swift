@@ -2,7 +2,7 @@
 //  App.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// A type that represents the structure and behavior of an app.

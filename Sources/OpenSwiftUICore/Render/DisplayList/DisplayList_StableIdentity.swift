@@ -2,7 +2,7 @@
 //  DisplayList_StableIdentity.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: WIP
 //  ID: 6C8682BE0755616E63B02969BA08C92E
 

@@ -2,7 +2,7 @@
 //  Update.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Blocked by Signpost
 //  ID: EA173074DA35FA471DC70643259B7E74 (RELEASE_2021)
 //  ID: 61534957AEEC2EDC447ABDC13B4D426F (RELEASE_2024)

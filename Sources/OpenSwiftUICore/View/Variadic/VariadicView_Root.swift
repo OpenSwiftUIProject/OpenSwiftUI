@@ -2,7 +2,7 @@
 //  VariadicView_ImplicitRoot.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// A type that creates a `Tree`, managing content subtrees passed to a result builder.

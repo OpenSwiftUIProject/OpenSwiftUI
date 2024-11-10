@@ -2,7 +2,7 @@
 //  UnsafeLockedPointer.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 #if OPENSWIFTUI_RELEASE_2021

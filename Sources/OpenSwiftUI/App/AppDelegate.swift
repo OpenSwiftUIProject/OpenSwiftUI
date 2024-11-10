@@ -2,7 +2,7 @@
 //  AppDelegate.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04
 

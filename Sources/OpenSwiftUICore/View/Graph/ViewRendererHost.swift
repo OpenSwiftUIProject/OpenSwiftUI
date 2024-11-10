@@ -2,7 +2,7 @@
 //  ViewRendererHost.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: WIP
 //  ID: 76C8A4B3FC8EE0F99045B3425CD62255
 

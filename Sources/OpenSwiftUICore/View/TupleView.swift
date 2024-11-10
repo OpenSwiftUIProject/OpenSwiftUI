@@ -2,7 +2,7 @@
 //  TupleView.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 79611CB2B7848ECB3D9EC1F26B13F28F
 

@@ -2,7 +2,7 @@
 //  AnyShapeStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Blocked by _ShapeStyle_Shape
 
 import Foundation

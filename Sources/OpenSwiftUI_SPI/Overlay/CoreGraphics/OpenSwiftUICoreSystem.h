@@ -2,7 +2,7 @@
 //  OpenSwiftUICoreSystem.h
 //  OpenSwiftUI_SPI
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Complete
 
 #ifndef OpenSwiftUICoreSystem_h

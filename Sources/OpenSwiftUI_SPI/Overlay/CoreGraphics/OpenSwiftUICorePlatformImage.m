@@ -2,7 +2,7 @@
 //  OpenSwiftUICorePlatformImage.h
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0 & macOS 15.0
 //  Status: Blocked by macOS implementation and Mac Catalyst support
 
 #include "OpenSwiftUICorePlatformImage.h"

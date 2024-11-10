@@ -2,7 +2,7 @@
 //  Switch.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Blocked by Color
 //  ID: 1246D37251EA3A918B392E2B95F8B7EF
 

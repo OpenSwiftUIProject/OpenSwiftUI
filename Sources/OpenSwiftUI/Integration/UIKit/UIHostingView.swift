@@ -2,7 +2,7 @@
 //  UIHostingView.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: FAF0B683EB49BE9BABC9009857940A1E
 

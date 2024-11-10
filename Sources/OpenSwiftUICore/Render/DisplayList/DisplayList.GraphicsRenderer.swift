@@ -2,7 +2,7 @@
 //  DisplayList.GraphicsRenderer.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Blocked by RenderBox and GraphicsContext
 //  ID: EFAEDE41CB8C85EF3A6A18DC05438A3C
 

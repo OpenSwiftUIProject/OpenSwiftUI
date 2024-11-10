@@ -2,7 +2,7 @@
 //  DisplayList+String.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: WIP
 //  ID: 11125C146A81D1913BFBD53B89D010C6
 

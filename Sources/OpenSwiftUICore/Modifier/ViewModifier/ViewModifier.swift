@@ -2,7 +2,7 @@
 //  ViewModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// A modifier that you apply to a view or another view modifier, producing a

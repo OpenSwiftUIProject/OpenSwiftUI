@@ -2,7 +2,7 @@
 //  AnimatablePair.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// A pair of animatable values, which is itself animatable.

@@ -2,7 +2,7 @@
 //  Axis.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 
 /// The horizontal or vertical dimension in a 2D coordinate system.

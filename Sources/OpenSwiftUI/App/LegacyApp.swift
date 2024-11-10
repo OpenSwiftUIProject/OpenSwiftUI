@@ -2,7 +2,7 @@
 //  LegacyApp.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: F8F4CFB3FB453F4ECC15C05B76BCD1E4
 

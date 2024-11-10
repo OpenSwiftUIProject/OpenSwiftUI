@@ -2,7 +2,7 @@
 //  PreferenceList.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD (RELEASE_2021)
 //  ID: 7B694C05291EA7AF22785AB458D1BC2F (RELEASE_2024)

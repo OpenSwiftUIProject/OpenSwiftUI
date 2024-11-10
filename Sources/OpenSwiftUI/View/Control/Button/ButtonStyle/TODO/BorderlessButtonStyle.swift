@@ -2,7 +2,7 @@
 //  BorderlessButtonStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 8946ABD13E6925C5D5FDD316D4A45F59
 

@@ -2,7 +2,7 @@
 //  AtomicBox.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: 82B2D47816BC992595021D60C278AFF0
 

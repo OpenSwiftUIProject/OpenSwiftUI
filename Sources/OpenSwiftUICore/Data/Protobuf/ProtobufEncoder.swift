@@ -2,7 +2,7 @@
 //  ProtobufEncoder.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: C7B3AAD101AF9EA76FC322BD6EF713E6
 

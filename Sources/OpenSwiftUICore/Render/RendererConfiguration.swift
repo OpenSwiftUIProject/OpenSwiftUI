@@ -2,7 +2,7 @@
 //  RendererConfiguration.swift
 //  OpenSwiftUICore
 //
-//  Audited for RELEASE_2024
+//  Audited for iOS 18.0
 //  Status: Complete
 
 public struct _RendererConfiguration {

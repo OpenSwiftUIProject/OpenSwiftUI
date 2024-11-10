@@ -2,7 +2,7 @@
 //  ViewList.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: WIP
 //  ID: 70E71091E926A1B09B75AAEB38F5AA3F
 

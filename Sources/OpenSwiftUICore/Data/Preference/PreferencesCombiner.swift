@@ -2,7 +2,7 @@
 //  PreferencesCombiner.swift
 //  OpenSwiftUI
 //
-//  Audited for RELEASE_2021
+//  Audited for iOS 15.5
 //  Status: Complete
 //  ID: 59D15989E597719355BF0EAE6CB41FF9
 
