@@ -5,6 +5,7 @@
 //  Created by Kyle on 2023/11/6.
 //
 
+// https://github.com/feedback-assistant/reports/issues/444
 // (4 toggles: C1T1 C1T2 C2T1 C2T2 - C1T1&C2T1 use the same truth, C1T2&C2T2 use the same truth )
 // macOS 14 behavior with SwiftUI
 // C1T1's UI will only be updated at most 1 time if we only tap T1.
@@ -20,6 +21,9 @@
 // Tap on C1T1 or C2T1 will update both toggle at the same time. (Expected)
 // Tap on C1T2 or C2T2 will update both toggle at the same time. (Expected)
 // But one is with transactino and the other is not.
+//
+// Status Update:
+// Fixed on macOS 15.1
 
 import SwiftUI
 import Observation
