@@ -4,7 +4,6 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 9FF97745734808976F608CE0DC13C39C
 
 package import OpenGraphShims
 
@@ -137,7 +136,9 @@ public struct _GraphInputs {
         get { cachedEnvironment.wrappedValue.environment }
         set {
             cachedEnvironment.wrappedValue = CachedEnvironment(newValue)
-            changedDebugProperties.insert(.environment)
+            if !changedDebugProperties.contains(.environment) {
+                changedDebugProperties.formUnion(.environment)
+            }
         }
     }
     
@@ -306,24 +307,5 @@ extension _GraphInputs {
 //        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
 //        return newInputs
         fatalError("TO BE REMOVED")
-    }
-
-    // MARK: - changedDebugProperties
-
-    @inline(__always)
-    package func withEmptyChangedDebugPropertiesInputs<R>(_ body: (_GraphInputs) -> R) -> R {
-//        var inputs = self
-//        inputs.changedDebugProperties = []
-//        return body(inputs)
-        fatalError("TO BE REMOVED")
-    }
-
-    // MARK: - options
-
-    @inline(__always)
-    package var enableLayout: Bool {
-        false
-//        get { options.contains(.enableLayout) }
-        // TODO: setter
     }
 }

@@ -23,7 +23,7 @@ let development = envEnable("OPENSWIFTUI_DEVELOPMENT", default: false)
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
 
-let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2021
+let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
 let platforms: [SupportedPlatform] = switch releaseVersion {
 case 2024: // iOS 18.0
     [

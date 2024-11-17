@@ -61,10 +61,10 @@ public struct AnyView: PrimitiveView {
         let parent = OGSubgraph.current!
         let container = AnyViewContainer(view: view.value, inputs: inputs, outputs: outputs, parentSubgraph: parent)
         let containerAttribute = Attribute(container)
-        outputs.forEach { key, value in
+        outputs.forEachPreference { key, value in
             value.indirectDependency = containerAttribute.identifier
         }
-        if let layoutComputer = outputs.$layoutComputer {
+        if let layoutComputer = outputs.layoutComputer {
             layoutComputer.identifier.indirectDependency = containerAttribute.identifier
         }
         return outputs

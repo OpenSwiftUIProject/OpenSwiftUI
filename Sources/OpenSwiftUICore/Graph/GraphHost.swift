@@ -219,6 +219,7 @@ open class GraphHost: CustomReflectable {
         case defaultValue3D
         case failedValue
         case placeholder
+        case preferenceKeyDefault
     }
     
     package final func intern<T>(_ value: T, for type: Any.Type = T.self, id: ConstantID) -> Attribute<T> {

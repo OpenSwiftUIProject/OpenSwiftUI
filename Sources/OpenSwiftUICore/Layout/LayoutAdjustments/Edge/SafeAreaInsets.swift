@@ -1,5 +1,5 @@
 // TODO
-struct SafeAreaInsets {
+package struct SafeAreaInsets {
     var space: UniqueID
     var elements: [Element]
     var next: OptionalValue

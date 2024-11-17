@@ -199,14 +199,14 @@ package final class ViewGraph: GraphHost {
         #if canImport(Darwin)
         let outputs = self.data.globalSubgraph.apply {
             let graphInputs = graphInputs
+            
             var inputs = _ViewInputs(
-                base: graphInputs,
-                preferences: PreferencesInputs(hostKeys: data.$hostPreferenceKeys),
-                transform: $rootTransform,
+                graphInputs,
                 position: $position,
-                containerPosition: $zeroPoint,
                 size: $dimensions,
-                safeAreaInsets: OptionalAttribute()
+                transform: $rootTransform,
+                containerPosition: $zeroPoint,
+                hostPreferenceKeys: data.$hostPreferenceKeys
             )
             if requestedOutputs.contains(.layout) {
                 // FIXME
@@ -232,10 +232,10 @@ package final class ViewGraph: GraphHost {
             as: RootGeometry.self,
             invalidating: true
         ) { rootGeometry in
-            rootGeometry.$childLayoutComputer = outputs.$layoutComputer
+            rootGeometry.$childLayoutComputer = outputs.layoutComputer
         }
         // TODO
-        hostPreferenceValues.projectedValue = outputs.hostPreferences
+        // hostPreferenceValues.projectedValue = outputs.hostPreferences
         makePreferenceOutlets(outputs: outputs)
         #endif
     }
@@ -271,18 +271,6 @@ package final class ViewGraph: GraphHost {
 extension ViewGraph {
     fileprivate func setPreferenceBridge(to bridge: PreferenceBridge?, isInvalidating: Bool) {
         // TODO
-    }
-}
-
-extension PreferenceBridge {
-    func invalidate() {
-        requestedPreferences = PreferenceKeys()
-        bridgedViewInputs = PropertyList()
-        for child in children {
-            let viewGraph = child.takeRetainedValue()
-            viewGraph.setPreferenceBridge(to: nil, isInvalidating: true)
-            child.release()
-        }
     }
 }
 

@@ -1,6 +1,6 @@
 //
 //  VersionSeed.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: Complete
@@ -64,8 +64,6 @@ package struct VersionSeed: CustomStringConvertible {
     }
 }
 
-//  ID: 1B00D77CE2C80F9C0F5A59FDEA30ED6B (RELEASE_2021)
-//  ID: F99DF4753FB5F5765C388695646E450B (RELEASE_2024)
 private func merge32(_ a: UInt32, _ b: UInt32) -> UInt32 {
     let a = UInt64(a)
     let b = UInt64(b)

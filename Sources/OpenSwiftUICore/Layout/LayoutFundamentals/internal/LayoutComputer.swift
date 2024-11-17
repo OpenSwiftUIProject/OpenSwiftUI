@@ -8,8 +8,8 @@
 import Foundation
 
 // TODO:
-struct LayoutComputer: Equatable {
-    static func == (lhs: LayoutComputer, rhs: LayoutComputer) -> Bool {
+package struct LayoutComputer: Equatable {
+    package static func == (lhs: LayoutComputer, rhs: LayoutComputer) -> Bool {
         lhs.seed == rhs.seed /*&& lhs.delegate == rhs.delegate*/
     }
     

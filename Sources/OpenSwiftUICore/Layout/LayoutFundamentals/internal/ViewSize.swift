@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct ViewSize: Equatable {
+package struct ViewSize: Equatable {
     var value: CGSize
     var _proposal: CGSize
     

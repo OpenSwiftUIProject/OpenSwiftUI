@@ -1,11 +1,13 @@
 //
 //  PreferenceList.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: WIP
-//  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD (RELEASE_2021)
-//  ID: 7B694C05291EA7AF22785AB458D1BC2F (RELEASE_2024)
+//  Audited for iOS 18.0
+//  Status: Copmlete
+//  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD (SwiftUI)
+//  ID: 7B694C05291EA7AF22785AB458D1BC2F (SwiftUICore)
+
+// MARK: - PreferenceList
 
 package struct PreferenceList: CustomStringConvertible {
     private var first: PreferenceNode?
@@ -23,40 +25,33 @@ package struct PreferenceList: CustomStringConvertible {
         }
     }
     
-    // TODO: TO BE AUDITED
     package subscript<K>(key: K.Type) -> Value<K.Value> where K: PreferenceKey{
         get {
             guard let first,
-                  let node = first.find(key: key) else {
+                  let node = first.find(key) else {
                 return Value(value: key.defaultValue, seed: .empty)
             }
             return Value(value: node.value, seed: node.seed)
         }
         set {
             if let first,
-               let _ = first.find(key: key) {
+               let _ = first.find(key) {
                 removeValue(for: key)
             }
             first = _PreferenceNode<K>(value: newValue.value, seed: newValue.seed, next: first)
         }
     }
     
-    // TODO: TO BE AUDITED
-    package func valueIfPresent<K>(for _: K.Type) -> Value<K.Value>? where K: PreferenceKey {
-        guard let first else {
-            return nil
-        }
-        return first.find(key: K.self).map { node in
+    package func valueIfPresent<K>(for key: K.Type = K.self) -> Value<K.Value>? where K: PreferenceKey {
+        first?.find(key).map { node in
             Value(value: node.value, seed: node.seed)
         }
     }
     
-    // TODO: TO BE AUDITED
     package func contains<K>(_ key: K.Type) -> Bool where K: PreferenceKey {
-        first?.find(key: key) != nil
+        first?.find(key) != nil
     }
     
-    // TODO: TO BE AUDITED
     package mutating func removeValue<K>(for key: K.Type) where K: PreferenceKey {
         let first = first
         self.first = nil
@@ -68,8 +63,7 @@ package struct PreferenceList: CustomStringConvertible {
         }
     }
     
-    // TODO: TO BE AUDITED
-    package mutating func modifyValue<K>(for key: K.Type, transform: Value <(inout K.Value) -> Void>) where K: PreferenceKey {
+    package mutating func modifyValue<K>(for key: K.Type, transform: Value<(inout K.Value) -> Void>) where K: PreferenceKey {
         var value = self[key]
         value.seed.merge(transform.seed)
         transform.value(&value.value)
@@ -77,15 +71,15 @@ package struct PreferenceList: CustomStringConvertible {
         first = _PreferenceNode<K>(value: value.value, seed: value.seed, next: first)
     }
     
-    // TODO: TO BE AUDITED
     package func mayNotBeEqual(to other: PreferenceList) -> Bool {
-        // TODO
-        return false
+        guard first !== other.first else {
+            return false
+        }
+        return !seed.matches(other.seed)
     }
     
     package var seed: VersionSeed { first?.mergedSeed ?? .empty }
     
-    // TODO: TO BE AUDITED
     package mutating func combine(with other: PreferenceList) {
         guard let otherFirst = other.first else {
             return
@@ -141,7 +135,8 @@ package struct PreferenceList: CustomStringConvertible {
     }
 }
 
-// TODO: TO BE AUDITED
+// MARK: - PreferenceNode
+
 private class PreferenceNode: CustomStringConvertible {
     let keyType: Any.Type
     let seed: VersionSeed
@@ -161,30 +156,25 @@ private class PreferenceNode: CustomStringConvertible {
         self.next = next
     }
     
+    @inlinable
     final func forEach(_ body: (PreferenceNode) -> Void) {
-        var node = self
-        repeat {
+        var currentNode: PreferenceNode? = self
+        while let node = currentNode {
             body(node)
-            guard let next = node.next else {
-                break
-            }
-            node = next
-        } while true
+            currentNode = node.next
+        }
     }
     
-    final func find<Key: PreferenceKey>(key: Key.Type) -> _PreferenceNode<Key>? {
-        var node = self
-        repeat {
-            if node.keyType == key {
-                return node as? _PreferenceNode<Key>
-            } else {
-                if let next = node.next {
-                    node = next
-                } else {
-                    break
-                }
+    @inlinable
+    final func find<K>(_ key: K.Type = K.self) -> _PreferenceNode<K>? where K: PreferenceKey {
+        var currentNode: PreferenceNode? = self
+        while let node = currentNode {
+            guard node.keyType == key else {
+                currentNode = node.next
+                continue
             }
-        } while true
+            return (node as! _PreferenceNode<K>)
+        }
         return nil
     }
     
@@ -195,33 +185,34 @@ private class PreferenceNode: CustomStringConvertible {
     var description: String { fatalError() }
 }
 
-// TODO: TO BE AUDITED
-private class _PreferenceNode<Key: PreferenceKey>: PreferenceNode {
-    let value: Key.Value
+// MARK: - PreferenceNode
+
+private class _PreferenceNode<K>: PreferenceNode where K: PreferenceKey {
+    let value: K.Value
     
-    init(value: Key.Value, seed: VersionSeed, next: PreferenceNode?) {
+    init(value: K.Value, seed: VersionSeed, next: PreferenceNode?) {
         self.value = value
-        super.init(keyType: Key.self, seed: seed, next: next)
+        super.init(keyType: K.self, seed: seed, next: next)
     }
     
     override func find(from: PreferenceNode?) -> PreferenceNode? {
-        from?.find(key: Key.self)
+        from?.find(K.self)
     }
     
     override func combine(from: PreferenceNode?, next: PreferenceNode?) -> PreferenceNode? {
         var currentNode = from
         while let node = currentNode {
-            if keyType == node.keyType {
-                var value = self.value
-                var seed = self.seed
-                Key.reduce(value: &value) {
-                    seed.merge(node.seed)
-                    return (node as! _PreferenceNode).value
-                }
-                return _PreferenceNode(value: value, seed: seed, next: next)
-            } else {
+            guard keyType == node.keyType else {
                 currentNode = node.next
+                continue
             }
+            var value = self.value
+            var seed = self.seed
+            K.reduce(value: &value) {
+                seed.merge(node.seed)
+                return (node as! _PreferenceNode).value
+            }
+            return _PreferenceNode(value: value, seed: seed, next: next)
         }
         return nil
     }
@@ -230,9 +221,9 @@ private class _PreferenceNode<Key: PreferenceKey>: PreferenceNode {
         _PreferenceNode(value: value, seed: seed, next: next)
     }
     
-    override class var _includesRemovedValues: Bool { Key._includesRemovedValues }
+    override class var _includesRemovedValues: Bool { K._includesRemovedValues }
     
     override var description: String {
-        "\(Key.self) = \(value)"
+        "\(K.self) = \(value)"
     }
 }

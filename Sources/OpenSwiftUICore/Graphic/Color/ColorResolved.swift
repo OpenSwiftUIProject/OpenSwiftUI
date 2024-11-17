@@ -5,11 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-#if canImport(Darwin)
-package import Foundation
-#else
 import Foundation
-#endif
 import OpenSwiftUI_SPI
 
 // MARK: - Color.Resolved
@@ -315,32 +311,3 @@ func sRGBToLinear(_ sRGB: Float) -> Float {
     }
     return sRGB > 0 ? result : -result
 }
-
-#if canImport(Darwin)
-
-// MARK: - Color.Resolved + platformColor
-
-extension Color.Resolved {
-    package init?(platformColor: AnyObject) {
-        var red: CGFloat = 0
-        var green: CGFloat = 0
-        var blue: CGFloat = 0
-        var alpha: CGFloat = 0
-        let result = CoreColorPlatformColorGetComponents(system: isAppKitBased() ? .appKit : .uiKit, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
-        if result {
-            self.init(red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
-        } else {
-            return nil
-        }
-    }
-
-    // ID: 4330A474F53D66045762501ED6F8A749
-    private static let cache: ObjectCache<Color.Resolved, NSObject> = ObjectCache { resolved in
-        CoreColor.platformColor(resolvedColor: resolved)!
-    }
-    
-    package var kitColor: NSObject {
-        Self.cache[self]
-    }
-}
-#endif
