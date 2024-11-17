@@ -3,20 +3,20 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: TO BE AUDITED
+//  Status: Blocked by ViewGraph
 //  ID: A9FAE381E99529D5274BA37A9BC9B074 (SwiftUI)
 //  ID: DF57A19C61B44C613EB77C1D47FC679A (SwiftUICore)
 
-import OpenGraphShims
+package import OpenGraphShims
 
 package final class PreferenceBridge {
-    weak var viewGraph: ViewGraph?
-    var isValid: Bool = true
-    private(set) var children: [Unmanaged<ViewGraph>] = []
+    package weak var viewGraph: ViewGraph?
+    private var isValid: Bool = true
+    private var children: [Unmanaged<ViewGraph>] = []
     var requestedPreferences = PreferenceKeys()
     var bridgedViewInputs = PropertyList()
-    @WeakAttribute var hostPreferenceKeys: PreferenceKeys?
-    @WeakAttribute var hostPreferencesCombiner: PreferenceList?
+    @WeakAttribute private var hostPreferenceKeys: PreferenceKeys?
+    @WeakAttribute private var hostPreferencesCombiner: PreferenceList?
     private var bridgedPreferences: [BridgedPreference] = []
 
     struct BridgedPreference {
@@ -24,18 +24,99 @@ package final class PreferenceBridge {
         var combiner: AnyWeakAttribute
     }
 
-    init() {
+    package init() {
         viewGraph = ViewGraph.current
+    }
+    
+    package func invalidate() {
+        requestedPreferences = PreferenceKeys()
+        bridgedViewInputs = PropertyList()
+        // TODO: Blocked by ViewGraph
+        // for child in children {
+            // let viewGraph = child.takeRetainedValue()
+            // viewGraph.setPreferenceBridge(to: nil, isInvalidating: true)
+            // child.release()
+        // }
+        isValid = false
     }
     
     deinit {
         if isValid { invalidate() }
     }
     
-    // FIXME: TO BE AUDITED
+    package func wrapInputs(_ inputs: inout _ViewInputs) {
+        #if canImport(Darwin)
+        inputs.customInputs = bridgedViewInputs
+        for key in requestedPreferences {
+            inputs.preferences.keys.add(key)
+        }
+        inputs.preferences.hostKeys = Attribute(MergePreferenceKeys(lhs: inputs.preferences.hostKeys, rhs: _hostPreferenceKeys))
+        #endif
+    }
     
-    #if canImport(Darwin) // FIXME: See #39
-    func addValue(_ value: AnyAttribute, for keyType: AnyPreferenceKey.Type) {
+    package func wrapOutputs(_ outputs: inout PreferencesOutputs, inputs: _ViewInputs) {
+        #if canImport(Darwin)
+        bridgedViewInputs = inputs.customInputs
+        for key in inputs.preferences.keys {
+            if key == _AnyPreferenceKey<HostPreferencesKey>.self {
+                let combiner = Attribute(
+                    HostPreferencesCombiner(
+                        keys: inputs.preferences.hostKeys,
+                        values: Attribute(identifier: outputs[anyKey: _AnyPreferenceKey<HostPreferencesKey>.self] ?? .nil)
+                    )
+                )
+                outputs[anyKey: key] = combiner.identifier
+                _hostPreferenceKeys = WeakAttribute(inputs.preferences.hostKeys)
+                _hostPreferencesCombiner = WeakAttribute(combiner)
+            } else {
+                struct MakeCombiner: PreferenceKeyVisitor {
+                    var result: AnyAttribute?
+                    
+                    mutating func visit<K>(key: K.Type) where K : PreferenceKey {
+                        let combiner = PreferenceCombiner<K>(attributes: [])
+                        result = Attribute(combiner).identifier
+                    }
+                }
+                guard outputs[anyKey: key] == nil else {
+                    break
+                }
+                var combiner = MakeCombiner()
+                key.visitKey(&combiner)
+                guard let result = combiner.result else {
+                    break
+                }
+                requestedPreferences.add(key)
+                bridgedPreferences.append(BridgedPreference(key: key, combiner: AnyWeakAttribute(result)))
+                outputs[anyKey: key] = result
+            }
+        }
+        #endif
+        
+    }
+    
+    package func addChild(_ child: ViewGraph) {
+        guard !children.contains(where: { $0.takeUnretainedValue() === child }) else {
+            return
+        }
+        children.append(Unmanaged.passUnretained(child))
+    }
+    
+    package func removeChild(_ child: ViewGraph) {
+        guard let index = children.firstIndex(where: { $0.takeUnretainedValue() === child }) else {
+            return
+        }
+        children.remove(at: index)
+    }
+    
+    package func removedStateDidChange() {
+        // TODO: Blocked by ViewGraph
+        // for child in children {
+            // let viewGraph = child.takeUnretainedValue()
+        // }
+    }
+    
+    #if canImport(Darwin)
+    package func addValue(_ src: AnyAttribute, for key: any AnyPreferenceKey.Type) {
         struct AddValue: PreferenceKeyVisitor {
             var combiner: AnyAttribute
             var value: AnyAttribute
@@ -48,18 +129,16 @@ package final class PreferenceBridge {
                 }
             }
         }
-        guard let bridgedPreference = bridgedPreferences.first(where: { $0.key == keyType }) else {
-            return
-        }
-        guard let combiner = bridgedPreference.combiner.attribute else {
-            return
-        }
-        var visitor = AddValue(combiner: combiner, value: value)
-        keyType.visitKey(&visitor)
-        viewGraph?.graphInvalidation(from: value)
+        guard let viewGraph,
+              let bridgedPreference = bridgedPreferences.first(where: { $0.key == key }),
+              let combiner = bridgedPreference.combiner.attribute
+        else { return }
+        var visitor = AddValue(combiner: combiner, value: src)
+        key.visitKey(&visitor)
+        viewGraph.graphInvalidation(from: src)
     }
-
-    func removeValue(_ value: AnyAttribute, for keyType: AnyPreferenceKey.Type, isInvalidating: Bool) {
+    
+    package func removeValue(_ src: AnyAttribute, for key: any AnyPreferenceKey.Type, isInvalidating: Bool = false) {
         struct RemoveValue: PreferenceKeyVisitor {
             var combiner: AnyAttribute
             var value: AnyAttribute
@@ -77,48 +156,54 @@ package final class PreferenceBridge {
                 }
             }
         }
-        guard let bridgedPreference = bridgedPreferences.first(where: { $0.key == keyType }) else {
-            return
-        }
-        guard let combiner = bridgedPreference.combiner.attribute else {
-            return
-        }
-        var visitor = RemoveValue(combiner: combiner, value: value)
-        keyType.visitKey(&visitor)
+        guard let viewGraph,
+              let bridgedPreference = bridgedPreferences.first(where: { $0.key == key }),
+              let combiner = bridgedPreference.combiner.attribute
+        else { return }
+        var visitor = RemoveValue(combiner: combiner, value: src)
+        key.visitKey(&visitor)
         if visitor.changed {
-            viewGraph?.graphInvalidation(from: isInvalidating ? nil : value)
+            viewGraph.graphInvalidation(from: isInvalidating ? nil : src)
         }
     }
+    #endif
     
     package func updateHostValues(_ keys: Attribute<PreferenceKeys>) {
-        fatalError("TODO")
+        #if canImport(Darwin)
+        guard let viewGraph else { return }
+        viewGraph.graphInvalidation(from: keys.identifier)
+        #endif
     }
     
-    package func addHostValue(_ values: WeakAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
-        fatalError("TODO")
+    package func addHostValues(_ values: WeakAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+        #if canImport(Darwin)
+        guard let viewGraph,
+              let combiner = $hostPreferencesCombiner
+        else { return }
+        combiner.mutateBody(
+            as: HostPreferencesCombiner.self,
+            invalidating: true
+        ) { combiner in
+            combiner.addChild(keys: keys, values: values)
+        }
+        viewGraph.graphInvalidation(from: keys.identifier)
+        #endif
     }
     
-    package func addHostValue(_ values: OptionalAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
-        fatalError("TODO")
-    }
-
-//    package func addHostValue(_ values: Attribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
-//        guard let combiner = $hostPreferencesCombiner else {
-//            return
-//        }
-//        combiner.mutateBody(
-//            as: HostPreferencesCombiner.self,
-//            invalidating: true
-//        ) { combiner in
-//            combiner.addChild(keys: keys, values: WeakAttribute(values))
-//        }
-//        viewGraph?.graphInvalidation(from: combiner.identifier)
-//    }
-
-    func removeHostValue(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool = false) {
-        guard let combiner = $hostPreferencesCombiner else {
+    package func addHostValues(_ values: OptionalAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+        #if canImport(Darwin)
+        guard let attribute = values.attribute else {
             return
         }
+        addHostValues(WeakAttribute(attribute), for: keys)
+        #endif
+    }
+    
+    package func removeHostValues(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool = false) {
+        #if canImport(Darwin)
+        guard let viewGraph,
+              let combiner = $hostPreferencesCombiner
+        else { return }
         var hasRemoved = false
         combiner.mutateBody(
             as: HostPreferencesCombiner.self,
@@ -132,23 +217,26 @@ package final class PreferenceBridge {
             hasRemoved = true
         }
         if hasRemoved {
-            viewGraph?.graphInvalidation(from: isInvalidating ? nil : keys.identifier)
+            viewGraph.graphInvalidation(from: isInvalidating ? nil : keys.identifier)
         }
+        #endif
     }
-    #endif
 }
+
+// MARK: - MergePreferenceKeys
 
 private struct MergePreferenceKeys: Rule, AsyncAttribute {
     @Attribute var lhs: PreferenceKeys
     @WeakAttribute var rhs: PreferenceKeys?
 
     var value: PreferenceKeys {
-//        var result = lhs
-//        guard let rhs else {
-//            return result
-//        }
-//        result.merge(rhs)
-//        return result
-        fatalError("TODO")
+        var result = lhs
+        guard let rhs else {
+            return lhs
+        }
+        for key in rhs.keys {
+            result.add(key)
+        }
+        return result
     }
 }

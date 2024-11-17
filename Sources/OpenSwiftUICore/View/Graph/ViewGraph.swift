@@ -274,18 +274,6 @@ extension ViewGraph {
     }
 }
 
-extension PreferenceBridge {
-    func invalidate() {
-        requestedPreferences = PreferenceKeys()
-        bridgedViewInputs = PropertyList()
-        for child in children {
-            let viewGraph = child.takeRetainedValue()
-            viewGraph.setPreferenceBridge(to: nil, isInvalidating: true)
-            child.release()
-        }
-    }
-}
-
 extension ViewGraph {
     struct NextUpdate {
         var time: Time
