@@ -23,6 +23,10 @@ jobs:
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      OPENGRAPH_ATTRIBUTEGRAPH_VERSION: RELEASE-${{ matrix.release }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -31,6 +35,9 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Swift version
         run: swift --version
+      - name: Set up build environment
+        run: Scripts/CI/macOS_setup_build.sh
+        shell: bash
       - name: Build and run tests in debug mode with coverage
         run: |
           swift test \
