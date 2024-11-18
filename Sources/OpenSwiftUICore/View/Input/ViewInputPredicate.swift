@@ -114,6 +114,8 @@ package struct TypesMatch<Left, Right>: ViewInputPredicate {
     package init() {}
 }
 
+#if OPENSWIFTUI_RELEASE_2024
+
 package struct IsVisionEnabledPredicate: ViewInputPredicate {
     package static func evaluate(inputs: _GraphInputs) -> Bool {
         #if os(macOS)
@@ -136,3 +138,5 @@ extension _ViewListInputs {
         IsVisionEnabledPredicate.evaluate(inputs: base)
     }
 }
+
+#endif
