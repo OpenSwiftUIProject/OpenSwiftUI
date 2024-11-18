@@ -5,6 +5,7 @@
 @testable import OpenSwiftUICore
 import Testing
 
+#if OPENSWIFTUI_RELEASE_2024
 struct InterfaceIdiomTests {
     @Test
     func idiomEqual() {
@@ -35,3 +36,4 @@ struct InterfaceIdiomTests {
         #expect((WidgetInterfaceIdiom() ~= AnyInterfaceIdiom(.complication)) == false)
     }
 }
+#endif

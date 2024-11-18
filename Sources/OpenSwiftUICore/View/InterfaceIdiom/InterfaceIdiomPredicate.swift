@@ -5,6 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+#if OPENSWIFTUI_RELEASE_2024
 package struct InterfaceIdiomPredicate<Idiom>: ViewInputPredicate where Idiom: InterfaceIdiom {
     package init() {}
     
@@ -42,3 +43,4 @@ extension AnyInterfaceIdiom {
         value == AnyInterfaceIdiom(pattern)
     }
 }
+#endif

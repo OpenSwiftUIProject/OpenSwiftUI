@@ -5,7 +5,8 @@ filepath() {
   [[ $1 = /* ]] && echo "$1" || echo "$PWD/${1#./}"
 }
 
-OG_ROOT="$(dirname $(dirname $(filepath $0)))"
+REPO_ROOT="$(dirname $(dirname $(filepath $0)))"
+cd $REPO_ROOT
 
 # Get the language and input file path from the arguments
 language=${1:-"swift"}
