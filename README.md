@@ -44,6 +44,10 @@ See Example folder and try it with ExampleApp
 ./Scripts/openswiftui_swiftinterface
 ```
 
+> [!NOTE]
+> You can use tools like [EnvPane](https://github.com/hschmidt/EnvPane/releases/) or [MenuHelper](https://github.com/Kyle-Ye/MenuHelper/releases)
+> on macOS platform to manage the environment variable more easily.
+
 ## Supported platforms
 
 The table below describes the current level of support that `OpenSwiftUI` has
