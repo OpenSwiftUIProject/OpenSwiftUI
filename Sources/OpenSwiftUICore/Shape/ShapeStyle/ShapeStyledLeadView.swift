@@ -1,14 +1,20 @@
 //
 //  ShapeStyledLeadView.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
 
-import Foundation
+package import Foundation
+package import AttributeGraph
 
-protocol ShapeStyledLeafView: ContentResponder {
+package protocol ShapeStyledLeafView: ContentResponder {
     static var animatesSize: Bool { get }
-    func shape(size: CGSize) /*-> (ShapeStyle_RenderShape.Shape, CGRect)*/
-    func isClear(style: _ShapeStyle_Shape.ResolvedStyle)
+    associatedtype ShapeUpdateData = Void
+    mutating func mustUpdate(data: ShapeUpdateData, position: Attribute<ViewOrigin>) -> Bool
+    typealias FramedShape =  (shape: _ShapeStyle_RenderedShape.Shape, frame: CGRect)
+    func shape(in size: CGSize) -> FramedShape
+    static var hasBackground: Bool { get }
+    func backgroundShape(in size: CGSize) -> FramedShape
+    func isClear(styles: _ShapeStyle_Pack) -> Bool
 }
