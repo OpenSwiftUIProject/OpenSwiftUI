@@ -34,8 +34,8 @@ public struct _ShapeStyle_Shape {
         case foregroundColor(Color)
     }
     
-    package var operation: _ShapeStyle_Shape.Operation
-    package var result: _ShapeStyle_Shape.Result
+    package var operation: Operation
+    package var result: Result
     package var environment: EnvironmentValues
     package var foregroundStyle: AnyShapeStyle?
     package var bounds: CGRect?

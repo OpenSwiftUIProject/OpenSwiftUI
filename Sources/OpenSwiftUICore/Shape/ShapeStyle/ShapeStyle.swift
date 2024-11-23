@@ -3,9 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by _ShapeStyle_Shape
-
-import Foundation
+//  Status: Blocked by Graident and Material
 
 // MARK: - ShapeStyle
 
@@ -161,5 +159,56 @@ extension ShapeStyle {
             return
         }
         Resolved._apply(to: &type)
+    }
+    
+    @_spi(Private)
+    public func fallbackColor(in environment: EnvironmentValues, level: Int = 0) -> Color? {
+        var shape = _ShapeStyle_Shape(operation: .fallbackColor(level: level), environment: environment)
+        _apply(to: &shape)
+        switch shape.result {
+            case let .color(color): return color
+            default: return nil
+        }
+    }
+
+    // package func resolveBackgroundMaterial(in environment: EnvironmentValues, level: Int = 0) -> Material.ResolvedMaterial?
+    // package func resolveGradient(in environment: EnvironmentValues, level: Int = 0) -> ResolvedGradient?
+
+    package func copyStyle(name: Name = .foreground, in env: EnvironmentValues, foregroundStyle: AnyShapeStyle? = nil) -> AnyShapeStyle {
+        var shape = _ShapeStyle_Shape(operation: .copyStyle(name: name), environment: env, foregroundStyle: foregroundStyle)
+        _apply(to: &shape)
+        switch shape.result {
+            case let .style(style): return style
+            default: return AnyShapeStyle(self)
+        }
+    }
+    
+    package func mapCopiedStyle<S>(in shape: inout _ShapeStyle_Shape, body: (AnyShapeStyle) -> S) where S: ShapeStyle {
+        guard case .copyStyle = shape.operation else {
+            return
+        }
+        _apply(to: &shape)
+        guard case let .style(style) = shape.result else {
+            return
+        }
+        shape.result = .style(AnyShapeStyle(body(style)))
+    }
+    
+    package func primaryStyle(in env: EnvironmentValues) -> AnyShapeStyle? {
+        var shape = _ShapeStyle_Shape(operation: .multiLevel, environment: env)
+        _apply(to: &shape)
+        switch shape.result {
+            case let .style(style): return style
+            default: return nil
+        }
+    }
+    
+    package func isMultiLevel(in env: EnvironmentValues) -> Bool {
+        var shape = _ShapeStyle_Shape(operation: .multiLevel, environment: env)
+        _apply(to: &shape)
+        switch shape.result {
+            case let .bool(value): return value
+            default: return false
+        }
     }
 }
