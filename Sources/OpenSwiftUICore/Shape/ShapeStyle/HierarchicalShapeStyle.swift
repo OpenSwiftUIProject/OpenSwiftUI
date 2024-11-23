@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by OffsetShapeStyle, SeparatorShapeStyle and BackgroundMaterial
+//  Status: Blocked by SeparatorShapeStyle and BackgroundMaterial
 
 /// A shape style that maps to one of the numbered content styles.
 @frozen
@@ -53,9 +53,9 @@ public struct HierarchicalShapeStyle: ShapeStyle, PrimitiveShapeStyle {
                         }
                     } else {
                         if case let .copyStyle(name: name) = shape.operation {
-                            // shape.result = .style(OffsetShapeStyle(style, id))
+                            shape.result = .style(AnyShapeStyle(OffsetShapeStyle(base: style, offset: level)))
                         } else {
-                            // OffsetShapeStyle(style, id)._apply(to: &shape)
+                            OffsetShapeStyle(base: style, offset: level)._apply(to: &shape)
                         }
                     }
                 } else {
