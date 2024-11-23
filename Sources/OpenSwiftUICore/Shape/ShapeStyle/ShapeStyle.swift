@@ -139,6 +139,7 @@ extension ShapeStyle where Resolved == Never {
 extension ShapeStyle {
     package typealias Name = _ShapeStyle_Name
     package typealias Pack = _ShapeStyle_Pack
+    package typealias ResolverMode = _ShapeStyle_ResolverMode
     
     nonisolated public static func _makeView<S>(view: _GraphValue<_ShapeView<S, Self>>, inputs: _ViewInputs) -> _ViewOutputs where S: Shape {
         legacyMakeShapeView(view: view, inputs: inputs)
