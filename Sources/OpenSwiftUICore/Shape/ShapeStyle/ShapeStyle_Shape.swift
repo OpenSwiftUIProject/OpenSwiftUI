@@ -90,13 +90,11 @@ public struct _ShapeStyle_Shape {
     }
     
     package var currentForegroundStyle: AnyShapeStyle? {
-        // FIXME: environment.foregroundStyle ?? environment.defaultForegroundStyle
-        nil
+        environment.currentForegroundStyle
     }
     
     package var effectiveForegroundStyle: AnyShapeStyle {
-        // foregroundStyle ?? environment.foregroundStyle ?? environment.defaultForegroundStyle ??
-        fatalError("TODO")
+        environment._effectiveForegroundStyle
     }
 }
 

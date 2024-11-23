@@ -195,7 +195,7 @@ extension ShapeStyle {
     }
     
     package func primaryStyle(in env: EnvironmentValues) -> AnyShapeStyle? {
-        var shape = _ShapeStyle_Shape(operation: .multiLevel, environment: env)
+        var shape = _ShapeStyle_Shape(operation: .primaryStyle, environment: env)
         _apply(to: &shape)
         switch shape.result {
             case let .style(style): return style

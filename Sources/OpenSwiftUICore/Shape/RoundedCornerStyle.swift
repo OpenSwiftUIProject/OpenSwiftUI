@@ -1,8 +1,8 @@
 //
-//  ShapeRole.swift
-//  OpenSwiftUI
+//  RoundedCornerStyle.swift
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 /// Defines the shape of a rounded rectangle's corners.
@@ -13,6 +13,3 @@ public enum RoundedCornerStyle: Sendable {
     /// Continuous curvature rounded rect corners.
     case continuous
 }
-
-extension RoundedCornerStyle: Equatable {}
-extension RoundedCornerStyle: Hashable {}
