@@ -2,10 +2,8 @@
 //  ShapeRole.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
-
-#if OPENSWIFTUI_SUPPORT_2021_API
 
 /// Ways of styling a shape.
 public enum ShapeRole: Sendable {
@@ -20,8 +18,3 @@ public enum ShapeRole: Sendable {
     /// separator.
     case separator
 }
-
-extension ShapeRole: Equatable {}
-extension ShapeRole: Hashable {}
-
-#endif
