@@ -3,8 +3,22 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: BEFE9363F68E039B4AB6422B8AA4535A (SwiftUICore)
+
+// MARK: - ForegroundStyleKey
+
+private struct ForegroundStyleKey: EnvironmentKey {
+    static let defaultValue: AnyShapeStyle? = nil
+}
+
+// MARK: - DefaultForegroundStyleKey
+
+private struct DefaultForegroundStyleKey: EnvironmentKey {
+    static let defaultValue: AnyShapeStyle? = nil
+}
+
+// MARK: - EnvironmentValues + ForegroundStyle
 
 extension EnvironmentValues {
     package var foregroundStyle: AnyShapeStyle? {
@@ -22,7 +36,7 @@ extension EnvironmentValues {
     }
     
     package var _effectiveForegroundStyle: AnyShapeStyle {
-        foregroundStyle ?? defaultForegroundStyle ?? .init(.foreground)
+        currentForegroundStyle ?? .init(.foreground)
     }
 }
 
@@ -68,16 +82,4 @@ extension ForegroundStyle {
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {
         type.result = .bool(true)
     }
-}
-
-// MARK: - ForegroundStyleKey
-
-private struct ForegroundStyleKey: EnvironmentKey {
-    static let defaultValue: AnyShapeStyle? = nil
-}
-
-// MARK: - DefaultForegroundStyleKey
-
-private struct DefaultForegroundStyleKey: EnvironmentKey {
-    static let defaultValue: AnyShapeStyle? = nil
 }
