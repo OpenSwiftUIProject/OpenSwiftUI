@@ -34,5 +34,3 @@ public struct FillStyle: Equatable {
         self.isAntialiased = antialiased
     }
 }
-
-extension FillStyle: Sendable {}

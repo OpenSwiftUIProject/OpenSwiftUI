@@ -49,7 +49,7 @@ public import CoreGraphics
 ///
 /// ![A screenshot of a green leaf.](Color-1)
 ///
-/// Because SwiftUI treats colors as ``View`` instances, you can also
+/// Because OpenSwiftUI treats colors as ``View`` instances, you can also
 /// directly add them to a view hierarchy. For example, you can layer
 /// a rectangle beneath a sun image using colors defined above:
 ///

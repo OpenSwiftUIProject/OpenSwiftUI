@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-import Foundation
+package import Foundation
 import OpenSwiftUI_SPI
 
 // MARK: - Color.Resolved
@@ -51,13 +51,18 @@ extension Color {
 
 // MARK: - Color.Resolved + ResolvedPaint
 
-extension Color.Resolved/*: ResolvedPaint*/ {
-    //    func draw(path: Path, style: paathDrawingStyle, in context: GraphicsContext, bounds: CGRect?)
+extension Color.Resolved: ResolvedPaint {
+    package func draw(path: Path, style: PathDrawingStyle, in context: GraphicsContext, bounds: CGRect?) {
+        // TODO
+    }
     
-    var isClear: Bool { opacity == 0 }
-    var isOpaque: Bool { opacity == 1 }
+    package var isClear: Bool { opacity == 0 }
+    package var isOpaque: Bool { opacity == 1 }
     
-//    static leafProtobufTag: CodableResolvedPaint.Tag?
+    package static var leafProtobufTag: CodableResolvedPaint.Tag? {
+        // TODO
+        nil
+    }
 }
 
 // MARK: - Color.Resolved + ShapeStyle
