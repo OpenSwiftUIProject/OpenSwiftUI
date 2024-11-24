@@ -19,7 +19,7 @@ struct TestIDView<Content, ID>: PrimitiveView, UnaryView {
     
     static func _makeView(view: _GraphValue<TestIDView<Content, ID>>, inputs: _ViewInputs) -> _ViewOutputs {
         // Use IdentifiedView here
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

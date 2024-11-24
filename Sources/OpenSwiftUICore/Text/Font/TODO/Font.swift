@@ -28,12 +28,12 @@ public struct Font: Hashable {
 package class AnyFontBox: Hashable {
     @usableFromInline
     package func hash(into _: inout Hasher) {
-        fatalError()
+        preconditionFailure("")
     }
 
     @usableFromInline
     package static func == (_: AnyFontBox, _: AnyFontBox) -> Bool {
-        fatalError()
+        preconditionFailure("")
     }
 }
 

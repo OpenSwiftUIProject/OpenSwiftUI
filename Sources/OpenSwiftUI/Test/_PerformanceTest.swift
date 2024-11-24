@@ -26,7 +26,7 @@ extension __App {
 
 extension _TestApp {
     public func runPerformanceTests(_ tests: [_PerformanceTest]) -> Never {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -37,7 +37,7 @@ extension _BenchmarkHost {
         #elseif os(macOS)
         NSApplication.shared.startedTest(test.name)
         #else
-        fatalError("Unimplemented for other platform")
+        preconditionFailure("Unimplemented for other platform")
         #endif
     }
 
@@ -47,7 +47,7 @@ extension _BenchmarkHost {
         #elseif os(macOS)
         NSApplication.shared.finishedTest(test.name)
         #else
-        fatalError("Unimplemented for other platform")
+        preconditionFailure("Unimplemented for other platform")
         #endif
     }
 
@@ -57,7 +57,7 @@ extension _BenchmarkHost {
         #elseif os(macOS)
         NSApplication.shared.failedTest(test.name, withFailure: nil)
         #else
-        fatalError("Unimplemented for other platform")
+        preconditionFailure("Unimplemented for other platform")
         #endif
     }
 }

@@ -8,10 +8,10 @@
 
 public struct _TestApp {
     public init() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     public func run() -> Never {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -21,12 +21,12 @@ extension _TestApp {
         var state: StateType
         
         init() {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         var body: some View {
             state.testView
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
     

@@ -28,7 +28,7 @@ open class UIHostingController<Content> : UIViewController where Content : View 
     }
     
     public required init?(coder: NSCoder) {
-        fatalError("init(coder:) must be implemented in a subclass and call super.init(coder:, rootView:)")
+        preconditionFailure("init(coder:) must be implemented in a subclass and call super.init(coder:, rootView:)")
     }
     
     func _commonInit() {

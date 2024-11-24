@@ -52,7 +52,7 @@ extension View {
             let accessor = ViewBodyAccessor<Self>()
             return accessor.makeBody(container: view, inputs: &inputs, fields: fields)
         default:
-            fatalError("views must be value types (either a struct or an enum); \(Self.self) is a class.")
+            preconditionFailure("views must be value types (either a struct or an enum); \(Self.self) is a class.")
         }
     }
 }

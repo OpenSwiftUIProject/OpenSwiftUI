@@ -5,6 +5,6 @@ public protocol _Benchmark: _Test {
 extension _TestApp {
     public func runBenchmarks(_ benchmarks: [_Benchmark]) -> Never {
         let _ = RootView()
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }

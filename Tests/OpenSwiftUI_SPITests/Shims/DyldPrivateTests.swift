@@ -65,7 +65,7 @@ struct DyldPrivateTests {
             )) == true)
         }
         #else
-        fatalError("Unsupported Darwin platform")
+        preconditionFailure("Unsupported Darwin platform")
         #endif
 
 #else
@@ -96,7 +96,7 @@ struct DyldPrivateTests {
             #elseif os(visionOS)
             #expect(platform == .XROS_SIMULATOR)
             #else
-            fatalError("Unsupported Darwin simulator platform")
+            preconditionFailure("Unsupported Darwin simulator platform")
             #endif
         #else
             #if os(iOS)
@@ -110,7 +110,7 @@ struct DyldPrivateTests {
             #elseif os(visionOS)
             #expect(platform == .XROS)
             #else
-            fatalError("Unsupported Darwin platform")
+            preconditionFailure("Unsupported Darwin platform")
             #endif
         #endif
 #else

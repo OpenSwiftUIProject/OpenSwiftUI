@@ -112,7 +112,7 @@ extension Color {
 }
 
 package func HSBToRGB(hue: Double, saturation: Double, brightness: Double) -> (red: Double, green: Double, blue: Double) {
-    fatalError("TODO")
+    preconditionFailure("TODO")
 }
 
 
@@ -167,7 +167,7 @@ extension ColorProvider {
     package var kitColor: AnyObject? { nil }
     package var colorDescription: String { String(describing: self) }
     package func opacity(at level: Int, environment: EnvironmentValues) -> Float {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

@@ -30,14 +30,14 @@ extension Color {
         }
         
 //        package func over(_ s: Resolved) -> Color.Resolved {
-//            fatalError("TODO")
+//            preconditionFailure("TODO")
 //        }
     }
     
     package struct ResolvedVibrant: Equatable {
         package var scale: Float
         package var bias: (Float, Float, Float)
-        // package var colorMatrix: _ColorMatrix { fatalError("TODO") }
+        // package var colorMatrix: _ColorMatrix { preconditionFailure("TODO") }
         
         package static func == (lhs: ResolvedVibrant, rhs: ResolvedVibrant) -> Bool {
             lhs.scale == rhs.scale && lhs.bias == rhs.bias
@@ -64,7 +64,7 @@ extension Color.Resolved/*: ResolvedPaint*/ {
 
 extension Color.Resolved: ShapeStyle/*, PrimitiveShapeStyle*/ {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     public typealias Resolved = Never
@@ -94,7 +94,7 @@ extension Color.Resolved : Animatable {
         get {
             if Self.legacyInterpolation {
                 // ResolvedGradient.Color.Space.convertIn(self)
-                fatalError("TODO")
+                preconditionFailure("TODO")
             } else {
                 let factor: Float = 128.0
                 return AnimatablePair(linearRed * factor, AnimatablePair(linearGreen * factor, AnimatablePair(linearBlue * factor, opacity * factor)))
@@ -105,7 +105,7 @@ extension Color.Resolved : Animatable {
             let factor: Float = 0.0078125
             if Self.legacyInterpolation {
                 // ResolvedGradient.Color.Space.convertOut(self)
-                fatalError("TODO")
+                preconditionFailure("TODO")
             } else {
                 linearRed = newValue.first * factor
                 linearGreen = newValue.second.first * factor

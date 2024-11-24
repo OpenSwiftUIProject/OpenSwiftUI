@@ -48,18 +48,18 @@ open class PlatformViewDefinition: @unchecked Sendable {
     }
   
     open class var system: PlatformViewDefinition.System { .init(base: .swiftUIView) }
-    open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { fatalError() }
+    open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { preconditionFailure("") }
     #if canImport(Darwin)
-    open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { fatalError() }
+    open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { preconditionFailure("") }
     #endif
-    open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { fatalError() }
-    // open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { fatalError() }
-    open class func setPath(_ path: Path, shapeView: AnyObject) { fatalError() }
-    open class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) { fatalError() }
-    open class func getRBLayer(drawingView: AnyObject) -> AnyObject? { fatalError() }
-    open class func setIgnoresEvents(_ state: Bool, of view: AnyObject) { fatalError() }
-    open class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) { fatalError() }
-    open class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) { fatalError() }
+    open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { preconditionFailure("") }
+    // open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { preconditionFailure("") }
+    open class func setPath(_ path: Path, shapeView: AnyObject) { preconditionFailure("") }
+    open class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) { preconditionFailure("") }
+    open class func getRBLayer(drawingView: AnyObject) -> AnyObject? { preconditionFailure("") }
+    open class func setIgnoresEvents(_ state: Bool, of view: AnyObject) { preconditionFailure("") }
+    open class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) { preconditionFailure("") }
+    open class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) { preconditionFailure("") }
 }
 
 extension DisplayList.ViewUpdater {
@@ -86,7 +86,7 @@ extension DisplayList.GraphicsRenderer {
             layer.bounds = CGRect(origin: .zero, size: size)
             layer.layoutIfNeeded()
         }
-        fatalError("Blocked by GraphicsContext")
+        preconditionFailure("Blocked by GraphicsContext")
         // ctx.drawLayer
     }
     #endif

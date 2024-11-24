@@ -81,7 +81,7 @@ package struct PropertyList: CustomStringConvertible {
     }
     
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
-        get { fatalError("TODO") }
+        get { preconditionFailure("TODO") }
     }
   
     @usableFromInline
@@ -126,7 +126,7 @@ package struct PropertyList: CustomStringConvertible {
     }
     
     mutating func merge(_ plist: PropertyList) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -193,18 +193,18 @@ extension PropertyList {
         }
         
         @usableFromInline
-        package var description: String { fatalError() }
+        package var description: String { preconditionFailure("") }
         
         func matches(_: Element, ignoredTypes _: inout Set<ObjectIdentifier>) -> Bool {
-            fatalError()
+            preconditionFailure("")
         }
         
         func hasMatchingValue(in _: Unmanaged<Element>?) -> Bool {
-            fatalError()
+            preconditionFailure("")
         }
         
         func copy(before _: Element?, after _: Element?) -> Element {
-            fatalError()
+            preconditionFailure("")
         }
         
         final package func byPrepending(_ element: Element?) -> Element {

@@ -18,7 +18,7 @@ package struct UnsafeAtomicLazy<Data>: Destroyable {
     }
     
     package func read(_ block: () -> Data) -> Data {
-        fatalError("TODO") // StrokedPath.boundingRect
+        preconditionFailure("TODO") // StrokedPath.boundingRect
     }
 
     package func destroy() {

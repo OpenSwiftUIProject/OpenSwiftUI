@@ -15,6 +15,6 @@ extension AsyncAttribute {
 
 extension Attribute {
     package func syncMainIfReferences<V>(do body: (Value) -> V) -> V {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }

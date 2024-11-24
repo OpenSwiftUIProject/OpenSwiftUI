@@ -74,7 +74,7 @@ public struct Transaction {
     package var isEmpty: Bool { plist.isEmpty }
     
     package func mayConcatenate(with other: Transaction) -> Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     @_transparent
@@ -99,11 +99,11 @@ public struct Transaction {
     }
     
     package var current: Transaction {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: TransactionKey {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     // FIXME: TO BE REMOVED

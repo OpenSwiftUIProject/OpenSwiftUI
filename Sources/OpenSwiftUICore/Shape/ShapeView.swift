@@ -19,6 +19,6 @@ public struct _ShapeView<Content, Style>: /*ShapeStyledLeafView, */UnaryView, Pr
     }
 
     public static func _makeView(view: _GraphValue<_ShapeView<Content, Style>>, inputs: _ViewInputs) -> _ViewOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }

@@ -26,6 +26,6 @@ struct FixedRoundedRect: Equatable {
     }
     
     func distance(to point: CGPoint) -> CGFloat {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }

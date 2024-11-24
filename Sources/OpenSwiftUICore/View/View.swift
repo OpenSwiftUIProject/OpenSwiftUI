@@ -103,6 +103,6 @@ extension Never: View {
 
 extension View {
     package func bodyError() -> Never {
-        fatalError("body() should not be called on \(Self.self)")
+        preconditionFailure("body() should not be called on \(Self.self)")
     }
 }

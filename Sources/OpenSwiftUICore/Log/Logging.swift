@@ -165,13 +165,18 @@ extension Log: Sendable {}
 @_transparent
 package func precondition(_ condition: @autoclosure () -> Bool, _ message: @autoclosure () -> String, file: StaticString = #fileID, line: UInt = #line) {
     guard condition() else {
-        Swift.preconditionFailure(message(), file: file, line: line)
+        preconditionFailure(message(), file: file, line: line)
     }
 }
 
 @_transparent
 package func preconditionFailure(_ message: @autoclosure () -> String, file: StaticString, line: UInt) -> Never {
-    Swift.preconditionFailure(message(), file: file, line: line)
+    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    if message() == "TODO" {
+        print("💣 Hit unimplemented part of OpenSwiftUI at \(file):\(line).\nConsider adding a plain implementation to avoid crash.")
+    }
+    #endif
+    Swift.fatalError(message(), file: file, line: line)
 }
 
 @_transparent

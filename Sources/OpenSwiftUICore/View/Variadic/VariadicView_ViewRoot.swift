@@ -42,7 +42,7 @@ extension _VariadicView_ViewRoot {
         inputs: _ViewInputs,
         body: (_Graph, _ViewInputs) -> _ViewListOutputs
     ) -> _ViewOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     public static func _makeViewList(
@@ -50,7 +50,7 @@ extension _VariadicView_ViewRoot {
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {

@@ -82,7 +82,7 @@ extension View {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     @inline(__always)

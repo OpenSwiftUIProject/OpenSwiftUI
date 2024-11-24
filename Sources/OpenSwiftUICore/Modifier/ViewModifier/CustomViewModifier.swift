@@ -39,14 +39,14 @@ extension ViewModifier {
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     static func viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     private static func makeBody(
@@ -60,7 +60,7 @@ extension ViewModifier {
             let accessor = ModifierBodyAccessor<Self>()
             return accessor.makeBody(container: modifier, inputs: &inputs, fields: fields)
         default:
-            fatalError("view modifiers must be value types:  \(Self.self)")
+            preconditionFailure("view modifiers must be value types:  \(Self.self)")
         }
     }
 }
@@ -95,7 +95,7 @@ public struct _ViewModifier_Content<Modifier: ViewModifier>: PrimitiveView {
         case let .view(makeViewBody):
             return makeViewBody(_Graph(), inputs)
         case let .list(makeViewListBody):
-            fatalError("TODO: \(String(describing: makeViewListBody))")
+            preconditionFailure("TODO: \(String(describing: makeViewListBody))")
         }
     }
     
@@ -103,14 +103,14 @@ public struct _ViewModifier_Content<Modifier: ViewModifier>: PrimitiveView {
         view: _GraphValue<Self>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

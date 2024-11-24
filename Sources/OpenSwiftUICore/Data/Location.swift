@@ -43,23 +43,23 @@ extension AnyLocationBase: Sendable {}
 open class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
     @_spi(ForOpenSwiftUIOnly)
     open var wasRead: Bool {
-        get { fatalError() }
-        set { fatalError() }
+        get { preconditionFailure("") }
+        set { preconditionFailure("") }
     }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func get() -> Value { fatalError() }
+    open func get() -> Value { preconditionFailure("") }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func set(_ value: Value, transaction: Transaction) { fatalError() }
+    open func set(_ value: Value, transaction: Transaction) { preconditionFailure("") }
     
     @_spi(ForOpenSwiftUIOnly)
     open func projecting<P>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base, P: Projection {
-        fatalError()
+        preconditionFailure("")
     }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func update() -> (Value, Bool) { fatalError() }
+    open func update() -> (Value, Bool) { preconditionFailure("") }
     
     @_spi(ForOpenSwiftUIOnly)
     open func isEqual(to other: AnyLocation<Value>) -> Bool { self === other }

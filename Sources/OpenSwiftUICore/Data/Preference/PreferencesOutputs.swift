@@ -47,14 +47,14 @@ package struct PreferencesOutputs {
             let value = self[anyKey: _AnyPreferenceKey<K>.self]
             return value.map { Attribute(identifier: $0) }
             #else
-            fatalError("See #39")
+            preconditionFailure("See #39")
             #endif
         }
         set {
             #if canImport(Darwin)
             self[anyKey: _AnyPreferenceKey<K>.self] = newValue.map { $0.identifier }
             #else
-            fatalError("See #39")
+            preconditionFailure("See #39")
             #endif
         }
     }
@@ -63,7 +63,7 @@ package struct PreferencesOutputs {
         #if canImport(Darwin)
         preferences.append(KeyValue(key: _AnyPreferenceKey<K>.self, value: value.identifier))
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     

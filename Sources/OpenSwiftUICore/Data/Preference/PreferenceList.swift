@@ -178,11 +178,11 @@ private class PreferenceNode: CustomStringConvertible {
         return nil
     }
     
-    func find(from _: PreferenceNode?) -> PreferenceNode? { fatalError() }
-    func combine(from _: PreferenceNode?, next _: PreferenceNode?) -> PreferenceNode? { fatalError() }
-    func copy(next _: PreferenceNode?) -> PreferenceNode { fatalError() }
-    class var _includesRemovedValues: Bool { fatalError() }
-    var description: String { fatalError() }
+    func find(from _: PreferenceNode?) -> PreferenceNode? { preconditionFailure("") }
+    func combine(from _: PreferenceNode?, next _: PreferenceNode?) -> PreferenceNode? { preconditionFailure("") }
+    func copy(next _: PreferenceNode?) -> PreferenceNode { preconditionFailure("") }
+    class var _includesRemovedValues: Bool { preconditionFailure("") }
+    var description: String { preconditionFailure("") }
 }
 
 // MARK: - PreferenceNode

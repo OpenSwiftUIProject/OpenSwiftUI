@@ -38,7 +38,7 @@ package struct CachedEnvironment {
             return value
         }
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     
@@ -53,20 +53,20 @@ package struct CachedEnvironment {
             return attribute
         }
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     
     func animatedPosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     func animatedSize(for inputs: _ViewInputs) -> Attribute<ViewSize> {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     func animatedCGSize(for inputs: _ViewInputs) -> Attribute<CGSize> {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     // func resolvedForegroundStyle() {}

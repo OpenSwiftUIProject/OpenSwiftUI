@@ -76,7 +76,7 @@ public struct _ViewListOutputs {
     }
     
     private static func staticList(_ elements: _ViewList_Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -87,7 +87,7 @@ extension _ViewListOutputs {
     }
     
     package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -129,9 +129,9 @@ package struct _ViewList_ID {
     
     package class Views {
         let isDataDependent: Bool
-        var endIndex: Int { fatalError() }
-        subscript(index: Int) -> _ViewList_ID { fatalError() }
-        func isEqual(to other: Views) -> Bool { fatalError() }
+        var endIndex: Int { preconditionFailure("") }
+        subscript(index: Int) -> _ViewList_ID { preconditionFailure("") }
+        func isEqual(to other: Views) -> Bool { preconditionFailure("") }
         init(isDataDependent: Bool) {
             self.isDataDependent = isDataDependent
         }
@@ -180,11 +180,11 @@ package struct _ViewList_ID {
         }
         
         override subscript(index: Int) -> _ViewList_ID {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         override func isEqual(to other: _ViewList_ID.Views) -> Bool {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
     
@@ -333,7 +333,7 @@ private struct UnaryElements<Value>: _ViewList_Elements {
         indirectMap: _ViewList_IndirectMap?,
         body: Body
     ) -> (_ViewOutputs?, Bool) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     func tryToReuseElement(
@@ -343,7 +343,7 @@ private struct UnaryElements<Value>: _ViewList_Elements {
         indirectMap: _ViewList_IndirectMap,
         testOnly: Bool
     ) -> Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -398,15 +398,15 @@ private struct SubgraphElements: _ViewList_Elements {
     let subgraph: _ViewList_Subgraph
     
     var count: Int {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     func makeElements(from start: inout Int, inputs: _ViewInputs, indirectMap: _ViewList_IndirectMap?, body: (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)) -> (_ViewOutputs?, Bool) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     func tryToReuseElement(at index: Int, by other: any _ViewList_Elements, at otherIndex: Int, indirectMap: _ViewList_IndirectMap, testOnly: Bool) -> Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -466,7 +466,7 @@ struct _ViewList_IteratorStyle: Equatable {
     var value: UInt
     
     func alignToPreviousGranularityMultiple(_ value: inout Int) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

@@ -129,7 +129,7 @@ extension DisplayList {
         var lastContentsScale: CGFloat
         
         init(platform: DisplayList.ViewUpdater.Platform, host: ViewRendererHost?, rootView: AnyObject, options: _RendererConfiguration.RasterizationOptions) {
-            fatalError()
+            preconditionFailure("")
         }
         
         var exportedObject: AnyObject? {
@@ -137,19 +137,19 @@ extension DisplayList {
         }
         
         func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         func destroy(rootView: AnyObject) {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         var viewCacheIsEmpty: Bool {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
 }

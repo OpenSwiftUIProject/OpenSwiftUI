@@ -69,12 +69,12 @@ public struct AnyView: PrimitiveView {
         }
         return outputs
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -86,25 +86,25 @@ class AnyViewStorageBase {
         self.id = id
     }
     
-    fileprivate var type: Any.Type { fatalError() }
-    fileprivate var canTransition: Bool { fatalError() }
-    fileprivate func matches(_ other: AnyViewStorageBase) -> Bool { fatalError() }
+    fileprivate var type: Any.Type { preconditionFailure("") }
+    fileprivate var canTransition: Bool { preconditionFailure("") }
+    fileprivate func matches(_ other: AnyViewStorageBase) -> Bool { preconditionFailure("") }
     fileprivate func makeChild(
         uniqueId: UInt32,
         container: Attribute<AnyViewInfo>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        fatalError()
+        preconditionFailure("")
     }
-    func child<Value>() -> Value { fatalError() }
+    func child<Value>() -> Value { preconditionFailure("") }
     fileprivate func makeViewList(
         view: _GraphValue<AnyView>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
-        fatalError()
+        preconditionFailure("")
     }
     fileprivate func visitContent<Vistor: ViewVisitor>(_ visitor: inout Vistor) {
-        fatalError()
+        preconditionFailure("")
     }
 }
 
@@ -204,7 +204,7 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
             return AnyViewInfo(item: storage, subgraph: childGraph, uniqueID: uniqueId)
         }
         #else
-        fatalError("#See #39")
+        preconditionFailure("#See #39")
         #endif
     }
     
@@ -261,7 +261,7 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
     typealias Value = AnyView // FIXME
     
     func updateValue() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     final class Item: _ViewList_Subgraph {

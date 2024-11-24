@@ -79,7 +79,7 @@ extension ViewRendererHost {
     package func invalidate() {
         // viewGraph.delegate = nil
         // TODO: Signpost.viewHost
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
 //    package static func makeRootView<V>(_ view: V) -> ModifiedContent<V, HitTestBindingModifier> where V: View
@@ -100,14 +100,14 @@ extension ViewRendererHost {
     
     @_spi(ForOpenSwiftUIOnly)
     public func graphDidChange() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func didRender() {}
     
     @_spi(ForOpenSwiftUIOnly)
     public func preferencesDidChange() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func invalidateProperties(_ props: ViewRendererHostProperties, mayDeferUpdate: Bool = true) {
@@ -140,7 +140,7 @@ extension ViewRendererHost {
     }
     
     package func updateTransform() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func render(interval: Double = 0, updateDisplayList: Bool = true, targetTimestamp: Time? = nil) {
@@ -167,34 +167,34 @@ extension ViewRendererHost {
     }
     
     package func renderAsync(interval: Double = 0, targetTimestamp: Time?) -> Time? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func advanceTimeForTest(interval: Double) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     @_spi(Private)
     public func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
-    package func idealSize() -> CGSize { fatalError("TODO") }
+    package func idealSize() -> CGSize { preconditionFailure("TODO") }
     
     package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package var centersRootView: Bool {
         get { viewGraph.centersRootView }
@@ -202,14 +202,14 @@ extension ViewRendererHost {
     }
     
 //    package var responderNode: ResponderNode? {
-//        fatalError("TODO")
+//        preconditionFailure("TODO")
 //    }
     
     package var isRootHost: Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
-    private var enclosingHosts: [ViewRendererHost] { fatalError("TODO") }
-    package func performExternalUpdate(_ update: () -> Void) { fatalError("TODO") }
+    private var enclosingHosts: [ViewRendererHost] { preconditionFailure("TODO") }
+    package func performExternalUpdate(_ update: () -> Void) { preconditionFailure("TODO") }
     package func updateFocusedItem() {}
     package func updateFocusedValues() {}
     package func updateFocusStore() {}
@@ -265,7 +265,7 @@ extension EnvironmentValues {
 
 extension ViewRendererHost {
     package func rootContentPath(kind: ContentShapeKinds) -> Path {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

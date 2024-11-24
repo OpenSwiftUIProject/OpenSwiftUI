@@ -7,7 +7,7 @@
 
 package class AnyResolvedPaint: Equatable {
     package static func == (lhs: AnyResolvedPaint, rhs: AnyResolvedPaint) -> Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

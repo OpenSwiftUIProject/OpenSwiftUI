@@ -185,11 +185,11 @@ extension UIViewRepresentable {
     static func _modifyBridgedViewInputs(_ inputs: inout _ViewInputs) {}
     
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

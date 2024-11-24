@@ -30,7 +30,7 @@ extension LayoutComputer {
         func layoutPriority() -> Double { .zero }
         func ignoresAutomaticPadding() -> Bool { false }
         func requiresSpacingProjection() -> Bool { false }
-        func spacing() -> Spacing { fatalError() }
+        func spacing() -> Spacing { preconditionFailure("") }
         func lengthThatFits(_ size: _ProposedSize, in axis: Axis) -> CGFloat {
             let result = sizeThatFits(size)
             return switch axis {
@@ -39,8 +39,8 @@ extension LayoutComputer {
             }
         }
 
-        func sizeThatFits(_: _ProposedSize) -> CGSize { fatalError() }
-        func childGeometries(at _: ViewSize, origin _: CGPoint) -> [ViewGeometry] { fatalError() }
+        func sizeThatFits(_: _ProposedSize) -> CGSize { preconditionFailure("") }
+        func childGeometries(at _: ViewSize, origin _: CGPoint) -> [ViewGeometry] { preconditionFailure("") }
         func explicitAlignment(_: AlignmentKey, at _: ViewSize) -> CGFloat? { nil }
     }
 }

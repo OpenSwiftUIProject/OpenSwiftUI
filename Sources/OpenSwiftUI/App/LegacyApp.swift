@@ -19,7 +19,7 @@ extension __App {
         var rootView: V
         
         init() {
-            fatalError("Not a standalone App.")
+            preconditionFailure("Not a standalone App.")
         }
         
         init(rootView: V) {

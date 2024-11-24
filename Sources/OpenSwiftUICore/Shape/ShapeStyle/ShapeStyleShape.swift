@@ -72,21 +72,21 @@ public struct _ShapeStyle_Shape {
     
     package func opacity(at level: Int) -> Float {
         // Blocked by Color
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func opacity(for color: Color, at level: Int) -> Float {
         // Blocked by Color
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package func applyingOpacity(at level: Int, to color: Color) -> Color {
         // Blocked by Color
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func applyingOpacity(at level: Int, to color: Color.Resolved) -> Color.Resolved {
         // Blocked by Color
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package var currentForegroundStyle: AnyShapeStyle? {

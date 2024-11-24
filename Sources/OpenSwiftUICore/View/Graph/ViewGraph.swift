@@ -37,7 +37,7 @@ package final class ViewGraph: GraphHost {
                 return
             }
             guard requestedOutputs.contains(.layout) else {
-                fatalError("Cannot use sizeThatFits without layout output")
+                preconditionFailure("Cannot use sizeThatFits without layout output")
             }
         }
     }
@@ -83,7 +83,7 @@ package final class ViewGraph: GraphHost {
         super.init(data: data)
         OGSubgraph.current = nil
         #else
-        fatalError("TOOD")
+        preconditionFailure("TOOD")
         #endif
     }
     
@@ -151,7 +151,7 @@ package final class ViewGraph: GraphHost {
 //                delegate?.focusDidChange()
             }
         } else {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         mainUpdates &-= 1
         #endif

@@ -60,7 +60,7 @@ package enum Update {
             return
         }
         guard isOwner else {
-            fatalError("OpenSwiftUI is active without having taken its own lock - missing Update.ensure()?")
+            preconditionFailure("OpenSwiftUI is active without having taken its own lock - missing Update.ensure()?")
         }
     }
     
@@ -111,7 +111,7 @@ package enum Update {
                 }
             }
             #else
-            fatalError("See #39")
+            preconditionFailure("See #39")
             #endif
         }
         #endif
@@ -152,7 +152,7 @@ package enum Update {
                         action()
                         let newDepth = depth
                         guard newDepth == oldDepth else {
-                            fatalError("Action caused unbalanced updates.")
+                            preconditionFailure("Action caused unbalanced updates.")
                         }
                     }
                 }

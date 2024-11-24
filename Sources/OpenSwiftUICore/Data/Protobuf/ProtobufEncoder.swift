@@ -415,7 +415,7 @@ extension ProtobufEncoder {
     /// - Returns: The encoded binary plist data.
     func binaryPlistData<T>(for value: T) throws -> Data where T: Encodable {
         #if os(WASI)
-        fatalError("PropertyListEncoder is not avaiable on WASI")
+        preconditionFailure("PropertyListEncoder is not avaiable on WASI")
         #else
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary

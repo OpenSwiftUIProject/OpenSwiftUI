@@ -170,7 +170,7 @@ public struct _ViewInputs {
             hostPreferenceKeys: Attribute(identifier: .nil)
         )
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     

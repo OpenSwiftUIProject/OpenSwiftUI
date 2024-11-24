@@ -30,7 +30,7 @@ private struct StaticSourceWriter<Alias: ViewAlias, Source: View>: PrimitiveView
     var source: Source
 
     static func _makeInputs(modifier: _GraphValue<StaticSourceWriter<Alias, Source>>, inputs: inout _GraphInputs) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -38,6 +38,6 @@ private struct OptionalSourceWriter<Alias: ViewAlias, Source: View>: PrimitiveVi
     var source: Source?
 
     static func _makeInputs(modifier: _GraphValue<OptionalSourceWriter<Alias, Source>>, inputs: inout _GraphInputs) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }

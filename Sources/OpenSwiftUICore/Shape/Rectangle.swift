@@ -4,7 +4,7 @@ public import Foundation
 @frozen
 public struct Rectangle: Shape {
     public func path(in rect: CGRect) -> Path {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 
     /// Creates a new rectangle shape.

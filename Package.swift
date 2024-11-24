@@ -17,13 +17,21 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
     }
 }
 
-let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
-let development = envEnable("OPENSWIFTUI_DEVELOPMENT", default: false)
-
-// Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
-let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
+var sharedSwiftSettings: [SwiftSetting] = [
+    .enableUpcomingFeature("BareSlashRegexLiterals"),
+    .enableUpcomingFeature("InternalImportsByDefault"),
+    .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
+    .swiftLanguageMode(.v5),
+]
 
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
+sharedSwiftSettings.append(.define("OPENSWIFTUI_RELEASE_\(releaseVersion)"))
+if releaseVersion >= 2021 {
+    for year in 2021 ... releaseVersion {
+        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))
+    }
+}
+
 let platforms: [SupportedPlatform] = switch releaseVersion {
 case 2024: // iOS 18.0
     [
@@ -53,18 +61,15 @@ default:
     ]
 }
 
-var sharedSwiftSettings: [SwiftSetting] = [
-    .enableUpcomingFeature("BareSlashRegexLiterals"),
-    .enableUpcomingFeature("InternalImportsByDefault"),
-    .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
-    .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
-    .swiftLanguageMode(.v5),
-]
+let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
 
-if releaseVersion >= 2021 {
-    for year in 2021 ... releaseVersion {
-        sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))
-    }
+// Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
+let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
+
+let development = envEnable("OPENSWIFTUI_DEVELOPMENT")
+
+if development {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
 }
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)

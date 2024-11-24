@@ -17,7 +17,7 @@ open class CoreGlue: NSObject {
     
     
     open func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

@@ -18,7 +18,7 @@ public struct RoundedRectangle: Shape {
     }
     
     public func path(in rect: CGRect) -> Path {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     public var animatableData: CGSize.AnimatableData {
         get { cornerSize.animatableData }

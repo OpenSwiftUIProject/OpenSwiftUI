@@ -150,7 +150,7 @@ package struct StrongHasher {
     package mutating func combineType(_ type: any Any.Type) {
 //        let signature = OGTypeGetSignature
 //        CC_SHA1_Update(&state, signature, 20)
-        fatalError("Blocked by latest OGTypeGetSignature")
+        preconditionFailure("Blocked by latest OGTypeGetSignature")
     }
 }
 

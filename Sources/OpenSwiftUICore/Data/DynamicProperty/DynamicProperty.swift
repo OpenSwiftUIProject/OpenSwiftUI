@@ -220,7 +220,7 @@ extension BodyAccessor {
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
         #if canImport(Darwin)
         guard Body.self != Never.self else {
-            fatalError("\(Body.self) may not have Body == Never")
+            preconditionFailure("\(Body.self) may not have Body == Never")
         }
         return withUnsafeMutablePointer(to: &inputs) { inputsPointer in
             func project<Flags: RuleThreadFlags>(flags _: Flags.Type) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
@@ -254,7 +254,7 @@ extension BodyAccessor {
             }
         }
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
 }

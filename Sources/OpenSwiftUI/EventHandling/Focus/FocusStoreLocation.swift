@@ -11,16 +11,16 @@ class FocusStoreLocation<A: Hashable>: AnyLocation<A>, @unchecked Sendable {
     }
     
     override func get() -> A {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     override func set(_ value: A, transaction: Transaction) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     typealias Value = A
     
-    override init() { fatalError() }
+    override init() { preconditionFailure("") }
     
     var store: FocusStore
     weak var host: GraphHost?

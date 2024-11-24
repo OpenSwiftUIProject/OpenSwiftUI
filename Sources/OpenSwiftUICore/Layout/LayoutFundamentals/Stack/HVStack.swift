@@ -18,6 +18,6 @@ public struct HStack<Content: View>: PrimitiveView {
     var _tree: _VariadicView.Tree<_HStackLayout, Content>
 
     public static func _makeView(view _: _GraphValue<HStack<Content>>, inputs _: _ViewInputs) -> _ViewOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }

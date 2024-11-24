@@ -149,10 +149,10 @@ open class GraphHost: CustomReflectable {
         } else if let currentSubgraph = Subgraph.current {
             currentSubgraph.graph.graphHost()
         } else {
-            fatalError("no current graph host")
+            preconditionFailure("no current graph host")
         }
         #else
-        fatalError("Compiler issue on Linux. See #39")
+        preconditionFailure("Compiler issue on Linux. See #39")
         #endif
     }
     
@@ -232,7 +232,7 @@ open class GraphHost: CustomReflectable {
             return result
         }
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     
@@ -282,7 +282,7 @@ extension GraphHost {
         guard isInstantiated else {
             return
         }
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package final func uninstantiate() {
@@ -329,7 +329,7 @@ extension GraphHost {
     }
     
     package final func updateRemovedState() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     // MARK: - GraphHost + Transaction
@@ -341,7 +341,7 @@ extension GraphHost {
         style: _GraphMutation_Style = .deferred,
         mayDeferUpdate: Bool = true
     ) where T: GraphMutation {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package final func asyncTransaction(
@@ -392,30 +392,30 @@ extension GraphHost {
         pendingTransactions = []
         for _ in transactions {
             instantiateIfNeeded()
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         graphDelegate?.graphDidChange()
         mayDeferUpdate = true
     }
 
     package final func runTransaction(_ transaction: Transaction? = nil, do body: () -> Void) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package final func runTransaction() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package final var needsTransaction: Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package final func startTransactionUpdate() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -424,7 +424,7 @@ extension GraphHost {
     private static var pendingGlobalTransactions: [GlobalTransaction] = []
 
     private static func flushGlobalTransactions() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package static func globalTransaction<T>(
@@ -433,7 +433,7 @@ extension GraphHost {
         mutation: T,
         hostProvider: any TransactionHostProvider
     ) where T: GraphMutation {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -596,5 +596,5 @@ private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
 
 public func __previewThunksHaveFinishedLoading() {
-    fatalError("TODO")
+    preconditionFailure("TODO")
 }

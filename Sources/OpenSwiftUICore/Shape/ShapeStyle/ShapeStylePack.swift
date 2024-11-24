@@ -136,7 +136,7 @@ package struct _ShapeStyle_Pack: Equatable {
         var baseLevel: UInt8
         
         init(pack: _ShapeStyle_Pack, name: _ShapeStyle_Name) {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         package var startIndex: Int {
@@ -144,38 +144,38 @@ package struct _ShapeStyle_Pack: Equatable {
         }
         
         package var endIndex: Int {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         package subscript(level: Int) -> _ShapeStyle_Pack.Style {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
     
     package mutating func modify(name: _ShapeStyle_Name, levels: Range<Int>, _ modifier: (inout _ShapeStyle_Pack.Style) -> Void) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func adjustLevelIndices(of name: _ShapeStyle_Name, by offset: Int) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func createOpacities(count: Int, name: _ShapeStyle_Name, environment: EnvironmentValues) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func isClear(name: _ShapeStyle_Name) -> Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package subscript(colorName: String) -> Color.Resolved? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
 extension _ShapeStyle_Pack.Slice {
     package var allColors: Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -192,23 +192,23 @@ extension _ShapeStyle_Pack.Style {
     }
     
     package var ignoresBackdrop: Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func applyOpacity(_ opacity: Float) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func applyingOpacity(_ opacity: Float) -> _ShapeStyle_Pack.Style {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func applyBlend(_ blend: GraphicsBlendMode) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package var color: Color.Resolved? {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 

@@ -27,7 +27,7 @@ struct CoreGraphicsContextTests {
             space: colorSpace,
             bitmapInfo: bitmapInfo
         ) else {
-            fatalError("Could not create CGContext")
+            preconditionFailure("Could not create CGContext")
         }
 
         let context = CoreGraphicsContext(cgContext: cgContext)

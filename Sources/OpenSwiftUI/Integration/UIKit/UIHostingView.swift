@@ -41,7 +41,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
     
     @available(*, unavailable)
     public required init?(coder _: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
+        preconditionFailure("init(coder:) has not been implemented")
     }
     
     deinit {
@@ -156,40 +156,40 @@ open class _UIHostingView<Content>: UIView where Content: View {
 extension _UIHostingView: ViewRendererHost {
     package var renderingPhase: OpenSwiftUICore.ViewRenderingPhase {
         get {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         set(newValue) {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
     
     package var externalUpdateCount: Int {
         get {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         set(newValue) {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
     
     package func updateEnvironment() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func updateSize() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func updateSafeArea() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func updateScrollableContainerSize() {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func addImplicitPropertiesNeedingUpdate(to _: inout ViewRendererHostProperties) {}
@@ -216,7 +216,7 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     package func rootTransform() -> ViewTransform {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     public func graphDidChange() {

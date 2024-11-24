@@ -55,15 +55,15 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
     // MARK: - abstract method
     
     fileprivate var isUpdating: Bool {
-        fatalError("abstract")
+        preconditionFailure("abstract")
     }
     
     fileprivate func commit(transaction: Transaction, mutation: BeginUpdate) {
-        fatalError("abstract")
+        preconditionFailure("abstract")
     }
     
     fileprivate func notifyObservers() {
-        fatalError("abstract")
+        preconditionFailure("abstract")
     }
     
     // MARK: - AnyLocation

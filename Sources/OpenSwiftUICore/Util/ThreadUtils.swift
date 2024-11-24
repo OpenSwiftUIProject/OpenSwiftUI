@@ -69,8 +69,6 @@ package func onMainThread(do body: @escaping () -> Void) {
 
 package func mainThreadPrecondition() {
     #if !os(WASI)
-    guard Thread.isMainThread else {
-        fatalError("calling into OpenSwiftUI on a non-main thread is not supported")
-    }
+    precondition(Thread.isMainThread, "calling into OpenSwiftUI on a non-main thread is not supported")
     #endif
 }

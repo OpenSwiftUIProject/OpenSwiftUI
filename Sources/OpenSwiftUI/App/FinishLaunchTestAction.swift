@@ -17,7 +17,7 @@ struct FinishLaunchTestAction {
         #if os(iOS)
         UIApplication.shared.finishedTest(UIApplication.shared._launchTestName())
         #else
-        fatalError("Unimplemented for other platform")
+        preconditionFailure("Unimplemented for other platform")
         #endif
     }
 }

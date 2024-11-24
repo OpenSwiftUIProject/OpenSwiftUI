@@ -41,7 +41,7 @@ final package class _DisplayList_StableIdentityRoot {
         if let map {
             return map[index]
         } else {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
 }
@@ -81,17 +81,17 @@ extension _DisplayList_StableIdentity: ProtobufMessage {
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
 extension _DisplayList_StableIdentityMap: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -145,7 +145,7 @@ extension _GraphInputs {
 
 package func makeStableTypeData(_ type: any Any.Type) -> StrongHash {
     // OGTypeGetSignature
-    fatalError("TODO")
+    preconditionFailure("TODO")
 }
 
 package func makeStableIDData<ID>(from id: ID) -> StrongHash? {

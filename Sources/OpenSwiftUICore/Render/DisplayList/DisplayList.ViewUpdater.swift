@@ -9,7 +9,7 @@ extension DisplayList {
     // FIXME
     final package class ViewUpdater: ViewRendererBase {
         init() {
-            fatalError()
+            preconditionFailure("")
         }
         
         init(platform: Platform, exportedObject: AnyObject? = nil, viewCacheIsEmpty: Bool) {

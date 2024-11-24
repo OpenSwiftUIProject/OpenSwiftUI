@@ -120,13 +120,13 @@ extension Never: ShapeStyle {
     public typealias Resolved = Never
     
     public static func _makeView<S>(view: _GraphValue<_ShapeView<S, Never>>, inputs: _ViewInputs) -> _ViewOutputs where S: Shape{
-        fatalError()
+        preconditionFailure("")
     }
 }
 
 extension ShapeStyle where Resolved == Never {
     public func resolve(in: EnvironmentValues) -> Self.Resolved {
-        fatalError()
+        preconditionFailure("")
     }
     
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {}

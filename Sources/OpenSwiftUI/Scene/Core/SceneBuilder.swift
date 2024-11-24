@@ -44,7 +44,7 @@ extension SceneBuilder {
 //        if #available(iOS 16.1, macOS 13.0, watchOS 9.1, tvOS 16.1, *) {
 //            return LimitedAvailabilityScene(scene)
 //        } else {
-//            fatalError("Unavailable")
+//            preconditionFailure("Unavailable")
 //        }
 //    }
 }

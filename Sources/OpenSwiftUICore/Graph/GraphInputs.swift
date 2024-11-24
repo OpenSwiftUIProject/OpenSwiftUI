@@ -22,7 +22,7 @@ extension GraphInput {
     }
     
     package static func makeReusable(indirectMap: IndirectAttributeMap, value: inout Value) {
-        fatalError("Reusable graph inputs must implement all reuse methods.")
+        preconditionFailure("Reusable graph inputs must implement all reuse methods.")
     }
   
     @inlinable
@@ -103,7 +103,7 @@ public struct _GraphInputs {
             transaction: Attribute(identifier: .nil)
         )
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
     
@@ -152,15 +152,15 @@ public struct _GraphInputs {
     }
     
     package mutating func `import`(_ src: _GraphInputs) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func merge(_ src: _GraphInputs) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func merge(_ src: _GraphInputs, ignoringPhase: Bool) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package func mapEnvironment<T>(_ keyPath: KeyPath<EnvironmentValues, T>) -> Attribute<T> {
@@ -169,11 +169,11 @@ public struct _GraphInputs {
     
     package mutating func copyCaches() {
         // Blocked by cachedEnvironment
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     package mutating func resetCaches() {
         // Blocked cachedEnvironment
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     package mutating func append<T, U>(_ newValue: U, to _: T.Type) where T: GraphInput, T.Value == Stack<U> {
@@ -306,6 +306,6 @@ extension _GraphInputs {
 //        var newInputs = self
 //        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
 //        return newInputs
-        fatalError("TO BE REMOVED")
+        preconditionFailure("TO BE REMOVED")
     }
 }

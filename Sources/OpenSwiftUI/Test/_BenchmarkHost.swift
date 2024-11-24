@@ -42,7 +42,7 @@ extension _BenchmarkHost {
         }
         return end - begin
         #else
-        fatalError("Unsupported Platfrom")
+        preconditionFailure("Unsupported Platfrom")
         #endif
     }
     

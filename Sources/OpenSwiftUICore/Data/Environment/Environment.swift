@@ -232,7 +232,7 @@ public struct Environment<Value>: DynamicProperty {
 
     @usableFromInline
     func error() -> Never {
-        fatalError("Reading Environment<\(Value.self)> outside View.body")
+        preconditionFailure("Reading Environment<\(Value.self)> outside View.body")
     }
 
     public static func _makeProperty<V>(

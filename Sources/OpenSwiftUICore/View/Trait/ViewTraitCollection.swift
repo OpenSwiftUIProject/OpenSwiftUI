@@ -53,11 +53,11 @@ package struct ViewTraitCollection {
     }
     
 //    func insertInteraction(for: OnInsertInteraction.Strategy) -> OnInsertInteraction? {
-//        fatalError("TODO")
+//        preconditionFailure("TODO")
 //    }
 //    
 //    var optionalTransition: AnyTransition? {
-//        fatalError("TODO")
+//        preconditionFailure("TODO")
 //    }
 }
 

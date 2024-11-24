@@ -38,7 +38,7 @@ public struct _AppearanceActionModifier: PrimitiveViewModifier {
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -91,7 +91,7 @@ extension AppearanceEffect: StatefulRule {
         lastValue = modifier
         appeared()
         #else
-        fatalError("See #39")
+        preconditionFailure("See #39")
         #endif
     }
 }

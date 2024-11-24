@@ -22,11 +22,11 @@ extension _VariadicView_Children: RandomAccessCollection {
         
         public var id: AnyHashable {
 //            view.viewID
-            fatalError("TODO")
+            preconditionFailure("TODO")
 
         }
         public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID : Hashable {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         public subscript<Trait: _ViewTraitKey>(key: Trait.Type) -> Trait.Value {
@@ -35,22 +35,22 @@ extension _VariadicView_Children: RandomAccessCollection {
         }
 
         public static func _makeView(view: _GraphValue<_VariadicView_Children.Element>, inputs: _ViewInputs) -> _ViewOutputs {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
     
     public var startIndex: Int {
-        fatalError("TODO")
+        preconditionFailure("TODO")
 
 //      get
     }
     public var endIndex: Int {
-        fatalError("TODO")
+        preconditionFailure("TODO")
 
 //      get
     }
     public subscript(index: Int) -> _VariadicView_Children.Element {
-        fatalError("TODO")
+        preconditionFailure("TODO")
 
 //      get
     }
@@ -63,7 +63,7 @@ extension _VariadicView_Children {
         @Attribute var children: _VariadicView_Children
         
         var value: Value {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
     }
 }

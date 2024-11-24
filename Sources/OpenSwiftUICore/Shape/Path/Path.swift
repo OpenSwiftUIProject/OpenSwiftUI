@@ -147,7 +147,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     ///
     @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     public init(roundedRect rect: CGRect, cornerRadii: RectangleCornerRadii, style: RoundedCornerStyle = .continuous) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     #endif
     
@@ -216,19 +216,19 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     /// A description of the path that may be used to recreate the path
     /// via `init?(_:)`.
     public var description: String {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 
     #if canImport(CoreGraphics)
     /// An immutable path representing the elements in the path.
     public var cgPath: CGPath {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     #endif
     
     /// A Boolean value indicating whether the path contains zero elements.
     public var isEmpty: Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 
     /// A rectangle containing all path segments.
@@ -237,7 +237,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     /// in the path but not including control points for Bézier
     /// curves.
     public var boundingRect: CGRect {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     /// Returns true if the path contains a specified point.
@@ -245,18 +245,18 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     /// If `eoFill` is true, this method uses the even-odd rule to define which
     /// points are inside the path. Otherwise, it uses the non-zero rule.
     public func contains(_ p: CGPoint, eoFill: Bool = false) -> Bool {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
     
     /// Calls `body` with each element in the path.
     public func forEach(_ body: (Path.Element) -> Void) {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 
     /// Returns a stroked copy of the path using `style` to define how the
     /// stroked outline is created.
     public func strokedPath(_ style: StrokeStyle) -> Path {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 
     /// Returns a partial copy of the path.
@@ -265,7 +265,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     /// which must be fractions between zero and one defining points
     /// linearly-interpolated along the path.
     public func trimmedPath(from: CGFloat, to: CGFloat) -> Path {
-        fatalError("TODO")
+        preconditionFailure("TODO")
     }
 }
 
@@ -290,11 +290,11 @@ extension Path {
         }
         
         init(_ path: CGPath) {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         init(_ mutablePath: CGMutablePath) {
-            fatalError("TODO")
+            preconditionFailure("TODO")
         }
         
         // FIXME
