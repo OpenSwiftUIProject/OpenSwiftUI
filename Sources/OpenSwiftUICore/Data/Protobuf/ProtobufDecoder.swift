@@ -4,7 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: Complete
-//  ID: FFA06CAF6B06DC3E21EC75547A0CD421
+//  ID: FFA06CAF6B06DC3E21EC75547A0CD421 (SwiftUICore)
 
 package import Foundation
 
@@ -65,6 +65,8 @@ extension ProtobufDecoder {
                 return packedField
             } else if packedEnd < ptr {
                 throw DecodingError.failed
+            } else {
+                packedField = Field(rawValue: 0)
             }
         }
         let result = try decodeVariant()
