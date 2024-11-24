@@ -6,7 +6,94 @@
 //  WIP
 
 package enum GraphicsFilter {
-    // TODO
+    // case blur(BlurStyle)
+    // case variableBlur(VariableBlurStyle)
+    case averageColor
+    // case shadow(ResolvedShadowStyle)
+    case projection(ProjectionTransform)
+    case colorMatrix(_ColorMatrix, premultiplied: Bool)
+    case colorMultiply(Color.Resolved)
+    case hueRotation(Angle)
+    case saturation(Double)
+    case brightness(Double)
+    case contrast(Double)
+    case luminanceToAlpha
+    case colorInvert
+    case grayscale(Double)
+    case colorMonochrome(GraphicsFilter.ColorMonochrome)
+    case vibrantColorMatrix(_ColorMatrix)
+    case luminanceCurve(GraphicsFilter.LuminanceCurve)
+    case colorCurves(GraphicsFilter.ColorCurves)
+    // case shader(GraphicsFilter.ShaderFilter)
+    
+    package struct ColorMonochrome: Equatable {
+        package var color: Color.Resolved
+        package var amount: Float
+        package var bias: Float
+        
+        package init(color: Color.Resolved, amount: Float, bias: Float) {
+            self.color = color
+            self.amount = amount
+            self.bias = bias
+        }
+        
+        package static func == (lhs: GraphicsFilter.ColorMonochrome, rhs: GraphicsFilter.ColorMonochrome) -> Bool {
+            lhs.color == rhs.color && lhs.amount == rhs.amount && lhs.bias == rhs.bias
+        }
+    }
+
+    package struct Curve: Equatable {
+        package var values: (Float, Float, Float, Float)
+        
+        package init(_ values: (Float, Float, Float, Float)) {
+            self.values = values
+        }
+        package static func == (lhs: GraphicsFilter.Curve, rhs: GraphicsFilter.Curve) -> Bool {
+            lhs.values == rhs.values
+        }
+    }
+
+    package struct LuminanceCurve: Equatable {
+        package var curve: GraphicsFilter.Curve
+        package var amount: Float
+        
+        package init(curve: GraphicsFilter.Curve, amount: Float) {
+            self.curve = curve
+            self.amount = amount
+        }
+        
+        package static func == (a: GraphicsFilter.LuminanceCurve, b: GraphicsFilter.LuminanceCurve) -> Bool {
+            a.curve == b.curve && a.amount == b.amount
+        }
+    }
+
+    package struct ColorCurves: Equatable {
+        package var redCurve: GraphicsFilter.Curve
+        package var greenCurve: GraphicsFilter.Curve
+        package var blueCurve: GraphicsFilter.Curve
+        package var opacityCurve: GraphicsFilter.Curve
+        
+        package init(redCurve: GraphicsFilter.Curve, greenCurve: GraphicsFilter.Curve, blueCurve: GraphicsFilter.Curve, opacityCurve: GraphicsFilter.Curve) {
+            self.redCurve = redCurve
+            self.greenCurve = greenCurve
+            self.blueCurve = blueCurve
+            self.opacityCurve = opacityCurve
+        }
+        
+        package static func == (a: GraphicsFilter.ColorCurves, b: GraphicsFilter.ColorCurves) -> Bool {
+            a.redCurve == b.redCurve && a.greenCurve == b.greenCurve && a.blueCurve == b.blueCurve && a.opacityCurve == b.opacityCurve
+        }
+    }
+
+//    package struct ShaderFilter {
+//        package var shader: Shader.ResolvedShader
+//        package var size: CGSize
+//        
+//        package init(shader: Shader.ResolvedShader, size: CGSize) {
+//            self.shader = shader
+//            self.size = size
+//        }
+//    }
 }
 
 package enum GraphicsBlendMode: Equatable {

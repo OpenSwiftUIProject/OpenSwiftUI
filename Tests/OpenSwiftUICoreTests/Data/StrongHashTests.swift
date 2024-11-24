@@ -100,4 +100,15 @@ struct StrongHashTests {
         #expect(s1 == s)
         #expect(s2 == s)
     }
+    
+    @Test(
+        arguments: [
+            (StrongHash(), "0a140000000000000000000000000000000000000000"),
+            (StrongHash(of: 1), "0a143da89ee273be13437e7ecf760f3fbd4dc0e8d1fe"),
+        ]
+    )
+    func pbMessage(hash: StrongHash, hexString: String) throws {
+        try hash.testPBEncoding(hexString: hexString)
+        try hash.testPBDecoding(hexString: hexString)
+    }
 }

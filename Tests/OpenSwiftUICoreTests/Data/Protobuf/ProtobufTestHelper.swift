@@ -440,3 +440,23 @@ extension ProtobufEncodableMessage {
         }
     }
 }
+
+// MARK: - ProtobufMessage + Testing
+
+#if canImport(Testing)
+import Testing
+
+extension ProtobufEncodableMessage {
+    func testPBEncoding(hexString expectedHexString: String) throws {
+        let data = try ProtobufEncoder.encoding(self)
+        #expect(data.hexString == expectedHexString)
+    }
+}
+
+extension ProtobufDecodableMessage where Self: Equatable {
+    func testPBDecoding(hexString: String) throws {
+        let decodedValue = try hexString.decodePBHexString(Self.self)
+        #expect(decodedValue == self)
+    }
+}
+#endif
