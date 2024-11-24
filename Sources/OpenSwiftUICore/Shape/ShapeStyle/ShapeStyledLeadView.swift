@@ -6,7 +6,7 @@
 //  Status: WIP
 
 package import Foundation
-package import AttributeGraph
+package import OpenGraphShims
 
 package protocol ShapeStyledLeafView: ContentResponder {
     static var animatesSize: Bool { get }

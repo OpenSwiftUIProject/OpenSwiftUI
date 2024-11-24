@@ -14,7 +14,7 @@ package struct OffsetShapeStyle<Base>: ShapeStyle where Base: ShapeStyle {
             case .prepareText(let level):
                 shape.operation = .prepareText(level: offset + level)
                 base._apply(to: &shape)
-            case .resolveStyle(let name, let levels):
+            case let .resolveStyle(_, levels):
                 let _ = levels.lowerBound + offset ..< levels.upperBound + offset
                 // Blocked by _ShapeStyle_Pack
             case .multiLevel:
@@ -22,7 +22,7 @@ package struct OffsetShapeStyle<Base>: ShapeStyle where Base: ShapeStyle {
             case .fallbackColor(let level):
                 shape.operation = .fallbackColor(level: offset + level)
                 base._apply(to: &shape)
-            case .copyStyle(let name):
+            case .copyStyle:
                 base.mapCopiedStyle(in: &shape) { style in
                     style.offset(by: offset)
                 }

@@ -109,7 +109,7 @@ public struct _BlendModeShapeStyle<Style>: ShapeStyle, PrimitiveShapeStyle where
         switch shape.operation {
             case .fallbackColor, .modifyBackground:
                 style._apply(to: &shape)
-            case .prepareText(let level):
+            case .prepareText:
                 if blendMode == .normal {
                     style._apply(to: &shape)
                 } else {

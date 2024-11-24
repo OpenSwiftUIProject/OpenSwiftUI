@@ -46,13 +46,13 @@ public struct HierarchicalShapeStyle: ShapeStyle, PrimitiveShapeStyle {
                 if let foregroundStyle = shape.foregroundStyle ?? shape.currentForegroundStyle {
                     let style = foregroundStyle.primaryStyle(in: shape.environment) ?? foregroundStyle
                     if id == 0 {
-                        if case let .copyStyle(name: name) = shape.operation {
+                        if case .copyStyle = shape.operation {
                             shape.result = .style(style)
                         } else {
                             style._apply(to: &shape)
                         }
                     } else {
-                        if case let .copyStyle(name: name) = shape.operation {
+                        if case .copyStyle = shape.operation {
                             shape.result = .style(AnyShapeStyle(OffsetShapeStyle(base: style, offset: level)))
                         } else {
                             OffsetShapeStyle(base: style, offset: level)._apply(to: &shape)
