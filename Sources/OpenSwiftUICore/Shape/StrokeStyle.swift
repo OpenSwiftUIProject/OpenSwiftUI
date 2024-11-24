@@ -79,5 +79,3 @@ extension StrokeStyle: Animatable {
         }
     }
 }
-
-extension StrokeStyle: Sendable {}

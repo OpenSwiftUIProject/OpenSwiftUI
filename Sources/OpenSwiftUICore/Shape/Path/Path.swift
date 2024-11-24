@@ -444,3 +444,10 @@ extension Path: CodableByProxy {
 
     static func unwrap(codingProxy: CodablePath) -> Path { codingProxy.base }
 }
+
+// MARK: - PathDrawingStyle
+
+package enum PathDrawingStyle {
+    case fill(FillStyle)
+    case stroke(StrokeStyle)
+}

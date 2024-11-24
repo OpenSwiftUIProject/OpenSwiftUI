@@ -1,6 +1,6 @@
 //
 //  ColorResolvedTests.swift
-//  OpenSwiftUITests
+//  OpenSwiftUICoreTests
 
 #if canImport(Darwin)
 
