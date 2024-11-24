@@ -1,14 +1,18 @@
 //
-//  ColorMatix.swift
+//  ColorMatrix.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by GraphicsFilter
+//  Status: Blocked by Color, GraphicsFilter and ShapeStyle
 //  ID: 623CA953523AF4C256B3825254A7F058 (SwiftUICore)
 
 #if canImport(Darwin)
 import CoreGraphics
+#else
+import Foundation
 #endif
+
+// MARK: - ColorMatrix
 
 /// A matrix to use in an RGBA color transformation.
 ///
@@ -27,6 +31,8 @@ public struct ColorMatrix: Equatable {
     @inlinable
     public init() {}
 }
+
+// MARK: - _ColorMatrix
 
 @frozen
 public struct _ColorMatrix: Equatable, Codable {
@@ -50,6 +56,7 @@ public struct _ColorMatrix: Equatable, Codable {
     public init() {}
     
     public init(color: Color, in environment: EnvironmentValues) {
+        // Blocked by Color
         fatalError("TODO")
     }
     
@@ -145,6 +152,8 @@ extension UnkeyedDecodingContainer {
         return (m11, m12, m13, m14, m15)
     }
 }
+
+// MARK: - _ColorMatrix + init [TODO]
 
 extension _ColorMatrix {
     @inline(__always)
@@ -271,6 +280,8 @@ extension _ColorMatrix {
     }
 }
 
+// MARK: - _ColorMatrix + ShapeStyle [TODO]
+
 @_spi(Private)
 extension _ColorMatrix: ShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
@@ -279,6 +290,8 @@ extension _ColorMatrix: ShapeStyle {
     
     public typealias Resolved = Never
 }
+
+// MARK: - _ColorMatrix + ProtobufMessage
 
 extension _ColorMatrix: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) {
@@ -332,5 +345,42 @@ extension _ColorMatrix: ProtobufMessage {
                 try decoder.skipField(field)
             }
         }
+    }
+}
+
+// MARK: - _ColorMatrix + Calculations
+
+extension _ColorMatrix {
+    mutating func add(_ other: _ColorMatrix) {
+        m11 += other.m11; m12 += other.m12; m13 += other.m13; m14 += other.m14; m15 += other.m15
+        m21 += other.m21; m22 += other.m22; m23 += other.m23; m24 += other.m24; m25 += other.m25
+        m31 += other.m31; m32 += other.m32; m33 += other.m33; m34 += other.m34; m35 += other.m35
+        m41 += other.m41; m42 += other.m42; m43 += other.m43; m44 += other.m44; m45 += other.m45
+    }
+    
+    mutating func subtract(_ other: _ColorMatrix) {
+        m11 -= other.m11; m12 -= other.m12; m13 -= other.m13; m14 -= other.m14; m15 -= other.m15
+        m21 -= other.m21; m22 -= other.m22; m23 -= other.m23; m24 -= other.m24; m25 -= other.m25
+        m31 -= other.m31; m32 -= other.m32; m33 -= other.m33; m34 -= other.m34; m35 -= other.m35
+        m41 -= other.m41; m42 -= other.m42; m43 -= other.m43; m44 -= other.m44; m45 -= other.m45
+    }
+    
+    mutating func negate() {
+        m11 = -m11; m12 = -m12; m13 = -m13; m14 = -m14; m15 = -m15
+        m21 = -m21; m22 = -m22; m23 = -m23; m24 = -m24; m25 = -m25
+        m31 = -m31; m32 = -m32; m33 = -m33; m34 = -m34; m35 = -m35
+        m41 = -m41; m42 = -m42; m43 = -m43; m44 = -m44; m45 = -m45
+    }
+    
+    mutating func scale(by scalar: Double) {
+        let scalar = Float(scalar)
+        m11 *= scalar; m12 *= scalar; m13 *= scalar; m14 *= scalar; m15 *= scalar
+        m21 *= scalar; m22 *= scalar; m23 *= scalar; m24 *= scalar; m25 *= scalar
+        m31 *= scalar; m32 *= scalar; m33 *= scalar; m34 *= scalar; m35 *= scalar
+        m41 *= scalar; m42 *= scalar; m43 *= scalar; m44 *= scalar; m45 *= scalar
+    }
+    
+    var magnitudeSquared: Double {
+        floatArray.reduce(0.0) { $0 + Double($1 * $1) }
     }
 }
