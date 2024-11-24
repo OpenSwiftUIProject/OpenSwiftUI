@@ -1,15 +1,17 @@
 //
 //  Color.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 3A792CB70CFCF892676D7ADF8BCA260F
+//  ID: 3A792CB70CFCF892676D7ADF8BCA260F (SwiftUICore)
 
 import Foundation
 #if canImport(Darwin)
 public import CoreGraphics
 #endif
+
+// MARK: - Color
 
 /// A representation of a color that adapts to a given context.
 ///
@@ -72,80 +74,77 @@ public import CoreGraphics
 /// For example, a color can have distinct light and dark variants
 /// that the system chooses from at render time.
 @frozen
-public struct Color {
-//    package var provider: AnyColorBox
-//    
-//    package init(provider: AnyColorBox) {
-//        self.provider = provider
-//    }
-//    
-//    package init<P>(provider: P) where P: ColorProvider {
-//        
-//    }
+public struct Color: Hashable, CustomStringConvertible, Sendable {
+    package var provider: AnyColorBox
+    
+    package init(box: AnyColorBox) {
+        self.provider = box
+    }
+    
+    package init<P>(provider: P) where P: ColorProvider {
+        self.init(box: ColorBox(base: provider))
+    }
+    
+    /// Creates a color that represents the specified custom color.
+    public init<T>(_ color: T) where T: Hashable, T: ShapeStyle, T.Resolved == Color.Resolved {
+        self.init(provider: CustomColorProvider(base: color))
+    }
+    
+    /// Evaluates this color to a resolved color given the current
+    /// `context`.
+    public func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        provider.resolve(in: environment)
+    }
+    
+    #if canImport(Darwin)
+    /// A Core Graphics representation of the color, if available.
+    ///
+    /// You can get a
+    /// [CGColor](https://developer.apple.com/documentation/CoreGraphics/CGColor)
+    /// instance from a constant SwiftUI color. This includes colors you create
+    /// from a Core Graphics color, from RGB or HSB components, or from constant
+    /// UIKit and AppKit colors.
+    ///
+    /// For a dynamic color, like one you load from an Asset Catalog using
+    /// ``init(_:bundle:)``, or one you create from a dynamic UIKit or AppKit
+    /// color, this property is `nil`. To evaluate all types of colors, use the
+    /// `resolve(in:)` method.
+    @available(*, deprecated, renamed: "resolve(in:)")
+    public var cgColor: CoreGraphics.CGColor? {
+        provider.staticColor
+    }
+    #endif
+    
+    /// Hashes the essential components of the color by feeding them into the
+    /// given hash function.
+    ///
+    /// - Parameters:
+    ///   - hasher: The hash function to use when combining the components of
+    ///     the color.
+    public func hash(into hasher: inout Hasher) {
+        provider.hash(into: &hasher)
+    }
+    
+    /// Indicates whether two colors are equal.
+    ///
+    /// - Parameters:
+    ///   - lhs: The first color to compare.
+    ///   - rhs: The second color to compare.
+    /// - Returns: A Boolean that's set to `true` if the two colors are equal.
+    public static func == (lhs: Color, rhs: Color) -> Bool {
+        lhs.provider.isEqual(to: rhs.provider)
+    }
+    
+    public var description: String {
+        provider.description
+    }
 }
 
 extension Color {
-    public func _apply(to shape: _ShapeStyle_Shape) {
-        // TODO
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        provider.apply(to: &shape)
     }
 }
-
-// MARK: - Color + ColorSpace
-
-extension Color {
-    public enum RGBColorSpace: Sendable {
-        case sRGB
-        case sRGBLinear
-        case displayP3
-    }
-
-    public init(_ colorSpace: RGBColorSpace = .sRGB, red: Double, green: Double, blue: Double, opacity: Double = 1) {
-        // self.init(red: red, green: green, blue: blue, opacity: opacity)
-    }
-
-    public init(_ colorSpace: RGBColorSpace = .sRGB, white: Double, opacity: Double = 1) {
-    }
-
-    public init(hue: Double, saturation: Double, brightness: Double, opacity: Double = 1) {
-
-    }
-}
-
-package func HSBToRGB(hue: Double, saturation: Double, brightness: Double) -> (red: Double, green: Double, blue: Double) {
-    preconditionFailure("TODO")
-}
-
-
-extension Color.RGBColorSpace: Hashable {}
-extension Color.RGBColorSpace: Equatable {}
-
-#if canImport(Darwin)
-
-// MARK: - CGColor + Color
-
-extension Color {
-    @available(*, deprecated, message: "Use Color(cgColor:) when converting a CGColor, or create a standard Color directly")
-    public init(_ cgColor: CGColor) {
-        self.init(cgColor: cgColor)
-    }
-}
-
-extension Color {
-    public init(cgColor: CGColor) {
-//        ColorBox
-    }
-}
-
-//extension CGColor: ColorProvider {
-//    package func resolve(in environment: EnvironmentValues) -> <<error type>> {
-//        <#code#>
-//    }
-//    
-//    staticColor
-//}
-
-#endif
-
 
 // MARK: - ColorProvider
 
@@ -167,20 +166,136 @@ extension ColorProvider {
     package var kitColor: AnyObject? { nil }
     package var colorDescription: String { String(describing: self) }
     package func opacity(at level: Int, environment: EnvironmentValues) -> Float {
+        // environment.systemColorDefinition
         preconditionFailure("TODO")
     }
 }
 
-// MARK: - ColorBox
+// MARK: - Color + View [TODO]
 
-//private ColorBox<P> where P: ColorProvider {
-//    let base: P
+//extension Color: EnvironmentalView, View {
+//    package func body(environment: EnvironmentValues) -> ColorView
+//    public typealias Body = Never
+//    package typealias EnvironmentBody = ColorView
 //}
 
+// MARK: - AnyColorBox
+
 @usableFromInline
-package class AnyColorBox: AnyShapeStyleBox {
-    
+package class AnyColorBox: AnyShapeStyleBox, @unchecked Sendable {
+    override package final func apply(to shape: inout _ShapeStyle_Shape) {
+        guard case let .fallbackColor(level) = shape.operation else {
+            apply(color: Color(box: self), to: &shape)
+            return
+        }
+        let color: Color
+        if level >= 1 {
+            let opacity = opacity(at: level, environment: shape.environment)
+            color = Color(box: self).opacity(Double(opacity))
+        } else {
+            color = Color(box: self)
+        }
+        shape.result = .color(color)
+    }
+
+    package func resolve(in environment: EnvironmentValues) -> Color.Resolved { preconditionFailure("") }
+    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) { preconditionFailure("") }
+    #if canImport(Darwin)
+    package var staticColor: CGColor? { preconditionFailure("") }
+    #endif
+    package var kitColor: AnyObject? { preconditionFailure("") }
+    package func hash(into hasher: inout Hasher) { preconditionFailure("") }
+    package var description: String { preconditionFailure("") }
+    package func opacity(at level: Int, environment: EnvironmentValues) -> Float { preconditionFailure("") }
 }
 
+@available(*, unavailable)
+extension AnyColorBox : Sendable {}
 
-//private CustomColorProvider
+// MARK: - ColorBox
+
+private final class ColorBox<P>: AnyColorBox, @unchecked Sendable where P: ColorProvider {
+    let base: P
+    
+    init(base: P) {
+        self.base = base
+    }
+    
+    override func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        base.resolve(in: environment)
+    }
+    
+    override func apply(color: Color, to shape: inout _ShapeStyle_Shape) {
+        base.apply(color: color, to: &shape)
+    }
+    
+    #if canImport(Darwin)
+    override var staticColor: CGColor? {
+        base.staticColor
+    }
+    #endif
+    
+    override var kitColor: AnyObject? {
+        base.kitColor
+    }
+    
+    override func isEqual(to other: AnyShapeStyleBox) -> Bool {
+        guard let other = other as? ColorBox<P> else { return false }
+        return base == other.base
+    }
+    
+    override func hash(into hasher: inout Hasher) {
+        base.hash(into: &hasher)
+    }
+    
+    override var description: String {
+        base.colorDescription
+    }
+    
+    override func opacity(at level: Int, environment: EnvironmentValues) -> Float {
+        base.opacity(at: level, environment: environment)
+    }
+}
+
+#if canImport(Darwin)
+
+// MARK: - ObjcColor
+
+@objc
+final package class ObjcColor: NSObject {
+    package let color: Color
+    
+    package init(_ color: Color) {
+        self.color = color
+        super.init()
+    }
+    
+    @objc
+    override package func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? ObjcColor else { return false }
+        return color == other.color
+    }
+
+    @objc
+    override package var hash: Int {
+        var hasher = Hasher()
+        color.hash(into: &hasher)
+        return hasher.finalize()
+    }
+}
+
+#endif
+
+// MARK: - CustomColorProvider
+
+private struct CustomColorProvider<P>: ColorProvider where P: Hashable, P: ShapeStyle, P.Resolved == Color.Resolved {
+    let base: P
+    
+    func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        base.resolve(in: environment)
+    }
+    
+    var colorDescription: String {
+        String(describing: base)
+    }
+}

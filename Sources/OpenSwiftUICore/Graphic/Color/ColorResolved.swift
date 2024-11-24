@@ -4,6 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
+//  ID: 7C95FE02C0C9104041ABD4890B043CBE (?)
 
 package import Foundation
 import OpenSwiftUI_SPI
@@ -46,6 +47,17 @@ extension Color {
     
     public init(_ resolved: Resolved) {
         // TODO
+        fatalError()
+    }
+}
+
+extension ColorProvider {
+    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) {
+        preconditionFailure("TODO")
+    }
+    
+    package func _apply(color: Color, to shape: inout _ShapeStyle_Shape) {
+        preconditionFailure("TODO")
     }
 }
 
@@ -63,7 +75,7 @@ extension Color.Resolved: ResolvedPaint {
 
 // MARK: - Color.Resolved + ShapeStyle
 
-extension Color.Resolved: ShapeStyle/*, PrimitiveShapeStyle*/ {
+extension Color.Resolved: ShapeStyle, PrimitiveShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         preconditionFailure("TODO")
     }
@@ -236,6 +248,7 @@ extension Color.Resolved {
 }
 
 // MARK: - Color.Resolved + Codable
+
 extension Color.Resolved: Codable {
     public func encode(to encoder: any Encoder) throws {
         var container = encoder.unkeyedContainer()
@@ -285,6 +298,7 @@ extension Color.Resolved: ProtobufMessage {
 
 // MARK: - Util method
 
+@inline(__always)
 func sRGBFromLinear(_ linear: Float) -> Float {
     let nonNegativeLinear = linear > 0 ? linear : -linear
     let result = if nonNegativeLinear <= 0.0031308 {
@@ -297,6 +311,7 @@ func sRGBFromLinear(_ linear: Float) -> Float {
     return linear > 0 ? result : -result
 }
 
+@inline(__always)
 func sRGBToLinear(_ sRGB: Float) -> Float {
     let nonNegativeSRGB = sRGB > 0 ? sRGB : -sRGB
     let result = if nonNegativeSRGB <= 0.04045 {
