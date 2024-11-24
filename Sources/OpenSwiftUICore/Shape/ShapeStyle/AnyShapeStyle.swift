@@ -1,10 +1,11 @@
 //
 //  AnyShapeStyle.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
-//  ID: ABC85937500395B09974756E9F651929
+//  ID: ABC85937500395B09974756E9F651929 (SwiftUI)
+//  ID: C5308685324599C90E2F7A588812BB29 (SwiftUICore)
 
 import Foundation
 import OpenGraphShims
@@ -42,10 +43,10 @@ public struct AnyShapeStyle: ShapeStyle {
         type.result = .none
     }
     
-    #if OPENSWIFTUI_SUPPORT_2023_API
     public typealias Resolved = Never
-    #endif
 }
+
+extension AnyShapeStyle.Storage: @unchecked Sendable {}
 
 /// Abstract base class for type-erased ShapeStyle storage.
 @usableFromInline
@@ -54,7 +55,9 @@ package class AnyShapeStyleBox {
     package func isEqual(to other: AnyShapeStyleBox) -> Bool { false }
 }
 
-// ID: ABC85937500395B09974756E9F651929
+@available(*, unavailable)
+extension AnyShapeStyleBox: Sendable {}
+
 private final class ShapeStyleBox<S>: AnyShapeStyleBox where S: ShapeStyle {
     let base: S
     

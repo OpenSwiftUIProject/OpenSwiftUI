@@ -29,9 +29,6 @@ public enum ColorRenderingMode: Sendable {
     case extendedLinear
 }
 
-extension ColorRenderingMode: Equatable {}
-extension ColorRenderingMode: Hashable {}
-
 extension ColorRenderingMode: ProtobufEnum {
     package var protobufValue: UInt {
         switch self {
