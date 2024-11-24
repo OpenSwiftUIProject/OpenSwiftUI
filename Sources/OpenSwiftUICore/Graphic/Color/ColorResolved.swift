@@ -1,10 +1,10 @@
 //
-//  ColorResolved.swift
+//  ?.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 7C95FE02C0C9104041ABD4890B043CBE (?)
+//  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore)
 
 package import Foundation
 import OpenSwiftUI_SPI
@@ -46,8 +46,27 @@ extension Color {
     }
     
     public init(_ resolved: Resolved) {
-        // TODO
-        fatalError()
+        self.init(provider: ResolvedColorProvider(color: resolved))
+    }
+}
+
+private struct ResolvedColorProvider: ColorProvider {
+    var color: Color.Resolved
+    
+    func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        color
+    }
+    
+    #if canImport(Darwin)
+    var staticColor: CGColor? {
+        // cache
+        preconditionFailure("")
+    }
+    #endif
+    
+    var colorDescription: String {
+        // FIXME
+        color.description
     }
 }
 
@@ -146,12 +165,12 @@ extension Color.ResolvedVibrant: Animatable {
 // MARK: - Color.Resolved + extension
 
 extension Color.Resolved {
-    package static let clear: Color.Resolved = Color.Resolved(linearRed: 0, linearGreen: 0, linearBlue: 0, opacity: 0)
-    package static let black: Color.Resolved = Color.Resolved(linearRed: 0, linearGreen: 0, linearBlue: 0, opacity: 1)
-    package static let gray_75: Color.Resolved = Color.Resolved(linearRed: 0.522522, linearGreen: 0.522522, linearBlue: 0.522522, opacity: 1)
-    package static let gray_50: Color.Resolved = Color.Resolved(linearRed: 0.214041, linearGreen: 0.214041, linearBlue: 0.214041, opacity: 1)
-    package static let gray_25: Color.Resolved = Color.Resolved(linearRed: 0.0508761, linearGreen: 0.0508761, linearBlue: 0.0508761, opacity: 1)
-    package static let white: Color.Resolved = Color.Resolved(linearRed: 1, linearGreen: 1, linearBlue: 1, opacity: 1)
+    package static let clear: Color.Resolved = Color.Resolved(linearWhite: 0, opacity: 0)
+    package static let black: Color.Resolved = Color.Resolved(linearWhite: 0)
+    package static let gray_75: Color.Resolved = Color.Resolved(linearWhite: 0.522522, opacity: 1)
+    package static let gray_50: Color.Resolved = Color.Resolved(linearWhite: 0.214041, opacity: 1)
+    package static let gray_25: Color.Resolved = Color.Resolved(linearWhite: 0.0508761, opacity: 1)
+    package static let white: Color.Resolved = Color.Resolved(linearWhite: 1)
     package static let red: Color.Resolved = Color.Resolved(linearRed: 1, linearGreen: 0, linearBlue: 0, opacity: 1)
     package static let blue: Color.Resolved = Color.Resolved(linearRed: 0, linearGreen: 0, linearBlue: 1, opacity: 1)
     package static let green: Color.Resolved = Color.Resolved(linearRed: 0, linearGreen: 1, linearBlue: 0, opacity: 1)

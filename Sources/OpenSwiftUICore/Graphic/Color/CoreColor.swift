@@ -17,7 +17,7 @@ extension Color.Resolved {
         var green: CGFloat = 0
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
-        let result = CoreColorPlatformColorGetComponents(system: isAppKitBased() ? .appKit : .uiKit, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
+        let result = CoreColorPlatformColorGetComponents(system: .defaults, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
         if result {
             self.init(red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
         } else {
@@ -40,7 +40,7 @@ extension CoreColor {
     }
     
     package static func platformColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) -> NSObject? {
-        CorePlatformColorForRGBA(system: isAppKitBased() ? .appKit : .uiKit, red: red, green: green, blue: blue, alpha: alpha)
+        CorePlatformColorForRGBA(system: .defaults, red: red, green: green, blue: blue, alpha: alpha)
     }
 }
 
