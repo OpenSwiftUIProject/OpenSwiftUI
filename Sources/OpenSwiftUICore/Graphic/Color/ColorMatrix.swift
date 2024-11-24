@@ -3,8 +3,12 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Blocked by GraphicsFilter
 //  ID: 623CA953523AF4C256B3825254A7F058 (SwiftUICore)
+
+#if canImport(Darwin)
+import CoreGraphics
+#endif
 
 /// A matrix to use in an RGBA color transformation.
 ///
@@ -159,42 +163,104 @@ extension _ColorMatrix {
     package init?(_ filter: GraphicsFilter, premultiplied: Bool = false) {
         fatalError("TODO")
     }
-  
+    
     package init(colorMultiply c: Color.Resolved, premultiplied: Bool = false) {
-        fatalError("TODO")
+        let factor: Float = premultiplied ? c.opacity : 1.0
+        let red = c.red * factor
+        let green = c.green * factor
+        let blue = c.blue * factor
+        let alpha = c.opacity
+        self.init(
+            row1: (red, 0, 0, 0, 0),
+            row2: (0, green, 0, 0, 0),
+            row3: (0, 0, blue, 0, 0),
+            row4: (0, 0, 0, alpha, 0)
+        )
     }
-  
-    package init(hueRotation: Angle) {
-        fatalError("TODO")
+    
+    package init(hueRotation angle: Angle) {
+        let cosValue = Float(cos(angle.radians))
+        let sinValue = Float(sin(angle.radians))
+        
+        // Matrix coefficients for hue rotation
+        // Based on color rotation matrix formula
+        self.init(
+            row1: (0.2126 + cosValue * 0.7873 - sinValue * 0.2126, 0.2126 - cosValue * 0.2126 + sinValue * 0.1430, 0.2126 - cosValue * 0.2126 - sinValue * 0.7873, 0, 0),
+            row2: (0.7152 - cosValue * 0.7152 - sinValue * 0.7152, 0.7152 + cosValue * 0.2848 + sinValue * 0.1400, 0.7152 - cosValue * 0.7152 + sinValue * 0.7152, 0, 0),
+            row3: (0.0722 - cosValue * 0.0722 + sinValue * 0.9278, 0.0722 - cosValue * 0.0722 - sinValue * 0.2830, 0.0722 + cosValue * 0.9278 + sinValue * 0.0722, 0, 0),
+            row4: (0, 0, 0, 1, 0)
+        )
     }
-  
+    
     package init(brightness: Double) {
-        fatalError("TODO")
+        let b = Float(brightness)
+        self.init(
+            row1: (1, 0, 0, 0, b),
+            row2: (0, 1, 0, 0, b),
+            row3: (0, 0, 1, 0, b),
+            row4: (0, 0, 0, 1, 0)
+        )
     }
-  
+    
     package init(contrast: Double) {
-        fatalError("TODO")
+        let c = Float(contrast)
+        let t = (1.0 - c) / 2.0
+        self.init(
+            row1: (c, 0, 0, 0, t),
+            row2: (0, c, 0, 0, t),
+            row3: (0, 0, c, 0, t),
+            row4: (0, 0, 0, 1, 0)
+        )
     }
-  
+    
     package init(luminanceToAlpha: Void) {
-        fatalError("TODO")
+        // Using standard luminance coefficients (Rec. 709)
+        self.init(
+            row1: (0, 0, 0, 0, 0),
+            row2: (0, 0, 0, 0, 0),
+            row3: (0, 0, 0, 0, 0),
+            row4: (0.2126, 0.7152, 0.0722, 0, 0) // Luminance coefficients in alpha channel
+        )
     }
-  
+    
     package init(colorInvert x: Float) {
-        fatalError("TODO")
+        self.init(
+            row1: (-1, 0, 0, 0, x),
+            row2: (0, -1, 0, 0, x),
+            row3: (0, 0, -1, 0, x),
+            row4: (0, 0, 0, 1, 0)
+        )
     }
-  
+    
     package init(colorMonochrome c: Color.Resolved, amount: Float = 1, bias: Float = 0) {
-        fatalError("TODO")
+        let red = c.red
+        let green = c.green
+        let blue = c.blue
+        let opacity = c.opacity
+        
+        // Standard luminance coefficients (Rec. 709)
+        let lumR: Float = 0.2126
+        let lumG: Float = 0.7152
+        let lumB: Float = 0.0722
+        
+        // Calculate the inverse of amount for blending
+        let invAmount = 1.0 - amount
+        
+        self.init(
+            row1: (red * lumR * amount + invAmount, red * lumG * amount, red * lumB * amount, 0, red * amount * bias),
+            row2: (green * lumR * amount, green * lumG * amount + invAmount, green * lumB * amount, 0, green * amount * bias),
+            row3: (blue * lumR * amount, blue * lumG * amount, blue * lumB * amount + invAmount, 0, blue * amount * bias),
+            row4: (0, 0, 0, opacity * amount + invAmount, 0)
+        )
     }
-  
+    
     package init(floatArray: [Float]) {
         m11 = floatArray[0]; m12 = floatArray[1]; m13 = floatArray[2]; m14 = floatArray[3]; m15 = floatArray[4]
         m21 = floatArray[5]; m22 = floatArray[6]; m23 = floatArray[7]; m24 = floatArray[8]; m25 = floatArray[9]
         m31 = floatArray[10]; m32 = floatArray[11]; m33 = floatArray[12]; m34 = floatArray[13]; m35 = floatArray[14]
         m41 = floatArray[15]; m42 = floatArray[16]; m43 = floatArray[17]; m44 = floatArray[18]; m45 = floatArray[19]
     }
-  
+    
     package var floatArray: [Float] {
         [
             m11, m12, m13, m14, m15,
