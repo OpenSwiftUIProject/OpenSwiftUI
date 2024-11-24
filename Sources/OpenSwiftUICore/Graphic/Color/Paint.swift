@@ -87,7 +87,7 @@ final package class _AnyResolvedPaint<P>: AnyResolvedPaint where P: ResolvedPain
         guard let other = other as? _AnyResolvedPaint<P> else {
             return false
         }
-        return self == other
+        return paint == other.paint
     }
     
     override package func visit<V>(_ visitor: inout V) where V : ResolvedPaintVisitor {

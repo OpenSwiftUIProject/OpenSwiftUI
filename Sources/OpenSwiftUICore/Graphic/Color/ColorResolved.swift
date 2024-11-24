@@ -58,11 +58,7 @@ extension Color.Resolved: ResolvedPaint {
     
     package var isClear: Bool { opacity == 0 }
     package var isOpaque: Bool { opacity == 1 }
-    
-    package static var leafProtobufTag: CodableResolvedPaint.Tag? {
-        // TODO
-        nil
-    }
+    package static var leafProtobufTag: CodableResolvedPaint.Tag? { .color }
 }
 
 // MARK: - Color.Resolved + ShapeStyle
