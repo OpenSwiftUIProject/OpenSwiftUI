@@ -38,17 +38,7 @@ struct _ColorMatrixTests {
         ]
     )
     func pbMessage(matrix: _ColorMatrix, hexString: String) throws {
-        try pbEncode(matrix: matrix, expectedHexString: hexString)
-        try pbDecode(hexString: hexString, expectedMatrix: matrix)
-    }
-    
-    private func pbEncode(matrix: _ColorMatrix, expectedHexString: String) throws {
-        let data = try ProtobufEncoder.encoding(matrix)
-        #expect(data.hexString == expectedHexString)
-    }
-    
-    private func pbDecode(hexString: String, expectedMatrix: _ColorMatrix) throws {
-        let decodedMatrix = try hexString.decodePBHexString(_ColorMatrix.self)
-        #expect(decodedMatrix == expectedMatrix)
+        try matrix.testPBEncoding(hexString: hexString)
+        try matrix.testPBDecoding(hexString: hexString)
     }
 }
