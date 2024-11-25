@@ -6,17 +6,33 @@
 //  Status: WIP
 //  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore?)
 
-package import Foundation
+import Foundation
 import OpenSwiftUI_SPI
 
 // MARK: - Color.Resolved
 
-extension Color {    
+extension Color {
+    /// A concrete color value.
+    ///
+    /// `Color.Resolved` is a set of RGBA values that represent a color that can
+    /// be shown. The values are in Linear sRGB color space, extended range. This is
+    /// a low-level type, most colors are represented by the `Color` type.
+    ///
+    /// - SeeAlso: `Color`
     @frozen
     public struct Resolved: Hashable {
+        /// The amount of red in the color in the sRGB linear color space.
         public var linearRed: Float
+        
+        /// The amount of green in the color in the sRGB linear color space.
         public var linearGreen: Float
+        
+        /// The amount of blue in the color in the sRGB linear color space.
         public var linearBlue: Float
+        /// The degree of opacity in the color, given in the range `0` to `1`.
+        ///
+        /// A value of `0` means 100% transparency, while a value of `1` means
+        /// 100% opacity.
         public var opacity: Float
         
         package init(linearRed: Float, linearGreen: Float, linearBlue: Float, opacity: Float = 1) {
@@ -30,21 +46,37 @@ extension Color {
             Color.Resolved(linearRed: linearRed, linearGreen: linearGreen, linearBlue: linearBlue, opacity: opacity * self.opacity)
         }
         
-//        package func over(_ s: Resolved) -> Color.Resolved {
-//            preconditionFailure("TODO")
-//        }
+        package func over(_ s: Color.Resolved) -> Color.Resolved {
+            let red = s.red * s.opacity * (1 - opacity) + red * opacity
+            let green = s.green * s.opacity * (1 - opacity) + green * opacity
+            let blue = s.blue * s.opacity * (1 - opacity) + blue * opacity
+            
+            let factor = 1 - (1 - opacity) * (1 - s.opacity)
+            guard factor != .zero else { return .init(linearWhite: 0) }
+            return .init(red: red / factor, green: green / factor, blue: blue / factor, opacity: factor)
+        }
     }
     
     package struct ResolvedVibrant: Equatable {
         package var scale: Float
         package var bias: (Float, Float, Float)
-        // package var colorMatrix: _ColorMatrix { preconditionFailure("TODO") }
+        
+        package var colorMatrix: _ColorMatrix {
+            return _ColorMatrix(
+                row1: (scale, 0, 0, 0, bias.0),
+                row2: (0, scale, 0, 0, bias.1),
+                row3: (0, 0, scale, 0, bias.2),
+                row4: (0, 0, 0, 1, 0)
+            )
+        }
         
         package static func == (lhs: ResolvedVibrant, rhs: ResolvedVibrant) -> Bool {
             lhs.scale == rhs.scale && lhs.bias == rhs.bias
         }
     }
     
+    /// Creates a constant color with the values specified by the resolved
+    /// color.
     public init(_ resolved: Resolved) {
         self.init(provider: ResolvedColorProvider(color: resolved))
     }
@@ -68,28 +100,6 @@ private struct ResolvedColorProvider: ColorProvider {
         // FIXME
         color.description
     }
-}
-
-extension ColorProvider {
-    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
-    }
-    
-    package func _apply(color: Color, to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
-    }
-}
-
-// MARK: - Color.Resolved + ResolvedPaint
-
-extension Color.Resolved: ResolvedPaint {
-    package func draw(path: Path, style: PathDrawingStyle, in context: GraphicsContext, bounds: CGRect?) {
-        // TODO
-    }
-    
-    package var isClear: Bool { opacity == 0 }
-    package var isOpaque: Bool { opacity == 1 }
-    package static var leafProtobufTag: CodableResolvedPaint.Tag? { .color }
 }
 
 // MARK: - Color.Resolved + ShapeStyle
@@ -224,6 +234,30 @@ extension Color.Resolved {
 }
 
 // MARK: - Color.Resolved + Display P3
+
+extension Color {
+    struct DisplayP3: ColorProvider {
+        #if canImport(Darwin)
+        private static let p3ColorSpace = CGColorSpace(name: CGColorSpace.displayP3)!
+        #endif
+        
+        let red: CGFloat
+        let green: CGFloat
+        let blue: CGFloat
+        let opacity: Float
+        
+        func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+            Color.Resolved(displayP3Red: Float(red), green: Float(green), blue: Float(blue), opacity: opacity)
+        }
+        
+        #if canImport(Darwin)
+        var staticColor: CGColor? {
+            var components: [CGFloat] = [red, green, blue, CGFloat(opacity)]
+            return CGColor(colorSpace: Self.p3ColorSpace, components: &components)
+        }
+        #endif
+    }
+}
 
 extension Color.Resolved {
     // SwiftUI iOS 18:

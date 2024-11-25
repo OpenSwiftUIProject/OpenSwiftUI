@@ -29,9 +29,6 @@ extension Color {
     public static let secondary: Color = Color(provider: SystemColorType.secondary)
 }
 
-// FIXME
-extension Color: ShapeStyle {}
-
 extension ShapeStyle where Self == Color {
     @_alwaysEmitIntoClient
     public static var red: Color { .red }
