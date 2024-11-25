@@ -1,10 +1,10 @@
 //
-//  ?.swift
+//  ColorResolved.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore)
+//  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore?)
 
 package import Foundation
 import OpenSwiftUI_SPI
