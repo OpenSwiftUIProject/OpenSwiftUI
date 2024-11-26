@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: 3A792CB70CFCF892676D7ADF8BCA260F (SwiftUICore)
 
 import Foundation
@@ -166,18 +166,21 @@ extension ColorProvider {
     package var kitColor: AnyObject? { nil }
     package var colorDescription: String { String(describing: self) }
     package func opacity(at level: Int, environment: EnvironmentValues) -> Float {
-        // environment.systemColorDefinition
-        preconditionFailure("TODO")
+        environment.systemColorDefinition.base.opacity(at: level, environment: environment)
     }
 }
 
-// MARK: - Color + View [TODO]
+// MARK: - Color + View
 
-//extension Color: EnvironmentalView, View {
-//    package func body(environment: EnvironmentValues) -> ColorView
-//    public typealias Body = Never
-//    package typealias EnvironmentBody = ColorView
-//}
+extension Color: EnvironmentalView, View {
+    package func body(environment: EnvironmentValues) -> ColorView {
+        ColorView(resolve(in: environment))
+    }
+    
+    public typealias Body = Never
+    
+    package typealias EnvironmentBody = ColorView
+}
 
 // MARK: - AnyColorBox
 
