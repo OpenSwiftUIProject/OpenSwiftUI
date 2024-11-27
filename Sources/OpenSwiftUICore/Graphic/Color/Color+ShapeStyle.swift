@@ -8,13 +8,8 @@
 package import Foundation
 
 extension Color: ShapeStyle {
-    package func fallbackColor(in env: EnvironmentValues) -> Color? {
-        preconditionFailure("TODO")
-    }
-    
-    package func resolvePaint(in environment: EnvironmentValues) -> Color.Resolved {
-        preconditionFailure("TODO")
-    }
+    package func fallbackColor(in env: EnvironmentValues) -> Color? { self }
+    package func resolvePaint(in environment: EnvironmentValues) -> Color.Resolved { resolve(in: environment) }
     
     @available(*, deprecated, message: "obsolete")
     @_alwaysEmitIntoClient
@@ -25,11 +20,42 @@ extension Color: ShapeStyle {
 
 extension ColorProvider {
     package func apply(color: Color, to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
+        _apply(color: color, to: &shape)
     }
     
     package func _apply(color: Color, to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
+        switch shape.operation {
+            case let .prepareText(level):
+                if level >= 1 {
+                    let opacity = color.provider.opacity(at: level, environment: shape.environment)
+                    shape.result = .preparedText(.foregroundColor(color.opacity(Double(opacity))))
+                } else {
+                    shape.result = .preparedText(.foregroundColor(color))
+                }
+            case let .resolveStyle(name, levels):
+                guard levels.lowerBound != levels.upperBound else {
+                    return
+                }
+                let resolved = resolve(in: shape.environment)
+                let opacity = color.provider.opacity(at: levels.lowerBound, environment: shape.environment)
+                
+                var newPack: _ShapeStyle_Pack
+                switch shape.result {
+                    case let .pack(pack): newPack = pack
+                    default: newPack = .init()
+                }
+                newPack[name, levels.lowerBound] = .init(.color(resolved.multiplyingOpacity(by: opacity)))
+                shape.result = .pack(newPack)
+            case let .fallbackColor(level):
+                if level >= 1 {
+                    let opacity = color.provider.opacity(at: level, environment: shape.environment)
+                    shape.result = .color(color.opacity(Double(opacity)))
+                } else {
+                    shape.result = .color(color)
+                }
+            default:
+                break
+        }
     }
 }
 
