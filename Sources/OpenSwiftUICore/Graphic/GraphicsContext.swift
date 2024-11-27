@@ -479,4 +479,18 @@ public struct GraphicsContext {
             self.init(rawValue: CGBlendMode.plusLighter.rawValue)
         }
     }
+    
+    // FIXME
+    package enum ResolvedShading: Sendable {
+        case backdrop(Color.Resolved)
+        case color(Color.Resolved)
+        case style(_ShapeStyle_Pack.Style)
+        case levels([GraphicsContext.ResolvedShading])
+    }
+}
+
+extension GraphicsContext {
+    package func draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle) {
+        preconditionFailure("TODO")
+    }
 }

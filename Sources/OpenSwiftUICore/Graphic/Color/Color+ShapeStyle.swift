@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
 package import Foundation
 
@@ -63,7 +63,7 @@ extension ColorProvider {
 
 extension Color.Resolved: ResolvedPaint {
     package func draw(path: Path, style: PathDrawingStyle, in context: GraphicsContext, bounds: CGRect?) {
-        preconditionFailure("TODO")
+        context.draw(path, with: .color(self), style: style)
     }
     
     package var isClear: Bool { opacity == 0 }
