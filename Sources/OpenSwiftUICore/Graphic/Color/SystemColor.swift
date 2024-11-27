@@ -9,72 +9,123 @@
 import OpenSwiftUI_SPI
 
 extension Color {
+    /// A context-dependent red color suitable for use in UI elements.
     public static let red: Color = Color(provider: SystemColorType.red)
+    
+    /// A context-dependent orange color suitable for use in UI elements.
     public static let orange: Color = Color(provider: SystemColorType.orange)
+    
+    /// A context-dependent yellow color suitable for use in UI elements.
     public static let yellow: Color = Color(provider: SystemColorType.yellow)
+    
+    /// A context-dependent green color suitable for use in UI elements.
     public static let green: Color = Color(provider: SystemColorType.green)
+    
+    /// A context-dependent mint color suitable for use in UI elements
     public static let mint: Color = Color(provider: SystemColorType.mint)
+    
+    /// A context-dependent teal color suitable for use in UI elements.
     public static let teal: Color = Color(provider: SystemColorType.teal)
+    
+    /// A context-dependent cyan color suitable for use in UI elements.
     public static let cyan: Color = Color(provider: SystemColorType.cyan)
+    
+    /// A context-dependent blue color suitable for use in UI elements.
     public static let blue: Color = Color(provider: SystemColorType.blue)
+    
+    /// A context-dependent indigo color suitable for use in UI elements.
     public static let indigo: Color = Color(provider: SystemColorType.indigo)
+    
+    /// A context-dependent purple color suitable for use in UI elements.
     public static let purple: Color = Color(provider: SystemColorType.purple)
+    
+    /// A context-dependent pink color suitable for use in UI elements.
     public static let pink: Color = Color(provider: SystemColorType.pink)
+    
+    /// A context-dependent brown color suitable for use in UI elements.
     public static let brown: Color = Color(provider: SystemColorType.brown)
+    
+    /// A white color suitable for use in UI elements.
     public static let white: Color = Color(Color.Resolved(linearWhite: 1.0))
+    
+    /// A context-dependent gray color suitable for use in
     public static let gray: Color = Color(provider: SystemColorType.gray)
+    
+    /// A black color suitable for use in UI elements.
     public static let black: Color = Color(Color.Resolved(linearWhite: 1.0))
+    
+    /// A clear color suitable for use in UI elements.
     public static let clear: Color = Color(Color.Resolved(linearWhite: 0.0, opacity: 0.0))
+    
+    /// The color to use for primary content.
     public static let primary: Color = Color(provider: SystemColorType.primary)
+    
+    /// The color to use for secondary content.
     public static let secondary: Color = Color(provider: SystemColorType.secondary)
 }
 
 extension ShapeStyle where Self == Color {
+    /// A context-dependent red color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var red: Color { .red }
 
+    /// A context-dependent orange color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var orange: Color { .orange }
     
+    /// A context-dependent yellow color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var yellow: Color { .yellow }
     
+    /// A context-dependent green color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var green: Color { .green }
     
+    /// A context-dependent mint color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var mint: Color { .mint }
     
+    /// A context-dependent teal color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var teal: Color { .teal }
     
+    /// A context-dependent cyan color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var cyan: Color { .cyan }
     
+    /// A context-dependent blue color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var blue: Color { .blue }
     
+    /// A context-dependent indigo color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var indigo: Color { .indigo }
     
+    /// A context-dependent purple color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var purple: Color { .purple }
     
+    /// A context-dependent pink color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var pink: Color { .pink }
     
+    /// A context-dependent brown color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var brown: Color { .brown }
     
+    /// A white color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var white: Color { .white }
     
+    /// A context-dependent gray color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var gray: Color { .gray }
     
+    /// A black color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var black: Color { .black }
     
+    /// A clear color suitable for use in UI elements.
     @_alwaysEmitIntoClient
     public static var clear: Color { .clear }
 }
