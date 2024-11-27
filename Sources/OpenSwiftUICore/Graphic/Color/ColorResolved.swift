@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Blocked by ResolvedGradient
 //  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore?)
 
 import Foundation
@@ -91,14 +91,26 @@ private struct ResolvedColorProvider: ColorProvider {
     
     #if canImport(Darwin)
     var staticColor: CGColor? {
-        // cache
-        preconditionFailure("")
+        color.cgColor
     }
     #endif
     
     var colorDescription: String {
-        // FIXME
-        color.description
+        let linearRed = color.linearRed
+        let linearGreen = color.linearGreen
+        let linearBlue = color.linearBlue
+        let opacity = color.opacity
+        
+        if linearRed == 0.0 && linearGreen == 0.0 && linearBlue == 0.0 {
+            if opacity == 0.0 {
+                return "clear"
+            } else if opacity == 1.0 {
+                return "black"
+            }
+        } else if linearRed == 1.0 && linearGreen == 1.0 && linearBlue == 1.0 && opacity == 1.0 {
+            return "white"
+        }
+        return color.description
     }
 }
 
