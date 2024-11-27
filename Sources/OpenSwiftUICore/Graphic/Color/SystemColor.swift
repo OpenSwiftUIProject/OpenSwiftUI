@@ -193,6 +193,7 @@ package enum SystemColorType: ColorProvider {
     }
     
     package var kitColor: AnyObject? {
+        #if canImport(Darwin)
         switch self {
             case .red: CoreColor.systemRedColor(with: .defaults)
             case .orange: CoreColor.systemOrangeColor(with: .defaults)
@@ -209,6 +210,9 @@ package enum SystemColorType: ColorProvider {
             case .gray: CoreColor.systemGrayColor(with: .defaults)
             default: nil
         }
+        #else
+        nil
+        #endif
     }
 }
 
