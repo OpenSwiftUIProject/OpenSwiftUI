@@ -21,7 +21,7 @@ package struct _ShapeStyle_Pack: Equatable {
         package init(_ fill: _ShapeStyle_Pack.Fill) {
             self.fill = fill
             self.opacity = 1.0
-            self._blend = .normal
+            self._blend = nil
             self.effects = []
         }
         
@@ -36,13 +36,17 @@ package struct _ShapeStyle_Pack: Equatable {
         case paint(AnyResolvedPaint)
         case foregroundMaterial(Color.Resolved/*, ContentStyle.MaterialStyle*/)
         // case backgroundMaterial(Material.ResolvedMaterial)
-        // case vibrantColor(Color.ResolvedVibrant)
-        // case vibrantMatrix(_ColorMatrix)
+        case vibrantColor(Color.ResolvedVibrant)
+        case vibrantMatrix(_ColorMatrix)
         // case multicolor(ResolvedMulticolorStyle)
         package static func == (a: _ShapeStyle_Pack.Fill, b: _ShapeStyle_Pack.Fill) -> Bool {
             switch (a, b) {
                 case (.color(let a), .color(let b)): return a == b
                 case (.paint(let a), .paint(let b)): return a == b
+                // case (.foregroundMaterial(let a), .foregroundMaterial(let b)): return a == b
+                case (.vibrantColor(let a), .vibrantColor(let b)): return a == b
+                case (.vibrantMatrix(let a), .vibrantMatrix(let b)): return a == b
+                // case (.multicolor(let a), .multicolor(let b)): return a == b
                 default: return false
             }
         }

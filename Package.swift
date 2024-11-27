@@ -110,7 +110,7 @@ let OpenSwiftUI_SPITestTarget = Target.testTarget(
         "OpenSwiftUI_SPI",
         // For ProtocolDescriptor symbol linking
         "OpenSwiftUI",
-        .product(name: "Numerics", package: "swift-numerics")
+        .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
@@ -119,6 +119,7 @@ let openSwiftUICoreTestTarget = Target.testTarget(
     name: "OpenSwiftUICoreTests",
     dependencies: [
         "OpenSwiftUICore",
+        .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
@@ -133,6 +134,9 @@ let openSwiftUITestTarget = Target.testTarget(
 )
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
+    dependencies: [
+        .product(name: "Numerics", package: "swift-numerics"),
+    ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )

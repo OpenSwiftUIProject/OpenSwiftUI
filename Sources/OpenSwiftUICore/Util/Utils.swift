@@ -46,4 +46,9 @@ package func isAppKitBased() -> Bool {
     #endif
 }
 
+extension CoreSystem {
+    @inline(__always)
+    static var defaults: CoreSystem = isAppKitBased() ? .appKit : .uiKit
+}
+
 #endif
