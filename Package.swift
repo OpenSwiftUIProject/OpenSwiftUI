@@ -104,6 +104,16 @@ let openSwiftUIExtensionTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
+
+let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "SwiftUI"
+let openSwiftUIBridgeTarget = Target.target(
+    name: "OpenSwiftUIBridge",
+    dependencies: [
+        "OpenSwiftUI",
+    ],
+    sources: ["Bridgeable.swift", bridgeFramework],
+    swiftSettings: sharedSwiftSettings
+)
 let OpenSwiftUI_SPITestTarget = Target.testTarget(
     name: "OpenSwiftUI_SPITests",
     dependencies: [
@@ -140,6 +150,15 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
+let openSwiftUIBridgeTestTarget = Target.testTarget(
+    name: "OpenSwiftUIBridgeTests",
+    dependencies: [
+        "OpenSwiftUIBridge",
+    ],
+    exclude: ["README.md"],
+    sources: ["BridgeableTests.swift", bridgeFramework],
+    swiftSettings: sharedSwiftSettings
+)
 
 let swiftBinPath = Context.environment["_"] ?? "/usr/bin/swift"
 let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
@@ -153,6 +172,7 @@ let package = Package(
         .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
         // FIXME: This will block xcodebuild build(iOS CI) somehow
         // .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
+        // .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
     ],
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
@@ -179,12 +199,15 @@ let package = Package(
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         openSwiftUICoreTarget,
         openSwiftUITarget,
+        
         openSwiftUIExtensionTarget,
+        openSwiftUIBridgeTarget,
         
         OpenSwiftUI_SPITestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
+        openSwiftUIBridgeTestTarget,
     ]
 )
 
@@ -234,6 +257,7 @@ if attributeGraphCondition {
     openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
+    openSwiftUIBridgeTestTarget.addAGSettings()
 }
 
 #if os(macOS)
