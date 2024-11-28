@@ -165,15 +165,24 @@ let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
 let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
 let includePath = SDKPath.appending("/usr/lib/swift")
 
+// Workaround iOS CI build issue (We need to disable this on iOS CI)
+let supportMultiProducts: Bool = envEnable("OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS", default: true)
+
+var products: [Product] = [
+    .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"])
+]
+if supportMultiProducts {
+    products = [
+        .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
+        .library(name: "OpenSwiftUIExtension", targets: ["OpenSwiftUIExtension"]),
+        .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
+    ]
+}
+
 let package = Package(
     name: "OpenSwiftUI",
     platforms: platforms,
-    products: [
-        .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI", "OpenSwiftUIExtension"]),
-        // FIXME: This will block xcodebuild build(iOS CI) somehow
-        // .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
-        // .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
-    ],
+    products: products,
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
     ],
