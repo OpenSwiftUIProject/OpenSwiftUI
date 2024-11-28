@@ -28,6 +28,7 @@ jobs:
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS: 0
       OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
       OPENGRAPH_ATTRIBUTEGRAPH_VERSION: RELEASE_${{ matrix.release }}
       GH_TOKEN: ${{ github.token }}
