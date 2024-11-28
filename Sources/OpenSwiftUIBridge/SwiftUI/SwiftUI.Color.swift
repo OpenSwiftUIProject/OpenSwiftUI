@@ -8,6 +8,7 @@ public import OpenSwiftUI
 
 // MARK: Color + Bridgeable
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension SwiftUI.Color: Bridgeable {
     public typealias Counterpart = OpenSwiftUI.Color
     
@@ -16,6 +17,7 @@ extension SwiftUI.Color: Bridgeable {
     }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension OpenSwiftUI.Color: Bridgeable {
     public typealias Counterpart = SwiftUI.Color
     
@@ -24,6 +26,7 @@ extension OpenSwiftUI.Color: Bridgeable {
     }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 private struct OpenSwiftUIColor2SwiftUIColorAdapter: Hashable, SwiftUI.ShapeStyle {
     private let base: OpenSwiftUI.Color
 
@@ -38,6 +41,7 @@ private struct OpenSwiftUIColor2SwiftUIColorAdapter: Hashable, SwiftUI.ShapeStyl
     }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 private struct SwiftUIColor2OpenSwiftUIColorAdapter: Hashable, OpenSwiftUI.ShapeStyle {
     private let base: SwiftUI.Color
 
@@ -54,6 +58,7 @@ private struct SwiftUIColor2OpenSwiftUIColorAdapter: Hashable, OpenSwiftUI.Shape
 
 // MARK: - Color.Resolved + Bridgeable
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension SwiftUI.Color.Resolved: Bridgeable {
     public typealias Counterpart = OpenSwiftUI.Color.Resolved
     
@@ -62,6 +67,7 @@ extension SwiftUI.Color.Resolved: Bridgeable {
     }
 }
 
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
 extension OpenSwiftUI.Color.Resolved: Bridgeable {
     public typealias Counterpart = SwiftUI.Color.Resolved
     
