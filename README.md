@@ -79,6 +79,15 @@ for various platforms:
 > So most of the core feature is only available on Apple platform built with
 > AttributeGraph varient.
 
+## Products
+
+- OpenSwiftUI
+    - A SwiftUI source compatibility framework.
+- OpenSwiftUIExtension
+    - Extensive API collections for OpenSwiftUI & SwiftUI.
+- OpenSwiftUIBridge
+    - A bridge layer for migrating other DSL framework to OpenSwiftUI incrementally and mixing them freely.
+
 ## License
 
 See LICENSE file - MIT
