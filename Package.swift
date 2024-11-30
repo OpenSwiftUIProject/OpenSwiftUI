@@ -172,7 +172,7 @@ var products: [Product] = [
     .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"])
 ]
 if supportMultiProducts {
-    products = [
+    products += [
         .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
         .library(name: "OpenSwiftUIExtension", targets: ["OpenSwiftUIExtension"]),
         .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
