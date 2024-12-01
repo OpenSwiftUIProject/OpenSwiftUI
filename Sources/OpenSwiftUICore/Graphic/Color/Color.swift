@@ -101,7 +101,7 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
     ///
     /// You can get a
     /// [CGColor](https://developer.apple.com/documentation/CoreGraphics/CGColor)
-    /// instance from a constant SwiftUI color. This includes colors you create
+    /// instance from a constant OpenSwiftUI color. This includes colors you create
     /// from a Core Graphics color, from RGB or HSB components, or from constant
     /// UIKit and AppKit colors.
     ///
