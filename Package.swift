@@ -92,6 +92,7 @@ let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
         "OpenSwiftUICore",
+        "COpenSwiftUI",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
     ],
@@ -203,6 +204,16 @@ let package = Package(
                 .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
                 .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
                 .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+            ]
+        ),
+        .target(
+            name: "COpenSwiftUI",
+            publicHeadersPath: ".",
+            cSettings: [
+                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
+                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+                .headerSearchPath("../OpenSwiftUI_SPI"),
             ]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
