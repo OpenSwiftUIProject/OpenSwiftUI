@@ -120,10 +120,9 @@ public struct _ViewInputs {
         set {
             if let newValue {
                 base.options.formUnion(.viewStackOrientationIsDefined)
-                switch newValue {
-                case .horizontal:
+                if newValue == .horizontal {
                     base.options.formUnion(.viewStackOrientationIsHorizontal)
-                case .vertical:
+                } else {
                     base.options.subtract(.viewStackOrientationIsHorizontal)
                 }
             } else {

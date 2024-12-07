@@ -33,10 +33,7 @@ extension LayoutComputer {
         func spacing() -> Spacing { preconditionFailure("") }
         func lengthThatFits(_ size: _ProposedSize, in axis: Axis) -> CGFloat {
             let result = sizeThatFits(size)
-            return switch axis {
-            case .horizontal: result.width
-            case .vertical: result.height
-            }
+            return result[axis]
         }
 
         func sizeThatFits(_: _ProposedSize) -> CGSize { preconditionFailure("") }

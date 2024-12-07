@@ -1,8 +1,8 @@
 //
 //  Axis.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 /// The horizontal or vertical dimension in a 2D coordinate system.
@@ -10,9 +10,10 @@
 public enum Axis: Int8, CaseIterable {
     /// The horizontal dimension.
     case horizontal
+    
     /// The vertical dimension.
     case vertical
-
+    
     /// An efficient set of axes.
     @frozen
     public struct Set: OptionSet {
@@ -32,10 +33,5 @@ public enum Axis: Int8, CaseIterable {
 }
 
 extension Axis: CustomStringConvertible {
-    public var description: String {
-        switch self {
-        case .horizontal: "horizontal"
-        case .vertical: "vertical"
-        }
-    }
+    public var description: String { self == .horizontal ? "horizontal" : "vertical" }
 }

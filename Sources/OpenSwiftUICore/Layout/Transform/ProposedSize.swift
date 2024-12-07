@@ -66,24 +66,11 @@ extension _ProposedSize {
     }
     
     package subscript(axis: Axis) -> CGFloat? {
-        get {
-            switch axis {
-                case .horizontal: width
-                case .vertical: height
-            }
-        }
-        set {
-            switch axis {
-                case .horizontal: width = newValue
-                case .vertical: height = newValue
-            }
-        }
+        get { axis == .horizontal ? width : height }
+        set { if axis == .horizontal { width = newValue } else { height = newValue } }
     }
     
     package init(_ l1: CGFloat?, in first: Axis, by l2: CGFloat?) {
-        switch first {
-            case .horizontal: self.init(width: l1, height: l2)
-            case .vertical: self.init(width: l2, height: l1)
-        }
+        self = first == .horizontal ? _ProposedSize(width: l1, height: l2) : _ProposedSize(width: l2, height: l1)
     }
 }

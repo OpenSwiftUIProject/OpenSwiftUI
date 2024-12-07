@@ -43,18 +43,8 @@ package struct ViewOrigin: Equatable {
 
 extension ViewOrigin {
     package subscript(d: Axis) -> CGFloat {
-        get {
-            switch d {
-                case .horizontal: x
-                case .vertical: y
-            }
-        }
-        set {
-            switch d {
-                case .horizontal: x = newValue
-                case .vertical: y = newValue
-            }
-        }
+        get { d == .horizontal ? x : y }
+        set { if d == .horizontal { x = newValue } else { y = newValue } }
     }
 }
 
