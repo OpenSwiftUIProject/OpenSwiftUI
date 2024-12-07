@@ -1,8 +1,8 @@
 //
 //  SafeAreaRegions.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 /// A set of symbolic safe area regions.
@@ -23,6 +23,6 @@ public struct SafeAreaRegions: OptionSet {
     
     /// All safe area regions.
     public static let all = SafeAreaRegions(rawValue: .max)
+    
+    package static let background = SafeAreaRegions(rawValue: 1 << 0)
 }
-
-extension SafeAreaRegions: Sendable {}
