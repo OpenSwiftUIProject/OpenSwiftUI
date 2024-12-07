@@ -8,10 +8,10 @@
 package import Foundation
 
 package struct ViewOrigin: Equatable {
-    var value: CGPoint
+    package var value: CGPoint
     
     @inline(__always)
-    static var zero: ViewOrigin { ViewOrigin(value: .zero) }
+    package static var zero: ViewOrigin { ViewOrigin(value: .zero) }
 }
 
 extension ViewOrigin: Animatable {

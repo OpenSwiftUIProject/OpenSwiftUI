@@ -8,7 +8,7 @@
 import Foundation
 import OpenGraphShims
 
-struct ViewGeometry: Equatable {
+package struct ViewGeometry: Equatable {
     var origin: ViewOrigin
     var dimensions: ViewDimensions
     

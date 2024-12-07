@@ -35,8 +35,8 @@ extension AbsoluteEdge.Set {
         }
         if edges.contains(.leading) {
             switch layoutDirection {
-            case .leftToRight: result.insert(.left)
-            case .rightToLeft: result.insert(.right)
+                case .leftToRight: result.insert(.left)
+                case .rightToLeft: result.insert(.right)
             }
         }
         if edges.contains(.bottom) {
@@ -44,8 +44,8 @@ extension AbsoluteEdge.Set {
         }
         if edges.contains(.trailing) {
             switch layoutDirection {
-            case .leftToRight: result.insert(.right)
-            case .rightToLeft: result.insert(.left)
+                case .leftToRight: result.insert(.right)
+                case .rightToLeft: result.insert(.left)
             }
         }
         self = result
@@ -59,10 +59,10 @@ extension AbsoluteEdge {
     
     package var opposite: AbsoluteEdge {
         switch self {
-        case .top: .bottom
-        case .left: .right
-        case .bottom: .top
-        case .right: .left
+            case .top: .bottom
+            case .left: .right
+            case .bottom: .top
+            case .right: .left
         }
     }
 }

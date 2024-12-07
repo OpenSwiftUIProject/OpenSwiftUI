@@ -7,7 +7,7 @@
 
 import Foundation
 
-struct SizeThatFitsObserver {
+package struct SizeThatFitsObserver {
     var proposal: _ProposedSize
     var callback: (CGSize, CGSize) -> Void
 }
