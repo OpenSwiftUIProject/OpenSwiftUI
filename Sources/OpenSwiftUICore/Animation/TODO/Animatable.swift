@@ -52,15 +52,6 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
 
 // MARK: - Animatable + CoreGraphics
 
-extension CGPoint: Animatable {
-    public var animatableData: AnimatablePair<CGFloat, CGFloat> {
-        @inlinable
-        get { .init(x, y) }
-        @inlinable
-        set { (x, y) = newValue[] }
-    }
-}
-
 extension CGRect: Animatable {
     public var animatableData: AnimatablePair<CGPoint.AnimatableData, CGSize.AnimatableData> {
         @inlinable

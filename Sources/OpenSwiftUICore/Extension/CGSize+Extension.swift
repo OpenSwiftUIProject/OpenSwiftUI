@@ -1,5 +1,5 @@
 //
-//  CGSize+OpenSwiftUI.swift
+//  CGSize+Extension.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
@@ -131,9 +131,10 @@ package struct HashableSize: Equatable, Hashable {
 extension CGSize: Animatable {
     public typealias AnimatableData = AnimatablePair<CGFloat, CGFloat>
     
-    @inlinable
     public var animatableData: AnimatableData {
+        @inlinable
         get { .init(width, height) }
+        @inlinable
         set { (width, height) = newValue[] }
     }
 }
