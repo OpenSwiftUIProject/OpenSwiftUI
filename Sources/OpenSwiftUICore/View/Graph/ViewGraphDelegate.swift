@@ -9,6 +9,7 @@ package protocol ViewGraphDelegate: GraphDelegate {
     func `as`<T>(_ type: T.Type) -> T?
     func modifyViewInputs(_ inputs: inout _ViewInputs)
     func updateViewGraph<T>(body: (ViewGraph) -> T) -> T
+    func requestUpdate(after: Double) -> ()
     func rootTransform() -> ViewTransform
 }
 
