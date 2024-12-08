@@ -1,6 +1,6 @@
 //
 //  CGPoint+Extension.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: Complete
@@ -75,10 +75,11 @@ extension CGPoint {
         CGPoint(x: !x.isNaN ? x : 0, y: !y.isNaN ? y : 0)
     }
     
-//    @inlinable
-//    package func approximates(_ other: CGPoint, epsilon: CGFloat) -> Bool {
-//         x.approximates(other.x, epsilon: epsilon) && y.approximates(other.y, epsilon: epsilon)
-//    }
+    @inlinable
+    package func approximates(_ other: CGPoint, epsilon: CGFloat) -> Bool {
+        x.approximates(other.x, epsilon: epsilon)
+        && y.approximates(other.y, epsilon: epsilon)
+    }
 
     @inlinable
     package mutating func clamp(size: CGSize) {

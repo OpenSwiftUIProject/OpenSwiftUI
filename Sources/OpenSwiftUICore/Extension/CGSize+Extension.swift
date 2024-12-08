@@ -77,10 +77,11 @@ extension CGSize {
         )
     }
     
-//    @inlinable
-//    package func approximates(_ other: CGSize, epsilon: CGFloat) -> Bool {
-//        width.approximates(other.width, epsilon: epsilon) && height.approximates(other.height, epsilon: epsilon)
-//    }
+    @inlinable
+    package func approximates(_ other: CGSize, epsilon: CGFloat) -> Bool {
+        width.approximates(other.width, epsilon: epsilon)
+        && height.approximates(other.height, epsilon: epsilon)
+    }
 }
 
 extension CGSize {
@@ -156,5 +157,12 @@ extension CGSize: ProtobufMessage {
             }
         }
         self.init(width: width, height: height)
+    }
+}
+
+extension CGSize {
+    @inlinable
+    package static func + (lhs: CGSize, rhs: CGPoint) -> CGPoint {
+        return CGPoint(x: rhs.x + lhs.width, y: rhs.y + lhs.height)
     }
 }
