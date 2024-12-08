@@ -166,105 +166,17 @@ package final class ViewGraph: GraphHost {
     }
     
     deinit {
+        // FIXME
         removePreferenceOutlets(isInvalidating: true)
     }
-    
-    @inline(__always)
-    func updateOutputs(at time: Time) {
-        beginNextUpdate(at: time)
-        updateOutputs()
-    }
-    
-    private func beginNextUpdate(at time: Time) {
-        setTime(time)
-        // updateSeed &+= 1
-        mainUpdates = graph.mainUpdates
-    }
-    
-    private func updateOutputs() {
-        #if canImport(Darwin)
-        instantiateIfNeeded()
         
-        // let oldCachedSizeThatFits = cachedSizeThatFits
-        
-        var preferencesChanged = false
-        var observedSizeThatFitsChanged = false
-        var updatedOutputs: Outputs = []
-        
-        var counter1 = 0
-        repeat {
-            counter1 &+= 1
-            inTransaction = true
-            var counter2 = 0
-            repeat {
-                let conts = continuations
-                continuations = []
-                for continuation in conts {
-                    continuation()
-                }
-                counter2 &+= 1
-                data.globalSubgraph.update(flags: .active)
-            } while (continuations.count != 0 && counter2 != 8)
-            inTransaction = false
-            preferencesChanged = preferencesChanged || updatePreferences()
-            observedSizeThatFitsChanged = observedSizeThatFitsChanged || updateObservedSizeThatFits()
-            updatedOutputs.formUnion(updateRequestedOutputs())
-        } while (data.globalSubgraph.isDirty(1) && counter1 != 8)
-        
-//        guard preferencesChanged || observedSizeThatFitsChanged || !updatedOutputs.isEmpty || needsFocusUpdate else {
-//            return
-//        }
-//        if Thread.isMainThread {
-//            if preferencesChanged {
-//                delegate?.preferencesDidChange()
-//            }
-//            if observedSizeThatFitsChanged {
-//                sizeThatFitsObserver?.callback(oldCachedSizeThatFits, self.cachedSizeThatFits)
-//            }
-//            if !requestedOutputs.isEmpty {
-////                delegate?.outputsDidChange(outputs: updatedOutputs)
-//            }
-//            if needsFocusUpdate {
-//                needsFocusUpdate = false
-////                delegate?.focusDidChange()
-//            }
-//        } else {
-//            preconditionFailure("TODO")
-//        }
-//        mainUpdates &-= 1
-        #endif
-    }
-    
-    private func updateObservedSizeThatFits() -> Bool {
-        // TODO
-        return false
-    }
-    
-    private func updateRequestedOutputs() -> Outputs {
-        // TODO
-        return []
-    }
-    
-    private func makePreferenceOutlets(outputs: _ViewOutputs) {
-        // TODO
-    }
-    
-    private func removePreferenceOutlets(isInvalidating: Bool) {
-        // TODO
-    }
-    
-    package func setRootView<V: View>(_ view: V) {
-        #if canImport(Darwin)
-        @Attribute(identifier: rootView)
-        var rootView: V
-        rootView = view
-        #endif
-    }
-    
-    // MARK: - Override Methods
-    
     override package var graphDelegate: GraphDelegate? { delegate }
+    
     override package var parentHost: GraphHost? { preferenceBridge?.viewGraph }
+    
+    // TODO: ViewGraphFeature
+    // package func append<T>(feature: T) where T: ViewGraphFeature
+    // package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature
     
     override package func instantiateOutputs() {
         #if canImport(Darwin)
@@ -327,30 +239,188 @@ package final class ViewGraph: GraphHost {
     override package func uninstantiateOutputs() {
         #if canImport(Darwin)
         removePreferenceOutlets(isInvalidating: false)
+        // TODO: features
         $rootGeometry.mutateBody(
             as: RootGeometry.self,
             invalidating: true
         ) { rootGeometry in
-            rootGeometry.$layoutDirection = nil
             rootGeometry.$childLayoutComputer = nil
+            rootGeometry.$layoutDirection = nil
         }
-//        $rootPlatformList = nil
+        $rootLayoutComputer = nil
 //        $rootResponders = nil
-//        $rootAccessibilityNodes = nil
-//        $rootLayoutComputer = nil
-//        $rootDisplayList = nil
+        $rootDisplayList = nil
         hostPreferenceValues = WeakAttribute()
         #endif
     }
     
     override package func timeDidChange() {
-        // nextUpdate.views = NextUpdate(time: .infinity)
+        nextUpdate.views = NextUpdate()
     }
     
     override package func isHiddenForReuseDidChange() {
+        preconditionFailure("TODO")
+    }
+    
+    private func makePreferenceOutlets(outputs: _ViewOutputs) {
+        // TODO
+    }
+    
+    @inline(__always)
+    private func removePreferenceOutlets(isInvalidating: Bool) {
         // TODO
     }
 }
+
+extension ViewGraph {
+    package func setRootView<Root>(_ view: Root) where Root: View {
+        #if canImport(Darwin)
+        @Attribute(identifier: rootView)
+        var rootView: Root
+        rootView = view
+        #endif
+    }
+    
+    package func setSize(_ size: ViewSize) {
+        let hasChange = $proposedSize.setValue(size)
+        if hasChange {
+            delegate?.graphDidChange()
+        }
+    }
+    
+    package func setProposedSize(_ size: CGSize) {
+        let hasChange = $proposedSize.setValue(ViewSize.fixed(size))
+        if hasChange {
+            delegate?.graphDidChange()
+        }
+    }
+    
+    package var size: ViewSize {
+        proposedSize
+    }
+    
+    @discardableResult
+    package func setSafeAreaInsets(_ insets: EdgeInsets) -> Bool {
+        setSafeAreaInsets([.init(regions: .container, insets: insets)])
+    }
+    
+    @discardableResult
+    package func setSafeAreaInsets(_ elts: [SafeAreaInsets.Element]) -> Bool {
+        let hasChange = $safeAreaInsets.setValue(.init(elements: elts))
+        if hasChange {
+            delegate?.graphDidChange()
+        }
+        return hasChange
+    }
+    
+    package func setScrollableContainerSize(_ size: ViewSize) {
+        guard let $scrollableContainerSize else {
+            return
+        }
+        let hasChange = $scrollableContainerSize.setValue(size)
+        if hasChange {
+            delegate?.graphDidChange()
+        }
+    }
+    
+    @discardableResult
+    package func invalidateTransform() -> Bool {
+        preconditionFailure("TODO")
+    }
+}
+
+extension ViewGraph {
+    package var updateRequiredMainThread: Bool {
+        graph.mainUpdates != mainUpdates
+    }
+    
+    package func updateOutputs(at time: Time) {
+        beginNextUpdate(at: time)
+        updateOutputs(async: false)
+    }
+    
+    package func updateOutputsAsync(at time: Time) -> (list: DisplayList, version: DisplayList.Version)? {
+        beginNextUpdate(at: time)
+        preconditionFailure("TODO")
+    }
+    
+    package func displayList() -> (DisplayList, DisplayList.Version) {
+        preconditionFailure("TODO")
+    }
+    
+    private func beginNextUpdate(at time: Time) {
+        setTime(time)
+        data.updateSeed &+= 1
+        mainUpdates = graph.mainUpdates
+    }
+    
+    // FIXME
+    private func updateOutputs(async: Bool) {
+        #if canImport(Darwin)
+        instantiateIfNeeded()
+        
+        // let oldCachedSizeThatFits = cachedSizeThatFits
+        
+        var preferencesChanged = false
+        var observedSizeThatFitsChanged = false
+        var updatedOutputs: Outputs = []
+        
+        var counter1 = 0
+        repeat {
+            counter1 &+= 1
+            inTransaction = true
+            var counter2 = 0
+            repeat {
+                let conts = continuations
+                continuations = []
+                for continuation in conts {
+                    continuation()
+                }
+                counter2 &+= 1
+                data.globalSubgraph.update(flags: .active)
+            } while (continuations.count != 0 && counter2 != 8)
+            inTransaction = false
+            preferencesChanged = preferencesChanged || updatePreferences()
+            observedSizeThatFitsChanged = observedSizeThatFitsChanged || updateObservedSizeThatFits()
+            updatedOutputs.formUnion(updateRequestedOutputs())
+        } while (data.globalSubgraph.isDirty(1) && counter1 != 8)
+        
+//        guard preferencesChanged || observedSizeThatFitsChanged || !updatedOutputs.isEmpty || needsFocusUpdate else {
+//            return
+//        }
+//        if Thread.isMainThread {
+//            if preferencesChanged {
+//                delegate?.preferencesDidChange()
+//            }
+//            if observedSizeThatFitsChanged {
+//                sizeThatFitsObserver?.callback(oldCachedSizeThatFits, self.cachedSizeThatFits)
+//            }
+//            if !requestedOutputs.isEmpty {
+////                delegate?.outputsDidChange(outputs: updatedOutputs)
+//            }
+//            if needsFocusUpdate {
+//                needsFocusUpdate = false
+////                delegate?.focusDidChange()
+//            }
+//        } else {
+//            preconditionFailure("TODO")
+//        }
+//        mainUpdates &-= 1
+        #endif
+    }
+    
+    private func updateObservedSizeThatFits() -> Bool {
+        // TODO
+        return false
+    }
+    
+    private func updateRequestedOutputs() -> Outputs {
+        // TODO
+        return []
+    }
+}
+
+// TODO
 
 extension ViewGraph {
     package func invalidatePreferenceBridge() {
