@@ -19,7 +19,7 @@ package struct ViewFrame: Equatable {
     
     @inlinable
     package init(size: ViewSize) {
-        self.origin = .zero
+        self.origin = ViewOrigin()
         self.size = size
     }
 }

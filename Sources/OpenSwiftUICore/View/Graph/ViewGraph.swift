@@ -65,7 +65,7 @@ package final class ViewGraph: GraphHost {
         OGSubgraph.current = data.globalSubgraph
         rootView = Attribute(type: Body.self).identifier
         _rootTransform = Attribute(RootTransform())
-        _zeroPoint = Attribute(value: .zero)
+        _zeroPoint = Attribute(value: ViewOrigin())
         // TODO
         _proposedSize = Attribute(value: .zero)
         // TODO
@@ -382,31 +382,32 @@ struct RootGeometry: Rule, AsyncAttribute {
     // |                                                                              |  y: i.t+(p.height-f.height)*0.5=14
     // └──────────────────────────────────────────────────────────────────────────────┘
     var value: ViewGeometry {
-        let layoutComputer = childLayoutComputer ?? .defaultValue
-        let insets = safeAreaInsets?.insets ?? EdgeInsets()
-        let proposal = proposedSize.value.inset(by: insets)
-        let fittingSize = layoutComputer.delegate.sizeThatFits(_ProposedSize(size: proposal))
-        
-        var x = insets.leading
-        var y = insets.top
-        if ViewGraph.current.centersRootView {
-            x += (proposal.width - fittingSize.width) * 0.5
-            y += (proposal.height - fittingSize.height) * 0.5
-        }
-        
-        let layoutDirection = layoutDirection ?? .leftToRight
-        switch layoutDirection {
-        case .leftToRight:
-            break
-        case .rightToLeft:
-            x = proposedSize.value.width - CGRect(origin: CGPoint(x: x, y: y), size: fittingSize).maxX
-        }
-        return ViewGeometry(
-            origin: ViewOrigin(value: CGPoint(x: x, y: y)),
-            dimensions: ViewDimensions(
-                guideComputer: layoutComputer,
-                size: ViewSize(value: fittingSize, _proposal: proposal)
-            )
-        )
+        preconditionFailure("TODO")
+//        let layoutComputer = childLayoutComputer ?? .defaultValue
+//        let insets = safeAreaInsets?.insets ?? EdgeInsets()
+//        let proposal = proposedSize.value.inset(by: insets)
+//        let fittingSize = layoutComputer.delegate.sizeThatFits(_ProposedSize(size: proposal))
+//        
+//        var x = insets.leading
+//        var y = insets.top
+//        if ViewGraph.current.centersRootView {
+//            x += (proposal.width - fittingSize.width) * 0.5
+//            y += (proposal.height - fittingSize.height) * 0.5
+//        }
+//        
+//        let layoutDirection = layoutDirection ?? .leftToRight
+//        switch layoutDirection {
+//        case .leftToRight:
+//            break
+//        case .rightToLeft:
+//            x = proposedSize.value.width - CGRect(origin: CGPoint(x: x, y: y), size: fittingSize).maxX
+//        }
+//        return ViewGeometry(
+//            origin: ViewOrigin(value: CGPoint(x: x, y: y)),
+//            dimensions: ViewDimensions(
+//                guideComputer: layoutComputer,
+//                size: ViewSize(value: fittingSize, _proposal: proposal)
+//            )
+//        )
     }
 }
