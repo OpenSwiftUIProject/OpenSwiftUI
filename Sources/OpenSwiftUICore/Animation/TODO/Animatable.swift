@@ -5,8 +5,6 @@
 //  Audited for iOS 15.5
 //  Status: Blocked by Graph
 
-public import Foundation
-
 // MARK: - Animatable
 
 /// A type that describes how to animate a property of a view.
@@ -47,20 +45,5 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
 
     public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {
         // TODO
-    }
-}
-
-// MARK: - Animatable + CoreGraphics
-
-extension CGRect: Animatable {
-    public var animatableData: AnimatablePair<CGPoint.AnimatableData, CGSize.AnimatableData> {
-        @inlinable
-        get {
-            .init(origin.animatableData, size.animatableData)
-        }
-        @inlinable
-        set {
-            (origin.animatableData, size.animatableData) = newValue[]
-        }
     }
 }
