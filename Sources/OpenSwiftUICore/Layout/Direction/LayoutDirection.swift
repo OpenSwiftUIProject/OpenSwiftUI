@@ -72,8 +72,8 @@ extension UITraitEnvironmentLayoutDirection {
 
 // MARK: - CodableLayoutDirection
 
-struct CodableLayoutDirection: CodableProxy {
-    var base: LayoutDirection
+package struct CodableLayoutDirection: CodableProxy {
+    package var base: LayoutDirection
     
     private enum CodingValue: Int, Codable {
         case leftToRight
@@ -85,7 +85,7 @@ struct CodableLayoutDirection: CodableProxy {
         self.base = base
     }
     
-    init(from decoder: any Decoder) throws {
+    package init(from decoder: any Decoder) throws {
         let container = try decoder.singleValueContainer()
         let value = try container.decode(CodingValue.self)
         switch value {
@@ -94,7 +94,7 @@ struct CodableLayoutDirection: CodableProxy {
         }
     }
     
-    func encode(to encoder: any Encoder) throws {
+    package func encode(to encoder: any Encoder) throws {
         var container = encoder.singleValueContainer()
         let value: CodingValue = switch base {
         case .leftToRight: .leftToRight
@@ -107,12 +107,8 @@ struct CodableLayoutDirection: CodableProxy {
 // MARK: - LayoutDirection + CodableByProxy
 
 extension LayoutDirection: CodableByProxy {
-    var codingProxy: CodableLayoutDirection {
+    package var codingProxy: CodableLayoutDirection {
         CodableLayoutDirection(base: self)
-    }
-    
-    static func unwrap(codingProxy: CodableLayoutDirection) -> LayoutDirection {
-        codingProxy.base
     }
 }
 

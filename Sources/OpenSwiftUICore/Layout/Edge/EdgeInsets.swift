@@ -144,13 +144,13 @@ extension EdgeInsets: Animatable, _VectorMath {
 
 // MARK: - CodableEdgeInsets
 
-struct CodableEdgeInsets: CodableProxy {
-    var base: EdgeInsets
+package struct CodableEdgeInsets: CodableProxy {
+    package var base: EdgeInsets
 
     @inline(__always)
     init(base: EdgeInsets) { self.base = base }
 
-    init(from decoder: Decoder) throws {
+    package init(from decoder: Decoder) throws {
         var container = try decoder.unkeyedContainer()
         let top = try container.decode(CGFloat.self)
         let leading = try container.decode(CGFloat.self)
@@ -159,7 +159,7 @@ struct CodableEdgeInsets: CodableProxy {
         base = EdgeInsets(top: top, leading: leading, bottom: bottom, trailing: trailing)
     }
     
-    func encode(to encoder: Encoder) throws {
+    package func encode(to encoder: Encoder) throws {
         var container = encoder.unkeyedContainer()
         try container.encode(base.top)
         try container.encode(base.leading)
@@ -171,7 +171,5 @@ struct CodableEdgeInsets: CodableProxy {
 // MARK: - EdgeInsets + CodableByProxy
 
 extension EdgeInsets: CodableByProxy {
-    var codingProxy: CodableEdgeInsets { CodableEdgeInsets(base: self) }
-
-    static func unwrap(codingProxy: CodableEdgeInsets) -> EdgeInsets { codingProxy.base }
+    package var codingProxy: CodableEdgeInsets { CodableEdgeInsets(base: self) }
 }

@@ -46,9 +46,9 @@ public enum Edge: Int8, CaseIterable {
 // MARK: Edge + CodableByProxy
 
 extension Edge: CodableByProxy {
-    var codingProxy: Int8 { rawValue }
+    package var codingProxy: Int8 { rawValue }
 
-    static func unwrap(codingProxy: Int8) -> Edge {
+    package static func unwrap(codingProxy: Int8) -> Edge {
         Edge(rawValue: codingProxy) ?? .top
     }
 }

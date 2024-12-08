@@ -401,8 +401,8 @@ extension Path {
 
 // MARK: - CodablePath[WIP]
 
-struct CodablePath: CodableProxy {
-    var base: Path
+package struct CodablePath: CodableProxy {
+    package var base: Path
 
     private enum Error: Swift.Error {
         case invalidPath
@@ -424,10 +424,10 @@ struct CodablePath: CodableProxy {
     }
 
     // TODO:
-    func encode(to _: Encoder) throws {}
+    package func encode(to _: Encoder) throws {}
 
     // TODO:
-    init(from _: Decoder) throws {
+    package init(from _: Decoder) throws {
         base = Path()
     }
 
@@ -440,9 +440,9 @@ struct CodablePath: CodableProxy {
 // MARK: - Path + CodableByProxy
 
 extension Path: CodableByProxy {
-    var codingProxy: CodablePath { CodablePath(base: self) }
-
-    static func unwrap(codingProxy: CodablePath) -> Path { codingProxy.base }
+    package var codingProxy: CodablePath {
+        CodablePath(base: self)
+    }
 }
 
 // MARK: - PathDrawingStyle
