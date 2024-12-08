@@ -4,8 +4,8 @@
 //
 //  Audited for iOS 18.0
 //  Status: Blocked by transactions
-//  ID: 30C09FF16BC95EC5173809B57186CAC3 (RELEASE_2021)
-//  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (RELEASE_2024)
+//  ID: 30C09FF16BC95EC5173809B57186CAC3 (SwiftUI)
+//  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (SwiftUICore)
 
 import OpenSwiftUI_SPI
 package import OpenGraphShims
@@ -329,7 +329,38 @@ extension GraphHost {
     }
     
     package final func updateRemovedState() {
-        preconditionFailure("TODO")
+        let isRemoved: Bool
+        let removedState: RemovedState
+        
+        if self.removedState.isEmpty {
+            if let parentHost {
+                let state = parentHost.removedState
+                isRemoved = state.contains(.unattached)
+                removedState = state
+            } else {
+                isRemoved = false
+                removedState = []
+            }
+        } else {
+            isRemoved = true
+            removedState = self.removedState
+        }
+        let isHiddenForReuse = removedState.contains(.hiddenForReuse)
+        
+        if isRemoved != data.isRemoved {
+            if isRemoved {
+                rootSubgraph.willRemove()
+                // TODO: OGSubgraphRemoveChild
+            } else {
+                // TODO: OGSubgraphAddChild
+                rootSubgraph.didReinsert()
+            }
+            data.isRemoved = isRemoved
+        }
+        if isHiddenForReuse != data.isHiddenForReuse {
+            data.isHiddenForReuse = isHiddenForReuse
+            isHiddenForReuseDidChange()
+        }
     }
     
     // MARK: - GraphHost + Transaction
@@ -582,7 +613,7 @@ private final class GlobalTransaction {
     }
 }
 
-// MARK: - Graph + Extension
+// MARK: - Graph + GraphHost
 
 extension Graph {
     package func graphHost() -> GraphHost {

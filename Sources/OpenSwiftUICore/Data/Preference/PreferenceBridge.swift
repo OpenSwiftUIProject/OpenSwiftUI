@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by ViewGraph
+//  Status: Complete
 //  ID: A9FAE381E99529D5274BA37A9BC9B074 (SwiftUI)
 //  ID: DF57A19C61B44C613EB77C1D47FC679A (SwiftUICore)
 
@@ -31,12 +31,12 @@ package final class PreferenceBridge {
     package func invalidate() {
         requestedPreferences = PreferenceKeys()
         bridgedViewInputs = PropertyList()
-        // TODO: Blocked by ViewGraph
-        // for child in children {
-            // let viewGraph = child.takeRetainedValue()
-            // viewGraph.setPreferenceBridge(to: nil, isInvalidating: true)
-            // child.release()
-        // }
+        for child in children {
+            let viewGraph = child.takeRetainedValue()
+            viewGraph.invalidatePreferenceBridge()
+            child.release()
+        }
+        viewGraph = nil
         isValid = false
     }
     
@@ -109,10 +109,11 @@ package final class PreferenceBridge {
     }
     
     package func removedStateDidChange() {
-        // TODO: Blocked by ViewGraph
-        // for child in children {
-            // let viewGraph = child.takeUnretainedValue()
-        // }
+        for child in children {
+            let viewGraph = child.takeUnretainedValue()
+            viewGraph.updateRemovedState()
+            child.release()
+        }
     }
     
     #if canImport(Darwin)

@@ -119,7 +119,7 @@ package final class ViewGraph: GraphHost {
     
     package var preferenceBridge: PreferenceBridge? {
         get { _preferenceBridge }
-        set { setPreferenceBridge(to: newValue, isInvalidating: false) }
+        set { setPreferenceBridge(to: newValue) }
     }
     #if canImport(Darwin) // FIXME: See #39
     var bridgedPreferences: [(AnyPreferenceKey.Type, AnyAttribute)] = []
@@ -245,10 +245,6 @@ package final class ViewGraph: GraphHost {
         return []
     }
     
-    func clearPreferenceBridge() {
-        setPreferenceBridge(to: nil, isInvalidating: true)
-    }
-    
     private func makePreferenceOutlets(outputs: _ViewOutputs) {
         // TODO
     }
@@ -268,10 +264,7 @@ package final class ViewGraph: GraphHost {
     // MARK: - Override Methods
     
     override package var graphDelegate: GraphDelegate? { delegate }
-    override package var parentHost: GraphHost? {
-        // TODO: _preferenceBridge
-        nil
-    }
+    override package var parentHost: GraphHost? { preferenceBridge?.viewGraph }
     
     override package func instantiateOutputs() {
         #if canImport(Darwin)
@@ -360,8 +353,32 @@ package final class ViewGraph: GraphHost {
 }
 
 extension ViewGraph {
-    fileprivate func setPreferenceBridge(to bridge: PreferenceBridge?, isInvalidating: Bool) {
-        // TODO
+    package func invalidatePreferenceBridge() {
+        setPreferenceBridge(to: nil, isInvalidating: true)
+    }
+    
+    @inline(__always)
+    private func setPreferenceBridge(to preferenceBridge: PreferenceBridge?, isInvalidating: Bool = false) {
+        guard _preferenceBridge !== preferenceBridge else { return }
+        #if canImport(Darwin)
+        if let preferenceBridge = _preferenceBridge {
+            for (src, key) in bridgedPreferences {
+                preferenceBridge.removeValue(key, for: src, isInvalidating: isInvalidating)
+            }
+            bridgedPreferences = []
+            preferenceBridge.removeHostValues(for: data.$hostPreferenceKeys, isInvalidating: isInvalidating)
+            preferenceBridge.removeChild(self)
+        }
+        #endif
+        _preferenceBridge = nil
+        if isInstantiated {
+            uninstantiate(immediately: isInvalidating)
+        }
+        _preferenceBridge = preferenceBridge
+        if let preferenceBridge = _preferenceBridge {
+            preferenceBridge.addChild(self)
+        }
+        updateRemovedState()
     }
 }
 
@@ -456,5 +473,13 @@ package struct RootGeometry: Rule, AsyncAttribute {
 //                size: ViewSize(value: fittingSize, _proposal: proposal)
 //            )
 //        )
+    }
+}
+
+// MARK: - Graph + ViewGraph
+
+extension Graph {
+    package func viewGraph() -> ViewGraph {
+        unsafeBitCast(context, to: ViewGraph.self)
     }
 }
