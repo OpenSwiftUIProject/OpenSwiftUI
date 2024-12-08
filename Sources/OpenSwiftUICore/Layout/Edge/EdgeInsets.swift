@@ -16,7 +16,6 @@ public struct EdgeInsets: Equatable {
     public var trailing: CGFloat
 
     @inlinable
-    @inline(__always)
     public init(top: CGFloat, leading: CGFloat, bottom: CGFloat, trailing: CGFloat) {
         self.top = top
         self.leading = leading
@@ -25,11 +24,12 @@ public struct EdgeInsets: Equatable {
     }
 
     @inlinable
-    @inline(__always)
     public init() {
         self.init(top: 0, leading: 0, bottom: 0, trailing: 0)
     }
 
+    package static var zero: EdgeInsets { EdgeInsets() }
+    
     @inline(__always)
     init(_ value: CGFloat, edges: Edge.Set) {
         self.init(
