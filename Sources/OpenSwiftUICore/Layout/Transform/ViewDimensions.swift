@@ -1,8 +1,8 @@
 //
 //  ViewDimensions.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 public import Foundation
@@ -58,8 +58,8 @@ public import Foundation
 ///
 /// The example above indents the second text view because the subtraction
 /// moves the second text view's leading guide in the negative x direction,
-/// which is to the left in the view's coordinate space. As a result,
-/// SwiftUI moves the second text view to the right, relative to the first
+/// Openwhich is to the left in the view's coordinate space. As a result,
+/// OpenSwiftUI moves the second text view to the right, relative to the first
 /// text view, to keep their leading guides aligned:
 ///
 /// ![A screenshot of two strings. The first says Default and the second,
@@ -71,7 +71,7 @@ public import Foundation
 ///
 /// The discussion above describes a left-to-right language environment,
 /// but you don't change your guide calculation to operate in a right-to-left
-/// environment. SwiftUI moves the view's origin from the left to the right side
+/// environment. OpenSwiftUI moves the view's origin from the left to the right side
 /// of the view and inverts the positive x direction. As a result,
 /// the existing calculation produces the same effect, but in the opposite
 /// direction.
@@ -93,14 +93,25 @@ public import Foundation
 /// string appears horizontally offset to the left from the right side of the
 /// first string by about the width of one character.](ViewDimensions-2-iOS)
 public struct ViewDimensions {
-    let guideComputer: LayoutComputer
-    var size: ViewSize
+    package let guideComputer: LayoutComputer
 
     /// The view's width.
-    public var width: CGFloat { size.value.width }
+    public var width: CGFloat { size.width }
 
     /// The view's height.
-    public var height: CGFloat { size.value.height }
+    public var height: CGFloat { size.height }
+
+    package var size: ViewSize
+    
+    package init(guideComputer: LayoutComputer, size: ViewSize) {
+        self.guideComputer = guideComputer
+        self.size = size
+    }
+    
+    package init(guideComputer: LayoutComputer, size: CGSize, proposal: _ProposedSize) {
+        self.guideComputer = guideComputer
+        self.size = ViewSize(size, proposal: proposal)
+    }
 
     /// Gets the value of the given horizontal guide.
     ///
@@ -134,10 +145,6 @@ public struct ViewDimensions {
     /// in _The Swift Programming Language_.
     public subscript(guide: VerticalAlignment) -> CGFloat {
         self[guide.key]
-    }
-
-    subscript(key: AlignmentKey) -> CGFloat {
-        self[explicit: key] ?? key.id.defaultValue(in: self)
     }
 
     /// Gets the explicit value of the given horizontal alignment guide.
@@ -177,13 +184,32 @@ public struct ViewDimensions {
     public subscript(explicit guide: VerticalAlignment) -> CGFloat? {
         self[explicit: guide.key]
     }
-
-    subscript(explicit key: AlignmentKey) -> CGFloat? {
-        guideComputer.delegate.explicitAlignment(key, at: size)
-    }
-    
-    @inline(__always)
-    static var zero: ViewDimensions { ViewDimensions(guideComputer: .defaultValue, size: .zero) }
 }
 
+@available(*, unavailable)
+extension ViewDimensions: Sendable {}
+
 extension ViewDimensions: Equatable {}
+
+extension ViewDimensions {
+    package static let invalidValue = ViewDimensions(guideComputer: .defaultValue, size: .invalidValue)
+    package static let zero = ViewDimensions(guideComputer: .defaultValue, size: .zero)
+    
+    package func at(_ topLeadingCorner: CGPoint) -> ViewGeometry {
+        preconditionFailure("TODO")
+    }
+    
+    package func centered(in setting: CGSize) -> ViewGeometry {
+        preconditionFailure("TODO")
+    }
+    
+    package subscript(key: AlignmentKey) -> CGFloat {
+        Update.assertIsLocked()
+        return self[explicit: key] ?? key.id.defaultValue(in: self)
+    }
+    
+    package subscript(explicit key: AlignmentKey) -> CGFloat? {
+        Update.assertIsLocked()
+        return guideComputer.delegate.explicitAlignment(key, at: size)
+    }
+}

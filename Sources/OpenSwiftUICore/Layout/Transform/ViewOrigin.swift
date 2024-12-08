@@ -36,9 +36,6 @@ package struct ViewOrigin: Equatable {
         get { value.y }
         set { value.y = newValue }
     }
-    
-    @inline(__always)
-    static let zero = ViewOrigin()
 }
 
 extension ViewOrigin {

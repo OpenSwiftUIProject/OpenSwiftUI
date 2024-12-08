@@ -81,9 +81,16 @@ extension ViewSize {
 }
 
 extension ViewSize: Animatable {
-    package typealias AnimatableData = CGSize.AnimatableData
-    package var animatableData: AnimatableData {
+    package var animatableData: CGSize.AnimatableData {
         get { value.animatableData }
         set { value.animatableData = newValue }
+    }
+}
+
+package import OpenGraphShims
+
+extension Attribute where Value == ViewSize {
+    package var cgSize: Attribute<CGSize> {
+        self[keyPath: \.value]
     }
 }

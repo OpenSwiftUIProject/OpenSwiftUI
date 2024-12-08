@@ -8,11 +8,11 @@
 
 @usableFromInline
 @frozen
-struct AlignmentKey: Hashable, Comparable {
+package struct AlignmentKey: Hashable, Comparable {
     private let bits: UInt
 
     @usableFromInline
-    static func < (lhs: AlignmentKey, rhs: AlignmentKey) -> Bool {
+    package static func < (lhs: AlignmentKey, rhs: AlignmentKey) -> Bool {
         lhs.bits < rhs.bits
     }
 
