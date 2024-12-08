@@ -30,10 +30,7 @@ extension CoordinateSpaceProtocol where Self == NamedCoordinateSpace {
     /// The named coordinate space that is added by the system for the innermost
     /// containing scroll view that allows scrolling along the provided axis.
     public static func scrollView(axis: Axis) -> Self {
-        switch axis {
-            case .horizontal: NamedCoordinateSpace(name: .horizontalScrollView)
-            case .vertical: NamedCoordinateSpace(name: .verticalScrollView)
-        }
+        NamedCoordinateSpace(name: axis == .horizontal ? .horizontalScrollView : .verticalScrollView)
     }
     
     /// The named coordinate space that is added by the system for the innermost

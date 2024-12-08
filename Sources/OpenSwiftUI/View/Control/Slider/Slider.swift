@@ -650,7 +650,7 @@ private struct Clamping<Value>: Projection where Value: BinaryFloatingPoint {
     }
 
     func set(base: inout Value, newValue: Double) {
-        base = clamp(Value(newValue), min: 0, max: 1)
+        base = Value(newValue).clamp(min: 0, max: 1)
     }
 }
 
