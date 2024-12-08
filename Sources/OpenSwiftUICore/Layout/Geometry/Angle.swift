@@ -1,8 +1,8 @@
 //
 //  Angle.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 /// A geometric angle whose value you access in either radians or degrees.
@@ -43,13 +43,36 @@ public struct Angle {
 }
 
 extension Angle: Hashable, Comparable {
+    @inlinable
     public static func < (lhs: Angle, rhs: Angle) -> Bool {
         lhs.radians < rhs.radians
     }
 }
 
-extension Angle: _VectorMath {
-    public var animatableData: Double {
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif os(WASI)
+import WASILibc
+#endif
+
+package func cos(_ angle: Angle) -> Double {
+    cos(angle.radians)
+}
+
+package func sin(_ angle: Angle) -> Double {
+    sin(angle.radians)
+}
+
+package func tan(_ angle: Angle) -> Double {
+    tan(angle.radians)
+}
+
+extension Angle: Animatable, _VectorMath {
+    public typealias AnimatableData = Double
+    
+    public var animatableData: AnimatableData {
         get { radians * 128.0 }
         set { radians = newValue / 128.0 }
     }
