@@ -49,11 +49,28 @@ extension CGAffineTransform {
 
 extension CGAffineTransform: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        preconditionFailure("TODO")
+        encoder.cgFloatField(1, a, defaultValue: 1)
+        encoder.cgFloatField(2, b, defaultValue: 0)
+        encoder.cgFloatField(3, c, defaultValue: 0)
+        encoder.cgFloatField(4, d, defaultValue: 1)
+        encoder.cgFloatField(5, tx, defaultValue: 0)
+        encoder.cgFloatField(6, ty, defaultValue: 0)
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
-        preconditionFailure("TODO")
+        var transform = CGAffineTransform.identity
+        while let field = try decoder.nextField() {
+            switch field.tag {
+                case 1: transform.a = try decoder.cgFloatField(field)
+                case 2: transform.b = try decoder.cgFloatField(field)
+                case 3: transform.c = try decoder.cgFloatField(field)
+                case 4: transform.d = try decoder.cgFloatField(field)
+                case 5: transform.tx = try decoder.cgFloatField(field)
+                case 6: transform.ty = try decoder.cgFloatField(field)
+                default: try decoder.skipField(field)
+            }
+        }
+        self = transform
     }
 }
 
