@@ -180,9 +180,7 @@ package final class ViewGraph: GraphHost {
     
     override package func instantiateOutputs() {
         #if canImport(Darwin)
-        let outputs = self.data.globalSubgraph.apply {
-            let graphInputs = graphInputs
-            
+        let outputs = globalSubgraph.apply {
             var inputs = _ViewInputs(
                 graphInputs,
                 position: $position,
@@ -211,12 +209,23 @@ package final class ViewGraph: GraphHost {
             // TOOD
             return makeRootView(rootView, inputs)
         }
+        
         $rootGeometry.mutateBody(
             as: RootGeometry.self,
             invalidating: true
         ) { rootGeometry in
             rootGeometry.$childLayoutComputer = outputs.layoutComputer
         }
+        if !requestedOutputs.isEmpty {
+            let displayList = outputs.preferences[DisplayList.Key.self]
+            if let displayList {
+                globalSubgraph.apply {
+                    // TODO
+                }
+            }
+            
+        }
+        
         // TODO
         // hostPreferenceValues.projectedValue = outputs.hostPreferences
         makePreferenceOutlets(outputs: outputs)
@@ -449,6 +458,17 @@ extension ViewGraph {
             preferenceBridge.addChild(self)
         }
         updateRemovedState()
+    }
+}
+
+// MARK: - RootDisplayList
+
+private struct RootDisplayList: Rule, AsyncAttribute {
+    @Attribute var content: DisplayList
+    @Attribute var time: Time
+    
+    var value: DisplayList {
+        preconditionFailure("TODO")
     }
 }
 
