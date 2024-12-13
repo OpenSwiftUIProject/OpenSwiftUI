@@ -241,7 +241,7 @@ extension Target {
     func addAGSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'AttributeGraph.framework'"
-        dependencies.append(.product(name: "AttributeGraph", package: "OpenGraph"))
+        dependencies.append(.product(name: "AttributeGraph", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
@@ -269,7 +269,17 @@ extension Target {
     }
 }
 
+let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
+
 if attributeGraphCondition {
+    let privateFrameworkRepo: Package.Dependency
+    if useLocalDeps {
+        privateFrameworkRepo = Package.Dependency.package(path: "../DarwinPrivateFrameworks")
+    } else {
+        privateFrameworkRepo = Package.Dependency.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main")
+    }
+    package.dependencies.append(privateFrameworkRepo)
+    
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
     
@@ -278,6 +288,17 @@ if attributeGraphCondition {
     openSwiftUITestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
     openSwiftUIBridgeTestTarget.addAGSettings()
+}
+
+if useLocalDeps {
+    package.dependencies += [
+        .package(path: "../OpenGraph"),
+    ]
+} else {
+    package.dependencies += [
+        // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
+    ]
 }
 
 #if os(macOS)
@@ -326,18 +347,6 @@ if compatibilityTestCondition {
     openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
 } else {
     openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
-}
-
-let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
-if useLocalDeps {
-    package.dependencies += [
-        .package(path: "../OpenGraph"),
-    ]
-} else {
-    package.dependencies += [
-        // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
-    ]
 }
 
 extension [Platform] {

@@ -22,6 +22,11 @@ jobs:
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENGRAPH_USE_LOCAL_DEPS: 1
+      OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -30,6 +35,9 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Swift version
         run: swift --version
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
           swift test \
@@ -64,6 +72,11 @@ jobs:
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS: 0
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENGRAPH_USE_LOCAL_DEPS: 1
+      OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
@@ -72,6 +85,9 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Swift version
         run: swift --version
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
           # FIXME: xcodebuild will run all test targets.
