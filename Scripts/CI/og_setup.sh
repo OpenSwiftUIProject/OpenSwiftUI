@@ -18,7 +18,7 @@ clone_checkout_og() {
 
 update_og() {
   cd $REPO_ROOT/../OpenGraph
-  ./AG/update.sh
+  ./Scripts/CI/darwin_setup_build.sh
 }
 
 clone_checkout_og
