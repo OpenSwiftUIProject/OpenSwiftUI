@@ -1,2 +1,14 @@
+codecov:
+  require_ci_to_pass: yes
+coverage:
+  status:
+    project:
+      default:
+        target: auto 
+        threshold: 5
+    patch:
+      default:
+        target: auto 
+        threshold: 5
 ignore:
   - Tests
