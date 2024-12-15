@@ -26,6 +26,17 @@ package final class ViewGraph: GraphHost {
         package static let focus: ViewGraph.Outputs = .init(rawValue: 1 << 5)
         package static let all: ViewGraph.Outputs = .init(rawValue: 0xFF)
         package static let defaults: ViewGraph.Outputs = [.displayList, .viewResponders, .layout, .focus]
+        
+        @inline(__always)
+        fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
+            inputs.preferences.add(HostPreferencesKey.self)
+            if contains(.platformItemList) {
+                inputs.preferences.add(DisplayList.Key.self)
+            }
+            if contains(.viewResponders) {
+                // inputs.preferences.add(ViewRespondersKey.self)
+            }
+        }
     }
     
     let rootViewType: Any.Type
@@ -180,36 +191,46 @@ package final class ViewGraph: GraphHost {
     
     override package func instantiateOutputs() {
         #if canImport(Darwin)
-        let outputs = self.data.globalSubgraph.apply {
-            let graphInputs = graphInputs
-            
+        let outputs = globalSubgraph.apply {
             var inputs = _ViewInputs(
                 graphInputs,
                 position: $position,
                 size: $dimensions,
-                transform: $rootTransform,
+                transform: $transform,
                 containerPosition: $zeroPoint,
                 hostPreferenceKeys: data.$hostPreferenceKeys
             )
             if requestedOutputs.contains(.layout) {
-                // FIXME
-                // inputs.base.options.formUnion(.init(rawValue: 0xe2))
+                inputs.base.options.formUnion([.viewRequestsLayoutComputer, .viewNeedsGeometry])
+                inputs.scrollableContainerSize = _scrollableContainerSize
             }
-//            requestedOutputs.addRequestedPreferences(to: &inputs)
-            _preferenceBridge?.wrapInputs(&inputs)
-            _ViewDebug.instantiateIfNeeded()
-            delegate?.modifyViewInputs(&inputs)
-            // TODO
+            requestedOutputs.addRequestedPreferences(to: &inputs)
+            if let preferenceBridge {
+                preferenceBridge.wrapInputs(&inputs)
+            }
+            _ViewDebug.instantiateIfNeeded() // FIXME
+            if _VariableFrameDurationIsSupported() {
+                if !inputs.base.options.contains(.supportsVariableFrameDuration) {
+                    inputs.base.options.formUnion(.supportsVariableFrameDuration)
+                }
+            }
+            if let delegate {
+                delegate.modifyViewInputs(&inputs)
+            }
+            if inputs.base.options.contains(.viewNeedsGeometry) {
+                // inputs.makeRootMatchedGeometryScope()
+            }
+            inputs.base.pushStableType(rootViewType)
             $rootGeometry.mutateBody(
                 as: RootGeometry.self,
                 invalidating: true
             ) { rootGeometry in
-                inputs.withMutableCachedEnviroment {
-                    rootGeometry.$layoutDirection = $0.attribute(keyPath: \.layoutDirection)
-                }
+                rootGeometry.$layoutDirection = inputs.mapEnvironment(\.layoutDirection)
             }
-            // TOOD
-            return makeRootView(rootView, inputs)
+            // TODO: features related
+            let outputs = makeRootView(rootView, inputs)
+            // TODO: features related
+            return outputs
         }
         $rootGeometry.mutateBody(
             as: RootGeometry.self,
@@ -217,24 +238,23 @@ package final class ViewGraph: GraphHost {
         ) { rootGeometry in
             rootGeometry.$childLayoutComputer = outputs.layoutComputer
         }
-        // TODO
-        // hostPreferenceValues.projectedValue = outputs.hostPreferences
+        if requestedOutputs.contains(.displayList) {
+            if let displayList = outputs.preferences[DisplayList.Key.self] {
+                _rootDisplayList = WeakAttribute(rootSubgraph.apply {
+                    Attribute(RootDisplayList(content: displayList, time: data.$time))
+                })
+            }
+        }
+        if requestedOutputs.contains(.viewResponders) {
+            // _rootResponders = WeakAttribute(outputs.preferences[ViewRespondersKey.self])
+        }
+        if requestedOutputs.contains(.layout) {
+            _rootLayoutComputer = WeakAttribute(outputs.layoutComputer)
+        }
+        hostPreferenceValues = WeakAttribute(outputs.preferences[HostPreferencesKey.self])
         makePreferenceOutlets(outputs: outputs)
         #endif
     }
-    
-    //        fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
-    //            inputs.preferences.add(HostPreferencesKey.self)
-    //            if contains(.displayList) {
-    //                inputs.preferences.add(DisplayList.Key.self)
-    //            }
-    //            if contains(.viewResponders) {
-    ////                inputs.preferences.add(ViewRespondersKey.self)
-    //            }
-    //            if contains(.platformItemList) {
-    ////                inputs.preferences.add(PlatformItemList.Key.self)
-    //            }
-    //        }
     
     override package func uninstantiateOutputs() {
         #if canImport(Darwin)
@@ -449,6 +469,17 @@ extension ViewGraph {
             preferenceBridge.addChild(self)
         }
         updateRemovedState()
+    }
+}
+
+// MARK: - RootDisplayList
+
+private struct RootDisplayList: Rule, AsyncAttribute {
+    @Attribute var content: DisplayList
+    @Attribute var time: Time
+    
+    var value: (DisplayList, DisplayList.Version) {
+        preconditionFailure("TODO")
     }
 }
 

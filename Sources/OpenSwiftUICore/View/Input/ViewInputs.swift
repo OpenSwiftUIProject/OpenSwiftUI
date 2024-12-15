@@ -244,18 +244,6 @@ extension _ViewInputs {
         body(&base)
     }
     
-    // MARK: - base.cachedEnvironment
-    
-    @inline(__always)
-    func withCachedEnviroment<R>(_ body: (CachedEnvironment) -> R) -> R {
-        body(base.cachedEnvironment.wrappedValue)
-    }
-    
-    @inline(__always)
-    func withMutableCachedEnviroment<R>(_ body: (inout CachedEnvironment) -> R) -> R {
-        body(&base.cachedEnvironment.wrappedValue)
-    }
-    
     @inline(__always)
     func detechedEnvironmentInputs() -> Self {
         var newInputs = self
