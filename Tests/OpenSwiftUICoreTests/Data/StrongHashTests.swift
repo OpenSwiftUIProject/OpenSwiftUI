@@ -5,6 +5,7 @@
 import OpenSwiftUICore
 import Testing
 import Foundation
+import OpenBoxShims
 
 struct StrongHashTests {
     @Test(
@@ -99,6 +100,32 @@ struct StrongHashTests {
         let s2 = try StrongHash(encodable: d2)
         #expect(s1 == s)
         #expect(s2 == s)
+    }
+    
+    @Test(
+        arguments: [
+            (StrongHash(), (0x00, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80)),
+            (StrongHash(of: 1), (0x3D, 0x58, 0x9E, 0xE2, 0x73, 0xBE, 0x13, 0x43, 0x7E, 0x7E, 0xCF, 0x76, 0x0F, 0x3F, 0xBD, 0x8D)),
+        ]
+    )
+    func obUUID(hash: StrongHash, expectedBytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)) {
+        let uuid = OBUUID(hash: hash)
+        #expect(uuid.bytes.0 == expectedBytes.0)
+        #expect(uuid.bytes.1 == expectedBytes.1)
+        #expect(uuid.bytes.2 == expectedBytes.2)
+        #expect(uuid.bytes.3 == expectedBytes.3)
+        #expect(uuid.bytes.4 == expectedBytes.4)
+        #expect(uuid.bytes.5 == expectedBytes.5)
+        #expect(uuid.bytes.6 == expectedBytes.6)
+        #expect(uuid.bytes.7 == expectedBytes.7)
+        #expect(uuid.bytes.8 == expectedBytes.8)
+        #expect(uuid.bytes.9 == expectedBytes.9)
+        #expect(uuid.bytes.10 == expectedBytes.10)
+        #expect(uuid.bytes.11 == expectedBytes.11)
+        #expect(uuid.bytes.12 == expectedBytes.12)
+        #expect(uuid.bytes.13 == expectedBytes.13)
+        #expect(uuid.bytes.14 == expectedBytes.14)
+        #expect(uuid.bytes.15 == expectedBytes.15)
     }
     
     @Test(
