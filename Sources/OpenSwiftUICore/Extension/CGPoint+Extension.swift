@@ -7,7 +7,8 @@
 
 public import Foundation
 
-@_spi(ForOpenSwiftUIOnly) public typealias PlatformPoint = CGPoint
+@_spi(ForOpenSwiftUIOnly)
+public typealias PlatformPoint = CGPoint
 
 extension CGPoint {
     @inlinable

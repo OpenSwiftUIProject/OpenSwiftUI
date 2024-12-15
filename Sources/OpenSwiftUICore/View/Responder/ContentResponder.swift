@@ -2,14 +2,14 @@
 //  ContentResponder.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
 
 package import Foundation
 import OpenSwiftUI_SPI
 
 package protocol ContentResponder {
-    func contains(points: [CGPoint], size: CGSize) -> BitVector64
+    func contains(points: [PlatformPoint], size: CGSize) -> BitVector64
     func contentPath(size: CGSize) -> Path
     func contentPath(size: CGSize, kind: ContentShapeKinds) -> Path
 }

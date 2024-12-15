@@ -13,7 +13,7 @@ public protocol Projection: Hashable {
     func set(base: inout Base, newValue: Projected)
 }
 
-@_spi(ForSwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension Projection {
     package func composed<Tail>(with tail: Tail) -> ComposedProjection<Self, Tail> where Tail: Projection, Projected == Tail.Base {
         ComposedProjection(left: self, right: tail)
