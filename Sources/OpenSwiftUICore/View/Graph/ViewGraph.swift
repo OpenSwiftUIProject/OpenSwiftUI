@@ -38,7 +38,7 @@ package final class ViewGraph: GraphHost {
                 inputs.preferences.add(DisplayList.Key.self)
             }
             if contains(.viewResponders) {
-                // inputs.preferences.add(ViewRespondersKey.self)
+                inputs.preferences.add(ViewRespondersKey.self)
             }
         }
     }
@@ -77,7 +77,7 @@ package final class ViewGraph: GraphHost {
     var eventSubgraph: Subgraph?
     
     @Attribute package var defaultLayoutComputer: LayoutComputer
-    // @WeakAttribute var rootResponders: [ViewResponder]?
+    @WeakAttribute var rootResponders: [ViewResponder]?
     @WeakAttribute var rootLayoutComputer: LayoutComputer?
     @WeakAttribute var rootDisplayList: (DisplayList, DisplayList.Version)?
     
@@ -250,7 +250,7 @@ package final class ViewGraph: GraphHost {
             }
         }
         if requestedOutputs.contains(.viewResponders) {
-            // _rootResponders = WeakAttribute(outputs.preferences[ViewRespondersKey.self])
+            _rootResponders = WeakAttribute(outputs.preferences[ViewRespondersKey.self])
         }
         if requestedOutputs.contains(.layout) {
             _rootLayoutComputer = WeakAttribute(outputs.layoutComputer)
@@ -272,7 +272,7 @@ package final class ViewGraph: GraphHost {
             rootGeometry.$layoutDirection = nil
         }
         $rootLayoutComputer = nil
-//        $rootResponders = nil
+        $rootResponders = nil
         $rootDisplayList = nil
         hostPreferenceValues = WeakAttribute()
         #endif
