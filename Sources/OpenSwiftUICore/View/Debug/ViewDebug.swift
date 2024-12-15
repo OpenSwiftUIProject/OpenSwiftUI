@@ -97,7 +97,15 @@ extension View {
     }
 }
 
-extension ViewModifier {
+extension ViewModifier {    
+    package static func makeDebuggableView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        preconditionFailure("TODO")
+    }
+    
     static func makeDebuggableViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
