@@ -104,28 +104,28 @@ struct StrongHashTests {
     
     @Test(
         arguments: [
-            (StrongHash(), OBUUID(uuid: UUID(uuidString: "00500000-0000-0000-0000-000000000080")!)),
-            (StrongHash(of: 1), OBUUID(uuid: UUID(uuidString: "3D589EE2-73BE-1343-7E7E-CF760F3FBD8D")!)),
+            (StrongHash(), (0x00, 0x50, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x80)),
+            (StrongHash(of: 1), (0x3D, 0x58, 0x9E, 0xE2, 0x73, 0xBE, 0x13, 0x43, 0x7E, 0x7E, 0xCF, 0x76, 0x0F, 0x3F, 0xBD, 0x8D)),
         ]
     )
-    func obUUID(hash: StrongHash, expectedUUID: OBUUID) {
+    func obUUID(hash: StrongHash, expectedBytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)) {
         let uuid = OBUUID(hash: hash)
-        #expect(uuid.bytes.0 == expectedUUID.bytes.0)
-        #expect(uuid.bytes.1 == expectedUUID.bytes.1)
-        #expect(uuid.bytes.2 == expectedUUID.bytes.2)
-        #expect(uuid.bytes.3 == expectedUUID.bytes.3)
-        #expect(uuid.bytes.4 == expectedUUID.bytes.4)
-        #expect(uuid.bytes.5 == expectedUUID.bytes.5)
-        #expect(uuid.bytes.6 == expectedUUID.bytes.6)
-        #expect(uuid.bytes.7 == expectedUUID.bytes.7)
-        #expect(uuid.bytes.8 == expectedUUID.bytes.8)
-        #expect(uuid.bytes.9 == expectedUUID.bytes.9)
-        #expect(uuid.bytes.10 == expectedUUID.bytes.10)
-        #expect(uuid.bytes.11 == expectedUUID.bytes.11)
-        #expect(uuid.bytes.12 == expectedUUID.bytes.12)
-        #expect(uuid.bytes.13 == expectedUUID.bytes.13)
-        #expect(uuid.bytes.14 == expectedUUID.bytes.14)
-        #expect(uuid.bytes.15 == expectedUUID.bytes.15)
+        #expect(uuid.bytes.0 == expectedBytes.0)
+        #expect(uuid.bytes.1 == expectedBytes.1)
+        #expect(uuid.bytes.2 == expectedBytes.2)
+        #expect(uuid.bytes.3 == expectedBytes.3)
+        #expect(uuid.bytes.4 == expectedBytes.4)
+        #expect(uuid.bytes.5 == expectedBytes.5)
+        #expect(uuid.bytes.6 == expectedBytes.6)
+        #expect(uuid.bytes.7 == expectedBytes.7)
+        #expect(uuid.bytes.8 == expectedBytes.8)
+        #expect(uuid.bytes.9 == expectedBytes.9)
+        #expect(uuid.bytes.10 == expectedBytes.10)
+        #expect(uuid.bytes.11 == expectedBytes.11)
+        #expect(uuid.bytes.12 == expectedBytes.12)
+        #expect(uuid.bytes.13 == expectedBytes.13)
+        #expect(uuid.bytes.14 == expectedBytes.14)
+        #expect(uuid.bytes.15 == expectedBytes.15)
     }
     
     @Test(
