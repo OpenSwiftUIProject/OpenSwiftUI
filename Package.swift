@@ -314,15 +314,23 @@ if useLocalDeps {
     package.dependencies += [
         .package(path: "../OpenGraph"),
         .package(path: "../OpenBox"),
-        .package(path: "../DarwinPrivateFrameworks"),
     ]
+    if attributeGraphCondition || renderBoxCondition {
+        package.dependencies.append(
+            .package(path: "../DarwinPrivateFrameworks")
+        )
+    }
 } else {
     package.dependencies += [
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenBox", branch: "main"),
-        .package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"),
     ]
+    if attributeGraphCondition || renderBoxCondition {
+        package.dependencies.append(
+            .package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main")
+        )
+    }
 }
 
 #if os(macOS)
