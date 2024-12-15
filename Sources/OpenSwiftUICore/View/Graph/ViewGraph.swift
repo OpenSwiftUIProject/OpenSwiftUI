@@ -48,7 +48,7 @@ package final class ViewGraph: GraphHost {
     
     package weak var delegate: (any ViewGraphDelegate)? = nil
     
-    // private var features: ViewGraphFeaturesBuffer = .init()
+    // private var features: ViewGraphFeatureBuffer = .init()
     
     package var centersRootView: Bool = true
     
