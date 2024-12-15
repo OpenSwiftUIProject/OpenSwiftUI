@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenBox",
       "state" : {
         "branch" : "main",
-        "revision" : "95fa6020e10c1d3b2f9e91be5ba53864ec854b17"
+        "revision" : "e1626f862c9c6da0813a9b8bb4172978054bc6b6"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "6b413687605b91fd3f49c86523ce57dff0bfa1d2"
+        "revision" : "c1be687dddce061a6895cf6f7b6c22f79ca5aec4"
       }
     },
     {

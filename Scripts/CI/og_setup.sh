@@ -11,7 +11,9 @@ clone_checkout_og() {
   cd $REPO_ROOT
   revision=$(Scripts/CI/get_revision.sh opengraph)
   cd ..
-  gh repo clone OpenSwiftUIProject/OpenGraph
+  if [ ! -d OpenGraph ]; then
+    gh repo clone OpenSwiftUIProject/OpenGraph
+  fi
   cd OpenGraph
   git checkout --quiet $revision
 }

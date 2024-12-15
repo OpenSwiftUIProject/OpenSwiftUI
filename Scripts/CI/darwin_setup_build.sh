@@ -10,3 +10,4 @@ cd $REPO_ROOT
 
 Scripts/CI/og_setup.sh
 Scripts/CI/ob_setup.sh
+Scripts/CI/framework_setup.sh

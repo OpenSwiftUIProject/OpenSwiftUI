@@ -11,7 +11,9 @@ clone_checkout_og() {
   cd $REPO_ROOT
   revision=$(Scripts/CI/get_revision.sh openbox)
   cd ..
-  gh repo clone OpenSwiftUIProject/OpenBox
+  if [ ! -d OpenBox ]; then
+    gh repo clone OpenSwiftUIProject/OpenBox
+  fi
   cd OpenBox
   git checkout --quiet $revision
 }
