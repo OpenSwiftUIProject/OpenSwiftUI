@@ -25,6 +25,8 @@ jobs:
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENGRAPH_USE_LOCAL_DEPS: 1
       OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      OPENBOX_USE_LOCAL_DEPS: 1
+      OPENBOX_TARGET_RELEASE: ${{ matrix.release }}
       DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -75,6 +77,8 @@ jobs:
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENGRAPH_USE_LOCAL_DEPS: 1
       OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      OPENBOX_USE_LOCAL_DEPS: 1
+      OPENBOX_TARGET_RELEASE: ${{ matrix.release }}
       DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
       GH_TOKEN: ${{ github.token }}
     steps:

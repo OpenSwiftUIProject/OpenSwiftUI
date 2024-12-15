@@ -1,5 +1,5 @@
 {
-  "originHash" : "0c4677673310eb1475283b96def29718c2f307825c2d136e0bfc40f4cd3d6920",
+  "originHash" : "3ec5ceae50a3ce95edc97ef8b27b3a65cb61320642aa5cc535bb5d4690cb4230",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,16 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "fc757950da6df4b1e30a3236549a27f21f82ab8a"
+        "revision" : "5627dacbbde44c8d3ea7b34f5d91b44839178e15"
+      }
+    },
+    {
+      "identity" : "openbox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenBox",
+      "state" : {
+        "branch" : "main",
+        "revision" : "95fa6020e10c1d3b2f9e91be5ba53864ec854b17"
       }
     },
     {
@@ -16,7 +25,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "5eccfe5e3149b3deb4bf5b76511d2ea7f5b39b94"
+        "revision" : "6b413687605b91fd3f49c86523ce57dff0bfa1d2"
       }
     },
     {

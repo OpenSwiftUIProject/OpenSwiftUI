@@ -85,6 +85,7 @@ let openSwiftUICoreTarget = Target.target(
     dependencies: [
         "OpenSwiftUI_SPI",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
+        .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
     swiftSettings: sharedSwiftSettings
 )
@@ -95,6 +96,7 @@ let openSwiftUITarget = Target.target(
         "COpenSwiftUI",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
+        .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
     swiftSettings: sharedSwiftSettings
 )
@@ -231,12 +233,6 @@ let package = Package(
     ]
 )
 
-#if os(macOS)
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: true)
-#else
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
-#endif
-
 extension Target {
     func addAGSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
@@ -244,6 +240,15 @@ extension Target {
         dependencies.append(.product(name: "AttributeGraph", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
+        self.swiftSettings = swiftSettings
+    }
+    
+    func addRBSettings() {
+        // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
+        // "could not determine executable path for bundle 'RenderBox.framework'"
+        dependencies.append(.product(name: "RenderBox", package: "DarwinPrivateFrameworks"))
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENBOX_RENDERBOX"))
         self.swiftSettings = swiftSettings
     }
 
@@ -271,15 +276,13 @@ extension Target {
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 
+#if os(macOS)
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: true)
+#else
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
+#endif
+
 if attributeGraphCondition {
-    let privateFrameworkRepo: Package.Dependency
-    if useLocalDeps {
-        privateFrameworkRepo = Package.Dependency.package(path: "../DarwinPrivateFrameworks")
-    } else {
-        privateFrameworkRepo = Package.Dependency.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main")
-    }
-    package.dependencies.append(privateFrameworkRepo)
-    
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
     
@@ -290,14 +293,35 @@ if attributeGraphCondition {
     openSwiftUIBridgeTestTarget.addAGSettings()
 }
 
+#if os(macOS)
+let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: true)
+#else
+let renderBoxCondition = envEnable("OPENBOX_RENDERBOX")
+#endif
+
+if renderBoxCondition {
+    openSwiftUICoreTarget.addRBSettings()
+    openSwiftUITarget.addRBSettings()
+    
+    OpenSwiftUI_SPITestTarget.addRBSettings()
+    openSwiftUICoreTestTarget.addRBSettings()
+    openSwiftUITestTarget.addRBSettings()
+    openSwiftUICompatibilityTestTarget.addRBSettings()
+    openSwiftUIBridgeTestTarget.addRBSettings()
+}
+
 if useLocalDeps {
     package.dependencies += [
         .package(path: "../OpenGraph"),
+        .package(path: "../OpenBox"),
+        .package(path: "../DarwinPrivateFrameworks"),
     ]
 } else {
     package.dependencies += [
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenBox", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"),
     ]
 }
 
