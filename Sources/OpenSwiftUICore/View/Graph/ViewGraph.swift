@@ -48,7 +48,7 @@ package final class ViewGraph: GraphHost {
     
     package weak var delegate: (any ViewGraphDelegate)? = nil
     
-    // private var features: ViewGraphFeaturesBuffer = .init()
+//     private var features: ViewGraphFeatureBuffer = .init()
     
     package var centersRootView: Bool = true
     
@@ -189,9 +189,13 @@ package final class ViewGraph: GraphHost {
     
     override package var parentHost: GraphHost? { preferenceBridge?.viewGraph }
     
-    // TODO: ViewGraphFeature
-    // package func append<T>(feature: T) where T: ViewGraphFeature
-    // package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature
+    package func append<T>(feature: T) where T: ViewGraphFeature {
+        preconditionFailure("TODO")
+    }
+    
+    package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature {
+        preconditionFailure("TODO")
+    }
     
     override package func instantiateOutputs() {
         #if canImport(Darwin)
