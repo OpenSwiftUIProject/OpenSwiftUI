@@ -73,10 +73,10 @@ extension Angle: Animatable, _VectorMath {
     public typealias AnimatableData = Double
     
     public var animatableData: AnimatableData {
-        get { radians * 128.0 }
-        set { radians = newValue / 128.0 }
+        get { radians.scaled(by: .unitScale) }
+        set { radians = newValue.scaled(by: .inverseUnitScale) }
     }
-
+    
     @inlinable
     public static var zero: Angle { .init() }
 }

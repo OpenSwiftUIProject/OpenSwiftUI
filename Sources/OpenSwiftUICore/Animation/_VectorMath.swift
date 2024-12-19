@@ -1,10 +1,12 @@
 //
 //  _VectorMath.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
+/// Adds the "vector space" numeric operations for any type that
+/// conforms to Animatable.
 public protocol _VectorMath: Animatable {}
 
 extension _VectorMath {
@@ -70,6 +72,21 @@ extension _VectorMath {
     public static func / (lhs: Self, rhs: Double) -> Self {
         var result = lhs
         result /= rhs
+        return result
+    }
+}
+
+extension _VectorMath {
+    package mutating func normalize() {
+        let magnitudeSquared = animatableData.magnitudeSquared
+        if magnitudeSquared != 0 {
+            self *= (1.0 / magnitudeSquared)
+        }
+    }
+    
+    package func normalized() -> Self {
+        var result = self
+        result.normalize()
         return result
     }
 }
