@@ -150,21 +150,28 @@ extension Color.Resolved : Animatable {
                 // ResolvedGradient.Color.Space.convertIn(self)
                 preconditionFailure("TODO")
             } else {
-                let factor: Float = 128.0
-                return AnimatablePair(linearRed * factor, AnimatablePair(linearGreen * factor, AnimatablePair(linearBlue * factor, opacity * factor)))
+                return AnimatablePair(
+                    linearRed.scaled(by: .unitScale),
+                    AnimatablePair(
+                        linearGreen.scaled(by: .unitScale),
+                        AnimatablePair(
+                            linearBlue.scaled(by: .unitScale),
+                            opacity.scaled(by: .unitScale)
+                        )
+                    )
+                )
             }
         }
 
         set {
-            let factor: Float = 0.0078125
             if Self.legacyInterpolation {
                 // ResolvedGradient.Color.Space.convertOut(self)
                 preconditionFailure("TODO")
             } else {
-                linearRed = newValue.first * factor
-                linearGreen = newValue.second.first * factor
-                linearBlue = newValue.second.second.first * factor
-                opacity = newValue.second.second.second * factor
+                linearRed = newValue.first.scaled(by: .inverseUnitScale)
+                linearGreen = newValue.second.first.scaled(by: .inverseUnitScale)
+                linearBlue = newValue.second.second.first.scaled(by: .inverseUnitScale)
+                opacity = newValue.second.second.second.scaled(by: .inverseUnitScale)
             }
         }
     }
@@ -173,13 +180,20 @@ extension Color.Resolved : Animatable {
 extension Color.ResolvedVibrant: Animatable {
     package var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
         get {
-            let factor: Float = 128.0
-            return AnimatablePair(scale * factor, AnimatablePair(bias.0 * factor, AnimatablePair(bias.1 * factor, bias.2 * factor)))
+            AnimatablePair(
+                scale.scaled(by: .unitScale),
+                AnimatablePair(
+                    bias.0.scaled(by: .unitScale),
+                    AnimatablePair(
+                        bias.1.scaled(by: .unitScale),
+                        bias.2.scaled(by: .unitScale)
+                    )
+                )
+            )
         }
         set {
-            let factor: Float = 0.0078125
-            scale = newValue.first * factor
-            bias = (newValue.second.first * factor, newValue.second.second.first * factor, newValue.second.second.second * factor)
+            scale = newValue.first.scaled(by: .inverseUnitScale)
+            bias = (newValue.second.first.scaled(by: .inverseUnitScale), newValue.second.second.first.scaled(by: .inverseUnitScale), newValue.second.second.second.scaled(by: .inverseUnitScale))
         }
     }
 }

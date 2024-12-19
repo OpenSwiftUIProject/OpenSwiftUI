@@ -1,10 +1,14 @@
 //
 //  EmptyAnimatableData.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
+/// An empty type for animatable data.
+///
+/// This type is suitable for use as the `animatableData` property of
+/// types that do not have any animatable properties.
 @frozen
 public struct EmptyAnimatableData: VectorArithmetic {
     @inlinable
@@ -32,4 +36,14 @@ public struct EmptyAnimatableData: VectorArithmetic {
     public var magnitudeSquared: Double { 0 }
 
     public static func == (_: EmptyAnimatableData, _: EmptyAnimatableData) -> Bool { true }
+}
+
+public import Foundation
+
+extension Double: Animatable {
+    public typealias AnimatableData = Swift.Double
+}
+
+extension CGFloat: Animatable {
+    public typealias AnimatableData = CGFloat
 }

@@ -1,16 +1,20 @@
 //
 //  AnimatablePair.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 /// A pair of animatable values, which is itself animatable.
 @frozen
 public struct AnimatablePair<First, Second>: VectorArithmetic where First: VectorArithmetic, Second: VectorArithmetic {
+    /// The first value.
     public var first: First
+
+    /// The second value.
     public var second: Second
-    
+
+    /// Creates an animated pair with the provided values.
     @inlinable
     public init(_ first: First, _ second: Second) {
         self.first = first
@@ -18,15 +22,14 @@ public struct AnimatablePair<First, Second>: VectorArithmetic where First: Vecto
     }
 
     @inlinable
-    subscript() -> (First, Second) {
+    package subscript() -> (First, Second) {
         get { (first, second) }
         set { (first, second) = newValue }
     }
 
     @_transparent
     public static var zero: AnimatablePair<First, Second> {
-        @_transparent
-        get { .init(First.zero, Second.zero) }
+        .init(First.zero, Second.zero)
     }
 
     @_transparent
@@ -57,13 +60,11 @@ public struct AnimatablePair<First, Second>: VectorArithmetic where First: Vecto
         second.scale(by: rhs)
     }
 
+    /// The dot-product of this animated pair with itself.
     @_transparent
     public var magnitudeSquared: Double {
-        @_transparent
-        get { first.magnitudeSquared + second.magnitudeSquared }
-    }
-
-    public static func == (a: AnimatablePair<First, Second>, b: AnimatablePair<First, Second>) -> Bool {
-        a.first == b.first && a.second == b.second
+        first.magnitudeSquared + second.magnitudeSquared
     }
 }
+
+extension AnimatablePair: Sendable where First: Sendable, Second: Sendable {}

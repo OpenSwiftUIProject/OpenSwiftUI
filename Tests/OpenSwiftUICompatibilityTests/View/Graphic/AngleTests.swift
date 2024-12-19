@@ -9,7 +9,7 @@ struct AngleTests {
         let a1 = Angle(radians: radians)
         #expect(a1.radians == radians)
         #expect(a1.degrees == degrees)
-        #expect(a1.animatableData == radians * 128)
+        #expect(a1.animatableData == radians * 128.0)
         let a2 = Angle(degrees: degrees)
         #expect(a2.radians == radians)
         #expect(a2.degrees == degrees)
