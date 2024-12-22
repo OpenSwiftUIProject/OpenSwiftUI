@@ -50,19 +50,9 @@ package struct UnsafeHeterogeneousBuffer: Collection {
     }
     
     private mutating func allocate(_ bytes: Int) -> UnsafeMutableRawPointer {
-        var count = _count
-        var offset = 0
         var size = 0
-        while count != 0 {
-            let itemSize = buf
-                .advanced(by: offset)
-                .assumingMemoryBound(to: Item.self)
-                .pointee
-                .size
-            offset &+= Int(itemSize)
-            count &-= 1
-            offset = count == 0 ? 0 : offset
-            size &+= Int(itemSize)
+        for element in self {
+            size += Int(element.item.pointee.size)
         }
         // Grow buffer if needed
         if Int(available) < bytes {
@@ -108,7 +98,6 @@ package struct UnsafeHeterogeneousBuffer: Collection {
                     oldBuffer += size
                     newBuffer += size
                 } while count != 0 || itemSize != 0
-                
             }
             buf.deallocate()
         }
@@ -118,18 +107,8 @@ package struct UnsafeHeterogeneousBuffer: Collection {
     
     package func destroy() {
         defer { buf?.deallocate() }
-        guard _count != 0 else {
-            return
-        }
-        var count = _count
-        var offset = 0
-        while count != 0 {
-            let itemPointer = buf
-                .advanced(by: offset)
-                .assumingMemoryBound(to: Item.self)
-            itemPointer.pointee.vtable.deinitialize(elt: .init(item: itemPointer))
-            offset &+= Int(itemPointer.pointee.size)
-            count &-= 1
+        for element in self {
+            element.item.pointee.vtable.deinitialize(elt: element)
         }
     }
     
