@@ -48,7 +48,7 @@ package final class ViewGraph: GraphHost {
     
     package weak var delegate: (any ViewGraphDelegate)? = nil
     
-    // private var features: ViewGraphFeaturesBuffer = .init()
+    private var features: ViewGraphFeatureBuffer = .init(contents: .init())
     
     package var centersRootView: Bool = true
     
@@ -183,15 +183,20 @@ package final class ViewGraph: GraphHost {
     deinit {
         // FIXME
         removePreferenceOutlets(isInvalidating: true)
+        features.contents.destroy()
     }
         
     override package var graphDelegate: GraphDelegate? { delegate }
     
     override package var parentHost: GraphHost? { preferenceBridge?.viewGraph }
     
-    // TODO: ViewGraphFeature
-    // package func append<T>(feature: T) where T: ViewGraphFeature
-    // package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature
+    package func append<T>(feature: T) where T: ViewGraphFeature {
+        features.append(feature)
+    }
+    
+    package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature {
+        features[feature]
+    }
     
     override package func instantiateOutputs() {
         #if canImport(Darwin)
@@ -231,9 +236,13 @@ package final class ViewGraph: GraphHost {
             ) { rootGeometry in
                 rootGeometry.$layoutDirection = inputs.mapEnvironment(\.layoutDirection)
             }
-            // TODO: features related
-            let outputs = makeRootView(rootView, inputs)
-            // TODO: features related
+            for feature in features {
+                feature.modifyViewInputs(inputs: &inputs, graph: self)
+            }
+            var outputs = makeRootView(rootView, inputs)
+            for feature in features {
+                feature.modifyViewOutputs(outputs: &outputs, inputs: inputs, graph: self)
+            }
             return outputs
         }
         $rootGeometry.mutateBody(
@@ -263,7 +272,9 @@ package final class ViewGraph: GraphHost {
     override package func uninstantiateOutputs() {
         #if canImport(Darwin)
         removePreferenceOutlets(isInvalidating: false)
-        // TODO: features
+        for feature in features {
+            feature.uninstantiate(graph: self)
+        }
         $rootGeometry.mutateBody(
             as: RootGeometry.self,
             invalidating: true
