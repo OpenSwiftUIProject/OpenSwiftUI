@@ -4,12 +4,16 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
+//  ID: 5A14269649C60F846422EA0FA4C5E535 (SwiftUI)
+//  ID: 43DA1754B0518AF1D72B90677BF266DB (SwiftUICore)
 
 public import Foundation
 import OpenGraphShims
 import OpenSwiftUI_SPI
 
+/// Namespace for view debug information.
 public enum _ViewDebug {
+    /// All debuggable view properties.
     public enum Property: UInt32, Hashable {
         case type
         case value
@@ -21,7 +25,8 @@ public enum _ViewDebug {
         case layoutComputer
         case displayList
     }
-
+    
+    /// Bitmask of requested view debug properties.
     public struct Properties: OptionSet {
         public let rawValue: UInt32
         public init(rawValue: UInt32) {
@@ -32,7 +37,7 @@ public enum _ViewDebug {
         package init(_ property: Property) {
             self.init(rawValue: 1 << property.rawValue)
         }
-
+        
         public static let type = Properties(.type)
         public static let value = Properties(.value)
         public static let transform = Properties(.transform)
@@ -47,6 +52,7 @@ public enum _ViewDebug {
     
     package static var properties = Properties()
     
+    /// View debug data for a view and all its child views.
     public struct Data {
         package var data: [Property: Any]
         package var childData: [_ViewDebug.Data]
@@ -72,8 +78,46 @@ extension _ViewDebug.Data: Sendable {}
 @available(*, unavailable)
 extension _ViewDebug: Sendable {}
 
-// TODO
+extension _ViewDebug {
+    package static func initialize(inputs: inout _ViewInputs) {
+        if !isInitialized {
+            if let debugValue = EnvironmentHelper.int32(for: "OPENSWIFTUI_VIEW_DEBUG") {
+                properties = Properties(rawValue: UInt32(bitPattern: debugValue))
+            }
+            isInitialized = true
+        }
+        if !properties.isEmpty {
+            Subgraph.setShouldRecordTree()
+        }
+    }
+}
+
 // MARK: View and ViewModifier
+
+extension ViewModifier {
+    @inline(__always)
+    nonisolated
+    package static func makeDebuggableView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        preconditionFailure("TODO")
+    }
+    
+    // FIXME
+    @inline(__always)
+    nonisolated
+    static func makeDebuggableViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        Subgraph.beginTreeElement(value: modifier.value, flags: 1)
+        defer { OGSubgraph.endTreeElement(value: modifier.value) }
+        return _makeViewList(modifier: modifier, inputs: inputs, body: body)
+    }
+}
 
 extension View {
     @inline(__always)
@@ -82,6 +126,16 @@ extension View {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
+        OGSubgraph.beginTreeElement(value: view.value, flags: 0)
+        var inputs = inputs
+        inputs.changedDebugProperties = []
+        // var outputs = Body._makeView(view: view, inputs: inputs)
+        
+//        if OGSubgraph.shouldRecordTree {
+//            _ViewDebug.reallyWrap(&outputs, value: view, inputs: &inputs)
+//            OGSubgraph.endTreeElement(value: view.value)
+//        }
+//        return outputs
         preconditionFailure("TODO")
     }
     
@@ -91,61 +145,13 @@ extension View {
         view: _GraphValue<Self>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
-        OGSubgraph.beginTreeElement(value: view.value, flags: 1)
-        defer { OGSubgraph.endTreeElement(value: view.value) }
+        Subgraph.beginTreeElement(value: view.value, flags: 1)
+        defer { Subgraph.endTreeElement(value: view.value) }
         return _makeViewList(view: view, inputs: inputs)
     }
 }
 
-extension ViewModifier {    
-    package static func makeDebuggableView(
-        modifier: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs {
-        preconditionFailure("TODO")
-    }
-    
-    static func makeDebuggableViewList(
-        modifier: _GraphValue<Self>,
-        inputs: _ViewListInputs,
-        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
-    ) -> _ViewListOutputs {
-        OGSubgraph.beginTreeElement(value: modifier.value, flags: 1)
-        defer { OGSubgraph.endTreeElement(value: modifier.value) }
-        return _makeViewList(modifier: modifier, inputs: inputs, body: body)
-    }
-}
-
-// MARK: _ViewDebug
-
 extension _ViewDebug {
-    public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
-        let encoder = JSONEncoder()
-        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
-        do {
-            let data = try encoder.encode(viewDebugData)
-            return data
-        } catch {
-            let dic = ["error": error.localizedDescription]
-            return try? encoder.encode(dic)
-        }
-    }
-}
-
-extension _ViewDebug {
-    @inline(__always)
-    static func instantiateIfNeeded() {
-        if !isInitialized {
-            let debugValue = UInt32(bitPattern: EnvironmentHelper.int32(for: "OPENSWIFTUI_VIEW_DEBUG"))
-            properties = Properties(rawValue: debugValue)
-            isInitialized = true
-        }
-        if !properties.isEmpty {
-            OGSubgraph.setShouldRecordTree()
-        }
-    }
-    
     // Fix -werror issue
     // @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
     @inline(__always)
@@ -173,8 +179,41 @@ extension _ViewDebug {
     private static func reallyWrap<Value>(_: inout _ViewOutputs, value: _GraphValue<Value>, inputs _: UnsafePointer<_ViewInputs>) {
         // TODO
     }
+}
 
-    fileprivate static func appendDebugData(from: Int/*AGTreeElement*/ , to: [_ViewDebug.Data]) {}
+// FIXME
+extension Subgraph {
+    func treeRoot() -> Int? { nil }
+}
+
+extension _ViewDebug {
+    package static func makeDebugData(subgraph: Subgraph) -> [_ViewDebug.Data] {
+        var result: [_ViewDebug.Data] = []
+        if let rootElement = subgraph.treeRoot() {
+            appendDebugData(from: rootElement, to: &result)
+        }
+        return result
+    }
+    
+    private static func appendDebugData(from element: Int/*AGTreeElement*/ , to result: inout [_ViewDebug.Data]) {
+        preconditionFailure("TODO")
+    }
+}
+
+// MARK: _ViewDebug
+
+extension _ViewDebug {
+    public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
+        let encoder = JSONEncoder()
+        encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
+        do {
+            let data = try encoder.encode(viewDebugData)
+            return data
+        } catch {
+            let dic = ["error": error.localizedDescription]
+            return try? encoder.encode(dic)
+        }
+    }
 }
 
 // MARK: _ViewDebug.Data

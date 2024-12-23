@@ -217,7 +217,7 @@ package final class ViewGraph: GraphHost {
             if let preferenceBridge {
                 preferenceBridge.wrapInputs(&inputs)
             }
-            _ViewDebug.instantiateIfNeeded() // FIXME
+            _ViewDebug.initialize(inputs: &inputs)
             if _VariableFrameDurationIsSupported() {
                 if !inputs.base.options.contains(.supportsVariableFrameDuration) {
                     inputs.base.options.formUnion(.supportsVariableFrameDuration)
