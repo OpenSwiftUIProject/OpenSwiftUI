@@ -49,10 +49,16 @@ public protocol View {
     /// implementation of the required ``View/body-swift.property`` property.
     associatedtype Body: View
     
+    /// Instantiates the view using `view` as its source value, and
+    /// `inputs` as its input values. Returns the view's output values.
+    /// This should never be called directly, instead use the
+    /// makeDebuggableView() shim function.
     static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs
     
     static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs
     
+    /// The number of views that `_makeViewList()` would produce, or
+    /// nil if unknown.
     static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
     
     /// The content and behavior of the view.
@@ -77,10 +83,6 @@ public protocol View {
 }
 
 extension View {
-    /// Instantiates the view using `view` as its source value, and
-    /// `inputs` as its input values. Returns the view's output values.
-    /// This should never be called directly, instead use the
-    /// makeDebuggableView() shim function.
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         makeView(view: view, inputs: inputs)
     }
