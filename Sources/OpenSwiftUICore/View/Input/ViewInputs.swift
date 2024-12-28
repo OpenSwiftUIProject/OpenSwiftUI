@@ -217,6 +217,15 @@ public struct _ViewInputs {
 @available(*, unavailable)
 extension _ViewInputs: Sendable {}
 
+extension _ViewInputs {
+    @inline(__always)
+    var withoutChangedDebugProperties: _ViewInputs {
+        var copy = self
+        copy.changedDebugProperties = []
+        return copy
+    }
+}
+
 
 // FIXME: TO BE REMOVED
 
