@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Blocked by TreeElement
 //  ID: 5A14269649C60F846422EA0FA4C5E535 (SwiftUI)
 //  ID: 43DA1754B0518AF1D72B90677BF266DB (SwiftUICore)
 
@@ -260,49 +260,56 @@ extension _ViewDebug.Data: Encodable {
         try container.encode(serializedProperties(), forKey: .properties)
         try container.encode(childData, forKey: .children)
     }
-
+    
     private func serializedProperties() -> [SerializedProperty] {
         data.compactMap { key, value -> SerializedProperty? in
-            if key == .value {
-                if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 6) {
-                    return SerializedProperty(id: key.rawValue, attribute: attribute)
-                } else {
-                    return nil
-                }
-            } else if key == .type {
-                let type = value as? Any.Type ?? type(of: value)
-                let attribute = SerializedAttribute(type: type)
-                return SerializedProperty(id: 0, attribute: attribute)
-            } else {
-                if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 4) {
-                    return SerializedProperty(id: key.rawValue, attribute: attribute)
-                } else {
-                    return nil
-                }
+            let attribute: SerializedAttribute? = switch key {
+                case .type: SerializedAttribute(type: value as? Any.Type ?? type(of: value))
+                case .value: serializedAttribute(for: value, label: nil, reflectionDepth: 6)
+                default: serializedAttribute(for: value, label: nil, reflectionDepth: 4)
             }
-        }
-    }
-
-    // TODO
-    // Mirror API
-    private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
-//            let unwrapped = unwrapped(value)
-
-        return nil
-
-//            let mirror = Mirror(reflecting: value)
-//            mirror.displayStyle = .tuple
-
-    }
-
-    private func unwrapped(_ value: Any) -> Any? {
-        if let value = value as? ValueWrapper {
-            return value.wrappedValue
-        } else {
-            return nil
+            guard let attribute else { return nil }
+            return SerializedProperty(id: key.rawValue, attribute: attribute)
         }
     }
     
+    private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
+        guard let unwrappedValue = unwrapped(value) else {
+            return nil
+        }
+        if unwrappedValue is Encodable || unwrappedValue is CustomViewDebugValueConvertible || depth == 0 {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
+        } else if let mirror = effectiveMirror(for: unwrappedValue) {
+            guard !mirror.children.isEmpty else {
+                return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
+            }
+            let depth = depth - 1
+            let subattributes = mirror.children.compactMap { child in
+                serializedAttribute(for: child.value, label: child.label, reflectionDepth: depth)
+            }
+            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: subattributes)
+        } else {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: nil)
+        }
+    }
+
+    private func unwrapped(_ value: Any) -> Any? {
+        if let valueWrapper = value as? ValueWrapper {
+            return valueWrapper.wrappedValue
+        } else {
+            return value
+        }
+    }
+    
+    private func effectiveMirror(for value: Any) -> Mirror? {
+        if case let customized as CustomViewDebugReflectable = value {
+            customized.customViewDebugMirror
+        } else if case let customized as CustomReflectable = value {
+            customized.customMirror
+        } else {
+            Mirror(reflecting: value)
+        }
+    }
 }
 
 // MARK: _ViewDebug.Data.SerializedProperty
@@ -328,56 +335,20 @@ extension _ViewDebug.Data {
 // MARK: _ViewDebug.Data.SerializedAttribute
 
 extension _ViewDebug.Data {
-    // Size: 0x60
     private struct SerializedAttribute: Encodable {
-        // TODO:
-        static func serialize(value _: Any) -> Any? {
-            // Mirror API
-            nil
-        }
-
-        init(type anyType: Any.Type) {
-            name = nil
-            type = String(reflecting: anyType)
-            readableType = OGTypeID(anyType).description
-            flags = [
-                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
-            ]
-            value = nil
-            subattributes = nil
-        }
-
-        init(value inputValue: Any, serializeValue: Bool, label: String?, subattributes inputSubattributes: [SerializedAttribute]) {
-            name = label
-            let anyType = Swift.type(of: inputValue)
-            type = String(reflecting: anyType)
-            readableType = OGTypeID(anyType).description
-            flags = [
-                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
-            ]
-            if serializeValue {
-                value = SerializedAttribute.serialize(value: inputValue)
-            } else {
-                value = nil
-            }
-            subattributes = inputSubattributes
-        }
-
-        struct Flags: OptionSet, Encodable {
-            let rawValue: Int
-
-            static let view = Flags(rawValue: 1 << 0)
-            static let viewModifier = Flags(rawValue: 1 << 1)
-        }
-
         let name: String?
         let type: String
         let readableType: String
         let flags: Flags
         let value: Any?
         let subattributes: [SerializedAttribute]?
+        
+        struct Flags: OptionSet, Encodable {
+            let rawValue: Int
+
+            static let view = Flags(rawValue: 1 << 0)
+            static let viewModifier = Flags(rawValue: 1 << 1)
+        }
         
         enum CodingKeys: CodingKey {
             case name
@@ -398,6 +369,52 @@ extension _ViewDebug.Data {
                 try container.encodeIfPresent(value, forKey: .value)
             }
             try container.encodeIfPresent(subattributes, forKey: .subattributes)
+        }
+        
+        static func serialize(value: Any) -> Any? {
+            let viewDebugValue: Any
+            if let customValue = value as? CustomViewDebugValueConvertible {
+                viewDebugValue = customValue.viewDebugValue
+            } else {
+                viewDebugValue = value
+            }
+            if let encodable = viewDebugValue as? Encodable {
+                return encodable
+            } else if let customDebugStringConvertible = viewDebugValue as? CustomDebugStringConvertible {
+                return customDebugStringConvertible.debugDescription
+            } else {
+                let mirror = Mirror(reflecting: viewDebugValue)
+                if let displayStyle = mirror.displayStyle, displayStyle == .enum {
+                    return String(describing: viewDebugValue)
+                } else {
+                    return nil
+                }
+            }
+        }
+
+        init(type anyType: Any.Type) {
+            self.name = nil
+            self.type = String(reflecting: anyType)
+            self.readableType = OGTypeID(anyType).description
+            self.flags = [
+                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
+            ]
+            self.value = nil
+            self.subattributes = nil
+        }
+
+        init(value: Any, serializeValue: Bool, label: String?, subattributes: [SerializedAttribute]?) {
+            self.name = label
+            let anyType = Swift.type(of: value)
+            self.type = String(reflecting: anyType)
+            self.readableType = OGTypeID(anyType).description
+            self.flags = [
+                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
+            ]
+            self.value = serializeValue ? SerializedAttribute.serialize(value: value) : nil
+            self.subattributes = subattributes
         }
     }
 }
