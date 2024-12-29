@@ -144,7 +144,7 @@ public struct _GraphInputs {
     
     package var animationsDisabled: Bool {
         get { options.contains(.animationsDisabled)  }
-        set { options.formUnion(.animationsDisabled) }
+        set { options.setValue(newValue, for: .animationsDisabled) }
     }
     
     package var needsStableDisplayListIDs: Bool {

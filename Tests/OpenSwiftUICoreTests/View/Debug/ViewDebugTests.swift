@@ -5,30 +5,44 @@
 //  Created by Kyle on 2023/10/6.
 //
 
-@testable import OpenSwiftUICore
+import OpenSwiftUICore
+import OpenGraphShims
 import Testing
 import Foundation
 
 struct ViewDebugTests {
-    @Test(.disabled("Skip the test until we finish the implementation of _ViewDebug"))
-    func type() throws {
+    private func checkJSONEqual(data: Data, expected expectedData: Data) -> Bool {
+        let json = try? JSONSerialization.jsonObject(with: data)
+        let expectedJSON = try? JSONSerialization.jsonObject(with: expectedData)
+        guard let json = json as? [[String: AnyHashable]], let expectedJSON = expectedJSON as? [[String: AnyHashable]] else {
+            return false
+        }
+        return json == expectedJSON
+    }
+    
+    @Test(.enabled(if: attributeGraphEnabled ,"Only enable the test when AG is enabled"))
+    func serializeData() throws {
         var rawData = _ViewDebug.Data()
         rawData.data = [.type: CGSize.self]
         let data = try #require(_ViewDebug.serializedData([rawData]))
-        let content = String(decoding: data, as: UTF8.self)
-        #expect(content == #"""
-        [{"properties":[{"id":0,"attribute":{"type":"__C.CGSize","flags":0,"readableType":""}}],"children":[]}]
-        """#)
+        #expect(checkJSONEqual(
+            data: data,
+            expected: #"""
+            [{"properties":[{"id":0,"attribute":{"type":"__C.CGSize","flags":0,"readableType":"CGSize"}}],"children":[]}]
+            """#.data(using: .utf8)!
+        ))
     }
 
-    @Test(.disabled("Skip the test until we finish the implementation of _ViewDebug"))
+    @Test(.enabled(if: attributeGraphEnabled ,"Only enable the test when AG is enabled"))
     func size() throws {
         var rawData = _ViewDebug.Data()
         rawData.data = [.size: CGSize(width: 20, height: 20)]
         let data = try #require(_ViewDebug.serializedData([rawData]))
-        let content = String(decoding: data, as: UTF8.self)
-        #expect(content == #"""
-        [{"properties":[],"children":[]}]
-        """#)
+        #expect(checkJSONEqual(
+            data: data,
+            expected: #"""
+            [{"properties":[{"id":4,"attribute":{"value":[20,20],"type":"__C.CGSize","flags":0,"readableType":"CGSize"}}],"children":[]}]
+            """#.data(using: .utf8)!
+        ))
     }
 }

@@ -28,12 +28,12 @@ public struct _ViewInputs {
         set { base.customInputs = newValue }
     }
     
-    package subscript<T>(input: T.Type) -> T.Value where T : ViewInput {
+    package subscript<T>(input: T.Type) -> T.Value where T: ViewInput {
         get { base[input] }
         set { base[input] = newValue }
     }
     
-    package subscript<T>(input: T.Type) -> T.Value where T : ViewInput, T.Value : GraphReusable {
+    package subscript<T>(input: T.Type) -> T.Value where T: ViewInput, T.Value: GraphReusable {
         get { base[input] }
         set { base[input] = newValue }
     }
@@ -216,6 +216,15 @@ public struct _ViewInputs {
 
 @available(*, unavailable)
 extension _ViewInputs: Sendable {}
+
+extension _ViewInputs {
+    @inline(__always)
+    var withoutChangedDebugProperties: _ViewInputs {
+        var copy = self
+        copy.changedDebugProperties = []
+        return copy
+    }
+}
 
 
 // FIXME: TO BE REMOVED

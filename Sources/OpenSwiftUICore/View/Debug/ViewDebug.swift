@@ -3,13 +3,17 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Blocked by TreeElement
+//  ID: 5A14269649C60F846422EA0FA4C5E535 (SwiftUI)
+//  ID: 43DA1754B0518AF1D72B90677BF266DB (SwiftUICore)
 
 public import Foundation
 import OpenGraphShims
 import OpenSwiftUI_SPI
 
+/// Namespace for view debug information.
 public enum _ViewDebug {
+    /// All debuggable view properties.
     public enum Property: UInt32, Hashable {
         case type
         case value
@@ -21,7 +25,8 @@ public enum _ViewDebug {
         case layoutComputer
         case displayList
     }
-
+    
+    /// Bitmask of requested view debug properties.
     public struct Properties: OptionSet {
         public let rawValue: UInt32
         public init(rawValue: UInt32) {
@@ -32,7 +37,7 @@ public enum _ViewDebug {
         package init(_ property: Property) {
             self.init(rawValue: 1 << property.rawValue)
         }
-
+        
         public static let type = Properties(.type)
         public static let value = Properties(.value)
         public static let transform = Properties(.transform)
@@ -47,6 +52,7 @@ public enum _ViewDebug {
     
     package static var properties = Properties()
     
+    /// View debug data for a view and all its child views.
     public struct Data {
         package var data: [Property: Any]
         package var childData: [_ViewDebug.Data]
@@ -72,52 +78,160 @@ extension _ViewDebug.Data: Sendable {}
 @available(*, unavailable)
 extension _ViewDebug: Sendable {}
 
-// TODO
-// MARK: View and ViewModifier
-
-extension View {
-    @inline(__always)
-    nonisolated
-    package static func makeDebuggableView(
-        view: _GraphValue<Self>,
-        inputs: _ViewInputs
-    ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+extension _ViewDebug {
+    package static func initialize(inputs: inout _ViewInputs) {
+        if !isInitialized {
+            if let debugValue = EnvironmentHelper.int32(for: "OPENSWIFTUI_VIEW_DEBUG") {
+                properties = Properties(rawValue: UInt32(bitPattern: debugValue))
+            }
+            isInitialized = true
+        }
+        if !properties.isEmpty {
+            Subgraph.setShouldRecordTree()
+        }
     }
     
-    @inline(__always)
-    nonisolated
-    package static func makeDebuggableViewList(
-        view: _GraphValue<Self>,
-        inputs: _ViewListInputs
-    ) -> _ViewListOutputs {
-        OGSubgraph.beginTreeElement(value: view.value, flags: 1)
-        defer { OGSubgraph.endTreeElement(value: view.value) }
-        return _makeViewList(view: view, inputs: inputs)
+    fileprivate static func reallyWrap<Value>(_ outputs: inout _ViewOutputs, value: _GraphValue<Value>, inputs: UnsafePointer<_ViewInputs>) {
+        var debugProperiets = outputs.preferences.debugProperties.union(inputs.pointee.changedDebugProperties)
+        outputs.preferences.debugProperties = []
+        if debugProperiets.contains(.layoutComputer) {
+            debugProperiets.setValue(outputs.layoutComputer != nil, for: .layoutComputer)
+        }
+        guard debugProperiets.subtracting(.displayList) != [] else {
+            return
+        }
+        guard Subgraph.shouldRecordTree else {
+            return
+        }
+        if debugProperiets.contains(.transform) {
+            Subgraph.addTreeValue(inputs.pointee.transform, forKey: "transfrom", flags: 0)
+        }
+        if debugProperiets.contains(.position) {
+            Subgraph.addTreeValue(inputs.pointee.position, forKey: "position", flags: 0)
+        }
+        if debugProperiets.contains(.size) {
+            Subgraph.addTreeValue(inputs.pointee.size, forKey: "size", flags: 0)
+        }
+        if debugProperiets.contains(.environment) {
+            Subgraph.addTreeValue(inputs.pointee.environment, forKey: "environment", flags: 0)
+        }
+        if debugProperiets.contains(.phase) {
+            Subgraph.addTreeValue(inputs.pointee.base.phase, forKey: "phase", flags: 0)
+        }
+        if debugProperiets.contains(.layoutComputer) {
+            Subgraph.addTreeValue(outputs.layoutComputer!, forKey: "layoutComputer", flags: 0)
+        }
     }
 }
 
-extension ViewModifier {    
-    package static func makeDebuggableView(
+// MARK: View and ViewModifier
+
+extension ViewModifier {
+    @inline(__always)
+    nonisolated package static func makeDebuggableView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        Subgraph.beginTreeElement(value: modifier.value, flags: 0)
+        var outputs = _makeView(
+            modifier: modifier,
+            inputs: inputs.withoutChangedDebugProperties,
+            body: body
+        )
+        if Subgraph.shouldRecordTree {
+            withUnsafePointer(to: inputs) { pointer in
+                _ViewDebug.reallyWrap(&outputs, value: modifier, inputs: pointer)
+            }
+        }
+        Subgraph.endTreeElement(value: modifier.value)
+        return outputs
     }
     
-    static func makeDebuggableViewList(
+    @inline(__always)
+    nonisolated package static func makeDebuggableViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        OGSubgraph.beginTreeElement(value: modifier.value, flags: 1)
-        defer { OGSubgraph.endTreeElement(value: modifier.value) }
+        Subgraph.beginTreeElement(value: modifier.value, flags: 1)
+        defer { Subgraph.endTreeElement(value: modifier.value) }
         return _makeViewList(modifier: modifier, inputs: inputs, body: body)
     }
 }
 
-// MARK: _ViewDebug
+extension View {
+    @inline(__always)
+    nonisolated package static func makeDebuggableView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        Subgraph.beginTreeElement(value: view.value, flags: 0)
+        var outputs = _makeView(
+            view: view,
+            inputs: inputs.withoutChangedDebugProperties
+        )
+        if Subgraph.shouldRecordTree {
+            withUnsafePointer(to: inputs) { pointer in
+                _ViewDebug.reallyWrap(&outputs, value: view, inputs: pointer)
+            }
+        }
+        Subgraph.endTreeElement(value: view.value)
+        return outputs
+    }
+    
+    @inline(__always)
+    nonisolated package static func makeDebuggableViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        Subgraph.beginTreeElement(value: view.value, flags: 1)
+        defer { Subgraph.endTreeElement(value: view.value) }
+        return _makeViewList(view: view, inputs: inputs)
+    }
+}
+
+extension _ViewDebug {
+    // Fix -werror issue
+    // @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
+    @inline(__always)
+    static func makeView<Value>(
+        view: _GraphValue<Value>,
+        inputs: _ViewInputs,
+        body: (_ view: _GraphValue<Value>, _ inputs: _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        Subgraph.beginTreeElement(value: view.value, flags: 0)
+        var outputs = body(view, inputs.withoutChangedDebugProperties)
+        if Subgraph.shouldRecordTree {
+            withUnsafePointer(to: inputs) { pointer in
+                _ViewDebug.reallyWrap(&outputs, value: view, inputs: pointer)
+            }
+        }
+        OGSubgraph.endTreeElement(value: view.value)
+        return outputs
+    }
+}
+
+// MARK: - ViewDebug + Debug Data
+
+// FIXME
+extension Subgraph {
+    func treeRoot() -> Int? { nil }
+}
+
+extension _ViewDebug {
+    package static func makeDebugData(subgraph: Subgraph) -> [_ViewDebug.Data] {
+        var result: [_ViewDebug.Data] = []
+        if let rootElement = subgraph.treeRoot() {
+            appendDebugData(from: rootElement, to: &result)
+        }
+        return result
+    }
+    
+    private static func appendDebugData(from element: Int/*AGTreeElement*/ , to result: inout [_ViewDebug.Data]) {
+        preconditionFailure("TODO")
+    }
+}
 
 extension _ViewDebug {
     public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
@@ -133,106 +247,69 @@ extension _ViewDebug {
     }
 }
 
-extension _ViewDebug {
-    @inline(__always)
-    static func instantiateIfNeeded() {
-        if !isInitialized {
-            let debugValue = UInt32(bitPattern: EnvironmentHelper.int32(for: "OPENSWIFTUI_VIEW_DEBUG"))
-            properties = Properties(rawValue: debugValue)
-            isInitialized = true
-        }
-        if !properties.isEmpty {
-            OGSubgraph.setShouldRecordTree()
-        }
-    }
-    
-    // Fix -werror issue
-    // @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
-    @inline(__always)
-    static func makeView<Value>(
-        view: _GraphValue<Value>,
-        inputs: _ViewInputs,
-        body: (_ view: _GraphValue<Value>, _ inputs: _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs {
-        var inputs = inputs
-        OGSubgraph.beginTreeElement(value: view.value, flags: 0)
-        // FIXME
-//        var outputs = inputs.withEmptyChangedDebugPropertiesInputs { inputs in
-//            body(view, inputs)
-//        }
-        inputs.changedDebugProperties = []
-        var outputs = body(view, inputs)
-        
-        if OGSubgraph.shouldRecordTree {
-            _ViewDebug.reallyWrap(&outputs, value: view, inputs: &inputs)
-            OGSubgraph.endTreeElement(value: view.value)
-        }
-        return outputs
-    }
-    
-    private static func reallyWrap<Value>(_: inout _ViewOutputs, value: _GraphValue<Value>, inputs _: UnsafePointer<_ViewInputs>) {
-        // TODO
-    }
-
-    fileprivate static func appendDebugData(from: Int/*AGTreeElement*/ , to: [_ViewDebug.Data]) {}
-}
-
 // MARK: _ViewDebug.Data
 
 extension _ViewDebug.Data: Encodable {
-    public func encode(to encoder: Encoder) throws {
-        var container: KeyedEncodingContainer<_ViewDebug.Data.CodingKeys> = encoder.container(keyedBy: _ViewDebug.Data.CodingKeys.self)
-        try container.encode(serializedProperties(), forKey: .properties)
-        try container.encode(childData, forKey: .children)
-    }
-
     enum CodingKeys: CodingKey {
         case properties
         case children
     }
-
+    
+    public func encode(to encoder: Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(serializedProperties(), forKey: .properties)
+        try container.encode(childData, forKey: .children)
+    }
+    
     private func serializedProperties() -> [SerializedProperty] {
         data.compactMap { key, value -> SerializedProperty? in
-            if key == .value {
-                if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 6) {
-                    return SerializedProperty(id: key.rawValue, attribute: attribute)
-                } else {
-                    return nil
-                }
-            } else if key == .type {
-                let type = value as? Any.Type ?? type(of: value)
-                let attribute = SerializedAttribute(type: type)
-                return SerializedProperty(id: 0, attribute: attribute)
-            } else {
-                if let attribute = serializedAttribute(for: value, label: nil, reflectionDepth: 4) {
-                    return SerializedProperty(id: key.rawValue, attribute: attribute)
-                } else {
-                    return nil
-                }
+            let attribute: SerializedAttribute? = switch key {
+                case .type: SerializedAttribute(type: value as? Any.Type ?? type(of: value))
+                case .value: serializedAttribute(for: value, label: nil, reflectionDepth: 6)
+                default: serializedAttribute(for: value, label: nil, reflectionDepth: 4)
             }
-        }
-    }
-
-    // TODO
-    // Mirror API
-    private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
-//            let unwrapped = unwrapped(value)
-
-        return nil
-
-//            let mirror = Mirror(reflecting: value)
-//            mirror.displayStyle = .tuple
-
-    }
-
-    private func unwrapped(_ value: Any) -> Any? {
-        if let value = value as? ValueWrapper {
-            return value.wrappedValue
-        } else {
-            return nil
+            guard let attribute else { return nil }
+            return SerializedProperty(id: key.rawValue, attribute: attribute)
         }
     }
     
+    private func serializedAttribute(for value: Any, label: String?, reflectionDepth depth: Int) -> SerializedAttribute? {
+        guard let unwrappedValue = unwrapped(value) else {
+            return nil
+        }
+        if unwrappedValue is Encodable || unwrappedValue is CustomViewDebugValueConvertible || depth == 0 {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
+        } else if let mirror = effectiveMirror(for: unwrappedValue) {
+            guard !mirror.children.isEmpty else {
+                return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
+            }
+            let depth = depth - 1
+            let subattributes = mirror.children.compactMap { child in
+                serializedAttribute(for: child.value, label: child.label, reflectionDepth: depth)
+            }
+            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: subattributes)
+        } else {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: nil)
+        }
+    }
+
+    private func unwrapped(_ value: Any) -> Any? {
+        if let valueWrapper = value as? ValueWrapper {
+            return valueWrapper.wrappedValue
+        } else {
+            return value
+        }
+    }
+    
+    private func effectiveMirror(for value: Any) -> Mirror? {
+        if case let customized as CustomViewDebugReflectable = value {
+            customized.customViewDebugMirror
+        } else if case let customized as CustomReflectable = value {
+            customized.customMirror
+        } else {
+            Mirror(reflecting: value)
+        }
+    }
 }
 
 // MARK: _ViewDebug.Data.SerializedProperty
@@ -258,56 +335,20 @@ extension _ViewDebug.Data {
 // MARK: _ViewDebug.Data.SerializedAttribute
 
 extension _ViewDebug.Data {
-    // Size: 0x60
     private struct SerializedAttribute: Encodable {
-        // TODO:
-        static func serialize(value _: Any) -> Any? {
-            // Mirror API
-            nil
-        }
-
-        init(type anyType: Any.Type) {
-            name = nil
-            type = String(reflecting: anyType)
-            readableType = OGTypeID(anyType).description
-            flags = [
-                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
-            ]
-            value = nil
-            subattributes = nil
-        }
-
-        init(value inputValue: Any, serializeValue: Bool, label: String?, subattributes inputSubattributes: [SerializedAttribute]) {
-            name = label
-            let anyType = Swift.type(of: inputValue)
-            type = String(reflecting: anyType)
-            readableType = OGTypeID(anyType).description
-            flags = [
-                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
-            ]
-            if serializeValue {
-                value = SerializedAttribute.serialize(value: inputValue)
-            } else {
-                value = nil
-            }
-            subattributes = inputSubattributes
-        }
-
-        struct Flags: OptionSet, Encodable {
-            let rawValue: Int
-
-            static let view = Flags(rawValue: 1 << 0)
-            static let viewModifier = Flags(rawValue: 1 << 1)
-        }
-
         let name: String?
         let type: String
         let readableType: String
         let flags: Flags
         let value: Any?
         let subattributes: [SerializedAttribute]?
+        
+        struct Flags: OptionSet, Encodable {
+            let rawValue: Int
+
+            static let view = Flags(rawValue: 1 << 0)
+            static let viewModifier = Flags(rawValue: 1 << 1)
+        }
         
         enum CodingKeys: CodingKey {
             case name
@@ -329,15 +370,76 @@ extension _ViewDebug.Data {
             }
             try container.encodeIfPresent(subattributes, forKey: .subattributes)
         }
+        
+        static func serialize(value: Any) -> Any? {
+            let viewDebugValue: Any
+            if let customValue = value as? CustomViewDebugValueConvertible {
+                viewDebugValue = customValue.viewDebugValue
+            } else {
+                viewDebugValue = value
+            }
+            if let encodable = viewDebugValue as? Encodable {
+                return encodable
+            } else if let customDebugStringConvertible = viewDebugValue as? CustomDebugStringConvertible {
+                return customDebugStringConvertible.debugDescription
+            } else {
+                let mirror = Mirror(reflecting: viewDebugValue)
+                if let displayStyle = mirror.displayStyle, displayStyle == .enum {
+                    return String(describing: viewDebugValue)
+                } else {
+                    return nil
+                }
+            }
+        }
+
+        init(type anyType: Any.Type) {
+            self.name = nil
+            self.type = String(reflecting: anyType)
+            self.readableType = OGTypeID(anyType).description
+            self.flags = [
+                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
+            ]
+            self.value = nil
+            self.subattributes = nil
+        }
+
+        init(value: Any, serializeValue: Bool, label: String?, subattributes: [SerializedAttribute]?) {
+            self.name = label
+            let anyType = Swift.type(of: value)
+            self.type = String(reflecting: anyType)
+            self.readableType = OGTypeID(anyType).description
+            self.flags = [
+                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
+            ]
+            self.value = serializeValue ? SerializedAttribute.serialize(value: value) : nil
+            self.subattributes = subattributes
+        }
     }
 }
 
-private protocol ValueWrapper {
+package protocol CustomViewDebugReflectable {
+    var customViewDebugMirror: Mirror? { get }
+}
+
+package protocol CustomViewDebugValueConvertible {
+    var viewDebugValue: Any { get }
+}
+
+@_spi(ForOpenSwiftUIOnly)
+extension ViewTransform.Item: Encodable {
+    package func encode(to encoder: any Encoder) throws {
+        preconditionFailure("TODO")
+    }
+}
+
+package protocol ValueWrapper {
     var wrappedValue: Any? { get }
 }
 
-extension Optional {
-    var wrappedValue: Any? {
+extension Optional: ValueWrapper {
+    package var wrappedValue: Any? {
         if case let .some(wrapped) = self {
             return wrapped
         } else {
@@ -345,3 +447,11 @@ extension Optional {
         }
     }
 }
+
+#if canImport(Darwin)
+@objc
+package protocol XcodeViewDebugDataProvider {
+    @objc
+    func makeViewDebugData() -> Foundation.Data?
+}
+#endif
