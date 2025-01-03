@@ -47,10 +47,15 @@ open class UIHostingController<Content> : UIViewController where Content : View 
         get { host.rootView }
         _modify { yield &host.rootView }
     }
+    
+    public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
+        host._forEachIdentifiedView(body: body)
+    }
 }
 
 @available(macOS, unavailable)
 extension UIHostingController: _UIHostingViewable where Content == AnyView {
+    
 }
 
 @available(macOS, unavailable)

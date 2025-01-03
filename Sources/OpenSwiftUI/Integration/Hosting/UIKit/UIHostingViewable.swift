@@ -13,7 +13,7 @@ import Foundation
 public protocol _UIHostingViewable: AnyObject {
 //    var rootView: AnyView { get set }
 //    func _render(seconds: Double)
-//    func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void)
+    func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void)
 //    func sizeThatFits(in size: CGSize) -> CGSize
 //    var _disableSafeArea: Bool { get set }
 ////    var _rendererConfiguration: _RendererConfiguration { get set }

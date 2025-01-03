@@ -151,6 +151,19 @@ open class _UIHostingView<Content>: UIView where Content: View {
     // TODO
     func clearUpdateTimer() {
     }
+    
+    func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
+        let tree = preferenceValue(_IdentifiedViewsKey.self)
+        let adjustment = { [weak self](rect: inout CGRect) in
+            guard let self else { return }
+            rect = convert(rect, from: nil)
+        }
+        tree.forEach { proxy in
+            var proxy = proxy
+            proxy.adjustment = adjustment
+            body(proxy)
+        }
+    }
 }
 
 extension _UIHostingView: ViewRendererHost {

@@ -12,7 +12,32 @@ package struct ViewTransform {
     }
 }
 
+
+// MARK: - ViewTransform + Chunk
+
 extension ViewTransform {
+    @inlinable
+    mutating func appendTranslation(_ size: CGSize) {
+        if size != .zero {
+            let chunk = mutableChunk()
+            chunk.appendTranslation(size)
+        }
+    }
+    
+    private mutating func mutableChunk() -> Chunk {
+        let lastIndex = chunks.count-1
+        if lastIndex >= 0, isKnownUniquelyReferenced(&chunks[lastIndex]) {
+            var chunks = chunks
+            let chunk = chunks[chunks.count-1]
+            // TODO
+            return chunk
+        } else {
+            let chunk = Chunk()
+            chunks = [chunk]
+            return chunk
+        }
+    }
+    
     private class Chunk {
         var tags: [Tag] = []
         var values: [CGFloat] = []
@@ -33,7 +58,6 @@ extension ViewTransform {
             tags.append(.translation)
             values.append(translation.width)
             values.append(translation.height)
-            
         }
     }
 }
@@ -54,5 +78,39 @@ extension ViewTransform {
             case affineTransform
             case projection
         }
+    }
+}
+
+// MARK: - ViewTransform + Conversion
+
+extension ViewTransform {
+    enum Conversion {
+        
+        private func finished(at coordinateSpace: CoordinateSpace) -> Bool {
+            // TODO
+            .random()
+        }
+        
+        private func shouldConvert(at coordinateSpace: CoordinateSpace) -> Bool {
+            // TODO
+            .random()
+        }
+    }
+    
+    func convert(_ conversion: ViewTransform.Conversion, space: CoordinateSpace, point: CGPoint) -> CGPoint {
+        
+    }
+
+}
+
+// MARK: AppyViewTransform
+
+private protocol AppyViewTransform {
+    mutating func convert(from coordinateSpace: CoordinateSpace, transform: ViewTransform)
+}
+
+extension CGPoint: AppyViewTransform {
+    mutating func convert(from coordinateSpace: CoordinateSpace, transform: ViewTransform) {
+        // TODO
     }
 }

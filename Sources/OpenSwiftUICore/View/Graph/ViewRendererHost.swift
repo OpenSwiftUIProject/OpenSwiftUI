@@ -176,7 +176,9 @@ extension ViewRendererHost {
     
     @_spi(Private)
     public func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {
-        preconditionFailure("TODO")
+        updateViewGraph { graph in
+            graph.preferenceValue(key)
+        }
     }
     
     package func idealSize() -> CGSize { preconditionFailure("TODO") }
