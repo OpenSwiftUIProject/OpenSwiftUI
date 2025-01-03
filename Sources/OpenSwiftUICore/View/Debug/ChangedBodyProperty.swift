@@ -72,7 +72,7 @@ package func changedBodyProperties<Body>(of type: Body.Type) -> [String] {
 
 package func printChangedBodyProperties<Body>(of type: Body.Type) {
     let properties = changedBodyProperties(of: type)
-    var result = OGTypeID(type).description
+    var result = Metadata(type).description
     if properties.isEmpty {
         result.append(": unchanged.")
     } else {
@@ -106,7 +106,7 @@ extension OSLog {
 
 package func logChangedBodyProperties<Body>(of type: Body.Type) {
     let properties = changedBodyProperties(of: type)
-    let result = OGTypeID(type).description
+    let result = Metadata(type).description
     if properties.isEmpty {
         #if OPENSWIFTUI_SWIFT_LOG
         Logger.changeBodyPropertiesLogger.info("\(result): unchanged.")

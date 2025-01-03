@@ -46,7 +46,7 @@ extension View {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        let kind = OGTypeID(Self.self).kind
+        let kind = Metadata(Self.self).kind
         switch kind {
         case .struct, .enum, .optional, .tuple:
             let accessor = ViewBodyAccessor<Self>()

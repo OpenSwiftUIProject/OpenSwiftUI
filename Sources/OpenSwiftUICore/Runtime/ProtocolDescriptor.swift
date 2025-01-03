@@ -21,7 +21,7 @@ protocol TupleDescriptor: ProtocolDescriptor {
 }
 
 extension TupleDescriptor {
-    static func tupleDescription(_ type: OGTupleType) -> TupleTypeDescription<Self> {
+    static func tupleDescription(_ type: TupleType) -> TupleTypeDescription<Self> {
         let id = ObjectIdentifier(type.type)
         if let cache = typeCache[id] {
             return cache
@@ -38,7 +38,7 @@ extension TupleDescriptor {
 struct TupleTypeDescription<PD: ProtocolDescriptor> {
     let contentTypes: [(Int, TypeConformance<PD>)]
     
-    init(_ tupleType: OGTupleType) {
+    init(_ tupleType: TupleType) {
         contentTypes = tupleType.indices.compactMap { index in
             let type = tupleType.type(at: index)
             guard let comformance = TypeConformance<PD>(type) else {

@@ -395,7 +395,7 @@ extension _ViewDebug.Data {
         init(type anyType: Any.Type) {
             self.name = nil
             self.type = String(reflecting: anyType)
-            self.readableType = OGTypeID(anyType).description
+            self.readableType = Metadata(anyType).description
             self.flags = [
                 conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
                 conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
@@ -408,7 +408,7 @@ extension _ViewDebug.Data {
             self.name = label
             let anyType = Swift.type(of: value)
             self.type = String(reflecting: anyType)
-            self.readableType = OGTypeID(anyType).description
+            self.readableType = Metadata(anyType).description
             self.flags = [
                 conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
                 conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],

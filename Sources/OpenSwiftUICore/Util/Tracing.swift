@@ -28,7 +28,7 @@ enum Tracing {
     
     static func libraryName(defining type: Any.Type) -> String {
         let unknown = "ModuleUnknown"
-        guard let nominalDescriptor = OGTypeID(type).nominalDescriptor else {
+        guard let nominalDescriptor = Metadata(type).nominalDescriptor else {
             return unknown
         }
         if let cachedName = moduleLookupCache.value[nominalDescriptor] {
@@ -51,7 +51,7 @@ enum Tracing {
     }
     
     static func nominalTypeName(_ type: Any.Type) -> String {
-        OGTypeID(type).description
+        Metadata(type).description
     }
 }
 
@@ -62,7 +62,7 @@ package func traceBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
     guard kdebug_is_enabled(UInt32(OSSignpostType.event.rawValue) & 0xF8 | 0x1411_0014) else {
         return body()
     }
-    // TODO: OGTypeID(type).description, Tracing.libraryName(defining: v)
+    // TODO: Metadata(type).description, Tracing.libraryName(defining: v)
     return body()
     #else
     body()

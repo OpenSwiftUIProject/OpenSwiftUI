@@ -21,7 +21,7 @@ final class DynamicPropertyCacheTests: XCTestCase {
         print(d)
         
         
-        let t = OGTypeID(DynamicPropertyCache.Fields?.self)
+        let t = Metadata(DynamicPropertyCache.Fields?.self)
         let result = t.forEachField(options: ._4) { name, index, type in
             let s = String(cString: name)
             print("\(s) \(index) \(type)")

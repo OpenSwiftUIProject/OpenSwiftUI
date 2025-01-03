@@ -166,18 +166,18 @@ package struct DynamicPropertyCache {
             return fields
         }
         let fields: Fields
-        let typeID = OGTypeID(type)
+        let typeID = Metadata(type)
         switch typeID.kind {
         case .enum, .optional:
             var taggedFields: [TaggedFields] = []
             _ = typeID.forEachField(options: [._2, ._4]) { name, offset, fieldType in
                 var fields: [Field] = []
-                let tupleType = OGTupleType(fieldType)
+                let tupleType = TupleType(fieldType)
                 for index in tupleType.indices {
                     guard let dynamicPropertyType = tupleType.type(at: index) as? DynamicProperty.Type else {
                         break
                     }
-                    let offset = tupleType.offset(at: index)
+                    let offset = tupleType.elementOffset(at: index)
                     let field = Field(type: dynamicPropertyType, offset: offset, name: name)
                     fields.append(field)
                 }
