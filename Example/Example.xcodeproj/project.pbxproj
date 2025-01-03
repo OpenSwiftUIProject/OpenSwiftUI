@@ -3,13 +3,11 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 56;
+	objectVersion = 71;
 	objects = {
 
 /* Begin PBXBuildFile section */
-		27496E8A2BB1E05B00953172 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E892BB1E05B00953172 /* AttributeGraph.xcframework */; };
 		27496E8E2BB1E0AA00953172 /* CoreServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */; };
-		27B7FC7B2BB31FCC00272BA5 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E892BB1E05B00953172 /* AttributeGraph.xcframework */; };
 		27B7FC7E2BB31FD000272BA5 /* CoreServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */; };
 		27CD0B4D2AFC8D37003665EB /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27CD0B4C2AFC8D37003665EB /* ExampleApp.swift */; };
 		27CD0B4F2AFC8D37003665EB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27CD0B4E2AFC8D37003665EB /* ContentView.swift */; };
@@ -23,19 +21,15 @@
 		27D49E042BA604FC00F6E2E2 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27D49E032BA604FC00F6E2E2 /* Assets.xcassets */; };
 		27D49E072BA604FC00F6E2E2 /* LaunchScreen.storyboard in Resources */ = {isa = PBXBuildFile; fileRef = 27D49E052BA604FC00F6E2E2 /* LaunchScreen.storyboard */; };
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
+		27E6C4D22D2842740010502F /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		27E6C4D52D2842810010502F /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		27E6C4D62D2842810010502F /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
 		271D81642BB1E8E300A6D543 /* OpenGraph */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenGraph; path = ../../OpenGraph; sourceTree = "<group>"; };
-		27496E892BB1E05B00953172 /* AttributeGraph.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AttributeGraph.xcframework; path = ../../OpenGraph/AG/AttributeGraph.xcframework; sourceTree = "<group>"; };
 		27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CoreServices.xcframework; path = ../PrivateFrameworks/CoreServices.xcframework; sourceTree = "<group>"; };
-		276A744D2BB1DDFD002CAB40 /* CoreServices.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = CoreServices.framework; path = Platforms/iPhoneOS.platform/Developer/SDKs/iPhoneOS17.2.sdk/System/Library/Frameworks/CoreServices.framework; sourceTree = DEVELOPER_DIR; };
-		278A03282BD6DE3D00ED4DAE /* OpenSwiftUI-debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "OpenSwiftUI-debug.xcconfig"; sourceTree = "<group>"; };
-		278A03292BD6DE3D00ED4DAE /* OpenSwiftUI-release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "OpenSwiftUI-release.xcconfig"; sourceTree = "<group>"; };
-		278A032A2BD6DE3D00ED4DAE /* SwiftUI-debug.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "SwiftUI-debug.xcconfig"; sourceTree = "<group>"; };
-		278A032B2BD6DE3D00ED4DAE /* SwiftUI-release.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = "SwiftUI-release.xcconfig"; sourceTree = "<group>"; };
-		278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Example.xcconfig; sourceTree = "<group>"; };
-		278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = HostingExample.xcconfig; sourceTree = "<group>"; };
 		27B7FC802BB31FF500272BA5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		27CD0B492AFC8D37003665EB /* Example.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Example.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		27CD0B4C2AFC8D37003665EB /* ExampleApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleApp.swift; sourceTree = "<group>"; };
@@ -52,7 +46,15 @@
 		27D49E032BA604FC00F6E2E2 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		27D49E062BA604FC00F6E2E2 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; name = Base; path = Base.lproj/LaunchScreen.storyboard; sourceTree = "<group>"; };
 		27D49E082BA604FC00F6E2E2 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		27E6C4D02D2842530010502F /* OpenBox */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenBox; path = /Users/kyle/Workspace/OpenSwiftUIProject/OpenBox; sourceTree = "<absolute>"; };
+		27E6C4D12D2842740010502F /* AttributeGraph.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AttributeGraph.xcframework; path = /Users/kyle/Workspace/OpenSwiftUIProject/DarwinPrivateFrameworks/AG/2024/AttributeGraph.xcframework; sourceTree = "<absolute>"; };
+		27E6C4D42D2842810010502F /* RenderBox.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RenderBox.xcframework; path = /Users/kyle/Workspace/OpenSwiftUIProject/DarwinPrivateFrameworks/RB/2024/RenderBox.xcframework; sourceTree = "<absolute>"; };
+		27E6C4F72D2844470010502F /* DarwinPrivateFrameworks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DarwinPrivateFrameworks; path = /Users/kyle/Workspace/OpenSwiftUIProject/DarwinPrivateFrameworks; sourceTree = "<absolute>"; };
 /* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
+/* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		27CD0B462AFC8D37003665EB /* Frameworks */ = {
@@ -60,8 +62,9 @@
 			buildActionMask = 2147483647;
 			files = (
 				27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */,
+				27E6C4D62D2842810010502F /* RenderBox.xcframework in Frameworks */,
+				27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */,
 				27B7FC7E2BB31FD000272BA5 /* CoreServices.xcframework in Frameworks */,
-				27B7FC7B2BB31FCC00272BA5 /* AttributeGraph.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -70,41 +73,22 @@
 			buildActionMask = 2147483647;
 			files = (
 				27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */,
+				27E6C4D52D2842810010502F /* RenderBox.xcframework in Frameworks */,
+				27E6C4D22D2842740010502F /* AttributeGraph.xcframework in Frameworks */,
 				27496E8E2BB1E0AA00953172 /* CoreServices.xcframework in Frameworks */,
-				27496E8A2BB1E05B00953172 /* AttributeGraph.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
-		278A032C2BD6DE3D00ED4DAE /* Shared */ = {
-			isa = PBXGroup;
-			children = (
-				278A03282BD6DE3D00ED4DAE /* OpenSwiftUI-debug.xcconfig */,
-				278A03292BD6DE3D00ED4DAE /* OpenSwiftUI-release.xcconfig */,
-				278A032A2BD6DE3D00ED4DAE /* SwiftUI-debug.xcconfig */,
-				278A032B2BD6DE3D00ED4DAE /* SwiftUI-release.xcconfig */,
-			);
-			path = Shared;
-			sourceTree = "<group>";
-		};
-		278A032F2BD6DE3D00ED4DAE /* Configurations */ = {
-			isa = PBXGroup;
-			children = (
-				278A032C2BD6DE3D00ED4DAE /* Shared */,
-				278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */,
-				278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */,
-			);
-			name = Configurations;
-			path = ../Configurations;
-			sourceTree = "<group>";
-		};
 		27CD0B402AFC8D37003665EB = {
 			isa = PBXGroup;
 			children = (
-				278A032F2BD6DE3D00ED4DAE /* Configurations */,
+				27E6C4F62D2842D80010502F /* Configurations */,
 				27B7FC802BB31FF500272BA5 /* README.md */,
+				27E6C4F72D2844470010502F /* DarwinPrivateFrameworks */,
+				27E6C4D02D2842530010502F /* OpenBox */,
 				271D81642BB1E8E300A6D543 /* OpenGraph */,
 				27CD0B612AFC8E0E003665EB /* OpenSwiftUI */,
 				27CD0B4B2AFC8D37003665EB /* Example */,
@@ -160,9 +144,9 @@
 		27D49E0C2BA60AF600F6E2E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				27E6C4D42D2842810010502F /* RenderBox.xcframework */,
+				27E6C4D12D2842740010502F /* AttributeGraph.xcframework */,
 				27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */,
-				27496E892BB1E05B00953172 /* AttributeGraph.xcframework */,
-				276A744D2BB1DDFD002CAB40 /* CoreServices.framework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -315,7 +299,8 @@
 /* Begin XCBuildConfiguration section */
 		272252242BB1C655009CA741 /* OpenSwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A03282BD6DE3D00ED4DAE /* OpenSwiftUI-debug.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = "Shared/OpenSwiftUI-debug.xcconfig";
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -374,7 +359,8 @@
 		};
 		272252252BB1C655009CA741 /* OpenSwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = Example.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -396,10 +382,8 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -412,7 +396,8 @@
 		};
 		272252262BB1C655009CA741 /* OpenSwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = HostingExample.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -426,7 +411,6 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -445,7 +429,8 @@
 		};
 		278A031C2BD6DD7200ED4DAE /* SwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032B2BD6DE3D00ED4DAE /* SwiftUI-release.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = "Shared/SwiftUI-release.xcconfig";
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -504,7 +489,8 @@
 		};
 		278A031D2BD6DD7200ED4DAE /* SwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = Example.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -526,10 +512,8 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -542,7 +526,8 @@
 		};
 		278A031E2BD6DD7200ED4DAE /* SwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = HostingExample.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -557,7 +542,6 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -576,7 +560,8 @@
 		};
 		278A031F2BD6DD9D00ED4DAE /* OpenSwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A03292BD6DE3D00ED4DAE /* OpenSwiftUI-release.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = "Shared/OpenSwiftUI-release.xcconfig";
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -635,7 +620,8 @@
 		};
 		278A03202BD6DD9D00ED4DAE /* OpenSwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = Example.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -657,10 +643,8 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 10.15;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -673,7 +657,8 @@
 		};
 		278A03212BD6DD9D00ED4DAE /* OpenSwiftUIRelease */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = HostingExample.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -687,7 +672,6 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -706,7 +690,8 @@
 		};
 		27CD0B562AFC8D38003665EB /* SwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032A2BD6DE3D00ED4DAE /* SwiftUI-debug.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = "Shared/SwiftUI-debug.xcconfig";
 			buildSettings = {
 				ALWAYS_SEARCH_USER_PATHS = NO;
 				ASSETCATALOG_COMPILER_GENERATE_SWIFT_ASSET_SYMBOL_EXTENSIONS = YES;
@@ -765,7 +750,8 @@
 		};
 		27CD0B592AFC8D38003665EB /* SwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032D2BD6DE3D00ED4DAE /* Example.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = Example.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -787,10 +773,8 @@
 				"INFOPLIST_KEY_UIStatusBarStyle[sdk=iphonesimulator*]" = UIStatusBarStyleDefault;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = "@executable_path/Frameworks";
 				"LD_RUNPATH_SEARCH_PATHS[sdk=macosx*]" = "@executable_path/../Frameworks";
-				MACOSX_DEPLOYMENT_TARGET = 12.0;
 				MARKETING_VERSION = 1.0;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				SDKROOT = auto;
@@ -803,7 +787,8 @@
 		};
 		27D49E0A2BA604FC00F6E2E2 /* SwiftUIDebug */ = {
 			isa = XCBuildConfiguration;
-			baseConfigurationReference = 278A032E2BD6DE3D00ED4DAE /* HostingExample.xcconfig */;
+			baseConfigurationReferenceAnchor = 27E6C4F62D2842D80010502F /* Configurations */;
+			baseConfigurationReferenceRelativePath = HostingExample.xcconfig;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
@@ -817,7 +802,6 @@
 				INFOPLIST_KEY_UIMainStoryboardFile = Main;
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
 				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				IPHONEOS_DEPLOYMENT_TARGET = 15.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
