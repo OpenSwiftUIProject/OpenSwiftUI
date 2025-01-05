@@ -245,21 +245,29 @@ extension CGRect: Animatable {
 
 extension CGRect: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) {
-        encoder.cgFloatField(1, x)
-        encoder.cgFloatField(2, y)
-        encoder.cgFloatField(3, width)
-        encoder.cgFloatField(4, height)
+        withUnsafePointer(to: self) { pointer in
+            let pointer = UnsafeRawPointer(pointer).assumingMemoryBound(to: CGFloat.self)
+            let bufferPointer = UnsafeBufferPointer(start: pointer, count: 4)
+            for index: UInt in 1 ... 4 {
+                encoder.cgFloatField(
+                    index,
+                    bufferPointer[Int(index &- 1)]
+                )
+            }
+        }
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
         var rect = CGRect.zero
-        while let field = try decoder.nextField() {
-            switch field.tag {
-                case 1: rect.x = try decoder.cgFloatField(field)
-                case 2: rect.y = try decoder.cgFloatField(field)
-                case 3: rect.size.width = try decoder.cgFloatField(field)
-                case 4: rect.size.height = try decoder.cgFloatField(field)
-                default: try decoder.skipField(field)
+        try withUnsafeMutablePointer(to: &rect) { pointer in
+            let pointer = UnsafeMutableRawPointer(pointer).assumingMemoryBound(to: CGFloat.self)
+            let bufferPointer = UnsafeMutableBufferPointer(start: pointer, count: 4)
+            while let field = try decoder.nextField() {
+                let tag = field.tag
+                switch tag {
+                    case 1...6: bufferPointer[Int(tag &- 1)] = try decoder.cgFloatField(field)
+                    default: try decoder.skipField(field)
+                }
             }
         }
         self = rect

@@ -49,25 +49,30 @@ extension CGAffineTransform {
 
 extension CGAffineTransform: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        encoder.cgFloatField(1, a, defaultValue: 1)
-        encoder.cgFloatField(2, b, defaultValue: 0)
-        encoder.cgFloatField(3, c, defaultValue: 0)
-        encoder.cgFloatField(4, d, defaultValue: 1)
-        encoder.cgFloatField(5, tx, defaultValue: 0)
-        encoder.cgFloatField(6, ty, defaultValue: 0)
+        withUnsafePointer(to: self) { pointer in
+            let pointer = UnsafeRawPointer(pointer).assumingMemoryBound(to: CGFloat.self)
+            let bufferPointer = UnsafeBufferPointer(start: pointer, count: 6)
+            for index: UInt in 1 ... 6 {
+                encoder.cgFloatField(
+                    index,
+                    bufferPointer[Int(index &- 1)],
+                    defaultValue: (index == 1 || index == 4) ? 1 : 0
+                )
+            }
+        }
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
         var transform = CGAffineTransform.identity
-        while let field = try decoder.nextField() {
-            switch field.tag {
-                case 1: transform.a = try decoder.cgFloatField(field)
-                case 2: transform.b = try decoder.cgFloatField(field)
-                case 3: transform.c = try decoder.cgFloatField(field)
-                case 4: transform.d = try decoder.cgFloatField(field)
-                case 5: transform.tx = try decoder.cgFloatField(field)
-                case 6: transform.ty = try decoder.cgFloatField(field)
-                default: try decoder.skipField(field)
+        try withUnsafeMutablePointer(to: &transform) { pointer in
+            let pointer = UnsafeMutableRawPointer(pointer).assumingMemoryBound(to: CGFloat.self)
+            let bufferPointer = UnsafeMutableBufferPointer(start: pointer, count: 6)
+            while let field = try decoder.nextField() {
+                let tag = field.tag
+                switch tag {
+                    case 1...6: bufferPointer[Int(tag &- 1)] = try decoder.cgFloatField(field)
+                    default: try decoder.skipField(field)
+                }
             }
         }
         self = transform

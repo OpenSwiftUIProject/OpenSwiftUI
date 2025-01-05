@@ -5,7 +5,6 @@
 //  Audited for iOS 15.5
 //  Status: Complete
 
-import OpenGraphShims
 @testable import OpenSwiftUICore
 import Testing
 

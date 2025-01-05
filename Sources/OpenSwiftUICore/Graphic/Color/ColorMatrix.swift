@@ -295,56 +295,34 @@ extension _ColorMatrix: ShapeStyle {
 
 extension _ColorMatrix: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) {
-        encoder.floatField(1, m11, defaultValue: 1.0)
-        encoder.floatField(2, m12, defaultValue: 0.0)
-        encoder.floatField(3, m13, defaultValue: 0.0)
-        encoder.floatField(4, m14, defaultValue: 0.0)
-        encoder.floatField(5, m15, defaultValue: 0.0)
-        encoder.floatField(6, m21, defaultValue: 0.0)
-        encoder.floatField(7, m22, defaultValue: 1.0)
-        encoder.floatField(8, m23, defaultValue: 0.0)
-        encoder.floatField(9, m24, defaultValue: 0.0)
-        encoder.floatField(10, m25, defaultValue: 0.0)
-        encoder.floatField(11, m31, defaultValue: 0.0)
-        encoder.floatField(12, m32, defaultValue: 0.0)
-        encoder.floatField(13, m33, defaultValue: 1.0)
-        encoder.floatField(14, m34, defaultValue: 0.0)
-        encoder.floatField(15, m35, defaultValue: 0.0)
-        encoder.floatField(16, m41, defaultValue: 0.0)
-        encoder.floatField(17, m42, defaultValue: 0.0)
-        encoder.floatField(18, m43, defaultValue: 0.0)
-        encoder.floatField(19, m44, defaultValue: 1.0)
-        encoder.floatField(20, m45, defaultValue: 0.0)
+        withUnsafePointer(to: self) { pointer in
+            let pointer = UnsafeRawPointer(pointer).assumingMemoryBound(to: Float.self)
+            let bufferPointer = UnsafeBufferPointer(start: pointer, count: 20)
+            for index: UInt in 1 ... 6 {
+                encoder.floatField(
+                    index,
+                    bufferPointer[Int(index &- 1)],
+                    defaultValue: (index == 1 || index == 7 || index == 13 || index == 19) ? 1 : 0
+                )
+            }
+        }
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
-        self = _ColorMatrix()
-        while let field = try decoder.nextField() {
-            switch field.tag {
-            case 1: m11 = try decoder.floatField(field)
-            case 2: m12 = try decoder.floatField(field)
-            case 3: m13 = try decoder.floatField(field)
-            case 4: m14 = try decoder.floatField(field)
-            case 5: m15 = try decoder.floatField(field)
-            case 6: m21 = try decoder.floatField(field)
-            case 7: m22 = try decoder.floatField(field)
-            case 8: m23 = try decoder.floatField(field)
-            case 9: m24 = try decoder.floatField(field)
-            case 10: m25 = try decoder.floatField(field)
-            case 11: m31 = try decoder.floatField(field)
-            case 12: m32 = try decoder.floatField(field)
-            case 13: m33 = try decoder.floatField(field)
-            case 14: m34 = try decoder.floatField(field)
-            case 15: m35 = try decoder.floatField(field)
-            case 16: m41 = try decoder.floatField(field)
-            case 17: m42 = try decoder.floatField(field)
-            case 18: m43 = try decoder.floatField(field)
-            case 19: m44 = try decoder.floatField(field)
-            case 20: m45 = try decoder.floatField(field)
-            default:
-                try decoder.skipField(field)
+        var matrix = _ColorMatrix()
+        try withUnsafeMutablePointer(to: &matrix) { pointer in
+            let pointer = UnsafeMutableRawPointer(pointer).assumingMemoryBound(to: Float.self)
+            let bufferPointer = UnsafeMutableBufferPointer(start: pointer, count: 20)
+            while let field = try decoder.nextField() {
+                let tag = field.tag
+                switch tag {
+                    case 1...6: bufferPointer[Int(tag &- 1)] = try decoder.floatField(field)
+                    default: try decoder.skipField(field)
+                }
             }
         }
+        self = matrix
+        
     }
 }
 
