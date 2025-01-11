@@ -43,6 +43,10 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
             body(.scrollGeometry(self), &stop)
         }
+        
+        package static func == (lhs: ViewTransform.ScrollGeometryItem, rhs: ViewTransform.ScrollGeometryItem) -> Bool {
+            lhs.base == rhs.base && lhs.isClipped == rhs.isClipped
+        }
     }
     
     private var head: AnyElement?
@@ -62,12 +66,100 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
     public static func == (lhs: ViewTransform, rhs: ViewTransform) -> Bool {
         guard lhs.positionAdjustment == rhs.positionAdjustment && lhs.pendingTranslation == rhs.pendingTranslation else { return false }
         guard let lhsHead = lhs.head, let rhsHead = rhs.head else { return lhs.head == nil && rhs.head == nil }
-        // FIXME
-        return lhsHead.isEqual(to: rhsHead)
+        guard lhsHead.depth == rhsHead.depth else { return false }
+        
+        var lhsNode: AnyElement? = lhsHead
+        var rhsNode: AnyElement? = rhsHead
+        
+        while let lhsElement = lhsNode, let rhsElement = rhsNode {
+            guard lhsElement !== rhsElement else { return true }
+            guard lhsElement.isEqual(to: rhsElement) else { return false }
+            lhsNode = lhsElement.next
+            rhsNode = rhsElement.next
+        }
+        return lhsNode == nil && rhsNode == nil
+    }
+    
+    package mutating func append(movingContentsOf elements: inout UnsafeBuffer) {
+        head = BufferedElement(next: head, translation: pendingTranslation, elements: elements)
+        pendingTranslation = .zero
+        elements = UnsafeBuffer()
+    }
+    
+    package mutating func appendPosition(_ position: CGPoint) {
+        let adjustedPosition = position - positionAdjustment
+        pendingTranslation = pendingTranslation - CGSize(adjustedPosition)
+        positionAdjustment = CGSize(position)
+    }
+    
+    package func withPosition(_ position: CGPoint) -> ViewTransform {
+        var copy = self
+        copy.appendPosition(position)
+        return copy
+    }
+    
+    package mutating func appendPosition(_ position: CGPoint, scale: CGFloat) {
+        let adjustedPosition = position - positionAdjustment
+        pendingTranslation = pendingTranslation - CGSize(adjustedPosition)
+        positionAdjustment = CGSize(position) * scale
+    }
+    
+    package mutating func resetPosition(_ position: CGPoint) {
+        let adjustedPosition = position - positionAdjustment
+        pendingTranslation = pendingTranslation - CGSize(adjustedPosition)
+        positionAdjustment = .zero
+    }
+    
+    package mutating func setPositionAdjustment(_ offset: CGSize) {
+        positionAdjustment = offset
     }
     
     package mutating func appendTranslation(_ size: CGSize) {
         pendingTranslation += size
+    }
+    
+    package mutating func appendAffineTransform(_ matrix: CGAffineTransform, inverse: Bool) {
+        if matrix.isTranslation {
+            let translation = CGSize(width: matrix.tx, height: matrix.ty)
+            appendTranslation(inverse ? -translation : translation)
+        } else {
+            head = Element(next: head, translation: pendingTranslation, element: AffineTransformElement(matrix: matrix, inverse: inverse))
+            pendingTranslation = .zero
+        }
+    }
+    
+    package mutating func appendProjectionTransform(_ matrix: ProjectionTransform, inverse: Bool) {
+        if matrix.isAffine {
+            appendAffineTransform(CGAffineTransform(matrix), inverse: inverse)
+        } else {
+            head = Element(next: head, translation: pendingTranslation, element: ProjectionTransformElement(matrix: matrix, inverse: inverse))
+            pendingTranslation = .zero
+        }
+    }
+    
+    package mutating func appendCoordinateSpace(name: AnyHashable) {
+        head = Element(next: head, translation: pendingTranslation, element: CoordinateSpaceElement(name: name))
+        pendingTranslation = .zero
+    }
+    
+    package mutating func appendCoordinateSpace(id: CoordinateSpace.ID) {
+        head = Element(next: head, translation: pendingTranslation, element: CoordinateSpaceIDElement(id: id))
+        pendingTranslation = .zero
+    }
+    
+    package mutating func appendSizedSpace(name: AnyHashable, size: CGSize) {
+        head = Element(next: head, translation: pendingTranslation, element: SizedSpaceElement(name: name, size: size))
+        pendingTranslation = .zero
+    }
+    
+    package mutating func appendSizedSpace(id: CoordinateSpace.ID, size: CGSize) {
+        head = Element(next: head, translation: pendingTranslation, element: SizedSpaceIDElement(id: id, size: size))
+        pendingTranslation = .zero
+    }
+    
+    package mutating func appendScrollGeometry(_ geometry: ScrollGeometry, isClipped: Bool) {
+        head = Element(next: head, translation: pendingTranslation, element: ScrollGeometryItem(base: geometry, isClipped: isClipped))
+        pendingTranslation = .zero
     }
     
     public var description: String {
@@ -286,9 +378,9 @@ private class AnyElement {
     var next: AnyElement?
     let depth: Int
     
-    init(next: AnyElement? = nil, depth: Int) {
+    init(next: AnyElement?) {
         self.next = next
-        self.depth = depth
+        self.depth = (next?.depth ?? 0) + 1
     }
     
     func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {}
@@ -299,15 +391,23 @@ private class AnyElement {
 private class Element<Value>: AnyElement where Value: ViewTransformElement {
     let translation: CGSize
     let element: Value
-    
-    init(translation: CGSize, element: Value) {
+
+    init(next: AnyElement?, translation: CGSize, element: Value) {
         self.translation = translation
         self.element = element
-        preconditionFailure("TODO")
+        super.init(next: next)
     }
     
     override func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        preconditionFailure("TODO")
+        if !inverted, translation != .zero {
+            body(.translation(translation), &stop)
+            if stop { return }
+        }
+        element.forEach(inverted: inverted, stop: &stop, body)
+        if stop { return }
+        if inverted, translation != .zero {
+            body(.translation(-translation), &stop)
+        }
     }
     
     override func isEqual(to other: AnyElement) -> Bool {
@@ -316,7 +416,12 @@ private class Element<Value>: AnyElement where Value: ViewTransformElement {
     }
     
     override var description: String? {
-        preconditionFailure("TODO")
+        let description = String(describing: element)
+        if translation == .zero {
+            return description
+        } else {
+            return "(\(translation), \(description))"
+        }
     }
 }
 
@@ -324,14 +429,22 @@ private class BufferedElement: AnyElement {
     let translation: CGSize
     var elements: ViewTransform.UnsafeBuffer
     
-    init(translation: CGSize, elements: ViewTransform.UnsafeBuffer) {
+    init(next: AnyElement?, translation: CGSize, elements: ViewTransform.UnsafeBuffer) {
         self.translation = translation
         self.elements = elements
-        preconditionFailure("TODO")
+        super.init(next: next)
     }
     
     override func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        preconditionFailure("TODO")
+        if !inverted, translation != .zero {
+            body(.translation(translation), &stop)
+            if stop { return }
+        }
+        elements.forEach(inverted: inverted, stop: &stop, body)
+        if stop { return }
+        if inverted, translation != .zero {
+            body(.translation(-translation), &stop)
+        }
     }
     
     override func isEqual(to other: AnyElement) -> Bool {
@@ -340,7 +453,12 @@ private class BufferedElement: AnyElement {
     }
     
     override var description: String? {
-        preconditionFailure("TODO")
+        let description = elements.description
+        if translation == .zero {
+            return description
+        } else {
+            return "(\(translation), \(description))"
+        }
     }
 }
 
