@@ -25,6 +25,23 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         package static func spaceToGlobal(_ space: CoordinateSpace) -> ViewTransform.Conversion {
             .spaceToSpace(space, .global)
         }
+        
+        // FIXME
+        @inline(__always)
+        func normalized() -> Conversion {
+            guard case let .spaceToSpace(space1, space2) = self else { return self }
+            if case .local = space1 {
+                return .localToSpace(space2)
+            } else if case .local = space2 {
+                return .spaceToLocal(space1)
+            } else if .root == space1 {
+                return .rootToSpace(space2)
+            } else if .root == space2 {
+                return .spaceToRoot(space1)
+            } else {
+                return self
+            }
+        }
     }
     
     package enum Item: Equatable {
@@ -264,6 +281,50 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
     
     package func forEach(_ body: (ViewTransform.Item, inout Bool) -> Void) {
         forEach(inverted: false, body)
+    }
+    
+    private func spaceBeforeSpace(_ space1: CoordinateSpace, _ space2: CoordinateSpace) -> Bool {
+        if case .global = space1 {
+            return true
+        } else if case .local = space1 {
+            return false
+        } else if case .global = space2 {
+            return false
+        } else if case .local = space2 {
+            return true
+        } else {
+            forEach(inverted: false) { item, stop in
+                // TODO
+            }
+            preconditionFailure("TODO")
+        }
+    }
+    
+    package func convert(_ conversion: ViewTransform.Conversion, _ body: (ViewTransform.Item) -> Void) {
+        guard !isEmpty else { return }
+        preconditionFailure("TODO")
+    }
+    
+    package func convert(_ conversion: ViewTransform.Conversion, points: inout [CGPoint]) {
+        guard !isEmpty else { return }
+        preconditionFailure("TODO")
+    }
+    
+    package func convert(_ conversion: ViewTransform.Conversion, point: CGPoint) -> CGPoint {
+        guard !isEmpty else { return point }
+        preconditionFailure("TODO")
+    }
+    
+    package var containingScrollGeometry: ScrollGeometry? {
+        preconditionFailure("TODO")
+    }
+    
+    package var nearestScrollGeometry: ScrollGeometry? {
+        preconditionFailure("TODO")
+    }
+    
+    package func containingSizedCoordinateSpace(name: CoordinateSpace.Name) -> CGRect? {
+        preconditionFailure("TODO")
     }
     
     public var description: String {
@@ -573,7 +634,15 @@ private class BufferedElement: AnyElement {
 // MARK: - ViewTransformable
 
 private protocol ApplyViewTransform {
-    mutating func convert(to space: CoordinateSpace, transform: ViewTransform)
+    mutating func applyTransform(item: ViewTransform.Item)
+}
+
+extension ApplyViewTransform {
+    mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+        transform.convert(.localToSpace(space)) { item in
+            applyTransform(item: item)
+        }
+    }
 }
 
 package protocol ViewTransformable {
@@ -581,7 +650,21 @@ package protocol ViewTransformable {
     mutating func convert(from space: CoordinateSpace, transform: ViewTransform)
 }
 
-extension CGPoint/*: ViewTransformable*/ {
+extension ViewTransformable where Self: ApplyViewTransform {
+    mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+        transform.convert(.localToSpace(space)) { item in
+            applyTransform(item: item)
+        }
+    }
+    
+    mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
+        transform.convert(.spaceToLocal(space)) { item in
+            applyTransform(item: item)
+        }
+    }
+}
+
+extension CGPoint: ApplyViewTransform, ViewTransformable {
     package mutating func applyTransform(item: ViewTransform.Item) {
         switch item {
             case let .translation(offset):
@@ -606,9 +689,17 @@ extension CGPoint/*: ViewTransformable*/ {
                 break
         }
     }
+    
+    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+        self = transform.convert(.localToSpace(space), point: self)
+    }
+    
+    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
+        self = transform.convert(.spaceToLocal(space), point: self)
+    }
 }
 
-extension [CGPoint]/*: ViewTransformable*/ {
+extension [CGPoint]: ApplyViewTransform, ViewTransformable {
     package mutating func applyTransform(item: ViewTransform.Item) {
         switch item {
             case let .translation(offset):
@@ -626,4 +717,45 @@ extension [CGPoint]/*: ViewTransformable*/ {
     package mutating func apply(_ m: ProjectionTransform, inverse: Bool) {
         self = map { inverse ? $0.unapplying(m) : $0.applying(m) }
     }
+    
+    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+        transform.convert(.localToSpace(space), points: &self)
+    }
+    
+    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
+        transform.convert(.spaceToLocal(space), points: &self)
+    }
 }
+
+extension CGRect: ViewTransformable {
+    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+        guard !isNull else { return }
+        guard !isInfinite else { return }
+        var points = cornerPoints
+        points.convert(to: space, transform: transform)
+        self = CGRect(cornerPoints: points)
+    }
+    
+    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
+        guard !isNull else { return }
+        guard !isInfinite else { return }
+        var points = cornerPoints
+        points.convert(from: space, transform: transform)
+        self = CGRect(cornerPoints: points)
+    }
+    
+    package mutating func whileClippingToScrollViewsConvert(to space: CoordinateSpace, transform: ViewTransform) -> Bool {
+        guard !isNull else { return true }
+        guard !isInfinite else { return true }
+        transform.convert(.localToSpace(space)) { item in
+            // TODO
+        }
+        preconditionFailure("TODO")
+    }
+}
+
+// TODO: Path + ViewTransformable
+//extension Path: ViewTransformable {
+//    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform)
+//    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform)
+//}
