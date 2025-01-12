@@ -705,8 +705,12 @@ extension [CGPoint]: ApplyViewTransform, ViewTransformable {
             case let .translation(offset):
                 self = map { $0 + offset }
             case let .affineTransform(matrix, inverse):
+                #if canImport(CoreGraphics)
                 let tranform = inverse ? matrix.inverted() : matrix
                 self = map { $0.applying(tranform) }
+                #else
+                preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                #endif
             case let .projectionTransform(matrix, inverse):
                 apply(matrix, inverse: inverse)
             case .coordinateSpace, .sizedSpace, .scrollGeometry:

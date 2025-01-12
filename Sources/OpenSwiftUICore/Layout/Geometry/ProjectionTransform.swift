@@ -8,25 +8,6 @@
 public import Foundation
 #if canImport(QuartzCore)
 public import QuartzCore
-#else
-// FIXME: Use Silica or other implementation
-public struct CGAffineTransform {
-    public init()
-
-    public init(a: Double, b: Double, c: Double, d: Double, tx: Double, ty: Double)
-
-    public var a: Double
-
-    public var b: Double
-
-    public var c: Double
-
-    public var d: Double
-
-    public var tx: Double
-
-    public var ty: Double
-}
 #endif
 
 @frozen
@@ -200,7 +181,6 @@ extension CGPoint {
     }
 }
 
-#if canImport(QuartzCore)
 extension CGAffineTransform {
     package init(_ m: ProjectionTransform) {
         self.init(
@@ -211,6 +191,7 @@ extension CGAffineTransform {
     }
 }
 
+#if canImport(QuartzCore)
 extension CATransform3D {
     package init(_ m: ProjectionTransform) {
         self.init(
