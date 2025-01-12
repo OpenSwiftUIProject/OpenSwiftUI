@@ -34,6 +34,67 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         case coordinateSpace(CoordinateSpace.Name)
         case sizedSpace(CoordinateSpace.Name, size: CGSize)
         case scrollGeometry(ViewTransform.ScrollGeometryItem)
+        
+        fileprivate func apply(to rect: inout CGRect?, name: CoordinateSpace.Name) {
+            switch self {
+                case let .translation(offset):
+                    rect?.origin += offset
+                case let .affineTransform(matrix, inverse):
+                    #if canImport(CoreGraphics)
+                    guard matrix.isRectilinear else {
+                        rect = nil
+                        break
+                    }
+                    let transform = inverse ? matrix.inverted() : matrix
+                    if var rect {
+                        rect = rect.applying(transform)
+                    }
+                    #else
+                    preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                    #endif
+                case .projectionTransform:
+                    rect = nil
+                case .coordinateSpace:
+                    break
+                case let .sizedSpace(spaceName, size):
+                    guard spaceName == name else { break }
+                    rect = CGRect(origin: .zero, size: size)
+                case .scrollGeometry:
+                    break
+            }
+        }
+        
+        fileprivate func apply(to geometry: inout ScrollGeometry?, allowUnclipped: Bool) {
+            switch self {
+                case let .translation(offset):
+                    geometry?.contentOffset += offset
+                case let .affineTransform(matrix, inverse):
+                    #if canImport(CoreGraphics)
+                    guard matrix.isRectilinear else {
+                        geometry = nil
+                        break
+                    }
+                    let transform = inverse ? matrix.inverted() : matrix
+                    if var geometry {
+                        geometry.contentOffset = geometry.contentOffset.applying(transform)
+                        geometry.containerSize = geometry.containerSize.applying(transform)
+                    }
+                    #else
+                    preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                    #endif
+                case .projectionTransform:
+                    geometry = nil
+                case .coordinateSpace:
+                    break
+                case .sizedSpace:
+                    break
+                case let .scrollGeometry(geometryItem):
+                    guard geometryItem.isClipped || allowUnclipped else {
+                        break
+                    }
+                    geometry = geometryItem.base
+            }
+        }
     }
     
     package struct ScrollGeometryItem: ViewTransformElement {
@@ -162,8 +223,59 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         pendingTranslation = .zero
     }
     
+    package func forEach(inverted: Bool, _ body: (Item, inout Bool) -> Void) {
+        guard let head else { return }
+        var stop = false
+        if inverted {
+            if pendingTranslation != .zero {
+                body(.translation(pendingTranslation), &stop)
+                if stop { return }
+            }
+            var element: AnyElement = head
+            repeat {
+                element.forEach(inverted: true, stop: &stop, body)
+                if stop { return }
+                guard let next = element.next else { break }
+                element = next
+            } while true
+        } else {
+            withUnsafeTemporaryAllocation(
+                of: AnyElement.self,
+                capacity: head.depth
+            ) { bufferPointer in
+                bufferPointer.initializeElement(at: 0, to: head)
+                var element = head
+                var index = 0
+                while let next = element.next {
+                    bufferPointer.initializeElement(at: index, to: next)
+                    element = next
+                    index &+= 1
+                }
+                for element in bufferPointer.reversed() {
+                    element.forEach(inverted: false, stop: &stop, body)
+                    if stop { return }
+                }
+                if pendingTranslation != .zero {
+                    body(.translation(pendingTranslation), &stop)
+                }
+            }
+        }
+    }
+    
+    package func forEach(_ body: (ViewTransform.Item, inout Bool) -> Void) {
+        forEach(inverted: false, body)
+    }
+    
     public var description: String {
-        preconditionFailure("TODO")
+        var descriptionArray = pendingTranslation == .zero ? [] : [String(describing: pendingTranslation)]
+        var element = head
+        while let current = element {
+            if let description = current.description {
+                descriptionArray.append(description)
+            }
+            element = current.next
+        }
+        return descriptionArray.reversed().joined(separator: "; ")
     }
 }
 
@@ -193,12 +305,8 @@ extension ViewTransform {
         
         package mutating func appendAffineTransform(_ matrix: CGAffineTransform, inverse: Bool) {
             if matrix.isTranslation {
-                appendTranslation(
-                    CGSize(
-                        width: inverse ? -matrix.tx : matrix.tx,
-                        height: inverse ? -matrix.ty : matrix.ty
-                    )
-                )
+                let tranlation = CGSize(width: matrix.tx, height: matrix.ty)
+                appendTranslation(inverse ? -tranlation : tranlation)
             } else {
                 contents.append(AffineTransformElement(matrix: matrix, inverse: inverse), vtable: _VTable<AffineTransformElement>.self)
             }
@@ -464,7 +572,58 @@ private class BufferedElement: AnyElement {
 
 // MARK: - ViewTransformable
 
+private protocol ApplyViewTransform {
+    mutating func convert(to space: CoordinateSpace, transform: ViewTransform)
+}
+
 package protocol ViewTransformable {
     mutating func convert(to space: CoordinateSpace, transform: ViewTransform)
     mutating func convert(from space: CoordinateSpace, transform: ViewTransform)
+}
+
+extension CGPoint/*: ViewTransformable*/ {
+    package mutating func applyTransform(item: ViewTransform.Item) {
+        switch item {
+            case let .translation(offset):
+                self += offset
+            case let .affineTransform(matrix, inverse):
+                #if canImport(CoreGraphics)
+                if inverse {
+                    if matrix.isTranslation {
+                        self -= CGSize(width: matrix.tx, height: matrix.ty)
+                    } else {
+                        self = applying(matrix.inverted())
+                    }
+                } else {
+                    self = applying(matrix)
+                }
+                #else
+                preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                #endif
+            case let .projectionTransform(matrix, inverse):
+                self = inverse ? unapplying(matrix) : applying(matrix)
+            case .coordinateSpace, .sizedSpace, .scrollGeometry:
+                break
+        }
+    }
+}
+
+extension [CGPoint]/*: ViewTransformable*/ {
+    package mutating func applyTransform(item: ViewTransform.Item) {
+        switch item {
+            case let .translation(offset):
+                self = map { $0 + offset }
+            case let .affineTransform(matrix, inverse):
+                let tranform = inverse ? matrix.inverted() : matrix
+                self = map { $0.applying(tranform) }
+            case let .projectionTransform(matrix, inverse):
+                apply(matrix, inverse: inverse)
+            case .coordinateSpace, .sizedSpace, .scrollGeometry:
+                break
+        }
+    }
+    
+    package mutating func apply(_ m: ProjectionTransform, inverse: Bool) {
+        self = map { inverse ? $0.unapplying(m) : $0.applying(m) }
+    }
 }
