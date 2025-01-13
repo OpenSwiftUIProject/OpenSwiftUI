@@ -6,6 +6,9 @@
 //  Status: WIP
 //  ID: A519B5B95CA8FF4E3445832668F0B2D2
 
+@_spi(Testing)
+import OpenSwiftUICore
+
 public struct _TestApp {
     public init() {
         preconditionFailure("TODO")

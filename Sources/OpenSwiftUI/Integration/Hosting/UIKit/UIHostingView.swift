@@ -7,7 +7,9 @@
 //  ID: FAF0B683EB49BE9BABC9009857940A1E
 
 #if os(iOS)
-@_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+@_spi(Private)
+public import OpenSwiftUICore
 public import UIKit
 
 @available(macOS, unavailable)
@@ -150,6 +152,19 @@ open class _UIHostingView<Content>: UIView where Content: View {
     
     // TODO
     func clearUpdateTimer() {
+    }
+    
+    func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
+        let tree = preferenceValue(_IdentifiedViewsKey.self)
+        let adjustment = { [weak self](rect: inout CGRect) in
+            guard let self else { return }
+            rect = convert(rect, from: nil)
+        }
+        tree.forEach { proxy in
+            var proxy = proxy
+            proxy.adjustment = adjustment
+            body(proxy)
+        }
     }
 }
 
