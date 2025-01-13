@@ -13,7 +13,7 @@ public struct _ViewOutputs {
     
     private var _layoutComputer: OptionalAttribute<LayoutComputer>
     
-    init() {
+    package init() {
         preferences = PreferencesOutputs()
         _layoutComputer = OptionalAttribute()
     }

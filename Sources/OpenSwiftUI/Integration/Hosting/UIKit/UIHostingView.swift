@@ -7,7 +7,9 @@
 //  ID: FAF0B683EB49BE9BABC9009857940A1E
 
 #if os(iOS)
-@_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+@_spi(Private)
+public import OpenSwiftUICore
 public import UIKit
 
 @available(macOS, unavailable)
