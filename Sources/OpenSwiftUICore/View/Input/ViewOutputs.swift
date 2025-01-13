@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
 package import OpenGraphShims
 
@@ -12,11 +12,6 @@ public struct _ViewOutputs {
     package var preferences: PreferencesOutputs
     
     private var _layoutComputer: OptionalAttribute<LayoutComputer>
-    
-    package init() {
-        preferences = PreferencesOutputs()
-        _layoutComputer = OptionalAttribute()
-    }
     
     package var layoutComputer: Attribute<LayoutComputer>? {
         get {
@@ -28,6 +23,11 @@ public struct _ViewOutputs {
                 preferences.debugProperties.formUnion(.layoutComputer)
             }
         }
+    }
+    
+    package init() {
+        preferences = PreferencesOutputs()
+        _layoutComputer = OptionalAttribute()
     }
     
     #if canImport(Darwin)
@@ -57,5 +57,7 @@ public struct _ViewOutputs {
 extension _ViewOutputs: Sendable {}
 
 extension _ViewOutputs {
-    // package func viewResponders: Attribute<[ViewResponder]> {}
+    package func viewResponders() -> Attribute<[ViewResponder]> {
+        self[ViewRespondersKey.self] ?? ViewGraph.current.intern([], for: [ViewResponder].self, id: .defaultValue)
+    }
 }
