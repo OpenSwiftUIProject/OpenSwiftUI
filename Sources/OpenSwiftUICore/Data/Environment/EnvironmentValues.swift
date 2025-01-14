@@ -150,6 +150,9 @@ public struct EnvironmentValues: CustomStringConvertible {
     private var _plist: PropertyList
     private let tracker: PropertyList.Tracker?
     
+    // FIXME
+    var plist: PropertyList { _plist }
+    
     init(plist: PropertyList) {
         _plist = plist
         tracker = nil

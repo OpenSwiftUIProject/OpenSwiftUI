@@ -42,7 +42,6 @@ public struct _GraphValue<Value>: Equatable {
     
     package func unsafeBitCast<T>(to _: T.Type) -> _GraphValue<T> {
         _GraphValue<T>(value.unsafeBitCast(to: T.self))
-
     }
     
     public static func == (a: _GraphValue<Value>, b: _GraphValue<Value>) -> Bool {
