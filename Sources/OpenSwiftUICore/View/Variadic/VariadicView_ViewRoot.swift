@@ -74,7 +74,7 @@ extension _ViewInputs {
 }
 
 extension View {
-    static func makeImplicitRoot(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+    nonisolated static func makeImplicitRoot(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         // TODO
         return .init()
     }

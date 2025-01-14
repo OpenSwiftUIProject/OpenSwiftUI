@@ -81,6 +81,11 @@ public struct _ViewListOutputs {
 }
 
 extension _ViewListOutputs {
+    package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
+        preconditionFailure("TODO")
+    }
+
+    
     @inline(__always)
     static func emptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
         staticList(EmptyElements(), inputs: inputs, staticCount: 0)
