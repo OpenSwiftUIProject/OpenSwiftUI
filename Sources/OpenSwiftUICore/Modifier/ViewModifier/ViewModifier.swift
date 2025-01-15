@@ -1,6 +1,6 @@
 //
 //  ViewModifier.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 15.5
 //  Status: Complete
@@ -48,18 +48,17 @@
 /// Downtown Bus. A view extension, using custom a modifier, renders the
 ///  caption in blue text surrounded by a rounded
 ///  rectangle.](OpenSwiftUI-View-ViewModifier.png)
+@MainActor
+@preconcurrency
 public protocol ViewModifier {
-    /// The type of view representing the body.
-    associatedtype Body: View
-    
     /// Makes a new view using the view modifier and inputs that you provide.
-    static func _makeView(
+    nonisolated static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs
 
-    static func _makeViewList(
+    nonisolated static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
@@ -67,48 +66,26 @@ public protocol ViewModifier {
 
     /// The number of views that `_makeViewList()` would produce, or
     /// nil if unknown.
-    static func _viewListCount(
+    nonisolated static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int?
     
-    /// The content view type passed to `body()`.
-    typealias Content = _ViewModifier_Content<Self>
+    /// The type of view representing the body.
+    associatedtype Body: View
     
     /// Gets the current body of the caller.
     ///
     /// `content` is a proxy for the view that will have the modifier
     /// represented by `Self` applied to it.
     @ViewBuilder
-    @MainActor
-    @preconcurrency
     func body(content: Content) -> Body
-}
-
-extension ViewModifier {
-    public static func _makeView(
-        modifier: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs {
-        makeView(modifier: modifier, inputs: inputs, body: body)
-    }
     
-    public static func _makeViewList(
-        modifier: _GraphValue<Self>,
-        inputs: _ViewListInputs,
-        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
-    ) -> _ViewListOutputs {
-        makeViewList(modifier: modifier, inputs: inputs, body: body)
-    }
-
-    public static func _viewListCount(
-        inputs: _ViewListCountInputs,
-        body: (_ViewListCountInputs) -> Int?
-    ) -> Int? {
-        viewListCount(inputs: inputs, body: body)
-    }
+    /// The content view type passed to `body()`.
+    typealias Content = _ViewModifier_Content<Self>
 }
+
+package protocol PrimitiveViewModifier: ViewModifier where Body == Never {}
 
 extension ViewModifier where Body == Never {
     public func body(content _: Content) -> Never {
@@ -161,5 +138,30 @@ extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
 extension ViewModifier {
     func bodyError() -> Never {
         preconditionFailure("body() should not be called on \(Self.self)")
+    }
+}
+
+extension ViewModifier {
+    public static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        makeView(modifier: modifier, inputs: inputs, body: body)
+    }
+    
+    public static func _makeViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        makeViewList(modifier: modifier, inputs: inputs, body: body)
+    }
+
+    public static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        viewListCount(inputs: inputs, body: body)
     }
 }

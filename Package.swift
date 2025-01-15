@@ -20,6 +20,7 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
 var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("BareSlashRegexLiterals"),
     .enableUpcomingFeature("InternalImportsByDefault"),
+    .enableUpcomingFeature("InferSendableFromCaptures"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .swiftLanguageMode(.v5),
 ]
@@ -74,7 +75,11 @@ if development {
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
-   sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
+    // Hold off the werror feature as we can't avoid the concurrency warning.
+    // Reenable the folllowing after swift-evolution#443 is release.
+    
+    // sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
+    // sharedSwiftSettings.append(.unsafeFlags(["-Wwarning", "concurrency"]))
 }
 
 // NOTE:
