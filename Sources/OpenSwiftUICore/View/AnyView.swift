@@ -1,20 +1,25 @@
 //
 //  AnyView.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
-//  ID: A96961F3546506F21D8995C6092F15B5
+//  ID: A96961F3546506F21D8995C6092F15B5 (OpenSwiftUI)
+//  ID: 7578D05D331D7F1A2E0C2F8DEF38AAD4 (OpenSwiftUICore)
 
 import OpenGraphShims
 import OpenSwiftUI_SPI
 
 @frozen
-public struct AnyView: PrimitiveView {
+public struct AnyView: View, PrimitiveView {
     var storage: AnyViewStorageBase
 
     public init<V>(_ view: V) where V: View {
-        self.init(view, id: nil)
+        if let anyView = view as? AnyView {
+            storage = anyView.storage
+        } else {
+            storage = AnyViewStorage(view: view)
+        }
     }
 
     @_alwaysEmitIntoClient
@@ -42,19 +47,7 @@ public struct AnyView: PrimitiveView {
         }
         self = visitor.view!
     }
-    
-    init<V: View>(_ view: V, id: UniqueID?) {
-        if let anyView = view as? AnyView {
-            storage = anyView.storage
-        } else {
-            storage = AnyViewStorage(view: view, id: id)
-        }
-    }
-    
-    func visitContent<Visitor: ViewVisitor>(_ visitor: inout Visitor) {
-        storage.visitContent(&visitor)
-    }
-    
+
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         #if canImport(Darwin)
         let outputs = inputs.makeIndirectOutputs()
@@ -76,16 +69,14 @@ public struct AnyView: PrimitiveView {
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
+
+    package func visitContent<Visitor: ViewVisitor>(_ visitor: inout Visitor) {
+        storage.visitContent(&visitor)
+    }
 }
 
 @usableFromInline
 class AnyViewStorageBase {
-    let id: UniqueID?
-    
-    init(id: UniqueID?) {
-        self.id = id
-    }
-    
     fileprivate var type: Any.Type { preconditionFailure("") }
     fileprivate var canTransition: Bool { preconditionFailure("") }
     fileprivate func matches(_ other: AnyViewStorageBase) -> Bool { preconditionFailure("") }
@@ -111,10 +102,13 @@ class AnyViewStorageBase {
 private final class AnyViewStorage<V: View>: AnyViewStorageBase {
     let view: V
     
-    init(view: V, id: UniqueID?) {
+    init(view: V) {
         self.view = view
-        super.init(id: id)
+        super.init()
     }
+
+    // FIXME
+    var id: UniqueID? { nil }
     
     override var type: Any.Type { V.self }
     

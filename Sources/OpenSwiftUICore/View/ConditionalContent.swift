@@ -55,9 +55,9 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
         var value: AnyView {
             switch content.storage {
             case .trueContent(let view):
-                AnyView(view, id: ids.0)
+                AnyView(view)
             case .falseContent(let view):
-                AnyView(view, id: ids.1)
+                AnyView(view)
             }
         }
     }

@@ -25,7 +25,7 @@ public struct _EnvironmentKeyWritingModifier<Value>: ViewModifier/*, _GraphInput
 extension View {
     @inlinable
     @inline(__always)
-    public func environment<V>(_ keyPath: WritableKeyPath<EnvironmentValues, V>, _ value: V) -> some View {
+    nonisolated public func environment<V>(_ keyPath: WritableKeyPath<EnvironmentValues, V>, _ value: V) -> some View {
         modifier(_EnvironmentKeyWritingModifier<V>(keyPath: keyPath, value: value))
     }
 }

@@ -7,7 +7,7 @@
 
 extension View {
     @inlinable
-    public func modifier<T>(_ modifier: T) -> ModifiedContent<Self, T> {
+    nonisolated public func modifier<T>(_ modifier: T) -> ModifiedContent<Self, T> {
         .init(content: self, modifier: modifier)
     }
 }
