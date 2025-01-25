@@ -4,8 +4,8 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: D59B7A281FFF29619A43A3D8F551CCE1 (RELEASE_2021)
-//  ID: 56D4CED87D5B226E2B40FB60C47D6F49 (RELEASE_2024)
+//  ID: D59B7A281FFF29619A43A3D8F551CCE1 (SwiftUI)
+//  ID: 56D4CED87D5B226E2B40FB60C47D6F49 (SwiftUICore)
 
 #if canImport(Darwin)
 import Darwin
@@ -23,7 +23,7 @@ import OpenSwiftUI_SPI
 import os.log
 #endif
 
-enum Tracing {
+package struct Tracing {
     private static var moduleLookupCache = ThreadSpecific<[UnsafeRawPointer: String]>([:])
     
     static func libraryName(defining type: Any.Type) -> String {
@@ -57,24 +57,41 @@ enum Tracing {
 
 @_transparent
 package func traceBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
-    #if canImport(Darwin)
-    // Signpost.bodyInvoke.traceInterval
-    guard kdebug_is_enabled(UInt32(OSSignpostType.event.rawValue) & 0xF8 | 0x1411_0014) else {
-        return body()
-    }
-    // TODO: Metadata(type).description, Tracing.libraryName(defining: v)
-    return body()
-    #else
-    body()
-    #endif
+    Signpost.bodyInvoke.traceInterval(
+        object: nil,
+        "", // TODO: For os_log use
+        [
+            Metadata(v).description,
+            Tracing.libraryName(defining: v)
+        ],
+        closure: body
+    )
 }
 
 @_transparent
 package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
-    #if canImport(Darwin)
-    // TODO:
-    return body()
-    #else
-    body()
-    #endif
+    defer {
+        #if canImport(Darwin)
+        let current = AnyAttribute.current!
+        Signpost.bodyInvoke.traceEvent(
+            type: .end,
+            object: nil,
+            "", // TODO: For os_log use
+            [
+                current.rawValue,
+                1,
+                current.graph.counter(for: ._4) // FIXME: UInt
+            ]
+        )
+        #endif
+    }
+    return Signpost.bodyInvoke.traceInterval(
+        object: nil,
+        "", // TODO: For os_log use
+        [
+            Metadata(v).description,
+            Tracing.libraryName(defining: v)
+        ],
+        closure: body
+    )
 }
