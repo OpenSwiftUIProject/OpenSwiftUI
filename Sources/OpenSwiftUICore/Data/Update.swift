@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by Signpost
+//  Status: Complete
 //  ID: EA173074DA35FA471DC70643259B7E74 (SwiftUI)
 //  ID: 61534957AEEC2EDC447ABDC13B4D426F (SwiftUICore)
 
@@ -68,14 +68,34 @@ package enum Update {
         lock()
         depth += 1
         if depth == 1 {
-            // TODO: Signpost.renderUpdate.trace + trackHost
+            #if canImport(Darwin)
+            Signpost.viewHost.traceEvent(
+                type: .begin,
+                object: trackHost,
+                "", // TODO: For os_log use
+                [
+                    0,
+                    UInt(bitPattern: Unmanaged.passUnretained(trackHost).toOpaque()),
+                ]
+            )
+            #endif
         }
     }
     
     package static func end() {
         if depth == 1 {
             dispatchActions()
-            // TODO: Signpost.renderUpdate.trace + trackHost
+            #if canImport(Darwin)
+            Signpost.viewHost.traceEvent(
+                type: .end,
+                object: trackHost,
+                "", // TODO: For os_log use
+                [
+                    0,
+                    UInt(bitPattern: Unmanaged.passUnretained(trackHost).toOpaque()),
+                ]
+            )
+            #endif
         }
         depth -= 1
         unlock()

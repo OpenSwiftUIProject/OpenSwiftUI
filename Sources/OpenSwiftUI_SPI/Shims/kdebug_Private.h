@@ -46,6 +46,33 @@
 
 #if OPENSWIFTUI_TARGET_OS_OSX
 #include <sys/kdebug.h>
+#else
+
+// iOS SDK does not have kdebug.h header, so we define the necessary constants here.
+
+#define KDBG_CLASS_MASK   (0xff000000)
+#define KDBG_CLASS_OFFSET (24)
+#define KDBG_CLASS_MAX    (0xff)
+#define KDBG_SUBCLASS_MASK   (0x00ff0000)
+#define KDBG_SUBCLASS_OFFSET (16)
+#define KDBG_SUBCLASS_MAX    (0xff)
+#define KDBG_CSC_MASK   (0xffff0000)
+#define KDBG_CSC_OFFSET (KDBG_SUBCLASS_OFFSET)
+#define KDBG_CSC_MAX    (0xffff)
+#define KDBG_CODE_MASK   (0x0000fffc)
+#define KDBG_CODE_OFFSET (2)
+#define KDBG_CODE_MAX    (0x3fff)
+#define KDBG_EVENTID_MASK (0xfffffffc)
+#define KDBG_FUNC_MASK    (0x00000003)
+
+#pragma mark - Class and subclass definitions
+
+#define DBG_MISC        20
+
+/* The Kernel Debug Sub Classes for DBG_MISC */
+
+#define DBG_MISC_INSTRUMENTS     0x11
+
 #endif
 
 #include <Availability.h>
@@ -141,7 +168,7 @@ __OSX_AVAILABLE(10.10) __IOS_AVAILABLE(8.2);
 *      `str` is an invalid address or NULL when `str_id` is 0.
 */
 OPENSWIFTUI_EXPORT uint64_t kdebug_trace_string(uint32_t debugid, uint64_t str_id,
-   const char *str)
+   const char * _Nullable str)
 __OSX_AVAILABLE(10.11) __IOS_AVAILABLE(9.0);
 
 /*

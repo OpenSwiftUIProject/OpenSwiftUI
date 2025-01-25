@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by Tracing
+//  Status: Complete
 
 import OpenGraphShims
 
@@ -55,8 +55,9 @@ struct EnvironmentalViewChild<V>: StatefulRule, AsyncAttribute, CustomStringConv
         guard shouldReset else { return }
         tracker.reset()
         tracker.initializeValues(from: env.plist)
-        // TODO: Tracing
-        value = view.body(environment: env)
+        value = traceBody(V.self) {
+            view.body(environment: env)
+        }
     }
     
     var description: String {
