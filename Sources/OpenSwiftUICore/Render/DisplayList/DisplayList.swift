@@ -214,12 +214,16 @@ extension DisplayList {
 //    }
     
     package struct Version: Comparable, Hashable {
-        package private(set) var value: Int
-
-        package init() { value = .zero }
-        package init(decodedValue value: Int) { self.value = value }
-        
         private static var lastValue: Int = .zero
+        
+        package private(set) var value: Int
+        
+        package init() { value = .zero }
+        
+        package init(decodedValue value: Int) {
+            Version.lastValue = max(Version.lastValue, value)
+            self.value = value
+        }
         
         package init(forUpdate: Void) {
             Version.lastValue &+= 1
