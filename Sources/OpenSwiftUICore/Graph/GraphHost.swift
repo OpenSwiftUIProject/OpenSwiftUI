@@ -206,8 +206,7 @@ open class GraphHost: CustomReflectable {
     
     package final func setNeedsUpdate(mayDeferUpdate: Bool) {
         self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
-        // Blocked by OGGraphSetNeedsUpdate
-        // data.graph?.setNeedsUpdate()
+        data.graph?.setNeedsUpdate()
     }
 
     // MARK: - GraphHost.ConstantID

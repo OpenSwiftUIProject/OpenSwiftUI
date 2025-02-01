@@ -207,8 +207,6 @@ extension _UIHostingView: ViewRendererHost {
         preconditionFailure("TODO")
     }
     
-    package func addImplicitPropertiesNeedingUpdate(to _: inout ViewRendererHostProperties) {}
-
     package func updateRootView() {
         let rootView = makeRootView()
         viewGraph.setRootView(rootView)

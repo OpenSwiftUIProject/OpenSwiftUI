@@ -193,7 +193,7 @@ package struct Signpost {
         let id = OSSignpostID.makeExclusiveID(object)
         let args = args()
         switch style {
-            case let .kdebug(code):
+            case .kdebug:
                 _primitive(type, log: _signpostLog, signpostID: id, message, args)
             case let .os_log(name):
                 os_signpost(type, log: _signpostLog, name: name, signpostID: id, message, args)

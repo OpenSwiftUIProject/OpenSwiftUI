@@ -59,7 +59,7 @@ package struct Tracing {
 package func traceBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
     Signpost.bodyInvoke.traceInterval(
         object: nil,
-        "", // TODO: For os_log use
+        "",
         [
             Metadata(v).description,
             Tracing.libraryName(defining: v)
@@ -76,7 +76,7 @@ package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
         Signpost.bodyInvoke.traceEvent(
             type: .end,
             object: nil,
-            "", // TODO: For os_log use
+            "",
             [
                 current.rawValue,
                 1,
@@ -87,7 +87,7 @@ package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
     }
     return Signpost.bodyInvoke.traceInterval(
         object: nil,
-        "", // TODO: For os_log use
+        "",
         [
             Metadata(v).description,
             Tracing.libraryName(defining: v)
