@@ -2,9 +2,9 @@
 //  UIHostingView.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
-//  ID: FAF0B683EB49BE9BABC9009857940A1E
+//  ID: FAF0B683EB49BE9BABC9009857940A1E (SwiftUI)
 
 #if os(iOS)
 @_spi(ForOpenSwiftUIOnly)
@@ -12,24 +12,201 @@
 public import OpenSwiftUICore
 public import UIKit
 
-@available(macOS, unavailable)
-@available(watchOS, unavailable)
-open class _UIHostingView<Content>: UIView where Content: View {
-    private var _rootView: Content
-    package var viewGraph: ViewGraph
-    package var currentTimestamp: Time = .zero
-    package var propertiesNeedingUpdate: ViewRendererHostProperties = [.rootView] // FIXME
-    package var isRendering: Bool = false
-    var inheritedEnvironment: EnvironmentValues?
-    var environmentOverride: EnvironmentValues?
-    weak var viewController: UIHostingController<Content>?
-    var displayLink: DisplayLink?
-    var lastRenderTime: Time = .zero
-    var canAdvanceTimeAutomatically = true
-    var allowLayoutWhenNotVisible = false
-    var isEnteringForeground = false
+final class UIHostingViewDebugLayer: CALayer {
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
     
-    public init(rootView: Content) {
+    override init(layer: Any) {
+        super.init(layer: layer)
+    }
+    
+    override init() {
+        super.init()
+    }
+    
+    override var name: String? {
+        get {
+            (delegate as? AnyUIHostingView)?.debugName ?? super.name
+        }
+        set {
+            super.name = newValue
+        }
+    }
+}
+
+@available(macOS, unavailable)
+open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Content: View {
+    override dynamic open class var layerClass: AnyClass {
+        UIHostingViewDebugLayer.self
+    }
+    
+    private var _rootView: Content
+    
+    final package let viewGraph: ViewGraph
+    
+    final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
+    
+    // final package let eventBindingManager: EventBindingManager
+    
+    package var currentTimestamp: Time = .zero
+    
+    package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
+    
+    package var renderingPhase: ViewRenderingPhase = .none
+    
+    package var externalUpdateCount: Int = .zero
+    
+    var parentPhase: _GraphInputs.Phase? = nil
+    
+    var isRotatingWindow: Bool = false
+    
+    var allowUIKitAnimations: Int32 = .zero
+    
+    var allowUIKitAnimationsForNextUpdate: Bool = false
+    
+    var disabledBackgroundColor: Bool = false
+    
+    var allowFrameChanges: Bool = true
+    
+    private var transparentBackgroundReasons: HostingViewTransparentBackgroundReason = [] {
+        didSet {
+            let oldHadReasons = oldValue != []
+            let newHasReasons = transparentBackgroundReasons != []
+            if oldHadReasons == newHasReasons {
+                updateBackgroundColor()
+            }
+        }
+    }
+    
+    var explicitSafeAreaInsets: EdgeInsets? = nil {
+        didSet {
+            safeAreaInsetsDidChange()
+        }
+    }
+    
+    var keyboardFrame: CGRect? = nil
+    
+    var keyboardSeed: UInt32 = .zero
+    
+    // var keyboardTrackingElement: UIHostingKeyboardTrackingElement? = nil
+    
+    package var isHiddenForReuse: Bool = false {
+        didSet {
+            updateRemovedState()
+        }
+    }
+    
+    var registeredForGeometryChanges: Bool = false
+    
+    @_spi(Private)
+    public var safeAreaRegions: SafeAreaRegions = .all {
+        didSet {
+            safeAreaRegionsDidChange(from: oldValue)
+        }
+    }
+    
+    var initialInheritedEnvironment: EnvironmentValues? = nil
+    
+    var inheritedEnvironment: EnvironmentValues? = nil {
+        didSet {
+            invalidateProperties(.environment)
+        }
+    }
+    
+    package var environmentOverride: EnvironmentValues? = nil {
+        didSet {
+            invalidateProperties(.environment)
+        }
+    }
+    
+    var traitCollectionOverride: UITraitCollection? = nil {
+        didSet {
+            guard traitCollectionOverride != oldValue else {
+                return
+            }
+            invalidateProperties(.environment)
+        }
+    }
+    
+    weak var viewController: UIHostingController<Content>? = nil {
+        didSet {
+            updateBackgroundColor()
+        }
+    }
+    
+    var currentEvent: UIEvent? = nil
+    
+    // var eventBridge: UIKitEventBindingBridge
+    
+    var displayLink: DisplayLink? = nil
+    
+    var lastRenderTime: Time = .zero
+    
+    var canAdvanceTimeAutomatically = true
+    
+    var pendingPreferencesUpdate: Bool = false
+    
+    var pendingPostDisappearPreferencesUpdate: Bool = false
+    
+    var nextTimerTime: Time? = nil
+    
+    var updateTimer: Timer? = nil
+    
+    var colorScheme: ColorScheme? = nil {
+        didSet {
+            didChangeColorScheme(from: oldValue)
+        }
+    }
+    
+    // TODO
+    
+    var focusedValues: FocusedValues = .init() {
+        didSet {
+            invalidateProperties(.focusedValues)
+        }
+    }
+    
+    // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
+    
+    private weak var observedWindow: UIWindow? = nil
+    
+    private weak var observedScene: UIWindowScene? = nil
+    
+    var _sceneActivationState: UIScene.ActivationState? = nil
+    
+    var isEnteringForeground: Bool = false
+    
+    var isExitingForeground: Bool = false
+    
+    var isCapturingSnapshots: Bool = false
+    
+    var invalidatesIntrinsicContentSizeOnIdealSizeChange: Bool = false {
+        didSet {
+            // TODO
+        }
+    }
+    
+    private lazy var foreignSubviews: NSHashTable<UIView>? = NSHashTable.weakObjects()
+
+    private var isInsertingRenderedSubview: Bool = false
+    
+    package var accessibilityEnabled: Bool {
+        get {
+            viewGraph.accessibilityEnabled
+        }
+        set {
+            let oldValue = viewGraph.accessibilityEnabled
+            viewGraph.accessibilityEnabled = newValue
+            guard oldValue != newValue else {
+                return
+            }
+            invalidateProperties(.environment)
+            // AccessibilityFocus.changed(from: nil, to: nil, within: self)
+        }
+    }
+    
+    required public init(rootView: Content) {
         // TODO
         _rootView = rootView
         viewGraph = ViewGraph(rootViewType: Content.self, requestedOutputs: []) // Fixme
@@ -42,14 +219,15 @@ open class _UIHostingView<Content>: UIView where Content: View {
     }
     
     @available(*, unavailable)
-    public required init?(coder _: NSCoder) {
+    required dynamic public init?(coder _: NSCoder) {
         preconditionFailure("init(coder:) has not been implemented")
     }
     
     deinit {
+        // FIXME
         updateRemovedState()
         NotificationCenter.default.removeObserver(self)
-        clearDeisplayLink()
+        clearDisplayLink()
         clearUpdateTimer()
         invalidate()
         Update.ensure {
@@ -58,7 +236,9 @@ open class _UIHostingView<Content>: UIView where Content: View {
         }
     }
     
+    // FIXME
     func setRootView(_ view: Content, transaction: Transaction) {
+        // FIXME
         _rootView = view
         let mutation = CustomGraphMutation { [weak self] in
             guard let self else { return }
@@ -72,6 +252,7 @@ open class _UIHostingView<Content>: UIView where Content: View {
         )
     }
     
+    // FIXME
     var rootView: Content {
         get { _rootView }
         set {
@@ -80,38 +261,40 @@ open class _UIHostingView<Content>: UIView where Content: View {
         }
     }
     
+    // FIXME
     func makeRootView() -> some View {
         _UIHostingView.makeRootView(rootView/*.modifier(EditModeScopeModifier(editMode: .default))*/)
     }
-        
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
+    
+    // FIXME
     final public func _viewDebugData() -> [_ViewDebug.Data] {
         // TODO
         []
     }
     
+    // FIXME
     open override func layoutSubviews() {
-        super.layoutSubviews()
-        guard updatesWillBeVisible || allowLayoutWhenNotVisible else {
-            return
-        }
-        guard canAdvanceTimeAutomatically else {
-            return
-        }
-        Update.locked {
-            cancelAsyncRendering()
-            let interval: Double
-            if let displayLink, displayLink.willRender {
-                interval = .zero
-            } else {
-                interval = renderInterval(timestamp: .systemUptime) / UIAnimationDragCoefficient()
-            }
-            render(interval: interval)
-            allowLayoutWhenNotVisible = false
-        }
+//        super.layoutSubviews()
+//        guard updatesWillBeVisible || allowLayoutWhenNotVisible else {
+//            return
+//        }
+//        guard canAdvanceTimeAutomatically else {
+//            return
+//        }
+//        Update.locked {
+//            cancelAsyncRendering()
+//            let interval: Double
+//            if let displayLink, displayLink.willRender {
+//                interval = .zero
+//            } else {
+//                interval = renderInterval(timestamp: .systemUptime) / UIAnimationDragCoefficient()
+//            }
+//            render(interval: interval)
+//            allowLayoutWhenNotVisible = false
+//        }
     }
     
+    // FIXME
     var updatesWillBeVisible: Bool {
         guard let window,
               let scene = window.windowScene else {
@@ -131,12 +314,14 @@ open class _UIHostingView<Content>: UIView where Content: View {
         }
     }
     
+    // FIXME
     func cancelAsyncRendering() {
         Update.locked {
             displayLink?.cancelAsyncRendering()
         }
     }
     
+    // FIXME
     private func renderInterval(timestamp: Time) -> Double {
         if lastRenderTime == .zero || lastRenderTime > timestamp {
             lastRenderTime = timestamp - 1e-6
@@ -147,13 +332,14 @@ open class _UIHostingView<Content>: UIView where Content: View {
     }
     
     // TODO
-    func clearDeisplayLink() {
+    func clearDisplayLink() {
     }
     
     // TODO
     func clearUpdateTimer() {
     }
     
+    // FIXME
     func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         let tree = preferenceValue(_IdentifiedViewsKey.self)
         let adjustment = { [weak self](rect: inout CGRect) in
@@ -166,27 +352,56 @@ open class _UIHostingView<Content>: UIView where Content: View {
             body(proxy)
         }
     }
+    
+    package func makeViewDebugData() -> Data? {
+        Update.ensure {
+            _ViewDebug.serializedData(viewGraph.viewDebugData())
+        }
+    }
+    
+    var wantsTransparentBackground: Bool {
+        transparentBackgroundReasons != []
+    }
+    
+    func setWantsTransparentBackground(for reason: HostingViewTransparentBackgroundReason, _ isEnabled: Bool) {
+        transparentBackgroundReasons.setValue(isEnabled, for: reason)
+    }
+    
+    func updateRemovedState() {
+        var removedState: GraphHost.RemovedState = []
+        if window == nil {
+            removedState.insert(.unattached)
+        }
+        if isHiddenForReuse {
+            removedState.insert(.hiddenForReuse)
+            clearDisplayLink()
+        }
+        Update.ensure {
+            viewGraph.removedState = removedState
+        }
+    }
+    
+    func safeAreaRegionsDidChange(from oldSafeAreaRegions: SafeAreaRegions) {
+        guard safeAreaRegions != oldSafeAreaRegions else {
+            return
+        }
+        invalidateProperties([.safeArea, .scrollableContainerSize])
+    }
+    
+    func updateBackgroundColor() {
+        guard let viewController else {
+            return
+        }
+        // TODO
+    }
+    
+    func didChangeColorScheme(from oldColorScheme: ColorScheme?) {
+        // TODO
+    }
+    
 }
 
 extension _UIHostingView: ViewRendererHost {
-    package var renderingPhase: OpenSwiftUICore.ViewRenderingPhase {
-        get {
-            preconditionFailure("TODO")
-        }
-        set(newValue) {
-            preconditionFailure("TODO")
-        }
-    }
-    
-    package var externalUpdateCount: Int {
-        get {
-            preconditionFailure("TODO")
-        }
-        set(newValue) {
-            preconditionFailure("TODO")
-        }
-    }
-    
     package func updateEnvironment() {
         preconditionFailure("TODO")
     }
@@ -237,10 +452,6 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     public func preferencesDidChange() {
-        // TODO
-    }
-    
-    func updateRemovedState() {
         // TODO
     }
 }

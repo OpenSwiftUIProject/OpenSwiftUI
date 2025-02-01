@@ -28,6 +28,20 @@ public func _makeUIHostingController(_ view: AnyView) -> any NSObject & _UIHosti
     UIHostingController(rootView: view)
 }
 
+final class _UISecureHostingController<Content>: UIHostingController<Content> where Content: View {
+    override init(rootView: Content) {
+        super.init(rootView: rootView)
+    }
+    
+    required init?(coder: NSCoder) {
+        preconditionFailure("init(coder:) has not been implemented")
+    }
+    
+    override var _canShowWhileLocked: Bool {
+        true
+    }
+}
+
 @available(macOS, unavailable)
 public func _makeUIHostingController(_ view: AnyView, tracksContentSize: Bool, secure: Bool = false) -> NSObject & _UIHostingViewable {
     let hostingController: UIHostingController<AnyView>
@@ -42,19 +56,12 @@ public func _makeUIHostingController(_ view: AnyView, tracksContentSize: Bool, s
     return hostingController
 }
 
-
-final class _UISecureHostingController<Content>: UIHostingController<Content> where Content: View {
-    override init(rootView: Content) {
-        super.init(rootView: rootView)
-    }
-    
-    required init?(coder: NSCoder) {
-        preconditionFailure("init(coder:) has not been implemented")
-    }
-    
-    override var _canShowWhileLocked: Bool {
-        true
-    }
+@available(iOS, unavailable)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+@available(visionOS, unavailable)
+public func _makeWatchKitUIHostingController(_ view: AnyView) -> any NSObject & _UIHostingViewable {
+    fatalError("TODO")
 }
 
 #endif

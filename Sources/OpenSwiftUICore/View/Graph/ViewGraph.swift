@@ -455,7 +455,39 @@ extension ViewGraph {
     }
 }
 
-// TODO
+//package struct SizeThatFitsMeasurer: ViewGraphGeometryMeasurer {
+//    package static func measure(given proposal: _ProposedSize, in graph: ViewGraph) -> CGSize
+//    package static let invalidValue: CGSize
+//    package typealias Proposal = _ProposedSize
+//    package typealias Size = CGSize
+//}
+
+//package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
+extension ViewGraph {
+    package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
+        preconditionFailure("TODO")
+    }
+    
+    package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
+        preconditionFailure("TODO")
+    }
+    
+    package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
+        preconditionFailure("TODO")
+    }
+    
+    package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
+        preconditionFailure("TODO")
+    }
+    
+    package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
+        preconditionFailure("TODO")
+    }
+    
+    package func viewDebugData() -> [_ViewDebug.Data] {
+        preconditionFailure("TODO")
+    }
+}
 
 extension ViewGraph {
     package func invalidatePreferenceBridge() {

@@ -5,7 +5,7 @@ public import UIKit
 @available(watchOS, unavailable)
 @MainActor
 @preconcurrency
-open class UIHostingController<Content> : UIViewController where Content : View {
+open class UIHostingController<Content>: UIViewController where Content : View {
     var host: _UIHostingView<Content>
     
     override open dynamic var keyCommands: [UIKeyCommand]? {
@@ -50,6 +50,14 @@ open class UIHostingController<Content> : UIViewController where Content : View 
     
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         host._forEachIdentifiedView(body: body)
+    }
+}
+
+@available(macOS, unavailable)
+extension UIHostingController {
+    public var safeAreaRegions: SafeAreaRegions {
+        get { host.safeAreaRegions }
+        set { host.safeAreaRegions = newValue }
     }
 }
 #endif
