@@ -9,7 +9,7 @@
 import OpenSwiftUI_SPI
 import UIKit
 
-class _UIInheritedView: UIView {
+final class _UIInheritedView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
     }

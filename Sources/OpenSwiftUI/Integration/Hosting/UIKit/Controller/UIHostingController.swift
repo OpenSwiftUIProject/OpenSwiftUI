@@ -52,25 +52,4 @@ open class UIHostingController<Content> : UIViewController where Content : View 
         host._forEachIdentifiedView(body: body)
     }
 }
-
-@available(macOS, unavailable)
-extension UIHostingController: _UIHostingViewable where Content == AnyView {
-    
-}
-
-@available(macOS, unavailable)
-public func _makeUIHostingController(_ view: AnyView) -> NSObject & _UIHostingViewable {
-    UIHostingController(rootView: view)
-}
-
-@available(macOS, unavailable)
-public func _makeUIHostingController(_ view: AnyView, tracksContentSize: Bool) -> NSObject & _UIHostingViewable {
-    let hostingController = UIHostingController(rootView: view)
-    if tracksContentSize {
-        // TODO: hostingController.host
-        // SizeThatFitsObserver
-    }
-    return hostingController
-}
-
 #endif

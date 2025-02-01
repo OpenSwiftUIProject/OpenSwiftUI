@@ -41,6 +41,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (BOOL)_shouldAnimatePropertyWithKey:(NSString *)key;
 @end
 
+@interface UIViewController (OpenSwiftUI_SPI)
+@property (nonatomic, readonly) BOOL _canShowWhileLocked;
+@end
+
 bool UIViewIgnoresTouchEvents(UIView *view);
 
 OPENSWIFTUI_ASSUME_NONNULL_END

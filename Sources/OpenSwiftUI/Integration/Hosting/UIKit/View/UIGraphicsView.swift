@@ -9,7 +9,7 @@
 import OpenSwiftUI_SPI
 import UIKit
 
-class _UIGraphicsView: UIView {
+final class _UIGraphicsView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
     }
