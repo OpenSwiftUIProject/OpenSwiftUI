@@ -182,7 +182,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             let selector = Selector(("_windowHostingScene"))
             guard let window,
                   window.responds(to: selector),
-                  let scene = window.perform(selector).takeRetainedValue() as? UIWindowScene else {
+                  (window.perform(selector).takeRetainedValue() as? UIWindowScene) != nil else {
                 return nil
             }
             return _sceneActivationState
@@ -227,14 +227,19 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     required public init(rootView: Content) {
-        // TODO
         _rootView = rootView
-        viewGraph = ViewGraph(rootViewType: Content.self, requestedOutputs: []) // Fixme
+        Update.begin()
+        viewGraph = ViewGraph(
+            rootViewType: ModifiedContent<ModifiedContent<Content, EditModeScopeModifier>, HitTestBindingModifier>.self,
+            requestedOutputs: Self.defaultViewGraphOutputs()
+        )
         // TODO
-        // FIXME
         super.init(frame: .zero)
-        
+        // TODO
         initializeViewGraph()
+        // TODO
+        HostingViewRegistry.shared.add(self)
+        Update.end()
         // TODO
     }
     
@@ -413,10 +418,12 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             _ViewDebug.serializedData(viewGraph.viewDebugData())
         }
     }
+    
+    static func defaultViewGraphOutputs() -> ViewGraph.Outputs { .defaults }
 }
 
 extension _UIHostingView {
-    func makeRootView() -> some View {
+    func makeRootView() -> ModifiedContent<ModifiedContent<Content, EditModeScopeModifier>, HitTestBindingModifier> {
         _UIHostingView.makeRootView(
             rootView.modifier(EditModeScopeModifier(isActive: viewController != nil))
         )
@@ -469,23 +476,24 @@ extension _UIHostingView {
 
 extension _UIHostingView: ViewRendererHost {
     package func updateEnvironment() {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
     
     package func updateSize() {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
     
     package func updateSafeArea() {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
     
     package func updateScrollableContainerSize() {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
     
     package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
+        return .infinity
     }
     
     package func updateRootView() {

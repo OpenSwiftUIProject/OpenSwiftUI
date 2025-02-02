@@ -193,7 +193,7 @@ extension ViewRendererHost {
     package func updateTransform() {
         // Blocked by ValueState
         // viewGraph.$rootTransform.valueState
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
     
     package func render(interval: Double = 0, updateDisplayList: Bool = true, targetTimestamp: Time? = nil) {
