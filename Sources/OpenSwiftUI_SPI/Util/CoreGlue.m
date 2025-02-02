@@ -8,6 +8,8 @@
 #include "CoreGlue.h"
 #include <dlfcn.h>
 
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+
 void abort_report_np(const char*, ...);
 
 void* OpenSwiftUILibrary();
@@ -40,3 +42,5 @@ void *getSwiftUIGlueClassSymbolLoc() {
     }
     return ptr;
 }
+
+#endif

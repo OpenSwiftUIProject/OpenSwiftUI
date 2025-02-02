@@ -8,6 +8,8 @@
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
+#if canImport(Darwin)
+
 @_cdecl("OpenSwiftUIGlueClass")
 func OpenSwiftUIGlueClass() -> CoreGlue.Type {
     OpenSwiftUIGlue.self
@@ -18,3 +20,5 @@ final class OpenSwiftUIGlue: CoreGlue {
         MakeDefaultLayoutComputerResult(value: ViewGraph.current.$defaultLayoutComputer)
     }
 }
+
+#endif

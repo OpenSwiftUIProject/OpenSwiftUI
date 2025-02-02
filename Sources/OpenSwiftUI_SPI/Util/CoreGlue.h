@@ -10,6 +10,10 @@
 
 #include "OpenSwiftUIBase.h"
 
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+
 id _initializeCoreGlue();
+
+#endif
 
 #endif /* CoreGlue_h */

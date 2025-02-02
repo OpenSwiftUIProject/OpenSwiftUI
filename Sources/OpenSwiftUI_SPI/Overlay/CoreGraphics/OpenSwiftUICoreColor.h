@@ -25,7 +25,7 @@ OPENSWIFTUI_EXPORT
 BOOL OpenSwiftUICoreColorPlatformColorGetComponents(OpenSwiftUICoreSystem system, id color, CGFloat *red, CGFloat *green, CGFloat *blue, CGFloat *alpha) OPENSWIFTUI_SWIFT_NAME(CoreColorPlatformColorGetComponents(system:color:red:green:blue:alpha:));
 
 OPENSWIFTUI_EXPORT
-NSObject  * _Nullable OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) OPENSWIFTUI_SWIFT_NAME(CorePlatformColorForRGBA(system:red:green:blue:alpha:));
+id _Nullable OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) OPENSWIFTUI_SWIFT_NAME(CorePlatformColorForRGBA(system:red:green:blue:alpha:));
 
 OPENSWIFTUI_EXPORT
 Class _Nullable OpenSwiftUICoreColorGetKitColorClass(OpenSwiftUICoreSystem system) OPENSWIFTUI_SWIFT_NAME(CoreColorGetKitColorClass(system:));

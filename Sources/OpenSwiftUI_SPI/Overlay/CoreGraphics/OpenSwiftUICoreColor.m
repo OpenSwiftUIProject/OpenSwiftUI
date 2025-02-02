@@ -44,7 +44,7 @@ BOOL OpenSwiftUICoreColorPlatformColorGetComponents(OpenSwiftUICoreSystem system
     #endif
 }
 
-NSObject *OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
+id OpenSwiftUICorePlatformColorForRGBA(OpenSwiftUICoreSystem system, CGFloat red, CGFloat green, CGFloat blue, CGFloat alpha) {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     if (!colorClass) {
         return nil;
