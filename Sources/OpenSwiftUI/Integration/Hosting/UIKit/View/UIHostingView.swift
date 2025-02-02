@@ -175,7 +175,22 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     private weak var observedScene: UIWindowScene? = nil
     
-    var _sceneActivationState: UIScene.ActivationState? = nil
+    private var _sceneActivationState: UIScene.ActivationState? = nil
+    
+    var sceneActivationState: UIScene.ActivationState? {
+        get {
+            let selector = Selector(("_windowHostingScene"))
+            guard let window,
+                  window.responds(to: selector),
+                  let scene = window.perform(selector).takeRetainedValue() as? UIWindowScene else {
+                return nil
+            }
+            return _sceneActivationState
+        }
+        set {
+            _sceneActivationState = newValue
+        }
+    }
     
     var isEnteringForeground: Bool = false
     
@@ -183,15 +198,18 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     var isCapturingSnapshots: Bool = false
     
-    var invalidatesIntrinsicContentSizeOnIdealSizeChange: Bool = false {
-        didSet {
-            // TODO
+    var updatesWillBeVisible: Bool {
+        guard let sceneActivationState else {
+            return false
+        }
+        guard !isHiddenForReuse else {
+            return false
+        }
+        return switch sceneActivationState {
+            case .foregroundActive, .foregroundInactive: true
+            default: isEnteringForeground || isCapturingSnapshots
         }
     }
-    
-    private lazy var foreignSubviews: NSHashTable<UIView>? = NSHashTable.weakObjects()
-
-    private var isInsertingRenderedSubview: Bool = false
     
     package var accessibilityEnabled: Bool {
         get {
@@ -261,7 +279,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     override dynamic open func layoutSubviews() {
         super.layoutSubviews()
-        guard let window else {
+        guard window != nil else {
             return
         }
         guard canAdvanceTimeAutomatically else {
@@ -298,66 +316,50 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     // TODO
     
-    // FIXME
     func setRootView(_ view: Content, transaction: Transaction) {
-        // FIXME
         _rootView = view
-        let mutation = CustomGraphMutation { [weak self] in
+        viewGraph.asyncTransaction(transaction) { [weak self] in
             guard let self else { return }
             updateRootView()
         }
-        viewGraph.asyncTransaction(
-            transaction,
-            mutation: mutation,
-            style: .deferred,
-            mayDeferUpdate: true
-        )
     }
     
-    // FIXME
     /// The root View of the view hierarchy to display.
     var rootView: Content {
         get { _rootView }
         set {
             _rootView = newValue
-            invalidateProperties(.init(rawValue: 1), mayDeferUpdate: true)
+            invalidateProperties(.rootView)
         }
     }
     
-    /// The UIKit notion of the safe area insets.
-//    open override var safeAreaInsets: UIEdgeInsets {
-//
-//    }
+    var invalidatesIntrinsicContentSizeOnIdealSizeChange: Bool = false {
+        didSet {
+            // TODO
+        }
+    }
     
-    // FIXME
-    func makeRootView() -> some View {
-        _UIHostingView.makeRootView(rootView/*.modifier(EditModeScopeModifier(editMode: .default))*/)
+    private lazy var foreignSubviews: NSHashTable<UIView>? = NSHashTable.weakObjects()
+
+    private var isInsertingRenderedSubview: Bool = false
+    
+    /// The UIKit notion of the safe area insets.
+    open override var safeAreaInsets: UIEdgeInsets {
+        guard let explicitSafeAreaInsets else {
+            return super.safeAreaInsets
+        }
+        let layoutDirection = Update.ensure { viewGraph.environment.layoutDirection }
+        return if layoutDirection == .rightToLeft {
+            UIEdgeInsets(top: explicitSafeAreaInsets.top, left: explicitSafeAreaInsets.trailing, bottom: explicitSafeAreaInsets.bottom, right: explicitSafeAreaInsets.leading)
+        } else {
+            UIEdgeInsets(top: explicitSafeAreaInsets.top, left: explicitSafeAreaInsets.leading, bottom: explicitSafeAreaInsets.bottom, right: explicitSafeAreaInsets.trailing)
+        }
     }
     
     // FIXME
     final public func _viewDebugData() -> [_ViewDebug.Data] {
         // TODO
         []
-    }
-    
-    // FIXME
-    var updatesWillBeVisible: Bool {
-        guard let window,
-              let scene = window.windowScene else {
-            return false
-        }
-        let environment = inheritedEnvironment ?? traitCollection.baseEnvironment
-        switch scene.activationState {
-        case .unattached, .foregroundActive, .foregroundInactive:
-            return true
-        case .background:
-            fallthrough
-        @unknown default:
-            if isEnteringForeground {
-                return true
-            }
-            return environment.scenePhase != .background
-        }
     }
     
     // FIXME
@@ -399,6 +401,13 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
     
+    @_spi(Private)
+    @available(iOS, deprecated, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
+    final public var addsKeyboardToSafeAreaInsets: Bool {
+        get { safeAreaRegions.contains(.keyboard) }
+        set { safeAreaRegions.setValue(newValue, for: .keyboard) }
+    }
+    
     package func makeViewDebugData() -> Data? {
         Update.ensure {
             _ViewDebug.serializedData(viewGraph.viewDebugData())
@@ -407,6 +416,12 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
 }
 
 extension _UIHostingView {
+    func makeRootView() -> some View {
+        _UIHostingView.makeRootView(
+            rootView.modifier(EditModeScopeModifier(isActive: viewController != nil))
+        )
+    }
+    
     var wantsTransparentBackground: Bool {
         transparentBackgroundReasons != []
     }
