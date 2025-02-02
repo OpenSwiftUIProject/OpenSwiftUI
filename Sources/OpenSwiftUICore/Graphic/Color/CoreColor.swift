@@ -41,7 +41,7 @@ extension CoreColor {
     }
     
     package static func platformColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) -> NSObject? {
-        CorePlatformColorForRGBA(system: .defaults, red: red, green: green, blue: blue, alpha: alpha)
+        CorePlatformColorForRGBA(system: .defaults, red: red, green: green, blue: blue, alpha: alpha) as? NSObject
     }
 }
 

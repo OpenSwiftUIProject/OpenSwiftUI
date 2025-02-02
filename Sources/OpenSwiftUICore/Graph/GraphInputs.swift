@@ -4,6 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
+//  ID: 9FF97745734808976F608CE0DC13C39C (SwiftUICore)
 
 package import OpenGraphShims
 
@@ -296,6 +297,21 @@ extension _GraphInputs {
     }
 }
 
+private struct MergedEnvironment: Rule, AsyncAttribute {
+    @WeakAttribute private var lhs: EnvironmentValues?
+    @Attribute private var rhs: EnvironmentValues
+    
+    var value: EnvironmentValues {
+        let rhs = rhs
+        guard let lhs else {
+            return rhs
+        }
+        preconditionFailure("TODO")
+        // rhs.plist.merge(lhs.plist)
+        // Tracker.invalidateAllValues(from: SwiftUI.PropertyList, to: SwiftUI.PropertyList)
+    }
+}
+
 // FIXME: TO BE REMOVED
 extension _GraphInputs {
 
@@ -303,9 +319,8 @@ extension _GraphInputs {
 
     @inline(__always)
     package func detechedEnvironmentInputs() -> Self {
-//        var newInputs = self
-//        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
-//        return newInputs
-        preconditionFailure("TO BE REMOVED")
+        var newInputs = self
+        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+        return newInputs
     }
 }

@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if canImport(QuartzCore)
-import QuartzCore
+public import QuartzCore
 #endif
 
 @_spi(ForOpenSwiftUIOnly)
@@ -22,6 +22,7 @@ public struct Time: Equatable, Hashable, Comparable {
     public static let infinity: Time = Time(seconds: .infinity)
 
     #if canImport(QuartzCore)
+    @inlinable
     public static var systemUptime: Time {
         Time(seconds: CACurrentMediaTime())
     }

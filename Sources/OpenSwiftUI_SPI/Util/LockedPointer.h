@@ -1,6 +1,6 @@
 //
 //  LockedPointer.h
-//  OpenSwiftUI
+//  OpenSwiftUI_SPI
 //
 //  Audited for iOS 15.5
 //  Status: Complete

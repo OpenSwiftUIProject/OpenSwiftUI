@@ -9,15 +9,15 @@
 
 public import Foundation
 package import OpenGraphShims
+import OpenSwiftUI_SPI
 
 @_spi(ForOpenSwiftUIOnly)
 @objc(OpenSwiftUICoreGlue)
 open class CoreGlue: NSObject {
-    package static var shared: CoreGlue = CoreGlue() // FIXME
-    
+    package static var shared: CoreGlue = _initializeCoreGlue() as! CoreGlue
     
     open func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
-        preconditionFailure("TODO")
+        preconditionFailure("")
     }
 }
 

@@ -1,16 +1,25 @@
 //
 //  EnvironmentKeyTransformModifier.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: Blocked by syncMainIfReferences
-//  ID: 1DBD4F024EFF0E73A70DB6DD05D5B548
+//  Audited for iOS 18.0
+//  Status: Blocked by Observation
+//  ID: 1DBD4F024EFF0E73A70DB6DD05D5B548 (SwiftUI)
+//  ID: E370275CDB55AC7AD9ACF0420859A9E8 (SwiftUICore)
 
-import OpenGraphShims
+package import OpenGraphShims
 
+// MARK: - EnvironmentKeyTransformModifier
+
+/// A view modifier that transforms the existing value of an
+/// environment key.
 @frozen
-public struct _EnvironmentKeyTransformModifier<Value>: PrimitiveViewModifier, _GraphInputsModifier {
+public struct _EnvironmentKeyTransformModifier<Value>: ViewModifier, _GraphInputsModifier, PrimitiveViewModifier {
+    /// The environment key path to transform.
     public var keyPath: WritableKeyPath<EnvironmentValues, Value>
+    
+    /// A function to map the original value of the environment key to
+    /// its new value.
     public var transform: (inout Value) -> Void
     
     @inlinable
@@ -18,44 +27,29 @@ public struct _EnvironmentKeyTransformModifier<Value>: PrimitiveViewModifier, _G
         self.keyPath = keyPath
         self.transform = transform
     }
-
+    
     public static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
         let childEnvironment = ChildEnvironment(
             modifier: modifier.value,
             environment: inputs.cachedEnvironment.wrappedValue.environment,
+            oldValue: nil,
             oldKeyPath: nil
         )
-        let attribute = Attribute(childEnvironment)
-        inputs.environment = attribute
+        inputs.environment = Attribute(childEnvironment)
     }
 }
 
-extension View {
-    /// Transforms the environment value of the specified key path with the
-    /// given function.
-    @inlinable
-    public func transformEnvironment<V>(
-        _ keyPath: WritableKeyPath<EnvironmentValues, V>,
-        transform: @escaping (inout V) -> Void
-    ) -> some View {
-        modifier(_EnvironmentKeyTransformModifier(
-            keyPath: keyPath,
-            transform: transform
-        ))
-    }
-}
-
-private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute {
-    @Attribute
-    private var modifier: _EnvironmentKeyTransformModifier<Value>
-    private var _environment: Attribute<EnvironmentValues>
+private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute, CustomStringConvertible {
+    @Attribute private var modifier: _EnvironmentKeyTransformModifier<Value>
+    @Attribute private var environment: EnvironmentValues
     private var oldValue: Value?
     private var oldKeyPath: WritableKeyPath<EnvironmentValues, Value>?
     
-    init(modifier: Attribute<_EnvironmentKeyTransformModifier<Value>>,
-         environment: Attribute<EnvironmentValues>,
-         oldValue: Value? = nil,
-         oldKeyPath: WritableKeyPath<EnvironmentValues, Value>?
+    init(
+        modifier: Attribute<_EnvironmentKeyTransformModifier<Value>>,
+        environment: Attribute<EnvironmentValues>,
+        oldValue: Value?,
+        oldKeyPath: WritableKeyPath<EnvironmentValues, Value>?
     ) {
         _modifier = modifier
         _environment = environment
@@ -69,11 +63,13 @@ private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute {
     
     typealias Value = EnvironmentValues
     
+    // FIXME
     mutating func updateValue() {
         var (environment, environmentChanged) = _environment.changedValue()
         let keyPath = modifier.keyPath
         var newValue = environment[keyPath: keyPath]
-        _modifier.syncMainIfReferences { modifier in
+        $modifier.syncMainIfReferences { modifier in
+            // TODO: Observation
             modifier.transform(&newValue)
         }
         guard !environmentChanged,
@@ -87,5 +83,50 @@ private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute {
             oldKeyPath = keyPath
             return
         }
+    }
+}
+
+@available(*, unavailable)
+extension _EnvironmentKeyTransformModifier: Sendable {}
+
+extension View {
+    /// Transforms the environment value of the specified key path with the
+    /// given function.
+    @inlinable
+    nonisolated public func transformEnvironment<V>(
+        _ keyPath: WritableKeyPath<EnvironmentValues, V>,
+        transform: @escaping (inout V) -> Void
+    ) -> some View {
+        modifier(_EnvironmentKeyTransformModifier(
+            keyPath: keyPath,
+            transform: transform
+        ))
+    }
+}
+
+// MARK: - EnvironmentModifier
+
+package protocol EnvironmentModifier: _GraphInputsModifier {
+    static func makeEnvironment(modifier: Attribute<Self>, environment: inout EnvironmentValues)
+}
+
+extension EnvironmentModifier {
+    package static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
+        let updateEnviroment = UpdateEnvironment(
+            modifier: modifier.value,
+            environment: inputs.cachedEnvironment.wrappedValue.environment
+        )
+        inputs.environment = Attribute(updateEnviroment)
+    }
+}
+
+private struct UpdateEnvironment<Modifier>: Rule where Modifier: EnvironmentModifier {
+    @Attribute var modifier: Modifier
+    @Attribute var environment: EnvironmentValues
+    
+    var value: EnvironmentValues {
+        var environment = environment
+        Modifier.makeEnvironment(modifier: $modifier, environment: &environment)
+        return environment
     }
 }

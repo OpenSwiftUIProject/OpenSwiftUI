@@ -20,3 +20,16 @@ package struct ViewRespondersKey: PreferenceKey {
 @_spi(ForOpenSwiftUIOnly)
 open class ViewResponder/*: ResponderNode, CustomStringConvertible, CustomRecursiveStringConvertible*/ {
 }
+
+package struct HitTestBindingModifier: ViewModifier, /*MultiViewModifier,*/ PrimitiveViewModifier {
+    nonisolated package static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        // preconditionFailure("TODO")
+        return body(_Graph(), inputs)
+    }
+    
+    package typealias Body = Never
+}

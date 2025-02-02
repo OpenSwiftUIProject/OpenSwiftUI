@@ -1,10 +1,11 @@
 //
 //  EnvironmentValues.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: Complete
-//  ID: 83E729E7BD00420AB79EFD8DF557072A
+//  Audited for iOS 18.0
+//  Status: TODO
+//  ID: 83E729E7BD00420AB79EFD8DF557072A (SwiftUI)
+//  ID: 0CBA6217BE011883F496E97230B6CF8F (SwiftUICore)
 
 /// A collection of environment values propagated through a view hierarchy.
 ///
@@ -35,7 +36,7 @@
 /// OpenSwiftUI provides dedicated view modifiers for setting some values, which
 /// typically makes your code easier to read. For example, rather than setting
 /// the ``EnvironmentValues/lineLimit`` value directly, as in the previous
-/// example, you should instead use the ``View/lineLimit(_:)-513mb`` modifier:
+/// example, you should instead use the ``View/lineLimit(_:)`` modifier:
 ///
 ///     MyView()
 ///         .lineLimit(2)
@@ -53,21 +54,12 @@
 ///                 .preferredColorScheme(.dark)
 ///         }
 ///
-/// Create custom environment values by defining a type that
-/// conforms to the ``EnvironmentKey`` protocol, and then extending the
-/// environment values structure with a new property. Use your key to get and
-/// set the value, and provide a dedicated modifier for clients to use when
-/// setting the value:
-///
-///     private struct MyEnvironmentKey: EnvironmentKey {
-///         static let defaultValue: String = "Default value"
-///     }
+/// Create a custom environment value by declaring a new property
+/// in an extension to the environment values structure and applying
+/// the ``Entry()`` macro to the variable declaration:
 ///
 ///     extension EnvironmentValues {
-///         var myCustomValue: String {
-///             get { self[MyEnvironmentKey.self] }
-///             set { self[MyEnvironmentKey.self] = newValue }
-///         }
+///         @Entry var myCustomValue: String = "Default value"
 ///     }
 ///
 ///     extension View {
@@ -80,6 +72,10 @@
 /// with the ``Environment`` property wrapper, and setting it with the
 /// `myCustomValue` view modifier.
 public struct EnvironmentValues: CustomStringConvertible {
+    private var _plist: PropertyList
+    
+    private let tracker: PropertyList.Tracker?
+    
     /// Creates an environment values instance.
     ///
     /// You don't typically create an instance of ``EnvironmentValues``
@@ -91,6 +87,26 @@ public struct EnvironmentValues: CustomStringConvertible {
     public init() {
         _plist = PropertyList()
         tracker = nil
+        // TODO: CoreGlue.shared
+    }
+    
+    package init(_ plist: PropertyList) {
+        _plist = plist
+        tracker = nil
+    }
+    
+    package init(_ plist: PropertyList, tracker: PropertyList.Tracker) {
+        // FIXME
+        self._plist = plist
+        self.tracker = tracker
+    }
+    
+    // FIXME
+    package var plist: PropertyList {
+        get { _plist }
+        set {
+            _plist = newValue
+        }
     }
     
     /// Accesses the environment value associated with a custom key.
@@ -146,18 +162,10 @@ public struct EnvironmentValues: CustomStringConvertible {
     /// A string that represents the contents of the environment values
     /// instance.
     public var description: String { _plist.description }
-
-    private var _plist: PropertyList
-    private let tracker: PropertyList.Tracker?
-    
-    // FIXME
-    var plist: PropertyList { _plist }
-    
-    init(plist: PropertyList) {
-        _plist = plist
-        tracker = nil
-    }
 }
+
+@available(*, unavailable)
+extension EnvironmentValues: Sendable {}
 
 private struct EnvironmentPropertyKey<EnvKey: EnvironmentKey>: PropertyKey {
     static var defaultValue: EnvKey.Value { EnvKey.defaultValue }
@@ -165,6 +173,6 @@ private struct EnvironmentPropertyKey<EnvKey: EnvironmentKey>: PropertyKey {
 
 private struct DerivedEnvironmentPropertyKey<EnvKey: DerivedEnvironmentKey>: DerivedPropertyKey {
     static func value(in plist: PropertyList) -> some Equatable {
-        EnvKey.value(in: EnvironmentValues(plist: plist))
+        EnvKey.value(in: EnvironmentValues(plist))
     }
 }
