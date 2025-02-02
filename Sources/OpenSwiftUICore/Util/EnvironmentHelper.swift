@@ -28,6 +28,9 @@ package enum EnvironmentHelper {
     
     @_transparent
     package static func bool(for key: String) -> Bool {
-        int32(for: key) != 0
+        guard let value = int32(for: key) else {
+            return false
+        }
+        return value != 0
     }
 }
