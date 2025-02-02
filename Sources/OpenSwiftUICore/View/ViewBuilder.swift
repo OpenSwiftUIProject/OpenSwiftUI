@@ -1,15 +1,22 @@
 //
 //  ViewBuilder.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for RELEASE_2023
+//  Audited for iOS 18.0
 //  Status: Complete
 
 @resultBuilder
-public enum ViewBuilder {
+public struct ViewBuilder {
     @_alwaysEmitIntoClient
     public static func buildExpression<Content>(_ content: Content) -> Content where Content: View {
         content
+    }
+    
+    @available(*, unavailable, message: "this expression does not conform to 'View'")
+    @_disfavoredOverload
+    @_alwaysEmitIntoClient
+    public static func buildExpression(_ invalid: Any) -> some View {
+        fatalError()
     }
 
     @_alwaysEmitIntoClient
@@ -30,7 +37,7 @@ public enum ViewBuilder {
 }
 
 @available(*, unavailable)
-extension ViewBuilder: Swift.Sendable {}
+extension ViewBuilder: Sendable {}
 
 extension ViewBuilder {
     @_alwaysEmitIntoClient
