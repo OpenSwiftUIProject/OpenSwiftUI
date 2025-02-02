@@ -3,17 +3,39 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Empty
+//  Status: Empty
 
-@MainActor
-@preconcurrency
-package struct ColorView: PrimitiveView { //FIXME
+package import Foundation
+
+package struct ColorView: RendererLeafView, Animatable {
     package var color: Color.Resolved
     
     package init(_ color: Color.Resolved) {
         self.color = color
     }
 
-    @available(iOS 13.0, tvOS 13.0, watchOS 6.0, macOS 10.15, *)
-    package typealias Body = Swift.Never
+    nonisolated package static func _makeView(view: _GraphValue<ColorView>, inputs: _ViewInputs) -> _ViewOutputs {
+        var inputs = inputs
+        if inputs.base.options.isEmpty {
+            // TODO: AnimatableAttribute
+        }
+        return makeLeafView(view: view, inputs: inputs)
+    }
+    
+    package var descriptionAttributes: [(name: String, value: String)] {
+        preconditionFailure("TODO")
+    }
+    
+    package func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
+        preconditionFailure("TODO")
+    }
+    
+    package func content() -> DisplayList.Content.Value {
+        preconditionFailure("TODO")
+    }
+        
+    package var animatableData: Color.Resolved.AnimatableData {
+        get { color.animatableData  }
+        set { color.animatableData = newValue }
+    }
 }
