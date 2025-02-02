@@ -14,16 +14,61 @@ import SwiftUI
 
 class ViewController: UINavigationController {
     override func viewDidAppear(_ animated: Bool) {
-        let vc = UIHostingController(rootView: ContentView())
-        pushViewController(vc, animated: false)
+        pushViewController(EntryViewController(), animated: false)
     }
 }
 
+final class EntryViewController: UIViewController {
+    override func viewDidLoad() {
+        navigationItem.rightBarButtonItem = UIBarButtonItem(
+            title: "Push",
+            style: .plain,
+            target: self,
+            action: #selector(pushHostingVC)
+        )
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+            self.pushHostingVC()
+        }
+    }
+    
+    @objc
+    private func pushHostingVC() {
+        guard let navigationController else { return }
+        let hostingVC = UIHostingController(rootView: ContentView())
+        navigationController.pushViewController(hostingVC, animated: true)
+    }
+}
+
+// TODO: Known issue
+// 1. State toggle crash
+// 2. pop - UIHostingView deinit crash / onDisappear
+// 3. if else builder issue
 struct ContentView: View {
+    @State private var first = true
+    
     var body: some View {
-        Color.red
-            .onAppear {
-                print("Hello")
-            }
+        if first {
+            Color.red
+                .onAppear {
+                    print("Red appear")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        first.toggle()
+                    }
+                }
+                .onDisappear {
+                    print("Red disappear")
+                }
+        } else {
+            Color.blue
+                .onAppear {
+                    print("Blue appear")
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                        first.toggle()
+                    }
+                }
+                .onDisappear {
+                    print("Blue disappear")
+                }
+        }
     }
 }
