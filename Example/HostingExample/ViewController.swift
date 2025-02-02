@@ -21,6 +21,9 @@ class ViewController: UINavigationController {
 
 struct ContentView: View {
     var body: some View {
-        AnyView(EmptyView())
+        Color.red
+            .onAppear {
+                print("Hello")
+            }
     }
 }
