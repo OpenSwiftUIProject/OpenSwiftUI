@@ -3,12 +3,15 @@
 //  OpenSwiftUI
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
 #if os(iOS)
 public import Foundation
 import UIKit
 
+/// Abstract the bits UV needs to know about UIHostingController so it doesn't
+/// need to rely on UIHostingController existing in the SDK, which it can't in
+/// the watchOS SDK
 @available(macOS, unavailable)
 public protocol _UIHostingViewable: AnyObject {
     var rootView: AnyView { get set }
@@ -51,7 +54,7 @@ public func _makeUIHostingController(_ view: AnyView, tracksContentSize: Bool, s
         hostingController = UIHostingController(rootView: view)
     }
     if tracksContentSize {
-        // TODO: hostingController.sizingOption
+        hostingController.sizingOptions = .preferredContentSize
     }
     return hostingController
 }

@@ -45,7 +45,11 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL _canShowWhileLocked;
 @end
 
+OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);
+
+OPENSWIFTUI_EXPORT
+double UIAnimationDragCoefficient(void);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

@@ -45,11 +45,53 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     
     public var rootView: Content {
         get { host.rootView }
-        _modify { yield &host.rootView }
+        set { host.rootView = newValue }
+    }
+    
+    public var sizingOptions: UIHostingControllerSizingOptions = [] {
+        didSet {
+            sizingOptionsDidChange(from: oldValue)
+        }
+    }
+    
+    @_spi(Private)
+    public func setRootView(_ newRootView: Content, transaction: Transaction) {
+        // TODO
+    }
+    
+    public func sizeThatFits(in size: CGSize) -> CGSize {
+        host.sizeThatFits(size)
+    }
+    
+    public func _render(seconds: Double) {
+        host.render(interval: seconds, targetTimestamp: nil)
     }
     
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         host._forEachIdentifiedView(body: body)
+    }
+    
+    @available(*, deprecated, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
+    public var _disableSafeArea: Swift.Bool {
+        get {
+            host.explicitSafeAreaInsets == .zero
+        }
+        set {
+            host.explicitSafeAreaInsets = newValue ? .zero : nil
+        }
+    }
+    
+    final public var _rendererConfiguration: _RendererConfiguration {
+        get { host._rendererConfiguration }
+        set { host._rendererConfiguration = newValue }
+    }
+    
+    final public var _rendererObject: AnyObject? {
+        host._rendererObject
+    }
+    
+    func sizingOptionsDidChange(from oldSizingOptions: UIHostingControllerSizingOptions) {
+        // TODO
     }
 }
 

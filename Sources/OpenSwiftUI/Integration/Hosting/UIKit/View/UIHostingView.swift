@@ -11,6 +11,7 @@
 @_spi(Private)
 public import OpenSwiftUICore
 public import UIKit
+import OpenSwiftUI_SPI
 
 final class UIHostingViewDebugLayer: CALayer {
     required init?(coder: NSCoder) {
@@ -35,6 +36,7 @@ final class UIHostingViewDebugLayer: CALayer {
     }
 }
 
+/// A UIView which hosts an OpenSwiftUI View hierarchy.
 @available(macOS, unavailable)
 open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Content: View {
     override dynamic open class var layerClass: AnyClass {
@@ -224,7 +226,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     deinit {
-        // FIXME
         updateRemovedState()
         NotificationCenter.default.removeObserver(self)
         clearDisplayLink()
@@ -234,7 +235,68 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             viewGraph.preferenceBridge = nil
             viewGraph.invalidate()
         }
+        HostingViewRegistry.shared.remove(self)
     }
+    
+    /// The renderer configuration of the hosting view.
+    final public var _rendererConfiguration: _RendererConfiguration {
+        get {
+            Update.locked { renderer.configuration }
+        }
+        set {
+            Update.locked { renderer.configuration = newValue }
+        }
+    }
+    
+    /// An optional object representing the current renderer.
+    final public var _rendererObject: AnyObject? {
+        Update.locked {
+            renderer.exportedObject(rootView: self)
+        }
+    }
+    
+    override dynamic open func didMoveToWindow() {
+        // TODO
+    }
+    
+    override dynamic open func layoutSubviews() {
+        super.layoutSubviews()
+        guard let window else {
+            return
+        }
+        guard canAdvanceTimeAutomatically else {
+            return
+        }
+        Update.lock()
+        cancelAsyncRendering()
+        let interval = if let displayLink, displayLink.willRender {
+            0.0
+        } else {
+            renderInterval(timestamp: .systemUptime) / UIAnimationDragCoefficient()
+        }
+        render(interval: interval, targetTimestamp: nil)
+        Update.unlock()
+    }
+    
+    package func modifyViewInputs(_ inputs: inout _ViewInputs) {
+        // TODO
+    }
+    
+    override dynamic open var frame: CGRect {
+        get {
+            super.frame
+        }
+        set {
+            guard allowFrameChanges else {
+                return
+            }
+            let oldValue = super.frame
+            super.frame = newValue
+            frameDidChange(oldValue: oldValue)
+        }
+    }
+    
+    // TODO
     
     // FIXME
     func setRootView(_ view: Content, transaction: Transaction) {
@@ -253,6 +315,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     // FIXME
+    /// The root View of the view hierarchy to display.
     var rootView: Content {
         get { _rootView }
         set {
@@ -260,6 +323,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             invalidateProperties(.init(rawValue: 1), mayDeferUpdate: true)
         }
     }
+    
+    /// The UIKit notion of the safe area insets.
+//    open override var safeAreaInsets: UIEdgeInsets {
+//
+//    }
     
     // FIXME
     func makeRootView() -> some View {
@@ -270,28 +338,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     final public func _viewDebugData() -> [_ViewDebug.Data] {
         // TODO
         []
-    }
-    
-    // FIXME
-    open override func layoutSubviews() {
-//        super.layoutSubviews()
-//        guard updatesWillBeVisible || allowLayoutWhenNotVisible else {
-//            return
-//        }
-//        guard canAdvanceTimeAutomatically else {
-//            return
-//        }
-//        Update.locked {
-//            cancelAsyncRendering()
-//            let interval: Double
-//            if let displayLink, displayLink.willRender {
-//                interval = .zero
-//            } else {
-//                interval = renderInterval(timestamp: .systemUptime) / UIAnimationDragCoefficient()
-//            }
-//            render(interval: interval)
-//            allowLayoutWhenNotVisible = false
-//        }
     }
     
     // FIXME
@@ -358,7 +404,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             _ViewDebug.serializedData(viewGraph.viewDebugData())
         }
     }
-    
+}
+
+extension _UIHostingView {
     var wantsTransparentBackground: Bool {
         transparentBackgroundReasons != []
     }
@@ -399,6 +447,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         // TODO
     }
     
+    private func frameDidChange(oldValue: CGRect) {
+        // TODO
+    }
 }
 
 extension _UIHostingView: ViewRendererHost {
@@ -431,10 +482,6 @@ extension _UIHostingView: ViewRendererHost {
         // TODO
     }
     
-    package func modifyViewInputs(_ inputs: inout _ViewInputs) {
-        // TODO
-    }
-    
     package func outputsDidChange(outputs: ViewGraph.Outputs) {
         // TODO
     }
@@ -463,7 +510,11 @@ extension UITraitCollection {
     }
 }
 
-@_silgen_name("UIAnimationDragCoefficient")
-private func UIAnimationDragCoefficient() -> Double
+@_spi(Private)
+extension _UIHostingView: HostingViewProtocol {
+    public func convertAnchor<Value>(_ anchor: Anchor<Value>) -> Value {
+        anchor.convert(to: viewGraph.transform)
+    }
+}
 
 #endif
