@@ -22,7 +22,8 @@ package struct _SafeAreaInsetsModifier: /* MultiViewModifier, */ PrimitiveViewMo
     }
     
     nonisolated package static func _makeView(modifier: _GraphValue<_SafeAreaInsetsModifier>, inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
+        return body(_Graph(), inputs)
     }
 }
 

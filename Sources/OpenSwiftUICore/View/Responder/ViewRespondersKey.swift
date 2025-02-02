@@ -28,7 +28,7 @@ package struct HitTestBindingModifier: ViewModifier, /*MultiViewModifier,*/ Prim
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
         // preconditionFailure("TODO")
-        makeDebuggableView(modifier: modifier, inputs: inputs, body: body)
+        return body(_Graph(), inputs)
     }
     
     package typealias Body = Never

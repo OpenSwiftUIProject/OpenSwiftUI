@@ -319,9 +319,8 @@ extension _GraphInputs {
 
     @inline(__always)
     package func detechedEnvironmentInputs() -> Self {
-//        var newInputs = self
-//        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
-//        return newInputs
-        preconditionFailure("TO BE REMOVED")
+        var newInputs = self
+        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+        return newInputs
     }
 }
