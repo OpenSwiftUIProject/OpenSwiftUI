@@ -22,6 +22,6 @@ extension _SceneModifier {
 extension _SceneModifier where Body == Never {
     @inline(__always)
     public func body(content _: SceneContent) -> Body {
-        preconditionFailure("body() should not be called on \(Self.self)")
+        preconditionFailure("body() should not be called on \(Self.self).")
     }
 }

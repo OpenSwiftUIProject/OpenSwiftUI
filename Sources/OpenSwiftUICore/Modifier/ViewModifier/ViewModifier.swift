@@ -137,7 +137,7 @@ extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
 
 extension ViewModifier {
     func bodyError() -> Never {
-        preconditionFailure("body() should not be called on \(Self.self)")
+        preconditionFailure("body() should not be called on \(Self.self).")
     }
 }
 

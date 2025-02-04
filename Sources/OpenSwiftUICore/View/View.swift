@@ -106,7 +106,7 @@ extension PrimitiveView {
 
 extension View {
     package func bodyError() -> Never {
-        preconditionFailure("body() should not be called on \(Self.self)")
+        preconditionFailure("body() should not be called on \(Self.self).")
     }
 }
 
