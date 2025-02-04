@@ -35,6 +35,12 @@ package struct ReuseTrace {
         traceReuseFailure("reuse_inputsDifferent")
     }
     
+    @inline(__always)
+    package static func traceReuseInvalidSubgraphFailure(_ typeFoundInvalid: any Any.Type) {
+        // FIXME: ReuseTraceInternal.InvalidSubgraphFailure
+        traceReuseFailure("reuse_invalidSubgraph")
+    }
+    
     // TODO
     
     final package class Recorder {

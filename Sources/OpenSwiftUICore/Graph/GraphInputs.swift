@@ -199,6 +199,13 @@ public struct _GraphInputs {
     package struct Phase: Equatable {
         var value: UInt32
         
+        @inline(__always)
+        static var isBeingRemovedBitCount: Int { 1 }
+        @inline(__always)
+        static var isBeingRemovedMask: UInt32 { (1 << isBeingRemovedBitCount) - 1}
+        @inline(__always)
+        static var resetSeedMask: UInt32 { ~isBeingRemovedMask }
+        
         @inlinable
         package init(value: UInt32) {
             self.value = value
@@ -211,19 +218,17 @@ public struct _GraphInputs {
         
         @inlinable
         package var resetSeed: UInt32 {
-            get { value >> 1 }
-            set { value = (newValue << 1) | (value & 1) }
+            get { value >> Self.isBeingRemovedBitCount }
+            set { value = (newValue << Self.isBeingRemovedBitCount) | (value & Self.isBeingRemovedMask) }
         }
 
         package var isBeingRemoved: Bool {
-            get { value & 1 != 0 }
-            set { value = (newValue ? 1 : 0) | (value & 0xFFFF_FFFE) }
+            get { (value & Self.isBeingRemovedMask) != 0 }
+            set { value = (newValue ? 1 : 0) | (value & Self.resetSeedMask) }
         }
 
         @inlinable
-        package var isInserted: Bool {
-            value & 1 == 0
-        }
+        package var isInserted: Bool { !isBeingRemoved }
 
         @inlinable
         package mutating func merge(_ other: _GraphInputs.Phase) {

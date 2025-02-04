@@ -323,6 +323,10 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
     }
     
     struct Transform: _ViewList_SublistTransform_Item {
+        func bindID(_ id: inout _ViewList_ID) {
+            // TODO
+        }
+        
         func apply(sublist: inout _ViewList_Sublist) {
             item.bindID(&sublist.id)
             sublist.elements = item.wrapping(sublist.elements)
