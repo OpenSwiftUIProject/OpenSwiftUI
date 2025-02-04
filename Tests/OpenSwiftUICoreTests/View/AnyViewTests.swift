@@ -1,6 +1,6 @@
 //
 //  AnyViewTests.swift
-//  OpenSwiftUITests
+//  OpenSwiftUICoreTests
 
 @testable import OpenSwiftUICore
 import Testing
