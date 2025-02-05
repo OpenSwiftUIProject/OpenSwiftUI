@@ -1,6 +1,6 @@
 //
 //  ViewList.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: WIP
@@ -789,7 +789,6 @@ public struct _ViewList_ID: Hashable {
         package let count: Int
         
         package init(_ views: [Views], isDataDependent: Bool) {
-            // FIXME
             var offset = 0
             var result: [(views: Views, endOffset: Int)] = []
             for view in views {
@@ -804,11 +803,27 @@ public struct _ViewList_ID: Hashable {
         override package var endIndex: Int { count }
         
         override package subscript(index: Int) -> ViewList.ID {
-            preconditionFailure("TODO")
+            // FIXME: targetIndex
+            let targetIndex = 0
+            
+            return views[targetIndex].views[index]            
         }
         
-        override package func isEqual(to other: _ViewList_ID.Views) -> Bool {
-            preconditionFailure("TODO")
+        override package func isEqual(to other: ViewList.ID.Views) -> Bool {
+            guard let other = other as? JoinedViews,
+                  count == other.count
+            else {
+                return false
+            }
+            guard !views.isEmpty else {
+                return true
+            }
+            for index in views.indices {
+                guard views[index].views.isEqual(to: other.views[index].views) else {
+                    return false
+                }
+            }
+            return true
         }
     }
 }
@@ -817,7 +832,7 @@ public struct _ViewList_ID: Hashable {
 @available(*, unavailable)
 extension _ViewList_ID: Sendable {}
 
-// MARK: - ViewList.ID.View
+// MARK: - ViewList.ID.Views
 
 @_spi(ForOpenSwiftUIOnly)
 open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
@@ -836,7 +851,11 @@ open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
     }
     
     package func withDataDependency() -> ViewList.ID.Views {
-        ViewList.ID._Views(self, isDataDependent: true)
+        if isDataDependent {
+            self
+        } else {
+            ViewList.ID._Views(self, isDataDependent: true)
+        }
     }
     
     public static func == (lhs: _ViewList_ID_Views, rhs: _ViewList_ID_Views) -> Bool {
