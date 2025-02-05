@@ -1,20 +1,25 @@
 //
-//  AppearanceActionModifierTests.swift
+//  StateTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 
 #if canImport(Darwin)
-struct AppearanceActionModifierTests {
+struct StateTests {
     @Test
     func appear() async throws {
         struct ContentView: View {
             var confirmation: Confirmation
 
+            @State private var toggle = false
+            
             var body: some View {
                 AnyView(EmptyView())
                     .onAppear {
-                        confirmation()
+                        toggle.toggle()
+                        if toggle {
+                            confirmation()
+                        }
                     }
             }
         }
