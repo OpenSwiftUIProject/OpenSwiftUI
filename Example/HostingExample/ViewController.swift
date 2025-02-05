@@ -47,28 +47,29 @@ struct ContentView: View {
     @State private var first = true
     
     var body: some View {
-        if first {
-            Color.red
-                .onAppear {
-                    print("Red appear")
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        first.toggle()
-                    }
+//        if first {
+        Color(uiColor: first ? .red : .blue)
+            .onAppear {
+                print("View appear")
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                    first.toggle()
                 }
-                .onDisappear {
-                    print("Red disappear")
-                }
-        } else {
-            Color.blue
-                .onAppear {
-                    print("Blue appear")
-                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                        first.toggle()
-                    }
-                }
-                .onDisappear {
-                    print("Blue disappear")
-                }
-        }
+            }
+            // .id(first)
+//                .onDisappear {
+//                    print("Red disappear")
+//                }
+//        } else {
+//            Color.blue
+//                .onAppear {
+//                    print("Blue appear")
+//                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+//                        first.toggle()
+//                    }
+//                }
+//                .onDisappear {
+//                    print("Blue disappear")
+//                }
+//        }
     }
 }

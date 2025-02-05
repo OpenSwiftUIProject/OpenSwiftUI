@@ -371,7 +371,7 @@ extension GraphHost {
         style: _GraphMutation_Style = .deferred,
         mayDeferUpdate: Bool = true
     ) where T: GraphMutation {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
     
     package final func asyncTransaction(

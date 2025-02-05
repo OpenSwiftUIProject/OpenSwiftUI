@@ -91,8 +91,8 @@ public struct Transaction {
     }
     
     package static var current: Transaction {
-        if let data = _threadTransactionData() as? AnyObject {
-            Transaction(plist: PropertyList(data: data))
+        if let data = _threadTransactionData() {
+            Transaction(plist: PropertyList(data: data as? AnyObject))
         } else {
             Transaction()
         }

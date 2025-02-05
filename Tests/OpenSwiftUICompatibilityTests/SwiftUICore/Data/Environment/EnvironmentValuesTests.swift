@@ -1,13 +1,10 @@
 //
-//  EnvironmentValuesTest.swift
-//
-//
-//  Created by Kyle on 2023/11/21.
-//
+//  EnvironmentValuesTests.swift
+//  OpenSwiftUICompatibilityTests
 
 import Testing
 
-struct EnvironmentValuesTest {
+struct EnvironmentValuesTests {
     struct BoolKey: EnvironmentKey {
         fileprivate static var name: String { "EnvironmentPropertyKey<BoolKey>" }
         
