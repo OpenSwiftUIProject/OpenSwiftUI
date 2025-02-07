@@ -594,7 +594,7 @@ extension ViewList.Elements {
     }
 }
 
-// MARK: - View.List.ID [WIP]
+// MARK: - View.List.ID
 
 @_spi(ForOpenSwiftUIOnly)
 public struct _ViewList_ID: Hashable {
@@ -729,16 +729,34 @@ public struct _ViewList_ID: Hashable {
     
     package var allExplicitIDs: [AnyHashable2] { explicitIDs.map(\.id) }
     
+    #if canImport(Darwin)
     package func explicitID<ID>(owner: AnyAttribute) -> ID? where ID: Hashable {
-        preconditionFailure("TODO")
+        for explicitID in explicitIDs {
+            guard explicitID.owner == owner,
+                  let id = explicitID.id.as(type: ID.self)
+            else { continue }
+            return id
+        }
+        return nil
     }
+    #endif
 
     package func explicitID<ID>(for idType: ID.Type) -> ID? where ID: Hashable {
-        preconditionFailure("TODO")
+        for explicitID in explicitIDs {
+            guard let id = explicitID.id.as(type: ID.self)
+            else { continue }
+            return id
+        }
+        return nil
     }
     
     package func containsID<ID>(_ id: ID) -> Bool where ID: Hashable {
-        preconditionFailure("TODO")
+        for explicitID in explicitIDs {
+            guard explicitID.id.as(type: ID.self) == id
+            else { continue }
+            return true
+        }
+        return false
     }
     
     public func hash(into hasher: inout Hasher) {
