@@ -803,10 +803,31 @@ public struct _ViewList_ID: Hashable {
         override package var endIndex: Int { count }
         
         override package subscript(index: Int) -> ViewList.ID {
-            // FIXME: targetIndex
-            let targetIndex = 0
+            var index = index
+            // Copied from Swift Standard Library's _partitioningIndex(where:) implementation
+            var n = views.count
+            var l = 0
+            while n > 0 {
+                let half = n / 2
+                let mid = l + half
+                if views[mid].endOffset > index {
+                    n = half
+                } else {
+                    l = mid + 1
+                    n -= half + 1
+                }
+            }
             
-            return views[targetIndex].views[index]            
+            let targetIndex = l
+            if targetIndex != 0 {
+                index &-= views[targetIndex - 1].endOffset
+            }
+            
+            let view = views[targetIndex]
+            // Copied from Swift Standard Library's _checkIndex(_:) implementation
+            Swift.precondition(index >= startIndex, "Negative Array index is out of range")
+            Swift.precondition(index <= endIndex, "Array index is out of range")
+            return view.views[index]
         }
         
         override package func isEqual(to other: ViewList.ID.Views) -> Bool {
