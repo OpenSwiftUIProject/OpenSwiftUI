@@ -16,43 +16,43 @@ package import OpenGraphShims
 public struct _ViewListInputs {
     package var base: _GraphInputs
     package var implicitID: Int
-    
+
     package struct Options: OptionSet {
         package let rawValue: Int
 
         package init(rawValue: Int) {
             self.rawValue = rawValue
         }
-        
-        package static let canTransition: Options = Options(rawValue: 1 << 0)
-        package static let disableTransitions: Options = Options(rawValue: 1 << 1)
-        package static let requiresDepthAndSections: Options = Options(rawValue: 1 << 2)
-        package static let requiresNonEmptyGroupParent: Options = Options(rawValue: 1 << 3)
-        package static let isNonEmptyParent: Options = Options(rawValue: 1 << 4)
-        package static let resetHeaderStyleContext: Options = Options(rawValue: 1 << 5)
-        package static let resetFooterStyleContext: Options = Options(rawValue: 1 << 6)
-        package static let layoutPriorityIsTrait: Options = Options(rawValue: 1 << 7)
-        package static let requiresSections: Options = Options(rawValue: 1 << 8)
-        package static let tupleViewCreatesUnaryElements: Options = Options(rawValue: 1 << 9)
-        package static let previewContext: Options = Options(rawValue: 1 << 10)
-        package static let needsDynamicTraits: Options = Options(rawValue: 1 << 11)
-        package static let allowsNestedSections: Options = Options(rawValue: 1 << 12)
-        package static let sectionsConcatenateFooter: Options = Options(rawValue: 1 << 13)
-        package static let needsArchivedAnimationTraits: Options = Options(rawValue: 1 << 14)
-        package static let sectionsAreHierarchical: Options = Options(rawValue: 1 << 15)
+
+        package static let canTransition: Options = .init(rawValue: 1 << 0)
+        package static let disableTransitions: Options = .init(rawValue: 1 << 1)
+        package static let requiresDepthAndSections: Options = .init(rawValue: 1 << 2)
+        package static let requiresNonEmptyGroupParent: Options = .init(rawValue: 1 << 3)
+        package static let isNonEmptyParent: Options = .init(rawValue: 1 << 4)
+        package static let resetHeaderStyleContext: Options = .init(rawValue: 1 << 5)
+        package static let resetFooterStyleContext: Options = .init(rawValue: 1 << 6)
+        package static let layoutPriorityIsTrait: Options = .init(rawValue: 1 << 7)
+        package static let requiresSections: Options = .init(rawValue: 1 << 8)
+        package static let tupleViewCreatesUnaryElements: Options = .init(rawValue: 1 << 9)
+        package static let previewContext: Options = .init(rawValue: 1 << 10)
+        package static let needsDynamicTraits: Options = .init(rawValue: 1 << 11)
+        package static let allowsNestedSections: Options = .init(rawValue: 1 << 12)
+        package static let sectionsConcatenateFooter: Options = .init(rawValue: 1 << 13)
+        package static let needsArchivedAnimationTraits: Options = .init(rawValue: 1 << 14)
+        package static let sectionsAreHierarchical: Options = .init(rawValue: 1 << 15)
     }
-    
+
     package var options: _ViewListInputs.Options
-    
+
     private var _traits: OptionalAttribute<ViewTraitCollection>
-    
+
     package var traits: Attribute<ViewTraitCollection>? {
         get { _traits.attribute }
         set { _traits.attribute = newValue }
     }
-    
+
     package var traitKeys: ViewTraitKeys?
-    
+
     package init(_ base: _GraphInputs, implicitID: Int = 0, options: _ViewListInputs.Options = .init()) {
         self.base = base
         self.implicitID = implicitID
@@ -60,7 +60,7 @@ public struct _ViewListInputs {
         self._traits = .init()
         self.traitKeys = .init()
     }
-    
+
     package init(_ base: _GraphInputs, implicitID: Int) {
         self.base = base
         self.implicitID = implicitID
@@ -68,7 +68,7 @@ public struct _ViewListInputs {
         self._traits = .init()
         self.traitKeys = .init()
     }
-    
+
     package init(_ base: _GraphInputs, options: _ViewListInputs.Options) {
         self.base = base
         self.implicitID = 0
@@ -76,7 +76,7 @@ public struct _ViewListInputs {
         self._traits = .init()
         self.traitKeys = .init()
     }
-    
+
     package init(_ base: _GraphInputs) {
         self.base = base
         self.implicitID = 0
@@ -84,21 +84,21 @@ public struct _ViewListInputs {
         self._traits = .init()
         self.traitKeys = .init()
     }
-    
+
     package subscript<T>(input: T.Type) -> T.Value where T: ViewInput {
         get { base[input] }
         set { base[input] = newValue }
     }
-    
+
     package subscript<T>(input: T.Type) -> T.Value where T: ViewInput, T.Value: GraphReusable {
         get { base[input] }
         set { base[input] = newValue }
     }
-    
+
     package var canTransition: Bool {
         options.contains(.canTransition)
     }
-    
+
     package mutating func addTraitKey<K>(_ key: K.Type) where K: _ViewTraitKey {
         traitKeys?.insert(key)
     }
@@ -112,31 +112,31 @@ public struct _ViewListCountInputs {
     package var options: _ViewListInputs.Options
     package var baseOptions: _GraphInputs.Options
     package var customModifierTypes: [ObjectIdentifier]
-    
+
     package init(_ inputs: _ViewListInputs) {
         customInputs = inputs.base.customInputs
         options = inputs.options
         baseOptions = inputs.base.options
         customModifierTypes = []
     }
-    
+
     package subscript<T>(input: T.Type) -> T.Value where T: GraphInput {
         get { customInputs[input] }
         set { customInputs[input] = newValue }
     }
-    
+
     package mutating func append<T, U>(_ newValue: U, to key: T.Type) where T: GraphInput, T.Value == Stack<U> {
         var stack = self[key]
         defer { self[key] = stack }
         stack.push(newValue)
     }
-    
+
     package mutating func popLast<T, U>(_ key: T.Type) -> U? where T: GraphInput, T.Value == Stack<U> {
         var stack = self[key]
         defer { self[key] = stack }
         return stack.pop()
     }
-    
+
     package var base: _GraphInputs {
         var inputs = _GraphInputs.invalid
         inputs.customInputs = customInputs
@@ -156,27 +156,27 @@ public struct _ViewListOutputs {
         case staticList(any _ViewList_Elements)
         case dynamicList(Attribute<any ViewList>, ListModifier?)
     }
-    
+
     package var views: Views
     package var nextImplicitID: Int
     package var staticCount: Int?
-    
+
     package init(_ views: _ViewListOutputs.Views, nextImplicitID: Int, staticCount: Int?) {
         self.views = views
         self.nextImplicitID = nextImplicitID
         self.staticCount = staticCount
     }
-    
+
     package init(_ views: _ViewListOutputs.Views, nextImplicitID: Int) {
         self.views = views
         self.nextImplicitID = nextImplicitID
         self.staticCount = nil
     }
-    
+
     package class ListModifier {
         init() {}
-        
-        package func apply(to list: inout ViewList)  {}
+
+        package func apply(to list: inout ViewList) {}
     }
 }
 
@@ -197,15 +197,15 @@ package protocol ViewList {
     typealias SublistTransform = _ViewList_SublistTransform
     typealias Subgraph = _ViewList_Subgraph
     typealias Edit = _ViewList_Edit
-    
+
     func count(style: IteratorStyle) -> Int
     func estimatedCount(style: IteratorStyle) -> Int
     var traitKeys: ViewTraitKeys? { get }
     var viewIDs: ID.Views? { get }
     var traits: ViewTraitCollection { get }
-    
+
     typealias ApplyBody = (inout Int, IteratorStyle, Self.Node, inout SublistTransform) -> Bool
-    
+
     @discardableResult
     func applyNodes(
         from start: inout Int,
@@ -222,37 +222,37 @@ package protocol ViewList {
 
 package struct _ViewList_IteratorStyle: Equatable {
     var value: UInt
-    
+
     @inline(__always)
     static var applyGranularityBitCount: Int { 1 }
     @inline(__always)
     static var applyGranularityMask: UInt { (1 << applyGranularityBitCount) - 1 }
     @inline(__always)
     static var granularityMask: UInt { ~applyGranularityMask }
-    
+
     package var applyGranularity: Bool {
         get { (value & Self.applyGranularityMask) != 0 }
         set { value = (newValue ? 1 : 0) | (value & Self.granularityMask) }
     }
-    
+
     package var granularity: Int {
         get { Int(bitPattern: value >> Self.applyGranularityBitCount) }
         set { value = (UInt(bitPattern: newValue) << Self.applyGranularityBitCount) | (value & Self.applyGranularityMask) }
     }
-    
+
     package init(granularity: Int) {
         value = UInt(bitPattern: granularity) << Self.applyGranularityBitCount
     }
-    
+
     package init() {
         self.init(granularity: 1)
     }
-    
+
     package func applyGranularity(to count: Int) -> Int {
         guard value != .zero else { return count }
         return granularity * count
     }
-    
+
     package func alignToPreviousGranularityMultiple(_ value: inout Int) {
         guard value != .zero else { return }
         let granularity = granularity
@@ -260,7 +260,7 @@ package struct _ViewList_IteratorStyle: Equatable {
         let diff = value - value / granularity * granularity
         value -= diff
     }
-    
+
     package func alignToNextGranularityMultiple(_ value: inout Int) {
         let granularity = granularity
         guard granularity != 1 else { return }
@@ -286,7 +286,7 @@ package struct _ViewList_Sublist {
     package var elements: any ViewList.Elements
     package var traits: ViewTraitCollection
     package var list: Attribute<ViewList>?
-    
+
     package init(start: Int, count: Int, id: _ViewList_ID, elements: any ViewList.Elements, traits: ViewList.Traits, list: Attribute<ViewList>?) {
         self.start = start
         self.count = count
@@ -301,27 +301,27 @@ package struct _ViewList_Sublist {
 
 package struct _ViewList_SublistTransform {
     package typealias Item = _ViewList_SublistTransform_Item
-    
+
     package var items: [any Item]
-    
+
     package init() { items = [] }
-    
+
     package var isEmpty: Bool { items.isEmpty }
-    
+
     package mutating func push<T>(_ item: T) where T: Item {
         items.append(item)
     }
-    
+
     package mutating func pop() {
         items.removeLast()
     }
-    
+
     package func apply(sublist: inout ViewList.Sublist) {
         for item in items {
             item.apply(sublist: &sublist)
         }
     }
-    
+
     package func bindID(_ id: inout ViewList.ID) {
         for item in items {
             item.bindID(&id)
@@ -343,11 +343,11 @@ package enum _ViewList_Node {
     case sublist(ViewList.Sublist)
     case group(ViewList.Group)
     case section(ViewList.Section)
-    
+
     package func count(style: ViewList.IteratorStyle) -> Int {
         preconditionFailure("TODO")
     }
-    
+
     package func estimatedCount(style: ViewList.IteratorStyle) -> Int {
         preconditionFailure("TODO")
     }
@@ -361,7 +361,7 @@ package enum _ViewList_Node {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     @discardableResult
     package func applyNodes(
         from start: inout Int,
@@ -370,7 +370,7 @@ package enum _ViewList_Node {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -380,7 +380,7 @@ package enum _ViewList_Node {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -389,8 +389,8 @@ package enum _ViewList_Node {
     ) -> Bool {
         applySublists(from: &start, style: .init(), transform: &transform, to: body)
     }
-  
-    package func firstOffset<OtherID>(forID id: OtherID, style: ViewList.IteratorStyle) -> Int? where OtherID : Hashable {
+
+    package func firstOffset<OtherID>(forID id: OtherID, style: ViewList.IteratorStyle) -> Int? where OtherID: Hashable {
         preconditionFailure("TODO")
     }
 }
@@ -399,15 +399,15 @@ package enum _ViewList_Node {
 
 extension ViewList {
     package var isEmpty: Bool { count == 0 }
-    
+
     package var count: Int {
         count(style: .init())
     }
-    
+
     package var estimatedCount: Int {
         estimatedCount(style: .init())
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -420,7 +420,7 @@ extension ViewList {
             node.applySublists(from: &start, style: style, transform: &transform, to: body)
         }
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -430,7 +430,7 @@ extension ViewList {
     ) -> Bool {
         applySublists(from: &start, style: .init(), list: list, transform: &transform, to: body)
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -441,7 +441,7 @@ extension ViewList {
         var transform = SublistTransform()
         return applySublists(from: &start, style: style, list: list, transform: &transform, to: body)
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -450,7 +450,7 @@ extension ViewList {
     ) -> Bool {
         applySublists(from: &start, style: .init(), list: list, to: body)
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -459,7 +459,7 @@ extension ViewList {
     ) -> Bool {
         applySublists(from: &start, style: style, list: nil, to: body)
     }
-    
+
     @discardableResult
     package func applySublists(
         from start: inout Int,
@@ -467,7 +467,7 @@ extension ViewList {
     ) -> Bool {
         applySublists(from: &start, style: .init(), list: nil, to: body)
     }
-    
+
     package var allViewIDs: ID.Views {
         if let viewIDs {
             return viewIDs
@@ -475,12 +475,12 @@ extension ViewList {
             var start = 0
             let result = applySublists(from: &start, style: .init(), list: nil) { sublist in
                 // sublist.elements append
-                return true
+                true
             }
             preconditionFailure("TODO")
         }
     }
-    
+
     package func applyIDs(
         from start: inout Int,
         style: IteratorStyle,
@@ -490,7 +490,7 @@ extension ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func applyIDs(
         from start: inout Int,
         listAttribute: Attribute<any ViewList>?,
@@ -499,7 +499,7 @@ extension ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func applyIDs(
         from start: inout Int,
         listAttribute: Attribute<any ViewList>?,
@@ -507,7 +507,7 @@ extension ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func applyIDs(
         from start: inout Int,
         transform t: inout ViewList.SublistTransform,
@@ -515,11 +515,11 @@ extension ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func firstOffset(of id: ViewList.ID.Canonical, style: IteratorStyle) -> Int? {
         preconditionFailure("TODO")
     }
-    
+
     package func firstOffset(of id: ViewList.ID.Canonical) -> Int? {
         firstOffset(of: id, style: .init())
     }
@@ -531,9 +531,9 @@ package protocol _ViewList_Elements {
     typealias Body = (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)
     typealias MakeElement = (_ViewInputs) -> _ViewOutputs
     typealias Release = _ViewList_ReleaseElements
-    
+
     var count: Int { get }
-    
+
     func makeElements(
         from start: inout Int,
         inputs: _ViewInputs,
@@ -548,7 +548,7 @@ package protocol _ViewList_Elements {
         indirectMap: IndirectAttributeMap,
         testOnly: Bool
     ) -> Bool
-    
+
     func retain() -> Release?
 }
 
@@ -561,7 +561,7 @@ extension ViewList.Elements {
     ) -> _ViewOutputs? {
         preconditionFailure("TODO")
     }
-    
+
     @inline(__always)
     package func makeAllElements(
         inputs: _ViewInputs,
@@ -588,7 +588,7 @@ extension ViewList.Elements {
     ) -> _ViewOutputs? {
         preconditionFailure("TODO")
     }
-    
+
     package func retain() -> Release? {
         nil
     }
@@ -599,51 +599,51 @@ extension ViewList.Elements {
 @_spi(ForOpenSwiftUIOnly)
 public struct _ViewList_ID: Hashable {
     package typealias Views = _ViewList_ID_Views
-    
+
     private var _index: Int32
-    
+
     package var index: Int {
         get { Int(_index) }
         set { _index = Int32(newValue) }
     }
-    
+
     private var implicitID: Int32
-    
+
     private var explicitIDs: [Explicit]
-    
+
     package init(implicitID: Int) {
         self._index = 0
         self.implicitID = Int32(implicitID)
         self.explicitIDs = []
     }
-    
+
     package init() {
         self._index = 0
         self.implicitID = 0
         self.explicitIDs = []
     }
-    
+
     private struct Explicit: Equatable {
         let id: AnyHashable2
         let reuseID: Int
         #if canImport(Darwin)
-        let owner: AnyAttribute
+            let owner: AnyAttribute
         #endif
         let isUnary: Bool
     }
-    
+
     #if canImport(Darwin)
-    package static func explicit<ID>(_ id: ID, owner: AnyAttribute) -> ViewList.ID where ID: Hashable {
-        var viewListID = ViewList.ID()
-        viewListID.bind(explicitID: id, owner: owner, isUnary: true, reuseID: .zero)
-        return viewListID
-    }
-    
-    package static func explicit<ID>(_ id: ID) -> ViewList.ID where ID : Hashable {
-        explicit(id, owner: .nil)
-    }
+        package static func explicit<ID>(_ id: ID, owner: AnyAttribute) -> ViewList.ID where ID: Hashable {
+            var viewListID = ViewList.ID()
+            viewListID.bind(explicitID: id, owner: owner, isUnary: true, reuseID: .zero)
+            return viewListID
+        }
+
+        package static func explicit<ID>(_ id: ID) -> ViewList.ID where ID: Hashable {
+            explicit(id, owner: .nil)
+        }
     #endif
-    
+
     package func elementID(at index: Int) -> ViewList.ID {
         var id = self
         id.index = index
@@ -652,24 +652,24 @@ public struct _ViewList_ID: Hashable {
 
     package struct Canonical: Hashable, CustomStringConvertible {
         private var _index: Int32
-        
+
         package var index: Int {
             get { Int(_index) }
             set { _index = Int32(newValue) }
         }
-        
+
         private var implicitID: Int32
-        
+
         package var explicitID: AnyHashable2?
-        
+
         init(_index: Int32, implicitID: Int32, explicitID: AnyHashable2?) {
             self._index = _index
             self.implicitID = implicitID
             self.explicitID = explicitID
         }
-        
+
         package var requiresImplicitID: Bool { implicitID >= 0 }
-        
+
         package var description: String {
             if let explicitID {
                 explicitID.description
@@ -678,14 +678,14 @@ public struct _ViewList_ID: Hashable {
             }
         }
     }
-    
+
     package var canonicalID: Canonical {
         guard let explicitID = explicitIDs.first else {
             return Canonical(_index: _index, implicitID: implicitID, explicitID: nil)
         }
         return Canonical(_index: _index, implicitID: explicitID.isUnary ? -1 : implicitID, explicitID: explicitID.id)
     }
-    
+
     package struct ElementCollection: RandomAccessCollection, Equatable {
         package var id: ViewList.ID
         package var count: Int
@@ -702,43 +702,43 @@ public struct _ViewList_ID: Hashable {
             id.elementID(at: index)
         }
     }
-    
+
     package func elementIDs(count: Int) -> ElementCollection {
         ElementCollection(id: self, count: count)
     }
-    
+
     #if canImport(Darwin)
-    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool, reuseID: Int) where ID: Hashable {
-        explicitIDs.append(Explicit(id: AnyHashable2(explicitID), reuseID: reuseID, owner: owner, isUnary: isUnary))
-    }
-    
-    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, reuseID: Int) where ID: Hashable {
-        bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: reuseID)
-    }
-    
-    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool) where ID: Hashable {
-        bind(explicitID: explicitID, owner: owner, isUnary: isUnary, reuseID: .zero)
-    }
-    
-    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute) where ID: Hashable {
-        bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: .zero)
-    }
-    #endif
-    
-    package var primaryExplicitID: AnyHashable2? { explicitIDs.first?.id }
-    
-    package var allExplicitIDs: [AnyHashable2] { explicitIDs.map(\.id) }
-    
-    #if canImport(Darwin)
-    package func explicitID<ID>(owner: AnyAttribute) -> ID? where ID: Hashable {
-        for explicitID in explicitIDs {
-            guard explicitID.owner == owner,
-                  let id = explicitID.id.as(type: ID.self)
-            else { continue }
-            return id
+        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool, reuseID: Int) where ID: Hashable {
+            explicitIDs.append(Explicit(id: AnyHashable2(explicitID), reuseID: reuseID, owner: owner, isUnary: isUnary))
         }
-        return nil
-    }
+
+        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, reuseID: Int) where ID: Hashable {
+            bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: reuseID)
+        }
+
+        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool) where ID: Hashable {
+            bind(explicitID: explicitID, owner: owner, isUnary: isUnary, reuseID: .zero)
+        }
+
+        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute) where ID: Hashable {
+            bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: .zero)
+        }
+    #endif
+
+    package var primaryExplicitID: AnyHashable2? { explicitIDs.first?.id }
+
+    package var allExplicitIDs: [AnyHashable2] { explicitIDs.map(\.id) }
+
+    #if canImport(Darwin)
+        package func explicitID<ID>(owner: AnyAttribute) -> ID? where ID: Hashable {
+            for explicitID in explicitIDs {
+                guard explicitID.owner == owner,
+                      let id = explicitID.id.as(type: ID.self)
+                else { continue }
+                return id
+            }
+            return nil
+        }
     #endif
 
     package func explicitID<ID>(for idType: ID.Type) -> ID? where ID: Hashable {
@@ -749,7 +749,7 @@ public struct _ViewList_ID: Hashable {
         }
         return nil
     }
-    
+
     package func containsID<ID>(_ id: ID) -> Bool where ID: Hashable {
         for explicitID in explicitIDs {
             guard explicitID.id.as(type: ID.self) == id
@@ -758,18 +758,18 @@ public struct _ViewList_ID: Hashable {
         }
         return false
     }
-    
+
     public func hash(into hasher: inout Hasher) {
         hasher.combine(_index)
         hasher.combine(implicitID)
         for explicitID in explicitIDs {
             hasher.combine(explicitID.id)
             #if canImport(Darwin)
-            hasher.combine(explicitID.owner)
+                hasher.combine(explicitID.owner)
             #endif
         }
     }
-    
+
     package var reuseIdentifier: Int {
         var hasher = Hasher()
         hasher.combine(_index)
@@ -779,33 +779,33 @@ public struct _ViewList_ID: Hashable {
         }
         return hasher.finalize()
     }
-    
+
     final package class _Views<Base>: Views where Base: Equatable, Base: RandomAccessCollection, Base.Element == ViewList.ID, Base.Index == Int {
         package let base: Base
-        
+
         package init(_ base: Base, isDataDependent: Bool) {
             self.base = base
             super.init(isDataDependent: isDataDependent)
         }
-        
+
         override package var endIndex: Int {
             base.endIndex
         }
-        
+
         override package subscript(index: Int) -> ViewList.ID {
             base[index]
         }
-        
+
         override package func isEqual(to other: _ViewList_ID.Views) -> Bool {
             guard let other = other as? Self else { return false }
             return base == other.base
         }
     }
-    
+
     final package class JoinedViews: Views {
         package let views: [(views: Views, endOffset: Int)]
         package let count: Int
-        
+
         package init(_ views: [Views], isDataDependent: Bool) {
             var offset = 0
             var result: [(views: Views, endOffset: Int)] = []
@@ -817,9 +817,9 @@ public struct _ViewList_ID: Hashable {
             self.count = offset
             super.init(isDataDependent: isDataDependent)
         }
-        
+
         override package var endIndex: Int { count }
-        
+
         override package subscript(index: Int) -> ViewList.ID {
             var index = index
             // Copied from Swift Standard Library's _partitioningIndex(where:) implementation
@@ -835,19 +835,19 @@ public struct _ViewList_ID: Hashable {
                     n -= half + 1
                 }
             }
-            
+
             let targetIndex = l
             if targetIndex != 0 {
                 index &-= views[targetIndex - 1].endOffset
             }
-            
+
             let view = views[targetIndex]
             // Copied from Swift Standard Library's _checkIndex(_:) implementation
             Swift.precondition(index >= startIndex, "Negative Array index is out of range")
             Swift.precondition(index <= endIndex, "Array index is out of range")
             return view.views[index]
         }
-        
+
         override package func isEqual(to other: ViewList.ID.Views) -> Bool {
             guard let other = other as? JoinedViews,
                   count == other.count
@@ -876,7 +876,7 @@ extension _ViewList_ID: Sendable {}
 @_spi(ForOpenSwiftUIOnly)
 open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
     final public let isDataDependent: Bool
-    
+
     final public var startIndex: Int { 0 }
 
     open var endIndex: Int { preconditionFailure("") }
@@ -884,11 +884,11 @@ open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
     open subscript(index: Int) -> _ViewList_ID { preconditionFailure("") }
 
     open func isEqual(to other: _ViewList_ID_Views) -> Bool { preconditionFailure("") }
-    
+
     package init(isDataDependent: Bool) {
         self.isDataDependent = isDataDependent
     }
-    
+
     package func withDataDependency() -> ViewList.ID.Views {
         if isDataDependent {
             self
@@ -896,7 +896,7 @@ open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
             ViewList.ID._Views(self, isDataDependent: true)
         }
     }
-    
+
     public static func == (lhs: _ViewList_ID_Views, rhs: _ViewList_ID_Views) -> Bool {
         lhs.isEqual(to: rhs)
     }
@@ -912,15 +912,15 @@ extension _ViewListOutputs {
     private static func staticList(_ elements: _ViewList_Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
-    
+
     package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
         preconditionFailure("TODO")
     }
-    
+
     package static func unaryViewList<T>(viewType: T.Type = T.self, inputs: _ViewListInputs, body: @escaping (_ViewInputs) -> _ViewOutputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
-    
+
     package static func emptyViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
         if inputs.options.contains(.isNonEmptyParent) {
             nonEmptyParentViewList(inputs: inputs)
@@ -928,44 +928,44 @@ extension _ViewListOutputs {
             staticList(EmptyViewListElements(), inputs: inputs, staticCount: 0)
         }
     }
-    
+
     static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
-    
+
     package func makeAttribute(inputs: _ViewListInputs) -> Attribute<any ViewList> {
         preconditionFailure("TODO")
     }
-    
+
     package func makeAttribute(viewInputs: _ViewInputs) -> Attribute<any ViewList> {
         preconditionFailure("TODO")
     }
-    
+
     package static func makeModifiedList(list: Attribute<any ViewList>, modifier: ListModifier?) -> Attribute<any ViewList> {
         preconditionFailure("TODO")
     }
-    
+
     package mutating func multiModifier<T>(_ modifier: _GraphValue<T>, inputs: _ViewListInputs) where T: ViewModifier {
         preconditionFailure("TODO")
     }
-    
+
     package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
 }
 
-// TODO
+// TODO:
 private struct UnaryElements<Value>: _ViewList_Elements {
     var body: Value
     var baseInputs: _GraphInputs
-    
+
     init(body: Value, baseInputs: _GraphInputs) {
         self.body = body
         self.baseInputs = baseInputs
     }
-    
+
     var count: Int { 1 }
-    
+
     func makeElements(
         from start: inout Int,
         inputs: _ViewInputs,
@@ -974,10 +974,10 @@ private struct UnaryElements<Value>: _ViewList_Elements {
     ) -> (_ViewOutputs?, Bool) {
         preconditionFailure("TODO")
     }
-    
+
     func tryToReuseElement(
         at index: Int,
-        by other: any  _ViewList_Elements,
+        by other: any _ViewList_Elements,
         at otherIndex: Int,
         indirectMap: IndirectAttributeMap,
         testOnly: Bool
@@ -986,22 +986,21 @@ private struct UnaryElements<Value>: _ViewList_Elements {
     }
 }
 
-
 // MARK: - EmptyViewList
 
 package struct EmptyViewList: ViewList {
     package init() {}
-    
+
     package func count(style: IteratorStyle) -> Int { .zero }
-    
+
     package func estimatedCount(style: IteratorStyle) -> Int { .zero }
-    
+
     package var traitKeys: ViewTraitKeys? { .init() }
-    
+
     package var viewIDs: ID.Views? { .init(isDataDependent: false) }
-    
+
     package var traits: Traits { .init() }
-    
+
     package func applyNodes(
         from start: inout Int,
         style: IteratorStyle,
@@ -1011,11 +1010,11 @@ package struct EmptyViewList: ViewList {
     ) -> Bool {
         true
     }
-    
+
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
         nil
     }
-    
+
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
         nil
     }
@@ -1025,7 +1024,7 @@ package struct EmptyViewList: ViewList {
 
 package struct EmptyViewListElements: ViewList.Elements {
     package init() {}
-    
+
     package var count: Int { 0 }
 
     package func makeElements(
@@ -1036,7 +1035,7 @@ package struct EmptyViewListElements: ViewList.Elements {
     ) -> (_ViewOutputs?, Bool) {
         return (nil, true)
     }
-    
+
     package func tryToReuseElement(
         at index: Int,
         by other: any ViewList.Elements,
@@ -1057,32 +1056,32 @@ package struct EmptyViewListElements: ViewList.Elements {
 package struct ViewListSlice: ViewList {
     let base: any ViewList
     let bounds: Range<Int>
-    
+
     package var traitKeys: ViewTraitKeys? {
         preconditionFailure("TODO")
     }
-    
+
     package var traits: Traits {
         preconditionFailure("TODO")
     }
-    
+
     package var viewIDs: ID.Views? {
         preconditionFailure("TODO")
     }
-    
+
     package init(base: any ViewList, bounds: Range<Int>) {
         self.base = base
         self.bounds = bounds
     }
-    
+
     package func count(style: IteratorStyle) -> Int {
         preconditionFailure("TODO")
     }
-    
+
     package func estimatedCount(style: IteratorStyle) -> Int {
         preconditionFailure("TODO")
     }
-    
+
     package func applyNodes(
         from start: inout Int,
         style: IteratorStyle,
@@ -1092,42 +1091,41 @@ package struct ViewListSlice: ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
         preconditionFailure("TODO")
     }
-    
+
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
         preconditionFailure("TODO")
     }
 }
 
-
 // MARK: - ViewList.Group [TODO]
 
 package struct _ViewList_Group: ViewList {
     package typealias AttributedList = (list: any ViewList, attribute: Attribute<any ViewList>)
-    
+
     package var lists: [AttributedList]
-    
+
     package func count(style: IteratorStyle) -> Int {
         lists.reduce(0) { $0 + $1.list.count(style: style) }
     }
-    
+
     package func estimatedCount(style: IteratorStyle) -> Int {
         lists.reduce(0) { $0 + $1.list.estimatedCount(style: style) }
     }
-    
+
     package var traits: Traits { .init() }
-    
+
     package var traitKeys: ViewTraitKeys? {
         preconditionFailure("TODO")
     }
-    
+
     package var viewIDs: ID.Views? {
         preconditionFailure("TODO")
     }
-        
+
     package func applyNodes(
         from start: inout Int,
         style: IteratorStyle,
@@ -1146,22 +1144,22 @@ package struct _ViewList_Group: ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
         preconditionFailure("TODO")
     }
-    
+
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
         preconditionFailure("TODO")
     }
 
     package struct Init: Rule, AsyncAttribute, CustomStringConvertible {
         var lists: [Attribute<any ViewList>]
-        
+
         package var value: any ViewList {
-            _ViewList_Group(lists: lists.map {($0.value, $0)})
+            _ViewList_Group(lists: lists.map { ($0.value, $0) })
         }
-        
+
         package var description: String { "∪" }
     }
 }
@@ -1173,35 +1171,35 @@ package struct _ViewList_Section: ViewList {
     package var base: ViewList.Group
     package var traits: ViewList.Traits
     package var isHierarchical: Bool
-    
+
     package var header: ViewList.Group.AttributedList {
         preconditionFailure("TODO")
     }
-    
+
     package var content: ViewList.Group.AttributedList {
         preconditionFailure("TODO")
     }
-    
+
     package var footer: ViewList.Group.AttributedList {
         preconditionFailure("TODO")
     }
-    
+
     package var traitKeys: ViewTraitKeys? {
         preconditionFailure("TODO")
     }
-    
+
     package var viewIDs: ID.Views? {
         preconditionFailure("TODO")
     }
-    
+
     package func count(style: IteratorStyle) -> Int {
         preconditionFailure("TODO")
     }
-    
+
     package func estimatedCount(style: IteratorStyle) -> Int {
         preconditionFailure("TODO")
     }
-    
+
     package func applyNodes(
         from start: inout Int,
         style: IteratorStyle,
@@ -1211,13 +1209,13 @@ package struct _ViewList_Section: ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package struct Info {
         package var id: UInt32
         package var isHeader: Bool
         package var isFooter: Bool
     }
-    
+
     package func applyNodes(
         from start: inout Int,
         style: IteratorStyle,
@@ -1226,11 +1224,11 @@ package struct _ViewList_Section: ViewList {
     ) -> Bool {
         preconditionFailure("TODO")
     }
-    
+
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
         preconditionFailure("TODO")
     }
-    
+
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
         preconditionFailure("TODO")
     }
@@ -1241,23 +1239,23 @@ package struct _ViewList_Section: ViewList {
 @_spi(ForOpenSwiftUIOnly)
 open class _ViewList_Subgraph {
     final package let subgraph: Subgraph
-    final package private(set) var refcount: UInt32
-    
+    private(set) final package var refcount: UInt32
+
     package init(subgraph: Subgraph) {
         self.subgraph = subgraph
         self.refcount = 1
     }
-    
+
     final package func wrapping(_ base: any ViewList.Elements) -> any ViewList.Elements {
         SubgraphElements(base: base, subgraph: self)
     }
-    
+
     final package func wrapping(_ list: any ViewList) -> any ViewList {
         SubgraphList(base: list, subgraph: self)
     }
-    
+
     open func invalidate() {}
-    
+
     @inline(__always)
     final var isValid: Bool {
         guard refcount != 0 else {
@@ -1265,12 +1263,12 @@ open class _ViewList_Subgraph {
         }
         return subgraph.isValid
     }
-    
+
     @inline(__always)
     final func retain() {
         refcount &+= 1
     }
-    
+
     @inline(__always)
     final func release(isInserted: Bool) {
         refcount &-= 1
@@ -1293,9 +1291,9 @@ extension ViewList.Subgraph: Sendable {}
 private struct SubgraphElements: ViewList.Elements {
     let base: any ViewList.Elements
     let subgraph: ViewList.Subgraph
-    
+
     var count: Int { base.count }
-    
+
     func makeElements(
         from start: inout Int,
         inputs: _ViewInputs,
@@ -1316,7 +1314,8 @@ private struct SubgraphElements: ViewList.Elements {
         testOnly: Bool
     ) -> Bool {
         guard let otherSubgraphElement = other as? SubgraphElements,
-              otherSubgraphElement.subgraph.isValid else {
+              otherSubgraphElement.subgraph.isValid
+        else {
             ReuseTrace.traceReuseInvalidSubgraphFailure(type(of: other))
             return false
         }
@@ -1328,7 +1327,7 @@ private struct SubgraphElements: ViewList.Elements {
             testOnly: testOnly
         )
     }
-    
+
     func retain() -> Release? {
         guard subgraph.isValid else {
             return nil
@@ -1340,27 +1339,27 @@ private struct SubgraphElements: ViewList.Elements {
 private struct SubgraphList: ViewList {
     var base: any ViewList
     var subgraph: ViewList.Subgraph
-    
+
     func count(style: IteratorStyle) -> Int {
         base.count(style: style)
     }
-    
+
     func estimatedCount(style: IteratorStyle) -> Int {
         base.estimatedCount(style: style)
     }
-    
+
     var traitKeys: ViewTraitKeys? {
         base.traitKeys
     }
-    
+
     var viewIDs: ID.Views? {
         base.viewIDs
     }
-    
+
     var traits: ViewTraitCollection {
         base.traits
     }
-    
+
     func applyNodes(
         from start: inout Int,
         style: IteratorStyle,
@@ -1372,22 +1371,22 @@ private struct SubgraphList: ViewList {
         defer { transform.pop() }
         return base.applyNodes(from: &start, style: style, list: list, transform: &transform, to: body)
     }
-    
+
     func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
         base.edit(forID: id, since: transaction)
     }
-    
+
     func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
         base.firstOffset(forID: id, style: style)
     }
-    
+
     struct Transform: ViewList.SublistTransform.Item {
         var subgraph: ViewList.Subgraph
-        
+
         func apply(sublist: inout _ViewList_Sublist) {
             sublist.elements = SubgraphElements(base: sublist.elements, subgraph: subgraph)
         }
-        
+
         func bindID(_ id: inout _ViewList_ID) {}
     }
 }
@@ -1397,18 +1396,18 @@ private struct SubgraphList: ViewList {
 final package class _ViewList_ReleaseElements: Equatable {
     var base: ViewList.Elements.Release?
     var subgraph: ViewList.Subgraph
-    
+
     init(base: ViewList.Elements.Release?, subgraph: ViewList.Subgraph) {
         self.base = base
         self.subgraph = subgraph
     }
-    
+
     deinit {
         Update.ensure {
             subgraph.release(isInserted: true)
         }
     }
-    
+
     package static func == (lhs: ViewList.Elements.Release, rhs: ViewList.Elements.Release) -> Bool {
         guard lhs.subgraph === rhs.subgraph else {
             return false
