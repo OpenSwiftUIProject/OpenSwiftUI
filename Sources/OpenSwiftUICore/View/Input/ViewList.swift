@@ -1177,22 +1177,38 @@ package struct EmptyViewListElements: ViewList.Elements {
     }
 }
 
-// MARK: - ViewListSlice [TODO]
+// MARK: - ViewListSlice
 
 package struct ViewListSlice: ViewList {
     let base: any ViewList
     let bounds: Range<Int>
 
-    package var traitKeys: ViewTraitKeys? {
-        preconditionFailure("TODO")
-    }
+    package var traitKeys: ViewTraitKeys? { nil }
 
-    package var traits: Traits {
-        preconditionFailure("TODO")
+    package var traits: Traits { .init() }
+
+    final class ViewIDsSlice: ID.Views {
+        let base: ID.Views
+        let bounds: Range<Int>
+
+        init?(base: ID.Views?, bounds: Range<Int>) {
+            guard let base else {
+                return nil
+            }
+            self.base = base
+            self.bounds = bounds
+            super.init(isDataDependent: base.isDataDependent)
+        }
+
+        override var endIndex: Int { bounds.count }
+
+        override subscript(index: Int) -> ID {
+            base[index + bounds.lowerBound]
+        }
     }
 
     package var viewIDs: ID.Views? {
-        preconditionFailure("TODO")
+        ViewIDsSlice(base: base.viewIDs, bounds: bounds)
     }
 
     package init(base: any ViewList, bounds: Range<Int>) {
@@ -1201,11 +1217,11 @@ package struct ViewListSlice: ViewList {
     }
 
     package func count(style: IteratorStyle) -> Int {
-        preconditionFailure("TODO")
+        bounds.count
     }
 
     package func estimatedCount(style: IteratorStyle) -> Int {
-        preconditionFailure("TODO")
+        bounds.count
     }
 
     package func applyNodes(
@@ -1215,15 +1231,29 @@ package struct ViewListSlice: ViewList {
         transform: inout SublistTransform,
         to body: ApplyBody
     ) -> Bool {
-        preconditionFailure("TODO")
+        var start = bounds.lowerBound + start
+        return base.applyNodes(
+            from: &start,
+            style: style,
+            list: list,
+            transform: &transform
+        ) { start, style, node, transform in
+            guard start < bounds.upperBound else {
+                return false
+            }
+            return body(&start, style, node, &transform)
+        }
     }
 
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
-        preconditionFailure("TODO")
+        base.edit(forID: id, since: transaction)
     }
 
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
-        preconditionFailure("TODO")
+        guard let offset = base.firstOffset(forID: id, style: style) else {
+            return nil
+        }
+        return offset - bounds.lowerBound
     }
 }
 
