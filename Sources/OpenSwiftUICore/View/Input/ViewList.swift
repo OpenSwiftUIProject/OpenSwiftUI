@@ -183,7 +183,7 @@ public struct _ViewListOutputs {
 @available(*, unavailable)
 extension _ViewListOutputs: Sendable {}
 
-// MARK: - ViewList [WIP]
+// MARK: - ViewList
 
 package protocol ViewList {
     typealias ID = _ViewList_ID
@@ -317,13 +317,13 @@ package struct _ViewList_SublistTransform {
     }
 
     package func apply(sublist: inout ViewList.Sublist) {
-        for item in items {
+        for item in items.reversed() {
             item.apply(sublist: &sublist)
         }
     }
 
     package func bindID(_ id: inout ViewList.ID) {
-        for item in items {
+        for item in items.reversed() {
             item.bindID(&id)
         }
     }
@@ -336,7 +336,7 @@ package protocol _ViewList_SublistTransform_Item {
     func bindID(_ id: inout ViewList.ID)
 }
 
-// MARK: - ViewList.Node [WIP]
+// MARK: - ViewList.Node
 
 package enum _ViewList_Node {
     case list(any ViewList, Attribute<any ViewList>?)
@@ -345,21 +345,82 @@ package enum _ViewList_Node {
     case section(ViewList.Section)
 
     package func count(style: ViewList.IteratorStyle) -> Int {
-        preconditionFailure("TODO")
+        switch self {
+        case let .list(list, _):
+            list.count(style: style)
+        case let .sublist(sublist):
+            style.applyGranularity(to: sublist.count)
+        case let .group(group):
+            group.count(style: style)
+        case let .section(section):
+            section.count(style: style)
+        }
     }
 
     package func estimatedCount(style: ViewList.IteratorStyle) -> Int {
-        preconditionFailure("TODO")
+        switch self {
+        case let .list(list, _):
+            list.estimatedCount(style: style)
+        case let .sublist(sublist):
+            style.applyGranularity(to: sublist.count)
+        case let .group(group):
+            group.estimatedCount(style: style)
+        case let .section(section):
+            section.estimatedCount(style: style)
+        }
     }
 
     @discardableResult
     package func applyNodes(
         from start: inout Int,
         style: ViewList.IteratorStyle,
-        transform: inout _ViewList_SublistTransform,
+        transform: inout ViewList.SublistTransform,
         to body: ViewList.ApplyBody
     ) -> Bool {
-        preconditionFailure("TODO")
+        switch self {
+        case let .list(list, attribute):
+            return list.applyNodes(
+                from: &start,
+                style: style,
+                list: attribute,
+                transform: &transform,
+                to: body
+            )
+        case let .sublist(sublist):
+            let count = style.applyGranularity(to: sublist.count)
+            if start >= count {
+                start &-= count
+                return true
+            } else {
+                defer { start = 0 }
+                return body(&start, style, self, &transform)
+            }
+        case let .group(group):
+            return group.applyNodes(
+                from: &start,
+                style: style,
+                transform: &transform,
+                to: body
+            )
+        case let .section(section):
+            if section.isHierarchical {
+                let list = section.base.lists[0]
+                return list.list.applyNodes(
+                    from: &start,
+                    style: style,
+                    list: list.attribute,
+                    transform: &transform,
+                    to: body
+                )
+            } else {
+                return section.base.applyNodes(
+                    from: &start,
+                    style: style,
+                    transform: &transform,
+                    to: body
+                )
+            }
+        }
     }
 
     @discardableResult
@@ -368,7 +429,12 @@ package enum _ViewList_Node {
         transform: inout _ViewList_SublistTransform,
         to body: ViewList.ApplyBody
     ) -> Bool {
-        preconditionFailure("TODO")
+        applyNodes(
+            from: &start,
+            style: .init(),
+            transform: &transform,
+            to: body
+        )
     }
 
     @discardableResult
@@ -378,7 +444,53 @@ package enum _ViewList_Node {
         transform: inout ViewList.SublistTransform,
         to body: (ViewList.Sublist) -> Bool
     ) -> Bool {
-        preconditionFailure("TODO")
+        switch self {
+        case let .list(list, attribute):
+            return list.applySublists(
+                from: &start,
+                style: style,
+                list: attribute,
+                transform: &transform,
+                to: body
+            )
+        case let .sublist(sublist):
+            var sublist = sublist
+            let count = style.applyGranularity(to: sublist.count)
+            if start >= count {
+                start &-= count
+                return true
+            } else {
+                transform.apply(sublist: &sublist)
+                defer { start = 0 }
+                return body(sublist)
+            }
+        case let .group(group):
+            return group.applyNodes(
+                from: &start,
+                style: style,
+                transform: &transform
+            ) { start, style, node, transform in
+                node.applySublists(
+                    from: &start,
+                    style: style,
+                    transform: &transform,
+                    to: body
+                )
+            }
+        case let .section(section):
+            return section.applyNodes(
+                from: &start,
+                style: style,
+                transform: &transform
+            ) { start, style, node, transform in
+                node.applySublists(
+                    from: &start,
+                    style: style,
+                    transform: &transform,
+                    to: body
+                )
+            }
+        }
     }
 
     @discardableResult
@@ -387,11 +499,25 @@ package enum _ViewList_Node {
         transform: inout ViewList.SublistTransform,
         to body: (ViewList.Sublist) -> Bool
     ) -> Bool {
-        applySublists(from: &start, style: .init(), transform: &transform, to: body)
+        applySublists(
+            from: &start,
+            style: .init(),
+            transform: &transform,
+            to: body
+        )
     }
 
     package func firstOffset<OtherID>(forID id: OtherID, style: ViewList.IteratorStyle) -> Int? where OtherID: Hashable {
-        preconditionFailure("TODO")
+        switch self {
+        case let .list(list, _):
+            list.firstOffset(forID: id, style: style)
+        case .sublist:
+            nil
+        case let .group(group):
+            group.firstOffset(forID: id, style: style)
+        case let .section(section):
+            section.firstOffset(forID: id, style: style)
+        }
     }
 }
 
@@ -1207,7 +1333,7 @@ package struct _ViewList_Section: ViewList {
         transform: inout SublistTransform,
         to body: ApplyBody
     ) -> Bool {
-        preconditionFailure("TODO")
+        body(&start, style, .section(self), &transform)
     }
 
     package struct Info {
