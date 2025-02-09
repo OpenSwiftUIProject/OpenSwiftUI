@@ -153,7 +153,7 @@ extension _ViewListCountInputs: Sendable {}
 /// Output values from `View._makeViewList()`.
 public struct _ViewListOutputs {
     package enum Views {
-        case staticList(any _ViewList_Elements)
+        case staticList(any ViewList.Elements)
         case dynamicList(Attribute<any ViewList>, ListModifier?)
     }
 
@@ -651,7 +651,7 @@ extension ViewList {
     }
 }
 
-// MARK: - ViewList.Elements [TODO]
+// MARK: - ViewList.Elements
 
 package protocol _ViewList_Elements {
     typealias Body = (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)
@@ -669,7 +669,7 @@ package protocol _ViewList_Elements {
 
     func tryToReuseElement(
         at index: Int,
-        by other: any _ViewList_Elements,
+        by other: any ViewList.Elements,
         at otherIndex: Int,
         indirectMap: IndirectAttributeMap,
         testOnly: Bool
@@ -685,7 +685,13 @@ extension ViewList.Elements {
         indirectMap: IndirectAttributeMap?,
         body: (_ViewInputs, @escaping MakeElement) -> _ViewOutputs?
     ) -> _ViewOutputs? {
-        preconditionFailure("TODO")
+        withoutActuallyEscaping(body) { escapingBody in
+            let wrapper: Body = { inputs, makeElement in
+                (escapingBody(inputs, makeElement), true)
+            }
+            var start = 0
+            return makeElements(from: &start, inputs: inputs, indirectMap: indirectMap, body: wrapper).0
+        }
     }
 
     @inline(__always)
@@ -693,7 +699,7 @@ extension ViewList.Elements {
         inputs: _ViewInputs,
         body: (_ViewInputs, @escaping MakeElement) -> _ViewOutputs?
     ) -> _ViewOutputs? {
-        preconditionFailure("TODO")
+        makeAllElements(inputs: inputs, indirectMap: nil, body: body)
     }
 
     @inline(__always)
@@ -703,7 +709,13 @@ extension ViewList.Elements {
         indirectMap: IndirectAttributeMap?,
         body: (_ViewInputs, @escaping MakeElement) -> _ViewOutputs?
     ) -> _ViewOutputs? {
-        preconditionFailure("TODO")
+        withoutActuallyEscaping(body) { escapingBody in
+            let wrapper: Body = { inputs, makeElement in
+                (escapingBody(inputs, makeElement), false)
+            }
+            var start = index
+            return makeElements(from: &start, inputs: inputs, indirectMap: indirectMap, body: wrapper).0
+        }
     }
 
     @inline(__always)
@@ -712,7 +724,7 @@ extension ViewList.Elements {
         inputs: _ViewInputs,
         body: (_ViewInputs, @escaping MakeElement) -> _ViewOutputs?
     ) -> _ViewOutputs? {
-        preconditionFailure("TODO")
+        makeOneElement(at: index, inputs: inputs, indirectMap: nil, body: body)
     }
 
     package func retain() -> Release? {
@@ -1035,7 +1047,7 @@ extension ViewList.ID.Views: Sendable {}
 // MARK: - ViewListOutputs + Extension [TODO]
 
 extension _ViewListOutputs {
-    private static func staticList(_ elements: _ViewList_Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
+    private static func staticList(_ elements: any ViewList.Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
 
@@ -1081,7 +1093,7 @@ extension _ViewListOutputs {
 }
 
 // TODO:
-private struct UnaryElements<Value>: _ViewList_Elements {
+private struct UnaryElements<Value>: ViewList.Elements {
     var body: Value
     var baseInputs: _GraphInputs
 
@@ -1103,7 +1115,7 @@ private struct UnaryElements<Value>: _ViewList_Elements {
 
     func tryToReuseElement(
         at index: Int,
-        by other: any _ViewList_Elements,
+        by other: any ViewList.Elements,
         at otherIndex: Int,
         indirectMap: IndirectAttributeMap,
         testOnly: Bool
@@ -1697,7 +1709,7 @@ final package class _ViewList_ReleaseElements: Equatable {
 // MARK: - _ViewList_View
 
 package struct _ViewList_View {
-    var elements: _ViewList_Elements
+    var elements: any ViewList.Elements
     var id: _ViewList_ID
     var index: Int
     var count: Int
