@@ -34,19 +34,26 @@ package struct Tracing {
         if let cachedName = moduleLookupCache.value[nominalDescriptor] {
             return cachedName
         } else {
-            #if canImport(Darwin)
-            var info = Dl_info()
-            guard dladdr(nominalDescriptor, &info) != 0 else {
+            // Use C Shims layer to import dladdr since we can't call it on non-Darwin Swift platform
+            // See https://forums.swift.org/t/dladdr-and-the-clang-importer/26379/11
+            //
+            //      var info = Dl_info()
+            //      guard dladdr(nominalDescriptor, &info) != 0 else {
+            //          return unknown
+            //      }
+            //      let pathName = info.dli_fname
+
+            guard let pathName = getSymbolPathName(nominalDescriptor) else {
                 return unknown
             }
-            let name = (String(cString: info.dli_fname) as NSString).lastPathComponent
-            moduleLookupCache.value[nominalDescriptor] = name
-            return name
+            let path = String(cString: pathName)
+            #if canImport(Darwin)
+            let libraryName = (path as NSString).lastPathComponent
             #else
-            // TODO: [Easy] Add a C layer to import dladdr on non-Darwin Swift platform
-            // See https://forums.swift.org/t/dladdr-and-the-clang-importer/26379/11
-            return unknown
+            let libraryName = URL(filePath: path).lastPathComponent
             #endif
+            moduleLookupCache.value[nominalDescriptor] = libraryName
+            return libraryName
         }
     }
     
