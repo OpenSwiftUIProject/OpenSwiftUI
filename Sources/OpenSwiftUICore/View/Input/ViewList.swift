@@ -204,7 +204,7 @@ package protocol ViewList {
     var viewIDs: ID.Views? { get }
     var traits: ViewTraitCollection { get }
 
-    typealias ApplyBody = (inout Int, IteratorStyle, Self.Node, inout SublistTransform) -> Bool
+    typealias ApplyBody = (inout Int, IteratorStyle, Node, inout SublistTransform) -> Bool
 
     @discardableResult
     func applyNodes(
@@ -482,7 +482,7 @@ package enum _ViewList_Node {
                 from: &start,
                 style: style,
                 transform: &transform
-            ) { start, style, node, transform in
+            ) { start, style, node, info, transform in
                 node.applySublists(
                     from: &start,
                     style: style,
@@ -1340,13 +1340,13 @@ package struct _ViewList_Group: ViewList {
     }
 
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
-        var count = 0
+        var previousCount = 0
         for (list, _) in lists {
             guard let offset = list.firstOffset(forID: id, style: style) else {
-                count += list.count(style: style)
+                previousCount += list.count(style: style)
                 continue
             }
-            return count + offset
+            return previousCount + offset
         }
         return nil
     }
@@ -1362,7 +1362,7 @@ package struct _ViewList_Group: ViewList {
     }
 }
 
-// MARK: - ViewList.Section [TODO]
+// MARK: - ViewList.Section
 
 package struct _ViewList_Section: ViewList {
     package var id: UInt32
@@ -1371,31 +1371,65 @@ package struct _ViewList_Section: ViewList {
     package var isHierarchical: Bool
 
     package var header: ViewList.Group.AttributedList {
-        preconditionFailure("TODO")
+        base.lists[0]
     }
 
     package var content: ViewList.Group.AttributedList {
-        preconditionFailure("TODO")
+        base.lists[1]
     }
 
     package var footer: ViewList.Group.AttributedList {
-        preconditionFailure("TODO")
+        base.lists[2]
     }
 
     package var traitKeys: ViewTraitKeys? {
-        preconditionFailure("TODO")
+        base.traitKeys
     }
 
     package var viewIDs: ID.Views? {
-        preconditionFailure("TODO")
+        if isHierarchical {
+            header.list.viewIDs
+        } else {
+            base.viewIDs
+        }
     }
 
+    @inline(__always)
+    package func headerFooterStyle(for style: IteratorStyle) -> IteratorStyle {
+        var style = style
+        style.applyGranularity = (style.granularity != 1)
+        return style
+    }
+
+
     package func count(style: IteratorStyle) -> Int {
-        preconditionFailure("TODO")
+        if isHierarchical {
+            var style = style
+            style.applyGranularity = (style.granularity != 1)
+            return header.list.count(style: style)
+        } else {
+            var contentCount = content.list.count(style: style)
+            style.alignToNextGranularityMultiple(&contentCount)
+            let headerFooterStyle = headerFooterStyle(for: style)
+            let headerCount = header.list.count(style: headerFooterStyle)
+            let footerCount = footer.list.count(style: headerFooterStyle)
+            return contentCount + headerCount + footerCount
+        }
     }
 
     package func estimatedCount(style: IteratorStyle) -> Int {
-        preconditionFailure("TODO")
+        if isHierarchical {
+            var style = style
+            style.applyGranularity = (style.granularity != 1)
+            return header.list.estimatedCount(style: style)
+        } else {
+            var contentEstimatedCount = content.list.estimatedCount(style: style)
+            style.alignToNextGranularityMultiple(&contentEstimatedCount)
+            let headerFooterStyle = headerFooterStyle(for: style)
+            let headerEstimatedCount = header.list.estimatedCount(style: headerFooterStyle)
+            let footerEstimatedCount = footer.list.estimatedCount(style: headerFooterStyle)
+            return contentEstimatedCount + headerEstimatedCount + footerEstimatedCount
+        }
     }
 
     package func applyNodes(
@@ -1418,17 +1452,58 @@ package struct _ViewList_Section: ViewList {
         from start: inout Int,
         style: IteratorStyle,
         transform: inout SublistTransform,
-        to body: ApplyBody
+        to body: (inout Int, IteratorStyle, Node, Info, inout SublistTransform) -> Bool
     ) -> Bool {
-        preconditionFailure("TODO")
+        style.alignToPreviousGranularityMultiple(&start)
+        let range = (0 ..< base.lists.count).prefix(isHierarchical ? 1 : .max)
+        let headerFooterStyle = headerFooterStyle(for: style)
+        for index in range {
+            let (list, attribute) = base.lists[index]
+            let result = list.applyNodes(
+                from: &start,
+                style: index == 1 ? style : headerFooterStyle,
+                list: attribute,
+                transform: &transform
+            ) { start, style, node, transform in
+                body(
+                    &start,
+                    style,
+                    node,
+                    Info(id: id, isHeader: index == 0, isFooter: index == 2),
+                    &transform
+                )
+            }
+            guard result else {
+                return false
+            }
+            style.alignToNextGranularityMultiple(&start)
+        }
+        return true
     }
 
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
-        preconditionFailure("TODO")
+        base.edit(forID: id, since: transaction)
     }
 
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
-        preconditionFailure("TODO")
+        let range = (0 ..< base.lists.count).prefix(isHierarchical ? 1 : .max)
+        let headerFooterStyle = headerFooterStyle(for: style)
+        var previousCount = 0
+        for index in range {
+            let (list, _) = base.lists[index]
+            let currentStyle = index == 1 ? style : headerFooterStyle
+            guard let offset = list.firstOffset(
+                forID: id,
+                style: currentStyle
+            ) else {
+                var count = list.count(style: currentStyle)
+                style.alignToNextGranularityMultiple(&count)
+                previousCount += count
+                continue
+            }
+            return previousCount + offset
+        }
+        return nil
     }
 }
 
