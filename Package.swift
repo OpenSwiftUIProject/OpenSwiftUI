@@ -17,6 +17,24 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
     }
 }
 
+// MARK: - Env and Config
+
+let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
+
+// Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
+let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
+
+let swiftBinPath = Context.environment["_"] ?? "/usr/bin/swift"
+let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
+let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
+let includePath = SDKPath.appending("/usr/lib/swift")
+
+var sharedCSettings: [CSetting] = [
+    .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
+    .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+    .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+]
+
 var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("BareSlashRegexLiterals"),
     .enableUpcomingFeature("InternalImportsByDefault"),
@@ -25,7 +43,10 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v5),
 ]
 
+// MARK: - [env] OPENGRAPH_TARGET_RELEASE
+
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
+sharedCSettings.append(.define("OPENSWIFTUI_RELEASE", to: "\(releaseVersion)"))
 sharedSwiftSettings.append(.define("OPENSWIFTUI_RELEASE_\(releaseVersion)"))
 if releaseVersion >= 2021 {
     for year in 2021 ... releaseVersion {
@@ -33,45 +54,15 @@ if releaseVersion >= 2021 {
     }
 }
 
-let platforms: [SupportedPlatform] = switch releaseVersion {
-case 2024: // iOS 18.0
-    [
-        .iOS(.v18),
-        .macOS(.v15),
-        .macCatalyst(.v18),
-        .tvOS(.v18),
-        .watchOS(.v10),
-        .visionOS(.v2),
-    ]
-case 2021: // iOS 15.5
-    [
-        .iOS(.v15),
-        .macOS(.v12),
-        .macCatalyst(.v15),
-        .tvOS(.v15),
-        .watchOS(.v7),
-    ]
-default:
-    [
-        .iOS(.v13),
-        .macOS(.v10_15),
-        .macCatalyst(.v13),
-        .tvOS(.v13),
-        .watchOS(.v7), // WKApplicationMain is available for watchOS 7.0+
-        .visionOS(.v1),
-    ]
-}
-
-let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
-
-// Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
-let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
+// MARK: - [env] OPENSWIFTUI_DEVELOPMENT
 
 let development = envEnable("OPENSWIFTUI_DEVELOPMENT")
 
 if development {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
 }
+
+// MARK: - [env] OPENSWIFTUI_WERROR
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
@@ -81,6 +72,12 @@ if warningsAsErrorsCondition {
     // sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
     // sharedSwiftSettings.append(.unsafeFlags(["-Wwarning", "concurrency"]))
 }
+
+// MARK: - [env] OPENSWIFTUI_BRIDGE_FRAMEWORK
+
+let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "SwiftUI"
+
+// MARK: - Targets
 
 // NOTE:
 // In macOS: Mac Catalyst App will use macOS-varient build of SwiftUI.framework in /System/Library/Framework and iOS varient of SwiftUI.framework in /System/iOSSupport/System/Library/Framework
@@ -113,7 +110,6 @@ let openSwiftUIExtensionTarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 
-let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "SwiftUI"
 let openSwiftUIBridgeTarget = Target.target(
     name: "OpenSwiftUIBridge",
     dependencies: [
@@ -168,11 +164,6 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
-let swiftBinPath = Context.environment["_"] ?? "/usr/bin/swift"
-let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
-let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
-let includePath = SDKPath.appending("/usr/lib/swift")
-
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
 let supportMultiProducts: Bool = envEnable("OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS", default: true)
 
@@ -189,7 +180,6 @@ if supportMultiProducts {
 
 let package = Package(
     name: "OpenSwiftUI",
-    platforms: platforms,
     products: products,
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
@@ -207,19 +197,12 @@ let package = Package(
         .target(
             name: "OpenSwiftUI_SPI",
             publicHeadersPath: ".",
-            cSettings: [
-                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
-                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
-                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
-            ]
+            cSettings: sharedCSettings
         ),
         .target(
             name: "COpenSwiftUI",
             publicHeadersPath: ".",
-            cSettings: [
-                .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
-                .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
-                .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+            cSettings: sharedCSettings + [
                 .headerSearchPath("../OpenSwiftUI_SPI"),
             ]
         ),
@@ -313,6 +296,15 @@ if renderBoxCondition {
     openSwiftUITestTarget.addRBSettings()
     openSwiftUICompatibilityTestTarget.addRBSettings()
     openSwiftUIBridgeTestTarget.addRBSettings()
+}
+
+if attributeGraphCondition || renderBoxCondition {
+    let release = Context.environment["DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
+    package.platforms = switch release {
+        case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
+        case 2021: [.iOS(.v15), .macOS(.v12), .macCatalyst(.v15), .tvOS(.v15), .watchOS(.v7)]
+        default: nil
+    }
 }
 
 if useLocalDeps {

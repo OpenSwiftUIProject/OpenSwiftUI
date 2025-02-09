@@ -23,7 +23,7 @@ struct TracingTests {
     }
     
     @Test(
-        .disabled(if: !attributeGraphEnabled, "OGTypeNominalDescriptor is not implemented yet"),
+        .enabled(if: swiftToolchainSupported),
         arguments: [
             (type: Int.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),
             (type: String.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),
