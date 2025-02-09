@@ -96,7 +96,7 @@ public struct _ViewListInputs {
     }
 
     package var canTransition: Bool {
-        options.contains(.canTransition)
+        options.contains(.canTransition) && !options.contains(.disableTransitions)
     }
 
     package mutating func addTraitKey<K>(_ key: K.Type) where K: _ViewTraitKey {
@@ -1132,7 +1132,7 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
     }
 }
 
-// MARK: - ViewListOutputs + Extension [TODO]
+// MARK: - ViewListOutputs + Extension [WIP]
 
 extension _ViewListOutputs {
     private struct ApplyModifiers: Rule, AsyncAttribute {
@@ -1146,11 +1146,40 @@ extension _ViewListOutputs {
         }
     }
 
-    private static func staticList(_ elements: any ViewList.Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+    private static func staticList(
+        _ elements: any ViewList.Elements,
+        inputs: _ViewListInputs,
+        staticCount: Int
+    ) -> _ViewListOutputs {
+        let implicitID = inputs.implicitID
+        let scope = inputs.base.stableIDScope
+        let traits = inputs.traits
+        let canTransition = inputs.canTransition
+        let views: Views
+        if scope != nil || traits != nil || canTransition {
+            views = .dynamicList(
+                Attribute(BaseViewList.Init(
+                    elements: elements,
+                    implicitID: implicitID,
+                    canTransition: canTransition,
+                    stableIDScope: scope,
+                    traitKeys: inputs.traitKeys,
+                    traits: .init(traits)
+                )),
+                nil
+            )
+        } else {
+            views = .staticList(elements)
+        }
+        return _ViewListOutputs(
+            views,
+            nextImplicitID: implicitID &+ staticCount,
+            staticCount: staticCount
+        )
     }
 
-    static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
+    // FIXME: Group
+    package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
 
@@ -1175,15 +1204,51 @@ extension _ViewListOutputs {
     }
 
     package func makeAttribute(inputs: _ViewListInputs) -> Attribute<any ViewList> {
-        preconditionFailure("TODO")
+        switch views {
+        case let .staticList(elements):
+            Attribute(value: BaseViewList(
+                elements: elements,
+                implicitID: nextImplicitID,
+                canTransition: inputs.canTransition,
+                stableIDScope: inputs.base.stableIDScope,
+                traitKeys: .init(),
+                traits: .init()
+            ))
+        case let .dynamicList(attribute, modifier):
+            if let modifier {
+                Attribute(ApplyModifiers(base: attribute, modifier: modifier))
+            } else {
+                attribute
+            }
+        }
     }
 
     package func makeAttribute(viewInputs: _ViewInputs) -> Attribute<any ViewList> {
-        preconditionFailure("TODO")
+        switch views {
+        case let .staticList(elements):
+            Attribute(value: BaseViewList(
+                elements: elements,
+                implicitID: nextImplicitID,
+                canTransition: false,
+                stableIDScope: viewInputs.base.stableIDScope,
+                traitKeys: .init(),
+                traits: .init()
+            ))
+        case let .dynamicList(attribute, modifier):
+            if let modifier {
+                Attribute(ApplyModifiers(base: attribute, modifier: modifier))
+            } else {
+                attribute
+            }
+        }
     }
 
     package static func makeModifiedList(list: Attribute<any ViewList>, modifier: ListModifier?) -> Attribute<any ViewList> {
-        preconditionFailure("TODO")
+        if let modifier {
+            Attribute(ApplyModifiers(base: list, modifier: modifier))
+        } else {
+            list
+        }
     }
 
     package mutating func multiModifier<T>(_ modifier: _GraphValue<T>, inputs: _ViewListInputs) where T: ViewModifier {
