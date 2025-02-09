@@ -1044,60 +1044,62 @@ open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
 @available(*, unavailable)
 extension ViewList.ID.Views: Sendable {}
 
-// MARK: - ViewListOutputs + Extension [TODO]
+// MARK: - UnaryViewGenerator
 
-extension _ViewListOutputs {
-    private static func staticList(_ elements: any ViewList.Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+public protocol UnaryViewGenerator {
+    func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs
+    func tryToReuse(by other: Self, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool
+}
+
+public struct BodyUnaryViewGenerator<V>: UnaryViewGenerator {
+    let body: ViewList.Elements.MakeElement
+
+    public func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs {
+        body(inputs)
     }
 
-    package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
-        preconditionFailure("TODO")
-    }
-
-    package static func unaryViewList<T>(viewType: T.Type = T.self, inputs: _ViewListInputs, body: @escaping (_ViewInputs) -> _ViewOutputs) -> _ViewListOutputs {
-        preconditionFailure("TODO")
-    }
-
-    package static func emptyViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        if inputs.options.contains(.isNonEmptyParent) {
-            nonEmptyParentViewList(inputs: inputs)
-        } else {
-            staticList(EmptyViewListElements(), inputs: inputs, staticCount: 0)
+    public func tryToReuse(by other: BodyUnaryViewGenerator<V>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
+        // FIXME
+        // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
+        // 2. Add 0x103 case instead of rawValue
+        guard compareValues(body, other.body, mode: .init(rawValue: 0x103)) else {
+            ReuseTrace.traceReuseBodyMismatchedFailure()
+            Log.graphReuse("Reuse failed: \(Self.self) failed comparison")
+            return false
         }
-    }
-
-    static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        preconditionFailure("TODO")
-    }
-
-    package func makeAttribute(inputs: _ViewListInputs) -> Attribute<any ViewList> {
-        preconditionFailure("TODO")
-    }
-
-    package func makeAttribute(viewInputs: _ViewInputs) -> Attribute<any ViewList> {
-        preconditionFailure("TODO")
-    }
-
-    package static func makeModifiedList(list: Attribute<any ViewList>, modifier: ListModifier?) -> Attribute<any ViewList> {
-        preconditionFailure("TODO")
-    }
-
-    package mutating func multiModifier<T>(_ modifier: _GraphValue<T>, inputs: _ViewListInputs) where T: ViewModifier {
-        preconditionFailure("TODO")
-    }
-
-    package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        return true
     }
 }
 
-// TODO:
-private struct UnaryElements<Value>: ViewList.Elements {
-    var body: Value
+public struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
+    let view: WeakAttribute<V>
+
+    public func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs {
+        guard var view = view.attribute else {
+            return .init()
+        }
+        if let indirectMap {
+            view.makeReusable(indirectMap: indirectMap)
+        }
+        return V.makeDebuggableView(view: _GraphValue(view), inputs: inputs)
+    }
+
+    public func tryToReuse(by other: TypedUnaryViewGenerator<V>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
+        guard let view = view.attribute, let otherView = other.view.attribute else {
+            Log.graphReuse("Reuse failed: missing attribute for \(V.self)")
+            return false
+        }
+        return view.tryToReuse(by: otherView, indirectMap: indirectMap, testOnly: testOnly)
+    }
+}
+
+// MARK: - UnaryElements
+
+private struct UnaryElements<Generator>: ViewList.Elements where Generator: UnaryViewGenerator {
+    var body: Generator
     var baseInputs: _GraphInputs
 
-    init(body: Value, baseInputs: _GraphInputs) {
+    init(body: Generator, baseInputs: _GraphInputs) {
         self.body = body
         self.baseInputs = baseInputs
     }
@@ -1120,6 +1122,64 @@ private struct UnaryElements<Value>: ViewList.Elements {
         indirectMap: IndirectAttributeMap,
         testOnly: Bool
     ) -> Bool {
+        guard let other  = other as? UnaryElements else {
+            Log.graphReuse("Reuse failed: other is not Unary")
+            ReuseTrace.traceReuseUnaryElementExpectedFailure(type(of: other))
+            return false
+        }
+        // BodyInput
+        preconditionFailure("TODO")
+    }
+}
+
+// MARK: - ViewListOutputs + Extension [TODO]
+
+extension _ViewListOutputs {
+    private static func staticList(_ elements: any ViewList.Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
+        preconditionFailure("TODO")
+    }
+
+    static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
+        preconditionFailure("TODO")
+    }
+
+    package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
+        let generator = TypedUnaryViewGenerator(view: .init(view.value))
+        let elements = UnaryElements(body: generator, baseInputs: inputs.base)
+        return staticList(elements, inputs: inputs, staticCount: 1)
+    }
+
+    package static func unaryViewList<T>(viewType: T.Type = T.self, inputs: _ViewListInputs, body: @escaping ViewList.Elements.MakeElement) -> _ViewListOutputs {
+        let generator = BodyUnaryViewGenerator<T>(body: body)
+        let elements = UnaryElements(body: generator, baseInputs: inputs.base)
+        return staticList(elements, inputs: inputs, staticCount: 1)
+    }
+
+    package static func emptyViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
+        if inputs.options.contains(.isNonEmptyParent) {
+            nonEmptyParentViewList(inputs: inputs)
+        } else {
+            staticList(EmptyViewListElements(), inputs: inputs, staticCount: 0)
+        }
+    }
+
+    package func makeAttribute(inputs: _ViewListInputs) -> Attribute<any ViewList> {
+        preconditionFailure("TODO")
+    }
+
+    package func makeAttribute(viewInputs: _ViewInputs) -> Attribute<any ViewList> {
+        preconditionFailure("TODO")
+    }
+
+    package static func makeModifiedList(list: Attribute<any ViewList>, modifier: ListModifier?) -> Attribute<any ViewList> {
+        preconditionFailure("TODO")
+    }
+
+    package mutating func multiModifier<T>(_ modifier: _GraphValue<T>, inputs: _ViewListInputs) where T: ViewModifier {
+        preconditionFailure("TODO")
+    }
+
+    package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
 }

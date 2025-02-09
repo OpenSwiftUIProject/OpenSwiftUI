@@ -34,13 +34,23 @@ package struct ReuseTrace {
     package static func traceReuseViewInputsDifferentFailure() {
         traceReuseFailure("reuse_inputsDifferent")
     }
-    
+
+    @inline(__always)
+    package static func traceReuseUnaryElementExpectedFailure(_ elementType: any Any.Type) {
+        traceReuseFailure("reuse_unaryElement")
+    }
+
     @inline(__always)
     package static func traceReuseInvalidSubgraphFailure(_ typeFoundInvalid: any Any.Type) {
         // FIXME: ReuseTraceInternal.InvalidSubgraphFailure
         traceReuseFailure("reuse_invalidSubgraph")
     }
-    
+
+    @inline(__always)
+    package static func traceReuseBodyMismatchedFailure() {
+        traceReuseFailure("reuse_bodyMismatched")
+    }
+
     // TODO
     
     final package class Recorder {

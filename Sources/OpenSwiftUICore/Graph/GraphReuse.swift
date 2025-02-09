@@ -12,7 +12,7 @@ package import OpenGraphShims
 package typealias Subgraph = OGSubgraph
 package typealias Graph = OGGraph
 
-package final class IndirectAttributeMap {
+public final class IndirectAttributeMap {
     #if canImport(Darwin)
     package final let subgraph: Subgraph
     package final var map: [AnyAttribute: AnyAttribute]
