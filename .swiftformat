@@ -5,13 +5,19 @@
 --asynccapturing 
 --beforemarks 
 --binarygrouping 4,8
+--callsiteparen default
 --categorymark "MARK: %c"
 --classthreshold 0
 --closingparen balanced
 --closurevoid remove
 --commas always
+--complexattrs preserve
+--computedvarattrs preserve
+--condassignment after-property
 --conflictmarkers reject
+--dateformat system
 --decimalgrouping 3,6
+--doccomments before-declarations
 --elseposition same-line
 --emptybraces no-space
 --enumnamespaces always
@@ -30,11 +36,12 @@
 --header ignore
 --hexgrouping 4,8
 --hexliteralcase uppercase
---ifdef no-indent
+--ifdef indent
 --importgrouping alpha
 --indent 4
 --indentcase false
 --indentstrings false
+--initcodernil false
 --lifecycle 
 --lineaftermarks true
 --linebreaks lf
@@ -42,34 +49,38 @@
 --markextensions always
 --marktypes always
 --maxwidth none
---modifierorder 
+--modifierorder nonisolated,public
 --nevertrailing 
+--nilinit remove
+--noncomplexattrs 
 --nospaceoperators 
 --nowrapoperators 
 --octalgrouping 4,8
 --onelineforeach ignore
 --operatorfunc spaced
+--organizationmode visibility
 --organizetypes actor,class,enum,struct
 --patternlet hoist
 --ranges spaced
---redundanttype inferred
+--redundanttype infer-locals-only
 --self remove
 --selfrequired 
 --semicolons inline
---shortoptionals always
+--shortoptionals except-properties
 --smarttabs enabled
---someany false
+--someany true
+--storedvarattrs preserve
 --stripunusedargs always
 --structthreshold 0
---swiftversion 5.10
 --tabwidth unspecified
 --throwcapturing 
+--timezone system
 --trailingclosures 
---trimwhitespace nonblank-lines
+--trimwhitespace always
 --typeattributes preserve
 --typeblanklines remove
+--typedelimiter space-after
 --typemark "MARK: - %t"
---varattributes preserve
 --voidtype void
 --wraparguments preserve
 --wrapcollections preserve
@@ -82,5 +93,4 @@
 --wraptypealiases preserve
 --xcodeindentation disabled
 --yodaswap always
---disable blankLineAfterImports,wrapMultilineStatementBraces
---enable acronyms,blankLinesBetweenImports
+--disable unusedArguments

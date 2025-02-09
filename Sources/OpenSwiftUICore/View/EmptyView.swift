@@ -36,10 +36,7 @@ public struct EmptyView: PrimitiveView {
     }
     
     public static func _makeViewList(view: _GraphValue<EmptyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        guard inputs.options.contains(.isNonEmptyParent) else {
-            return _ViewListOutputs.emptyParentViewList(inputs: inputs)
-        }
-        return _ViewListOutputs.nonEmptyParentViewList(inputs: inputs)
+        .emptyViewList(inputs: inputs)
     }
     
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {

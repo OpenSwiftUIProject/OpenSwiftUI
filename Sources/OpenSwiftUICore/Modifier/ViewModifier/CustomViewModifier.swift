@@ -139,3 +139,56 @@ extension _ViewModifier_Content {
         }
     }
 }
+
+// MARK: - BodyInput
+
+// FIXME
+private struct BodyInput<Input> {}
+
+private enum BodyInputElement: GraphReusable, Equatable {
+    typealias MakeViewBody = (_Graph, _ViewInputs) -> _ViewOutputs
+    typealias MakeViewListBody = (_Graph, _ViewListInputs) -> _ViewListOutputs
+
+    case view(MakeViewBody)
+    case list(MakeViewListBody)
+
+    static func == (lhs: BodyInputElement, rhs: BodyInputElement) -> Bool {
+        if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
+            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
+        } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
+            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
+        } else {
+            false
+        }
+    }
+
+    static var isTriviallyReusable: Bool {
+        _SemanticFeature_v5.isEnabled
+    }
+
+    func makeReusable(indirectMap: IndirectAttributeMap) {
+        return
+    }
+
+    func tryToReuse(by other: BodyInputElement, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
+        switch self {
+            case let .view(makeViewBody):
+                guard case let .view(otherMakeViewBody) = other else {
+                    ReuseTrace.traceReuseInternalFailure()
+                    return false
+                }
+                return Self.isTriviallyReusable || compareValues(makeViewBody, otherMakeViewBody, options: .init(rawValue: 0x103))
+            case let .list(makeViewListBody):
+                guard case let .list(otherMakeViewListBody) = other else {
+                    ReuseTrace.traceReuseInternalFailure()
+                    return false
+                }
+                return Self.isTriviallyReusable || compareValues(makeViewListBody, otherMakeViewListBody, options: .init(rawValue: 0x103))
+        }
+    }
+}
+
+
+private struct BodyCountInput<V>: ViewInput {
+    static var defaultValue: Stack<_ViewListCountInputs> { .init() }
+}

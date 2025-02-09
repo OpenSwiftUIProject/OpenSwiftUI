@@ -134,7 +134,7 @@ extension _GraphInputs {
         pushScope(id: makeStableTypeData(type))
     }
     
-    package var stableIDScope: WeakAttribute<_DisplayList_StableIdentityScope>? {
+    package var stableIDScope: WeakAttribute<DisplayList.StableIdentityScope>? {
         guard !options.contains(.needsStableDisplayListIDs) else {
             return nil
         }

@@ -44,9 +44,7 @@ extension View {
     nonisolated package static func makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
-        let (body, buffer) = inputs.withMutateGraphInputs { inputs in
-            makeBody(view: view, inputs: &inputs, fields: fields)
-        }
+        let (body, buffer) = makeBody(view: view, inputs: &inputs.base, fields: fields)
         let outputs = Body.makeDebuggableViewList(view: body, inputs: inputs)
         if let buffer {
             buffer.traceMountedProperties(to: body, fields: fields)

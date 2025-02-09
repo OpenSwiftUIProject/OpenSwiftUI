@@ -120,9 +120,7 @@ extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
         var inputs = inputs
-        inputs.withMutateGraphInputs { inputs in
-            _makeInputs(modifier: modifier, inputs: &inputs)
-        }
+        _makeInputs(modifier: modifier, inputs: &inputs.base)
         let outputs = body(_Graph(), inputs)
         return outputs
     }
