@@ -1093,7 +1093,7 @@ public struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
     }
 }
 
-// MARK: - UnaryElements
+// MARK: - UnaryElements [WIP]
 
 private struct UnaryElements<Generator>: ViewList.Elements where Generator: UnaryViewGenerator {
     var body: Generator
@@ -1135,6 +1135,17 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
 // MARK: - ViewListOutputs + Extension [TODO]
 
 extension _ViewListOutputs {
+    private struct ApplyModifiers: Rule, AsyncAttribute {
+        @Attribute var base: any ViewList
+        let modifier: ListModifier
+
+        var value: any ViewList {
+            var value = base
+            modifier.apply(to: &value)
+            return value
+        }
+    }
+
     private static func staticList(_ elements: any ViewList.Elements, inputs: _ViewListInputs, staticCount: Int) -> _ViewListOutputs {
         preconditionFailure("TODO")
     }
@@ -1181,6 +1192,108 @@ extension _ViewListOutputs {
 
     package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
+    }
+}
+
+// MARK: - BaseViewList
+
+private struct BaseViewList: ViewList {
+    var elements: any Elements
+    var implicitID: Int
+    var traitKeys: ViewTraitKeys?
+    var traits: ViewTraitCollection
+
+    init(
+        elements: any Elements,
+        implicitID: Int,
+        canTransition: Bool,
+        stableIDScope: WeakAttribute<DisplayList.StableIdentityScope>?,
+        traitKeys: ViewTraitKeys?,
+        traits: ViewTraitCollection
+    ) {
+        self.elements = elements
+        self.implicitID = implicitID
+        self.traitKeys = traitKeys
+        self.traits = traits
+        if canTransition {
+            self.traits.canTransition = true
+        }
+        if let stableIDScope {
+            self.traits[DisplayList.StableIdentityScope.self] = stableIDScope
+        }
+    }
+
+    func count(style: IteratorStyle) -> Int {
+        style.applyGranularity(to: elements.count)
+    }
+
+    func estimatedCount(style: IteratorStyle) -> Int {
+        style.applyGranularity(to: elements.count)
+    }
+
+    var viewIDs: ID.Views? {
+        ID._Views(
+            ID.ElementCollection(
+                id: ID(implicitID: implicitID),
+                count: elements.count),
+            isDataDependent: false
+        )
+    }
+
+    func applyNodes(
+        from start: inout Int,
+        style: IteratorStyle,
+        list: Attribute<any ViewList>?,
+        transform: inout SublistTransform,
+        to body: ApplyBody
+    ) -> Bool {
+        let count = count(style: style)
+        guard start < count else {
+            start -= count
+            return true
+        }
+        let sublist = Sublist(
+            start: start,
+            count: count,
+            id: ViewList.ID(implicitID: implicitID),
+            elements: elements,
+            traits: traits,
+            list: list
+        )
+        defer { start = 0 }
+        return body(&start, style, .sublist(sublist), &transform)
+    }
+
+    func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
+        nil
+    }
+
+    func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID : Hashable {
+        nil
+    }
+
+    struct Init: Rule, AsyncAttribute, CustomStringConvertible {
+        let elements: any Elements
+        let implicitID: Int
+        let canTransition: Bool
+        let stableIDScope: WeakAttribute<DisplayList.StableIdentityScope>?
+        let traitKeys: ViewTraitKeys?
+        @OptionalAttribute var traits: ViewTraitCollection?
+
+        var value: any ViewList {
+            BaseViewList(
+                elements: elements,
+                implicitID: implicitID,
+                canTransition: canTransition,
+                stableIDScope: stableIDScope,
+                traitKeys: traitKeys,
+                traits: traits ?? .init()
+            )
+        }
+
+        var description: String {
+            "Elements [\(elements.count)]"
+        }
     }
 }
 
