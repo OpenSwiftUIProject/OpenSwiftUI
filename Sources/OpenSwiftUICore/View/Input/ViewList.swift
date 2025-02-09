@@ -1257,7 +1257,7 @@ package struct ViewListSlice: ViewList {
     }
 }
 
-// MARK: - ViewList.Group [TODO]
+// MARK: - ViewList.Group
 
 package struct _ViewList_Group: ViewList {
     package typealias AttributedList = (list: any ViewList, attribute: Attribute<any ViewList>)
@@ -1275,11 +1275,28 @@ package struct _ViewList_Group: ViewList {
     package var traits: Traits { .init() }
 
     package var traitKeys: ViewTraitKeys? {
-        preconditionFailure("TODO")
+        var traitKeys = ViewTraitKeys()
+        for (list, _) in lists {
+            guard let keys = list.traitKeys else {
+                return nil
+            }
+            traitKeys.formUnion(keys)
+        }
+        return traitKeys
     }
 
     package var viewIDs: ID.Views? {
-        preconditionFailure("TODO")
+        var views: [ID.Views] = []
+        var isDataDependent = false
+        for (list, _) in lists {
+            guard let ids = list.viewIDs else {
+                return nil
+            }
+            views.append(ids)
+            isDataDependent = isDataDependent || ids.isDataDependent
+        }
+        return ViewList.ID.JoinedViews(views, isDataDependent: isDataDependent)
+
     }
 
     package func applyNodes(
@@ -1289,7 +1306,7 @@ package struct _ViewList_Group: ViewList {
         transform: inout SublistTransform,
         to body: ApplyBody
     ) -> Bool {
-        preconditionFailure("TODO")
+        body(&start, style, .group(self), &transform)
     }
 
     package func applyNodes(
@@ -1298,15 +1315,40 @@ package struct _ViewList_Group: ViewList {
         transform: inout SublistTransform,
         to body: ApplyBody
     ) -> Bool {
-        preconditionFailure("TODO")
+        for (list, attribute) in lists {
+            guard list.applyNodes(
+                from: &start,
+                style: style,
+                list: attribute,
+                transform: &transform,
+                to: body
+            ) else {
+                return false
+            }
+        }
+        return true
     }
 
     package func edit(forID id: ID, since transaction: TransactionID) -> Edit? {
-        preconditionFailure("TODO")
+        for (list, _) in lists {
+            guard let edit = list.edit(forID: id, since: transaction) else {
+                continue
+            }
+            return edit
+        }
+        return nil
     }
 
     package func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
-        preconditionFailure("TODO")
+        var count = 0
+        for (list, _) in lists {
+            guard let offset = list.firstOffset(forID: id, style: style) else {
+                count += list.count(style: style)
+                continue
+            }
+            return count + offset
+        }
+        return nil
     }
 
     package struct Init: Rule, AsyncAttribute, CustomStringConvertible {
