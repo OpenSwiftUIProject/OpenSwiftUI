@@ -38,7 +38,7 @@ MovableLock _MovableLockCreate() {
     return lock;
 }
 
-void _MovableLockDestory(MovableLock lock) {
+void _MovableLockDestroy(MovableLock lock) {
     pthread_cond_destroy(&lock->cond1);
     pthread_cond_destroy(&lock->cond2);
     pthread_cond_destroy(&lock->cond3);
