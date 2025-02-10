@@ -14,7 +14,7 @@ final class MovableLockTests {
     }
 
     deinit {
-        lock.destory()
+        lock.destroy()
     }
     
     @Test
