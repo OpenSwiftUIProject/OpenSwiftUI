@@ -14,7 +14,7 @@ public import Combine
 /// A property wrapper type that subscribes to an observable object and
 /// invalidates a view whenever the observable object changes.
 ///
-/// Add the `@ObservedObject` attribute to a parameter of a OpenSwiftUI ``View``
+/// Add the `@ObservedObject` attribute to a parameter of an OpenSwiftUI ``View``
 /// when the input is an
 /// [ObservableObject](https://developer.apple.com/documentation/combine/observableobject)
 /// and you want the view to update when the object's published properties
