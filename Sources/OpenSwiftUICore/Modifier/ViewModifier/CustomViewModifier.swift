@@ -18,9 +18,7 @@ extension ViewModifier {
     ) -> _ViewOutputs {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
-        let (view, buffer) = inputs.withMutateGraphInputs { inputs in
-            makeBody(modifier: modifier, inputs: &inputs, fields: fields)
-        }
+        let (view, buffer) = makeBody(modifier: modifier, inputs: &inputs.base, fields: fields)
         inputs.append(.view(body), to: _ViewModifier_Content<Self>.BodyInput.self)
         let outputs = _ViewDebug.makeView(
             view: view,
