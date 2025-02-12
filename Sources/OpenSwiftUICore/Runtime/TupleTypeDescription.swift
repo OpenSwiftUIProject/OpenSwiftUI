@@ -3,9 +3,8 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
-import OpenSwiftUI_SPI
 package import OpenGraphShims
 
 // MARK: - TupleDescriptor
@@ -29,34 +28,20 @@ extension TupleDescriptor {
 
 // MARK: - TupleTypeDescription
 
-//package struct TupleTypeDescription<P> where P : SwiftUICore.ProtocolDescriptor {
-//  package let contentTypes: [(Swift.Int, SwiftUICore.TypeConformance<P>)]
-//  package init(_ type: AttributeGraph.TupleType)
-//}
+package struct TupleTypeDescription<P> where P: ProtocolDescriptor {
+    package let contentTypes: [(Int, TypeConformance<P>)]
 
-package struct TupleTypeDescription<PD: ProtocolDescriptor> {
-    let contentTypes: [(Int, TypeConformance<PD>)]
-
-    init(_ tupleType: TupleType) {
-//        contentTypes = tupleType.indices.compactMap { index in
-//            let type = tupleType.type(at: index)
-//            guard let comformance = TypeConformance<PD>(type) else {
-//                print("Ignoring invalid type at index \(index), type \(type)")
-//                return nil
-//            }
-//            return (index, comformance)
-//        }
-        preconditionFailure("TODO")
+    package init(_ type: TupleType) {
+        var contentTypes: [(Int, TypeConformance<P>)] = []
+        for index in type.indices {
+            let type = type.type(at: index)
+            guard let comformance = P.conformance(of: type) else {
+                let message = "Ignoring invalid type at index \(index), type \(type)"
+                Log.unlocatedIssuesLog.fault("\(message, privacy: .public)")
+                continue
+            }
+            contentTypes.append((index, comformance))
+        }
+        self.contentTypes = contentTypes
     }
-}
-
-// FIXME
-
-// MARK: - ViewDescriptor
-
-struct ViewDescriptor: TupleDescriptor {
-    static var descriptor: UnsafeRawPointer {
-        _OpenSwiftUI_viewProtocolDescriptor()
-    }
-    static var typeCache: [ObjectIdentifier: TupleTypeDescription<ViewDescriptor>] = [:]
 }

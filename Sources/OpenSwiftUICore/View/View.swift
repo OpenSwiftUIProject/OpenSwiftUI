@@ -5,6 +5,8 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
+import OpenSwiftUI_SPI
+
 /// A type that represents part of your app's user interface and provides
 /// modifiers that you use to configure views.
 ///
@@ -136,4 +138,28 @@ extension MultiView {
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         nil
     }
+}
+
+// TODO: _UnaryViewAdaptor
+
+// MARK: - ViewVisitor
+
+package protocol ViewVisitor {
+    mutating func visit<V>(_ view: V) where V: View
+}
+
+// MARK: - ViewTypeVisitor
+
+package protocol ViewTypeVisitor {
+    mutating func visit<V>(type: V.Type) where V: View
+}
+
+// MARK: - ViewDescriptor [WIP]
+
+package struct ViewDescriptor: TupleDescriptor {
+    package static var descriptor: UnsafeRawPointer {
+        _OpenSwiftUI_viewProtocolDescriptor()
+    }
+
+    package static var typeCache: [ObjectIdentifier: TupleTypeDescription<ViewDescriptor>] = [:]
 }
