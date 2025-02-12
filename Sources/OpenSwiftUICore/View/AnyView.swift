@@ -44,7 +44,7 @@ public struct AnyView: View, PrimitiveView {
                 view = AnyView(value as! V)
             }
         }
-        guard let conformace = TypeConformance<ViewDescriptor>(type(of: value)) else {
+        guard let conformace = ViewDescriptor.conformance(of: type(of: value)) else {
             return nil
         }
         var visitor = Visitor(value: value)
