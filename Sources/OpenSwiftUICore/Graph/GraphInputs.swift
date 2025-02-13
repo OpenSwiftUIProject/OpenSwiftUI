@@ -319,9 +319,14 @@ private struct MergedEnvironment: Rule, AsyncAttribute {
 
 extension _GraphInputs {
     @inline(__always)
-    func detechedEnvironmentInputs() -> Self {
+    mutating func detachEnvironmentInputs() {
+        cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+    }
+
+    @inline(__always)
+    func detachedEnvironmentInputs() -> Self {
         var newInputs = self
-        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+        newInputs.detachEnvironmentInputs()
         return newInputs
     }
 }

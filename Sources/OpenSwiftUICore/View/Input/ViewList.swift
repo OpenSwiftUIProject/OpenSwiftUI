@@ -104,6 +104,20 @@ public struct _ViewListInputs {
     }
 }
 
+extension _ViewListInputs {
+    @inline(__always)
+    mutating func detachEnvironmentInputs() {
+        base.detachEnvironmentInputs()
+    }
+
+    @inline(__always)
+    func detachedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.detachEnvironmentInputs()
+        return newInputs
+    }
+}
+
 // MARK: - _ViewListCountInputs
 
 /// Input values to `View._viewListCount()`.
@@ -1792,7 +1806,7 @@ open class _ViewList_Subgraph {
     }
 
     @inline(__always)
-    final func release(isInserted: Bool) {
+    final func invalidate(isInserted: Bool) {
         refcount &-= 1
         guard refcount == 0 else {
             return
@@ -1803,6 +1817,15 @@ open class _ViewList_Subgraph {
         }
         subgraph.willInvalidate(isInserted: isInserted)
         subgraph.invalidate()
+    }
+
+    @inline(__always)
+    final func remove(from parent: Subgraph) {
+        if isValid {
+            subgraph.willRemove()
+            // parent.removeChild(subgraph) // FIXME: OG
+        }
+        invalidate(isInserted: false)
     }
 }
 
@@ -1926,7 +1949,7 @@ final package class _ViewList_ReleaseElements: Equatable {
 
     deinit {
         Update.ensure {
-            subgraph.release(isInserted: true)
+            subgraph.invalidate(isInserted: true)
         }
     }
 

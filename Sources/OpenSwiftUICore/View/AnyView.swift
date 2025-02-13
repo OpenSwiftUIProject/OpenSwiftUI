@@ -188,7 +188,7 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
         let childGraph = OGSubgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(childGraph)
         return childGraph.apply {
-            let childInputs = inputs.detechedEnvironmentInputs()
+            let childInputs = inputs.detachedEnvironmentInputs()
             let childOutputs = storage.makeChild(
                 uniqueId: uniqueId,
                 container: current.unsafeCast(to: AnyViewInfo.self),

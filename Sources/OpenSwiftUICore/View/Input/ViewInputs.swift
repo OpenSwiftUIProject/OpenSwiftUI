@@ -226,9 +226,14 @@ extension _ViewInputs {
     }
 
     @inline(__always)
-    func detechedEnvironmentInputs() -> Self {
+    mutating func detachEnvironmentInputs() {
+        base.detachEnvironmentInputs()
+    }
+
+    @inline(__always)
+    func detachedEnvironmentInputs() -> Self {
         var newInputs = self
-        newInputs.base = self.base.detechedEnvironmentInputs()
+        newInputs.detachEnvironmentInputs()
         return newInputs
     }
 }
