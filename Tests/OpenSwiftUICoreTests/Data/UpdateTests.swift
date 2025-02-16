@@ -5,7 +5,7 @@
 import OpenSwiftUICore
 import Testing
 
-#if canImport(Darwin)
+#if canImport(Darwin) // FIXME: Add this test on non-Darwin platform
 struct UpdateTests {
     @Test
     @MainActor

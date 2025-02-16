@@ -97,19 +97,16 @@ struct ViewListIDTests {
         #expect(canonical1.explicitID == nil)
         #expect(canonical1.description == "@0")
         
-        #if canImport(Darwin)
         id.bind(explicitID: "test", owner: .nil)
         let canonical2 = id.canonicalID
         #expect(canonical2.index == 0)
         #expect(canonical2.requiresImplicitID == true)
         #expect(canonical2.explicitID?.description == "test")
         #expect(canonical2.description == "test")
-        #endif
     }
     
     @Test
     func explicitIDOperations() {
-        #if canImport(Darwin)
         var id = ViewList.ID()
         
         // Test binding single explicit ID
@@ -129,7 +126,6 @@ struct ViewListIDTests {
         // Test static explicit ID creation
         let explicitID = ViewList.ID.explicit("test3")
         #expect(explicitID.primaryExplicitID?.description == "test3")
-        #endif
     }
     
     @Test

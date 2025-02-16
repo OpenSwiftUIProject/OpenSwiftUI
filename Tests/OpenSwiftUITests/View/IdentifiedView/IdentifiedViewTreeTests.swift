@@ -10,7 +10,6 @@ import OpenSwiftUICore
 import UIKit
 #endif
 
-#if canImport(Darwin)
 struct IdentifiedViewTreeTests {
     private func helper(identifier: AnyHashable) -> _IdentifiedViewProxy {
         return _IdentifiedViewProxy(
@@ -57,4 +56,3 @@ struct IdentifiedViewTreeTests {
         }
     }
 }
-#endif

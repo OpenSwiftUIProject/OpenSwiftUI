@@ -159,18 +159,14 @@ public struct _ViewInputs {
     }
     
     package static func invalidInputs(_ base: _GraphInputs) -> _ViewInputs {
-        #if canImport(Darwin)
         _ViewInputs(
             base,
-            position: Attribute(identifier: .nil),
-            size: Attribute(identifier: .nil),
-            transform: Attribute(identifier: .nil),
-            containerPosition: Attribute(identifier: .nil),
-            hostPreferenceKeys: Attribute(identifier: .nil)
+            position: Attribute(identifier: AnyAttribute.nil),
+            size: Attribute(identifier: AnyAttribute.nil),
+            transform: Attribute(identifier: AnyAttribute.nil),
+            containerPosition: Attribute(identifier: AnyAttribute.nil),
+            hostPreferenceKeys: Attribute(identifier: AnyAttribute.nil)
         )
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
     
     package func mapEnvironment<T>(_ keyPath: KeyPath<EnvironmentValues, T>) -> Attribute<T> {

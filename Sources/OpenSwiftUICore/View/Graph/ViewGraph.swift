@@ -136,14 +136,12 @@ package final class ViewGraph: GraphHost {
         get { _preferenceBridge }
         set { setPreferenceBridge(to: newValue) }
     }
-    #if canImport(Darwin) // FIXME: See #39
+
     var bridgedPreferences: [(AnyPreferenceKey.Type, AnyAttribute)] = []
-    #endif
-    
+
     package static var current: ViewGraph { GraphHost.currentHost as! ViewGraph }
     
     package init<Root>(rootViewType: Root.Type = Root.self, requestedOutputs: ViewGraph.Outputs = Outputs.defaults) where Root: View {
-        #if canImport(Darwin)
         self.rootViewType = rootViewType
         self.requestedOutputs = requestedOutputs
         let data = GraphHost.Data()
@@ -175,9 +173,6 @@ package final class ViewGraph: GraphHost {
         }
         super.init(data: data)
         Subgraph.current = nil
-        #else
-        preconditionFailure("#39")
-        #endif
     }
     
     deinit {
@@ -199,7 +194,6 @@ package final class ViewGraph: GraphHost {
     }
     
     override package func instantiateOutputs() {
-        #if canImport(Darwin)
         let outputs = globalSubgraph.apply {
             var inputs = _ViewInputs(
                 graphInputs,
@@ -266,11 +260,9 @@ package final class ViewGraph: GraphHost {
         }
         hostPreferenceValues = WeakAttribute(outputs.preferences[HostPreferencesKey.self])
         makePreferenceOutlets(outputs: outputs)
-        #endif
     }
     
     override package func uninstantiateOutputs() {
-        #if canImport(Darwin)
         removePreferenceOutlets(isInvalidating: false)
         for feature in features {
             feature.uninstantiate(graph: self)
@@ -286,7 +278,6 @@ package final class ViewGraph: GraphHost {
         $rootResponders = nil
         $rootDisplayList = nil
         hostPreferenceValues = WeakAttribute()
-        #endif
     }
     
     override package func timeDidChange() {
@@ -309,11 +300,9 @@ package final class ViewGraph: GraphHost {
 
 extension ViewGraph {
     package func setRootView<Root>(_ view: Root) where Root: View {
-        #if canImport(Darwin)
         @Attribute(identifier: rootView)
         var rootView: Root
         rootView = view
-        #endif
     }
     
     package func setSize(_ size: ViewSize) {
@@ -391,7 +380,6 @@ extension ViewGraph {
     
     // FIXME
     private func updateOutputs(async: Bool) {
-        #if canImport(Darwin)
         instantiateIfNeeded()
         
         // let oldCachedSizeThatFits = cachedSizeThatFits
@@ -441,7 +429,6 @@ extension ViewGraph {
 //            preconditionFailure("TODO")
 //        }
 //        mainUpdates &-= 1
-        #endif
     }
     
     private func updateObservedSizeThatFits() -> Bool {
@@ -497,7 +484,6 @@ extension ViewGraph {
     @inline(__always)
     private func setPreferenceBridge(to preferenceBridge: PreferenceBridge?, isInvalidating: Bool = false) {
         guard _preferenceBridge !== preferenceBridge else { return }
-        #if canImport(Darwin)
         if let preferenceBridge = _preferenceBridge {
             for (src, key) in bridgedPreferences {
                 preferenceBridge.removeValue(key, for: src, isInvalidating: isInvalidating)
@@ -506,7 +492,6 @@ extension ViewGraph {
             preferenceBridge.removeHostValues(for: data.$hostPreferenceKeys, isInvalidating: isInvalidating)
             preferenceBridge.removeChild(self)
         }
-        #endif
         _preferenceBridge = nil
         if isInstantiated {
             uninstantiate(immediately: isInvalidating)

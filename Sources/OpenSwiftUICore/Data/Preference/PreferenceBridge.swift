@@ -45,17 +45,14 @@ package final class PreferenceBridge {
     }
     
     package func wrapInputs(_ inputs: inout _ViewInputs) {
-        #if canImport(Darwin)
         inputs.customInputs = bridgedViewInputs
         for key in requestedPreferences {
             inputs.preferences.keys.add(key)
         }
         inputs.preferences.hostKeys = Attribute(MergePreferenceKeys(lhs: inputs.preferences.hostKeys, rhs: _hostPreferenceKeys))
-        #endif
     }
     
     package func wrapOutputs(_ outputs: inout PreferencesOutputs, inputs: _ViewInputs) {
-        #if canImport(Darwin)
         bridgedViewInputs = inputs.customInputs
         for key in inputs.preferences.keys {
             if key == _AnyPreferenceKey<HostPreferencesKey>.self {
@@ -90,8 +87,6 @@ package final class PreferenceBridge {
                 outputs[anyKey: key] = result
             }
         }
-        #endif
-        
     }
     
     package func addChild(_ child: ViewGraph) {
@@ -116,7 +111,6 @@ package final class PreferenceBridge {
         }
     }
     
-    #if canImport(Darwin)
     package func addValue(_ src: AnyAttribute, for key: any AnyPreferenceKey.Type) {
         struct AddValue: PreferenceKeyVisitor {
             var combiner: AnyAttribute
@@ -167,17 +161,13 @@ package final class PreferenceBridge {
             viewGraph.graphInvalidation(from: isInvalidating ? nil : src)
         }
     }
-    #endif
-    
+
     package func updateHostValues(_ keys: Attribute<PreferenceKeys>) {
-        #if canImport(Darwin)
         guard let viewGraph else { return }
         viewGraph.graphInvalidation(from: keys.identifier)
-        #endif
     }
     
     package func addHostValues(_ values: WeakAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
-        #if canImport(Darwin)
         guard let viewGraph,
               let combiner = $hostPreferencesCombiner
         else { return }
@@ -188,20 +178,16 @@ package final class PreferenceBridge {
             combiner.addChild(keys: keys, values: values)
         }
         viewGraph.graphInvalidation(from: keys.identifier)
-        #endif
     }
     
     package func addHostValues(_ values: OptionalAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
-        #if canImport(Darwin)
         guard let attribute = values.attribute else {
             return
         }
         addHostValues(WeakAttribute(attribute), for: keys)
-        #endif
     }
     
     package func removeHostValues(for keys: Attribute<PreferenceKeys>, isInvalidating: Bool = false) {
-        #if canImport(Darwin)
         guard let viewGraph,
               let combiner = $hostPreferencesCombiner
         else { return }
@@ -220,7 +206,6 @@ package final class PreferenceBridge {
         if hasRemoved {
             viewGraph.graphInvalidation(from: isInvalidating ? nil : keys.identifier)
         }
-        #endif
     }
 }
 

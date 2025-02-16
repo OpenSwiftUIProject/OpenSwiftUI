@@ -79,7 +79,6 @@ extension AppearanceEffect: StatefulRule {
     typealias Value = Void
     
     mutating func updateValue() {
-        #if canImport(Darwin)
         if node.attribute == nil {
             node.attribute = .current
         }
@@ -90,13 +89,8 @@ extension AppearanceEffect: StatefulRule {
 //        }
         lastValue = modifier
         appeared()
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
 }
-
-#if canImport(Darwin) // See #39
 
 // MARK: AppearanceEffect + RemovableAttribute
 
@@ -120,7 +114,6 @@ extension AppearanceEffect: RemovableAttribute {
         nodeAttribute.graph.graphHost().graphInvalidation(from: nil)
     }
 }
-#endif
 
 // MARK: - View Extension
 
