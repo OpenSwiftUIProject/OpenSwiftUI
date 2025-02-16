@@ -1823,7 +1823,7 @@ open class _ViewList_Subgraph {
     final func remove(from parent: Subgraph) {
         if isValid {
             subgraph.willRemove()
-            // parent.removeChild(subgraph) // FIXME: OG
+            parent.removeChild(subgraph)
         }
         invalidate(isInserted: false)
     }

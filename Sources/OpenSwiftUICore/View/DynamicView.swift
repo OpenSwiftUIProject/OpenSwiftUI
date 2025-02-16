@@ -29,6 +29,7 @@ extension DynamicView where ID == UniqueID {
 
 extension DynamicView {
     package static func makeDynamicView(metadata: Metadata, view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        #if canImport(Darwin)
         let outputs = inputs.makeIndirectOutputs()
         let container = DynamicViewContainer(
             metadata: metadata,
@@ -38,13 +39,15 @@ extension DynamicView {
         )
         let attribute = Attribute(container)
         attribute.flags = .active
-        #if canImport(Darwin)
         outputs.setIndirectDependency(attribute.identifier)
-        #endif
         return outputs
+        #else
+        preconditionFailure("See #39")
+        #endif
     }
 
     package static func makeDynamicViewList(metadata: Metadata, view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        #if canImport(Darwin)
         let list = DynamicViewList(metadata: metadata, view: view.value, inputs: inputs, lastItem: nil)
         let attribute = Attribute(list)
         return _ViewListOutputs(
@@ -52,8 +55,13 @@ extension DynamicView {
             nextImplicitID: inputs.implicitID,
             staticCount: nil
         )
+        #else
+        preconditionFailure("See #39")
+        #endif
     }
 }
+
+#if canImport(Darwin)
 
 // MARK: - DynamicViewContainer
 
@@ -365,3 +373,5 @@ extension DynamicViewList {
         }
     }
 }
+
+#endif
