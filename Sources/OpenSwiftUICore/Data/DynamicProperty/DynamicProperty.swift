@@ -218,7 +218,6 @@ extension BodyAccessor {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        #if canImport(Darwin)
         guard Body.self != Never.self else {
             preconditionFailure("\(Body.self) may not have Body == Never")
         }
@@ -253,9 +252,6 @@ extension BodyAccessor {
                 return project(flags: MainThreadFlags.self)
             }
         }
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
 }
 
@@ -272,8 +268,6 @@ private struct AsyncThreadFlags: RuleThreadFlags {
 private struct MainThreadFlags: RuleThreadFlags {
     static var value: OGAttributeTypeFlags { .mainThread }
 }
-
-#if canImport(Darwin)
 
 // MARK: - StaticBody
 
@@ -404,5 +398,3 @@ extension DynamicBody: BodyAccessorRule {
 extension DynamicBody: CustomStringConvertible {
     var description: String { "\(Accessor.Body.self)" }
 }
-
-#endif

@@ -24,38 +24,33 @@ extension _ViewInputs {
         @IndirectAttribute(source: defaultLayoutComputer)
         var indirect: LayoutComputer
         outputs.layoutComputer = $indirect
+        #else
+        preconditionFailure("#39")
         #endif
         return outputs
     }
 }
 
 extension _ViewOutputs {
-    #if canImport(Darwin)
     package func setIndirectDependency(_ dependency: AnyAttribute?) {
         preferences.setIndirectDependency(dependency)
         if let target = layoutComputer?.identifier {
             target.indirectDependency = dependency
         }
     }
-    #endif
-
         
     package func attachIndirectOutputs(to childOutputs: _ViewOutputs) {
-        #if canImport(Darwin)
         preferences.attachIndirectOutputs(to: childOutputs.preferences)
         if let target = layoutComputer?.identifier,
            let source = childOutputs.layoutComputer?.identifier {
             target.source = source
         }
-        #endif
     }
 
     package func detachIndirectOutputs() {
-        #if canImport(Darwin)
         preferences.detachIndirectOutputs()
         if let target = layoutComputer?.identifier {
             target.source = .nil
         }
-        #endif
     }
 }

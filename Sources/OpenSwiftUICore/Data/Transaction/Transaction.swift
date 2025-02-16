@@ -262,20 +262,12 @@ package struct TransactionID: Comparable, Hashable {
 
     @inlinable
     package init(context: AnyRuleContext) {
-        #if canImport(Darwin)
         self.init(graph: context.attribute.graph)
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
 
     @inlinable
     package init<Value>(context: RuleContext<Value>) {
-        #if canImport(Darwin)
         self.init(graph: context.attribute.graph)
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
 
     @inlinable

@@ -778,13 +778,10 @@ public struct _ViewList_ID: Hashable {
     private struct Explicit: Equatable {
         let id: AnyHashable2
         let reuseID: Int
-        #if canImport(Darwin)
         let owner: AnyAttribute
-        #endif
         let isUnary: Bool
     }
 
-    #if canImport(Darwin)
     package static func explicit<ID>(_ id: ID, owner: AnyAttribute) -> ViewList.ID where ID: Hashable {
         var viewListID = ViewList.ID()
         viewListID.bind(explicitID: id, owner: owner, isUnary: true, reuseID: .zero)
@@ -794,7 +791,6 @@ public struct _ViewList_ID: Hashable {
     package static func explicit<ID>(_ id: ID) -> ViewList.ID where ID: Hashable {
         explicit(id, owner: .nil)
     }
-    #endif
 
     package func elementID(at index: Int) -> ViewList.ID {
         var id = self
@@ -859,7 +855,6 @@ public struct _ViewList_ID: Hashable {
         ElementCollection(id: self, count: count)
     }
 
-    #if canImport(Darwin)
     package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool, reuseID: Int) where ID: Hashable {
         explicitIDs.append(Explicit(id: AnyHashable2(explicitID), reuseID: reuseID, owner: owner, isUnary: isUnary))
     }
@@ -875,13 +870,11 @@ public struct _ViewList_ID: Hashable {
     package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute) where ID: Hashable {
         bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: .zero)
     }
-    #endif
 
     package var primaryExplicitID: AnyHashable2? { explicitIDs.first?.id }
 
     package var allExplicitIDs: [AnyHashable2] { explicitIDs.map(\.id) }
 
-    #if canImport(Darwin)
     package func explicitID<ID>(owner: AnyAttribute) -> ID? where ID: Hashable {
         for explicitID in explicitIDs {
             guard explicitID.owner == owner,
@@ -891,7 +884,6 @@ public struct _ViewList_ID: Hashable {
         }
         return nil
     }
-    #endif
 
     package func explicitID<ID>(for idType: ID.Type) -> ID? where ID: Hashable {
         for explicitID in explicitIDs {
@@ -916,9 +908,7 @@ public struct _ViewList_ID: Hashable {
         hasher.combine(implicitID)
         for explicitID in explicitIDs {
             hasher.combine(explicitID.id)
-            #if canImport(Darwin)
             hasher.combine(explicitID.owner)
-            #endif
         }
     }
 

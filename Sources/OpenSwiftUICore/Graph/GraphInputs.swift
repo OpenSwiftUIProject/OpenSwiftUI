@@ -72,9 +72,7 @@ public struct _GraphInputs {
     package var transaction: Attribute<Transaction>
     package var changedDebugProperties: _ViewDebug.Properties
     package var options: _GraphInputs.Options
-    #if canImport(Darwin)
     package var mergedInputs: Set<AnyAttribute>
-    #endif
     
     package init(
         time: Attribute<Time>,
@@ -89,23 +87,16 @@ public struct _GraphInputs {
         self.transaction = transaction
         self.changedDebugProperties = .all
         self.options = []
-        
-        #if canImport(Darwin)
         self.mergedInputs = []
-        #endif
     }
     
     package static var invalid: _GraphInputs {
-        #if canImport(Darwin)
         _GraphInputs(
-            time: Attribute(identifier: .nil),
-            phase: Attribute(identifier: .nil),
-            environment: Attribute(identifier: .nil),
-            transaction: Attribute(identifier: .nil)
+            time: Attribute(identifier: AnyAttribute.nil),
+            phase: Attribute(identifier: AnyAttribute.nil),
+            environment: Attribute(identifier: AnyAttribute.nil),
+            transaction: Attribute(identifier: AnyAttribute.nil)
         )
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
     
     package subscript<T>(input: T.Type) -> T.Value where T: GraphInput {

@@ -112,9 +112,7 @@ open class GraphHost: CustomReflectable {
     package final var graphInputs: _GraphInputs { data.inputs }
     package final var globalSubgraph: Subgraph { data.globalSubgraph }
     package final var rootSubgraph: Subgraph { data.rootSubgraph }
-    #if canImport(Darwin)
     private var constants: [ConstantKey: AnyAttribute] = [:]
-    #endif
     private(set) package final var isInstantiated: Bool = false
     package final var hostPreferenceValues: WeakAttribute<PreferenceList> = WeakAttribute()
     package final var lastHostPreferencesSeed: VersionSeed = .invalid
@@ -143,7 +141,6 @@ open class GraphHost: CustomReflectable {
     }
     
     package static var currentHost: GraphHost {
-        #if canImport(Darwin)
         if let currentAttribute = AnyAttribute.current {
             currentAttribute.graph.graphHost()
         } else if let currentSubgraph = Subgraph.current {
@@ -151,9 +148,6 @@ open class GraphHost: CustomReflectable {
         } else {
             preconditionFailure("no current graph host")
         }
-        #else
-        preconditionFailure("Compiler issue on Linux. See #39")
-        #endif
     }
     
     package init(data: Data) {
@@ -166,12 +160,10 @@ open class GraphHost: CustomReflectable {
             else { return }
             graphDelegate.updateGraph { _ in }
         }
-        #if canImport(Darwin)
         Graph.setInvalidationCallback(graph) { [weak self] attribute in
             guard let self else { return }
             graphInvalidation(from: attribute)
         }
-        #endif
         graph.context = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
     }
     
@@ -222,7 +214,6 @@ open class GraphHost: CustomReflectable {
     }
     
     package final func intern<T>(_ value: T, for type: Any.Type = T.self, id: ConstantID) -> Attribute<T> {
-        #if canImport(Darwin)
         if let attribute = constants[ConstantKey(type: type , id: id)] {
             return Attribute(identifier: attribute)
         } else {
@@ -230,9 +221,6 @@ open class GraphHost: CustomReflectable {
             constants[ConstantKey(type: type, id: id)] = result.identifier
             return result
         }
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
     
     public final var customMirror: Mirror { Mirror(self, children: []) }
@@ -252,7 +240,6 @@ extension GraphHost: Sendable {}
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
     package final func graphInvalidation(from src: AnyAttribute?) {
-        #if canImport(Darwin)
         guard let src else {
             graphDelegate?.graphDidChange()
             return
@@ -265,7 +252,6 @@ extension GraphHost {
             return
         }
         emptyTransaction(transaction)
-        #endif
     }
     
     package final func instantiate() {
@@ -389,10 +375,8 @@ extension GraphHost {
         style: _GraphMutation_Style = .deferred,
         mayDeferUpdate: Bool = true
     ) {
-        #if canImport(Darwin)
         // Blocked by WeakAttribute.base API in OpenGraph
         // asyncTransaction(transaction, id: transactionID, mutation: InvalidatingGraphMutation(attribute: attribute.base), style: style, mayDeferUpdate: mayDeferUpdate)
-        #endif
     }
     
     package final func emptyTransaction(_ transaction: Transaction = .init()) {
@@ -543,7 +527,6 @@ package struct CustomGraphMutation: GraphMutation {
     package func combine<T>(with other: T) -> Bool where T : GraphMutation { false }
 }
 
-#if canImport(Darwin)
 struct InvalidatingGraphMutation: GraphMutation {
     let attribute: AnyWeakAttribute
     
@@ -558,7 +541,6 @@ struct InvalidatingGraphMutation: GraphMutation {
         return mutation.attribute == attribute
     }
 }
-#endif
 
 private struct EmptyGraphMutation: GraphMutation {
     package init() {}

@@ -13,14 +13,12 @@ package typealias Subgraph = OGSubgraph
 package typealias Graph = OGGraph
 
 public final class IndirectAttributeMap {
-    #if canImport(Darwin)
     package final let subgraph: Subgraph
     package final var map: [AnyAttribute: AnyAttribute]
     package init(subgraph: Subgraph) {
         self.subgraph = subgraph
         self.map = [:]
     }
-    #endif
 }
 
 package protocol GraphReusable {
@@ -60,7 +58,6 @@ extension _GraphValue where Value: GraphReusable {
 
 extension Attribute: GraphReusable {
     package mutating func makeReusable(indirectMap: IndirectAttributeMap) {
-        #if canImport(Darwin)
         if let result = indirectMap.map[identifier] {
             identifier = result
         } else {
@@ -69,11 +66,9 @@ extension Attribute: GraphReusable {
             }
             indirectMap.map[identifier] = indirect.identifier
         }
-        #endif
     }
     
     package func tryToReuse(by other: Attribute<Value>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
-        #if canImport(Darwin)
         if let result = indirectMap.map[identifier] {
             if testOnly {
                 return true
@@ -85,9 +80,6 @@ extension Attribute: GraphReusable {
             Log.graphReuse("Reuse failed: missing indirection for \(Value.self)")
             return false
         }
-        #else
-        false
-        #endif
     }
 }
 

@@ -49,7 +49,6 @@ public struct AnyView: View, PrimitiveView {
     }
 
     public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        #if canImport(Darwin)
         let outputs = inputs.makeIndirectOutputs()
         let parent = OGSubgraph.current!
         let container = AnyViewContainer(view: view.value, inputs: inputs, outputs: outputs, parentSubgraph: parent)
@@ -61,9 +60,6 @@ public struct AnyView: View, PrimitiveView {
             layoutComputer.identifier.indirectDependency = containerAttribute.identifier
         }
         return outputs
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
     
     public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
@@ -183,7 +179,6 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
     }
     
     func makeItem(_ storage: AnyViewStorageBase, uniqueId: UInt32) -> AnyViewInfo {
-        #if canImport(Darwin)
         let current = AnyAttribute.current!
         let childGraph = OGSubgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(childGraph)
@@ -197,9 +192,6 @@ private struct AnyViewContainer: StatefulRule, AsyncAttribute {
             outputs.attachIndirectOutputs(to: childOutputs)
             return AnyViewInfo(item: storage, subgraph: childGraph, uniqueID: uniqueId)
         }
-        #else
-        preconditionFailure("#See #39")
-        #endif
     }
     
     func eraseItem(info: AnyViewInfo) {
@@ -260,15 +252,12 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
     
     final class Item: _ViewList_Subgraph {
         let type: Any.Type
-        #if canImport(Darwin)
         let owner: AnyAttribute
-        #endif
         @Attribute var list: ViewList
         let id: UniqueID
         let isUnary: Bool
         let allItems: MutableBox<[Unmanaged<Item>]>
         
-        #if canImport(Darwin)
         init(type: Any.Type, owner: AnyAttribute, list: Attribute<ViewList>, id: UniqueID, isUnary: Bool, subgraph: OGSubgraph, allItems: MutableBox<[Unmanaged<Item>]>) {
             self.type = type
             self.owner = owner
@@ -279,17 +268,6 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
             super.init(subgraph: subgraph)
             allItems.wrappedValue.append(.passUnretained(self))
         }
-        #else
-        init(type: Any.Type, list: Attribute<ViewList>, id: UniqueID, isUnary: Bool, subgraph: OGSubgraph, allItems: MutableBox<[Unmanaged<Item>]>) {
-            self.type = type
-            _list = list
-            self.id = id
-            self.isUnary = isUnary
-            self.allItems = allItems
-            super.init(subgraph: subgraph)
-            allItems.wrappedValue.append(.passUnretained(self))
-        }
-        #endif
         
         override func invalidate() {
             for (index, item) in allItems.wrappedValue.enumerated() {
@@ -302,9 +280,7 @@ private struct AnyViewList: StatefulRule, AsyncAttribute {
         }
         
         func bindID(_ id: inout _ViewList_ID) {
-            #if canImport(Darwin)
             id.bind(explicitID: AnyHashable(self.id), owner: owner, isUnary: isUnary)
-            #endif
         }
     }
     

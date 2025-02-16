@@ -12,24 +12,19 @@ package import OpenGraphShims
 package struct CachedEnvironment {
     package var environment: Attribute<EnvironmentValues>
     private var items: [Item]
-    #if canImport(Darwin)
     private var constants: [HashableConstant: AnyAttribute]
-    #endif
 //    private var animatedFrame: AnimatedFrame?
     // private var resolvedFgStyles: [ResolvedFgStyle : Swift<_ShapeStyle_Resolved.ResolvedFg>]
     
     package init(_ environment: Attribute<EnvironmentValues>) {
         self.environment = environment
         items = []
-        #if canImport(Darwin)
         constants = [:]
-        #endif
 //        animatedFrame = nil
         // resolvedFgStyles = [:] FIXME: 0x100: ?
     }
     
     package mutating func attribute<Value>(keyPath: KeyPath<EnvironmentValues, Value>) -> Attribute<Value> {
-        #if canImport(Darwin)
         if let item = items.first(where: { $0.key == keyPath }) {
             return Attribute(identifier: item.value)
         } else {
@@ -37,13 +32,9 @@ package struct CachedEnvironment {
             items.append(Item(key: keyPath, value: value.identifier))
             return value
         }
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
     
     package mutating func intern<Value>(_ value: Value, id: Int) -> Attribute<Value> {
-        #if canImport(Darwin)
         let constant = HashableConstant(value, id: id)
         if let identifier = constants[constant] {
             return Attribute(identifier: identifier)
@@ -52,9 +43,6 @@ package struct CachedEnvironment {
             constants[constant] = attribute.identifier
             return attribute
         }
-        #else
-        preconditionFailure("See #39")
-        #endif
     }
     
     func animatedPosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
@@ -75,9 +63,7 @@ package struct CachedEnvironment {
 extension CachedEnvironment {
     private struct Item {
         var key: PartialKeyPath<EnvironmentValues>
-        #if canImport(Darwin) // See #39
         var value: AnyAttribute
-        #endif
     }
 }
 
