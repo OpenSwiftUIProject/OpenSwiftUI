@@ -104,6 +104,20 @@ public struct _ViewListInputs {
     }
 }
 
+extension _ViewListInputs {
+    @inline(__always)
+    mutating func detachEnvironmentInputs() {
+        base.detachEnvironmentInputs()
+    }
+
+    @inline(__always)
+    func detachedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.detachEnvironmentInputs()
+        return newInputs
+    }
+}
+
 // MARK: - _ViewListCountInputs
 
 /// Input values to `View._viewListCount()`.
@@ -765,21 +779,21 @@ public struct _ViewList_ID: Hashable {
         let id: AnyHashable2
         let reuseID: Int
         #if canImport(Darwin)
-            let owner: AnyAttribute
+        let owner: AnyAttribute
         #endif
         let isUnary: Bool
     }
 
     #if canImport(Darwin)
-        package static func explicit<ID>(_ id: ID, owner: AnyAttribute) -> ViewList.ID where ID: Hashable {
-            var viewListID = ViewList.ID()
-            viewListID.bind(explicitID: id, owner: owner, isUnary: true, reuseID: .zero)
-            return viewListID
-        }
+    package static func explicit<ID>(_ id: ID, owner: AnyAttribute) -> ViewList.ID where ID: Hashable {
+        var viewListID = ViewList.ID()
+        viewListID.bind(explicitID: id, owner: owner, isUnary: true, reuseID: .zero)
+        return viewListID
+    }
 
-        package static func explicit<ID>(_ id: ID) -> ViewList.ID where ID: Hashable {
-            explicit(id, owner: .nil)
-        }
+    package static func explicit<ID>(_ id: ID) -> ViewList.ID where ID: Hashable {
+        explicit(id, owner: .nil)
+    }
     #endif
 
     package func elementID(at index: Int) -> ViewList.ID {
@@ -846,21 +860,21 @@ public struct _ViewList_ID: Hashable {
     }
 
     #if canImport(Darwin)
-        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool, reuseID: Int) where ID: Hashable {
-            explicitIDs.append(Explicit(id: AnyHashable2(explicitID), reuseID: reuseID, owner: owner, isUnary: isUnary))
-        }
+    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool, reuseID: Int) where ID: Hashable {
+        explicitIDs.append(Explicit(id: AnyHashable2(explicitID), reuseID: reuseID, owner: owner, isUnary: isUnary))
+    }
 
-        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, reuseID: Int) where ID: Hashable {
-            bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: reuseID)
-        }
+    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, reuseID: Int) where ID: Hashable {
+        bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: reuseID)
+    }
 
-        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool) where ID: Hashable {
-            bind(explicitID: explicitID, owner: owner, isUnary: isUnary, reuseID: .zero)
-        }
+    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute, isUnary: Bool) where ID: Hashable {
+        bind(explicitID: explicitID, owner: owner, isUnary: isUnary, reuseID: .zero)
+    }
 
-        package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute) where ID: Hashable {
-            bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: .zero)
-        }
+    package mutating func bind<ID>(explicitID: ID, owner: AnyAttribute) where ID: Hashable {
+        bind(explicitID: explicitID, owner: owner, isUnary: false, reuseID: .zero)
+    }
     #endif
 
     package var primaryExplicitID: AnyHashable2? { explicitIDs.first?.id }
@@ -868,15 +882,15 @@ public struct _ViewList_ID: Hashable {
     package var allExplicitIDs: [AnyHashable2] { explicitIDs.map(\.id) }
 
     #if canImport(Darwin)
-        package func explicitID<ID>(owner: AnyAttribute) -> ID? where ID: Hashable {
-            for explicitID in explicitIDs {
-                guard explicitID.owner == owner,
-                      let id = explicitID.id.as(type: ID.self)
-                else { continue }
-                return id
-            }
-            return nil
+    package func explicitID<ID>(owner: AnyAttribute) -> ID? where ID: Hashable {
+        for explicitID in explicitIDs {
+            guard explicitID.owner == owner,
+                  let id = explicitID.id.as(type: ID.self)
+            else { continue }
+            return id
         }
+        return nil
+    }
     #endif
 
     package func explicitID<ID>(for idType: ID.Type) -> ID? where ID: Hashable {
@@ -903,7 +917,7 @@ public struct _ViewList_ID: Hashable {
         for explicitID in explicitIDs {
             hasher.combine(explicitID.id)
             #if canImport(Darwin)
-                hasher.combine(explicitID.owner)
+            hasher.combine(explicitID.owner)
             #endif
         }
     }
@@ -1059,7 +1073,7 @@ public struct BodyUnaryViewGenerator<V>: UnaryViewGenerator {
     }
 
     public func tryToReuse(by other: BodyUnaryViewGenerator<V>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
-        // FIXME
+        // FIXME:
         // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
         // 2. Add 0x103 case instead of rawValue
         guard compareValues(body, other.body, mode: .init(rawValue: 0x103)) else {
@@ -1122,7 +1136,7 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
         indirectMap: IndirectAttributeMap,
         testOnly: Bool
     ) -> Bool {
-        guard let other  = other as? UnaryElements else {
+        guard let other = other as? UnaryElements else {
             Log.graphReuse("Reuse failed: other is not Unary")
             ReuseTrace.traceReuseUnaryElementExpectedFailure(type(of: other))
             return false
@@ -1300,7 +1314,8 @@ private struct BaseViewList: ViewList {
         ID._Views(
             ID.ElementCollection(
                 id: ID(implicitID: implicitID),
-                count: elements.count),
+                count: elements.count
+            ),
             isDataDependent: false
         )
     }
@@ -1333,7 +1348,7 @@ private struct BaseViewList: ViewList {
         nil
     }
 
-    func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID : Hashable {
+    func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable {
         nil
     }
 
@@ -1546,7 +1561,6 @@ package struct _ViewList_Group: ViewList {
             isDataDependent = isDataDependent || ids.isDataDependent
         }
         return ViewList.ID.JoinedViews(views, isDataDependent: isDataDependent)
-
     }
 
     package func applyNodes(
@@ -1650,7 +1664,6 @@ package struct _ViewList_Section: ViewList {
         style.applyGranularity = (style.granularity != 1)
         return style
     }
-
 
     package func count(style: IteratorStyle) -> Int {
         if isHierarchical {
@@ -1793,7 +1806,7 @@ open class _ViewList_Subgraph {
     }
 
     @inline(__always)
-    final func release(isInserted: Bool) {
+    final func invalidate(isInserted: Bool) {
         refcount &-= 1
         guard refcount == 0 else {
             return
@@ -1804,6 +1817,15 @@ open class _ViewList_Subgraph {
         }
         subgraph.willInvalidate(isInserted: isInserted)
         subgraph.invalidate()
+    }
+
+    @inline(__always)
+    final func remove(from parent: Subgraph) {
+        if isValid {
+            subgraph.willRemove()
+            parent.removeChild(subgraph)
+        }
+        invalidate(isInserted: false)
     }
 }
 
@@ -1906,11 +1928,11 @@ private struct SubgraphList: ViewList {
     struct Transform: ViewList.SublistTransform.Item {
         var subgraph: ViewList.Subgraph
 
-        func apply(sublist: inout _ViewList_Sublist) {
+        func apply(sublist: inout ViewList.Sublist) {
             sublist.elements = SubgraphElements(base: sublist.elements, subgraph: subgraph)
         }
 
-        func bindID(_ id: inout _ViewList_ID) {}
+        func bindID(_ id: inout ViewList.ID) {}
     }
 }
 
@@ -1927,7 +1949,7 @@ final package class _ViewList_ReleaseElements: Equatable {
 
     deinit {
         Update.ensure {
-            subgraph.release(isInserted: true)
+            subgraph.invalidate(isInserted: true)
         }
     }
 

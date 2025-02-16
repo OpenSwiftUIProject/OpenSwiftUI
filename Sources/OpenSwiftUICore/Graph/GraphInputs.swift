@@ -317,15 +317,16 @@ private struct MergedEnvironment: Rule, AsyncAttribute {
     }
 }
 
-// FIXME: TO BE REMOVED
 extension _GraphInputs {
-
-    // MARK: - cachedEnvironment
+    @inline(__always)
+    mutating func detachEnvironmentInputs() {
+        cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+    }
 
     @inline(__always)
-    package func detechedEnvironmentInputs() -> Self {
+    func detachedEnvironmentInputs() -> Self {
         var newInputs = self
-        newInputs.cachedEnvironment = MutableBox(cachedEnvironment.wrappedValue)
+        newInputs.detachEnvironmentInputs()
         return newInputs
     }
 }

@@ -74,7 +74,7 @@ package struct PreferencesOutputs {
     #endif
     
     #if canImport(Darwin)
-    package func setIndirectDependencies(_ dependency: AnyAttribute?) {
+    package func setIndirectDependency(_ dependency: AnyAttribute?) {
         preferences.forEach {
             $0.value.indirectDependency = dependency
         }

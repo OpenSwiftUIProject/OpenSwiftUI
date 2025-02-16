@@ -224,19 +224,29 @@ extension _ViewInputs {
         copy.changedDebugProperties = []
         return copy
     }
+
+    @inline(__always)
+    mutating func detachEnvironmentInputs() {
+        base.detachEnvironmentInputs()
+    }
+
+    @inline(__always)
+    func detachedEnvironmentInputs() -> Self {
+        var newInputs = self
+        newInputs.detachEnvironmentInputs()
+        return newInputs
+    }
 }
 
-
-// FIXME: TO BE REMOVED
-
-// @available(*, deprecated, message: "TO BE REMOVED")
+// FIXME
+@available(*, deprecated, message: "TO BE REMOVED")
 extension _ViewInputs {
     mutating func append<Input: ViewInput, Value>(_ value: Value, to type: Input.Type) where Input.Value == [Value] {
         var values = base[type]
         values.append(value)
         base[type] = values
     }
-    
+
     mutating func popLast<Input: ViewInput, Value>(_ type: Input.Type) -> Value? where Input.Value == [Value]  {
         var values = base[type]
         guard let value = values.popLast() else {
@@ -244,19 +254,5 @@ extension _ViewInputs {
         }
         base[type] = values
         return value
-    }
-    
-    // MARK: - base
-    
-    @inline(__always)
-    mutating func withMutateGraphInputs<R>(_ body: (inout _GraphInputs) -> R) -> R {
-        body(&base)
-    }
-    
-    @inline(__always)
-    func detechedEnvironmentInputs() -> Self {
-        var newInputs = self
-        newInputs.base = self.base.detechedEnvironmentInputs()
-        return newInputs
     }
 }

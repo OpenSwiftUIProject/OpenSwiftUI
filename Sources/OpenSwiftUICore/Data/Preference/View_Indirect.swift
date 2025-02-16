@@ -31,8 +31,8 @@ extension _ViewInputs {
 
 extension _ViewOutputs {
     #if canImport(Darwin)
-    package func setIndirectDependencies(_ dependency: AnyAttribute?) {
-        preferences.setIndirectDependencies(dependency)
+    package func setIndirectDependency(_ dependency: AnyAttribute?) {
+        preferences.setIndirectDependency(dependency)
         if let target = layoutComputer?.identifier {
             target.indirectDependency = dependency
         }

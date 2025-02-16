@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: B2543BCA257433E04979186A1DC2B6BC
 
-import OpenGraphShims
+package import OpenGraphShims
 import OpenSwiftUI_SPI
 
 /// The context of the current state-processing update.
@@ -247,11 +247,39 @@ extension Transaction {
     }
 }
 
-// MARK: - TransactionID [TODO]
+// MARK: - TransactionID
 
-package struct TransactionID/*: Comparable, Hashable */{
+package struct TransactionID: Comparable, Hashable {
     package var id: Int
-    package init(id: Int) {
-        self.id = id
+
+    @inlinable
+    package init() { id = .zero }
+
+    @inlinable
+    package init(graph: Graph) {
+        id = Int(graph.counter(for: ._1))
+    }
+
+    @inlinable
+    package init(context: AnyRuleContext) {
+        #if canImport(Darwin)
+        self.init(graph: context.attribute.graph)
+        #else
+        preconditionFailure("See #39")
+        #endif
+    }
+
+    @inlinable
+    package init<Value>(context: RuleContext<Value>) {
+        #if canImport(Darwin)
+        self.init(graph: context.attribute.graph)
+        #else
+        preconditionFailure("See #39")
+        #endif
+    }
+
+    @inlinable
+    package static func < (lhs: TransactionID, rhs: TransactionID) -> Bool {
+        lhs.id < rhs.id
     }
 }
