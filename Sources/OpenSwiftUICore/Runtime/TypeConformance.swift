@@ -10,7 +10,7 @@ import OpenGraphShims
 
 // MARK: - ProtocolDescriptor
 
-package protocol ProtocolDescriptor {
+public /*package*/ protocol ProtocolDescriptor {
     static var descriptor: UnsafeRawPointer { get }
 }
 
