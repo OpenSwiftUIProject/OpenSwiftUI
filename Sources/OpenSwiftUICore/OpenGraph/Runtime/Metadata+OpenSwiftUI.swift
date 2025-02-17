@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-public import OpenGraphShims
+package import OpenGraphShims
 
 extension Metadata {
     package var isValueType: Bool {
@@ -15,7 +15,7 @@ extension Metadata {
         }
     }
 
-    public func genericType(at index: Int) -> any Any.Type {
+    package func genericType(at index: Int) -> any Any.Type {
         UnsafeRawPointer(rawValue)
             .advanced(by: index &* 8)
             .advanced(by: 16)
