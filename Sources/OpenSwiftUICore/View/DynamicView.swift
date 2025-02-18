@@ -72,8 +72,8 @@ private struct DynamicViewContainer<V>: StatefulRule, AsyncAttribute where V: Dy
 
     func updateValue() {
         let (type, id) = view.childInfo(metadata: metadata)
-        let oldValue: Value? = Graph.outputValue()?.pointee
-        guard oldValue.map({ $0.matches(type: type, id: id)}) == false else {
+        let oldValue: Value? = hasValue ? value : nil
+        guard oldValue.map({ $0.matches(type: type, id: id)}) != true else {
             return
         }
         if let oldValue {
