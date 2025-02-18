@@ -5,16 +5,17 @@
 @testable import OpenSwiftUICore
 import Testing
 
+@MainActor
 struct AnyViewTests {
     @Test
-    func testInitFromValue() throws {
+    func initFromValue() throws {
         let empty = EmptyView()
-        let any = try #require(AnyView(_fromValue: empty))
-        // #expect(any.storage.id == nil)
-        let _: EmptyView = any.storage.child()
-        
-        let any1 = AnyView(any)
-        let any2 = try #require(AnyView(_fromValue: any))
-        #expect(any1.storage === any2.storage)
+        let any1 = try #require(AnyView(_fromValue: empty))
+
+        let any2 = try #require(AnyView(_fromValue: any1))
+        #expect(any2.storage === any1.storage)
+
+        let any3 = AnyView(any1)
+        #expect(any3.storage === any1.storage)
     }
 }

@@ -128,10 +128,12 @@ extension _GraphInputs {
     }
     
     package mutating func pushStableType(_ type: any Any.Type) {
+        #if OPENSWIFTUI_SUPPORT_2024_API
         guard options.contains(.needsStableDisplayListIDs) else {
             return
         }
         pushScope(id: makeStableTypeData(type))
+        #endif
     }
     
     package var stableIDScope: WeakAttribute<DisplayList.StableIdentityScope>? {
@@ -143,10 +145,11 @@ extension _GraphInputs {
     }
 }
 
+#if OPENSWIFTUI_SUPPORT_2024_API
 package func makeStableTypeData(_ type: any Any.Type) -> StrongHash {
-    // OGTypeGetSignature
-    preconditionFailure("TODO")
+    unsafeBitCast(Metadata(type).signature, to: StrongHash.self)
 }
+#endif
 
 package func makeStableIDData<ID>(from id: ID) -> StrongHash? {
     guard let encodable = id as? Encodable else {
