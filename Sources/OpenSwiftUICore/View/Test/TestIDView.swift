@@ -3,27 +3,30 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: CC151E1A36B4405FF56CDABA5D46BF1E
 
 import OpenGraphShims
 
+// MARK: - TestIDView + View extension
+
 @_spi(Testing)
 extension View {
-    nonisolated public func testID<ID>(_ id: ID) -> TestIDView<Self, ID> where ID : Hashable {
+    nonisolated public func testID<ID>(_ id: ID) -> TestIDView<Self, ID> where ID: Hashable {
         TestIDView(content: self, id: id)
     }
 }
 
+// MARK: - TestIDView
+
 @_spi(Testing)
-@MainActor
-@preconcurrency
 public struct TestIDView<Content, ID>: PrimitiveView, UnaryView where Content: View, ID: Hashable {
     public var content: Content
     public var id: ID
     
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        fatalError()
+        let view = _GraphValue(IdentifiedView(view: view.value, id: nil))
+        return Content.makeDebuggableView(view: view, inputs: inputs)
     }
     
     public typealias Body = Never
@@ -37,15 +40,15 @@ public struct TestIDView<Content, ID>: PrimitiveView, UnaryView where Content: V
             self.id = id
         }
         
-        // TODO
-        typealias Value = TestIDView
-        
+        typealias Value = Content
+
         mutating func updateValue() {
-            // TODO: id = view.id
+            id = view.id
+            value = view.content
         }
         
         func matchesIdentifier<I>(_ identifier: I) -> Bool where I: Hashable {
-            compareValues(id, identifier as? ID)
+            (id as? I).map { $0 == identifier } == true
         }
         
         var description: String {
