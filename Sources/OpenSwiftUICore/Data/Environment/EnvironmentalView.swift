@@ -48,9 +48,7 @@ struct EnvironmentalViewChild<V>: StatefulRule, AsyncAttribute, CustomStringConv
         } else if envChanged, tracker.hasDifferentUsedValues(env.plist) {
             shouldReset = true
         } else {
-            // TODO: Optimize this API call
-            let outputValue: UnsafePointer<V.EnvironmentBody>? = Graph.outputValue()
-            shouldReset = outputValue == nil
+            shouldReset = !hasValue
         }
         guard shouldReset else { return }
         tracker.reset()
