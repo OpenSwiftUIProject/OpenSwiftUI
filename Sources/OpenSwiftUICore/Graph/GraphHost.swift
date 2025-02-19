@@ -199,7 +199,7 @@ open class GraphHost: CustomReflectable {
     }
     
     package final var isUpdating: Bool {
-        guard let graph = data.graph else { return false }
+        guard isValid else { return false }
         return graph.counter(for: ._6) != 0
     }
     
@@ -369,7 +369,7 @@ extension GraphHost {
                 return
             }
             let shouldDeferUpdate = switch style {
-                case .immediate: graph.counter(for: ._6) != 0 // FIXME: isUpdating
+                case .immediate: isUpdating
                 case .deferred: true
             }
             self.mayDeferUpdate = self.mayDeferUpdate || mayDeferUpdate
@@ -445,40 +445,70 @@ extension GraphHost {
         host.continuations.append(body)
     }
     
-    package final var hasPendingTransactions: Bool { !pendingTransactions.isEmpty }
+    package final var hasPendingTransactions: Bool {
+        !pendingTransactions.isEmpty
+    }
 
     package final func flushTransactions() {
         guard isValid, hasPendingTransactions else {
             return
         }
-        let transactions = pendingTransactions
+        let asyncTransactions = pendingTransactions
         pendingTransactions = []
-        for _ in transactions {
-            instantiateIfNeeded()
-            preconditionFailure("TODO")
+        for asyncTransaction in asyncTransactions {
+            let transaction = asyncTransaction.transaction
+            let mutations = asyncTransaction.mutations
+            runTransaction(transaction) {
+                withTransaction(transaction) {
+                    for mutation in mutations {
+                        mutation.apply()
+                    }
+                }
+            }
         }
         graphDelegate?.graphDidChange()
         mayDeferUpdate = true
     }
 
     package final func runTransaction(_ transaction: Transaction? = nil, do body: () -> Void) {
-        preconditionFailure("TODO")
+        instantiateIfNeeded()
+        if let transaction, !transaction.isEmpty {
+            data.transaction = transaction
+        }
+        startTransactionUpdate()
+        body()
+        finishTransactionUpdate(in: globalSubgraph)
+        if let transaction, !transaction.isEmpty {
+            data.transaction = .init()
+        }
     }
     
     package final func runTransaction() {
-        preconditionFailure("TODO")
+        runTransaction(nil) {}
     }
     
     package final var needsTransaction: Bool {
-        preconditionFailure("TODO")
+        globalSubgraph.isDirty(1)
     }
     
     package final func startTransactionUpdate() {
-        preconditionFailure("TODO")
+        inTransaction = true
+        data.transactionSeed += 1
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
-        preconditionFailure("TODO")
+        var count = 0
+        repeat {
+            let currentContinuations = continuations
+            continuations = []
+            for currentContinuation in currentContinuations {
+                currentContinuation()
+            }
+            count &+= 1
+            subgraph.update(flags: .active)
+            postUpdate(!continuations.isEmpty)
+        } while count != 8 && !continuations.isEmpty
+        inTransaction = false
     }
 }
 
