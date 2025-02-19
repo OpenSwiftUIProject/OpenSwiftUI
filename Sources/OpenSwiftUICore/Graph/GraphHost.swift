@@ -24,8 +24,15 @@ public protocol GraphDelegate: AnyObject {
 @_spi(ForOpenSwiftUIOnly)
 extension GraphDelegate {
     public func beginTransaction() {
-        onMainThread {
-            // TODO: RunLoop.addObserver
+        onMainThread { [weak self] in
+            RunLoop.addObserver {
+                Update.ensure {
+                    guard let self else { return }
+                    self.updateGraph { host in
+                        host.flushTransactions()
+                    }
+                }
+            }
         }
     }
 }
@@ -83,15 +90,15 @@ open class GraphHost: CustomReflectable {
             self.graph = graph
             self.globalSubgraph = globalSubgraph
             self.rootSubgraph = rootSubgrph
-            isRemoved = false
-            isHiddenForReuse = false
-            _time = time
-            _environment = environment
-            _phase = phase
-            _hostPreferenceKeys = hostPreferenceKeys
-            _transaction = transaction
-            _updateSeed = updateSeed
-            _transactionSeed = transactionSeed
+            self.isRemoved = false
+            self.isHiddenForReuse = false
+            self._time = time
+            self._environment = environment
+            self._phase = phase
+            self._hostPreferenceKeys = hostPreferenceKeys
+            self._transaction = transaction
+            self._updateSeed = updateSeed
+            self._transactionSeed = transactionSeed
             self.inputs = inputs
         }
         
@@ -335,9 +342,9 @@ extension GraphHost {
         if isRemoved != data.isRemoved {
             if isRemoved {
                 rootSubgraph.willRemove()
-                // TODO: OGSubgraphRemoveChild
+                globalSubgraph.removeChild(rootSubgraph)
             } else {
-                // TODO: OGSubgraphAddChild
+                globalSubgraph.addChild(rootSubgraph)
                 rootSubgraph.didReinsert()
             }
             data.isRemoved = isRemoved
