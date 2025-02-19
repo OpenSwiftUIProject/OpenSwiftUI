@@ -24,8 +24,15 @@ public protocol GraphDelegate: AnyObject {
 @_spi(ForOpenSwiftUIOnly)
 extension GraphDelegate {
     public func beginTransaction() {
-        onMainThread {
-            // TODO: RunLoop.addObserver
+        onMainThread { [weak self] in
+            RunLoop.addObserver {
+                Update.ensure {
+                    guard let self else { return }
+                    self.updateGraph { host in
+                        host.flushTransactions()
+                    }
+                }
+            }
         }
     }
 }
@@ -83,15 +90,15 @@ open class GraphHost: CustomReflectable {
             self.graph = graph
             self.globalSubgraph = globalSubgraph
             self.rootSubgraph = rootSubgrph
-            isRemoved = false
-            isHiddenForReuse = false
-            _time = time
-            _environment = environment
-            _phase = phase
-            _hostPreferenceKeys = hostPreferenceKeys
-            _transaction = transaction
-            _updateSeed = updateSeed
-            _transactionSeed = transactionSeed
+            self.isRemoved = false
+            self.isHiddenForReuse = false
+            self._time = time
+            self._environment = environment
+            self._phase = phase
+            self._hostPreferenceKeys = hostPreferenceKeys
+            self._transaction = transaction
+            self._updateSeed = updateSeed
+            self._transactionSeed = transactionSeed
             self.inputs = inputs
         }
         
@@ -192,7 +199,7 @@ open class GraphHost: CustomReflectable {
     }
     
     package final var isUpdating: Bool {
-        guard let graph = data.graph else { return false }
+        guard isValid else { return false }
         return graph.counter(for: ._6) != 0
     }
     
@@ -335,9 +342,9 @@ extension GraphHost {
         if isRemoved != data.isRemoved {
             if isRemoved {
                 rootSubgraph.willRemove()
-                // TODO: OGSubgraphRemoveChild
+                globalSubgraph.removeChild(rootSubgraph)
             } else {
-                // TODO: OGSubgraphAddChild
+                globalSubgraph.addChild(rootSubgraph)
                 rootSubgraph.didReinsert()
             }
             data.isRemoved = isRemoved
@@ -354,10 +361,43 @@ extension GraphHost {
         _ transaction: Transaction = .init(),
         id transactionID: Transaction.ID = Transaction.id,
         mutation: T,
-        style: _GraphMutation_Style = .deferred,
+        style: GraphMutation.Style = .deferred,
         mayDeferUpdate: Bool = true
     ) where T: GraphMutation {
-        // preconditionFailure("TODO")
+        Update.locked {
+            guard isValid else {
+                return
+            }
+            let shouldDeferUpdate = switch style {
+                case .immediate: isUpdating
+                case .deferred: true
+            }
+            self.mayDeferUpdate = self.mayDeferUpdate || mayDeferUpdate
+            if hasPendingTransactions {
+                let count = pendingTransactions.count
+                if pendingTransactions[count-1].transactionID == transactionID,
+                   pendingTransactions[count-1].transaction.mayConcatenate(with: transaction) {
+                    pendingTransactions[count-1].append(mutation)
+                    if !shouldDeferUpdate {
+                        let lastTransaction = pendingTransactions.removeLast()
+                        flushTransactions()
+                        pendingTransactions.append(lastTransaction)
+                    }
+                    return
+                }
+                if !shouldDeferUpdate {
+                    flushTransactions()
+                }
+            } else {
+                graphDelegate?.beginTransaction()
+            }
+            pendingTransactions.append(
+                AsyncTransaction(
+                    transaction: transaction,
+                    transactionID: transactionID,
+                    mutations: [mutation])
+            )
+        }
     }
     
     package final func asyncTransaction(
@@ -365,18 +405,27 @@ extension GraphHost {
         id transactionID: Transaction.ID = Transaction.id,
         _ body: @escaping () -> Void
     ) {
-        asyncTransaction(transaction, id: transactionID, mutation: CustomGraphMutation(body))
+        asyncTransaction(
+            transaction,
+            id: transactionID,
+            mutation: CustomGraphMutation(body)
+        )
     }
     
     package final func asyncTransaction<T>(
         _ transaction: Transaction = .init(),
         id transactionID: Transaction.ID = Transaction.id,
         invalidating attribute: WeakAttribute<T>,
-        style: _GraphMutation_Style = .deferred,
+        style: GraphMutation.Style = .deferred,
         mayDeferUpdate: Bool = true
     ) {
-        // Blocked by WeakAttribute.base API in OpenGraph
-        // asyncTransaction(transaction, id: transactionID, mutation: InvalidatingGraphMutation(attribute: attribute.base), style: style, mayDeferUpdate: mayDeferUpdate)
+        asyncTransaction(
+            transaction,
+            id: transactionID,
+            mutation: InvalidatingGraphMutation(attribute: .init(attribute)),
+            style: style,
+            mayDeferUpdate: mayDeferUpdate
+        )
     }
     
     package final func emptyTransaction(_ transaction: Transaction = .init()) {
@@ -396,40 +445,70 @@ extension GraphHost {
         host.continuations.append(body)
     }
     
-    package final var hasPendingTransactions: Bool { !pendingTransactions.isEmpty }
+    package final var hasPendingTransactions: Bool {
+        !pendingTransactions.isEmpty
+    }
 
     package final func flushTransactions() {
         guard isValid, hasPendingTransactions else {
             return
         }
-        let transactions = pendingTransactions
+        let asyncTransactions = pendingTransactions
         pendingTransactions = []
-        for _ in transactions {
-            instantiateIfNeeded()
-            preconditionFailure("TODO")
+        for asyncTransaction in asyncTransactions {
+            let transaction = asyncTransaction.transaction
+            let mutations = asyncTransaction.mutations
+            runTransaction(transaction) {
+                withTransaction(transaction) {
+                    for mutation in mutations {
+                        mutation.apply()
+                    }
+                }
+            }
         }
         graphDelegate?.graphDidChange()
         mayDeferUpdate = true
     }
 
     package final func runTransaction(_ transaction: Transaction? = nil, do body: () -> Void) {
-        preconditionFailure("TODO")
+        instantiateIfNeeded()
+        if let transaction, !transaction.isEmpty {
+            data.transaction = transaction
+        }
+        startTransactionUpdate()
+        body()
+        finishTransactionUpdate(in: globalSubgraph)
+        if let transaction, !transaction.isEmpty {
+            data.transaction = .init()
+        }
     }
     
     package final func runTransaction() {
-        preconditionFailure("TODO")
+        runTransaction(nil) {}
     }
     
     package final var needsTransaction: Bool {
-        preconditionFailure("TODO")
+        globalSubgraph.isDirty(1)
     }
     
     package final func startTransactionUpdate() {
-        preconditionFailure("TODO")
+        inTransaction = true
+        data.transactionSeed += 1
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
-        preconditionFailure("TODO")
+        var count = 0
+        repeat {
+            let currentContinuations = continuations
+            continuations = []
+            for currentContinuation in currentContinuations {
+                currentContinuation()
+            }
+            count &+= 1
+            subgraph.update(flags: .active)
+            postUpdate(!continuations.isEmpty)
+        } while count != 8 && !continuations.isEmpty
+        inTransaction = false
     }
 }
 
@@ -509,14 +588,20 @@ private struct ConstantKey: Hashable {
 
 package protocol GraphMutation {
     typealias Style = _GraphMutation_Style
+
     func apply()
+
     mutating func combine<T>(with other: T) -> Bool where T: GraphMutation
 }
+
+// MARK: GraphMutation.Style
 
 package enum _GraphMutation_Style {
     case immediate
     case deferred
 }
+
+// MARK: - CustomGraphMutation
 
 package struct CustomGraphMutation: GraphMutation {
     let body: () -> Void
@@ -524,8 +609,10 @@ package struct CustomGraphMutation: GraphMutation {
         self.body = body
     }
     package func apply() { body() }
-    package func combine<T>(with other: T) -> Bool where T : GraphMutation { false }
+    package func combine<T>(with other: T) -> Bool where T: GraphMutation { false }
 }
+
+// MARK: - InvalidatingGraphMutation
 
 struct InvalidatingGraphMutation: GraphMutation {
     let attribute: AnyWeakAttribute
@@ -542,6 +629,8 @@ struct InvalidatingGraphMutation: GraphMutation {
     }
 }
 
+// MARK: - EmptyGraphMutation
+
 private struct EmptyGraphMutation: GraphMutation {
     package init() {}
     package func apply() {}
@@ -550,26 +639,24 @@ private struct EmptyGraphMutation: GraphMutation {
     }
 }
 
-// MARK: - TransactionHostProvider [TODO]
+// MARK: - TransactionHostProvider
 
 package protocol TransactionHostProvider: AnyObject {
     var mutationHost: GraphHost? { get }
 }
 
-// MARK: - AsyncTransaction [TODO]
+// MARK: - AsyncTransaction
 
-private final class AsyncTransaction {
+private struct AsyncTransaction {
     let transaction: Transaction
+
+    let transactionID: Transaction.ID
+
     var mutations: [GraphMutation] = []
-    
-    init(_ transaction: Transaction) {
-        self.transaction = transaction
-    }
-    
-    func append<Mutation: GraphMutation>(_ mutation: Mutation) {
-        // ``GraphMutation/combine`` is mutating function
-        // So we use ``Array.subscript/_modify`` instead of ``Array.last/getter`` to mutate inline
-        if !mutations.isEmpty, mutations[mutations.count - 1].combine(with: mutation) {
+
+    mutating func append<T>(_ mutation: T) where T: GraphMutation {
+        // NOTE: use ``Array.subscript/_modify`` instead of ``Array.last/getter`` to mutate inline
+        guard mutations.isEmpty || !mutations[mutations.count - 1].combine(with: mutation) else {
             return
         }
         mutations.append(mutation)

@@ -74,7 +74,8 @@ public struct Transaction {
     package var isEmpty: Bool { plist.isEmpty }
     
     package func mayConcatenate(with other: Transaction) -> Bool {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
+        false
     }
     
     @_transparent
@@ -92,7 +93,7 @@ public struct Transaction {
     
     package static var current: Transaction {
         if let data = _threadTransactionData() {
-            Transaction(plist: PropertyList(data: data as? AnyObject))
+            Transaction(plist: PropertyList(data: data as AnyObject))
         } else {
             Transaction()
         }
@@ -131,11 +132,19 @@ public func withTransaction<Result>(
     _ transaction: Transaction,
     _ body: () throws -> Result
 ) rethrows -> Result {
-    // TO BE AUDITED in RELEASE_2024
     try withExtendedLifetime(transaction) {
         let oldData = _threadTransactionData()
         defer { _setThreadTransactionData(oldData) }
-        let data = transaction.plist.elements.map { Unmanaged.passUnretained($0).toOpaque() }        
+        // FIXME after Transaction update
+        let result: Transaction
+        if isDeployedOnOrAfter(Semantics.v5) {
+            var transaction = Transaction.current
+            transaction.plist.merge(transaction.plist)
+            result = transaction
+        } else {
+            result = transaction
+        }
+        let data = result.plist.elements.map { Unmanaged.passUnretained($0).toOpaque() }
         _setThreadTransactionData(data)
         return try body()
     }

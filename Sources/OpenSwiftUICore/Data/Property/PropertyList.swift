@@ -126,7 +126,7 @@ package struct PropertyList: CustomStringConvertible {
     }
     
     mutating func merge(_ plist: PropertyList) {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
 }
 
