@@ -9,6 +9,19 @@
 package import Foundation
 import CoreFoundation
 
+#if !canImport(ObjectiveC)
+/// A compactible implementation for the autoreleasepool API
+@inlinable
+func autoreleasepool<Result>(invoking body: () throws -> Result) rethrows -> Result {
+    try body()
+}
+
+extension CFRunLoopMode {
+    static let defaultMode: CFRunLoopMode! = kCFRunLoopDefaultMode
+    static let commonModes: CFRunLoopMode! = kCFRunLoopCommonModes
+}
+#endif
+
 package func onNextMainRunLoop(do body: @escaping () -> Void) {
     RunLoop.main.perform(inModes: [.common], block: body)
 }
