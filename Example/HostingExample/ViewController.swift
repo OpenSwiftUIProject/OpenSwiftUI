@@ -55,7 +55,7 @@ struct ContentView: View {
                     first.toggle()
                 }
             }
-            // .id(first)
+            .id(first)
 //                .onDisappear {
 //                    print("Red disappear")
 //                }
