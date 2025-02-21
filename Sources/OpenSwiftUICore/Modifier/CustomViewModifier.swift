@@ -115,7 +115,7 @@ extension ViewModifier {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
         let (view, buffer) = makeBody(modifier: modifier, inputs: &inputs.base, fields: fields)
-        inputs.append(.view(body), to: BodyInput<Self>.self)
+        inputs.append(.view(body), to: BodyInput<Content>.self)
         let outputs = Body.makeDebuggableView(view: view, inputs: inputs)
         if let buffer {
             buffer.traceMountedProperties(to: modifier, fields: fields)
@@ -131,7 +131,7 @@ extension ViewModifier {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
         let (view, buffer) = makeBody(modifier: modifier, inputs: &inputs.base, fields: fields)
-        inputs.base.append(.list(body), to: BodyInput<Self>.self)
+        inputs.base.append(.list(body), to: BodyInput<Content>.self)
         let outputs = Body.makeDebuggableViewList(view: view, inputs: inputs)
         if let buffer {
             buffer.traceMountedProperties(to: modifier, fields: fields)
