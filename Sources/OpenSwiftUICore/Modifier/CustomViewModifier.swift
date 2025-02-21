@@ -4,11 +4,37 @@
 //
 //  Audited for iOS 15.5
 //  Status: WIP
-//  ID: 0EAFD5A78D9C0B607C3C0964CF3A3038
+//  ID: 0EAFD5A78D9C0B607C3C0964CF3A3038 (SwiftUI)
+//  ID: 2BA0A33A15B7F322F46AFB9D0D1A262D (SwiftUICore)
 
 import OpenGraphShims
 
 // MARK: - ViewModifier + Extension
+
+extension ViewModifier {
+    public static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        makeView(modifier: modifier, inputs: inputs, body: body)
+    }
+
+    public static func _makeViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        makeViewList(modifier: modifier, inputs: inputs, body: body)
+    }
+
+    public static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        viewListCount(inputs: inputs, body: body)
+    }
+}
 
 extension ViewModifier {
     static func makeView(
@@ -63,82 +89,7 @@ extension ViewModifier {
     }
 }
 
-// MARK: - ModifierBodyAccessor
-
-private struct ModifierBodyAccessor<Container: ViewModifier>: BodyAccessor {
-    typealias Body = Container.Body
-    
-    func updateBody(of container: Container, changed: Bool) {
-        guard changed else {
-            return
-        }
-        setBody {
-            container.body(content: _ViewModifier_Content())
-        }
-    }
-}
-
-// MARK: - _ViewModifier_Content
-
-public struct _ViewModifier_Content<Modifier: ViewModifier>: PrimitiveView {
-    public static func _makeView(
-        view: _GraphValue<Self>,
-        inputs: _ViewInputs
-    ) -> _ViewOutputs {
-        var inputs = inputs
-        guard let body = inputs.popLast(BodyInput.self) else {
-            return _ViewOutputs()
-        }
-        switch body {
-        case let .view(makeViewBody):
-            return makeViewBody(_Graph(), inputs)
-        case let .list(makeViewListBody):
-            preconditionFailure("TODO: \(String(describing: makeViewListBody))")
-        }
-    }
-    
-    public static func _makeViewList(
-        view: _GraphValue<Self>,
-        inputs: _ViewListInputs
-    ) -> _ViewListOutputs {
-        preconditionFailure("TODO")
-    }
-    
-    public static func _viewListCount(
-        inputs: _ViewListCountInputs,
-        body: (_ViewListCountInputs) -> Int?
-    ) -> Int? {
-        preconditionFailure("TODO")
-    }
-}
-
-extension _ViewModifier_Content {
-    fileprivate struct BodyInput: ViewInput {
-        static var defaultValue: [Body] {
-            []
-        }
-        
-        typealias MakeViewBody = (_Graph, _ViewInputs) -> _ViewOutputs
-        typealias MakeViewListBody = (_Graph, _ViewListInputs) -> _ViewListOutputs
-        
-        enum Body: Equatable {
-            case view(MakeViewBody)
-            case list(MakeViewListBody)
-            
-            static func == (lhs: _ViewModifier_Content<Modifier>.BodyInput.Body, rhs: _ViewModifier_Content<Modifier>.BodyInput.Body) -> Bool {
-                if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
-                    compareValues(lhsBody, rhsBody)
-                } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
-                    compareValues(lhsBody, rhsBody)
-                } else {
-                    false
-                }
-            }
-        }
-    }
-}
-
-// MARK: - BodyInput
+// MARK: - BodyInput [WIP]
 
 // FIXME
 private struct BodyInput<Input> {}
@@ -186,7 +137,83 @@ private enum BodyInputElement: GraphReusable, Equatable {
     }
 }
 
+// MARK: - BodyCountInput
 
 private struct BodyCountInput<V>: ViewInput {
-    static var defaultValue: Stack<_ViewListCountInputs> { .init() }
+    static var defaultValue: Stack<(_ViewListCountInputs) -> Int?> { .init() }
+}
+
+// MARK: - ModifierBodyAccessor
+
+private struct ModifierBodyAccessor<Container>: BodyAccessor where Container: ViewModifier {
+    typealias Body = Container.Body
+
+    func updateBody(of container: Container, changed: Bool) {
+        guard changed else {
+            return
+        }
+        setBody {
+            container.body(content: Container.Content())
+        }
+    }
+}
+
+// MARK: - _ViewModifier_Content
+
+public struct _ViewModifier_Content<Modifier: ViewModifier>: PrimitiveView {
+    public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        guard let body = inputs.popLast(BodyInput.self) else {
+            return _ViewOutputs()
+        }
+        switch body {
+        case let .view(makeViewBody):
+            return makeViewBody(_Graph(), inputs)
+        case let .list(makeViewListBody):
+            preconditionFailure("TODO: \(String(describing: makeViewListBody))")
+        }
+    }
+
+    public static func _makeViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        preconditionFailure("TODO")
+    }
+
+    public static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        preconditionFailure("TODO")
+    }
+}
+
+extension _ViewModifier_Content {
+    fileprivate struct BodyInput: ViewInput {
+        static var defaultValue: [Body] {
+            []
+        }
+
+        typealias MakeViewBody = (_Graph, _ViewInputs) -> _ViewOutputs
+        typealias MakeViewListBody = (_Graph, _ViewListInputs) -> _ViewListOutputs
+
+        enum Body: Equatable {
+            case view(MakeViewBody)
+            case list(MakeViewListBody)
+
+            static func == (lhs: _ViewModifier_Content<Modifier>.BodyInput.Body, rhs: _ViewModifier_Content<Modifier>.BodyInput.Body) -> Bool {
+                if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
+                    compareValues(lhsBody, rhsBody)
+                } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
+                    compareValues(lhsBody, rhsBody)
+                } else {
+                    false
+                }
+            }
+        }
+    }
 }

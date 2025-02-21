@@ -80,4 +80,13 @@ extension View {
     }
 }
 
-// TODO: ViewModifier
+extension ViewModifier {
+    nonisolated static func makeImplicitRoot(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewOutputs {
+        // TODO
+        return .init()
+    }
+}
