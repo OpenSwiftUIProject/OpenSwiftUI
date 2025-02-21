@@ -255,7 +255,7 @@ extension ViewRendererHost {
             }
             renderingPhase = .none
             if nextTime.seconds.isFinite {
-                var delay = max(nextTime.seconds, time.seconds) - time.seconds
+                let delay = max(nextTime.seconds, time.seconds) - time.seconds
                 requestUpdate(after: max(delay, 1e-6))
             }
         }
