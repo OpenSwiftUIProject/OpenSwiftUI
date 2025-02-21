@@ -1,13 +1,13 @@
 //
 //  DynamicProperty.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: Complete
-//  ID: 49D2A32E637CD497C6DE29B8E060A506 (RELEASE_2021)
-//  ID: A4C1D658B3717A3062FEFC91A812D6EB (RELEASE_2024)
+//  ID: 49D2A32E637CD497C6DE29B8E060A506 (SwiftUI)
+//  ID: A4C1D658B3717A3062FEFC91A812D6EB (SwiftUICore)
 
-import OpenGraphShims
+package import OpenGraphShims
 
 // MARK: - DynamicProperty
 
@@ -210,7 +210,11 @@ package struct DynamicPropertyCache {
     }
 }
 
-// TO BE AUDITED
+package protocol BodyAccessor<Container, Body> {
+    associatedtype Container
+    associatedtype Body
+    func updateBody(of container: Container, changed: Bool)
+}
 
 extension BodyAccessor {
     package func makeBody(
@@ -253,7 +257,28 @@ extension BodyAccessor {
             }
         }
     }
+
+    @inline(__always)
+    package func setBody(_ body: () -> Body) {
+        let value = traceRuleBody(Container.self) {
+            OGGraph.withoutUpdate(body)
+        }
+        withUnsafePointer(to: value) { value in
+            OGGraph.setOutputValue(value)
+        }
+    }
 }
+
+// MARK: - BodyAccessorRule
+
+package protocol BodyAccessorRule {
+    static var container: Any.Type { get }
+    static func value<T>(as: T.Type, attribute: AnyAttribute) -> T?
+    static func buffer<T>(as: T.Type, attribute: AnyAttribute) -> _DynamicPropertyBuffer?
+    static func metaProperties<T>(as: T.Type, attribute: AnyAttribute) -> [(String, AnyAttribute)]
+}
+
+// TO BE AUDITED
 
 // MARK: - RuleThreadFlags
 
