@@ -258,33 +258,21 @@ private enum BodyInputElement: GraphReusable, Equatable {
                     ReuseTrace.traceReuseInternalFailure()
                     return false
                 }
-                // FIXME:
-                // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
-                // 2. Add 0x103 case instead of rawValue
-                return Self.isTriviallyReusable || compareValues(makeViewBody, otherMakeViewBody, options: .init(rawValue: 0x103))
+                return Self.isTriviallyReusable || compareValues(makeViewBody, otherMakeViewBody)
             case let .list(makeViewListBody):
                 guard case let .list(otherMakeViewListBody) = other else {
                     ReuseTrace.traceReuseInternalFailure()
                     return false
                 }
-                // FIXME:
-                // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
-                // 2. Add 0x103 case instead of rawValue
-                return Self.isTriviallyReusable || compareValues(makeViewListBody, otherMakeViewListBody, options: .init(rawValue: 0x103))
+                return Self.isTriviallyReusable || compareValues(makeViewListBody, otherMakeViewListBody)
         }
     }
 
     static func == (lhs: BodyInputElement, rhs: BodyInputElement) -> Bool {
         if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
-            // FIXME:
-            // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
-            // 2. Add 0x103 case instead of rawValue
-            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
+            compareValues(lhsBody, rhsBody)
         } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
-            // FIXME:
-            // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
-            // 2. Add 0x103 case instead of rawValue
-            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
+            compareValues(lhsBody, rhsBody)
         } else {
             false
         }
