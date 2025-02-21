@@ -190,7 +190,7 @@ extension ViewInputsModifier {
         nil
     }
 
-    nonisolated static func _makeView(
+    nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
@@ -200,7 +200,7 @@ extension ViewInputsModifier {
         return body(_Graph(), viewInputs)
     }
 
-    nonisolated static func _makeViewList(
+    nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
@@ -217,7 +217,7 @@ extension ViewInputsModifier {
 
     /// The number of views that `_makeViewList()` would produce, or
     /// nil if unknown.
-    nonisolated static func _viewListCount(
+    nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
