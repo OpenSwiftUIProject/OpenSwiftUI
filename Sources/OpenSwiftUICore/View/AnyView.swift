@@ -131,15 +131,17 @@ private final class AnyViewStorage<V>: AnyViewStorageBase where V: View {
     override func makeChildView(view: Attribute<AnyView>, inputs: _ViewInputs) -> _ViewOutputs {
         var inputs = inputs
         inputs.base.pushStableType(V.self)
-        let view = _GraphValue(AnyViewChild<V>(view: view))
-        return V.makeDebuggableView(view: view, inputs: inputs)
+        let childView = Attribute(AnyViewChild<V>(view: view))
+        childView.value = self.view
+        return V.makeDebuggableView(view: _GraphValue(childView), inputs: inputs)
     }
 
     override func makeChildViewList(view: Attribute<AnyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
         var inputs = inputs
         inputs.base.pushStableType(V.self)
-        let view = _GraphValue(AnyViewChild<V>(view: view))
-        return V.makeDebuggableViewList(view: view, inputs: inputs)
+        let childView = Attribute(AnyViewChild<V>(view: view))
+        childView.value = self.view
+        return V.makeDebuggableViewList(view: _GraphValue(childView), inputs: inputs)
     }
 
     override func visitContent<Visitor>(_ visitor: inout Visitor) where Visitor: ViewVisitor {

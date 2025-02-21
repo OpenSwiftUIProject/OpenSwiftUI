@@ -34,7 +34,7 @@ extension DynamicView {
             metadata: metadata,
             view: view.value,
             inputs: inputs,
-            outputs: inputs.makeIndirectOutputs()
+            outputs: outputs
         )
         let attribute = Attribute(container)
         attribute.flags = .active
@@ -157,7 +157,7 @@ private struct DynamicViewList<V>: StatefulRule, AsyncAttribute where V: Dynamic
                 continue
             }
             item.retain()
-            // parentSubgraph.addChild(item.subgraph)
+            parentSubgraph.addChild(item.subgraph)
             item.subgraph.didReinsert()
             lastItem = item
             setValue(for: item, id: lastID)
