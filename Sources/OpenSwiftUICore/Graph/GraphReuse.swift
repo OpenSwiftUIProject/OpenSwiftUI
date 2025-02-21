@@ -8,10 +8,6 @@
 
 package import OpenGraphShims
 
-// TODO: Move down to OpenGraph Package
-package typealias Subgraph = OGSubgraph
-package typealias Graph = OGGraph
-
 public final class IndirectAttributeMap {
     package final let subgraph: Subgraph
     package final var map: [AnyAttribute: AnyAttribute]

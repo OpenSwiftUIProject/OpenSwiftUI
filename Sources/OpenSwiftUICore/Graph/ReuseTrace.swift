@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-import OpenGraphShims
+package import OpenGraphShims
 
 package struct ReuseTrace {
     package static func register(graph: Graph) {
