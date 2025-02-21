@@ -73,6 +73,17 @@ extension _ViewInputs {
     }
 }
 
+package struct ViewListOptionsInput: ViewInput {
+    package static let defaultValue: _ViewListInputs.Options = []
+}
+
+extension _ViewOutputs {
+    package static func multiView(inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewListOutputs) -> _ViewOutputs {
+        // TODO
+        return .init()
+    }
+}
+
 extension View {
     nonisolated static func makeImplicitRoot(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         // TODO

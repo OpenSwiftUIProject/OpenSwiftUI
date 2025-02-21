@@ -1,18 +1,90 @@
 //
 //  CustomViewModifier.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: WIP
+//  Audited for iOS 18.0
+//  Status: Complete
 //  ID: 0EAFD5A78D9C0B607C3C0964CF3A3038 (SwiftUI)
 //  ID: 2BA0A33A15B7F322F46AFB9D0D1A262D (SwiftUICore)
 
 import OpenGraphShims
 
+// MARK: - _ViewModifier_Content
+
+public struct _ViewModifier_Content<Modifier>: PrimitiveView where Modifier: ViewModifier {
+    nonisolated public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        providerMakeView(view: view, inputs: inputs)
+    }
+
+    nonisolated public static func _makeViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        providerMakeViewList(view: view, inputs: inputs)
+    }
+
+    nonisolated public static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        nil
+    }
+
+    @_alwaysEmitIntoClient
+    nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        _viewListCount(inputs: inputs) { _ in nil }
+    }
+}
+
+// MARK: - PlaceholderContentView
+
+/// A placeholder used to construct an inline modifier, transition, or other
+/// helper type.
+///
+/// You don't use this type directly. Instead OpenSwiftUI creates this type on
+/// your behalf.
+public struct PlaceholderContentView<Value>: View {
+    package init() {}
+
+    nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        providerMakeView(view: view, inputs: inputs)
+    }
+
+    nonisolated public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        providerMakeViewList(view: view, inputs: inputs)
+    }
+
+    nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        providerViewListCount(inputs: inputs)
+    }
+
+    public typealias Body = Never
+}
+
+@available(*, unavailable)
+extension PlaceholderContentView: Sendable {}
+
+extension _ViewInputs {
+    package mutating func pushModifierBody<Token>(_ type: Token.Type, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) {
+        append(BodyInputElement.view(body), to: BodyInput<Token>.self)
+    }
+}
+extension _ViewListInputs {
+    package mutating func pushModifierBody<Token>(_ type: Token.Type, body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs) {
+        base.append(BodyInputElement.list(body), to: BodyInput<Token>.self)
+    }
+}
+
+@available(*, unavailable)
+extension _ViewModifier_Content: Sendable {}
+
 // MARK: - ViewModifier + Extension
 
 extension ViewModifier {
-    public static func _makeView(
+    nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
@@ -20,7 +92,7 @@ extension ViewModifier {
         makeView(modifier: modifier, inputs: inputs, body: body)
     }
 
-    public static func _makeViewList(
+    nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
@@ -28,16 +100,14 @@ extension ViewModifier {
         makeViewList(modifier: modifier, inputs: inputs, body: body)
     }
 
-    public static func _viewListCount(
+    nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
         viewListCount(inputs: inputs, body: body)
     }
-}
 
-extension ViewModifier {
-    static func makeView(
+    nonisolated package static func makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
@@ -45,35 +115,42 @@ extension ViewModifier {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
         let (view, buffer) = makeBody(modifier: modifier, inputs: &inputs.base, fields: fields)
-        inputs.append(.view(body), to: _ViewModifier_Content<Self>.BodyInput.self)
-        let outputs = _ViewDebug.makeView(
-            view: view,
-            inputs: inputs
-        ) { view, inputs in
-            Body._makeView(view: view, inputs: inputs)
-        }
+        inputs.append(.view(body), to: BodyInput<Self>.self)
+        let outputs = Body.makeDebuggableView(view: view, inputs: inputs)
         if let buffer {
-            buffer.traceMountedProperties(to: view, fields: fields)
+            buffer.traceMountedProperties(to: modifier, fields: fields)
         }
         return outputs
     }
     
-    static func makeViewList(
+    nonisolated package static func makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        let fields = DynamicPropertyCache.fields(of: Self.self)
+        var inputs = inputs
+        let (view, buffer) = makeBody(modifier: modifier, inputs: &inputs.base, fields: fields)
+        inputs.base.append(.list(body), to: BodyInput<Self>.self)
+        let outputs = Body.makeDebuggableViewList(view: view, inputs: inputs)
+        if let buffer {
+            buffer.traceMountedProperties(to: modifier, fields: fields)
+        }
+        return outputs
     }
     
-    static func viewListCount(
+    nonisolated package static func viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
-        preconditionFailure("TODO")
+        withoutActuallyEscaping(body) { escapingBody in
+            var inputs = inputs
+            inputs.append(escapingBody, to: BodyCountInput<Self>.self)
+            return Body._viewListCount(inputs: inputs)
+        }
     }
     
-    private static func makeBody(
+    nonisolated private static func makeBody(
         modifier: _GraphValue<Self>,
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
@@ -81,18 +158,83 @@ extension ViewModifier {
         let kind = Metadata(Self.self).kind
         switch kind {
         case .struct, .enum, .optional, .tuple:
-            let accessor = ModifierBodyAccessor<Self>()
-            return accessor.makeBody(container: modifier, inputs: &inputs, fields: fields)
+            return ModifierBodyAccessor().makeBody(container: modifier, inputs: &inputs, fields: fields)
         default:
-            preconditionFailure("view modifiers must be value types:  \(Self.self)")
+            preconditionFailure("view modifiers must be value types: \(Self.self)")
         }
     }
 }
 
-// MARK: - BodyInput [WIP]
+// MARK: - ViewModifierContentProvider
 
-// FIXME
-private struct BodyInput<Input> {}
+private protocol ViewModifierContentProvider: PrimitiveView {}
+
+extension _ViewModifier_Content: ViewModifierContentProvider {}
+extension PlaceholderContentView: ViewModifierContentProvider {}
+
+extension ViewModifierContentProvider {
+    nonisolated fileprivate static func providerMakeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        let graphInputs = inputs.base
+        var inputs = inputs
+        guard let body = inputs.popLast(BodyInput<Self>.self) else {
+            return _ViewOutputs()
+        }
+        switch body {
+        case let .view(makeViewBody):
+            return makeViewBody(_Graph(), inputs)
+        case let .list(makeViewListBody):
+            return .multiView(inputs: inputs) {
+                makeViewListBody($0, .init($1.base, options: graphInputs[ViewListOptionsInput.self]))
+            }
+        }
+    }
+
+    nonisolated fileprivate static func providerMakeViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        guard let body = inputs.base.popLast(BodyInput<Self>.self) else {
+            return .emptyViewList(inputs: inputs)
+        }
+        switch body {
+        case let .view(makeViewBody):
+            return .unaryViewList(
+                viewType: Self.self,
+                inputs: inputs
+            ) {
+                makeViewBody(_Graph(), $0)
+            }
+        case let .list(makeViewListBody):
+            return makeViewListBody(_Graph(), inputs)
+        }
+    }
+
+    nonisolated fileprivate static func providerViewListCount(
+        inputs: _ViewListCountInputs
+    ) -> Int? {
+        var inputs = inputs
+        guard let input = inputs.popLast(BodyCountInput<Self>.self) else {
+            return 0
+        }
+        guard !inputs.customModifierTypes.contains(ObjectIdentifier(Self.self)) else {
+            return nil
+        }
+        inputs.customModifierTypes.append(ObjectIdentifier(Self.self))
+        return input(inputs)
+    }
+}
+
+// MARK: - BodyInput
+
+private struct BodyInput<V>: ViewInput {
+    static var defaultValue: Stack<BodyInputElement> { Stack() }
+}
+
+// MARK: - BodyInputElement
 
 private enum BodyInputElement: GraphReusable, Equatable {
     typealias MakeViewBody = (_Graph, _ViewInputs) -> _ViewOutputs
@@ -100,16 +242,6 @@ private enum BodyInputElement: GraphReusable, Equatable {
 
     case view(MakeViewBody)
     case list(MakeViewListBody)
-
-    static func == (lhs: BodyInputElement, rhs: BodyInputElement) -> Bool {
-        if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
-            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
-        } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
-            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
-        } else {
-            false
-        }
-    }
 
     static var isTriviallyReusable: Bool {
         _SemanticFeature_v5.isEnabled
@@ -126,13 +258,35 @@ private enum BodyInputElement: GraphReusable, Equatable {
                     ReuseTrace.traceReuseInternalFailure()
                     return false
                 }
+                // FIXME:
+                // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
+                // 2. Add 0x103 case instead of rawValue
                 return Self.isTriviallyReusable || compareValues(makeViewBody, otherMakeViewBody, options: .init(rawValue: 0x103))
             case let .list(makeViewListBody):
                 guard case let .list(otherMakeViewListBody) = other else {
                     ReuseTrace.traceReuseInternalFailure()
                     return false
                 }
+                // FIXME:
+                // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
+                // 2. Add 0x103 case instead of rawValue
                 return Self.isTriviallyReusable || compareValues(makeViewListBody, otherMakeViewListBody, options: .init(rawValue: 0x103))
+        }
+    }
+
+    static func == (lhs: BodyInputElement, rhs: BodyInputElement) -> Bool {
+        if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
+            // FIXME:
+            // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
+            // 2. Add 0x103 case instead of rawValue
+            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
+        } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
+            // FIXME:
+            // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
+            // 2. Add 0x103 case instead of rawValue
+            compareValues(lhsBody, rhsBody, options: .init(rawValue: 0x103))
+        } else {
+            false
         }
     }
 }
@@ -154,66 +308,6 @@ private struct ModifierBodyAccessor<Container>: BodyAccessor where Container: Vi
         }
         setBody {
             container.body(content: Container.Content())
-        }
-    }
-}
-
-// MARK: - _ViewModifier_Content
-
-public struct _ViewModifier_Content<Modifier: ViewModifier>: PrimitiveView {
-    public static func _makeView(
-        view: _GraphValue<Self>,
-        inputs: _ViewInputs
-    ) -> _ViewOutputs {
-        var inputs = inputs
-        guard let body = inputs.popLast(BodyInput.self) else {
-            return _ViewOutputs()
-        }
-        switch body {
-        case let .view(makeViewBody):
-            return makeViewBody(_Graph(), inputs)
-        case let .list(makeViewListBody):
-            preconditionFailure("TODO: \(String(describing: makeViewListBody))")
-        }
-    }
-
-    public static func _makeViewList(
-        view: _GraphValue<Self>,
-        inputs: _ViewListInputs
-    ) -> _ViewListOutputs {
-        preconditionFailure("TODO")
-    }
-
-    public static func _viewListCount(
-        inputs: _ViewListCountInputs,
-        body: (_ViewListCountInputs) -> Int?
-    ) -> Int? {
-        preconditionFailure("TODO")
-    }
-}
-
-extension _ViewModifier_Content {
-    fileprivate struct BodyInput: ViewInput {
-        static var defaultValue: [Body] {
-            []
-        }
-
-        typealias MakeViewBody = (_Graph, _ViewInputs) -> _ViewOutputs
-        typealias MakeViewListBody = (_Graph, _ViewListInputs) -> _ViewListOutputs
-
-        enum Body: Equatable {
-            case view(MakeViewBody)
-            case list(MakeViewListBody)
-
-            static func == (lhs: _ViewModifier_Content<Modifier>.BodyInput.Body, rhs: _ViewModifier_Content<Modifier>.BodyInput.Body) -> Bool {
-                if case let .view(lhsBody) = lhs, case let .view(rhsBody) = rhs {
-                    compareValues(lhsBody, rhsBody)
-                } else if case let .list(lhsBody) = lhs, case let .list(rhsBody) = rhs{
-                    compareValues(lhsBody, rhsBody)
-                } else {
-                    false
-                }
-            }
         }
     }
 }
