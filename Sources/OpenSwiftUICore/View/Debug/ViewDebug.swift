@@ -8,7 +8,7 @@
 //  ID: 43DA1754B0518AF1D72B90677BF266DB (SwiftUICore)
 
 public import Foundation
-import OpenGraphShims
+package import OpenGraphShims
 import OpenSwiftUI_SPI
 
 /// Namespace for view debug information.
