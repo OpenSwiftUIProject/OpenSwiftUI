@@ -1063,10 +1063,7 @@ public struct BodyUnaryViewGenerator<V>: UnaryViewGenerator {
     }
 
     public func tryToReuse(by other: BodyUnaryViewGenerator<V>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
-        // FIXME:
-        // 1. pass body to OGCompareValues directly instaed of withUnsafePointer
-        // 2. Add 0x103 case instead of rawValue
-        guard compareValues(body, other.body, mode: .init(rawValue: 0x103)) else {
+        guard compareValues(body, other.body) else {
             ReuseTrace.traceReuseBodyMismatchedFailure()
             Log.graphReuse("Reuse failed: \(Self.self) failed comparison")
             return false
