@@ -6,12 +6,13 @@
 //  Status: Empty
 
 @_spi(ForOpenSwiftUIOnly)
-import OpenSwiftUICore
+public import OpenSwiftUICore
 
 #if canImport(Darwin)
 
-@_cdecl("OpenSwiftUIGlueClass")
-func OpenSwiftUIGlueClass() -> CoreGlue.Type {
+@_spi(ForOpenSwiftUIOnly)
+@_silgen_name("OpenSwiftUIGlueClass")
+public func OpenSwiftUIGlueClass() -> CoreGlue.Type {
     OpenSwiftUIGlue.self
 }
 
