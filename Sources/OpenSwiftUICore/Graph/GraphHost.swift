@@ -184,14 +184,7 @@ open class GraphHost: CustomReflectable {
             globalSubgraph.willInvalidate(isInserted: false)
             isInstantiated = false
         }
-        if let graph = data.graph {
-            Update.begin()
-            globalSubgraph.invalidate()
-            graph.context = nil
-            graph.invalidate()
-            data.graph = nil
-            Update.end()
-        }
+        data.invalidate()
     }
     
     package static var isUpdating: Bool {

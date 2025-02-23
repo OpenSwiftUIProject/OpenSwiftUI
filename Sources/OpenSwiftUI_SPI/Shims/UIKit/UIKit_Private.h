@@ -1,28 +1,13 @@
 //
-//  UIKitAppKit_Private.h
+//  UIKit_Private.h
 //  OpenSwiftUI_SPI
 //
-//  Audited for iOS 15.5
 //  Status: WIP
 
-#ifndef UIKitAppKit_Private_h
-#define UIKitAppKit_Private_h
+#ifndef UIKit_Private_h
+#define UIKit_Private_h
 
 #include "OpenSwiftUIBase.h"
-
-#if __has_include(<QuartzCore/CoreAnimation.h>)
-
-#import <QuartzCore/CoreAnimation.h>
-
-OPENSWIFTUI_ASSUME_NONNULL_BEGIN
-
-@interface CALayer (OpenSwiftUI_SPI)
-- (BOOL)hasBeenCommitted;
-@end
-
-OPENSWIFTUI_ASSUME_NONNULL_END
-
-#endif /* CoreAnimation.h */
 
 #if __has_include(<UIKit/UIKit.h>)
 
@@ -31,10 +16,13 @@ OPENSWIFTUI_ASSUME_NONNULL_END
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIApplication (OpenSwiftUI_SPI)
+// Test API
 - (void)startedTest:(nullable NSString *)name;
 - (void)finishedTest:(nullable NSString *)name;
 - (void)failedTest:(nullable NSString *)name withFailure:(nullable NSError*)failure;
 - (nullable NSString *)_launchTestName;
+
+- (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
@@ -53,20 +41,6 @@ double UIAnimationDragCoefficient(void);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#elif __has_include(<AppKit/AppKit.h>)
+#endif /* UIKit.h */
 
-#import <AppKit/AppKit.h>
-
-OPENSWIFTUI_ASSUME_NONNULL_BEGIN
-
-@interface NSApplication (OpenSwiftUI_SPI)
-- (void)startedTest:(nullable NSString *)name;
-- (void)finishedTest:(nullable NSString *)name;
-- (void)failedTest:(nullable NSString *)name withFailure:(nullable NSError*)failure;
-@end
-
-OPENSWIFTUI_ASSUME_NONNULL_END
-
-#endif /* UIKit.h / AppKit.h */
-
-#endif /* UIKitAppKit_Private_h */
+#endif /* UIKit_Private_h */
