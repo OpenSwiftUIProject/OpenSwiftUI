@@ -22,7 +22,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (void)failedTest:(nullable NSString *)name withFailure:(nullable NSError*)failure;
 - (nullable NSString *)_launchTestName;
 
-- (void)_performBlockAfterCATransactionCommits:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
+- (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
