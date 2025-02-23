@@ -279,9 +279,28 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     override dynamic open func didMoveToWindow() {
+        Update.begin()
+        if window != nil {
+            traitCollectionOverride = nil
+            initialInheritedEnvironment = nil
+            invalidateProperties(.transform)
+        }
+        // updateKeyboardAvoidance()
+        // eventBridge.hostingView(self, didMoveToWindow: window)
+        // TODO: rootViewDelegate
+        if window != nil {
+            updateRemovedState()
+            // updateEventBridge()
+        } else {
+            UIApplication.shared._performBlockAfterCATransactionCommits { [weak self] in
+                guard let self else { return }
+                updateRemovedState()
+            }
+        }
         // TODO
+        Update.end()
     }
-    
+
     override dynamic open func layoutSubviews() {
         super.layoutSubviews()
         guard window != nil else {

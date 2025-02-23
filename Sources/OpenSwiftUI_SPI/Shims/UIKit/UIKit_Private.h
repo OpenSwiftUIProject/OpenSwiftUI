@@ -16,10 +16,13 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIApplication (OpenSwiftUI_SPI)
+// Test API
 - (void)startedTest:(nullable NSString *)name;
 - (void)finishedTest:(nullable NSString *)name;
 - (void)failedTest:(nullable NSString *)name withFailure:(nullable NSError*)failure;
 - (nullable NSString *)_launchTestName;
+
+- (void)_performBlockAfterCATransactionCommits:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
