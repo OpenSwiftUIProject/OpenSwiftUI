@@ -150,6 +150,30 @@ extension Optional {
     }
 }
 
+// MARK: - ConditionalContent + ConditionalMetadata
+
+extension _ConditionalContent {
+    static func makeConditionalMetadata<P>(_ protocolDescriptor: P.Type) -> ConditionalMetadata<P> where P: ConditionalProtocolDescriptor {
+        let descriptor: ConditionalTypeDescriptor<P>
+        if let result = P.fetchConditionalType(key: ObjectIdentifier(Self.self)) {
+            descriptor = result
+        } else {
+            descriptor = {
+                let falseDescriptor = ConditionalTypeDescriptor<P>.descriptor(type: FalseContent.self)
+                let trueDescriptor = ConditionalTypeDescriptor<P>.descriptor(type: TrueContent.self)
+                return ConditionalTypeDescriptor(
+                    // FIXME
+                    storage: .either(Storage.self, f: falseDescriptor, t: trueDescriptor),
+                    count: falseDescriptor.count + trueDescriptor.count
+                )
+
+            }()
+            P.insertConditionalType(key: ObjectIdentifier(Self.self), value: descriptor)
+        }
+        return ConditionalMetadata(descriptor)
+    }
+}
+
 // MARK: ConditionalMetadata + ViewDescriptor
 
 extension ConditionalMetadata where P == ViewDescriptor {
