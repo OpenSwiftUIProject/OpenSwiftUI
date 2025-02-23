@@ -55,10 +55,10 @@ struct ContentView: View {
                     first.toggle()
                 }
             }
-            // .id(first)
-//                .onDisappear {
-//                    print("Red disappear")
-//                }
+            .onDisappear {
+                print("Red disappear")
+            }
+            .id(first)
 //        } else {
 //            Color.blue
 //                .onAppear {
