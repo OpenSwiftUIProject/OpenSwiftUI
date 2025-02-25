@@ -3,8 +3,8 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
-//  ID: 2319071E64CA2FA820BFB26F46C6ECC6
+//  Status: Complete
+//  ID: 2319071E64CA2FA820BFB26F46C6ECC6 (SwiftUICore)
 
 import OpenGraphShims
 
@@ -41,7 +41,7 @@ package struct ConditionalMetadata<P> where P: ConditionalProtocolDescriptor {
 // MARK: - ConditionalTypeDescriptor
 
 package struct ConditionalTypeDescriptor<P> where P: ConditionalProtocolDescriptor {
-    private enum Storage {
+    fileprivate enum Storage {
         case atom(TypeConformance<P>)
         indirect case optional(any Any.Type, ConditionalTypeDescriptor<P>)
         indirect case either(any Any.Type, f: ConditionalTypeDescriptor<P>, t: ConditionalTypeDescriptor<P>)
@@ -61,9 +61,18 @@ package struct ConditionalTypeDescriptor<P> where P: ConditionalProtocolDescript
         }
     }
 
+    fileprivate init(storage: Storage, count: Int) {
+        self.storage = storage
+        self.count = count
+    }
+
     init(_ type: any Any.Type) {
+        let storage: Storage
+        let count: Int
+
         let metadata = Metadata(type)
         let descriptor = metadata.nominalDescriptor
+
         if descriptor == conditionalTypeDescriptor {
             let falseDescriptor = Self.descriptor(type: metadata.genericType(at: 1))
             let trueDescriptor = Self.descriptor(type: metadata.genericType(at: 0))
@@ -77,6 +86,8 @@ package struct ConditionalTypeDescriptor<P> where P: ConditionalProtocolDescript
             storage = .atom(P.conformance(of: type)!)
             count = 1
         }
+
+        self.init(storage: storage, count: count)
     }
 
     fileprivate func project(at base: UnsafeRawPointer, baseIndex: Int, _ body: (Int, TypeConformance<P>?, UnsafeRawPointer?) -> ()) {
@@ -118,13 +129,102 @@ package struct ConditionalTypeDescriptor<P> where P: ConditionalProtocolDescript
 private let optionalTypeDescriptor: UnsafeRawPointer = Metadata(Void?.self).nominalDescriptor!
 private let conditionalTypeDescriptor: UnsafeRawPointer = Metadata(_ConditionalContent<Void, Void>.self).nominalDescriptor!
 
+// MARK: - Optional + ConditionalMetadata
+
 extension Optional {
     package static func makeConditionalMetadata<P>(_ protocolDescriptor: P.Type) -> ConditionalMetadata<P> where P: ConditionalProtocolDescriptor {
-        let descriptor = P.fetchConditionalType(key: ObjectIdentifier(Self.self)) ?? {
-            let descriptor = ConditionalTypeDescriptor<P>.descriptor(type: Wrapped.self)
+        let descriptor: ConditionalTypeDescriptor<P>
+        if let result = P.fetchConditionalType(key: ObjectIdentifier(Self.self)) {
+            descriptor = result
+        } else {
+            descriptor = {
+                let wrappedDescriptor = ConditionalTypeDescriptor<P>.descriptor(type: Wrapped.self)
+                return ConditionalTypeDescriptor(
+                    storage: .optional(Self.self, wrappedDescriptor),
+                    count: wrappedDescriptor.count + 1
+                )
+            }()
             P.insertConditionalType(key: ObjectIdentifier(Self.self), value: descriptor)
-            return descriptor
-        }()
+        }
         return ConditionalMetadata(descriptor)
     }
 }
+
+// MARK: ConditionalMetadata + ViewDescriptor
+
+extension ConditionalMetadata where P == ViewDescriptor {
+    func makeView<V>(ptr: UnsafePointer<V>, view: Attribute<V>, inputs: _ViewInputs) -> _ViewOutputs {
+        var visitor = MakeView(desc: desc, view: view, inputs: inputs)
+        desc.project(at: ptr, baseIndex: 0) { index, conformance, ptr in
+            guard let conformance, let ptr else { return }
+            visitor.index = index
+            visitor.ptr = ptr
+            conformance.visitType(visitor: &visitor)
+        }
+        return visitor.outputs ?? .init()
+    }
+
+    func makeViewList<V>(ptr: UnsafePointer<V>, view: Attribute<V>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        var visitor = MakeList(desc: desc, view: view, inputs: inputs)
+        desc.project(at: ptr, baseIndex: 0) { index, conformance, ptr in
+            guard let conformance, let ptr else { return }
+            visitor.index = index
+            visitor.ptr = ptr
+            conformance.visitType(visitor: &visitor)
+        }
+        return visitor.outputs ?? .emptyViewList(inputs: inputs)
+    }
+
+    private struct MakeView<Source>: ViewTypeVisitor {
+        var desc: ConditionalTypeDescriptor<ViewDescriptor>
+        var view: Attribute<Source>
+        var index: Int = 0
+        var ptr: UnsafeRawPointer?
+        var inputs: _ViewInputs
+        var outputs: _ViewOutputs?
+
+        mutating func visit<V>(type: V.Type) where V: View {
+            inputs.base.pushStableID(index)
+            let unwrapConditional = UnwrapConditional<P, Source, V>(source: view, desc: desc, index: index)
+            let attribute = Attribute(unwrapConditional)
+            attribute.value = ptr!.assumingMemoryBound(to: V.self).pointee
+            outputs = V.makeDebuggableView(view: _GraphValue(attribute), inputs: inputs)
+        }
+    }
+
+
+    private struct MakeList<Source>: ViewTypeVisitor {
+        var desc: ConditionalTypeDescriptor<ViewDescriptor>
+        var view: Attribute<Source>
+        var index: Int = 0
+        var ptr: UnsafeRawPointer?
+        var inputs: _ViewListInputs
+        var outputs: _ViewListOutputs?
+
+        mutating func visit<V>(type: V.Type) where V: View {
+            inputs.base.pushStableID(index)
+            let unwrapConditional = UnwrapConditional<P, Source, V>(source: view, desc: desc, index: index)
+            let attribute = Attribute(unwrapConditional)
+            attribute.value = ptr!.assumingMemoryBound(to: V.self).pointee
+            outputs = V.makeDebuggableViewList(view: _GraphValue(attribute), inputs: inputs)
+        }
+    }
+}
+
+// MARK: - UnwrapConditional
+
+private struct UnwrapConditional<P, Source, Value>: StatefulRule, AsyncAttribute where P: ConditionalProtocolDescriptor {
+    @Attribute var source: Source
+    let desc: ConditionalTypeDescriptor<P>
+    let index: Int
+
+    func updateValue() {
+        withUnsafePointer(to: source) { ptr in
+            desc.project(at: ptr, baseIndex: 0) { index, conformance, ptr in
+                guard self.index == index else { return }
+                value = ptr!.assumingMemoryBound(to: Value.self).pointee
+            }
+        }
+    }
+}
+

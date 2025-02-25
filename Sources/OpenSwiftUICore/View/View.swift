@@ -4,6 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
+//  ID: 1ABF77B82C037C602A176AE349787FED (SwiftUICore)
 
 import OpenSwiftUI_SPI
 
@@ -154,12 +155,30 @@ package protocol ViewTypeVisitor {
     mutating func visit<V>(type: V.Type) where V: View
 }
 
-// MARK: - ViewDescriptor [WIP]
+// MARK: - ViewDescriptor
 
-package struct ViewDescriptor: TupleDescriptor {
+package struct ViewDescriptor: TupleDescriptor, ConditionalProtocolDescriptor {
+    package static var typeCache: [ObjectIdentifier: TupleTypeDescription<ViewDescriptor>] = [:]
+
     package static var descriptor: UnsafeRawPointer {
         _OpenSwiftUI_viewProtocolDescriptor()
     }
 
-    package static var typeCache: [ObjectIdentifier: TupleTypeDescription<ViewDescriptor>] = [:]
+    private static var conditionalCache: [ObjectIdentifier: ConditionalTypeDescriptor<ViewDescriptor>] = [:]
+
+    package static func fetchConditionalType(key: ObjectIdentifier) -> ConditionalTypeDescriptor<ViewDescriptor>? {
+        conditionalCache[key]
+    }
+
+    package static func insertConditionalType(key: ObjectIdentifier, value: ConditionalTypeDescriptor<ViewDescriptor>) {
+        conditionalCache[key] = value
+    }
+}
+
+// MARK: - TypeConformance + ViewDescriptor
+
+extension TypeConformance where P == ViewDescriptor {
+    package func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: ViewTypeVisitor {
+        visitor.pointee.visit(type: unsafeBitCast(self, to: (any View.Type).self))
+    }
 }
