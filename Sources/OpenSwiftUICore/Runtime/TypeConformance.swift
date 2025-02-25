@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by ExistentialMetatype
+//  Status: Complete
 
 import OpenSwiftUI_SPI
 import OpenGraphShims
@@ -32,14 +32,20 @@ package struct TypeConformance<P> where P: ProtocolDescriptor {
         self.storage = storage
     }
 
-    package var type: any Any.Type { storage.type }
+    package var type: any Any.Type {
+        storage.type
+    }
 
-    package var conformance: UnsafeRawPointer { storage.conformance }
+    package var conformance: UnsafeRawPointer {
+        storage.conformance
+    }
 
-    package var metadata: UnsafeRawPointer { unsafeBitCast(storage.type, to: UnsafeRawPointer.self) }
+    package var metadata: UnsafeRawPointer {
+        unsafeBitCast(storage.type, to: UnsafeRawPointer.self)
+    }
 
     package func unsafeExistentialMetatype<ExistentialMetatype>(_ type: ExistentialMetatype.Type) -> ExistentialMetatype {
-        preconditionFailure("TODO")
+        unsafeBitCast(storage, to: type)
     }
 }
 
