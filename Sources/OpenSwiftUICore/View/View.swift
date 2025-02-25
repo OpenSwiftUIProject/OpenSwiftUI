@@ -4,6 +4,9 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
+//  ID: 1ABF77B82C037C602A176AE349787FED (SwiftUICore)
+
+import OpenSwiftUI_SPI
 
 /// A type that represents part of your app's user interface and provides
 /// modifiers that you use to configure views.
@@ -135,5 +138,47 @@ extension MultiView {
     
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         nil
+    }
+}
+
+// TODO: _UnaryViewAdaptor
+
+// MARK: - ViewVisitor
+
+package protocol ViewVisitor {
+    mutating func visit<V>(_ view: V) where V: View
+}
+
+// MARK: - ViewTypeVisitor
+
+package protocol ViewTypeVisitor {
+    mutating func visit<V>(type: V.Type) where V: View
+}
+
+// MARK: - ViewDescriptor
+
+package struct ViewDescriptor: TupleDescriptor, ConditionalProtocolDescriptor {
+    package static var typeCache: [ObjectIdentifier: TupleTypeDescription<ViewDescriptor>] = [:]
+
+    package static var descriptor: UnsafeRawPointer {
+        _OpenSwiftUI_viewProtocolDescriptor()
+    }
+
+    private static var conditionalCache: [ObjectIdentifier: ConditionalTypeDescriptor<ViewDescriptor>] = [:]
+
+    package static func fetchConditionalType(key: ObjectIdentifier) -> ConditionalTypeDescriptor<ViewDescriptor>? {
+        conditionalCache[key]
+    }
+
+    package static func insertConditionalType(key: ObjectIdentifier, value: ConditionalTypeDescriptor<ViewDescriptor>) {
+        conditionalCache[key] = value
+    }
+}
+
+// MARK: - TypeConformance + ViewDescriptor
+
+extension TypeConformance where P == ViewDescriptor {
+    package func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: ViewTypeVisitor {
+        visitor.pointee.visit(type: unsafeBitCast(self, to: (any View.Type).self))
     }
 }

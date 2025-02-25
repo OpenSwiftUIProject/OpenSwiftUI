@@ -74,4 +74,18 @@ struct Metadata_OpenSwiftUITests {
         #expect(t == .empty)
     }
     #endif
+
+    @Test
+    func compareEnumTagsTest() {
+        enum A {
+            case a, b, c
+        }
+        #expect(compareEnumTags(A.a, A.b) == false)
+        #expect(compareEnumTags(A.a, A.a) == true)
+
+        let v1: A? = .c
+        let v2: A? = .a
+        #expect(compareEnumTags(v1, nil) == false)
+        #expect(compareEnumTags(v1, v2) == true)
+    }
 }
