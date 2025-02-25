@@ -37,7 +37,11 @@ package struct TupleTypeDescription<P> where P: ProtocolDescriptor {
             let type = type.type(at: index)
             guard let comformance = P.conformance(of: type) else {
                 let message = "Ignoring invalid type at index \(index), type \(type)"
+                #if OPENSWIFTUI_SWIFT_LOG
+                Log.unlocatedIssuesLog.error("\(message)")
+                #else
                 Log.unlocatedIssuesLog.fault("\(message, privacy: .public)")
+                #endif
                 continue
             }
             contentTypes.append((index, comformance))

@@ -10,6 +10,7 @@ extension TestProtocolDescriptor: TupleDescriptor {
     static var typeCache: [ObjectIdentifier: TupleTypeDescription<Self>] = [:]
 }
 
+@Suite(.enabled(if: swiftToolchainSupported), .serialized)
 struct TupleTypeDescriptionTests {
     // Types that conform to TestProtocol
     struct P1: TestProtocol {}

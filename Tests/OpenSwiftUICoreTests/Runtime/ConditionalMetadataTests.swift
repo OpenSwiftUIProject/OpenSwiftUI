@@ -18,6 +18,7 @@ extension TestProtocolDescriptor: ConditionalProtocolDescriptor {
     }
 }
 
+@Suite(.enabled(if: swiftToolchainSupported), .serialized)
 struct ConditionalMetadataTests {
     struct P1: TestProtocol {}
     struct P2: TestProtocol {}

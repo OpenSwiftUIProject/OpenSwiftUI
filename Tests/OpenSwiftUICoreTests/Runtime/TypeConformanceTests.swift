@@ -4,6 +4,7 @@
 
 import Testing
 import OpenSwiftUICore
+import OpenGraphShims
 
 protocol TestProtocol {}
 
@@ -16,6 +17,7 @@ struct TestProtocolDescriptor: ProtocolDescriptor {
     }
 }
 
+@Suite(.enabled(if: swiftToolchainSupported))
 struct TypeConformanceTests {
     struct P1: TestProtocol {}
     struct P2 {}
