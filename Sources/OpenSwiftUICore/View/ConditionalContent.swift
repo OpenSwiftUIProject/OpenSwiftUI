@@ -29,9 +29,20 @@ extension _ConditionalContent.Storage: Sendable {}
 extension _ConditionalContent: Sendable {}
 
 extension _ConditionalContent {
+    /// Creates a conditional content.
+    ///
+    /// You don't use this initializer directly. OpenSwiftUI creates a
+    /// _ConditionalContent on your behalf when using conditional
+    /// statements in a variety of result builders.
+    @available(*, deprecated, message: "Do not use this.")
     @_alwaysEmitIntoClient
     public init(_storage: Storage) {
         self.storage = _storage
+    }
+
+    @_alwaysEmitIntoClient
+    package init(__storage: Storage) {
+        self.storage = __storage
     }
 }
 
