@@ -76,7 +76,16 @@ package struct ConditionalTypeDescriptor<P> where P: ConditionalProtocolDescript
         if descriptor == conditionalTypeDescriptor {
             let falseDescriptor = Self.descriptor(type: metadata.genericType(at: 1))
             let trueDescriptor = Self.descriptor(type: metadata.genericType(at: 0))
-            storage = .either(type, f: falseDescriptor, t: trueDescriptor)
+            // FIXME: How to get _ConditionalContent.Storage type more easily
+            typealias Accessor =  @convention(c) (UInt, Metadata, Metadata) -> Metadata
+            let nominal = Metadata(_ConditionalContent<Void, Void>.Storage.self).nominalDescriptor!
+            let accessorRelativePointer = nominal.advanced(by: 12)
+            let accessor = unsafeBitCast(
+                accessorRelativePointer.advanced(by:Int(accessorRelativePointer.assumingMemoryBound(to: Int32.self).pointee)),
+                to: Accessor.self
+            )
+            let type = accessor(0, Metadata(metadata.genericType(at: 0)), Metadata(metadata.genericType(at: 1)))
+            storage = .either(type.type, f: falseDescriptor, t: trueDescriptor)
             count = falseDescriptor.count + trueDescriptor.count
         } else if descriptor == optionalTypeDescriptor {
             let wrappedDescriptor = Self.descriptor(type: metadata.genericType(at: 0))
@@ -143,6 +152,29 @@ extension Optional {
                     storage: .optional(Self.self, wrappedDescriptor),
                     count: wrappedDescriptor.count + 1
                 )
+            }()
+            P.insertConditionalType(key: ObjectIdentifier(Self.self), value: descriptor)
+        }
+        return ConditionalMetadata(descriptor)
+    }
+}
+
+// MARK: - ConditionalContent + ConditionalMetadata
+
+extension _ConditionalContent {
+    static func makeConditionalMetadata<P>(_ protocolDescriptor: P.Type) -> ConditionalMetadata<P> where P: ConditionalProtocolDescriptor {
+        let descriptor: ConditionalTypeDescriptor<P>
+        if let result = P.fetchConditionalType(key: ObjectIdentifier(Self.self)) {
+            descriptor = result
+        } else {
+            descriptor = {
+                let falseDescriptor = ConditionalTypeDescriptor<P>.descriptor(type: FalseContent.self)
+                let trueDescriptor = ConditionalTypeDescriptor<P>.descriptor(type: TrueContent.self)
+                return ConditionalTypeDescriptor(
+                    storage: .either(Storage.self, f: falseDescriptor, t: trueDescriptor),
+                    count: falseDescriptor.count + trueDescriptor.count
+                )
+
             }()
             P.insertConditionalType(key: ObjectIdentifier(Self.self), value: descriptor)
         }
