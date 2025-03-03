@@ -145,3 +145,33 @@ private struct HashableConstant: Hashable {
 //        return _animatedSize
 //    }
 //}
+
+// package struct CachedEnvironment {
+//   package var environment: AttributeGraph.Attribute<SwiftUICore.EnvironmentValues> {
+//     get
+//   }
+//   package mutating func attribute<T>(keyPath: Swift.KeyPath<SwiftUICore.EnvironmentValues, T>) -> AttributeGraph.Attribute<T>
+// }
+// extension SwiftUICore.CachedEnvironment {
+//   package mutating func animatedPosition(for inputs: SwiftUICore._ViewInputs) -> AttributeGraph.Attribute<SwiftUICore.ViewOrigin>
+//   package mutating func animatedSize(for inputs: SwiftUICore._ViewInputs) -> AttributeGraph.Attribute<SwiftUICore.ViewSize>
+//   package mutating func animatedCGSize(for inputs: SwiftUICore._ViewInputs) -> AttributeGraph.Attribute<CoreFoundation.CGSize>
+// }
+// extension SwiftUICore.CachedEnvironment.AnimatedFrame {
+//   package init(inputs: SwiftUICore._ViewInputs, pixelLength: AttributeGraph.Attribute<CoreFoundation.CGFloat>, environment: AttributeGraph.Attribute<SwiftUICore.EnvironmentValues>)
+// }
+// extension SwiftUICore.CachedEnvironment {
+//   package struct AnimatedFrame {
+//     package let position: AttributeGraph.Attribute<SwiftUICore.ViewOrigin>
+//     package let size: AttributeGraph.Attribute<SwiftUICore.ViewSize>
+//     package let pixelLength: AttributeGraph.Attribute<CoreFoundation.CGFloat>
+//     package let time: AttributeGraph.Attribute<SwiftUICore.Time>
+//     package let transaction: AttributeGraph.Attribute<SwiftUICore.Transaction>
+//     package let viewPhase: AttributeGraph.Attribute<SwiftUICore._GraphInputs.Phase>
+//     package let animatedFrame: AttributeGraph.Attribute<SwiftUICore.ViewFrame>
+//     package init(inputs: SwiftUICore._GraphInputs, position: AttributeGraph.Attribute<SwiftUICore.ViewOrigin>, size: AttributeGraph.Attribute<SwiftUICore.ViewSize>, pixelLength: AttributeGraph.Attribute<CoreFoundation.CGFloat>, animatedFrame: AttributeGraph.Attribute<SwiftUICore.ViewFrame>, environment: AttributeGraph.Attribute<SwiftUICore.EnvironmentValues>)
+//     package mutating func animatedPosition() -> AttributeGraph.Attribute<SwiftUICore.ViewOrigin>
+//     package mutating func animatedSize() -> AttributeGraph.Attribute<SwiftUICore.ViewSize>
+//     package mutating func animatedCGSize() -> AttributeGraph.Attribute<CoreFoundation.CGSize>
+//   }
+// }
