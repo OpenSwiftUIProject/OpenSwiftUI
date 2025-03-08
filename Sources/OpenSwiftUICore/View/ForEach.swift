@@ -44,11 +44,23 @@
 /// ![A vertically arranged stack of labels showing various standard fonts,
 /// such as Large Title and Headline.](OpenSwiftUI-ForEach-fonts.png)
 public struct ForEach<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable {
-
     /// The collection of underlying identified data that OpenSwiftUI uses to create
     /// views dynamically.
     public var data: Data
 
     /// A function to create content on demand using the underlying data.
     public var content: (Data.Element) -> Content
+}
+
+@available(*, unavailable)
+extension ForEach: Sendable {}
+
+extension ForEach: View, PrimitiveView where Content: View {
+    nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        preconditionFailure("TODO")
+    }
+
+    nonisolated public static func _makeViewList(view: _GraphValue<ForEach<Data, ID, Content>>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        preconditionFailure("TODO")
+    }
 }
