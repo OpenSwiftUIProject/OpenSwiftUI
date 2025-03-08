@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: 1ABF77B82C037C602A176AE349787FED (SwiftUICore)
 
 import OpenSwiftUI_SPI
@@ -87,16 +87,6 @@ public protocol View {
     var body: Self.Body { get }
 }
 
-// MARK: - Never + View
-
-extension Never: View {
-    public var body: Never { self }
-
-    nonisolated public static func _viewListCount(inputs _: _ViewListCountInputs) -> Int? {
-        nil
-    }
-}
-
 // MARK: - PrimitiveView
 
 package protocol PrimitiveView: View {}
@@ -141,7 +131,30 @@ extension MultiView {
     }
 }
 
-// TODO: _UnaryViewAdaptor
+// MARK: - _UnaryViewAdaptor
+
+/// Shim to turn a view that may implement _makeViewList() into a
+/// single view.
+@frozen
+public struct _UnaryViewAdaptor<Content>: View, UnaryView, PrimitiveView where Content : View {
+    public var content: Content
+
+    @inlinable
+    public init(_ content: Content) {
+        self.content = content
+    }
+
+    package init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        Content.makeDebuggableView(view: view[offset: { .of(&$0.content)} ], inputs: inputs)
+    }
+}
+
+@available(*, unavailable)
+extension _UnaryViewAdaptor: Sendable {}
 
 // MARK: - ViewVisitor
 
