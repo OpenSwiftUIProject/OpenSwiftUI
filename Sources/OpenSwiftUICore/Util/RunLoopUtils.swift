@@ -7,18 +7,19 @@
 //  ID: 904CE3B9A8258172D2E69C7BF94D1428 (SwiftUICore)
 
 package import Foundation
-import CoreFoundation
 
 #if !canImport(ObjectiveC)
+package import CoreFoundation
+
 /// A compactible implementation for the autoreleasepool API
 @inlinable
-func autoreleasepool<Result>(invoking body: () throws -> Result) rethrows -> Result {
+package func autoreleasepool<Result>(invoking body: () throws -> Result) rethrows -> Result {
     try body()
 }
 
 extension CFRunLoopMode {
-    static let defaultMode: CFRunLoopMode! = kCFRunLoopDefaultMode
-    static let commonModes: CFRunLoopMode! = kCFRunLoopCommonModes
+    package static let defaultMode: CFRunLoopMode! = kCFRunLoopDefaultMode
+    package static let commonModes: CFRunLoopMode! = kCFRunLoopCommonModes
 }
 #endif
 
