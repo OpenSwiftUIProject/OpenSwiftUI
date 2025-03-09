@@ -15,7 +15,11 @@ import OpenSwiftUI_SPI
 @objc(OpenSwiftUICoreGlue)
 open class CoreGlue: NSObject {
     package static var shared: CoreGlue = _initializeCoreGlue() as! CoreGlue
-    
+
+    open var defaultImplicitRootType: DefaultImplicitRootTypeResult {
+        preconditionFailure("")
+    }
+
     open func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
         preconditionFailure("")
     }
@@ -23,6 +27,14 @@ open class CoreGlue: NSObject {
 
 @_spi(ForOpenSwiftUIOnly)
 extension CoreGlue {
+    public struct DefaultImplicitRootTypeResult {
+        package var value: any _VariadicView.AnyImplicitRoot.Type
+
+        package init(_ value: any _VariadicView.AnyImplicitRoot.Type) {
+            self.value = value
+        }
+    }
+
     public struct MakeDefaultLayoutComputerResult {
         package var value: Attribute<LayoutComputer>
         

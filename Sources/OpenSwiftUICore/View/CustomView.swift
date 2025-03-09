@@ -2,8 +2,8 @@
 //  CustomView.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: WIP
+//  Audited for iOS 18.0
+//  Status: Complete
 //  ID: 9F92ACD17B554E8AB7D29ABB1E796415 (SwiftUI)
 //  ID: CE1D93D8ECBBEB5FE2E32E69A123E7CB (SwiftUICore)
 
@@ -26,17 +26,10 @@ extension View {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
         let (body, buffer) = makeBody(view: view, inputs: &inputs.base, fields: fields)
-        // FIXME
-        let outputs = _ViewDebug.makeView(
-            view: body,
-            inputs: inputs
-        ) { view, inputs in
-            Body._makeView(view: body, inputs: inputs)
-        }
         if let buffer {
             buffer.traceMountedProperties(to: body, fields: fields)
         }
-        return outputs
+        return Body.makeDebuggableView(view: body, inputs: inputs)
     }
     
     nonisolated package static func makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {

@@ -1,18 +1,16 @@
 //
 //  VariadicView_Children.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: TODO
-//  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3
+//  Audited for iOS 18.0
+//  Status: WIP
+//  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (?)
+//  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (?)
+
+
+// FIXME: Confirm the ID
 
 import OpenGraphShims
-
-/// An ad hoc collection of the children of a variadic view.
-public struct _VariadicView_Children {
-    var list: ViewList
-    var contentSubgraph: OGSubgraph
-}
 
 extension _VariadicView_Children: RandomAccessCollection {
     public struct Element: PrimitiveView, UnaryView, Identifiable {
@@ -28,7 +26,9 @@ extension _VariadicView_Children: RandomAccessCollection {
         public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID : Hashable {
             preconditionFailure("TODO")
         }
-        
+
+        /// The value of each trait associated with the view. Changing
+        /// the traits will not affect the view in any way.
         public subscript<Trait: _ViewTraitKey>(key: Trait.Type) -> Trait.Value {
             get { traits[key] }
             set { traits[key] = newValue }
@@ -66,4 +66,35 @@ extension _VariadicView_Children {
             preconditionFailure("TODO")
         }
     }
+}
+
+extension ViewList {
+    package typealias Backing = _ViewList_Backing
+}
+
+package struct _ViewList_Backing {
+    package var children: _VariadicView.Children
+//    package var viewCount: Swift.Int {
+//    get
+//    }
+    package init(_ children: _VariadicView.Children)  {
+        self.children = children
+    }
+//    package func visitViews<V>(applying v: inout V, from start: inout Swift.Int) -> Swift.Bool where V : SwiftUICore.ViewListVisitor
+}
+
+// MARK: - _ViewList_View
+
+package struct _ViewList_View {
+    var elements: any ViewList.Elements
+    var id: _ViewList_ID
+    var index: Int
+    var count: Int
+    var contentSubgraph: Subgraph
+}
+
+// MARK: - ViewListVisitor
+
+protocol ViewListVisitor {
+    mutating func visit(view: _ViewList_View, traits: ViewTraitCollection) -> Bool
 }

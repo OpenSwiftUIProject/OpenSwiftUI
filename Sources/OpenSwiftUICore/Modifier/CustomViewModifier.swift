@@ -187,7 +187,7 @@ extension ViewModifierContentProvider {
             return makeViewBody(_Graph(), inputs)
         case let .list(makeViewListBody):
             return .multiView(inputs: inputs) {
-                makeViewListBody($0, .init($1.base, options: graphInputs[ViewListOptionsInput.self]))
+                makeViewListBody($0, .init($1.base, options: graphInputs.viewListOptions))
             }
         }
     }
