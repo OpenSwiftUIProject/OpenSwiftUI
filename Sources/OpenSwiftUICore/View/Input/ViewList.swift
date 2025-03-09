@@ -747,7 +747,7 @@ extension ViewList.Elements {
     }
 }
 
-// MARK: - View.List.ID
+// MARK: - ViewList.ID
 
 @_spi(ForOpenSwiftUIOnly)
 public struct _ViewList_ID: Hashable {

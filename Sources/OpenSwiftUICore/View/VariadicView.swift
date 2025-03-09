@@ -37,7 +37,7 @@ public enum _VariadicView {
     ///         Spacer()
     ///         Text(timestamp, format: .dateTime).layoutPriority(1)
     ///     }
-    ///     
+    ///
     public typealias Root = _VariadicView_Root
 
     /// A type of root that creates a View when its result builder is invoked with View.
