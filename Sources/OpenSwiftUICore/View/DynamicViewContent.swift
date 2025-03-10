@@ -33,7 +33,7 @@ package struct DynamicViewContentOffsetTraitKey: _ViewTraitKey {
 package struct DynamicContentOffsetVisitor: ViewListVisitor {
     package var offset: Int?
 
-    package mutating func visit(view: _ViewList_View, traits: ViewTraitCollection) -> Bool {
+    package mutating func visit(view: ViewList.View, traits: ViewTraitCollection) -> Bool {
         offset = traits.value(for: DynamicViewContentOffsetTraitKey.self)
         return false
     }
