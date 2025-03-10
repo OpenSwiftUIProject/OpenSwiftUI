@@ -1,5 +1,5 @@
 //
-//  _VectorMath.swift
+//  VectorMath.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
