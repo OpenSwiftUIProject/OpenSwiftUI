@@ -10,7 +10,7 @@
 		27186AE02D538A6B009E05F9 /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27186AE32D538A76009E05F9 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
 		27496E8E2BB1E0AA00953172 /* CoreServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */; };
-		27B7FC7E2BB31FD000272BA5 /* CoreServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */; };
+		27B7FC7E2BB31FD000272BA5 /* CoreServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */; platformFilter = ios; };
 		27CD0B4D2AFC8D37003665EB /* ExampleApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27CD0B4C2AFC8D37003665EB /* ExampleApp.swift */; };
 		27CD0B4F2AFC8D37003665EB /* ContentView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27CD0B4E2AFC8D37003665EB /* ContentView.swift */; };
 		27CD0B512AFC8D38003665EB /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 27CD0B502AFC8D38003665EB /* Assets.xcassets */; };
