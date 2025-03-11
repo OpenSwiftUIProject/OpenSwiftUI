@@ -178,8 +178,7 @@ package struct _ViewList_View: PrimitiveView, View, UnaryView {
         let placeholderInfo = PlaceholderInfo(
             placeholder: view.value,
             inputs: inputs,
-            outputs: outputs,
-            parentSubgraph: .current!
+            outputs: outputs
         )
         let attribute = Attribute(placeholderInfo)
         outputs.setIndirectDependency(attribute.identifier)
@@ -201,6 +200,15 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
     var lastMap: IndirectAttributeMap?
     var contentObserver: (Subgraph, Int)?
     var lastPhase: Attribute<_GraphInputs.Phase>?
+
+    init(placeholder: Attribute<ViewList.View>, inputs: _ViewInputs, outputs: _ViewOutputs) {
+        self._placeholder = placeholder
+        self.inputs = inputs
+        self.outputs = outputs
+        // FIXME: The Subgraph.current call on the init default value or the call site will trigger a compiler crash (SIL -> IR) on Release build
+        // We workaround it by setting it to .current here
+        self.parentSubgraph = .current!
+    }
 
     struct Value {
         var id: ViewList.ID
