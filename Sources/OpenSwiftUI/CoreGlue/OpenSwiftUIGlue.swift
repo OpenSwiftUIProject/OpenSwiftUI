@@ -17,6 +17,10 @@ public func OpenSwiftUIGlueClass() -> CoreGlue.Type {
 }
 
 final class OpenSwiftUIGlue: CoreGlue {
+    override var defaultImplicitRootType: DefaultImplicitRootTypeResult {
+        DefaultImplicitRootTypeResult(_VStackLayout.self)
+    }
+
     override func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
         MakeDefaultLayoutComputerResult(value: ViewGraph.current.$defaultLayoutComputer)
     }

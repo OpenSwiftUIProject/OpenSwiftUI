@@ -15,6 +15,7 @@ package import OpenGraphShims
 /// Input values to `View._makeViewList()`.
 public struct _ViewListInputs {
     package var base: _GraphInputs
+
     package var implicitID: Int
 
     package struct Options: OptionSet {
@@ -746,7 +747,7 @@ extension ViewList.Elements {
     }
 }
 
-// MARK: - View.List.ID
+// MARK: - ViewList.ID
 
 @_spi(ForOpenSwiftUIOnly)
 public struct _ViewList_ID: Hashable {
@@ -1949,22 +1950,4 @@ final package class _ViewList_ReleaseElements: Equatable {
         }
         return lhsBase == rhsBase
     }
-}
-
-// FIXME: VariadicView Part
-
-// MARK: - _ViewList_View
-
-package struct _ViewList_View {
-    var elements: any ViewList.Elements
-    var id: _ViewList_ID
-    var index: Int
-    var count: Int
-    var contentSubgraph: Subgraph
-}
-
-// MARK: - ViewListVisitor
-
-protocol ViewListVisitor {
-    mutating func visit(view: _ViewList_View, traits: ViewTraitCollection) -> Bool
 }
