@@ -13,6 +13,7 @@
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
 id _initializeCoreGlue();
+id _initializeCoreGlue2();
 
 #endif
 
