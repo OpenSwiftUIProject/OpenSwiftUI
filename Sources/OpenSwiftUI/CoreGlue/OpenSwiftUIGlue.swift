@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for iOS 18.0
-//  Status: Empty
+//  Status: WIP
 
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
@@ -11,7 +11,7 @@ import COpenSwiftUI
 
 #if canImport(Darwin)
 
-import Foundation
+public import Foundation
 
 @_spi(ForOpenSwiftUIOnly)
 @_silgen_name("OpenSwiftUIGlueClass")
@@ -50,7 +50,43 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     }
     #endif
 
+    override public final func isStatusBarHidden() -> Bool? {
+        #if os(iOS)
+        guard let scene = UIApplication.shared.connectedScenes.first,
+              let windowScene = scene as? UIWindowScene
+        else {
+            return nil
+        }
+        return windowScene.statusBarManager?.isStatusBarHidden ?? false
+        #else
+        nil
+        #endif
+    }
+
     override public final func configureDefaultEnvironment(_: inout EnvironmentValues) {
+    }
+
+    override public final func makeRootView(base: AnyView, rootFocusScope: Namespace.ID) -> AnyView {
+        AnyView(base.safeAreaInsets(.zero, next: nil))
+    }
+
+    override public final var systemDefaultDynamicTypeSize: DynamicTypeSize {
+        #if os(iOS)
+        let size = _UIApplicationDefaultContentSizeCategory()
+        let dynamicSize = DynamicTypeSize(size)
+        return dynamicSize ?? .large
+        #else
+        // TODO: macOS
+        return .large
+        #endif
+    }
+
+    override public final var codableAttachmentCellType: CodableAttachmentCellTypeResult {
+        CodableAttachmentCellTypeResult(nil)
+    }
+
+    override public final func linkURL(_ parameters: LinkURLParameters) -> URL? {
+        preconditionFailure("TODO")
     }
 }
 

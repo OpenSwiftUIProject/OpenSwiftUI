@@ -1,10 +1,10 @@
 //
-//  OpenSwiftUI+UIKit.swift
+//  UIKitConversions.swift
 //  OpenSwiftUI
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 6DC24D5146AF4B80347A1025025F68EE (SwiftUI?)
+//  ID: 6DC24D5146AF4B80347A1025025F68EE (SwiftUI)
 
 #if canImport(UIKit)
 
@@ -12,7 +12,7 @@ public import OpenSwiftUICore
 public import UIKit
 import COpenSwiftUI
 
-// MARK: - Color + UIColor
+// MARK: - UIColor Conversions
 
 @available(*, deprecated, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
 @available(macOS, unavailable)
@@ -146,11 +146,13 @@ extension UIColor: ColorProvider {
     }
 }
 
-public extension ColorScheme {
+// MARK: - UIUserInterfaceStyle Conversions
+
+extension ColorScheme {
     /// Creates a color scheme from its user interface style equivalent.
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
-    init?(_ uiUserInterfaceStyle: UIUserInterfaceStyle) {
+    public init?(_ uiUserInterfaceStyle: UIUserInterfaceStyle) {
         switch uiUserInterfaceStyle {
             case .unspecified: return nil
             case .light: self = .light
@@ -160,11 +162,11 @@ public extension ColorScheme {
     }
 }
 
-public extension UIUserInterfaceStyle {
+extension UIUserInterfaceStyle {
     /// Creates a user interface style from its ColorScheme equivalent.
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
-    init(_ colorScheme: ColorScheme?) {
+    public init(_ colorScheme: ColorScheme?) {
         switch colorScheme {
             case .light: self = .light
             case .dark: self = .dark
@@ -172,4 +174,33 @@ public extension UIUserInterfaceStyle {
         }
     }
 }
+
+// MARK: - UIAccessibilityContrast Conversions [TODO]
+
+// ColorSchemeContrast
+// UIAccessibilityContrast
+
+// MARK: - UIContentSizeCategory Conversions [WIP]
+
+extension DynamicTypeSize {
+    /// Create a Dynamic Type size from its `UIContentSizeCategory` equivalent.
+    public init?(_ uiSizeCategory: UIContentSizeCategory) {
+        switch uiSizeCategory {
+        case .extraSmall: self = .xSmall
+        case .small: self = .small
+        case .medium: self = .medium
+        case .large: self = .large
+        case .extraLarge: self = .xLarge
+        case .extraExtraLarge: self = .xxLarge
+        case .extraExtraExtraLarge: self = .xxxLarge
+        case .accessibilityMedium: self = .accessibility1
+        case .accessibilityLarge: self = .accessibility2
+        case .accessibilityExtraLarge: self = .accessibility3
+        case .accessibilityExtraExtraLarge: self = .accessibility4
+        case .accessibilityExtraExtraExtraLarge: self = .accessibility5
+        default: return nil
+        }
+    }
+}
+
 #endif
