@@ -168,10 +168,11 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
 let supportMultiProducts: Bool = envEnable("OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS", default: true)
 
 var products: [Product] = [
-    .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"])
+    .library(name: "OpenSwiftUI", type: .dynamic, targets: ["OpenSwiftUI"]),
 ]
 if supportMultiProducts {
     products += [
+        .library(name: "OpenSwiftUICore", type: .dynamic, targets: ["OpenSwiftUICore"]),
         .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
         .library(name: "OpenSwiftUIExtension", targets: ["OpenSwiftUIExtension"]),
         .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
