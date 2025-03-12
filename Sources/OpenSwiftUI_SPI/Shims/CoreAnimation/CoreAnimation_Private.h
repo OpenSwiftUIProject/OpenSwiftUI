@@ -1,8 +1,6 @@
 //
 //  CoreAnimation_Private.h
 //  OpenSwiftUI_SPI
-//
-//  Status: WIP
 
 #ifndef CoreAnimation_Private_h
 #define CoreAnimation_Private_h
@@ -16,7 +14,8 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface CALayer (OpenSwiftUI_SPI)
-- (BOOL)hasBeenCommitted;
+@property (nonatomic, assign, readonly) BOOL openSwiftUI_hasBeenCommitted OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted);
+@property (nonatomic, assign) uint64_t openSwiftUI_viewTestProperties;
 @end
 
 OPENSWIFTUI_ASSUME_NONNULL_END
