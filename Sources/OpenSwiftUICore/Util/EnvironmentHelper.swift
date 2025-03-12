@@ -34,3 +34,21 @@ package enum EnvironmentHelper {
         return value != 0
     }
 }
+
+package enum ProcessEnvironment {
+    package static func bool(forKey key: String, defaultValue: Bool = false) -> Bool {
+        guard let env = getenv(key) else {
+            return defaultValue
+        }
+        return atoi(env) != 0
+    }
+
+    static func uint32(forKey key: String, defaultValue: UInt32 = 0) -> UInt32 {
+        guard let env = getenv(key) else {
+            return defaultValue
+        }
+        return UInt32(atoi(env))
+    }
+
+    // package static let tracingOptions: OGGraphTraceFlags = .init(rawValue: uint32(forKey: "SWIFTUI_TRACE"))
+}
