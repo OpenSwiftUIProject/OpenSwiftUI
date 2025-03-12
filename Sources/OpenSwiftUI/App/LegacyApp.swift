@@ -1,12 +1,15 @@
 //
 //  LegacyApp.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
-//  ID: F8F4CFB3FB453F4ECC15C05B76BCD1E4
+//  ID: F8F4CFB3FB453F4ECC15C05B76BCD1E4 (SwiftUI)
 
 public enum __App {}
+
+@available(*, unavailable)
+extension __App: Sendable {}
 
 extension __App {
     public static func run(_ rootView: some View) -> Never {

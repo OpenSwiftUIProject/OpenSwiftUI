@@ -1,8 +1,8 @@
 //
-//  _PerformanceTest.swift
+//  PerformanceTest.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
 
 #if os(iOS)
@@ -10,31 +10,16 @@ import UIKit
 #elseif os(macOS)
 import AppKit
 #endif
-
 import OpenSwiftUI_SPI
-public import OpenSwiftUICore
 
 public protocol _PerformanceTest: _Test {
     var name: String { get }
-    func runTest(host: _BenchmarkHost, options: [AnyHashable: Any])
+    func runTest(host: any _BenchmarkHost, options: [AnyHashable: Any])
 }
 
 extension __App {
     public static func _registerPerformanceTests(_ tests: [_PerformanceTest]) {
         TestingAppDelegate.performanceTests = tests
-    }
-}
-
-extension _TestApp {
-    public func runBenchmarks(_ benchmarks: [_Benchmark]) -> Never {
-        let _ = RootView()
-        preconditionFailure("TODO")
-    }
-}
-
-extension _TestApp {
-    public func runPerformanceTests(_ tests: [_PerformanceTest]) -> Never {
-        preconditionFailure("TODO")
     }
 }
 

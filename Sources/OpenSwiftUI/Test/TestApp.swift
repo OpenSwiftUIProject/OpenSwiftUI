@@ -26,3 +26,16 @@ extension _TestApp {
         preconditionFailure("TODO")
     }
 }
+
+extension _TestApp {
+    public func runBenchmarks(_ benchmarks: [_Benchmark]) -> Never {
+        let _ = RootView()
+        preconditionFailure("TODO")
+    }
+}
+
+extension _TestApp {
+    public func runPerformanceTests(_ tests: [_PerformanceTest]) -> Never {
+        preconditionFailure("TODO")
+    }
+}
