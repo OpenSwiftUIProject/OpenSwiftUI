@@ -39,37 +39,8 @@ final class EntryViewController: UIViewController {
     }
 }
 
-// TODO: Known issue
-// 1. State toggle crash
-// 2. pop - UIHostingView deinit crash / onDisappear
-// 3. if else builder issue
 struct ContentView: View {
-    @State private var first = true
-    
     var body: some View {
-//        if first {
-        Color(uiColor: first ? .red : .blue)
-            .onAppear {
-                print("View appear")
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                    first.toggle()
-                }
-            }
-            .onDisappear {
-                print("Red disappear")
-            }
-            .id(first)
-//        } else {
-//            Color.blue
-//                .onAppear {
-//                    print("Blue appear")
-//                    DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-//                        first.toggle()
-//                    }
-//                }
-//                .onDisappear {
-//                    print("Blue disappear")
-//                }
-//        }
+        AppearanceActionModifierExample()
     }
 }
