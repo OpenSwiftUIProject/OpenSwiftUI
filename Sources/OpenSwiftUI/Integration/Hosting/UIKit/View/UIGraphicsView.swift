@@ -19,7 +19,7 @@ final class _UIGraphicsView: UIView {
     }
     
     override func _shouldAnimateProperty(withKey key: String) -> Bool {
-        if layer.hasBeenCommitted() {
+        if layer.hasBeenCommitted {
             super._shouldAnimateProperty(withKey: key)
         } else {
             false

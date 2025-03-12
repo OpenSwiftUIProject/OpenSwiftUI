@@ -4,7 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: Complete
-//  ID: CC151E1A36B4405FF56CDABA5D46BF1E
+//  ID: CC151E1A36B4405FF56CDABA5D46BF1E (SwiftUICore)
 
 import OpenGraphShims
 

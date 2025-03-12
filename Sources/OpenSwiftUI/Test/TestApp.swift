@@ -2,47 +2,40 @@
 //  TestApp.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
-//  ID: A519B5B95CA8FF4E3445832668F0B2D2
 
-@_spi(Testing)
-import OpenSwiftUICore
+public import OpenSwiftUICore
+import Foundation
 
-public struct _TestApp {
-    public init() {
-        preconditionFailure("TODO")
-    }
+extension _TestApp {
     public func run() -> Never {
+        let semanticsIndex = CommandLine.arguments.lastIndex(of: "--semantics")
+        if let semanticsIndex,
+           semanticsIndex + 1 != CommandLine.arguments.count {
+            setSemantics(CommandLine.arguments[semanticsIndex + 1])
+        } else {
+            setSemantics("lastest")
+        }
+        #if canImport(Darwin)
+        CFPreferencesSetAppValue("AppleLanguages" as NSString, ["en"] as NSArray, kCFPreferencesCurrentApplication)
+        // CTClearFontFallbacksCache()
+        #endif
+        Color.Resolved.legacyInterpolation = true
+        let rootView = RootView()
         preconditionFailure("TODO")
     }
 }
 
 extension _TestApp {
-    struct RootView: View {
-        @State
-        var state: StateType
-        
-        init() {
-            preconditionFailure("TODO")
-        }
-        
-        var body: some View {
-            state.testView
-            preconditionFailure("TODO")
-        }
+    public func runBenchmarks(_ benchmarks: [_Benchmark]) -> Never {
+        let _ = RootView()
+        preconditionFailure("TODO")
     }
-    
 }
 
-extension _TestApp.RootView {
-    struct StateType {
-        var id: Int
-        var testView: AnyView
-        
-        mutating func setTestView<V: View>(_ view: V) {
-            id += 1
-            testView = AnyView(view.testID(id))
-        }
+extension _TestApp {
+    public func runPerformanceTests(_ tests: [_PerformanceTest]) -> Never {
+        preconditionFailure("TODO")
     }
 }

@@ -47,6 +47,7 @@ package enum SemanticRequirement {
 
 extension Semantics {
     package static var forced: Forced = Forced()
+
     package func test<R>(as keyPath: WritableKeyPath<Forced, Semantics?> = \.sdk, _ body: () throws -> R) rethrows -> R {
         let value = Semantics.forced[keyPath: keyPath]
         Semantics.forced[keyPath: keyPath] = self
@@ -57,7 +58,9 @@ extension Semantics {
 extension Semantics {
     package struct Forced {
         package var sdk: Semantics?
+
         package var deploymentTarget: Semantics?
+
         package init() {
             if dyld_program_sdk_at_least(dyld_build_version_t(semantics: firstRelease)) {
                 sdk = nil
