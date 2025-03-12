@@ -53,6 +53,7 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		27C4C20C2D8178CF00511552 /* Examples */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Examples; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -130,6 +131,7 @@
 		27D49DF92BA604FB00F6E2E2 /* HostingExample */ = {
 			isa = PBXGroup;
 			children = (
+				27C4C20C2D8178CF00511552 /* Examples */,
 				27D49DFA2BA604FB00F6E2E2 /* AppDelegate.swift */,
 				27D49DFC2BA604FB00F6E2E2 /* SceneDelegate.swift */,
 				27D49DFE2BA604FB00F6E2E2 /* ViewController.swift */,
@@ -185,6 +187,9 @@
 			buildRules = (
 			);
 			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				27C4C20C2D8178CF00511552 /* Examples */,
 			);
 			name = HostingExample;
 			packageProductDependencies = (
