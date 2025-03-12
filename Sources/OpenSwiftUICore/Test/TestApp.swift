@@ -61,10 +61,21 @@ public struct _TestApp {
         #endif
     }
 
-//  package static var host: (any TestHost)?
-//  package static var comparisonHost: (any TestHost)?
-//  package static func setIntents(_ intents: TestIntents)
-//  package static func isIntending(to intents: TestIntents) -> Bool
+    package static var host: (any TestHost)?
+
+    package static var comparisonHost: (any TestHost)?
+
+    private static var testIntents: TestIntents = []
+
+    package static func setIntents(_ intents: TestIntents) {
+        let before = testIntents
+        testIntents = intents
+        host?.testIntentsChanged(before: before, after: intents)
+    }
+
+    package static func isIntending(to intents: TestIntents) -> Bool {
+        !testIntents.isDisjoint(with: intents)
+    }
 
     package static var environmentOverride: EnvironmentValues?
 
