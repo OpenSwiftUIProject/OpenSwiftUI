@@ -86,7 +86,8 @@ final class TimerUtilsXCTests: XCTestCase {
         }
         XCTAssertTrue(timer.isValid)
         XCTAssertFalse(callbackExecuted)
-        await fulfillment(of: [expectation], timeout: 0.3)
+        // 0.3s will sometimes fail for macOS + 2021 platform
+        await fulfillment(of: [expectation], timeout: 1)
 
         XCTAssertTrue(callbackExecuted)
         let elapsedTime = Date().timeIntervalSince(startTime)

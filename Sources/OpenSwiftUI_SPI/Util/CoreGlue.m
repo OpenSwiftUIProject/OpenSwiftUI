@@ -13,22 +13,24 @@
 void abort_report_np(const char*, ...);
 
 void* OpenSwiftUILibrary();
-void * getSwiftUIGlueClassSymbolLoc();
+void * getOpenSwiftUIGlueClassSymbolLoc();
+void * getOpenSwiftUIGlue2ClassSymbolLoc();
 
 id _initializeCoreGlue() {
-    void *location = getSwiftUIGlueClassSymbolLoc();
+    void *location = getOpenSwiftUIGlueClassSymbolLoc();
     Class (*classFunc)(void) = (Class (*)(void))location;
     Class glueClass = classFunc();
     return [[glueClass alloc] init];
 }
 
-void* OpenSwiftUILibrary() {
-    // Since we are staticlly linking OpenSwiftUI and OpenSwiftUICore into the final binary,
-    // we can just use dlopen(NULL, RTLD_LAZY) to get the current macho binary handle
-    return dlopen(NULL, RTLD_LAZY);
+id _initializeCoreGlue2() {
+    void *location = getOpenSwiftUIGlue2ClassSymbolLoc();
+    Class (*classFunc)(void) = (Class (*)(void))location;
+    Class glue2Class = classFunc();
+    return [[glue2Class alloc] init];
 }
 
-void *getSwiftUIGlueClassSymbolLoc() {
+void *getOpenSwiftUIGlueClassSymbolLoc() {
     static void *ptr;
     if (ptr == NULL) {
         @try {
@@ -41,6 +43,28 @@ void *getSwiftUIGlueClassSymbolLoc() {
         abort_report_np("%s", error);
     }
     return ptr;
+}
+
+void *getOpenSwiftUIGlue2ClassSymbolLoc() {
+    static void *ptr;
+    if (ptr == NULL) {
+        @try {
+            ptr = dlsym(OpenSwiftUILibrary(), "OpenSwiftUIGlue2Class");
+        } @finally {
+        }
+    }
+    if (ptr == NULL) {
+        const char *error = dlerror();
+        abort_report_np("%s", error);
+    }
+    return ptr;
+}
+
+
+void* OpenSwiftUILibrary() {
+    // Since we are staticlly linking OpenSwiftUI and OpenSwiftUICore into the final binary,
+    // we can just use dlopen(NULL, RTLD_LAZY) to get the current macho binary handle
+    return dlopen(NULL, RTLD_LAZY);
 }
 
 #endif

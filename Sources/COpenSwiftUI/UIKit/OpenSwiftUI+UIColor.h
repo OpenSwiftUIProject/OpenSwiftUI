@@ -28,6 +28,6 @@ BOOL _UIColorDependsOnTraitCollection(UIColor *color);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif
+#endif /* OPENSWIFTUI_TARGET_OS_IOS */
 
 #endif /* OpenSwiftUI_UIColor_h */
