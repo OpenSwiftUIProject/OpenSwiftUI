@@ -1,13 +1,11 @@
 //
 //  ViewTrait.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by ViewList
+//  Status: Complete
 //  ID: 9929B476764059557433A108298EE66F (SwiftUI)
 //  ID: 48526BA25CDCBF890FA91D018A5421B4 (SwiftUICore)
-
-// TODO: Update path and fix the ViewList issue and the TODO
 
 import OpenGraphShims
 
@@ -23,11 +21,11 @@ public protocol _ViewTraitKey {
     static var defaultValue: Value { get }
 }
 
-// MARK: - _TraitWritingModifier [TODO]
+// MARK: - _TraitWritingModifier
 
 /// A view content adapter that associates a trait with its base content.
 @frozen
-public struct _TraitWritingModifier<Trait>: PrimitiveViewModifier where Trait : _ViewTraitKey {
+public struct _TraitWritingModifier<Trait>: PrimitiveViewModifier where Trait: _ViewTraitKey {
     public let value: Trait.Value
 
     @inlinable
@@ -40,23 +38,47 @@ public struct _TraitWritingModifier<Trait>: PrimitiveViewModifier where Trait : 
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        if Trait.self == LayoutPriorityTraitKey.self {
+            LayoutPriorityLayout.makeViewImpl(
+                modifier: modifier.unsafeCast(),
+                inputs: inputs,
+                body: body
+            )
+        } else {
+            body(_Graph(), inputs)
+        }
     }
+
     nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        var inputs = inputs
+        if Trait.self == LayoutPriorityTraitKey.self,
+           !inputs.options.contains(.layoutPriorityIsTrait) {
+            let attribute = modifier.value.unsafeBitCast(to: _TraitWritingModifier<LayoutPriorityTraitKey>.self)
+            var outputs = body(_Graph(), inputs)
+            outputs.multiModifier(_GraphValue(attribute), inputs: inputs)
+            return outputs
+        } else {
+            let addTrait = AddTrait(modifier: modifier.value, traits: OptionalAttribute(inputs.traits))
+            let attribute = Attribute(addTrait)
+            inputs.addTraitKey(Trait.self)
+            inputs.traits = attribute
+            return body(_Graph(), inputs)
+        }
     }
 
-    nonisolated public static func _viewListCount(inputs: _ViewListCountInputs, body: (_ViewListCountInputs) -> Int?) -> Int? {
-        preconditionFailure("TODO")
-    }
-
-    private struct AddTrait {
+    private struct AddTrait: Rule {
         @Attribute var modifier: _TraitWritingModifier
         @OptionalAttribute var traits: ViewTraitCollection?
+
+        var value: ViewTraitCollection {
+            var traits = traits ?? ViewTraitCollection()
+            traits[Trait.self] = modifier.value
+            return traits
+        }
     }
 }
 
@@ -67,16 +89,17 @@ extension View {
     /// Associate a trait `value` for the given `key` for this view content.
     @inlinable
     nonisolated public func _trait<K>(_ key: K.Type, _ value: K.Value) -> some View where K: _ViewTraitKey {
-        return modifier(_TraitWritingModifier<K>(value: value))
+        modifier(_TraitWritingModifier<K>(value: value))
     }
 }
 
-// MARK: - _ConditionalTraitWritingModifier [TODO]
+// MARK: - _ConditionalTraitWritingModifier
 
 /// Conditionally writes a trait.
 @frozen
 public struct _ConditionalTraitWritingModifier<Trait>: PrimitiveViewModifier where Trait : _ViewTraitKey {
     public var value: Trait.Value
+
     public var isEnabled: Bool
     
     @_alwaysEmitIntoClient
@@ -90,18 +113,45 @@ public struct _ConditionalTraitWritingModifier<Trait>: PrimitiveViewModifier whe
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        _TraitWritingModifier<Trait>._makeView(
+            modifier: _GraphValue(Attribute(identifier: AnyAttribute.nil)),
+            inputs: inputs,
+            body: body
+        )
     }
+
     nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        var inputs = inputs
+        if Trait.self == LayoutPriorityTraitKey.self,
+           !inputs.options.contains(.layoutPriorityIsTrait) {
+            let attribute = modifier.value.unsafeBitCast(to: _TraitWritingModifier<LayoutPriorityTraitKey>.self)
+            var outputs = body(_Graph(), inputs)
+            outputs.multiModifier(_GraphValue(attribute), inputs: inputs)
+            return outputs
+        } else {
+            let addTrait = ConditionalAddTrait(modifier: modifier.value, traits: OptionalAttribute(inputs.traits))
+            let attribute = Attribute(addTrait)
+            inputs.addTraitKey(Trait.self)
+            inputs.traits = attribute
+            return body(_Graph(), inputs)
+        }
     }
 
-    nonisolated public static func _viewListCount(inputs: _ViewListCountInputs, body: (_ViewListCountInputs) -> Int?) -> Int? {
-        preconditionFailure("TODO")
+    private struct ConditionalAddTrait: Rule {
+        @Attribute var modifier: _ConditionalTraitWritingModifier
+        @OptionalAttribute var traits: ViewTraitCollection?
+
+        var value: ViewTraitCollection {
+            var traits = traits ?? ViewTraitCollection()
+            if modifier.isEnabled {
+                traits[Trait.self] = modifier.value
+            }
+            return traits
+        }
     }
 }
 
@@ -109,7 +159,10 @@ public struct _ConditionalTraitWritingModifier<Trait>: PrimitiveViewModifier whe
 extension _ConditionalTraitWritingModifier: Sendable {}
 
 extension View {
+    /// Conditionally writes a trait.
     @_alwaysEmitIntoClient
+    @MainActor
+    @preconcurrency
     public func _trait<K>(_ key: K.Type = K.self, _ value: K.Value, isEnabled: Bool) -> some View where K: _ViewTraitKey {
         modifier(_ConditionalTraitWritingModifier<K>(
             value: value,
@@ -118,15 +171,49 @@ extension View {
     }
 }
 
-// MARK: - TraitTransformerModifier [TODO]
+// MARK: - TraitTransformerModifier
 
-struct TraitTransformerModifier {
-    
+struct TraitTransformerModifier<Trait>: PrimitiveViewModifier where Trait: _ViewTraitKey {
+    var transform: (inout Trait.Value) -> Void
+
+    nonisolated public static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        body(_Graph(), inputs)
+    }
+
+    nonisolated public static func _makeViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        let trait = TransformTrait(modifier: modifier.value, traits: OptionalAttribute(inputs.traits))
+        let attribute = Attribute(trait)
+        inputs.traits = attribute
+        return body(_Graph(), inputs)
+    }
+
+    private struct TransformTrait: Rule {
+        @Attribute var modifier: TraitTransformerModifier
+        @OptionalAttribute var traits: ViewTraitCollection?
+
+        var value: ViewTraitCollection {
+            var traits = traits ?? ViewTraitCollection()
+            let transform = modifier.transform
+            var value = traits.value(for: Trait.self)
+            transform(&value)
+            traits[Trait.self] = value
+            return traits
+        }
+    }
 }
 
 extension View {
     package func transformTrait<K>(_ key: K.Type = K.self, transform: @escaping (inout K.Value) -> Void) -> some View where K: _ViewTraitKey {
-        preconditionFailure("TODO")
+        modifier(TraitTransformerModifier<K>(transform: transform))
     }
 }
 
