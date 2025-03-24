@@ -102,7 +102,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
             storage = .rect(rect)
             return
         }
-        storage = .roundedRect(FixedRoundedRect(rect: rect, cornerSize: cornerSize, style: style))
+        storage = .roundedRect(FixedRoundedRect(rect, cornerSize: cornerSize, style: style))
     }
 
     /// Creates a path containing a rounded rectangle.
@@ -127,7 +127,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
             storage = .rect(rect)
             return
         }
-        storage = .roundedRect(FixedRoundedRect(rect: rect, cornerSize: CGSize(width: cornerRadius, height: cornerRadius), style: style))
+        storage = .roundedRect(FixedRoundedRect(rect, cornerSize: CGSize(width: cornerRadius, height: cornerRadius), style: style))
     }
 
     #if OPENSWIFTUI_SUPPORT_2022_API
