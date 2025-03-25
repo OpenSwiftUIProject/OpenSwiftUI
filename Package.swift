@@ -79,6 +79,10 @@ let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "Sw
 
 // MARK: - Targets
 
+let coreGraphicsShims = Target.target(
+    name: "CoreGraphicsShims",
+    swiftSettings: sharedSwiftSettings
+)
 // NOTE:
 // In macOS: Mac Catalyst App will use macOS-varient build of SwiftUI.framework in /System/Library/Framework and iOS varient of SwiftUI.framework in /System/iOSSupport/System/Library/Framework
 // Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `OpenSwiftUI_SPI`.
@@ -86,6 +90,7 @@ let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
         "OpenSwiftUI_SPI",
+        "CoreGraphicsShims",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
@@ -96,6 +101,7 @@ let openSwiftUITarget = Target.target(
     dependencies: [
         "OpenSwiftUICore",
         "COpenSwiftUI",
+        "CoreGraphicsShims",
         .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
@@ -207,6 +213,7 @@ let package = Package(
             ]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
+        coreGraphicsShims,
         openSwiftUICoreTarget,
         openSwiftUITarget,
         
