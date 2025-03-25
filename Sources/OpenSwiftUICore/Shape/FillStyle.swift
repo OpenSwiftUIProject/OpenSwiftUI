@@ -1,8 +1,8 @@
 //
 //  FillStyle.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 /// A style for rasterizing vector shapes.
@@ -32,5 +32,24 @@ public struct FillStyle: Equatable {
     public init(eoFill: Bool = false, antialiased: Bool = true) {
         self.isEOFilled = eoFill
         self.isAntialiased = antialiased
+    }
+}
+
+extension FillStyle: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) {
+        encoder.boolField(1, isEOFilled, defaultValue: false)
+        encoder.boolField(2, isAntialiased, defaultValue: true)
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var style = FillStyle()
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: style.isEOFilled = try decoder.boolField(field)
+            case 2: style.isAntialiased = try decoder.boolField(field)
+            default: try decoder.skipField(field)
+            }
+        }
+        self = style
     }
 }
