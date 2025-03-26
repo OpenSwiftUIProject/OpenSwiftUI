@@ -1,11 +1,13 @@
 //
 //  Shape.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: WIP
+//  Audited for iOS 18.0
+//  Status: Blocked by GeometryProxy
 
 public import Foundation
+
+// MARK: - Shape
 
 /// A 2D shape that you can use when drawing a view.
 ///
@@ -15,15 +17,14 @@ public import Foundation
 /// You can define shapes in relation to an implicit frame of reference, such as
 /// the natural size of the view that contains it. Alternatively, you can define
 /// shapes in terms of absolute coordinates.
-public protocol Shape: Animatable, View {
+public protocol Shape: Sendable, Animatable, View, _RemoveGlobalActorIsolation {
     /// Describes this shape as a path within a rectangular frame of reference.
     ///
     /// - Parameter rect: The frame of reference for describing this shape.
     ///
     /// - Returns: A path that describes this shape.
-    func path(in rect: CGRect) -> Path
-    
-    #if OPENSWIFTUI_SUPPORT_2021_API
+    nonisolated func path(in rect: CGRect) -> Path
+
     /// An indication of how to style a shape.
     ///
     /// OpenSwiftUI looks at a shape's role when deciding how to apply a
@@ -31,21 +32,49 @@ public protocol Shape: Animatable, View {
     /// default implementation with a value of ``ShapeRole/fill``. If you
     /// create a composite shape, you can provide an override of this property
     /// to return another value, if appropriate.
-    static var role: ShapeRole { get }
-    #endif
+    nonisolated static var role: ShapeRole { get }
+
+    nonisolated var layoutDirectionBehavior: LayoutDirectionBehavior { get }
+
+    nonisolated func sizeThatFits(_ proposal: ProposedViewSize) -> CGSize
 }
 
 extension Shape {
-    public var body: _ShapeView<Self, ForegroundStyle> {
-        _ShapeView(shape: self, style: ForegroundStyle())
+    nonisolated public func sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
+        proposal.replacingUnspecifiedDimensions()
     }
 }
 
-#if OPENSWIFTUI_SUPPORT_2021_API
+
+// MARK: - ShapeRole
+
+/// Ways of styling a shape.
+public enum ShapeRole: Sendable {
+    /// Indicates to the shape's style that OpenSwiftUI fills the shape.
+    case fill
+
+    /// Indicates to the shape's style that OpenSwiftUI applies a stroke to
+    /// the shape's path.
+    case stroke
+
+    /// Indicates to the shape's style that OpenSwiftUI uses the shape as a
+    /// separator.
+    case separator
+}
 
 extension Shape {
     public static var role: ShapeRole {
         .fill
     }
 }
-#endif
+
+extension Shape {
+    public var layoutDirectionBehavior: LayoutDirectionBehavior {
+        isDeployedOnOrAfter(.v5) ? .mirrors(in: .rightToLeft) : .fixed
+    }
+
+    package func effectivePath(in rect: CGRect) -> Path {
+        // _threadGeometryProxyData
+        preconditionFailure("TODO")
+    }
+}
