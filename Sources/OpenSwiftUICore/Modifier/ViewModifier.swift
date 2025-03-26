@@ -138,7 +138,7 @@ extension UnaryViewModifier {
 package protocol MultiViewModifier: ViewModifier {}
 
 extension MultiViewModifier {
-    nonisolated static func _makeViewList(
+    nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs

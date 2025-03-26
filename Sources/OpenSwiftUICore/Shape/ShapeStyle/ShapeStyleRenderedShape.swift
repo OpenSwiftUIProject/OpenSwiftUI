@@ -8,7 +8,9 @@
 
 extension ShapeStyle {
     package typealias RenderedShape = _ShapeStyle_RenderedShape
+    package typealias InterpolatorGroup = _ShapeStyle_InterpolatorGroup
 }
+
 package struct _ShapeStyle_RenderedShape {
     package enum Shape {
         case empty
@@ -17,4 +19,7 @@ package struct _ShapeStyle_RenderedShape {
         // case image(GraphicsImage)
         case alphaMask(DisplayList.Item)
     }
+}
+
+final package class _ShapeStyle_InterpolatorGroup/*: DisplayList.InterpolatorGroup*/ {
 }
