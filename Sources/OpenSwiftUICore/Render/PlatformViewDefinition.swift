@@ -65,6 +65,18 @@ open class PlatformViewDefinition: @unchecked Sendable {
 extension DisplayList.ViewUpdater {
     package struct Platform {
         let rawValue: UInt
+        
+        struct State {
+            var position: CGPoint
+            var size: CGSize
+            let kind: PlatformViewDefinition.ViewKind
+            var flags: ViewFlags
+            var platformState: PlatformState
+        }
+        
+        struct ViewFlags {
+            let rawValue: UInt8
+        }
     }
 }
 
