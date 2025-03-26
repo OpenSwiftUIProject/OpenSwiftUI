@@ -4,6 +4,10 @@
 
 #if canImport(CoreGraphics)
 @_exported import CoreGraphics
-#else
-@_exported import CoreFoundation
 #endif
+
+#if canImport(QuartzCore)
+@_exported import QuartzCore
+#endif
+
+@_exported import CoreFoundation

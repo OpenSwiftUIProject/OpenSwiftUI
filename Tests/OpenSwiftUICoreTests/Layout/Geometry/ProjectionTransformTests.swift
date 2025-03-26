@@ -2,13 +2,11 @@
 //  ProjectionTransformTests.swift
 //  OpenSwiftUICoreTests
 
-import Testing
-import OpenSwiftUICore
-import Numerics
+import CoreGraphicsShims
 import Foundation
-#if canImport(QuartzCore)
-import QuartzCore
-#endif
+import Numerics
+import OpenSwiftUICore
+import Testing
 
 struct ProjectionTransformTests {
     // MARK: - Initialization Tests
@@ -16,75 +14,67 @@ struct ProjectionTransformTests {
     @Test
     func defaultInit() {
         let transform = ProjectionTransform()
-        #expect(transform.m11 == 1.0)
-        #expect(transform.m12 == 0.0)
-        #expect(transform.m13 == 0.0)
-        #expect(transform.m21 == 0.0)
-        #expect(transform.m22 == 1.0)
-        #expect(transform.m23 == 0.0)
-        #expect(transform.m31 == 0.0)
-        #expect(transform.m32 == 0.0)
-        #expect(transform.m33 == 1.0)
+        #expect(transform.m11.isApproximatelyEqual(to: 1.0))
+        #expect(transform.m12.isApproximatelyEqual(to: 0.0))
+        #expect(transform.m13.isApproximatelyEqual(to: 0.0))
+        #expect(transform.m21.isApproximatelyEqual(to: 0.0))
+        #expect(transform.m22.isApproximatelyEqual(to: 1.0))
+        #expect(transform.m23.isApproximatelyEqual(to: 0.0))
+        #expect(transform.m31.isApproximatelyEqual(to: 0.0))
+        #expect(transform.m32.isApproximatelyEqual(to: 0.0))
+        #expect(transform.m33.isApproximatelyEqual(to: 1.0))
     }
     
-    #if canImport(QuartzCore)
     @Test
     func cgAffineTransformInit() {
         let affine = CGAffineTransform(a: 2, b: 3, c: 4, d: 5, tx: 6, ty: 7)
         let transform = ProjectionTransform(affine)
-        #expect(transform.m11 == 2)
-        #expect(transform.m12 == 3)
-        #expect(transform.m21 == 4)
-        #expect(transform.m22 == 5)
-        #expect(transform.m31 == 6)
-        #expect(transform.m32 == 7)
-        #expect(transform.m13 == 0)
-        #expect(transform.m23 == 0)
-        #expect(transform.m33 == 1)
+        #expect(transform.m11.isApproximatelyEqual(to: 2))
+        #expect(transform.m12.isApproximatelyEqual(to: 3))
+        #expect(transform.m21.isApproximatelyEqual(to: 4))
+        #expect(transform.m22.isApproximatelyEqual(to: 5))
+        #expect(transform.m31.isApproximatelyEqual(to: 6))
+        #expect(transform.m32.isApproximatelyEqual(to: 7))
+        #expect(transform.m13.isApproximatelyEqual(to: 0))
+        #expect(transform.m23.isApproximatelyEqual(to: 0))
+        #expect(transform.m33.isApproximatelyEqual(to: 1))
     }
     
     @Test
     func caTransform3DInit() {
         let t3d = CATransform3DMakeTranslation(1, 2, 3)
         let transform = ProjectionTransform(t3d)
-        #expect(transform.m11 == 1)
-        #expect(transform.m12 == 0)
-        #expect(transform.m13 == t3d.m14)
-        #expect(transform.m21 == 0)
-        #expect(transform.m22 == 1)
-        #expect(transform.m23 == t3d.m24)
-        #expect(transform.m31 == 1)
-        #expect(transform.m32 == 2)
-        #expect(transform.m33 == t3d.m44)
+        #expect(transform.m11.isApproximatelyEqual(to: 1))
+        #expect(transform.m12.isApproximatelyEqual(to: 0))
+        #expect(transform.m13.isApproximatelyEqual(to: t3d.m14))
+        #expect(transform.m21.isApproximatelyEqual(to: 0))
+        #expect(transform.m22.isApproximatelyEqual(to: 1))
+        #expect(transform.m23.isApproximatelyEqual(to: t3d.m24))
+        #expect(transform.m31.isApproximatelyEqual(to: 1))
+        #expect(transform.m32.isApproximatelyEqual(to: 2))
+        #expect(transform.m33.isApproximatelyEqual(to: t3d.m44))
     }
-    #endif
-    
+
     // MARK: - Property Tests
     
     @Test
     func isIdentity() {
         let identity = ProjectionTransform()
         #expect(identity.isIdentity)
-        
-        #if canImport(QuartzCore)
         let nonIdentity = ProjectionTransform(CGAffineTransform(translationX: 1, y: 1))
         #expect(!nonIdentity.isIdentity)
-        #endif
     }
     
     @Test
     func isAffine() {
-        #if canImport(QuartzCore)
         let affine = ProjectionTransform(CGAffineTransform.identity)
         #expect(affine.isAffine)
-        #endif
-        
+
         var nonAffine = ProjectionTransform()
         nonAffine.m13 = 0.5
         #expect(!nonAffine.isAffine)
     }
     
-    #if canImport(QuartzCore)
     @Test(
         arguments: [
             // Affine transforms
@@ -113,38 +103,17 @@ struct ProjectionTransformTests {
     func determinant(transform: ProjectionTransform, expectedDet: CGFloat) {
         #expect(transform.determinant.isApproximatelyEqual(to: expectedDet))
     }
-    #else
-    @Test(
-        arguments: [
-            // Non-affine transforms with non-zero determinant
-            (
-                ProjectionTransform(
-                    m11: 1, m12: 2, m13: 3,
-                    m21: 0, m22: 1, m23: 4,
-                    m31: 5, m32: 6, m33: 0
-                ),
-                1.0
-            ),
-        ]
-    )
-    func determinant(transform: ProjectionTransform, expectedDet: CGFloat) {
-        #expect(transform.determinant.isApproximatelyEqual(to: expectedDet))
-    }
-    #endif
-
     
     // MARK: - Matrix Operation Tests
     
     @Test
     func invert() {
-        #if canImport(QuartzCore)
         var transform = ProjectionTransform(CGAffineTransform(scaleX: 2, y: 2))
         let transformInvertResult = transform.invert()
         #expect(transformInvertResult == true)
-        #expect(transform.m11 == 0.5)
-        #expect(transform.m22 == 0.5)
-        #endif
-        
+        #expect(transform.m11.isApproximatelyEqual(to: 0.5))
+        #expect(transform.m22.isApproximatelyEqual(to: 0.5))
+
         var singular = ProjectionTransform()
         singular.m11 = 0
         singular.m22 = 0
@@ -154,96 +123,89 @@ struct ProjectionTransformTests {
     
     @Test
     func inverted() {
-        #if canImport(QuartzCore)
         let transform = ProjectionTransform(CGAffineTransform(scaleX: 2, y: 2))
         let inverted = transform.inverted()
-        #expect(inverted.m11 == 0.5)
-        #expect(inverted.m22 == 0.5)
-        #endif
+        #expect(inverted.m11.isApproximatelyEqual(to: 0.5))
+        #expect(inverted.m22.isApproximatelyEqual(to: 0.5))
     }
     
     @Test
     func concatenating() {
-        #if canImport(QuartzCore)
         let t1 = ProjectionTransform(CGAffineTransform(translationX: 1, y: 0))
         let t2 = ProjectionTransform(CGAffineTransform(translationX: 0, y: 2))
         let result = t1.concatenating(t2)
-        #expect(result.m31 == 1)
-        #expect(result.m32 == 2)
-        #endif
+        #expect(result.m31.isApproximatelyEqual(to: 1))
+        #expect(result.m32.isApproximatelyEqual(to: 2))
     }
     
     // MARK: - Point Transform Tests
     
     @Test
     func applyingToPoint() {
-        #if canImport(QuartzCore)
         // Test affine transform
         let transform = ProjectionTransform(CGAffineTransform(translationX: 1, y: 2))
         let point = CGPoint(x: 1, y: 1)
         let transformed = point.applying(transform)
-        #expect(transformed.x == 2)
-        #expect(transformed.y == 3)
-        #endif
-        
+        #expect(transformed.x.isApproximatelyEqual(to: 2))
+        #expect(transformed.y.isApproximatelyEqual(to: 3))
+
         // Test perspective transform
         var perspective = ProjectionTransform()
         perspective.m13 = 0.5
         let perspectivePoint = CGPoint(x: 2, y: 0).applying(perspective)
-        #expect(perspectivePoint.x != 2)  // Point should be transformed by perspective
+        // Point should be transformed by perspective
+        #expect(!perspectivePoint.x.isApproximatelyEqual(to: 2))
     }
     
     @Test
     func unapplyingToPoint() {
-        #if canImport(QuartzCore)
         // Test with invertible transform
         let transform = ProjectionTransform(CGAffineTransform(translationX: 1, y: 2))
         let point = CGPoint(x: 2, y: 3)
         let untransformed = point.unapplying(transform)
-        #expect(untransformed.x == 1)
-        #expect(untransformed.y == 1)
-        #endif
-        
+        #expect(untransformed.x.isApproximatelyEqual(to: 1.0))
+        #expect(untransformed.y.isApproximatelyEqual(to: 1.0))
+
         // Test with non-invertible transform
         var singular = ProjectionTransform()
         singular.m11 = 0
         singular.m22 = 0
         let originalPoint = CGPoint(x: 1, y: 1)
         let result = originalPoint.unapplying(singular)
-        #expect(result == originalPoint)  // Should return original point for non-invertible transform
+        // Should return original point for non-invertible transform
+        #expect(result.x.isApproximatelyEqual(to: originalPoint.x))
+        #expect(result.y.isApproximatelyEqual(to: originalPoint.y))
     }
     
-    #if canImport(QuartzCore)
     // MARK: - Conversion Tests
     
     @Test
     func toCATransform3D() {
         let projection = ProjectionTransform()
         let transform3D = CATransform3D(projection)
-        #expect(transform3D.m11 == projection.m11)
-        #expect(transform3D.m12 == projection.m12)
-        #expect(transform3D.m14 == projection.m13)
-        #expect(transform3D.m21 == projection.m21)
-        #expect(transform3D.m22 == projection.m22)
-        #expect(transform3D.m24 == projection.m23)
-        #expect(transform3D.m41 == projection.m31)
-        #expect(transform3D.m42 == projection.m32)
-        #expect(transform3D.m44 == projection.m33)
+        #expect(transform3D.m11.isApproximatelyEqual(to: projection.m11))
+        #expect(transform3D.m12.isApproximatelyEqual(to: projection.m12))
+        #expect(transform3D.m14.isApproximatelyEqual(to: projection.m13))
+        #expect(transform3D.m21.isApproximatelyEqual(to: projection.m21))
+        #expect(transform3D.m22.isApproximatelyEqual(to: projection.m22))
+        #expect(transform3D.m24.isApproximatelyEqual(to: projection.m23))
+        #expect(transform3D.m41.isApproximatelyEqual(to: projection.m31))
+        #expect(transform3D.m42.isApproximatelyEqual(to: projection.m32))
+        #expect(transform3D.m44.isApproximatelyEqual(to: projection.m33))
     }
     
     @Test
     func toCGAffineTransform() {
         let projection = ProjectionTransform()
         let affine = CGAffineTransform(projection)
-        #expect(affine.a == projection.m11)
-        #expect(affine.b == projection.m12)
-        #expect(affine.c == projection.m21)
-        #expect(affine.d == projection.m22)
-        #expect(affine.tx == projection.m31)
-        #expect(affine.ty == projection.m32)
+        #expect(affine.a.isApproximatelyEqual(to: projection.m11))
+        #expect(affine.b.isApproximatelyEqual(to: projection.m12))
+        #expect(affine.c.isApproximatelyEqual(to: projection.m21))
+        #expect(affine.d.isApproximatelyEqual(to: projection.m22))
+        #expect(affine.tx.isApproximatelyEqual(to: projection.m31))
+        #expect(affine.ty.isApproximatelyEqual(to: projection.m32))
     }
-    #endif
-    
+
     // MARK: - ProtobufMessage Tests
     
     @Test(

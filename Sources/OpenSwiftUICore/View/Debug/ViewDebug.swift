@@ -9,6 +9,7 @@
 
 public import Foundation
 package import OpenGraphShims
+package import CoreGraphicsShims
 import OpenSwiftUI_SPI
 
 /// Namespace for view debug information.
@@ -441,38 +442,28 @@ extension ViewTransform.Item: Encodable {
             case let .translation(size):
                 try container.encode(size, forKey: .transform)
             case let .affineTransform(affineTransform, inverse):
-                #if canImport(QuartzCore)
                 var transform3D = CATransform3DMakeAffineTransform(affineTransform)
                 if inverse {
                     transform3D = CATransform3DInvert(transform3D)
                 }
                 try container.encode(transform3D.elements, forKey: .affineTransform)
-                #else
-                preconditionFailure("CATransform3D is not available on this platform")
-                #endif
             case let .projectionTransform(projectionTransform, inverse):
-                #if canImport(QuartzCore)
                 var transform3D = CATransform3D(projectionTransform)
                 if inverse {
                     transform3D = CATransform3DInvert(transform3D)
                 }
                 try container.encode(transform3D.elements, forKey: .projectionTransform)
-                #else
-                preconditionFailure("CATransform3D is not available on this platform")
-                #endif
             default:
                 break
         }
     }
 }
 
-#if canImport(QuartzCore)
 extension CATransform3D {
     fileprivate var elements: [CGFloat] {
         [m11, m12, m13, m14, m21, m22, m23, m24, m31, m32, m33, m34, m41, m42, m43, m44]
     }
 }
-#endif
 
 package protocol ValueWrapper {
     var wrappedValue: Any? { get }

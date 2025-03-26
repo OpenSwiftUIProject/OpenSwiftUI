@@ -5,8 +5,20 @@
 #if !canImport(CoreGraphics)
 public import Foundation
 
-// FIXME: Use Silica or other implementation
 public struct CGAffineTransform: Equatable {
+    public init(translationX tx: CGFloat, y ty: CGFloat) {
+        self.init(a: 1, b: 0, c: 0, d: 1, tx: Double(tx), ty: Double(ty))
+    }
+
+    public init(scaleX sx: CGFloat, y sy: CGFloat) {
+        self.init(a: Double(sx), b: 0, c: 0, d: Double(sy), tx: 0, ty: 0)
+    }
+
+    public init(rotationAngle angle: CGFloat) {
+        let radians = Double(angle)
+        self.init(a: cos(radians), b: sin(radians), c: -sin(radians), d: cos(radians), tx: 0, ty: 0)
+    }
+
     public init() {
         a = .zero
         b = .zero
