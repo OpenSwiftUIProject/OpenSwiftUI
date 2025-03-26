@@ -1,9 +1,16 @@
 //
 //  ShapeView.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for iOS 15.5
 //  Status: WIP
+
+// FIXME
+extension Shape {
+    public var body: _ShapeView<Self, ForegroundStyle> {
+        _ShapeView(shape: self, style: ForegroundStyle())
+    }
+}
 
 @frozen
 public struct _ShapeView<Content, Style>: /*ShapeStyledLeafView, */UnaryView, PrimitiveView where Content: Shape, Style: ShapeStyle {
