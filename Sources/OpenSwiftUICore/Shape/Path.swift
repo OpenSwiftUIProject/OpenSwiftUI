@@ -33,6 +33,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
         private var kind: Kind
 
+        #if canImport(CoreGraphics)
         private var data: PathData
 
         @inline(__always)
@@ -41,6 +42,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             //data = PathData(path)
             preconditionFailure("TODO")
         }
+        #endif
 
         package init(takingPath path: OBPath) {
             kind = .obPath
@@ -48,6 +50,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             preconditionFailure("TODO")
         }
 
+        #if canImport(CoreGraphics)
         private func prepareBuffer() {
             let obPath: OBPath
             switch kind {
@@ -64,6 +67,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             // storage.appendPath
             obPath.release()
         }
+        #endif
 
         @usableFromInline
         package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
@@ -299,7 +303,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     }
     #endif
 
-    package func retainRBPath() -> RBPath {
+    package func retainOBPath() -> OBPath {
         preconditionFailure("TODO")
     }
 

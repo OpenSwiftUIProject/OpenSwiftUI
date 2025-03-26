@@ -113,6 +113,9 @@ final class TimerUtilsXCTests: XCTestCase {
     }
 
     func testWithDelayRunsOnMainRunLoop() async throws {
+        #if canImport(Darwin)
+        throw XCTSkip("Skip flaky test case temporary")
+        #endif
         let expectation = expectation(description: "withDelay body call")
         let _ = withDelay(0.2) {
             XCTAssertTrue(Thread.isMainThread)

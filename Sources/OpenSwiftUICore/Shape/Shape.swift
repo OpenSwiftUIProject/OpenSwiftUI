@@ -163,7 +163,7 @@ extension Shape {
     /// line-width defined by `lineWidth` and all other properties of
     /// `StrokeStyle` having their default values.
     @inlinable
-    nonisolated public func stroke(lineWidth: CoreFoundation.CGFloat = 1) -> some Shape {
+    nonisolated public func stroke(lineWidth: CGFloat = 1) -> some Shape {
         return stroke(style: StrokeStyle(lineWidth: lineWidth))
     }
 }
