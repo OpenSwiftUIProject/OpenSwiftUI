@@ -1,12 +1,13 @@
 //
 //  LayoutDirection.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
-//  ID: 9DE75C3EAC30FFAB943BCC50F6D5E8C1
+//  ID: 9DE75C3EAC30FFAB943BCC50F6D5E8C1 (SwiftUI)
+//  ID: 54C853EF26D00A0E6B1785C3902A74F4 (SwiftUICore)
 
-import Foundation
+package import Foundation
 
 // MARK: - LayoutDirection
 
@@ -27,88 +28,25 @@ import Foundation
 /// value. OpenSwiftUI horizontally flips the x position of each view within its
 /// parent, so layout calculations automatically produce the desired effect
 /// for both modes without any changes.
-public enum LayoutDirection: Hashable, CaseIterable {
+public enum LayoutDirection: Hashable, CaseIterable, Sendable {
     /// A left-to-right layout direction.
     case leftToRight
     
     /// A right-to-left layout direction.
     case rightToLeft
-}
 
-extension LayoutDirection: Sendable {}
-
-#if canImport(UIKit)
-// MARK: - UIKit integration
-
-public import UIKit
-
-extension LayoutDirection {
-    /// Create a direction from its UITraitEnvironmentLayoutDirection equivalent.
-    public init?(_ uiLayoutDirection: UITraitEnvironmentLayoutDirection) {
-        switch uiLayoutDirection {
-        case .unspecified:
-            return nil
-        case .leftToRight:
-            self = .leftToRight
-        case .rightToLeft:
-            self = .rightToLeft
-        @unknown default:
-            return nil
+    package func convert(_ rect: CGRect, to layoutDirection: LayoutDirection, in size: CGSize) -> CGRect {
+        guard self != layoutDirection else {
+            return rect
         }
+        return CGRect(origin: CGPoint(x: size.width - rect.x - rect.width, y: rect.y), size: rect.size)
     }
-}
 
-extension UITraitEnvironmentLayoutDirection {
-    /// Creates a trait environment layout direction from the specified OpenSwiftUI layout direction.
-    public init(_ layoutDirection: LayoutDirection) {
-        switch layoutDirection {
-        case .leftToRight: self = .leftToRight
-        case .rightToLeft: self = .rightToLeft
+    package var opposite: LayoutDirection {
+        switch self {
+        case .leftToRight: .rightToLeft
+        case .rightToLeft: .leftToRight
         }
-    }
-}
-
-#endif
-
-// MARK: - CodableLayoutDirection
-
-package struct CodableLayoutDirection: CodableProxy {
-    package var base: LayoutDirection
-    
-    private enum CodingValue: Int, Codable {
-        case leftToRight
-        case rightToLeft
-    }
-    
-    @inline(__always)
-    init(base: LayoutDirection) {
-        self.base = base
-    }
-    
-    package init(from decoder: any Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        let value = try container.decode(CodingValue.self)
-        switch value {
-        case .leftToRight: base = .leftToRight
-        case .rightToLeft: base = .rightToLeft
-        }
-    }
-    
-    package func encode(to encoder: any Encoder) throws {
-        var container = encoder.singleValueContainer()
-        let value: CodingValue = switch base {
-        case .leftToRight: .leftToRight
-        case .rightToLeft: .rightToLeft
-        }
-        try container.encode(value)
-    }
-}
-
-// MARK: - LayoutDirection + CodableByProxy
-
-extension LayoutDirection: CodableByProxy {
-    package var codingProxy: CodableLayoutDirection {
-        CodableLayoutDirection(base: self)
     }
 }
 
@@ -123,6 +61,46 @@ extension EnvironmentValues {
     public var layoutDirection: LayoutDirection {
         get { self[LayoutDirectionKey.self] }
         set { self[LayoutDirectionKey.self] = newValue }
-        _modify { yield &self[LayoutDirectionKey.self] }
+    }
+}
+
+// MARK: - LayoutDirection + CodableByProxy
+
+extension LayoutDirection: CodableByProxy {
+    package var codingProxy: CodableLayoutDirection {
+        CodableLayoutDirection(self)
+    }
+}
+
+// MARK: - CodableLayoutDirection
+
+package struct CodableLayoutDirection: CodableProxy {
+    package var base: LayoutDirection
+
+    package init(_ base: LayoutDirection) {
+        self.base = base
+    }
+
+    private enum CodingValue: Int, Codable {
+        case leftToRight
+        case rightToLeft
+    }
+
+    package func encode(to encoder: any Encoder) throws {
+        var container = encoder.singleValueContainer()
+        let value: CodingValue = switch base {
+        case .leftToRight: .leftToRight
+        case .rightToLeft: .rightToLeft
+        }
+        try container.encode(value)
+    }
+
+    package init(from decoder: any Decoder) throws {
+        let container = try decoder.singleValueContainer()
+        let value = try container.decode(CodingValue.self)
+        switch value {
+        case .leftToRight: base = .leftToRight
+        case .rightToLeft: base = .rightToLeft
+        }
     }
 }
