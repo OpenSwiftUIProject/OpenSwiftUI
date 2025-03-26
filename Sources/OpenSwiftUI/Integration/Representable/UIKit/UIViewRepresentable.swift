@@ -4,6 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
+//  ID: 19642D833A8FE469B137699ED1426762 (SwiftUI)
 
 #if os(iOS)
 
@@ -107,7 +108,6 @@ public protocol UIViewRepresentable: View where Body == Never {
     ///   - coordinator: The custom coordinator instance you use to communicate
     ///     changes back to Open If you do not use a custom coordinator, the
     ///     system provides a default instance.
-    @MainActor
     static func dismantleUIView(_ uiView: UIViewType, coordinator: Coordinator)
     
     /// A type to coordinate with the view.
@@ -152,7 +152,7 @@ public protocol UIViewRepresentable: View where Body == Never {
     func sizeThatFits(_ proposal: ProposedViewSize, uiView: UIViewType, context: Context) -> CGSize?
 
     /// Overrides the default size-that-fits.
-    func _overrideSizeThatFits(_ size: inout CGSize, in: _ProposedSize, uiView: UIViewType)
+    func _overrideSizeThatFits(_ size: inout CGSize, in proposedSize: _ProposedSize, uiView: UIViewType)
 
     /// Custom layoutTraits hook.
     func _overrideLayoutTraits(_ layoutTraits: inout _LayoutTraits, for uiView: UIViewType)
@@ -193,8 +193,7 @@ extension UIViewRepresentable {
 
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         precondition(isLinkedOnOrAfter(.v4) ? Metadata(Self.self).isValueType : true, "UIViewRepresentables must be value types: \(Self.self)")
-        // PlatformViewRepresentable
-        preconditionFailure("TODO")
+        return PlatformViewRepresentableAdaptor<Self>._makeView(view: view.unsafeCast(), inputs: inputs)
     }
 
     nonisolated public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
@@ -220,6 +219,66 @@ extension UIViewRepresentable {
     }
 }
 
+private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: UIViewRepresentable {
+    var base: Base
+
+    static var dynamicProperties: DynamicPropertyCache.Fields {
+        DynamicPropertyCache.fields(of: Base.self)
+    }
+
+    typealias PlatformViewProvider = Base.UIViewType
+
+    typealias Coordinator = Base.Coordinator
+
+    func makeViewProvider(context: Context) -> Base.UIViewType {
+        base.makeUIView(context: .init(context))
+    }
+
+    func updateViewProvider(_ provider: PlatformViewProvider, context: Context) {
+        base.updateUIView(provider, context: .init(context))
+    }
+
+    func resetViewProvider(_ provider: PlatformViewProvider, coordinator: Coordinator, destroy: () -> Void) {
+        base._resetUIView(provider, coordinator: coordinator, destroy: destroy)
+    }
+
+    static func dismantleViewProvider(_ provider: PlatformViewProvider, coordinator: Coordinator) {
+        Base.dismantleUIView(provider, coordinator: coordinator)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        base.makeCoordinator()
+    }
+
+    func _identifiedViewTree(in provider: PlatformViewProvider) -> _IdentifiedViewTree {
+        base._identifiedViewTree(in: provider)
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, provider: PlatformViewProvider, context: Context) -> CGSize? {
+        base.sizeThatFits(proposal, uiView: provider, context: .init(context))
+    }
+
+    func overrideSizeThatFits(_ size: inout CGSize, in proposedSize: _ProposedSize, platformView: PlatformViewProvider) {
+        base._overrideSizeThatFits(&size, in: proposedSize, uiView: platformView)
+    }
+
+    func overrideLayoutTraits(_ traits: inout _LayoutTraits, for provider: PlatformViewProvider) {
+        base._overrideLayoutTraits(&traits, for: provider)
+    }
+
+    static func modifyBridgedViewInputs(_ inputs: inout _ViewInputs) {
+        Base._modifyBridgedViewInputs(&inputs)
+    }
+
+    static func shouldEagerlyUpdateSafeArea(_ provider: Base.UIViewType) -> Bool {
+        false
+    }
+
+    static func layoutOptions(_ provider: PlatformViewProvider) -> LayoutOptions {
+        Base._layoutOptions(provider)
+    }
+}
+
 /// Contextual information about the state of the system that you use to create
 /// and update your UIKit view.
 ///
@@ -234,26 +293,33 @@ extension UIViewRepresentable {
 @available(watchOS, unavailable)
 @MainActor
 public struct UIViewRepresentableContext<Representable> where Representable: UIViewRepresentable {
+    var values: RepresentableContextValues
 
     /// The view's associated coordinator.
     public let coordinator: Representable.Coordinator
 
     /// The current transaction.
-    public private(set) var transaction: Transaction
+    public private(set) var transaction: Transaction {
+        get { values.transaction }
+        set { values.transaction = newValue }
+    }
 
     /// The current environment.
     ///
     /// Use the environment values to configure the state of your view when
     /// creating or updating it.
-    public private(set) var environment: EnvironmentValues
-    
-    var preferenceBridge: PreferenceBridge
-    
-    init(coordinator: Representable.Coordinator, transaction: Transaction, environment: EnvironmentValues, preferenceBridge: PreferenceBridge) {
-        self.coordinator = coordinator
-        self.transaction = transaction
-        self.environment = environment
-        self.preferenceBridge = preferenceBridge
+    public var environment: EnvironmentValues {
+        switch values.environmentStorage {
+        case let .eager(environmentValues):
+            environmentValues
+        case let .lazy(attribute, anyRuleContext):
+            Update.ensure { anyRuleContext[attribute] }
+        }
+    }
+
+    init<R>(_ context: PlatformViewRepresentableContext<R>) where R: PlatformViewRepresentable, R.Coordinator == Representable.Coordinator {
+        values = context.values
+        coordinator = context.coordinator
     }
 
     /// Animates changes using the animation in the current transaction.
