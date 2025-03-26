@@ -6,6 +6,7 @@
 //  Status: Complete
 
 public import Foundation
+public import CoreGraphicsShims
 #if canImport(QuartzCore)
 public import QuartzCore
 #endif

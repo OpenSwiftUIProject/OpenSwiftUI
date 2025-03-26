@@ -2,10 +2,6 @@
 //  OpenSwiftUI_CSymbols.c
 //  OpenSwiftUI_SPI
 
-#ifdef __linux__
-#define _GNU_SOURCE
-#endif
-
 #include "OpenSwiftUI_CSymbols.h"
 #include <dlfcn.h>
 

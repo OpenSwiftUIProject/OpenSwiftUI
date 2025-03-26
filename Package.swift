@@ -101,7 +101,7 @@ let openSwiftUISPITarget = Target.target(
         .product(name: "OpenBox", package: "OpenBox"),
     ],
     publicHeadersPath: ".",
-    cSettings: sharedCSettings,
+    cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
     cxxSettings: sharedCxxSettings
 )
 let coreGraphicsShims = Target.target(

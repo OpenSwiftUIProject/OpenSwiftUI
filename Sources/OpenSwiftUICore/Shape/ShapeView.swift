@@ -547,7 +547,7 @@ extension ShapeView {
     ///   - lineWidth: The width of the stroke that outlines this shape.
     /// - Returns: A stroked shape.
     @_alwaysEmitIntoClient
-    nonisolated public func stroke<S>(_ content: S, lineWidth: CoreFoundation.CGFloat = 1, antialiased: Swift.Bool = true) -> StrokeShapeView<Self.Content, S, Self> where S: ShapeStyle {
+    nonisolated public func stroke<S>(_ content: S, lineWidth: CGFloat = 1, antialiased: Swift.Bool = true) -> StrokeShapeView<Self.Content, S, Self> where S: ShapeStyle {
         stroke(
             content,
             style: StrokeStyle(lineWidth: lineWidth),

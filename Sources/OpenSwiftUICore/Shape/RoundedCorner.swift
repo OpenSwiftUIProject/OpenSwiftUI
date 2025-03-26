@@ -6,9 +6,7 @@
 //  Status: WIP
 
 public import Foundation
-#if canImport(CoreGraphics)
-package import CoreGraphics
-#endif
+package import CoreGraphicsShims
 
 // MARK: - RoundedCornerStyle
 
@@ -72,10 +70,10 @@ package struct FixedRoundedRect: Equatable {
     }
 
     // TODO: RenderBox
-    // package func withTemporaryPath<R>(_ body: (RBPath) -> R) -> R
+    // package func withTemporaryPath<R>(_ body: (OBPath) -> R) -> R
 
     package func contains(_ point: CGPoint) -> Bool {
-        // TODO: RBPath
+        // TODO: OBPath
         preconditionFailure("TODO")
     }
 
