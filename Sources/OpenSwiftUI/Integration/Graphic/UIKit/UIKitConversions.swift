@@ -203,4 +203,30 @@ extension DynamicTypeSize {
     }
 }
 
+extension LayoutDirection {
+    /// Create a direction from its UITraitEnvironmentLayoutDirection equivalent.
+    public init?(_ uiLayoutDirection: UITraitEnvironmentLayoutDirection) {
+        switch uiLayoutDirection {
+        case .unspecified:
+            return nil
+        case .leftToRight:
+            self = .leftToRight
+        case .rightToLeft:
+            self = .rightToLeft
+        @unknown default:
+            return nil
+        }
+    }
+}
+
+extension UITraitEnvironmentLayoutDirection {
+    /// Creates a trait environment layout direction from the specified OpenSwiftUI layout direction.
+    public init(_ layoutDirection: LayoutDirection) {
+        switch layoutDirection {
+        case .leftToRight: self = .leftToRight
+        case .rightToLeft: self = .rightToLeft
+        }
+    }
+}
+
 #endif
