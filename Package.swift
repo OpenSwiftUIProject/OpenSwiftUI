@@ -194,6 +194,15 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     sources: ["BridgeableTests.swift", bridgeFramework],
     swiftSettings: sharedSwiftSettings
 )
+let coreGraphicsShimsTestTarget = Target.testTarget(
+    name: "CoreGraphicsShimsTests",
+    dependencies: [
+        "CoreGraphicsShims",
+        .product(name: "Numerics", package: "swift-numerics"),
+    ],
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
+)
 
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
 let supportMultiProducts: Bool = envEnable("OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS", default: true)
@@ -251,6 +260,7 @@ let package = Package(
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
         openSwiftUIBridgeTestTarget,
+        coreGraphicsShimsTestTarget,
     ]
 )
 

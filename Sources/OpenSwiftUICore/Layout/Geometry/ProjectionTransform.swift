@@ -7,9 +7,6 @@
 
 public import Foundation
 public import CoreGraphicsShims
-#if canImport(QuartzCore)
-public import QuartzCore
-#endif
 
 @frozen
 public struct ProjectionTransform {
@@ -37,7 +34,6 @@ public struct ProjectionTransform {
     @inlinable
     public init() {}
 
-    #if canImport(QuartzCore)
     @inlinable
     public init(_ m: CGAffineTransform) {
         m11 = m.a
@@ -60,7 +56,6 @@ public struct ProjectionTransform {
         m32 = m.m42
         m33 = m.m44
     }
-    #endif
 
     @inlinable
     public var isIdentity: Bool {
@@ -192,7 +187,6 @@ extension CGAffineTransform {
     }
 }
 
-#if canImport(QuartzCore)
 extension CATransform3D {
     package init(_ m: ProjectionTransform) {
         self.init(
@@ -203,7 +197,6 @@ extension CATransform3D {
         )
     }
 }
-#endif
 
 extension ProjectionTransform: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) {
