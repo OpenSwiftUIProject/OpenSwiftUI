@@ -1,18 +1,18 @@
 //
 //  Path.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 31FD92B70C320DDD253E93C7417D779A RELEASE_2021
-//  ID: 3591905F51357E95FA93E39751507471 RELEASE_2024
+//  ID: 31FD92B70C320DDD253E93C7417D779A (SwiftUI)
+//  ID: 3591905F51357E95FA93E39751507471 (SwiftUICore)
 
 public import Foundation
+package import OpenBoxShims
+import OpenSwiftUI_SPI
+public import CoreGraphicsShims
 
 #if canImport(CoreGraphics)
-import OpenSwiftUI_SPI
-public import CoreGraphics
-
 @_silgen_name("__CGPathParseString")
 private func __CGPathParseString(_ path: CGMutablePath, _ utf8CString: UnsafePointer<CChar>) -> Bool
 #endif
@@ -21,9 +21,80 @@ private func __CGPathParseString(_ path: CGMutablePath, _ utf8CString: UnsafePoi
 
 /// The outline of a 2D shape.
 @frozen
-public struct Path/*: Equatable, LosslessStringConvertible*/ {
-    var storage: Path.Storage
-    
+public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
+    @usableFromInline
+    final package class PathBox: Equatable {
+
+        private enum Kind: UInt8 {
+            case cgPath
+            case obPath
+            case buffer
+        }
+
+        private var kind: Kind
+
+        private var data: PathData
+
+        @inline(__always)
+        init(_ path: CGPath) {
+            kind = .cgPath
+            //data = PathData(path)
+            preconditionFailure("TODO")
+        }
+
+        package init(takingPath path: OBPath) {
+            kind = .obPath
+            //data = PathData(path)
+            preconditionFailure("TODO")
+        }
+
+        private func prepareBuffer() {
+            let obPath: OBPath
+            switch kind {
+            case .cgPath:
+                // data.cgPath
+                // let rbPath = OBPathMakeWithCGPath
+                preconditionFailure("TODO")
+            case .obPath:
+                obPath = data.obPath.assumingMemoryBound(to: OBPath.self).pointee
+            case .buffer:
+                return
+            }
+            // OBPath.Storage.init
+            // storage.appendPath
+            obPath.release()
+        }
+
+        @usableFromInline
+        package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
+            preconditionFailure("TODO")
+        }
+    }
+
+    @usableFromInline
+    @frozen
+    package enum Storage: Equatable {
+        case empty
+        case rect(CGRect)
+        case ellipse(CGRect)
+        indirect case roundedRect(FixedRoundedRect)
+        @available(*, deprecated, message: "obsolete")
+        indirect case stroked(StrokedPath)
+        @available(*, deprecated, message: "obsolete")
+        indirect case trimmed(TrimmedPath)
+        case path(PathBox)
+    }
+
+    package var storage: Path.Storage
+
+    package init(storage: Path.Storage) {
+        self.storage = storage
+    }
+
+    package init(box: Path.PathBox) {
+        self.storage = .path(box)
+    }
+
     /// Creates an empty path.
     public init() {
         storage = .empty
@@ -55,7 +126,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
             return
         }
         storage = .path(PathBox(path.mutableCopy()!))
-        
+        preconditionFailure("TODO")
     }
     #endif
     
@@ -127,10 +198,9 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
             storage = .rect(rect)
             return
         }
-        storage = .roundedRect(FixedRoundedRect(rect, cornerSize: CGSize(width: cornerRadius, height: cornerRadius), style: style))
+        storage = .roundedRect(FixedRoundedRect(rect, cornerRadius: cornerRadius, style: style))
     }
 
-    #if OPENSWIFTUI_SUPPORT_2022_API
     /// Creates a path as the given rounded rectangle, which may have
     /// uneven corner radii.
     ///
@@ -145,12 +215,14 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     ///   - style: The corner style. Defaults to the `continous` style
     ///     if not specified.
     ///
-    @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
     public init(roundedRect rect: CGRect, cornerRadii: RectangleCornerRadii, style: RoundedCornerStyle = .continuous) {
+        guard !rect.isNull else {
+            storage = .empty
+            return
+        }
         preconditionFailure("TODO")
     }
-    #endif
-    
+
     /// Creates a path as an ellipse within the given rectangle.
     ///
     /// This is a convenience function that creates a path of an
@@ -208,6 +280,7 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
             return nil
         }
         storage = .path(PathBox(mutablePath))
+        preconditionFailure("TODO")
         #else
         return nil
         #endif
@@ -225,7 +298,15 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
         preconditionFailure("TODO")
     }
     #endif
-    
+
+    package func retainRBPath() -> RBPath {
+        preconditionFailure("TODO")
+    }
+
+    package mutating func withMutableBuffer(do body: (UnsafeMutableRawPointer) -> Void) {
+        preconditionFailure("TODO")
+    }
+
     /// A Boolean value indicating whether the path contains zero elements.
     public var isEmpty: Bool {
         preconditionFailure("TODO")
@@ -247,127 +328,11 @@ public struct Path/*: Equatable, LosslessStringConvertible*/ {
     public func contains(_ p: CGPoint, eoFill: Bool = false) -> Bool {
         preconditionFailure("TODO")
     }
-    
-    /// Calls `body` with each element in the path.
-    public func forEach(_ body: (Path.Element) -> Void) {
+
+    package func contains(points: [CGPoint], eoFill: Bool = false, origin: CGPoint = .zero) -> BitVector64 {
         preconditionFailure("TODO")
     }
 
-    /// Returns a stroked copy of the path using `style` to define how the
-    /// stroked outline is created.
-    public func strokedPath(_ style: StrokeStyle) -> Path {
-        preconditionFailure("TODO")
-    }
-
-    /// Returns a partial copy of the path.
-    ///
-    /// The returned path contains the region between `from` and `to`, both of
-    /// which must be fractions between zero and one defining points
-    /// linearly-interpolated along the path.
-    public func trimmedPath(from: CGFloat, to: CGFloat) -> Path {
-        preconditionFailure("TODO")
-    }
-}
-
-#if canImport(CoreGraphics)
-
-// MARK: - Path.PathBox
-
-extension Path {
-    @usableFromInline
-    final package class PathBox: Equatable {
-        #if OPENSWIFTUI_RELEASE_2024 // Also on RELEASE_2023
-        private var kind: Kind
-////        var data: PathData
-        private init() {
-            kind = .buffer
-//            // TODO
-        }
-        private enum Kind: UInt8 {
-            case cgPath
-            case rbPath
-            case buffer
-        }
-        
-        init(_ path: CGPath) {
-            preconditionFailure("TODO")
-        }
-        
-        init(_ mutablePath: CGMutablePath) {
-            preconditionFailure("TODO")
-        }
-        
-        // FIXME
-        @usableFromInline
-        package static func == (lhs: Path.PathBox, rhs: Path.PathBox) -> Bool {
-            lhs.kind == rhs.kind
-        }
-        #elseif OPENSWIFTUI_RELEASE_2021
-        let cgPath: CGMutablePath
-        var bounds: UnsafeAtomicLazy<CGRect>
-        
-        init(_ path: CGPath) {
-            cgPath = path as! CGMutablePath
-            bounds = UnsafeAtomicLazy(cache: nil)
-        }
-        
-        init(_ mutablePath: CGMutablePath) {
-            cgPath = mutablePath
-            bounds = UnsafeAtomicLazy(cache: nil)
-        }
-        
-        deinit {
-            bounds.destroy()
-        }
-        
-        @usableFromInline
-        package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
-            lhs.cgPath === rhs.cgPath
-        }
-        
-        var boundingRect: CGRect {
-            if let cache = bounds.cache {
-                return cache
-            } else {
-                let boundingBox = cgPath.boundingBoxOfPath
-                bounds.$cache.withMutableData { rect in
-                    if rect == nil {
-                        rect = boundingBox
-                    }
-                }
-                return boundingBox
-            }
-        }
-        
-        private func clearCache() {
-            bounds.cache = nil
-        }
-        #endif
-    }
-}
-
-#endif
-
-// MARK: - Path.Storage
-
-extension Path {
-    @usableFromInline
-    @frozen enum Storage: Equatable {
-        case rect(CGRect)
-        case ellipse(CGRect)
-        indirect case roundedRect(FixedRoundedRect)
-//        indirect case stroked(StrokedPath)
-//        indirect case trimmed(TrimmedPath)
-        #if canImport(CoreGraphics)
-        case path(PathBox)
-        #endif
-        case empty
-    }
-}
-
-// MARK: - Path.Element
-
-extension Path {
     /// An element of a path.
     @frozen
     public enum Element: Equatable {
@@ -397,57 +362,90 @@ extension Path {
         /// After closing the subpath, the current point becomes undefined.
         case closeSubpath
     }
-}
 
-// MARK: - CodablePath[WIP]
-
-package struct CodablePath: CodableProxy {
-    package var base: Path
-
-    private enum Error: Swift.Error {
-        case invalidPath
+    /// Calls `body` with each element in the path.
+    public func forEach(_ body: (Path.Element) -> Void) {
+        preconditionFailure("TODO")
     }
 
-    private enum CodingKind: UInt8, Codable {
-        case empty
-        case rect
-        case ellipse
-        case roundedRect
-        case stroked
-        case trimmed
-        case data
+    /// Returns a stroked copy of the path using `style` to define how the
+    /// stroked outline is created.
+    public func strokedPath(_ style: StrokeStyle) -> Path {
+        preconditionFailure("TODO")
     }
 
-    private enum CodingKeys: Hashable, CodingKey {
-        case kind
-        case value
+    /// Returns a partial copy of the path.
+    ///
+    /// The returned path contains the region between `from` and `to`, both of
+    /// which must be fractions between zero and one defining points
+    /// linearly-interpolated along the path.
+    public func trimmedPath(from: CGFloat, to: CGFloat) -> Path {
+        preconditionFailure("TODO")
     }
 
-    // TODO:
-    package func encode(to _: Encoder) throws {}
-
-    // TODO:
-    package init(from _: Decoder) throws {
-        base = Path()
+    package func rect() -> CGRect? {
+        preconditionFailure("TODO")
     }
 
-    @inline(__always)
-    init(base: Path) {
-        self.base = base
+    package func roundedRect() -> FixedRoundedRect? {
+        preconditionFailure("TODO")
     }
 }
 
-// MARK: - Path + CodableByProxy
+@available(*, unavailable)
+extension Path.Storage: Sendable {}
 
-extension Path: CodableByProxy {
-    package var codingProxy: CodablePath {
-        CodablePath(base: self)
+@available(*, unavailable)
+extension Path.PathBox: Sendable {}
+
+// MARK: - Path + Shape
+
+extension Path: Shape {
+    nonisolated public func path(in _: CGRect) -> Path { self }
+
+    public typealias AnimatableData = EmptyAnimatableData
+
+    public typealias Body = _ShapeView<Path, ForegroundStyle>
+}
+
+// MARK: - Path + ProtobufMessage
+
+extension Path: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        preconditionFailure("TODO")
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        preconditionFailure("TODO")
     }
 }
 
-// MARK: - PathDrawingStyle
+// MARK: - StrokedPath
 
-package enum PathDrawingStyle {
-    case fill(FillStyle)
-    case stroke(StrokeStyle)
+@available(*, deprecated, message: "obsolete")
+@usableFromInline
+package struct StrokedPath: Equatable {
+    public init(path: Path, style: StrokeStyle) {}
+
+    @usableFromInline
+    package static func == (a: StrokedPath, b: StrokedPath) -> Bool {
+        true
+    }
 }
+
+@available(*, unavailable)
+extension StrokedPath: Sendable {}
+
+// MARK: - TrimmedPath
+
+@available(*, deprecated, message: "obsolete")
+@usableFromInline
+package struct TrimmedPath: Equatable {
+    @usableFromInline
+    package static func == (a: TrimmedPath, b: TrimmedPath) -> Swift.Bool {
+        true
+    }
+}
+
+@available(*, unavailable)
+extension TrimmedPath: Sendable {}

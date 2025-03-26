@@ -31,6 +31,14 @@ let includePath = SDKPath.appending("/usr/lib/swift")
 
 var sharedCSettings: [CSetting] = [
     .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
+    .unsafeFlags(["-fmodules"]),
+    .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
+    .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+]
+
+var sharedCxxSettings: [CXXSetting] = [
+    .unsafeFlags(["-I", includePath], .when(platforms: .nonDarwinPlatforms)),
+    .unsafeFlags(["-fcxx-modules"]),
     .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
 ]
@@ -79,6 +87,23 @@ let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "Sw
 
 // MARK: - Targets
 
+let cOpenSwiftUITarget = Target.target(
+    name: "COpenSwiftUI",
+    publicHeadersPath: ".",
+    cSettings: sharedCSettings + [
+        .headerSearchPath("../OpenSwiftUI_SPI"),
+    ],
+    cxxSettings: sharedCxxSettings
+)
+let openSwiftUISPITarget = Target.target(
+    name: "OpenSwiftUI_SPI",
+    dependencies: [
+        .product(name: "OpenBox", package: "OpenBox"),
+    ],
+    publicHeadersPath: ".",
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings
+)
 let coreGraphicsShims = Target.target(
     name: "CoreGraphicsShims",
     swiftSettings: sharedSwiftSettings
@@ -124,7 +149,7 @@ let openSwiftUIBridgeTarget = Target.target(
     sources: ["Bridgeable.swift", bridgeFramework],
     swiftSettings: sharedSwiftSettings
 )
-let OpenSwiftUI_SPITestTarget = Target.testTarget(
+let openSwiftUISPITestTarget = Target.testTarget(
     name: "OpenSwiftUI_SPITests",
     dependencies: [
         "OpenSwiftUI_SPI",
@@ -174,10 +199,11 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
 let supportMultiProducts: Bool = envEnable("OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS", default: true)
 
 var products: [Product] = [
-    .library(name: "OpenSwiftUI", targets: ["OpenSwiftUI"])
+    .library(name: "OpenSwiftUI", type: .dynamic, targets: ["OpenSwiftUI"])
 ]
 if supportMultiProducts {
     products += [
+        .library(name: "OpenSwiftUICore", type: .dynamic, targets: ["OpenSwiftUICore"]),
         .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
         .library(name: "OpenSwiftUIExtension", targets: ["OpenSwiftUIExtension"]),
         .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
@@ -200,27 +226,17 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
-        .target(
-            name: "OpenSwiftUI_SPI",
-            publicHeadersPath: ".",
-            cSettings: sharedCSettings
-        ),
-        .target(
-            name: "COpenSwiftUI",
-            publicHeadersPath: ".",
-            cSettings: sharedCSettings + [
-                .headerSearchPath("../OpenSwiftUI_SPI"),
-            ]
-        ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
         coreGraphicsShims,
+        cOpenSwiftUITarget,
+        openSwiftUISPITarget,
         openSwiftUICoreTarget,
         openSwiftUITarget,
         
         openSwiftUIExtensionTarget,
         openSwiftUIBridgeTarget,
         
-        OpenSwiftUI_SPITestTarget,
+        openSwiftUISPITestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
@@ -281,7 +297,7 @@ if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
     
-    OpenSwiftUI_SPITestTarget.addAGSettings()
+    openSwiftUISPITestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
     openSwiftUICompatibilityTestTarget.addAGSettings()
@@ -298,7 +314,7 @@ if renderBoxCondition {
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
     
-    OpenSwiftUI_SPITestTarget.addRBSettings()
+    openSwiftUISPITestTarget.addRBSettings()
     openSwiftUICoreTestTarget.addRBSettings()
     openSwiftUITestTarget.addRBSettings()
     openSwiftUICompatibilityTestTarget.addRBSettings()
