@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-import Foundation
+package import Foundation
 
 package protocol RendererLeafView: /*ContentResponder,*/ PrimitiveView, UnaryView {
     static var requiresMainThread: Bool { get }
@@ -24,5 +24,20 @@ extension RendererLeafView {
     package static func makeLeafView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         // preconditionFailure("TODO")
         _ViewOutputs()
+    }
+}
+
+package protocol LeafViewLayout {
+    func spacing() -> Spacing
+    func sizeThatFits(in proposedSize: _ProposedSize) -> CGSize
+}
+
+extension LeafViewLayout {
+    package func spacing() -> Spacing {
+        preconditionFailure("")
+    }
+
+    package static func makeLeafLayout(_ outputs: inout _ViewOutputs, view: _GraphValue<Self>, inputs: _ViewInputs) {
+        preconditionFailure("TODO")
     }
 }

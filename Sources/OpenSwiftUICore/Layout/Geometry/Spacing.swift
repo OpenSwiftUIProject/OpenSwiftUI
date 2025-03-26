@@ -8,7 +8,7 @@
 
 import Foundation
 
-struct Spacing {
+package struct Spacing {
     // TODO
     static let zero = Spacing(minima: [:])
     static let zeroHorizontal = Spacing(minima: [:])

@@ -143,10 +143,6 @@ extension ShapeStyle {
         legacyMakeShapeView(view: view, inputs: inputs)
     }
     
-    static func legacyMakeShapeView<S>(view: _GraphValue<_ShapeView<S, Self>>, inputs: _ViewInputs) -> _ViewOutputs where S: Shape {
-        _ShapeView._makeView(view: view, inputs: inputs)
-    }
-    
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         guard Resolved.self != Never.self else {
             return
