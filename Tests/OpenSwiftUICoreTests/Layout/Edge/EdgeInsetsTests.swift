@@ -210,4 +210,17 @@ struct EdgeInsetsTests {
         #expect(newInsets.bottom == 3)
         #expect(newInsets.trailing == 4)
     }
+
+    // MARK: - ProtobufMessage Tests
+
+    @Test(
+        arguments: [
+            (EdgeInsets.zero, ""),
+            (EdgeInsets(top: 1, leading: 2, bottom: 4, trailing: 8), "0d0000803f15000000401d000080402500000041")
+        ]
+    )
+    func pbMessage(insets: EdgeInsets, hexString: String) throws {
+        try insets.testPBEncoding(hexString: hexString)
+        try insets.testPBDecoding(hexString: hexString)
+    }
 }

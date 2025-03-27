@@ -265,7 +265,7 @@ extension CGRect: ProtobufMessage {
             while let field = try decoder.nextField() {
                 let tag = field.tag
                 switch tag {
-                    case 1...6: bufferPointer[Int(tag &- 1)] = try decoder.cgFloatField(field)
+                    case 1...4: bufferPointer[Int(tag &- 1)] = try decoder.cgFloatField(field)
                     default: try decoder.skipField(field)
                 }
             }
