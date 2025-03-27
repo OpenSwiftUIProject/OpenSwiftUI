@@ -12,6 +12,8 @@ public import UIKit
 public import OpenSwiftUICore
 import OpenGraphShims
 
+// MARK: - UIViewRepresentable
+
 /// A wrapper for a UIKit view that you use to integrate that view into your
 /// OpenSwiftUI view hierarchy.
 ///
@@ -21,7 +23,7 @@ import OpenGraphShims
 /// use its methods to create, update, and tear down your view. The creation and
 /// update processes parallel the behavior of OpenSwiftUI views, and you use them to
 /// configure your view with your app's current state information. Use the
-/// teardown process to remove your view cleanly from your Open For example,
+/// teardown process to remove your view cleanly from your OpenSwiftUI. For example,
 /// you might use the teardown process to notify other objects that the view is
 /// disappearing.
 ///
@@ -176,6 +178,8 @@ public protocol UIViewRepresentable: View where Body == Never {
     typealias LayoutOptions = _PlatformViewRepresentableLayoutOptions
 }
 
+// MARK: - UIViewRepresentable + Extension
+
 @available(macOS, unavailable)
 extension UIViewRepresentable where Coordinator == () {
     public func makeCoordinator() -> Coordinator {
@@ -218,6 +222,8 @@ extension UIViewRepresentable {
         bodyError()
     }
 }
+
+// MARK: - PlatformViewRepresentableAdaptor
 
 private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: UIViewRepresentable {
     var base: Base
@@ -279,6 +285,8 @@ private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable
     }
 }
 
+// MARK: - UIViewRepresentableContext
+
 /// Contextual information about the state of the system that you use to create
 /// and update your UIKit view.
 ///
@@ -292,6 +300,7 @@ private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
+@preconcurrency
 public struct UIViewRepresentableContext<Representable> where Representable: UIViewRepresentable {
     var values: RepresentableContextValues
 

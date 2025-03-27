@@ -138,6 +138,16 @@ struct PlatformViewRepresentableContext<Representable: PlatformViewRepresentable
         self.values = .init(preferenceBridge: preferenceBridge, transaction: transaction, environmentStorage: environmentStorage)
         self.coordinator = coordinator
     }
+
+    @inlinable
+    var environment: EnvironmentValues {
+        switch values.environmentStorage {
+        case let .eager(environmentValues):
+            environmentValues
+        case let .lazy(attribute, anyRuleContext):
+            Update.ensure { anyRuleContext[attribute] }
+        }
+    }
 }
 
 // MARK: - PlatformViewCoordinator
