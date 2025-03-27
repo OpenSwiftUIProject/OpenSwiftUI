@@ -34,31 +34,23 @@ public struct _TestApp {
         package init() {}
 
         package var body: some View {
-            #if canImport(Darwin)
             CoreGlue2.shared.makeRootView(
                 base: state.testView,
                 rootFocusScope: rootFocusScope
             )
-            #else
-            state.testView
-            #endif
         }
     }
 
     package static let defaultEnvironment: EnvironmentValues = {
         var environment = EnvironmentValues()
-        #if canImport(Darwin)
         CoreGlue2.shared.configureDefaultEnvironment(&environment)
-        #endif
         // TODO
         return environment
     }()
 
     /// Initialize a `_TestApp` for running tests.
     public init() {
-        #if canImport(Darwin)
         CoreGlue2.shared.initializeTestApp()
-        #endif
     }
 
     package static var host: (any TestHost)?

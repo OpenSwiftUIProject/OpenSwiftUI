@@ -453,11 +453,7 @@ extension _VariadicView.ImplicitRoot {
 // MARK: - ImplicitRootType
 
 private struct ImplicitRootType: ViewInput {
-    #if canImport(Darwin)
     static let defaultValue: _VariadicView_AnyImplicitRoot.Type = CoreGlue.shared.defaultImplicitRootType.value
-    #else
-    static let defaultValue: _VariadicView_AnyImplicitRoot.Type = _VStackLayout.self
-    #endif
 }
 
 // MARK: - _ViewInputs + ImplicitRoot
@@ -498,7 +494,6 @@ private struct MakeViewRoot: _VariadicView.ImplicitRootVisitor {
     mutating func visit<R>(type: R.Type) where R : _VariadicView_ImplicitRoot {
         let attribute = inputs.intern(R.implicitRoot, id: .implicitRoot)
         inputs.viewListOptions = R.viewListOptions
-        let root = _GraphValue(attribute)
         outputs = R._makeView(
             root: _GraphValue(attribute),
             inputs: inputs,

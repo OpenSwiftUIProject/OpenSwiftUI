@@ -19,14 +19,10 @@ extension _ViewInputs {
         guard requestsLayoutComputer else {
             return outputs
         }
-        #if canImport(Darwin)
         let defaultLayoutComputer = CoreGlue.shared.makeDefaultLayoutComputer().value
         @IndirectAttribute(source: defaultLayoutComputer)
         var indirect: LayoutComputer
         outputs.layoutComputer = $indirect
-        #else
-        preconditionFailure("#39")
-        #endif
         return outputs
     }
 }
