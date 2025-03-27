@@ -29,7 +29,12 @@ public func OpenSwiftUIGlueClass() -> CoreGlue.Type
 #endif
 open class CoreGlue: NSObject {
     #if canImport(Darwin)
-    package static var shared: CoreGlue = _initializeCoreGlue() as! CoreGlue
+    package static var shared: CoreGlue = {
+        guard let instance = _initializeCoreGlue() as? CoreGlue else {
+            fatalError("Could not cast _initializeCoreGlue result to CoreGlue")
+        }
+        return instance
+    }()
     #else
     package static var shared: CoreGlue = {
         let type = OpenSwiftUIGlueClass()
@@ -190,7 +195,12 @@ public func OpenSwiftUIGlue2Class() -> CoreGlue2.Type
 #endif
 open class CoreGlue2: NSObject {
     #if canImport(Darwin)
-    package static var shared: CoreGlue2 = _initializeCoreGlue2() as! CoreGlue2
+    package static var shared: CoreGlue2 = {
+        guard let instance = _initializeCoreGlue2() as? CoreGlue2 else {
+            fatalError("Could not cast _initializeCoreGlue2 result to CoreGlue2")
+        }
+        return instance
+    }()
     #else
     package static var shared: CoreGlue2 = {
         let type = OpenSwiftUIGlue2Class()
