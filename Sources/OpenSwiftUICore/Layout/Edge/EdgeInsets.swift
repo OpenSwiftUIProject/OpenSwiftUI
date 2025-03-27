@@ -391,3 +391,36 @@ extension EdgeInsets {
         self.init(top: all, leading: all, bottom: all, trailing: all)
     }
 }
+
+// MARK: - EdgeInsets + ProtobufMessage
+
+extension EdgeInsets: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) {
+        withUnsafePointer(to: self) { pointer in
+            let pointer = UnsafeRawPointer(pointer).assumingMemoryBound(to: CGFloat.self)
+            let bufferPointer = UnsafeBufferPointer(start: pointer, count: 4)
+            for index: UInt in 1 ... 4 {
+                encoder.cgFloatField(
+                    index,
+                    bufferPointer[Int(index &- 1)]
+                )
+            }
+        }
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var insets = EdgeInsets.zero
+        try withUnsafeMutablePointer(to: &insets) { pointer in
+            let pointer = UnsafeMutableRawPointer(pointer).assumingMemoryBound(to: CGFloat.self)
+            let bufferPointer = UnsafeMutableBufferPointer(start: pointer, count: 4)
+            while let field = try decoder.nextField() {
+                let tag = field.tag
+                switch tag {
+                    case 1...4: bufferPointer[Int(tag &- 1)] = try decoder.cgFloatField(field)
+                    default: try decoder.skipField(field)
+                }
+            }
+        }
+        self = insets
+    }
+}
