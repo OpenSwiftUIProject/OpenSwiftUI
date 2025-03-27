@@ -9,7 +9,7 @@
 
 public import Foundation
 public import CoreText
-package import OpenGraphShims
+public import OpenGraphShims
 import OpenSwiftUI_SPI
 
 @_spi(ForOpenSwiftUIOnly)
@@ -17,13 +17,69 @@ import OpenSwiftUI_SPI
 open class CoreGlue: NSObject {
     package static var shared: CoreGlue = _initializeCoreGlue() as! CoreGlue
 
+    open func maxVelocity(_ velocity: CGFloat) {
+        preconditionFailure("")
+    }
+
+    open func nextUpdate(nextTime: Time, interval: Double, reason: UInt32?) {
+        preconditionFailure("")
+    }
+
+    open func hasTestHost() -> Bool {
+        preconditionFailure("")
+    }
+
+    open func isInstantiated(graph: Graph) -> Bool {
+        preconditionFailure("")
+    }
+
     open var defaultImplicitRootType: DefaultImplicitRootTypeResult {
         preconditionFailure("")
     }
 
+    open var defaultSpacing: CGSize {
+        preconditionFailure("")
+
+    }
     open func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
         preconditionFailure("")
     }
+
+    open func makeDefaultLayoutComputer(graph: Graph) -> MakeDefaultLayoutComputerResult {
+        preconditionFailure("")
+    }
+
+    open func startChildGeometries(_ params: StartChildGeometriesParameters) {
+        preconditionFailure("")
+    }
+
+    open func endChildGeometries(_ params: EndChildGeometriesParameters) {
+        preconditionFailure("")
+    }
+
+//    open func makeLayoutView<L>(root: _GraphValue<L>, inputs: _ViewInputs, body: (_Graph, _ViewInputs) -> _ViewListOutputs) -> _ViewOutputs where L: Layout {
+//        preconditionFailure("")
+//    }
+
+    open func addDisplayListTreeValue(outputs: inout _ViewOutputs) {
+        preconditionFailure("")
+    }
+
+//    open func updateData(_ data: inout _ViewDebug.Data, value: TreeValue) {
+//        preconditionFailure("")
+//    }
+
+    open func makeForEachView<D, ID, C>(view: _GraphValue<ForEach<D, ID, C>>, inputs: _ViewInputs) -> _ViewOutputs? where D: RandomAccessCollection, ID: Hashable, C: View {
+        preconditionFailure("")
+    }
+
+    open func makeForEachViewList<D, ID, C>(view: _GraphValue<ForEach<D, ID, C>>, inputs: _ViewListInputs) -> _ViewListOutputs? where D: RandomAccessCollection, ID: Hashable, C: View {
+        preconditionFailure("")
+    }
+
+//    open func defaultOpenURLAction(env: EnvironmentValues) -> OpenURLAction {
+//        preconditionFailure("")
+//    }
 }
 
 @_spi(ForOpenSwiftUIOnly)
@@ -43,7 +99,48 @@ extension CoreGlue {
             self.value = value
         }
     }
+
+    public struct StartChildGeometriesParameters {
+        // package var recorder: LayoutTrace.Recorder
+
+        package var parentSize: ViewSize
+
+        package var origin: CGPoint
+
+        package var attributeID: UInt32
+
+        package init(parentSize: ViewSize, origin: CGPoint, attributeID: UInt32) {
+            self.parentSize = parentSize
+            self.origin = origin
+            self.attributeID = attributeID
+        }
+    }
+
+    public struct EndChildGeometriesParameters {
+        // package var recorder: LayoutTrace.Recorder
+
+        package var geometries: [ViewGeometry]
+
+        package init(geometries: [ViewGeometry]) {
+            self.geometries = geometries
+        }
+    }
 }
+
+@available(*, unavailable)
+extension CoreGlue: Sendable {}
+
+@available(*, unavailable)
+extension CoreGlue.DefaultImplicitRootTypeResult: Sendable {}
+
+@available(*, unavailable)
+extension CoreGlue.MakeDefaultLayoutComputerResult: Sendable {}
+
+@available(*, unavailable)
+extension CoreGlue.StartChildGeometriesParameters: Sendable {}
+
+@available(*, unavailable)
+extension CoreGlue.EndChildGeometriesParameters: Sendable {}
 
 @_spi(ForOpenSwiftUIOnly)
 @objc(OpenSwiftUICoreGlue2)

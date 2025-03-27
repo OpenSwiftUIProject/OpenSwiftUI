@@ -5,13 +5,13 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-@_spi(ForOpenSwiftUIOnly)
-public import OpenSwiftUICore
-import COpenSwiftUI
-
 #if canImport(Darwin)
 
 public import Foundation
+@_spi(ForOpenSwiftUIOnly)
+public import OpenSwiftUICore
+public import OpenGraphShims
+import COpenSwiftUI
 
 @_spi(ForOpenSwiftUIOnly)
 @_silgen_name("OpenSwiftUIGlueClass")
@@ -22,13 +22,40 @@ public func OpenSwiftUIGlueClass() -> CoreGlue.Type {
 @_spi(ForOpenSwiftUIOnly)
 @objc(OpenSwiftUIGlue)
 final public class OpenSwiftUIGlue: CoreGlue {
+    override final public func maxVelocity(_ velocity: CGFloat) {
+        ViewGraph.current.nextUpdate.views.maxVelocity(velocity)
+    }
+
+    override final public func nextUpdate(nextTime: Time, interval: Double, reason: UInt32?) {
+        ViewGraph.current.nextUpdate.views.at(nextTime)
+        ViewGraph.current.nextUpdate.views.interval(interval, reason: reason)
+    }
+
+    override final public func hasTestHost() -> Bool {
+        _TestApp.host != nil
+    }
+
+    override final public func isInstantiated(graph: Graph) -> Bool {
+        graph.viewGraph().isInstantiated
+    }
+
     override final public var defaultImplicitRootType: DefaultImplicitRootTypeResult {
         DefaultImplicitRootTypeResult(_VStackLayout.self)
+    }
+
+    override final public var defaultSpacing: CGSize {
+        CGSize(width: 8, height: 8)
     }
 
     override final public func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
         MakeDefaultLayoutComputerResult(value: ViewGraph.current.$defaultLayoutComputer)
     }
+
+    override final public func makeDefaultLayoutComputer(graph: Graph) -> MakeDefaultLayoutComputerResult {
+        MakeDefaultLayoutComputerResult(value: graph.viewGraph().$defaultLayoutComputer)
+    }
+
+    // TODO
 }
 
 @_spi(ForOpenSwiftUIOnly)
