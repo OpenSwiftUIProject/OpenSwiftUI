@@ -16,8 +16,8 @@ typealias PlatformView = UIView
 typealias PlatformViewController = UIViewController
 #else
 import Foundation
-typealias PlatformView = Void
-typealias PlatformViewController = Void
+typealias PlatformView = NSObject
+typealias PlatformViewController = NSObject
 #endif
 import OpenSwiftUICore
 import OpenGraphShims
@@ -81,6 +81,8 @@ extension PlatformViewRepresentable {
     }
 }
 
+#if canImport(UIKit) || canImport(AppKit)
+
 extension PlatformViewRepresentable where PlatformViewProvider: PlatformView {
     static func platformView(for provider: PlatformViewProvider) -> PlatformView {
         provider
@@ -90,14 +92,14 @@ extension PlatformViewRepresentable where PlatformViewProvider: PlatformView {
 }
 
 extension PlatformViewRepresentable where PlatformViewProvider: PlatformViewController {
-    #if canImport(UIKit) || canImport(AppKit)
     static func platformView(for provider: PlatformViewProvider) -> PlatformView {
         provider.view
     }
-    #endif
 
     static var isViewController: Bool { true }
 }
+
+#endif
 
 // MARK: - RepresentableContextValues
 
