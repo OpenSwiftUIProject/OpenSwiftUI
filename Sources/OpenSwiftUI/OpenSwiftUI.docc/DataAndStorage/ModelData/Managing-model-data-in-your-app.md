@@ -4,7 +4,7 @@ Create connections between your app’s data model and views.
 
 ## Overview
 
-A OpenSwiftUI app can display data that people can change using the app’s user
+An OpenSwiftUI app can display data that people can change using the app’s user
 interface (UI). To manage that data, an app creates a data model, which is a
 custom type that represents the data. A data model provides separation between
 the data and the views that interact with the data. This separation promotes
