@@ -58,11 +58,7 @@ public enum DynamicTypeSize: Hashable, Comparable, CaseIterable, Sendable {
     }
 
     package static var systemDefault: DynamicTypeSize {
-        #if canImport(Darwin)
         CoreGlue2.shared.systemDefaultDynamicTypeSize
-        #else
-        .large
-        #endif
     }
 }
 

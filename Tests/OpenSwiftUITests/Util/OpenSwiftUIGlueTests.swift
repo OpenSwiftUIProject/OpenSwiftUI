@@ -2,8 +2,6 @@
 //  OpenSwiftUIGlueTests.swift
 //  OpenSwiftUITests
 
-#if canImport(Darwin)
-
 import Testing
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUI
@@ -27,5 +25,3 @@ struct OpenSwiftUIGlue2Tests {
         #expect(CoreGlue2.shared is OpenSwiftUIGlue2)
     }
 }
-
-#endif

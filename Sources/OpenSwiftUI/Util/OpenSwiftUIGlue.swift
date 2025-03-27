@@ -5,13 +5,13 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-#if canImport(Darwin)
-
 public import Foundation
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 public import OpenGraphShims
 import COpenSwiftUI
+
+// MARK: - OpenSwiftUIGlue
 
 @_spi(ForOpenSwiftUIOnly)
 @_silgen_name("OpenSwiftUIGlueClass")
@@ -20,7 +20,9 @@ public func OpenSwiftUIGlueClass() -> CoreGlue.Type {
 }
 
 @_spi(ForOpenSwiftUIOnly)
+#if canImport(ObjectiveC)
 @objc(OpenSwiftUIGlue)
+#endif
 final public class OpenSwiftUIGlue: CoreGlue {
     override final public func maxVelocity(_ velocity: CGFloat) {
         ViewGraph.current.nextUpdate.views.maxVelocity(velocity)
@@ -62,6 +64,8 @@ final public class OpenSwiftUIGlue: CoreGlue {
 @available(*, unavailable)
 extension OpenSwiftUIGlue: Sendable {}
 
+// MARK: - OpenSwiftUIGlue2
+
 @_spi(ForOpenSwiftUIOnly)
 @_silgen_name("OpenSwiftUIGlue2Class")
 public func OpenSwiftUIGlue2Class() -> CoreGlue2.Type {
@@ -69,7 +73,9 @@ public func OpenSwiftUIGlue2Class() -> CoreGlue2.Type {
 }
 
 @_spi(ForOpenSwiftUIOnly)
+#if canImport(ObjectiveC)
 @objc(OpenSwiftUIGlue2)
+#endif
 final public class OpenSwiftUIGlue2: CoreGlue2 {
     #if os(iOS)
     override public final func initializeTestApp() {
@@ -120,4 +126,3 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
 @_spi(ForOpenSwiftUIOnly)
 @available(*, unavailable)
 extension OpenSwiftUIGlue2: Sendable {}
-#endif

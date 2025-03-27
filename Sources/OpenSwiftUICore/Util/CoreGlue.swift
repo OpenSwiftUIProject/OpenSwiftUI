@@ -5,17 +5,38 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-#if canImport(Darwin)
-
 public import Foundation
+#if canImport(CoreText)
 public import CoreText
+#endif
 public import OpenGraphShims
 import OpenSwiftUI_SPI
 
+// MARK: - CoreGlue
+
+#if !canImport(Darwin)
+// Assume OpenSwiftUI and OpenSwiftUICore is staticlly linked on non-Darwin platform.
+// The symbol load process (_initializeCoreGlue) is somehow bugy on Linux.
+// So we use it directly here on Swift.
 @_spi(ForOpenSwiftUIOnly)
+@_silgen_name("OpenSwiftUIGlueClass")
+public func OpenSwiftUIGlueClass() -> CoreGlue.Type
+#endif
+
+@_spi(ForOpenSwiftUIOnly)
+#if canImport(ObjectiveC)
 @objc(OpenSwiftUICoreGlue)
+#endif
 open class CoreGlue: NSObject {
+    #if canImport(Darwin)
     package static var shared: CoreGlue = _initializeCoreGlue() as! CoreGlue
+    #else
+    package static var shared: CoreGlue = {
+        let type = OpenSwiftUIGlueClass()
+        let instance = type.init()
+        return instance
+    }()
+    #endif
 
     open func maxVelocity(_ velocity: CGFloat) {
         preconditionFailure("")
@@ -80,6 +101,16 @@ open class CoreGlue: NSObject {
 //    open func defaultOpenURLAction(env: EnvironmentValues) -> OpenURLAction {
 //        preconditionFailure("")
 //    }
+
+    #if canImport(Darwin)
+    override dynamic public init() {
+        super.init()
+    }
+    #else
+    override dynamic required public init() {
+        super.init()
+    }
+    #endif
 }
 
 @_spi(ForOpenSwiftUIOnly)
@@ -142,10 +173,31 @@ extension CoreGlue.StartChildGeometriesParameters: Sendable {}
 @available(*, unavailable)
 extension CoreGlue.EndChildGeometriesParameters: Sendable {}
 
+// MARK: - CoreGlue2
+
+#if !canImport(Darwin)
+// Assume OpenSwiftUI and OpenSwiftUICore is staticlly linked on non-Darwin platform.
+// The symbol load process (_initializeCoreGlue) is somehow bugy on Linux.
+// So we use it directly here on Swift.
 @_spi(ForOpenSwiftUIOnly)
+@_silgen_name("OpenSwiftUIGlue2Class")
+public func OpenSwiftUIGlue2Class() -> CoreGlue2.Type
+#endif
+
+@_spi(ForOpenSwiftUIOnly)
+#if canImport(ObjectiveC)
 @objc(OpenSwiftUICoreGlue2)
+#endif
 open class CoreGlue2: NSObject {
+    #if canImport(Darwin)
     package static var shared: CoreGlue2 = _initializeCoreGlue2() as! CoreGlue2
+    #else
+    package static var shared: CoreGlue2 = {
+        let type = OpenSwiftUIGlue2Class()
+        let instance = type.init()
+        return instance
+    }()
+    #endif
 
     open func initializeTestApp() {
         preconditionFailure("")
@@ -183,10 +235,22 @@ open class CoreGlue2: NSObject {
         preconditionFailure("")
     }
 
+    #if canImport(CoreText)
     @objc(makeSummarySymbolHostIsOn:font:foregroundColor:)
     open func makeSummarySymbolHost(isOn: Bool, font: CTFont, foregroundColor: CGColor) -> AnyObject {
         preconditionFailure("")
     }
+    #endif
+
+    #if canImport(Darwin)
+    override dynamic public init() {
+        super.init()
+    }
+    #else
+    override dynamic required public init() {
+        super.init()
+    }
+    #endif
 }
 
 extension CoreGlue2 {
@@ -219,5 +283,3 @@ extension CoreGlue2.CodableAttachmentCellTypeResult: Sendable {}
 
 @available(*, unavailable)
 extension CoreGlue2.LinkURLParameters: Sendable {}
-
-#endif
