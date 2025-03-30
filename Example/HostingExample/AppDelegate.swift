@@ -31,9 +31,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
-#endif
-
-#if os(macOS)
+#elseif os(macOS)
 import AppKit
 
 @main

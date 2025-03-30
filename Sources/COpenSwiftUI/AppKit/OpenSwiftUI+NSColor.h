@@ -14,7 +14,7 @@
 
 #import <AppKit/AppKit.h>
 
-NS_ASSUME_NONNULL_BEGIN
+OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 OPENSWIFTUI_EXPORT
 BOOL _NSColorDependsOnAppearance(NSColor *color);
@@ -26,8 +26,8 @@ BOOL _NSColorDependsOnAppearance(NSColor *color);
 
 @end
 
-NS_ASSUME_NONNULL_END
+OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif
+#endif /* OPENSWIFTUI_TARGET_OS_OSX */
 
-#endif
+#endif /* OpenSwiftUI_NSColor_h */
