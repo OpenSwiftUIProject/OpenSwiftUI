@@ -5,12 +5,14 @@
 //  Created by Kyle on 2024/3/17.
 //
 
-import UIKit
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
 import SwiftUI
 #endif
+
+#if os(iOS)
+import UIKit
 
 class ViewController: UINavigationController {
     override func viewDidAppear(_ animated: Bool) {
@@ -30,7 +32,7 @@ final class EntryViewController: UIViewController {
             self.pushHostingVC()
         }
     }
-    
+
     @objc
     private func pushHostingVC() {
         guard let navigationController else { return }
@@ -38,9 +40,32 @@ final class EntryViewController: UIViewController {
         navigationController.pushViewController(hostingVC, animated: true)
     }
 }
+#endif
 
 struct ContentView: View {
     var body: some View {
         AppearanceActionModifierExample()
     }
 }
+
+#if os(macOS)
+import AppKit
+
+class ViewController: NSViewController {
+    override func loadView() {
+        view = NSHostingView(rootView: ContentView())
+    }
+
+    override func viewDidLoad() {
+        super.viewDidLoad()
+        
+        view.frame = .init(x: 0, y: 0, width: 500, height: 300)
+    }
+
+    override var representedObject: Any? {
+        didSet {
+            // Update the view, if already loaded.
+        }
+    }
+}
+#endif
