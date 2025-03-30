@@ -12,3 +12,5 @@ Example/.swiftpm/xcode/package.xcworkspace/contents.xcworkspacedata
 /Example/.build
 Example/Package.resolved
 TODO.md
+Example/Example.xcodeproj/project.xcworkspace
+Example/Example.xcodeproj/xcshareddata

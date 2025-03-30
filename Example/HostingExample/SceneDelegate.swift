@@ -5,6 +5,8 @@
 //  Created by Kyle on 2024/3/17.
 //
 
+#if os(iOS)
+
 import UIKit
 
 class SceneDelegate: UIResponder, UIWindowSceneDelegate {
@@ -50,3 +52,4 @@ class SceneDelegate: UIResponder, UIWindowSceneDelegate {
 
 }
 
+#endif
