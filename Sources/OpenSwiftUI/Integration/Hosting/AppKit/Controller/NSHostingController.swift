@@ -32,7 +32,7 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     /// - Parameter rootView: The root view of the SwiftUI view hierarchy that
     ///   you want to manage using the hosting view controller.
     public init(rootView: Content) {
-        // TODO:
+        // TODO
         self.host = NSHostingView(rootView: rootView)
         super.init(nibName: nil, bundle: nil)
         _commonInit()
@@ -46,7 +46,7 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     ///   - rootView: The root view of the SwiftUI view hierarchy that you want
     ///     to manage using this view controller.
     public init?(coder: NSCoder, rootView: Content) {
-        // TODO:
+        // TODO
         self.host = NSHostingView(rootView: rootView)
         super.init(coder: coder)
         _commonInit()

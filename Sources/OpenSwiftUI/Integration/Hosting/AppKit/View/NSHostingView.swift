@@ -16,9 +16,9 @@ import OpenSwiftUI_SPI
 ///
 /// You use `NSHostingView` objects to integrate SwiftUI views into your
 /// AppKit view hierarchies. A hosting view is an
-/// <doc://com.apple.documentation/documentation/AppKit/NSView> object that manages a single
+/// [NSView](https://developer.apple.com/documentation/AppKit/NSView) object that manages a single
 /// SwiftUI view, which may itself contain other SwiftUI views. Because it is an
-/// <doc://com.apple.documentation/documentation/AppKit/NSView> object, you can integrate it
+/// [NSView](https://developer.apple.com/documentation/AppKit/NSView) object, you can integrate it
 /// into your existing AppKit view hierarchies to implement portions of your UI.
 /// For example, you can use a hosting view to implement a custom control.
 ///
@@ -32,7 +32,6 @@ import OpenSwiftUI_SPI
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Content: View {
-
     /// The options for how the hosting view creates and updates constraints
     /// based on the size of its SwiftUI content.
     ///
@@ -115,21 +114,21 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     ///   you want to manage using this hosting view.
     public required init(rootView: Content) {
         self._rootView = rootView
-        // TODO:
+        // TODO
         Update.begin()
         self.viewGraph = ViewGraph(
             rootViewType: ModifiedContent<Content, HitTestBindingModifier>.self
         )
-        // TODO:
+        // TODO
         super.init(frame: .zero)
         initializeViewGraph()
-        // TODO:
+        // TODO
         clipsToBounds = false
-        // TODO:
+        // TODO
         wantsLayer = true
-        // TODO:
+        // TODO
         HostingViewRegistry.shared.add(self)
-        // TODO:
+        // TODO
         Update.end()
     }
 
@@ -234,13 +233,13 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     public final func _viewDebugData() -> [_ViewDebug.Data] { [] }
 
-    /// TODO:
+    // TODO
     func clearUpdateTimer() {}
 
-    /// TODO:
+    // TODO
     func cancelAsyncRendering() {}
 
-    /// FIXME:
+    // FIXME
     func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         let tree = preferenceValue(_IdentifiedViewsKey.self)
         let adjustment = { [weak self](rect: inout CGRect) in
