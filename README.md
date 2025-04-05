@@ -32,6 +32,8 @@ See Example folder and try it with ExampleApp
 
 ## Build
 
+The current suggested toolchain to build the project is Swift 6.0 / Xcode 16.0.
+
 ### Build without testing framework
 
 ```
