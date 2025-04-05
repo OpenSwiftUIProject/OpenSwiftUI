@@ -22,7 +22,7 @@
                 "GITHUB_PERSONAL_ACCESS_TOKEN": "${input:github_token}"
             }
         },
-        "git": {
+        "ida": {
             "command": "uvx",
             "args": [
                 "mcp-server-ida"
