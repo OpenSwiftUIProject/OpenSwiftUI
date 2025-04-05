@@ -1,8 +1,8 @@
 //
 //  Edge.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Complete
 
 // MARK: - Edge
@@ -10,10 +10,7 @@
 /// An enumeration to indicate one edge of a rectangle.
 @frozen
 public enum Edge: Int8, CaseIterable {
-    case top
-    case leading
-    case bottom
-    case trailing
+    case top, leading, bottom, trailing
 
     /// An efficient set of Edges.
     @frozen
@@ -37,23 +34,59 @@ public enum Edge: Int8, CaseIterable {
         /// Creates an instance containing just e
         public init(_ e: Edge) { self.init(rawValue: 1 << e.rawValue) }
 
-        func contains(_ edge: Edge) -> Bool {
+        package func contains(_ edge: Edge) -> Bool {
             contains(.init(edge))
         }
     }
 }
 
-// MARK: Edge + CodableByProxy
+// MARK: - Edge + Extension
 
-extension Edge: CodableByProxy {
-    package var codingProxy: Int8 { rawValue }
+extension Edge {
+    @_alwaysEmitIntoClient
+    init(vertical edge: VerticalEdge) {
+        self = Edge(rawValue: edge.rawValue << 1).unsafelyUnwrapped
+    }
 
-    package static func unwrap(codingProxy: Int8) -> Edge {
-        Edge(rawValue: codingProxy) ?? .top
+    package init(_vertical edge: VerticalEdge) {
+        self.init(vertical: edge)
+    }
+
+    @_alwaysEmitIntoClient
+    init(horizontal edge: HorizontalEdge) {
+        self = Edge(rawValue: 1 &+ (edge.rawValue << 1)).unsafelyUnwrapped
+    }
+
+    package init(_horizontal edge: HorizontalEdge) {
+        self.init(horizontal: edge)
     }
 }
 
-// MARK: - HorizontalEdge and VerticalEdge
+extension Edge {
+    package var opposite: Edge {
+        switch self {
+        case .top: .bottom
+        case .leading: .trailing
+        case .bottom: .top
+        case .trailing: .leading
+        }
+    }
+}
+
+extension Edge.Set {
+    package init(_ axes: Axis.Set) {
+        var set = Edge.Set()
+        if axes.contains(.horizontal) {
+            set.insert(.horizontal)
+        }
+        if axes.contains(.vertical) {
+            set.insert(.vertical)
+        }
+        self = set
+    }
+}
+
+// MARK: - HorizontalEdge
 
 /// An edge on the horizontal axis.
 ///
@@ -72,8 +105,8 @@ public enum HorizontalEdge: Int8, CaseIterable, Codable {
     /// An efficient set of `HorizontalEdge`s.
     @frozen
     public struct Set: OptionSet {
-        public typealias Element = Set
         public let rawValue: Int8
+
         public init(rawValue: Int8) { self.rawValue = rawValue }
 
         /// A set containing only the leading horizontal edge.
@@ -85,13 +118,15 @@ public enum HorizontalEdge: Int8, CaseIterable, Codable {
         /// A set containing the leading and trailing horizontal edges.
         public static let all: Set = [.leading, .trailing]
 
-        /// Creates an instance containing just `e`.
-        public init(_ e: HorizontalEdge) { self.init(rawValue: 1 << e.rawValue) }
+        /// Creates a set of edges containing only the specified horizontal edge.
+        public init(_ edge: HorizontalEdge) { self.init(rawValue: 1 << edge.rawValue) }
 
         @inline(__always)
-        func contains(_ edge: HorizontalEdge) -> Bool { contains(.init(edge)) }
+        package func contains(_ edge: HorizontalEdge) -> Bool { contains(.init(edge)) }
     }
 }
+
+// MARK: - VerticalEdge
 
 /// An edge on the vertical axis.
 @frozen
@@ -105,8 +140,8 @@ public enum VerticalEdge: Int8, CaseIterable, Codable {
     /// An efficient set of `VerticalEdge`s.
     @frozen
     public struct Set: OptionSet {
-        public typealias Element = Set
         public let rawValue: Int8
+
         public init(rawValue: Int8) { self.rawValue = rawValue }
         
         /// A set containing only the top vertical edge.
@@ -118,31 +153,23 @@ public enum VerticalEdge: Int8, CaseIterable, Codable {
         /// A set containing the top and bottom vertical edges.
         public static let all: Set = [.top, .bottom]
 
-        /// Creates an instance containing just `e`
+        /// Creates a set of edges containing only the specified vertical edge.
         public init(_ e: VerticalEdge) { self.init(rawValue: 1 << e.rawValue) }
 
         @inline(__always)
-        func contains(_ edge: VerticalEdge) -> Bool { contains(.init(edge)) }
+        package func contains(_ e: VerticalEdge) -> Bool { contains(.init(e)) }
     }
 }
 
-extension Edge {
-    @_alwaysEmitIntoClient
-    init(vertical edge: VerticalEdge) {
-        self = Edge(rawValue: edge.rawValue << 1).unsafelyUnwrapped
-    }
+// MARK: - CustomViewDebugValueConvertible
 
-    @_alwaysEmitIntoClient
-    init(horizontal edge: HorizontalEdge) {
-        self = Edge(rawValue: 1 &+ (edge.rawValue << 1)).unsafelyUnwrapped
+extension Edge.Set: CustomViewDebugValueConvertible {
+    package var viewDebugValue: Any {
+        var value: [Edge] = []
+        if contains(.top) { value.append(.top) }
+        if contains(.leading) { value.append(.leading) }
+        if contains(.bottom) { value.append(.bottom) }
+        if contains(.trailing) { value.append(.trailing) }
+        return value
     }
 }
-
-// MARK: - Sendable
-
-extension Edge: Sendable {}
-extension Edge.Set: Sendable {}
-extension HorizontalEdge: Sendable {}
-extension HorizontalEdge.Set: Sendable {}
-extension VerticalEdge: Sendable {}
-extension VerticalEdge.Set: Sendable {}
