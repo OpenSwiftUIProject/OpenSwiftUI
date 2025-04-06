@@ -26,12 +26,7 @@ extension ColorProvider {
     package func _apply(color: Color, to shape: inout _ShapeStyle_Shape) {
         switch shape.operation {
             case let .prepareText(level):
-                if level < 1 {
-                    shape.result = .preparedText(.foregroundColor(color))
-                } else {
-                    let opacity = color.provider.opacity(at: level, environment: shape.environment)
-                    shape.result = .preparedText(.foregroundColor(color.opacity(Double(opacity))))
-                }
+                shape.result = .preparedText(.foregroundColor(shape.applyingOpacity(at: level, to: color)))
             case let .resolveStyle(name, levels):
                 guard levels.lowerBound != levels.upperBound else {
                     break
@@ -47,12 +42,7 @@ extension ColorProvider {
                 newPack[name, levels.lowerBound] = .init(.color(resolved.multiplyingOpacity(by: opacity)))
                 shape.result = .pack(newPack)
             case let .fallbackColor(level):
-                if level < 1 {
-                    shape.result = .color(color)
-                } else {
-                    let opacity = color.provider.opacity(at: level, environment: shape.environment)
-                    shape.result = .color(color.opacity(Double(opacity)))
-                }
+                shape.result = .color(shape.applyingOpacity(at: level, to: color))
             default:
                 break
         }
