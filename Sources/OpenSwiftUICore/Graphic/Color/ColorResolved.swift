@@ -139,10 +139,7 @@ extension Color.Resolved: CustomStringConvertible {
 // MARK: - Color.Resolved + Animatable
 
 extension Color.Resolved : Animatable {
-    package static var legacyInterpolation: Bool = {
-        // TODO: Semantic.v6
-        return false
-    }()
+    package static var legacyInterpolation: Bool = !isLinkedOnOrAfter(.v6)
 
     public var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
         get {
