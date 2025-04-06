@@ -118,7 +118,36 @@ private struct ResolvedColorProvider: ColorProvider {
 
 extension Color.Resolved: ShapeStyle, PrimitiveShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
+        switch shape.operation {
+        case let .prepareText(level):
+            if level < 1 {
+                shape.result = .preparedText(.foregroundColor(Color(provider: ResolvedColorProvider(color: self))))
+            } else {
+                let opacity = shape.environment.systemColorDefinition.base.opacity(at: level, environment: shape.environment)
+                shape.result = .preparedText(.foregroundColor(Color(provider: ResolvedColorProvider(color: multiplyingOpacity(by: opacity)))))
+            }
+        case let .resolveStyle(name, levels):
+            guard levels.lowerBound != levels.upperBound else {
+                break
+            }
+            let opacity = shape.environment.systemColorDefinition.base.opacity(at: levels.lowerBound, environment: shape.environment)
+            var newPack: _ShapeStyle_Pack
+            switch shape.result {
+            case let .pack(pack): newPack = pack
+            default: newPack = .init()
+            }
+            newPack[name, levels.lowerBound] = .init(.color(multiplyingOpacity(by: opacity)))
+            shape.result = .pack(newPack)
+        case let .fallbackColor(level):
+            if level < 1 {
+                shape.result = .color(Color(provider: ResolvedColorProvider(color: self)))
+            } else {
+                let opacity = shape.environment.systemColorDefinition.base.opacity(at: level, environment: shape.environment)
+                shape.result = .color(Color(provider: ResolvedColorProvider(color: multiplyingOpacity(by: opacity))))
+            }
+        default:
+            break
+        }
     }
     
     public typealias Resolved = Never
