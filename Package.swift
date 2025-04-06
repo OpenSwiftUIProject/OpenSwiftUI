@@ -163,6 +163,7 @@ let openSwiftUISPITestTarget = Target.testTarget(
 let openSwiftUICoreTestTarget = Target.testTarget(
     name: "OpenSwiftUICoreTests",
     dependencies: [
+        "OpenSwiftUI", // NOTE: For the Glue link logic only, do not call `import OpenSwiftUI` in this target
         "OpenSwiftUICore",
         .product(name: "Numerics", package: "swift-numerics"),
     ],
