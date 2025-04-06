@@ -29,6 +29,7 @@ extension Color {
         
         /// The amount of blue in the color in the sRGB linear color space.
         public var linearBlue: Float
+
         /// The degree of opacity in the color, given in the range `0` to `1`.
         ///
         /// A value of `0` means 100% transparency, while a value of `1` means
@@ -59,6 +60,7 @@ extension Color {
     
     package struct ResolvedVibrant: Equatable {
         package var scale: Float
+        
         package var bias: (Float, Float, Float)
         
         package var colorMatrix: _ColorMatrix {
@@ -120,12 +122,9 @@ extension Color.Resolved: ShapeStyle, PrimitiveShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         switch shape.operation {
         case let .prepareText(level):
-            if level < 1 {
-                shape.result = .preparedText(.foregroundColor(Color(provider: ResolvedColorProvider(color: self))))
-            } else {
-                let opacity = shape.environment.systemColorDefinition.base.opacity(at: level, environment: shape.environment)
-                shape.result = .preparedText(.foregroundColor(Color(provider: ResolvedColorProvider(color: multiplyingOpacity(by: opacity)))))
-            }
+            shape.result = .preparedText(.foregroundColor(
+                Color(provider: ResolvedColorProvider(color: shape.applyingOpacity(at: level, to: self)))
+            ))
         case let .resolveStyle(name, levels):
             guard levels.lowerBound != levels.upperBound else {
                 break
@@ -139,12 +138,9 @@ extension Color.Resolved: ShapeStyle, PrimitiveShapeStyle {
             newPack[name, levels.lowerBound] = .init(.color(multiplyingOpacity(by: opacity)))
             shape.result = .pack(newPack)
         case let .fallbackColor(level):
-            if level < 1 {
-                shape.result = .color(Color(provider: ResolvedColorProvider(color: self)))
-            } else {
-                let opacity = shape.environment.systemColorDefinition.base.opacity(at: level, environment: shape.environment)
-                shape.result = .color(Color(provider: ResolvedColorProvider(color: multiplyingOpacity(by: opacity))))
-            }
+            shape.result = .color(
+                Color(provider: ResolvedColorProvider(color: shape.applyingOpacity(at: level, to: self)))
+            )
         default:
             break
         }
