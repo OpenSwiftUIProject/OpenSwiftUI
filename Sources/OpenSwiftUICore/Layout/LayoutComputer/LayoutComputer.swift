@@ -59,10 +59,7 @@ extension LayoutComputer {
         }
 
         override func spacing() -> Spacing {
-            Spacing(minima: [
-                .init(category: .edgeBelowText, edge: .top) : .zero,
-                .init(category: .edgeAboveText, edge: .bottom) : .zero,
-            ])
+            Spacing()
         }
 
         override func sizeThatFits(_ size: _ProposedSize) -> CGSize {

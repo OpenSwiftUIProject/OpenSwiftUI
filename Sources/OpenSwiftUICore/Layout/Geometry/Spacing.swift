@@ -246,7 +246,7 @@ public struct Spacing: Equatable, Sendable {
         minima.merge(
             other.minima
                 .lazy
-                .filter { key, value in
+                .filter { key, _ in
                     edges.contains(key.edge)
                 }
         ) { max($0, $1) }
