@@ -33,14 +33,7 @@ extension ColorProvider {
                 }
                 let resolved = resolve(in: shape.environment)
                 let opacity = color.provider.opacity(at: levels.lowerBound, environment: shape.environment)
-                
-                var newPack: _ShapeStyle_Pack
-                switch shape.result {
-                    case let .pack(pack): newPack = pack
-                    default: newPack = .init()
-                }
-                newPack[name, levels.lowerBound] = .init(.color(resolved.multiplyingOpacity(by: opacity)))
-                shape.result = .pack(newPack)
+                shape.stylePack[name, levels.lowerBound] = .init(.color(resolved.multiplyingOpacity(by: opacity)))
             case let .fallbackColor(level):
                 shape.result = .color(shape.applyingOpacity(at: level, to: color))
             default:

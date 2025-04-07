@@ -267,9 +267,14 @@ struct TestingSystemColorDefinition: SystemColorDefinition {
 
 // MARK: - SystemColorsStyle [TODO]
 
-//package struct SystemColorsStyle : ShapeStyle, PrimitiveShapeStyle {
-//  package init()
-//  package func _apply(to shape: inout _ShapeStyle_Shape)
-//  @available(iOS 17.0, tvOS 17.0, watchOS 10.0, macOS 14.0, *)
-//  package typealias Resolved = Never
-//}
+package struct SystemColorsStyle: ShapeStyle, PrimitiveShapeStyle {
+    package init() {
+        preconditionFailure("TODO")
+    }
+
+    package func _apply(to shape: inout _ShapeStyle_Shape) {
+        preconditionFailure("TODO")
+    }
+
+    package typealias Resolved = Never
+}

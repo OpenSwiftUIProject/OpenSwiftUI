@@ -53,9 +53,9 @@ public struct HierarchicalShapeStyle: ShapeStyle, PrimitiveShapeStyle {
                         }
                     } else {
                         if case .copyStyle = shape.operation {
-                            shape.result = .style(AnyShapeStyle(OffsetShapeStyle(base: style, offset: level)))
+                            shape.result = .style(AnyShapeStyle(style.offset(by: level)))
                         } else {
-                            OffsetShapeStyle(base: style, offset: level)._apply(to: &shape)
+                            style.offset(by: level)._apply(to: &shape)
                         }
                     }
                 } else {
