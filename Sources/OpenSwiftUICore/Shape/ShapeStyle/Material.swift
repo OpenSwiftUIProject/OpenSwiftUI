@@ -103,9 +103,83 @@ public struct Material: Sendable {
         indirect case coreMaterial(light: String, dark: String, bundle: Bundle?)
     }
 
+    package struct ResolvedMaterial: Hashable {
+        package struct Flags: OptionSet, Hashable {
+            package let rawValue: UInt32
+
+            package init(rawValue: UInt32) { self.rawValue = rawValue }
+
+            package static let darkColorScheme = Flags(rawValue: 1 << 0)
+
+            package static let reduceTransparency = Flags(rawValue: 1 << 1)
+
+            package static let increasedContrast = Flags(rawValue: 1 << 2)
+
+            package static let disableChameleon = Flags(rawValue: 1 << 3)
+
+            package static let isActive = Flags(rawValue: 1 << 4)
+
+            package static let noBlur = Flags(rawValue: 1 << 5)
+
+            package static let isEmphasized = Flags(rawValue: 1 << 6)
+
+            package static let filtersInPlace = Flags(rawValue: 1 << 7)
+
+            package static let noTransparentBlur = Flags(rawValue: 1 << 8)
+
+            package static let isVisionEnabled = Flags(rawValue: 1 << 9)
+
+            package static let noNormalizedEdgesBlur = Flags(rawValue: 1 << 10)
+
+            package static let applyHardEdgesBlur = Flags(rawValue: 1 << 11)
+
+            package init(environment: EnvironmentValues) {
+                var flags = Flags()
+                if environment.colorScheme == .dark {
+                    flags.insert(.darkColorScheme)
+                }
+                if environment.accessibilityReduceTransparency {
+                    flags.insert(.reduceTransparency)
+                }
+                if environment.colorSchemeContrast == .increased {
+                    flags.insert(.increasedContrast)
+                }
+                self = flags
+            }
+        }
+
+        package var id: Material.ID
+
+        package var flags: Material.ResolvedMaterial.Flags
+
+        package var colorScheme: ColorScheme {
+            flags.contains(.darkColorScheme) ? .dark : .light
+        }
+
+        package var colorSchemeContrast: ColorSchemeContrast {
+            flags.contains(.increasedContrast) ? .increased : .standard
+        }
+
+        package var isEmphasized: Swift.Bool {
+            flags.contains(.isEmphasized)
+        }
+    }
+
     package var id: Material.ID
 
-    // package var flags: Material.ResolvedMaterial.Flags
+    package var flags: Material.ResolvedMaterial.Flags
+
+    package init(id: Material.ID) {
+        self.id = id
+        self.flags = []
+    }
+
+    package func resolve(in env: EnvironmentValues, role: ShapeRole? = nil) -> Material.ResolvedMaterial {
+        ResolvedMaterial(
+            id: id,
+            flags: Material.ResolvedMaterial.Flags(environment: env).union(flags)
+        )
+    }
 }
 
 // TODO
