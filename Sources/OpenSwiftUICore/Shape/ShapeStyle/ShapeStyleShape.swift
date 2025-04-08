@@ -113,6 +113,7 @@ extension _ShapeStyle_Shape: Sendable {}
 
 // MARK: - _ShapeStyle_ShapeType
 
+/// A shape type that can have a ShapeStyle type applied to it.
 public struct _ShapeStyle_ShapeType {
     package enum Operation {
         case modifiesBackground
