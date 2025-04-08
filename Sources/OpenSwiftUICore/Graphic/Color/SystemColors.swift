@@ -1,12 +1,14 @@
 //
-//  SystemColor.swift
+//  SystemColors.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: 9E3352CE4697DF56A738786E16992848 (SwiftUICore?)
+//  ID: 9E3352CE4697DF56A738786E16992848 (SwiftUICore)
 
 import OpenSwiftUI_SPI
+
+// MARK: - Color + SystemColorType
 
 extension Color {
     /// A context-dependent red color suitable for use in UI elements.
@@ -63,6 +65,8 @@ extension Color {
     /// The color to use for secondary content.
     public static let secondary: Color = Color(provider: SystemColorType.secondary)
 }
+
+// MARK: - ShapeStyle + Color
 
 extension ShapeStyle where Self == Color {
     /// A context-dependent red color suitable for use in UI elements.
@@ -129,6 +133,8 @@ extension ShapeStyle where Self == Color {
     @_alwaysEmitIntoClient
     public static var clear: Color { .clear }
 }
+
+// MARK: - Color + SystemColorType
 
 extension Color {
     package static let primarySystemFill: Color = Color(provider: SystemColorType.primaryFill)
@@ -265,15 +271,28 @@ struct TestingSystemColorDefinition: SystemColorDefinition {
     }
 }
 
-// MARK: - SystemColorsStyle [TODO]
+// MARK: - SystemColorsStyle
 
 package struct SystemColorsStyle: ShapeStyle, PrimitiveShapeStyle {
-    package init() {
-        preconditionFailure("TODO")
-    }
+    package init() {}
 
     package func _apply(to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
+        switch shape.operation {
+        case let .prepareText(level):
+            let id = ContentStyle.ID(truncatingLevel: level)
+            let color = Color(id)
+            shape.result = .preparedText(.foregroundColor(color))
+        case let .resolveStyle(name, levels):
+            let id = ContentStyle.ID(truncatingLevel: levels.lowerBound)
+            let resolved = id.resolve(in: shape.environment)
+            shape.stylePack[name, levels.lowerBound] = .init(.color(resolved))
+        case let .fallbackColor(level):
+            let id = ContentStyle.ID(truncatingLevel: level)
+            let color = Color(id)
+            shape.result = .color(color)
+        default:
+            break
+        }
     }
 
     package typealias Resolved = Never
