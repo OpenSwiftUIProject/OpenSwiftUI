@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: BE30CA4BBA5F98638AD9D34F1557FB4D (SwiftUICore)
 
 // MARK: - ShapeStyle + HierarchicalShapeStyle
@@ -123,6 +123,8 @@ package enum ContentStyle {
     }
 }
 
+// MARK: - HierarchicalShapeStyle
+
 /// A shape style that maps to one of the numbered content styles.
 @frozen
 public struct HierarchicalShapeStyle: ShapeStyle, PrimitiveShapeStyle {
@@ -210,4 +212,149 @@ extension HierarchicalShapeStyle {
     /// A shape style that maps to the fifth level of the current
     /// content style.
     public static let quinary: HierarchicalShapeStyle = .init(id: 4)
+}
+
+// MARK: - LegacyContentStyle
+
+package struct LegacyContentStyle: ShapeStyle, PrimitiveShapeStyle {
+    package static let sharedPrimary = AnyShapeStyle(LegacyContentStyle(id: .primary, color: .primary))
+
+    package var id: ContentStyle.ID
+
+    package var color: Color
+
+    package func _apply(to shape: inout _ShapeStyle_Shape) {
+        switch shape.operation {
+        case .primaryStyle:
+            shape.result = .style(LegacyContentStyle.sharedPrimary)
+        default:
+            if let backgroundMaterial = shape.environment.backgroundMaterial {
+                let style = ForegroundMaterialStyle(material: backgroundMaterial)
+                if id == .primary {
+                    style._apply(to: &shape)
+                } else {
+                    style.offset(by: Int(id.rawValue))._apply(to: &shape)
+                }
+            } else {
+                let style = SystemColorsStyle()
+                if id == .primary {
+                    style._apply(to: &shape)
+                } else {
+                    style.offset(by: Int(id.rawValue))._apply(to: &shape)
+                }
+            }
+        }
+    }
+}
+
+
+// MARK: - ContentStyle.ID + Extension
+
+extension SystemColorType {
+    package init(_ id: ContentStyle.ID) {
+        switch id {
+        case .primary: self = .primary
+        case .secondary: self = .secondary
+        case .tertiary: self = .tertiary
+        case .quaternary: self = .quaternary
+        case .quinary: self = .quinary
+        }
+    }
+}
+
+extension Color {
+    package init(_ id: ContentStyle.ID) {
+        switch id {
+        case .primary: self = .primary
+        case .secondary: self = .secondary
+        case .tertiary: self = .tertiary
+        case .quaternary: self = .quaternary
+        case .quinary: self = .quinary
+        }
+    }
+}
+
+// MARK: - ContentStyle.ID + ColorProvider
+
+extension ContentStyle.ID: ColorProvider {
+    package func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        environment.systemColorDefinition.base.value(for: SystemColorType(self), environment: environment)
+    }
+
+    package var level: Int {
+        Int(rawValue)
+    }
+
+    package init?(level: Int) {
+        self.init(rawValue: Int8(level & 0xFF))
+    }
+
+    package init(truncatingLevel level: Int) {
+        switch level {
+        case 0: self = .primary
+        case 1: self = .secondary
+        case 2: self = .tertiary
+        case 3: self = .quaternary
+        default: self = .quinary
+        }
+    }
+}
+
+// MARK: - ShapeStyle + HierarchicalShapeStyleModifier
+
+extension ShapeStyle {
+    /// Returns the second level of this shape style.
+    @_alwaysEmitIntoClient
+    public var secondary: some ShapeStyle {
+        HierarchicalShapeStyleModifier(base: self, level: 1)
+    }
+
+    /// Returns the third level of this shape style.
+    @_alwaysEmitIntoClient
+    public var tertiary: some ShapeStyle {
+        HierarchicalShapeStyleModifier(base: self, level: 2)
+    }
+
+    /// Returns the fourth level of this shape style.
+    @_alwaysEmitIntoClient
+    public var quaternary: some ShapeStyle {
+        HierarchicalShapeStyleModifier(base: self, level: 3)
+    }
+
+    /// Returns the fifth level of this shape style.
+    @_alwaysEmitIntoClient
+    public var quinary: some ShapeStyle {
+        HierarchicalShapeStyleModifier(base: self, level: 4)
+    }
+}
+
+// MARK: - HierarchicalShapeStyleModifier
+
+/// Styles that you can apply to hierarchical shapes.
+@frozen
+public struct HierarchicalShapeStyleModifier<Base>: ShapeStyle where Base: ShapeStyle {
+    @usableFromInline
+    var base: Base
+
+    @usableFromInline
+    var level: Int
+
+    @_alwaysEmitIntoClient
+    init(base: Base, level: Int) {
+        (self.base, self.level) = (base, level)
+    }
+
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        if let primaryStyle = primaryStyle(in: shape.environment) {
+            primaryStyle.offset(by: level)._apply(to: &shape)
+        } else {
+            base.offset(by: level)._apply(to: &shape)
+        }
+    }
+
+    public static func _apply(to type: inout _ShapeStyle_ShapeType) {
+        type.result = .bool(true)
+    }
+
+    public typealias Resolved = Never
 }
