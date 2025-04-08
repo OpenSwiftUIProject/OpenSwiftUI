@@ -40,7 +40,7 @@ public struct AnyShapeStyle: ShapeStyle {
     }
     
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {
-        type.result = .none
+        type.result = .bool(true)
     }
     
     public typealias Resolved = Never

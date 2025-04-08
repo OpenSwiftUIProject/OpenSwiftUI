@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by Graident and Material
+//  Status: Blocked by Graident
 
 // MARK: - ShapeStyle
 
@@ -162,12 +162,27 @@ extension ShapeStyle {
         var shape = _ShapeStyle_Shape(operation: .fallbackColor(level: level), environment: environment)
         _apply(to: &shape)
         switch shape.result {
-            case let .color(color): return color
-            default: return nil
+        case let .color(color): return color
+        default: return nil
         }
     }
 
-    // package func resolveBackgroundMaterial(in environment: EnvironmentValues, level: Int = 0) -> Material.ResolvedMaterial?
+    package func resolveBackgroundMaterial(in environment: EnvironmentValues, level: Int = 0) -> Material.ResolvedMaterial? {
+        let name = ShapeStyle.Name.background
+        var shape = _ShapeStyle_Shape(
+            operation: .resolveStyle(name: name, levels: level ..< level + 1),
+            environment: environment
+        )
+        _apply(to: &shape)
+        let style = shape.stylePack[name, level]
+        switch style.fill {
+        case let .backgroundMaterial(resolvedMaterial):
+            return resolvedMaterial
+        default:
+            return nil
+        }
+    }
+
     // package func resolveGradient(in environment: EnvironmentValues, level: Int = 0) -> ResolvedGradient?
 
     package func copyStyle(name: Name = .foreground, in env: EnvironmentValues, foregroundStyle: AnyShapeStyle? = nil) -> AnyShapeStyle {
