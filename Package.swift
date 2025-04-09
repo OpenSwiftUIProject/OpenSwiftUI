@@ -102,7 +102,8 @@ let openSwiftUISPITarget = Target.target(
     ],
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
-    cxxSettings: sharedCxxSettings
+    cxxSettings: sharedCxxSettings,
+    linkerSettings: [.unsafeFlags(["-lMobileGestalt"], .when(platforms: .darwinPlatforms))] // For MGCopyAnswer API support
 )
 let coreGraphicsShims = Target.target(
     name: "CoreGraphicsShims",
@@ -423,6 +424,10 @@ if compatibilityTestCondition {
 }
 
 extension [Platform] {
+    static var darwinPlatforms: [Platform] {
+        [.macOS, .iOS, .macCatalyst, .tvOS, .watchOS, .visionOS]
+    }
+
     static var nonDarwinPlatforms: [Platform] {
         [.linux, .android, .wasi, .openbsd, .windows]
     }
