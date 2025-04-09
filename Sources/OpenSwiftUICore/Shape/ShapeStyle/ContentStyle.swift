@@ -278,7 +278,7 @@ extension Color {
 
 extension ContentStyle.ID: ColorProvider {
     package func resolve(in environment: EnvironmentValues) -> Color.Resolved {
-        environment.systemColorDefinition.base.value(for: SystemColorType(self), environment: environment)
+        SystemColorType(self).resolve(in: environment)
     }
 
     package var level: Int {

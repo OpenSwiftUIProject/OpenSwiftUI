@@ -149,7 +149,7 @@ extension Color {
     package static let quinary: Color = Color(provider: SystemColorType.quinary)
 }
 
-// MARK: - SystemColorType [WIP]
+// MARK: - SystemColorType
 
 package enum SystemColorType: ColorProvider {
     case red
@@ -177,24 +177,26 @@ package enum SystemColorType: ColorProvider {
     }
     
     package func apply(color: Color, to shape: inout _ShapeStyle_Shape) {
-        guard _SemanticFeature_v3.isEnabled else {
+        guard isLinkedOnOrAfter(.v3) else {
             _apply(color: color, to: &shape)
             return
         }
         switch self {
-            case .primary:
-                LegacyContentStyle(id: .primary, color: color)._apply(to: &shape)
-            case .secondary:
-                LegacyContentStyle(id: .secondary, color: color)._apply(to: &shape)
-            case .tertiary:
-                LegacyContentStyle(id: .tertiary, color: color)._apply(to: &shape)
-            case .quaternary:
-                LegacyContentStyle(id: .quaternary, color: color)._apply(to: &shape)
-            case .quinary:
-                LegacyContentStyle(id: .quinary, color: color)._apply(to: &shape)
-            default:
-                // TODO: BackgroundMaterialKey + Material
-                break
+        case .primary: LegacyContentStyle(id: .primary, color: color)._apply(to: &shape)
+        case .secondary: LegacyContentStyle(id: .secondary, color: color)._apply(to: &shape)
+        case .tertiary: LegacyContentStyle(id: .tertiary, color: color)._apply(to: &shape)
+        case .quaternary: LegacyContentStyle(id: .quaternary, color: color)._apply(to: &shape)
+        case .quinary: LegacyContentStyle(id: .quinary, color: color)._apply(to: &shape)
+        default:
+            let environment = shape.environment
+            guard let backgroundMaterial = environment.backgroundMaterial,
+                  let vibrantColorStyle = environment.vibrantColorStyle
+            else {
+                _apply(color: color, to: &shape)
+                return
+            }
+            vibrantColorStyle.apply(self, color: color, material: backgroundMaterial, to: &shape)
+            break
         }
     }
     

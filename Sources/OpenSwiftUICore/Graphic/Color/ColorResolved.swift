@@ -123,23 +123,17 @@ extension Color.Resolved: ShapeStyle, PrimitiveShapeStyle {
         switch shape.operation {
         case let .prepareText(level):
             shape.result = .preparedText(.foregroundColor(
-                Color(provider: ResolvedColorProvider(color: shape.applyingOpacity(at: level, to: self)))
+                Color(shape.applyingOpacity(at: level, to: self))
             ))
         case let .resolveStyle(name, levels):
             guard levels.lowerBound != levels.upperBound else {
                 break
             }
             let opacity = shape.environment.systemColorDefinition.base.opacity(at: levels.lowerBound, environment: shape.environment)
-            var newPack: _ShapeStyle_Pack
-            switch shape.result {
-            case let .pack(pack): newPack = pack
-            default: newPack = .init()
-            }
-            newPack[name, levels.lowerBound] = .init(.color(multiplyingOpacity(by: opacity)))
-            shape.result = .pack(newPack)
+            shape.stylePack[name, levels.lowerBound] = .init(.color(multiplyingOpacity(by: opacity)))
         case let .fallbackColor(level):
             shape.result = .color(
-                Color(provider: ResolvedColorProvider(color: shape.applyingOpacity(at: level, to: self)))
+                Color(shape.applyingOpacity(at: level, to: self))
             )
         default:
             break
