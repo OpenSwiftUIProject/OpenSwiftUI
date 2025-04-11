@@ -124,21 +124,21 @@ package struct AtomicBox<Value> {
     package var wrappedValue: Value {
         get {
             #if canImport(Darwin)
-            os_unfair_lock_lock(&buffer.header)
-            defer { os_unfair_lock_unlock(&buffer.header) }
+            buffer.withUnsafeMutablePointerToHeader { os_unfair_lock_lock($0) }
+            defer { buffer.withUnsafeMutablePointerToHeader { os_unfair_lock_unlock($0) } }
             #else
-            buffer.header.lock()
-            defer { buffer.header.unlock() }
+            buffer.withUnsafeMutablePointerToHeader { $0.pointee.lock() }
+            defer { buffer.withUnsafeMutablePointerToHeader { $0.pointee.unlock() } }
             #endif
             return buffer.withUnsafeMutablePointerToElements { $0.pointee }
         }
         nonmutating _modify {
             #if canImport(Darwin)
-            os_unfair_lock_lock(&buffer.header)
-            defer { os_unfair_lock_unlock(&buffer.header) }
+            buffer.withUnsafeMutablePointerToHeader { os_unfair_lock_lock($0) }
+            defer { buffer.withUnsafeMutablePointerToHeader { os_unfair_lock_unlock($0) } }
             #else
-            buffer.header.lock()
-            defer { buffer.header.unlock() }
+            buffer.withUnsafeMutablePointerToHeader { $0.pointee.lock() }
+            defer { buffer.withUnsafeMutablePointerToHeader { $0.pointee.unlock() } }
             #endif
             yield &buffer.withUnsafeMutablePointerToElements { $0 }.pointee
         }
