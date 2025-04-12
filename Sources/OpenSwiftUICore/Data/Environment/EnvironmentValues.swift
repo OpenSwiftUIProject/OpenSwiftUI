@@ -139,7 +139,7 @@ public struct EnvironmentValues: CustomStringConvertible {
     ///         }
     ///     }
     ///
-    public subscript<K: EnvironmentKey>(key: K.Type) -> K.Value {
+    public subscript<K>(key: K.Type) -> K.Value where K: EnvironmentKey {
         get {
             if let tracker {
                 tracker.value(_plist, for: EnvironmentPropertyKey<K>.self)
@@ -159,6 +159,14 @@ public struct EnvironmentValues: CustomStringConvertible {
         }
     }
 
+    package subscript<K>(key: K.Type) -> K.Value where K: DerivedEnvironmentKey {
+        if let tracker {
+            tracker.derivedValue(_plist, for: DerivedEnvironmentPropertyKey<K>.self)
+        } else {
+            _plist[DerivedEnvironmentPropertyKey<K>.self]
+        }
+    }
+
     /// A string that represents the contents of the environment values
     /// instance.
     public var description: String { _plist.description }
@@ -172,7 +180,7 @@ private struct EnvironmentPropertyKey<EnvKey: EnvironmentKey>: PropertyKey {
 }
 
 private struct DerivedEnvironmentPropertyKey<EnvKey: DerivedEnvironmentKey>: DerivedPropertyKey {
-    static func value(in plist: PropertyList) -> some Equatable {
+    static func value(in plist: PropertyList) -> EnvKey.Value {
         EnvKey.value(in: EnvironmentValues(plist))
     }
 }

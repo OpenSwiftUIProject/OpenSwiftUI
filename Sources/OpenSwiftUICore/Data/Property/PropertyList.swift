@@ -348,7 +348,11 @@ extension PropertyList {
                 }
             }
         }
-        
+
+        package func derivedValue<Key: DerivedPropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
+            preconditionFailure("TODO")
+        }
+
         package func initializeValues(from: PropertyList) {
             data.plistID = from.elements?.id ?? .invalid
         }
