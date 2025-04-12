@@ -120,7 +120,13 @@ let openSwiftUICoreTarget = Target.target(
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: [
+        // TODO: Add CoreUI.tdb etc to other repo.
+        .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"]),
+        .linkedFramework("CoreUI"),
+//        .unsafeFlags(["-fCoreUI"], .when(platforms: .darwinPlatforms)) // For CoreUI API support
+    ]
 )
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",

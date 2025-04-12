@@ -81,7 +81,8 @@ package struct PropertyList: CustomStringConvertible {
     }
     
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
-        get { preconditionFailure("TODO") }
+        // preconditionFailure("TODO")
+        K.value(in: self)
     }
   
     @usableFromInline
