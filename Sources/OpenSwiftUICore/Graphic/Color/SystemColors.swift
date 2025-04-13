@@ -266,7 +266,7 @@ extension EnvironmentValues {
 
 struct CoreUIDefaultSystemColorDefinition: SystemColorDefinition {
     static func value(for type: SystemColorType, environment: EnvironmentValues) -> Color.Resolved {
-        #if canImport(Darwin)
+        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
         let name: CUIColorName
         switch type {
         case .red: name = .red

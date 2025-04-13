@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: EBD1C829A869D5EC3C2FDA55F4467D9A (SwiftUICore?)
 
-#if canImport(Darwin)
+#if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 package import OpenSwiftUI_SPI
 
 package struct CUIDesignLibraryCacheKey: Hashable {

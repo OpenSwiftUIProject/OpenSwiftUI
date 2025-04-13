@@ -49,6 +49,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("InferSendableFromCaptures"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .swiftLanguageMode(.v5),
+    .define("OPENSWIFTUI_LINK_COREUI", .when(platforms: [.macOS])),
 ]
 
 // MARK: - [env] OPENGRAPH_TARGET_RELEASE
@@ -122,10 +123,9 @@ let openSwiftUICoreTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings,
     linkerSettings: [
-        // TODO: Add CoreUI.tdb etc to other repo.
-        .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"]),
-        .linkedFramework("CoreUI"),
-//        .unsafeFlags(["-fCoreUI"], .when(platforms: .darwinPlatforms)) // For CoreUI API support
+        // TODO: Add CoreUI.tdb etc. to support link it for iOS platform
+        .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])),
+        .linkedFramework("CoreUI", .when(platforms: [.macOS])),
     ]
 )
 let openSwiftUITarget = Target.target(

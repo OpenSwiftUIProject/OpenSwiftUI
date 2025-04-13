@@ -2,7 +2,7 @@
 //  CUIDesignLibraryCacheKeyTests.swift
 //  OpenSwiftUICoreTests
 
-#if canImport(Darwin)
+#if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 
 @testable import OpenSwiftUICore
 import Testing
