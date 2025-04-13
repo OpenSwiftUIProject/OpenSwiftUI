@@ -59,34 +59,44 @@ public struct _ShapeStyle_Shape {
 
     package struct RecursiveStyles: OptionSet {
         package let rawValue: UInt8
+
         package init(rawValue: UInt8) {
             self.rawValue = rawValue
         }
-        
+
         package static let content: RecursiveStyles = .init(rawValue: 1 << 0)
+
         package static let foreground: RecursiveStyles = .init(rawValue: 1 << 1)
+
         package static let background: RecursiveStyles = .init(rawValue: 1 << 2)
     }
     
     package var activeRecursiveStyles: RecursiveStyles = []
     
     package func opacity(at level: Int) -> Float {
-        // Blocked by Color
-        preconditionFailure("TODO")
+        environment.systemColorDefinition.base.opacity(at: level, environment: environment)
     }
     
     package func opacity(for color: Color, at level: Int) -> Float {
-        // Blocked by Color
-        preconditionFailure("TODO")
+        color.provider.opacity(at: level, environment: environment)
     }
+
     package func applyingOpacity(at level: Int, to color: Color) -> Color {
-        // Blocked by Color
-        preconditionFailure("TODO")
+        if level < 1 {
+            return color
+        } else {
+            let opacity = opacity(for: color, at: level)
+            return color.opacity(Double(opacity))
+        }
     }
     
     package func applyingOpacity(at level: Int, to color: Color.Resolved) -> Color.Resolved {
-        // Blocked by Color
-        preconditionFailure("TODO")
+        if level < 1 {
+            return color
+        } else {
+            let opacity = opacity(at: level)
+            return color.multiplyingOpacity(by: opacity)
+        }
     }
     
     package var currentForegroundStyle: AnyShapeStyle? {
@@ -103,6 +113,7 @@ extension _ShapeStyle_Shape: Sendable {}
 
 // MARK: - _ShapeStyle_ShapeType
 
+/// A shape type that can have a ShapeStyle type applied to it.
 public struct _ShapeStyle_ShapeType {
     package enum Operation {
         case modifiesBackground

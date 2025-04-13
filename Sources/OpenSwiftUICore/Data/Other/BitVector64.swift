@@ -9,19 +9,15 @@ import Foundation
 
 @_spi(ForOpenSwiftUIOnly)
 public struct BitVector64: OptionSet {
-    @_spi(ForOpenSwiftUIOnly)
     public var rawValue: UInt64
     
-    @_spi(ForOpenSwiftUIOnly)
     public init(rawValue: UInt64) {
         self.rawValue = rawValue
     }
     
-    @_spi(ForOpenSwiftUIOnly)
     @inlinable
     public init() { self.init(rawValue: 0) }
     
-    @_spi(ForOpenSwiftUIOnly)
     package subscript(index: Int) -> Bool {
         get {
             rawValue & (1 << UInt(index)) != 0

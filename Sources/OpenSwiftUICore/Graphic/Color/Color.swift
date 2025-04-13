@@ -150,12 +150,17 @@ extension Color {
 
 package protocol ColorProvider: Hashable {
     func resolve(in environment: EnvironmentValues) -> Color.Resolved
+
     func apply(color: Color, to shape: inout _ShapeStyle_Shape)
+
     #if canImport(Darwin)
     var staticColor: CGColor? { get }
     #endif
+
     var kitColor: AnyObject? { get }
+
     var colorDescription: String { get }
+
     func opacity(at level: Int, environment: EnvironmentValues) -> Float
 }
 
@@ -163,8 +168,11 @@ extension ColorProvider {
     #if canImport(Darwin)
     package var staticColor: CGColor? { nil }
     #endif
+
     package var kitColor: AnyObject? { nil }
+
     package var colorDescription: String { String(describing: self) }
+
     package func opacity(at level: Int, environment: EnvironmentValues) -> Float {
         environment.systemColorDefinition.base.opacity(at: level, environment: environment)
     }

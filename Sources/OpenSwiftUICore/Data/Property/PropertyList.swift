@@ -81,7 +81,8 @@ package struct PropertyList: CustomStringConvertible {
     }
     
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
-        get { preconditionFailure("TODO") }
+        // preconditionFailure("TODO")
+        K.value(in: self)
     }
   
     @usableFromInline
@@ -348,7 +349,11 @@ extension PropertyList {
                 }
             }
         }
-        
+
+        package func derivedValue<Key: DerivedPropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
+            preconditionFailure("TODO")
+        }
+
         package func initializeValues(from: PropertyList) {
             data.plistID = from.elements?.id ?? .invalid
         }

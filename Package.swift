@@ -49,6 +49,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("InferSendableFromCaptures"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .swiftLanguageMode(.v5),
+    .define("OPENSWIFTUI_LINK_COREUI", .when(platforms: [.macOS])),
 ]
 
 // MARK: - [env] OPENGRAPH_TARGET_RELEASE
@@ -120,7 +121,12 @@ let openSwiftUICoreTarget = Target.target(
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: [
+        // TODO: Add CoreUI.tdb etc. to support link it for iOS platform
+        .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])),
+        .linkedFramework("CoreUI", .when(platforms: [.macOS])),
+    ]
 )
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",

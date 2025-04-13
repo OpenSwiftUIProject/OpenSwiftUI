@@ -29,6 +29,7 @@ extension Color {
         
         /// The amount of blue in the color in the sRGB linear color space.
         public var linearBlue: Float
+
         /// The degree of opacity in the color, given in the range `0` to `1`.
         ///
         /// A value of `0` means 100% transparency, while a value of `1` means
@@ -59,6 +60,7 @@ extension Color {
     
     package struct ResolvedVibrant: Equatable {
         package var scale: Float
+        
         package var bias: (Float, Float, Float)
         
         package var colorMatrix: _ColorMatrix {
@@ -118,7 +120,24 @@ private struct ResolvedColorProvider: ColorProvider {
 
 extension Color.Resolved: ShapeStyle, PrimitiveShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        preconditionFailure("TODO")
+        switch shape.operation {
+        case let .prepareText(level):
+            shape.result = .preparedText(.foregroundColor(
+                Color(shape.applyingOpacity(at: level, to: self))
+            ))
+        case let .resolveStyle(name, levels):
+            guard levels.lowerBound != levels.upperBound else {
+                break
+            }
+            let opacity = shape.environment.systemColorDefinition.base.opacity(at: levels.lowerBound, environment: shape.environment)
+            shape.stylePack[name, levels.lowerBound] = .init(.color(multiplyingOpacity(by: opacity)))
+        case let .fallbackColor(level):
+            shape.result = .color(
+                Color(shape.applyingOpacity(at: level, to: self))
+            )
+        default:
+            break
+        }
     }
     
     public typealias Resolved = Never
@@ -139,10 +158,7 @@ extension Color.Resolved: CustomStringConvertible {
 // MARK: - Color.Resolved + Animatable
 
 extension Color.Resolved : Animatable {
-    package static var legacyInterpolation: Bool = {
-        // TODO: Semantic.v6
-        return false
-    }()
+    package static var legacyInterpolation: Bool = !isLinkedOnOrAfter(.v6)
 
     public var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
         get {

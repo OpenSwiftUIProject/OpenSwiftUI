@@ -7,6 +7,7 @@
 
 package struct OffsetShapeStyle<Base>: ShapeStyle where Base: ShapeStyle {
     package var base: Base
+
     package var offset: Int
     
     package func _apply(to shape: inout _ShapeStyle_Shape) {

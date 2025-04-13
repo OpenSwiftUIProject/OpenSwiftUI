@@ -26,30 +26,22 @@ package struct _ShapeStyle_Pack: Equatable {
         }
         
         package static let clear: _ShapeStyle_Pack.Style = .init(.color(.clear))
-        package static func == (a: _ShapeStyle_Pack.Style, b: _ShapeStyle_Pack.Style) -> Bool {
-            a.fill == b.fill && a.opacity == b.opacity && a._blend == b._blend && a.effects == b.effects
-        }
     }
     
     package enum Fill: Equatable, Sendable {
         case color(Color.Resolved)
+
         case paint(AnyResolvedPaint)
-        case foregroundMaterial(Color.Resolved/*, ContentStyle.MaterialStyle*/)
-        // case backgroundMaterial(Material.ResolvedMaterial)
+
+        case foregroundMaterial(Color.Resolved, ContentStyle.MaterialStyle)
+
+        case backgroundMaterial(Material.ResolvedMaterial)
+
         case vibrantColor(Color.ResolvedVibrant)
+
         case vibrantMatrix(_ColorMatrix)
+
         // case multicolor(ResolvedMulticolorStyle)
-        package static func == (a: _ShapeStyle_Pack.Fill, b: _ShapeStyle_Pack.Fill) -> Bool {
-            switch (a, b) {
-                case (.color(let a), .color(let b)): return a == b
-                case (.paint(let a), .paint(let b)): return a == b
-                // case (.foregroundMaterial(let a), .foregroundMaterial(let b)): return a == b
-                case (.vibrantColor(let a), .vibrantColor(let b)): return a == b
-                case (.vibrantMatrix(let a), .vibrantMatrix(let b)): return a == b
-                // case (.multicolor(let a), .multicolor(let b)): return a == b
-                default: return false
-            }
-        }
     }
     
     package struct Effect: Equatable, Sendable {

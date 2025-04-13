@@ -12,10 +12,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-typedef CF_CLOSED_ENUM(uint32_t, CUIDisplayGamut) {
-    CUIDisplayGamutSRGB = 0,
-    CUIDisplayGamutP3 = 1,
-};
+#include "../../Shims/CoreUI/CUIDisplayGamut.h"
 
 CUIDisplayGamut _CUIDefaultDisplayGamut();
 
