@@ -48,16 +48,16 @@ extension Color {
     public static let brown: Color = Color(provider: SystemColorType.brown)
     
     /// A white color suitable for use in UI elements.
-    public static let white: Color = Color(Color.Resolved(linearWhite: 1.0))
-    
+    public static let white: Color = Color(Resolved.white)
+
     /// A context-dependent gray color suitable for use in
     public static let gray: Color = Color(provider: SystemColorType.gray)
     
     /// A black color suitable for use in UI elements.
-    public static let black: Color = Color(Color.Resolved(linearWhite: 1.0))
-    
+    public static let black: Color = Color(Resolved.black)
+
     /// A clear color suitable for use in UI elements.
-    public static let clear: Color = Color(Color.Resolved(linearWhite: 0.0, opacity: 0.0))
+    public static let clear: Color = Color(Resolved.clear)
     
     /// The color to use for primary content.
     public static let primary: Color = Color(provider: SystemColorType.primary)
@@ -359,7 +359,7 @@ struct DefaultSystemColorDefinition_PhoneTV: SystemColorDefinition {
 //                #colorLiteral(red: 0.19607843, green: 0.6784314, blue: 0.9019608, alpha: 1.0)
                 colorSchemeContrast == .increased
                     ? Color.Resolved(red: 0.0, green: 113 / 255, blue: 164 / 255, opacity: 1.0)
-                    : Color.Resolved(red: 50 / 255, green: 191739 / 255, blue: 230 / 255, opacity: 1.0)
+                    : Color.Resolved(red: 50 / 255, green: 173 / 255, blue: 230 / 255, opacity: 1.0)
             case .blue:
 //                #colorLiteral(red: 0.0, green: 0.2509804, blue: 0.8666667, alpha: 1.0)
 //                #colorLiteral(red: 0.0, green: 0.47843137, blue: 1.0, alpha: 1.0)

@@ -12,7 +12,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-typedef OPENSWIFTUI_CLOSED_ENUM(uint32_t, CUIDesignStyling) {
+typedef OPENSWIFTUI_CLOSED_ENUM(uint64_t, CUIDesignStyling) {
     CUIDesignStyling_0 = 0,
     CUIDesignStyling_1 = 1,
     CUIDesignStyling_2 = 2,

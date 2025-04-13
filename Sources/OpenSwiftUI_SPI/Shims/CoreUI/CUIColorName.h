@@ -3,7 +3,7 @@
 //  OpenSwiftUI_SPI
 //
 //  Audited for iOS 18.0
-//  Status: Complete
+//  Status: WIP
 
 #ifndef CUIColorName_h
 #define CUIColorName_h
@@ -12,6 +12,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
+// TOOD: 29 cases
 typedef OPENSWIFTUI_CLOSED_ENUM(uint64_t, CUIColorName) {
     CUIColorNameRed = 0,
     CUIColorNameOrange = 1,
