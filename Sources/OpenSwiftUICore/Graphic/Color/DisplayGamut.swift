@@ -13,7 +13,7 @@ public enum DisplayGamut: Int {
     case displayP3
 
     package static var deviceDefault: DisplayGamut {
-        #if canImport(Darwin)
+        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
         switch _CUIDefaultDisplayGamut() {
         case .SRGB: .sRGB
         case .P3: .displayP3

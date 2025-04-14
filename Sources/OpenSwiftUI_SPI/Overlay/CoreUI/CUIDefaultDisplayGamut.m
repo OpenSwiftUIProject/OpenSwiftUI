@@ -7,7 +7,7 @@
 
 #include "CUIDefaultDisplayGamut.h"
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN
+#if OPENSWIFTUI_TARGET_OS_DARWIN && OPENSWIFTUI_LINK_COREUI
 
 #include "../../Shims/libMobileGestalt/MobileGestalt.h"
 

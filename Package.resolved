@@ -1,5 +1,5 @@
 {
-  "originHash" : "9f7f3a9e12b01f4eea87d737b4cb5a3574c316bddd8fed0bd9663487fefed563",
+  "originHash" : "2d683ce16a22a62342bc34180dc768d9a7290ad4eb9e4368730342fb89e0370f",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "6ef0aae7ac472a4c47cd0569000138f5c852eb67"
+        "revision" : "c2a9a47ac481253d2cd3e25d03cf448efe80bb3f"
       }
     },
     {
@@ -31,10 +31,10 @@
     {
       "identity" : "swift-numerics",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-numerics",
+      "location" : "https://github.com/apple/swift-numerics.git",
       "state" : {
-        "revision" : "0a5bc04095a675662cf24757cc0640aa2204253b",
-        "version" : "1.0.2"
+        "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
+        "version" : "1.0.3"
       }
     }
   ],
