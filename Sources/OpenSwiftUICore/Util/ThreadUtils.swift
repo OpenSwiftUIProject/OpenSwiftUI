@@ -11,7 +11,7 @@ import Foundation
 // MARK: - ThreadSpecific
 
 final package class ThreadSpecific<T> {
-    var key: pthread_key_t
+    private var key: pthread_key_t
     let defaultValue: T
     
     package init(_ defaultValue: T) {
