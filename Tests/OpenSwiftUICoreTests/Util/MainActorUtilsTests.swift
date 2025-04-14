@@ -31,18 +31,12 @@ struct MainActorUtilsTests {
     @Test
     func nonMainActorOperation() {
         // TODO: swift-testing does not exist yet
-        // Expect crash
+        // Expect crash (Need to fork and crash to avoid affect other Semantics.force check on main actor)
 //        Semantics.v6.test {
 //            MainActor.assumeIsolatedIfLinkedOnOrAfterV6 {
 //                let a = A()
 //                a.foo()
 //            }
 //        }
-        Semantics.v5.test {
-            MainActor.assumeIsolatedIfLinkedOnOrAfterV6 {
-                let a = A()
-                a.foo()
-            }
-        }
     }
 }

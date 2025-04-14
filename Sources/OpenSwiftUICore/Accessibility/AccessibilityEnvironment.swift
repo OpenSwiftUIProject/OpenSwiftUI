@@ -1,5 +1,5 @@
 //
-//  AccessibilityEnvironment.swift.swift
+//  AccessibilityEnvironment.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
