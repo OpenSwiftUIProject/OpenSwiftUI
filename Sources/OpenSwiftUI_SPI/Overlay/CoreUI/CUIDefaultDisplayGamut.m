@@ -7,7 +7,7 @@
 
 #include "CUIDefaultDisplayGamut.h"
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN
+#if OPENSWIFTUI_TARGET_OS_DARWIN && OPENSWIFTUI_LINK_COREUI
 
 #include "../../Shims/libMobileGestalt/MobileGestalt.h"
 
@@ -25,4 +25,4 @@ CUIDisplayGamut _CUIDefaultDisplayGamut() {
     return defaultGamut;
 }
 
-#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN && OPENSWIFTUI_LINK_COREUI */

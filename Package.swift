@@ -49,7 +49,6 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("InferSendableFromCaptures"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .swiftLanguageMode(.v5),
-    .define("OPENSWIFTUI_LINK_COREUI", .when(platforms: [.macOS])),
 ]
 
 // MARK: - [env] OPENGRAPH_TARGET_RELEASE
@@ -69,6 +68,26 @@ let development = envEnable("OPENSWIFTUI_DEVELOPMENT")
 
 if development {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
+}
+
+// MARK: - [env] OPENSWIFTUI_LINK_COREUI
+
+#if os(macOS)
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: false)
+#else
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI")
+#endif
+
+if linkCoreUI {
+    sharedCSettings.append(
+        .define("OPENSWIFTUI_LINK_COREUI")
+    )
+    sharedCxxSettings.append(
+        .define("OPENSWIFTUI_LINK_COREUI")
+    )
+    sharedSwiftSettings.append(
+        .define("OPENSWIFTUI_LINK_COREUI")
+    )
 }
 
 // MARK: - [env] OPENSWIFTUI_WERROR
@@ -121,12 +140,7 @@ let openSwiftUICoreTarget = Target.target(
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
-    swiftSettings: sharedSwiftSettings,
-    linkerSettings: [
-        // TODO: Add CoreUI.tdb etc. to support link it for iOS platform
-        .unsafeFlags([systemFrameworkSearchFlag, "/System/Library/PrivateFrameworks/"], .when(platforms: [.macOS])),
-        .linkedFramework("CoreUI", .when(platforms: [.macOS])),
-    ]
+    swiftSettings: sharedSwiftSettings
 )
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
@@ -147,7 +161,6 @@ let openSwiftUIExtensionTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
-
 let openSwiftUIBridgeTarget = Target.target(
     name: "OpenSwiftUIBridge",
     dependencies: [
@@ -291,6 +304,12 @@ extension Target {
         self.swiftSettings = swiftSettings
     }
 
+    func addCoreUISettings() {
+        // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
+        // "could not determine executable path for bundle 'CoreUI.framework'"
+        dependencies.append(.product(name: "CoreUI", package: "DarwinPrivateFrameworks"))
+    }
+
     func addOpenCombineSettings() {
         dependencies.append(.product(name: "OpenCombine", package: "OpenCombine"))
         var swiftSettings = swiftSettings ?? []
@@ -358,27 +377,30 @@ if attributeGraphCondition || renderBoxCondition {
     }
 }
 
+if linkCoreUI {
+    openSwiftUICoreTarget.addCoreUISettings()
+    openSwiftUISPITarget.addCoreUISettings()
+}
+
 if useLocalDeps {
-    package.dependencies += [
+    var dependencies: [Package.Dependency] = [
         .package(path: "../OpenGraph"),
         .package(path: "../OpenBox"),
     ]
-    if attributeGraphCondition || renderBoxCondition {
-        package.dependencies.append(
-            .package(path: "../DarwinPrivateFrameworks")
-        )
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI {
+        dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
+    package.dependencies += dependencies
 } else {
-    package.dependencies += [
+    var dependencies: [Package.Dependency] = [
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenBox", branch: "main"),
     ]
-    if attributeGraphCondition || renderBoxCondition {
-        package.dependencies.append(
-            .package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main")
-        )
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI {
+        dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
+    package.dependencies += dependencies
 }
 
 #if os(macOS)
