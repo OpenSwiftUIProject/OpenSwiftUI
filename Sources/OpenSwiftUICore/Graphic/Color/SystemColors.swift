@@ -7,6 +7,9 @@
 //  ID: 9E3352CE4697DF56A738786E16992848 (SwiftUICore)
 
 import OpenSwiftUI_SPI
+#if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+import CoreUI
+#endif
 
 // MARK: - Color + SystemColorType
 

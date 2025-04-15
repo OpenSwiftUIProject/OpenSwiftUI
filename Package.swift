@@ -73,7 +73,7 @@ if development {
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
 #if os(macOS)
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: false)
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: true)
 #else
 let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI")
 #endif
