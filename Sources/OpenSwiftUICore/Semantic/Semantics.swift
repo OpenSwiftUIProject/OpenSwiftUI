@@ -138,33 +138,72 @@ extension Semantics {
     }
 }
 
-// 2019.9.1 OS release (iOS 13)
+// NOTE: Source: https://theapplewiki.com/wiki/Timeline
+
+/// Fall 2019 OS version - iOS 13.0
 let openSwiftUI_v1_os_versions = dyld_build_version_t(version: 0x07E3_0901)
+
+/// iOS 13.1
 let openSwiftUI_autumn_2019_os_versions = dyld_build_version_t(version: 0x07E3_0902)
+
+/// iOS 13.2
 let openSwiftUI_late_fall_2019_os_versions = dyld_build_version_t(version: 0x07E3_1015)
+
+/// 2020.12.01 - iOS 13.3.1
 let openSwiftUI_v1_3_1_os_versions = dyld_build_version_t(version: 0x07E3_1201)
+
+/// Spring 2020 OS version - iOS 13.4
 let openSwiftUI_v1_4_os_versions = dyld_build_version_t(version: 0x07E4_0301)
+
 let openSwiftUI_late_spring_2020_os_versions = dyld_build_version_t(version: 0x07E4_0415)
+
 let openSwiftUI_summer_2020_os_versions = dyld_build_version_t(version: 0x07E4_0601)
-// 2020.9.1 OS release (iOS 14)
+
+/// Fall 2020 - 2020.09.01 - iOS 14.0
 let openSwiftUI_v2_os_versions = dyld_build_version_t(version: 0x07E4_0901)
+
+/// Late Fall 2020 - 2020.10.15 - iOS 14.1
 let openSwiftUI_v2_1_os_versions = dyld_build_version_t(version: 0x07E4_1015)
+
+/// Spring 2021 - 2021.03.01 - iOS 14.3
 let openSwiftUI_v2_3_os_versions = dyld_build_version_t(version: 0x07E5_0301)
-// 2021.9.1 OS release (iOS 15)
+
+/// Fall 2021 - 2021.09.01 - iOS 15.0
 let openSwiftUI_v3_0_os_versions = dyld_build_version_t(version: 0x07E5_0901)
-// 2021.12.1 OS release
+
+/// Winter 2021 - 2021.12.01 - iOS 15.2
 let openSwiftUI_v3_2_os_versions = dyld_build_version_t(version: 0x07E5_1201)
+
+/// Spring 2022 - 2022.03.01 - iOS 15.4
 let openSwiftUI_v3_4_os_versions = dyld_build_version_t(version: 0x07E6_0301)
-// 2022.9.1 OS release (iOS 16)
+
+// MARK: - 2022.9.1 OS release (iOS 16)
+
+/// Fall 2022 - 2022.09.01 - iOS 16.0
 let openSwiftUI_v4_0_os_versions = dyld_build_version_t(version: 0x07E6_0901)
+
+/// Late Fall 2022 - 2022.10.15 - iOS 16.4
 let openSwiftUI_v4_4_os_versions = dyld_build_version_t(version: 0x07E6_2300)
-// 2023.9.1 OS release (iOS 17)
+
+// MARK: - 2023.9.1 OS release (iOS 17)
+
+/// Fall 2023 OS version - iOS 18.0
 let openSwiftUI_v5_0_os_versions = dyld_build_version_t(version: 0x07E7_0901)
+
 let openSwiftUI_v5_2_os_versions = dyld_build_version_t(version: 0x07E7_0d01)
-// 2024 OS release (iOS 18)
+
+// MARK: - 2024 OS release (iOS 18)
+
+/// Fall 2024 OS version - iOS 18.0
 let openSwiftUI_v6_0_os_versions = dyld_build_version_t(version: 0x07E8_0000)
+
+///
 let openSwiftUI_v6_1_os_versions = dyld_build_version_t(version: 0x07E8_0100)
+
 let openSwiftUI_v6_2_os_versions = dyld_build_version_t(version: 0x07E8_0200)
+
 let openSwiftUI_v6_4_os_versions = dyld_build_version_t(version: 0x07E8_0400)
-// 2025 OS release (iOS 19)
+
+// MARK: - 2025 OS release (iOS 19)
+
 let openSwiftUI_v7_0_os_versions = dyld_build_version_t(version: 0x07E9_0000)
