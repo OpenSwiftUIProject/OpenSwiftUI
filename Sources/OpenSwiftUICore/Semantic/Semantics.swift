@@ -21,7 +21,7 @@ package func isDeployedOnOrAfter(_ semantics: Semantics) -> Bool {
     if let deploymentTarget = Semantics.forced.deploymentTarget {
         deploymentTarget >= semantics
     } else {
-        dyld_program_sdk_at_least(dyld_build_version_t(semantics: semantics))
+        dyld_program_minos_at_least(dyld_build_version_t(semantics: semantics))
     }
 }
 

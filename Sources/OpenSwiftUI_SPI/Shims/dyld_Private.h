@@ -78,8 +78,11 @@ typedef struct {
 } dyld_build_version_t;
 
 // Always return true on non-Darwin platform
+// Convenience versions of the previous two functions that run against the the main executable
 OPENSWIFTUI_EXPORT
 bool dyld_program_sdk_at_least(dyld_build_version_t version);
+OPENSWIFTUI_EXPORT
+bool dyld_program_minos_at_least(dyld_build_version_t version);
 
 OPENSWIFTUI_EXPORT
 dyld_platform_t dyld_get_active_platform(void);

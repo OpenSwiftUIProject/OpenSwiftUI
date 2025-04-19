@@ -37,4 +37,14 @@ struct SemanticsTests {
         #expect(Semantics.v5.description == "2023-9-1")
         #expect(Semantics.v6.description == "2024-0-0")
     }
+    
+    @Test
+    func isDeployedOnOrAfter() {
+        #expect(OpenSwiftUICore.isDeployedOnOrAfter(.v1) == true)
+        #expect(OpenSwiftUICore.isDeployedOnOrAfter(.v2) == true)
+        #expect(OpenSwiftUICore.isDeployedOnOrAfter(.v3) == true)
+        #expect(OpenSwiftUICore.isDeployedOnOrAfter(.v4) == true)
+        #expect(OpenSwiftUICore.isDeployedOnOrAfter(.v5) == true)
+        #expect(OpenSwiftUICore.isDeployedOnOrAfter(.v6) == false)
+    }
 }
