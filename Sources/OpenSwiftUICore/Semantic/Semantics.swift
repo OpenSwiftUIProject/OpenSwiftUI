@@ -158,13 +158,13 @@ extension Semantics {
     /// Fall 2022 (iOS 16.0, macOS 13.0, watchOS 9.0, tvOS 16.0)
     package static let v4 = Semantics(version: openSwiftUI_v4_0_os_versions)
 
-    /// 2022_SU_E (iOS 16.4, macOS 13.3, watchOS 9.4, tvOS 16.4)
+    /// 2022 SU E (iOS 16.4, macOS 13.3, watchOS 9.4, tvOS 16.4)
     package static let v4_4 = Semantics(version: openSwiftUI_v4_4_os_versions)
 
     /// Fall 2023 (iOS 17.0, macOS 14.0, watchOS 10.0, tvOS 17.0)
     package static let v5 = Semantics(version: openSwiftUI_v5_0_os_versions)
 
-    /// 2023_SU_C (iOS 17.2, macOS 14.2, watchOS 10.2, tvOS 17.2, visionOS 1.0)
+    /// 2023 SU C (iOS 17.2, macOS 14.2, watchOS 10.2, tvOS 17.2, visionOS 1.0)
     package static let v5_2 = Semantics(version: openSwiftUI_v5_2_os_versions)
 
     /// Fall 2024 (iOS 18.0, macOS 15.0, watchOS 11.0, tvOS 18.0)
@@ -293,7 +293,7 @@ let openSwiftUI_v3_4_os_versions = dyld_build_version_t(version: 0x07E6_0301)
 /// macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, bridgeOS 7.0, driverKit 22.0
 let openSwiftUI_v4_0_os_versions = dyld_build_version_t(version: 0x07E6_0901)
 
-/// 2022_SU_E (2022.35.0) SDK version set
+/// 2022 SU E (2022.35.0) SDK version set
 ///
 /// macOS 13.3, iOS 16.4, watchOS 9.4, tvOS 16.4, bridgeOS 7.3, driverKit 22.4
 let openSwiftUI_v4_4_os_versions = dyld_build_version_t(version: 0x07E6_2300)
@@ -303,7 +303,7 @@ let openSwiftUI_v4_4_os_versions = dyld_build_version_t(version: 0x07E6_2300)
 /// macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, bridgeOS 8.0, driverKit 23.0
 let openSwiftUI_v5_0_os_versions = dyld_build_version_t(version: 0x07E7_0901)
 
-/// 2023_SU_C (2023.13.1) SDK version set
+/// 2023 SU C (2023.13.1) SDK version set
 ///
 /// macOS 14.2, iOS 17.2, watchOS 10.2, tvOS 17.2, bridgeOS 8.2, driverKit 23.2, visionOS 1.0
 let openSwiftUI_v5_2_os_versions = dyld_build_version_t(version: 0x07E7_0d01)
