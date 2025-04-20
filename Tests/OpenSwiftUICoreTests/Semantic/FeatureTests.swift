@@ -6,6 +6,7 @@ import OpenSwiftUICore
 import Testing
 import Foundation
 
+@MainActor
 struct FeatureTests {
     @Test
     func defaultValue() {
