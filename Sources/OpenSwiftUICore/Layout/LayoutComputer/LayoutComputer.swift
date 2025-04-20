@@ -1,90 +1,278 @@
 //
 //  LayoutComputer.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: WIP
+//  Audited for iOS 18.0
+//  Status: Complete
+//  ID: 91FCB5522C30220AE13689E45789FEF2 (SwiftUICore)
 
-import Foundation
+package import Foundation
+package import OpenGraphShims
 
-// TODO:
 package struct LayoutComputer: Equatable {
-    package static func == (lhs: LayoutComputer, rhs: LayoutComputer) -> Bool {
-        lhs.seed == rhs.seed /*&& lhs.delegate == rhs.delegate*/
+    fileprivate var box: AnyLayoutEngineBox
+
+    fileprivate var seed: Int = 0
+
+    package init<E>(_ engine: E) where E: LayoutEngine {
+        if LayoutTrace.isEnabled {
+            box = TracingLayoutEngineBox(engine)
+        } else {
+            box = LayoutEngineBox(engine)
+        }
     }
-    
-    var seed: Int
-    var delegate: Delegate
+
+    package static func == (lhs: LayoutComputer, rhs: LayoutComputer) -> Bool {
+        lhs.box === rhs.box && lhs.seed == rhs.seed
+    }
+
+    package func layoutPriority() -> Double {
+        Update.assertIsLocked()
+        return box.layoutPriority()
+    }
+
+    package func ignoresAutomaticPadding() -> Bool {
+        Update.assertIsLocked()
+        return box.ignoresAutomaticPadding()
+    }
+
+    package func requiresSpacingProjection() -> Bool {
+        Update.assertIsLocked()
+        return box.requiresSpacingProjection()
+    }
+
+    package func spacing() -> Spacing {
+        Update.assertIsLocked()
+        return box.spacing()
+    }
+
+    package func lengthThatFits(_ proposal: _ProposedSize, in direction: Axis) -> CGFloat {
+        Update.assertIsLocked()
+        return box.lengthThatFits(proposal, in: direction)
+    }
+
+    package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        Update.assertIsLocked()
+        return box.sizeThatFits(proposedSize)
+    }
+
+    package func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
+        Update.assertIsLocked()
+        return box.childGeometries(at: parentSize, origin: origin)
+    }
+
+    package func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
+        Update.assertIsLocked()
+        return box.explicitAlignment(k, at: viewSize)
+    }
 }
+
+// MARK: - AnyLayoutEngineBox
+
+private class AnyLayoutEngineBox {
+    func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine { preconditionFailure("") }
+
+    func layoutPriority() -> Double { preconditionFailure("") }
+
+    func ignoresAutomaticPadding() -> Bool { preconditionFailure("") }
+
+    func requiresSpacingProjection() -> Bool { preconditionFailure("") }
+
+    func spacing() -> Spacing { preconditionFailure("") }
+
+    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize { preconditionFailure("") }
+
+    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat { preconditionFailure("") }
+
+    func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] { preconditionFailure("") }
+
+    func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? { preconditionFailure("") }
+
+    var debugContentDescription: String? { preconditionFailure("") }
+}
+
+// MARK: - LayoutEngineBox
+
+private class LayoutEngineBox<Engine>: AnyLayoutEngineBox where Engine: LayoutEngine {
+    var engine: Engine
+
+    init(_ engine: Engine) {
+        self.engine = engine
+    }
+
+    override func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine {
+        guard Engine.self == E.self else {
+            preconditionFailure("Mismatched engine type")
+        }
+        return withUnsafePointer(to: &engine) { ptr in
+            body(&UnsafeMutableRawPointer(mutating: UnsafeRawPointer(ptr)).assumingMemoryBound(to: E.self).pointee)
+        }
+    }
+
+    override func layoutPriority() -> Double {
+        engine.layoutPriority()
+    }
+
+    override func ignoresAutomaticPadding() -> Bool {
+        engine.ignoresAutomaticPadding()
+    }
+
+    override func requiresSpacingProjection() -> Bool {
+        engine.requiresSpacingProjection()
+    }
+
+    override func spacing() -> Spacing {
+        engine.spacing()
+    }
+
+    override func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        engine.sizeThatFits(proposedSize)
+    }
+
+    override func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat {
+        engine.lengthThatFits(proposal, in: axis)
+    }
+
+    override func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
+        engine.childGeometries(at: parentSize, origin: origin)
+    }
+
+    override func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
+        engine.explicitAlignment(k, at: viewSize)
+    }
+}
+
+// MARK: - TracingLayoutEngineBox
+
+private class TracingLayoutEngineBox<Engine>: LayoutEngineBox<Engine> where Engine: LayoutEngine {
+    var attribute: AnyAttribute?
+
+    override init(_ engine: Engine) {
+        attribute = .current
+        super.init(engine)
+        if let debugContentDescription = engine.debugContentDescription {
+            LayoutTrace.recorder?.traceContentDescription(attribute, debugContentDescription)
+        }
+    }
+
+    override func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        LayoutTrace.traceSizeThatFits(attribute, proposal: proposedSize) {
+            engine.sizeThatFits(proposedSize)
+        }
+    }
+
+    override func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat {
+        LayoutTrace.traceLengthThatFits(attribute, proposal: proposal, in: axis) {
+            engine.lengthThatFits(proposal, in: axis)
+        }
+    }
+
+    override func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
+        LayoutTrace.traceChildGeometries(attribute, at: parentSize, origin: origin) {
+            engine.childGeometries(at: parentSize, origin: origin)
+        }
+    }
+}
+
+// MARK: - LayoutComputer + Defaultable
 
 extension LayoutComputer: Defaultable {
-    static var defaultValue: LayoutComputer {
-        LayoutComputer(seed: 0, delegate: LayoutComputer.defaultDelegate)
-    }
-}
-
-// MARK: LayoutComputer + Delegate
-
-extension LayoutComputer {
-    class Delegate: LayoutComputerDelegate {
-        func layoutPriority() -> Double { .zero }
-        func ignoresAutomaticPadding() -> Bool { false }
-        func requiresSpacingProjection() -> Bool { false }
-        func spacing() -> Spacing { preconditionFailure("") }
-        func lengthThatFits(_ size: _ProposedSize, in axis: Axis) -> CGFloat {
-            let result = sizeThatFits(size)
-            return result[axis]
+    package struct DefaultEngine: LayoutEngine {
+        package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+            proposedSize.fixingUnspecifiedDimensions()
         }
 
-        func sizeThatFits(_: _ProposedSize) -> CGSize { preconditionFailure("") }
-        func childGeometries(at _: ViewSize, origin _: CGPoint) -> [ViewGeometry] { preconditionFailure("") }
-        func explicitAlignment(_: AlignmentKey, at _: ViewSize) -> CGFloat? { nil }
-    }
-}
-
-protocol LayoutComputerDelegate: LayoutComputer.Delegate {}
-
-// MARK: LayoutComputer + DefaultDelegate
-
-extension LayoutComputer {
-    static let defaultDelegate = DefaultDelegate()
-
-    class DefaultDelegate: Delegate {
-        override func layoutPriority() -> Double {
-            .zero
-        }
-
-        override func ignoresAutomaticPadding() -> Bool {
-            false
-        }
-
-        override func spacing() -> Spacing {
-            Spacing()
-        }
-
-        override func sizeThatFits(_ size: _ProposedSize) -> CGSize {
-            CGSize(width: size.width ?? 10, height: size.height ?? 10)
-        }
-
-        override func childGeometries(at _: ViewSize, origin _: CGPoint) -> [ViewGeometry] {
+        package func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
             []
         }
     }
+
+    package static let defaultValue = LayoutComputer(DefaultEngine())
 }
 
-// MARK: LayoutComputer + EngineDelegate
+// MARK: - LayoutEngine
 
-// TODO
-extension LayoutComputer {
-    class EngineDelegate: Delegate {}
-}
-
-protocol LayoutEngineProtocol {
+package protocol LayoutEngine {
     func layoutPriority() -> Double
+
     func ignoresAutomaticPadding() -> Bool
+
     func requiresSpacingProjection() -> Bool
-    func spacing() -> Spacing
-    func sizeThatFits(_: _ProposedSize) -> CGSize
-    func childGeometries(at _: ViewSize, origin _: CGPoint) -> [ViewGeometry]
-    func explicitAlignment(_: AlignmentKey, at _: ViewSize) -> CGFloat?
+
+    mutating func spacing() -> Spacing
+
+    mutating func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize
+
+    mutating func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat
+
+    mutating func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry]
+
+    mutating func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat?
+
+    var debugContentDescription: String? { get }
+}
+
+// MARK: - LayoutEngine + Default implementation
+
+extension LayoutEngine {
+    package func layoutPriority() -> Double { .zero }
+
+    package func ignoresAutomaticPadding() -> Bool { false }
+
+    package func requiresSpacingProjection() -> Bool { false }
+
+    package mutating func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat {
+        sizeThatFits(proposal)[axis]
+    }
+
+    package func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
+        preconditionFailure("implement or don't call me!")
+    }
+
+    package func spacing() -> Spacing { Spacing() }
+
+    package func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? { nil }
+
+    package var debugContentDescription: String? { nil }
+}
+
+// MARK: - LayoutComputer + Mutate
+
+extension LayoutComputer {
+    package func withMutableEngine<E, R>(type _: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine {
+        Update.assertIsLocked()
+        return box.mutateEngine(as: E.self, do: body)
+    }
+}
+
+extension StatefulRule where Value == LayoutComputer {
+    package mutating func update<E>(to engine: E) where E: LayoutEngine {
+        update { mutatingEngine in
+            mutatingEngine = engine
+        } create: {
+            engine
+        }
+
+    }
+
+    package mutating func updateIfNotEqual<E>(to engine: E) where E: Equatable, E: LayoutEngine {
+        if hasValue {
+            let oldEngine = value.box as! LayoutEngineBox<E>
+            if oldEngine.engine != engine {
+                oldEngine.engine = engine
+                value.seed &+= 1
+            }
+        } else {
+            value = LayoutComputer(engine)
+        }
+    }
+
+    package mutating func update<E>(modify: (inout E) -> Void, create: () -> E) where E: LayoutEngine {
+        if hasValue {
+            value.withMutableEngine(type: E.self, do: modify)
+            value.seed &+= 1
+        } else {
+            value = LayoutComputer(create())
+        }
+    }
 }
