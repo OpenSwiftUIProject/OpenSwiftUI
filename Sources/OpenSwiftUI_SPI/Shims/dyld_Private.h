@@ -49,6 +49,17 @@ struct mach_header {
 };
 #endif
 
+#if OPENSWIFTUI_TARGET_OS_DARWIN && __has_include(<Availability.h>)
+#include <Availability.h>
+#else
+#ifndef __API_AVAILABLE
+  #define __API_AVAILABLE(...)
+#endif
+#ifndef __SPI_AVAILABLE
+  #define __SPI_AVAILABLE(...)
+#endif
+#endif
+
 typedef uint32_t dyld_platform_t;
 
 typedef struct {
