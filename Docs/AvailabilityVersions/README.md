@@ -41,3 +41,7 @@ When updating the project to support new OS versions:
 
 - [The Apple Wiki Timeline](https://theapplewiki.com/wiki/Timeline)
 - [Apple OSS Distributions](https://github.com/apple-oss-distributions/AvailabilityVersions)
+
+## License
+
+[APSL](http://www.opensource.apple.com/apsl/)

@@ -92,7 +92,9 @@ for various platforms:
 
 ## License
 
-See LICENSE file - MIT
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
+
+Part of the header file is from Apple Open Source project which is license under APSL
 
 ## Related Projects
 
