@@ -135,7 +135,7 @@ extension Semantics {
     package static let v1_3_1 = Semantics(version: openSwiftUI_v1_3_1_os_versions)
 
     /// Spring 2020 (iOS 13.4, macOS 10.15.4, watchOS 6.2, tvOS 13.4)
-    package static let v1_4 = Semantics(version: openSwiftUI_v1_os_versions)
+    package static let v1_4 = Semantics(version: openSwiftUI_v1_4_os_versions)
 
     /// Fall 2020 (iOS 14.0, macOS 10.16, watchOS 7.0, tvOS 14.0)
     package static let v2 = Semantics(version: openSwiftUI_v2_os_versions)
