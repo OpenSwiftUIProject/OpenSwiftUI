@@ -192,24 +192,54 @@ extension ViewDimensions: Sendable {}
 extension ViewDimensions: Equatable {}
 
 extension ViewDimensions {
+    /// A constant representing an invalid view dimensions value.
+    ///
+    /// This value is used internally to indicate when dimensions are not valid or not yet calculated.
     package static let invalidValue = ViewDimensions(guideComputer: .defaultValue, size: .invalidValue)
+
+    /// A view dimensions instance with zero width and height.
+    ///
+    /// This provides a convenient way to create dimensions for an empty view.
     package static let zero = ViewDimensions(guideComputer: .defaultValue, size: .zero)
     
+    /// Creates a `ViewGeometry` instance with the receiver as dimensions and the specified point as origin.
+    ///
+    /// - Parameter topLeadingCorner: The point to use as the top-leading corner of the view.
+    /// - Returns: A new `ViewGeometry` instance combining the dimensions with the specified origin.
     package func at(_ topLeadingCorner: CGPoint) -> ViewGeometry {
-        preconditionFailure("TODO")
+        ViewGeometry(origin: ViewOrigin(topLeadingCorner), dimensions: self)
     }
     
+    /// Creates a `ViewGeometry` instance with the receiver as dimensions centered within the specified size.
+    ///
+    /// This method calculates the appropriate origin so that the view appears centered
+    /// within the container of the given size.
+    ///
+    /// - Parameter setting: The containing size within which to center these dimensions.
+    /// - Returns: A new `ViewGeometry` instance representing the centered placement.
     package func centered(in setting: CGSize) -> ViewGeometry {
-        preconditionFailure("TODO")
+        ViewGeometry(origin: ViewOrigin((setting - size.value) / 2 + .zero), dimensions: self)
     }
     
+    /// Gets the value of the given alignment guide.
+    ///
+    /// This subscript calculates the guide value, either using an explicit value if one exists,
+    /// or falling back to the guide's default value if no explicit value is available.
+    ///
+    /// - Parameter key: The alignment key to look up.
+    /// - Returns: The guide value for the specified alignment.
     package subscript(key: AlignmentKey) -> CGFloat {
-        Update.assertIsLocked()
-        return self[explicit: key] ?? key.id.defaultValue(in: self)
+        self[explicit: key] ?? key.id.defaultValue(in: self)
     }
     
+    /// Gets the explicit value of the given alignment guide, if one exists.
+    ///
+    /// This subscript returns the explicitly set alignment guide value without applying
+    /// any default calculations.
+    ///
+    /// - Parameter key: The alignment key to look up.
+    /// - Returns: The explicit guide value if one exists, or nil if no explicit value was set.
     package subscript(explicit key: AlignmentKey) -> CGFloat? {
-        Update.assertIsLocked()
-        return guideComputer.delegate.explicitAlignment(key, at: size)
+        guideComputer.explicitAlignment(key, at: size)
     }
 }

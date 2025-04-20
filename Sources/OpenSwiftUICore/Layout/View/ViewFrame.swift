@@ -33,15 +33,15 @@ extension ViewFrame {
     }
 }
 
-extension CGRect {
-    package init(_ frame: ViewFrame) {
-        self.init(origin: frame.origin.value, size: frame.size.value)
-    }
-}
-
 extension ViewFrame: Animatable {
     package var animatableData: CGRect.AnimatableData {
         get { .init(origin.animatableData, size.animatableData) }
         set { (origin.animatableData, size.animatableData) = (newValue.first, newValue.second) }
+    }
+}
+
+extension CGRect {
+    package init(_ frame: ViewFrame) {
+        self.init(origin: frame.origin.value, size: frame.size.value)
     }
 }
