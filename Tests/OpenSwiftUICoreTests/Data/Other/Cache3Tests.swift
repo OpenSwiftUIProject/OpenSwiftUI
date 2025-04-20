@@ -14,19 +14,19 @@ struct Cache3Tests {
         #expect(cache.find(2) == nil)
         #expect(cache.find(3) == nil)
         #expect(cache.find(4) == nil)
-        
+
         cache.put(2, value: "2")
         #expect(cache.find(1) == "1")
         #expect(cache.find(2) == "2")
         #expect(cache.find(3) == nil)
         #expect(cache.find(4) == nil)
-        
+
         cache.put(3, value: "3")
         #expect(cache.find(1) == "1")
         #expect(cache.find(2) == "2")
         #expect(cache.find(3) == "3")
         #expect(cache.find(4) == nil)
-        
+
         cache.put(4, value: "4")
         #expect(cache.find(1) == nil)
         #expect(cache.find(2) == "2")
