@@ -3,6 +3,7 @@
 //  OpenSwiftUICoreTests
 
 import OpenSwiftUICore
+import OpenSwiftUI_SPI
 import Testing
 
 @MainActor
@@ -39,48 +40,84 @@ struct SemanticsTests {
     }
 
     @Test
-    func semanticsIsDeployedOnOrAfter() {
-        let expectedIsDeployedOnOrAfterV1: Bool
-        let expectedIsDeployedOnOrAfterV2: Bool
-        let expectedIsDeployedOnOrAfterV3: Bool
-        let expectedIsDeployedOnOrAfterV4: Bool
-        let expectedIsDeployedOnOrAfterV5: Bool
-        let expectedIsDeployedOnOrAfterV6: Bool
-        if #available(iOS 13, macOS 10.15, *) {
-            expectedIsDeployedOnOrAfterV1 = true
-        } else {
-            expectedIsDeployedOnOrAfterV1 = false
-        }
-        if #available(iOS 14, macOS 11, *) {
-            expectedIsDeployedOnOrAfterV2 = true
-        } else {
-            expectedIsDeployedOnOrAfterV2 = false
-        }
-        if #available(iOS 15, macOS 12, *) {
-            expectedIsDeployedOnOrAfterV3 = true
-        } else {
-            expectedIsDeployedOnOrAfterV3 = false
-        }
-        if #available(iOS 16, macOS 13, *) {
-            expectedIsDeployedOnOrAfterV4 = true
-        } else {
-            expectedIsDeployedOnOrAfterV4 = false
-        }
-        if #available(iOS 17, macOS 14, *) {
-            expectedIsDeployedOnOrAfterV5 = true
-        } else {
-            expectedIsDeployedOnOrAfterV5 = false
-        }
-        if #available(iOS 18, macOS 15, *) {
-            expectedIsDeployedOnOrAfterV6 = true
-        } else {
-            expectedIsDeployedOnOrAfterV6 = false
-        }
-        #expect(isDeployedOnOrAfter(.v1) == expectedIsDeployedOnOrAfterV1)
-        #expect(isDeployedOnOrAfter(.v2) == expectedIsDeployedOnOrAfterV2)
-        #expect(isDeployedOnOrAfter(.v3) == expectedIsDeployedOnOrAfterV3)
-        #expect(isDeployedOnOrAfter(.v4) == expectedIsDeployedOnOrAfterV4)
-        #expect(isDeployedOnOrAfter(.v5) == expectedIsDeployedOnOrAfterV5)
-        #expect(isDeployedOnOrAfter(.v6) == expectedIsDeployedOnOrAfterV6)
+    func semanticsIsLinkedOnOrAfterAndIsDeployedOnOrAfter() {
+        // This is currently tied with the toolchain's xctest binary
+        #if os(iOS)
+        #if compiler(<6.2) && compiler(>=6.1)
+        // Path: /Applications/Xcode-16.3.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: 18.4
+        // min version: 14.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == false)
+        #expect(isDeployedOnOrAfter(.v4) == false)
+        #expect(isDeployedOnOrAfter(.v5) == false)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #elseif compiler(>=6.0)
+        // Path: /Applications/Xcode-16.0.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: 18.0
+        // min version: 14.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == false)
+        #expect(isDeployedOnOrAfter(.v4) == false)
+        #expect(isDeployedOnOrAfter(.v5) == false)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #endif
+        #elseif os(macOS)
+        #if compiler(<6.2) && compiler(>=6.1)
+        // Path: /Applications/Xcode-16.3.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: 15.4
+        // min version: 14.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == true)
+        #expect(isDeployedOnOrAfter(.v4) == true)
+        #expect(isDeployedOnOrAfter(.v5) == true)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #elseif compiler(>=6.0)
+        // Path: /Applications/Xcode-16.0.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: 15.0
+        // min version: 13.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == true)
+        #expect(isDeployedOnOrAfter(.v4) == true)
+        #expect(isDeployedOnOrAfter(.v5) == false)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #endif
+        #endif
     }
 }

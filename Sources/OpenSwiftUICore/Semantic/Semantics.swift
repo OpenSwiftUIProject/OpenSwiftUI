@@ -75,22 +75,40 @@ extension Semantics {
 
 extension Semantics {
     package static let firstRelease = Semantics(version: openSwiftUI_v1_os_versions)
+
     package static let latest = Semantics(value: 0xFFFF_FFFE)
+
     package static let maximal = Semantics(value: 0xFFFF_FFFF)
+
     package static let v1 = Semantics(version: openSwiftUI_v1_os_versions)
+
     package static let v1_3_1 = Semantics(version: openSwiftUI_v1_3_1_os_versions)
+
     package static let v1_4 = Semantics(version: openSwiftUI_v1_os_versions)
+
     package static let v2 = Semantics(version: openSwiftUI_v2_os_versions)
+
     package static let v2_1 = Semantics(version: openSwiftUI_v2_1_os_versions)
+
     package static let v2_3 = Semantics(version: openSwiftUI_v2_3_os_versions)
+
     package static let v3 = Semantics(version: openSwiftUI_v3_0_os_versions)
+
     package static let v3_2 = Semantics(version: openSwiftUI_v3_2_os_versions)
+
     package static let v3_4 = Semantics(version: openSwiftUI_v3_4_os_versions)
+
     package static let v4 = Semantics(version: openSwiftUI_v4_0_os_versions)
+
     package static let v4_4 = Semantics(version: openSwiftUI_v4_4_os_versions)
+
     package static let v5 = Semantics(version: openSwiftUI_v5_0_os_versions)
+
     package static let v5_2 = Semantics(version: openSwiftUI_v5_2_os_versions)
+
     package static let v6 = Semantics(version: openSwiftUI_v6_0_os_versions)
+
+    package static let v7 = Semantics(version: openSwiftUI_v7_0_os_versions)
 }
 
 extension Semantics {
