@@ -10,13 +10,16 @@
 public import Foundation
 package import CoreUI
 
-package final class CUINamedColor: NSObject {} // FIXME
+//package final class CUINamedColor: NSObject {} // FIXME
 
 extension CUINamedColor {
     private func effectiveCGColor(in environment: EnvironmentValues) -> CGColor? {
-        // substituteWithSystemColor
-        // environment.cuiNamedColorProvider
-        nil
+        if substituteWithSystemColor {
+            if let color = environment.cuiNamedColorProvider?.effectiveCGColor(cuiColor: self, in: environment) {
+                return color
+            }
+        }
+        return cgColor
     }
 }
 
@@ -48,6 +51,7 @@ extension Color {
                 name: name,
                 bundle: bundle
             )
+            
             colorCache.access { dict in
                 if let value = dict[key] {
                     return value
@@ -55,6 +59,7 @@ extension Color {
 
                 }
             }
+            
             preconditionFailure("TODO")
         }
 
