@@ -1,16 +1,67 @@
 //
-//  Switch.swift
+//  SwitchToggleStyle.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
-//  Status: Blocked by Color
-//  ID: 1246D37251EA3A918B392E2B95F8B7EF
+//  Audited for iOS 18.0
+//  Status: WIP
+//  ID: 1246D37251EA3A918B392E2B95F8B7EF (SwiftUI)
+
+// MARK: - SwitchToggleStyle [TODO]
+
+extension ToggleStyle where Self == SwitchToggleStyle {
+    @_alwaysEmitIntoClient
+    @MainActor
+    @preconcurrency
+    public static var `switch`: SwitchToggleStyle {
+        .init()
+    }
+}
+
+public struct SwitchToggleStyle: ToggleStyle {
+    @Environment(\.controlSize)
+    private var controlSize: ControlSize
+
+//    @Environment(\.tintColor)
+//    private var controlTint: Color?
+//
+//    @Environment(\.placementTint)
+//    private var placementTint: [TintPlacement: AnyShapeStyle]
+//
+    @Environment(\.effectiveFont)
+    private var font: Font
+
+    let tint: Color?
+
+    public init() {
+        tint = nil
+    }
+
+    @available(*, deprecated, message: "Use ``View/tint(_)`` instead.")
+    @available(tvOS, unavailable)
+    public init(tint: Color) {
+        self.tint = tint
+    }
+
+    public func makeBody(configuration: Configuration) -> some View {
+        preconditionFailure("")
+//        Switch(isOn: configuration.$isOn, tint: tint)
+//            .fixedSize()
+//            .contentShape(Capsule())
+            // .accessibilityLabel(<#T##Text#>)
+    }
+}
+
+@available(*, unavailable)
+extension SwitchToggleStyle: Sendable {}
 
 #if os(iOS)
 import UIKit
 
+// MARK: - Switch [WIP]
+
 private struct Switch: UIViewRepresentable {
     typealias UIViewType = UISwitch
+
     typealias Coordinator = PlatformSwitchCoordinator
     
     @Binding var isOn: Bool
