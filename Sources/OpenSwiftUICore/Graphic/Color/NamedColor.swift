@@ -10,21 +10,19 @@
 public import Foundation
 package import CoreUI
 
-//package final class CUINamedColor: NSObject {} // FIXME
+// package final class CUINamedColor: NSObject {} // FIXME
 
 extension CUINamedColor {
-    private func effectiveCGColor(in environment: EnvironmentValues) -> CGColor? {
-        if substituteWithSystemColor {
-            if let color = environment.cuiNamedColorProvider?.effectiveCGColor(cuiColor: self, in: environment) {
-                return color
-            }
+    package func effectiveCGColor(in environment: EnvironmentValues) -> CGColor? {
+        if substituteWithSystemColor, let color = environment.cuiNamedColorProvider?.effectiveCGColor(cuiColor: self, in: environment) {
+            return color
         }
         return cgColor
     }
 }
 
 package protocol CoreUINamedColorProvider {
-     static func effectiveCGColor(cuiColor: CUINamedColor, in environment: EnvironmentValues) -> CGColor?
+    static func effectiveCGColor(cuiColor: CUINamedColor, in environment: EnvironmentValues) -> CGColor?
 }
 
 extension EnvironmentValues {
@@ -38,11 +36,24 @@ extension EnvironmentValues {
     }
 }
 
+private final class CUICatalog: NSObject {
+    class func defaultUICatalog(for bundle: Bundle?) -> CUICatalog {
+        CUICatalog()
+    }
+
+    func findAsset<A, B>(key: ColorCacheKey, matchTypes: A?, assetLookup: B?) -> NamedColorInfo? {
+        nil
+    }
+}
+
 extension Color {
     private struct NamedColor: ColorProvider {
         var name: String
 
         var bundle: Bundle?
+
+        @AtomicBox
+        private static var colorCache: [ColorCacheKey: NamedColorInfo] = [:]
 
         func resolveCGColor(in environment: EnvironmentValues) -> CGColor? {
             let key = ColorCacheKey(
@@ -51,16 +62,21 @@ extension Color {
                 name: name,
                 bundle: bundle
             )
-            
-            colorCache.access { dict in
-                if let value = dict[key] {
-                    return value
-                } else {
 
+            if let info = Self.colorCache[key] {
+                return info.color.effectiveCGColor(in: environment)
+            } else {
+                return Self.$colorCache.access { cache -> CGColor? in
+                    if let value = cache[key] {
+                        return value.color.effectiveCGColor(in: environment)
+                    }
+                    let catalog = CUICatalog.defaultUICatalog(for: bundle)
+                    if let findColorInfo = catalog.findAsset(key: key, matchTypes: [], assetLookup: []) {
+                        return findColorInfo.color.effectiveCGColor(in: environment)
+                    }
+                    return nil
                 }
             }
-            
-            preconditionFailure("TODO")
         }
 
         func resolve(in environment: EnvironmentValues) -> Color.Resolved {
@@ -132,8 +148,6 @@ private struct ColorCacheKey: Hashable {
 private struct NamedColorInfo {
     var color: CUINamedColor
 }
-
-private var colorCache: AtomicBox<[ColorCacheKey: NamedColorInfo]> = AtomicBox(wrappedValue: [:])
 
 #endif
 
