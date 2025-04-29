@@ -52,8 +52,8 @@ extension Color {
 
         var bundle: Bundle?
 
-        @AtomicBox
-        private static var colorCache: [ColorCacheKey: NamedColorInfo] = [:]
+//        @AtomicBox
+//        private static var colorCache: [ColorCacheKey: NamedColorInfo] = [:]
 
         func resolveCGColor(in environment: EnvironmentValues) -> CGColor? {
             let key = ColorCacheKey(
@@ -63,19 +63,15 @@ extension Color {
                 bundle: bundle
             )
 
-            if let info = Self.colorCache[key] {
-                return info.color.effectiveCGColor(in: environment)
-            } else {
-                return Self.$colorCache.access { cache -> CGColor? in
-                    if let value = cache[key] {
-                        return value.color.effectiveCGColor(in: environment)
-                    }
-                    let catalog = CUICatalog.defaultUICatalog(for: bundle)
-                    if let findColorInfo = catalog.findAsset(key: key, matchTypes: [], assetLookup: []) {
-                        return findColorInfo.color.effectiveCGColor(in: environment)
-                    }
-                    return nil
+            return colorCache.access { cache -> CGColor? in
+                if let value = cache[key] {
+                    return value.color.effectiveCGColor(in: environment)
                 }
+                let catalog = CUICatalog.defaultUICatalog(for: bundle)
+                if let findColorInfo = catalog.findAsset(key: key, matchTypes: [], assetLookup: []) {
+                    return findColorInfo.color.effectiveCGColor(in: environment)
+                }
+                return nil
             }
         }
 
@@ -148,6 +144,8 @@ private struct ColorCacheKey: Hashable {
 private struct NamedColorInfo {
     var color: CUINamedColor
 }
+
+private var colorCache: AtomicBox<[ColorCacheKey: NamedColorInfo]> = .init(wrappedValue: [:])
 
 #endif
 
