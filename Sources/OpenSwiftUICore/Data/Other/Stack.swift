@@ -5,15 +5,39 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+/// A generic last-in-first-out (LIFO) stack data structure.
+///
+/// `Stack` provides efficient operations for adding and removing elements in a
+/// last-in-first-out (LIFO) manner. Elements added to the stack using `push(_:)`
+/// are removed using `pop()` in the reverse order they were added.
+///
+/// You can iterate through the elements of a stack from top to bottom.
+///
+///     var stack = Stack<Int>()
+///     stack.push(1)
+///     stack.push(2)
+///     stack.push(3)
+///
+///     for element in stack {
+///         print(element)
+///     }
+///
 package enum Stack<Value>: Sequence, IteratorProtocol {
+    /// An empty stack with no elements.
     case empty
+
+    /// A stack node containing a value and a reference to the next node.
     indirect case node(value: Value, next: Stack<Value>)
-    
+
+    /// Creates a new, empty stack.
     @inlinable
     package init() {
         self = .empty
     }
-    
+
+    /// The element at the top of the stack.
+    ///
+    /// Returns `nil` if the stack is empty.
     package var top: Value? {
         switch self {
         case .empty:
@@ -22,7 +46,10 @@ package enum Stack<Value>: Sequence, IteratorProtocol {
             return value
         }
     }
-    
+
+    /// The number of elements in the stack.
+    ///
+    /// - Complexity: O(n), where n is the number of elements in the stack.
     @inlinable
     package var count: Int {
         var iterator = makeIterator()
@@ -32,17 +59,28 @@ package enum Stack<Value>: Sequence, IteratorProtocol {
         }
         return count
     }
-    
+
+    /// A Boolean value indicating whether the stack is empty.
+    ///
+    /// - Complexity: O(1)
     @inlinable
     package var isEmpty: Bool {
         top == nil
     }
-    
+
+    /// Adds a new element to the top of the stack.
+    ///
+    /// - Parameter value: The element to add to the stack.
+    /// - Complexity: O(1)
     @inlinable
     package mutating func push(_ value: Value) {
         self = .node(value: value, next: self)
     }
 
+    /// Removes and returns the element at the top of the stack.
+    ///
+    /// - Returns: The element at the top of the stack, or `nil` if the stack is empty.
+    /// - Complexity: O(1)
     @discardableResult
     @inlinable
     package mutating func pop() -> Value? {
@@ -54,12 +92,21 @@ package enum Stack<Value>: Sequence, IteratorProtocol {
             return value
         }
     }
-    
+
+    /// Removes all elements from the stack.
+    ///
+    /// - Complexity: O(1)
     @inlinable
     package mutating func popAll() {
         self = .empty
     }
-    
+
+    /// Returns a new stack containing the results of mapping the given closure over the elements.
+    ///
+    /// - Parameter transform: A mapping closure. `transform` accepts an element of this stack
+    ///   as its parameter and returns a transformed value of the same or a different type.
+    /// - Returns: A stack containing the transformed elements.
+    /// - Complexity: O(n), where n is the number of elements in the stack.
     package func map<T>(_ transform: (Value) -> T) -> Stack<T> {
         withUnsafeTemporaryAllocation(
             of: T.self,
@@ -74,7 +121,7 @@ package enum Stack<Value>: Sequence, IteratorProtocol {
                 guard let next else { break }
                 buffer.initializeElement(at: count - index, to: transform(next))
             } while true
-            
+
             var stack = Stack<T>()
             for index in buffer.indices {
                 stack.push(buffer[index])
@@ -82,12 +129,19 @@ package enum Stack<Value>: Sequence, IteratorProtocol {
             return stack
         }
     }
-    
+
+    /// Advances to the next element and returns it, or `nil` if no next element exists.
+    ///
+    /// - Returns: The next element in the stack, or `nil` if the stack is empty.
+    /// - Note: This is part of the `IteratorProtocol` implementation.
     package mutating func next() -> Value? {
         pop()
     }
-    
+
+    /// The type of element traversed by this stack.
     package typealias Element = Value
+
+    /// The type of iterator that iterates over the stack's elements.
     package typealias Iterator = Stack<Value>
 }
 
@@ -109,7 +163,7 @@ extension Stack: GraphReusable where Value: GraphReusable {
     package static var isTriviallyReusable: Bool {
         Value.isTriviallyReusable
     }
-    
+
     package mutating func makeReusable(indirectMap: IndirectAttributeMap) {
         guard !isEmpty else { return }
         self = map { value in
@@ -118,7 +172,7 @@ extension Stack: GraphReusable where Value: GraphReusable {
             return value
         }
     }
-    
+
     package func tryToReuse(by other: Stack<Value>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
         var nodeA = self
         var nodeB = other
