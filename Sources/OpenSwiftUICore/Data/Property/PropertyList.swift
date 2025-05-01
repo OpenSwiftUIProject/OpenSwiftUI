@@ -145,14 +145,14 @@ private func find<Key: PropertyKey>(
         return nil
     }
     repeat {
-        guard keyFilter.match(element.flatMap(\.keyFilter)) else {
+        guard keyFilter.match(element.map(\.keyFilter)) else {
             return nil
         }
         if let before = element.map(\.before),
             let result = find(before, key: key, keyFilter: keyFilter) {
             return result
         }
-        if element.flatMap(\.keyType) == Key.self {
+        if element.map(\.keyType) == Key.self {
             return element.map { $0 as? TypedElement<Key> }
         }
         guard let after = element.map(\.after) else {
