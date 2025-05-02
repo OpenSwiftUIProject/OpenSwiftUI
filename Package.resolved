@@ -1,0 +1,51 @@
+{
+  "originHash" : "5e3702487c06d4bad355311803d0cebe543527e4de91cb6857a25375e22f85a9",
+  "pins" : [
+    {
+      "identity" : "darwinprivateframeworks",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "e431e3fd08c3d960639c0c95c998f17d0b0f48f3"
+      }
+    },
+    {
+      "identity" : "openbox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenBox",
+      "state" : {
+        "branch" : "main",
+        "revision" : "de81c145fd3ef582d4cb41b2190febf487ce6125"
+      }
+    },
+    {
+      "identity" : "opengraph",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
+      "state" : {
+        "branch" : "main",
+        "revision" : "5204ae0d031a520df99b5b2f32c5c9ddbfdb5036"
+      }
+    },
+    {
+      "identity" : "swift-numerics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-numerics.git",
+      "state" : {
+        "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
+        "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "symbollocator",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
+      "state" : {
+        "revision" : "ab226a25d84cd3c9f7286bec2c1a1ba8eea957c4",
+        "version" : "0.1.0"
+      }
+    }
+  ],
+  "version" : 3
+}
