@@ -1,14 +1,54 @@
 //
 //  PropertyList.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for iOS 18.0
 //  Status: Blocked by merge & WIP in 2024
-//  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (RELEASE_2021)
-//  ID: D64CE6C88E7413721C59A34C0C940F2C (RELEASE_2024)
+//  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (SwiftUI)
+//  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)
 
 import OpenSwiftUI_SPI
 import OpenGraphShims
+
+// MARK: - PropertyKey
+
+package protocol PropertyKey {
+    associatedtype Value
+
+    static var defaultValue: Value { get }
+
+    static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool
+}
+
+extension PropertyKey where Value: Equatable {
+    package static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
+        lhs == rhs
+    }
+}
+
+extension PropertyKey {
+    package static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
+        compareValues(lhs, rhs)
+    }
+}
+
+// MARK: - DerivedPropertyKey
+
+package protocol DerivedPropertyKey {
+    associatedtype Value: Equatable
+
+    static func value(in: PropertyList) -> Value
+}
+
+// MARK: - PropertyKeyLookup
+
+protocol PropertyKeyLookup {
+    associatedtype Primary: PropertyKey
+
+    associatedtype Secondary: PropertyKey
+
+    static func lookup(in: Secondary.Value) -> Primary.Value?
+}
 
 // MARK: - PropertyList
 
@@ -16,10 +56,9 @@ import OpenGraphShims
 @usableFromInline
 @frozen
 package struct PropertyList: CustomStringConvertible {
-    // FIXME: should be internal
     @usableFromInline
-    package var elements: Element?
-  
+    var elements: Element?
+
     @inlinable
     package init() {
         elements = nil
@@ -27,26 +66,27 @@ package struct PropertyList: CustomStringConvertible {
     
     package init(data: AnyObject?) {
         guard let data else {
-            elements = nil
             return
         }
         elements = (data as! Element)
     }
     
     @inlinable
-    package var data: AnyObject? {
-        elements
-    }
-    
+    package var data: AnyObject? { elements }
+
     @inlinable
     package var isEmpty: Bool {
         elements === nil
     }
     
     package var id: UniqueID {
-        elements?.id ?? .invalid
+        if let elements {
+            elements.id
+        } else {
+            .invalid
+        }
     }
-    
+
     package mutating func override(with other: PropertyList) {
         if let element = elements {
             // TO BE AUDITED in 2024
@@ -84,7 +124,11 @@ package struct PropertyList: CustomStringConvertible {
         // preconditionFailure("TODO")
         K.value(in: self)
     }
-  
+
+    func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
+        preconditionFailure("TODO")
+    }
+
     @usableFromInline
     package var description: String {
         var description = "["
@@ -162,6 +206,118 @@ private func find<Key: PropertyKey>(
     } while(true)
     return nil
 }
+
+// MARK: - PropertyList.Tracker
+
+extension PropertyList {
+    @usableFromInline
+    package class Tracker {
+        @AtomicBox
+        private var data: TrackerData
+
+        package init() {
+            _data = AtomicBox(wrappedValue: .init(
+                plistID: .invalid,
+                values: [:],
+                derivedValues: [:],
+                invalidValues: [],
+                unrecordedDependencies: false
+            ))
+        }
+
+        final package func reset() {
+            $data.access { data in
+                data.plistID = .invalid
+                data.values.removeAll(keepingCapacity: true)
+                data.derivedValues.removeAll(keepingCapacity: true)
+                data.invalidValues.removeAll(keepingCapacity: true)
+                data.unrecordedDependencies = false
+            }
+        }
+
+        final package func value<K>(_ plist: PropertyList, for keyType: K.Type) -> K.Value where K: PropertyKey {
+            $data.access { data in
+                guard match(data: data, plist: plist) else {
+                    data.unrecordedDependencies = true
+                    return plist[keyType]
+                }
+                if let trackedValue = data.values[ObjectIdentifier(K.self)] {
+                    return trackedValue.unwrap()
+                } else {
+                    let value = plist[keyType]
+                    let trackedValue = TrackedValue<K>(value: value)
+                    data.values[ObjectIdentifier(K.self)] = trackedValue
+                    return value
+                }
+            }
+        }
+
+//        final valueWithSecondaryLookup<L>(_ plist: PropertyList, for keyType: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {}
+
+        final package func valueWithSecondaryLoopup<K, S>(_ plist: PropertyList, for key: K.Type, secondaryKey: S.Type, secondaryLookupHandler: (S.Value) -> K.Value?) -> K.Value where K: PropertyKey, S: PropertyKey {
+            preconditionFailure("")
+        }
+
+
+        package func derivedValue<Key: DerivedPropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
+            preconditionFailure("TODO")
+        }
+
+        package func initializeValues(from: PropertyList) {
+            data.plistID = from.elements?.id ?? .invalid
+        }
+
+        package func invalidateValue<Key: PropertyKey>(for keyType: Key.Type, from: PropertyList, to: PropertyList) {
+            $data.access { data in
+                guard let id = match(data: data, from: from, to: to) else {
+                    return
+                }
+                let removedValue = data.values.removeValue(forKey: ObjectIdentifier(Key.self))
+                if let removedValue {
+                    data.invalidValues.append(removedValue)
+                }
+                move(&data.derivedValues, to: &data.invalidValues)
+                data.plistID = id
+            }
+        }
+
+        package func invalidateAllValues(from: PropertyList, to: PropertyList) {
+            $data.access { data in
+                guard let id = match(data: data, from: from, to: to) else {
+                    return
+                }
+                move(&data.values, to: &data.invalidValues)
+                move(&data.derivedValues, to: &data.invalidValues)
+                data.plistID = id
+            }
+        }
+
+        package func hasDifferentUsedValues(_ plist: PropertyList) -> Bool {
+            let data = data
+            guard !data.unrecordedDependencies else {
+                return true
+            }
+            guard match(data: data, plist: plist) else {
+                return false
+            }
+            guard compare(data.values, against: plist) else {
+                return true
+            }
+            guard compare(data.derivedValues, against: plist) else {
+                return true
+            }
+            for invalidValue in data.invalidValues {
+                guard invalidValue.hasMatchingValue(in: plist) else {
+                    return true
+                }
+            }
+            return false
+        }
+    }
+}
+
+@available(*, unavailable)
+extension PropertyList.Tracker: Sendable {}
 
 // MARK: - PropertyList.Element
 
@@ -316,107 +472,6 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
     }
 }
 
-// MARK: - PropertyList.Tracker
-
-extension PropertyList {
-    package class Tracker {
-        @AtomicBox
-        private var data: TrackerData
-        
-        package init() {
-            _data = AtomicBox(wrappedValue: .init(
-                plistID: .invalid,
-                values: [:],
-                derivedValues: [:],
-                invalidValues: [],
-                unrecordedDependencies: false
-            ))
-        }
-        
-        package func value<Key: PropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
-            $data.access { data in
-                guard match(data: data, plist: plist) else {
-                    data.unrecordedDependencies = true
-                    return plist[keyType]
-                }
-                if let trackedValue = data.values[ObjectIdentifier(Key.self)] {
-                    return trackedValue.unwrap()
-                } else {
-                    let value = plist[keyType]
-                    let trackedValue = TrackedValue<Key>(value: value)
-                    data.values[ObjectIdentifier(Key.self)] = trackedValue
-                    return value
-                }
-            }
-        }
-
-        package func derivedValue<Key: DerivedPropertyKey>(_ plist: PropertyList, for keyType: Key.Type) -> Key.Value {
-            preconditionFailure("TODO")
-        }
-
-        package func initializeValues(from: PropertyList) {
-            data.plistID = from.elements?.id ?? .invalid
-        }
-        
-        package func invalidateValue<Key: PropertyKey>(for keyType: Key.Type, from: PropertyList, to: PropertyList) {
-            $data.access { data in
-                guard let id = match(data: data, from: from, to: to) else {
-                    return
-                }
-                let removedValue = data.values.removeValue(forKey: ObjectIdentifier(Key.self))
-                if let removedValue {
-                    data.invalidValues.append(removedValue)
-                }
-                move(&data.derivedValues, to: &data.invalidValues)
-                data.plistID = id
-            }
-        }
-
-        package func invalidateAllValues(from: PropertyList, to: PropertyList) {
-            $data.access { data in
-                guard let id = match(data: data, from: from, to: to) else {
-                    return
-                }
-                move(&data.values, to: &data.invalidValues)
-                move(&data.derivedValues, to: &data.invalidValues)
-                data.plistID = id
-            }
-        }
-        
-        package func reset() {
-            $data.access { data in
-                data.plistID = .invalid
-                data.values.removeAll(keepingCapacity: true)
-                data.derivedValues.removeAll(keepingCapacity: true)
-                data.invalidValues.removeAll(keepingCapacity: true)
-                data.unrecordedDependencies = false
-            }
-        }
-    
-        package func hasDifferentUsedValues(_ plist: PropertyList) -> Bool {
-            let data = data
-            guard !data.unrecordedDependencies else {
-                return true
-            }
-            guard match(data: data, plist: plist) else {
-                return false
-            }
-            guard compare(data.values, against: plist) else {
-                return true
-            }
-            guard compare(data.derivedValues, against: plist) else {
-                return true
-            }
-            for invalidValue in data.invalidValues {
-                guard invalidValue.hasMatchingValue(in: plist) else {
-                    return true
-                }
-            }
-            return false
-        }
-    }
-}
-
 // MARK: - PropertyList.Tracker Helper functions
 
 @inline(__always)
@@ -471,7 +526,7 @@ private struct TrackerData {
     var plistID: UniqueID
     var values: [ObjectIdentifier: any AnyTrackedValue]
     var derivedValues: [ObjectIdentifier: any AnyTrackedValue]
-    var invalidValues: [AnyTrackedValue]
+    var invalidValues: [any AnyTrackedValue]
     var unrecordedDependencies: Bool
 }
 
@@ -482,29 +537,51 @@ private protocol AnyTrackedValue {
     func hasMatchingValue(in: PropertyList) -> Bool
 }
 
-private struct TrackedValue<Key: PropertyKey>: AnyTrackedValue {
+// MARK: - TrackedValue
+
+private struct TrackedValue<Key>: AnyTrackedValue where Key: PropertyKey {
     var value: Key.Value
 
     func unwrap<Value>() -> Value {
-        value as! Value
+        unsafeBitCast(value, to: Value.self)
     }
 
     func hasMatchingValue(in plist: PropertyList) -> Bool {
-        compareValues(value, plist[Key.self])
+        Key.valuesEqual(value, plist[Key.self])
     }
 }
 
-private struct DerivedValue<Key: DerivedPropertyKey>: AnyTrackedValue {
+// MARK: - DerivedValue
+
+private struct DerivedValue<Key>: AnyTrackedValue where Key: DerivedPropertyKey {
     var value: Key.Value
 
     func unwrap<Value>() -> Value {
-        value as! Value
+        unsafeBitCast(value, to: Value.self)
     }
 
     func hasMatchingValue(in plist: PropertyList) -> Bool {
         value == Key.value(in: plist)
     }
 }
+
+private struct SecondaryLookupTrackedValue<Lookup>: AnyTrackedValue where Lookup: PropertyKeyLookup {
+    var value: Lookup.Primary.Value
+
+    init(value: Lookup.Primary.Value) {
+        self.value = value
+    }
+
+    func unwrap<Value>() -> Value {
+        unsafeBitCast(value, to: Value.self)
+    }
+
+    func hasMatchingValue(in plist: PropertyList) -> Bool {
+        Lookup.Primary.valuesEqual(value, plist.valueWithSecondaryLookup(Lookup.self))
+    }
+}
+
+// MARK: - EmptyKey
 
 private struct EmptyKey: PropertyKey {
     static var defaultValue: Void { () }
