@@ -1,10 +1,10 @@
 //
-//  ColorResolved.swift
+//  ConstantColor.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
 //  Status: Blocked by ResolvedGradient
-//  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore?)
+//  ID: 7C95FE02C0C9104041ABD4890B043CBE (SwiftUICore)
 
 import Foundation
 import OpenSwiftUI_SPI
