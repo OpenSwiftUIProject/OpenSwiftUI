@@ -101,20 +101,24 @@ if warningsAsErrorsCondition {
     // sharedSwiftSettings.append(.unsafeFlags(["-Wwarning", "concurrency"]))
 }
 
-// MARK: - [env] OPENSWIFTUI_BRIDGE_FRAMEWORK
+// MARK: - CoreGraphicsShims Target
 
-let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "SwiftUI"
-
-// MARK: - Targets
-
-let cOpenSwiftUITarget = Target.target(
-    name: "COpenSwiftUI",
-    publicHeadersPath: ".",
-    cSettings: sharedCSettings + [
-        .headerSearchPath("../OpenSwiftUI_SPI"),
-    ],
-    cxxSettings: sharedCxxSettings
+let coreGraphicsShimsTarget = Target.target(
+    name: "CoreGraphicsShims",
+    swiftSettings: sharedSwiftSettings
 )
+let coreGraphicsShimsTestTarget = Target.testTarget(
+    name: "CoreGraphicsShimsTests",
+    dependencies: [
+        "CoreGraphicsShims",
+        .product(name: "Numerics", package: "swift-numerics"),
+    ],
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
+)
+
+// MARK: - OpenSwiftUISPI Target
+
 let openSwiftUISPITarget = Target.target(
     name: "OpenSwiftUI_SPI",
     dependencies: [
@@ -125,10 +129,21 @@ let openSwiftUISPITarget = Target.target(
     cxxSettings: sharedCxxSettings,
     linkerSettings: [.unsafeFlags(["-lMobileGestalt"], .when(platforms: .darwinPlatforms))] // For MGCopyAnswer API support
 )
-let coreGraphicsShims = Target.target(
-    name: "CoreGraphicsShims",
+
+let openSwiftUISPITestTarget = Target.testTarget(
+    name: "OpenSwiftUI_SPITests",
+    dependencies: [
+        "OpenSwiftUI_SPI",
+        // For ProtocolDescriptor symbol linking
+        "OpenSwiftUI",
+        .product(name: "Numerics", package: "swift-numerics"),
+    ],
+    exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
+
+// MARK: - OpenSwiftUICore Target
+
 // NOTE:
 // In macOS: Mac Catalyst App will use macOS-varient build of SwiftUI.framework in /System/Library/Framework and iOS varient of SwiftUI.framework in /System/iOSSupport/System/Library/Framework
 // Add `|| Mac Catalyst` check everywhere in `OpenSwiftUICore` and `OpenSwiftUI_SPI`.
@@ -142,6 +157,29 @@ let openSwiftUICoreTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
+
+let openSwiftUICoreTestTarget = Target.testTarget(
+    name: "OpenSwiftUICoreTests",
+    dependencies: [
+        "OpenSwiftUI", // NOTE: For the Glue link logic only, do not call `import OpenSwiftUI` in this target
+        "OpenSwiftUICore",
+        .product(name: "Numerics", package: "swift-numerics"),
+    ],
+    exclude: ["README.md"],
+    swiftSettings: sharedSwiftSettings
+)
+
+// MARK: OpenSwiftUI Target
+
+let cOpenSwiftUITarget = Target.target(
+    name: "COpenSwiftUI",
+    publicHeadersPath: ".",
+    cSettings: sharedCSettings + [
+        .headerSearchPath("../OpenSwiftUI_SPI"),
+    ],
+    cxxSettings: sharedCxxSettings
+)
+
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
@@ -154,6 +192,7 @@ let openSwiftUITarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
+
 let openSwiftUIExtensionTarget = Target.target(
     name: "OpenSwiftUIExtension",
     dependencies: [
@@ -161,35 +200,7 @@ let openSwiftUIExtensionTarget = Target.target(
     ],
     swiftSettings: sharedSwiftSettings
 )
-let openSwiftUIBridgeTarget = Target.target(
-    name: "OpenSwiftUIBridge",
-    dependencies: [
-        "OpenSwiftUI",
-    ],
-    sources: ["Bridgeable.swift", bridgeFramework],
-    swiftSettings: sharedSwiftSettings
-)
-let openSwiftUISPITestTarget = Target.testTarget(
-    name: "OpenSwiftUI_SPITests",
-    dependencies: [
-        "OpenSwiftUI_SPI",
-        // For ProtocolDescriptor symbol linking
-        "OpenSwiftUI",
-        .product(name: "Numerics", package: "swift-numerics"),
-    ],
-    exclude: ["README.md"],
-    swiftSettings: sharedSwiftSettings
-)
-let openSwiftUICoreTestTarget = Target.testTarget(
-    name: "OpenSwiftUICoreTests",
-    dependencies: [
-        "OpenSwiftUI", // NOTE: For the Glue link logic only, do not call `import OpenSwiftUI` in this target
-        "OpenSwiftUICore",
-        .product(name: "Numerics", package: "swift-numerics"),
-    ],
-    exclude: ["README.md"],
-    swiftSettings: sharedSwiftSettings
-)
+
 let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
@@ -198,6 +209,7 @@ let openSwiftUITestTarget = Target.testTarget(
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
+
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
     dependencies: [
@@ -206,6 +218,22 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
 )
+
+// MARK: - [env] OPENSWIFTUI_BRIDGE_FRAMEWORK
+
+let bridgeFramework = Context.environment["OPENSWIFTUI_BRIDGE_FRAMEWORK"] ?? "SwiftUI"
+
+// MARK: - OpenSwiftUIBridge Target
+
+let openSwiftUIBridgeTarget = Target.target(
+    name: "OpenSwiftUIBridge",
+    dependencies: [
+        "OpenSwiftUI",
+    ],
+    sources: ["Bridgeable.swift", bridgeFramework],
+    swiftSettings: sharedSwiftSettings
+)
+
 let openSwiftUIBridgeTestTarget = Target.testTarget(
     name: "OpenSwiftUIBridgeTests",
     dependencies: [
@@ -215,11 +243,26 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     sources: ["BridgeableTests.swift", bridgeFramework],
     swiftSettings: sharedSwiftSettings
 )
-let coreGraphicsShimsTestTarget = Target.testTarget(
-    name: "CoreGraphicsShimsTests",
+
+// MARK: - OpenSwiftUISymbolDualTests Target
+
+let openSwiftUISymbolDualTestsHelperTarget = Target.target(
+    name: "OpenSwiftUISymbolDualTestsHelper",
     dependencies: [
-        "CoreGraphicsShims",
-        .product(name: "Numerics", package: "swift-numerics"),
+        .product(name: "SymbolLocator", package: "SymbolLocator"),
+    ],
+    publicHeadersPath: ".",
+    cSettings: sharedCSettings + [
+        .headerSearchPath("../OpenSwiftUI_SPI"),
+    ],
+    cxxSettings: sharedCxxSettings
+)
+
+let openSwiftUISymbolDualTestsTarget = Target.testTarget(
+    name: "OpenSwiftUISymbolDualTests",
+    dependencies: [
+        "OpenSwiftUI",
+        .target(name: "OpenSwiftUISymbolDualTestsHelper"),
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
@@ -255,6 +298,7 @@ let package = Package(
     products: products,
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
+        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.1.0"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -267,21 +311,27 @@ let package = Package(
             ]
         ),
         .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
-        coreGraphicsShims,
-        cOpenSwiftUITarget,
+
+        coreGraphicsShimsTarget,
+        coreGraphicsShimsTestTarget,
+
         openSwiftUISPITarget,
-        openSwiftUICoreTarget,
-        openSwiftUITarget,
-        
-        openSwiftUIExtensionTarget,
-        openSwiftUIBridgeTarget,
-        
         openSwiftUISPITestTarget,
+
+        openSwiftUICoreTarget,
         openSwiftUICoreTestTarget,
+
+        cOpenSwiftUITarget,
+        openSwiftUITarget,
+        openSwiftUIExtensionTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
+
+        openSwiftUIBridgeTarget,
         openSwiftUIBridgeTestTarget,
-        coreGraphicsShimsTestTarget,
+
+        openSwiftUISymbolDualTestsHelperTarget,
+        openSwiftUISymbolDualTestsTarget
     ]
 )
 
