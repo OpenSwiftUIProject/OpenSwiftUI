@@ -286,7 +286,7 @@ extension PropertyList: Sendable {}
 
 private func find<Key>(
     _ element: Unmanaged<PropertyList.Element>?,
-    key: Key.Type,
+    key: Key.Type
 ) -> Unmanaged<TypedElement<Key>>? where Key: PropertyKey {
     find1(element, key: key, filter: BloomFilter(type: key))
 }
