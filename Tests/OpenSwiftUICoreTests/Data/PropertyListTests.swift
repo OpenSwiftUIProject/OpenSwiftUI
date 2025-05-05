@@ -8,6 +8,90 @@ import Testing
 
 struct PropertyListTests {
     @Test
+    func override() {
+        // Test basic override functionality
+        var basePlist = PropertyList()
+        basePlist[IntKey.self] = 10
+        basePlist[BoolKey.self] = true
+        basePlist[StringKey.self] = "base"
+        #expect(basePlist.description == #"""
+        [StringKey = base, BoolKey = true, IntKey = 10]
+        """#)
+
+        var overridePlist = PropertyList()
+        overridePlist[IntKey.self] = 20
+        overridePlist[StringKey.self] = "override"
+        #expect(overridePlist.description == #"""
+        [StringKey = override, IntKey = 20]
+        """#)
+
+        // Override basePlist with overridePlist
+        basePlist.override(with: overridePlist)
+        #expect(basePlist[IntKey.self] == 20)
+        #expect(basePlist[BoolKey.self] == true)
+        #expect(basePlist[StringKey.self] == "override")
+        #expect(basePlist.description == #"""
+        [StringKey = override, IntKey = 20, StringKey = base, BoolKey = true, IntKey = 10]
+        """#)
+
+        // Test empty override list
+        var emptyPlist = PropertyList()
+        var fullPlist = PropertyList()
+        fullPlist[IntKey.self] = 42
+        #expect(fullPlist.description == #"""
+        [IntKey = 42]
+        """#)
+
+        fullPlist.override(with: emptyPlist)
+        #expect(fullPlist[IntKey.self] == 42)
+        #expect(fullPlist.description == #"""
+        [IntKey = 42]
+        """#)
+
+        emptyPlist.override(with: fullPlist)
+        #expect(emptyPlist[IntKey.self] == 42)
+        #expect(emptyPlist.description == #"""
+        [IntKey = 42]
+        """#)
+
+        // Test chained overrides
+        var plist1 = PropertyList()
+        plist1[IntKey.self] = 1
+        
+        var plist2 = PropertyList()
+        plist2[IntKey.self] = 2
+        plist2[StringKey.self] = "two"
+        
+        var plist3 = PropertyList()
+        plist3[IntKey.self] = 3
+        plist3[BoolKey.self] = true
+        
+        // Chain multiple overrides
+        plist1.override(with: plist2)
+        plist1.override(with: plist3)
+        
+        // Latest override should take precedence
+        #expect(plist1[IntKey.self] == 3)
+        #expect(plist1[StringKey.self] == "two")
+        #expect(plist1[BoolKey.self] == true)
+        #expect(plist1.description == #"""
+        [BoolKey = true, IntKey = 3, EmptyKey = (), StringKey = two, IntKey = 2, IntKey = 1]
+        """#)
+
+        // Test derived values after override
+        var derivedBasePlist = PropertyList()
+        derivedBasePlist[IntKey.self] = 5
+        
+        var derivedOverridePlist = PropertyList()
+        derivedOverridePlist[IntKey.self] = 10
+        derivedBasePlist.override(with: derivedOverridePlist)
+        #expect(derivedBasePlist[DerivedIntPlus2Key.self] == 12)
+        #expect(derivedBasePlist.description == #"""
+        [IntKey = 10, IntKey = 5]
+        """#)
+    }
+
+    @Test
     func description() throws {
         var plist = PropertyList()
         #expect(plist.description == "[]")

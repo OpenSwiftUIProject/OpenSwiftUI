@@ -14,6 +14,12 @@ extension PropertyList {
     @_silgen_name("OpenSwiftUITestStub_PropertyListInit")
     init(swiftUI: Void)
 
+    @_silgen_name("OpenSwiftUITestStub_PropertyListInitWithData")
+    init(swiftUI_data: AnyObject?)
+
+    @_silgen_name("OpenSwiftUITestStub_PropertyListOverride")
+    mutating func swiftUI_override(with other: PropertyList)
+
     subscript<K>(swiftUI key: K.Type) -> K.Value where K: PropertyKey {
         @_silgen_name("OpenSwiftUITestStub_PropertyListSubscriptWithPropertyKeyGetter")
         get
@@ -27,7 +33,120 @@ extension PropertyList {
     }
 
     @_silgen_name("OpenSwiftUITestStub_PropertyListValueWithSecondaryLookup")
-    func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup
+    func swiftUI_valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup
+
+    var swiftUI_description: String {
+        @_silgen_name("OpenSwiftUITestStub_PropertyListDescription")
+        get
+    }
+}
+
+struct PropertyListTests {
+    @Test
+    func override() {
+        // Test basic override functionality
+        var basePlist = PropertyList(swiftUI: ())
+        basePlist[swiftUI: IntKey.self] = 10
+        basePlist[swiftUI: BoolKey.self] = true
+        basePlist[swiftUI: StringKey.self] = "base"
+        #expect(basePlist.swiftUI_description == #"""
+        [StringKey = base, BoolKey = true, IntKey = 10]
+        """#)
+
+        var overridePlist = PropertyList(swiftUI: ())
+        overridePlist[swiftUI: IntKey.self] = 20
+        overridePlist[swiftUI: StringKey.self] = "override"
+        #expect(overridePlist.swiftUI_description == #"""
+        [StringKey = override, IntKey = 20]
+        """#)
+
+        // Override basePlist with overridePlist
+        basePlist.swiftUI_override(with: overridePlist)
+        #expect(basePlist[swiftUI: IntKey.self] == 20)
+        #expect(basePlist[swiftUI: BoolKey.self] == true)
+        #expect(basePlist[swiftUI: StringKey.self] == "override")
+        #expect(basePlist.swiftUI_description == #"""
+        [StringKey = override, IntKey = 20, StringKey = base, BoolKey = true, IntKey = 10]
+        """#)
+
+        // Test empty override list
+        var emptyPlist = PropertyList(swiftUI: ())
+        var fullPlist = PropertyList(swiftUI: ())
+        fullPlist[swiftUI: IntKey.self] = 42
+        #expect(fullPlist.swiftUI_description == #"""
+        [IntKey = 42]
+        """#)
+
+        fullPlist.swiftUI_override(with: emptyPlist)
+        #expect(fullPlist[swiftUI: IntKey.self] == 42)
+        #expect(fullPlist.swiftUI_description == #"""
+        [IntKey = 42]
+        """#)
+
+        emptyPlist.swiftUI_override(with: fullPlist)
+        #expect(emptyPlist[swiftUI: IntKey.self] == 42)
+        #expect(emptyPlist.swiftUI_description == #"""
+        [IntKey = 42]
+        """#)
+
+        // Test chained overrides
+        var plist1 = PropertyList(swiftUI: ())
+        plist1[swiftUI: IntKey.self] = 1
+        
+        var plist2 = PropertyList(swiftUI: ())
+        plist2[swiftUI: IntKey.self] = 2
+        plist2[swiftUI: StringKey.self] = "two"
+        
+        var plist3 = PropertyList(swiftUI: ())
+        plist3[swiftUI: IntKey.self] = 3
+        plist3[swiftUI: BoolKey.self] = true
+        
+        // Chain multiple overrides
+        plist1.swiftUI_override(with: plist2)
+        plist1.swiftUI_override(with: plist3)
+        
+        // Latest override should take precedence
+        #expect(plist1[swiftUI: IntKey.self] == 3)
+        #expect(plist1[swiftUI: StringKey.self] == "two")
+        #expect(plist1[swiftUI: BoolKey.self] == true)
+        #expect(plist1.swiftUI_description == #"""
+        [BoolKey = true, IntKey = 3, EmptyKey = (), StringKey = two, IntKey = 2, IntKey = 1]
+        """#)
+
+        // Test derived values after override
+        var derivedBasePlist = PropertyList(swiftUI: ())
+        derivedBasePlist[swiftUI: IntKey.self] = 5
+        
+        var derivedOverridePlist = PropertyList(swiftUI: ())
+        derivedOverridePlist[swiftUI: IntKey.self] = 10
+        derivedBasePlist.swiftUI_override(with: derivedOverridePlist)
+        #expect(derivedBasePlist[swiftUI: DerivedIntPlus2Key.self] == 12)
+        #expect(derivedBasePlist.swiftUI_description == #"""
+        [IntKey = 10, IntKey = 5]
+        """#)
+    }
+    
+    @Test
+    func description() throws {
+        var plist = PropertyList(swiftUI: ())
+        #expect(plist.swiftUI_description == "[]")
+        
+        var bool = plist[swiftUI: BoolKey.self]
+        #expect(bool == BoolKey.defaultValue)
+        #expect(plist.swiftUI_description == "[]")
+        
+        plist[swiftUI: BoolKey.self] = bool
+        #expect(plist.swiftUI_description == "[\(BoolKey.self) = \(bool)]")
+        
+        plist[swiftUI: BoolKey.self] = !bool
+        bool = plist[swiftUI: BoolKey.self]
+        #expect(bool == !BoolKey.defaultValue)
+        #expect(plist.swiftUI_description == "[\(BoolKey.self) = \(bool), \(BoolKey.self) = \(BoolKey.defaultValue)]")
+        
+        let value = 1
+        plist[swiftUI: IntKey.self] = value
+        #expect(plist.swiftUI_description == "[\(IntKey.self) = \(value), \(BoolKey.self) = \(bool), \(BoolKey.self) = \(BoolKey.defaultValue)]")
+    }
 }
 
 extension PropertyList.Tracker {

@@ -84,16 +84,24 @@ package struct PropertyList: CustomStringConvertible {
     }
 
     package mutating func override(with other: PropertyList) {
-        if let element = elements {
-            // TO BE AUDITED in 2024
-            elements = element.byPrepending(other.elements)
+        let newElements: Element?
+        if let elements {
+            if let otherElements = other.elements {
+                if elements.before != nil {
+                    newElements = TypedElement<EmptyKey>(value: (), before: otherElements, after: elements)
+                } else {
+                    newElements = elements.copy(before: otherElements, after: elements.after)
+                }
+            } else {
+                newElements = elements
+            }
         } else {
-            elements = other.elements
+            newElements = other.elements
         }
+        elements = newElements
     }
-    
-    // TO BE AUDITED in 2024 BEGIN
-    
+
+    // TODO
     package subscript<K>(key: K.Type) -> K.Value where K: PropertyKey {
         get {
             withExtendedLifetime(key) {
@@ -115,67 +123,93 @@ package struct PropertyList: CustomStringConvertible {
             elements = TypedElement<K>(value: newValue, before: nil, after: elements)
         }
     }
-    
+
+    // TODO
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
         // TODO
         K.value(in: self)
     }
 
-    func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
+    // TODO
+    package func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
         // TDOO
         self[L.Primary.self]
+    }
+
+    // TODO
+    package mutating func prependValue<K>(_ value: K.Value, for key: K.Type) where K: PropertyKey {
+        preconditionFailure("TODO")
+    }
+
+    // TODO
+    package func mayNotBeEqual(to: PropertyList) -> Bool {
+        preconditionFailure("TODO")
+//        let equalResult: Bool
+//        if let elements {
+//            var ignoredTypes = Set<ObjectIdentifier>()
+//            equalResult = elements.isEqual(to: to.elements, ignoredTypes: &ignoredTypes)
+//        } else {
+//            equalResult = to.elements == nil
+//        }
+//        return !equalResult
+    }
+
+    // TODO
+    @_transparent
+    package mutating func set(_ other: PropertyList) {
+        preconditionFailure("TODO")
     }
 
     @usableFromInline
     package var description: String {
         var description = "["
-        var shouldAddSeparator = false
-        elements?.forEach { element, stop in
-            let element = element.takeUnretainedValue()
-            if shouldAddSeparator {
-                description.append(", ")
-            } else {
-                shouldAddSeparator = true
+        var index = 0
+        if let elements {
+            elements.forEach(filter: BloomFilter()) { element, stop in
+                if index != 0 {
+                    description.append(", ")
+                }
+                description.append(element.takeUnretainedValue().description)
+                index += 1
             }
-            description.append(element.description)
         }
         description.append("]")
         return description
     }
-    
-    func forEach<Key: PropertyKey>(keyType: Key.Type, _ body: (Key.Value, inout Swift.Bool) -> Void) {
-        guard let elements else {
-            return
-        }
-        elements.forEach { element, stop in
-            let element = element.takeUnretainedValue()
-            guard element.keyType == Key.self else {
-                return
-            }
-            body((element as! TypedElement<Key>).value, &stop)
-        }
+
+    // TODO
+    package func forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: PropertyKey {
+        preconditionFailure("TODO")
+
+//        guard let elements else {
+//            return
+//        }
+//        elements.forEach { element, stop in
+//            let element = element.takeUnretainedValue()
+//            guard element.keyType == K.self else {
+//                return
+//            }
+//            body((element as! TypedElement<K>).value, &stop)
+//        }
     }
     
-    func mayNotBeEqual(to: PropertyList) -> Bool {
-        let equalResult: Bool
-        if let elements {
-            var ignoredTypes = Set<ObjectIdentifier>()
-            equalResult = elements.isEqual(to: to.elements, ignoredTypes: &ignoredTypes)
-        } else {
-            equalResult = to.elements == nil
-        }
-        return !equalResult
+    package mutating func merge(_ plist: PropertyList) {
+//         preconditionFailure("TODO")
     }
-    
-    mutating func merge(_ plist: PropertyList) {
-        // preconditionFailure("TODO")
+
+    package func merging(_ other: PropertyList) -> PropertyList {
+         preconditionFailure("TODO")
+    }
+
+    package static func value<T>(as _: T.Type, from element: Element) -> T {
+        element.value(as: T.self)
     }
 }
 
 @available(*, unavailable)
 extension PropertyList: Sendable {}
 
-// MARK: - PropertyList Help functions
+// MARK: - PropertyList Helper Functions
 
 private func find<Key: PropertyKey>(
     _ element: Unmanaged<PropertyList.Element>?,
@@ -186,7 +220,7 @@ private func find<Key: PropertyKey>(
         return nil
     }
     repeat {
-        guard keyFilter.match(element.map(\.keyFilter)) else {
+        guard keyFilter.match(element.map(\.skipFilter)) else {
             return nil
         }
         if let before = element.map(\.before),
@@ -344,7 +378,7 @@ extension PropertyList {
 @available(*, unavailable)
 extension PropertyList.Tracker: Sendable {}
 
-// MARK: - PropertyList.Tracker Helper functions
+// MARK: - PropertyList.Tracker Helper Functions
 
 @inline(never)
 private func move(_ source: inout [ObjectIdentifier: any AnyTrackedValue], to destination: inout [any AnyTrackedValue]) {
@@ -448,129 +482,174 @@ private struct SecondaryLookupTrackedValue<Lookup>: AnyTrackedValue where Lookup
 extension PropertyList {
     @usableFromInline
     package class Element: CustomStringConvertible {
-        let keyType: Any.Type
+        let keyType: any Any.Type
         let before: Element?
         var after: Element?
         var skip: Unmanaged<Element>?
         let length: UInt32
         let skipCount: UInt32
-        let keyFilter: BloomFilter // skipFilter
+        let skipFilter: BloomFilter
         let id = UniqueID()
 
-        init(keyType: Any.Type, before: Element?, after: Element?) {
+        fileprivate init(keyType: any Any.Type, before: Element?, after: Element?) {
             self.keyType = keyType
             self.before = before
             self.after = after
-            var length: UInt32 = 1
-            var keyFilter = BloomFilter(type: keyType)
+
+            var filter = BloomFilter(type: keyType)
             if let before {
-                length += before.length
-                keyFilter.value |= before.keyFilter.value
-            }
-            if let after {
-                length += after.length
-                keyFilter.value |= after.keyFilter.value
-            }
-            self.skipCount = 0
-            self.length = length
-            self.keyFilter = keyFilter
-        }
-        
-        @usableFromInline
-        package var description: String { preconditionFailure("") }
-        
-        func matches(_: Element, ignoredTypes _: inout Set<ObjectIdentifier>) -> Bool {
-            preconditionFailure("")
-        }
-        
-        func hasMatchingValue(in _: Unmanaged<Element>?) -> Bool {
-            preconditionFailure("")
-        }
-        
-        func copy(before _: Element?, after _: Element?) -> Element {
-            preconditionFailure("")
-        }
-        
-        final package func byPrepending(_ element: Element?) -> Element {
-            guard let element else {
-                return self
-            }
-            return if before != nil {
-                TypedElement<EmptyKey>(value: EmptyKey.defaultValue, before: element, after: self)
+                var length = before.length + 1
+                if let after { length += after.length }
+                self.length = length
+                self.skipCount = 0
+                filter.value = .max
+                self.skipFilter = filter
+                self.skip = .passUnretained(self)
             } else {
-                copy(before: element, after: after)
-            }
-        }
-        
-        final package func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
-            guard let element else {
-                return false
-            }
-            guard length == element.length else {
-                return false
-            }
-            guard self !== element else {
-                return true
-            }
-            guard matches(element, ignoredTypes: &ignoredTypes) else {
-                return false
-            }
-            var element1 = self
-            var element2 = element
-            repeat {
-                if let before1 = element1.before {
-                    guard before1.isEqual(to: element2.before, ignoredTypes: &ignoredTypes) else {
-                        return false
+                if let after {
+                    let length = after.length + 1
+                    if after.skipCount > 15 {
+                        self.length = length
+                        self.skipCount = 1
+                        self.skipFilter = filter
+                        self.skip = .passUnretained(after)
+                    } else {
+                        self.length = length
+                        self.skipCount = after.skipCount &+ 1
+                        self.skipFilter = after.skipFilter.union(filter)
+                        self.skip = after.skip
                     }
                 } else {
-                    guard element2.before == nil else {
-                        return false
-                    }
+                    self.length = 1
+                    self.skipCount = 1
+                    self.skipFilter = filter
+                    self.skip = nil
                 }
-                if let after1 = element1.after {
-                    guard let after2 = element2.after else {
-                        return false
-                    }
-                    guard after1 !== after2 else {
-                        return true
-                    }
-                    guard after1.isEqual(to: after2, ignoredTypes: &ignoredTypes) else {
-                        return false
-                    }
-                    element1 = after1
-                    element2 = after2
-                } else {
-                    return element.after == nil
-                }
-            } while(true)
+            }
         }
-        
-        final func forEach(_ body: (
-            _ element: Unmanaged<Element>,
-            _ stop: inout Bool
-        ) -> Void) {
+
+        @discardableResult
+        final func forEach(
+            filter: BloomFilter,
+            _ body: (Unmanaged<Element>, inout Bool) -> Void
+        ) -> Bool {
             var element = self
             var stop = false
             repeat {
-                if let before = element.before {
-                    before.forEach(body)
+                guard element.skipFilter.mayContain(filter) else {
+                    if element.skip != nil {
+                        continue
+                    } else {
+                        return true
+                    }
                 }
-                body(.passUnretained(element), &stop)
-                guard !stop else { break }
+                if let before = element.before {
+                    let result = before.forEach(filter: filter, body)
+                    stop = !result
+                    guard result else { return false }
+                }
+                _ = body(.passUnretained(element), &stop)
+                guard !stop else { return false }
                 guard let after = element.after else {
-                    break
+                    return true
                 }
                 element = after
             } while(true)
         }
+
+        @usableFromInline
+        package var description: String { preconditionFailure("") }
+        
+        func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+            preconditionFailure("")
+        }
+        
+        func copy(before: Element?, after: Element?) -> Element {
+            preconditionFailure("")
+        }
+
+        func value<T>(as type: T.Type) -> T {
+            preconditionFailure("")
+        }
+
+        // FIXME
+//        final func forEach(_ body: (
+//            _ element: Unmanaged<Element>,
+//            _ stop: inout Bool
+//        ) -> Void) {
+//            var element = self
+//            var stop = false
+//            repeat {
+//                if let before = element.before {
+//                    before.forEach(body)
+//                }
+//                body(.passUnretained(element), &stop)
+//                guard !stop else { break }
+//                guard let after = element.after else {
+//                    break
+//                }
+//                element = after
+//            } while(true)
+//        }
+//        // FIXME
+//        func hasMatchingValue(in _: Unmanaged<Element>?) -> Bool {
+//            preconditionFailure("")
+//        }
+//
+//        
+//        final func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
+//            guard let element else {
+//                return false
+//            }
+//            guard length == element.length else {
+//                return false
+//            }
+//            guard self !== element else {
+//                return true
+//            }
+//            guard matches(element, ignoredTypes: &ignoredTypes) else {
+//                return false
+//            }
+//            var element1 = self
+//            var element2 = element
+//            repeat {
+//                if let before1 = element1.before {
+//                    guard before1.isEqual(to: element2.before, ignoredTypes: &ignoredTypes) else {
+//                        return false
+//                    }
+//                } else {
+//                    guard element2.before == nil else {
+//                        return false
+//                    }
+//                }
+//                if let after1 = element1.after {
+//                    guard let after2 = element2.after else {
+//                        return false
+//                    }
+//                    guard after1 !== after2 else {
+//                        return true
+//                    }
+//                    guard after1.isEqual(to: after2, ignoredTypes: &ignoredTypes) else {
+//                        return false
+//                    }
+//                    element1 = after1
+//                    element2 = after2
+//                } else {
+//                    return element.after == nil
+//                }
+//            } while(true)
+//        }
     }
 }
 
+@available(*, unavailable)
+extension PropertyList.Element: Sendable {}
+
 // MARK: - TypedElement
 
-private class TypedElement<Key: PropertyKey>: PropertyList.Element {
-    var value: Key.Value
-    
+private class TypedElement<Key>: PropertyList.Element where Key: PropertyKey {
+    let value: Key.Value
+
     init(value: Key.Value, before: PropertyList.Element?, after: PropertyList.Element?) {
         self.value = value
         super.init(keyType: Key.self, before: before, after: after)
@@ -580,22 +659,27 @@ private class TypedElement<Key: PropertyKey>: PropertyList.Element {
         "\(Key.self) = \(value)"
     }
     
-    override func matches(_ element: PropertyList.Element, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
-        guard let typedElement = element as? TypedElement<Key> else {
+    override func matches(_ other: PropertyList.Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+        guard other.keyType == keyType else {
             return false
         }
-        guard !ignoredTypes.contains(ObjectIdentifier(Key.self)) else {
+        let keyID = ObjectIdentifier(Key.self)
+        guard !ignoredTypes.contains(keyID) else {
             return true
         }
-        guard compareValues(value, typedElement.value) else {
+        guard Key.valuesEqual(value, other.value(as: Key.Value.self)) else {
             return false
         }
-        ignoredTypes.insert(ObjectIdentifier(Key.self))
+        ignoredTypes.append(keyID)
         return true
     }
         
     override func copy(before: PropertyList.Element?, after: PropertyList.Element?) -> PropertyList.Element {
         TypedElement(value: value, before: before, after: after)
+    }
+
+    override func value<T>(as type: T.Type) -> T {
+        unsafeBitCast(value, to: type)
     }
 }
 
