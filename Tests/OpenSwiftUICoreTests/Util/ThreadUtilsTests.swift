@@ -55,4 +55,27 @@ struct AtomicBoxTests {
         @AtomicBox var box: Int = 3
         #expect($box.access { $0.description } == "3")
     }
+
+    @Test
+    func deinitCheck() async throws {
+        final class DeinitCheck {
+            let confirmation: Confirmation
+
+            init(confirmation: Confirmation) {
+                self.confirmation = confirmation
+            }
+
+            deinit {
+                confirmation()
+            }
+        }
+
+        func deinitCheck(_ confirmation: Confirmation) {
+            @AtomicBox var check = DeinitCheck(confirmation: confirmation)
+        }
+
+        await confirmation { confirmation in
+            deinitCheck(confirmation)
+        }
+    }
 }

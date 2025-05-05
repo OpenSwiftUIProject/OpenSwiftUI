@@ -95,6 +95,12 @@ private final class AtomicBuffer<Value>: ManagedBuffer<os_unfair_lock_s, Value> 
         }
         return unsafeDowncast(buffer, to: AtomicBuffer<Value>.self)
     }
+
+    deinit {
+        withUnsafeMutablePointerToElements { pointer in
+            _ = pointer.deinitialize(count: 1)
+        }
+    }
 }
 #else
 private final class AtomicBuffer<Value>: ManagedBuffer<NSLock, Value> {
@@ -106,6 +112,12 @@ private final class AtomicBuffer<Value>: ManagedBuffer<NSLock, Value> {
             pointer.initialize(to: value)
         }
         return unsafeDowncast(buffer, to: AtomicBuffer<Value>.self)
+    }
+
+    deinit {
+        withUnsafeMutablePointerToElements { pointer in
+            _ = pointer.deinitialize(count: 1)
+        }
     }
 }
 #endif
