@@ -65,6 +65,12 @@ extension PropertyList {
     static func swiftUI_value<T>(as _: T.Type, from element: Element) -> T
 }
 
+private struct DerivedIntPlus2Key: DerivedPropertyKey {
+    static func value(in plist: PropertyList) -> Int {
+        plist[swiftUI: IntKey.self] + 2
+    }
+}
+
 struct PropertyListTests {
     @Test
     func override() {
@@ -258,7 +264,6 @@ struct PropertyListTrackerTests {
         #expect(tracker.swiftUI_hasDifferentUsedValues(newPlist))
 
         tracker.swiftUI_invalidateValue(for: IntKey.self, from: plist, to: newPlist)
-
         #expect(tracker.swiftUI_value(newPlist, for: IntKey.self) == 100)
         #expect(tracker.swiftUI_derivedValue(newPlist, for: DerivedIntPlus2Key.self) == 102)
         #expect(tracker.swiftUI_value(newPlist, for: StringKey.self) == "original")
@@ -290,9 +295,9 @@ struct PropertyListTrackerTests {
 
         tracker.swiftUI_invalidateAllValues(from: plist, to: newPlist)
         #expect(tracker.swiftUI_value(newPlist, for: IntKey.self) == 100)
-        #expect(tracker.swiftUI_derivedValue(plist, for: DerivedIntPlus2Key.self) == 102)
+        #expect(tracker.swiftUI_derivedValue(newPlist, for: DerivedIntPlus2Key.self) == 102)
         #expect(tracker.swiftUI_value(newPlist, for: StringKey.self) == "modified")
-        #expect(tracker.swiftUI_valueWithSecondaryLookup(plist, secondaryLookupHandler: StringFromIntLookup.self) == "200")
+        #expect(tracker.swiftUI_valueWithSecondaryLookup(newPlist, secondaryLookupHandler: StringFromIntLookup.self) == "200")
     }
 
     @Test

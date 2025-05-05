@@ -166,7 +166,6 @@ struct PropertyListTrackerTests {
         #expect(tracker.hasDifferentUsedValues(newPlist))
         
         tracker.invalidateValue(for: IntKey.self, from: plist, to: newPlist)
-        
         #expect(tracker.value(newPlist, for: IntKey.self) == 100)
         #expect(tracker.derivedValue(newPlist, for: DerivedIntPlus2Key.self) == 102)
         #expect(tracker.value(newPlist, for: StringKey.self) == "original")
@@ -198,9 +197,9 @@ struct PropertyListTrackerTests {
 
         tracker.invalidateAllValues(from: plist, to: newPlist)
         #expect(tracker.value(newPlist, for: IntKey.self) == 100)
-        #expect(tracker.derivedValue(plist, for: DerivedIntPlus2Key.self) == 102)
+        #expect(tracker.derivedValue(newPlist, for: DerivedIntPlus2Key.self) == 102)
         #expect(tracker.value(newPlist, for: StringKey.self) == "modified")
-        #expect(tracker.valueWithSecondaryLookup(plist, secondaryLookupHandler: StringFromIntLookup.self) == "200")
+        #expect(tracker.valueWithSecondaryLookup(newPlist, secondaryLookupHandler: StringFromIntLookup.self) == "200")
     }
 
     @Test
