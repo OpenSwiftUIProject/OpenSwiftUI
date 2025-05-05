@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by merge & WIP in 2024
+//  Status: Blocked by merge & compareLists
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (SwiftUI)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)
 
@@ -119,7 +119,7 @@ package struct PropertyList: CustomStringConvertible {
                 key: key
             ), K.valuesEqual(newValue, result.takeUnretainedValue().value)
             else {
-                elements = TypedElement<K>(value: newValue, before: nil, after: elements)
+                prependValue(newValue, for: key)
                 return
             }
         }
@@ -143,28 +143,33 @@ package struct PropertyList: CustomStringConvertible {
         }
     }
 
-    // TODO
     package mutating func prependValue<K>(_ value: K.Value, for key: K.Type) where K: PropertyKey {
-        preconditionFailure("TODO")
+        elements = TypedElement<K>(value: value, before: nil, after: elements)
     }
 
-    // TODO
-    package func mayNotBeEqual(to: PropertyList) -> Bool {
-        preconditionFailure("TODO")
-//        let equalResult: Bool
-//        if let elements {
-//            var ignoredTypes = Set<ObjectIdentifier>()
-//            equalResult = elements.isEqual(to: to.elements, ignoredTypes: &ignoredTypes)
-//        } else {
-//            equalResult = to.elements == nil
-//        }
-//        return !equalResult
+    package func mayNotBeEqual(to other: PropertyList) -> Bool {
+        var ignoredTypes = [ObjectIdentifier]()
+        return mayNotBeEqual(to: other, ignoredTypes: &ignoredTypes)
     }
 
-    // TODO
+    package func mayNotBeEqual(to other: PropertyList, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+        guard let elements,
+              let otherElements = other.elements else {
+            return !isEmpty || !other.isEmpty
+        }
+        return !compareLists(
+            .passUnretained(elements),
+            .passUnretained(otherElements),
+            ignoredTypes: &ignoredTypes
+        )
+    }
+
     @_transparent
     package mutating func set(_ other: PropertyList) {
-        preconditionFailure("TODO")
+        guard other.elements !== elements else {
+            return
+        }
+        elements = other.elements
     }
 
     @usableFromInline
@@ -184,28 +189,26 @@ package struct PropertyList: CustomStringConvertible {
         return description
     }
 
-    // TODO
     package func forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: PropertyKey {
-        preconditionFailure("TODO")
-
-//        guard let elements else {
-//            return
-//        }
-//        elements.forEach { element, stop in
-//            let element = element.takeUnretainedValue()
-//            guard element.keyType == K.self else {
-//                return
-//            }
-//            body((element as! TypedElement<K>).value, &stop)
-//        }
+        guard let elements else {
+            return
+        }
+        elements.forEach(filter: BloomFilter(type: K.self)) { element, stop in
+            guard element.takeUnretainedValue().keyType == K.self else {
+                return
+            }
+            body(Unmanaged<TypedElement<K>>.fromOpaque(element.toOpaque()).takeUnretainedValue().value, &stop)
+        }
     }
 
     package mutating func merge(_ plist: PropertyList) {
-//         preconditionFailure("TODO")
+         preconditionFailure("TODO")
     }
 
     package func merging(_ other: PropertyList) -> PropertyList {
-         preconditionFailure("TODO")
+        var value = self
+        value.merge(other)
+        return value
     }
 
     package static func value<T>(as _: T.Type, from element: Element) -> T {
@@ -299,6 +302,15 @@ private func findValueWithSecondaryLookup<Lookup>(
         }
         currentElement = after
     } while true
+}
+
+private func compareLists(
+    _ lhs: Unmanaged<PropertyList.Element>,
+    _ rhs: Unmanaged<PropertyList.Element>,
+    ignoredTypes: inout [ObjectIdentifier]
+) -> Bool {
+    // TODO
+    false
 }
 
 // MARK: - PropertyList.Tracker

@@ -35,11 +35,14 @@ extension PropertyList {
     @_silgen_name("OpenSwiftUITestStub_PropertyListValueWithSecondaryLookup")
     func swiftUI_valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup
 
-//    @_silgen_name("OpenSwiftUITestStub_PropertyListPrependValue")
-//    mutating func swiftUI_prependValue<K>(_ value: K.Value, for key: K.Type) where K: PropertyKey
+    @_silgen_name("OpenSwiftUITestStub_PropertyListPrependValue")
+    mutating func swiftUI_prependValue<K>(_ value: K.Value, for key: K.Type) where K: PropertyKey
 
     @_silgen_name("OpenSwiftUITestStub_PropertyListMayNotBeEqual")
     func swiftUI_mayNotBeEqual(to: PropertyList) -> Bool
+
+    @_silgen_name("OpenSwiftUITestStub_PropertyListMayNotBeEqualIgnoredTypes")
+    func swiftUI_mayNotBeEqual(to: PropertyList, ignoredTypes: inout [ObjectIdentifier]) -> Bool
 
     @_silgen_name("OpenSwiftUITestStub_PropertyListSet")
     mutating func swiftUI_set(_ other: PropertyList)
@@ -49,17 +52,17 @@ extension PropertyList {
         get
     }
 
-//    @_silgen_name("OpenSwiftUITestStub_PropertyListForEach")
-//    func swiftUI_forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: PropertyKey
-//
-//    @_silgen_name("OpenSwiftUITestStub_PropertyListMerge")
-//    mutating func swiftUI_merge(_ plist: PropertyList)
-//
-//    @_silgen_name("OpenSwiftUITestStub_PropertyListMerging")
-//    func swiftUI_merging(_ other: PropertyList) -> PropertyList
-//
-//    @_silgen_name("OpenSwiftUITestStub_PropertyListValue")
-//    static func swiftUI_value<T>(as _: T.Type, from element: Element) -> T
+    @_silgen_name("OpenSwiftUITestStub_PropertyListForEach")
+    func swiftUI_forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: PropertyKey
+
+    @_silgen_name("OpenSwiftUITestStub_PropertyListMerge")
+    mutating func swiftUI_merge(_ plist: PropertyList)
+
+    @_silgen_name("OpenSwiftUITestStub_PropertyListMerging")
+    func swiftUI_merging(_ other: PropertyList) -> PropertyList
+
+    @_silgen_name("OpenSwiftUITestStub_PropertyListValue")
+    static func swiftUI_value<T>(as _: T.Type, from element: Element) -> T
 }
 
 struct PropertyListTests {
