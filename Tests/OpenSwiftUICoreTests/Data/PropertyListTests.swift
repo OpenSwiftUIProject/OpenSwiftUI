@@ -104,7 +104,7 @@ struct PropertyListTests {
     }
 
     @Test
-    func description() throws {
+    func description() {
         var plist = PropertyList()
         #expect(plist.description == "[]")
         
@@ -123,6 +123,24 @@ struct PropertyListTests {
         let value = 1
         plist[IntKey.self] = value
         #expect(plist.description == "[\(IntKey.self) = \(value), \(BoolKey.self) = \(bool), \(BoolKey.self) = \(BoolKey.defaultValue)]")
+    }
+
+    @Test
+    func merging() {
+        var plist1 = PropertyList()
+        plist1[IntKey.self] = 42
+        var plist2 = PropertyList()
+        plist2[StringKey.self] = "Hello"
+
+        let plist3 = plist1.merging(plist2)
+        let plist4 = plist2.merging(plist1)
+
+        #expect(plist3.description == #"""
+        [StringKey = Hello, IntKey = 42]
+        """#)
+        #expect(plist4.description == #"""
+        [IntKey = 42, StringKey = Hello]
+        """#)
     }
 }
 

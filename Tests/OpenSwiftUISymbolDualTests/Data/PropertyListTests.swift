@@ -163,7 +163,7 @@ struct PropertyListTests {
     }
 
     @Test
-    func description() throws {
+    func description() {
         var plist = PropertyList(swiftUI: ())
         #expect(plist.swiftUI_description == "[]")
         
@@ -182,6 +182,24 @@ struct PropertyListTests {
         let value = 1
         plist[swiftUI: IntKey.self] = value
         #expect(plist.swiftUI_description == "[\(IntKey.self) = \(value), \(BoolKey.self) = \(bool), \(BoolKey.self) = \(BoolKey.defaultValue)]")
+    }
+
+    @Test
+    func merging() {
+        var plist1 = PropertyList(swiftUI: ())
+        plist1[swiftUI: IntKey.self] = 42
+        var plist2 = PropertyList(swiftUI: ())
+        plist2[swiftUI: StringKey.self] = "Hello"
+
+        let plist3 = plist1.swiftUI_merging(plist2)
+        let plist4 = plist2.swiftUI_merging(plist1)
+
+        #expect(plist3.swiftUI_description == #"""
+        [StringKey = Hello, IntKey = 42]
+        """#)
+        #expect(plist4.swiftUI_description == #"""
+        [IntKey = 42, StringKey = Hello]
+        """#)
     }
 }
 

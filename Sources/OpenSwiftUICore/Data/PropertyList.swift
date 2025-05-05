@@ -202,7 +202,15 @@ package struct PropertyList: CustomStringConvertible {
     }
 
     package mutating func merge(_ plist: PropertyList) {
-         preconditionFailure("TODO")
+//        preconditionFailure("TODO")
+
+        var copyCount = 0
+        guard copyCount != 0 else {
+            return
+        }
+        withUnsafeTuple(of: TupleType(Element.self), count: copyCount) { tuple in
+            // TODO
+        }
     }
 
     package func merging(_ other: PropertyList) -> PropertyList {
