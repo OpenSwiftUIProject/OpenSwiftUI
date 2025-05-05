@@ -16,7 +16,7 @@ package struct StringKey: PropertyKey {
     package static var defaultValue: String { "" }
 }
 
-package struct IntPluse2Key: DerivedPropertyKey {
+package struct DerivedIntPlus2Key: DerivedPropertyKey {
     package static func value(in plist: PropertyList) -> Int {
         plist[IntKey.self] + 2
     }
@@ -24,13 +24,18 @@ package struct IntPluse2Key: DerivedPropertyKey {
 
 package struct DerivedStringKey: DerivedPropertyKey {
     package static func value(in plist: PropertyList) -> String {
-        "derived:" + plist[StringKey.self]
+        "d:" + plist[StringKey.self]
     }
 }
 
 package struct StringFromIntLookup: PropertyKeyLookup {
-    package typealias Primary = StringKey
-    package typealias Secondary = IntKey
+    package struct Primary: PropertyKey {
+        package static var defaultValue: String { "" }
+    }
+
+    package struct Secondary: PropertyKey {
+        package static var defaultValue: Int { 0 }
+    }
 
     package static func lookup(in value: Int) -> String? {
         value == Secondary.defaultValue ? nil : "\(value)"

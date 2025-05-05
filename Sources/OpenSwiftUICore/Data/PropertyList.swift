@@ -123,7 +123,7 @@ package struct PropertyList: CustomStringConvertible {
 
     func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
         // TDOO
-        L.Primary.defaultValue
+        self[L.Primary.self]
     }
 
     @usableFromInline
@@ -249,7 +249,7 @@ extension PropertyList {
             }
         }
 
-        final package func valueWithSecondaryLoopup<Lookup>(_ plist: PropertyList, secondaryLookupHandler: Lookup.Type) -> Lookup.Primary.Value where Lookup: PropertyKeyLookup {
+        final package func valueWithSecondaryLookup<Lookup>(_ plist: PropertyList, secondaryLookupHandler: Lookup.Type) -> Lookup.Primary.Value where Lookup: PropertyKeyLookup {
             $data.access { data in
                 guard data.plistID == plist.id else {
                     data.unrecordedDependencies = true
