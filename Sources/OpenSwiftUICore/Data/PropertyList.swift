@@ -63,14 +63,14 @@ package struct PropertyList: CustomStringConvertible {
     package init() {
         elements = nil
     }
-    
+
     package init(data: AnyObject?) {
         guard let data else {
             return
         }
         elements = (data as! Element)
     }
-    
+
     @inlinable
     package var data: AnyObject? { elements }
 
@@ -78,7 +78,7 @@ package struct PropertyList: CustomStringConvertible {
     package var isEmpty: Bool {
         elements === nil
     }
-    
+
     package var id: UniqueID {
         elements?.id ?? .invalid
     }
@@ -101,36 +101,34 @@ package struct PropertyList: CustomStringConvertible {
         elements = newElements
     }
 
-    // TODO
     package subscript<K>(key: K.Type) -> K.Value where K: PropertyKey {
         get {
-            withExtendedLifetime(key) {
-                guard let result = find(elements.map { .passUnretained($0) }, key: key) else {
+            withExtendedLifetime(elements) {
+                guard let result = find(
+                    elements.map { .passUnretained($0) },
+                    key: key
+                ) else {
                     return K.defaultValue
                 }
                 return result.takeUnretainedValue().value
             }
         }
         set {
-            if let result = find(elements.map { .passUnretained($0) }, key: key) {
-                guard !compareValues(
-                    newValue,
-                    result.takeUnretainedValue().value
-                ) else {
-                    return
-                }
+            guard let result = find(
+                elements.map { .passUnretained($0) },
+                key: key
+            ), K.valuesEqual(newValue, result.takeUnretainedValue().value)
+            else {
+                elements = TypedElement<K>(value: newValue, before: nil, after: elements)
+                return
             }
-            elements = TypedElement<K>(value: newValue, before: nil, after: elements)
         }
     }
 
-    // TODO
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
-        // TODO
         K.value(in: self)
     }
 
-    // TODO
     package func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
         // TDOO
         self[L.Primary.self]
@@ -192,7 +190,7 @@ package struct PropertyList: CustomStringConvertible {
 //            body((element as! TypedElement<K>).value, &stop)
 //        }
     }
-    
+
     package mutating func merge(_ plist: PropertyList) {
 //         preconditionFailure("TODO")
     }
@@ -211,31 +209,42 @@ extension PropertyList: Sendable {}
 
 // MARK: - PropertyList Helper Functions
 
-private func find<Key: PropertyKey>(
+private func find<Key>(
     _ element: Unmanaged<PropertyList.Element>?,
     key: Key.Type,
-    keyFilter: BloomFilter = BloomFilter(type: Key.self)
-) -> Unmanaged<TypedElement<Key>>? {
-    guard var element else {
+) -> Unmanaged<TypedElement<Key>>? where Key: PropertyKey {
+    find1(element, key: key, filter: BloomFilter(type: key))
+}
+
+private func find1<Key>(
+    _ element: Unmanaged<PropertyList.Element>?,
+    key: Key.Type,
+    filter: BloomFilter
+) -> Unmanaged<TypedElement<Key>>? where Key: PropertyKey {
+    guard let element else {
         return nil
     }
+    var currentElement = element.takeUnretainedValue()
     repeat {
-        guard keyFilter.match(element.map(\.skipFilter)) else {
+        guard currentElement.skipFilter.mayContain(filter) else {
+            if currentElement.skip != nil {
+                continue
+            } else {
+                return nil
+            }
+        }
+        if let before = currentElement.before {
+            let result = find1(.passUnretained(before), key: key, filter: filter)
+            if let result { return result }
+        }
+        if currentElement.keyType == Key.self {
+            return .fromOpaque(Unmanaged.passUnretained(currentElement).toOpaque())
+        }
+        guard let after = currentElement.after else {
             return nil
         }
-        if let before = element.map(\.before),
-            let result = find(before, key: key, keyFilter: keyFilter) {
-            return result
-        }
-        if element.map(\.keyType) == Key.self {
-            return element.map { $0 as? TypedElement<Key> }
-        }
-        guard let after = element.map(\.after) else {
-            break
-        }
-        element = after
+        currentElement = after
     } while(true)
-    return nil
 }
 
 // MARK: - PropertyList.Tracker
@@ -533,37 +542,37 @@ extension PropertyList {
             filter: BloomFilter,
             _ body: (Unmanaged<Element>, inout Bool) -> Void
         ) -> Bool {
-            var element = self
+            var currentElement = self
             var stop = false
             repeat {
-                guard element.skipFilter.mayContain(filter) else {
-                    if element.skip != nil {
+                guard currentElement.skipFilter.mayContain(filter) else {
+                    if currentElement.skip != nil {
                         continue
                     } else {
                         return true
                     }
                 }
-                if let before = element.before {
+                if let before = currentElement.before {
                     let result = before.forEach(filter: filter, body)
                     stop = !result
                     guard result else { return false }
                 }
-                _ = body(.passUnretained(element), &stop)
+                _ = body(.passUnretained(currentElement), &stop)
                 guard !stop else { return false }
-                guard let after = element.after else {
+                guard let after = currentElement.after else {
                     return true
                 }
-                element = after
+                currentElement = after
             } while(true)
         }
 
         @usableFromInline
         package var description: String { preconditionFailure("") }
-        
+
         func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
             preconditionFailure("")
         }
-        
+
         func copy(before: Element?, after: Element?) -> Element {
             preconditionFailure("")
         }
@@ -571,32 +580,7 @@ extension PropertyList {
         func value<T>(as type: T.Type) -> T {
             preconditionFailure("")
         }
-
-        // FIXME
-//        final func forEach(_ body: (
-//            _ element: Unmanaged<Element>,
-//            _ stop: inout Bool
-//        ) -> Void) {
-//            var element = self
-//            var stop = false
-//            repeat {
-//                if let before = element.before {
-//                    before.forEach(body)
-//                }
-//                body(.passUnretained(element), &stop)
-//                guard !stop else { break }
-//                guard let after = element.after else {
-//                    break
-//                }
-//                element = after
-//            } while(true)
-//        }
-//        // FIXME
-//        func hasMatchingValue(in _: Unmanaged<Element>?) -> Bool {
-//            preconditionFailure("")
-//        }
 //
-//        
 //        final func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
 //            guard let element else {
 //                return false
@@ -654,11 +638,11 @@ private class TypedElement<Key>: PropertyList.Element where Key: PropertyKey {
         self.value = value
         super.init(keyType: Key.self, before: before, after: after)
     }
-    
+
     override var description: String {
         "\(Key.self) = \(value)"
     }
-    
+
     override func matches(_ other: PropertyList.Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
         guard other.keyType == keyType else {
             return false
@@ -673,7 +657,7 @@ private class TypedElement<Key>: PropertyList.Element where Key: PropertyKey {
         ignoredTypes.append(keyID)
         return true
     }
-        
+
     override func copy(before: PropertyList.Element?, after: PropertyList.Element?) -> PropertyList.Element {
         TypedElement(value: value, before: before, after: after)
     }
