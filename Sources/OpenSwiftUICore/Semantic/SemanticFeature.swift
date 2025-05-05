@@ -8,7 +8,7 @@
 import OpenSwiftUI_SPI
 
 /// Protocol for features that are conditionally available based on semantic versions.
-package protocol SemanticFeature {
+package protocol SemanticFeature: Feature {
     /// The semantic version in which this feature was introduced
     static var introduced: Semantics { get }
 

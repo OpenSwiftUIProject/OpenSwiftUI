@@ -26,7 +26,8 @@ struct ObservableObjectLocation<Root, Value>: Location where Root: ObservableObj
         let element = _threadTransactionData().map { Unmanaged<PropertyList.Element>.fromOpaque($0).takeRetainedValue() }
         let newElement: PropertyList.Element?
         if let element = transaction.plist.elements {
-            newElement = element.byPrepending(element)
+            // newElement = element.byPrepending(element)
+            newElement = nil
         } else {
             newElement = element
         }

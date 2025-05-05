@@ -58,7 +58,7 @@ extension RunLoop {
     }
 
     package static func flushObservers() {
-        while(!observerActions.isEmpty) {
+        while !observerActions.isEmpty {
             let actions = observerActions
             observerActions = []
             Update.begin()

@@ -173,7 +173,7 @@ package enum Update {
                     }
                 }
             }
-        } while(!Update.actions.isEmpty)
+        } while !Update.actions.isEmpty
     }
     
     package static func dispatchImmediately<T>(_ body: () -> T) -> T {

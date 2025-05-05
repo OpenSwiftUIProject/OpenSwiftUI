@@ -94,10 +94,4 @@ package struct BloomFilter: Equatable {
         let bit2 = 1 &<< (value &>> 0x4)
         self.value = bit0 | bit1 | bit2
     }
-
-    // FIXME:
-    @inline(__always)
-    package func match(_ filter: BloomFilter) -> Bool {
-        (value & filter.value) == value
-    }
 }
