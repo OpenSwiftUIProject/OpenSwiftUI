@@ -12,11 +12,23 @@ import OpenGraphShims
 
 // MARK: - PropertyKey
 
+/// A protocol that defines a key for use in a PropertyList.
+/// 
+/// Types conforming to PropertyKey serve as strongly-typed keys with associated values
+/// that can be stored and retrieved from a PropertyList.
 package protocol PropertyKey {
+    /// The type of value associated with this key.
     associatedtype Value
 
+    /// The default value to return when no value is found for this key in a PropertyList.
     static var defaultValue: Value { get }
 
+    /// Compares two values of this key's type for equality.
+    ///
+    /// - Parameters:
+    ///   - lhs: The first value to compare.
+    ///   - rhs: The second value to compare.
+    /// - Returns: `true` if the values are equal, otherwise `false`.
     static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool
 }
 
@@ -34,36 +46,63 @@ extension PropertyKey {
 
 // MARK: - DerivedPropertyKey
 
+/// A protocol that defines a key for a value derived from other values in a PropertyList.
+///
+/// Types conforming to DerivedPropertyKey can compute their values based on 
+/// other values stored in a PropertyList.
 package protocol DerivedPropertyKey {
+    /// The type of value associated with this key.
     associatedtype Value: Equatable
 
+    /// Computes the derived value from the provided PropertyList.
+    ///
+    /// - Parameter list: The PropertyList from which to derive the value.
+    /// - Returns: The derived value.
     static func value(in: PropertyList) -> Value
 }
 
 // MARK: - PropertyKeyLookup
 
+/// A protocol that defines a relationship between two property keys.
+///
+/// Types conforming to PropertyKeyLookup provide a way to look up a primary value
+/// using a secondary value from a PropertyList.
 package protocol PropertyKeyLookup {
+    /// The primary key type used for the lookup result.
     associatedtype Primary: PropertyKey
 
+    /// The secondary key type used for the lookup source.
     associatedtype Secondary: PropertyKey
 
+    /// Looks up a primary value from a secondary value.
+    ///
+    /// - Parameter secondaryValue: The secondary value to use for lookup.
+    /// - Returns: The primary value if found, or `nil` if not found.
     static func lookup(in: Secondary.Value) -> Primary.Value?
 }
 
 // MARK: - PropertyList
 
-/// A mutable container of key-value pairs
+/// A mutable container of key-value pairs.
+///
+/// PropertyList provides a type-safe way to store and retrieve values using keys
+/// that conform to `PropertyKey`. It efficiently manages the storage of multiple
+/// property values and supports value overriding and merging operations.
 @usableFromInline
 @frozen
 package struct PropertyList: CustomStringConvertible {
     @usableFromInline
     var elements: Element?
 
+    /// Creates an empty PropertyList.
     @inlinable
     package init() {
         elements = nil
     }
 
+    /// Creates a PropertyList with the specified data.
+    ///
+    /// - Parameter data: The data object to initialize the PropertyList with.
     package init(data: AnyObject?) {
         guard let data else {
             return
@@ -71,18 +110,31 @@ package struct PropertyList: CustomStringConvertible {
         elements = (data as! Element)
     }
 
+    /// The underlying data object of the PropertyList.
     @inlinable
     package var data: AnyObject? { elements }
 
+    /// Returns a Boolean value indicating whether the PropertyList is empty.
+    ///
+    /// - Returns: `true` if the PropertyList contains no elements, otherwise `false`.
     @inlinable
     package var isEmpty: Bool {
         elements === nil
     }
 
+    /// The unique identifier for this PropertyList.
+    ///
+    /// - Returns: A UniqueID that identifies this PropertyList, or `.invalid` if empty.
     package var id: UniqueID {
         elements?.id ?? .invalid
     }
 
+    /// Overrides the current PropertyList with values from another PropertyList.
+    ///
+    /// This method gives priority to values from the other PropertyList when both
+    /// PropertyLists contain values for the same key.
+    ///
+    /// - Parameter other: The PropertyList to override with.
     package mutating func override(with other: PropertyList) {
         let newElements: Element?
         if let elements {
@@ -101,6 +153,14 @@ package struct PropertyList: CustomStringConvertible {
         elements = newElements
     }
 
+    /// Gets or sets the value for the specified key type.
+    ///
+    /// When getting a value, returns the stored value for the key, or the key's default value
+    /// if no value is stored. When setting a value, stores the new value only if it's different
+    /// from the current value.
+    ///
+    /// - Parameter key: The key type to get or set the value for.
+    /// - Returns: The value associated with the key.
     package subscript<K>(key: K.Type) -> K.Value where K: PropertyKey {
         get {
             withExtendedLifetime(elements) {
@@ -125,10 +185,21 @@ package struct PropertyList: CustomStringConvertible {
         }
     }
 
+    /// Gets the derived value for the specified key type.
+    ///
+    /// - Parameter key: The derived key type to get the value for.
+    /// - Returns: The derived value associated with the key.
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedPropertyKey {
         K.value(in: self)
     }
 
+    /// Gets a value using a secondary lookup.
+    ///
+    /// Searches for a value using the specified lookup handler to convert between
+    /// primary and secondary keys.
+    ///
+    /// - Parameter key: The lookup handler type to use for the search.
+    /// - Returns: The primary value if found, or the primary key's default value if not found.
     package func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
         withExtendedLifetime(elements) {
             guard let result = findValueWithSecondaryLookup(
@@ -143,15 +214,30 @@ package struct PropertyList: CustomStringConvertible {
         }
     }
 
+    /// Prepends a value to the PropertyList for the specified key.
+    ///
+    /// - Parameters:
+    ///   - value: The value to prepend.
+    ///   - key: The key type to associate with the value.
     package mutating func prependValue<K>(_ value: K.Value, for key: K.Type) where K: PropertyKey {
         elements = TypedElement<K>(value: value, before: nil, after: elements)
     }
 
+    /// Checks if this PropertyList might not be equal to another PropertyList.
+    ///
+    /// - Parameter other: The PropertyList to compare with.
+    /// - Returns: `true` if the PropertyLists might not be equal, otherwise `false`.
     package func mayNotBeEqual(to other: PropertyList) -> Bool {
         var ignoredTypes = [ObjectIdentifier]()
         return mayNotBeEqual(to: other, ignoredTypes: &ignoredTypes)
     }
 
+    /// Checks if this PropertyList might not be equal to another PropertyList, ignoring specified types.
+    ///
+    /// - Parameters:
+    ///   - other: The PropertyList to compare with.
+    ///   - ignoredTypes: Types to ignore during comparison.
+    /// - Returns: `true` if the PropertyLists might not be equal, otherwise `false`.
     package func mayNotBeEqual(to other: PropertyList, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
         guard let elements,
               let otherElements = other.elements else {
@@ -164,6 +250,9 @@ package struct PropertyList: CustomStringConvertible {
         )
     }
 
+    /// Sets this PropertyList to be the same as another PropertyList.
+    ///
+    /// - Parameter other: The PropertyList to set from.
     @_transparent
     package mutating func set(_ other: PropertyList) {
         guard other.elements !== elements else {
@@ -172,6 +261,7 @@ package struct PropertyList: CustomStringConvertible {
         elements = other.elements
     }
 
+    /// A textual representation of the PropertyList.
     @usableFromInline
     package var description: String {
         var description = "["
@@ -189,6 +279,11 @@ package struct PropertyList: CustomStringConvertible {
         return description
     }
 
+    /// Iterates through all values of a specific key type in the PropertyList.
+    ///
+    /// - Parameters:
+    ///   - keyType: The key type to filter values by.
+    ///   - body: A closure to execute for each matching value. Set the second parameter to `true` to stop iteration.
     package func forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: PropertyKey {
         guard let elements else {
             return
@@ -201,6 +296,9 @@ package struct PropertyList: CustomStringConvertible {
         }
     }
 
+    /// Merges another PropertyList into this PropertyList.
+    ///
+    /// - Parameter other: The PropertyList to merge from.
     package mutating func merge(_ other: PropertyList) {
         guard let selfElements = self.elements else {
             elements = other.elements
@@ -268,12 +366,22 @@ package struct PropertyList: CustomStringConvertible {
         }
     }
 
+    /// Creates a new PropertyList by merging this PropertyList with another.
+    ///
+    /// - Parameter other: The PropertyList to merge with.
+    /// - Returns: A new PropertyList containing values from both PropertyLists.
     package func merging(_ other: PropertyList) -> PropertyList {
         var value = self
         value.merge(other)
         return value
     }
 
+    /// Extracts a value of the specified type from an Element.
+    ///
+    /// - Parameters:
+    ///   - type: The type to extract the value as.
+    ///   - element: The Element to extract the value from.
+    /// - Returns: The extracted value.
     package static func value<T>(as _: T.Type, from element: Element) -> T {
         element.value(as: T.self)
     }
@@ -411,11 +519,16 @@ private func compareLists(
 // MARK: - PropertyList.Tracker
 
 extension PropertyList {
+    /// A class that tracks property accesses and detects changes in a PropertyList.
+    ///
+    /// Tracker is used to efficiently determine when relevant values in a PropertyList
+    /// have changed, which can help avoid unnecessary updates in UI system.
     @usableFromInline
     package class Tracker {
         @AtomicBox
         private var data: TrackerData
 
+        /// Creates a new Tracker instance.
         package init() {
             _data = AtomicBox(wrappedValue: .init(
                 plistID: .invalid,
@@ -426,6 +539,9 @@ extension PropertyList {
             ))
         }
 
+        /// Resets the tracker to its initial state.
+        ///
+        /// This removes all tracked values and dependencies.
         final package func reset() {
             $data.access { data in
                 data.plistID = .invalid
@@ -436,6 +552,12 @@ extension PropertyList {
             }
         }
 
+        /// Gets a tracked value for the specified key from the PropertyList.
+        ///
+        /// - Parameters:
+        ///   - plist: The PropertyList to get the value from.
+        ///   - key: The key type to get the value for.
+        /// - Returns: The value associated with the key.
         final package func value<K>(_ plist: PropertyList, for key: K.Type) -> K.Value where K: PropertyKey {
             $data.access { data in
                 guard data.plistID == plist.id else {
@@ -453,6 +575,12 @@ extension PropertyList {
             }
         }
 
+        /// Gets a tracked value using a secondary lookup from the PropertyList.
+        ///
+        /// - Parameters:
+        ///   - plist: The PropertyList to get the value from.
+        ///   - secondaryLookupHandler: The lookup handler type to use.
+        /// - Returns: The primary value if found.
         final package func valueWithSecondaryLookup<Lookup>(_ plist: PropertyList, secondaryLookupHandler: Lookup.Type) -> Lookup.Primary.Value where Lookup: PropertyKeyLookup {
             $data.access { data in
                 guard data.plistID == plist.id else {
@@ -470,6 +598,12 @@ extension PropertyList {
             }
         }
 
+        /// Gets a tracked derived value for the specified key from the PropertyList.
+        ///
+        /// - Parameters:
+        ///   - plist: The PropertyList to get the derived value from.
+        ///   - key: The derived key type to get the value for.
+        /// - Returns: The derived value associated with the key.
         final package func derivedValue<K>(_ plist: PropertyList, for key: K.Type) -> K.Value where K: DerivedPropertyKey {
             $data.access { data in
                 guard data.plistID == plist.id else {
@@ -487,10 +621,19 @@ extension PropertyList {
             }
         }
 
+        /// Initializes the tracker with values from a PropertyList.
+        ///
+        /// - Parameter plist: The PropertyList to initialize values from.
         final package func initializeValues(from plist: PropertyList) {
             data.plistID = plist.id
         }
 
+        /// Invalidates the tracked value for a specific key when moving from one PropertyList to another.
+        ///
+        /// - Parameters:
+        ///   - key: The key type whose value should be invalidated.
+        ///   - oldPlist: The original PropertyList.
+        ///   - newPlist: The new PropertyList.
         final package func invalidateValue<K>(for key: K.Type, from oldPlist: PropertyList, to newPlist: PropertyList) where K: PropertyKey {
             $data.access { data in
                 guard data.plistID == oldPlist.id, data.plistID != newPlist.id else {
@@ -505,6 +648,11 @@ extension PropertyList {
             }
         }
 
+        /// Invalidates all tracked values when moving from one PropertyList to another.
+        ///
+        /// - Parameters:
+        ///   - oldPlist: The original PropertyList.
+        ///   - newPlist: The new PropertyList.
         final package func invalidateAllValues(from oldPlist: PropertyList, to newPlist: PropertyList) {
             $data.access { data in
                 guard data.plistID == oldPlist.id, data.plistID != newPlist.id else {
@@ -516,6 +664,10 @@ extension PropertyList {
             }
         }
 
+        /// Checks if the PropertyList has different values for any of the tracked keys.
+        ///
+        /// - Parameter plist: The PropertyList to check against.
+        /// - Returns: `true` if any tracked value differs, otherwise `false`.
         final package func hasDifferentUsedValues(_ plist: PropertyList) -> Bool {
             let data = data
             guard !data.unrecordedDependencies else {
@@ -539,6 +691,9 @@ extension PropertyList {
             return false
         }
 
+        /// Combines the tracked values from another Tracker into this one.
+        ///
+        /// - Parameter other: The Tracker to merge values from.
         final package func formUnion(_ other: Tracker) {
             data.formUnion(other.data)
         }
@@ -650,6 +805,10 @@ private struct SecondaryLookupTrackedValue<Lookup>: AnyTrackedValue where Lookup
 // MARK: - PropertyList.Element
 
 extension PropertyList {
+    /// A base class for elements stored in a PropertyList.
+    ///
+    /// Element provides the foundation for type-safe storage of key-value pairs
+    /// in a PropertyList, with support for efficient traversal and comparison.
     @usableFromInline
     package class Element: CustomStringConvertible {
         let keyType: any Any.Type
@@ -698,6 +857,12 @@ extension PropertyList {
             }
         }
 
+        /// Executes a closure for each element that matches the filter.
+        ///
+        /// - Parameters:
+        ///   - filter: A bloom filter to quickly skip elements that don't match.
+        ///   - body: A closure to execute for each matching element. Set the second parameter to `true` to stop iteration.
+        /// - Returns: `false` if iteration was stopped, otherwise `true`.
         @discardableResult
         final func forEach(
             filter: BloomFilter,
@@ -727,17 +892,34 @@ extension PropertyList {
             } while true
         }
 
+        /// A textual representation of the element.
         @usableFromInline
         package var description: String { preconditionFailure("") }
 
+        /// Checks if this element matches another element, ignoring specified types.
+        ///
+        /// - Parameters:
+        ///   - other: The element to compare with.
+        ///   - ignoredTypes: Types to ignore during comparison.
+        /// - Returns: `true` if the elements match, otherwise `false`.
         func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
             preconditionFailure("")
         }
 
+        /// Creates a copy of this element with the specified before and after elements.
+        ///
+        /// - Parameters:
+        ///   - before: The element to link before this one.
+        ///   - after: The element to link after this one.
+        /// - Returns: A new element with the same value but different links.
         func copy(before: Element?, after: Element?) -> Element {
             preconditionFailure("")
         }
 
+        /// Extracts a value of the specified type from this element.
+        ///
+        /// - Parameter type: The type to extract the value as.
+        /// - Returns: The extracted value.
         func value<T>(as type: T.Type) -> T {
             preconditionFailure("")
         }
