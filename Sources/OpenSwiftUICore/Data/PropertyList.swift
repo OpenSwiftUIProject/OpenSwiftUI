@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by merge
+//  Status: Complete
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (SwiftUI)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)
 
@@ -201,15 +201,70 @@ package struct PropertyList: CustomStringConvertible {
         }
     }
 
-    package mutating func merge(_ plist: PropertyList) {
-//        preconditionFailure("TODO")
-
+    package mutating func merge(_ other: PropertyList) {
+        guard let selfElements = self.elements else {
+            elements = other.elements
+            return
+        }
+        guard let otherElements = other.elements else {
+            return
+        }
+        guard elements !== otherElements else {
+            return
+        }
         var copyCount = 0
+        var currentSelfElement = selfElements
+        var currentOptionalSelfElement: Element? = elements
+        var currentOtherElement = otherElements
+        var currentOptinoalOtherElement: Element? = otherElements
+        repeat {
+            if currentOtherElement.length >= currentSelfElement.length {
+                copyCount += 1
+                currentOptinoalOtherElement = currentOtherElement.after
+                if let after = currentOtherElement.after {
+                    currentOtherElement = after
+                    continue
+                } else {
+                    break
+                }
+            } else {
+                currentOptionalSelfElement = currentSelfElement.after
+                if let after = currentSelfElement.after {
+                    currentSelfElement = after
+                    continue
+                } else {
+                    break
+                }
+            }
+        } while currentSelfElement !== currentOtherElement
+        guard let currentOptionalSelfElement,
+              let currentOptinoalOtherElement,
+              currentOptionalSelfElement === currentOptinoalOtherElement
+        else {
+            override(with: other)
+            return
+        }
+        guard currentOptionalSelfElement !== otherElements else {
+            return
+        }
+        guard currentOptionalSelfElement !== selfElements else {
+            elements = otherElements
+            return
+        }
         guard copyCount != 0 else {
             return
         }
         withUnsafeTuple(of: TupleType(Element.self), count: copyCount) { tuple in
-            // TODO
+            let pointer = tuple.address(as: Element.self)
+            var current: Element! = otherElements
+            for index in 0 ..< copyCount {
+                pointer[index] = current
+                current = current.after
+            }
+            for index in 0 ..< copyCount {
+                let element = pointer[copyCount - index - 1]
+                elements = element.copy(before: element.before, after: elements)
+            }
         }
     }
 
