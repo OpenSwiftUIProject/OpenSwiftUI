@@ -130,8 +130,17 @@ package struct PropertyList: CustomStringConvertible {
     }
 
     package func valueWithSecondaryLookup<L>(_ key: L.Type) -> L.Primary.Value where L: PropertyKeyLookup {
-        // TDOO
-        self[L.Primary.self]
+        withExtendedLifetime(elements) {
+            guard let result = findValueWithSecondaryLookup(
+                elements.map { .passUnretained($0) },
+                secondaryLookupHandler: key,
+                filter: BloomFilter(type: L.Primary.self),
+                secondaryFilter: BloomFilter(type: L.Secondary.self)
+            ) else {
+                return L.Primary.defaultValue
+            }
+            return result
+        }
     }
 
     // TODO
@@ -244,7 +253,52 @@ private func find1<Key>(
             return nil
         }
         currentElement = after
-    } while(true)
+    } while true
+}
+
+private func findValueWithSecondaryLookup<Lookup>(
+    _ element: Unmanaged<PropertyList.Element>?,
+    secondaryLookupHandler: Lookup.Type,
+    filter: BloomFilter,
+    secondaryFilter: BloomFilter
+) -> Lookup.Primary.Value? where Lookup: PropertyKeyLookup {
+    guard let element else {
+        return nil
+    }
+    var currentElement = element.takeUnretainedValue()
+    repeat {
+        let skipFilter = currentElement.skipFilter
+        guard skipFilter.mayContain(filter) || skipFilter.mayContain(secondaryFilter) else {
+            if currentElement.skip != nil {
+                continue
+            } else {
+                return nil
+            }
+        }
+        if let before = currentElement.before {
+            let result = findValueWithSecondaryLookup(
+                .passUnretained(before),
+                secondaryLookupHandler: secondaryLookupHandler,
+                filter: filter,
+                secondaryFilter: secondaryFilter
+            )
+            if let result { return result }
+        }
+        let keyType = currentElement.keyType
+        if keyType == Lookup.Primary.self {
+            let element: Unmanaged<TypedElement<Lookup.Primary>> = .fromOpaque(Unmanaged.passUnretained(currentElement).toOpaque())
+            return element.takeUnretainedValue().value
+        } else if keyType == Lookup.Secondary.self {
+            let element: Unmanaged<TypedElement<Lookup.Secondary>> = .fromOpaque(Unmanaged.passUnretained(currentElement).toOpaque())
+            if let value = Lookup.lookup(in: element.takeUnretainedValue().value) {
+                return value
+            }
+        }
+        guard let after = currentElement.after else {
+            return nil
+        }
+        currentElement = after
+    } while true
 }
 
 // MARK: - PropertyList.Tracker
@@ -563,7 +617,7 @@ extension PropertyList {
                     return true
                 }
                 currentElement = after
-            } while(true)
+            } while true
         }
 
         @usableFromInline
@@ -621,7 +675,7 @@ extension PropertyList {
 //                } else {
 //                    return element.after == nil
 //                }
-//            } while(true)
+//            } while true
 //        }
     }
 }

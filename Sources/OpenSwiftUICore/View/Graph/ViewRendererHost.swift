@@ -238,7 +238,7 @@ extension ViewRendererHost {
                     guard shouldContinue else {
                         break
                     }
-                } while(true)
+                } while true
             }
             var nextTime = viewGraph.nextUpdate.views.time
             if updateDisplayList {

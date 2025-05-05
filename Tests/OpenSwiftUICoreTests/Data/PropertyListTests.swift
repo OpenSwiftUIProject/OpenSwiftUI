@@ -92,6 +92,18 @@ struct PropertyListTests {
     }
 
     @Test
+    func valueWithSecondaryLookup() {
+        var plist = PropertyList()
+        #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == StringFromIntLookup.Primary.defaultValue)
+        plist[StringFromIntLookup.Primary.self] = "AA"
+        #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "AA")
+        plist[StringFromIntLookup.Secondary.self] = 42
+        #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "42")
+        plist[StringFromIntLookup.Primary.self] = "BB"
+        #expect(plist.valueWithSecondaryLookup(StringFromIntLookup.self) == "BB")
+    }
+
+    @Test
     func description() throws {
         var plist = PropertyList()
         #expect(plist.description == "[]")
