@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by merge & compareLists
+//  Status: Blocked by merge
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (SwiftUI)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)
 
@@ -309,8 +309,40 @@ private func compareLists(
     _ rhs: Unmanaged<PropertyList.Element>,
     ignoredTypes: inout [ObjectIdentifier]
 ) -> Bool {
-    // TODO
-    false
+    let lhsElement = lhs.takeUnretainedValue()
+    let rhsElement = rhs.takeUnretainedValue()
+    guard lhsElement.length == rhsElement.length else {
+        return false
+    }
+    guard lhsElement !== rhsElement else {
+        return true
+    }
+    guard lhsElement.matches(rhsElement, ignoredTypes: &ignoredTypes) else {
+        return false
+    }
+    var currentLhsElement = lhsElement
+    var currentRhsElement = rhsElement
+    repeat {
+        let lhsBefore = currentLhsElement.before
+        let rhsBefore = currentRhsElement.before
+        if let lhsBefore, let rhsBefore {
+            if !compareLists(.passUnretained(lhsBefore), .passUnretained(rhsBefore), ignoredTypes: &ignoredTypes) {
+                return false
+            }
+        } else if lhsBefore != nil || rhsBefore != nil {
+            return false
+        }
+        let lhsAfter = currentLhsElement.after
+        let rhsAfter = currentRhsElement.after
+        guard let lhsAfter, let rhsAfter else {
+            return lhsAfter == nil && rhsAfter == nil
+        }
+        if lhsAfter === rhsAfter {
+            return true
+        }
+        currentLhsElement = lhsAfter
+        currentRhsElement = rhsAfter
+    } while true
 }
 
 // MARK: - PropertyList.Tracker
@@ -646,49 +678,6 @@ extension PropertyList {
         func value<T>(as type: T.Type) -> T {
             preconditionFailure("")
         }
-//
-//        final func isEqual(to element: Element?, ignoredTypes: inout Set<ObjectIdentifier>) -> Bool {
-//            guard let element else {
-//                return false
-//            }
-//            guard length == element.length else {
-//                return false
-//            }
-//            guard self !== element else {
-//                return true
-//            }
-//            guard matches(element, ignoredTypes: &ignoredTypes) else {
-//                return false
-//            }
-//            var element1 = self
-//            var element2 = element
-//            repeat {
-//                if let before1 = element1.before {
-//                    guard before1.isEqual(to: element2.before, ignoredTypes: &ignoredTypes) else {
-//                        return false
-//                    }
-//                } else {
-//                    guard element2.before == nil else {
-//                        return false
-//                    }
-//                }
-//                if let after1 = element1.after {
-//                    guard let after2 = element2.after else {
-//                        return false
-//                    }
-//                    guard after1 !== after2 else {
-//                        return true
-//                    }
-//                    guard after1.isEqual(to: after2, ignoredTypes: &ignoredTypes) else {
-//                        return false
-//                    }
-//                    element1 = after1
-//                    element2 = after2
-//                } else {
-//                    return element.after == nil
-//                }
-//            } while true
-//        }
     }
 }
 
