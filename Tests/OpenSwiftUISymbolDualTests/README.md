@@ -11,13 +11,12 @@ import SwiftUI
 import OpenSwiftUI
 
 extension CGSize {
-    var swiftUIHasZero: Bool {
+    var swiftUI_hasZero: Bool {
         @_silgen_name("OpenSwiftUITestStub_CGSizeHasZero")
         get
     }
 }
 
 let size = CGSize(width: 0, height: 0)
-#expect(size.hasZero)
-#expect(size.swiftUIHasZero)
+#expect(size.swiftUI_hasZero == true)
 ```

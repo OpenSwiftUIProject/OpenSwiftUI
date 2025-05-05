@@ -163,6 +163,7 @@ let openSwiftUICoreTestTarget = Target.testTarget(
     dependencies: [
         "OpenSwiftUI", // NOTE: For the Glue link logic only, do not call `import OpenSwiftUI` in this target
         "OpenSwiftUICore",
+        "OpenSwiftUITestsSupport",
         .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
@@ -193,6 +194,14 @@ let openSwiftUITarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 
+let openSwiftUITestsSupportTarget = Target.target(
+    name: "OpenSwiftUITestsSupport",
+    dependencies: [
+        "OpenSwiftUI",
+    ],
+    swiftSettings: sharedSwiftSettings
+)
+
 let openSwiftUIExtensionTarget = Target.target(
     name: "OpenSwiftUIExtension",
     dependencies: [
@@ -205,6 +214,7 @@ let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
         "OpenSwiftUI",
+        "OpenSwiftUITestsSupport",
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
@@ -213,6 +223,7 @@ let openSwiftUITestTarget = Target.testTarget(
 let openSwiftUICompatibilityTestTarget = Target.testTarget(
     name: "OpenSwiftUICompatibilityTests",
     dependencies: [
+        "OpenSwiftUITestsSupport",
         .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
@@ -238,6 +249,7 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     name: "OpenSwiftUIBridgeTests",
     dependencies: [
         "OpenSwiftUIBridge",
+        "OpenSwiftUITestsSupport",
     ],
     exclude: ["README.md"],
     sources: ["BridgeableTests.swift", bridgeFramework],
@@ -246,8 +258,8 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
 
 // MARK: - OpenSwiftUISymbolDualTests Target
 
-let openSwiftUISymbolDualTestsHelperTarget = Target.target(
-    name: "OpenSwiftUISymbolDualTestsHelper",
+let openSwiftUISymbolDualTestsSupportTarget = Target.target(
+    name: "OpenSwiftUISymbolDualTestsSupport",
     dependencies: [
         .product(name: "SymbolLocator", package: "SymbolLocator"),
     ],
@@ -262,7 +274,8 @@ let openSwiftUISymbolDualTestsTarget = Target.testTarget(
     name: "OpenSwiftUISymbolDualTests",
     dependencies: [
         "OpenSwiftUI",
-        .target(name: "OpenSwiftUISymbolDualTestsHelper"),
+        "OpenSwiftUITestsSupport",
+        "OpenSwiftUISymbolDualTestsSupport",
     ],
     exclude: ["README.md"],
     swiftSettings: sharedSwiftSettings
@@ -323,6 +336,7 @@ let package = Package(
 
         cOpenSwiftUITarget,
         openSwiftUITarget,
+        openSwiftUITestsSupportTarget,
         openSwiftUIExtensionTarget,
         openSwiftUITestTarget,
         openSwiftUICompatibilityTestTarget,
@@ -330,7 +344,7 @@ let package = Package(
         openSwiftUIBridgeTarget,
         openSwiftUIBridgeTestTarget,
 
-        openSwiftUISymbolDualTestsHelperTarget,
+        openSwiftUISymbolDualTestsSupportTarget,
         openSwiftUISymbolDualTestsTarget
     ]
 )

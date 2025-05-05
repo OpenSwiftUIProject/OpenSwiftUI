@@ -1,6 +1,6 @@
 //
 //  CGSize+ExtensionTestsStub.c
-//  OpenSwiftUISymbolDualTestsHelper
+//  OpenSwiftUISymbolDualTestsSupport
 
 #include "OpenSwiftUIBase.h"
 
