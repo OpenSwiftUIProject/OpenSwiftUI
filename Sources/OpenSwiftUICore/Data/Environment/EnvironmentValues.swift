@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: TODO
+//  Status: Complete
 //  ID: 83E729E7BD00420AB79EFD8DF557072A (SwiftUI)
 //  ID: 0CBA6217BE011883F496E97230B6CF8F (SwiftUICore)
 
@@ -87,28 +87,92 @@ public struct EnvironmentValues: CustomStringConvertible {
     public init() {
         _plist = PropertyList()
         tracker = nil
-        // TODO: CoreGlue.shared
+        CoreGlue2.shared.configureDefaultEnvironment(&self)
     }
     
+    /// Creates an environment values instance with the specified property list.
+    ///
+    /// - Parameter plist: The property list to initialize the environment values with.
     package init(_ plist: PropertyList) {
         _plist = plist
         tracker = nil
     }
     
+    /// Creates an environment values instance with the specified property list and tracker.
+    ///
+    /// - Parameters:
+    ///   - plist: The property list to initialize the environment values with.
+    ///   - tracker: The tracker to monitor property list changes.
     package init(_ plist: PropertyList, tracker: PropertyList.Tracker) {
-        // FIXME
+        tracker.initializeValues(from: plist)
         self._plist = plist
         self.tracker = tracker
     }
     
-    // FIXME
+    /// The underlying property list that stores environment values.
     package var plist: PropertyList {
-        get { _plist }
+        get {
+            _plist
+        }
         set {
+            guard _plist.id != newValue.id else {
+                return
+            }
+            if let tracker {
+                tracker.invalidateAllValues(from: _plist, to: newValue)
+            }
             _plist = newValue
         }
     }
     
+    /// Returns a new environment values instance without a tracker.
+    ///
+    /// - Returns: An environment values instance with the same property list but no tracker.
+    package func removingTracker() -> EnvironmentValues {
+        EnvironmentValues(_plist)
+    }
+    
+    /// Adds dependencies from another tracker to this environment's tracker.
+    ///
+    /// - Parameter other: The tracker whose dependencies should be added.
+    package func addDependencies(from other: PropertyList.Tracker) {
+        guard let tracker else { return }
+        tracker.formUnion(other)
+    }
+    
+    /// Retrieves a value using a secondary lookup mechanism.
+    ///
+    /// - Parameter key: The lookup key type.
+    /// - Returns: The value associated with the key's primary type.
+    package func valueWithSecondaryLookup<Lookup>(_ key: Lookup.Type) -> Lookup.Primary.Value where Lookup: PropertyKeyLookup {
+        if let tracker {
+            tracker.valueWithSecondaryLookup(_plist, secondaryLookupHandler: key)
+        } else {
+            _plist.valueWithSecondaryLookup(key)
+        }
+    }
+    
+    /// Sets a value for the specified environment key.
+    ///
+    /// - Parameters:
+    ///   - value: The value to set.
+    ///   - key: The environment key type.
+    package mutating func setValue<K>(_ value: K.Value, for key: K.Type) where K: EnvironmentKey {
+        _set(value, for: key)
+    }
+    
+    private mutating func _set<K>(_ value: K.Value, for key: K.Type) where K: EnvironmentKey {
+        let oldPlist = _plist
+        _plist[EnvironmentPropertyKey<K>.self] = value
+        if let tracker {
+            tracker.invalidateValue(
+                for: EnvironmentPropertyKey<K>.self,
+                from: oldPlist,
+                to: plist
+            )
+        }
+    }
+
     /// Accesses the environment value associated with a custom key.
     ///
     /// Create custom environment values by defining a key
@@ -148,17 +212,17 @@ public struct EnvironmentValues: CustomStringConvertible {
             }
         }
         set {
-            _plist[EnvironmentPropertyKey<K>.self] = newValue
-            if let tracker {
-                tracker.invalidateValue(
-                    for: EnvironmentPropertyKey<K>.self,
-                    from: _plist,
-                    to: _plist
-                )
-            }
+            setValue(newValue, for: key)
         }
     }
 
+    /// Accesses the environment value associated with a derived environment key.
+    ///
+    /// Derived environment keys calculate their values based on other environment values.
+    /// This subscript provides read-only access to these derived values.
+    ///
+    /// - Parameter key: The derived environment key type.
+    /// - Returns: The value associated with the key.
     package subscript<K>(key: K.Type) -> K.Value where K: DerivedEnvironmentKey {
         if let tracker {
             tracker.derivedValue(_plist, for: DerivedEnvironmentPropertyKey<K>.self)
@@ -175,12 +239,25 @@ public struct EnvironmentValues: CustomStringConvertible {
 @available(*, unavailable)
 extension EnvironmentValues: Sendable {}
 
-private struct EnvironmentPropertyKey<EnvKey: EnvironmentKey>: PropertyKey {
-    static var defaultValue: EnvKey.Value { EnvKey.defaultValue }
+/// A property key that provides access to environment values.
+///
+/// This type bridges between the `EnvironmentKey` protocol and the internal `PropertyKey` system.
+private struct EnvironmentPropertyKey<Key>: PropertyKey where Key: EnvironmentKey {
+    /// The default value for this property key, obtained from the environment key.
+    static var defaultValue: Key.Value {
+        Key.defaultValue
+    }
 }
 
-private struct DerivedEnvironmentPropertyKey<EnvKey: DerivedEnvironmentKey>: DerivedPropertyKey {
-    static func value(in plist: PropertyList) -> EnvKey.Value {
-        EnvKey.value(in: EnvironmentValues(plist))
+/// A property key that provides access to derived environment values.
+///
+/// This type bridges between the `DerivedEnvironmentKey` protocol and the internal `DerivedPropertyKey` system.
+private struct DerivedEnvironmentPropertyKey<Key>: DerivedPropertyKey where Key: DerivedEnvironmentKey {
+    /// Calculates the derived value based on the current environment.
+    ///
+    /// - Parameter plist: The property list containing the current environment state.
+    /// - Returns: The calculated value for this derived key.
+    static func value(in plist: PropertyList) -> Key.Value {
+        Key.value(in: EnvironmentValues(plist))
     }
 }

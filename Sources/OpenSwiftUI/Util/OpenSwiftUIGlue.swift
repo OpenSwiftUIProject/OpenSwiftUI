@@ -97,6 +97,7 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     }
 
     override public final func configureDefaultEnvironment(_: inout EnvironmentValues) {
+        // TODO
     }
 
     override public final func makeRootView(base: AnyView, rootFocusScope: Namespace.ID) -> AnyView {

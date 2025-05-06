@@ -1,5 +1,5 @@
 //
-//  PropertyList+Test.swift
+//  PropertyListKey+Test.swift
 //  OpenSwiftUITestsSupport
 
 package import OpenSwiftUI

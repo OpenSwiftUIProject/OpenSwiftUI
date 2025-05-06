@@ -70,6 +70,20 @@ public protocol EnvironmentKey {
     /// The default value for the environment key.
     static var defaultValue: Value { get }
     
+    /// Compares two values of the environment key's associated type.
+    ///
+    /// This function determines if two values of this environment key's 
+    /// associated type should be considered equal. OpenSwiftUI uses this 
+    /// to determine when environment changes should trigger view updates.
+    ///
+    /// - Parameters:
+    ///   - lhs: The first value to compare.
+    ///   - rhs: The second value to compare.
+    /// - Returns: `true` if the values are considered equal; otherwise, `false`.
+    ///
+    /// The default implementation uses general value comparison for non-Equatable types.
+    /// Types conforming to `Equatable` receive an optimized implementation that uses
+    /// the `==` operator.
     static func _valuesEqual(_ lhs: Self.Value, _ rhs: Self.Value) -> Bool
 }
 
@@ -85,7 +99,42 @@ extension EnvironmentKey where Value: Equatable {
     }
 }
 
+/// A protocol that defines environment keys derived from other environment values.
+///
+/// Unlike standard `EnvironmentKey` that stores values directly, a `DerivedEnvironmentKey`
+/// calculates its value dynamically based on other environment values.
+///
+/// To implement a derived environment key:
+/// 1. Create a type that conforms to `DerivedEnvironmentKey`
+/// 2. Specify the `Value` type that must conform to `Equatable`
+/// 3. Implement the `value(in:)` method to compute the derived value
+///
+/// Example:
+///
+///     private struct MyDerivedKey: DerivedEnvironmentKey {
+///         typealias Value = String
+///
+///         static func value(in values: EnvironmentValues) -> String {
+///             return "\(values.someOtherValue) derived"
+///         }
+///     }
+///
+/// Then extend `EnvironmentValues` to access your derived value:
+///
+///     extension EnvironmentValues {
+///         var myDerivedValue: String {
+///             self[MyDerivedKey.self]
+///         }
+///     }
+///
 package protocol DerivedEnvironmentKey {
+    /// The associated type representing the type of the environment key's
+    /// value.
     associatedtype Value: Equatable
+    
+    /// Calculates the derived value based on the current environment values.
+    ///
+    /// - Parameter values: The current environment values.
+    /// - Returns: The derived value for this key.
     static func value(in: EnvironmentValues) -> Value
 }
