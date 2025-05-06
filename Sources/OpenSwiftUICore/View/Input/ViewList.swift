@@ -1051,12 +1051,12 @@ extension ViewList.ID.Views: Sendable {}
 
 // MARK: - UnaryViewGenerator
 
-public protocol UnaryViewGenerator {
+private protocol UnaryViewGenerator {
     func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs
     func tryToReuse(by other: Self, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool
 }
 
-public struct BodyUnaryViewGenerator<V>: UnaryViewGenerator {
+private struct BodyUnaryViewGenerator<V>: UnaryViewGenerator {
     let body: ViewList.Elements.MakeElement
 
     public func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs {
@@ -1073,10 +1073,10 @@ public struct BodyUnaryViewGenerator<V>: UnaryViewGenerator {
     }
 }
 
-public struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
+private struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
     let view: WeakAttribute<V>
 
-    public func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs {
+    func makeView(inputs: _ViewInputs, indirectMap: IndirectAttributeMap?) -> _ViewOutputs {
         guard var view = view.attribute else {
             return .init()
         }
@@ -1086,7 +1086,7 @@ public struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
         return V.makeDebuggableView(view: _GraphValue(view), inputs: inputs)
     }
 
-    public func tryToReuse(by other: TypedUnaryViewGenerator<V>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
+    func tryToReuse(by other: TypedUnaryViewGenerator<V>, indirectMap: IndirectAttributeMap, testOnly: Bool) -> Bool {
         guard let view = view.attribute, let otherView = other.view.attribute else {
             Log.graphReuse("Reuse failed: missing attribute for \(V.self)")
             return false

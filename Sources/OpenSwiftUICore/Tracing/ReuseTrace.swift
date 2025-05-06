@@ -51,6 +51,11 @@ package struct ReuseTrace {
         traceReuseFailure("reuse_bodyMismatched")
     }
 
+    @inline(__always)
+    package static func traceNeverMadeReusableFailure(_ valueType: (any Any.Type)?) {
+        // TODO
+    }
+
     // TODO
     
     final package class Recorder {

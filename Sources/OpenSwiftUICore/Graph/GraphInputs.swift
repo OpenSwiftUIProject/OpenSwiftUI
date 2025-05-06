@@ -114,13 +114,14 @@ public struct _GraphInputs {
     
     private mutating func recordReusableInput<T>(_ input: T.Type) where T: GraphInput, T.Value: GraphReusable {
         let filter = BloomFilter(type: input)
-        let reusableInputs = customInputs[ReusableInputs.self]
-        if reusableInputs.stack.top == T.self {
+        let inputs = customInputs[ReusableInputs.self]
+        let stack = inputs.stack
+        guard stack.top != T.self else {
             return
         }
         customInputs[ReusableInputs.self] = ReusableInputStorage(
-            filter: reusableInputs.filter.union(filter),
-            stack: .node(value: T.self, next: reusableInputs.stack)
+            filter: inputs.filter.union(filter),
+            stack: .node(value: T.self, next: stack)
         )
     }
     

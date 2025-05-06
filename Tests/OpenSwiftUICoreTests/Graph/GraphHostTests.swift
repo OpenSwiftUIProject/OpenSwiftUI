@@ -1,8 +1,7 @@
 //
 //  GraphHostTests.swift
-//  OpenSwiftUITests
+//  OpenSwiftUICoreTests
 
-import OpenSwiftUICore
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 import Testing
 
