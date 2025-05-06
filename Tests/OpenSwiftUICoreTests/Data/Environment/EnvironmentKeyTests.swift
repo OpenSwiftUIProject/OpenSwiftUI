@@ -32,7 +32,8 @@ struct EnvironmentKeyTests {
         #expect(OptionalStringEnvironmentKey._valuesEqual("test", nil) == false)
         #expect(OptionalStringEnvironmentKey._valuesEqual(nil, "test") == false)
     }
-    
+
+    #if canImport(Darwin) // FIXME: compareValues is not implemented on OG yet
     @Test
     func nonEquatableValuesComparison() {
         let struct1 = CustomStructEnvironmentKey.CustomStruct(value: 100)
@@ -42,7 +43,8 @@ struct EnvironmentKeyTests {
         #expect(CustomStructEnvironmentKey._valuesEqual(struct1, struct2) == true)
         #expect(CustomStructEnvironmentKey._valuesEqual(struct1, struct3) == false)
     }
-    
+    #endif
+
     // MARK: - DerivedEnvironmentKey Tests
     
     @Test
