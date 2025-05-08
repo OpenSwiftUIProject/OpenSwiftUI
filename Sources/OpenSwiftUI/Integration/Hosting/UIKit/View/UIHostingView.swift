@@ -511,6 +511,9 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
+        #if DEBUG
+        print(list.description)
+        #endif
         // preconditionFailure("TODO")
         return .infinity
     }

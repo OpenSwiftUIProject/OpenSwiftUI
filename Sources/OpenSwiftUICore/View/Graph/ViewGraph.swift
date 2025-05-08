@@ -34,7 +34,7 @@ package final class ViewGraph: GraphHost {
         @inline(__always)
         fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
             inputs.preferences.add(HostPreferencesKey.self)
-            if contains(.platformItemList) {
+            if contains(.displayList) {
                 inputs.preferences.add(DisplayList.Key.self)
             }
             if contains(.viewResponders) {
@@ -511,7 +511,10 @@ private struct RootDisplayList: Rule, AsyncAttribute {
     @Attribute var time: Time
     
     var value: (DisplayList, DisplayList.Version) {
-        preconditionFailure("TODO")
+        var displayList = content
+        let version = DisplayList.Version(forUpdate: ())
+        displayList.applyViewGraphTransform(time: $time, version: version)
+        return (content, version)
     }
 }
 
@@ -579,7 +582,8 @@ package struct RootGeometry: Rule, AsyncAttribute {
     // |                                                                              |  y: i.t+(p.height-f.height)*0.5=14
     // └──────────────────────────────────────────────────────────────────────────────┘
     package var value: ViewGeometry {
-        preconditionFailure("TODO")
+        .init(origin: .zero, dimensions: .zero)
+//        preconditionFailure("TODO")
 //        let layoutComputer = childLayoutComputer ?? .defaultValue
 //        let insets = safeAreaInsets?.insets ?? EdgeInsets()
 //        let proposal = proposedSize.value.inset(by: insets)

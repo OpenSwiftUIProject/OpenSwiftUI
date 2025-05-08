@@ -4,7 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: WIP
-//  ID: F37E3733E490AA5E3BDC045E3D34D9F8
+//  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
 package import Foundation
 
@@ -105,22 +105,31 @@ extension DisplayList.Version: Sendable {}
 
 extension DisplayList {
     package typealias Identity = _DisplayList_Identity
+
     package typealias StableIdentity = _DisplayList_StableIdentity
+
     package typealias StableIdentityMap = _DisplayList_StableIdentityMap
+
     package typealias StableIdentityRoot = _DisplayList_StableIdentityRoot
+
     package typealias StableIdentityScope = _DisplayList_StableIdentityScope
-    
+
     package struct Item: Equatable {
         package var frame: CGRect
+
         package var version: Version
+
         package var value: Item.Value
+
         package var identity: Identity
+
         package enum Value {
             case empty
             case content(Content)
             case effect(Effect, DisplayList)
             case states([(StrongHash, DisplayList)])
         }
+
         package init(_ value: Item.Value, frame: CGRect, identity: Identity, version: Version) {
             self.frame = frame
             self.version = version
@@ -133,16 +142,19 @@ extension DisplayList {
         }
         
         package var position: CGPoint { frame.origin }
+
         package var size: CGSize { frame.size }
     }
     
     package struct Content {
         package var value: Content.Value
+
         package var seed: Seed
+
         package enum Value {
-//        indirect case backdrop(BackdropEffect)
+            indirect case backdrop(BackdropEffect)
             indirect case color(Color.Resolved)
-//        indirect case chameleonColor(fallback: Color.Resolved, filters: [GraphicsFilter])
+            indirect case chameleonColor(fallback: Color.Resolved, filters: [GraphicsFilter])
 //        indirect case image(GraphicsImage)
 //        indirect case shape(Path, AnyResolvedPaint, FillStyle)
 //        indirect case shadow(Path, ResolvedShadowStyle)
@@ -246,8 +258,14 @@ extension DisplayList {
             self.value = value
         }
         
-        package init() { self.init(value: .zero) }
-        package init(decodedValue value: UInt16) { self.init(value: value) }
+        package init() {
+            self.init(value: .zero)
+        }
+
+        package init(decodedValue value: UInt16) {
+            self.init(value: value)
+        }
+
         package init(_ version: Version) {
             if version.value == .zero {
                 self.init(value: .zero)
@@ -267,6 +285,7 @@ extension DisplayList {
         
         package static let undefined: Seed = Seed(value: 2)
     }
+    
     package struct Properties: OptionSet {
         package let rawValue: UInt8
         package init(rawValue: UInt8) {
@@ -402,5 +421,20 @@ extension DisplayList {
             static let _4 = RestoreOptions(rawValue: 1 << 2)
             static let _8 = RestoreOptions(rawValue: 1 << 3)
         }
+    }
+}
+
+// MARK: - DisplayList.Item + Extension
+
+extension DisplayList.Item {
+    package mutating func canonicalize(options: DisplayList.Options = .init()) {
+        // TODO
+    }
+
+    // package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool
+
+    package var features: DisplayList.Features {
+        // TODO
+        []
     }
 }

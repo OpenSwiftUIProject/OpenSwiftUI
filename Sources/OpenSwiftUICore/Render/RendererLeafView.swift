@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  ID: 65609C35608651F66D749EB1BD9D2226 (SwiftUICore?)
+//  ID: 65609C35608651F66D749EB1BD9D2226 (SwiftUICore)
 //  Status: WIP
 
 package import Foundation
@@ -11,13 +11,13 @@ import OpenGraphShims
 
 // MARK: - RendererLeafView [TODO]
 
-package protocol RendererLeafView: /*ContentResponder,*/ PrimitiveView, UnaryView {
+package protocol RendererLeafView: ContentResponder, PrimitiveView, UnaryView {
     static var requiresMainThread: Bool { get }
     func content() -> DisplayList.Content.Value
 }
 
 extension RendererLeafView {
-    package static var requiresMainThread: Swift.Bool {
+    package static var requiresMainThread: Bool {
         false
     }
     
@@ -26,8 +26,21 @@ extension RendererLeafView {
     }
     
     package static func makeLeafView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        // preconditionFailure("TODO")
-        _ViewOutputs()
+        // TODO
+        var outputs = _ViewOutputs()
+        // FIXME
+        outputs.preferences[DisplayList.Key.self] = Attribute(
+            LeafDisplayList(
+                identity: .init(),
+                view: view.value,
+                position: inputs.position,
+                size: inputs.size.cgSize,
+                containerPosition: inputs.containerPosition,
+                options: .defaultValue,
+                contentSeed: .init()
+            )
+        )
+        return outputs
     }
 }
 
@@ -89,4 +102,45 @@ package struct LeafLayoutEngine<V>: LayoutEngine where V: LeafViewLayout {
             view.sizeThatFits(in: proposedSize)
         }
     }
+}
+
+// MARK: - LeafDisplayList [WIP]
+
+private struct LeafDisplayList<V>: StatefulRule, CustomStringConvertible where V: RendererLeafView {
+    let identity: DisplayList.Identity
+    @Attribute var view: V
+    @Attribute var position: ViewOrigin
+    @Attribute var size: CGSize
+    @Attribute var containerPosition: ViewOrigin
+    let options: DisplayList.Options
+    var contentSeed: DisplayList.Seed
+
+    typealias Value = DisplayList
+
+    static var flags: OGAttributeTypeFlags {
+        V.requiresMainThread ? .mainThread : []
+    }
+
+    mutating func updateValue() {
+        let (view, changed) = $view.changedValue()
+        let content = view.content()
+        let version = DisplayList.Version(forUpdate: ())
+        if changed {
+            contentSeed = .init(version)
+        }
+        var item = DisplayList.Item(
+            .content(DisplayList.Content(content, seed: contentSeed)),
+            frame: CGRect(
+                origin: CGPoint(position.value - containerPosition.value),
+                size: size
+            ),
+            identity: identity,
+            version: version
+        )
+        item.canonicalize(options: options)
+        // TODO
+        value = DisplayList(item)
+    }
+
+    var description: String { "LeafDisplayList" }
 }
