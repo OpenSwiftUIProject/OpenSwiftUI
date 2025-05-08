@@ -4,7 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: Blocked by ViewUpdater and ViewRasterizer
-//  ID: 21FFA3C7D88AC65BB559906758271BFC
+//  ID: 21FFA3C7D88AC65BB559906758271BFC (SwiftUICore)
 
 package import Foundation
 
@@ -118,7 +118,13 @@ extension DisplayList {
             renderer?.viewCacheIsEmpty ?? true
         }
     }
-    
+}
+
+// MARK: - DisplayList.ViewRasterizer
+
+private var printTree: Bool?
+
+extension DisplayList {
     private final class ViewRasterizer: ViewRendererBase {
         let platform: DisplayList.ViewUpdater.Platform
         weak var host: ViewRendererHost?
@@ -127,27 +133,34 @@ extension DisplayList {
         let renderer: DisplayList.GraphicsRenderer
         var seed: DisplayList.Seed
         var lastContentsScale: CGFloat
-        
+
         init(platform: DisplayList.ViewUpdater.Platform, host: ViewRendererHost?, rootView: AnyObject, options: _RendererConfiguration.RasterizationOptions) {
             preconditionFailure("")
         }
-        
+
         var exportedObject: AnyObject? {
             platform.definition.getRBLayer(drawingView: drawingView!)
         }
-        
+
         func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
-            preconditionFailure("TODO")
+            // preconditionFailure("TODO")
+            if printTree == nil {
+                printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
+            }
+            if let printTree, printTree {
+                print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at \(time):\n\(list.description)")
+            }
+            return .zero
         }
-        
+
         func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
             preconditionFailure("TODO")
         }
-        
+
         func destroy(rootView: AnyObject) {
             preconditionFailure("TODO")
         }
-        
+
         var viewCacheIsEmpty: Bool {
             preconditionFailure("TODO")
         }
