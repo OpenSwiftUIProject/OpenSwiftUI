@@ -31,7 +31,7 @@ package struct ColorView: RendererLeafView, Animatable {
     }
     
     package func content() -> DisplayList.Content.Value {
-        preconditionFailure("TODO")
+        .color(color)
     }
         
     package var animatableData: Color.Resolved.AnimatableData {

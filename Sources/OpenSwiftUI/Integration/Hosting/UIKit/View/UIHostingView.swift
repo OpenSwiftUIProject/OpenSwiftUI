@@ -509,10 +509,66 @@ extension _UIHostingView: ViewRendererHost {
     package func updateScrollableContainerSize() {
         // preconditionFailure("TODO")
     }
-    
-    package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
-        // preconditionFailure("TODO")
-        return .infinity
+
+    var shouldDisableUIKitAnimations: Bool {
+        // FIXME
+        false
+    }
+
+    package func renderDisplayList(
+        _ list: DisplayList,
+        asynchronously: Bool,
+        time: Time,
+        nextTime: Time,
+        targetTimestamp: Time?,
+        version: DisplayList.Version,
+        maxVersion: DisplayList.Version
+    ) -> Time {
+        func render() -> Time {
+            let scale = window?.screen.scale ?? 1
+            let environment = DisplayList.ViewRenderer.Environment(contentScale: scale)
+            return renderer.render(
+                rootView: self,
+                from: list,
+                time: time,
+                nextTime: nextTime,
+                version: version,
+                maxVersion: maxVersion,
+                environment: environment
+            )
+        }
+
+        if asynchronously {
+            if let renderedTime = renderer.renderAsync(
+                to: list,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            ) {
+                return renderedTime
+            } else {
+                var renderedTime = nextTime
+                Update.syncMain {
+                    renderedTime = render()
+                }
+                return renderedTime
+            }
+        } else {
+            if Self.areAnimationsEnabled, shouldDisableUIKitAnimations {
+                var renderedTime = nextTime // FIXME
+                Self.performWithoutAnimation {
+                    renderedTime = render()
+                }
+                allowUIKitAnimationsForNextUpdate = false
+                return renderedTime
+            } else {
+                let renderedTime = render()
+                allowUIKitAnimationsForNextUpdate = false
+                return renderedTime
+            }
+        }
     }
     
     package func updateRootView() {
