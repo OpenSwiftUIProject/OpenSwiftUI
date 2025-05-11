@@ -9,4 +9,4 @@ OPENSWIFTUI_ROOT="$(dirname $(dirname $(filepath $0)))"
 
 cd $OPENSWIFTUI_ROOT
 
-swift build -Xswiftc -emit-module-interface -Xswiftc -enable-library-evolution  -Xswiftc -no-verify-emitted-module-interface
+swift build -Xswiftc -emit-module-interface -Xswiftc -enable-library-evolution -Xswiftc -no-verify-emitted-module-interface
