@@ -34,9 +34,6 @@ struct AppearanceActionModifierTests {
         #endif
     }
 
-    #if !DEBUG || compiler(>=6.1)
-    // For Xcode 16.3-/Swift 6.1-, Xcode will infer OpaqueTypeErasure to be true which will make some difference to the result.
-    // And there is no way to opt-out it for package yet.
     @Test
     func idTest() async throws {
         enum Helper {
@@ -69,6 +66,5 @@ struct AppearanceActionModifierTests {
         #expect(Helper.result.hasPrefix("AAD"))
         #endif
     }
-    #endif
 }
 #endif

@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.0"]
+        xcode-version: ["16.3"]
         release: [2024]
     runs-on: ${{ matrix.os }}
     env:
@@ -23,10 +23,13 @@ jobs:
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LIBRARY_EVOLUTION: 0
       OPENGRAPH_USE_LOCAL_DEPS: 1
       OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      OPENGRAPH_LIBRARY_EVOLUTION: 0
       OPENBOX_USE_LOCAL_DEPS: 1
       OPENBOX_TARGET_RELEASE: ${{ matrix.release }}
+      OPENBOX_LIBRARY_EVOLUTION: 0
       DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -60,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.0"]
+        xcode-version: ["16.3"]
         release: [2024]
         ios-version: ["18.0"]
         include:

@@ -102,12 +102,12 @@ extension DisplayList {
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
         package func swiftUI_render(
             rootView: AnyObject,
-            from list: UnsafePointer<DisplayList>,
-            time: UnsafePointer<Time>,
-            nextTime: UnsafePointer<Time>,
-            version: UnsafePointer<DisplayList.Version>,
-            maxVersion: UnsafePointer<DisplayList.Version>,
-            environment: UnsafePointer<DisplayList.ViewRenderer.Environment>
+            from list: DisplayList,
+            time: Time,
+            nextTime: Time,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version,
+            environment: DisplayList.ViewRenderer.Environment
         ) -> Time
         #endif
 
