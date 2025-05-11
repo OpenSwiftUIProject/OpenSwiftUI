@@ -53,15 +53,16 @@ extension View {
 extension IDView {
     @usableFromInline
     package static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        if _SemanticFeature_v2.isEnabled {
-            return makeImplicitRoot(view: view, inputs: inputs)
-        } else {
+        // FIXME: makeImplicitRoot is not implemented yet
+//        if _SemanticFeature_v2.isEnabled {
+//            return makeImplicitRoot(view: view, inputs: inputs)
+//        } else {
             let id = view.value[offset: { .of(&$0.id) }]
             let phase = IDPhase(id: id, phase: inputs.viewPhase, lastID: nil, delta: 0)
             var inputs = inputs
             inputs.viewPhase = Attribute(phase)
             return Content.makeDebuggableView(view: view[offset: { .of(&$0.content)}], inputs: inputs)
-        }
+//        }
     }
 }
 
