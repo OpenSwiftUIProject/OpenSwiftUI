@@ -28,7 +28,7 @@ struct TimerUtilsTests {
             var callbackExecuted = false
 
             let startTime = Date()
-            let delayInterval: TimeInterval = 0.2
+            let delayInterval: TimeInterval = 2
 
             let timer = withDelay(delayInterval) {
                 callbackExecuted = true
@@ -36,7 +36,7 @@ struct TimerUtilsTests {
             }
             #expect(timer.isValid == true)
             #expect(callbackExecuted == false)
-            try await Task.sleep(nanoseconds: 300_000_000)
+            try await Task.sleep(for: .seconds(5))
 
             #expect(callbackExecuted == true)
             let elapsedTime = Date().timeIntervalSince(startTime)
@@ -47,13 +47,13 @@ struct TimerUtilsTests {
     @Test
     func withDelayCanBeCancelled() async throws {
         var callbackExecuted = false
-        let timer = withDelay(0.2) {
+        let timer = withDelay(2) {
             callbackExecuted = true
         }
         #expect(timer.isValid == true)
 
         timer.invalidate()
-        try await Task.sleep(nanoseconds: 300_000_000)
+        try await Task.sleep(for: .seconds(5))
 
         #expect(timer.isValid == false)
         #expect(callbackExecuted == false)
@@ -62,11 +62,11 @@ struct TimerUtilsTests {
     @Test
     func withDelayRunsOnMainRunLoop() async throws {
         try await confirmation { confirmation in
-            let _ = withDelay(0.2) {
+            let _ = withDelay(2) {
                 #expect(Thread.isMainThread)
                 confirmation()
             }
-            try await Task.sleep(nanoseconds: 300_000_000)
+            try await Task.sleep(for: .seconds(5))
         }
     }
 }
@@ -78,7 +78,7 @@ final class TimerUtilsXCTests: XCTestCase {
         var callbackExecuted = false
 
         let startTime = Date()
-        let delayInterval: TimeInterval = 0.2
+        let delayInterval: TimeInterval = 2
 
         let timer = withDelay(delayInterval) {
             callbackExecuted = true
@@ -86,12 +86,10 @@ final class TimerUtilsXCTests: XCTestCase {
         }
         XCTAssertTrue(timer.isValid)
         XCTAssertFalse(callbackExecuted)
-        // 0.3s will sometimes fail for macOS + 2021 platform
-        await fulfillment(of: [expectation], timeout: 1)
+        await fulfillment(of: [expectation], timeout: 5)
 
         XCTAssertTrue(callbackExecuted)
         let elapsedTime = Date().timeIntervalSince(startTime)
-        print("Elapsed time: \(elapsedTime)")
         #if !canImport(Darwin)
         // FIXE: The elapsed time is somehow not correct on non-Darwin platform
         throw XCTSkip("The elapsed time is somehow not correct on non-Darwin platform")
@@ -101,26 +99,23 @@ final class TimerUtilsXCTests: XCTestCase {
 
     func testWithDelayCanBeCancelled() async throws {
         var callbackExecuted = false
-        let timer = withDelay(0.2) {
+        let timer = withDelay(2) {
             callbackExecuted = true
         }
         XCTAssertTrue(timer.isValid)
 
         timer.invalidate()
-        try await Task.sleep(nanoseconds: 300_000_000)
+        try await Task.sleep(for: .seconds(5))
         XCTAssertFalse(timer.isValid)
         XCTAssertFalse(callbackExecuted)
     }
 
     func testWithDelayRunsOnMainRunLoop() async throws {
-        #if canImport(Darwin)
-        throw XCTSkip("Skip flaky test case temporary")
-        #endif
         let expectation = expectation(description: "withDelay body call")
-        let _ = withDelay(0.2) {
+        let _ = withDelay(2) {
             XCTAssertTrue(Thread.isMainThread)
             expectation.fulfill()
         }
-        await fulfillment(of: [expectation], timeout: 0.3)
+        await fulfillment(of: [expectation], timeout: 5)
     }
 }
