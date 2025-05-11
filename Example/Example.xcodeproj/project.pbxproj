@@ -25,6 +25,8 @@
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
 		27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
 		27E6C4D62D2842810010502F /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		27EE91732DD0C753006C85FD /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
+		27EE91762DD0C77E006C85FD /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -50,6 +52,7 @@
 		27E6C4D12D2842740010502F /* AttributeGraph.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = AttributeGraph.xcframework; path = ../../DarwinPrivateFrameworks/AG/2024/AttributeGraph.xcframework; sourceTree = "<group>"; };
 		27E6C4D42D2842810010502F /* RenderBox.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = RenderBox.xcframework; path = ../../DarwinPrivateFrameworks/RB/2024/RenderBox.xcframework; sourceTree = "<group>"; };
 		27E6C4F72D2844470010502F /* DarwinPrivateFrameworks */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = DarwinPrivateFrameworks; path = ../../DarwinPrivateFrameworks; sourceTree = "<group>"; };
+		27EE91722DD0C753006C85FD /* CoreUI.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CoreUI.xcframework; path = ../../DarwinPrivateFrameworks/CoreUI/2024/CoreUI.xcframework; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -64,6 +67,7 @@
 			files = (
 				27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */,
 				27E6C4D62D2842810010502F /* RenderBox.xcframework in Frameworks */,
+				27EE91762DD0C77E006C85FD /* CoreUI.xcframework in Frameworks */,
 				27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */,
 				27B7FC7E2BB31FD000272BA5 /* CoreServices.xcframework in Frameworks */,
 			);
@@ -75,6 +79,7 @@
 			files = (
 				27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */,
 				27496E8E2BB1E0AA00953172 /* CoreServices.xcframework in Frameworks */,
+				27EE91732DD0C753006C85FD /* CoreUI.xcframework in Frameworks */,
 				27186AE02D538A6B009E05F9 /* RenderBox.xcframework in Frameworks */,
 				27186AE32D538A76009E05F9 /* AttributeGraph.xcframework in Frameworks */,
 			);
@@ -146,6 +151,7 @@
 		27D49E0C2BA60AF600F6E2E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				27EE91722DD0C753006C85FD /* CoreUI.xcframework */,
 				27E6C4D42D2842810010502F /* RenderBox.xcframework */,
 				27E6C4D12D2842740010502F /* AttributeGraph.xcframework */,
 				27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */,
