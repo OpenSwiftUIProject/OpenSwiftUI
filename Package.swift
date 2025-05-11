@@ -139,8 +139,9 @@ let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION")
 #endif
 
 if libraryEvolutionCondition {
-    // NOTE:  -enable-library-evolution is not supported on `swift build` yet.
-    sharedSwiftSettings.append(.unsafeFlags(["-enable-library-evolution"]))
+    // NOTE: -enable-library-evolution will cause module verify failure for `swift build`.
+    // Either set OPENSWIFTUI_LIBRARY_EVOLUTION=0 or add `-Xswiftc -no-verify-emitted-module-interface` after `swift build`
+    sharedSwiftSettings.append(.unsafeFlags(["-enable-library-evolution", "-no-verify-emitted-module-interface"]))
 }
 
 // MARK: - CoreGraphicsShims Target
