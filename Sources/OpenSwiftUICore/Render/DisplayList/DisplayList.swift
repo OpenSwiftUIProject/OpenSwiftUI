@@ -155,15 +155,15 @@ extension DisplayList {
             indirect case backdrop(BackdropEffect)
             indirect case color(Color.Resolved)
             indirect case chameleonColor(fallback: Color.Resolved, filters: [GraphicsFilter])
-//        indirect case image(GraphicsImage)
-//        indirect case shape(Path, AnyResolvedPaint, FillStyle)
-//        indirect case shadow(Path, ResolvedShadowStyle)
-//        indirect case platformView(any PlatformViewFactory)
-//        indirect case platformLayer(any PlatformLayerFactory)
-//        indirect case text(StyledTextContentView, CGSize)
-//        indirect case flattened(DisplayList, CGPoint, RasterizationOptions)
-//        indirect case drawing(any RenderBox.RBDisplayListContents, CGPoint, RasterizationOptions)
-//        indirect case view(any _DisplayList_ViewFactory)
+            indirect case image(GraphicsImage)
+            indirect case shape(Path, AnyResolvedPaint, FillStyle)
+            indirect case shadow(Path, ResolvedShadowStyle)
+            indirect case platformView(any PlatformViewFactory)
+            indirect case platformLayer(any PlatformLayerFactory)
+            indirect case text(StyledTextContentView, CGSize)
+            indirect case flattened(DisplayList, CGPoint, RasterizationOptions)
+            indirect case drawing(any RBDisplayListContents, CGPoint, RasterizationOptions)
+            indirect case view(any _DisplayList_ViewFactory)
             case placeholder(id: Identity)
         }
         package init(_ value: Content.Value, seed: Seed) {
@@ -173,7 +173,7 @@ extension DisplayList {
     }
 
 //    package typealias ViewFactory = _DisplayList_ViewFactory
-    
+
     package enum Effect {
         case identity
         case geometryGroup
@@ -181,22 +181,22 @@ extension DisplayList {
         case backdropGroup(Bool)
         indirect case archive(ArchiveIDs?)
         case properties(Properties)
-//      indirect case platformGroup(any PlatformGroupFactory)
+        indirect case platformGroup(any PlatformGroupFactory)
         case opacity(Float)
-//      case blendMode(GraphicsBlendMode)
-//      indirect case clip(Path, FillStyle, _: GraphicsContext.ClipOptions = .init())
-//      indirect case mask(DisplayList, _: GraphicsContext.ClipOptions = .init())
-//      indirect case transform(Transform)
-//      indirect case filter(GraphicsFilter)
-//      indirect case animation(any _DisplayList_AnyEffectAnimation)
-//      indirect case contentTransition(ContentTransition.State)
-//      indirect case view(any _DisplayList_ViewFactory)
-//      indirect case accessibility([AccessibilityNodeAttachment])
-//      indirect case platform(PlatformEffect)
+        case blendMode(GraphicsBlendMode)
+        indirect case clip(Path, FillStyle, _: GraphicsContext.ClipOptions = .init())
+        indirect case mask(DisplayList, _: GraphicsContext.ClipOptions = .init())
+        indirect case transform(Transform)
+        indirect case filter(GraphicsFilter)
+        indirect case animation(any _DisplayList_AnyEffectAnimation)
+        indirect case contentTransition(ContentTransition.State)
+        indirect case view(any _DisplayList_ViewFactory)
+        indirect case accessibility([AccessibilityNodeAttachment])
+        indirect case platform(PlatformEffect)
         indirect case state(StrongHash)
-//      indirect case interpolatorRoot(InterpolatorGroup, contentOrigin: CGPoint, contentOffset: CGSize)
-//      case interpolatorLayer(InterpolatorGroup, serial: UInt32)
-//      indirect case interpolatorAnimation(InterpolatorAnimation)
+        indirect case interpolatorRoot(InterpolatorGroup, contentOrigin: CGPoint, contentOffset: CGSize)
+        case interpolatorLayer(InterpolatorGroup, serial: UInt32)
+        indirect case interpolatorAnimation(InterpolatorAnimation)
     }
         
     package enum Transform {
@@ -220,10 +220,10 @@ extension DisplayList {
         }
     }
     
-//    package struct InterpolatorAnimation {
-//      package var value: StrongHash?
-//      package var animation: Animation?
-//    }
+    package struct InterpolatorAnimation {
+        package var value: StrongHash?
+        package var animation: Animation?
+    }
     
     package struct Version: Comparable, Hashable {
         private static var lastValue: Int = .zero
@@ -438,3 +438,43 @@ extension DisplayList.Item {
         []
     }
 }
+
+// TODO
+
+extension DisplayList {
+    // FIXME
+    package class InterpolatorGroup {}
+}
+
+package struct AccessibilityNodeAttachment {}
+
+extension GraphicsContext {
+    @frozen
+    public struct ClipOptions: OptionSet {
+        public let rawValue: UInt32
+
+        public init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+    }
+}
+
+package protocol PlatformGroupFactory {}
+package protocol _DisplayList_AnyEffectAnimation {}
+
+public struct ContentTransition {
+    package struct State {}
+}
+package protocol _DisplayList_ViewFactory {}
+
+package protocol PlatformViewFactory {}
+package protocol PlatformLayerFactory {}
+
+package struct GraphicsImage {}
+package struct ResolvedShadowStyle {}
+
+package struct StyledTextContentView {}
+package struct RasterizationOptions {}
+package protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
+public struct PlatformDrawableOptions {}
+public protocol PlatformDrawable : AnyObject {}

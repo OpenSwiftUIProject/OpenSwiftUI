@@ -1,5 +1,5 @@
 //
-//  DisplayList.ViewRenderer.swift
+//  DisplayListViewRenderer.swift
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
@@ -8,7 +8,7 @@
 
 package import Foundation
 
-protocol ViewRendererBase {
+protocol ViewRendererBase: AnyObject {
     var platform: DisplayList.ViewUpdater.Platform { get }
     var exportedObject: AnyObject? { get }
     func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time
@@ -21,27 +21,33 @@ protocol ViewRendererBase {
 extension DisplayList {
     final public class ViewRenderer {
         package struct Environment: Equatable {
-            package var contentScale: CGFloat
-            package static let invalid = Environment(contentScale: .zero)
-            
-            package init(contentScale: CGFloat) {
-                self.contentScale = contentScale
+            package var contentsScale: CGFloat
+
+            package static let invalid = Environment(contentsScale: .zero)
+
+            package init(contentsScale: CGFloat) {
+                self.contentsScale = contentsScale
             }
         }
+        
+        let platform: DisplayList.ViewUpdater.Platform
+
+        package var configuration: _RendererConfiguration = .init()
+
+        package weak var host: (any ViewRendererHost)? = nil
 
         private enum State {
             case none
             case updating
             case rasterizing
         }
-        
-        let platform: DisplayList.ViewUpdater.Platform
-        package var configuration: _RendererConfiguration = .init()
-        package weak var host: ViewRendererHost? = nil
+
         private var state: State = .none
-        var renderer: (any ViewRendererBase)? = nil
-        var configChanged: Bool = true
-        
+
+        private var renderer: (any ViewRendererBase)? = nil
+
+        private var configChanged: Bool = true
+
         package init(platform: DisplayList.ViewUpdater.Platform) {
             self.platform = platform
         }
@@ -91,8 +97,29 @@ extension DisplayList {
             let renderer = updateRenderer(rootView: rootView)
             return renderer.exportedObject
         }
-        
-        package func render(rootView: AnyObject, from list: DisplayList, time: Time, nextTime: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
+
+        #if canImport(Darwin) && _OPENSWIFTUI_SWIFTUI_RENDER
+        @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
+        package func swiftUI_render(
+            rootView: AnyObject,
+            from list: UnsafePointer<DisplayList>,
+            time: UnsafePointer<Time>,
+            nextTime: UnsafePointer<Time>,
+            version: UnsafePointer<DisplayList.Version>,
+            maxVersion: UnsafePointer<DisplayList.Version>,
+            environment: UnsafePointer<DisplayList.ViewRenderer.Environment>
+        ) -> Time
+        #endif
+
+        package func render(
+            rootView: AnyObject,
+            from list: DisplayList,
+            time: Time,
+            nextTime: Time,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version,
+            environment: DisplayList.ViewRenderer.Environment
+        ) -> Time {
             let renderer = updateRenderer(rootView: rootView)
             let result = renderer.render(rootView: rootView, from: list, time: time, version: version, maxVersion: maxVersion, environment: environment)
             let interval = min(nextTime, result) - time

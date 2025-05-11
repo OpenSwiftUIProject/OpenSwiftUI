@@ -8,25 +8,28 @@
 
 private var printTree: Bool?
 
+import Foundation
+#if canImport(Darwin)
+import QuartzCore
+#endif
+
 extension DisplayList {
     // FIXME
     final package class ViewUpdater: ViewRendererBase {
+        weak var host: ViewRendererHost?
+        var viewCache: DisplayList.ViewUpdater.ViewCache
+        var seed: DisplayList.Seed
+        var asyncSeed: DisplayList.Seed
+        var nextUpdate: Time
+        var lastEnv: DisplayList.ViewRenderer.Environment
+        var lastList: DisplayList
+        var lastTime: Time
+        var isValid: Bool
+        var wasValid: Bool
+
         init() {
-            // preconditionFailure("TODO")
-            platform = .init(rawValue: 0)
-            exportedObject = nil
-            viewCacheIsEmpty = false
+            preconditionFailure("TODO")
         }
-        
-        init(platform: Platform, exportedObject: AnyObject? = nil, viewCacheIsEmpty: Bool) {
-            self.platform = platform
-            self.exportedObject = exportedObject
-            self.viewCacheIsEmpty = viewCacheIsEmpty
-        }
-        
-        var platform: Platform
-        
-        var exportedObject: AnyObject?
         
         func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
             // TODO
@@ -46,6 +49,53 @@ extension DisplayList {
         func destroy(rootView: AnyObject) {
         }
         
-        var viewCacheIsEmpty: Bool
+        var viewCacheIsEmpty: Bool {
+            // TODO
+            false
+        }
+
+        var platform: Platform {
+            // TODO
+            preconditionFailure("TODO")
+        }
+
+        var exportedObject: AnyObject? {
+            // TODO
+            nil
+        }
+    }
+}
+
+extension DisplayList.ViewUpdater {
+    struct ViewInfo {
+        struct Seeds {
+            var item: DisplayList.Seed
+            var content: DisplayList.Seed
+            var opacity: DisplayList.Seed
+            var blend: DisplayList.Seed
+            var transform: DisplayList.Seed
+            var clips: DisplayList.Seed
+            var filters: DisplayList.Seed
+            var shadow: DisplayList.Seed
+            var properties: DisplayList.Seed
+            var platformSeeds: DisplayList.ViewUpdater.PlatformViewInfo.Seeds
+        }
+
+        struct ID {
+            var value: Int
+        }
+
+        var view: AnyObject
+        #if canImport(Darwin)
+        var layer: CALayer
+        #endif
+        var container: AnyObject
+        var state: DisplayList.ViewUpdater.Platform.State
+        var id: ID
+        var parentID: ID
+        var seeds: Seeds
+        var cacheSeed: UInt32
+        var isRemoved: Bool
+        var isInvalid: Bool
     }
 }

@@ -12,13 +12,29 @@ import AppKit
 // TODO
 final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override final class var system: PlatformViewDefinition.System { .nsView }
-    
-    override class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject {
+
+    #if _OPENSWIFTUI_SWIFTUI_RENDER
+    override static func makeView(kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject {
+        _makeView(kind: kind.pointee)
+    }
+
+    override static func makeLayerView(type: CALayer.Type, kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject {
         preconditionFailure("TODO")
     }
-    
-    override class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
+    #else
+    override static func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject {
+        _makeView(kind: kind)
+    }
+
+    override static func makeLayerView(type: CALayer.Type, kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject {
         preconditionFailure("TODO")
+    }
+    #endif
+
+    // FIXME: A shim for _OPENSWIFTUI_SWIFTUI_RENDER
+    private static func _makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject {
+        // TODO
+        return NSView()
     }
 }
 #endif

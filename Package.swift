@@ -51,7 +51,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v5),
 ]
 
-// MARK: - [env] OPENGRAPH_TARGET_RELEASE
+// MARK: - [env] OPENSWIFTUI_TARGET_RELEASE
 
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
 sharedCSettings.append(.define("OPENSWIFTUI_RELEASE", to: "\(releaseVersion)"))
@@ -88,6 +88,20 @@ if linkCoreUI {
     sharedSwiftSettings.append(
         .define("OPENSWIFTUI_LINK_COREUI")
     )
+}
+
+// MARK: - [env] OPENGSWIFTUI_SWIFTUI_RENDER
+
+#if os(macOS)
+let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER", default: true)
+#else
+let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER")
+#endif
+
+if swiftUIRenderCondition {
+    sharedCSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
+    sharedCxxSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
+    sharedSwiftSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
 }
 
 // MARK: - [env] OPENSWIFTUI_WERROR
@@ -154,7 +168,7 @@ let openSwiftUICoreTarget = Target.target(
         "CoreGraphicsShims",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
-    ],
+    ] + (swiftUIRenderCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
     swiftSettings: sharedSwiftSettings
 )
 
