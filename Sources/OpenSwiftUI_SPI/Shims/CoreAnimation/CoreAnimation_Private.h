@@ -14,7 +14,11 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface CALayer (OpenSwiftUI_SPI)
-@property (nonatomic, assign, readonly) BOOL openSwiftUI_hasBeenCommitted OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted);
+@property (nonatomic, assign, readonly) BOOL hasBeenCommitted_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted);
+- (void)setAllowsEdgeAntialiasing_openswiftui_safe_wrapper:(BOOL)allows OPENSWIFTUI_SWIFT_NAME(setAllowsEdgeAntialiasing(_:));
+- (void)setAllowsGroupOpacity_openswiftui_safe_wrapper:(BOOL)allows OPENSWIFTUI_SWIFT_NAME(setAllowsGroupOpacity(_:));
+- (void)setAllowsGroupBlending_openswiftui_safe_wrapper:(BOOL)allows OPENSWIFTUI_SWIFT_NAME(setAllowsGroupBlending(_:));
+
 @property (nonatomic, assign) uint64_t openSwiftUI_viewTestProperties;
 @end
 
