@@ -23,6 +23,10 @@ jobs:
     container: swift:${{ matrix.swift_version }}-jammy
     steps:
       - uses: actions/checkout@v4
+      - name: Toolchain fix patch
+        run: |
+          # Fix swift-corelibs-foundation#5211
+          .github/scripts/fix-toolchain.sh
       - name: Building and running tests in debug mode with coverage
         run: |
           swift test \
