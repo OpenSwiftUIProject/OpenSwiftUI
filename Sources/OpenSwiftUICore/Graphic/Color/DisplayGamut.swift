@@ -5,7 +5,10 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+#if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 import OpenSwiftUI_SPI
+import CoreUI
+#endif
 
 @_spi(Private)
 public enum DisplayGamut: Int {

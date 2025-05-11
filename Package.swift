@@ -73,7 +73,7 @@ if development {
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
 #if os(macOS)
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: false)
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: true)
 #else
 let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI")
 #endif
@@ -89,6 +89,14 @@ if linkCoreUI {
         .define("OPENSWIFTUI_LINK_COREUI")
     )
 }
+
+// MARK: - [env] OPENGSWIFTUI_SYMBOL_LOCATOR
+
+#if os(macOS)
+let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR", default: true)
+#else
+let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR")
+#endif
 
 // MARK: - [env] OPENGSWIFTUI_SWIFTUI_RENDER
 
@@ -110,7 +118,7 @@ let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcode
 if warningsAsErrorsCondition {
     // Hold off the werror feature as we can't avoid the concurrency warning.
     // Reenable the folllowing after swift-evolution#443 is release.
-    
+
     // sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
     // sharedSwiftSettings.append(.unsafeFlags(["-Wwarning", "concurrency"]))
 }
@@ -168,7 +176,9 @@ let openSwiftUICoreTarget = Target.target(
         "CoreGraphicsShims",
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
-    ] + (swiftUIRenderCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
+    ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -181,6 +191,8 @@ let openSwiftUICoreTestTarget = Target.testTarget(
         .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -192,7 +204,8 @@ let cOpenSwiftUITarget = Target.target(
     cSettings: sharedCSettings + [
         .headerSearchPath("../OpenSwiftUI_SPI"),
     ],
-    cxxSettings: sharedCxxSettings
+    cxxSettings: sharedCxxSettings,
+    swiftSettings: sharedSwiftSettings
 )
 
 let openSwiftUITarget = Target.target(
@@ -205,6 +218,8 @@ let openSwiftUITarget = Target.target(
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -221,6 +236,8 @@ let openSwiftUIExtensionTarget = Target.target(
     dependencies: [
         "OpenSwiftUI",
     ],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -231,6 +248,8 @@ let openSwiftUITestTarget = Target.testTarget(
         "OpenSwiftUITestsSupport",
     ],
     exclude: ["README.md"],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -241,6 +260,8 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
         .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -256,6 +277,8 @@ let openSwiftUIBridgeTarget = Target.target(
         "OpenSwiftUI",
     ],
     sources: ["Bridgeable.swift", bridgeFramework],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -267,6 +290,8 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     ],
     exclude: ["README.md"],
     sources: ["BridgeableTests.swift", bridgeFramework],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -281,7 +306,8 @@ let openSwiftUISymbolDualTestsSupportTarget = Target.target(
     cSettings: sharedCSettings + [
         .headerSearchPath("../OpenSwiftUI_SPI"),
     ],
-    cxxSettings: sharedCxxSettings
+    cxxSettings: sharedCxxSettings,
+    swiftSettings: sharedSwiftSettings
 )
 
 let openSwiftUISymbolDualTestsTarget = Target.testTarget(
@@ -292,6 +318,8 @@ let openSwiftUISymbolDualTestsTarget = Target.testTarget(
         "OpenSwiftUISymbolDualTestsSupport",
     ],
     exclude: ["README.md"],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
 )
 
@@ -324,8 +352,7 @@ let package = Package(
     name: "OpenSwiftUI",
     products: products,
     dependencies: [
-        .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.2"),
-        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.1.0"),
+        .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.3"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
@@ -357,9 +384,6 @@ let package = Package(
 
         openSwiftUIBridgeTarget,
         openSwiftUIBridgeTestTarget,
-
-        openSwiftUISymbolDualTestsSupportTarget,
-        openSwiftUISymbolDualTestsTarget
     ]
 )
 
@@ -372,7 +396,7 @@ extension Target {
         swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
     }
-    
+
     func addRBSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'RenderBox.framework'"
@@ -401,7 +425,7 @@ extension Target {
         swiftSettings.append(.define("OPENSWIFTUI_SWIFT_LOG"))
         self.swiftSettings = swiftSettings
     }
-    
+
     func addSwiftCryptoSettings() {
         dependencies.append(.product(name: "Crypto", package: "swift-crypto"))
         var swiftSettings = swiftSettings ?? []
@@ -421,7 +445,7 @@ let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
-    
+
     openSwiftUISPITestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
     openSwiftUITestTarget.addAGSettings()
@@ -438,7 +462,7 @@ let renderBoxCondition = envEnable("OPENBOX_RENDERBOX")
 if renderBoxCondition {
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
-    
+
     openSwiftUISPITestTarget.addRBSettings()
     openSwiftUICoreTestTarget.addRBSettings()
     openSwiftUITestTarget.addRBSettings()
@@ -526,6 +550,19 @@ if compatibilityTestCondition {
     openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
 } else {
     openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
+}
+
+// MARK: - SymbolLocator
+
+if symbolLocatorCondition {
+    package.dependencies.append(
+        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0")
+    )
+
+    package.targets += [
+        openSwiftUISymbolDualTestsSupportTarget,
+        openSwiftUISymbolDualTestsTarget,
+    ]
 }
 
 extension [Platform] {

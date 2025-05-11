@@ -1,5 +1,5 @@
 {
-  "originHash" : "8917cbaeeda8db57a8ea78c2771eb811ef20031946167d085ed5773330885409",
+  "originHash" : "c72e2bc714f92bcf02092961f7be834040b491a370d9391bb55c683896efa9b3",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
       "state" : {
-        "revision" : "ab226a25d84cd3c9f7286bec2c1a1ba8eea957c4",
-        "version" : "0.1.0"
+        "revision" : "1bd1a26ef304337ad2dbb4a947593d642f71ed8a",
+        "version" : "0.2.0"
       }
     }
   ],
