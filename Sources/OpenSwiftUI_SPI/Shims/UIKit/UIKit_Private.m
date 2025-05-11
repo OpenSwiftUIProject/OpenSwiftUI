@@ -43,6 +43,11 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_shouldAnimatePropertyWithKey:", NO, NSString *);
     return func(self, selector, key);
 }
+
+- (void)_setFocusInteractionEnabled_openswiftui_safe_wrapper:(BOOL)enabled {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_setFocusInteractionEnabled:", , BOOL);
+    func(self, selector, enabled);
+}
 @end
 
 @implementation UIViewController (OpenSwiftUI_SPI)

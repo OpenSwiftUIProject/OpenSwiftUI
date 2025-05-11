@@ -52,17 +52,18 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         if kind != .platformView && kind != .platformGroup {
             view.autoresizesSubviews = false
             if !kind.isContainer {
-                // view._setFocusInteractionEnabled = false
+                view._setFocusInteractionEnabled(false)
             }
         }
         view.layer.anchorPoint = .zero
         switch kind {
         case .color, .image, .shape:
-                // view.layer.setAllowsEdgeAntialiasing = true
+            view.layer.setAllowsEdgeAntialiasing(true)
             break
         case .geometry, .projection, .affine3D, .mask, .platformEffect:
-            // view.layer.setAllowsGroupOpacity = false
-            // view.layer.setAllowsGroupBlending = false
+            let layer = view.layer
+            layer.setAllowsGroupOpacity(false)
+            layer.setAllowsGroupBlending(false)
             break
         default:
             break
