@@ -61,7 +61,6 @@ for various platforms:
 | **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ |
 | **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅ |
 | **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ |
-| **Wasm** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/wasm.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/wasm.yml) | ⭐️ *[^4] | ✅ | ❌ | ❌ |
 | **Windows** | None | Not supported yet | ❌ | ❌ | ❌ |
 
 
