@@ -1,4 +1,4 @@
-// swift-tools-version: 6.0
+// swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
 import Foundation
@@ -117,10 +117,17 @@ if swiftUIRenderCondition {
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
     // Hold off the werror feature as we can't avoid the concurrency warning.
-    // Reenable the folllowing after swift-evolution#443 is release.
-
+    // Since there is no such group for diagnostic we want to ignore, we enable werror for all known groups instead.
+    // See detail on [#443](https://github.com/swiftlang/swift-evolution/blob/main/proposals/0443-warning-control-flags.md)
+    // items we want it to be error:
+    // [remove_package_import]
+    // items we want to ignore:
+    // [error_from_clang] [error_in_future_swift_version]
     // sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
-    // sharedSwiftSettings.append(.unsafeFlags(["-Wwarning", "concurrency"]))
+    sharedSwiftSettings.append(.unsafeFlags(["-Werror", "DeprecatedDeclaration"]))
+    sharedSwiftSettings.append(.unsafeFlags(["-Werror", "Unsafe"]))
+    sharedSwiftSettings.append(.unsafeFlags(["-Werror", "UnknownWarningGroup"]))
+    sharedSwiftSettings.append(.unsafeFlags(["-Werror", "ExistentialAny"]))
 }
 
 // MARK: - [env] OPENSWIFTUI_LIBRARY_EVOLUTION
