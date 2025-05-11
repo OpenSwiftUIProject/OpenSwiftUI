@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [macos-15]
         xcode-version: ["16.0"]
-        release: [2021, 2024]
+        release: [2024]
         ios-version: ["18.0"]
         include:
           - ios-version: "18.0"

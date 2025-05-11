@@ -4,8 +4,6 @@
 //  Audited for iOS 15.5
 //  Status: Complete
 
-#if OPENSWIFTUI_RELEASE_2021
-
 //struct VersionSeedTracker<Key: HostPreferenceKey> {
 //    var seed: VersionSeed
 //}
@@ -57,5 +55,3 @@
 //        }
 //    }
 //}
-
-#endif
