@@ -8,6 +8,8 @@
 import OpenSwiftUI_SPI
 #if canImport(Darwin)
 public import QuartzCore
+#else
+import Foundation
 #endif
 
 @_spi(DisplayList_ViewSystem)
@@ -48,12 +50,21 @@ open class PlatformViewDefinition: @unchecked Sendable {
     }
   
     open class var system: PlatformViewDefinition.System { .init(base: .swiftUIView) }
+
+    #if _OPENSWIFTUI_SWIFTUI_RENDER
+    open class func makeView(kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject { preconditionFailure("") }
+    #if canImport(Darwin)
+    open class func makeLayerView(type: CALayer.Type, kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject { preconditionFailure("") }
+    #endif
+    open class func makePlatformView(view: AnyObject, kind: UnsafePointer<PlatformViewDefinition.ViewKind>) { preconditionFailure("") }
+    #else
     open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { preconditionFailure("") }
     #if canImport(Darwin)
     open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { preconditionFailure("") }
     #endif
     open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { preconditionFailure("") }
-    // open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { preconditionFailure("") }
+    #endif
+    open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { preconditionFailure("") }
     open class func setPath(_ path: Path, shapeView: AnyObject) { preconditionFailure("") }
     open class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) { preconditionFailure("") }
     open class func getRBLayer(drawingView: AnyObject) -> AnyObject? { preconditionFailure("") }
@@ -65,6 +76,18 @@ open class PlatformViewDefinition: @unchecked Sendable {
 extension DisplayList.ViewUpdater {
     package struct Platform {
         let rawValue: UInt
+
+        struct State {
+            var position: CGPoint
+            var size: CGSize
+            let kind: PlatformViewDefinition.ViewKind
+            var flags: ViewFlags
+            var platformState: Platform.PlatformState
+        }
+
+        struct ViewFlags {
+            let rawValue: UInt8
+        }
     }
 }
 

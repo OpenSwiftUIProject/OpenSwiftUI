@@ -138,7 +138,10 @@ private struct LeafDisplayList<V>: StatefulRule, CustomStringConvertible where V
             version: version
         )
         item.canonicalize(options: options)
-        // TODO
+        #if _OPENSWIFTUI_SWIFTUI_RENDER
+        // FIXME: Remove me after Layout system is implemented
+        item.frame = CGRect(x: 0, y: 100.333, width: 402, height: 739)
+        #endif
         value = DisplayList(item)
     }
 

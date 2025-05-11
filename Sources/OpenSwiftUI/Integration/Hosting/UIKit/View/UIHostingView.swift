@@ -13,6 +13,8 @@ public import OpenSwiftUICore
 public import UIKit
 import OpenSwiftUI_SPI
 
+import OpenSwiftUISymbolDualTestsSupport
+
 final class UIHostingViewDebugLayer: CALayer {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
@@ -48,11 +50,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     final package let viewGraph: ViewGraph
     
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
-    
+
     // final package let eventBindingManager: EventBindingManager
     
     package var currentTimestamp: Time = .zero
-    
+
     package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
     
     package var renderingPhase: ViewRenderingPhase = .none
@@ -60,7 +62,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     package var externalUpdateCount: Int = .zero
     
     var parentPhase: _GraphInputs.Phase? = nil
-    
+
     var isRotatingWindow: Bool = false
     
     var allowUIKitAnimations: Int32 = .zero
@@ -109,7 +111,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     var initialInheritedEnvironment: EnvironmentValues? = nil
-    
+
     var inheritedEnvironment: EnvironmentValues? = nil {
         didSet {
             invalidateProperties(.environment)
@@ -144,7 +146,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     var displayLink: DisplayLink? = nil
     
     var lastRenderTime: Time = .zero
-    
+
     var canAdvanceTimeAutomatically = true
     
     var pendingPreferencesUpdate: Bool = false
@@ -152,7 +154,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     var pendingPostDisappearPreferencesUpdate: Bool = false
     
     var nextTimerTime: Time? = nil
-    
+
     var updateTimer: Timer? = nil
     
     var colorScheme: ColorScheme? = nil {
@@ -237,6 +239,10 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         super.init(frame: .zero)
         // TODO
         initializeViewGraph()
+        // RepresentableContextValues.current =
+
+        renderer.host = self
+
         // TODO
         HostingViewRegistry.shared.add(self)
         Update.end()
@@ -526,7 +532,31 @@ extension _UIHostingView: ViewRendererHost {
     ) -> Time {
         func render() -> Time {
             let scale = window?.screen.scale ?? 1
-            let environment = DisplayList.ViewRenderer.Environment(contentScale: scale)
+            let environment = DisplayList.ViewRenderer.Environment(contentsScale: scale)
+            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
+            return withUnsafePointer(to: list) { list in
+                withUnsafePointer(to: time) { time in
+                    withUnsafePointer(to: nextTime) { nextTime in
+                        withUnsafePointer(to: version) { version in
+                            withUnsafePointer(to: maxVersion) { maxVersion in
+                                withUnsafePointer(to: environment) { environment in
+                                    return renderer
+                                        .swiftUI_render(
+                                            rootView: self,
+                                            from: list,
+                                            time: time,
+                                            nextTime: nextTime,
+                                            version: version,
+                                            maxVersion: maxVersion,
+                                            environment: environment
+                                        )
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            #else
             return renderer.render(
                 rootView: self,
                 from: list,
@@ -536,6 +566,7 @@ extension _UIHostingView: ViewRendererHost {
                 maxVersion: maxVersion,
                 environment: environment
             )
+            #endif
         }
 
         if asynchronously {
