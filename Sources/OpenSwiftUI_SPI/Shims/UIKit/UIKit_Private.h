@@ -17,20 +17,20 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIApplication (OpenSwiftUI_SPI)
 // Test API
-- (void)startedTest:(nullable NSString *)name;
-- (void)finishedTest:(nullable NSString *)name;
-- (void)failedTest:(nullable NSString *)name withFailure:(nullable NSError*)failure;
-- (nullable NSString *)_launchTestName;
+- (void)startedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(startedTest(_:));
+- (void)finishedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(finishedTest(_:));
+- (void)failedTest_openswiftui_safe_wrapper:(nullable NSString *)name withFailure:(nullable NSError*)failure OPENSWIFTUI_SWIFT_NAME(failedTest(_:withFailure:));
+- (nullable NSString *)_launchTestName_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_launchTestName());
 
 - (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
-- (BOOL)_shouldAnimatePropertyWithKey:(NSString *)key;
+- (BOOL)_shouldAnimatePropertyWithKey_openswiftui_safe_wrapper:(NSString *)key OPENSWIFTUI_SWIFT_NAME(_shouldAnimateProperty(withKey:));
 @end
 
 @interface UIViewController (OpenSwiftUI_SPI)
-@property (nonatomic, readonly) BOOL _canShowWhileLocked;
+@property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);
 @end
 
 OPENSWIFTUI_EXPORT
