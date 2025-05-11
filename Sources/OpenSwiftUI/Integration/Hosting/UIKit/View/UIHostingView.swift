@@ -534,28 +534,15 @@ extension _UIHostingView: ViewRendererHost {
             let scale = window?.screen.scale ?? 1
             let environment = DisplayList.ViewRenderer.Environment(contentsScale: scale)
             #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
-            return withUnsafePointer(to: list) { list in
-                withUnsafePointer(to: time) { time in
-                    withUnsafePointer(to: nextTime) { nextTime in
-                        withUnsafePointer(to: version) { version in
-                            withUnsafePointer(to: maxVersion) { maxVersion in
-                                withUnsafePointer(to: environment) { environment in
-                                    return renderer
-                                        .swiftUI_render(
-                                            rootView: self,
-                                            from: list,
-                                            time: time,
-                                            nextTime: nextTime,
-                                            version: version,
-                                            maxVersion: maxVersion,
-                                            environment: environment
-                                        )
-                                }
-                            }
-                        }
-                    }
-                }
-            }
+            return renderer.swiftUI_render(
+                rootView: self,
+                from: list,
+                time: time,
+                nextTime: nextTime,
+                version: version,
+                maxVersion: maxVersion,
+                environment: environment
+            )
             #else
             return renderer.render(
                 rootView: self,

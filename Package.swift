@@ -123,6 +123,18 @@ if warningsAsErrorsCondition {
     // sharedSwiftSettings.append(.unsafeFlags(["-Wwarning", "concurrency"]))
 }
 
+// MARK: - [env] OPENSWIFTUI_LIBRARY_EVOLUTION
+
+#if os(macOS)
+let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION", default: true)
+#else
+let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION")
+#endif
+
+if libraryEvolutionCondition {
+    sharedSwiftSettings.append(.unsafeFlags(["-enable-library-evolution"]))
+}
+
 // MARK: - CoreGraphicsShims Target
 
 let coreGraphicsShimsTarget = Target.target(
@@ -352,7 +364,7 @@ let package = Package(
     name: "OpenSwiftUI",
     products: products,
     dependencies: [
-        .package(url: "https://github.com/apple/swift-numerics.git", from: "1.0.3"),
+        .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
     ],
     targets: [
         // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS

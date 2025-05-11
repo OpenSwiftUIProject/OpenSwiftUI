@@ -50,20 +50,11 @@ open class PlatformViewDefinition: @unchecked Sendable {
     }
   
     open class var system: PlatformViewDefinition.System { .init(base: .swiftUIView) }
-
-    #if _OPENSWIFTUI_SWIFTUI_RENDER
-    open class func makeView(kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject { preconditionFailure("") }
-    #if canImport(Darwin)
-    open class func makeLayerView(type: CALayer.Type, kind: UnsafePointer<PlatformViewDefinition.ViewKind>) -> AnyObject { preconditionFailure("") }
-    #endif
-    open class func makePlatformView(view: AnyObject, kind: UnsafePointer<PlatformViewDefinition.ViewKind>) { preconditionFailure("") }
-    #else
     open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { preconditionFailure("") }
     #if canImport(Darwin)
     open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { preconditionFailure("") }
     #endif
     open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { preconditionFailure("") }
-    #endif
     open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { preconditionFailure("") }
     open class func setPath(_ path: Path, shapeView: AnyObject) { preconditionFailure("") }
     open class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) { preconditionFailure("") }
