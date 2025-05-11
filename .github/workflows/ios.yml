@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.0"]
+        xcode-version: ["16.3"]
         release: [2024]
         ios-version: ["18.0"]
         include:
