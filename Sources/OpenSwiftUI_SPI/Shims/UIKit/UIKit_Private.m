@@ -5,6 +5,7 @@
 //  Status: WIP
 
 #import "UIKit_Private.h"
+#import "../OpenSwiftUIShims.h"
 
 #if __has_include(<UIKit/UIKit.h>)
 
@@ -12,101 +13,42 @@
 
 @implementation UIApplication (OpenSwiftUI_SPI)
 - (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block {
-    typedef void (*Func)(UIApplication *, SEL, void (^)(void));
-    SEL selector = NSSelectorFromString(@"_performBlockAfterCATransactionCommits:");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        func(self, selector, block);
-    }
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_performBlockAfterCATransactionCommits:", block(),void (^)(void));
+    func(self, selector, block);
 }
 
 - (void)startedTest_openswiftui_safe_wrapper:(NSString *)name {
-    typedef void (*Func)(UIApplication *, SEL, NSString *);
-    SEL selector = NSSelectorFromString(@"startedTest:");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        func(self, selector, name);
-    }
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"startedTest:", , NSString *);
+    func(self, selector, name);
 }
 
 - (void)finishedTest_openswiftui_safe_wrapper:(NSString *)name {
-    typedef void (*Func)(UIApplication *, SEL, NSString *);
-    SEL selector = NSSelectorFromString(@"finishedTest:");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        func(self, selector, name);
-    }
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"finishedTest:", , NSString *);
+    func(self, selector, name);
 }
 
 - (void)failedTest_openswiftui_safe_wrapper:(NSString *)name withFailure:(NSError *)failure {
-    typedef void (*Func)(UIApplication *, SEL, NSString *, NSError *);
-    SEL selector = NSSelectorFromString(@"failedTest:withFailure:");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        func(self, selector, name, failure);
-    }
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"failedTest:withFailure:", , NSString *, NSError *);
+    func(self, selector, name, failure);
 }
 
 - (NSString *)_launchTestName_openswiftui_safe_wrapper {
-    typedef NSString* (*Func)(UIApplication *, SEL);
-    SEL selector = NSSelectorFromString(@"_launchTestName");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        return func(self, selector);
-    }
-    return nil;
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSString *, @"_launchTestName", nil);
+    return func(self, selector);
 }
 @end
 
 @implementation UIView (OpenSwiftUI_SPI)
 - (BOOL)_shouldAnimatePropertyWithKey_openswiftui_safe_wrapper:(NSString *)key {
-    typedef BOOL (*Func)(UIView *, SEL, NSString *);
-    SEL selector = NSSelectorFromString(@"_shouldAnimatePropertyWithKey:");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        return func(self, selector, key);
-    }
-    return NO;
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_shouldAnimatePropertyWithKey:", NO, NSString *);
+    return func(self, selector, key);
 }
 @end
 
 @implementation UIViewController (OpenSwiftUI_SPI)
 - (BOOL)_canShowWhileLocked_openswiftui_safe_wrapper {
-    typedef BOOL (*Func)(UIViewController *, SEL);
-    SEL selector = NSSelectorFromString(@"_canShowWhileLocked");
-    Func func = nil;
-    if ([self respondsToSelector:selector]) {
-        IMP impl = class_getMethodImplementation([self class], selector);
-        func = (Func)impl;
-    }
-    if (func != nil) {
-        return func(self, selector);
-    }
-    return NO;
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_canShowWhileLocked", NO);
+    return func(self, selector);
 }
 @end
 
