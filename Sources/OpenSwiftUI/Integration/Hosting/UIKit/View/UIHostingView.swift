@@ -596,8 +596,14 @@ extension _UIHostingView: ViewRendererHost {
     
     package func requestUpdate(after: Double) {
         // TODO
+        requestImmediateUpdate()
     }
-    
+
+    func requestImmediateUpdate() {
+        // FIXME
+        setNeedsLayout()
+    }
+
     package func outputsDidChange(outputs: ViewGraph.Outputs) {
         // TODO
     }
@@ -609,11 +615,7 @@ extension _UIHostingView: ViewRendererHost {
     package func rootTransform() -> ViewTransform {
         preconditionFailure("TODO")
     }
-    
-    public func graphDidChange() {
-        // TODO
-    }
-    
+
     public func preferencesDidChange() {
         // TODO
     }
