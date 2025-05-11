@@ -14,7 +14,7 @@ jobs:
       matrix:
         os: [macos-15]
         xcode-version: ["16.0"]
-        release: [2021, 2024]
+        release: [2024]
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 1

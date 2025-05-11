@@ -56,8 +56,8 @@ var sharedSwiftSettings: [SwiftSetting] = [
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
 sharedCSettings.append(.define("OPENSWIFTUI_RELEASE", to: "\(releaseVersion)"))
 sharedSwiftSettings.append(.define("OPENSWIFTUI_RELEASE_\(releaseVersion)"))
-if releaseVersion >= 2021 {
-    for year in 2021 ... releaseVersion {
+if releaseVersion >= 2024 {
+    for year in 2024 ... releaseVersion {
         sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))
     }
 }
@@ -450,7 +450,6 @@ if attributeGraphCondition || renderBoxCondition {
     let release = Context.environment["DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
     package.platforms = switch release {
         case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
-        case 2021: [.iOS(.v15), .macOS(.v12), .macCatalyst(.v15), .tvOS(.v15), .watchOS(.v7)]
         default: nil
     }
 }
