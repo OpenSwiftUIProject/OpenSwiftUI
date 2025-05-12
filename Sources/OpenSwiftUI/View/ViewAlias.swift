@@ -11,6 +11,14 @@ import OpenGraphShims
 
 // MARK: - ViewAlias
 
+/// A protocol for creating view aliases that can be used to reference source views indirectly.
+///
+/// ViewAlias allows the creation of placeholder views that will be replaced with actual
+/// source views at render time. This enables more flexible view composition patterns
+/// and reuse of view hierarchies across different parts of an application.
+///
+/// Conforming types must provide an empty initializer and will inherit the view
+/// implementation from the source view when rendered.
 protocol ViewAlias: PrimitiveView {
     init()
 }
@@ -18,6 +26,16 @@ protocol ViewAlias: PrimitiveView {
 // MARK: - View + ViewAlias Extension
 
 extension View {
+    /// Defines a view alias that will be replaced with the provided source view.
+    ///
+    /// Use this method to associate a view alias with a source view. When the
+    /// alias is used elsewhere in the view hierarchy, it will be replaced with
+    /// the source view provided here.
+    ///
+    /// - Parameters:
+    ///   - alias: The view alias type to associate with the source view.
+    ///   - source: A closure that returns the source view to be used when rendering the alias.
+    /// - Returns: A view that establishes the connection between the alias and source view.
     func viewAlias<Alias, Source>(
         _ alias: Alias.Type,
         _ source: () -> Source
@@ -25,6 +43,16 @@ extension View {
         modifier(StaticSourceWriter<Alias, Source>(source: source()))
     }
 
+    /// Conditionally defines a view alias based on a predicate.
+    ///
+    /// Use this method to associate a view alias with a source view only when
+    /// a specific condition is met based on the ViewInputPredicate.
+    ///
+    /// - Parameters:
+    ///   - predicate: The predicate type used to determine if the alias should be applied.
+    ///   - alias: The view alias type to associate with the source view.
+    ///   - source: A closure that returns the source view to be used when rendering the alias.
+    /// - Returns: A view that conditionally establishes the connection between the alias and source view.
     func viewAlias<Predicate, Alias, Source>(
         if predicate: Predicate.Type,
         _ alias: Alias.Type,
@@ -33,6 +61,16 @@ extension View {
         modifier(StaticSourceWriter<Alias, Source>(source: source()).requiring(predicate))
     }
 
+    /// Defines an optional view alias that will be replaced with the provided source view when it exists.
+    ///
+    /// Use this method to associate a view alias with an optional source view. When the
+    /// alias is used elsewhere in the view hierarchy, it will be replaced with the source
+    /// view if it's non-nil, or not rendered if the source is nil.
+    ///
+    /// - Parameters:
+    ///   - alias: The view alias type to associate with the optional source view.
+    ///   - source: A closure that returns the optional source view to be used when rendering the alias.
+    /// - Returns: A view that establishes the conditional connection between the alias and source view.
     func optionalViewAlias<Alias, Source>(
         _ alias: Alias.Type,
         _ source: () -> Source?
@@ -64,6 +102,14 @@ private protocol AnySourceFormula {
 
 // MARK: - OptionalViewAlias
 
+/// A property wrapper that provides conditional access to a view alias based on source availability.
+///
+/// `OptionalViewAlias` checks whether a source view has been defined for the specified
+/// view alias type. If a source exists, the `wrappedValue` provides an instance of the
+/// alias; otherwise, it returns `nil`.
+///
+/// This is useful for conditionally including views in a hierarchy when their source views
+/// may or may not be defined.
 struct OptionalViewAlias<Alias>: DynamicProperty where Alias: ViewAlias {
     static func _makeProperty<Value>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<Value>, fieldOffset: Int, inputs: inout _GraphInputs) {
         if let source = inputs[SourceInput<Alias>.self].top {
@@ -80,8 +126,10 @@ struct OptionalViewAlias<Alias>: DynamicProperty where Alias: ViewAlias {
         }
     }
 
+    /// Indicates whether a source view has been defined for this alias.
     var sourceExists: Bool
 
+    /// Returns an instance of the alias if a source view exists, otherwise `nil`.
     var wrappedValue: Alias? {
         sourceExists ? Alias() : nil
     }
