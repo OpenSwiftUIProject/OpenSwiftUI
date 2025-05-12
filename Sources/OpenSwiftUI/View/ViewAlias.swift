@@ -110,6 +110,7 @@ private protocol AnySourceFormula {
 ///
 /// This is useful for conditionally including views in a hierarchy when their source views
 /// may or may not be defined.
+@propertyWrapper
 struct OptionalViewAlias<Alias>: DynamicProperty where Alias: ViewAlias {
     static func _makeProperty<Value>(in buffer: inout _DynamicPropertyBuffer, container: _GraphValue<Value>, fieldOffset: Int, inputs: inout _GraphInputs) {
         if let source = inputs[SourceInput<Alias>.self].top {
@@ -127,7 +128,7 @@ struct OptionalViewAlias<Alias>: DynamicProperty where Alias: ViewAlias {
     }
 
     /// Indicates whether a source view has been defined for this alias.
-    var sourceExists: Bool
+    var sourceExists: Bool = false
 
     /// Returns an instance of the alias if a source view exists, otherwise `nil`.
     var wrappedValue: Alias? {
