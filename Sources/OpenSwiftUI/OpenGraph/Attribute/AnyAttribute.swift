@@ -1,29 +1,14 @@
 //
 //  AnyAttributeFix.swift
-//  OpenSwiftUICore
+//  OpenSwiftUI
 
 #if !canImport(Darwin)
 package import OpenGraphShims
 
-// This is a workaround to partially "fix" the Swift compiler bug on non-Darwin platforms.
-// "Fix" here means we do not have to write #if canImport(Darwin) everywhere.
-// See #39 for more details.
-package struct AnyAttribute: RawRepresentable, Hashable {
-    package var rawValue: UInt32
-    package init(rawValue: UInt32) {
-        self.rawValue = rawValue
-    }
-}
+package typealias AnyAttribute = OpenSwiftUICore.AnyAttribute
+package typealias AttributeInfo = OpenSwiftUICore.AttributeInfo
 
-package struct AttributeInfo {
-    package var type: UnsafePointer<AttributeType>
-    package var body: UnsafeRawPointer
-}
-
-package struct AttributeType {
-    package var typeID: Metadata
-    package var valueTypeID: Metadata
-}
+package typealias AttributeType = OpenSwiftUICore.AttributeType
 
 extension AnyAttribute {
     package static var `nil`: AnyAttribute { AnyAttribute(rawValue: 0x2) }
@@ -42,6 +27,10 @@ extension AnyAttribute {
     }
 
     package func invalidateValue() {
+        preconditionFailure("#39")
+    }
+
+    package func createIndirect() -> AnyAttribute {
         preconditionFailure("#39")
     }
 }
