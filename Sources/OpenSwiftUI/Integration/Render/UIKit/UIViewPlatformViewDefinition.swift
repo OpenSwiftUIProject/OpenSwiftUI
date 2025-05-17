@@ -43,12 +43,12 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         view.layer.anchorPoint = .zero
         switch kind {
         case .color, .image, .shape:
-            view.layer.setAllowsEdgeAntialiasing(true)
+            view.layer.allowsEdgeAntialiasing = true
             break
         case .geometry, .projection, .affine3D, .mask, .platformEffect:
             let layer = view.layer
-            layer.setAllowsGroupOpacity(false)
-            layer.setAllowsGroupBlending(false)
+            layer.allowsGroupOpacity = false
+            layer.allowsGroupBlending = false
             break
         default:
             break

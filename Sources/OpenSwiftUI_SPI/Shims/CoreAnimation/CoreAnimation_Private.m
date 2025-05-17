@@ -16,14 +16,9 @@
     return func(self, selector);
 }
 
-- (void)setAllowsEdgeAntialiasing_openswiftui_safe_wrapper:(BOOL)allows {
-    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setAllowsEdgeAntialiasing:", , BOOL);
-    func(self, selector, allows);
-}
-
-- (void)setAllowsGroupOpacity_openswiftui_safe_wrapper:(BOOL)allows {
-    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setAllowsGroupOpacity:", , BOOL);
-    func(self, selector, allows);
+- (BOOL)allowsGroupBlending_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsGroupBlending", NO);
+    return func(self, selector);
 }
 
 - (void)setAllowsGroupBlending_openswiftui_safe_wrapper:(BOOL)allows {
