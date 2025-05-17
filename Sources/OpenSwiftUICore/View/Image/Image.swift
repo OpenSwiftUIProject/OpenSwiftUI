@@ -73,6 +73,16 @@ extension Image {
         /// horizontal flip from the orientation of its original pixel data.
         case rightMirrored = 5
 
+        /// Creates an image orientation from an EXIF orientation value.
+        ///
+        /// This initializer converts the standard EXIF orientation values (1-8)
+        /// to the corresponding `Image.Orientation` cases.
+        ///
+        /// - Parameter exifValue: An integer representing the EXIF orientation.
+        ///   Valid values are 1 through 8, corresponding to the standard EXIF
+        ///   orientation values.
+        /// - Returns: The corresponding orientation, or `nil` if the provided
+        ///   value is not a valid EXIF orientation value.
         @_spi(Private)
         public init?(exifValue: Int) {
             switch exifValue {

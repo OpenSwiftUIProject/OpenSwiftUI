@@ -75,14 +75,42 @@ import ImageIO
 ///     }
 ///
 public struct AsyncImage<Content>: View where Content : View {
+    /// The URL of the image to load.
+    ///
+    /// When this property changes, the view automatically starts loading the new image
+    /// and updates the display when the load completes. Set to `nil` to display the
+    /// default placeholder.
     var url: URL?
     
+    /// The scale to apply to the loaded image.
+    ///
+    /// This value determines how the view interprets the image data. For example,
+    /// a value of `2` treats the image as having double the resolution of the display.
+    /// The default is `1`.
     var scale: CGFloat
     
+    /// The transaction to use when updating the UI.
+    ///
+    /// This transaction controls how the view animates when the image loads or
+    /// when a loading error occurs. The default transaction uses default animation
+    /// timing and does not disable animations.
     var transaction: Transaction
     
+    /// A closure that transforms the loading phase into a view.
+    ///
+    /// This closure receives the current phase of the loading operation and returns
+    /// a view to display for that phase. The view returned by this closure becomes
+    /// the body of the AsyncImage.
     var content: (AsyncImagePhase) -> Content
     
+    /// The state that tracks the image loading process.
+    ///
+    /// This state property stores information about the current loading operation, including:
+    /// - The current phase (empty, success, or failure)
+    /// - The task that's performing the download operation
+    /// - The URL being downloaded
+    ///
+    /// When this state changes, the view automatically updates to reflect the new loading status.
     @State private var loadingState = LoadingState(phase: .empty)
     
     /// Loads and displays an image from the specified URL.
@@ -223,8 +251,15 @@ public struct AsyncImage<Content>: View where Content : View {
     
     // MARK: - AsyncImage.Inner
     
+    /// Internal view that renders the content based on the current loading phase.
+    ///
+    /// This view adapts the content closure's output to display the appropriate
+    /// view for the current phase of the loading operation.
     private struct Inner: View {
+        /// The current phase of the loading operation.
         var phase: AsyncImagePhase
+        
+        /// A closure that transforms the loading phase into a view.
         var content: (AsyncImagePhase) -> Content
         
         var body: some View {
@@ -232,6 +267,14 @@ public struct AsyncImage<Content>: View where Content : View {
         }
     }
     
+    /// Handles changes to the URL.
+    ///
+    /// This method is called when the URL changes or when the view appears.
+    /// It starts a new loading operation if necessary.
+    ///
+    /// - Parameters:
+    ///   - oldValue: The previous URL, if any.
+    ///   - newValue: The new URL, if any.
     private func didChangeURL(oldValue: URL?, newValue: URL?) {
         let value = (newValue, loadingState.url)
         guard value.0 != value.1 else {
@@ -254,6 +297,10 @@ public struct AsyncImage<Content>: View where Content : View {
         updateTask(task, url: newURL)
     }
     
+    /// Handles the view disappearing.
+    ///
+    /// Cancels any in-progress loading operations to prevent memory leaks
+    /// and unnecessary work when the view is no longer visible.
     private func onDisappear() {
         if let task = loadingState.task {
             task.cancel()
@@ -261,6 +308,10 @@ public struct AsyncImage<Content>: View where Content : View {
         loadingState.task = nil
     }
     
+    /// Resets the loading state.
+    ///
+    /// Called when the URL is set to nil or when a new URL is set.
+    /// Cancels any in-progress loading operations and resets the state.
     private func resetLoadingState() {
         withTransaction(transaction) {
             if let task = loadingState.task {
@@ -275,6 +326,14 @@ public struct AsyncImage<Content>: View where Content : View {
         }
     }
 
+    /// Updates the task and loading state.
+    ///
+    /// Called when a new loading operation starts.
+    /// Cancels any previous loading operation and updates the state.
+    ///
+    /// - Parameters:
+    ///   - task: The new loading task.
+    ///   - url: The URL being loaded.
     private func updateTask(_ task: Task<Void, Never>, url: URL) {
         loadingState.task?.cancel()
         // SwiftUI iOS 18.0 implementation:
@@ -346,35 +405,83 @@ public enum AsyncImagePhase: Sendable {
 
 // MARK: - LoadingState
 
+/// Tracks the state of an asynchronous image loading operation.
+///
+/// This structure encapsulates the current state of an image load operation, including:
+/// - The task responsible for downloading and processing the image
+/// - The URL being downloaded
+/// - The current phase of the loading operation
 private struct LoadingState {
+    /// The task that handles the asynchronous image loading.
+    /// May be nil if no loading operation is in progress.
     var task: Task<Void, Never>?
+    
+    /// The URL being downloaded, if any.
+    /// Used to prevent duplicate downloads of the same URL.
     var url: URL?
+    
+    /// The current phase of the loading operation.
+    /// Indicates whether the operation is in progress, has succeeded, or has failed.
     var phase: AsyncImagePhase
 }
 
 // MARK: - LoadingError
 
+/// Error thrown when an image fails to load.
+///
+/// This generic error is used when a more specific error isn't available
+/// or when the image data couldn't be processed correctly.
 private struct LoadingError: Error {}
 
 // MARK: - TaskConfig
 
+/// Configuration for an image loading task.
+///
+/// Contains the necessary context for updating the UI when an image load
+/// operation completes, including:
+/// - A binding to the loading state
+/// - The scale to apply to the loaded image
+/// - The transaction to use when updating the UI
 private struct TaskConfig {
+    /// Binding to the current loading state.
+    /// Used to update the UI when the loading state changes.
     @Binding var loadingState: LoadingState
+    
+    /// The scale to apply to the loaded image.
     var scale: CGFloat
+    
+    /// The transaction to use when updating the UI.
+    /// Controls animation when the image appears.
     var transaction: Transaction
 }
 
 // MARK: - TaskResult
 
+/// Result of an image loading operation.
+///
+/// Contains the loaded image data or error information.
+/// Used to pass the result of the loading operation back to the UI.
 private struct TaskResult {
+    /// The local URL where the downloaded image is temporarily stored.
     var localURL: URL?
+    
     #if canImport(CoreGraphics)
+    /// The loaded Core Graphics image.
     var cgImage: CGImage?
     #endif
+    
+    /// The orientation of the loaded image, if available.
     var orientation: Image.Orientation?
+    
+    /// The error that occurred during loading, if any.
     var error: Error?
 }
 
+/// Downloads an image from the specified URL.
+///
+/// - Parameter url: The URL of the image to download.
+/// - Returns: A `TaskResult` containing the downloaded image or an error.
+/// - Throws: An error if the download fails or the image can't be processed.
 private func downloadURL(_ url: URL) async throws -> TaskResult {
     #if canImport(CoreGraphics) && canImport(ImageIO)
     let (localURL, _) = try await URLSession.shared.download(from: url, delegate: nil)
@@ -394,6 +501,10 @@ private func downloadURL(_ url: URL) async throws -> TaskResult {
 
 #if canImport(ImageIO)
 extension CGImageSource {
+    /// Extracts the orientation information from an image at the specified index.
+    ///
+    /// - Parameter index: The index of the image in the image source.
+    /// - Returns: The orientation of the image, or nil if not available.
     fileprivate func orientation(at index: Int) -> Image.Orientation? {
         guard let properties = CGImageSourceCopyPropertiesAtIndex(self, index, nil),
               let orientationResult = CFDictionaryGetValue(
@@ -409,6 +520,11 @@ extension CGImageSource {
 }
 #endif
 
+/// Updates the UI with the result of an image loading operation.
+///
+/// - Parameters:
+///   - result: The result of the loading operation.
+///   - config: Configuration for updating the UI.
 private func updateTaskResult(_ result: TaskResult, config: TaskConfig) {
     #if canImport(CoreGraphics)
     if let cgImage = result.cgImage {
