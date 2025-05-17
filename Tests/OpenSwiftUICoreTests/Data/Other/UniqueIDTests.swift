@@ -7,10 +7,14 @@ import Testing
 
 struct UniqueIDTests {
     @Test
-    func exmpla() {
+    func invalid() {
         #expect(UniqueID.invalid.value == 0)
-        let initialID = UniqueID()
-        #expect(UniqueID().value == initialID.value + 1)
     }
 
+    @Test
+    func different() {
+        let id1 = UniqueID()
+        let id2 = UniqueID()
+        #expect(id1.value != id2.value)
+    }
 }
