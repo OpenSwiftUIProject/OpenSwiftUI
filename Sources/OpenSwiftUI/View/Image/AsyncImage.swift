@@ -511,7 +511,7 @@ extension CGImageSource {
                 properties,
                 Unmanaged.passUnretained(kCGImagePropertyOrientation).toOpaque()
               ),
-              let orientation = orientationResult.assumingMemoryBound(to: NSNumber.self).pointee as? Int
+              let orientation = unsafeBitCast(orientationResult, to: NSNumber.self) as? Int
         else {
             return nil
         }
