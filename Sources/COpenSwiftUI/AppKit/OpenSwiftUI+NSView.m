@@ -1,5 +1,5 @@
 //
-//  __FILEBASENAME__.m
+//  OpenSwiftUI+NSView.m
 //  COpenSwiftUI
 //
 //  Audited for macOS 15.0

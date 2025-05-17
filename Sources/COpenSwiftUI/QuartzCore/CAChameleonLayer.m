@@ -1,9 +1,9 @@
 //
 //  CAChameleonLayer.m
-//  OpenSwiftUI
+//  COpenSwiftUI
 //
-//  Created by JH on 2025/5/14.
-//
+//  Audited for macOS 15.0
+//  Status: WIP
 
 #import "CAChameleonLayer.h"
 
