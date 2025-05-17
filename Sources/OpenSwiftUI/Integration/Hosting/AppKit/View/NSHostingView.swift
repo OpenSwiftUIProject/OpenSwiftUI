@@ -127,6 +127,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         // TODO
         wantsLayer = true
         // TODO
+        renderer.host = self
         HostingViewRegistry.shared.add(self)
         // TODO
         Update.end()
@@ -182,7 +183,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             context.allowsImplicitAnimation = false
             isUpdating = true
             // TODO
-            render()
+            render(targetTimestamp: Time())
             // TODO
             isUpdating = false
             // TODO
@@ -318,8 +319,67 @@ extension NSHostingView: ViewRendererHost {
 
     package func updateScrollableContainerSize() {}
 
-    package func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time {
-        .infinity
+    package func renderDisplayList(
+        _ list: DisplayList,
+        asynchronously: Bool,
+        time: Time,
+        nextTime: Time,
+        targetTimestamp: Time?,
+        version: DisplayList.Version,
+        maxVersion: DisplayList.Version
+    ) -> Time {
+        func render() -> Time {
+            let scale = window?.screen?.backingScaleFactor ?? 1
+            let environment = DisplayList.ViewRenderer.Environment(contentsScale: scale, opaqueBackground: isOpaque)
+            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
+
+            return renderer.swiftUI_render(
+                rootView: self,
+                from: list,
+                time: time,
+                nextTime: nextTime,
+                version: version,
+                maxVersion: maxVersion,
+                environment: environment
+            )
+
+            #else
+            return renderer.render(
+                rootView: self,
+                from: list,
+                time: time,
+                nextTime: nextTime,
+                version: version,
+                maxVersion: maxVersion,
+                environment: environment
+            )
+            #endif
+        }
+
+        if asynchronously {
+            if let renderedTime = renderer.renderAsync(
+                to: list,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            ) {
+                return renderedTime
+            } else {
+                var renderedTime = nextTime
+                Update.syncMain {
+                    renderedTime = render()
+                }
+                return renderedTime
+            }
+        } else {
+            var renderedTime = nextTime
+            Update.syncMain {
+                renderedTime = render()
+            }
+            return renderedTime
+        }
     }
 
     package func updateRootView() {
