@@ -17,6 +17,13 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
     }
 }
 
+#if os(macOS)
+// NOTE: #if os(macOS) check is not accurate if we are cross compiling for Linux platform. So we add an env key to specify it.
+let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM", default: true)
+#else
+let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM")
+#endif
+
 // MARK: - Env and Config
 
 let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
@@ -72,11 +79,7 @@ if development {
 
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
-#if os(macOS)
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: true)
-#else
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI")
-#endif
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform)
 
 if linkCoreUI {
     sharedCSettings.append(
@@ -92,20 +95,11 @@ if linkCoreUI {
 
 // MARK: - [env] OPENGSWIFTUI_SYMBOL_LOCATOR
 
-#if os(macOS)
-let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR", default: true)
-#else
-let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR")
-#endif
+let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR", default: buildForDarwinPlatform)
 
 // MARK: - [env] OPENGSWIFTUI_SWIFTUI_RENDER
 
-#if os(macOS)
-let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER", default: true)
-#else
-let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER")
-#endif
-
+let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER", default: buildForDarwinPlatform)
 if swiftUIRenderCondition {
     sharedCSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
     sharedCxxSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
@@ -132,12 +126,7 @@ if warningsAsErrorsCondition {
 
 // MARK: - [env] OPENSWIFTUI_LIBRARY_EVOLUTION
 
-#if os(macOS)
-let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION", default: true)
-#else
-let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION")
-#endif
-
+let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
 if libraryEvolutionCondition {
     // NOTE: -enable-library-evolution will cause module verify failure for `swift build`.
     // Either set OPENSWIFTUI_LIBRARY_EVOLUTION=0 or add `-Xswiftc -no-verify-emitted-module-interface` after `swift build`
@@ -457,12 +446,7 @@ extension Target {
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 
-#if os(macOS)
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: true)
-#else
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
-#endif
-
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform)
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
@@ -474,12 +458,7 @@ if attributeGraphCondition {
     openSwiftUIBridgeTestTarget.addAGSettings()
 }
 
-#if os(macOS)
-let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: true)
-#else
-let renderBoxCondition = envEnable("OPENBOX_RENDERBOX")
-#endif
-
+let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: buildForDarwinPlatform)
 if renderBoxCondition {
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
@@ -525,11 +504,7 @@ if useLocalDeps {
     package.dependencies += dependencies
 }
 
-#if os(macOS)
-let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE")
-#else
-let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: true)
-#endif
+let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: !buildForDarwinPlatform)
 if openCombineCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
@@ -538,11 +513,7 @@ if openCombineCondition {
     openSwiftUITarget.addOpenCombineSettings()
 }
 
-#if os(macOS)
-let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG")
-#else
-let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: true)
-#endif
+let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: !buildForDarwinPlatform)
 if swiftLogCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-log", from: "1.5.3")
@@ -551,11 +522,7 @@ if swiftLogCondition {
     openSwiftUITarget.addSwiftLogSettings()
 }
 
-#if os(macOS)
-let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO")
-#else
-let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: true)
-#endif
+let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: !buildForDarwinPlatform)
 if swiftCryptoCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.8.0")
