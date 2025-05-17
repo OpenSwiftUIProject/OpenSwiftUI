@@ -8,7 +8,6 @@ DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_CGSizeHasZero, SwiftUI, $sSo6CGSizeV7Swif
 
 ```swift
 import SwiftUI
-import OpenSwiftUI
 
 extension CGSize {
     var swiftUI_hasZero: Bool {
