@@ -22,12 +22,23 @@ extension DisplayList {
     final public class ViewRenderer {
         package struct Environment: Equatable {
             package var contentsScale: CGFloat
-
+            
+            #if os(macOS)
+            package var opaqueBackground: Bool = false
+            #endif
+            
             package static let invalid = Environment(contentsScale: .zero)
 
             package init(contentsScale: CGFloat) {
                 self.contentsScale = contentsScale
             }
+            
+            #if os(macOS)
+            package init(contentsScale: CGFloat, opaqueBackground: Bool) {
+                self.contentsScale = contentsScale
+                self.opaqueBackground = opaqueBackground
+            }
+            #endif
         }
         
         let platform: DisplayList.ViewUpdater.Platform
