@@ -15,6 +15,21 @@ extension AsyncAttribute {
 
 extension Attribute {
     package func syncMainIfReferences<V>(do body: (Value) -> V) -> V {
-        preconditionFailure("TODO")
+        let (value, flags) = valueAndFlags(options: [._2])
+        if flags.contains(.requiresMainThread) {
+            var result: V?
+            Update.syncMain {
+                result = body(value)
+            }
+            return result!
+        } else {
+            return body(value)
+        }
     }
+}
+
+// FIXME: Add OGChangedValueFlagsRequiresMainThread in OpenGraph
+
+extension OGChangedValueFlags {
+    static let requiresMainThread = Self(rawValue: 2)
 }
