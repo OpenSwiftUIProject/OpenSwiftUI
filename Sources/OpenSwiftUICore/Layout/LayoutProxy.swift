@@ -5,6 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+package import Foundation
 package import OpenGraphShims
 
 /// A collection of attributes that can be applied to layout calculations.
