@@ -19,4 +19,10 @@ void * _Nullable _threadTransactionData(void);
 OPENSWIFTUI_EXPORT
 uint32_t _threadTransactionID(bool increase);
 
+OPENSWIFTUI_EXPORT
+void _setThreadLayoutData(void * _Nullable data);
+
+OPENSWIFTUI_EXPORT
+void * _Nullable _threadLayoutData(void);
+
 #endif /* TLS_h */
