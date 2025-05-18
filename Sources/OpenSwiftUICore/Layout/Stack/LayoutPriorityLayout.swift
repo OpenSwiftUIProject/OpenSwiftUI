@@ -5,6 +5,8 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
+package import Foundation
+
 extension View {
     /// Sets the priority by which a parent layout should apportion space to
     /// this child.
@@ -57,17 +59,16 @@ package struct LayoutPriorityTraitKey: _ViewTraitKey {
 extension LayoutPriorityTraitKey: Sendable {}
 
 // FIXME
-protocol UnaryLayout: ViewModifier {
-    static func makeViewImpl(
-        modifier: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs
-}
-
-// FIXME
 package struct LayoutPriorityLayout: UnaryLayout {
-    static func makeViewImpl(modifier: _GraphValue<LayoutPriorityLayout>, inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
+    package func placement(of child: LayoutProxy, in context: PlacementContext) -> _Placement {
+        preconditionFailure("TODO")
+    }
+    
+    package func sizeThatFits(in proposedSize: _ProposedSize, context: SizeAndSpacingContext, child: LayoutProxy) -> CGSize {
+        preconditionFailure("TODO")
+    }
+    
+    package static func makeViewImpl(modifier: _GraphValue<LayoutPriorityLayout>, inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
         .init()
     }
 }
