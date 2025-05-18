@@ -229,9 +229,14 @@ public func withTransaction<R, V>(
     return try withTransaction(transaction, body)
 }
 
+@_transparent
 private var threadTransactionData: AnyObject? {
-    @_silgen_name("_threadTransactionData")
-    get
-    @_silgen_name("_setThreadTransactionData")
-    set
+    get {
+        _threadTransactionData() as AnyObject?
+    }
+    set {
+        _setThreadTransactionData(
+            newValue.map { Unmanaged.passUnretained($0).toOpaque() }
+        )
+    }
 }
