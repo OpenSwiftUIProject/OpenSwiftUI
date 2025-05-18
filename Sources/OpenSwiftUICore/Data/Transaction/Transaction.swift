@@ -3,11 +3,90 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
-//  ID: B2543BCA257433E04979186A1DC2B6BC
+//  Status: Complete
+//  ID: B2543BCA257433E04979186A1DC2B6BC (SwiftUICore)
 
-package import OpenGraphShims
+import OpenGraphShims
 import OpenSwiftUI_SPI
+
+// MARK: - TransactionKey
+
+/// A key for accessing values in a transaction.
+///
+/// You can create custom transaction values by extending the ``Transaction``
+/// structure with new properties.
+/// First declare a new transaction key type and specify a value for the
+/// required ``defaultValue`` property:
+///
+///     private struct MyTransactionKey: TransactionKey {
+///         static let defaultValue = false
+///     }
+///
+/// The Swift compiler automatically infers the associated ``Value`` type as the
+/// type you specify for the default value. Then use the key to define a new
+/// transaction value property:
+///
+///     extension Transaction {
+///         var myCustomValue: Bool {
+///             get { self[MyTransactionKey.self] }
+///             set { self[MyTransactionKey.self] = newValue }
+///         }
+///     }
+///
+/// Clients of your transaction value never use the key directly.
+/// Instead, they use the key path of your custom transaction value property.
+/// To set the transaction value for a change, wrap that change in a call to
+/// `withTransaction`:
+///
+///     withTransaction(\.myCustomValue, true) {
+///         isActive.toggle()
+///     }
+///
+/// To use the value from inside `MyView` or one of its descendants, use the
+/// ``View/transaction(_:)`` view modifier:
+///
+///     MyView()
+///         .transaction { transaction in
+///             if transaction.myCustomValue {
+///                 transaction.animation = .default.repeatCount(3)
+///             }
+///         }
+public protocol TransactionKey {
+    /// The associated type representing the type of the transaction key's
+    /// value.
+    associatedtype Value
+
+    /// The default value for the transaction key.
+    static var defaultValue: Value { get }
+
+    static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Swift.Bool
+}
+
+extension TransactionKey {
+    public static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
+        compareValues(lhs, rhs)
+    }
+}
+
+extension TransactionKey where Value: Equatable {
+    public static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
+        lhs == rhs
+    }
+}
+
+// MARK: - TransactionPropertyKey
+
+private struct TransactionPropertyKey<Key>: PropertyKey where Key: TransactionKey {
+    typealias Value = Key.Value
+
+    static var defaultValue: Value { Key.defaultValue }
+
+    static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
+        Key._valuesEqual(lhs, rhs)
+    }
+}
+
+// MARK: - Transaction
 
 /// The context of the current state-processing update.
 ///
@@ -62,55 +141,37 @@ public struct Transaction {
     ///         }
     ///     }
     public subscript<K>(key: K.Type) -> K.Value where K: TransactionKey {
-        get {
-            plist[TransactionPropertyKey<K>.self]
-        }
-        set {
-            plist[TransactionPropertyKey<K>.self] = newValue
-        }
+        get { plist[TransactionPropertyKey<K>.self] }
+        set { plist[TransactionPropertyKey<K>.self] = newValue }
     }
     
     @inlinable
     package var isEmpty: Bool { plist.isEmpty }
     
     package func mayConcatenate(with other: Transaction) -> Bool {
-        // preconditionFailure("TODO")
-        false
+        !plist.mayNotBeEqual(to: other.plist)
     }
     
     @_transparent
     package mutating func set(_ other: Transaction) {
-        if plist.isEmpty {
-            if !other.plist.isEmpty {
-                plist = other.plist
-            }
-        } else if other.plist.isEmpty {
-            plist = other.plist
-        } else if plist.data !== other.plist.data {
-            plist = other.plist
-        }
+        plist.set(other.plist)
     }
     
     package static var current: Transaction {
-        if let data = _threadTransactionData() {
-            Transaction(plist: PropertyList(data: data as AnyObject))
-        } else {
-            Transaction()
-        }
+        Transaction(plist: PropertyList(data: threadTransactionData))
     }
     
     package var current: Transaction {
-        preconditionFailure("TODO")
+        var newTransaction = self
+        newTransaction.plist.override(with: Transaction.current.plist)
+        return newTransaction
     }
     
     package func forEach<K>(keyType: K.Type, _ body: (K.Value, inout Bool) -> Void) where K: TransactionKey {
-        preconditionFailure("TODO")
-    }
-    
-    // FIXME: TO BE REMOVED
-    @inline(__always)
-    mutating package func override(_ transaction: Transaction) {
-        plist.override(with: transaction.plist)
+        plist.forEach(
+            keyType: TransactionPropertyKey<K>.self,
+            body
+        )
     }
 }
 
@@ -133,19 +194,15 @@ public func withTransaction<Result>(
     _ body: () throws -> Result
 ) rethrows -> Result {
     try withExtendedLifetime(transaction) {
-        let oldData = _threadTransactionData()
-        defer { _setThreadTransactionData(oldData) }
-        // FIXME after Transaction update
+        let oldData = threadTransactionData
+        defer { threadTransactionData = oldData }
         let result: Transaction
         if isDeployedOnOrAfter(Semantics.v5) {
-            var transaction = Transaction.current
-            transaction.plist.merge(transaction.plist)
-            result = transaction
+            result = Transaction(plist: Transaction.current.plist.merging(transaction.plist))
         } else {
             result = transaction
         }
-        let data = result.plist.elements.map { Unmanaged.passUnretained($0).toOpaque() }
-        _setThreadTransactionData(data)
+        threadTransactionData = result.plist.data
         return try body()
     }
 }
@@ -172,115 +229,9 @@ public func withTransaction<R, V>(
     return try withTransaction(transaction, body)
 }
 
-// MARK: - TransactionKey
-
-/// A key for accessing values in a transaction.
-///
-/// You can create custom transaction values by extending the ``Transaction``
-/// structure with new properties.
-/// First declare a new transaction key type and specify a value for the
-/// required ``defaultValue`` property:
-///
-///     private struct MyTransactionKey: TransactionKey {
-///         static let defaultValue = false
-///     }
-///
-/// The Swift compiler automatically infers the associated ``Value`` type as the
-/// type you specify for the default value. Then use the key to define a new
-/// transaction value property:
-///
-///     extension Transaction {
-///         var myCustomValue: Bool {
-///             get { self[MyTransactionKey.self] }
-///             set { self[MyTransactionKey.self] = newValue }
-///         }
-///     }
-///
-/// Clients of your transaction value never use the key directly.
-/// Instead, they use the key path of your custom transaction value property.
-/// To set the transaction value for a change, wrap that change in a call to
-/// `withTransaction`:
-///
-///     withTransaction(\.myCustomValue, true) {
-///         isActive.toggle()
-///     }
-///
-/// To use the value from inside `MyView` or one of its descendants, use the
-/// ``View/transaction(_:)`` view modifier:
-///
-///     MyView()
-///         .transaction { transaction in
-///             if transaction.myCustomValue {
-///                 transaction.animation = .default.repeatCount(3)
-///             }
-///         }
-public protocol TransactionKey {
-    /// The associated type representing the type of the transaction key's
-    /// value.
-    associatedtype Value
-    
-    /// The default value for the transaction key.
-    static var defaultValue: Value { get }
-    
-    static func _valuesEqual(_ lhs: Self.Value, _ rhs: Self.Value) -> Swift.Bool
-}
-
-extension TransactionKey {
-    public static func _valuesEqual(_ lhs: Self.Value, _ rhs: Self.Value) -> Bool {
-        compareValues(lhs, rhs)
-    }
-}
-
-extension TransactionKey where Value: Equatable {
-    public static func _valuesEqual(_ lhs: Self.Value, _ rhs: Self.Value) -> Bool {
-        lhs == rhs
-    }
-}
-
-// MARK: - TransactionPropertyKey
-
-private struct TransactionPropertyKey<Key>: PropertyKey where Key: TransactionKey {
-    typealias Value = Key.Value
-    
-    static var defaultValue: Key.Value { Key.defaultValue }
-    
-    static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
-        Key._valuesEqual(lhs, rhs)
-    }
-}
-
-// FIXME: TO BE REMOVED
-extension Transaction {
-    package struct Key<K: TransactionKey>: PropertyKey {
-        package static var defaultValue: K.Value { K.defaultValue }
-    }
-}
-
-// MARK: - TransactionID
-
-package struct TransactionID: Comparable, Hashable {
-    package var id: Int
-
-    @inlinable
-    package init() { id = .zero }
-
-    @inlinable
-    package init(graph: Graph) {
-        id = Int(graph.counter(for: ._1))
-    }
-
-    @inlinable
-    package init(context: AnyRuleContext) {
-        self.init(graph: context.attribute.graph)
-    }
-
-    @inlinable
-    package init<Value>(context: RuleContext<Value>) {
-        self.init(graph: context.attribute.graph)
-    }
-
-    @inlinable
-    package static func < (lhs: TransactionID, rhs: TransactionID) -> Bool {
-        lhs.id < rhs.id
-    }
+private var threadTransactionData: AnyObject? {
+    @_silgen_name("_threadTransactionData")
+    get
+    @_silgen_name("_setThreadTransactionData")
+    set
 }

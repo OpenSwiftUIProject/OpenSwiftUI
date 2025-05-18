@@ -99,8 +99,7 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
         guard shouldCommit else {
             return
         }
-        var newTransaction = transaction
-        newTransaction.override(.current)
+        var newTransaction = transaction.current
         onMainThread { [weak self] in
             guard let self else {
                 return

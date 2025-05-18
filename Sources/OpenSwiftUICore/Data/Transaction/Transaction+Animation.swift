@@ -26,8 +26,8 @@ extension Transaction {
     
     /// The animation, if any, associated with the current state change.
     public var animation: Animation? {
-        get { plist[Key<AnimationKey>.self] }
-        set { plist[Key<AnimationKey>.self] = newValue }
+        get { self[AnimationKey.self] }
+        set { self[AnimationKey.self] = newValue }
     }
     
     /// A Boolean value that indicates whether views should disable animations.
@@ -36,7 +36,7 @@ extension Transaction {
     /// update, to prevent ``View/animation(_:)`` from inserting new animations
     /// into the transaction.
     public var disablesAnimations: Bool {
-        get { plist[Key<DisablesAnimationsKey>.self] }
-        set { plist[Key<DisablesAnimationsKey>.self] = newValue }
+        get { self[DisablesAnimationsKey.self] }
+        set { self[DisablesAnimationsKey.self] = newValue }
     }
 }
