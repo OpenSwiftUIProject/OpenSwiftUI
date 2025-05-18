@@ -8,7 +8,7 @@
 package import Foundation
 
 package protocol DerivedLayoutEngine: LayoutEngine {
-  var base: LayoutComputer { get }
+    var base: LayoutComputer { get }
 }
 
 extension DerivedLayoutEngine {
