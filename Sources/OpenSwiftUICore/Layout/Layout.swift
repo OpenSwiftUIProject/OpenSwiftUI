@@ -11,6 +11,7 @@ public import CoreGraphics
 #endif
 public import Foundation
 package import OpenGraphShims
+import OpenSwiftUI_SPI
 
 // MARK: - LayoutProperties
 
@@ -711,6 +712,10 @@ public struct LayoutSubview: Equatable {
 @available(*, unavailable)
 extension LayoutSubview: Sendable {}
 
+// MARK: - PlacementData [WIP]
+
+private struct PlacementData {}
+
 // MARK: - LayoutValueKey
 
 /// A key for accessing a layout value of a layout container's subviews.
@@ -871,3 +876,17 @@ public struct _LayoutTrait<K>: _ViewTraitKey where K: LayoutValueKey {
 
 @available(*, unavailable)
 extension _LayoutTrait: Sendable {}
+
+// MARK: - threadLayoutData
+
+@_transparent
+private var threadLayoutData: AnyObject? {
+    get {
+        _threadLayoutData() as AnyObject?
+    }
+    set {
+        _setThreadLayoutData(
+            newValue.map { Unmanaged.passUnretained($0).toOpaque() }
+        )
+    }
+}

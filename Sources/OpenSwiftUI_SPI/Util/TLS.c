@@ -11,6 +11,7 @@
 static _Thread_local int64_t _perThreadUpdateCount = 0;
 static _Thread_local void * _perThreadTransactionData = NULL;
 static _Thread_local uint32_t _perThreadTransactionID = 0;
+static _Thread_local void * _perThreadLayoutData = NULL;
 static _Thread_local void * _perThreadGeometryProxyData = NULL;
 
 void _setThreadTransactionData(void * data) {
@@ -31,4 +32,12 @@ uint32_t _threadTransactionID(bool increase) {
         _perThreadTransactionID = result;
         return result;
     }
+}
+
+void _setThreadLayoutData(void * data) {
+    _perThreadLayoutData = data;
+}
+
+void *_threadLayoutData(void) {
+    return _perThreadLayoutData;
 }
