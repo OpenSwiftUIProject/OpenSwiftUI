@@ -164,4 +164,13 @@ extension Subgraph {
         preconditionFailure("#39")
     }
 }
+
+extension Rule where Self: Hashable {
+    package func cachedValue(
+        options: OGCachedValueOptions = [],
+        owner: AnyAttribute?
+    ) -> Value {
+        preconditionFailure("#39")
+    }
+}
 #endif
