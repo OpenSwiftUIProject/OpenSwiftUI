@@ -634,13 +634,7 @@ package struct RootGeometry: Rule, AsyncAttribute {
             origin += (proposal-fittingSize) * 0.5
         }
 
-        // For RTL layout, adjust the x position to maintain proper visual alignment
-        if let layoutDirection, layoutDirection == .rightToLeft {
-            // This flips the x-coordinate to maintain proper visual layout in RTL mode
-            origin.x = proposedSize.width - CGRect(origin: origin, size: fittingSize).maxX
-        }
-
-        return ViewGeometry(
+        var geometry = ViewGeometry(
             origin: ViewOrigin(origin),
             dimensions: ViewDimensions(
                 guideComputer: layoutComputer,
@@ -648,6 +642,10 @@ package struct RootGeometry: Rule, AsyncAttribute {
                 proposal: .init(proposal)
             )
         )
+        if let layoutDirection {
+            geometry.finalizeLayoutDirection(layoutDirection, parentSize: proposedSize.value)
+        }
+        return geometry
     }
 }
 
