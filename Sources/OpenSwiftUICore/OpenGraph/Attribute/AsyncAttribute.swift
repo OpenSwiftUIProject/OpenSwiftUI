@@ -27,9 +27,3 @@ extension Attribute {
         }
     }
 }
-
-// FIXME: Add OGChangedValueFlagsRequiresMainThread in OpenGraph
-
-extension OGChangedValueFlags {
-    static let requiresMainThread = Self(rawValue: 2)
-}
