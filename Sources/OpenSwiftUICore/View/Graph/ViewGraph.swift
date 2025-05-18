@@ -531,12 +531,74 @@ private struct RootTransform: Rule {
 
 // MARK: - RootGeometry
 
+/// Calculates the geometry of the root view within the proposed size.
+///
+/// `RootGeometry` is responsible for:
+/// - Computing the size that fits the content based on layout preferences
+/// - Determining the origin of the content, applying centering if needed
+/// - Handling right-to-left layout direction adjustments
+/// - Applying safe area insets to the available space
+///
+/// The diagram below illustrates how the geometry is calculated:
+///
+/// ```
+/// |←--------------------------proposedSize.value.width--------------------------→|  (0, 0)
+/// ┌──────────────────────────────────────────────────────────────────────────────┐  ┌─────────> x
+/// │     (x: insets.leading, y: insets.top)                                       |  │
+/// │     ↓                                                                        |  |
+/// |     |←--------------------------proposal.width--------------------------→|   |  |
+/// │     ┌────────────┬───────────────────────────────────────────────────────┐   |  |
+/// │     |████████████|                                                       |   │  ↓ y
+/// │     |████████████|                                                       |   │  
+/// │     ├────────────┘                                                       │   |  
+/// |     |←----------→|                                                       |   |  
+/// │     |fittingSize.width                                                   |   |  
+/// │     |                                                                    |   │  
+/// |     |                                                                    |   |  
+/// |     |                                                                    |   |  
+/// |     |                                                                    |   |  
+/// │     |        centersRootView == true:                                    │   |  
+/// │     |        origin = insets + (proposal - fittingSize) * 0.5            │   |  
+/// │     |                                                                    |   │  
+/// │     |        centersRootView == false:                                   |   │  
+/// │     |        origin = (insets.leading, insets.top)                       |   │  
+/// │     |                                                                    |   │  
+/// │     |        If layoutDirection == .rightToLeft:                         |   │  
+/// │     |        origin.x is flipped to keep visual order consistent         |   │  
+/// │     |                                                                    |   │  
+/// │     └────────────────────────────────────────────────────────────────────┘   |  
+/// |                                                                              |  
+/// └──────────────────────────────────────────────────────────────────────────────┘  
+/// ```
 package struct RootGeometry: Rule, AsyncAttribute {
-    @OptionalAttribute package var layoutDirection: LayoutDirection?
-    @Attribute package var proposedSize: ViewSize
-    @OptionalAttribute package var safeAreaInsets: _SafeAreaInsetsModifier?
-    @OptionalAttribute package var childLayoutComputer: LayoutComputer?
-    
+    /// The layout direction to apply to the root view.
+    ///
+    /// When set to `.rightToLeft`, the x-coordinate will be adjusted to maintain
+    /// proper visual alignment from the right edge.
+    @OptionalAttribute
+    package var layoutDirection: LayoutDirection?
+
+    /// The proposed size for the entire view, including any insets.
+    @Attribute
+    package var proposedSize: ViewSize
+
+    /// Safe area insets to apply to the view.
+    ///
+    /// These insets define padding from the edges of the proposed size.
+    @OptionalAttribute
+    package var safeAreaInsets: _SafeAreaInsetsModifier?
+
+    /// The layout computer used to determine the size of the child view.
+    @OptionalAttribute
+    package var childLayoutComputer: LayoutComputer?
+
+    /// Creates a new root geometry with the specified attributes.
+    ///
+    /// - Parameters:
+    ///   - layoutDirection: The layout direction to apply.
+    ///   - proposedSize: The proposed size for the entire view.
+    ///   - safeAreaInsets: Safe area insets to apply to the view.
+    ///   - childLayoutComputer: The layout computer for determining the child view size.
     package init(
         layoutDirection: OptionalAttribute<LayoutDirection> = .init(),
         proposedSize: Attribute<ViewSize>,
@@ -549,67 +611,43 @@ package struct RootGeometry: Rule, AsyncAttribute {
         _childLayoutComputer = childLayoutComputer
     }
 
-    
-    // |←--------------------------proposedSize.value.width--------------------------→|  (0, 0)
-    // ┌──────────────────────────────────────────────────────────────────────────────┐  ┌─────────> x
-    // │     (x: insets.leading, y: insets.top)                                       |  │
-    // │     ↓                                                                        |  |
-    // |     |←--------------------------proposal.width--------------------------→|   |  |
-    // │     ┌────────────┬───────────────────────────────────────────────────────┐   |  |
-    // │     |████████████|                                                       |   │  ↓ y
-    // │     |████████████|                                                       |   │  eg.
-    // │     ├────────────┘                                                       │   |  proposedSize = (width: 80, height: 30)
-    // |     |←----------→|                                                       |   |  insets = (
-    // │     |fittingSize.width                                                   |   |    top: 4,
-    // │     |                                                                    |   │    leading: 6,
-    // |     | (x: insets.leading + (proposal.width  - fittingSize.width ) * 0.5, |   |    bottom: 2,
-    // |     |  y: insets.top     + (proposal.height - fittingSize.height) * 0.5) |   |    trailing: 4
-    // |     |                           ↓                                        |   |  )
-    // │     |                           ┌────────────┐                           │   |  proposal = (width: 70, height: 24)
-    // │     |                           |████████████|                           │   |  fitting = (width: 14, height: 4)
-    // │     |                           |████████████|                           |   │
-    // │     |                           └────────────┘                           |   │  Result:
-    // │     |                                                                    |   │  center: false + left
-    // │     |                                                                    |   │  x: insets.leading = 6
-    // │     |                                                                    |   │  y: insets.top = 4
-    // │     |                                                                    |   │
-    // │     |                                                                    |   │  center: false + right
-    // │     |                                                                    |   │  x: insets.leading = proposedSize.width-(i.l+f.w)
-    // │     |                                                                    |   │  y: insets.top = 4
-    // │     |                                                                    |   │
-    // │     |                                                                    |   │  center: true + left
-    // │     └────────────────────────────────────────────────────────────────────┘   |  x: i.l+(p.width-f.width)*0.5=34
-    // |                                                                              |  y: i.t+(p.height-f.height)*0.5=14
-    // └──────────────────────────────────────────────────────────────────────────────┘
     package var value: ViewGeometry {
-        .init(origin: .zero, dimensions: .zero)
-//        preconditionFailure("TODO")
-//        let layoutComputer = childLayoutComputer ?? .defaultValue
-//        let insets = safeAreaInsets?.insets ?? EdgeInsets()
-//        let proposal = proposedSize.value.inset(by: insets)
-//        let fittingSize = layoutComputer.delegate.sizeThatFits(_ProposedSize(size: proposal))
-//        
-//        var x = insets.leading
-//        var y = insets.top
-//        if ViewGraph.current.centersRootView {
-//            x += (proposal.width - fittingSize.width) * 0.5
-//            y += (proposal.height - fittingSize.height) * 0.5
-//        }
-//        
-//        let layoutDirection = layoutDirection ?? .leftToRight
-//        switch layoutDirection {
-//        case .leftToRight:
-//            break
-//        case .rightToLeft:
-//            x = proposedSize.value.width - CGRect(origin: CGPoint(x: x, y: y), size: fittingSize).maxX
-//        }
-//        return ViewGeometry(
-//            origin: ViewOrigin(value: CGPoint(x: x, y: y)),
-//            dimensions: ViewDimensions(
-//                guideComputer: layoutComputer,
-//                size: ViewSize(value: fittingSize, _proposal: proposal)
-//            )
-//        )
+        let layoutComputer = childLayoutComputer ?? .defaultValue
+        let insets: EdgeInsets
+        if let safeAreaInsets {
+            var safeAreaInsets = safeAreaInsets.elements.reduce(.zero, { $0 + $1.insets })
+            // Apply flipping if needed to convert left/right insets to leading/trailing
+            if let layoutDirection {
+                safeAreaInsets.xFlipIfRightToLeft { layoutDirection }
+            }
+            insets = safeAreaInsets
+        } else {
+            insets = .zero
+        }
+        let proposal = proposedSize.value.inset(by: insets)
+        let fittingSize = layoutComputer.sizeThatFits(.init(proposal))
+        // Start with origin at the safe area offset
+        var origin = CGPoint(x: insets.leading, y: insets.top)
+
+        // Apply centering if needed
+        if ViewGraph.current.centersRootView {
+            origin += (proposal-fittingSize) * 0.5
+        }
+
+        // For RTL layout, adjust the x position to maintain proper visual alignment
+        if let layoutDirection, layoutDirection == .rightToLeft {
+            // This flips the x-coordinate to maintain proper visual layout in RTL mode
+            origin.x = proposedSize.width - CGRect(origin: origin, size: fittingSize).maxX
+        }
+
+        return ViewGeometry(
+            origin: ViewOrigin(origin),
+            dimensions: ViewDimensions(
+                guideComputer: layoutComputer,
+                size: fittingSize,
+                proposal: .init(proposal)
+            )
+        )
     }
 }
 
