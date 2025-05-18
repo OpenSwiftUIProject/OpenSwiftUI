@@ -83,9 +83,13 @@ open class CoreGlue: NSObject {
         preconditionFailure("")
     }
 
-//    open func makeLayoutView<L>(root: _GraphValue<L>, inputs: _ViewInputs, body: (_Graph, _ViewInputs) -> _ViewListOutputs) -> _ViewOutputs where L: Layout {
-//        preconditionFailure("")
-//    }
+    open func makeLayoutView<L>(
+        root: _GraphValue<L>,
+        inputs: _ViewInputs,
+        body: (_Graph, _ViewInputs) -> _ViewListOutputs
+    ) -> _ViewOutputs where L: Layout {
+        preconditionFailure("")
+    }
 
     open func addDisplayListTreeValue(outputs: inout _ViewOutputs) {
         preconditionFailure("")
