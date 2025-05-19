@@ -1549,6 +1549,156 @@ public struct _LayoutTrait<K>: _ViewTraitKey where K: LayoutValueKey {
 @available(*, unavailable)
 extension _LayoutTrait: Sendable {}
 
+// MARK: - Layout + View
+
+extension Layout {
+    /// Combines the specified views into a single composite view using
+    /// the layout algorithms of the custom layout container.
+    ///
+    /// Don't call this method directly. SwiftUI calls it when you
+    /// instantiate a custom layout that conforms to the ``Layout``
+    /// protocol:
+    ///
+    ///     BasicVStack { // Implicitly calls callAsFunction.
+    ///         Text("A View")
+    ///         Text("Another View")
+    ///     }
+    ///
+    /// For information about how Swift uses the `callAsFunction()` method to
+    /// simplify call site syntax, see
+    /// [Methods with Special Names](https://docs.swift.org/swift-book/ReferenceManual/Declarations.html#ID622)
+    /// in *The Swift Programming Language*.
+    ///
+    /// - Parameter content: A ``ViewBuilder`` that contains the views to
+    ///   lay out.
+    ///
+    /// - Returns: A composite view that combines all the input views.
+    @_alwaysEmitIntoClient
+    @_disfavoredOverload
+    public func callAsFunction<V>(@ViewBuilder _ content: () -> V) -> some View where V: View {
+        return _VariadicView.Tree(_LayoutRoot(self)) { content() }
+    }
+
+    @_spi(_)
+    @available(*, deprecated, message: "replaced by implicit function call")
+    @_alwaysEmitIntoClient
+    public func content<V>(@ViewBuilder _ content: () -> V) -> some View where V: View {
+        return callAsFunction(content)
+    }
+}
+
+// MARK: - LayoutRoot
+
+@frozen
+public struct _LayoutRoot<L>: _VariadicView.UnaryViewRoot where L: Layout {
+    @usableFromInline
+    var layout: L
+
+    @inlinable package init(_ layout: L) { self.layout = layout }
+
+    nonisolated public static func _makeView(
+        root: _GraphValue<_LayoutRoot<L>>,
+        inputs: _ViewInputs,
+        body: (_Graph, _ViewInputs) -> _ViewListOutputs
+    ) -> _ViewOutputs {
+        L._makeLayoutView(
+            root: root[offset: { .of(&$0.layout) }],
+            inputs: inputs,
+            body: body
+        )
+    }
+}
+
+@available(*, unavailable)
+extension _LayoutRoot: Sendable {}
+
+// MARK: - AnyLayoutProperties
+
+package struct AnyLayoutProperties: Rule, AsyncAttribute {
+    @Attribute var layout: AnyLayout
+
+    package var value: Axis? {
+        layout.storage.layoutProperties.stackOrientation
+    }
+
+    package init(layout: Attribute<AnyLayout>) {
+        _layout = layout
+    }
+}
+
+// MARK: - ViewSizeCache
+
+/// A cache for storing and retrieving view sizes based on proposed size values.
+///
+/// `ViewSizeCache` provides an efficient way to cache calculated sizes for views,
+/// avoiding redundant size calculations when the same proposed size is requested multiple times.
+package struct ViewSizeCache {
+    private var cache: Cache3<ProposedViewSize, CGSize>
+
+    /// Creates a new view size cache.
+    ///
+    /// - Parameter cache: An optional pre-configured cache. If not provided, a new cache will be created.
+    package init(cache: Cache3<ProposedViewSize, CGSize> = .init()) {
+        self.cache = cache
+    }
+
+    /// Retrieves a cached size for the given proposed size, computing it if not already cached.
+    ///
+    /// This method returns a cached value if available. If the value isn't cached,
+    /// it calls the provided closure to compute the value, caches it, and then returns it.
+    ///
+    /// - Parameters:
+    ///   - k: The proposed size to use as a key for the cache lookup.
+    ///   - makeValue: A closure that computes the size when no cached value is available.
+    /// - Returns: The cached or newly computed size.
+    @inline(__always)
+    package mutating func get(_ k: _ProposedSize, makeValue: () -> CGSize) -> CGSize {
+        cache.get(ProposedViewSize(k), makeValue: makeValue)
+    }
+}
+
+// MARK: - _GraphInputs / _ViewInputs + needsDynamicLayout
+
+extension _GraphInputs {
+    package var needsDynamicLayout: Bool {
+        get { options.contains(.needsDynamicLayout) }
+        set { options.setValue(newValue, for: .needsDynamicLayout) }
+    }
+}
+
+extension _ViewInputs {
+    package var needsDynamicLayout: Bool {
+        get { base.needsDynamicLayout }
+        set { base.needsDynamicLayout = newValue }
+    }
+}
+
+// MARK: - Deprecated types for @spi(_)
+
+@_spi(_)
+@available(*, deprecated, renamed: "Layout")
+public typealias ViewLayout = Layout
+
+@_spi(_)
+@available(*, deprecated, renamed: "LayoutSubview")
+public typealias ViewLayoutSubview = LayoutSubview
+
+@_spi(_)
+@available(*, deprecated, renamed: "LayoutSubviews")
+public typealias ViewLayoutSubviews = LayoutSubviews
+
+@_spi(_)
+@available(*, deprecated, renamed: "LayoutProperties")
+public typealias ViewLayoutProperties = LayoutProperties
+
+@_spi(_)
+@available(*, deprecated, renamed: "LayoutValueKey")
+public typealias ViewLayoutKey = LayoutValueKey
+
+@_spi(_)
+@available(*, deprecated, renamed: "_LayoutRoot")
+public typealias _ViewLayoutRoot<L> = _LayoutRoot<L> where L : Layout
+
 // MARK: - threadLayoutData
 
 @_transparent
