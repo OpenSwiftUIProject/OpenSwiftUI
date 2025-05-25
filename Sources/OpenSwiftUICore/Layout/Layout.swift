@@ -8,8 +8,10 @@
 
 #if canImport(Darwin)
 public import CoreGraphics
-#endif
+import Foundation
+#else
 public import Foundation
+#endif
 package import OpenGraphShims
 import OpenSwiftUI_SPI
 
@@ -630,6 +632,70 @@ extension Layout {
         inputs: _ViewInputs,
         body: (_Graph, _ViewInputs) -> _ViewListOutputs
     ) -> _ViewOutputs {
+        var root = root
+        var inputs = inputs
+        _makeAnimatable(value: &root, inputs: inputs.base)
+        let properties: LayoutProperties
+        if Self.self == AnyLayout.self {
+            let anyLayoutProperties = AnyLayoutProperties(layout: root.value.unsafeCast(to: AnyLayout.self))
+            let dynamicStackOrientation = Attribute(anyLayoutProperties)
+            inputs.dynamicStackOrientation = OptionalAttribute(dynamicStackOrientation)
+            properties = LayoutProperties()
+        } else {
+            if let orientation = layoutProperties.stackOrientation {
+                inputs.stackOrientation = orientation
+            } else {
+                inputs.dynamicStackOrientation = OptionalAttribute()
+            }
+            properties = LayoutProperties()
+        }
+        inputs.stackOrientation = properties.stackOrientation
+        if inputs.archivedView.isArchived {
+            inputs.viewListOptions.formUnion(.needsArchivedAnimationTraits)
+        }
+        let outputs = body(_Graph(), inputs)
+        switch outputs.views {
+        case let .staticList(elements):
+            if inputs.needsDynamicLayout {
+                return makeDynamicView(
+                    root: root,
+                    inputs: inputs,
+                    properties: properties,
+                    list: outputs.makeAttribute(viewInputs: inputs)
+                )
+            } else {
+                return makeStaticView(
+                    root: root,
+                    inputs: inputs,
+                    properties: properties,
+                    list: elements
+                )
+            }
+        case let .dynamicList(viewList, modifier):
+            return makeDynamicView(
+                root: root,
+                inputs: inputs,
+                properties: properties,
+                list: outputs.makeAttribute(viewInputs: inputs)
+            )
+        }
+    }
+
+    static func makeDynamicView(
+        root: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        properties: LayoutProperties,
+        list: Attribute<any ViewList>
+    ) -> _ViewOutputs {
+        preconditionFailure("TODO")
+    }
+
+    static func makeStaticView(
+        root: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        properties: LayoutProperties,
+        list: ViewList.Elements
+    ) -> _ViewOutputs {
         preconditionFailure("TODO")
     }
 }
@@ -639,7 +705,7 @@ extension Layout {
         rule: inout R,
         layoutContext ctx: SizeAndSpacingContext,
         children: LayoutProxyCollection
-    ) where R : StatefulRule, R.Value == LayoutComputer {
+    ) where R: StatefulRule, R.Value == LayoutComputer {
         preconditionFailure("TODO")
     }
 
