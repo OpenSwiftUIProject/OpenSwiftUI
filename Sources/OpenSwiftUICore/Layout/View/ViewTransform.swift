@@ -8,7 +8,9 @@
 //  ID: 1CC2FE016A82CF91549A64E942CE8ED4 (SwiftUICore)
 
 package import Foundation
+#if !canImport(Darwin)
 package import CoreGraphicsShims
+#endif
 
 @_spi(ForOpenSwiftUIOnly)
 public struct ViewTransform: Equatable, CustomStringConvertible {

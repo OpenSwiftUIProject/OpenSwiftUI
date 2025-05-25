@@ -2,13 +2,15 @@
 //  ViewInputs.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  ID: C38EF38637B6130AEFD462CBD5EAC727 (SwiftUICore)
 //  Status: Complete
 
 #if !canImport(Darwin)
 package import Foundation
 #endif
 package import OpenGraphShims
+
+// MARK: - ViewInputs [6.0.87]
 
 package typealias ViewPhase = _GraphInputs.Phase
 
@@ -50,7 +52,10 @@ public struct _ViewInputs {
     
     package var viewPhase: Attribute<ViewPhase> {
         get { base.phase }
-        set { base.phase = newValue }
+        set {
+            base.phase = newValue
+            base.changedDebugProperties.formUnion(.phase)
+        }
     }
     
     package var transaction: Attribute<Transaction> {
@@ -227,28 +232,108 @@ extension _ViewInputs {
     }
 
     @inline(__always)
-    func detachedEnvironmentInputs() -> Self {
+    func detachedEnvironmentInputs() -> _ViewInputs {
         var newInputs = self
         newInputs.detachEnvironmentInputs()
         return newInputs
     }
 }
 
-// FIXME
-@available(*, deprecated, message: "TO BE REMOVED")
+// MARK: - DynamicStackOrientation [6.0.87]
+
+package struct DynamicStackOrientation: ViewInput {
+    package static let defaultValue: OptionalAttribute<Axis?> = .init()
+}
+
+// MARK: - ViewInputs without Geometry Dependencies [6.4.41]
+
 extension _ViewInputs {
-    mutating func append<Input: ViewInput, Value>(_ value: Value, to type: Input.Type) where Input.Value == [Value] {
-        var values = base[type]
-        values.append(value)
-        base[type] = values
+    package var withoutGeometryDependencies: _ViewInputs {
+        let viewGraph = ViewGraph.current
+        var inputs = self
+        inputs.position = viewGraph.$zeroPoint
+        inputs.transform = viewGraph.intern(ViewTransform(), id: .defaultValue)
+        inputs.containerPosition = viewGraph.$zeroPoint
+        inputs.size = viewGraph.intern(ViewSize.zero, id: .defaultValue)
+        inputs.requestsLayoutComputer = false
+        inputs.needsGeometry = false
+        inputs.preferences.remove(DisplayList.Key.self)
+        inputs.preferences.remove(ViewRespondersKey.self)
+        return inputs
     }
 
-    mutating func popLast<Input: ViewInput, Value>(_ type: Input.Type) -> Value? where Input.Value == [Value]  {
-        var values = base[type]
-        guard let value = values.popLast() else {
-            return nil
+    package init(withoutGeometry base: _GraphInputs) {
+        let base = base
+        let viewGraph = ViewGraph.current
+        let position = viewGraph.$zeroPoint
+        let size = viewGraph.intern(ViewSize.zero, id: .defaultValue)
+        let transform = viewGraph.intern(ViewTransform(), id: .defaultValue)
+        let containerPosition = viewGraph.$zeroPoint
+        let hostKeys = Attribute(value: PreferenceKeys())
+
+        self.base = base
+        self.preferences = PreferencesInputs(hostKeys: hostKeys)
+        self.transform = transform
+        self.position = position
+        self.containerPosition = containerPosition
+        self.size = size
+        self.safeAreaInsets = .init()
+        self.scrollableContainerSize = .init()
+    }
+}
+
+extension _ViewListInputs {
+    package var withoutGeometryDependencies: _ViewInputs {
+        let inputs = _ViewInputs(withoutGeometry: base)
+        return inputs.withoutGeometryDependencies
+    }
+}
+
+// MARK: ResetDeltaModifier [6.4.41]
+
+private struct ResetDeltaModifier: MultiViewModifier, PrimitiveViewModifier {
+    var delta: UInt32
+
+    nonisolated static func _makeView(
+        modifier: _GraphValue<ResetDeltaModifier>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        let phase = ChildPhase(base: inputs.base.phase, delta: modifier.value.unsafeOffset(at: 0, as: UInt32.self))
+        inputs.viewPhase = Attribute(phase)
+        return body(_Graph(), inputs)
+    }
+
+    struct ChildPhase: Rule {
+        @Attribute var base: _GraphInputs.Phase
+        @Attribute var delta: UInt32
+
+        var value: _GraphInputs.Phase {
+            var phase = base
+            phase.resetSeed += delta
+            return phase
         }
-        base[type] = values
-        return value
+    }
+}
+
+extension View {
+    package func reset(delta: UInt32) -> some View {
+        modifier(ResetDeltaModifier(delta: delta))
+    }
+}
+
+// MARK: Resolve Shape Style [6.4.41]
+
+extension _ViewInputs {
+    package func resolvedShapeStyles(
+        role: ShapeRole,
+        mode: Attribute<_ShapeStyle_ResolverMode>? = nil
+    ) -> Attribute<_ShapeStyle_Pack> {
+        base.cachedEnvironment.wrappedValue.resolvedShapeStyles(
+            for: self,
+            role: role,
+            mode: mode
+        )
     }
 }
