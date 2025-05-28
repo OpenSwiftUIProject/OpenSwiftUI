@@ -1,11 +1,14 @@
 //
-//  AlignmentID.swift
-//  OpenSwiftUI
+//  AlignmentGuide.swift
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
 //  Status: Complete
+//  ID: E20796D15DD3D417699102559E024115 (SwiftUI)
+//  ID: 1135C055CD2C2B1265C25B13E3E74C01 (SwiftUICore)
 
 public import Foundation
+
+// MARK: - AlignmentID [6.4.41]
 
 /// A type that you use to create custom alignment guides.
 ///
@@ -70,7 +73,7 @@ public import Foundation
 /// of the top-most rectangle in each stack are aligned with each
 /// other.](AlignmentId-1-iOS)
 ///
-/// You can also use the ``View/alignmentGuide(_:computeValue:)-6y3u2`` view
+/// You can also use the ``View/alignmentGuide(_:computeValue:)`` view
 /// modifier to alter the behavior of your custom guide for a view, as you
 /// might alter a built-in guide. For example, you can change
 /// one of the stacks of stripes from the previous example to align its
@@ -119,7 +122,7 @@ public protocol AlignmentID {
     ///
     /// You can override the default value that this method returns for a
     /// particular guide by adding the
-    /// ``View/alignmentGuide(_:computeValue:)-9mdoh`` view modifier to a
+    /// ``View/alignmentGuide(_:computeValue:)`` view modifier to a
     /// particular view.
     ///
     /// - Parameter context: The context of the view that you apply
@@ -132,7 +135,9 @@ public protocol AlignmentID {
     /// - Returns: The offset of the guide from the origin in the
     ///   view's coordinate space.
     static func defaultValue(in context: ViewDimensions) -> CGFloat
-    
+
+    /// Updates `parentValue` with the `n`th explicit child guide value, as
+    /// projected into the parent's coordinate space.
     static func _combineExplicit(childValue: CGFloat, _ n: Int, into parentValue: inout CGFloat?)
 }
 
@@ -151,10 +156,61 @@ extension AlignmentID {
         let n = CGFloat(n)
         parentValue = (value * n + childValue) / (n + 1.0)
     }
+
+    package static func combineExplicit<S>(_ values: S) -> CGFloat? where S: Sequence, S.Element == CGFloat? {
+        var result: CGFloat? = nil
+        var n = 0
+        for childValue in values {
+            guard let childValue else {
+                continue
+            }
+            _combineExplicit(childValue: childValue, n, into: &result)
+            n += 1
+        }
+        return result
+    }
 }
 
 protocol FrameAlignment: AlignmentID {}
 
 extension FrameAlignment {
     static func _combineExplicit(childValue _: CGFloat, _: Int, into _: inout CGFloat?) {}
+}
+
+
+// MARK: - AlignmentKey [6.4.41]
+
+@usableFromInline
+@frozen
+package struct AlignmentKey: Hashable, Comparable {
+    private let bits: UInt
+
+    @usableFromInline
+    package static func < (lhs: AlignmentKey, rhs: AlignmentKey) -> Bool {
+        lhs.bits < rhs.bits
+    }
+
+    @AtomicBox
+    private static var typeCache = TypeCache(typeIDs: [:], types: [])
+
+    struct TypeCache {
+        var typeIDs: [ObjectIdentifier: UInt]
+        var types: [AlignmentID.Type]
+    }
+
+    init(id: AlignmentID.Type, axis _: Axis) {
+        let index: UInt
+        if let value = AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] {
+            index = value
+        } else {
+            index = UInt(AlignmentKey.typeCache.types.count)
+            AlignmentKey.typeCache.types.append(id)
+            AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] = index
+        }
+        bits = index * 2 + 3
+    }
+
+    var id: AlignmentID.Type {
+        AlignmentKey.typeCache.types[Int(bits / 2 - 1)]
+    }
 }

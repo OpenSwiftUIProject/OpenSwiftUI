@@ -1,10 +1,13 @@
 //
-//  AlignmentIDTests.swift
+//  AlignmentGuideTests.swift
 //  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
-import Testing
 import Foundation
+import Numerics
+import OpenSwiftUICore
+import Testing
+
+// MARK: - AlignmentIDTests
 
 struct AlignmentIDTests {
     private struct TestAlignment: AlignmentID {
@@ -21,9 +24,7 @@ struct AlignmentIDTests {
                 into: &value
             )
             let value = try #require(value)
-            // TODO: use swift-numerics
-            // https://github.com/apple/swift-testing/issues/165
-            #expect(abs(value - CGFloat(n) / 2) <= 0.0001)
+            #expect(value.isApproximatelyEqual(to: CGFloat(n) / 2))
         }
     }
 
@@ -38,7 +39,19 @@ struct AlignmentIDTests {
                 into: &value
             )
             let value = try #require(value)
-            #expect(abs(value - child) <= 0.0001)
+            #expect(value.isApproximatelyEqual(to: child))
         }
+    }
+
+    @Test
+    func combineSequence() throws {
+        var values: [CGFloat?] = [1, 3, 5]
+        let result = TestAlignment.combineExplicit(values) ?? .zero
+        #expect(result.isApproximatelyEqual(to: 3.0))
+
+        values.append(nil)
+        values.append(nil)
+        let result2 = TestAlignment.combineExplicit(values) ?? .zero
+        #expect(result2.isApproximatelyEqual(to: 3.0))
     }
 }
