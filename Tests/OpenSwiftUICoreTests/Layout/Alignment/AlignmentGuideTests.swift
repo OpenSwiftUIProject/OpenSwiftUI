@@ -55,3 +55,45 @@ struct AlignmentIDTests {
         #expect(result2.isApproximatelyEqual(to: 3.0))
     }
 }
+
+// MARK: - AlignmentKeyTests
+
+struct AlignmentKeyTests {
+    private struct ZeroAlignment: AlignmentID {
+        static func defaultValue(in context: ViewDimensions) -> CGFloat {
+            .zero
+        }
+    }
+
+    private struct SumAlignment: AlignmentID {
+        static func defaultValue(in context: ViewDimensions) -> CGFloat {
+            context.size.width + context.size.height
+        }
+    }
+
+    @Test
+    func typeAndAxis() {
+        let horizontalKey1 = AlignmentKey(id: ZeroAlignment.self, axis: .horizontal)
+        let horizontalKey2 = AlignmentKey(id: SumAlignment.self, axis: .horizontal)
+        let verticalKey1 = AlignmentKey(id: ZeroAlignment.self, axis: .vertical)
+        let verticalKey2 = AlignmentKey(id: SumAlignment.self, axis: .vertical)
+
+        #expect(horizontalKey1.axis == .horizontal)
+        #expect(horizontalKey2.axis == .horizontal)
+        #expect(verticalKey1.axis == .vertical)
+        #expect(verticalKey2.axis == .vertical)
+
+        #expect(horizontalKey1.id == ZeroAlignment.self)
+        #expect(verticalKey1.id == ZeroAlignment.self)
+        #expect(horizontalKey2.id == SumAlignment.self)
+        #expect(verticalKey2.id == SumAlignment.self)
+    }
+
+    @Test
+    func fraction() {
+        let key1 = AlignmentKey(id: ZeroAlignment.self, axis: .horizontal)
+        let key2 = AlignmentKey(id: SumAlignment.self, axis: .horizontal)
+        #expect(key1.fraction.isApproximatelyEqual(to: .zero))
+        #expect(key2.fraction.isApproximatelyEqual(to: 2.0))
+    }
+}

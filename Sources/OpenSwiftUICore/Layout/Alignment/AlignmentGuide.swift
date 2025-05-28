@@ -177,40 +177,72 @@ extension FrameAlignment {
     static func _combineExplicit(childValue _: CGFloat, _: Int, into _: inout CGFloat?) {}
 }
 
-
 // MARK: - AlignmentKey [6.4.41]
 
-@usableFromInline
+/// A single sort key type for alignment guides in both axes.
+///
+/// You don't use this type directly.
+@_documentation(visibility: private)
 @frozen
-package struct AlignmentKey: Hashable, Comparable {
-    private let bits: UInt
-
-    @usableFromInline
-    package static func < (lhs: AlignmentKey, rhs: AlignmentKey) -> Bool {
-        lhs.bits < rhs.bits
-    }
-
+public struct AlignmentKey: Hashable, Comparable {
     @AtomicBox
     private static var typeCache = TypeCache(typeIDs: [:], types: [])
 
     struct TypeCache {
         var typeIDs: [ObjectIdentifier: UInt]
-        var types: [AlignmentID.Type]
+        var types: [any AlignmentID.Type]
     }
 
-    init(id: AlignmentID.Type, axis _: Axis) {
-        let index: UInt
-        if let value = AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] {
-            index = value
-        } else {
-            index = UInt(AlignmentKey.typeCache.types.count)
-            AlignmentKey.typeCache.types.append(id)
-            AlignmentKey.typeCache.typeIDs[ObjectIdentifier(id)] = index
+    private let bits: UInt
+
+    package var id: any AlignmentID.Type {
+        Self.typeCache.types[index]
+    }
+
+    package var axis: Axis { bits & 1 == 0 ? .horizontal : .vertical }
+
+    @inline(__always)
+    var index: Int { Int(bits / 2 - 1) }
+
+    package init(id: AlignmentID.Type, axis: Axis) {
+        let index = Self.$typeCache.access { cache in
+            let identifier = ObjectIdentifier(id)
+            if let value = cache.typeIDs[identifier] {
+                return value
+            } else {
+                let index = UInt(cache.types.count)
+                cache.types.append(id)
+                cache.typeIDs[identifier] = index
+                return index
+            }
         }
-        bits = index * 2 + 3
+        bits = (axis == .horizontal ? 0 : 1) + (index + 1) * 2
     }
 
-    var id: AlignmentID.Type {
-        AlignmentKey.typeCache.types[Int(bits / 2 - 1)]
+    package init() { bits = .zero }
+
+    public static func < (lhs: AlignmentKey, rhs: AlignmentKey) -> Bool {
+        lhs.bits < rhs.bits
+    }
+
+    package var fraction: CGFloat {
+        let computer = LayoutComputer.defaultValue
+        let dimensions = ViewDimensions(
+            guideComputer: computer,
+            size: .fixed(CGSize(width: 1.0, height: 1.0))
+        )
+        return id.defaultValue(in: dimensions)
+    }
+}
+
+// MARK: - AlignmentGuide [6.4.41]
+
+package protocol AlignmentGuide: Equatable {
+    var key: AlignmentKey { get }
+}
+
+extension AlignmentGuide {
+    package var fraction: CGFloat {
+        key.fraction
     }
 }
