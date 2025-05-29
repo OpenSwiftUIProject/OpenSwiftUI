@@ -23,16 +23,24 @@ public enum Edge: Int8, CaseIterable {
             self.rawValue = rawValue
         }
 
-        public static let top = Set(.top)
-        public static let leading = Set(.leading)
-        public static let bottom = Set(.bottom)
-        public static let trailing = Set(.trailing)
+        public static let top: Set = .init(.top)  // 1
+
+        public static let leading: Set = .init(.leading) // 2
+
+        public static let bottom: Set = .init(.bottom) // 4
+
+        public static let trailing: Set = .init(.trailing) // 8
+
         public static let all: Set = [.top, .leading, .bottom, .trailing]
-        public static let horizontal: Set = [.leading, .trailing]
-        public static let vertical: Set = [.top, .bottom]
+
+        public static let horizontal: Set = [.leading, .trailing] // 0xa
+
+        public static let vertical: Set = [.top, .bottom] // 0x5
 
         /// Creates an instance containing just e
-        public init(_ e: Edge) { self.init(rawValue: 1 << e.rawValue) }
+        public init(_ e: Edge) {
+            rawValue = 1 << e.rawValue
+        }
 
         package func contains(_ edge: Edge) -> Bool {
             contains(.init(edge))

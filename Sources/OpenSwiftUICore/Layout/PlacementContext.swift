@@ -4,7 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: Complete
-//  ID: BA60BF7120E939C5C25B2A488163D4AC
+//  ID: BA60BF7120E939C5C25B2A488163D4AC (SwiftUICore)
 
 package import Foundation
 package import OpenGraphShims

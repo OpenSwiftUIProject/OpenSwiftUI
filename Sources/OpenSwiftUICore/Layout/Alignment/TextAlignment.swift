@@ -2,10 +2,11 @@
 //  TextAlignment.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
 
 package import Foundation
+
+// MARK: - TextAlignment [6.0.87]
 
 /// An alignment position for text along the horizontal axis.
 @frozen
