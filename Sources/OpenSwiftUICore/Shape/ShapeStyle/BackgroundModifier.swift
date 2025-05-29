@@ -2,11 +2,6 @@
 //  BackgroundModifier.swift
 //  OpenSwiftUICore
 
-// FIXME
-public enum Alignment {
-    case center
-}
-
 @frozen
 public struct _BackgroundModifier<Background>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Background: View {
     public var background: Background
