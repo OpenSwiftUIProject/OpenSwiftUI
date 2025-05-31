@@ -671,7 +671,7 @@ extension Layout {
                     list: elements
                 )
             }
-        case let .dynamicList(viewList, modifier):
+        case .dynamicList:
             return makeDynamicView(
                 root: root,
                 inputs: inputs,
@@ -1132,7 +1132,7 @@ private protocol DefaultAlignmentFunction {
     ) -> CGFloat?
 }
 
-// MARK: - ViewLayoutEngine [6.4.41] [WIP]
+// MARK: - ViewLayoutEngine [6.4.41]
 
 struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layout {
     var layout: L
@@ -1225,7 +1225,51 @@ struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layo
     }
 
     mutating func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
-        preconditionFailure("TODO")
+        let count = proxies.count
+        if cachedAlignmentSize == parentSize, origin == .zero, cachedAlignmentGeometry.count == proxies.count {
+            return cachedAlignmentGeometry
+        } else {
+            let proposal = parentSize.proposal
+            let frame = CGRect(origin: origin, size: parentSize.value)
+            var data = PlacementData(
+                unknown: false,
+                geometrys: Array(repeating: ViewGeometry.invalidValue, count: count),
+                invalidCount: 0,
+                frame: frame,
+                layoutDirection: layoutDirection
+            )
+            withUnsafeMutablePointer(to: &data) { data in
+                let oldData = threadLayoutData
+                threadLayoutData = data
+                layout.placeSubviews(
+                    in: frame,
+                    proposal: ProposedViewSize(proposal),
+                    subviews: LayoutSubviews(
+                        context: proxies.context,
+                        storage: .direct(proxies.attributes),
+                        layoutDirection: layoutDirection
+                    ),
+                    cache: &cache
+                )
+                threadLayoutData = oldData
+                guard data.pointee.invalidCount != count else {
+                    return
+                }
+                for (index, geometry) in data.pointee.geometrys.enumerated() {
+                    guard geometry.isInvalid else {
+                        continue
+                    }
+                    let dimiensions = proxies[index].dimensions(in: parentSize.proposal)
+                    let center = data.pointee.frame.center
+                    data.pointee.setGeometry(
+                        dimiensions.centered(in: CGSize(center)),
+                        at: index,
+                        layoutDirection: .leftToRight
+                    )
+                }
+            }
+            return data.geometrys
+        }
     }
 
     mutating func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
@@ -1613,9 +1657,11 @@ public struct LayoutSubview: Equatable {
 @available(*, unavailable)
 extension LayoutSubview: Sendable {}
 
-// MARK: - PlacementData [6.4.41] [WIP]
+// MARK: - PlacementData [6.4.41]
 
 private struct PlacementData {
+    var unknown: Bool // FIXME
+
     var geometrys: [ViewGeometry]
 
     var invalidCount: Int
@@ -1623,6 +1669,8 @@ private struct PlacementData {
     var frame: CGRect
 
     var layoutDirection: LayoutDirection
+
+    static var current: UnsafeMutablePointer<PlacementData>? { threadLayoutData }
 
     mutating func setGeometry(_ geometry: ViewGeometry, at index: Int, layoutDirection: LayoutDirection) {
         if geometrys[index].isInvalid {
@@ -1632,6 +1680,18 @@ private struct PlacementData {
         if layoutDirection != self.layoutDirection {
             geometrys[index].origin.x = frame.maxX - (geometry.frame.maxX - frame.x)
         }
+    }
+}
+
+// MARK: - threadLayoutData
+
+@_transparent
+private var threadLayoutData: UnsafeMutablePointer<PlacementData>? {
+    get {
+        _threadLayoutData()?.assumingMemoryBound(to: PlacementData.self)
+    }
+    set {
+        _setThreadLayoutData(newValue)
     }
 }
 
@@ -1954,17 +2014,3 @@ public typealias ViewLayoutKey = LayoutValueKey
 @_spi(_)
 @available(*, deprecated, renamed: "_LayoutRoot")
 public typealias _ViewLayoutRoot<L> = _LayoutRoot<L> where L : Layout
-
-// MARK: - threadLayoutData
-
-@_transparent
-private var threadLayoutData: AnyObject? {
-    get {
-        _threadLayoutData() as AnyObject?
-    }
-    set {
-        _setThreadLayoutData(
-            newValue.map { Unmanaged.passUnretained($0).toOpaque() }
-        )
-    }
-}
