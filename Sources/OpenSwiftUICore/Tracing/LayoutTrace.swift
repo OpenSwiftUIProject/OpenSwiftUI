@@ -52,11 +52,17 @@ package struct LayoutTrace {
         }
 
         func traceCacheLookup(_ proposal: _ProposedSize, _ hit: Bool) {
-            preconditionFailure("TODO")
+            guard let recorder else {
+                return
+            }
+            recorder.cacheLookup = (proposal, hit)
         }
 
         func traceCacheLookup(_ proposal: CGSize, _ hit: Bool) {
-            preconditionFailure("TODO")
+            guard let recorder else {
+                return
+            }
+            recorder.cacheLookup = (.init(proposal), hit)
         }
 
         func traceChildGeometries(_ attribute: AnyAttribute?, at parentSize: ViewSize, origin: CGPoint, _ block: () -> [ViewGeometry]) -> [ViewGeometry] {

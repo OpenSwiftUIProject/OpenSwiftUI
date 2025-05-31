@@ -6,6 +6,7 @@
 //  Status: WIP
 
 package import Foundation
+package import OpenGraphShims
 
 package protocol UnaryLayout: Animatable, MultiViewModifier, PrimitiveViewModifier {
     associatedtype PlacementContextType = PlacementContext
@@ -46,5 +47,15 @@ extension UnaryLayout {
 
     package func spacing(in context: SizeAndSpacingContext, child: LayoutProxy) -> Spacing {
         child.spacing()
+    }
+}
+
+extension StatefulRule where Value == LayoutComputer {
+    package mutating func updateLayoutComputer<L>(
+        layout: L,
+        environment: Attribute<EnvironmentValues>,
+        attributes: [LayoutProxyAttributes]
+    ) where L: Layout {
+        preconditionFailure("TODO")
     }
 }

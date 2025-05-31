@@ -706,7 +706,11 @@ extension Layout {
         layoutContext ctx: SizeAndSpacingContext,
         children: LayoutProxyCollection
     ) where R: StatefulRule, R.Value == LayoutComputer {
-        preconditionFailure("TODO")
+        rule.update { (engine: inout ViewLayoutEngine<Self>) in
+            engine.update(layout: self, context: ctx, children: children)
+        } create: {
+            ViewLayoutEngine(layout: self, context: ctx, children: children)
+        }
     }
 
     public static var layoutProperties: LayoutProperties {
@@ -1118,6 +1122,165 @@ extension ViewSpacing: CustomStringConvertible {
     }
 }
 
+// MARK: - DefaultAlignmentFunction [6.4.41]
+
+private protocol DefaultAlignmentFunction {
+    static func defaultAlignment(
+        _ key: AlignmentKey,
+        size: ViewSize,
+        data: UnsafeMutableRawPointer
+    ) -> CGFloat?
+}
+
+// MARK: - ViewLayoutEngine [6.4.41] [WIP]
+
+struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layout {
+    var layout: L
+
+    var cache: L.Cache
+
+    var proxies: LayoutProxyCollection
+
+    var layoutDirection: LayoutDirection
+
+    var sizeCache: ViewSizeCache = .init()
+
+    var cachedAlignmentSize: ViewSize = .zero
+
+    var cachedAlignmentGeometry: [ViewGeometry] = []
+
+    var cachedAlignment: Cache3<ObjectIdentifier, CGFloat?> = .init()
+
+    var preferredSpacing: ViewSpacing?
+
+    init(
+        layout: L,
+        context ctx: SizeAndSpacingContext,
+        children: LayoutProxyCollection
+    ) {
+        self.proxies = children
+        self.layoutDirection = ctx.layoutDirection
+        self.layout = layout
+        self.cache = layout.makeCache(
+            subviews: LayoutSubviews(
+                context: children.context,
+                storage: .direct(children.attributes),
+                layoutDirection: layoutDirection
+            )
+        )
+    }
+
+    mutating func update(
+        layout: L,
+        context ctx: SizeAndSpacingContext,
+        children: LayoutProxyCollection
+    ) {
+        self.proxies = children
+        self.layoutDirection = ctx.layoutDirection
+        self.layout = layout
+        self.sizeCache = .init()
+        self.cachedAlignmentGeometry = []
+        self.cachedAlignment = .init()
+        self.preferredSpacing = nil
+        layout.updateCache(
+            &cache,
+            subviews: LayoutSubviews(
+                context: proxies.context,
+                storage: .direct(proxies.attributes),
+                layoutDirection: layoutDirection
+            )
+        )
+    }
+
+    func layoutPriority() -> Double {
+        proxies.attributes.isEmpty ? -Double.infinity : Double.zero
+    }
+
+    mutating func spacing() -> Spacing {
+        guard let preferredSpacing else {
+            let subviews = LayoutSubviews(
+                context: proxies.context,
+                storage: .direct(proxies.attributes),
+                layoutDirection: layoutDirection
+            )
+            let spacing = layout.spacing(subviews: subviews, cache: &cache)
+            preferredSpacing = spacing
+            return spacing.spacing
+        }
+        return preferredSpacing.spacing
+    }
+
+    mutating func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        sizeCache.get(proposedSize) {
+            layout.sizeThatFits(
+                proposal: ProposedViewSize(proposedSize),
+                subviews: LayoutSubviews(
+                    context: proxies.context,
+                    storage: .direct(proxies.attributes),
+                    layoutDirection: layoutDirection
+                ),
+                cache: &cache
+            )
+        }
+    }
+
+    mutating func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] {
+        preconditionFailure("TODO")
+    }
+
+    mutating func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
+        if cachedAlignmentSize != viewSize {
+            cachedAlignmentSize = viewSize
+            cachedAlignmentGeometry = []
+            cachedAlignment = .init()
+        }
+        let key = ObjectIdentifier(k.id)
+        guard let value = cachedAlignment.find(key) else {
+            let value = withUnsafePointer(to: self) { ptr in
+                Self.defaultAlignment(k, size: viewSize, data: UnsafeMutableRawPointer(mutating: ptr))
+            }
+            cachedAlignment.put(key, value: value)
+            return value
+        }
+        return value
+    }
+
+    static func defaultAlignment(_ key: AlignmentKey, size: ViewSize, data: UnsafeMutableRawPointer) -> CGFloat? {
+        guard size.value.isFinite else {
+            return nil
+        }
+        let enginePtr = data.assumingMemoryBound(to: Self.self)
+
+        let proxies = enginePtr.pointee.proxies
+        let oldAlignmentGeometry = enginePtr.pointee.cachedAlignmentGeometry
+        let alignmentGeometry: [ViewGeometry]
+        if oldAlignmentGeometry.count == proxies.count {
+            alignmentGeometry = oldAlignmentGeometry
+        } else {
+            alignmentGeometry = enginePtr.pointee.childGeometries(at: size, origin: .zero)
+            enginePtr.pointee.cachedAlignmentGeometry = alignmentGeometry
+        }
+        var result: CGFloat? = nil
+        guard !alignmentGeometry.isEmpty else {
+            return nil
+        }
+        var n = 0
+        for (index, proxy) in proxies.enumerated() {
+            let geometry = alignmentGeometry[index]
+            guard let value = proxy.layoutComputer.explicitAlignment(
+                key,
+                at: geometry.dimensions.size
+            ) else {
+                continue
+            }
+            let origin = key.axis == .horizontal ? geometry.origin.x : geometry.origin.y
+            key.id._combineExplicit(childValue: origin + value, n, into: &result)
+            n += 1
+        }
+        return result
+    }
+}
+
 // MARK: - LayoutSubviews
 
 /// A collection of proxy values that represent the subviews of a layout view.
@@ -1152,7 +1315,7 @@ public struct LayoutSubviews: Equatable, RandomAccessCollection, Sendable {
 
     var context: AnyRuleContext
 
-    private enum Storage: Equatable {
+    fileprivate enum Storage: Equatable {
         case direct([LayoutProxyAttributes])
         case indirect([IndexedAttributes])
 
@@ -1170,7 +1333,7 @@ public struct LayoutSubviews: Equatable, RandomAccessCollection, Sendable {
         }
     }
 
-    private var storage: Storage
+    fileprivate var storage: Storage
 
     /// The layout direction inherited by the container view.
     ///
@@ -1450,9 +1613,27 @@ public struct LayoutSubview: Equatable {
 @available(*, unavailable)
 extension LayoutSubview: Sendable {}
 
-// MARK: - PlacementData [WIP]
+// MARK: - PlacementData [6.4.41] [WIP]
 
-private struct PlacementData {}
+private struct PlacementData {
+    var geometrys: [ViewGeometry]
+
+    var invalidCount: Int
+
+    var frame: CGRect
+
+    var layoutDirection: LayoutDirection
+
+    mutating func setGeometry(_ geometry: ViewGeometry, at index: Int, layoutDirection: LayoutDirection) {
+        if geometrys[index].isInvalid {
+            invalidCount += 1
+        }
+        geometrys[index] = geometry
+        if layoutDirection != self.layoutDirection {
+            geometrys[index].origin.x = frame.maxX - (geometry.frame.maxX - frame.x)
+        }
+    }
+}
 
 // MARK: - LayoutValueKey
 
@@ -1692,7 +1873,7 @@ package struct AnyLayoutProperties: Rule, AsyncAttribute {
     }
 }
 
-// MARK: - ViewSizeCache
+// MARK: - ViewSizeCache [6.4.41]
 
 /// A cache for storing and retrieving view sizes based on proposed size values.
 ///
@@ -1719,7 +1900,16 @@ package struct ViewSizeCache {
     /// - Returns: The cached or newly computed size.
     @inline(__always)
     package mutating func get(_ k: _ProposedSize, makeValue: () -> CGSize) -> CGSize {
-        cache.get(ProposedViewSize(k), makeValue: makeValue)
+        let key = ProposedViewSize(k)
+        if let value = cache.find(key) {
+            LayoutTrace.traceCacheLookup(k, true)
+            return value
+        } else {
+            LayoutTrace.traceCacheLookup(k, false)
+            let value = makeValue()
+            cache.put(key, value: value)
+            return value
+        }
     }
 }
 
