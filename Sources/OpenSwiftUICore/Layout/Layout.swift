@@ -680,24 +680,6 @@ extension Layout {
             )
         }
     }
-
-    static func makeDynamicView(
-        root: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        properties: LayoutProperties,
-        list: Attribute<any ViewList>
-    ) -> _ViewOutputs {
-        preconditionFailure("TODO")
-    }
-
-    static func makeStaticView(
-        root: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        properties: LayoutProperties,
-        list: ViewList.Elements
-    ) -> _ViewOutputs {
-        preconditionFailure("TODO")
-    }
 }
 
 extension Layout {
