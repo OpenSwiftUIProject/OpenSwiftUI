@@ -125,11 +125,7 @@ public struct _ViewInputs {
         set {
             if let newValue {
                 base.options.formUnion(.viewStackOrientationIsDefined)
-                if newValue == .horizontal {
-                    base.options.formUnion(.viewStackOrientationIsHorizontal)
-                } else {
-                    base.options.subtract(.viewStackOrientationIsHorizontal)
-                }
+                base.options.setValue(newValue == .horizontal, for: .viewStackOrientationIsHorizontal)
             } else {
                 base.options.subtract([.viewStackOrientationIsDefined, .viewStackOrientationIsHorizontal])
             }
@@ -243,6 +239,14 @@ extension _ViewInputs {
 
 package struct DynamicStackOrientation: ViewInput {
     package static let defaultValue: OptionalAttribute<Axis?> = .init()
+}
+
+extension _ViewInputs {
+    @inline(__always)
+    var dynamicStackOrientation: OptionalAttribute<Axis?> {
+        get { self[DynamicStackOrientation.self] }
+        set { self[DynamicStackOrientation.self] = newValue }
+    }
 }
 
 // MARK: - ViewInputs without Geometry Dependencies [6.4.41]

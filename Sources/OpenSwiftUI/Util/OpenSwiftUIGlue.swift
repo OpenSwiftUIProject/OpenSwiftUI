@@ -57,6 +57,14 @@ final public class OpenSwiftUIGlue: CoreGlue {
         MakeDefaultLayoutComputerResult(value: graph.viewGraph().$defaultLayoutComputer)
     }
 
+    override final public func makeLayoutView<L>(
+        root: _GraphValue<L>,
+        inputs: _ViewInputs,
+        body: (_Graph, _ViewInputs) -> _ViewListOutputs
+    ) -> _ViewOutputs where L: Layout {
+        L.makeLayoutView(root: root, inputs: inputs, body: body)
+    }
+
     // TODO
 }
 
