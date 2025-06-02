@@ -19,9 +19,7 @@ public struct _ViewOutputs {
         }
         set {
             _layoutComputer = OptionalAttribute(newValue)
-            if !preferences.debugProperties.contains(.layoutComputer) {
-                preferences.debugProperties.formUnion(.layoutComputer)
-            }
+            preferences.debugProperties.insert(.layoutComputer)
         }
     }
 

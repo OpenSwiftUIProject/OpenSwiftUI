@@ -129,7 +129,7 @@ public struct _GraphInputs {
         get { cachedEnvironment.wrappedValue.environment }
         set {
             cachedEnvironment = MutableBox(CachedEnvironment(newValue))
-            changedDebugProperties.formUnion(.environment)
+            changedDebugProperties.insert(.environment)
         }
     }
     
