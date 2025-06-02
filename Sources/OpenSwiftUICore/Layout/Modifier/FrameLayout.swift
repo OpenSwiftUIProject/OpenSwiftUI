@@ -7,15 +7,37 @@
 
 public import Foundation
 
-// MARK: - FrameLayoutCommon [6.4.41] [WIP]
+// MARK: - FrameLayoutCommon [6.4.41]
 
 private protocol FrameLayoutCommon {
-    func commonPlacement(of child: LayoutProxy, in context: PlacementContext, childProposal: _ProposedSize) -> _Placement
+    var alignment: Alignment { get }
 }
 
 extension FrameLayoutCommon {
     func commonPlacement(of child: LayoutProxy, in context: PlacementContext, childProposal: _ProposedSize) -> _Placement {
-        preconditionFailure("TODO")
+        let defaultDimensions = ViewDimensions(guideComputer: LayoutComputer.defaultValue, size: .fixed(context.size))
+        let dimensions = child.dimensions(in: childProposal)
+
+        let horizontalKey = alignment.horizontal.key
+        let horizontalID = horizontalKey.id
+
+        let verticalKey = alignment.vertical.key
+        let verticalID = verticalKey.id
+
+        let horizontalDefaultValue = horizontalID.defaultValue(in: defaultDimensions)
+        let verticalDefaultValue = verticalID.defaultValue(in: defaultDimensions)
+
+        let horizontalAlignmentValue = dimensions[horizontalKey]
+        let verticalAlignmentValue = dimensions[verticalKey]
+
+        let x = horizontalDefaultValue - horizontalAlignmentValue
+        let y = verticalDefaultValue - verticalAlignmentValue
+
+        return _Placement(
+            proposedSize: childProposal,
+            anchoring: .topLeading,
+            at: CGPoint(x: x, y: y)
+        )
     }
 }
 
