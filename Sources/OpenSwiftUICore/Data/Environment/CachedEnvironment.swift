@@ -70,13 +70,9 @@ package struct CachedEnvironment {
 }
 
 extension CachedEnvironment {
-    package mutating func animatedPosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
-        guard inputs.needsGeometry else {
-            return inputs.position
-        }
+    private mutating func withAnimatedFrame<T>(for inputs: _ViewInputs, body: (inout AnimatedFrame) -> T) -> T {
         let transaction = inputs.geometryTransaction()
         let pixelLength = attribute(id: .pixelLength) { $0.pixelLength }
-
         if let animatedFrame,
            animatedFrame.position == inputs.position,
            animatedFrame.size == inputs.size,
@@ -84,7 +80,7 @@ extension CachedEnvironment {
            animatedFrame.time == inputs.time,
            animatedFrame.transaction == transaction,
            animatedFrame.viewPhase == inputs.viewPhase {
-
+            // Reuse existing animated frame
         } else {
             animatedFrame = AnimatedFrame(
                 inputs: inputs,
@@ -92,15 +88,28 @@ extension CachedEnvironment {
                 environment: environment
             )
         }
-        preconditionFailure("TODO")
+        return body(&animatedFrame!)
+    }
+
+    package mutating func animatedPosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {
+        guard inputs.needsGeometry else {
+            return inputs.position
+        }
+        return withAnimatedFrame(for: inputs) { $0.animatedPosition() }
     }
 
     package mutating func animatedSize(for inputs: _ViewInputs) -> Attribute<ViewSize> {
-        preconditionFailure("TODO")
+        guard inputs.needsGeometry else {
+            return inputs.size
+        }
+        return withAnimatedFrame(for: inputs) { $0.animatedSize() }
     }
 
     package mutating func animatedCGSize(for inputs: _ViewInputs) -> Attribute<CGSize> {
-        preconditionFailure("TODO")
+        guard inputs.needsGeometry else {
+            return inputs.size.cgSize
+        }
+        return withAnimatedFrame(for: inputs) { $0.animatedCGSize() }
     }
 }
 
