@@ -224,13 +224,13 @@ let openSwiftUITarget = Target.target(
         "OpenSwiftUICore",
         "COpenSwiftUI",
         "CoreGraphicsShims",
-        .target(name: "CoreServices", condition: .when(platforms: [.iOS])),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: [.unsafeFlags(["-framework", "CoreServices"], .when(platforms: [.iOS]))] // For CS private API link support
 )
 
 let openSwiftUITestsSupportTarget = Target.target(
@@ -374,8 +374,6 @@ let package = Package(
                 .apt(["libgtk-4-dev clang"]),
             ]
         ),
-        .binaryTarget(name: "CoreServices", path: "PrivateFrameworks/CoreServices.xcframework"),
-
         coreGraphicsShimsTarget,
         coreGraphicsShimsTestTarget,
 

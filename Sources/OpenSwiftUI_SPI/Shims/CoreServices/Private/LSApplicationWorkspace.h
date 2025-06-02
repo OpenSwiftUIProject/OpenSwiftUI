@@ -6,12 +6,26 @@
 * classdump-dyld is licensed under GPLv3, Copyright © 2013-2016 by Elias Limneos.
 */
 
+#ifndef LSApplicationWorkspace_h
+#define LSApplicationWorkspace_h
+
+#include "OpenSwiftUIBase.h"
+
+#if __has_include(<UIKit/UIKit.h>)
+
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
-#import "_LSOpenConfiguration.h"
+#import "LSOpenConfiguration.h"
 
 NS_ASSUME_NONNULL_BEGIN
+
 @interface LSApplicationWorkspace : NSObject
 +(nullable instancetype)defaultWorkspace;
 -(void)openURL:(NSURL *)url configuration:(_LSOpenConfiguration *)config completionHandler:(void (^)(BOOL))completion;
 @end
+
 NS_ASSUME_NONNULL_END
+
+#endif /* UIKit.h */
+
+#endif /* LSApplicationWorkspace_h */
