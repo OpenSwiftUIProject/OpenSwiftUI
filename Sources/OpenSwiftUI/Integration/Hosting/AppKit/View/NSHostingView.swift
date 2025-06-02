@@ -313,7 +313,9 @@ extension NSHostingView {
 extension NSHostingView: ViewRendererHost {
     package func updateEnvironment() {}
 
-    package func updateSize() {}
+    package func updateSize() {
+        viewGraph.setProposedSize(bounds.size)
+    }
 
     package func updateSafeArea() {}
 
