@@ -10,6 +10,14 @@
 		27186AE02D538A6B009E05F9 /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27186AE32D538A76009E05F9 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
 		275752042DEE147E003E467C /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 275752032DEE147E003E467C /* SnapshotTesting */; };
+		275752912DEE1C1F003E467C /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		275752952DEE1C1F003E467C /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
+		275752972DEE1C1F003E467C /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		2757529B2DEE1C25003E467C /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2757529A2DEE1C25003E467C /* OpenSwiftUI */; };
+		2757529C2DEE1C35003E467C /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		2757529E2DEE1C35003E467C /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
+		275752A02DEE1C35003E467C /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		275752A42DEE1C3A003E467C /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 275752A32DEE1C3A003E467C /* OpenSwiftUI */; };
 		27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */; };
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
 		27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
@@ -78,6 +86,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				275752A42DEE1C3A003E467C /* OpenSwiftUI in Frameworks */,
+				2757529E2DEE1C35003E467C /* CoreUI.xcframework in Frameworks */,
+				2757529C2DEE1C35003E467C /* AttributeGraph.xcframework in Frameworks */,
+				275752A02DEE1C35003E467C /* RenderBox.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -85,7 +97,11 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				275752952DEE1C1F003E467C /* CoreUI.xcframework in Frameworks */,
 				275752042DEE147E003E467C /* SnapshotTesting in Frameworks */,
+				275752972DEE1C1F003E467C /* RenderBox.xcframework in Frameworks */,
+				2757529B2DEE1C25003E467C /* OpenSwiftUI in Frameworks */,
+				275752912DEE1C1F003E467C /* AttributeGraph.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -174,6 +190,7 @@
 			);
 			name = TestingHost;
 			packageProductDependencies = (
+				275752A32DEE1C3A003E467C /* OpenSwiftUI */,
 			);
 			productName = TestingHost;
 			productReference = 275751E32DEE1441003E467C /* TestingHost.app */;
@@ -198,6 +215,7 @@
 			name = OpenSwiftUIUITests;
 			packageProductDependencies = (
 				275752032DEE147E003E467C /* SnapshotTesting */,
+				2757529A2DEE1C25003E467C /* OpenSwiftUI */,
 			);
 			productName = OpenSwiftUIUITests;
 			productReference = 275751F52DEE1456003E467C /* OpenSwiftUIUITests.xctest */;
@@ -413,7 +431,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -424,8 +441,6 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = OpenSwiftUIDebug;
 		};
@@ -551,10 +566,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -584,9 +595,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = YES;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 			};
@@ -887,10 +896,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = (
-					"DEBUG=1",
-					"$(inherited)",
-				);
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -907,9 +912,7 @@
 				SDKROOT = auto;
 				SUPPORTED_PLATFORMS = "iphoneos iphonesimulator macosx";
 				SUPPORTS_MACCATALYST = NO;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "DEBUG $(inherited)";
 				SWIFT_EMIT_LOC_STRINGS = NO;
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
 				TEST_TARGET_NAME = Example;
@@ -1161,7 +1164,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1172,8 +1174,6 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = SwiftUIRelease;
 		};
@@ -1224,7 +1224,6 @@
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = "";
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_FILE = HostingExample/Info.plist;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
@@ -1294,7 +1293,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1305,8 +1303,6 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = OpenSwiftUIRelease;
 		};
@@ -1426,7 +1422,6 @@
 				GCC_DYNAMIC_NO_PIC = NO;
 				GCC_NO_COMMON_BLOCKS = YES;
 				GCC_OPTIMIZATION_LEVEL = 0;
-				GCC_PREPROCESSOR_DEFINITIONS = "$(inherited)";
 				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
 				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
 				GCC_WARN_UNDECLARED_SELECTOR = YES;
@@ -1437,8 +1432,6 @@
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
-				SWIFT_ACTIVE_COMPILATION_CONDITIONS = "$(inherited)";
-				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 			};
 			name = SwiftUIDebug;
 		};
@@ -1590,6 +1583,14 @@
 			isa = XCSwiftPackageProductDependency;
 			package = 275752022DEE147E003E467C /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */;
 			productName = SnapshotTesting;
+		};
+		2757529A2DEE1C25003E467C /* OpenSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenSwiftUI;
+		};
+		275752A32DEE1C3A003E467C /* OpenSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenSwiftUI;
 		};
 		27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;

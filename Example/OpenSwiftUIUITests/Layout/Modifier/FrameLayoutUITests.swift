@@ -18,18 +18,16 @@ import UIKit
 @available(iOS 15, *)
 #endif
 final class FrameLayoutUITests: XCTestCase {
-
     func testFrameSize() {
         struct ContentView: View {
             var body: some View {
                 Color.red.frame(width: 10, height: 10)
             }
         }
-
         assertSnapshot(
-          of: UIHostingController(rootView: ContentView()),
-          as: .image(on: .iPhoneSe(.portrait), precision: 0.98, perceptualPrecision: 0.98),
-          record: false
+            of: UIHostingController(rootView: ContentView()),
+            as: .image,
+            record: shouldRecord
         )
     }
 }
