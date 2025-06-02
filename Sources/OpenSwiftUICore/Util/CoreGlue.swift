@@ -141,7 +141,7 @@ extension CoreGlue {
     }
 
     public struct StartChildGeometriesParameters {
-        // package var recorder: LayoutTrace.Recorder
+        package var recorder: LayoutTrace.Recorder
 
         package var parentSize: ViewSize
 
@@ -149,7 +149,8 @@ extension CoreGlue {
 
         package var attributeID: UInt32
 
-        package init(parentSize: ViewSize, origin: CGPoint, attributeID: UInt32) {
+        package init(recorder: LayoutTrace.Recorder, parentSize: ViewSize, origin: CGPoint, attributeID: UInt32) {
+            self.recorder = recorder
             self.parentSize = parentSize
             self.origin = origin
             self.attributeID = attributeID
@@ -157,11 +158,12 @@ extension CoreGlue {
     }
 
     public struct EndChildGeometriesParameters {
-        // package var recorder: LayoutTrace.Recorder
+        package var recorder: LayoutTrace.Recorder
 
         package var geometries: [ViewGeometry]
 
-        package init(geometries: [ViewGeometry]) {
+        package init(recorder: LayoutTrace.Recorder, geometries: [ViewGeometry]) {
+            self.recorder = recorder
             self.geometries = geometries
         }
     }

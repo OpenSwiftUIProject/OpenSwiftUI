@@ -54,7 +54,7 @@ public struct _ViewInputs {
         get { base.phase }
         set {
             base.phase = newValue
-            base.changedDebugProperties.formUnion(.phase)
+            base.changedDebugProperties.insert(.phase)
         }
     }
     
@@ -65,13 +65,13 @@ public struct _ViewInputs {
     
     package var transform: Attribute<ViewTransform> {
         didSet {
-            base.changedDebugProperties.formUnion(.transform)
+            base.changedDebugProperties.insert(.transform)
         }
     }
     
     package var position: Attribute<ViewOrigin> {
         didSet {
-            base.changedDebugProperties.formUnion(.position)
+            base.changedDebugProperties.insert(.position)
         }
     }
     
@@ -79,7 +79,7 @@ public struct _ViewInputs {
     
     package var size: Attribute<ViewSize> {
         didSet {
-            base.changedDebugProperties.formUnion(.size)
+            base.changedDebugProperties.insert(.size)
         }
     }
     
