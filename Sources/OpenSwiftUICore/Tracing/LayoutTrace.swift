@@ -51,22 +51,12 @@ package struct LayoutTrace {
             preconditionFailure("TODO")
         }
 
-        func traceCacheLookup(_ proposal: _ProposedSize, _ hit: Bool) {
-            guard let recorder else {
-                return
-            }
-            recorder.cacheLookup = (proposal, hit)
-        }
-
-        func traceCacheLookup(_ proposal: CGSize, _ hit: Bool) {
-            guard let recorder else {
-                return
-            }
-            recorder.cacheLookup = (.init(proposal), hit)
-        }
-
         func traceChildGeometries(_ attribute: AnyAttribute?, at parentSize: ViewSize, origin: CGPoint, _ block: () -> [ViewGeometry]) -> [ViewGeometry] {
-            preconditionFailure("TODO")
+            activateFrameIfNeeded()
+            CoreGlue.shared.startChildGeometries(.init(recorder: self, parentSize: parentSize, origin: origin, attributeID: attribute?.rawValue ?? .zero))
+            let geometries = block()
+            CoreGlue.shared.endChildGeometries(.init(recorder: self, geometries: geometries))
+            return geometries
         }
 
         func traceContentDescription(_ attribute: AnyAttribute?, _ description: String) {
@@ -88,12 +78,18 @@ extension LayoutTrace {
 
     @inline(__always)
     package static func traceCacheLookup(_ proposal: _ProposedSize, _ hit: Bool) {
-        recorder!.traceCacheLookup(proposal, hit)
+        guard let recorder else {
+            return
+        }
+        recorder.cacheLookup = (proposal, hit)
     }
 
     @inline(__always)
     package static func traceCacheLookup(_ proposal: CGSize, _ hit: Bool) {
-        recorder!.traceCacheLookup(proposal, hit)
+        guard let recorder else {
+            return
+        }
+        recorder.cacheLookup = (.init(proposal), hit)
     }
 
     @inline(__always)
