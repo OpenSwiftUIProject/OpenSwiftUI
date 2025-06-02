@@ -128,10 +128,8 @@ public struct _GraphInputs {
     package var environment: Attribute<EnvironmentValues> {
         get { cachedEnvironment.wrappedValue.environment }
         set {
-            cachedEnvironment.wrappedValue = CachedEnvironment(newValue)
-            if !changedDebugProperties.contains(.environment) {
-                changedDebugProperties.formUnion(.environment)
-            }
+            cachedEnvironment = MutableBox(CachedEnvironment(newValue))
+            changedDebugProperties.formUnion(.environment)
         }
     }
     
@@ -155,9 +153,9 @@ public struct _GraphInputs {
     package mutating func merge(_ src: _GraphInputs, ignoringPhase: Bool) {
         preconditionFailure("TODO")
     }
-    
-    package func mapEnvironment<T>(_ keyPath: KeyPath<EnvironmentValues, T>) -> Attribute<T> {
-        cachedEnvironment.wrappedValue.attribute(keyPath: keyPath)
+
+    package func mapEnvironment<T>(id: CachedEnvironment.ID, _ body: (EnvironmentValues) -> T) -> Attribute<T> {
+        cachedEnvironment.wrappedValue.attribute(id: id, body)
     }
     
     package mutating func copyCaches() {

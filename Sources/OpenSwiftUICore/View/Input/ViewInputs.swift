@@ -170,8 +170,8 @@ public struct _ViewInputs {
         )
     }
     
-    package func mapEnvironment<T>(_ keyPath: KeyPath<EnvironmentValues, T>) -> Attribute<T> {
-        base.mapEnvironment(keyPath)
+    package func mapEnvironment<T>(id: CachedEnvironment.ID, _ body: (EnvironmentValues) -> T) -> Attribute<T> {
+        base.mapEnvironment(id: id, body)
     }
     
     package func animatedPosition() -> Attribute<ViewOrigin> {

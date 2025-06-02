@@ -226,7 +226,7 @@ package final class ViewGraph: GraphHost {
                 as: RootGeometry.self,
                 invalidating: true
             ) { rootGeometry in
-                rootGeometry.$layoutDirection = inputs.mapEnvironment(\.layoutDirection)
+                rootGeometry.$layoutDirection = inputs.mapEnvironment(id: .layoutDirection) { $0.layoutDirection }
             }
             for feature in features {
                 feature.modifyViewInputs(inputs: &inputs, graph: self)
