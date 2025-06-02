@@ -505,7 +505,7 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     package func updateSize() {
-        // preconditionFailure("TODO")
+        viewGraph.setProposedSize(bounds.size)
     }
     
     package func updateSafeArea() {
