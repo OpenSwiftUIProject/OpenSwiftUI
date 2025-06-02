@@ -170,7 +170,7 @@ public struct _ViewInputs {
         )
     }
     
-    package func mapEnvironment<T>(id: CachedEnvironment.ID, _ body: (EnvironmentValues) -> T) -> Attribute<T> {
+    package func mapEnvironment<T>(id: CachedEnvironment.ID, _ body: @escaping (EnvironmentValues) -> T) -> Attribute<T> {
         base.mapEnvironment(id: id, body)
     }
     
