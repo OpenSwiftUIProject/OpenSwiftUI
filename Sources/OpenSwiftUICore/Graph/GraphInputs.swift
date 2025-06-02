@@ -154,7 +154,7 @@ public struct _GraphInputs {
         preconditionFailure("TODO")
     }
 
-    package func mapEnvironment<T>(id: CachedEnvironment.ID, _ body: (EnvironmentValues) -> T) -> Attribute<T> {
+    package func mapEnvironment<T>(id: CachedEnvironment.ID, _ body: @escaping (EnvironmentValues) -> T) -> Attribute<T> {
         cachedEnvironment.wrappedValue.attribute(id: id, body)
     }
     
