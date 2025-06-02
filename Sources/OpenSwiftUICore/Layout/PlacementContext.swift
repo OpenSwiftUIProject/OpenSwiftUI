@@ -203,7 +203,7 @@ package struct _PositionAwarePlacementContext {
     }
 
     package var transform: ViewTransform {
-        context[_transform].withPosition(context[_position].value)
+        context[_transform].withPosition(context[_position])
     }
 
     package subscript<T>(dynamicMember keyPath: KeyPath<EnvironmentValues, T>) -> T {

@@ -131,7 +131,7 @@ private struct LeafDisplayList<V>: StatefulRule, CustomStringConvertible where V
         var item = DisplayList.Item(
             .content(DisplayList.Content(content, seed: contentSeed)),
             frame: CGRect(
-                origin: CGPoint(position.value - containerPosition.value),
+                origin: CGPoint(position - containerPosition),
                 size: size
             ),
             identity: identity,

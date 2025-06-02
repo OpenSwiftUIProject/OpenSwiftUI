@@ -76,10 +76,20 @@ package struct AnimatableAttribute<Value>: StatefulRule, AsyncAttribute, Observe
 // MARK: - AnimatableFrameAttribute [6.4.41] [TODO]
 
 package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedAttribute {
-    package typealias Value = ViewFrame
+    @Attribute private var position: CGPoint
+
+    @Attribute private var size: ViewSize
+
+    @Attribute private var pixelLength: CGFloat
+
+    @Attribute private var environment: EnvironmentValues
+
+    private var helper: AnimatableAttributeHelper<ViewFrame>
+
+    let animationsDisabled: Bool
 
     package init(
-        position: Attribute<ViewOrigin>,
+        position: Attribute<CGPoint>,
         size: Attribute<ViewSize>,
         pixelLength: Attribute<CGFloat>,
         environment: Attribute<EnvironmentValues>,
@@ -88,30 +98,37 @@ package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedA
         transaction: Attribute<Transaction>,
         animationsDisabled: Bool
     ) {
-        preconditionFailure("TODO")
+        _position = position
+        _size = size
+        _pixelLength = pixelLength
+        _environment = environment
+        helper = .init(phase: phase, time: time, transaction: transaction)
+        self.animationsDisabled = animationsDisabled
     }
 
+    package typealias Value = ViewFrame
+
     package mutating func updateValue() {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
 
     package mutating func destroy() {
-        preconditionFailure("TODO")
+        // helper.animatorState?.removeListeners()
     }
 }
 
 // MARK: - AnimatableFrameAttributeVFD [6.4.41] [TODO]
 
 package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, ObservedAttribute {
-    @Attribute var position: CGPoint
+    @Attribute private var position: ViewOrigin
 
-    @Attribute var size: ViewSize
+    @Attribute private var size: ViewSize
 
-    @Attribute var pixelLength: CGFloat
+    @Attribute private var pixelLength: CGFloat
 
-    @Attribute var environment: EnvironmentValues
+    @Attribute private var environment: EnvironmentValues
 
-    var helper: AnimatableAttributeHelper<ViewFrame>
+    private var helper: AnimatableAttributeHelper<ViewFrame>
 
     private var velocityFilter: FrameVelocityFilter
 
@@ -127,17 +144,23 @@ package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, Observ
         transaction: Attribute<Transaction>,
         animationsDisabled: Bool
     ) {
-        preconditionFailure("TODO")
+        _position = position
+        _size = size
+        _pixelLength = pixelLength
+        _environment = environment
+        helper = .init(phase: phase, time: time, transaction: transaction)
+        velocityFilter = FrameVelocityFilter()
+        self.animationsDisabled = animationsDisabled
     }
 
     package typealias Value = ViewFrame
 
     package mutating func updateValue() {
-        preconditionFailure("TODO")
+        // preconditionFailure("TODO")
     }
 
     package mutating func destroy() {
-        preconditionFailure("TODO")
+        // helper.animatorState?.removeListeners()
     }
 }
 
