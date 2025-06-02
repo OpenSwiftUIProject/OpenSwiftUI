@@ -6,7 +6,7 @@
 //  ID: C424ABD9FC88B2DFD0B7B2319F2E7987 (SwiftUI)
 //  ID: B62A4B04AF9F1325924A089D63071424 (SwiftUICore)
 
-import Foundation
+package import Foundation
 package import OpenGraphShims
 
 // MARK: - CachedEnvironment [6.4.41]
@@ -20,10 +20,6 @@ package struct CachedEnvironment {
         package init() {
             self.base = .init()
         }
-
-        static let pixelLength: ID = .init()
-        static let layoutDirection: ID = .init()
-
     }
 
     private struct MapItem {

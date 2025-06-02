@@ -39,6 +39,10 @@ extension EnvironmentValues {
     }
 }
 
+extension CachedEnvironment.ID {
+    static let pixelLength: CachedEnvironment.ID = .init()
+}
+
 private struct DisplayGamutKey: EnvironmentKey {
     static var defaultValue: DisplayGamut { .sRGB }
 }

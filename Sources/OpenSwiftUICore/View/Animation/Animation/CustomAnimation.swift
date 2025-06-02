@@ -5,6 +5,7 @@
 //  Status: WIP
 //  ID: 35ADF281214A25133F1A6DF28858952D (SwiftUICore?)
 
+package import Foundation
 package import OpenGraphShims
 
 // MARK: - FrameVelocityFilter [6.4.41]
