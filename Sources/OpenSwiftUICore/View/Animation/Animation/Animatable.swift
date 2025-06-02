@@ -43,8 +43,10 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
 }
 
 extension Animatable {
-    package static func makeAnimatable(value: inout _GraphValue<Self>, inputs: _GraphInputs) {
+    package static func makeAnimatable(value: _GraphValue<Self>, inputs: _GraphInputs) -> Attribute<Self> {
+        var value = value
         _makeAnimatable(value: &value, inputs: inputs)
+        return value.value
     }
 }
 

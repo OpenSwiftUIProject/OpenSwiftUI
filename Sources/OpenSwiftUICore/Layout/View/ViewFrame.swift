@@ -28,7 +28,7 @@ extension ViewFrame {
     package mutating func round(toMultipleOf m: CGFloat) {
         var rect = CGRect(self)
         rect.roundCoordinatesToNearestOrUp(toMultipleOf: m)
-        origin.value = rect.origin
+        origin = rect.origin
         size.value = rect.size
     }
 }
@@ -42,6 +42,6 @@ extension ViewFrame: Animatable {
 
 extension CGRect {
     package init(_ frame: ViewFrame) {
-        self.init(origin: frame.origin.value, size: frame.size.value)
+        self.init(origin: frame.origin, size: frame.size.value)
     }
 }

@@ -205,8 +205,8 @@ private struct UnsupportedDisplayList: Rule {
     var value: DisplayList {
         let version = DisplayList.Version(forUpdate: ())
         let seed = DisplayList.Seed(version)
-        let position = position.value
-        let containerPosition = containerPosition.value
+        let position = position
+        let containerPosition = containerPosition
         let size = size.value
         preconditionFailure("TODO: EmptyViewFactory")
     }

@@ -157,7 +157,7 @@ package struct _SafeAreaInsetsModifier: MultiViewModifier, PrimitiveViewModifier
 
         var value: ViewTransform {
             var transform = transform
-            transform.appendPosition(position.value)
+            transform.appendPosition(position)
             transform.appendSizedSpace(id: space, size: size.value)
             return transform
         }

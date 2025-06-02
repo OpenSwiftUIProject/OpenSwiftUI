@@ -150,3 +150,19 @@ extension CGPoint: ProtobufMessage {
         self.init(x: x, y: y)
     }
 }
+
+// MARK: - ViewOrigin [6.4.41]
+
+package typealias ViewOrigin = CGPoint
+
+extension ViewOrigin {
+    @inline(__always)
+    package static var invalidValue: Self {
+        Self(x: Double.nan, y: Double.nan)
+    }
+
+    @inline(__always)
+    package init(_ value: CGPoint) {
+        self = value
+    }
+}

@@ -8,6 +8,7 @@
 //  ID: 54C853EF26D00A0E6B1785C3902A74F4 (SwiftUICore)
 
 package import Foundation
+package import OpenGraphShims
 
 // MARK: - LayoutDirection
 
@@ -52,7 +53,7 @@ public enum LayoutDirection: Hashable, CaseIterable, Sendable {
 
 // MARK: - LayoutDirectionKey
 
-private struct LayoutDirectionKey: EnvironmentKey {
+struct LayoutDirectionKey: EnvironmentKey {
     static let defaultValue: LayoutDirection = .leftToRight
 }
 
@@ -102,5 +103,23 @@ package struct CodableLayoutDirection: CodableProxy {
         case .leftToRight: base = .leftToRight
         case .rightToLeft: base = .rightToLeft
         }
+    }
+}
+
+// MARK: - LayoutDirection + CachedEnvironment [6.4.41]
+
+extension CachedEnvironment.ID {
+    static let layoutDirection: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    package var layoutDirection: Attribute<LayoutDirection> {
+        mapEnvironment(id: .layoutDirection) { $0.layoutDirection }
+    }
+}
+
+extension _ViewInputs {
+    package var layoutDirection: Attribute<LayoutDirection> {
+        mapEnvironment(id: .layoutDirection) { $0.layoutDirection }
     }
 }

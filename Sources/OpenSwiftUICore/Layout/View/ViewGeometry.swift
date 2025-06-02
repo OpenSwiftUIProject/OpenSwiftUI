@@ -36,15 +36,6 @@ package struct ViewGeometry: Equatable {
         self.init(origin: ViewOrigin(), dimensions: dimensions)
     }
 
-    /// Creates a view geometry with the specified CGPoint origin and dimensions.
-    ///
-    /// - Parameters:
-    ///   - origin: The position of the view as a CGPoint.
-    ///   - dimensions: The size and alignment information of the view.
-    package init(origin: CGPoint, dimensions: ViewDimensions) {
-        self.init(origin: ViewOrigin(origin), dimensions: dimensions)
-    }
-
     /// Creates a view geometry using placement and dimensions information.
     ///
     /// - Parameters:
@@ -98,13 +89,13 @@ extension ViewGeometry {
     ///
     /// This property combines the origin and size information into a CGRect.
     package var frame: CGRect {
-        CGRect(origin: origin.value, size: dimensions.size.value)
+        CGRect(origin: origin, size: dimensions.size.value)
     }
 
     /// A view geometry value representing an invalid state.
     ///
     /// This value is used to indicate errors or uninitialized states.
-    package static let invalidValue = ViewGeometry(origin: ViewOrigin(invalid: ()), dimensions: .invalidValue)
+    package static let invalidValue = ViewGeometry(origin: .invalidValue, dimensions: .invalidValue)
 
     /// Indicates whether this view geometry is in an invalid state.
     package var isInvalid: Bool { origin.x.isNaN }

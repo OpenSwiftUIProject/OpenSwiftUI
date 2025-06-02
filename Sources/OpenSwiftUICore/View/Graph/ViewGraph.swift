@@ -213,14 +213,12 @@ package final class ViewGraph: GraphHost {
             }
             _ViewDebug.initialize(inputs: &inputs)
             if _VariableFrameDurationIsSupported() {
-                if !inputs.base.options.contains(.supportsVariableFrameDuration) {
-                    inputs.base.options.formUnion(.supportsVariableFrameDuration)
-                }
+                inputs.base.options.formUnion(.supportsVariableFrameDuration)
             }
             if let delegate {
                 delegate.modifyViewInputs(&inputs)
             }
-            if inputs.base.options.contains(.viewNeedsGeometry) {
+            if inputs.needsGeometry {
                 // inputs.makeRootMatchedGeometryScope()
             }
             inputs.base.pushStableType(rootViewType)
@@ -228,7 +226,7 @@ package final class ViewGraph: GraphHost {
                 as: RootGeometry.self,
                 invalidating: true
             ) { rootGeometry in
-                rootGeometry.$layoutDirection = inputs.mapEnvironment(\.layoutDirection)
+                rootGeometry.$layoutDirection = inputs.mapEnvironment(id: .layoutDirection) { $0.layoutDirection }
             }
             for feature in features {
                 feature.modifyViewInputs(inputs: &inputs, graph: self)
