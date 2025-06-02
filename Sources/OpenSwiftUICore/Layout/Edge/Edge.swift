@@ -23,19 +23,19 @@ public enum Edge: Int8, CaseIterable {
             self.rawValue = rawValue
         }
 
-        public static let top: Set = .init(.top)  // 1
+        public static let top: Set = .init(.top)
 
-        public static let leading: Set = .init(.leading) // 2
+        public static let leading: Set = .init(.leading)
 
-        public static let bottom: Set = .init(.bottom) // 4
+        public static let bottom: Set = .init(.bottom)
 
-        public static let trailing: Set = .init(.trailing) // 8
+        public static let trailing: Set = .init(.trailing)
 
         public static let all: Set = [.top, .leading, .bottom, .trailing]
 
-        public static let horizontal: Set = [.leading, .trailing] // 0xa
+        public static let horizontal: Set = [.leading, .trailing]
 
-        public static let vertical: Set = [.top, .bottom] // 0x5
+        public static let vertical: Set = [.top, .bottom]
 
         /// Creates an instance containing just e
         public init(_ e: Edge) {
