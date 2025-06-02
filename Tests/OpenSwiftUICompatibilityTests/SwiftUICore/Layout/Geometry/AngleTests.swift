@@ -37,6 +37,7 @@ struct AngleTests {
         helper(radians: .pi, degrees: 180)
     }
 
+    @Test
     func circle() {
         helper(radians: .pi * 2, degrees: 360)
     }

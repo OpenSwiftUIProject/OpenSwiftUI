@@ -49,7 +49,8 @@ package struct CachedEnvironment {
     package mutating func attribute<T>(id: CachedEnvironment.ID, _ body: (EnvironmentValues) -> T) -> Attribute<T> {
         guard let item = mapItems.first(where: { $0.key == id }) else {
             // Blocked by OG's Map
-            preconditionFailure("TODO")
+            // preconditionFailure("TODO")
+            return Attribute(value: body(environment.value))
         }
         return item.value.unsafeCast(to: T.self)
     }
