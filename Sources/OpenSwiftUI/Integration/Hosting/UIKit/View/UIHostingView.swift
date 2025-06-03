@@ -536,10 +536,20 @@ extension _UIHostingView {
     }
     
     func updateBackgroundColor() {
-        guard let viewController else {
+        func setBackground(_ color: UIColor?) {
+            guard !disabledBackgroundColor else {
+                return
+            }
+            super.backgroundColor = color
+        }
+        guard viewController != nil else {
             return
         }
-        // TODO
+        if wantsTransparentBackground {
+            super.backgroundColor = nil
+        } else {
+            setBackground(.systemBackground)
+        }
     }
     
     func didChangeColorScheme(from oldColorScheme: ColorScheme?) {
