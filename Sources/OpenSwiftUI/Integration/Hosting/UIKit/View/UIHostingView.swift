@@ -448,6 +448,58 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
 }
 
 extension _UIHostingView {
+    var hostSafeAreaElements: [SafeAreaInsets.Element] {
+        _hostSafeAreaElements
+    }
+
+    var _hostSafeAreaElements: [SafeAreaInsets.Element] {
+        let pixelLength = viewGraph.environment.pixelLength
+        let uiSafeAreaInsets = safeAreaInsets
+        var safeAreaEdgeInsets = EdgeInsets(
+            top: uiSafeAreaInsets.top,
+            leading: uiSafeAreaInsets.left,
+            bottom: uiSafeAreaInsets.bottom,
+            trailing: uiSafeAreaInsets.right
+        )
+        safeAreaEdgeInsets.xFlipIfRightToLeft { .leftToRight }
+        safeAreaEdgeInsets.round(toMultipleOf: pixelLength)
+        var containerElement = SafeAreaInsets.Element(regions: .container, insets: .zero)
+        if safeAreaRegions.contains(.container) {
+            containerElement.insets = safeAreaEdgeInsets
+        }
+        let bottomInset: Double
+        if safeAreaRegions.contains(.keyboard),
+           let keyboardFrame,
+           let window,
+           keyboardFrame.size.isNonEmpty {
+            let convertedKeyboardFrame = convert(keyboardFrame, from: window.screen.coordinateSpace)
+            bottomInset = convertedKeyboardFrame.minY - bounds.maxY
+        } else {
+            bottomInset = 0.0
+        }
+        var keyboardElement = SafeAreaInsets.Element(regions: .keyboard, insets: .zero)
+        if safeAreaRegions.contains(.keyboard) {
+            var value = bottomInset - safeAreaEdgeInsets.bottom
+            value.round(toMultipleOf: pixelLength)
+            keyboardElement.insets = EdgeInsets(value, edges: .bottom)
+        }
+
+        if keyboardElement.insets.bottom < 0 {
+            containerElement.insets.bottom = -keyboardElement.insets.bottom
+            keyboardElement.insets.bottom = bottomInset
+            keyboardElement.regions.formUnion(containerElement.regions)
+        }
+
+        var elements: [SafeAreaInsets.Element] = []
+        if !containerElement.insets.isEmpty {
+            elements.append(containerElement)
+        }
+        if !keyboardElement.insets.isEmpty {
+            elements.append(keyboardElement)
+        }
+        return elements
+    }
+
     func makeRootView() -> ModifiedContent<ModifiedContent<Content, EditModeScopeModifier>, HitTestBindingModifier> {
         _UIHostingView.makeRootView(
             rootView.modifier(EditModeScopeModifier(isActive: viewController != nil))
@@ -509,9 +561,12 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     package func updateSafeArea() {
-        // preconditionFailure("TODO")
+        let changed = viewGraph.setSafeAreaInsets(hostSafeAreaElements)
+        if changed {
+            invalidateIntrinsicContentSize()
+        }
     }
-    
+
     package func updateScrollableContainerSize() {
         // preconditionFailure("TODO")
     }
