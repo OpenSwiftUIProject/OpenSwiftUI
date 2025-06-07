@@ -14,6 +14,13 @@
 		275752952DEE1C1F003E467C /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
 		275752972DEE1C1F003E467C /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		2757529B2DEE1C25003E467C /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2757529A2DEE1C25003E467C /* OpenSwiftUI */; };
+		279FED052DF4566D00320390 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		279FED062DF4566D00320390 /* AttributeGraph.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		279FED082DF4567000320390 /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
+		279FED092DF4567000320390 /* CoreUI.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		279FED0A2DF4567400320390 /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		279FED0B2DF4567400320390 /* RenderBox.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 279FED0C2DF4567B00320390 /* OpenSwiftUI */; };
 		27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */; };
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
 		27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
@@ -39,9 +46,24 @@
 		};
 /* End PBXContainerItemProxy section */
 
+/* Begin PBXCopyFilesBuildPhase section */
+		279FED072DF4566D00320390 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				279FED092DF4567000320390 /* CoreUI.xcframework in Embed Frameworks */,
+				279FED062DF4566D00320390 /* AttributeGraph.xcframework in Embed Frameworks */,
+				279FED0B2DF4567400320390 /* RenderBox.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
 		271D81642BB1E8E300A6D543 /* OpenGraph */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenGraph; path = ../../OpenGraph; sourceTree = "<group>"; };
-		27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CoreServices.xcframework; path = ../PrivateFrameworks/CoreServices.xcframework; sourceTree = "<group>"; };
 		275751E32DEE1441003E467C /* TestingHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestingHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		275751F52DEE1456003E467C /* OpenSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27B7FC802BB31FF500272BA5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -97,6 +119,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */,
+				279FED082DF4567000320390 /* CoreUI.xcframework in Frameworks */,
+				279FED052DF4566D00320390 /* AttributeGraph.xcframework in Frameworks */,
+				279FED0A2DF4567400320390 /* RenderBox.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -173,7 +199,6 @@
 				27EE91722DD0C753006C85FD /* CoreUI.xcframework */,
 				27E6C4D42D2842810010502F /* RenderBox.xcframework */,
 				27E6C4D12D2842740010502F /* AttributeGraph.xcframework */,
-				27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -188,6 +213,7 @@
 				275751DF2DEE1441003E467C /* Sources */,
 				275751E02DEE1441003E467C /* Frameworks */,
 				275751E12DEE1441003E467C /* Resources */,
+				279FED072DF4566D00320390 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -198,6 +224,7 @@
 			);
 			name = TestingHost;
 			packageProductDependencies = (
+				279FED0C2DF4567B00320390 /* OpenSwiftUI */,
 			);
 			productName = TestingHost;
 			productReference = 275751E32DEE1441003E467C /* TestingHost.app */;
@@ -1594,6 +1621,10 @@
 			productName = SnapshotTesting;
 		};
 		2757529A2DEE1C25003E467C /* OpenSwiftUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = OpenSwiftUI;
+		};
+		279FED0C2DF4567B00320390 /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenSwiftUI;
 		};

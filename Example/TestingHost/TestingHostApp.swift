@@ -16,10 +16,12 @@ import UIKit
 
 @main
 struct TestingHostApp: App {
+    #if !OPENSWIFTUI
     #if canImport(AppKit)
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     #else
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
     #endif
 
     var body: some Scene {
