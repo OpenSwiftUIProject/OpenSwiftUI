@@ -5,16 +5,14 @@
 #if canImport(SwiftUI, _underlyingVersion: 6.0.87)
 import Testing
 import SwiftUI
-import OpenSwiftUI
 
 extension CGSize {
-    var swiftUI_hasZero: Bool {
+    var hasZero: Bool {
         @_silgen_name("OpenSwiftUITestStub_CGSizeHasZero")
         get
     }
 }
 
-#if compiler(>=6.1) // https://github.com/swiftlang/swift/issues/81248
 struct CGSize_ExtensionTests {
     @Test(
         .enabled {
@@ -32,10 +30,9 @@ struct CGSize_ExtensionTests {
         ]
     )
     func hasZero(size: CGSize, expectedResult: Bool) {
-        let result = size.swiftUI_hasZero
+        let result = size.hasZero
         #expect(result == expectedResult)
     }
 }
-#endif
 
 #endif

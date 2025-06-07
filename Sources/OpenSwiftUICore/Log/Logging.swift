@@ -5,7 +5,12 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+#if DEBUG
 import Foundation
+#else
+public import Foundation
+#endif
+
 #if OPENSWIFTUI_SWIFT_LOG
 public import Logging
 extension Logger {
@@ -19,6 +24,7 @@ extension Logger {
 public import os.log
 
 #if DEBUG
+@usableFromInline
 package let dso = { () -> UnsafeMutableRawPointer in
     let count = _dyld_image_count()
     for i in 0 ..< count {
@@ -110,6 +116,7 @@ package enum Log {
     package static var runtimeIssuesLog = Logger(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
     @_transparent
+    @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
@@ -121,6 +128,7 @@ package enum Log {
     package static var runtimeIssuesLog: OSLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
     @_transparent
+    @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
