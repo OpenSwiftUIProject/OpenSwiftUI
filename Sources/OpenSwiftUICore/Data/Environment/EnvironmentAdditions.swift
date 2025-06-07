@@ -40,7 +40,7 @@ extension EnvironmentValues {
 }
 
 extension CachedEnvironment.ID {
-    static let pixelLength: CachedEnvironment.ID = .init()
+    package static let pixelLength: CachedEnvironment.ID = .init()
 }
 
 private struct DisplayGamutKey: EnvironmentKey {

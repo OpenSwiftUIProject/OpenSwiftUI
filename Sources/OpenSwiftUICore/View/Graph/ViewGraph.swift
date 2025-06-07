@@ -470,7 +470,7 @@ extension ViewGraph {
     }
     
     package func viewDebugData() -> [_ViewDebug.Data] {
-        preconditionFailure("TODO")
+        _ViewDebug.makeDebugData(subgraph: rootSubgraph)
     }
 }
 

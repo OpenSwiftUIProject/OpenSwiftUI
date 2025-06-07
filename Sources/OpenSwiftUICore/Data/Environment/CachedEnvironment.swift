@@ -9,7 +9,7 @@
 package import Foundation
 package import OpenGraphShims
 
-// MARK: - CachedEnvironment [6.4.41]
+// MARK: - CachedEnvironment [6.4.41] [WIP]
 
 package struct CachedEnvironment {
     package private(set) var environment: Attribute<EnvironmentValues>
@@ -71,22 +71,21 @@ extension CachedEnvironment {
     private mutating func withAnimatedFrame<T>(for inputs: _ViewInputs, body: (inout AnimatedFrame) -> T) -> T {
         let transaction = inputs.geometryTransaction()
         let pixelLength = attribute(id: .pixelLength) { $0.pixelLength }
-        if let animatedFrame,
+        guard var animatedFrame,
            animatedFrame.position == inputs.position,
            animatedFrame.size == inputs.size,
            animatedFrame.pixelLength == pixelLength,
            animatedFrame.time == inputs.time,
            animatedFrame.transaction == transaction,
-           animatedFrame.viewPhase == inputs.viewPhase {
-            // Reuse existing animated frame
-        } else {
+           animatedFrame.viewPhase == inputs.viewPhase else {
             animatedFrame = AnimatedFrame(
                 inputs: inputs,
                 pixelLength: pixelLength,
                 environment: environment
             )
+            return body(&animatedFrame!)
         }
-        return body(&animatedFrame!)
+        return body(&animatedFrame)
     }
 
     package mutating func animatedPosition(for inputs: _ViewInputs) -> Attribute<ViewOrigin> {

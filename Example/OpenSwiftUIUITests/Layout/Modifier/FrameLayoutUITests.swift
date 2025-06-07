@@ -2,7 +2,7 @@
 //  FrameLayoutUITests.swift
 //  OpenSwiftUIUITests
 
-import XCTest
+import Testing
 import SnapshotTesting
 
 #if OPENSWIFTUI
@@ -11,24 +11,29 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS)
-import UIKit
-
 #if !OPENSWIFTUI
-@available(iOS 15, *)
+@available(iOS 15, macOS 12, *)
 #endif
-final class FrameLayoutUITests: XCTestCase {
-    func testFrameSize() {
+@MainActor
+@Suite(.snapshots(record: .never, diffTool: .ksdiff))
+struct FrameLayoutUITests {
+    @Test
+    func noFrame() {
+        struct ContentView: View {
+            var body: some View {
+                Color.red.frame()
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView(), size: CGSize(width: 200, height: 200))
+    }
+
+    @Test
+    func frameSize() {
         struct ContentView: View {
             var body: some View {
                 Color.red.frame(width: 10, height: 10)
             }
         }
-        assertSnapshot(
-            of: UIHostingController(rootView: ContentView()),
-            as: .image,
-            record: shouldRecord
-        )
+        openSwiftUIAssertSnapshot(of: ContentView(), size: CGSize(width: 200, height: 200))
     }
 }
-#endif

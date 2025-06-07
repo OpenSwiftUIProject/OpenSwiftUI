@@ -16,3 +16,4 @@ Example/Example.xcodeproj/project.xcworkspace
 Example/Example.xcodeproj/xcshareddata
 
 __Snapshots__
+Example/ReferenceImages/**/*.png

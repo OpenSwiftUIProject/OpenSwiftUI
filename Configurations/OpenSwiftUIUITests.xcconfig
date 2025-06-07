@@ -2,3 +2,5 @@ PRODUCT_BUNDLE_IDENTIFIER=org.OpenSwiftUIProject.OpenSwiftUI.OpenSwiftUIUITests
 
 // Remove -module_alias Testing=_Testing_Unavailable
 OTHER_SWIFT_FLAGS=""
+
+CODE_SIGN_ENTITLEMENTS=TestingHost/TestingHost.entitlements

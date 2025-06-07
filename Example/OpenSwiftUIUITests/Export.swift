@@ -6,7 +6,7 @@ import XCTest
 import SnapshotTesting
 
 #if OPENSWIFTUI
-let shouldRecord = false
+let shouldRecord: Bool? = nil
 #else
-let shouldRecord = true
+let shouldRecord: Bool? = true
 #endif

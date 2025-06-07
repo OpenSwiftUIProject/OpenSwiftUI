@@ -55,9 +55,17 @@ The current suggested toolchain to build the project is Swift 6.1 / Xcode 16.3.
 The table below describes the current level of support that `OpenSwiftUI` has
 for various platforms:
 
+### Darwin Platform Status
+
+| **Test Type** | **CI Status** |
+|-|:-|
+| **SwiftUI Compatibility** | [![Compatibility tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml) |
+| **UI Tests** | [![UI Tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/uitests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/uitests.yml) |
+
+### Platform Support
+
 | **Platform** | **CI Status** | **Support Status** | Build | Test | Deploy |
 |-|:-|-|-|-|-|
-| **SwiftUI Compatibility** | [![Compatibility tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml) | | | | |
 | **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ |
 | **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅ |
 | **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ |

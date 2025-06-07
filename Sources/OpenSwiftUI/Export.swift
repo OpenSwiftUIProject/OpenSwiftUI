@@ -10,3 +10,7 @@
 @_spi(SystemUI)
 @_spi(DoNotImport)
 public import OpenSwiftUICore
+
+#if canImport(CoreGraphics)
+@_exported import CoreGraphics
+#endif

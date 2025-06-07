@@ -14,10 +14,13 @@
 		275752952DEE1C1F003E467C /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
 		275752972DEE1C1F003E467C /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		2757529B2DEE1C25003E467C /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 2757529A2DEE1C25003E467C /* OpenSwiftUI */; };
-		2757529C2DEE1C35003E467C /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
-		2757529E2DEE1C35003E467C /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
-		275752A02DEE1C35003E467C /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
-		275752A42DEE1C3A003E467C /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 275752A32DEE1C3A003E467C /* OpenSwiftUI */; };
+		279FED052DF4566D00320390 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		279FED062DF4566D00320390 /* AttributeGraph.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		279FED082DF4567000320390 /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
+		279FED092DF4567000320390 /* CoreUI.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		279FED0A2DF4567400320390 /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		279FED0B2DF4567400320390 /* RenderBox.xcframework in Embed Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; settings = {ATTRIBUTES = (CodeSignOnCopy, RemoveHeadersOnCopy, ); }; };
+		279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 279FED0C2DF4567B00320390 /* OpenSwiftUI */; };
 		27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */; };
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
 		27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
@@ -34,11 +37,33 @@
 			remoteGlobalIDString = 27CD0B482AFC8D37003665EB;
 			remoteInfo = Example;
 		};
+		279FEBDE2DF445CB00320390 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 27CD0B412AFC8D37003665EB /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 275751E22DEE1441003E467C;
+			remoteInfo = TestingHost;
+		};
 /* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		279FED072DF4566D00320390 /* Embed Frameworks */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 10;
+			files = (
+				279FED092DF4567000320390 /* CoreUI.xcframework in Embed Frameworks */,
+				279FED062DF4566D00320390 /* AttributeGraph.xcframework in Embed Frameworks */,
+				279FED0B2DF4567400320390 /* RenderBox.xcframework in Embed Frameworks */,
+			);
+			name = "Embed Frameworks";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		271D81642BB1E8E300A6D543 /* OpenGraph */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenGraph; path = ../../OpenGraph; sourceTree = "<group>"; };
-		27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CoreServices.xcframework; path = ../PrivateFrameworks/CoreServices.xcframework; sourceTree = "<group>"; };
 		275751E32DEE1441003E467C /* TestingHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestingHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		275751F52DEE1456003E467C /* OpenSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27B7FC802BB31FF500272BA5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -71,13 +96,21 @@
 			};
 			target = 27D49DF72BA604FB00F6E2E2 /* HostingExample */;
 		};
+		279FEC4B2DF4506700320390 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				OpenSwiftUIUITests.xctestplan,
+			);
+			target = 275751F42DEE1456003E467C /* OpenSwiftUIUITests */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		275751AF2DEE136A003E467C /* Example */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Example; sourceTree = "<group>"; };
 		275751C12DEE136C003E467C /* HostingExample */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (275751CC2DEE136C003E467C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HostingExample; sourceTree = "<group>"; };
 		275751E42DEE1441003E467C /* TestingHost */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TestingHost; sourceTree = "<group>"; };
-		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
+		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (279FEC4B2DF4506700320390 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
+		279FEC572DF450D200320390 /* ReferenceImages */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReferenceImages; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
@@ -86,10 +119,10 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				275752A42DEE1C3A003E467C /* OpenSwiftUI in Frameworks */,
-				2757529E2DEE1C35003E467C /* CoreUI.xcframework in Frameworks */,
-				2757529C2DEE1C35003E467C /* AttributeGraph.xcframework in Frameworks */,
-				275752A02DEE1C35003E467C /* RenderBox.xcframework in Frameworks */,
+				279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */,
+				279FED082DF4567000320390 /* CoreUI.xcframework in Frameworks */,
+				279FED052DF4566D00320390 /* AttributeGraph.xcframework in Frameworks */,
+				279FED0A2DF4567400320390 /* RenderBox.xcframework in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -143,6 +176,7 @@
 				275751C12DEE136C003E467C /* HostingExample */,
 				275751E42DEE1441003E467C /* TestingHost */,
 				275751F62DEE1456003E467C /* OpenSwiftUIUITests */,
+				279FEC572DF450D200320390 /* ReferenceImages */,
 				27CD0B4A2AFC8D37003665EB /* Products */,
 				27D49E0C2BA60AF600F6E2E2 /* Frameworks */,
 			);
@@ -165,7 +199,6 @@
 				27EE91722DD0C753006C85FD /* CoreUI.xcframework */,
 				27E6C4D42D2842810010502F /* RenderBox.xcframework */,
 				27E6C4D12D2842740010502F /* AttributeGraph.xcframework */,
-				27496E8D2BB1E0AA00953172 /* CoreServices.xcframework */,
 			);
 			name = Frameworks;
 			sourceTree = "<group>";
@@ -180,6 +213,7 @@
 				275751DF2DEE1441003E467C /* Sources */,
 				275751E02DEE1441003E467C /* Frameworks */,
 				275751E12DEE1441003E467C /* Resources */,
+				279FED072DF4566D00320390 /* Embed Frameworks */,
 			);
 			buildRules = (
 			);
@@ -190,7 +224,7 @@
 			);
 			name = TestingHost;
 			packageProductDependencies = (
-				275752A32DEE1C3A003E467C /* OpenSwiftUI */,
+				279FED0C2DF4567B00320390 /* OpenSwiftUI */,
 			);
 			productName = TestingHost;
 			productReference = 275751E32DEE1441003E467C /* TestingHost.app */;
@@ -208,6 +242,7 @@
 			);
 			dependencies = (
 				275751FC2DEE1456003E467C /* PBXTargetDependency */,
+				279FEBDF2DF445CB00320390 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				275751F62DEE1456003E467C /* OpenSwiftUIUITests */,
@@ -282,7 +317,7 @@
 					};
 					275751F42DEE1456003E467C = {
 						CreatedOnToolsVersion = 16.3;
-						TestTargetID = 27CD0B482AFC8D37003665EB;
+						TestTargetID = 275751E22DEE1441003E467C;
 					};
 					27CD0B482AFC8D37003665EB = {
 						CreatedOnToolsVersion = 15.0;
@@ -383,6 +418,11 @@
 			isa = PBXTargetDependency;
 			target = 27CD0B482AFC8D37003665EB /* Example */;
 			targetProxy = 275751FB2DEE1456003E467C /* PBXContainerItemProxy */;
+		};
+		279FEBDF2DF445CB00320390 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 275751E22DEE1441003E467C /* TestingHost */;
+			targetProxy = 279FEBDE2DF445CB00320390 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
@@ -553,7 +593,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -638,7 +677,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -721,7 +759,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -804,7 +841,6 @@
 				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
 				CLANG_WARN_UNREACHABLE_CODE = YES;
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
-				CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
 				CURRENT_PROJECT_VERSION = 1;
@@ -915,7 +951,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Example;
+				TEST_TARGET_NAME = TestingHost;
 			};
 			name = SwiftUIDebug;
 		};
@@ -982,7 +1018,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Example;
+				TEST_TARGET_NAME = TestingHost;
 			};
 			name = SwiftUIRelease;
 		};
@@ -1049,7 +1085,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Example;
+				TEST_TARGET_NAME = TestingHost;
 			};
 			name = OpenSwiftUIDebug;
 		};
@@ -1116,7 +1152,7 @@
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				SWIFT_VERSION = 5.0;
 				TARGETED_DEVICE_FAMILY = "1,2";
-				TEST_TARGET_NAME = Example;
+				TEST_TARGET_NAME = TestingHost;
 			};
 			name = OpenSwiftUIRelease;
 		};
@@ -1588,7 +1624,7 @@
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenSwiftUI;
 		};
-		275752A32DEE1C3A003E467C /* OpenSwiftUI */ = {
+		279FED0C2DF4567B00320390 /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenSwiftUI;
 		};

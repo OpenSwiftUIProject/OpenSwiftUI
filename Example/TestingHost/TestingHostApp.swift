@@ -2,22 +2,44 @@
 //  TestingHostApp.swift
 //  TestingHost
 
+#if OPENSWIFTUI
+import OpenSwiftUI
+#else
 import SwiftUI
+#endif
+
+#if canImport(AppKit)
+import AppKit
+#else
+import UIKit
+#endif
 
 @main
 struct TestingHostApp: App {
-    #if os(iOS)
+    #if !OPENSWIFTUI
+    #if canImport(AppKit)
+    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #else
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
     #endif
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            Color.red
         }
     }
 }
 
-#if os(iOS)
+#if canImport(AppKit)
+class AppDelegate: NSResponder, NSApplicationDelegate {
+    var window: NSWindow?
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        return
+    }
+}
+#else
 class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
@@ -29,12 +51,6 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
             .filter { $0.responds(to: setHardwareLayout) }
             .forEach { $0.perform(setHardwareLayout, with: nil) }
         #endif
-
-        let window = UIWindow(frame: UIScreen.main.bounds)
-        self.window = window
-        let vc = UIViewController()
-        window.rootViewController = vc
-        window.makeKeyAndVisible()
         return true
     }
 }

@@ -77,20 +77,24 @@ package struct AnimatableAttribute<Value>: StatefulRule, AsyncAttribute, Observe
 // MARK: - AnimatableFrameAttribute [6.4.41] [TODO]
 
 package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedAttribute {
-    @Attribute private var position: CGPoint
+    @Attribute
+    private var position: ViewOrigin
 
-    @Attribute private var size: ViewSize
+    @Attribute
+    private var size: ViewSize
 
-    @Attribute private var pixelLength: CGFloat
+    @Attribute
+    private var pixelLength: CGFloat
 
-    @Attribute private var environment: EnvironmentValues
+    @Attribute
+    private var environment: EnvironmentValues
 
     private var helper: AnimatableAttributeHelper<ViewFrame>
 
     let animationsDisabled: Bool
 
     package init(
-        position: Attribute<CGPoint>,
+        position: Attribute<ViewOrigin>,
         size: Attribute<ViewSize>,
         pixelLength: Attribute<CGFloat>,
         environment: Attribute<EnvironmentValues>,
@@ -110,7 +114,22 @@ package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedA
     package typealias Value = ViewFrame
 
     package mutating func updateValue() {
-        // preconditionFailure("TODO")
+        let (position, positionChanged) = $position.changedValue()
+        let (size, sizeChanged) = $size.changedValue()
+        let (pixelLength, pixelLengthChanged) = $pixelLength.changedValue()
+        let changed = positionChanged || sizeChanged || pixelLengthChanged
+        var rect = CGRect(origin: position, size: size.value)
+        rect.roundCoordinatesToNearestOrUp(toMultipleOf: pixelLength)
+        let viewFrame = ViewFrame(
+            origin: rect.origin,
+            size: ViewSize(value: rect.size, proposal: size._proposal)
+        )
+        if !animationsDisabled {
+            // TODO: helper
+        }
+        if changed || !hasValue {
+            value = viewFrame
+        }
     }
 
     package mutating func destroy() {
@@ -121,13 +140,17 @@ package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedA
 // MARK: - AnimatableFrameAttributeVFD [6.4.41] [TODO]
 
 package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, ObservedAttribute {
-    @Attribute private var position: ViewOrigin
+    @Attribute
+    private var position: ViewOrigin
 
-    @Attribute private var size: ViewSize
+    @Attribute
+    private var size: ViewSize
 
-    @Attribute private var pixelLength: CGFloat
+    @Attribute
+    private var pixelLength: CGFloat
 
-    @Attribute private var environment: EnvironmentValues
+    @Attribute
+    private var environment: EnvironmentValues
 
     private var helper: AnimatableAttributeHelper<ViewFrame>
 
@@ -157,7 +180,22 @@ package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, Observ
     package typealias Value = ViewFrame
 
     package mutating func updateValue() {
-        // preconditionFailure("TODO")
+        let (position, positionChanged) = $position.changedValue()
+        let (size, sizeChanged) = $size.changedValue()
+        let (pixelLength, pixelLengthChanged) = $pixelLength.changedValue()
+        let changed = positionChanged || sizeChanged || pixelLengthChanged
+        var rect = CGRect(origin: position, size: size.value)
+        rect.roundCoordinatesToNearestOrUp(toMultipleOf: pixelLength)
+        let viewFrame = ViewFrame(
+            origin: rect.origin,
+            size: ViewSize(value: rect.size, proposal: size._proposal)
+        )
+        if !animationsDisabled {
+            // TODO
+        }
+        if changed || !hasValue {
+            value = viewFrame
+        }
     }
 
     package mutating func destroy() {
@@ -168,12 +206,20 @@ package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, Observ
 // MARK: - AnimatableAttributeHelper [FIXME]
 
 package struct AnimatableAttributeHelper<Value> where Value: Animatable {
-    @Attribute var phase: _GraphInputs.Phase
-    @Attribute var time: Time
-    @Attribute var transaction: Transaction
-    var previousModelData: Value.AnimatableData?
-    // var animatorState: AnimatorState<Value.AnimatableData>?
-    var resetSeed: UInt32 = 0
+    @Attribute
+    private var phase: _GraphInputs.Phase
+
+    @Attribute
+    private var time: Time
+
+    @Attribute
+    private var transaction: Transaction
+
+    private var previousModelData: Value.AnimatableData?
+
+    // private var animatorState: AnimatorState<Value.AnimatableData>?
+
+    private var resetSeed: UInt32 = 0
 
     init(
         phase: Attribute<_GraphInputs.Phase>,

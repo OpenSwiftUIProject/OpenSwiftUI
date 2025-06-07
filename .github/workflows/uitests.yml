@@ -1,0 +1,120 @@
+name: UI Tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  ios_uitest:
+    name: Execute UI tests on iOS
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        xcode-version: ["16.3"]
+        release: [2024]
+        ios-version: ["18.0"]
+        include:
+          - ios-version: "18.0"
+            ios-simulator-name: "iPhone 16 Pro"
+    runs-on: ${{ matrix.os }}
+    env:
+      OPENSWIFTUI_WERROR: 1
+      OPENGRAPH_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS: 0
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENGRAPH_USE_LOCAL_DEPS: 1
+      OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      OPENBOX_USE_LOCAL_DEPS: 1
+      OPENBOX_TARGET_RELEASE: ${{ matrix.release }}
+      DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Swift version
+        run: swift --version
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
+      - name: Record baseline images with SwiftUI
+        run: |
+          cd Example
+          xcodebuild test \
+            -scheme OpenSwiftUIUITests \
+            -configuration SwiftUIDebug \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -skipMacroValidation \
+            -skipPackagePluginValidation || true
+      - name: Run UI tests with OpenSwiftUI
+        run: |
+          cd Example
+          xcodebuild test \
+            -scheme OpenSwiftUIUITests \
+            -configuration OpenSwiftUIDebug \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -skipMacroValidation \
+            -skipPackagePluginValidation
+
+  macos_uitest:
+    name: Execute UI tests on macOS
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        xcode-version: ["16.3"]
+        release: [2024]
+    runs-on: ${{ matrix.os }}
+    env:
+      OPENSWIFTUI_WERROR: 1
+      OPENGRAPH_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS: 0
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENGRAPH_USE_LOCAL_DEPS: 1
+      OPENGRAPH_TARGET_RELEASE: ${{ matrix.release }}
+      OPENBOX_USE_LOCAL_DEPS: 1
+      OPENBOX_TARGET_RELEASE: ${{ matrix.release }}
+      DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: maxim-lobanov/setup-xcode@v1
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Swift version
+        run: swift --version
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
+      - name: Record baseline images with SwiftUI
+        run: |
+          cd Example
+          xcodebuild test \
+            -scheme OpenSwiftUIUITests \
+            -configuration SwiftUIDebug \
+            -destination "platform=macOS" \
+            -skipMacroValidation \
+            -skipPackagePluginValidation || true
+      - name: Run UI tests with OpenSwiftUI
+        run: |
+          cd Example
+          xcodebuild test \
+            -scheme OpenSwiftUIUITests \
+            -configuration OpenSwiftUIDebug \
+            -destination "platform=macOS" \
+            -skipMacroValidation \
+            -skipPackagePluginValidation
