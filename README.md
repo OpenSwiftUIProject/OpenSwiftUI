@@ -14,6 +14,14 @@ Currently, this project is in early development.
 
 You can find the API [documentation](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI/main/documentation/openswiftui) here.
 
+## Notes
+
+this project is for learning and research purposes only.
+
+If you choose to use this project, you do so at your own risk and are responsible for compliance with any applicable laws.
+
+The author of this project is not responsible for any consequences that may arise from your use of this project.
+
 > [!WARNING]
 > This package use a lot of hidden API and private framework on Apple platform.
 >
@@ -47,6 +55,8 @@ The current suggested toolchain to build the project is Swift 6.1 / Xcode 16.3.
 ```
 
 > [!NOTE]
+> This project's configuration is heavily based on many environment variables.
+>
 > You can use tools like [EnvPane](https://github.com/hschmidt/EnvPane/releases/) or [MenuHelper](https://github.com/Kyle-Ye/MenuHelper/releases)
 > on macOS platform to manage the environment variable more easily.
 
@@ -64,9 +74,9 @@ for various platforms:
 | **Windows** | None | Not supported yet | ❌ | ❌ | ❌ |
 
 
-[^1]: AppKit and other UI framework backend is not intergrated yet.
+[^1]: AppKit intergration is partly implemented. Render is support via SwiftUI's render implementation. Other UI framework backend is not intergrated yet.
 
-[^2]: UIKit intergration is partly implemented. No Render support yet.
+[^2]: UIKit intergration is partly implemented. Render is support via SwiftUI's render implementation.
 
 [^3]: Build and test is supported. But some feature is cut due to known Swift compiler issue.
 
@@ -89,16 +99,15 @@ for various platforms:
 - OpenSwiftUIBridge
     - A bridge layer for migrating other DSL framework to OpenSwiftUI incrementally and mixing them freely.
 
+## Disclaimer
+
+SwiftUI is a trademark of Apple Inc. This project is not affiliated with, endorsed by, or connected to Apple Inc. in any way. OpenSwiftUI is an independent open-source implementation created for educational and research purposes.
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 Part of the header file is from Apple Open Source project which is license under APSL
-
-## Related Projects
-
-- https://github.com/Cosmo/OpenSwiftUI
-- https://github.com/helbertgs/OpenSwiftUI
 
 ## Star History
 
