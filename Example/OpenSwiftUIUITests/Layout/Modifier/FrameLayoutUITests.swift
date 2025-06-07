@@ -11,9 +11,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if !OPENSWIFTUI
-@available(iOS 15, macOS 12, *)
-#endif
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: .ksdiff))
 struct FrameLayoutUITests {

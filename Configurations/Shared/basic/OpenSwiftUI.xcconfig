@@ -1,2 +1,19 @@
 GCC_PREPROCESSOR_DEFINITIONS_OPENSWIFTUI = OPENSWIFTUI=1
+
 SWIFT_ACTIVE_COMPILATION_CONDITIONS_OPENSWIFTUI = OPENSWIFTUI
+
+OPENSWIFTUI_AVAILABILITY_MACRO = \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v1_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0" \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v2_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0" \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v3_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0" \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v4_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0" \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v5_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0" \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v6_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0" \
+"-Xfrontend" "-enable-experimental-feature" \
+"-Xfrontend" "AvailabilityMacro=OpenSwiftUI_v7_0:iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0"

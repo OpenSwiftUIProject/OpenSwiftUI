@@ -1,3 +1,3 @@
-PRODUCT_BUNDLE_IDENTIFIER=org.OpenSwiftUIProject.OpenSwiftUI.TestingHost
+PRODUCT_BUNDLE_IDENTIFIER = org.OpenSwiftUIProject.OpenSwiftUI.TestingHost
 
-CODE_SIGN_ENTITLEMENTS=TestingHost/TestingHost.entitlements
+CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements

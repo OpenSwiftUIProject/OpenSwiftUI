@@ -1555,7 +1555,7 @@
 				275751F02DEE1442003E467C /* OpenSwiftUIRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = SwiftUIDebug;
+			defaultConfigurationName = OpenSwiftUIDebug;
 		};
 		275751FD2DEE1456003E467C /* Build configuration list for PBXNativeTarget "OpenSwiftUIUITests" */ = {
 			isa = XCConfigurationList;
@@ -1566,7 +1566,7 @@
 				275752012DEE1456003E467C /* OpenSwiftUIRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = SwiftUIDebug;
+			defaultConfigurationName = OpenSwiftUIDebug;
 		};
 		27CD0B442AFC8D37003665EB /* Build configuration list for PBXProject "Example" */ = {
 			isa = XCConfigurationList;
@@ -1577,7 +1577,7 @@
 				278A031F2BD6DD9D00ED4DAE /* OpenSwiftUIRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = SwiftUIDebug;
+			defaultConfigurationName = OpenSwiftUIDebug;
 		};
 		27CD0B582AFC8D38003665EB /* Build configuration list for PBXNativeTarget "Example" */ = {
 			isa = XCConfigurationList;
@@ -1588,7 +1588,7 @@
 				278A03202BD6DD9D00ED4DAE /* OpenSwiftUIRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = SwiftUIDebug;
+			defaultConfigurationName = OpenSwiftUIDebug;
 		};
 		27D49E092BA604FC00F6E2E2 /* Build configuration list for PBXNativeTarget "HostingExample" */ = {
 			isa = XCConfigurationList;
@@ -1599,7 +1599,7 @@
 				278A03212BD6DD9D00ED4DAE /* OpenSwiftUIRelease */,
 			);
 			defaultConfigurationIsVisible = 0;
-			defaultConfigurationName = SwiftUIDebug;
+			defaultConfigurationName = OpenSwiftUIDebug;
 		};
 /* End XCConfigurationList section */
 

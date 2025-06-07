@@ -1,3 +1,11 @@
 GCC_PREPROCESSOR_DEFINITIONS_DEBUG = DEBUG=1
+
+// MARK: Swift compiler
+
 SWIFT_ACTIVE_COMPILATION_CONDITIONS_DEBUG = DEBUG
+
+// Disable whole-module compilation for Swift.
+SWIFT_COMPILATION_MODE = singlefile
+
+// Disable optimizations for Swift.
 SWIFT_OPTIMIZATION_LEVEL = -Onone
