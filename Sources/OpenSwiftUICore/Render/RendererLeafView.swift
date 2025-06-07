@@ -33,8 +33,8 @@ extension RendererLeafView {
             LeafDisplayList(
                 identity: .init(),
                 view: view.value,
-                position: inputs.position,
-                size: inputs.size.cgSize,
+                position: inputs.animatedPosition(),
+                size: inputs.animatedCGSize(),
                 containerPosition: inputs.containerPosition,
                 options: .defaultValue,
                 contentSeed: .init()

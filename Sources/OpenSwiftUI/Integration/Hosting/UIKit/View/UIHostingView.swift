@@ -563,7 +563,10 @@ extension _UIHostingView {
 
 extension _UIHostingView: ViewRendererHost {
     package func updateEnvironment() {
-        // preconditionFailure("TODO")
+        // FIXME
+        var environment = EnvironmentValues()
+        environment.displayScale = traitCollection.displayScale
+        viewGraph.setEnvironment(environment)
     }
     
     package func updateSize() {
