@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: 79611CB2B7848ECB3D9EC1F26B13F28F
 
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct TupleView<T>: PrimitiveView {
     public var value: T

@@ -40,6 +40,7 @@ extension EnvironmentValues {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension ShapeStyle where Self == ForegroundStyle {
     /// The foreground style in the current context.
     ///
@@ -58,6 +59,7 @@ extension ShapeStyle where Self == ForegroundStyle {
 /// The foreground style in the current context.
 ///
 /// You can also use ``ShapeStyle/foreground`` to construct this style.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct ForegroundStyle: ShapeStyle, PrimitiveShapeStyle {
     /// Creates a foreground style instance.

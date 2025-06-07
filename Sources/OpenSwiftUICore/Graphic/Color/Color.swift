@@ -73,6 +73,7 @@ public import CoreGraphics
 /// system defined colors, or those that you load from an Asset Catalog.
 /// For example, a color can have distinct light and dark variants
 /// that the system chooses from at render time.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct Color: Hashable, CustomStringConvertible, Sendable {
     package var provider: AnyColorBox
@@ -86,12 +87,14 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
     }
     
     /// Creates a color that represents the specified custom color.
+    @available(OpenSwiftUI_v5_0, *)
     public init<T>(_ color: T) where T: Hashable, T: ShapeStyle, T.Resolved == Color.Resolved {
         self.init(provider: CustomColorProvider(base: color))
     }
     
     /// Evaluates this color to a resolved color given the current
     /// `context`.
+    @available(OpenSwiftUI_v5_0, *)
     public func resolve(in environment: EnvironmentValues) -> Color.Resolved {
         provider.resolve(in: environment)
     }
@@ -140,6 +143,7 @@ public struct Color: Hashable, CustomStringConvertible, Sendable {
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Color {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         provider.apply(to: &shape)
@@ -180,6 +184,7 @@ extension ColorProvider {
 
 // MARK: - Color + View
 
+@available(OpenSwiftUI_v1_0, *)
 extension Color: EnvironmentalView, View {
     package func body(environment: EnvironmentValues) -> ColorView {
         ColorView(resolve(in: environment))
@@ -192,6 +197,7 @@ extension Color: EnvironmentalView, View {
 
 // MARK: - AnyColorBox
 
+@available(OpenSwiftUI_v1_0, *)
 @usableFromInline
 package class AnyColorBox: AnyShapeStyleBox, @unchecked Sendable {
     override package final func apply(to shape: inout _ShapeStyle_Shape) {

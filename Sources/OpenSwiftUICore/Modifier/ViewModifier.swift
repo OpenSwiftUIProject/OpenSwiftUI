@@ -379,6 +379,7 @@ extension View {
 // MARK: - ModifiedContent
 
 /// A value with a modifier applied to it.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct ModifiedContent<Content, Modifier> {
     public typealias Body = Never
@@ -412,6 +413,7 @@ extension ModifiedContent: Sendable {}
 
 // MARK: - ModifiedContent + Equatable
 
+@available(OpenSwiftUI_v1_0, *)
 extension ModifiedContent: Equatable where Content: Equatable, Modifier: Equatable {
     public static func == (a: ModifiedContent<Content, Modifier>, b: ModifiedContent<Content, Modifier>) -> Bool {
         a.content == b.content && a.modifier == b.modifier
@@ -420,6 +422,7 @@ extension ModifiedContent: Equatable where Content: Equatable, Modifier: Equatab
 
 // MARK: - ModifiedContent + View
 
+@available(OpenSwiftUI_v1_0, *)
 extension ModifiedContent: View where Content: View, Modifier: ViewModifier {
     public static func _makeView(
         view: _GraphValue<Self>,
@@ -451,6 +454,7 @@ extension ModifiedContent: View where Content: View, Modifier: ViewModifier {
         }
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     public static func _viewListCount(
         inputs: _ViewListCountInputs
     ) -> Int? {
@@ -466,6 +470,7 @@ extension ModifiedContent: View where Content: View, Modifier: ViewModifier {
 
 // MARK: - ModifiedContent + ViewModifier
 
+@available(OpenSwiftUI_v1_0, *)
 extension ModifiedContent: ViewModifier where Content: ViewModifier, Modifier: ViewModifier {
     public static func _makeView(
         modifier: _GraphValue<Self>,
@@ -501,6 +506,7 @@ extension ModifiedContent: ViewModifier where Content: ViewModifier, Modifier: V
         }
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
@@ -513,6 +519,7 @@ extension ModifiedContent: ViewModifier where Content: ViewModifier, Modifier: V
 
 // MARK: - ViewModifier + modifier
 
+@available(OpenSwiftUI_v1_0, *)
 extension ViewModifier {
     /// Returns a new modifier that is the result of concatenating
     /// `self` with `modifier`.

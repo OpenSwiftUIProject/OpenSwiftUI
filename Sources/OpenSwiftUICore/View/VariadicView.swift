@@ -25,6 +25,7 @@ package import OpenGraphShims
 ///         Text(timestamp, format: .dateTime).layoutPriority(1)
 ///     }
 ///     
+@available(OpenSwiftUI_v1_0, *)
 public enum _VariadicView {
     /// A type that creates a `Tree`, managing content subtrees passed as
     /// result builder arguments.
@@ -63,6 +64,7 @@ public enum _VariadicView {
     ///
     /// Depending on the type of `Root` and `Content`, `Tree` will
     /// conditionally conform to protocols like `View`.
+    @available(OpenSwiftUI_v1_0, *)
     @frozen
     public struct Tree<Root, Content> where Root: _VariadicView.Root {
         public var root: Root
@@ -93,10 +95,12 @@ extension _VariadicView: Sendable {}
 /// A type that creates a `Tree`, managing content subtrees passed to a result builder.
 ///
 /// - SeeAlso: _VariadicView.Root.
+@available(OpenSwiftUI_v1_0, *)
 public protocol _VariadicView_Root {
     static var _viewListOptions: Int { get }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension _VariadicView.Root {
     public static var _viewListOptions: Int { 0 }
 
@@ -104,6 +108,7 @@ extension _VariadicView.Root {
         .init(rawValue: _viewListOptions)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     public static func _viewListCount(
         inputs _: _ViewListCountInputs,
         body _: (_ViewListCountInputs) -> Int?
@@ -157,6 +162,7 @@ extension _ViewListCountInputs {
 ///
 /// - SeeAlso: _VariadicView.ViewRoot.
 /// - Note: Requirements mirror `View`'s.
+@available(OpenSwiftUI_v1_0, *)
 public protocol _VariadicView_ViewRoot: _VariadicView.Root {
     static func _makeView(
         root: _GraphValue<Self>,
@@ -170,6 +176,7 @@ public protocol _VariadicView_ViewRoot: _VariadicView.Root {
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs
 
+    @available(OpenSwiftUI_v2_0, *)
     static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
@@ -189,6 +196,7 @@ extension _VariadicView.ViewRoot where Body == Never {
 
 // MARK: - _VariadicView.UnaryViewRoot
 
+@available(OpenSwiftUI_v1_0, *)
 public protocol _VariadicView_UnaryViewRoot: _VariadicView.ViewRoot {}
 
 extension _VariadicView.UnaryViewRoot {
@@ -218,6 +226,7 @@ extension _VariadicView.UnaryViewRoot {
 
 // MARK: - _VariadicView.MultiViewRoot
 
+@available(OpenSwiftUI_v1_0, *)
 public protocol _VariadicView_MultiViewRoot: _VariadicView.ViewRoot {}
 
 extension _VariadicView.MultiViewRoot {
@@ -254,6 +263,7 @@ extension _VariadicView.MultiViewRoot {
 // MARK: - _VariadicView.Children
 
 /// An ad hoc collection of the children of a variadic view.
+@available(OpenSwiftUI_v1_0, *)
 public struct _VariadicView_Children {
     package var list: any ViewList
 

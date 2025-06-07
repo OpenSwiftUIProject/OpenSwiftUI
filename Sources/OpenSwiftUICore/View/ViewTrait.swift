@@ -13,6 +13,7 @@ import OpenGraphShims
 
 /// A type of key for a trait associated with the content of a
 /// container view.
+@available(OpenSwiftUI_v1_0, *)
 public protocol _ViewTraitKey {
     /// The type of value produced by the trait.
     associatedtype Value
@@ -24,6 +25,7 @@ public protocol _ViewTraitKey {
 // MARK: - _TraitWritingModifier
 
 /// A view content adapter that associates a trait with its base content.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _TraitWritingModifier<Trait>: PrimitiveViewModifier where Trait: _ViewTraitKey {
     public let value: Trait.Value
@@ -85,6 +87,7 @@ public struct _TraitWritingModifier<Trait>: PrimitiveViewModifier where Trait: _
 @available(*, unavailable)
 extension _TraitWritingModifier: Sendable {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Associate a trait `value` for the given `key` for this view content.
     @inlinable
@@ -96,6 +99,7 @@ extension View {
 // MARK: - _ConditionalTraitWritingModifier
 
 /// Conditionally writes a trait.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _ConditionalTraitWritingModifier<Trait>: PrimitiveViewModifier where Trait : _ViewTraitKey {
     public var value: Trait.Value
@@ -158,6 +162,7 @@ public struct _ConditionalTraitWritingModifier<Trait>: PrimitiveViewModifier whe
 @available(*, unavailable)
 extension _ConditionalTraitWritingModifier: Sendable {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Conditionally writes a trait.
     @_alwaysEmitIntoClient

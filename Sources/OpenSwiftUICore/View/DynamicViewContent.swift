@@ -6,6 +6,7 @@
 //  Status: Complete
 
 /// A type of view that generates views from an underlying collection of data.
+@available(OpenSwiftUI_v1_0, *)
 public protocol DynamicViewContent: View {
     /// The type of the underlying collection of data.
     associatedtype Data: Collection

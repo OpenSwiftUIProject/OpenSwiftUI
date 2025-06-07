@@ -1,2 +1,7 @@
-#include "common.xcconfig"
-SWIFT_OPTIMIZATION_LEVEL = -O
+// MARK: Swift compiler
+
+// Enable whole-module compilation for Swift.
+SWIFT_COMPILATION_MODE = wholemodule
+
+// Enable whole-module optimization for Swift.
+SWIFT_OPTIMIZATION_LEVEL = -Owholemodule

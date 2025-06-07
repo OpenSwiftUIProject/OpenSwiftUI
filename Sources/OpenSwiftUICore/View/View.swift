@@ -44,6 +44,7 @@ import OpenSwiftUI_SPI
 /// and respond to <doc:View-Input-and-Events>.
 /// You can also collect groups of default modifiers into new,
 /// custom view modifiers for easy reuse.
+@available(OpenSwiftUI_v1_0, *)
 @_typeEraser(AnyView)
 @preconcurrency
 @MainActor
@@ -58,6 +59,7 @@ public protocol View {
     
     /// The number of views that `_makeViewList()` would produce, or
     /// nil if unknown.
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
     
     /// The type of view representing the body of this view.
@@ -135,6 +137,7 @@ extension MultiView {
 
 /// Shim to turn a view that may implement _makeViewList() into a
 /// single view.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _UnaryViewAdaptor<Content>: View, UnaryView, PrimitiveView where Content : View {
     public var content: Content

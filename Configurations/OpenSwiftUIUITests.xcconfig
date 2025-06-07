@@ -1,6 +1,6 @@
-PRODUCT_BUNDLE_IDENTIFIER=org.OpenSwiftUIProject.OpenSwiftUI.OpenSwiftUIUITests
+PRODUCT_BUNDLE_IDENTIFIER = org.OpenSwiftUIProject.OpenSwiftUI.OpenSwiftUIUITests
+
+CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements
 
 // Remove -module_alias Testing=_Testing_Unavailable
-OTHER_SWIFT_FLAGS=""
-
-CODE_SIGN_ENTITLEMENTS=TestingHost/TestingHost.entitlements
+OTHER_SWIFT_FLAGS = $(OPENSWIFTUI_AVAILABILITY_MACRO)
