@@ -1,17 +1,26 @@
 //
-//  TestAppDelegate.swift
-//  TestsHost
-//
-//  Created by Kyle on 2024/4/23.
-//
+//  TestingHostApp.swift
+//  TestingHost
 
-#if os(iOS)
-import UIKit
+import SwiftUI
 
 @main
-final class TestAppDelegate: NSObject , UIApplicationDelegate {
+struct TestingHostApp: App {
+    #if os(iOS)
+    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #endif
+
+    var body: some Scene {
+        WindowGroup {
+            ContentView()
+        }
+    }
+}
+
+#if os(iOS)
+class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
-    
+
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         #if targetEnvironment(simulator)
         // Disable hardware keyboards
@@ -29,5 +38,4 @@ final class TestAppDelegate: NSObject , UIApplicationDelegate {
         return true
     }
 }
-
 #endif

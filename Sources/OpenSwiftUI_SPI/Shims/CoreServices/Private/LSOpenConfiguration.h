@@ -6,9 +6,18 @@
 * classdump-dyld is licensed under GPLv3, Copyright © 2013-2016 by Elias Limneos.
 */
 
+#ifndef LSOpenConfiguration_h
+#define LSOpenConfiguration_h
+
+#include "OpenSwiftUIBase.h"
+
+#if __has_include(<UIKit/UIKit.h>)
+
+#import <UIKit/UIKit.h>
 #import <Foundation/Foundation.h>
 
 NS_ASSUME_NONNULL_BEGIN
+
 @interface _LSOpenConfiguration : NSObject
 @property(assign, getter=isSensitive,nonatomic) BOOL sensitive;
 @property(nonatomic, retain, nullable) id targetConnectionEndpoint;
@@ -18,4 +27,9 @@ NS_ASSUME_NONNULL_BEGIN
 -(void)setTargetConnectionEndpoint:(nullable id)endpoint ;
 -(nullable id)targetConnectionEndpoint;
 @end
+
 NS_ASSUME_NONNULL_END
+
+#endif /* UIKit.h */
+
+#endif /* LSOpenConfiguration_h */

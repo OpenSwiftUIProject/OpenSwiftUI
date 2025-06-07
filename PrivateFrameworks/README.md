@@ -1,3 +1,0 @@
-- CoreServices
-    - Header file source is https://developer.limneos.net + iOS 15.2.1
-    - Other file is from iOS 15.5 SDK
