@@ -2,15 +2,15 @@
 //  ConditionalContent.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C (SwiftUI)
 
 package import OpenGraphShims
 
-// MARK: - ConditionalContent
+// MARK: - ConditionalContent [6.4.41]
 
 /// View content that shows one of two possible children.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _ConditionalContent<TrueContent, FalseContent> {
     @frozen
@@ -46,8 +46,9 @@ extension _ConditionalContent {
     }
 }
 
-// MARK: - ConditionalContent + View
+// MARK: - ConditionalContent + View [6.0.87]
 
+@available(OpenSwiftUI_v1_0, *)
 extension _ConditionalContent: View, PrimitiveView where TrueContent: View, FalseContent: View {
     @usableFromInline
     init(storage: Storage) {
@@ -68,6 +69,7 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
         return makeDynamicViewList(metadata: metadata, view: view, inputs: inputs)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         guard let trueCount = TrueContent._viewListCount(inputs: inputs),
               trueCount == FalseContent._viewListCount(inputs: inputs) else {
@@ -77,7 +79,7 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
     }
 }
 
-// MARK: - ConditionalContent + DynamicView
+// MARK: - ConditionalContent + DynamicView [6.0.87]
 
 extension _ConditionalContent: DynamicView where TrueContent: View, FalseContent: View {
     package static var canTransition: Bool {
@@ -230,7 +232,7 @@ extension _ConditionalContent {
     }
 }
 
-// MARK: - ConditionalContentProvider
+// MARK: - ConditionalContentProvider [6.0.87]
 
 package protocol ConditionalContentProvider {
     associatedtype TrueContent

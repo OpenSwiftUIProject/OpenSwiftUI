@@ -9,6 +9,7 @@ package import OpenGraphShims
 
 extension Optional: PrimitiveView where Wrapped: View {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension Optional: View where Wrapped: View {
     public typealias Body = Never
 
@@ -32,6 +33,7 @@ extension Optional: View where Wrapped: View {
         return makeDynamicViewList(metadata: metadata, view: view, inputs: inputs)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         Wrapped._viewListCount(inputs: inputs)
     }

@@ -11,6 +11,7 @@ import OpenGraphShims
 
 // MARK: - _ViewModifier_Content
 
+@available(OpenSwiftUI_v1_0, *)
 public struct _ViewModifier_Content<Modifier>: PrimitiveView where Modifier: ViewModifier {
     nonisolated public static func _makeView(
         view: _GraphValue<Self>,
@@ -26,6 +27,7 @@ public struct _ViewModifier_Content<Modifier>: PrimitiveView where Modifier: Vie
         providerMakeViewList(view: view, inputs: inputs)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
@@ -33,6 +35,7 @@ public struct _ViewModifier_Content<Modifier>: PrimitiveView where Modifier: Vie
         nil
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     @_alwaysEmitIntoClient
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         _viewListCount(inputs: inputs) { _ in nil }
@@ -46,6 +49,7 @@ public struct _ViewModifier_Content<Modifier>: PrimitiveView where Modifier: Vie
 ///
 /// You don't use this type directly. Instead OpenSwiftUI creates this type on
 /// your behalf.
+@available(OpenSwiftUI_v5_0, *)
 public struct PlaceholderContentView<Value>: View {
     package init() {}
 
@@ -83,6 +87,7 @@ extension _ViewModifier_Content: Sendable {}
 
 // MARK: - ViewModifier + Extension
 
+@available(OpenSwiftUI_v1_0, *)
 extension ViewModifier {
     nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
@@ -100,6 +105,7 @@ extension ViewModifier {
         makeViewList(modifier: modifier, inputs: inputs, body: body)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?

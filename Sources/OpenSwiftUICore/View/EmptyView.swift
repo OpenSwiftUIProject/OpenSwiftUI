@@ -25,6 +25,7 @@
 ///     print("\(type(of:progressView))")
 ///     // Prints: ProgressView<EmptyView, EmptyView>
 ///
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct EmptyView: PrimitiveView {
     /// Creates an empty view.
@@ -34,11 +35,12 @@ public struct EmptyView: PrimitiveView {
     public static func _makeView(view: _GraphValue<EmptyView>, inputs: _ViewInputs) -> _ViewOutputs {
         _ViewOutputs()
     }
-    
+
     public static func _makeViewList(view: _GraphValue<EmptyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
         .emptyViewList(inputs: inputs)
     }
-    
+
+    @available(OpenSwiftUI_v2_0, *)
     public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         0
     }

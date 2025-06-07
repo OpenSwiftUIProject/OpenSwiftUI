@@ -9,6 +9,7 @@
 
 import OpenGraphShims
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         makeView(view: view, inputs: inputs)
@@ -18,6 +19,7 @@ extension View {
         makeViewList(view: view, inputs: inputs)
     }
     
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         Body._viewListCount(inputs: inputs)
     }

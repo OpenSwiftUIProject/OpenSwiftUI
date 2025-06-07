@@ -43,6 +43,7 @@
 ///
 /// ![A vertically arranged stack of labels showing various standard fonts,
 /// such as Large Title and Headline.](OpenSwiftUI-ForEach-fonts.png)
+@available(OpenSwiftUI_v1_0, *)
 public struct ForEach<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable {
     /// The collection of underlying identified data that OpenSwiftUI uses to create
     /// views dynamically.

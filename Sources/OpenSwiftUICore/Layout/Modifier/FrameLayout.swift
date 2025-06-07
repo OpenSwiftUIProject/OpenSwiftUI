@@ -45,6 +45,7 @@ extension FrameLayoutCommon {
 
 /// A modifier that centers its child in an invisible frame with one or two
 /// fixed dimensions.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _FrameLayout: UnaryLayout, FrameLayoutCommon {
     let width: CGFloat?
@@ -108,6 +109,7 @@ public struct _FrameLayout: UnaryLayout, FrameLayoutCommon {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Positions this view within an invisible frame with the specified size.
     ///
@@ -185,6 +187,7 @@ extension View {
 
 /// A modifier that aligns its child in an invisible, flexible frame with size
 /// limits and ideal size properties.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _FlexFrameLayout: UnaryLayout, FrameLayoutCommon {
     let minWidth: CGFloat?
@@ -380,6 +383,7 @@ public struct _FlexFrameLayout: UnaryLayout, FrameLayoutCommon {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Positions this view within an invisible frame having the specified size
     /// constraints.

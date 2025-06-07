@@ -88,25 +88,30 @@
 ///
 ///     ![A screenshot of a title in the primary content color above a
 ///     subtitle in the secondary content color.](ShapeStyle-3)
+@available(OpenSwiftUI_v1_0, *)
 public protocol ShapeStyle: Sendable {
     /// Returns the view's outputs, for the shape view and its inputs.
     @available(*, deprecated, message: "obsolete")
     static func _makeView<S>(view: _GraphValue<_ShapeView<S, Self>>, inputs: _ViewInputs) -> _ViewOutputs where S: Shape
     
     /// Called to apply the style to the given shape value.
+    @available(OpenSwiftUI_v3_0, *)
     func _apply(to shape: inout _ShapeStyle_Shape)
     
     /// Called to apply the style to the given shape type.
+    @available(OpenSwiftUI_v3_0, *)
     static func _apply(to type: inout _ShapeStyle_ShapeType)
     
     /// The type of shape style this will resolve to.
     ///
     /// When you create a custom shape style, Swift infers this type
     /// from your implementation of the required `resolve` function.
+    @available(OpenSwiftUI_v5_0, *)
     @_weakLinked
     associatedtype Resolved: ShapeStyle = Never
     
     /// Evaluate to a resolved shape style given the current `environment`.
+    @available(OpenSwiftUI_v5_0, *)
     func resolve(in environment: EnvironmentValues) -> Self.Resolved
 }
 
@@ -116,6 +121,7 @@ package protocol PrimitiveShapeStyle: ShapeStyle where Resolved == Never {}
 
 // MARK: - ShapeStyle + Never
 
+@available(OpenSwiftUI_v5_0, *)
 extension Never: ShapeStyle {
     public typealias Resolved = Never
     
@@ -124,6 +130,7 @@ extension Never: ShapeStyle {
     }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension ShapeStyle where Resolved == Never {
     public func resolve(in: EnvironmentValues) -> Self.Resolved {
         preconditionFailure("")
@@ -134,6 +141,7 @@ extension ShapeStyle where Resolved == Never {
 
 // MARK: - ShapeStyle + Default implementation
 
+@available(OpenSwiftUI_v3_0, *)
 extension ShapeStyle {
     package typealias Name = _ShapeStyle_Name
     package typealias Pack = _ShapeStyle_Pack

@@ -11,6 +11,7 @@ package import OpenGraphShims
 
 // MARK: - _VariadicView.Children + View [WIP]
 
+@available(OpenSwiftUI_v1_0, *)
 extension _VariadicView.Children: View, MultiView, PrimitiveView {
     nonisolated public static func _makeViewList(
         view: _GraphValue<Self>,
@@ -20,6 +21,7 @@ extension _VariadicView.Children: View, MultiView, PrimitiveView {
         return ForEach._makeViewList(view: child, inputs: inputs)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs
     ) -> Int? {
@@ -39,6 +41,7 @@ extension _VariadicView.Children: View, MultiView, PrimitiveView {
 
 // MARK: - _VariadicView.Children + RandomAccessCollection [WIP]
 
+@available(OpenSwiftUI_v1_0, *)
 extension _VariadicView.Children: RandomAccessCollection {
     public struct Element: PrimitiveView, UnaryView, Identifiable {
         var view: ViewList.View

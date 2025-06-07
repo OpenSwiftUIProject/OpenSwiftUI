@@ -28,6 +28,7 @@
 ///         }
 ///     }
 ///
+@available(OpenSwiftUI_v1_0, *)
 @resultBuilder
 public struct ViewBuilder {
     /// Builds an expression within the builder.
@@ -69,6 +70,7 @@ public struct ViewBuilder {
 @available(*, unavailable)
 extension ViewBuilder: Sendable {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension ViewBuilder {
     /// Produces an optional view for conditional statements in multi-statement
     /// closures that's only visible when the condition evaluates to true.
@@ -92,6 +94,7 @@ extension ViewBuilder {
     }
 }
 
+@available(OpenSwiftUI_v2_0, *)
 extension ViewBuilder {
     /// Processes view content for a conditional compiler-control
     /// statement that performs an availability check.
