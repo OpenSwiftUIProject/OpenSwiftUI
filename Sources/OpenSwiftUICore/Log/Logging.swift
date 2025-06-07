@@ -5,7 +5,12 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
+#if DEBUG
 import Foundation
+#else
+public import Foundation
+#endif
+
 #if OPENSWIFTUI_SWIFT_LOG
 public import Logging
 extension Logger {
@@ -111,6 +116,7 @@ package enum Log {
     package static var runtimeIssuesLog = Logger(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
     @_transparent
+    @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []

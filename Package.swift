@@ -97,6 +97,18 @@ if linkCoreUI {
 
 let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR", default: buildForDarwinPlatform)
 
+// MARK: - [env] OPENSWIFTUI_OPENCOMBINE
+
+let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: !buildForDarwinPlatform)
+
+// MARK: - [env] OPENSWIFTUI_SWIFT_LOG
+
+let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: !buildForDarwinPlatform)
+
+// MARK: - [env] OPENSWIFTUI_SWIFT_CRYPTO
+
+let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: !buildForDarwinPlatform)
+
 // MARK: - [env] OPENGSWIFTUI_SWIFTUI_RENDER
 
 let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER", default: buildForDarwinPlatform)
@@ -127,7 +139,7 @@ if warningsAsErrorsCondition {
 // MARK: - [env] OPENSWIFTUI_LIBRARY_EVOLUTION
 
 let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
-if libraryEvolutionCondition {
+if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
     // NOTE: -enable-library-evolution will cause module verify failure for `swift build`.
     // Either set OPENSWIFTUI_LIBRARY_EVOLUTION=0 or add `-Xswiftc -no-verify-emitted-module-interface` after `swift build`
     sharedSwiftSettings.append(.unsafeFlags(["-enable-library-evolution", "-no-verify-emitted-module-interface"]))
@@ -503,7 +515,6 @@ if useLocalDeps {
     package.dependencies += dependencies
 }
 
-let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: !buildForDarwinPlatform)
 if openCombineCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
@@ -512,7 +523,6 @@ if openCombineCondition {
     openSwiftUITarget.addOpenCombineSettings()
 }
 
-let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: !buildForDarwinPlatform)
 if swiftLogCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-log", from: "1.5.3")
@@ -521,7 +531,6 @@ if swiftLogCondition {
     openSwiftUITarget.addSwiftLogSettings()
 }
 
-let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: !buildForDarwinPlatform)
 if swiftCryptoCondition {
     package.dependencies.append(
         .package(url: "https://github.com/apple/swift-crypto.git", from: "3.8.0")

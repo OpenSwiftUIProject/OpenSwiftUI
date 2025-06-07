@@ -34,7 +34,7 @@ private let _signpostLog = OSLog(subsystem: Log.subsystem, category: "OpenSwiftU
 #endif
 
 package struct Signpost {
-    #if canImport(Darwin)
+    #if canImport(Darwin) && !OPENSWIFTUI_SWIFT_LOG
     package static let archiving = OSSignposter(logger: Log.archiving)
     package static let metaExtraction = OSSignposter(logger: Log.metadataExtraction)
     #endif
