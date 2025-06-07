@@ -11,11 +11,8 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS)
-import UIKit
-
 #if !OPENSWIFTUI
-@available(iOS 15, *)
+@available(iOS 15, macOS 12, *)
 #endif
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: .ksdiff))
@@ -27,7 +24,7 @@ struct FrameLayoutUITests {
                 Color.red.frame()
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView())
+        openSwiftUIAssertSnapshot(of: ContentView(), size: CGSize(width: 200, height: 200))
     }
 
     @Test
@@ -37,7 +34,6 @@ struct FrameLayoutUITests {
                 Color.red.frame(width: 10, height: 10)
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView())
+        openSwiftUIAssertSnapshot(of: ContentView(), size: CGSize(width: 200, height: 200))
     }
 }
-#endif
