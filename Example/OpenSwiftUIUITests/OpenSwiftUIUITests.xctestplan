@@ -1,0 +1,29 @@
+{
+  "configurations" : [
+    {
+      "id" : "42FF1E04-FB24-4BB0-BEDD-78AC5072DAFC",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "key" : "SNAPSHOT_REFERENCE_DIR",
+        "value" : "\/Users\/kyle\/Workspace\/OpenSwiftUIProject\/OpenSwiftUI\/Example\/OpenSwiftUIUITests\/ReferenceImages"
+      }
+    ]
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Example.xcodeproj",
+        "identifier" : "275751F42DEE1456003E467C",
+        "name" : "OpenSwiftUIUITests"
+      }
+    }
+  ],
+  "version" : 1
+}
