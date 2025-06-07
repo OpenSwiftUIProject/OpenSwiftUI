@@ -326,6 +326,7 @@ let openSwiftUISymbolDualTestsTarget = Target.testTarget(
         "OpenSwiftUI",
         "OpenSwiftUITestsSupport",
         "OpenSwiftUISymbolDualTestsSupport",
+        .product(name: "Numerics", package: "swift-numerics"),
     ],
     exclude: ["README.md"],
     cSettings: sharedCSettings,

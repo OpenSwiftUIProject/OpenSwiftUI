@@ -8,8 +8,6 @@ import SwiftUI
 import OpenSwiftUI
 import OpenSwiftUITestsSupport
 
-#if compiler(>=6.1) // https://github.com/swiftlang/swift/issues/81248
-
 extension PropertyList {
     @_silgen_name("OpenSwiftUITestStub_PropertyListInit")
     init(swiftUI: Void)
@@ -333,7 +331,5 @@ struct PropertyListTrackerTests {
         #expect(tracker1.swiftUI_value(plist2, for: IntKey.self) == 25)
     }
 }
-
-#endif
 
 #endif
