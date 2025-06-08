@@ -57,4 +57,15 @@
 }
 @end
 
+@implementation UIScreen (OpenSwiftUI_SPI)
+- (CGRect)_referenceBounds_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(CGRect, @"_referenceBounds", CGRectZero);
+    return func(self, selector);
+}
+- (CGFloat)_pointsPerInch_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(CGFloat, @"_pointsPerInch", 0.0);
+    return func(self, selector);
+}
+@end
+
 #endif /* UIKit.h */

@@ -122,6 +122,11 @@ package struct PropertyList: CustomStringConvertible {
         elements === nil
     }
 
+    @inlinable
+    package func isIdentical(to other: PropertyList) -> Bool {
+        elements === other.elements
+    }
+
     /// The unique identifier for this PropertyList.
     ///
     /// - Returns: A UniqueID that identifies this PropertyList, or `.invalid` if empty.
