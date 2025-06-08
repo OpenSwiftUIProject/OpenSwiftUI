@@ -19,7 +19,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 OPENSWIFTUI_EXPORT
 BOOL _NSColorDependsOnAppearance(NSColor *color);
 
-@interface NSColor (OpenSwiftUI)
+@interface NSColor (OpenSwiftUI_NSColor)
 
 // Workaround Swift initializer limitation
 - (instancetype)initWithColor__openSwiftUI__:(NSColor *)color;

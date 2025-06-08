@@ -226,6 +226,16 @@ package class AnyColorBox: AnyShapeStyleBox, @unchecked Sendable {
     package func opacity(at level: Int, environment: EnvironmentValues) -> Float { preconditionFailure("") }
 }
 
+extension AnyColorBox { // 6.4.41
+    package func `as`<P>(_ type: P.Type) -> P? where P: ColorProvider {
+        if let p = self as? ColorBox<P> {
+            return p.base
+        } else {
+            return nil
+        }
+    }
+}
+
 @available(*, unavailable)
 extension AnyColorBox : Sendable {}
 

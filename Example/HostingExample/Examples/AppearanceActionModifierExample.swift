@@ -13,8 +13,8 @@ struct AppearanceActionModifierExample: View {
     @State private var first = true
 
     var color: Color {
-        #if os(macOS) // TODO:
-        Color.red
+        #if os(macOS)
+        Color(nsColor: first ? .red : .blue)
         #else
         Color(uiColor: first ? .red : .blue)
         #endif
