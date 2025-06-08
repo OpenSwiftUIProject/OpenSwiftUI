@@ -1,6 +1,6 @@
 //
 //  Export.swift
-//  OpenSwiftUICompatibilityTests
+//  OpenSwiftUITestsSupport
 
 #if OPENSWIFTUI_COMPATIBILITY_TEST
 @_exported import SwiftUI

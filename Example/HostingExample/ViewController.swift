@@ -66,6 +66,7 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        Color.red.frame(width: 10, height: 10)
+        Color.red
+            .frame(width: 200, height: 200)
     }
 }

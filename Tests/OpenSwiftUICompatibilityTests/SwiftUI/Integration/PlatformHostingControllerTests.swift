@@ -1,13 +1,13 @@
 //
-//  UIHostingControllerTests.swift
+//  PlatformHostingControllerTests.swift
 //  OpenSwiftUICompatibilityTests
 
-#if os(iOS)
+#if canImport(Darwin)
 import Testing
-import UIKit
+import OpenSwiftUITestsSupport
 
 @MainActor
-struct UIHostingControllerTests {
+struct PlatformHostingControllerTests {
     @Test(
         .bug(
             "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
@@ -16,18 +16,12 @@ struct UIHostingControllerTests {
         )
     )
     func testBasicAnyView() throws {
-        guard #unavailable(iOS 18) else {
-            withKnownIssue {
-                Issue.record("Known crash issue on iOS 18")
-            }
-            return
-        }
         struct ContentView: View {
             var body: some View {
                 AnyView(EmptyView())
             }
         }
-        let vc = UIHostingController(rootView: ContentView())
+        let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         workaroundIssue87(vc)
     }
@@ -40,19 +34,13 @@ struct UIHostingControllerTests {
         )
     )
     func testBasicAnyViewWithProperty() throws {
-        guard #unavailable(iOS 18) else {
-            withKnownIssue {
-                Issue.record("Known crash issue on iOS 18")
-            }
-            return
-        }
         struct ContentView: View {
             var name = ""
             var body: some View {
                 AnyView(EmptyView())
             }
         }
-        let vc = UIHostingController(rootView: ContentView())
+        let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         workaroundIssue87(vc)
     }

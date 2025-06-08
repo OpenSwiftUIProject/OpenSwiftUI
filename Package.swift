@@ -541,9 +541,7 @@ if swiftCryptoCondition {
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
 if compatibilityTestCondition {
-    var swiftSettings: [SwiftSetting] = (openSwiftUICompatibilityTestTarget.swiftSettings ?? [])
-    swiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
-    openSwiftUICompatibilityTestTarget.swiftSettings = swiftSettings
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
 } else {
     openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
 }

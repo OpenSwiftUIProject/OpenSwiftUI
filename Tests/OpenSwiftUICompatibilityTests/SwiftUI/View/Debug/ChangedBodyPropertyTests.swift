@@ -5,10 +5,7 @@
 #if canImport(Darwin) && !OPENSWIFTUI_SWIFT_LOG
 import Testing
 import OSLog
-
-#if os(iOS)
-import UIKit
-#endif
+import OpenSwiftUITestsSupport
 
 @MainActor
 struct ChangedBodyPropertyTests {
@@ -35,24 +32,16 @@ struct ChangedBodyPropertyTests {
     #endif
     @Test
     func zeroPropertyView() throws {
-        guard #unavailable(iOS 18) else {
-            withKnownIssue {
-                Issue.record("Known crash issue on iOS 18")
-            }
-            return
-        }
         struct ContentView: View {
             var body: some View {
                 let _ = Self._logChanges()
                 AnyView(EmptyView())
             }
         }
-        #if os(iOS)
-        let vc = UIHostingController(rootView: ContentView())
+        let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         workaroundIssue87(vc)
         try verifyLog(expected: "ChangedBodyPropertyTests.ContentView: @self changed.")
-        #endif
     }
     
     #if OPENSWIFTUI_COMPATIBILITY_TEST
@@ -62,12 +51,6 @@ struct ChangedBodyPropertyTests {
     #endif
     @Test
     func propertyView() throws {
-        guard #unavailable(iOS 18) else {
-            withKnownIssue {
-                Issue.record("Known crash issue on iOS 18")
-            }
-            return
-        }
         struct ContentView: View {
             var name = ""
             var body: some View {
@@ -75,12 +58,10 @@ struct ChangedBodyPropertyTests {
                 AnyView(EmptyView())
             }
         }
-        #if os(iOS)
-        let vc = UIHostingController(rootView: ContentView())
+        let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         workaroundIssue87(vc)
         try verifyLog(expected: "ChangedBodyPropertyTests.ContentView: @self changed.")
-        #endif
     }
     
     #if OPENSWIFTUI_COMPATIBILITY_TEST
@@ -90,12 +71,6 @@ struct ChangedBodyPropertyTests {
     #endif
     @Test
     func statePropertyView() throws {
-        guard #unavailable(iOS 18) else {
-            withKnownIssue {
-                Issue.record("Known crash issue on iOS 18")
-            }
-            return
-        }
         struct ContentView: View {
             @State var name = ""
             var body: some View {
@@ -103,12 +78,10 @@ struct ChangedBodyPropertyTests {
                 AnyView(EmptyView())
             }
         }
-        #if os(iOS)
-        let vc = UIHostingController(rootView: ContentView())
+        let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         workaroundIssue87(vc)
         try verifyLog(expected: "ChangedBodyPropertyTests.ContentView: @self, @identity, _name changed.")
-        #endif
     }
 }
 #endif
