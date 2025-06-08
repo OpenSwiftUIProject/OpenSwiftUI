@@ -6,9 +6,7 @@
 import Testing
 
 import Foundation
-#if os(iOS)
-import UIKit
-#endif
+import OpenSwiftUITestsSupport
 
 @MainActor
 struct AppearanceActionModifierTests {
@@ -24,14 +22,11 @@ struct AppearanceActionModifierTests {
                     }
             }
         }
-
-        #if os(iOS)
         await confirmation { @MainActor confirmation in
-            let vc = UIHostingController(rootView: ContentView(confirmation: confirmation))
+            let vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
             vc.triggerLayout()
             workaroundIssue87(vc)
         }
-        #endif
     }
 
     @Test
@@ -48,7 +43,7 @@ struct AppearanceActionModifierTests {
                 Color.red
                     .onAppear {
                         Helper.result += "A"
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
                             toggle.toggle()
                         }
                     }
@@ -58,13 +53,16 @@ struct AppearanceActionModifierTests {
                     .id(toggle)
             }
         }
-        #if os(iOS)
-        let vc = UIHostingController(rootView: ContentView())
+        let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         workaroundIssue87(vc)
-        try await Task.sleep(nanoseconds: 1 * 1_000_000_000)
+        #expect(Helper.result.hasPrefix("A"))
+        var timeout = 5
+        while !Helper.result.hasPrefix("AAD") && timeout > 0{
+            try await Task.sleep(for: .seconds(1))
+            timeout -= 1
+        }
         #expect(Helper.result.hasPrefix("AAD"))
-        #endif
     }
 }
 #endif

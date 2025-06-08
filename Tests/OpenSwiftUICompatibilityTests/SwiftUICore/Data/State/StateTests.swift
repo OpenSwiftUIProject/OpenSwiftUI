@@ -3,6 +3,7 @@
 //  OpenSwiftUICompatibilityTests
 
 import Testing
+import OpenSwiftUITestsSupport
 
 #if canImport(Darwin)
 struct StateTests {
@@ -23,16 +24,11 @@ struct StateTests {
                     }
             }
         }
-
-        #if os(iOS)
         await confirmation { @MainActor confirmation in
-            let vc = UIHostingController(rootView: ContentView(confirmation: confirmation))
+            let vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
             vc.triggerLayout()
             workaroundIssue87(vc)
         }
-        #endif
     }
-    
-    // TODO: Add disappear support and test case
 }
 #endif
