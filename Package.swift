@@ -79,7 +79,7 @@ if development {
 
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform)
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
 
 if linkCoreUI {
     sharedCSettings.append(
@@ -457,7 +457,11 @@ extension Target {
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform)
+// https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
+// By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
+let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", default: false)
+
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
@@ -469,7 +473,7 @@ if attributeGraphCondition {
     openSwiftUIBridgeTestTarget.addAGSettings()
 }
 
-let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: buildForDarwinPlatform)
+let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
 if renderBoxCondition {
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
