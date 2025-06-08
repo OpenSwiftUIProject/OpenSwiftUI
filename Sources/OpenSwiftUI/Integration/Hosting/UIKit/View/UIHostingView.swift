@@ -566,6 +566,9 @@ extension _UIHostingView: ViewRendererHost {
         // FIXME
         var environment = EnvironmentValues()
         environment.displayScale = traitCollection.displayScale
+        if let displayGamut = DisplayGamut(rawValue: traitCollection.displayGamut.rawValue) {
+            environment.displayGamut = displayGamut
+        }
         viewGraph.setEnvironment(environment)
     }
     
