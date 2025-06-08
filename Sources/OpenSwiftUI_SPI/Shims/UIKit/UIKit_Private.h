@@ -34,6 +34,11 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);
 @end
 
+@interface UIScreen (OpenSwiftUI_SPI)
+@property (nonatomic, readonly) CGRect _referenceBounds_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_referenceBounds);
+@property (nonatomic, readonly) CGFloat _pointsPerInch_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_pointsPerInch);
+@end
+
 OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);
 

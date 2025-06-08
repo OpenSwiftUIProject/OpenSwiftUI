@@ -25,6 +25,16 @@ public enum DisplayGamut: Int {
         return .sRGB
         #endif
     }
+
+    #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+    @inline(__always)
+    var cuiDisplayGamut: CUIDisplayGamut {
+        switch self {
+        case .sRGB: .SRGB
+        case .displayP3: .P3
+        }
+    }
+    #endif
 }
 
 @available(*, unavailable)

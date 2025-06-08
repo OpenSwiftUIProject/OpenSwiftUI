@@ -223,6 +223,10 @@ open class CoreGlue2: NSObject {
         preconditionFailure("")
     }
 
+    open func configureEmptyEnvironment(_: inout EnvironmentValues) {
+        preconditionFailure("")
+    }
+
     open func configureDefaultEnvironment(_: inout EnvironmentValues) {
         preconditionFailure("")
     }

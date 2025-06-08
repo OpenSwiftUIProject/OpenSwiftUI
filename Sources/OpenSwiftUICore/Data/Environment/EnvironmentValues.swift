@@ -87,7 +87,7 @@ public struct EnvironmentValues: CustomStringConvertible {
     public init() {
         _plist = PropertyList()
         tracker = nil
-        CoreGlue2.shared.configureDefaultEnvironment(&self)
+        CoreGlue2.shared.configureEmptyEnvironment(&self)
     }
     
     /// Creates an environment values instance with the specified property list.
