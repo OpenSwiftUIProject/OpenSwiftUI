@@ -81,12 +81,36 @@ extension Color {
                 name: name,
                 bundle: bundle
             )
-            return colorCache.access { cache in
-                guard let value = cache[key] else {
-                    // FIXME: CUICatalog
+            return colorCache.access { cache -> CGColor? in
+                let colorInfo: NamedColorInfo
+                if let info = cache[key] {
+                    colorInfo = info
+                } else {
+                    guard let catalog = CUICatalog.defaultUICatalog(for: bundle) else {
+                        return nil
+                    }
+                    let gamut = key.displayGamut.cuiDisplayGamut
+                    let idiom = CUIDeviceIdiom(rawValue: environment.cuiAssetIdiom) ?? .universal
+                    let color = catalog.findAsset(
+                        key: key.catalogKey,
+                        matchTypes: environment.cuiAssetMatchTypes,
+                    ) { appearanceName -> CUINamedColor? in
+                        let color = catalog.color(
+                            withName: name,
+                            displayGamut: gamut,
+                            deviceIdiom: idiom,
+                            appearanceName: appearanceName
+                        )
+                        return color
+                    }
+                    let info = NamedColorInfo(color: color)
+                    cache[key] = info
+                    colorInfo = info
+                }
+                guard let color = colorInfo.color else {
                     return nil
                 }
-                return value.color?.effectiveCGColor(in: environment)
+                return color.effectiveCGColor(in: environment)
             }
         }
     }
@@ -113,6 +137,61 @@ extension CUINamedColor {
             return cgColor
         }
         return colorProviderType.effectiveCGColor(cuiColor: self, in: environment)
+    }
+}
+
+extension CUICatalog {
+    func findAsset<Asset, AssetMatchTypes>(key: CatalogKey, matchTypes: AssetMatchTypes, assetLookup: (String) -> Asset?) -> Asset?
+        where Asset: CUINamedLookup,
+        AssetMatchTypes: Collection,
+        AssetMatchTypes.Element == CatalogAssetMatchType
+    {
+        guard !matchTypes.isEmpty else {
+            return nil
+        }
+        let colorScheme = key.colorScheme
+        let contrast = key.contrast
+        for matchType in matchTypes {
+            let isVision = matchType == .cuiIdiom(8)
+            let appearanceConfigurations: [(ColorScheme?, ColorSchemeContrast)]
+            switch (contrast, isVision) {
+            case (.standard, false):
+                appearanceConfigurations = [(colorScheme, .standard), (nil, .standard)]
+            case (.standard, true):
+                appearanceConfigurations = [(nil, .standard)]
+            case (.increased, false):
+                appearanceConfigurations = [(colorScheme, .increased), (colorScheme, .standard), (nil, .increased), (nil, .standard)]
+            case (.increased, true):
+                appearanceConfigurations = [(nil, .increased), (nil, .standard)]
+            }
+            for (scheme, contrast) in appearanceConfigurations {
+                let appearanceName = switch (scheme, contrast) {
+                case (nil, .standard): "UIAppearanceAny"
+                case (nil, .increased): "UIAppearanceHighContrastAny"
+                case (.light, .standard): "UIAppearanceLight"
+                case (.light, .increased): "UIAppearanceHighContrastLight"
+                case (.dark, .standard): "UIAppearanceDark"
+                case (.dark, .increased): "UIAppearanceHighContrastDark"
+                }
+                guard let asset = assetLookup(appearanceName) else {
+                    continue
+                }
+                switch matchType {
+                case .always:
+                    break
+                case .appearance:
+                    guard asset.appearance == appearanceName else {
+                        continue
+                    }
+                case let .cuiIdiom(idiomValue):
+                    guard asset.idiom.rawValue == idiomValue else {
+                        continue
+                    }
+                }
+                return asset
+            }
+        }
+        return nil
     }
 }
 

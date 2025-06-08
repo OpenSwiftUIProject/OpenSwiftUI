@@ -32,14 +32,18 @@ extension EnvironmentValues {
 
     private mutating func _configureForPlatform(traitCollection: UITraitCollection?) {
         // defaultAccentColorProvider = OpenSwiftUIDefaultAccentColorProvider.self
+        #if OPENSWIFTUI_LINK_COREUI
         cuiNamedColorProvider = KitCoreUINamedColorProvider.self
+        #endif
         // resolvedTextProvider = OpenSwiftUIResolvedTextProvider.self
         // hasSystemOpenURLAction = true
         // bridgedEnvironmentResolver = UITraitBridgedEnvironmentResolver.self
+        #if OPENSWIFTUI_LINK_COREUI
         let idiom = traitCollection?.userInterfaceIdiom ?? UIDevice.current.userInterfaceIdiom
-        cuiAssetIdiom = _CUIIdiomForIdiom(idiom)
-        cuiAssetSubtype = _CUISubtypeForIdiom(idiom)
-        cuiAssetMatchTypes = CatalogAssetMatchType.defaultValue(idiom: _CUIIdiomForIdiom(idiom))
+        cuiAssetIdiom = _CUIIdiomForIdiom(idiom).rawValue
+        cuiAssetSubtype = Int(_CUISubtypeForIdiom(idiom).rawValue)
+        cuiAssetMatchTypes = CatalogAssetMatchType.defaultValue(idiom: _CUIIdiomForIdiom(idiom).rawValue)
+        #endif
     }
 }
 

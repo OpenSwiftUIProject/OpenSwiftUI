@@ -7,50 +7,50 @@
 
 #include "CoreUI+UIUserInterfaceIdiom.h"
 
-#if __has_include(<UIKit/UIKit.h>)
+#if OPENSWIFTUI_TARGET_OS_IOS && OPENSWIFTUI_LINK_COREUI
 #include "../../Shims/UIKit/UIKit_Private.h"
 
-NSInteger _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
+CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
     switch (idiom) {
-        case UIUserInterfaceIdiomPhone: return 1;
-        case UIUserInterfaceIdiomPad: return 2;
-        case UIUserInterfaceIdiomTV: return 3;
-        case UIUserInterfaceIdiomCarPlay: return 4;
-        case 4: return 5;
-        case UIUserInterfaceIdiomMac: return 7;
-        case UIUserInterfaceIdiomVision: return 8;
+        case UIUserInterfaceIdiomPhone: return CUIDeviceIdiomIPhone;
+        case UIUserInterfaceIdiomPad: return CUIDeviceIdiomIPad;
+        case UIUserInterfaceIdiomTV: return CUIDeviceIdiomAppleTV;
+        case UIUserInterfaceIdiomCarPlay: return CUIDeviceIdiomCarPlay;
+        case /* UIUserInterfaceIdiomWatch */ 4: return CUIDeviceIdiomAppleWatch;
+        case UIUserInterfaceIdiomMac: return CUIDeviceIdiomMac;
+        case UIUserInterfaceIdiomVision: return CUIDeviceIdiomVision;
         default: return 0;
     }
 }
 
-NSInteger _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
+CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
     switch (idiom) {
         case UIUserInterfaceIdiomPhone: {
             CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
             double height = CGRectGetHeight(bounds);
             if (height > 667.0) {
-                return 570; // 0x23a
+                return CUISubtypeIPhonePlus;
             } else if (height > 568.0) {
-                return 569; // 0x239
+                return CUISubtypeIPhone47Inch;
             } else if (height > 480.0) {
-                return 568; // 0x238
+                return CUISubtypeIPhone4Inch;
             } else {
-                return 0;
+                return CUISubtypeNormal;
             }
         }
         case UIUserInterfaceIdiomPad: {
             CGFloat pointsPerInch = UIScreen.mainScreen._pointsPerInch_openswiftui_safe_wrapper;
-            return pointsPerInch == 163.0 ? 163 : 0;
+            return pointsPerInch == 163.0 ? CUISubtypeIPadMini : CUISubtypeNormal;
         }
         case UIUserInterfaceIdiomTV: {
             CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
             double height = CGRectGetHeight(bounds) * UIScreen.mainScreen.scale;
-            return height < 1080.0 ? 720 : 0;
+            return height < 1080.0 ? CUISubtypeAppleTVHD : CUISubtypeNormal;
         }
-        case 4: return 320;
-        case UIUserInterfaceIdiomVision: return 3648;
-        default: return 0;
+        case /* UIUserInterfaceIdiomWatch */ 4: return CUISubtypeAppleWatch38;
+        case UIUserInterfaceIdiomVision: return CUISubtypeAppleVision;
+        default: return CUISubtypeNormal;
     }
 }
 
-#endif /* __has_include(<UIKit/UIKit.h>) */
+#endif /* OPENSWIFTUI_TARGET_OS_IOS && OPENSWIFTUI_LINK_COREUI */
