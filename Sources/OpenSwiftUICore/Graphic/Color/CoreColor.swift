@@ -2,7 +2,6 @@
 //  CoreColor.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: 4330A474F53D66045762501ED6F8A749 (SwiftUICore)
 
@@ -10,7 +9,7 @@
 package import Foundation
 import OpenSwiftUI_SPI
 
-// MARK: - Color.Resolved + platformColor
+// MARK: - Color.Resolved + PlatformColor [6.4.41]
 
 extension Color.Resolved {
     package init?(platformColor: AnyObject) {
@@ -20,7 +19,7 @@ extension Color.Resolved {
         var alpha: CGFloat = 0
         let result = CoreColorPlatformColorGetComponents(system: .defaults, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
         if result {
-            self.init(red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
+            self.init(colorSpace: .sRGB, red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
         } else {
             return nil
         }
@@ -35,6 +34,8 @@ extension Color.Resolved {
     }
 }
 
+// MARK: - CoreColor + PlatformColor [6.4.41]
+
 extension CoreColor {
     package static func platformColor(resolvedColor: Color.Resolved) -> NSObject? {
         platformColor(red: CGFloat(resolvedColor.red), green: CGFloat(resolvedColor.green), blue: CGFloat(resolvedColor.blue), alpha: CGFloat(resolvedColor.opacity))
@@ -45,4 +46,26 @@ extension CoreColor {
     }
 }
 
-#endif
+#if OPENSWIFTUI_LINK_COREUI
+package import CoreUI
+
+// MARK: - CoreUINamedColorProvider [6.4.41]
+
+package protocol CoreUINamedColorProvider {
+    static func effectiveCGColor(cuiColor: CUINamedColor, in environment: EnvironmentValues) -> CGColor?
+}
+
+extension EnvironmentValues {
+    private struct CoreUINamedColorProviderKey: EnvironmentKey {
+        static var defaultValue: (any CoreUINamedColorProvider.Type)? { nil }
+    }
+
+    package var cuiNamedColorProvider: (any CoreUINamedColorProvider.Type)? {
+        get { self[CoreUINamedColorProviderKey.self] }
+        set { self[CoreUINamedColorProviderKey.self] = newValue }
+    }
+}
+
+#endif /* OPENSWIFTUI_LINK_COREUI */
+
+#endif /* canImport(Darwin) */
