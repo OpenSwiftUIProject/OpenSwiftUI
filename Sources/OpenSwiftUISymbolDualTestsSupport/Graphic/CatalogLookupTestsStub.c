@@ -1,5 +1,5 @@
 //
-//  CatalogKeyTestsStub.c
+//  CatalogLookupTestsStub.c
 //  OpenSwiftUISymbolDualTestsSupport
 
 #include "OpenSwiftUIBase.h"

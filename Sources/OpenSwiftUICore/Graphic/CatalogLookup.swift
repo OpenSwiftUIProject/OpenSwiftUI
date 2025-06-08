@@ -1,9 +1,9 @@
 //
-//  CatalogKey.swift
+//  CatalogLookup.swift
 //  OpenSwiftUICore
 //
 //  Status: Complete
-//  ID: 7D88FB88100BA54A0D48F777CDF70C18 (SwiftUICore?)
+//  ID: 7D88FB88100BA54A0D48F777CDF70C18 (SwiftUICore)
 
 // MARK: - CatalogKey [6.4.41]
 

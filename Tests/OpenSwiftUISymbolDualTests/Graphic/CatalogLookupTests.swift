@@ -1,5 +1,5 @@
 //
-//  CatalogKeyTests.swift
+//  CatalogLookupTests.swift
 //  OpenSwiftUISymbolDualTests
 
 #if canImport(SwiftUI, _underlyingVersion: 6.0.87)
