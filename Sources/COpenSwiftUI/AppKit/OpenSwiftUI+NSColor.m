@@ -2,7 +2,7 @@
 //  OpenSwiftUI+NSColor.m
 //  COpenSwiftUI
 //
-//  Audited for macOS 15.0
+//  Audited for 6.5.4
 //  Status: WIP
 
 #import "OpenSwiftUI+NSColor.h"
@@ -13,8 +13,7 @@ BOOL _NSColorDependsOnAppearance(NSColor *color) {
     return [color isKindOfClass:NSClassFromString(@"NSDynamicNamedColor")];
 }
 
-
-@implementation NSColor (OpenSwiftUI)
+@implementation NSColor (OpenSwiftUI_NSColor)
 
 - (instancetype)initWithColor__openSwiftUI__:(NSColor *)color {
     self = color;

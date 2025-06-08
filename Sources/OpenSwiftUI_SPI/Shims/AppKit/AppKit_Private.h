@@ -21,6 +21,11 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (void)failedTest_openswiftui_safe_wrapper:(nullable NSString *)name withFailure:(nullable NSError*)failure OPENSWIFTUI_SWIFT_NAME(failedTest(_:withFailure:));
 @end
 
+typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
+    NSViewVibrantBlendingStyle_0 = 0,
+    NSViewVibrantBlendingStyle_1 = 1,
+};
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* AppKit.h */

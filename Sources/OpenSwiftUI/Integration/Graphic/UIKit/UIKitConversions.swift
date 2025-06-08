@@ -14,8 +14,11 @@ import COpenSwiftUI
 
 // MARK: - UIColor Conversions
 
-@available(*, deprecated, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(iOS, introduced: 13.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
 @available(macOS, unavailable)
+@available(tvOS, introduced: 13.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(watchOS, introduced: 6.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(visionOS, introduced: 1.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
 extension Color {
     /// Creates a color from a UIKit color.
     ///
@@ -98,16 +101,19 @@ extension Color {
     }
 }
 
+private let dynamicColorCache: NSMapTable<ObjcColor, UIColor> = NSMapTable.strongToWeakObjects()
+
 extension UIColor: ColorProvider {
-    private static var dynamicColorCache: NSMapTable<ObjcColor, UIColor> = NSMapTable.strongToWeakObjects()
-    
+    @available(OpenSwiftUI_v2_0, *)
     @available(macOS, unavailable)
     convenience public init(_ color: Color) {
-        if let cgColor = color.provider.staticColor {
+        if let color = color.provider.as(UIColor.self) {
+            self.init(color__openSwiftUI__: color)
+        } else if let cgColor = color.provider.staticColor {
             self.init(cgColor: cgColor)
         } else {
             let objCColor = ObjcColor(color)
-            let cache = Self.dynamicColorCache
+            let cache = dynamicColorCache
             if let color = cache.object(forKey: objCColor) {
                 self.init(color__openSwiftUI__: color)
             } else {
