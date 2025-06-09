@@ -32,7 +32,7 @@ extension UnaryLayout where PlacementContextType == PlacementContext {
             return body(_Graph(), inputs)
         }
         let animatedModifier = makeAnimatable(value: modifier, inputs: inputs.base)
-        let computer = Attribute( UnaryLayoutComputer(
+        let computer = Attribute(UnaryLayoutComputer(
             layout: animatedModifier,
             environment: inputs.environment,
             childLayoutComputer: OptionalAttribute()
