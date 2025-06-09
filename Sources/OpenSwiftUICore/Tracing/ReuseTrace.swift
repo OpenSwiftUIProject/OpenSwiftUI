@@ -24,31 +24,80 @@ package struct ReuseTrace {
         // OGGraphAddTraceEvent
         // recorder.graph.addTraceEvent(name)
     }
-    
+
     @inline(__always)
     package static func traceReuseInternalFailure() {
         traceReuseFailure("resuse_internal")
     }
-    
+
     @inline(__always)
     package static func traceReuseViewInputsDifferentFailure() {
         traceReuseFailure("reuse_inputsDifferent")
     }
 
     @inline(__always)
+    package static func traceReuseSkippedNotIdle(_ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseItemUnplaced(_ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceCacheItemRecycled(_ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseCacheItemPlaced(_ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseCacheItemFailure(_ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseCacheItemAdded(_ itemReuseIdentifier: Int, _ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceMismatchedReuseIDFailure(_ itemReuseIdentifier: Int, _ subgraph: Subgraph) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseIdentifier(_ itemReuseIdentifier: Int) {
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseTypeComparisonFailure(_ baseType: (any Any.Type)?, _ candidateType: (any Any.Type)?) {
+        // TODO
+    }
+
+    @inline(__always)
     package static func traceReuseUnaryElementExpectedFailure(_ elementType: any Any.Type) {
-        traceReuseFailure("reuse_unaryElement")
+        // TODO
     }
 
     @inline(__always)
     package static func traceReuseInvalidSubgraphFailure(_ typeFoundInvalid: any Any.Type) {
-        // FIXME: ReuseTraceInternal.InvalidSubgraphFailure
-        traceReuseFailure("reuse_invalidSubgraph")
+        // TODO
+    }
+
+    @inline(__always)
+    package static func traceReuseIncompatibleListsFailure(_ baseList: any Any.Type, _ candidateList: any Any.Type) {
+        // TODO
     }
 
     @inline(__always)
     package static func traceReuseBodyMismatchedFailure() {
-        traceReuseFailure("reuse_bodyMismatched")
+        // TODO
     }
 
     @inline(__always)
@@ -56,7 +105,10 @@ package struct ReuseTrace {
         // TODO
     }
 
-    // TODO
+    @inline(__always)
+    package static func traceReusePreventedFailure(_ preventingType: any Any.Type) {
+        // TODO
+    }
     
     final package class Recorder {
         var graph: Graph
