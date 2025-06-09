@@ -135,9 +135,11 @@ extension ViewModifier {
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
         Subgraph.beginTreeElement(value: modifier.value, flags: 0)
+        var inputs = inputs
+        inputs.changedDebugProperties = []
         var outputs = _makeView(
             modifier: modifier,
-            inputs: inputs.withoutChangedDebugProperties,
+            inputs: inputs,
             body: body
         )
         if Subgraph.shouldRecordTree {
@@ -168,9 +170,11 @@ extension View {
         inputs: _ViewInputs
     ) -> _ViewOutputs {
         Subgraph.beginTreeElement(value: view.value, flags: 0)
+        var inputs = inputs
+        inputs.changedDebugProperties = []
         var outputs = _makeView(
             view: view,
-            inputs: inputs.withoutChangedDebugProperties
+            inputs: inputs
         )
         if Subgraph.shouldRecordTree {
             withUnsafePointer(to: inputs) { pointer in
@@ -189,27 +193,6 @@ extension View {
         Subgraph.beginTreeElement(value: view.value, flags: 1)
         defer { Subgraph.endTreeElement(value: view.value) }
         return _makeViewList(view: view, inputs: inputs)
-    }
-}
-
-extension _ViewDebug {
-    // Fix -werror issue
-    // @available(*, deprecated, message: "To be refactored into View.makeDebuggableView")
-    @inline(__always)
-    static func makeView<Value>(
-        view: _GraphValue<Value>,
-        inputs: _ViewInputs,
-        body: (_ view: _GraphValue<Value>, _ inputs: _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs {
-        Subgraph.beginTreeElement(value: view.value, flags: 0)
-        var outputs = body(view, inputs.withoutChangedDebugProperties)
-        if Subgraph.shouldRecordTree {
-            withUnsafePointer(to: inputs) { pointer in
-                _ViewDebug.reallyWrap(&outputs, value: view, inputs: pointer)
-            }
-        }
-        OGSubgraph.endTreeElement(value: view.value)
-        return outputs
     }
 }
 

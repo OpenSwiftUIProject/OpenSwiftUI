@@ -52,10 +52,7 @@ public struct _ViewInputs {
     
     package var viewPhase: Attribute<ViewPhase> {
         get { base.phase }
-        set {
-            base.phase = newValue
-            base.changedDebugProperties.insert(.phase)
-        }
+        set { base.phase = newValue }
     }
     
     package var transaction: Attribute<Transaction> {
@@ -65,13 +62,13 @@ public struct _ViewInputs {
     
     package var transform: Attribute<ViewTransform> {
         didSet {
-            base.changedDebugProperties.insert(.transform)
+            base.changedDebugProperties.formUnion(.transform)
         }
     }
     
     package var position: Attribute<ViewOrigin> {
         didSet {
-            base.changedDebugProperties.insert(.position)
+            base.changedDebugProperties.formUnion(.position)
         }
     }
     
@@ -79,7 +76,7 @@ public struct _ViewInputs {
     
     package var size: Attribute<ViewSize> {
         didSet {
-            base.changedDebugProperties.insert(.size)
+            base.changedDebugProperties.formUnion(.size)
         }
     }
     
@@ -213,15 +210,6 @@ public struct _ViewInputs {
 
 @available(*, unavailable)
 extension _ViewInputs: Sendable {}
-
-extension _ViewInputs {
-    @inline(__always)
-    var withoutChangedDebugProperties: _ViewInputs {
-        var copy = self
-        copy.changedDebugProperties = []
-        return copy
-    }
-}
 
 // MARK: - DynamicStackOrientation [6.0.87]
 
