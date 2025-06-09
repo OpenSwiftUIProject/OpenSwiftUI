@@ -1081,7 +1081,7 @@ private struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
     }
 }
 
-// MARK: - UnaryElements [WIP]
+// MARK: - UnaryElements [6.4.41] [WIP]
 
 private struct UnaryElements<Generator>: ViewList.Elements where Generator: UnaryViewGenerator {
     var body: Generator
@@ -1100,7 +1100,21 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
         indirectMap: IndirectAttributeMap?,
         body: Body
     ) -> (_ViewOutputs?, Bool) {
-        preconditionFailure("TODO")
+        guard start == 0 else {
+            start = max(start - 1, 0)
+            return (nil, true)
+        }
+        let (outputs, shouldContinue) = body(inputs) { inputs in
+            var baseInputs = baseInputs
+            if let indirectMap {
+                baseInputs.makeReusable(indirectMap: indirectMap)
+            }
+            var inputs = inputs
+            inputs.base.merge(baseInputs, ignoringPhase: false)
+            return self.body.makeView(inputs: inputs, indirectMap: indirectMap)
+        }
+        start = 0
+        return (outputs, shouldContinue)
     }
 
     func tryToReuseElement(
@@ -1115,8 +1129,8 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
             ReuseTrace.traceReuseUnaryElementExpectedFailure(type(of: other))
             return false
         }
-        // BodyInput
-        preconditionFailure("TODO")
+        // TODO: BodyInput: GraphInputs.containsNonEmptyBodyStack
+        return false
     }
 }
 
