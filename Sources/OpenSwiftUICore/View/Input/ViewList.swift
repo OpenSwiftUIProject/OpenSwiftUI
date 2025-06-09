@@ -105,20 +105,6 @@ public struct _ViewListInputs {
     }
 }
 
-extension _ViewListInputs {
-    @inline(__always)
-    mutating func detachEnvironmentInputs() {
-        base.detachEnvironmentInputs()
-    }
-
-    @inline(__always)
-    func detachedEnvironmentInputs() -> Self {
-        var newInputs = self
-        newInputs.detachEnvironmentInputs()
-        return newInputs
-    }
-}
-
 // MARK: - _ViewListCountInputs
 
 /// Input values to `View._viewListCount()`.
