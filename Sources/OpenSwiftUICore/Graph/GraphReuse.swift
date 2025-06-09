@@ -57,17 +57,15 @@ extension _GraphValue where Value: GraphReusable {
     package static var isTriviallyReusable: Bool { Value.isTriviallyReusable }
 }
 
-// MARK: - _GraphInputs + GraphReusable [WIP]
+// MARK: - _GraphInputs + GraphReusable [6.0.87]
 
 extension _GraphInputs: GraphReusable {
     package mutating func makeReusable(indirectMap: IndirectAttributeMap) {
         time.makeReusable(indirectMap: indirectMap)
         phase.makeReusable(indirectMap: indirectMap)
-        changedDebugProperties.insert(.phase)
         environment.makeReusable(indirectMap: indirectMap)
-        detachEnvironmentInputs()
-        changedDebugProperties.insert(.environment)
         transaction.makeReusable(indirectMap: indirectMap)
+        let stack = customInputs[ReusableInputs.self].stack
         func project<Input>(_ type: Input.Type) where Input: GraphInput {
             guard !Input.isTriviallyReusable else {
                 return
@@ -76,7 +74,6 @@ extension _GraphInputs: GraphReusable {
             Input.makeReusable(indirectMap: indirectMap, value: &value)
             self[Input.self] = value
         }
-        let stack = customInputs[ReusableInputs.self].stack
         for value in stack {
             project(value)
         }

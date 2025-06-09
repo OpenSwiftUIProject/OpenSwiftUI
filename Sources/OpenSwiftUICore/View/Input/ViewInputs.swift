@@ -221,18 +221,6 @@ extension _ViewInputs {
         copy.changedDebugProperties = []
         return copy
     }
-
-    @inline(__always)
-    mutating func detachEnvironmentInputs() {
-        base.detachEnvironmentInputs()
-    }
-
-    @inline(__always)
-    func detachedEnvironmentInputs() -> _ViewInputs {
-        var newInputs = self
-        newInputs.detachEnvironmentInputs()
-        return newInputs
-    }
 }
 
 // MARK: - DynamicStackOrientation [6.0.87]

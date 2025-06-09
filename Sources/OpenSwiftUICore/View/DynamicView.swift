@@ -87,10 +87,12 @@ private struct DynamicViewContainer<V>: StatefulRule, AsyncAttribute where V: Dy
         parentSubgraph.addChild(newSubgraph)
 
         value = newSubgraph.apply {
+            var inputs = inputs
+            inputs.copyCaches()
             let childOutputs = view.makeChildView(
                 metadata: metadata,
                 view: $view,
-                inputs: inputs.detachedEnvironmentInputs()
+                inputs: inputs
             )
             outputs.attachIndirectOutputs(to: childOutputs)
             return Value(type: type, id: id, subgraph: newSubgraph)
@@ -174,7 +176,7 @@ private struct DynamicViewList<V>: StatefulRule, AsyncAttribute where V: Dynamic
         parentSubgraph.addChild(newSubgraph)
         let (listAttribute, isUnary) = newSubgraph.apply {
             var newInputs = inputs
-            newInputs.detachEnvironmentInputs()
+            newInputs.base.copyCaches()
             if V.canTransition {
                 newInputs.options.insert(.canTransition)
             }
