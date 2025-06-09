@@ -3,24 +3,47 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.4.41
-//  Status: WIP
+//  Status: Complete
 
 extension _ViewOutputs {
     package static func makePlatformRootGeometryTransform(
         inputs: _ViewInputs,
-        bodys: (_ViewInputs) -> _ViewOutputs
+        body: (_ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        body(inputs)
     }
 }
 
 extension _VariadicView.Tree where Root: _VariadicView_ViewRoot, Content: View {
     @inline(__always)
     package static func makePlatformSubstitutableView(
-        view: _GraphValue<_VariadicView.Tree<Root, Content>>,
+        view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        makeDebuggableView(view: view, inputs: inputs)
+    }
+}
+
+protocol ZStackParameterSmuggle {
+    static func makeParameterSmuggledZStackView<Content>(
+        view: _GraphValue<_VariadicView.Tree<_ZStackLayout, Content>>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs where Content: View
+}
+
+extension _VariadicView.Tree where Root == _ZStackLayout, Content: View {
+    @inline(__always)
+    package static func makePlatformSubstitutableView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        if let conformance = Content.self as? any ZStackParameterSmuggle.Type {
+            conformance.makeParameterSmuggledZStackView(
+                view: view,
+                inputs: inputs)
+        } else {
+            makeDebuggableView(view: view, inputs: inputs)
+        }
     }
 }
 
@@ -31,5 +54,5 @@ package func makePlatformSecondaryView(
     flipOrder: Bool,
     body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
 ) -> _ViewOutputs {
-    preconditionFailure("TODO")
+    body(_Graph(), secondaryInputs)
 }
