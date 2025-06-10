@@ -24,6 +24,10 @@ let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM", 
 let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM")
 #endif
 
+// https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
+// By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
+let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", default: false)
+
 // MARK: - Env and Config
 
 let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
@@ -456,10 +460,6 @@ extension Target {
 }
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
-
-// https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
-// By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
-let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", default: false)
 
 let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
 if attributeGraphCondition {
