@@ -24,6 +24,10 @@ let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM", 
 let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM")
 #endif
 
+// https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
+// By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
+let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", default: false)
+
 // MARK: - Env and Config
 
 let isXcodeEnv = Context.environment["__CFBundleIdentifier"] == "com.apple.dt.Xcode"
@@ -56,7 +60,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("InferSendableFromCaptures"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .swiftLanguageMode(.v5),
-] + .availabilityMacroSettings(ignoreAvailability: true)
+] + .availabilityMacroSettings(ignoreAvailability: !isSPIDocGenerationBuild)
 
 // MARK: - [env] OPENSWIFTUI_TARGET_RELEASE
 
@@ -457,10 +461,6 @@ extension Target {
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 
-// https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
-// By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
-let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", default: false)
-
 let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
@@ -485,7 +485,7 @@ if renderBoxCondition {
     openSwiftUIBridgeTestTarget.addRBSettings()
 }
 
-if attributeGraphCondition || renderBoxCondition {
+if attributeGraphCondition || renderBoxCondition || isSPIDocGenerationBuild {
     let release = Context.environment["DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
     package.platforms = switch release {
         case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]

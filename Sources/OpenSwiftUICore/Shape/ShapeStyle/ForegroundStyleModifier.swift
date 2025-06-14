@@ -7,6 +7,7 @@
 
 // MARK: - View + foregroundStyle
 
+@available(OpenSwiftUI_v3_0, *)
 extension View {
     /// Sets a view's foreground elements to use a given style.
     ///
@@ -173,6 +174,7 @@ extension View {
 
 // MARK: - _ForegroundStyleModifier
 
+@available(OpenSwiftUI_v3_0, *)
 @frozen
 @MainActor
 @preconcurrency
@@ -198,7 +200,9 @@ extension _ForegroundStyleModifier: Sendable {}
 
 // MARK: - _ForegroundStyleModifier2
 
-@frozen @MainActor @preconcurrency public struct _ForegroundStyleModifier2<S1, S2>: PrimitiveViewModifier, ViewInputsModifier where S1: ShapeStyle, S2: ShapeStyle {
+@available(OpenSwiftUI_v3_0, *)
+@frozen
+public struct _ForegroundStyleModifier2<S1, S2>: PrimitiveViewModifier, ViewInputsModifier where S1: ShapeStyle, S2: ShapeStyle {
     nonisolated package static var graphInputsSemantics: Semantics? { .v4 }
     
     public var primary: S1
@@ -222,9 +226,8 @@ extension _ForegroundStyleModifier2: Sendable {}
 
 // MARK: - _ForegroundStyleModifier3
 
+@available(OpenSwiftUI_v3_0, *)
 @frozen
-@MainActor
-@preconcurrency
 public struct _ForegroundStyleModifier3<S1, S2, S3>: PrimitiveViewModifier, ViewInputsModifier where S1: ShapeStyle, S2: ShapeStyle, S3: ShapeStyle {
     nonisolated package static var graphInputsSemantics: Semantics? { .v4 }
 

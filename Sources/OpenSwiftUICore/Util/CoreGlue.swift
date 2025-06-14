@@ -24,6 +24,7 @@ public func OpenSwiftUIGlueClass() -> CoreGlue.Type
 #endif
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 #if canImport(ObjectiveC)
 @objc(OpenSwiftUICoreGlue)
 #endif
@@ -123,6 +124,7 @@ open class CoreGlue: NSObject {
 }
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 extension CoreGlue {
     public struct DefaultImplicitRootTypeResult {
         package var value: any _VariadicView.AnyImplicitRoot.Type
@@ -196,6 +198,7 @@ public func OpenSwiftUIGlue2Class() -> CoreGlue2.Type
 #endif
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 #if canImport(ObjectiveC)
 @objc(OpenSwiftUICoreGlue2)
 #endif
@@ -273,6 +276,7 @@ open class CoreGlue2: NSObject {
     #endif
 }
 
+@available(OpenSwiftUI_v6_0, *)
 extension CoreGlue2 {
     public struct CodableAttachmentCellTypeResult {
         package var value: (any ProtobufMessage.Type)?

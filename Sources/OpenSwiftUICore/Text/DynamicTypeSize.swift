@@ -73,6 +73,7 @@ extension EnvironmentValues {
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension View {
     nonisolated public func dynamicTypeSize(_ size: DynamicTypeSize) -> some View {
         self.environment(\.dynamicTypeSize, size)
