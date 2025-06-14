@@ -1081,6 +1081,122 @@ private struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
     }
 }
 
+// MARK: - MergedElements [6.4.41]
+
+private struct MergedElements: ViewList.Elements {
+    var outputs: ArraySlice<_ViewListOutputs>
+
+    var count: Int {
+        guard !outputs.isEmpty else {
+            return 0
+        }
+        var count = 0
+        for output in outputs {
+            guard case let .staticList(elements) = output.views else {
+                preconditionFailure("")
+            }
+            count += elements.count
+        }
+        return count
+    }
+
+    func makeElements(
+        from start: inout Int,
+        inputs: _ViewInputs,
+        indirectMap: IndirectAttributeMap?,
+        body: (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)
+    ) -> (_ViewOutputs?, Bool) {
+        var viewOutputs: [_ViewOutputs] = []
+        var shouldContinue = true
+        for output in outputs {
+            guard case let .staticList(elements) = output.views else {
+                preconditionFailure("")
+            }
+            let (elementsOutputs, elementsShouldContinue) = elements.makeElements(
+                from: &start,
+                inputs: inputs,
+                indirectMap: indirectMap,
+                body: body
+            )
+            if let elementsOutputs {
+                viewOutputs.append(elementsOutputs)
+            }
+            guard elementsShouldContinue else {
+                shouldContinue = false
+                break
+            }
+        }
+        let viewOutput: _ViewOutputs?
+        switch viewOutputs.count {
+        case 1: viewOutput = viewOutputs[0]
+        case 0: viewOutput = nil
+        default:
+            var preferencesOutputs: [PreferencesOutputs] = []
+            preferencesOutputs.reserveCapacity(viewOutputs.count)
+            for output in viewOutputs {
+                preferencesOutputs.append(output.preferences)
+            }
+            var visitor = MultiPreferenceCombinerVisitor(
+                outputs: preferencesOutputs,
+                result: PreferencesOutputs()
+            )
+            for key in inputs.preferences.keys {
+                key.visitKey(&visitor)
+            }
+            var result = _ViewOutputs()
+            result.preferences = visitor.result
+            viewOutput = result
+        }
+        return (viewOutput, shouldContinue)
+    }
+
+    func tryToReuseElement(
+        at index: Int,
+        by other: any _ViewList_Elements,
+        at otherIndex: Int,
+        indirectMap: IndirectAttributeMap,
+        testOnly: Bool
+    ) -> Bool {
+        guard let other = other as? MergedElements else {
+            ReuseTrace.traceReuseViewInputsDifferentFailure()
+            return false
+        }
+        guard let (elements, elementsIndex) = findElement(at: index),
+              let (otherElements, otherElementsIndex) = other.findElement(at: otherIndex) else {
+            ReuseTrace.traceReuseViewInputsDifferentFailure()
+            return false
+        }
+        return elements.tryToReuseElement(
+            at: elementsIndex,
+            by: otherElements,
+            at: otherElementsIndex,
+            indirectMap: indirectMap,
+            testOnly: testOnly
+        )
+    }
+
+    func findElement(at index: Int) -> (any ViewList.Elements, Int)? {
+        guard !outputs.isEmpty else {
+            return nil
+        }
+        var lowerBound = 0
+        for output in outputs {
+            guard case let .staticList(elements) = output.views else {
+                preconditionFailure("")
+            }
+            let count = elements.count
+            let upperBound = lowerBound + count
+            let range = lowerBound..<upperBound
+            if range.contains(index) {
+                return (elements, index - lowerBound)
+            }
+            lowerBound = upperBound
+        }
+        return nil
+    }
+}
+
+
 // MARK: - UnaryElements [6.4.41] [WIP]
 
 private struct UnaryElements<Generator>: ViewList.Elements where Generator: UnaryViewGenerator {
