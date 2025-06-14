@@ -234,6 +234,36 @@ extension ViewModifierContentProvider {
     }
 }
 
+extension _GraphInputs {
+    @inline(__always)
+    var containsNonEmptyBodyStack: Bool {
+        var set: Set<Metadata> = []
+        let descriptor = Metadata(BodyInput<Void>.self).nominalDescriptor
+        var isEmptyStack = true
+        if let elements = customInputs.elements {
+            return elements.forEach(
+                filter: .init()
+            ) { element, stop in
+                let element = element.takeUnretainedValue()
+                let type = Metadata(element.keyType)
+                guard type.nominalDescriptor == descriptor else {
+                    return
+                }
+                let _ = set.insert(type)
+                let value = element.value(as: Stack<BodyInputElement>.self)
+                isEmptyStack = value.isEmpty
+                guard isEmptyStack else {
+                    ReuseTrace.traceReusePreventedFailure(element.keyType)
+                    Log.graphReuse("Input \(element.keyType) is preventing reuse")
+                    stop = true
+                    return
+                }
+            }
+        }
+        return !isEmptyStack
+    }
+}
+
 // MARK: - BodyInput
 
 private struct BodyInput<V>: ViewInput {

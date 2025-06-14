@@ -1129,8 +1129,19 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
             ReuseTrace.traceReuseUnaryElementExpectedFailure(type(of: other))
             return false
         }
-        // TODO: BodyInput: GraphInputs.containsNonEmptyBodyStack
-        return false
+        guard !baseInputs.containsNonEmptyBodyStack,
+              !other.baseInputs.containsNonEmptyBodyStack else {
+            return false
+        }
+        return body.tryToReuse(
+            by: other.body,
+            indirectMap: indirectMap,
+            testOnly: testOnly
+        ) && baseInputs.tryToReuse(
+            by: other.baseInputs,
+            indirectMap: indirectMap,
+            testOnly: testOnly
+        )
     }
 }
 
