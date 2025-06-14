@@ -82,7 +82,7 @@ package struct ReuseTrace {
 
     @inline(__always)
     package static func traceReuseUnaryElementExpectedFailure(_ elementType: any Any.Type) {
-        // TODO
+        traceReuseFailure("reuse_unaryElement")
     }
 
     @inline(__always)

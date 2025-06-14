@@ -877,7 +877,8 @@ extension PropertyList {
             var stop = false
             repeat {
                 guard currentElement.skipFilter.mayContain(filter) else {
-                    if currentElement.skip != nil {
+                    if let skip = currentElement.skip {
+                        currentElement = skip.takeUnretainedValue()
                         continue
                     } else {
                         return true

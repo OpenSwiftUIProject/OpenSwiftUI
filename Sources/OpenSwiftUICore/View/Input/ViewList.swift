@@ -1081,7 +1081,7 @@ private struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
     }
 }
 
-// MARK: - UnaryElements [WIP]
+// MARK: - UnaryElements [6.4.41] [WIP]
 
 private struct UnaryElements<Generator>: ViewList.Elements where Generator: UnaryViewGenerator {
     var body: Generator
@@ -1100,7 +1100,21 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
         indirectMap: IndirectAttributeMap?,
         body: Body
     ) -> (_ViewOutputs?, Bool) {
-        preconditionFailure("TODO")
+        guard start == 0 else {
+            start = max(start - 1, 0)
+            return (nil, true)
+        }
+        let (outputs, shouldContinue) = body(inputs) { inputs in
+            var baseInputs = baseInputs
+            if let indirectMap {
+                baseInputs.makeReusable(indirectMap: indirectMap)
+            }
+            var inputs = inputs
+            inputs.base.merge(baseInputs, ignoringPhase: false)
+            return self.body.makeView(inputs: inputs, indirectMap: indirectMap)
+        }
+        start = 0
+        return (outputs, shouldContinue)
     }
 
     func tryToReuseElement(
@@ -1115,8 +1129,19 @@ private struct UnaryElements<Generator>: ViewList.Elements where Generator: Unar
             ReuseTrace.traceReuseUnaryElementExpectedFailure(type(of: other))
             return false
         }
-        // BodyInput
-        preconditionFailure("TODO")
+        guard !baseInputs.containsNonEmptyBodyStack,
+              !other.baseInputs.containsNonEmptyBodyStack else {
+            return false
+        }
+        return body.tryToReuse(
+            by: other.body,
+            indirectMap: indirectMap,
+            testOnly: testOnly
+        ) && baseInputs.tryToReuse(
+            by: other.baseInputs,
+            indirectMap: indirectMap,
+            testOnly: testOnly
+        )
     }
 }
 
@@ -1240,11 +1265,90 @@ extension _ViewListOutputs {
     }
 
     package mutating func multiModifier<T>(_ modifier: _GraphValue<T>, inputs: _ViewListInputs) where T: ViewModifier {
-        preconditionFailure("TODO")
+        switch views {
+        case let .staticList(elements):
+            views = .staticList(ModifiedElements(base: elements, modifier: WeakAttribute(modifier.value), baseInputs: inputs.base))
+        case .dynamicList(_, _):
+            preconditionFailure("TODO")
+        }
     }
 
     package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
         preconditionFailure("TODO")
+    }
+}
+
+// MARK: - ModifiedElements [6.4.41]
+
+private struct ModifiedElements<Modifier>: ViewList.Elements where Modifier: ViewModifier {
+    let base: any ViewList.Elements
+
+    let modifier: WeakAttribute<Modifier>
+
+    let baseInputs: _GraphInputs
+
+    var count: Int {
+        base.count
+    }
+
+    func makeElements(
+        from start: inout Int,
+        inputs: _ViewInputs,
+        indirectMap: IndirectAttributeMap?,
+        body: (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)
+    ) -> (_ViewOutputs?, Bool) {
+        withoutActuallyEscaping(body) { escapingBody in
+            base.makeElements(
+                from: &start,
+                inputs: inputs,
+                indirectMap: indirectMap,
+            ) {
+                makeElementsInputs,
+                makeElementsBody in
+                escapingBody(makeElementsInputs) { bodyInputs in
+                    var base = baseInputs
+                    if let indirectMap {
+                        base.makeReusable(indirectMap: indirectMap)
+                    }
+                    var inputs = bodyInputs
+                    inputs.base.merge(base)
+                    guard var modifier = modifier.attribute else {
+                        return _ViewOutputs()
+                    }
+                    if let indirectMap {
+                        modifier.makeReusable(indirectMap: indirectMap)
+                    }
+                    return Modifier.makeDebuggableView(
+                        modifier: _GraphValue(modifier),
+                        inputs: inputs
+                    ) { _, modifierInputs in
+                        makeElementsBody(modifierInputs)
+                    }
+                }
+            }
+        }
+    }
+
+    func tryToReuseElement(
+        at index: Int,
+        by other: any _ViewList_Elements,
+        at otherIndex: Int,
+        indirectMap: IndirectAttributeMap,
+        testOnly: Bool
+    ) -> Bool {
+        guard let other = other as? ModifiedElements,
+              let modifier = modifier.attribute, let otherModifier = other.modifier.attribute,
+              modifier.tryToReuse(by: otherModifier, indirectMap: indirectMap, testOnly: testOnly),
+              baseInputs.tryToReuse(by: other.baseInputs, indirectMap: indirectMap, testOnly: testOnly)
+        else {
+            ReuseTrace.traceReuseIncompatibleListsFailure(ViewList.self, type(of: other))
+            return false
+        }
+        return base.tryToReuseElement(at: index, by: other.base, at: otherIndex, indirectMap: indirectMap, testOnly: testOnly)
+    }
+
+    func retain() -> Release? {
+        base.retain()
     }
 }
 
