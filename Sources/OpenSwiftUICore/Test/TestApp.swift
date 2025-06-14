@@ -7,6 +7,7 @@
 //  ID: A519B5B95CA8FF4E3445832668F0B2D2 (SwiftUI)
 //  ID: E1A97A5CD5A5467396F8BB461CB26984 (SwiftUICore)
 
+@available(OpenSwiftUI_v1_0, *)
 public struct _TestApp {
     package static var rootViewIdentifier: some Hashable { 0 }
 

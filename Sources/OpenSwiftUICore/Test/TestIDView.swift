@@ -11,6 +11,7 @@ import OpenGraphShims
 // MARK: - TestIDView + View extension
 
 @_spi(Testing)
+@available(OpenSwiftUI_v2_0, *)
 extension View {
     nonisolated public func testID<ID>(_ id: ID) -> TestIDView<Self, ID> where ID: Hashable {
         TestIDView(content: self, id: id)
@@ -20,6 +21,7 @@ extension View {
 // MARK: - TestIDView
 
 @_spi(Testing)
+@available(OpenSwiftUI_v2_0, *)
 public struct TestIDView<Content, ID>: PrimitiveView, UnaryView where Content: View, ID: Hashable {
     public var content: Content
     public var id: ID
