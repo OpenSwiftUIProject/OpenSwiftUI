@@ -1081,6 +1081,122 @@ private struct TypedUnaryViewGenerator<V>: UnaryViewGenerator where V: View {
     }
 }
 
+// MARK: - MergedElements [6.4.41]
+
+private struct MergedElements: ViewList.Elements {
+    var outputs: ArraySlice<_ViewListOutputs>
+
+    var count: Int {
+        guard !outputs.isEmpty else {
+            return 0
+        }
+        var count = 0
+        for output in outputs {
+            guard case let .staticList(elements) = output.views else {
+                preconditionFailure("")
+            }
+            count += elements.count
+        }
+        return count
+    }
+
+    func makeElements(
+        from start: inout Int,
+        inputs: _ViewInputs,
+        indirectMap: IndirectAttributeMap?,
+        body: (_ViewInputs, @escaping MakeElement) -> (_ViewOutputs?, Bool)
+    ) -> (_ViewOutputs?, Bool) {
+        var viewOutputs: [_ViewOutputs] = []
+        var shouldContinue = true
+        for output in outputs {
+            guard case let .staticList(elements) = output.views else {
+                preconditionFailure("")
+            }
+            let (elementsOutputs, elementsShouldContinue) = elements.makeElements(
+                from: &start,
+                inputs: inputs,
+                indirectMap: indirectMap,
+                body: body
+            )
+            if let elementsOutputs {
+                viewOutputs.append(elementsOutputs)
+            }
+            guard elementsShouldContinue else {
+                shouldContinue = false
+                break
+            }
+        }
+        let viewOutput: _ViewOutputs?
+        switch viewOutputs.count {
+        case 1: viewOutput = viewOutputs[0]
+        case 0: viewOutput = nil
+        default:
+            var preferencesOutputs: [PreferencesOutputs] = []
+            preferencesOutputs.reserveCapacity(viewOutputs.count)
+            for output in viewOutputs {
+                preferencesOutputs.append(output.preferences)
+            }
+            var visitor = MultiPreferenceCombinerVisitor(
+                outputs: preferencesOutputs,
+                result: PreferencesOutputs()
+            )
+            for key in inputs.preferences.keys {
+                key.visitKey(&visitor)
+            }
+            var result = _ViewOutputs()
+            result.preferences = visitor.result
+            viewOutput = result
+        }
+        return (viewOutput, shouldContinue)
+    }
+
+    func tryToReuseElement(
+        at index: Int,
+        by other: any _ViewList_Elements,
+        at otherIndex: Int,
+        indirectMap: IndirectAttributeMap,
+        testOnly: Bool
+    ) -> Bool {
+        guard let other = other as? MergedElements else {
+            ReuseTrace.traceReuseViewInputsDifferentFailure()
+            return false
+        }
+        guard let (elements, elementsIndex) = findElement(at: index),
+              let (otherElements, otherElementsIndex) = other.findElement(at: otherIndex) else {
+            ReuseTrace.traceReuseViewInputsDifferentFailure()
+            return false
+        }
+        return elements.tryToReuseElement(
+            at: elementsIndex,
+            by: otherElements,
+            at: otherElementsIndex,
+            indirectMap: indirectMap,
+            testOnly: testOnly
+        )
+    }
+
+    func findElement(at index: Int) -> (any ViewList.Elements, Int)? {
+        guard !outputs.isEmpty else {
+            return nil
+        }
+        var lowerBound = 0
+        for output in outputs {
+            guard case let .staticList(elements) = output.views else {
+                preconditionFailure("")
+            }
+            let count = elements.count
+            let upperBound = lowerBound + count
+            let range = lowerBound..<upperBound
+            if range.contains(index) {
+                return (elements, index - lowerBound)
+            }
+            lowerBound = upperBound
+        }
+        return nil
+    }
+}
+
+
 // MARK: - UnaryElements [6.4.41] [WIP]
 
 private struct UnaryElements<Generator>: ViewList.Elements where Generator: UnaryViewGenerator {
@@ -1273,8 +1389,105 @@ extension _ViewListOutputs {
         }
     }
 
+    // MARK: - _ViewListOutputs.concat [6.4.41]
+
     package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        func mergeStatic(from startIndex: Int, to endIndex: Int) -> _ViewListOutputs {
+            let count = endIndex - startIndex
+            let elements: any ViewList.Elements
+            let staticCount: Int?
+            switch count {
+            case 1:
+                let output = outputs[startIndex]
+                guard case let .staticList(viewElements) = output.views else {
+                    preconditionFailure("")
+                }
+                elements = viewElements
+                staticCount = output.staticCount
+            case 0:
+                elements = EmptyViewListElements()
+                staticCount = 0
+            default:
+                elements = MergedElements(outputs: outputs[startIndex..<endIndex])
+                var count: Int? = 0
+                for output in outputs[startIndex..<endIndex] {
+                    guard let oldCount = count, let staticCount = output.staticCount else {
+                        count = nil
+                        break
+                    }
+                    count = oldCount + staticCount
+                }
+                staticCount = count
+            }
+            let baseViewList = BaseViewList(
+                elements: elements,
+                implicitID: implicitID,
+                canTransition: inputs.canTransition,
+                stableIDScope: inputs.base.stableIDScope,
+                traitKeys: ViewTraitKeys(),
+                traits: ViewTraitCollection()
+            )
+            let baseViewListAttribute: Attribute<any ViewList> = Attribute(value: baseViewList)
+            implicitID &+= 1
+            return _ViewListOutputs(
+                .dynamicList(baseViewListAttribute, nil),
+                nextImplicitID: implicitID,
+                staticCount: staticCount
+            )
+        }
+
+        guard !outputs.isEmpty else {
+            return .init(.staticList(EmptyViewListElements()), nextImplicitID: inputs.implicitID, staticCount: 0)
+        }
+        var implicitID = inputs.implicitID
+
+        var dynamicListAttributes: [Attribute<any ViewList>] = []
+        var fromIndex = 0
+        var mergedStaticCount: Int? = 0
+        for (index, output) in outputs.enumerated() {
+            if let staticCount = output.staticCount {
+                mergedStaticCount = (mergedStaticCount ?? 0) + staticCount
+            } else {
+                mergedStaticCount = nil
+            }
+            guard case .dynamicList = output.views else {
+                continue
+            }
+            if fromIndex < index {
+                let mergedOutput = mergeStatic(from: fromIndex, to: index)
+                dynamicListAttributes.append(mergedOutput.makeAttribute(inputs: inputs))
+            }
+            dynamicListAttributes.append(output.makeAttribute(inputs: inputs))
+            fromIndex = index &+ 1
+        }
+        if fromIndex < outputs.count {
+            guard fromIndex != 0 else {
+                return if outputs.count == 1 {
+                    outputs[0]
+                } else {
+                    _ViewListOutputs(
+                        .staticList(MergedElements(outputs: ArraySlice(outputs))),
+                        nextImplicitID: implicitID,
+                        staticCount: mergedStaticCount
+                    )
+                }
+            }
+            let mergedOutput = mergeStatic(from: fromIndex, to: outputs.count)
+            dynamicListAttributes.append(mergedOutput.makeAttribute(inputs: inputs))
+        }
+        return switch dynamicListAttributes.count {
+        case 1: _ViewListOutputs(
+            .dynamicList(dynamicListAttributes[0], nil),
+            nextImplicitID: implicitID,
+            staticCount: mergedStaticCount
+        )
+        case 0: emptyViewList(inputs: inputs)
+        default: _ViewListOutputs(
+            .dynamicList(Attribute(ViewList.Group.Init(lists: dynamicListAttributes)), nil),
+            nextImplicitID: implicitID,
+            staticCount: mergedStaticCount
+        )
+        }
     }
 }
 
@@ -1352,7 +1565,7 @@ private struct ModifiedElements<Modifier>: ViewList.Elements where Modifier: Vie
     }
 }
 
-// MARK: - BaseViewList
+// MARK: - BaseViewList [6.4.41]
 
 private struct BaseViewList: ViewList {
     var elements: any Elements
