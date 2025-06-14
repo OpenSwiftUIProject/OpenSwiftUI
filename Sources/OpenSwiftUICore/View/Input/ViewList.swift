@@ -1389,8 +1389,105 @@ extension _ViewListOutputs {
         }
     }
 
+    // MARK: - _ViewListOutputs.concat [6.4.41]
+
     package static func concat(_ outputs: [_ViewListOutputs], inputs: _ViewListInputs) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        func mergeStatic(from startIndex: Int, to endIndex: Int) -> _ViewListOutputs {
+            let count = endIndex - startIndex
+            let elements: any ViewList.Elements
+            let staticCount: Int?
+            switch count {
+            case 1:
+                let output = outputs[startIndex]
+                guard case let .staticList(viewElements) = output.views else {
+                    preconditionFailure("")
+                }
+                elements = viewElements
+                staticCount = output.staticCount
+            case 0:
+                elements = EmptyViewListElements()
+                staticCount = 0
+            default:
+                elements = MergedElements(outputs: outputs[startIndex..<endIndex])
+                var count: Int? = 0
+                for output in outputs[startIndex..<endIndex] {
+                    guard let oldCount = count, let staticCount = output.staticCount else {
+                        count = nil
+                        break
+                    }
+                    count = oldCount + staticCount
+                }
+                staticCount = count
+            }
+            let baseViewList = BaseViewList(
+                elements: elements,
+                implicitID: implicitID,
+                canTransition: inputs.canTransition,
+                stableIDScope: inputs.base.stableIDScope,
+                traitKeys: ViewTraitKeys(),
+                traits: ViewTraitCollection()
+            )
+            let baseViewListAttribute: Attribute<any ViewList> = Attribute(value: baseViewList)
+            implicitID &+= 1
+            return _ViewListOutputs(
+                .dynamicList(baseViewListAttribute, nil),
+                nextImplicitID: implicitID,
+                staticCount: staticCount
+            )
+        }
+
+        guard !outputs.isEmpty else {
+            return .init(.staticList(EmptyViewListElements()), nextImplicitID: inputs.implicitID, staticCount: 0)
+        }
+        var implicitID = inputs.implicitID
+
+        var dynamicListAttributes: [Attribute<any ViewList>] = []
+        var fromIndex = 0
+        var mergedStaticCount: Int? = 0
+        for (index, output) in outputs.enumerated() {
+            if let staticCount = output.staticCount {
+                mergedStaticCount = (mergedStaticCount ?? 0) + staticCount
+            } else {
+                mergedStaticCount = nil
+            }
+            guard case .dynamicList = output.views else {
+                continue
+            }
+            if fromIndex < index {
+                let mergedOutput = mergeStatic(from: fromIndex, to: index)
+                dynamicListAttributes.append(mergedOutput.makeAttribute(inputs: inputs))
+            }
+            dynamicListAttributes.append(output.makeAttribute(inputs: inputs))
+            fromIndex = index &+ 1
+        }
+        if fromIndex < outputs.count {
+            guard fromIndex != 0 else {
+                return if outputs.count == 1 {
+                    outputs[0]
+                } else {
+                    _ViewListOutputs(
+                        .staticList(MergedElements(outputs: ArraySlice(outputs))),
+                        nextImplicitID: implicitID,
+                        staticCount: mergedStaticCount
+                    )
+                }
+            }
+            let mergedOutput = mergeStatic(from: fromIndex, to: outputs.count)
+            dynamicListAttributes.append(mergedOutput.makeAttribute(inputs: inputs))
+        }
+        return switch dynamicListAttributes.count {
+        case 1: _ViewListOutputs(
+            .dynamicList(dynamicListAttributes[0], nil),
+            nextImplicitID: implicitID,
+            staticCount: mergedStaticCount
+        )
+        case 0: emptyViewList(inputs: inputs)
+        default: _ViewListOutputs(
+            .dynamicList(Attribute(ViewList.Group.Init(lists: dynamicListAttributes)), nil),
+            nextImplicitID: implicitID,
+            staticCount: mergedStaticCount
+        )
+        }
     }
 }
 
@@ -1468,7 +1565,7 @@ private struct ModifiedElements<Modifier>: ViewList.Elements where Modifier: Vie
     }
 }
 
-// MARK: - BaseViewList
+// MARK: - BaseViewList [6.4.41]
 
 private struct BaseViewList: ViewList {
     var elements: any Elements
