@@ -2,10 +2,11 @@
 //  HStack.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.4.41
 //  Status: Complete
 
 public import Foundation
+
+// MARK: - HStack [6.4.41]
 
 /// A view that arranges its subviews in a horizontal line.
 ///
@@ -105,12 +106,26 @@ extension HStack: DerivedLayout where Content == EmptyView {
     }
 }
 
+// MARK: - _HStackLayout [6.4.41]
+
+/// A layout that arranges its children in a horizontal line.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _HStackLayout {
+    /// The vertical alignment of children.
     public var alignment: VerticalAlignment
 
+    /// The distance between adjacent children, or `nil` if the stack should
+    /// choose a default distance for each pair of children.
     public var spacing: CGFloat?
 
+    /// Creates an instance with the given `spacing` and Y axis `alignment`.
+    ///
+    /// - Parameters:
+    ///     - alignment: the guide that will have the same horizontal screen
+    ///       coordinate for all children.
+    ///     - spacing: the distance between adjacent children, or nil if the
+    ///       stack should choose a default distance for each pair of children.
     @inlinable
     public init(alignment: VerticalAlignment = .center, spacing: CGFloat? = nil) {
         self.alignment = alignment
@@ -139,6 +154,8 @@ extension _HStackLayout: Layout {
 extension _HStackLayout: _VariadicView.ImplicitRoot {
     package static var implicitRoot: _HStackLayout { .init() }
 }
+
+// MARK: - HStackLayout [6.4.41]
 
 /// A horizontal container that you can use in conditional layouts.
 ///

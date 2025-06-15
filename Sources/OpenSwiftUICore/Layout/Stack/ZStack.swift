@@ -91,6 +91,15 @@ public struct ZStack<Content>: View, UnaryView, PrimitiveView where Content: Vie
 @available(*, unavailable)
 extension ZStack: Sendable {}
 
+/// Overlays views while aligning on both axes.
+///
+/// Child sizing: Views with fixed size are respected, while flexible views are
+/// expanded to fill the remaining space.
+///
+/// Preferred size: Sizes to fit all the views. More descriptive info is in the
+/// layoutTraits method in StackView.swift
+///
+/// Other: Views are centered within stack if they underflow or overflow
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _ZStackLayout: _VariadicView.UnaryViewRoot, Animatable {
