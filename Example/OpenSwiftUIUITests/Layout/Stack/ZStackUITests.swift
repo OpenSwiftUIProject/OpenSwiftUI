@@ -1,19 +1,13 @@
 //
-//  ZStackTests.swift
-//  OpenSwiftUIUITests=
+//  ZStackUITests.swift
+//  OpenSwiftUIUITests
 
 import Testing
 import SnapshotTesting
 
-#if OPENSWIFTUI
-import OpenSwiftUI
-#else
-import SwiftUI
-#endif
-
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
-struct ZStackTests {
+struct ZStackUITests {
     @Test(
         arguments: [
             (Alignment.center, "center"),
@@ -41,10 +35,6 @@ struct ZStackTests {
         openSwiftUIAssertSnapshot(
             of: ContentView(
                 alignment: alignment
-            ),
-            size: CGSize(
-                width: 100,
-                height: 100
             ),
             testName: "alignment_\(name)"
         )
