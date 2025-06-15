@@ -2,7 +2,7 @@
 //  ModifiedColor.swift
 //  OpenSwiftUICore
 //
-//  Status: Blocked by Gradient
+//  Status: Complete
 //  ID: B495DF025D9B78431A787E266E7D8FB1 (SwiftUI)
 //  ID: F28C5F7FF836E967BAC87540A3CB4F65 (SwiftUICore)
 
@@ -83,7 +83,22 @@ extension Color {
         Color(provider: DestinationOverProvider(lhs: self, rhs: rhs))
     }
 
-    // TODO: Blocked by Gradient
+    // MARK: - MixProvider [6.4.41]
+
+    private struct MixProvider: ColorProvider {
+        var lhs: Color
+        var rhs: Color
+        var colorSpace: Gradient.ColorSpace
+        var fraction: Float
+
+        func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+            colorSpace.base.mix(
+                lhs.resolve(in: environment),
+                rhs.resolve(in: environment),
+                by: fraction
+            )
+        }
+    }
 
     /// Returns a version of self mixed with `rhs` by the amount specified
     /// by `fraction`.
@@ -94,24 +109,34 @@ extension Color {
     ///               equal parts with `rhs`.
     ///   - colorSpace: The color space used to mix the colors.
     /// - Returns: A new `Color` based on `self` and `rhs`.
-//    @available(OpenSwiftUI_v6_0, *)
-//    public func mix(
-//        with rhs: Color,
-//        by fraction: Double,
-//        in colorSpace: Gradient.ColorSpace = .perceptual
-//    ) -> Color {
-//        preconditionFailure("TODO")
-//    }
-//
-//    @_spi(Private)
-//    @available(*, deprecated, renamed: "mix(with:by:in:)")
-//    public func blend(
-//        with rhs: Color,
-//        in colorSpace: Gradient.ColorSpace = .perceptual,
-//        by fraction: Double
-//    ) -> Color {
-//        preconditionFailure("TODO")
-//    }
+    @available(OpenSwiftUI_v6_0, *)
+    public func mix(
+        with rhs: Color,
+        by fraction: Double,
+        in colorSpace: Gradient.ColorSpace = .perceptual
+    ) -> Color {
+        Color(provider: MixProvider(
+            lhs: self,
+            rhs: rhs,
+            colorSpace: colorSpace,
+            fraction: Float(fraction)
+        ))
+    }
+
+    @_spi(Private)
+    @available(*, deprecated, renamed: "mix(with:by:in:)")
+    public func blend(
+        with rhs: Color,
+        in colorSpace: Gradient.ColorSpace = .perceptual,
+        by fraction: Double
+    ) -> Color {
+        Color(provider: MixProvider(
+            lhs: self,
+            rhs: rhs,
+            colorSpace: colorSpace,
+            fraction: Float(fraction)
+        ))
+    }
 }
 
 @_spi(Private)
