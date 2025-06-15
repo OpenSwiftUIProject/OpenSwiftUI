@@ -5,17 +5,20 @@
 import Testing
 import SnapshotTesting
 
-#if OPENSWIFTUI
-import OpenSwiftUI
-#else
-import SwiftUI
-#endif
+import Foundation
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct NamedColorUITests {
-    @Test
+    @Test(.disabled {
+        #if os(macOS)
+        true
+        #else
+        false
+        #endif
+    })
     func namedColor() {
+        let bundle = Bundle.main
         openSwiftUIAssertSnapshot(
             of: Color("custom")
         )

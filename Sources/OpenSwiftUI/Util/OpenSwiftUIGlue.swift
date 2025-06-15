@@ -105,11 +105,7 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     }
 
     override public func configureEmptyEnvironment(_ environment: inout EnvironmentValues) {
-        #if os(iOS)
         environment.configureForPlatform(traitCollection: nil)
-        #else
-        // TODO
-        #endif
     }
 
     override public final func configureDefaultEnvironment(_: inout EnvironmentValues) {

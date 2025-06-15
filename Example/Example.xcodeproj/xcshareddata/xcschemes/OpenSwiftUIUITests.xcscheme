@@ -8,7 +8,7 @@
       buildArchitectures = "Automatic">
    </BuildAction>
    <TestAction
-      buildConfiguration = "SwiftUIDebug"
+      buildConfiguration = "OpenSwiftUIDebug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">

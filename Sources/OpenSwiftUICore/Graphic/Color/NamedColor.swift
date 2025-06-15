@@ -165,6 +165,7 @@ extension CUICatalog {
                 appearanceConfigurations = [(nil, .increased), (nil, .standard)]
             }
             for (scheme, contrast) in appearanceConfigurations {
+                // FIXME: macOS should use NSAppearanceNameSystem and other stuff
                 let appearanceName = switch (scheme, contrast) {
                 case (nil, .standard): "UIAppearanceAny"
                 case (nil, .increased): "UIAppearanceHighContrastAny"
