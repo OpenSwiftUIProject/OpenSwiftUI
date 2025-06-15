@@ -45,8 +45,8 @@ package func makeSecondaryLayerView<SecondaryLayer>(
         key.visitKey(&visitor)
     }
     var result = visitor.result
-    result.layoutComputer = secondaryOutputs.layoutComputer
-    return visitor.result
+    result.layoutComputer = primaryOutputs.layoutComputer
+    return result
 }
 
 // MARK: - OverlayModifier [6.4.41]
@@ -208,7 +208,7 @@ extension View {
     /// - Returns: A view that uses the specified content as a foreground.
     @inlinable
     nonisolated public func overlay<V>(alignment: Alignment = .center, @ViewBuilder content: () -> V) -> some View where V: View {
-        modifier(_BackgroundModifier(background: content(), alignment: alignment))
+        modifier(_OverlayModifier(overlay: content(), alignment: alignment))
     }
 }
 

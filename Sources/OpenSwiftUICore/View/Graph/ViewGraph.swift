@@ -159,7 +159,10 @@ package final class ViewGraph: GraphHost {
         // _inheritedPhase
         _gestureResetSeed = Attribute(value: .zero)
         _gesturePreferenceKeys = Attribute(value: .init())
-        _rootGeometry = Attribute(RootGeometry(proposedSize: _proposedSize, safeAreaInsets: OptionalAttribute(_safeAreaInsets)))
+        _rootGeometry = Attribute(RootGeometry(
+            proposedSize: _proposedSize,
+            safeAreaInsets: OptionalAttribute(_safeAreaInsets)
+        ))
         _position = _rootGeometry.origin()
         _dimensions = _rootGeometry.size()
         makeRootView = { [_zeroPoint, _proposedSize, _safeAreaInsets] view, inputs in
@@ -236,7 +239,7 @@ package final class ViewGraph: GraphHost {
                 as: RootGeometry.self,
                 invalidating: true
             ) { rootGeometry in
-                rootGeometry.$layoutDirection = inputs.mapEnvironment(id: .layoutDirection) { $0.layoutDirection }
+                rootGeometry.$layoutDirection = inputs.layoutDirection
             }
             for feature in features {
                 feature.modifyViewInputs(inputs: &inputs, graph: self)
