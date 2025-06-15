@@ -2,7 +2,12 @@
 //  PlatformAlias.swift
 //  OpenSwiftUITestsSupport
 
+#if OPENSWIFTUI_COMPATIBILITY_TEST
+package import SwiftUI
+#else
 package import OpenSwiftUI
+#endif
+
 #if os(iOS)
 package import UIKit
 package typealias PlatformViewController = UIViewController

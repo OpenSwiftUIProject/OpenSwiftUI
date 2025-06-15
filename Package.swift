@@ -60,7 +60,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("InferSendableFromCaptures"),
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     .swiftLanguageMode(.v5),
-] + .availabilityMacroSettings(ignoreAvailability: !isSPIDocGenerationBuild)
+]
 
 // MARK: - [env] OPENSWIFTUI_TARGET_RELEASE
 
@@ -148,6 +148,19 @@ if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
     // Either set OPENSWIFTUI_LIBRARY_EVOLUTION=0 or add `-Xswiftc -no-verify-emitted-module-interface` after `swift build`
     sharedSwiftSettings.append(.unsafeFlags(["-enable-library-evolution", "-no-verify-emitted-module-interface"]))
 }
+
+// MARK: - [env] OPENSWIFTUI_COMPATIBILITY_TEST
+
+let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST", default: true)
+
+if compatibilityTestCondition {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
+}
+
+// MARK: - [env] OPENSWIFTUI_IGNORE_AVAILABILITY
+
+let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild)
+sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(ignoreAvailability: !isSPIDocGenerationBuild && !compatibilityTestCondition))
 
 // MARK: - CoreGraphicsShims Target
 
@@ -284,7 +297,7 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     dependencies: [
         "OpenSwiftUITestsSupport",
         .product(name: "Numerics", package: "swift-numerics"),
-    ],
+    ] + (compatibilityTestCondition ? [] : ["OpenSwiftUI"]),
     exclude: ["README.md"],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
@@ -543,13 +556,6 @@ if swiftCryptoCondition {
     openSwiftUITarget.addSwiftCryptoSettings()
 }
 
-let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
-if compatibilityTestCondition {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
-} else {
-    openSwiftUICompatibilityTestTarget.dependencies.append("OpenSwiftUI")
-}
-
 // MARK: - SymbolLocator
 
 if symbolLocatorCondition {
@@ -580,7 +586,6 @@ extension [SwiftSetting] {
     /// setting availability definitions, which was added in
     /// [swift#65218](https://github.com/swiftlang/swift/pull/65218).
     fileprivate static func availabilityMacroSettings(ignoreAvailability: Bool) -> Self {
-        let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: ignoreAvailability)
         let minimumVersion = "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0"
         return [
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_0:\(ignoreAvailability ? minimumVersion : "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0")"),
