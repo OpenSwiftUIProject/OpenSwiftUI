@@ -6,7 +6,7 @@
 
 package import OpenGraphShims
 
-// MARK: - makeSecondaryLayerView [6.4.41] [WIP]
+// MARK: - makeSecondaryLayerView [6.4.41]
 
 package func makeSecondaryLayerView<SecondaryLayer>(
     secondaryLayer: Attribute<SecondaryLayer>,
@@ -15,7 +15,37 @@ package func makeSecondaryLayerView<SecondaryLayer>(
     body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs,
     flipOrder: Bool
 ) -> _ViewOutputs where SecondaryLayer: View {
-    preconditionFailure("TODO")
+    var inputs = inputs
+    inputs.base.pushStableIndex(0)
+    let primaryOutputs = body(_Graph(), inputs)
+    let layoutDirection = inputs.layoutDirection
+    let geometry = Attribute(SecondaryLayerGeometryQuery(
+        alignment: .init(alignment),
+        layoutDirection: layoutDirection,
+        primaryPosition: inputs.position,
+        primarySize: inputs.size,
+        primaryLayoutComputer: .init(primaryOutputs.layoutComputer),
+        secondaryLayoutComputer: .init()
+    ))
+    inputs.position = geometry.origin()
+    inputs.size = geometry.size()
+    inputs.base.pushStableIndex(1)
+    if Semantics.DepthWiseSecondaryLayers.isEnabled {
+        inputs.implicitRootType = _ZStackLayout.self
+    }
+    let secondaryOutputs = SecondaryLayer.makeDebuggableView(view: .init(secondaryLayer), inputs: inputs)
+    geometry.mutateBody(as: SecondaryLayerGeometryQuery.self, invalidating: true) { query in
+        query.$secondaryLayoutComputer = secondaryOutputs.layoutComputer
+    }
+    var visitor = PairwisePreferenceCombinerVisitor(
+        outputs: flipOrder ? (secondaryOutputs, primaryOutputs) : (primaryOutputs, secondaryOutputs)
+    )
+    for key in inputs.preferences.keys {
+        key.visitKey(&visitor)
+    }
+    var result = visitor.result
+    result.layoutComputer = secondaryOutputs.layoutComputer
+    return visitor.result
 }
 
 // MARK: - OverlayModifier [6.4.41]
