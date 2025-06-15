@@ -147,6 +147,11 @@ public struct ViewDimensions {
         self[guide.key]
     }
 
+    @inline(__always)
+    subscript(guide: Alignment) -> (CGFloat, CGFloat) {
+        (self[guide.horizontal], self[guide.vertical])
+    }
+
     /// Gets the explicit value of the given horizontal alignment guide.
     ///
     /// Find the horizontal offset of a particular guide in the corresponding
@@ -183,6 +188,11 @@ public struct ViewDimensions {
     /// in _The Swift Programming Language_.
     public subscript(explicit guide: VerticalAlignment) -> CGFloat? {
         self[explicit: guide.key]
+    }
+
+    @inline(__always)
+    subscript(explicit guide: Alignment) -> (CGFloat?, CGFloat?) {
+        (self[explicit: guide.horizontal], self[explicit: guide.vertical])
     }
 }
 
