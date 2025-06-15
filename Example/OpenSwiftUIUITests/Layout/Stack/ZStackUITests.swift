@@ -40,5 +40,54 @@ struct ZStackUITests {
         )
     }
 
-    // TODO: layoutPriority
+    @Test
+    func layoutPriority() {
+        struct ContentView: View {
+            var body: some View {
+                ZStack(alignment: .leading) {
+                    Color.blue
+                        .opacity(0.5)
+                        .frame(width: 100, height: 100)
+                        .layoutPriority(-0.1)
+                    Color.red
+                        .opacity(0.5)
+                        .frame(width: 60, height: 60)
+                    Color.green
+                        .frame(width: 40, height: 40)
+                        .layoutPriority(1)
+                }
+                .overlay {
+                    Color.black
+                        .frame(width: 20, height: 20)
+                }
+            }
+        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
+    }
+
+    @Test
+    func overlayAndBackground() {
+        struct ContentView: View {
+            var body: some View {
+                ZStack(alignment: .leading) {
+                    Color.red
+                        .opacity(0.5)
+                        .frame(width: 200, height: 200)
+                }
+                .overlay(alignment: .topLeading) {
+                    Color.green.opacity(0.5)
+                        .frame(width: 100, height: 100)
+                }
+                .background(alignment: .bottomTrailing) {
+                    Color.blue.opacity(0.5)
+                        .frame(width: 100, height: 100)
+                }
+            }
+        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
+    }
 }
