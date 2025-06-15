@@ -47,7 +47,6 @@ open class GraphHost: CustomReflectable {
         return graph
     }()
 
-    
     // MARK: - GraphHost.Data
     
     package struct Data {
