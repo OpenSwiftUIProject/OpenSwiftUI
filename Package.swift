@@ -153,7 +153,7 @@ if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
 
 // MARK: - [env] OPENSWIFTUI_COMPATIBILITY_TEST
 
-let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST", default: true)
+let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
 
 if compatibilityTestCondition {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))

@@ -13,6 +13,8 @@ typealias TraitCollection = UITraitCollection
 #elseif os(macOS)
 import AppKit
 typealias TraitCollection = Void
+#else
+typealias TraitCollection = Void
 #endif
 
 // MARK: - Environment + Platform [6.4.41]
