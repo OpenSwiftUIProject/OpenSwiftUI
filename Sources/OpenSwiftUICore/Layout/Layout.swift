@@ -1632,13 +1632,7 @@ public struct LayoutSubview: Equatable {
         guard !origin.isNaN else {
             preconditionFailure("view origin is invalid: \(position), \(anchor), \(dimensions.size.value)")
         }
-        let layoutData = threadLayoutData!
-        Swift.precondition(!layoutData.pointee.unknown)
-        layoutData.pointee.setGeometry(
-            ViewGeometry(origin: origin, dimensions: dimensions),
-            at: numericCast(index),
-            layoutDirection: .leftToRight
-        )
+        place(in: ViewGeometry(origin: origin, dimensions: dimensions))
     }
 
     package func place(in geometry: ViewGeometry, layoutDirection: LayoutDirection = .leftToRight) {

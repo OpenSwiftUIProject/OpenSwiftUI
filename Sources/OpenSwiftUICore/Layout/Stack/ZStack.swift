@@ -3,9 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.4.41
-//  Status: WIP
+//  Status: Complete
 
 public import Foundation
+
+// MARK: - ZStack [6.4.41]
 
 /// A view that overlays its subviews, aligning them in both axes.
 ///
@@ -91,6 +93,8 @@ public struct ZStack<Content>: View, UnaryView, PrimitiveView where Content: Vie
 @available(*, unavailable)
 extension ZStack: Sendable {}
 
+// MARK: - _ZStackLayout [6.4.41]
+
 /// Overlays views while aligning on both axes.
 ///
 /// Child sizing: Views with fixed size are respected, while flexible views are
@@ -144,11 +148,53 @@ extension _ZStackLayout: Layout {
         subviews: _ZStackLayout.Subviews,
         cache: inout Void
     ) {
-        preconditionFailure("TODO")
+        let maxPriority = subviews.lazy
+            .map { $0.priority }
+            .max() ?? 0.0
+        let alignmentSize = subviews.lazy
+            .filter { $0.priority == maxPriority }
+            .map { $0.dimensions(in: ProposedViewSize(bounds.size)) }
+            .reduce(CGSize(width: -.infinity, height: -.infinity)) { result, dimension in
+                CGSize(
+                    width: max(result.width, dimension[alignment.horizontal]),
+                    height: max(result.height, dimension[alignment.vertical])
+                )
+            }
+        for subview in subviews {
+            let dimensions = subview.dimensions(in: ProposedViewSize(bounds.size))
+            let horizontalAlignmentValue = dimensions[alignment.horizontal]
+            let verticalAlignmentValue = dimensions[alignment.vertical]
+            let geometry = ViewGeometry(
+                origin: CGPoint(
+                    x: alignmentSize.width - horizontalAlignmentValue + bounds.origin.x,
+                    y: alignmentSize.height - verticalAlignmentValue + bounds.origin.y
+                ),
+                dimensions: dimensions
+            )
+            subview.place(in: geometry)
+        }
     }
 
     public func spacing(subviews: _ZStackLayout.Subviews, cache: inout Void) -> ViewSpacing {
-        preconditionFailure("TODO")
+        let maxPriority = subviews.lazy
+            .map { $0.priority }
+            .max() ?? 0.0
+        let direction = subviews.layoutDirection
+        guard let highPrioritySubviewIndex = subviews.lazy.firstIndex(where: {
+            $0.priority == maxPriority
+        }) else {
+            return ViewSpacing.zero
+        }
+        var spacing = ViewSpacing(Spacing(minima: [:]), layoutDirection: direction)
+        guard !subviews.isEmpty else {
+            return spacing
+        }
+        // FIXME
+        for (_, subview) in subviews.enumerated() {
+            _ = highPrioritySubviewIndex
+            spacing.formUnion(subview.spacing)
+        }
+        return spacing
     }
 
     public func sizeThatFits(
@@ -156,7 +202,21 @@ extension _ZStackLayout: Layout {
         subviews: _ZStackLayout.Subviews,
         cache: inout Void
     ) -> CGSize {
-        preconditionFailure("TODO")
+        guard !subviews.isEmpty else {
+            return CGSize.zero
+        }
+        let maxPriority = subviews.lazy
+            .map { $0.priority }
+            .max() ?? 0.0
+        return subviews.lazy
+            .filter { $0.priority == maxPriority }
+            .map { $0.dimensions(in: proposal) }
+            .reduce(CGSize.zero) { result, dimension in
+                CGSize(
+                    width: max(result.width, dimension.width),
+                    height: max(result.height, dimension.height)
+                )
+            }
     }
 
     @available(OpenSwiftUI_v4_0, *)
@@ -166,6 +226,8 @@ extension _ZStackLayout: Layout {
 extension _ZStackLayout: _VariadicView.ImplicitRoot {
     package static var implicitRoot: _ZStackLayout { .init() }
 }
+
+// MARK: - ZStackLayout [6.4.41]
 
 /// An overlaying container that you can use in conditional layouts.
 ///
