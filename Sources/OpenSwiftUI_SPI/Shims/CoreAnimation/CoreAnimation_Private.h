@@ -20,6 +20,20 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) uint64_t openSwiftUI_viewTestProperties;
 @end
 
+struct CAColorMatrix {
+    float m11, m12, m13, m14, m15;
+    float m21, m22, m23, m24, m25;
+    float m31, m32, m33, m34, m35;
+    float m41, m42, m43, m44, m45;
+};
+typedef struct CAColorMatrix CAColorMatrix;
+
+@interface NSValue (OpenSwiftUI_SPI)
++ (NSValue *)valueWithCAColorMatrix_openswiftui_safe_wrapper:(CAColorMatrix)t OPENSWIFTUI_SWIFT_NAME(init(caColorMatrix:));
+@end
+
+// OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted)
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* CoreAnimation.h */

@@ -11,6 +11,7 @@ import CoreGraphics
 #else
 import Foundation
 #endif
+import OpenSwiftUI_SPI
 
 // MARK: - ColorMatrix
 
@@ -362,3 +363,17 @@ extension _ColorMatrix {
         floatArray.reduce(0.0) { $0 + Double($1 * $1) }
     }
 }
+
+#if canImport(Darwin)
+extension _ColorMatrix {
+    @inline(__always)
+    var caColorMatrix: CAColorMatrix {
+        CAColorMatrix(
+            m11: m11, m12: m12, m13: m13, m14: m14, m15: m15,
+            m21: m21, m22: m22, m23: m23, m24: m24, m25: m25,
+            m31: m31, m32: m32, m33: m33, m34: m34, m35: m35,
+            m41: m41, m42: m42, m43: m43, m44: m44, m45: m45
+        )
+    }
+}
+#endif

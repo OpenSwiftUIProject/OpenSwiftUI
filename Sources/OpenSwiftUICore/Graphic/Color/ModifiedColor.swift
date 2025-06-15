@@ -8,7 +8,9 @@
 
 #if canImport(Darwin)
 import CoreGraphics
+import Foundation
 #endif
+import OpenSwiftUI_SPI
 
 @available(OpenSwiftUI_v1_0, *)
 extension Color {
@@ -170,6 +172,33 @@ extension Color {
     }
 }
 
+// MARK: - CustomVibrantColor_Watch [6.4.41] [WIP]
+
+struct CustomVibrantColor_Watch: ColorProvider {
+    var base: Color
+    var vibrantMatrix: _ColorMatrix
+    var tertiaryOpacity: Float
+
+    func resolve(in environment: EnvironmentValues) -> Color.Resolved {
+        base.provider.resolve(in: environment)
+    }
+
+    func opacity(at level: Int, environment: EnvironmentValues) -> Float {
+        guard level != 2 else {
+            return tertiaryOpacity
+        }
+        return environment.systemColorDefinition.base.opacity(at: level, environment: environment)
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(base)
+        #if canImport(Darwin)
+        hasher.combine(NSValue(caColorMatrix: vibrantMatrix.caColorMatrix))
+        #endif
+        hasher.combine(tertiaryOpacity)
+    }
+}
+
 @_spi(Private)
 @available(OpenSwiftUI_v6_0, *)
 @available(iOS, unavailable)
@@ -177,6 +206,10 @@ extension Color {
 @available(tvOS, unavailable)
 extension Color {
     public func vibrancy(_ vibrantMatrix: _ColorMatrix, tertiaryOpacity: Double) -> Color {
-        preconditionFailure("TODO")
+        Color(provider: CustomVibrantColor_Watch(
+            base: self,
+            vibrantMatrix: vibrantMatrix,
+            tertiaryOpacity: Float(tertiaryOpacity)
+        ))
     }
 }
