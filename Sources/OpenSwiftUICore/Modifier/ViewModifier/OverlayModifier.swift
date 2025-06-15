@@ -4,6 +4,7 @@
 //
 //  Status: WIP
 
+import Foundation
 package import OpenGraphShims
 
 // MARK: - makeSecondaryLayerView [6.4.41]
@@ -262,7 +263,7 @@ package struct SecondaryLayerGeometryQuery: Rule, AsyncAttribute {
         let fittingSize = secondaryLayoutComputer.sizeThatFits(.init(proposal))
         let secondaryDimensions = ViewDimensions(guideComputer: secondaryLayoutComputer, size: ViewSize(value: fittingSize, proposal: proposal))
         let (secondaryHorizontalAlignment, secondaryVerticalAlignment) = secondaryDimensions[alignment]
-        
+
         var geometry = ViewGeometry(
             origin: primaryPosition
                 + CGSize(width: primaryHorizontalAlignment, height: primaryVerticalAlignment)
