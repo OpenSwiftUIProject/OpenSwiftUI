@@ -97,17 +97,24 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     package var externalUpdateCount: Int = .zero
 
-    var canAdvanceTimeAutomatically = true
+    private var canAdvanceTimeAutomatically = true
 
-    var needsDeferredUpdate = false
+    private var needsDeferredUpdate = false
 
-    var isPerformingLayout: Bool {
+    private var isPerformingLayout: Bool {
         if renderingPhase == .rendering {
             return true
         }
         return externalUpdateCount > 0
     }
 
+    open override var isFlipped: Bool { true }
+    
+    open override var layerContentsRedrawPolicy: NSView.LayerContentsRedrawPolicy {
+        set { }
+        get { .duringViewResize }
+    }
+    
     /// Creates a hosting view object that wraps the specified SwiftUI view.
     ///
     /// - Parameter rootView: The root view of the SwiftUI view hierarchy that
@@ -234,11 +241,13 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     public final func _viewDebugData() -> [_ViewDebug.Data] { [] }
 
-    // TODO
-    func clearUpdateTimer() {}
+    func clearUpdateTimer() {
+        // TODO
+    }
 
-    // TODO
-    func cancelAsyncRendering() {}
+    func cancelAsyncRendering() {
+        // TODO    
+    }
 
     // FIXME
     func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
@@ -273,9 +282,12 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 extension NSHostingView {
-    public func _renderForTest(interval: Double) {}
+    public func _renderForTest(interval: Double) {
+        // TODO
+    }
 
     public func _renderAsyncForTest(interval: Double) -> Bool {
+        // TODO
         false
     }
 }
@@ -311,15 +323,21 @@ extension NSHostingView {
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 extension NSHostingView: ViewRendererHost {
-    package func updateEnvironment() {}
+    package func updateEnvironment() {
+        // TODO
+    }
 
     package func updateSize() {
         viewGraph.setProposedSize(bounds.size)
     }
 
-    package func updateSafeArea() {}
+    package func updateSafeArea() {
+        // TODO
+    }
 
-    package func updateScrollableContainerSize() {}
+    package func updateScrollableContainerSize() {
+        // TODO
+    }
 
     package func renderDisplayList(
         _ list: DisplayList,
@@ -389,7 +407,10 @@ extension NSHostingView: ViewRendererHost {
         viewGraph.setRootView(rootView)
     }
 
-    package func requestUpdate(after: Double) {}
+    package func requestUpdate(after: Double) {
+        // TODO
+        setNeedsUpdate()
+    }
 }
 
 @_spi(Private)
