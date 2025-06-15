@@ -8,7 +8,12 @@ The project is for the following purposes:
 - Build GUI app on non-Apple platform (eg. Linux & Windows)
 - Diagnose and debug SwiftUI issues on Apple platform
 
-And the API design is to stay the same as the original SwiftUI API as possible.
+And the API design and documentation is to stay as compatible with the original SwiftUI API as possible.
+
+> [!TIP]
+> "Why join the navy if you can be a pirate?" — Steve Jobs
+>
+> :)
 
 Currently, this project is in early development.
 
