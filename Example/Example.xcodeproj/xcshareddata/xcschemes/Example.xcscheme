@@ -35,7 +35,7 @@
             parallelizable = "YES">
             <BuildableReference
                BuildableIdentifier = "primary"
-               BlueprintIdentifier = "275751F42DEE1456003E467C"
+               BlueprintIdentifier = "279283B82DFF11CE00234D64"
                BuildableName = "OpenSwiftUIUITests.xctest"
                BlueprintName = "OpenSwiftUIUITests"
                ReferencedContainer = "container:Example.xcodeproj">
