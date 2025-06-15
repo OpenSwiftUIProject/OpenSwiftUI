@@ -162,8 +162,7 @@ extension _ZStackLayout: Layout {
             }
         for subview in subviews {
             let dimensions = subview.dimensions(in: ProposedViewSize(bounds.size))
-            let horizontalAlignmentValue = dimensions[alignment.horizontal]
-            let verticalAlignmentValue = dimensions[alignment.vertical]
+            let (horizontalAlignmentValue, verticalAlignmentValue) = dimensions[alignment]
             let geometry = ViewGeometry(
                 origin: CGPoint(
                     x: alignmentSize.width - horizontalAlignmentValue + bounds.origin.x,

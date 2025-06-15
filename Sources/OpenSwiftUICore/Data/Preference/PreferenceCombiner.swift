@@ -51,6 +51,7 @@ package struct PreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringConverti
 
 package struct PairwisePreferenceCombinerVisitor: PreferenceKeyVisitor {
     package let outputs: (_ViewOutputs, _ViewOutputs)
+
     package var result: _ViewOutputs = _ViewOutputs()
 
     package init(outputs: (_ViewOutputs, _ViewOutputs)) {
