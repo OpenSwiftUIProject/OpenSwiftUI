@@ -5,11 +5,6 @@
 import SnapshotTesting
 import Testing
 import Foundation
-#if OPENSWIFTUI
-import OpenSwiftUI
-#else
-import SwiftUI
-#endif
 
 #if canImport(AppKit)
 import AppKit
@@ -25,9 +20,11 @@ typealias PlatformView = UIView
 typealias PlatformImage = UIImage
 #endif
 
+let defaultSize = CGSize(width: 200, height: 200)
+
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () throws -> V,
-    size: CGSize = CGSize(width: 200, height: 200),
+    size: CGSize = defaultSize,
     named name: String? = nil,
     record recording: Bool? = shouldRecord,
     timeout: TimeInterval = 5,

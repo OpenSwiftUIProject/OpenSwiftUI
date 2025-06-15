@@ -11,9 +11,7 @@ struct RGBColorSpaceTests {
         var output: (red: Double, green: Double, blue: Double)
     }
     
-    #if OPENSWIFTUI_COMPATIBILITY_TEST
-    @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, *)
-    #endif
+    @available(OpenSwiftUI_v5_0, *)
     @Test(arguments:
         [
             IO(input: (0.0, 0.0, 0.0), output: (0.0, 0.0, 0.0)), // Black

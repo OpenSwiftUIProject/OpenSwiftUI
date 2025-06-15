@@ -296,8 +296,17 @@ struct CoreUIDefaultSystemColorDefinition: SystemColorDefinition {
         let entry = cacheKey.fetch()
         return entry.color
         #else
-        // For non CoreUI supported platform, simply return clear for now
-        Color.Resolved.clear
+        // For non CoreUI supported platform, simply return a plain Color.Resolved color or black for now
+        return switch type {
+        case .red: .red
+        case .green: .green
+        case .blue: .blue
+        case .primary: .black
+        case .secondary: .gray_75
+        case .tertiary: .gray_50
+        case .tertiary: .gray_25
+        default: .black
+        }
         #endif
 
     }

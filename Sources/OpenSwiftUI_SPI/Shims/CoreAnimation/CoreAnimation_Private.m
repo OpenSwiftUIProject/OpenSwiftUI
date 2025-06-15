@@ -36,4 +36,12 @@
 }
 @end
 
+@implementation NSValue (OpenSwiftUI_SPI)
++ (NSValue *)valueWithCAColorMatrix_openswiftui_safe_wrapper:(CAColorMatrix)t {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSValue *, @"valueWithCAColorMatrix:", nil, CAColorMatrix);
+    return func(self, selector, t);
+}
+@end
+
+
 #endif /* CoreAnimation.h */

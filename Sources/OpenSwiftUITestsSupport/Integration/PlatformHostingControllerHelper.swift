@@ -32,12 +32,10 @@ extension PlatformHostingController {
 
 // FIXME: A workaround to bypass the Issue #87
 package func workaroundIssue87(_ vc: PlatformViewController) {
-    if compatibilityTestEnabled {
-        return
-    } else {
-        // TODO: Use swift-test exist test feature to detect the crash instead or sliently workaroun it
-        CrashWorkaround.shared.objects.append(vc)
-    }
+    #if !OPENSWIFTUI_COMPATIBILITY_TEST
+    // TODO: Use swift-test exist test feature to detect the crash instead or sliently workaroun it
+    CrashWorkaround.shared.objects.append(vc)
+    #endif
 }
 
 private final class CrashWorkaround {

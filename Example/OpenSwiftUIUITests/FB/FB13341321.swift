@@ -25,6 +25,8 @@
 // Status Update:
 // Fixed on macOS 15.1
 
+#if !OPENSWIFTUI
+
 import SwiftUI
 import Observation
 
@@ -112,3 +114,4 @@ extension View {
     FB13341321.ContentView()
         .padding(20)
 }
+#endif
