@@ -40,7 +40,7 @@ func openSwiftUIAssertSnapshot<V: View>(
     openSwiftUIAssertSnapshot(
         of: PlatformHostingController(rootView: try value()),
         as: .image(size: size),
-        named: "\(Int(size.width))x\(Int(size.height))",
+        named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
         timeout: timeout,
         fileID: fileID,

@@ -125,7 +125,7 @@ extension Layout {
                 geometry = Attribute(
                     LayoutChildGeometries(
                         parentSize: inputs.size,
-                        parentPosition: inputs.containerPosition,
+                        parentPosition: inputs.position,
                         layoutComputer: layoutComputer
                     )
                 )
@@ -183,12 +183,12 @@ package struct LayoutChildGeometries: Rule, AsyncAttribute {
     private var parentSize: ViewSize
 
     @Attribute
-    private var parentPosition: PlatformPoint
+    private var parentPosition: ViewOrigin
 
     @Attribute
     private var layoutComputer: LayoutComputer
 
-    package init(parentSize: Attribute<ViewSize>, parentPosition: Attribute<PlatformPoint>, layoutComputer: Attribute<LayoutComputer>) {
+    package init(parentSize: Attribute<ViewSize>, parentPosition: Attribute<ViewOrigin>, layoutComputer: Attribute<LayoutComputer>) {
         _parentSize = parentSize
         _parentPosition = parentPosition
         _layoutComputer = layoutComputer

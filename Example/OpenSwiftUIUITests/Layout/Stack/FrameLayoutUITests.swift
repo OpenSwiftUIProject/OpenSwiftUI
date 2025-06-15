@@ -12,7 +12,7 @@ import SwiftUI
 #endif
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: .ksdiff))
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct FrameLayoutUITests {
     @Test
     func noFrame() {

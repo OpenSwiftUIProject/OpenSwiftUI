@@ -10,3 +10,4 @@ let shouldRecord: Bool? = nil
 #else
 let shouldRecord: Bool? = true
 #endif
+let diffTool: SnapshotTestingConfiguration.DiffTool = .default

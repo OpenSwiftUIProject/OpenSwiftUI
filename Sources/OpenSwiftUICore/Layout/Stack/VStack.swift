@@ -2,10 +2,11 @@
 //  VStack.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.4.41
 //  Status: Complete
 
 public import Foundation
+
+// MARK: - VStack [6.4.41]
 
 /// A view that arranges its subviews in a vertical line.
 ///
@@ -105,12 +106,26 @@ extension VStack: DerivedLayout where Content == EmptyView {
     }
 }
 
+// MARK: - _VStackLayout [6.4.41]
+
+/// A layout that arranges its children in a vertical line.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _VStackLayout {
+    /// The horizontal alignment of children.
     public var alignment: HorizontalAlignment
 
+    /// The distance between adjacent children, or nil if the stack should
+    /// choose a default distance for each pair of children.
     public var spacing: CGFloat?
 
+    /// Creates an instance with the given `spacing` and X axis `alignment`.
+    ///
+    /// - Parameters:
+    ///     - alignment: the guide that will have the same horizontal screen
+    ///       coordinate for all children.
+    ///     - spacing: the distance between adjacent children, or nil if the
+    ///       stack should choose a default distance for each pair of children.
     @inlinable
     public init(alignment: HorizontalAlignment = .center, spacing: CGFloat? = nil) {
         self.alignment = alignment
@@ -139,6 +154,8 @@ extension _VStackLayout: Layout {
 extension _VStackLayout: _VariadicView.ImplicitRoot {
     package static var implicitRoot: _VStackLayout { .init() }
 }
+
+// MARK: - VStackLayout [6.4.41]
 
 /// A vertical container that you can use in conditional layouts.
 ///

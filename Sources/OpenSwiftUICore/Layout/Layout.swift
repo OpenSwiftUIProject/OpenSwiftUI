@@ -1628,11 +1628,21 @@ public struct LayoutSubview: Equatable {
     }
 
     package func place(at position: CGPoint, anchor: UnitPoint = .topLeading, dimensions: ViewDimensions) {
-        preconditionFailure("TODO")
+        let origin = CGRect(position: position, size: dimensions.size.value, anchor: anchor).origin
+        guard !origin.isNaN else {
+            preconditionFailure("view origin is invalid: \(position), \(anchor), \(dimensions.size.value)")
+        }
+        place(in: ViewGeometry(origin: origin, dimensions: dimensions))
     }
 
     package func place(in geometry: ViewGeometry, layoutDirection: LayoutDirection = .leftToRight) {
-        preconditionFailure("TODO")
+        let layoutData = threadLayoutData!
+        Swift.precondition(!layoutData.pointee.unknown)
+        layoutData.pointee.setGeometry(
+            geometry,
+            at: numericCast(index),
+            layoutDirection: layoutDirection
+        )
     }
 }
 

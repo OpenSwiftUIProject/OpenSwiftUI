@@ -32,7 +32,7 @@ package struct _DisplayList_Identity: Hashable, Codable, CustomStringConvertible
     package var description: String { "#\(value)" }
 }
 
-// MARK: - DisplayList
+// MARK: - DisplayList [6.4.41] [WIP]
 
 package struct DisplayList: Equatable {
     package private(set) var items: [Item]
@@ -54,6 +54,7 @@ package struct DisplayList: Equatable {
     }
     
     package private(set) var features: Features
+
     package private(set) var properties: Properties
 
     package init() {
@@ -63,6 +64,7 @@ package struct DisplayList: Equatable {
     }
     
     package init(_ item: Item) {
+        // TODO
         switch item.value {
         case .empty:
             items = []
@@ -75,8 +77,8 @@ package struct DisplayList: Equatable {
         }
     }
     
-    // TO BE VERIFIED
     package init(_ items: [Item]) {
+        // TOOD
         var features: Features = []
         var properties: Properties = []
         for item in items {
@@ -87,13 +89,15 @@ package struct DisplayList: Equatable {
         self.features = features
         self.properties = properties
     }
-    
+
     package mutating func append(_ item: Item) {
         preconditionFailure("TODO")
     }
     
     package mutating func append(contentsOf other: DisplayList) {
-        preconditionFailure("TODO")
+        // TODO
+        items.append(contentsOf: other.items)
+//        preconditionFailure("TODO")
     }    
 }
 
