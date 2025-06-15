@@ -9,7 +9,7 @@
 import Foundation
 package import OpenGraphShims
 
-// MARK: - SafeAreaRegions
+// MARK: - SafeAreaRegions [6.4.41]
 
 /// A set of symbolic safe area regions.
 @frozen
@@ -83,7 +83,7 @@ package struct SafeAreaInsets: Equatable {
     }
 }
 
-// MARK: - _SafeAreaInsetsModifier [WIP]
+// MARK: - _SafeAreaInsetsModifier [6.4.41]
 
 package struct _SafeAreaInsetsModifier: MultiViewModifier, PrimitiveViewModifier, Equatable {
     var elements: [SafeAreaInsets.Element]
@@ -106,15 +106,12 @@ package struct _SafeAreaInsetsModifier: MultiViewModifier, PrimitiveViewModifier
     ) -> _ViewOutputs {
         var inputs = inputs
         let space = CoordinateSpace.ID()
-        if inputs.needsGeometry {
-            // TODO
-        }
         inputs.transform = Attribute(
             Transform(
                 space: space,
                 transform: inputs.transform,
-                position: inputs.position,
-                size: inputs.size
+                position: inputs.animatedPosition(),
+                size: inputs.animatedSize()
             )
         )
         inputs.safeAreaInsets = OptionalAttribute(
@@ -182,7 +179,7 @@ extension _PositionAwarePlacementContext {
     }
 }
 
-// MARK: - SafeAreaInsetsModifier
+// MARK: - SafeAreaInsetsModifier [6.4.41]
 
 package typealias SafeAreaInsetsModifier = ModifiedContent<_PaddingLayout, _SafeAreaInsetsModifier>
 
@@ -203,7 +200,7 @@ extension View {
     }
 }
 
-// MARK: - ResolvedSafeAreaInsets
+// MARK: - ResolvedSafeAreaInsets [6.4.41]
 
 package struct ResolvedSafeAreaInsets: Rule, AsyncAttribute {
     let regions: SafeAreaRegions

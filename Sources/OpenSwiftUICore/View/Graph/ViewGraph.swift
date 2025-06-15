@@ -163,12 +163,22 @@ package final class ViewGraph: GraphHost {
         _position = _rootGeometry.origin()
         _dimensions = _rootGeometry.size()
         makeRootView = { [_zeroPoint, _proposedSize, _safeAreaInsets] view, inputs in
-            // FIXME
-            _ = _zeroPoint
-            _ = _proposedSize
-            return _SafeAreaInsetsModifier.makeDebuggableView(modifier: _GraphValue(_safeAreaInsets), inputs: inputs) { _, inputs in
-                let rootView = _GraphValue<Root>(view.unsafeCast(to: Root.self))
-                return Root.makeDebuggableView(view: rootView, inputs: inputs)
+            var zeroInputs = inputs
+            zeroInputs.position = _zeroPoint
+            zeroInputs.containerPosition = _zeroPoint
+            zeroInputs.size = _proposedSize
+            return _SafeAreaInsetsModifier.makeDebuggableView(
+                modifier: _GraphValue(_safeAreaInsets),
+                inputs: zeroInputs
+            ) { _, insetsInputs in
+                var modifiedInputs = insetsInputs
+                modifiedInputs.position = inputs.position
+                modifiedInputs.containerPosition = inputs.containerPosition
+                modifiedInputs.size = inputs.size
+                return Root.makeDebuggableView(
+                    view: _GraphValue(Attribute(identifier: view)),
+                    inputs: modifiedInputs
+                )
             }
         }
         super.init(data: data)
