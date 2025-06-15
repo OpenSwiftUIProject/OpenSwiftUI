@@ -1,12 +1,14 @@
 //
-//  LayoutPriorityLayout.swift
+//  LayoutPriority.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
 package import Foundation
 
+// MARK: - View + layoutPriority [6.4.41]
+
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Sets the priority by which a parent layout should apportion space to
     /// this child.
@@ -49,6 +51,8 @@ extension View {
     }
 }
 
+// MARK: - LayoutPriorityTraitKey [6.4.41]
+
 @usableFromInline
 package struct LayoutPriorityTraitKey: _ViewTraitKey {
     @inlinable
@@ -58,17 +62,36 @@ package struct LayoutPriorityTraitKey: _ViewTraitKey {
 @available(*, unavailable)
 extension LayoutPriorityTraitKey: Sendable {}
 
-// FIXME
+// MARK: - LayoutPriorityLayout [6.4.41]
+
 package struct LayoutPriorityLayout: UnaryLayout {
+    package init(priority: Double) {
+        self.priority = priority
+    }
+
     package func placement(of child: LayoutProxy, in context: PlacementContext) -> _Placement {
-        preconditionFailure("TODO")
+        _Placement(
+            proposedSize: context.proposedSize,
+            aligning: .center,
+            in: context.size
+        )
     }
     
     package func sizeThatFits(in proposedSize: _ProposedSize, context: SizeAndSpacingContext, child: LayoutProxy) -> CGSize {
-        preconditionFailure("TODO")
+        child.size(in: proposedSize)
     }
-    
-    package static func makeViewImpl(modifier: _GraphValue<LayoutPriorityLayout>, inputs: _ViewInputs, body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs) -> _ViewOutputs {
-        .init()
+
+    package func spacing(in context: SizeAndSpacingContext, child: LayoutProxy) -> Spacing {
+        child.spacing()
     }
+
+    package func layoutPriority(child: LayoutProxy) -> Double {
+        priority
+    }
+
+    package func ignoresAutomaticPadding(child: LayoutProxy) -> Bool {
+        child.ignoresAutomaticPadding
+    }
+
+    package var priority: Double
 }
