@@ -74,6 +74,8 @@ public struct _TestApp {
 
     package static func setTestEnvironment(_ environment: EnvironmentValues?) {
         // TODO
+        host?.environmentOverride = environment
+        comparisonHost?.environmentOverride = environment
     }
 
     package static func updateTestEnvironment(_ body: (inout EnvironmentValues) -> Void) {

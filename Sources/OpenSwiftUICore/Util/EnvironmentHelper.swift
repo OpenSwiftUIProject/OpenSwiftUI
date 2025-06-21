@@ -14,6 +14,7 @@ import WASILibc
 #else
 #error("Unsupported Platform")
 #endif
+import OpenGraphShims
 
 package enum EnvironmentHelper {
     @_transparent
@@ -50,5 +51,5 @@ package enum ProcessEnvironment {
         return UInt32(atoi(env))
     }
 
-    // package static let tracingOptions: OGGraphTraceFlags = .init(rawValue: uint32(forKey: "SWIFTUI_TRACE"))
+    static let tracingOptions: Graph.TraceFlags = .init(rawValue: uint32(forKey: "OPENSWIFTUI_TRACE"))
 }

@@ -145,7 +145,7 @@ package final class ViewGraph: GraphHost {
         self.rootViewType = rootViewType
         self.requestedOutputs = requestedOutputs
         let data = GraphHost.Data()
-        OGSubgraph.current = data.globalSubgraph
+        Subgraph.current = data.globalSubgraph
         rootView = Attribute(type: Root.self).identifier
         _rootTransform = Attribute(RootTransform())
         _transform = _rootTransform
