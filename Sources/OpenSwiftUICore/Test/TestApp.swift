@@ -49,6 +49,8 @@ public struct _TestApp {
         return environment
     }()
 
+    package static var renderOptions: TestRenderOptions = .default
+
     /// Initialize a `_TestApp` for running tests.
     public init() {
         CoreGlue2.shared.initializeTestApp()

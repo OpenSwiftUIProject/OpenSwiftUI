@@ -165,6 +165,9 @@ package enum Log {
     package static let archivedButton: Logger = Logger(subsystem: subsystem, category: "ArchivedButton")
     package static let archivedPlaybackButton: Logger = Logger(subsystem: subsystem, category: "ArchivedPlaybackButton")
     package static let metadataExtraction: Logger = Logger(subsystem: subsystem, category: "MetadataExtraction")
+
+    // NOTE: Added in 6.4.41
+    package static let unitTests: Logger = Logger(subsystem: subsystem, category: "UnitTests")
 }
 
 @available(*, unavailable)
