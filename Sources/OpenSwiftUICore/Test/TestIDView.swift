@@ -2,13 +2,12 @@
 //  TestIDView.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: CC151E1A36B4405FF56CDABA5D46BF1E (SwiftUICore)
 
 import OpenGraphShims
 
-// MARK: - TestIDView + View extension
+// MARK: - TestIDView + View extension [6.4.41]
 
 @_spi(Testing)
 @available(OpenSwiftUI_v2_0, *)
@@ -18,21 +17,20 @@ extension View {
     }
 }
 
-// MARK: - TestIDView
+// MARK: - TestIDView [6.4.41]
 
 @_spi(Testing)
 @available(OpenSwiftUI_v2_0, *)
 public struct TestIDView<Content, ID>: PrimitiveView, UnaryView where Content: View, ID: Hashable {
     public var content: Content
+
     public var id: ID
     
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         let view = _GraphValue(IdentifiedView(view: view.value, id: nil))
         return Content.makeDebuggableView(view: view, inputs: inputs)
     }
-    
-    public typealias Body = Never
-    
+
     private struct IdentifiedView: StatefulRule, AsyncAttribute, IdentifierProvider, CustomStringConvertible {
         @Attribute var view: TestIDView
         var id: ID?

@@ -48,7 +48,7 @@ package final class AppGraph: GraphHost {
             return
         }
         if launchProfileOptions.contains(.profile) {
-            OGGraph.startProfiling()
+            Graph.startProfiling()
         }
     }
     
@@ -58,11 +58,11 @@ package final class AppGraph: GraphHost {
         }
         didCollectLaunchProfile = true
         if launchProfileOptions.contains(.profile) {
-            OGGraph.stopProfiling()
+            Graph.stopProfiling()
         }
         if !launchProfileOptions.isEmpty {
             // /tmp/graph.ag-gzon
-            OGGraph.archiveJSON(name: nil)
+            Graph.archiveJSON(name: nil)
         }
     }
 }

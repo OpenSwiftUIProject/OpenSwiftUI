@@ -261,10 +261,10 @@ extension BodyAccessor {
     @inline(__always)
     package func setBody(_ body: () -> Body) {
         let value = traceRuleBody(Container.self) {
-            OGGraph.withoutUpdate(body)
+            Graph.withoutUpdate(body)
         }
         withUnsafePointer(to: value) { value in
-            OGGraph.setOutputValue(value)
+            Graph.setOutputValue(value)
         }
     }
 }
