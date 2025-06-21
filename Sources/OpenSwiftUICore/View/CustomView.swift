@@ -2,12 +2,13 @@
 //  CustomView.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
 //  ID: 9F92ACD17B554E8AB7D29ABB1E796415 (SwiftUI)
 //  ID: CE1D93D8ECBBEB5FE2E32E69A123E7CB (SwiftUICore)
 
-import OpenGraphShims
+package import OpenGraphShims
+
+// MARK: - View default implmementation [6.0.87]
 
 @available(OpenSwiftUI_v1_0, *)
 extension View {
@@ -58,5 +59,57 @@ extension View {
         default:
             preconditionFailure("views must be value types (either a struct or an enum); \(Self.self) is a class.")
         }
+    }
+}
+
+// MARK: - ViewBodyAccessor [6.0.87]
+
+package struct ViewBodyAccessor<V>: BodyAccessor where V: View {
+    package init() {}
+
+    package func updateBody(of container: Container, changed: Bool) {
+        guard changed else {
+            return
+        }
+        setBody {
+            container.body
+        }
+    }
+
+    package typealias Body = V.Body
+
+    package typealias Container = V
+}
+
+// MARK: - ViewBodyAccessor [6.4.41]
+
+package struct ViewValuePredicate<V> where V: View {
+    package var view: V?
+
+    package init(view: V?) {
+        self.view = view
+    }
+
+    package mutating func apply(to ident: AnyAttribute) -> Bool {
+        if let rule = ident._bodyType as? BodyAccessorRule.Type {
+            view = rule.value(as: V.self, attribute: ident)
+        }
+        return view != nil
+    }
+}
+
+// MARK: - ViewBodyAccessor [6.4.41]
+
+package struct ViewStatePredicate<V, S> where V: View {
+    package var state: Binding<S>?
+
+    package init() {}
+
+    package mutating func apply(to ident: AnyAttribute) -> Bool {
+        if let rule = ident._bodyType as? BodyAccessorRule.Type,
+           let buffer = rule.buffer(as: V.self, attribute: ident) {
+            state = buffer.getState(type: S.self)
+        }
+        return state != nil
     }
 }
