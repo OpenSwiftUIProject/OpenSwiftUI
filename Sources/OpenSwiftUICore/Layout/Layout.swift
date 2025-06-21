@@ -162,6 +162,7 @@ import OpenSwiftUI_SPI
 /// modifier. Read the corresponding value from the subview's proxy using the
 /// key as an index on the subview. For more information about creating,
 /// setting, and accessing custom layout values, see ``LayoutValueKey``.
+@available(OpenSwiftUI_v4_0, *)
 public protocol Layout: Animatable {
     /// Properties of a layout container.
     ///
