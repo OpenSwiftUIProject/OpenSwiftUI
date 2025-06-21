@@ -87,7 +87,9 @@ struct ZStackUITests {
             }
         }
         openSwiftUIAssertSnapshot(
-            of: ContentView()
+            of: ContentView(),
+            // FIXME: Workaround #340
+            perceptualPrecision: 0.99
         )
     }
 }

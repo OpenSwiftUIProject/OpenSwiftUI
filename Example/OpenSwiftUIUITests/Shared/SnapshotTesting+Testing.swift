@@ -24,6 +24,7 @@ let defaultSize = CGSize(width: 200, height: 200)
 
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () throws -> V,
+    perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
     named name: String? = nil,
     record recording: Bool? = shouldRecord,
@@ -36,7 +37,7 @@ func openSwiftUIAssertSnapshot<V: View>(
 ) {
     openSwiftUIAssertSnapshot(
         of: PlatformHostingController(rootView: try value()),
-        as: .image(size: size),
+        as: .image(perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
         timeout: timeout,
