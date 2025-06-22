@@ -2,12 +2,15 @@
 //  IdentifiedViewsKey.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
 //  Status: Complete
+//  ID: 972049776785601E5EF56C4D9DFD84DB (?)
 
 @_spi(Private)
 public import OpenSwiftUICore
 
+// MARK: - _IdentifiedViewsKey [6.4.41]
+
+@available(OpenSwiftUI_v1_0, *)
 public struct _IdentifiedViewsKey {
     public typealias Value = _IdentifiedViewTree
     
@@ -36,4 +39,5 @@ public struct _IdentifiedViewsKey {
 extension _IdentifiedViewsKey: Sendable {}
 
 @_spi(Private)
+@available(OpenSwiftUI_v1_0, *)
 extension _IdentifiedViewsKey: HostPreferenceKey {}

@@ -25,7 +25,7 @@ package struct PreferenceList: CustomStringConvertible {
         }
     }
     
-    package subscript<K>(key: K.Type) -> Value<K.Value> where K: PreferenceKey{
+    package subscript<K>(key: K.Type) -> Value<K.Value> where K: PreferenceKey {
         get {
             guard let first,
                   let node = first.find(key) else {

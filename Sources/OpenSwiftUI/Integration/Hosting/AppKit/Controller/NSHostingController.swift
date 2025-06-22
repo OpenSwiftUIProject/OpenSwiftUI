@@ -142,7 +142,7 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     
     
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
-        host._forEachIdentifiedView(body: body)
+        host.forEachIdentifiedView(body: body)
     }
     
     

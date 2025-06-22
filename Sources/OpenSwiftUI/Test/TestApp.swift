@@ -5,6 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
+@_spi(Testing)
 public import OpenSwiftUICore
 import Foundation
 
@@ -23,19 +24,6 @@ extension _TestApp {
         #endif
         Color.Resolved.legacyInterpolation = true
         let rootView = RootView()
-        preconditionFailure("TODO")
-    }
-}
-
-extension _TestApp {
-    public func runBenchmarks(_ benchmarks: [_Benchmark]) -> Never {
-        let _ = RootView()
-        preconditionFailure("TODO")
-    }
-}
-
-extension _TestApp {
-    public func runPerformanceTests(_ tests: [_PerformanceTest]) -> Never {
         preconditionFailure("TODO")
     }
 }

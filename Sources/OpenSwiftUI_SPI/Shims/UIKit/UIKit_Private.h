@@ -39,6 +39,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) CGFloat _pointsPerInch_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_pointsPerInch);
 @end
 
+@interface UIWindowScene (OpenSwiftUI_SPI)
+@property (nonatomic, readonly) UIUserInterfaceStyle _systemUserInterfaceStyle_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_systemUserInterfaceStyle);
+@end
+
 OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);
 

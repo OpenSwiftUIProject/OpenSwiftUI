@@ -18,6 +18,38 @@ extension _Test {
     public func tearDownTestWithError() throws {}
 }
 
+// MARK: - TestRenderOptions [6.4.41]
+
+package struct TestRenderOptions: OptionSet {
+    package let rawValue: UInt64
+
+    package init(rawValue: UInt64) {
+        self.rawValue = rawValue
+    }
+
+    package static let `default`: TestRenderOptions = [.recursive, .postRenderRunLoop]
+
+    package static var current: TestRenderOptions { _TestApp.renderOptions }
+
+    package static let simple: TestRenderOptions = .init(rawValue: 0)
+
+    package static let recursive: TestRenderOptions = .init(rawValue: 1 << 0)
+
+    package static let async: TestRenderOptions = .init(rawValue: 1 << 1)
+
+    package static let postRenderRunLoop: TestRenderOptions = .init(rawValue: 1 << 2)
+
+    package static let comparison: TestRenderOptions = .init(rawValue: 1 << 3)
+}
+
+package func withRenderOptions(_ options: TestRenderOptions, _ body: () -> Void) {
+    let previous = _TestApp.renderOptions
+    defer { _TestApp.renderOptions = previous }
+    body()
+}
+
+// MARK: - TestIntents [6.4.41]
+
 package struct TestIntents: OptionSet {
     package let rawValue: UInt64
 
@@ -117,6 +149,8 @@ package struct TestIntents: OptionSet {
 
     package static let ignorePlatformSpecificStyling: TestIntents = [.ignoreGeometry, .ignoreCornerRadius, .ignoreOpacity, .ignoreCompositingFilters]
 }
+
+// MARK: - PlatformViewTestProperties [6.4.41]
 
 package struct PlatformViewTestProperties: OptionSet {
     package let rawValue: UInt64

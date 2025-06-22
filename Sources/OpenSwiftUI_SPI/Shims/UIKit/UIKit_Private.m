@@ -68,4 +68,12 @@
 }
 @end
 
+@implementation UIWindowScene (OpenSwiftUI_SPI)
+- (UIUserInterfaceStyle) _systemUserInterfaceStyle_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(UIUserInterfaceStyle, @"_systemUserInterfaceStyle", UIUserInterfaceStyleUnspecified);
+    return func(self, selector);
+}
+@end
+
+
 #endif /* UIKit.h */

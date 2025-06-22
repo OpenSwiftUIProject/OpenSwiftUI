@@ -180,11 +180,7 @@ extension Log {
     static func graphReuse(_ message: @autoclosure () -> String) {
         if EnableGraphReuseLogging.isEnabled {
             let message = message()
-            #if OPENSWIFTUI_SWIFT_LOG
-            graphReuseLog.log(level: .info, "\(message)")
-            #else
-            graphReuseLog.log("\(message)")
-            #endif
+            graphReuseLog.log(level: .default, "\(message)")
         }
     }
 }

@@ -20,6 +20,15 @@ extension Logger {
         self = logger
     }
 }
+
+extension Logger.Level {
+    #if DEBUG
+    package static let `default`: Logger.Level = .debug
+    #else
+    package static let `default`: Logger.Level = .info
+    #endif
+}
+
 #else
 public import os.log
 
@@ -165,6 +174,9 @@ package enum Log {
     package static let archivedButton: Logger = Logger(subsystem: subsystem, category: "ArchivedButton")
     package static let archivedPlaybackButton: Logger = Logger(subsystem: subsystem, category: "ArchivedPlaybackButton")
     package static let metadataExtraction: Logger = Logger(subsystem: subsystem, category: "MetadataExtraction")
+
+    // NOTE: Added in 6.4.41
+    package static let unitTests: Logger = Logger(subsystem: subsystem, category: "UnitTests")
 }
 
 @available(*, unavailable)
@@ -198,3 +210,31 @@ extension os.OSLog {
     static var runtimeIssuesLog: os.OSLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
 }
 #endif
+
+// MARK: - OpenSwiftUI dev addition Log API
+
+@_transparent
+package func openSwiftUIUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
+    preconditionFailure("TODO", file: file, line: line)
+
+}
+
+@_transparent
+package func openSwiftUIPlatformUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
+    preconditionFailure("TODO", file: file, line: line)
+}
+
+@_transparent
+package func openSwiftUIUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
+    print("[Warning]: \(function) is unimplemented")
+    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    openSwiftUIUnimplementedFailure(function, file: file, line: line)
+    #endif
+}
+
+package func openSwiftUIPlatformUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
+    print("[Warning]: \(function) is unimplemented on this platform")
+    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    openSwiftUIPlatformUnimplementedFailure(function, file: file, line: line)
+    #endif
+}

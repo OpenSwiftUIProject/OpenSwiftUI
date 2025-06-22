@@ -12,3 +12,11 @@ public struct _PreferenceWritingModifier<Key>: ViewModifier where Key: Preferenc
 //extension _PreferenceWritingModifier: Equatable where Key.Value: Equatable {
 //    public static func == (a: _PreferenceWritingModifier<Key>, b: _PreferenceWritingModifier<Key>) -> Bool
 //}
+
+extension View {
+    /// Sets a value for the given preference.
+    @inlinable
+    public func preference<K>(key: K.Type = K.self, value: K.Value) -> some View where K : PreferenceKey {
+        modifier(_PreferenceWritingModifier<K>(value: value))
+    }
+}

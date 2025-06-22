@@ -2,9 +2,11 @@
 //  IdentifiedViewTree.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
 //  Status: Complete
 
+// MARK: - _IdentifiedViewTree [6.4.41]
+
+@available(OpenSwiftUI_v1_0, *)
 public enum _IdentifiedViewTree {
     case empty
     case proxy(_IdentifiedViewProxy)
