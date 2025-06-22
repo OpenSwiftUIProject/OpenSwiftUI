@@ -66,18 +66,9 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        ZStack(alignment: .leading) {
-            Color.red
-                .opacity(0.5)
-                .frame(width: 200, height: 200)
-        }
-        .overlay(alignment: .topLeading) {
-            Color.green.opacity(0.5)
-                .frame(width: 100, height: 100)
-        }
-        .background(alignment: .bottomTrailing) {
-            Color.blue.opacity(0.5)
-                .frame(width: 100, height: 100)
-        }
+        MyViewThatFitsByLayout {
+            Color.red.frame(width: 50, height: 50)
+            Color.green.frame(width: 50, height: 50)
+        }.frame(width: 200, height: 200)
     }
 }
