@@ -81,7 +81,6 @@ extension _BenchmarkHost {
     }
 }
 
-// WIP
 package func summarize(_ measurements: [(any _Benchmark, [Double])]) -> String {
     let benchmarkData = measurements.map { (String(describing: $0.0), $0.1) }
     

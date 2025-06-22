@@ -2,17 +2,20 @@
 //  TestHost.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 
 package import Foundation
+
+// MARK: - TestHost [6.4.41]
 
 package protocol TestHost: _BenchmarkHost {
     func setTestSize(_ size: CGSize)
 
     func setTestSafeAreaInsets(_ insets: EdgeInsets)
 
-    // func sendTestEvents(_ events: [EventID: any EventType])
+    var testSize: CGSize { get }
+
+    func sendTestEvents(_ events: [EventID: any EventType])
 
     func resetTestEvents()
 
@@ -34,19 +37,18 @@ package protocol TestHost: _BenchmarkHost {
 
     var accessibilityEnabled: Bool { get set }
 
-    var hasActivePresentation: Bool { get }
-
-    func dismissActivePresentations()
-
-    // var attributeCountInfo: AttributeCountTestInfo { get }
-}
-
-extension TestHost {
-    package var hasActivePresentation: Bool { false }
-
-    package func dismissActivePresentations() {}
+    var attributeCountInfo: AttributeCountTestInfo { get }
 }
 
 extension TestHost {
     package func testIntentsChanged(before: TestIntents, after: TestIntents) {}
+}
+
+extension CGSize {
+    package static var deviceSize: CGSize {
+        CGSize(
+            width: Double.greatestFiniteMagnitude,
+            height: Double.greatestFiniteMagnitude
+        )
+    }
 }

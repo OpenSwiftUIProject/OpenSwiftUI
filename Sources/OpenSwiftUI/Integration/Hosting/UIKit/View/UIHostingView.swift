@@ -339,11 +339,25 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
                 return
             }
             let oldValue = super.frame
-            super.frame = newValue
+            super.bounds = newValue
             frameDidChange(oldValue: oldValue)
         }
     }
-    
+
+    open override var bounds: CGRect {
+        get {
+            super.bounds
+        }
+        set {
+            guard allowFrameChanges else {
+                return
+            }
+            let oldValue = super.bounds
+            super.bounds = newValue
+            frameDidChange(oldValue: oldValue)
+        }
+    }
+
     // TODO
     
     func setRootView(_ view: Content, transaction: Transaction) {
@@ -703,6 +717,135 @@ extension UITraitCollection {
 extension _UIHostingView: HostingViewProtocol {
     public func convertAnchor<Value>(_ anchor: Anchor<Value>) -> Value {
         anchor.convert(to: viewGraph.transform)
+    }
+}
+
+// MARK: - _UIHostingView + TestHost [6.4.41]
+
+extension _UIHostingView: TestHost {
+    package func setTestSize(_ size: CGSize) {
+        let newSize: CGSize
+        if size == CGSize.deviceSize {
+            let screenSize = UIDevice.current.screenSize
+            let idiom = UIDevice.current.userInterfaceIdiom
+            if idiom == .pad, screenSize.width < screenSize.height {
+                newSize = CGSize(width: screenSize.height, height: screenSize.width)
+            } else {
+                if idiom == .phone, screenSize.height < screenSize.width {
+                    newSize = CGSize(width: screenSize.height, height: screenSize.width)
+                } else {
+                    newSize = screenSize
+                }
+            }
+        } else {
+            newSize = size
+        }
+        if bounds.size != newSize {
+            allowFrameChanges = true
+            bounds.size = newSize
+            allowFrameChanges = false
+        }
+    }
+
+    package func setTestSafeAreaInsets(_ insets: EdgeInsets) {
+        explicitSafeAreaInsets = insets
+
+    }
+
+    package var testSize: CGSize { bounds.size }
+
+    package var viewCacheIsEmpty: Bool {
+        Update.locked {
+            renderer.viewCacheIsEmpty
+        }
+    }
+
+    package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
+        let tree = preferenceValue(_IdentifiedViewsKey.self)
+        tree.forEach { proxy in
+            var proxy = proxy
+            proxy.adjustment = { [weak self] rect in
+                guard let self else { return }
+                rect = convert(rect, from: nil)
+            }
+            body(proxy)
+        }
+    }
+
+    package func forEachDescendantHost(body: (any TestHost) -> Void) {
+        forEachDescendantHost { (view: UIView) in
+            if let testHost = view as? any TestHost {
+                body(testHost)
+            }
+        }
+    }
+
+    package func renderForTest(interval: Double) {
+        _renderForTest(interval: interval)
+    }
+
+    package var attributeCountInfo: AttributeCountTestInfo {
+        preferenceValue(AttributeCountInfoKey.self)
+    }
+
+    public func _renderForTest(interval: Double) {
+        func shouldContinue() -> Bool {
+            if propertiesNeedingUpdate == [], !CoreTesting.needRender {
+                false
+            } else {
+                times >= 0
+            }
+        }
+        advanceTimeForTest(interval: interval)
+        canAdvanceTimeAutomatically = false
+        var times = 16
+        repeat {
+            times -= 1
+            CoreTesting.needRender = false
+            updateGraph { host in
+                host.flushTransactions()
+            }
+            RunLoop.flushObservers()
+            render(targetTimestamp: nil)
+            CATransaction.flush()
+        } while shouldContinue()
+        CoreTesting.needRender = false
+        canAdvanceTimeAutomatically = true
+    }
+}
+
+extension UIDevice {
+    package var screenSize: CGSize {
+        let screenBounds = UIScreen.main.bounds
+        let screenWidth = screenBounds.width
+        let screenHeight = screenBounds.height
+        let orientation = UIDevice.current.orientation
+        let finalWidth: CGFloat
+        let finalHeight: CGFloat
+        switch orientation {
+        case .landscapeLeft, .landscapeRight:
+            // In landscape, swap dimensions to ensure width > height
+            finalWidth = max(screenWidth, screenHeight)
+            finalHeight = min(screenWidth, screenHeight)
+        case .portrait, .portraitUpsideDown:
+            // In portrait, keep original dimensions (height > width)
+            finalWidth = screenWidth
+            finalHeight = screenHeight
+        default:
+            // For other orientations, keep original dimensions
+            finalWidth = screenWidth
+            finalHeight = screenHeight
+        }
+        return CGSize(width: finalWidth, height: finalHeight)
+    }
+}
+
+extension UIView {
+    func forEachDescendantHost(body: (UIView) -> Void) {
+        body(self)
+        for view in subviews {
+            view.forEachDescendantHost(body: body)
+        }
     }
 }
 

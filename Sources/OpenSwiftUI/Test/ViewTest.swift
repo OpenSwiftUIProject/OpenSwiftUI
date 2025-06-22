@@ -244,7 +244,7 @@ extension _ViewTest {
         var times = times
         while times != 0 {
             times -= 1
-            let modes = [defaultMode, commonMode]
+            // let modes = [defaultMode, commonMode]
             let date = Date(timeIntervalSinceNow: interval)
             if !RunLoop.current.run(mode: defaultMode, before: date) {
                 Thread.sleep(forTimeInterval: interval)
@@ -261,7 +261,7 @@ extension _ViewTest {
         let interval = 0.001
         var times = 17
         while CoreTesting.needRender || CoreTesting.neeedsRunLoopTurn {
-            let modes = [defaultMode, commonMode]
+            // let modes = [defaultMode, commonMode]
             let date = Date(timeIntervalSinceNow: interval)
             if !RunLoop.current.run(mode: defaultMode, before: date) {
                 Thread.sleep(forTimeInterval: interval)

@@ -2,10 +2,11 @@
 //  TestApp.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: A519B5B95CA8FF4E3445832668F0B2D2 (SwiftUI)
 //  ID: E1A97A5CD5A5467396F8BB461CB26984 (SwiftUICore)
+
+// MARK: _TestApp [6.4.41] [WIP for defaultEnvironment]
 
 @available(OpenSwiftUI_v1_0, *)
 public struct _TestApp {
@@ -45,6 +46,9 @@ public struct _TestApp {
     package static let defaultEnvironment: EnvironmentValues = {
         var environment = EnvironmentValues()
         CoreGlue2.shared.configureDefaultEnvironment(&environment)
+        // TODO: Font: "HelveticaNeue"
+        environment.displayScale = 2.0
+        environment.setTestSystemColorDefinition()
         // TODO
         return environment
     }()
@@ -75,13 +79,21 @@ public struct _TestApp {
     package static var environmentOverride: EnvironmentValues?
 
     package static func setTestEnvironment(_ environment: EnvironmentValues?) {
-        // TODO
-        host?.environmentOverride = environment
-        comparisonHost?.environmentOverride = environment
+        if let environment {
+            var env = defaultEnvironment
+            env.plist.override(with: environment.plist)
+            environmentOverride = env
+        } else {
+            environmentOverride = nil
+        }
+        host?.invalidateProperties(.environment, mayDeferUpdate: true)
+        comparisonHost?.invalidateProperties(.environment, mayDeferUpdate: true)
     }
 
     package static func updateTestEnvironment(_ body: (inout EnvironmentValues) -> Void) {
-        // TODO
+        var environment = EnvironmentValues()
+        body(&environment)
+        setTestEnvironment(environment)
     }
 
     package func setSemantics(_ version: String) {

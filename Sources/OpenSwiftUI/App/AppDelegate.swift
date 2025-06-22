@@ -9,13 +9,19 @@
 #if os(iOS)
 import UIKit
 typealias DelegateBaseClass = UIResponder
+typealias PlatformApplication = UIApplication
+typealias PlatformApplicationDelegate = UIApplicationDelegate
 #elseif os(macOS)
 import AppKit
 typealias DelegateBaseClass = NSResponder
+typealias PlatformApplication = NSApplication
+typealias PlatformApplicationDelegate = NSApplicationDelegate
 #else
 import Foundation
 // FIXME: Temporarily use NSObject as a placeholder
 typealias DelegateBaseClass = NSObject
+typealias PlatformApplication = NSObject
+typealias PlatformApplicationDelegate = NSObject
 #endif
 
 class AppDelegate: DelegateBaseClass {

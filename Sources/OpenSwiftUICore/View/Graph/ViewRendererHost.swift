@@ -347,10 +347,15 @@ package let hostingViewCoordinateSpace: CoordinateSpace.ID = .init()
 //    package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase)
 //}
 
-//extension ViewRendererHost {
-//    package func sendTestEvents(_ events: [EventID : any EventType])
-//    package func resetTestEvents()
-//}
+extension ViewRendererHost {
+    package func sendTestEvents(_ events: [EventID : any EventType]) {
+        preconditionFailure("TODO")
+    }
+
+    package func resetTestEvents() {
+        preconditionFailure("TODO")
+    }
+}
 
 // MARK: - ViewGraph + viewRendererHost
 

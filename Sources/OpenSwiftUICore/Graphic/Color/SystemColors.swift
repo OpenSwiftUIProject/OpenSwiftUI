@@ -263,6 +263,11 @@ extension EnvironmentValues {
     var systemColorDefinition: SystemColorDefinitionType {
         self[SystemColorDefinitionKey.self]
     }
+
+    @inline(__always)
+    mutating func setTestSystemColorDefinition() {
+        self[SystemColorDefinitionKey.self] = SystemColorDefinitionType(base: TestingSystemColorDefinition.self)
+    }
 }
 
 // MARK: - CoreUIDefaultSystemColorDefinition
