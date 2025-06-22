@@ -202,10 +202,30 @@ extension os.OSLog {
 }
 #endif
 
-package func openSwiftUIUnimplementedWarning(_ function: String = #function) {
-    #if DEBUG
+// MARK: - OpenSwiftUI dev addition Log API
+
+@_transparent
+package func openSwiftUIUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
+    preconditionFailure("TODO", file: file, line: line)
+
+}
+
+@_transparent
+package func openSwiftUIPlatformUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
+    preconditionFailure("TODO", file: file, line: line)
+}
+
+@_transparent
+package func openSwiftUIUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
     print("[Warning]: \(function) is unimplemented")
-    #else
-    preconditionFailure("TODO")
+    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    openSwiftUIUnimplementedFailure(function, file: file, line: line)
+    #endif
+}
+
+package func openSwiftUIPlatformUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
+    print("[Warning]: \(function) is unimplemented on this platform")
+    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    openSwiftUIPlatformUnimplementedFailure(function, file: file, line: line)
     #endif
 }

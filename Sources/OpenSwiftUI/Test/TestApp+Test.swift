@@ -25,6 +25,7 @@ extension _TestApp {
     func performBenchmarks(_ benchmarks: [any _Benchmark], with host: any TestHost) {
         _TestApp.host = host
         host.environmentOverride = _TestApp.defaultEnvironment
+        #if canImport(Darwin)
         CFRunLoopPerformBlock(
             CFRunLoopGetCurrent(),
             CFRunLoopMode.commonModes.rawValue
@@ -43,6 +44,9 @@ extension _TestApp {
             log(results)
             exit(0)
         }
+        #else
+        openSwiftUIUnimplementedFailure()
+        #endif
     }
 }
 
