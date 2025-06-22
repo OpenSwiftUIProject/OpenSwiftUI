@@ -68,7 +68,7 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     }
     
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
-        host._forEachIdentifiedView(body: body)
+        host.forEachIdentifiedView(body: body)
     }
     
     @available(*, deprecated, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")

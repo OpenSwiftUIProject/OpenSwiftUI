@@ -249,20 +249,6 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         // TODO    
     }
 
-    // FIXME
-    func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
-        let tree = preferenceValue(_IdentifiedViewsKey.self)
-        let adjustment = { [weak self](rect: inout CGRect) in
-            guard let self else { return }
-            rect = convert(rect, from: nil)
-        }
-        tree.forEach { proxy in
-            var proxy = proxy
-            proxy.adjustment = adjustment
-            body(proxy)
-        }
-    }
-
     package func makeViewDebugData() -> Data? {
         Update.ensure {
             _ViewDebug.serializedData(viewGraph.viewDebugData())
@@ -421,6 +407,21 @@ extension NSHostingView: ViewRendererHost {
 extension NSHostingView: HostingViewProtocol {
     public func convertAnchor<Value>(_ anchor: Anchor<Value>) -> Value {
         anchor.convert(to: viewGraph.transform)
+    }
+}
+
+extension NSHostingView/*: TestHost*/ {
+    func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
+        let tree = preferenceValue(_IdentifiedViewsKey.self)
+        let adjustment = { [weak self](rect: inout CGRect) in
+            guard let self else { return }
+            rect = convert(rect, from: nil)
+        }
+        tree.forEach { proxy in
+            var proxy = proxy
+            proxy.adjustment = adjustment
+            body(proxy)
+        }
     }
 }
 #endif
