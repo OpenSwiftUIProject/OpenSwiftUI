@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 1FCA4829BCDAAC91F1E6D1FB696F6642 (SwiftUI)
 
-import Foundation
+public import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 #if os(iOS)
@@ -273,7 +273,7 @@ extension _ViewTest {
             }
         }
         if CoreTesting.needRender || CoreTesting.neeedsRunLoopTurn {
-            Log.unitTests.log("Render or run loop turn needed after max iterations")
+            Log.unitTests.log(level: .default, "Render or run loop turn needed after max iterations")
         }
     }
 }

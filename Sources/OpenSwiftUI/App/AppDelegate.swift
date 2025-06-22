@@ -21,7 +21,7 @@ import Foundation
 // FIXME: Temporarily use NSObject as a placeholder
 typealias DelegateBaseClass = NSObject
 typealias PlatformApplication = NSObject
-typealias PlatformApplicationDelegate = NSObject
+typealias PlatformApplicationDelegate = AnyObject
 #endif
 
 class AppDelegate: DelegateBaseClass {

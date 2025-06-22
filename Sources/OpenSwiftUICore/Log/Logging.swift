@@ -20,6 +20,15 @@ extension Logger {
         self = logger
     }
 }
+
+extension Logger.Level {
+    #if DEBUG
+    package static let `default`: Logger.Level = .debug
+    #else
+    package static let `default`: Logger.Level = .info
+    #endif
+}
+
 #else
 public import os.log
 
