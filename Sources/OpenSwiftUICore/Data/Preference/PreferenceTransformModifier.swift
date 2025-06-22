@@ -58,8 +58,7 @@ extension PreferencesOutputs {
         key _: K.Type,
         transform: @autoclosure () -> Attribute<(inout K.Value) -> Void>
     ) where K: PreferenceKey {
-        // preconditionFailure("TODO")
-        print("[Warning]: PreferencesOutputs.makePreferenceTransformer is unimplemented")
+        openSwiftUIUnimplementedWarning()
     }
 }
 

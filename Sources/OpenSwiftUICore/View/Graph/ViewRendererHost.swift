@@ -349,11 +349,11 @@ package let hostingViewCoordinateSpace: CoordinateSpace.ID = .init()
 
 extension ViewRendererHost {
     package func sendTestEvents(_ events: [EventID : any EventType]) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedWarning()
     }
 
     package func resetTestEvents() {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedWarning()
     }
 }
 

@@ -109,9 +109,9 @@ extension ViewRendererHost {
         let root = root ?? viewGraph.rootView
         var v: V? = nil
         _ = root.breadthFirstSearch(options: ._2) { attribute in
-            func project(type: any Any.Type) -> Bool {
-                // FIXME: type
-                guard let provider = attribute._bodyPointer as? IdentifierProvider else {
+            func project<T>(type: T.Type) -> Bool {
+                let bodyValue = attribute._bodyPointer.assumingMemoryBound(to: type).pointee
+                guard let provider = bodyValue as? IdentifierProvider else {
                     return false
                 }
                 guard provider.matchesIdentifier(identifier),
@@ -121,8 +121,9 @@ extension ViewRendererHost {
                 v = value
                 return true
             }
-            return project(type: attribute._bodyType)
+            return _openExistential(attribute._bodyType, do: project)
         }
         return v
     }
+
 }

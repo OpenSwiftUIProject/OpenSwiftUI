@@ -191,7 +191,7 @@ extension _ViewTest {
 
     public func setSize(_ size: CGSize) {
         _TestApp.host!.setTestSize(size)
-        _TestApp.comparisonHost!.setTestSize(size)
+        _TestApp.comparisonHost?.setTestSize(size)
     }
 
     func setSafeAreaInsets(_ insets: EdgeInsets) {

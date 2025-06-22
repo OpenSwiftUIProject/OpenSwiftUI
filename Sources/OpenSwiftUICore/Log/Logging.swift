@@ -201,3 +201,11 @@ extension os.OSLog {
     static var runtimeIssuesLog: os.OSLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
 }
 #endif
+
+package func openSwiftUIUnimplementedWarning(_ function: String = #function) {
+    #if DEBUG
+    print("[Warning]: \(function) is unimplemented")
+    #else
+    preconditionFailure("TODO")
+    #endif
+}
