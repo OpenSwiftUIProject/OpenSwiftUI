@@ -173,4 +173,10 @@ extension Rule where Self: Hashable {
         preconditionFailure("#39")
     }
 }
+
+extension [AnyAttribute] {
+    package var anyInputsChanged: Bool {
+        false
+    }
+}
 #endif

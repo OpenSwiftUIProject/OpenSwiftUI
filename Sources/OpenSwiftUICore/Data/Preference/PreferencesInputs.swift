@@ -34,14 +34,11 @@ package struct PreferencesInputs {
     
     @inlinable
     package func contains<K>(_ key: K.Type, includeHostPreferences: Bool) -> Bool where K: PreferenceKey {
-        let result = keys.contains(key)
+        let result = contains(key)
         guard !result, includeHostPreferences else {
             return result
         }
-        guard K._isReadableByHost else {
-            return false
-        }
-        return keys.contains(_AnyPreferenceKey<HostPreferencesKey>.self)
+        return K._isReadableByHost && contains(HostPreferencesKey.self)
     }
     
     package func makeIndirectOutputs() -> PreferencesOutputs {

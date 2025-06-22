@@ -684,7 +684,8 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     package func rootTransform() -> ViewTransform {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedWarning()
+        return ViewTransform()
     }
 
     public func preferencesDidChange() {
