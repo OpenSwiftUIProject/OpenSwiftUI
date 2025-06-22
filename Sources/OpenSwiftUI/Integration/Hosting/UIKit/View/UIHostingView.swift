@@ -339,7 +339,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
                 return
             }
             let oldValue = super.frame
-            super.bounds = newValue
+            super.frame = newValue
             frameDidChange(oldValue: oldValue)
         }
     }
