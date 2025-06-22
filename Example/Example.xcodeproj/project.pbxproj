@@ -120,6 +120,7 @@
 		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
 		279FEC572DF450D200320390 /* ReferenceImages */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReferenceImages; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
+		27FFF0422E08850C0060A4DA /* SharedExample */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = SharedExample; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -179,6 +180,7 @@
 				27E6C4D02D2842530010502F /* OpenBox */,
 				271D81642BB1E8E300A6D543 /* OpenGraph */,
 				27CD0B612AFC8E0E003665EB /* OpenSwiftUI */,
+				27FFF0422E08850C0060A4DA /* SharedExample */,
 				275751AF2DEE136A003E467C /* Example */,
 				275751C12DEE136C003E467C /* HostingExample */,
 				275751E42DEE1441003E467C /* TestingHost */,
@@ -277,6 +279,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751AF2DEE136A003E467C /* Example */,
+				27FFF0422E08850C0060A4DA /* SharedExample */,
 			);
 			name = Example;
 			packageProductDependencies = (
@@ -300,6 +303,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751C12DEE136C003E467C /* HostingExample */,
+				27FFF0422E08850C0060A4DA /* SharedExample */,
 			);
 			name = HostingExample;
 			packageProductDependencies = (
