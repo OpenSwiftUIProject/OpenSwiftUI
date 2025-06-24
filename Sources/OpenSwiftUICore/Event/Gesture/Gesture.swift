@@ -21,7 +21,10 @@ public protocol Gesture<Value> {
     /// The type representing the gesture's value.
     associatedtype Value
 
-    nonisolated static func _makeGesture(gesture: _GraphValue<Self>, inputs: _GestureInputs) -> _GestureOutputs<Value>
+    nonisolated static func _makeGesture(
+        gesture: _GraphValue<Self>,
+        inputs: _GestureInputs
+    ) -> _GestureOutputs<Value>
 
     /// The type of gesture representing the body of `Self`.
     associatedtype Body : Gesture
@@ -40,14 +43,14 @@ package protocol PubliclyPrimitiveGesture: PrimitiveGesture {
 
 @available(OpenSwiftUI_v1_0, *)
 extension PubliclyPrimitiveGesture {
-    public static func _makeGesture(
+    nonisolated public static func _makeGesture(
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Self.Value> {
         makeGesture(gesture: gesture, inputs: inputs)
     }
 
-    package static func makeGesture(
+    nonisolated package static func makeGesture(
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Self.Value> {
