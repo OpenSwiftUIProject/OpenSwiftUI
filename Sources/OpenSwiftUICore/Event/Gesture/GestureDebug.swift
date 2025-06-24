@@ -7,6 +7,7 @@
 
 package import Foundation
 package import OpenGraphShims
+import OpenSwiftUI_SPI
 
 package enum GestureDebug {
     package typealias Properties = ArrayWith2Inline<(String, String)>
@@ -86,22 +87,36 @@ extension Attribute where Value: DebuggableGesturePhase {
 
 extension Gesture {
     @inline(__always)
-    package static func makeDebuggableGesture(
+    nonisolated package static func makeDebuggableGesture(
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Self.Value> {
-        preconditionFailure("TODO")
+        var outputs = _makeGesture(gesture: gesture, inputs: inputs)
+        guard inputs.options.contains(.includeDebugOutput),
+              // FIXME
+              !(self is PrimitiveDebuggableGesture) else {
+            return outputs
+        }
+        outputs.wrapDebugOutputs(Self.self, inputs: inputs)
+        return outputs
     }
 }
 
 extension GestureModifier {
     @inline(__always)
-    package static func makeDebuggableGesture(
+    nonisolated package static func makeDebuggableGesture(
         modifier: _GraphValue<Self>,
         inputs: _GestureInputs,
         body: (_GestureInputs) -> _GestureOutputs<Self.BodyValue>
     ) -> _GestureOutputs<Self.Value> {
-        preconditionFailure("TODO")
+        var outputs = _makeGesture(modifier: modifier, inputs: inputs, body: body)
+        guard inputs.options.contains(.includeDebugOutput),
+              // FIXME
+              !(self is PrimitiveDebuggableGesture) else {
+            return outputs
+        }
+        outputs.wrapDebugOutputs(Self.self, inputs: inputs)
+        return outputs
     }
 }
 
@@ -112,7 +127,16 @@ extension _GestureOutputs {
         properties: Attribute<GestureDebug.Properties>? = nil,
         inputs: _GestureInputs
     ) {
-        preconditionFailure("TODO")
+        guard inputs.options.contains(.includeDebugOutput) else {
+            return
+        }
+        reallyWrap(
+            type,
+            kind: conformsToProtocol(type, _OpenSwiftUI_gestureModifierProtocolDescriptor()) ? .modifier : .primitive,
+            properties: properties,
+            inputs: inputs,
+            data: (debugData, nil)
+        )
     }
 
     @inline(__always)
@@ -122,6 +146,25 @@ extension _GestureOutputs {
         properties: Attribute<GestureDebug.Properties>? = nil,
         inputs: _GestureInputs,
         combiningOutputs outputs: (_GestureOutputs<V1>, _GestureOutputs<V2>)
+    ) {
+        guard inputs.options.contains(.includeDebugOutput) else {
+            return
+        }
+        reallyWrap(
+            type,
+            kind: kind,
+            properties: properties,
+            inputs: inputs,
+            data: (outputs.0.debugData, outputs.1.debugData)
+        )
+    }
+
+    private func reallyWrap<T>(
+        _ type: T.Type,
+        kind: GestureDebug.Kind,
+        properties: Attribute<GestureDebug.Properties>?,
+        inputs: _GestureInputs,
+        data: (Attribute<GestureDebug.Data>?, Attribute<GestureDebug.Data>?)
     ) {
         preconditionFailure("TODO")
     }

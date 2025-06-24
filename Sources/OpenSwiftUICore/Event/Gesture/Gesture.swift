@@ -7,7 +7,7 @@
 package import OpenGraphShims
 import OpenSwiftUI_SPI
 
-// MARK: - Gesture [6.5.4] [Blocked by GestureDebug]
+// MARK: - Gesture [6.5.4]
 
 /// An instance that matches a sequence of events to a gesture, and returns a
 /// stream of values for each of its states.
@@ -27,13 +27,17 @@ public protocol Gesture<Value> {
     ) -> _GestureOutputs<Value>
 
     /// The type of gesture representing the body of `Self`.
-    associatedtype Body : Gesture
+    associatedtype Body: Gesture
 
     /// The content and behavior of the gesture.
     var body: Body { get }
 }
 
+// MARK: - PrimitiveGesture [6.5.4]
+
 package protocol PrimitiveGesture: Gesture where Body == Never {}
+
+// MARK: - PubliclyPrimitiveGesture [6.5.4]
 
 package protocol PubliclyPrimitiveGesture: PrimitiveGesture {
     associatedtype InternalBody: Gesture where Value == InternalBody.Value
@@ -54,9 +58,14 @@ extension PubliclyPrimitiveGesture {
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Self.Value> {
-        preconditionFailure("TODO") // GestureDebug
+        InternalBody.makeDebuggableGesture(
+            gesture: gesture[\.internalBody],
+            inputs: inputs
+        )
     }
 }
+
+// MARK: - Never + Gesture [6.5.4]
 
 @available(OpenSwiftUI_v1_0, *)
 extension Never: Gesture {
@@ -213,10 +222,10 @@ public struct _GestureOutputs<Value> {
 
     package var preferences: PreferencesOutputs
 
-//    package var debugData: Attribute<GestureDebug.Data>? {
-//        get { preconditionFailure("TODO") }
-//        set { preconditionFailure("TODO") }
-//    }
+    package var debugData: Attribute<GestureDebug.Data>? {
+        get { preconditionFailure("TODO") }
+        set { preconditionFailure("TODO") }
+    }
 
     package init(phase: Attribute<GesturePhase<Value>>) {
         preconditionFailure("TODO")
