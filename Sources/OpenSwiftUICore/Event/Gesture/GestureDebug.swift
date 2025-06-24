@@ -70,6 +70,8 @@ extension GestureDebug.Data: Defaultable {
 package protocol PrimitiveDebuggableGesture {
 }
 
+// MARK: - DebuggableGesturePhase [6.5.4]
+
 package protocol DebuggableGesturePhase {
     associatedtype PhaseValue
     var phase: GesturePhase<PhaseValue> { get set }
@@ -78,7 +80,7 @@ package protocol DebuggableGesturePhase {
 
 extension Attribute where Value: DebuggableGesturePhase {
     package func phase() -> Attribute<GesturePhase<Value.PhaseValue>> {
-        preconditionFailure("TODO")
+        self[offset: { .of(&$0.phase) }]
     }
 }
 
