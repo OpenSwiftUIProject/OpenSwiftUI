@@ -285,7 +285,7 @@ public struct GestureCategory: OptionSet {
     package struct Key: PreferenceKey {
         package static let _includesRemovedValues: Bool = true
 
-        package static let defaultValue: GestureCategory = .magnify
+        package static let defaultValue: GestureCategory = .defaultValue
 
         package static func reduce(
             value: inout GestureCategory.Key.Value,
