@@ -3,6 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Status: WIP
+//  ID: 5DF390A778F4D193C5F92C06542566B0 (SwiftUICore)
 
 package import OpenGraphShims
 import OpenSwiftUI_SPI
@@ -79,13 +80,27 @@ extension PrimitiveGesture {
     }
 }
 
+// MARK: - GestureBodyAccessor [6.5.4]
+
+private struct GestureBodyAccessor<Container>: BodyAccessor where Container: Gesture {
+    typealias Body = Container.Body
+
+    func updateBody(of container: Container, changed: Bool) {
+        guard changed else { return }
+        setBody { container.body }
+    }
+}
+
 @available(OpenSwiftUI_v1_0, *)
 extension Gesture where Value == Body.Value {
     public static func _makeGesture(
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Self.Body.Value> {
-        preconditionFailure("TODO")
+        let fields = DynamicPropertyCache.fields(of: Self.self)
+        var inputs = inputs
+        let (body, _) = GestureBodyAccessor().makeBody(container: gesture, inputs: &inputs.viewInputs.base, fields: fields)
+        return Body.makeDebuggableGesture(gesture: body, inputs: inputs)
     }
 }
 
