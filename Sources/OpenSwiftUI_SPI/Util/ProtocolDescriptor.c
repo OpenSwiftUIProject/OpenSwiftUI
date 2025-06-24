@@ -22,3 +22,17 @@ const void *$s15OpenSwiftUICore12ViewModifierMp;
 const void *_OpenSwiftUI_viewModifierProtocolDescriptor(void) {
     return &$s15OpenSwiftUICore12ViewModifierMp;
 }
+
+OPENSWIFTUI_EXPORT
+const void *$s15OpenSwiftUICore7GestureMp;
+
+const void *_OpenSwiftUI_gestureProtocolDescriptor(void) {
+    return &$s15OpenSwiftUICore7GestureMp;
+}
+
+OPENSWIFTUI_EXPORT
+const void *$s15OpenSwiftUICore15GestureModifierMp;
+
+const void *_OpenSwiftUI_gestureModifierProtocolDescriptor(void) {
+    return &$s15OpenSwiftUICore15GestureModifierMp;
+}
