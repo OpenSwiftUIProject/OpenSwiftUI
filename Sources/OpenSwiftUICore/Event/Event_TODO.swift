@@ -1,11 +1,7 @@
 // FIXME
 
-package struct EventID: Hashable {}
-package protocol EventType {}
-
 package class ResponderNode {}
 
-package protocol EventGraphHost {}
 package class EventBindingManager {}
 
 package protocol EventBindingSource {}

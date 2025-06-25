@@ -4,9 +4,13 @@
 //
 //  Status: WIP
 
+// MARK: - GestureGraphDelegate [6.5.4]
+
 package protocol GestureGraphDelegate: AnyObject {
     func enqueueAction(_ action: @escaping () -> Void)
 }
+
+// MARK: - GestureGraph [6.5.4] [WIP]
 
 final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvertible {
     package init(eventBindingManager: EventBindingManager) {
@@ -74,6 +78,6 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
 
 extension GestureGraph {
     package static var current: GestureGraph {
-        get { preconditionFailure("TODO") }
+        GraphHost.currentHost as! GestureGraph
     }
 }
