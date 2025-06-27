@@ -7,7 +7,7 @@
 
 package import OpenGraphShims
 
-// MARK: - PreferenceTransformModifier [6.4.41] [WIP]
+// MARK: - PreferenceTransformModifier [6.4.41]
 
 @available(OpenSwiftUI_v1_0, *)
 @frozen
@@ -52,29 +52,114 @@ extension View {
     }
 }
 
+// MARK: - PreferencesOutputs + makePreferenceTransformer [6.0.87]
+
 extension PreferencesOutputs {
     package mutating func makePreferenceTransformer<K>(
         inputs: PreferencesInputs,
-        key _: K.Type,
+        key: K.Type,
         transform: @autoclosure () -> Attribute<(inout K.Value) -> Void>
     ) where K: PreferenceKey {
-        openSwiftUIUnimplementedWarning()
+        let contains = inputs.contains(K.self)
+        let transformValue: Attribute<(inout K.Value) -> Void>!
+        if contains {
+            transformValue = transform()
+            let transform = PreferenceTransform<K>(
+                transform: transformValue,
+                childValue: OptionalAttribute(self[key])
+            )
+            self[key] = Attribute(transform)
+        } else {
+            transformValue = nil
+        }
+        guard K._isReadableByHost, inputs.contains(HostPreferencesKey.self) else {
+            return
+        }
+        let hostTransform = HostPreferencesTransform<K>(
+            transform: transformValue ?? transform(),
+            keys: inputs.hostKeys,
+            childValues: OptionalAttribute(self[HostPreferencesKey.self]),
+            keyRequested: false,
+            wasEmpty: false,
+            delta: 0,
+            nodeId: HostPreferencesKey.makeNodeId()
+        )
+        self[HostPreferencesKey.self] = Attribute(hostTransform)
     }
 }
 
-// TODO
-private struct PreferenceTransform<K> where K: PreferenceKey {
+// MARK: - PreferenceTransform [6.0.87]
+
+private struct PreferenceTransform<K>: Rule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
     @Attribute var transform: (inout K.Value) -> Void
     @OptionalAttribute var childValue: K.Value?
+
+    var value: K.Value {
+        var value = childValue ?? K.defaultValue
+        $transform.syncMainIfReferences { transform in
+            // TODO: Observation support
+            transform(&value)
+        }
+        return value
+    }
+
+    var description: String {
+        "Transform: \(K.readableName)"
+    }
 }
 
-// TODO
-private struct HostPreferencesTransform<K> where K: PreferenceKey {
+// MARK: - HostPreferencesTransform [6.0.87]
+
+private struct HostPreferencesTransform<K>: StatefulRule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
     @Attribute var transform: (inout K.Value) -> Void
-    @Attribute var keys: Attribute<PreferenceKeys>
-    @OptionalAttribute var childValues: PreferenceValues?
+    @Attribute var keys: PreferenceKeys
+    // FIXME:  [6.4.41]
+    // @OptionalAttribute var childValues: PreferenceValues?
+    @OptionalAttribute var childValues: PreferenceList?
     var keyRequested: Bool
     var wasEmpty: Bool
     var delta: UInt32
     let nodeId: UInt32
+
+    typealias Value = PreferenceList
+
+    mutating func updateValue() {
+        var values: PreferenceList
+        let valuesChanged: Bool
+        if let childValues = $childValues {
+            (values, valuesChanged) = childValues.changedValue()
+            wasEmpty = false
+        } else {
+            (values, valuesChanged) = (PreferenceList(), !wasEmpty)
+            wasEmpty = true
+        }
+        var requiresUpdate = valuesChanged
+        let (keys, keysChanged) = $keys.changedValue()
+
+        let keyContains = keysChanged ? keys.contains(K.self) : false
+        if keyRequested != keyContains {
+            keyRequested = keyContains
+            requiresUpdate = true
+        }
+        if keyRequested {
+            let anyInputsChanged = [_keys.identifier, _childValues.base.identifier].anyInputsChanged
+            if anyInputsChanged {
+                delta &+= 1
+                requiresUpdate = true
+            }
+            if anyInputsChanged || requiresUpdate {
+                $transform.syncMainIfReferences { transform in
+                    let transformValue = PreferenceList.Value(value: transform, seed: VersionSeed(nodeId: nodeId, viewSeed: delta))
+                    values.modifyValue(for: K.self, transform: transformValue)
+                }
+            }
+        }
+        if requiresUpdate || !hasValue {
+            value = values
+        }
+    }
+
+    var description: String {
+        "HostTransform: \(K.readableName)"
+    }
 }
