@@ -2,10 +2,6 @@
 
 package class ResponderNode {}
 
-package class EventBindingManager {}
-
-package protocol EventBindingSource {}
-
 package struct ExclusiveGesture<A, B>: PrimitiveGesture {}
 
 package struct _MapGesture<Content, Value>: PrimitiveGesture where Content: Gesture {

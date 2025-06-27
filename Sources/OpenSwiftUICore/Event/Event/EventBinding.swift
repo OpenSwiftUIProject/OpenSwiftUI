@@ -2,7 +2,7 @@
 //  EventBinding.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Status: Complete
 
 // MARK: - EventBinding [6.5.4]
 
