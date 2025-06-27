@@ -3,25 +3,31 @@
 //  OpenSwiftUICore
 //
 //  Status: WIP
+//  ID: E11AC34B5BFF53E1001A61D61F5B9E0F (SwiftUICore)
 
 // MARK: - EventBindingBridge [6.5.4] [WIP]
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
 open class EventBindingBridge {
-    package weak var eventBindingManager: EventBindingManager? { preconditionFailure("TODO") }
+    package private(set) weak var eventBindingManager: EventBindingManager?
 
     package var responderWasBoundHandler: ((ResponderNode) -> Void)?
 
+    private struct TrackedEventState {
+        var sourceID: ObjectIdentifier
+        var reset: Bool
+    }
+
+    private var trackedEvents: [EventID: TrackedEventState] = [:]
+
     public init(eventBindingManager: EventBindingManager) {
-        preconditionFailure("TODO")
+        self.eventBindingManager = eventBindingManager
     }
 
-    public init() {
-        preconditionFailure("TODO")
-    }
+    public init() {}
 
-    open var eventSources: [any EventBindingSource] { preconditionFailure("TODO") }
+    open var eventSources: [any EventBindingSource] { [] }
 
     @discardableResult
     open func send(
@@ -38,12 +44,16 @@ open class EventBindingBridge {
         preconditionFailure("TODO")
     }
 
-    open func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
+    private func resetEvent() {
         preconditionFailure("TODO")
     }
 
+    open func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
+        eventBindingManager?.setInheritedPhase(phase)
+    }
+
     open func source(for sourceType: EventSourceType) -> (any EventBindingSource)? {
-        preconditionFailure("TODO")
+        nil
     }
 }
 
@@ -51,26 +61,40 @@ open class EventBindingBridge {
 @available(*, unavailable)
 extension EventBindingBridge: Sendable {}
 
+// MARK: - EventBindingBridge + EventBindingManagerDelegate [6.5.4]
+
 @_spi(ForOpenSwiftUIOnly)
 extension EventBindingBridge: EventBindingManagerDelegate {
     package func didBind(
         to newBinding: EventBinding,
         id: EventID
     ) {
-        preconditionFailure("TODO")
+        if let responderWasBoundHandler {
+            // TODO: Update.enqueueAction(reason:_:)
+            Update.enqueueAction {
+                responderWasBoundHandler(newBinding.responder)
+            }
+        }
+        for eventSource in eventSources {
+            eventSource.didBind(to: newBinding, id: id, in: self)
+        }
     }
 
     package func didUpdate(
         phase: GesturePhase<Void>,
         in eventBindingManager: EventBindingManager
     ) {
-        preconditionFailure("TODO")
+        for eventSource in eventSources {
+            eventSource.didUpdate(phase: phase, in: self)
+        }
     }
 
     package func didUpdate(
         gestureCategory: GestureCategory,
         in eventBindingManager: EventBindingManager
     ) {
-        preconditionFailure("TODO")
+        for eventSource in eventSources {
+            eventSource.didUpdate(gestureCategory: gestureCategory, in: self)
+        }
     }
 }
