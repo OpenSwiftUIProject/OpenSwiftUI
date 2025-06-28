@@ -47,3 +47,7 @@ extension UnsafeMutableBufferPointer {
         baseAddress ?? .null
     }
 }
+
+package func address(of object: AnyObject) -> UnsafeRawPointer {
+    unsafeBitCast(object, to: UnsafeRawPointer.self)
+}
