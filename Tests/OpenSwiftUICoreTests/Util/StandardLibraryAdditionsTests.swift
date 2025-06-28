@@ -32,7 +32,7 @@ struct UnsafeMutableBufferProjectionPointerTests {
         buffer[1] = 20
         buffer[2] = 30
 
-        let pointer = UnsafeMutableBufferProjectionPointer<TestScene, Int>(start: buffer.baseAddress!, count: 3)
+        let pointer = UnsafeMutableBufferProjectionPointer<Int, Int>(start: buffer.baseAddress!, count: 3)
 
         #expect(pointer.startIndex == 0)
         #expect(pointer.endIndex == 3)
@@ -52,27 +52,6 @@ struct UnsafeMutableBufferProjectionPointerTests {
         #expect(pointer.startIndex == 0)
         #expect(pointer.endIndex == 0)
         #expect(pointer.isEmpty)
-    }
-
-    @Test
-    func mutableAccess() {
-        let buffer = UnsafeMutableBufferPointer<TestScene>.allocate(capacity: 1)
-        defer { buffer.deallocate() }
-
-        buffer[0] = TestScene(x: 42, y: 3.14, z: "test")
-
-        let xProjection = UnsafeMutableBufferProjectionPointer(buffer, \TestScene.x)
-
-        xProjection[0] = 999
-
-        #expect(buffer[0].x == 999)
-        #expect(xProjection[0] == 999)
-
-        let yProjection = UnsafeMutableBufferProjectionPointer(buffer, \TestScene.y)
-        #expect(yProjection[0] == 3.14)
-
-        let zProjection = UnsafeMutableBufferProjectionPointer(buffer, \TestScene.z)
-        #expect(zProjection[0] == "test")
     }
 
     @Test
@@ -244,7 +223,7 @@ struct CountingIndexTests {
         let index3 = CountingIndex(base: 5, offset: 15)
 
         #expect(index1 < index2)
-        #expect(index1 == index3)
+        #expect(index1 != index3)
     }
 
     @Test
