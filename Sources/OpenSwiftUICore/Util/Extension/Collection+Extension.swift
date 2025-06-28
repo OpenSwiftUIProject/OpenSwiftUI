@@ -2,8 +2,9 @@
 //  Collection+Extension.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
+
+// MARK: - Collection + Index Extension [6.0.87]
 
 extension Collection {
     package func index(atOffset n: Int) -> Index {
@@ -27,5 +28,41 @@ extension Collection {
     
     package func withContiguousStorage<R>(_ body: (UnsafeBufferPointer<Element>) throws -> R) rethrows -> R {
         try withContiguousStorageIfAvailable(body) ?? ContiguousArray(self).withUnsafeBufferPointer(body)
+    }
+}
+
+// MARK: - Collection + prefix and suffix [6.5.4]
+
+extension Collection where Self.Element: Equatable {
+    package func commonPrefix<Other>(with other: Other) -> (Self.SubSequence, Other.SubSequence) where Other: Collection, Element == Other.Element {
+        var selfIndex = startIndex
+        var otherIndex = other.startIndex
+
+        while selfIndex != endIndex && otherIndex != other.endIndex && self[selfIndex] == other[otherIndex] {
+            formIndex(after: &selfIndex)
+            other.formIndex(after: &otherIndex)
+        }
+
+        return (self[startIndex..<selfIndex], other[other.startIndex..<otherIndex])
+    }
+}
+
+extension BidirectionalCollection where Self.Element: Equatable {
+    package func commonSuffix<Other>(with other: Other) -> (Self.SubSequence, Other.SubSequence) where Other: BidirectionalCollection, Self.Element == Other.Element {
+        var selfIndex = endIndex
+        var otherIndex = other.endIndex
+
+        while selfIndex != startIndex && otherIndex != other.startIndex {
+            formIndex(before: &selfIndex)
+            other.formIndex(before: &otherIndex)
+
+            if self[selfIndex] != other[otherIndex] {
+                formIndex(after: &selfIndex)
+                other.formIndex(after: &otherIndex)
+                break
+            }
+        }
+
+        return (self[selfIndex..<endIndex], other[otherIndex..<other.endIndex])
     }
 }
