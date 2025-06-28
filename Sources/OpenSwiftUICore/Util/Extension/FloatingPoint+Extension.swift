@@ -2,8 +2,11 @@
 //  FloatingPoint+Extension.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
+
+package import Foundation
+
+// MARK: - FloatingPoint + Zero [6.0.87]
 
 extension FloatingPoint {
     /// Determines whether two floating-point values are approximately equal within a specified tolerance.

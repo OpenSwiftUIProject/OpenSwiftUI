@@ -2,8 +2,9 @@
 //  Collection+Extension.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
+
+// MARK: - Collection + Index Extension [6.0.87]
 
 extension Collection {
     package func index(atOffset n: Int) -> Index {

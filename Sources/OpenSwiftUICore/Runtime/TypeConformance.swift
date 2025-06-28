@@ -49,12 +49,8 @@ package struct TypeConformance<P> where P: ProtocolDescriptor {
     }
 }
 
-package func conformsToProtocol(_ type: any Any.Type, _ desc: UnsafeRawPointer) -> Bool {
-    swiftConformsToProtocol(type, desc) != nil
-}
-
 @_silgen_name("swift_conformsToProtocol")
-private func swiftConformsToProtocol(
+func swiftConformsToProtocol(
     _ type: Any.Type,
     _ protocolDescriptor: UnsafeRawPointer
 ) -> UnsafeRawPointer?
