@@ -151,6 +151,10 @@ extension AnyOptionalAttribute {
         get { preconditionFailure("#39") }
         nonmutating set { preconditionFailure("#39") }
     }
+
+    package init(_ attribute: AnyAttribute?) {
+        preconditionFailure("#39")
+    }
 }
 
 extension Graph {
