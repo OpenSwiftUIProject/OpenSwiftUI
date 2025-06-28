@@ -2,8 +2,8 @@
 //  ViewInputs.swift
 //  OpenSwiftUICore
 //
-//  ID: C38EF38637B6130AEFD462CBD5EAC727 (SwiftUICore)
 //  Status: Complete
+//  ID: C38EF38637B6130AEFD462CBD5EAC727 (SwiftUICore)
 
 #if !canImport(Darwin)
 package import Foundation

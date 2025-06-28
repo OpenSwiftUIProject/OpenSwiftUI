@@ -6,6 +6,8 @@
 //  ID: A519B5B95CA8FF4E3445832668F0B2D2 (SwiftUI)
 //  ID: E1A97A5CD5A5467396F8BB461CB26984 (SwiftUICore)
 
+package import Foundation
+
 // MARK: _TestApp [6.4.41] [WIP for defaultEnvironment]
 
 @available(OpenSwiftUI_v1_0, *)
@@ -103,5 +105,18 @@ public struct _TestApp {
         case "system": break
         default: preconditionFailure("Invalid --semantics argument: \(version))")
         }
+    }
+}
+
+@available(*, unavailable)
+extension _TestApp: Sendable {}
+
+extension _TestApp {
+    package static func date(for time: Time) -> Date {
+        Date.now
+    }
+
+    package static var dateIsSynchronizedWithTime: Bool {
+        false
     }
 }

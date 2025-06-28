@@ -1,6 +1,3 @@
-// FIXME
-protocol ResponderNode {}
-
 struct FocusStore {
     var seed: VersionSeed
     var focusedResponders: ContiguousArray<ResponderNode>
