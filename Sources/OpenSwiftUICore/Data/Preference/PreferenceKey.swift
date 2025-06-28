@@ -73,6 +73,10 @@ extension PreferenceKey {
             return name
         }
     }
+
+    package static func visitKey<Visitor>(_ visitor: inout Visitor) where Visitor: PreferenceKeyVisitor {
+        visitor.visit(key: Self.self)
+    }
 }
 
 // MARK: - PreferenceKeyVisitor
