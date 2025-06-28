@@ -63,14 +63,14 @@ extension GestureViewModifier {
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
         var outputs = body(_Graph(), inputs)
-        if inputs.preferences.contains(ViewRespondersKey.self) {
+        if inputs.preferences.requiresViewResponders {
             let filter = GestureFilter(
                 children: outputs.viewResponders(),
                 modifier: modifier.value,
                 inputs: inputs,
                 viewSubgraph: .current!
             )
-            outputs.preferences[ViewRespondersKey.self] = Attribute(filter)
+            outputs.preferences.viewResponders = Attribute(filter)
         }
         let provider = inputs.gestureAccessibilityProvider
         provider.makeGesture(

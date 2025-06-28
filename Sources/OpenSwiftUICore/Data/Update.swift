@@ -100,7 +100,15 @@ package enum Update {
         depth -= 1
         unlock()
     }
-    
+
+    @inlinable
+    @inline(__always)
+    static func perform<T>(_ body: () throws -> T) rethrows -> T {
+        begin()
+        defer { end() }
+        return try body()
+    }
+
     package static func enqueueAction(_ action: @escaping () -> Void) {
         begin()
         actions.append(action)

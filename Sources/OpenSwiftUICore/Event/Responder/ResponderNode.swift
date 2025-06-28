@@ -55,7 +55,7 @@ open class ResponderNode {
 @available(*, unavailable)
 extension ResponderNode: Sendable {}
 
-// MARK: - ResponderVisitorResult [6.5.4] [WIP]
+// MARK: - ResponderVisitorResult [6.5.4]
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
