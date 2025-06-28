@@ -266,7 +266,7 @@ public struct _GestureOutputs<Value> {
         preconditionFailure("TODO")
     }
 
-    package subscript(anyKey key: any AnyPreferenceKey.Type) -> AnyAttribute? {
+    package subscript(anyKey key: any PreferenceKey.Type) -> AnyAttribute? {
         get { preconditionFailure("TODO") }
         set { preconditionFailure("TODO") }
     }
@@ -283,7 +283,7 @@ public struct _GestureOutputs<Value> {
         preconditionFailure("TODO")
     }
 
-    package func forEachPreference(_ body: (any AnyPreferenceKey.Type, AnyAttribute) -> Void) {
+    package func forEachPreference(_ body: (any PreferenceKey.Type, AnyAttribute) -> Void) {
         preconditionFailure("TODO")
     }
 }

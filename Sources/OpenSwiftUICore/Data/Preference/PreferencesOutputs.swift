@@ -2,10 +2,12 @@
 //  PreferencesOutputs.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
+//  ID: 639FD567E11A491423DEEA5A95A52B4C (SwiftUICore)
 
 package import OpenGraphShims
+
+// MARK: - PreferencesOutputs [6.5.4]
 
 package struct PreferencesOutputs {
     private var preferences: [KeyValue]
@@ -17,13 +19,19 @@ package struct PreferencesOutputs {
         debugProperties = []
     }
     
-    subscript(anyKey key: AnyPreferenceKey.Type) -> AnyAttribute? {
-        get { preferences.first { $0.key == key }?.value }
-        set {
-            if key == _AnyPreferenceKey<DisplayList.Key>.self {
-                if !debugProperties.contains(.displayList) {
-                    debugProperties.formUnion(.displayList)
+    subscript(anyKey key: any PreferenceKey.Type) -> AnyAttribute? {
+        get {
+            for preference in preferences {
+                guard preference.key == key else {
+                    continue
                 }
+                return preference.value
+            }
+            return nil
+        }
+        set {
+            if key == DisplayList.Key.self {
+                debugProperties.insert(.displayList)
             }
             if let index = preferences.firstIndex(where: { $0.key == key }) {
                 if let newValue {
@@ -41,19 +49,19 @@ package struct PreferencesOutputs {
 
     subscript<K>(key: K.Type) -> Attribute<K.Value>? where K: PreferenceKey {
         get {
-            let value = self[anyKey: _AnyPreferenceKey<K>.self]
+            let value = self[anyKey: key]
             return value.map { Attribute(identifier: $0) }
         }
         set {
-            self[anyKey: _AnyPreferenceKey<K>.self] = newValue.map { $0.identifier }
+            self[anyKey: key] = newValue.map { $0.identifier }
         }
     }
     
     package mutating func appendPreference<K>(key: K.Type, value: Attribute<K.Value>) where K: PreferenceKey{
-        preferences.append(KeyValue(key: _AnyPreferenceKey<K>.self, value: value.identifier))
+        preferences.append(KeyValue(key: key, value: value.identifier))
     }
 
-    package func forEachPreference(_ body: (any AnyPreferenceKey.Type, AnyAttribute) -> Void) {
+    package func forEachPreference(_ body: (any PreferenceKey.Type, AnyAttribute) -> Void) {
         preferences.forEach { body($0.key, $0.value) }
     }
 
@@ -72,22 +80,15 @@ package struct PreferencesOutputs {
     }
     
     package func detachIndirectOutputs() {
-        struct ResetPreference: PreferenceKeyVisitor {
-            var destination: AnyAttribute
-            func visit<K>(key: K.Type) where K: PreferenceKey {
-                destination.source = .nil
-            }
-        }
         for keyValue in preferences {
-            var visitor = ResetPreference(destination: keyValue.value)
-            keyValue.key.visitKey(&visitor)
+            keyValue.value.source = .nil
         }
     }
 }
 
 extension PreferencesOutputs {
     private struct KeyValue {
-        var key: any AnyPreferenceKey.Type
+        var key: any PreferenceKey.Type
         var value: AnyAttribute
     }
 }

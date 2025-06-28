@@ -75,34 +75,17 @@ extension PreferenceKey {
     }
 }
 
-// MARK: - AnyPreferenceKey
-
-package protocol AnyPreferenceKey {
-    static var valueType: any Any.Type { get }
-    static func visitKey<V>(_ v: inout V) where V: PreferenceKeyVisitor
-}
-
 // MARK: - PreferenceKeyVisitor
 
 package protocol PreferenceKeyVisitor {
     mutating func visit<K>(key: K.Type) where K: PreferenceKey
 }
 
-// MARK: - _AnyPreferenceKey
-
-package struct _AnyPreferenceKey<K>: AnyPreferenceKey where K: PreferenceKey{
-    package static var valueType: any Any.Type { K.self }
-    
-    package static func visitKey<V>(_ v: inout V) where V : PreferenceKeyVisitor {
-        v.visit(key: K.self)
-    }
-}
-
-// MARK: - PreferenceKeys
+// MARK: - PreferenceKeys [6.5.4]
 
 package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollection {
-    var keys: [any AnyPreferenceKey.Type] = []
-    
+    var keys: [any PreferenceKey.Type] = []
+
     @inlinable
     package init() {}
     
@@ -110,33 +93,20 @@ package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollect
     package var isEmpty: Bool { keys.isEmpty }
     
     @inlinable
-    package func contains(_ key: any AnyPreferenceKey.Type) -> Bool {
+    package func contains(_ key: any PreferenceKey.Type) -> Bool {
         keys.contains { $0 == key }
     }
     
-    @inlinable
-    package func contains<K>(_ key: K.Type) -> Bool where K: PreferenceKey {
-        contains(_AnyPreferenceKey<K>.self)
-    }
-    
-    package mutating func add(_ key: any AnyPreferenceKey.Type) {
+    package mutating func add(_ key: any PreferenceKey.Type) {
         guard !contains(key) else {
             return
         }
         keys.append(key)
     }
-    
-    package mutating func add<K>(_ key: K.Type) where K: PreferenceKey {
-        add(_AnyPreferenceKey<K>.self)
-    }
-    
-    package mutating func remove(_ key: AnyPreferenceKey.Type) {
+
+    package mutating func remove(_ key: any PreferenceKey.Type) {
         guard let index = keys.firstIndex(where: { $0 == key }) else { return }
         keys.remove(at: index)
-    }
-    
-    package mutating func remove<K>(_ key: K.Type) where K: PreferenceKey {
-        remove(_AnyPreferenceKey<K>.self)
     }
     
     package static func == (lhs: PreferenceKeys, rhs: PreferenceKeys) -> Bool {
@@ -158,7 +128,7 @@ package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollect
     package var endIndex: Int { keys.endIndex }
 
     @inlinable
-    package subscript(position: Int) -> AnyPreferenceKey.Type {
+    package subscript(position: Int) -> any PreferenceKey.Type {
         get { keys[position] }
         set { keys[position] = newValue }
     }

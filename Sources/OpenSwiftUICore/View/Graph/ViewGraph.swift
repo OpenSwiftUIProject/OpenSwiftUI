@@ -137,7 +137,7 @@ package final class ViewGraph: GraphHost {
         set { setPreferenceBridge(to: newValue) }
     }
 
-    var bridgedPreferences: [(AnyPreferenceKey.Type, AnyAttribute)] = []
+    var bridgedPreferences: [(any PreferenceKey.Type, AnyAttribute)] = []
 
     package static var current: ViewGraph { GraphHost.currentHost as! ViewGraph }
     
