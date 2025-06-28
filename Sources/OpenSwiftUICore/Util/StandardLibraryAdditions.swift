@@ -14,7 +14,7 @@ import Glibc
 #error("Unsupported Platform")
 #endif
 
-// MARK: - bind
+// MARK: - bind [6.5.4]
 
 package func bind<T>(_ action: ((T) -> Void)?, _ value: T) -> (() -> Void)? {
     guard let action else {
@@ -727,6 +727,103 @@ package struct CollectionOfTwo<T>: RandomAccessCollection, MutableCollection {
             default: preconditionFailure("index out of range")
             }
         }
+    }
+}
+
+// MARK: - Protocol Conformance [6.5.4]
+
+package func conformsToProtocol(_ type: any Any.Type, _ desc: UnsafeRawPointer) -> Bool {
+    swiftConformsToProtocol(type, desc) != nil
+}
+
+// MARK: - String Extensions [6.5.4]
+
+extension String {
+    package var isNewLineOrReturn: Bool {
+        self == "\n" || self == "\r"
+    }
+}
+
+// MARK: - DefaultStringInterpolation Extensions [6.5.4]
+
+private let roundingFormatter = {
+    let formatter = NumberFormatter()
+    formatter.minimumFractionDigits = 1
+    formatter.maximumFractionDigits = 3
+    return formatter
+}()
+
+extension BinaryFloatingPoint {
+    @inline(__always)
+    fileprivate static func exp10(_ x: Self) -> Double {
+        #if canImport(Darwin)
+        return __exp10(Double(x))
+        #else
+        pow(10, Double(x))
+        #endif
+    }
+
+    fileprivate func roundedForDisplay() -> Self {
+        let multiplier = Double.exp10(Double(roundingFormatter.maximumFractionDigits))
+        let result = Self((multiplier * Double(self)).rounded() / multiplier)
+        return result == 0 ? 0 : result
+    }
+}
+
+extension DefaultStringInterpolation {
+    package mutating func appendInterpolation(rounding value: Float) {
+        appendLiteral(roundingFormatter.string(from: NSNumber(value: value.roundedForDisplay()))!)
+    }
+    
+    package mutating func appendInterpolation(rounding value: Double) {
+        appendLiteral(roundingFormatter.string(from: NSNumber(value: value.roundedForDisplay()))!)
+    }
+    
+    package mutating func appendInterpolation(rounding value: SIMD2<Double>) {
+        appendLiteral("(\(rounding: value.x), \(rounding: value.y))")
+    }
+    
+    package mutating func appendInterpolation(rounding value: SIMD3<Double>) {
+        appendLiteral("(\(rounding: value.x), \(rounding: value.y), \(rounding: value.z))")
+    }
+    
+    package mutating func appendInterpolation(rounding value: SIMD4<Double>) {
+        appendLiteral("(\(rounding: value.x), \(rounding: value.y), \(rounding: value.z), \(rounding: value.w)")
+    }
+}
+
+// MARK: - Sequence Extensions [6.5.4]
+
+extension Sequence {
+    package func sorted(by keyPath: KeyPath<Element, some Comparable>) -> [Element] {
+        sorted { lhs, rhs in
+            lhs[keyPath: keyPath] < rhs[keyPath: keyPath]
+        }
+    }
+}
+
+// MARK: - Array Extensions [6.5.4]
+
+extension Array {
+    package mutating func sort(by keyPath: KeyPath<Element, some Comparable>, reversed: Bool = false) {
+        sort { lhs, rhs in
+            if reversed {
+                lhs[keyPath: keyPath] > rhs[keyPath: keyPath]
+            } else {
+                lhs[keyPath: keyPath] < rhs[keyPath: keyPath]
+            }
+        }
+    }
+}
+
+extension Array where Element: Hashable {
+    package func removingDuplicates() -> [Element] {
+        var dict = [Element: Bool]()
+        return filter { dict.updateValue(true, forKey: $0) == nil }
+    }
+    
+    package mutating func removeDuplicates() {
+        self = removingDuplicates()
     }
 }
 
