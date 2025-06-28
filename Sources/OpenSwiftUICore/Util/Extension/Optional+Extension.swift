@@ -4,10 +4,10 @@
 //
 //  Status: Complete
 
-@inlinable
-@inline(__always)
-func asOptional<Value>(_ value: Value) -> Value? {
-    func unwrap<T>() -> T { value as! T }
-    let optionalValue: Value? = unwrap()
-    return optionalValue
+// MARK: - Optional + if-then
+
+extension Optional {
+    package init(if condition: Bool, then value: @autoclosure () -> Wrapped) {
+        self = condition ? value() : nil
+    }
 }
