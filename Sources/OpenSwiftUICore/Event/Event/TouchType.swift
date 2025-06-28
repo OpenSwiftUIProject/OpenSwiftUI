@@ -26,5 +26,14 @@ extension TouchType: Sendable {}
 
 @_spi(_)
 extension TouchType {
-    package static let allTypes: Set<TouchType> = [.direct, .indirect, .pencil, .indirectPointer]
+    #if os(macOS)
+    package static let allTypes: Set<TouchType> = [
+        .direct, .indirect,
+    ]
+    #else
+    package static let allTypes: Set<TouchType> = [
+        .direct, .indirect,
+        .pencil, .indirectPointer,
+    ]
+    #endif
 }
