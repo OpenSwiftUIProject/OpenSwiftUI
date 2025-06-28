@@ -20,7 +20,7 @@ package final class PreferenceBridge {
     private var bridgedPreferences: [BridgedPreference] = []
 
     struct BridgedPreference {
-        var key: AnyPreferenceKey.Type
+        var key: any PreferenceKey.Type
         var combiner: AnyWeakAttribute
     }
 
@@ -55,20 +55,20 @@ package final class PreferenceBridge {
     package func wrapOutputs(_ outputs: inout PreferencesOutputs, inputs: _ViewInputs) {
         bridgedViewInputs = inputs.customInputs
         for key in inputs.preferences.keys {
-            if key == _AnyPreferenceKey<HostPreferencesKey>.self {
+            if key == HostPreferencesKey.self {
                 let combiner = Attribute(
                     HostPreferencesCombiner(
                         keys: inputs.preferences.hostKeys,
-                        values: Attribute(identifier: outputs[anyKey: _AnyPreferenceKey<HostPreferencesKey>.self] ?? .nil)
+                        values: outputs[HostPreferencesKey.self]
                     )
                 )
-                outputs[anyKey: key] = combiner.identifier
+                outputs[HostPreferencesKey.self] = combiner
                 _hostPreferenceKeys = WeakAttribute(inputs.preferences.hostKeys)
                 _hostPreferencesCombiner = WeakAttribute(combiner)
             } else {
                 struct MakeCombiner: PreferenceKeyVisitor {
                     var result: AnyAttribute?
-                    
+
                     mutating func visit<K>(key: K.Type) where K : PreferenceKey {
                         let combiner = PreferenceCombiner<K>(attributes: [])
                         result = Attribute(combiner).identifier
@@ -111,53 +111,43 @@ package final class PreferenceBridge {
         }
     }
     
-    package func addValue(_ src: AnyAttribute, for key: any AnyPreferenceKey.Type) {
-        struct AddValue: PreferenceKeyVisitor {
-            var combiner: AnyAttribute
-            var value: AnyAttribute
-            func visit<Key: PreferenceKey>(key _: Key.Type) {
-                combiner.mutateBody(
-                    as: PreferenceCombiner<Key>.self,
-                    invalidating: true
-                ) { combiner in
-                    combiner.attributes.append(WeakAttribute(base: AnyWeakAttribute(value)))
-                }
-            }
-        }
+    package func addValue(_ src: AnyAttribute, for key: any PreferenceKey.Type) {
         guard let viewGraph,
               let bridgedPreference = bridgedPreferences.first(where: { $0.key == key }),
               let combiner = bridgedPreference.combiner.attribute
         else { return }
-        var visitor = AddValue(combiner: combiner, value: src)
-        key.visitKey(&visitor)
+        func project<K>(_ key: K.Type) where K: PreferenceKey {
+            combiner.mutateBody(
+                as: PreferenceCombiner<K>.self,
+                invalidating: true
+            ) { combiner in
+                combiner.attributes.append(WeakAttribute(base: AnyWeakAttribute(src)))
+            }
+        }
+        project(key)
         viewGraph.graphInvalidation(from: src)
     }
     
-    package func removeValue(_ src: AnyAttribute, for key: any AnyPreferenceKey.Type, isInvalidating: Bool = false) {
-        struct RemoveValue: PreferenceKeyVisitor {
-            var combiner: AnyAttribute
-            var value: AnyAttribute
-            var changed = false
-            mutating func visit<Key: PreferenceKey>(key _: Key.Type) {
-                combiner.mutateBody(
-                    as: PreferenceCombiner<Key>.self,
-                    invalidating: true
-                ) { combiner in
-                    guard let index = combiner.attributes.firstIndex(where: { $0.attribute?.identifier == value }) else {
-                        return
-                    }
-                    combiner.attributes.remove(at: index)
-                    changed = true
-                }
-            }
-        }
+    package func removeValue(_ src: AnyAttribute, for key: any PreferenceKey.Type, isInvalidating: Bool = false) {
         guard let viewGraph,
               let bridgedPreference = bridgedPreferences.first(where: { $0.key == key }),
               let combiner = bridgedPreference.combiner.attribute
         else { return }
-        var visitor = RemoveValue(combiner: combiner, value: src)
-        key.visitKey(&visitor)
-        if visitor.changed {
+        var changed = false
+        func project<K>(_ key: K.Type) where K: PreferenceKey {
+            combiner.mutateBody(
+                as: PreferenceCombiner<K>.self,
+                invalidating: true
+            ) { combiner in
+                guard let index = combiner.attributes.firstIndex(where: { $0.attribute?.identifier == src }) else {
+                    return
+                }
+                combiner.attributes.remove(at: index)
+                changed = true
+            }
+        }
+        project(key)
+        if changed {
             viewGraph.graphInvalidation(from: isInvalidating ? nil : src)
         }
     }

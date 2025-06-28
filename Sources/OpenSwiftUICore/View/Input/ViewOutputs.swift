@@ -28,7 +28,7 @@ public struct _ViewOutputs {
         _layoutComputer = OptionalAttribute()
     }
 
-    package subscript(anyKey key: any AnyPreferenceKey.Type) -> AnyAttribute? {
+    package subscript(anyKey key: any PreferenceKey.Type) -> AnyAttribute? {
         get { preferences[anyKey: key] }
         set { preferences[anyKey: key] = newValue }
     }
@@ -42,7 +42,7 @@ public struct _ViewOutputs {
         preferences.appendPreference(key: key, value: value)
     }
 
-    package func forEachPreference(_ body: (any AnyPreferenceKey.Type, AnyAttribute) -> Void) {
+    package func forEachPreference(_ body: (any PreferenceKey.Type, AnyAttribute) -> Void) {
         preferences.forEachPreference(body)
     }
 }
