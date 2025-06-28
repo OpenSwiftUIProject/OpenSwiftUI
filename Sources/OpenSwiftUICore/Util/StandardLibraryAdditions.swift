@@ -531,7 +531,173 @@ package struct Cache3<Key, Value> where Key: Equatable {
     }
 }
 
-// TODO:
+// MARK: - Dictionary Extensions [6.5.4]
+
+extension Dictionary {
+    package func optimisticFilter(_ predicate: (Element) -> Bool) -> [Key: Value] {
+        guard count > 64 else {
+            return filter(predicate)
+        }
+        // FIXME: Use a more efficient approach for larger dictionaries
+        var result = [Key: Value]()
+        for (key, value) in self {
+            if predicate((key, value)) {
+                result[key] = value
+            }
+        }
+        return result
+    }
+    
+    package init(identifying items: some Sequence<Value>, by identifier: (Value) -> Key) {
+        self.init()
+        for item in items {
+            let key = identifier(item)
+            self[key] = item
+        }
+    }
+}
+
+// MARK: - Environment [6.5.4]
+
+package func readEnvironment(_ value: inout Bool?, _ key: UnsafePointer<CChar>) -> Bool {
+    if let existing = value {
+        return existing
+    }
+    guard let env = getenv(key) else {
+        return false
+    }
+    let result = atoi(env) != 0
+    value = result
+    return result
+}
+
+// MARK: - BidirectionalCollection Extensions [6.5.4] [WIP]
+
+extension BidirectionalCollection where Self: MutableCollection, Element: Comparable {
+    package mutating func formNextLexicographicalPermutation() -> Bool {
+        preconditionFailure("TODO")
+    }
+}
+
+// MARK: - RandomAccessCollection Extensions [Copilot]
+
+extension RandomAccessCollection {
+    package func lowerBound(_ predicate: (Element) -> Bool) -> Index {
+        var left = startIndex
+        var right = endIndex
+        
+        while left < right {
+            let mid = index(left, offsetBy: distance(from: left, to: right) / 2)
+            if predicate(self[mid]) {
+                right = mid
+            } else {
+                left = index(after: mid)
+            }
+        }
+        return left
+    }
+}
+
+extension RandomAccessCollection where Element: Comparable {
+    package func lowerBound(of value: Element) -> Index {
+        lowerBound { $0 >= value }
+    }
+}
+
+// MARK: - Range Extensions [Copilot]
+
+extension Range {
+    package func intersection(_ other: Range<Bound>) -> Range<Bound>? {
+        let lower = Swift.max(lowerBound, other.lowerBound)
+        let upper = Swift.min(upperBound, other.upperBound)
+        return lower < upper ? lower..<upper : nil
+    }
+
+    package func contains(_ other: Range<Bound>) -> Bool {
+        return lowerBound <= other.lowerBound && other.upperBound <= upperBound
+    }
+}
+
+extension Range where Bound: Numeric {
+    package var length: Bound {
+        upperBound - lowerBound
+    }
+}
+
+extension Range where Bound: SignedNumeric {
+    package func offset(by delta: Bound) -> Range<Bound> {
+        return (lowerBound + delta)..<(upperBound + delta)
+    }
+}
+
+// MARK: - ClosedRange Extensions [Copilot]
+
+extension ClosedRange {
+    package init(bounds a: Bound, _ b: Bound) {
+        if a <= b {
+            self = a...b
+        } else {
+            self = b...a
+        }
+    }
+    
+    package func union(_ other: ClosedRange<Bound>) -> ClosedRange<Bound> {
+        let lower = Swift.min(lowerBound, other.lowerBound)
+        let upper = Swift.max(upperBound, other.upperBound)
+        return lower...upper
+    }
+    
+    package func intersection(_ other: ClosedRange<Bound>) -> ClosedRange<Bound>? {
+        let lower = Swift.max(lowerBound, other.lowerBound)
+        let upper = Swift.min(upperBound, other.upperBound)
+        return lower <= upper ? lower...upper : nil
+    }
+    
+    package func contains(_ other: ClosedRange<Bound>) -> Bool {
+        return lowerBound <= other.lowerBound && other.upperBound <= upperBound
+    }
+}
+
+extension ClosedRange where Bound: Numeric {
+    package var length: Bound {
+        upperBound - lowerBound
+    }
+    
+    package static func + (lhs: ClosedRange<Bound>, rhs: Bound) -> ClosedRange<Bound> {
+        return (lhs.lowerBound + rhs)...(lhs.upperBound + rhs)
+    }
+    
+    package static func - (lhs: ClosedRange<Bound>, rhs: Bound) -> ClosedRange<Bound> {
+        return (lhs.lowerBound - rhs)...(lhs.upperBound - rhs)
+    }
+    
+    package static func += (lhs: inout ClosedRange<Bound>, rhs: Bound) {
+        lhs = lhs + rhs
+    }
+    
+    package static func -= (lhs: inout ClosedRange<Bound>, rhs: Bound) {
+        lhs = lhs - rhs
+    }
+}
+
+extension ClosedRange where Bound: SignedNumeric {
+    package func offset(by delta: Bound) -> ClosedRange<Bound> {
+        return (lowerBound + delta)...(upperBound + delta)
+    }
+}
+
+extension ClosedRange where Bound == Date {
+    package func progress(at date: Date, countdown: Bool) -> Double {
+        let totalDuration = upperBound.timeIntervalSince(lowerBound)
+        guard totalDuration > 0 else { return countdown ? 1.0 : 0.0 }
+        
+        let elapsed = date.timeIntervalSince(lowerBound)
+        let progress = elapsed / totalDuration
+        let clampedProgress = Swift.max(0.0, Swift.min(1.0, progress))
+        
+        return countdown ? (1.0 - clampedProgress) : clampedProgress
+    }
+}
 
 // MARK: - CollectionOfTwo [6.5.4]
 
