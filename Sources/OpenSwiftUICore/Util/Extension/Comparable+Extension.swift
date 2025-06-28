@@ -31,20 +31,3 @@ extension Comparable {
         return result
     }
 }
-
-package func == <A, B, C, D>(
-    lhs: ((A, B), (C, D)),
-    rhs: ((A, B), (C, D))
-) -> Bool where A: Equatable, B: Equatable, C: Equatable, D: Equatable {
-    return lhs.0.0 == rhs.0.0 && lhs.0.1 == rhs.0.1 && lhs.1.0 == rhs.1.0 && lhs.1.1 == rhs.1.1
-}
-
-package func min<C>(_ a: C, ifPresent b: C?) -> C where C: Comparable {
-    guard let b else { return a }
-    return Swift.min(a, b)
-}
-
-package func max<C>(_ a: C, ifPresent b: C?) -> C where C: Comparable {
-    guard let b else { return a }
-    return Swift.max(a, b)
-}
