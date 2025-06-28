@@ -93,7 +93,7 @@ private struct GestureBodyAccessor<Container>: BodyAccessor where Container: Ges
 
 @available(OpenSwiftUI_v1_0, *)
 extension Gesture where Value == Body.Value {
-    public static func _makeGesture(
+    nonisolated public static func _makeGesture(
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Self.Body.Value> {

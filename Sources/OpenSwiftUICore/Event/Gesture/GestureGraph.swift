@@ -4,6 +4,8 @@
 //
 //  Status: WIP
 
+import OpenGraphShims
+
 // MARK: - GestureGraphDelegate [6.5.4]
 
 package protocol GestureGraphDelegate: AnyObject {
@@ -13,67 +15,101 @@ package protocol GestureGraphDelegate: AnyObject {
 // MARK: - GestureGraph [6.5.4] [WIP]
 
 final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvertible {
-    package init(eventBindingManager: EventBindingManager) {
+    weak var rootResponder: AnyGestureResponder?
+    weak var delegate: GestureGraphDelegate?
+    package let eventBindingManager: EventBindingManager
+    @Attribute private var gestureTime: Time
+    @Attribute private var gestureEvents: [EventID: any EventType]
+    @Attribute private var inheritedPhase: _GestureInputs.InheritedPhase
+    @Attribute private var gestureResetSeed: UInt32
+    @OptionalAttribute private var rootPhase: GesturePhase<()>?
+    @OptionalAttribute private var gestureDebug: GestureDebug.Data?
+    @OptionalAttribute private var gestureCategoryAttr: GestureCategory?
+    @OptionalAttribute private var gestureLabelAttr: String??
+    @OptionalAttribute private var isCancellableAttr: Bool?
+    @OptionalAttribute private var requiredTapCountAttr: Int??
+    @OptionalAttribute private var gestureDependencyAttr: GestureDependency?
+    @Attribute private var gesturePreferenceKeys: PreferenceKeys
+    var nextUpdateTime: Time
+
+    init(rootResponder: AnyGestureResponder) {
+        self.rootResponder = rootResponder
         preconditionFailure("TODO")
     }
 
-    final package let eventBindingManager: EventBindingManager
-
-    final package var description: String {
-        get { preconditionFailure("TODO") }
+    package var description: String {
+        "GestureGraph<\(rootResponder.map { String(describing: $0.gestureType) } ?? "nil")> \(self)"
     }
 
-    override final package func instantiateOutputs() {
+    override package func instantiateOutputs() {
         preconditionFailure("TODO")
     }
 
-    override final package func uninstantiateOutputs() {
-        preconditionFailure("TODO")
+    override package func uninstantiateOutputs() {
+        $rootPhase = nil
+        _ = gestureEvents
+        gestureEvents = [:]
+        inheritedPhase = .failed
+        gestureResetSeed = .zero
+        gesturePreferenceKeys = .init()
+        if let rootResponder {
+            rootResponder.resetGesture()
+        }
     }
 
-    override final package func timeDidChange() {
-        preconditionFailure("TODO")
+    override package func timeDidChange() {
+        nextUpdateTime = .infinity
     }
 
-    final package var responderNode: ResponderNode? {
-        get { preconditionFailure("TODO") }
+    package var responderNode: ResponderNode? {
+        rootResponder
     }
 
-    final package var focusedResponder: ResponderNode? {
-        get { preconditionFailure("TODO") }
+    package var focusedResponder: ResponderNode? {
+        guard let rootResponder,
+              let host = rootResponder.host,
+              let eventGraphHost = host.as(EventGraphHost.self) else {
+            return nil
+        }
+        return eventGraphHost.focusedResponder
     }
 
-    final package var nextGestureUpdateTime: Time {
-        get { preconditionFailure("TODO") }
+    package var nextGestureUpdateTime: Time {
+        nextUpdateTime
     }
 
-    final package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
-        preconditionFailure("TODO")
+    package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
+        inheritedPhase = phase
     }
 
-    final package func sendEvents(
+    package func sendEvents(
         _ events: [EventID: any EventType],
         rootNode: ResponderNode,
         at time: Time
     ) -> GesturePhase<Void> {
+        guard let rootResponder, rootResponder.isValid else {
+            return .failed
+        }
         preconditionFailure("TODO")
     }
 
-    final package func resetEvents() {
-        preconditionFailure("TODO")
+    package func resetEvents() {
+        uninstantiate(immediately: false)
     }
 
-    final package func enqueueAction(_ action: @escaping () -> Void) {
-        preconditionFailure("TODO")
+    package func enqueueAction(_ action: @escaping () -> Void) {
+        delegate?.enqueueAction(action)
     }
 
-    final package func gestureCategory() -> GestureCategory? {
-        preconditionFailure("TODO")
+    package func gestureCategory() -> GestureCategory? {
+        guard let rootResponder, rootResponder.isValid else {
+            return nil
+        }
+        return Update.perform {
+            instantiateIfNeeded()
+            return gestureCategoryAttr
+        }
     }
-
-//    @objc deinit {
-//        preconditionFailure("TODO")
-//    }
 }
 
 extension GestureGraph {

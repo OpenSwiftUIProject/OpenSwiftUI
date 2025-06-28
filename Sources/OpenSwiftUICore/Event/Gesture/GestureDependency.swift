@@ -29,7 +29,7 @@ private struct DependentGesture<V>: GestureModifier {
 
     var dependency: GestureDependency
 
-    static func _makeGesture(
+    nonisolated static func _makeGesture(
         modifier: _GraphValue<Self>,
         inputs: _GestureInputs,
         body: (_GestureInputs) -> _GestureOutputs<Value>

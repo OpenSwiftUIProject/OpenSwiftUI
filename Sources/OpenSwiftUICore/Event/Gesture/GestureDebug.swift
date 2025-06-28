@@ -68,8 +68,7 @@ extension GestureDebug.Data: Defaultable {
 
 // MARK: - PrimitiveDebuggableGesture [6.5.4]
 
-package protocol PrimitiveDebuggableGesture {
-}
+package protocol PrimitiveDebuggableGesture {}
 
 // MARK: - DebuggableGesturePhase [6.5.4]
 

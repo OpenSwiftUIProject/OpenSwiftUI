@@ -238,7 +238,7 @@ extension _ViewInputs {
         inputs.requestsLayoutComputer = false
         inputs.needsGeometry = false
         inputs.preferences.remove(DisplayList.Key.self)
-        inputs.preferences.remove(ViewRespondersKey.self)
+        inputs.preferences.requiresViewResponders = false
         return inputs
     }
 

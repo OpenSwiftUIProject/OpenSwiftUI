@@ -38,7 +38,7 @@ package final class ViewGraph: GraphHost {
                 inputs.preferences.add(DisplayList.Key.self)
             }
             if contains(.viewResponders) {
-                inputs.preferences.add(ViewRespondersKey.self)
+                inputs.preferences.requiresViewResponders = true
             }
         }
     }
@@ -264,7 +264,7 @@ package final class ViewGraph: GraphHost {
             }
         }
         if requestedOutputs.contains(.viewResponders) {
-            _rootResponders = WeakAttribute(outputs.preferences[ViewRespondersKey.self])
+            _rootResponders = WeakAttribute(outputs.preferences.viewResponders)
         }
         if requestedOutputs.contains(.layout) {
             _rootLayoutComputer = WeakAttribute(outputs.layoutComputer)
