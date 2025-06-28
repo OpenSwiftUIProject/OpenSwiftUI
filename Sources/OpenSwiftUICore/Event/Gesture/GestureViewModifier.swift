@@ -225,7 +225,7 @@ private class GestureResponder<Modifier>/*: AnyGestureResponder where Modifier: 
 // MARK: - GestureAccessibilityProvider [6.5.4]
 
 package protocol GestureAccessibilityProvider {
-    static func makeGesture(
+    nonisolated static func makeGesture(
         mask: @autoclosure () -> Attribute<GestureMask>,
         inputs: _ViewInputs,
         outputs: inout _ViewOutputs
@@ -237,7 +237,7 @@ private struct GestureAccessibilityProviderKey: GraphInput {
 }
 
 struct EmptyGestureAccessibilityProvider: GestureAccessibilityProvider {
-    static func makeGesture(
+    nonisolated static func makeGesture(
         mask: @autoclosure () -> Attribute<GestureMask>,
         inputs: _ViewInputs,
         outputs: inout _ViewOutputs
@@ -259,17 +259,19 @@ extension _ViewInputs {
     }
 }
 
-// MARK: - Optional: Gesture
+// MARK: - Optional: Gesture [WIP]
 
-//extension Optional: Gesture where Wrapped: Gesture {
-//    public typealias Value = Wrapped.Value
-//    
-//    public static func _makeGesture(
-//        gesture: _GraphValue<Optional<Wrapped>>,
-//        inputs: _GestureInputs
-//    ) -> _GestureOutputs<Wrapped.Value> { preconditionFailure("TODO") }
-//    
-//    public typealias Body = Never
-//}
-//
-//extension Optional: PrimitiveGesture where Wrapped: Gesture {}
+extension Optional: Gesture where Wrapped: Gesture {
+    public typealias Value = Wrapped.Value
+    
+    nonisolated public static func _makeGesture(
+        gesture: _GraphValue<Optional<Wrapped>>,
+        inputs: _GestureInputs
+    ) -> _GestureOutputs<Wrapped.Value> {
+        preconditionFailure("TODO")
+    }
+
+    public typealias Body = Never
+}
+
+extension Optional: PrimitiveGesture where Wrapped: Gesture {}
