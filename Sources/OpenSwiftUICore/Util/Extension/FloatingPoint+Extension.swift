@@ -2,8 +2,11 @@
 //  FloatingPoint+Extension.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
 //  Status: Complete
+
+package import Foundation
+
+// MARK: - FloatingPoint + Zero [6.0.87]
 
 extension FloatingPoint {
     /// Determines whether two floating-point values are approximately equal within a specified tolerance.
@@ -106,3 +109,88 @@ extension FloatingPoint {
         return rescaledValue.isAlmostEqual(to: otherRescaledValue, tolerance: tolerance)
     }
 }
+
+// MARK: - FloatingPoint + Misc [6.5.4]
+
+extension Float {
+    package func mix(with other: Float, by t: Double) -> Float {
+        (other - self) * Float(t) + self
+    }
+}
+
+extension CGFloat {
+    package func mix(with other: CGFloat, by t: Double) -> CGFloat {
+        (other - self) * CGFloat(t) + self
+    }
+}
+
+extension Double {
+    package func mix(with other: Double, by t: Double) -> Double {
+        (other - self) * t + self
+    }
+}
+
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#else
+#error("Unsupported Platform")
+#endif
+
+extension Double {
+    package var quantized: Double {
+        CGFloat(self).quantized
+    }
+}
+
+extension Float {
+    package var quantized: Float {
+        #if canImport(Darwin)
+        Darwin.round(self * 256.0) / 256.0
+        #elseif canImport(Glibc)
+        Glibc.round(self * 256.0) / 256.0
+        #else
+        #error("Unsupported Platform")
+        #endif
+    }
+}
+
+extension CGFloat {
+    package var quantized: CGFloat {
+        #if canImport(Darwin)
+        Darwin.round(self * 256.0) / 256.0
+        #elseif canImport(Glibc)
+        Glibc.round(self * 256.0) / 256.0
+        #else
+        #error("Unsupported Platform")
+        #endif
+    }
+}
+
+extension FloatingPoint {
+    package func mappingNaN(to value: Self) -> Self {
+        isNaN ? value : self
+    }
+}
+
+extension BinaryFloatingPoint {
+    package func ensuringNonzeroValue() -> Self {
+        isZero ? Self.leastNonzeroMagnitude : self
+    }
+}
+
+// MARK: - Duration Conversion [6.5.4]
+
+@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
+extension Double {
+    package init(_ duration: Duration) {
+        let (seconds, attoseconds) = duration.components
+        self = Double(seconds) + Double(attoseconds) / 1e18
+    }
+}
+
+package func abs(_ duration: Duration) -> Duration {
+    (duration < .zero) ? (.zero - duration) : duration
+}
+
