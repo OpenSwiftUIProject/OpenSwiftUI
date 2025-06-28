@@ -3,6 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Status: WIP
+//  ID: D63F4C292364B83D9F441CFC1A31B3F3 (SwiftUICore)
 
 import Foundation
 
@@ -58,9 +59,18 @@ final public class EventBindingManager {
         preconditionFailure("TODO")
     }
 
+    private func sendDownstream(_ events: [EventID: any EventType]) -> Set<EventID> {
+        preconditionFailure("TODO")
+    }
+
     @discardableResult
     package func send(_ events: [EventID: any EventType]) -> Set<EventID> {
-        preconditionFailure("TODO")
+        Update.locked { [weak self] in
+            guard let self else {
+                return []
+            }
+            return sendDownstream(events)
+        }
     }
 
     package func send<E>(_ event: E, id: Int) where E: EventType {
