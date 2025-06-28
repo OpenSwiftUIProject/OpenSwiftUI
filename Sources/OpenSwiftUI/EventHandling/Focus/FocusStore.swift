@@ -1,3 +1,6 @@
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
+
 struct FocusStore {
     var seed: VersionSeed
     var focusedResponders: ContiguousArray<ResponderNode>
