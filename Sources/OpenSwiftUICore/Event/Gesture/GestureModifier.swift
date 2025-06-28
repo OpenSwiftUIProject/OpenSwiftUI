@@ -2,7 +2,7 @@
 //  GestureModifier.swift
 //  OpenSwiftUICore
 //
-//  Status: Blocked by makeDebuggableGesture
+//  Status: Complete
 
 package protocol GestureModifier {
     associatedtype Value
@@ -33,10 +33,18 @@ package struct ModifierGesture<ContentModifier, Content>: PrimitiveGesture
     package typealias Value = ContentModifier.Value
 
     package static func _makeGesture(
-        gesture: _GraphValue<ModifierGesture<ContentModifier, Content>>,
+        gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<ContentModifier.Value> {
-        preconditionFailure("TODO")
+        ContentModifier.makeDebuggableGesture(
+            modifier: gesture[offset: { .of(&$0.modifier) }],
+            inputs: inputs
+        ) { inputs in
+            Content.makeDebuggableGesture(
+                gesture: gesture[offset: { .of(&$0.content) }],
+                inputs: inputs
+            )
+        }
     }
 }
 
