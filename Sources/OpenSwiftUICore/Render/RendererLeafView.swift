@@ -29,7 +29,7 @@ extension RendererLeafView {
         // TODO
         var outputs = _ViewOutputs()
         // FIXME
-        outputs.preferences[DisplayList.Key.self] = Attribute(
+        outputs.preferences.displayList = Attribute(
             LeafDisplayList(
                 identity: .init(),
                 view: view.value,
