@@ -70,15 +70,15 @@ extension EnvironmentValues {
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     public var _useVibrantStyling: Bool {
-        get { openSwiftUIUnimplementedFailure() }
-        set { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
     }
 
     @available(iOS, unavailable)
     @available(tvOS, unavailable)
     @available(watchOS, unavailable)
     package var reduceDesktopTinting: Bool {
-        get { openSwiftUIUnimplementedFailure() }
-        set { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
     }
 }

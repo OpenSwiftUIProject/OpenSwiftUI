@@ -584,7 +584,7 @@ extension _UIHostingView: ViewRendererHost {
     }
 
     package func updateScrollableContainerSize() {
-        // openSwiftUIUnimplementedFailure()
+        // _openSwiftUIUnimplementedFailure()
     }
 
     var shouldDisableUIKitAnimations: Bool {
@@ -684,7 +684,7 @@ extension _UIHostingView: ViewRendererHost {
     }
     
     package func rootTransform() -> ViewTransform {
-        openSwiftUIUnimplementedWarning()
+        _openSwiftUIUnimplementedWarning()
         return ViewTransform()
     }
 

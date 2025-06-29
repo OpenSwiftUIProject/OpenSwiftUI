@@ -91,13 +91,13 @@ package struct DisplayList: Equatable {
     }
 
     package mutating func append(_ item: Item) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package mutating func append(contentsOf other: DisplayList) {
         // TODO
         items.append(contentsOf: other.items)
-//        openSwiftUIUnimplementedFailure()
+//        _openSwiftUIUnimplementedFailure()
     }    
 }
 
@@ -392,16 +392,16 @@ extension DisplayList {
         }
         
         package mutating func skip(list: DisplayList) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package mutating func skip(item: Item) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package mutating func skip(effect: Effect) {
             
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func assertItem(_ item: Item) {}

@@ -116,7 +116,7 @@ public struct _BlendModeShapeStyle<Style>: ShapeStyle, PrimitiveShapeStyle where
                     shape.result = .preparedText(.foregroundKeyColor)
                 }
             default:
-                openSwiftUIUnimplementedFailure()
+                _openSwiftUIUnimplementedFailure()
 //            case resolveStyle(name: _ShapeStyle_Name, levels: Range<Int>):
 //                
 //                

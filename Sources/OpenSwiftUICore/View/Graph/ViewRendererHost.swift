@@ -193,7 +193,7 @@ extension ViewRendererHost {
     package func updateTransform() {
         // Blocked by ValueState
         // viewGraph.$rootTransform.valueState
-        // openSwiftUIUnimplementedFailure()
+        // _openSwiftUIUnimplementedFailure()
     }
     
     package func render(interval: Double = 0, updateDisplayList: Bool = true, targetTimestamp: Time? = nil) {
@@ -262,7 +262,7 @@ extension ViewRendererHost {
     }
     
     package func renderAsync(interval: Double = 0, targetTimestamp: Time?) -> Time? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func advanceTimeForTest(interval: Double) {
@@ -292,19 +292,19 @@ extension ViewRendererHost {
         }
     }
     package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package var centersRootView: Bool {
@@ -313,7 +313,7 @@ extension ViewRendererHost {
     }
     
 //    package var responderNode: ResponderNode? {
-//        openSwiftUIUnimplementedFailure()
+//        _openSwiftUIUnimplementedFailure()
 //    }
     
     package var isRootHost: Bool {
@@ -323,8 +323,8 @@ extension ViewRendererHost {
         return bridge.viewGraph == nil
     }
     
-    private var enclosingHosts: [ViewRendererHost] { openSwiftUIUnimplementedFailure() }
-    package func performExternalUpdate(_ update: () -> Void) { openSwiftUIUnimplementedFailure() }
+    private var enclosingHosts: [ViewRendererHost] { _openSwiftUIUnimplementedFailure() }
+    package func performExternalUpdate(_ update: () -> Void) { _openSwiftUIUnimplementedFailure() }
     package func updateFocusedItem() {}
     package func updateFocusedValues() {}
     package func updateFocusStore() {}
@@ -391,7 +391,7 @@ extension EnvironmentValues {
 
 extension ViewRendererHost {
     package func rootContentPath(kind: ContentShapeKinds) -> Path {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

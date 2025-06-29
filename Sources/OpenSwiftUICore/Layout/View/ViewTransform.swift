@@ -299,35 +299,35 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
             forEach(inverted: false) { item, stop in
                 // TODO
             }
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, _ body: (ViewTransform.Item) -> Void) {
         guard !isEmpty else { return }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, points: inout [CGPoint]) {
         guard !isEmpty else { return }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, point: CGPoint) -> CGPoint {
         guard !isEmpty else { return point }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package var containingScrollGeometry: ScrollGeometry? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package var nearestScrollGeometry: ScrollGeometry? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func containingSizedCoordinateSpace(name: CoordinateSpace.Name) -> CGRect? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     public var description: String {
@@ -757,7 +757,7 @@ extension CGRect: ViewTransformable {
         transform.convert(.localToSpace(space)) { item in
             // TODO
         }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

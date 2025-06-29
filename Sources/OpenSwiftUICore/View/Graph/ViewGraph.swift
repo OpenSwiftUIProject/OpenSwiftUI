@@ -296,7 +296,7 @@ package final class ViewGraph: GraphHost {
     }
     
     override package func isHiddenForReuseDidChange() {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     private func makePreferenceOutlets(outputs: _ViewOutputs) {
@@ -360,7 +360,7 @@ extension ViewGraph {
     
     @discardableResult
     package func invalidateTransform() -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -376,11 +376,11 @@ extension ViewGraph {
     
     package func updateOutputsAsync(at time: Time) -> (list: DisplayList, version: DisplayList.Version)? {
         beginNextUpdate(at: time)
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func displayList() -> (DisplayList, DisplayList.Version) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     private func beginNextUpdate(at time: Time) {
@@ -437,7 +437,7 @@ extension ViewGraph {
 ////                delegate?.focusDidChange()
 //            }
 //        } else {
-//            openSwiftUIUnimplementedFailure()
+//            _openSwiftUIUnimplementedFailure()
 //        }
 //        mainUpdates &-= 1
     }
@@ -463,23 +463,23 @@ extension ViewGraph {
 //package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
 extension ViewGraph {
     package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func viewDebugData() -> [_ViewDebug.Data] {

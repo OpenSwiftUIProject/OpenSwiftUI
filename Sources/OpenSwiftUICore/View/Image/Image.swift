@@ -13,13 +13,13 @@ public import CoreGraphics
 public struct Image: Equatable, Sendable {
     // FIXME
     package static var redacted: Image {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     #if canImport(CoreGraphics)
     // FIXME
     public init(decorative: CGImage, scale: CGFloat, orientation: Image.Orientation) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     #endif
 }

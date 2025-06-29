@@ -711,7 +711,7 @@ extension Layout {
         subviews: Subviews,
         cache: inout Cache
     ) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func explicitAlignment(
@@ -721,11 +721,11 @@ extension Layout {
         subviews: Subviews,
         cache: inout Cache
     ) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func spacing(subviews: Subviews, cache: inout Cache) -> ViewSpacing {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

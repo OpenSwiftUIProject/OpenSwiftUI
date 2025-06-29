@@ -120,14 +120,14 @@ extension IDView: DynamicView {
 
     package static var traitKeysDependOnView: Bool { false }
 
-    package static func makeID() -> ID { openSwiftUIBaseClassAbstractMethod() }
+    package static func makeID() -> ID { _openSwiftUIBaseClassAbstractMethod() }
 
     package func childInfo(metadata: ()) -> (any Any.Type, ID?) {
         (Content.self, id)
     }
 
     package func makeChildView(metadata: (), view: Attribute<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func makeChildViewList(metadata: (), view: Attribute<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {

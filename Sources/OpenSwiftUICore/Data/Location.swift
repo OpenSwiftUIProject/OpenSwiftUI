@@ -43,23 +43,23 @@ extension AnyLocationBase: Sendable {}
 open class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
     @_spi(ForOpenSwiftUIOnly)
     open var wasRead: Bool {
-        get { openSwiftUIBaseClassAbstractMethod() }
-        set { openSwiftUIBaseClassAbstractMethod() }
+        get { _openSwiftUIBaseClassAbstractMethod() }
+        set { _openSwiftUIBaseClassAbstractMethod() }
     }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func get() -> Value { openSwiftUIBaseClassAbstractMethod() }
+    open func get() -> Value { _openSwiftUIBaseClassAbstractMethod() }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func set(_ value: Value, transaction: Transaction) { openSwiftUIBaseClassAbstractMethod() }
+    open func set(_ value: Value, transaction: Transaction) { _openSwiftUIBaseClassAbstractMethod() }
     
     @_spi(ForOpenSwiftUIOnly)
     open func projecting<P>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base, P: Projection {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func update() -> (Value, Bool) { openSwiftUIBaseClassAbstractMethod() }
+    open func update() -> (Value, Bool) { _openSwiftUIBaseClassAbstractMethod() }
     
     @_spi(ForOpenSwiftUIOnly)
     open func isEqual(to other: AnyLocation<Value>) -> Bool { self === other }

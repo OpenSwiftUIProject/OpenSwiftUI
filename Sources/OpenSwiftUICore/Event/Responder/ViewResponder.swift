@@ -143,7 +143,7 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
 
     open var descriptionName: String {
         // recursiveDescriptionName(Self.self)
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public var description: String {
@@ -153,7 +153,7 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
     @inline(never)
     final package func printTree(depth: Int = 0) {
         // Log.eventDebug
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     open func extendPrintTree(string: inout String) {}

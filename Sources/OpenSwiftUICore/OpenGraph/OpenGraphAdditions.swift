@@ -78,7 +78,7 @@ extension Attribute {
     }
 
     package func invalidateValueIfNeeded() -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func unsafeBitCast<T>(to _: T.Type) -> Attribute<T> {
@@ -97,31 +97,31 @@ package protocol InvalidatableAttribute: _AttributeBody {
 
 extension AnyAttribute.Flags {
     package static var transactional: Subgraph.Flags {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package static var removable: Subgraph.Flags {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package static var invalidatable: Subgraph.Flags {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package static var scrapeable: Subgraph.Flags {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 }
 
 extension Subgraph.ChildFlags {
     package static var secondary: Subgraph.ChildFlags {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 }
 
 extension Subgraph {
     package func addSecondaryChild(_ child: Subgraph) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func willRemove() {
@@ -169,17 +169,17 @@ extension Attribute {
     }
 
     package func allowsAsyncUpdate() -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
 extension WeakAttribute {
     package var uncheckedIdentifier: Attribute<Value> {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package func allowsAsyncUpdate() -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -201,7 +201,7 @@ package struct TreeValueFlags: OptionSet {
     package let rawValue: UInt32
 
     package init(rawValue: UInt32) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     // FIXME?
@@ -276,7 +276,7 @@ private struct ToOptional<T>: Rule, AsyncAttribute {
 extension Graph {
     @inline(__always)
     package static func cancelCurrentUpdateIfDeadlinePassed() -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package static func startTracing(options: Graph.TraceOptions? = nil) {

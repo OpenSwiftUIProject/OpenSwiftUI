@@ -41,7 +41,7 @@ final package class _DisplayList_StableIdentityRoot {
         if let map {
             return map[index]
         } else {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 }
@@ -81,17 +81,17 @@ extension _DisplayList_StableIdentity: ProtobufMessage {
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
 extension _DisplayList_StableIdentityMap: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package init(from decoder: inout ProtobufDecoder) throws {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

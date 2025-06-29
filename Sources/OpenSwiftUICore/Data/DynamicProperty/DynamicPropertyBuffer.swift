@@ -273,7 +273,7 @@ private class BoxVTableBase {
         ptr _: UnsafeMutableRawPointer,
         from _: UnsafeMutableRawPointer
     ) {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
     
     class func deinitialize(ptr _: UnsafeMutableRawPointer) {}

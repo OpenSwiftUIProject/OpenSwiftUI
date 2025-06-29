@@ -266,7 +266,7 @@ extension GraphHost {
         guard isInstantiated else {
             return
         }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package final func uninstantiate() {
@@ -509,7 +509,7 @@ extension GraphHost {
     private static var pendingGlobalTransactions: [GlobalTransaction] = []
 
     private static func flushGlobalTransactions() {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package static func globalTransaction<T>(
@@ -518,7 +518,7 @@ extension GraphHost {
         mutation: T,
         hostProvider: any TransactionHostProvider
     ) where T: GraphMutation {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -687,5 +687,5 @@ private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
 
 public func __previewThunksHaveFinishedLoading() {
-    openSwiftUIUnimplementedFailure()
+    _openSwiftUIUnimplementedFailure()
 }

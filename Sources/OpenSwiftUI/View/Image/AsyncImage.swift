@@ -495,7 +495,7 @@ private func downloadURL(_ url: URL) async throws -> TaskResult {
         orientation: cgImageSource.orientation(at: 0)
     )
     #else
-    openSwiftUIUnimplementedFailure()
+    _openSwiftUIUnimplementedFailure()
     #endif
 }
 
@@ -539,6 +539,6 @@ private func updateTaskResult(_ result: TaskResult, config: TaskConfig) {
         }
     }
     #else
-    openSwiftUIUnimplementedFailure()
+    _openSwiftUIUnimplementedFailure()
     #endif
 }

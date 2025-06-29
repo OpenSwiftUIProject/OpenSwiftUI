@@ -132,7 +132,7 @@ package struct _ShapeStyle_Pack: Equatable {
         var baseLevel: UInt8
         
         init(pack: _ShapeStyle_Pack, name: _ShapeStyle_Name) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package var startIndex: Int {
@@ -140,38 +140,38 @@ package struct _ShapeStyle_Pack: Equatable {
         }
         
         package var endIndex: Int {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package subscript(level: Int) -> _ShapeStyle_Pack.Style {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
     
     package mutating func modify(name: _ShapeStyle_Name, levels: Range<Int>, _ modifier: (inout _ShapeStyle_Pack.Style) -> Void) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package mutating func adjustLevelIndices(of name: _ShapeStyle_Name, by offset: Int) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package mutating func createOpacities(count: Int, name: _ShapeStyle_Name, environment: EnvironmentValues) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func isClear(name: _ShapeStyle_Name) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package subscript(colorName: String) -> Color.Resolved? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
 extension _ShapeStyle_Pack.Slice {
     package var allColors: Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -188,23 +188,23 @@ extension _ShapeStyle_Pack.Style {
     }
     
     package var ignoresBackdrop: Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package mutating func applyOpacity(_ opacity: Float) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func applyingOpacity(_ opacity: Float) -> _ShapeStyle_Pack.Style {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package mutating func applyBlend(_ blend: GraphicsBlendMode) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package var color: Color.Resolved? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

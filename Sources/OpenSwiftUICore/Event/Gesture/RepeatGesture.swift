@@ -32,7 +32,7 @@ package struct RepeatGesture<Value>: GestureModifier {
         inputs: _GestureInputs,
         body: (_GestureInputs) -> _GestureOutputs<Value>
     ) -> _GestureOutputs<Value> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -54,6 +54,6 @@ private struct RepeatPhase<V>: ResettableGestureRule {
         guard resetIfNeeded() else {
             return
         }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }

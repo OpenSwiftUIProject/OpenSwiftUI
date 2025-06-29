@@ -55,15 +55,15 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
     // MARK: - abstract method
     
     fileprivate var isUpdating: Bool {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate func commit(transaction: Transaction, mutation: BeginUpdate) {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
     
     fileprivate func notifyObservers() {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
     
     // MARK: - AnyLocation

@@ -48,19 +48,19 @@ final public class EventBindingManager {
         _ identifier: EventID,
         to: ResponderNode?
     ) -> (from: EventBinding?, to: EventBinding?)? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func willRemoveResponder(_ from: ResponderNode) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     private func sendDownstream(_ events: [EventID: any EventType]) -> Set<EventID> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     @discardableResult
@@ -74,23 +74,23 @@ final public class EventBindingManager {
     }
 
     package func send<E>(_ event: E, id: Int) where E: EventType {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
-    package var rootResponder: ResponderNode? { openSwiftUIUnimplementedFailure() }
+    package var rootResponder: ResponderNode? { _openSwiftUIUnimplementedFailure() }
 
-    package var focusedResponder: ResponderNode? { openSwiftUIUnimplementedFailure() }
+    package var focusedResponder: ResponderNode? { _openSwiftUIUnimplementedFailure() }
 
     package func reset(resetForwardedEventDispatchers: Bool = false) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func isActive<E>(for eventType: E.Type) -> Bool where E: EventType {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func binds<E>(_ event: E) -> Bool where E: EventType {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

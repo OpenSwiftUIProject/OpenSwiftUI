@@ -34,18 +34,18 @@ open class EventBindingBridge {
         _ events: [EventID: any EventType],
         source: any EventBindingSource
     ) -> Set<EventID> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     open func reset(
         eventSource: any EventBindingSource,
         resetForwardedEventDispatchers: Bool = false
     ) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     private func resetEvent() {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     open func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {

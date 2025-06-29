@@ -45,7 +45,7 @@ extension _TestApp {
             exit(0)
         }
         #else
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
         #endif
     }
 }

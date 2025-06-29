@@ -604,7 +604,7 @@ extension ViewList {
                 // sublist.elements append
                 true
             }
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -615,7 +615,7 @@ extension ViewList {
         transform: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func applyIDs(
@@ -624,7 +624,7 @@ extension ViewList {
         transform t: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func applyIDs(
@@ -632,7 +632,7 @@ extension ViewList {
         listAttribute: Attribute<any ViewList>?,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func applyIDs(
@@ -640,11 +640,11 @@ extension ViewList {
         transform t: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func firstOffset(of id: ViewList.ID.Canonical, style: IteratorStyle) -> Int? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func firstOffset(of id: ViewList.ID.Canonical) -> Int? {
@@ -1008,11 +1008,11 @@ open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
 
     final public var startIndex: Int { 0 }
 
-    open var endIndex: Int { openSwiftUIBaseClassAbstractMethod() }
+    open var endIndex: Int { _openSwiftUIBaseClassAbstractMethod() }
 
-    open subscript(index: Int) -> _ViewList_ID { openSwiftUIBaseClassAbstractMethod() }
+    open subscript(index: Int) -> _ViewList_ID { _openSwiftUIBaseClassAbstractMethod() }
 
-    open func isEqual(to other: _ViewList_ID_Views) -> Bool { openSwiftUIBaseClassAbstractMethod() }
+    open func isEqual(to other: _ViewList_ID_Views) -> Bool { _openSwiftUIBaseClassAbstractMethod() }
 
     package init(isDataDependent: Bool) {
         self.isDataDependent = isDataDependent
@@ -1093,7 +1093,7 @@ private struct MergedElements: ViewList.Elements {
         var count = 0
         for output in outputs {
             guard case let .staticList(elements) = output.views else {
-                openSwiftUIBaseClassAbstractMethod()
+                _openSwiftUIBaseClassAbstractMethod()
             }
             count += elements.count
         }
@@ -1110,7 +1110,7 @@ private struct MergedElements: ViewList.Elements {
         var shouldContinue = true
         for output in outputs {
             guard case let .staticList(elements) = output.views else {
-                openSwiftUIBaseClassAbstractMethod()
+                _openSwiftUIBaseClassAbstractMethod()
             }
             let (elementsOutputs, elementsShouldContinue) = elements.makeElements(
                 from: &start,
@@ -1182,7 +1182,7 @@ private struct MergedElements: ViewList.Elements {
         var lowerBound = 0
         for output in outputs {
             guard case let .staticList(elements) = output.views else {
-                openSwiftUIBaseClassAbstractMethod()
+                _openSwiftUIBaseClassAbstractMethod()
             }
             let count = elements.count
             let upperBound = lowerBound + count
@@ -1309,7 +1309,7 @@ extension _ViewListOutputs {
 
     // FIXME: Group
     package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
@@ -1385,7 +1385,7 @@ extension _ViewListOutputs {
         case let .staticList(elements):
             views = .staticList(ModifiedElements(base: elements, modifier: WeakAttribute(modifier.value), baseInputs: inputs.base))
         case .dynamicList(_, _):
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -1400,7 +1400,7 @@ extension _ViewListOutputs {
             case 1:
                 let output = outputs[startIndex]
                 guard case let .staticList(viewElements) = output.views else {
-                    openSwiftUIBaseClassAbstractMethod()
+                    _openSwiftUIBaseClassAbstractMethod()
                 }
                 elements = viewElements
                 staticCount = output.staticCount

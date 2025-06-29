@@ -12,7 +12,7 @@ package struct ResolvedGradient: Equatable {
         case perceptual
 
         func mix(_ lhs: Color.Resolved, _ rhs: Color.Resolved, by fraction: Float) -> Color.Resolved {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 }

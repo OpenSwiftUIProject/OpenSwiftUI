@@ -16,7 +16,7 @@ extension UnaryLayout where Self.PlacementContextType == _PositionAwarePlacement
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

@@ -140,7 +140,7 @@ extension RoundedRectangle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         @usableFromInline
@@ -187,7 +187,7 @@ extension UnevenRoundedRectangle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         @usableFromInline
@@ -226,7 +226,7 @@ extension Capsule: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         @usableFromInline
@@ -285,7 +285,7 @@ extension Ellipse: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         @usableFromInline
@@ -329,7 +329,7 @@ extension Circle: InsettableShape {
 
         @usableFromInline
         nonisolated func path(in rect: CGRect) -> Path {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         @usableFromInline

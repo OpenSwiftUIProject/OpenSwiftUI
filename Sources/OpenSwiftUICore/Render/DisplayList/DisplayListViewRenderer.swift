@@ -173,7 +173,7 @@ extension DisplayList {
         var lastContentsScale: CGFloat
 
         init(platform: DisplayList.ViewUpdater.Platform, host: ViewRendererHost?, rootView: AnyObject, options: _RendererConfiguration.RasterizationOptions) {
-            openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIBaseClassAbstractMethod()
         }
 
         var exportedObject: AnyObject? {
@@ -181,7 +181,7 @@ extension DisplayList {
         }
 
         func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
-            // openSwiftUIUnimplementedFailure()
+            // _openSwiftUIUnimplementedFailure()
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
             }
@@ -192,15 +192,15 @@ extension DisplayList {
         }
 
         func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         func destroy(rootView: AnyObject) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         var viewCacheIsEmpty: Bool {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 }

@@ -15,7 +15,7 @@ extension _AnimatableView {
     }
 
     public static func _makeViewList(view _: _GraphValue<Self>, inputs _: _ViewListInputs) -> _ViewListOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -25,6 +25,6 @@ extension View where Self: Animatable {
     }
 
     public static func _makeViewList(view _: _GraphValue<Self>, inputs _: _ViewListInputs) -> _ViewListOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }

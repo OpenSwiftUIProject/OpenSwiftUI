@@ -350,7 +350,7 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
         cacheKey: UInt32?,
         options: ViewResponder.ContainsPointsOptions
     ) -> ViewResponder.ContainsPointsResult {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     override func bindEvent(_ event: any EventType) -> ResponderNode? {
@@ -392,7 +392,7 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
 //            }
 //            // TODO: GestureViewDebug
 //            return closure()
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -604,7 +604,7 @@ private struct SubviewsPhase: StatefulRule, ObservedAttribute {
     @OptionalAttribute var childDebugData: GestureDebug.Data?
 
     mutating func updateValue() {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     func destroy() {
@@ -660,7 +660,7 @@ extension Optional: Gesture where Wrapped: Gesture {
         gesture: _GraphValue<Optional<Wrapped>>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Wrapped.Value> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public typealias Body = Never

@@ -28,11 +28,11 @@ final class DisplayLink: NSObject {
     
     #if os(iOS)
     init(host: AnyUIHostingView, window: UIWindow) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     #elseif os(macOS)
     init(host: AnyUIHostingView, window: NSWindow) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     #endif
     
