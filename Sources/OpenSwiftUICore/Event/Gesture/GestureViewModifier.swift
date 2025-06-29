@@ -14,7 +14,7 @@ package protocol GestureViewModifier: MultiViewModifier, PrimitiveViewModifier {
     
     associatedtype Combiner: GestureCombiner = DefaultGestureCombiner
     
-    var gesture: Self.ContentGesture { get }
+    var gesture: ContentGesture { get }
     
     var name: String? { get }
     
@@ -40,13 +40,13 @@ extension GestureResponderExclusionPolicy: Sendable {}
 // MARK: - GestureCombiner [6.5.4]
 
 package protocol GestureCombiner {
-    associatedtype Result: Gesture /*where Result.Value == ()*/
+    associatedtype Result: Gesture where Result.Value == ()
 
     static func combine(
         _ gesture1: AnyGesture<Void>,
         _ gesture2: AnyGesture<Void>
-    ) -> Self.Result
-    
+    ) -> Result
+
     static var exclusionPolicy: GestureResponderExclusionPolicy { get }
 }
 
@@ -90,40 +90,6 @@ extension GestureViewModifier {
     }
 }
 
-// MARK: - GestureFilter [6.5.4] [Blocked by ViewResponder]
-
-private struct GestureFilter<Modifier>: StatefulRule where Modifier: GestureViewModifier {
-    typealias Value = [ViewResponder]
-    
-    @Attribute var children: [ViewResponder]
-    
-    @Attribute var modifier: Modifier
-    
-    var inputs: _ViewInputs
-    
-    var viewSubgraph: Subgraph
-    
-    lazy var responder: GestureResponder<Modifier> = {
-        viewSubgraph.apply {
-            GestureResponder(
-                modifier: $modifier,
-                inputs: inputs
-            )
-        }
-    }()
-    
-    mutating func updateValue() {
-        let responder = responder
-        let (children, childrenChanged) = $children.changedValue()
-        if childrenChanged {
-            // responder.children = children
-        }
-        if !hasValue {
-            // value = [self.responder]
-        }
-    }
-}
-
 // MARK: - AddGestureModifier [6.5.4]
 
 package struct AddGestureModifier<T>: GestureViewModifier where T: Gesture {
@@ -146,10 +112,12 @@ package struct AddGestureModifier<T>: GestureViewModifier where T: Gesture {
     package typealias ContentGesture = T
 }
 
+// MARK: - DefaultGestureCombiner [6.5.4]
+
 package struct DefaultGestureCombiner: GestureCombiner {
     package typealias Base = ExclusiveGesture<AnyGesture<Void>, AnyGesture<Void>>
 
-    package typealias Result = _MapGesture<DefaultGestureCombiner.Base, Int>
+    package typealias Result = _MapGesture<DefaultGestureCombiner.Base, Void>
 
     package static var exclusionPolicy: GestureResponderExclusionPolicy { .default }
 
@@ -157,68 +125,316 @@ package struct DefaultGestureCombiner: GestureCombiner {
         _ first: AnyGesture<Void>,
         _ second: AnyGesture<Void>
     ) -> DefaultGestureCombiner.Result {
-        preconditionFailure("TODO")
+        first.exclusively(before: second).map { _ in }
     }
 }
 
+// MARK: - AnyGestureContainingResponder [6.5.4]
+
 package protocol AnyGestureContainingResponder: ViewResponder {
     var viewSubgraph: Subgraph { get }
+
     var eventSources: [any EventBindingSource] { get }
+
     var gestureType: any Any.Type { get }
+
     var isValid: Bool { get }
-    
+
     func detachContainer()
 }
 
+// MARK: - AnyGestureResponder [6.5.4]
+
 package protocol AnyGestureResponder: AnyGestureContainingResponder {
     var inputs: _ViewInputs { get }
+
     var childSubgraph: Subgraph? { get set }
+
     var childViewSubgraph: Subgraph? { get set }
+
     var exclusionPolicy: GestureResponderExclusionPolicy { get }
+
+    var label: String? { get }
+
     var gestureGraph: GestureGraph { get }
-    
+
+    var relatedAttribute: AnyAttribute { get }
+
     func makeSubviewsGesture(inputs: _GestureInputs) -> _GestureOutputs<Void>
 }
 
 extension AnyGestureResponder {
-    package var exclusionPolicy: GestureResponderExclusionPolicy {
-        get { preconditionFailure("TODO") }
-    }
-    
+    package var exclusionPolicy: GestureResponderExclusionPolicy { .default }
+
     package func makeSubviewsGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
-        preconditionFailure("TODO")
+        _GestureOutputs(phase: inputs.failedPhase)
     }
     
     package func makeWrappedGesture(
         inputs: _GestureInputs,
         makeChild: (_GestureInputs) -> _GestureOutputs<Void>
-    ) -> _GestureOutputs<Void> { preconditionFailure("TODO") }
-    
-    package var label: String? {
-        get { preconditionFailure("TODO") }
+    ) -> _GestureOutputs<Void> {
+        let inputs = inputs
+        var outputs: _GestureOutputs<Void> = inputs.makeDefaultOutputs()
+        guard viewSubgraph.isValid else {
+            return outputs
+        }
+        let currentSubgraph = Subgraph.current!
+        let needGestureGraph = inputs.options.contains(.gestureGraph)
+        childSubgraph = Subgraph(graph: (needGestureGraph ? currentSubgraph : viewSubgraph).graph)
+        viewSubgraph.addChild(childSubgraph!, tag: 1)
+        currentSubgraph.addChild(childSubgraph!)
+        if needGestureGraph {
+            childViewSubgraph = Subgraph(graph: viewSubgraph.graph)
+            childSubgraph!.addChild(childViewSubgraph!, tag: 1)
+        }
+        childSubgraph!.apply {
+            let subgraph = (childViewSubgraph ?? childSubgraph)!
+            var childInputs = inputs
+            var viewInputs = self.inputs
+            viewInputs.copyCaches()
+            childInputs.viewInputs = viewInputs
+            let childOutputs = makeChild(childInputs)
+            outputs.overrideDefaultValues(childOutputs)
+        }
+        return outputs
     }
     
+    package var label: String? { nil }
+
     package var isCancellable: Bool {
-        get { preconditionFailure("TODO") }
+        gestureGraph.isCancellable
     }
     
     package var requiredTapCount: Int? {
-        get { preconditionFailure("TODO") }
+        gestureGraph.requiredTapCount
     }
     
     package func canPrevent(
         _ other: ViewResponder,
         otherExclusionPolicy: GestureResponderExclusionPolicy
-    ) -> Bool { preconditionFailure("TODO") }
+    ) -> Bool {
+        guard isPrioritized(over: other, otherExclusionPolicy: otherExclusionPolicy) else {
+            return false
+        }
+        guard let other = other as? any AnyGestureResponder else {
+            return true
+        }
+        return other.dependency == .none
+    }
     
     package func shouldRequireFailure(of other: any AnyGestureResponder) -> Bool {
-        preconditionFailure("TODO")
+        guard exclusionPolicy != .simultaneous,
+              other.exclusionPolicy != .simultaneous,
+              let requiredTapCount,
+              let otherRequiredTapCount = other.requiredTapCount,
+              otherRequiredTapCount != requiredTapCount
+        else {
+            return other.isPrioritized(over: self, otherExclusionPolicy: exclusionPolicy) && dependency != .none
+        }
+        return requiredTapCount < otherRequiredTapCount
+    }
+
+    private func isPrioritized(over other: ViewResponder, otherExclusionPolicy: GestureResponderExclusionPolicy) -> Bool {
+        switch (exclusionPolicy, otherExclusionPolicy) {
+        case (.default, .default):
+            var resonder: ResponderNode = other
+            while true {
+                guard resonder !== self else {
+                    return false
+                }
+                guard let nextResponder = resonder.nextResponder else {
+                    return true
+                }
+                resonder = nextResponder
+            }
+        case (.highPriority, .highPriority):
+            var resonder: ResponderNode = other
+            while true {
+                guard resonder !== self else {
+                    return true
+                }
+                guard let nextResponder = resonder.nextResponder else {
+                    return false
+                }
+                resonder = nextResponder
+            }
+        case (.highPriority, .default):
+            return true
+        default:
+            return false
+        }
+    }
+
+    private var dependency: GestureDependency {
+        gestureGraph.gestureDependency
     }
 }
 
-private class GestureResponder<Modifier>/*: AnyGestureResponder where Modifier: GestureViewModifier*/ {
+private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGestureResponder where Modifier: GestureViewModifier {
+    let modifier: Attribute<Modifier>
+
+    var childSubgraph: Subgraph?
+
+    var childViewSubgraph: Subgraph?
+
+    lazy var gestureGraph: GestureGraph = {
+        GestureGraph(rootResponder: self)
+    }()
+
+    lazy var bindingBridge: EventBindingBridge & GestureGraphDelegate = {
+        let bridge = inputs.makeEventBindingBridge(bindingManager: gestureGraph.eventBindingManager, responder: self)
+        gestureGraph.delegate = bridge
+        return bridge
+    }()
+
+    var _gestureContainer: AnyObject?
+
     init(modifier: Attribute<Modifier>, inputs: _ViewInputs) {
-        preconditionFailure("TODO")
+        self.modifier = modifier
+        super.init(inputs: inputs)
+    }
+
+    var gestureType: any Any.Type {
+        Modifier.ContentGesture.self
+    }
+
+    var relatedAttribute: AnyAttribute {
+        modifier.identifier
+    }
+
+    var eventSources: [any EventBindingSource] {
+        bindingBridge.eventSources
+    }
+
+    var exclusionPolicy: GestureResponderExclusionPolicy {
+        Modifier.Combiner.exclusionPolicy
+    }
+
+    var label: String? {
+        guard viewSubgraph.isValid else { return nil }
+        return Graph.withoutUpdate {
+            viewSubgraph.apply {
+                modifier.name.value
+            }
+        } ?? gestureGraph.gestureLabel
+    }
+
+    var isValid: Bool {
+        _gestureContainer != nil && viewSubgraph.isValid
+    }
+
+    func detachContainer() {
+        _gestureContainer = nil
+    }
+
+    func makeSubviewsGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
+        makeGesture(inputs: inputs)
+    }
+
+    override var gestureContainer: AnyObject? {
+        guard let gestureContainer = _gestureContainer else {
+            guard viewSubgraph.isValid else {
+                return nil
+            }
+            _gestureContainer = inputs.makeGestureContainer(responder: self)
+            return _gestureContainer!
+        }
+        return gestureContainer
+    }
+
+    override func containsGlobalPoints(
+        _ points: [PlatformPoint],
+        cacheKey: UInt32?,
+        options: ViewResponder.ContainsPointsOptions
+    ) -> ViewResponder.ContainsPointsResult {
+        openSwiftUIUnimplementedFailure()
+    }
+
+    override func bindEvent(_ event: any EventType) -> ResponderNode? {
+        guard GestureContainerFeature.isEnabled else {
+            return super.bindEvent(event)
+        }
+        guard let hitTestableEvent = HitTestableEvent(event) else {
+            return nil
+        }
+        return hitTest(
+            globalPoint: hitTestableEvent.hitTestLocation,
+            radius: hitTestableEvent.hitTestRadius
+        )
+    }
+
+    override func makeGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
+        makeWrappedGesture(inputs: inputs) { childInputs in
+            var childViewInputs = childInputs.viewInputs
+            let closure: () -> _GestureOutputs<Void> = { [self] in
+                if inputs.options.contains(.skipCombiners) {
+                    let childGesture = Attribute(GestureViewChild(
+                        modifier: modifier,
+                        isEnabled: childViewInputs.isEnabled,
+                        viewPhase: childViewInputs.viewPhase
+                    ))
+                    return AnyGesture<Void>.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
+                } else {
+                    let childGesture = Attribute(CombiningGestureViewChild(
+                        modifier: modifier,
+                        isEnabled: childViewInputs.isEnabled,
+                        viewPhase: childViewInputs.viewPhase,
+                        node: self
+                    ))
+                    return Modifier.Combiner.Result.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
+                }
+            }
+            guard inputs.options.contains(.includeDebugOutput) else {
+                return closure()
+            }
+            // TODO: GestureViewDebug
+            return closure()
+        }
+    }
+
+    override func resetGesture() {
+        childSubgraph = nil
+        childViewSubgraph = nil
+        super.resetGesture()
+    }
+
+    override func extendPrintTree(string: inout String) {
+        string.append("\(Modifier.ContentGesture.self)")
+    }
+}
+
+// MARK: - GestureFilter [6.5.4]
+
+private struct GestureFilter<Modifier>: StatefulRule where Modifier: GestureViewModifier {
+    typealias Value = [ViewResponder]
+
+    @Attribute var children: [ViewResponder]
+
+    @Attribute var modifier: Modifier
+
+    var inputs: _ViewInputs
+
+    var viewSubgraph: Subgraph
+
+    lazy var responder: GestureResponder<Modifier> = {
+        viewSubgraph.apply {
+            GestureResponder(
+                modifier: $modifier,
+                inputs: inputs
+            )
+        }
+    }()
+
+    mutating func updateValue() {
+        let responder = responder
+        let (children, childrenChanged) = $children.changedValue()
+        if childrenChanged {
+            responder.children = children
+        }
+        if !hasValue {
+            value = [self.responder]
+        }
     }
 }
 
@@ -232,10 +448,6 @@ package protocol GestureAccessibilityProvider {
     )
 }
 
-private struct GestureAccessibilityProviderKey: GraphInput {
-    static let defaultValue: (any GestureAccessibilityProvider.Type) = EmptyGestureAccessibilityProvider.self
-}
-
 struct EmptyGestureAccessibilityProvider: GestureAccessibilityProvider {
     nonisolated static func makeGesture(
         mask: @autoclosure () -> Attribute<GestureMask>,
@@ -246,6 +458,10 @@ struct EmptyGestureAccessibilityProvider: GestureAccessibilityProvider {
 }
 
 extension _GraphInputs {
+    private struct GestureAccessibilityProviderKey: GraphInput {
+        static let defaultValue: (any GestureAccessibilityProvider.Type) = EmptyGestureAccessibilityProvider.self
+    }
+
     package var gestureAccessibilityProvider: (any GestureAccessibilityProvider.Type) {
         get { self[GestureAccessibilityProviderKey.self] }
         set { self[GestureAccessibilityProviderKey.self] = newValue }
@@ -256,6 +472,179 @@ extension _ViewInputs {
     package var gestureAccessibilityProvider: (any GestureAccessibilityProvider.Type) {
         get { base.gestureAccessibilityProvider }
         set { base.gestureAccessibilityProvider = newValue }
+    }
+}
+
+// MARK: - GestureViewChild [6.5.4]
+
+private struct GestureViewChild<Modifier>: Rule where Modifier: GestureViewModifier {
+    @Attribute var modifier: Modifier
+    @Attribute var isEnabled: Bool
+    @Attribute var viewPhase: _GraphInputs.Phase
+
+    typealias Value = AnyGesture<Void>
+
+    var value: Value {
+        let shouldReceiveEvents = modifier.gestureMask.contains(.gesture) && isEnabled
+        guard shouldReceiveEvents else {
+            return AnyGesture(EmptyGesture())
+        }
+        return AnyGesture(modifier.gesture.map { _ in })
+    }
+}
+
+// MARK: - CombiningGestureViewChild [6.5.4]
+
+private struct CombiningGestureViewChild<Modifier>: Rule where Modifier: GestureViewModifier {
+    @Attribute var modifier: Modifier
+    @Attribute var isEnabled: Bool
+    @Attribute var viewPhase: _GraphInputs.Phase
+
+    let node: any AnyGestureResponder
+
+    typealias Value = Modifier.Combiner.Result
+
+    @inline(__always)
+    private var shouldReceiveEvents: Bool {
+        modifier.gestureMask.contains(.gesture) && isEnabled
+    }
+
+    @inline(__always)
+    private var shouldReceiveSubviewEvents: Bool {
+        modifier.gestureMask.contains(.subviews)
+    }
+
+    @inline(__always)
+    private var subviewsGesture: AnyGesture<Void> {
+        if modifier.gestureMask.contains(.subviews) {
+            return AnyGesture(SubviewsGesture(node: node))
+        } else {
+            return AnyGesture(EmptyGesture())
+        }
+    }
+
+    @inline(__always)
+    private var contentGesture: AnyGesture<Void> {
+        if shouldReceiveEvents {
+            AnyGesture(modifier.gesture
+                .modifier(ContentGesture<Modifier.ContentGesture.Value>())
+            )
+        } else {
+            AnyGesture(EmptyGesture())
+        }
+    }
+
+    var value: Value {
+        Modifier.Combiner.combine(subviewsGesture, contentGesture)
+    }
+}
+
+// MARK: - GestureViewDebug [6.5.4] [WIP]
+
+private struct GestureViewDebug<Modifier> where Modifier: GestureViewModifier {
+}
+
+// MARK: - SubviewsGesture [6.5.4]
+
+private struct SubviewsGesture: PrimitiveGesture, PrimitiveDebuggableGesture {
+    internal typealias Value = ()
+
+    internal typealias Body = Never
+
+    internal let node: AnyGestureResponder
+
+    fileprivate static func _makeGesture(gesture: _GraphValue<Self>, inputs: _GestureInputs) -> _GestureOutputs<Void> {
+        let outputs: _GestureOutputs<Void> = inputs.makeIndirectOutputs()
+        let currentSubgraph = Subgraph.current!
+        let subviewValue = Attribute(SubviewsPhase(
+            gesture: gesture.value,
+            resetSeed: inputs.resetSeed,
+            inputs: inputs,
+            outputs: outputs,
+            parentSubgraph: currentSubgraph,
+            oldNode: nil,
+            oldSeed: 0,
+            childSubgraph: nil,
+            childPhase: .init(),
+            childDebugData: .init()
+        ))
+        outputs.setIndirectDependency(subviewValue.identifier)
+        return outputs
+    }
+}
+
+// MARK: - SimultaneousGestureCombiner [6.5.4] [WIP]
+
+struct SimultaneousGestureCombiner {}
+
+// MARK: - HighPriorityGestureCombiner [6.5.4] [WIP]
+
+struct HighPriorityGestureCombiner {}
+
+// MARK: - SubviewsPhase [6.5.4] [WIP]
+
+private struct SubviewsPhase: StatefulRule, ObservedAttribute {
+    struct Value {
+        var phase: GesturePhase<Void>
+        var debugData: GestureDebug.Data
+    }
+
+    @Attribute var gesture: SubviewsGesture
+    @Attribute var resetSeed: UInt32
+    let inputs: _GestureInputs
+    let outputs: _GestureOutputs<Void>
+    let parentSubgraph: Subgraph
+    var oldNode: AnyGestureResponder?
+    var oldSeed: UInt32
+    var childSubgraph: Subgraph?
+    @OptionalAttribute var childPhase: GesturePhase<Void>?
+    @OptionalAttribute var childDebugData: GestureDebug.Data?
+
+    mutating func updateValue() {
+        openSwiftUIUnimplementedFailure()
+    }
+
+    func destroy() {
+        oldNode?.resetGesture()
+    }
+}
+
+// MARK: - ContentGesture [6.5.4]
+
+private struct ContentGesture<V>: GestureModifier {
+    typealias Value = Void
+
+    typealias BodyValue = V
+
+    nonisolated static func _makeGesture(
+        modifier: _GraphValue<ContentGesture<V>>,
+        inputs: _GestureInputs,
+        body: (_GestureInputs) -> _GestureOutputs<V>
+    ) -> _GestureOutputs<Void> {
+        let outputs = body(inputs)
+        let phase = Attribute(ContentPhase(
+            phase: outputs.phase,
+            resetSeed: inputs.resetSeed,
+            lastResetSeed: 0
+        ))
+        return outputs.withPhase(phase)
+    }
+}
+
+// MARK: - ContentPhase [6.5.4]
+
+private struct ContentPhase<Value>: ResettableGestureRule {
+    @Attribute var phase: GesturePhase<Value>
+    @Attribute var resetSeed: UInt32
+    var lastResetSeed: UInt32
+
+    typealias Value = GesturePhase<Void>
+
+    mutating func updateValue() {
+        guard resetIfNeeded() else {
+            return
+        }
+        value = phase.withValue(())
     }
 }
 

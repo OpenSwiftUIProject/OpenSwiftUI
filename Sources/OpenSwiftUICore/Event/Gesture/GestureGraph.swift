@@ -101,14 +101,44 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
         delegate?.enqueueAction(action)
     }
 
+    @inline(__always)
+    func access<T>(_ body: @autoclosure () -> T) -> T {
+        Update.perform {
+            instantiateIfNeeded()
+            return body()
+        }
+    }
+
     package func gestureCategory() -> GestureCategory? {
         guard let rootResponder, rootResponder.isValid else {
             return nil
         }
-        return Update.perform {
-            instantiateIfNeeded()
-            return gestureCategoryAttr
+        return access(gestureCategoryAttr)
+    }
+
+    @inline(__always)
+    var gestureLabel: String? {
+        guard isInstantiated else {
+            return nil
         }
+        return Update.perform {
+            gestureLabelAttr ?? nil
+        }
+    }
+
+    @inline(__always)
+    var isCancellable: Bool {
+        access(isCancellableAttr ?? false)
+    }
+
+    @inline(__always)
+    var requiredTapCount: Int? {
+        access(requiredTapCountAttr ?? nil)
+    }
+
+    @inline(__always)
+    var gestureDependency: GestureDependency {
+        access(gestureDependencyAttr ?? .none)
     }
 }
 
