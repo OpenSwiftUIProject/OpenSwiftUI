@@ -49,7 +49,7 @@ package struct StyleContextAcceptsPredicate<Query>: ViewInputPredicate {
     package init() {}
 
     package static func evaluate(inputs: _GraphInputs) -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -57,7 +57,7 @@ package struct StyleContextAcceptsAnyPredicate<each Query>: ViewInputPredicate w
     package init() {}
 
     package static func evaluate(inputs: _GraphInputs) -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 

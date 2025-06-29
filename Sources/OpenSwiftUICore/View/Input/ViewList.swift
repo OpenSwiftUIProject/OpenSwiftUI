@@ -604,7 +604,7 @@ extension ViewList {
                 // sublist.elements append
                 true
             }
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -615,7 +615,7 @@ extension ViewList {
         transform: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func applyIDs(
@@ -624,7 +624,7 @@ extension ViewList {
         transform t: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func applyIDs(
@@ -632,7 +632,7 @@ extension ViewList {
         listAttribute: Attribute<any ViewList>?,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func applyIDs(
@@ -640,11 +640,11 @@ extension ViewList {
         transform t: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func firstOffset(of id: ViewList.ID.Canonical, style: IteratorStyle) -> Int? {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func firstOffset(of id: ViewList.ID.Canonical) -> Int? {
@@ -1008,11 +1008,11 @@ open class _ViewList_ID_Views: RandomAccessCollection, Equatable {
 
     final public var startIndex: Int { 0 }
 
-    open var endIndex: Int { preconditionFailure("") }
+    open var endIndex: Int { openSwiftUIBaseClassAbstractMethod() }
 
-    open subscript(index: Int) -> _ViewList_ID { preconditionFailure("") }
+    open subscript(index: Int) -> _ViewList_ID { openSwiftUIBaseClassAbstractMethod() }
 
-    open func isEqual(to other: _ViewList_ID_Views) -> Bool { preconditionFailure("") }
+    open func isEqual(to other: _ViewList_ID_Views) -> Bool { openSwiftUIBaseClassAbstractMethod() }
 
     package init(isDataDependent: Bool) {
         self.isDataDependent = isDataDependent
@@ -1093,7 +1093,7 @@ private struct MergedElements: ViewList.Elements {
         var count = 0
         for output in outputs {
             guard case let .staticList(elements) = output.views else {
-                preconditionFailure("")
+                openSwiftUIBaseClassAbstractMethod()
             }
             count += elements.count
         }
@@ -1110,7 +1110,7 @@ private struct MergedElements: ViewList.Elements {
         var shouldContinue = true
         for output in outputs {
             guard case let .staticList(elements) = output.views else {
-                preconditionFailure("")
+                openSwiftUIBaseClassAbstractMethod()
             }
             let (elementsOutputs, elementsShouldContinue) = elements.makeElements(
                 from: &start,
@@ -1182,7 +1182,7 @@ private struct MergedElements: ViewList.Elements {
         var lowerBound = 0
         for output in outputs {
             guard case let .staticList(elements) = output.views else {
-                preconditionFailure("")
+                openSwiftUIBaseClassAbstractMethod()
             }
             let count = elements.count
             let upperBound = lowerBound + count
@@ -1309,7 +1309,7 @@ extension _ViewListOutputs {
 
     // FIXME: Group
     package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
@@ -1385,7 +1385,7 @@ extension _ViewListOutputs {
         case let .staticList(elements):
             views = .staticList(ModifiedElements(base: elements, modifier: WeakAttribute(modifier.value), baseInputs: inputs.base))
         case .dynamicList(_, _):
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -1400,7 +1400,7 @@ extension _ViewListOutputs {
             case 1:
                 let output = outputs[startIndex]
                 guard case let .staticList(viewElements) = output.views else {
-                    preconditionFailure("")
+                    openSwiftUIBaseClassAbstractMethod()
                 }
                 elements = viewElements
                 staticCount = output.staticCount

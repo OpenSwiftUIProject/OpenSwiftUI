@@ -174,7 +174,7 @@ extension Layout {
         properties: LayoutProperties,
         list: Attribute<any ViewList>
     ) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 

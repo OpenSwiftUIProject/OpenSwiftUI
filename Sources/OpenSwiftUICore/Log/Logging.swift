@@ -211,12 +211,23 @@ extension os.OSLog {
 }
 #endif
 
-// MARK: - OpenSwiftUI dev addition Log API
+// MARK: - OpenSwiftUI addition: abstract and stub call
+
+@_transparent
+package func openSwiftUIBaseClassAbstractMethod(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
+    preconditionFailure("", file: file, line: line)
+}
+
+@_transparent
+package func openSwiftUIEmptyStub(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
+    // Intentionally empty - stub implementation
+}
+
+// MARK: - OpenSwiftUI addition: dev addition Log API
 
 @_transparent
 package func openSwiftUIUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
     preconditionFailure("TODO", file: file, line: line)
-
 }
 
 @_transparent
@@ -232,6 +243,7 @@ package func openSwiftUIUnimplementedWarning(_ function: String = #function, fil
     #endif
 }
 
+@_transparent
 package func openSwiftUIPlatformUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
     print("[Warning]: \(function) is unimplemented on this platform")
     #if DEBUG && OPENSWIFTUI_DEVELOPMENT

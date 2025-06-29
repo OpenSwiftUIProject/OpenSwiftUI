@@ -184,11 +184,11 @@ open class _UnsafeHeterogeneousBuffer_VTable {
     }
     
     open class func moveInitialize(elt: _UnsafeHeterogeneousBuffer_Element, from: _UnsafeHeterogeneousBuffer_Element) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     open class func deinitialize(elt: _UnsafeHeterogeneousBuffer_Element) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 }
 

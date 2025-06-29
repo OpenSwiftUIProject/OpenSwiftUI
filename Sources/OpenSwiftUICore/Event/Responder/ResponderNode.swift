@@ -12,7 +12,7 @@ open class ResponderNode {
     public init() {}
 
     open var nextResponder: ResponderNode? {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func bindEvent(_ event: any EventType) -> ResponderNode? {
@@ -28,7 +28,9 @@ open class ResponderNode {
         _GestureOutputs(phase: inputs.failedPhase)
     }
 
-    open func resetGesture() {}
+    open func resetGesture() {
+        openSwiftUIEmptyStub()
+    }
 
     final package var sequence: some Sequence<ResponderNode> {
         Swift.sequence(first: self) { $0.nextResponder }

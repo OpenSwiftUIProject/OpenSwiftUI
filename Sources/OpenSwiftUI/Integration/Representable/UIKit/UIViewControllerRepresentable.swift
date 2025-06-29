@@ -176,7 +176,7 @@ extension UIViewControllerRepresentable {
     public static func dismantleUIViewController(_ uiViewController: UIViewControllerType, coordinator: Coordinator) {}
 
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     nonisolated public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {

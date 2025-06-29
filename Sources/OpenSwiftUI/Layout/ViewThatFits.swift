@@ -107,7 +107,7 @@ public struct _SizeFittingRoot: _VariadicView.UnaryViewRoot {
     init(axes: Axis.Set) { self.axes = axes }
 
     nonisolated public static func _makeView(root: _GraphValue<Self>, inputs: _ViewInputs, body: (_Graph, _ViewInputs) -> _ViewListOutputs) -> _ViewOutputs {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     public typealias Body = Never

@@ -213,7 +213,7 @@ extension _ViewDebug {
     }
     
     private static func appendDebugData(from element: Int/*AGTreeElement*/ , to result: inout [_ViewDebug.Data]) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 

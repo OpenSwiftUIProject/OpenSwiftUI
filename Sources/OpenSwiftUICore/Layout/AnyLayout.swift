@@ -502,44 +502,44 @@ extension AnyLayout: Sendable {}
 @usableFromInline
 class AnyLayoutBox {
     var layoutProperties: LayoutProperties {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func makeCache(subviews: LayoutSubviews) -> AnyLayout.Cache {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func updateCache(_ cache: inout AnyLayout.Cache, subviews: LayoutSubviews) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func spacing(subviews: LayoutSubviews, cache: inout AnyLayout.Cache) -> ViewSpacing {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func sizeThatFits(proposal: ProposedViewSize, subviews: LayoutSubviews, cache: inout AnyLayout.Cache) -> CGSize {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: LayoutSubviews, cache: inout AnyLayout.Cache) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func explicitAlignment(of guide: HorizontalAlignment, in bounds: CGRect, proposal: ProposedViewSize, subviews: LayoutSubviews, cache: inout AnyLayout.Cache) -> CGFloat? {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     func explicitAlignment(of guide: VerticalAlignment, in bounds: CGRect, proposal: ProposedViewSize, subviews: LayoutSubviews, cache: inout AnyLayout.Cache) -> CGFloat? {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     var animatableData: AnyLayout.AnimatableData {
-        get { preconditionFailure("") }
-        set { preconditionFailure("") }
+        get { openSwiftUIBaseClassAbstractMethod() }
+        set { openSwiftUIBaseClassAbstractMethod() }
     }
 
     func withAnimatableData(_ data: AnyLayout.AnimatableData) -> AnyLayoutBox {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 }
 

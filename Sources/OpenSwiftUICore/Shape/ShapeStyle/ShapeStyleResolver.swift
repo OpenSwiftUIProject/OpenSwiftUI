@@ -26,15 +26,15 @@ package struct ShapeStyleResolver<Style>: StatefulRule, AsyncAttribute, Observed
         animationsDisabled: Bool
     // helper: AnimatableAttributeHelper<_ShapeStyle_Pack>
     ) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
     
     package mutating func updateValue() {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     package func destroy() {
         // Blocked by _ShapeStyle_Pack
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }

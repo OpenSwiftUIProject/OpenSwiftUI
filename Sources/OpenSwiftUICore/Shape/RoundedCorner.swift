@@ -74,7 +74,7 @@ package struct FixedRoundedRect: Equatable {
 
     package func contains(_ point: CGPoint) -> Bool {
         // TODO: OBPath
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func applying(_ m: CGAffineTransform) -> FixedRoundedRect {
@@ -144,7 +144,7 @@ package struct FixedRoundedRect: Equatable {
 
     #if canImport(CoreGraphics)
     package var cgPath: CGPath {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
     #endif
 

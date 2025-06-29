@@ -215,15 +215,15 @@ package class AnyColorBox: AnyShapeStyleBox, @unchecked Sendable {
         shape.result = .color(color)
     }
 
-    package func resolve(in environment: EnvironmentValues) -> Color.Resolved { preconditionFailure("") }
-    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) { preconditionFailure("") }
+    package func resolve(in environment: EnvironmentValues) -> Color.Resolved { openSwiftUIBaseClassAbstractMethod() }
+    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) { openSwiftUIBaseClassAbstractMethod() }
     #if canImport(Darwin)
-    package var staticColor: CGColor? { preconditionFailure("") }
+    package var staticColor: CGColor? { openSwiftUIBaseClassAbstractMethod() }
     #endif
-    package var kitColor: AnyObject? { preconditionFailure("") }
-    package func hash(into hasher: inout Hasher) { preconditionFailure("") }
-    package var description: String { preconditionFailure("") }
-    package func opacity(at level: Int, environment: EnvironmentValues) -> Float { preconditionFailure("") }
+    package var kitColor: AnyObject? { openSwiftUIBaseClassAbstractMethod() }
+    package func hash(into hasher: inout Hasher) { openSwiftUIBaseClassAbstractMethod() }
+    package var description: String { openSwiftUIBaseClassAbstractMethod() }
+    package func opacity(at level: Int, environment: EnvironmentValues) -> Float { openSwiftUIBaseClassAbstractMethod() }
 }
 
 extension AnyColorBox { // 6.4.41

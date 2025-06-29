@@ -55,15 +55,15 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
     // MARK: - abstract method
     
     fileprivate var isUpdating: Bool {
-        preconditionFailure("abstract")
+        openSwiftUIBaseClassAbstractMethod()
     }
-    
+
     fileprivate func commit(transaction: Transaction, mutation: BeginUpdate) {
-        preconditionFailure("abstract")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     fileprivate func notifyObservers() {
-        preconditionFailure("abstract")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     // MARK: - AnyLocation

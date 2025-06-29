@@ -12,7 +12,7 @@ public struct PlainButtonStyle: PrimitiveButtonStyle {
     public func makeBody(configuration: Configuration) -> some View {
 //        Button(configuration)
 //            .buttonStyle(buttonStyleRepresentation)
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 }
 
@@ -35,6 +35,6 @@ private struct PlainButtonStyleBase: ButtonStyle {
 //            configuration.label
 //        }
 //        .opacity(isEnabled ? (configuration.isPressed ? 0.75 : 1.0) : 0.5)
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 }

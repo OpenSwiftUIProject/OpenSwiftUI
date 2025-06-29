@@ -575,7 +575,7 @@ package func readEnvironment(_ value: inout Bool?, _ key: UnsafePointer<CChar>) 
 
 extension BidirectionalCollection where Self: MutableCollection, Element: Comparable {
     package mutating func formNextLexicographicalPermutation() -> Bool {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 

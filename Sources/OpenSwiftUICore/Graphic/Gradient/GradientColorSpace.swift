@@ -22,12 +22,12 @@ extension Gradient {
     }
 
 //    public func colorSpace(_ space: Gradient.ColorSpace) -> AnyGradient {
-//        preconditionFailure("TODO")
+//        openSwiftUIUnimplementedFailure()
 //    }
 }
 
 //extension AnyGradient {
 //    public func colorSpace(_ space: Gradient.ColorSpace) -> AnyGradient {
-//        preconditionFailure("TODO")
+//        openSwiftUIUnimplementedFailure()
 //    }
 //}

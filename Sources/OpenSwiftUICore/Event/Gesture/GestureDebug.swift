@@ -33,8 +33,8 @@ package enum GestureDebug {
         package typealias Children = ArrayWith2Inline<GestureDebug.Data>
 
         package var children: GestureDebug.Data.Children {
-            get { preconditionFailure("TODO") }
-            set { preconditionFailure("TODO") }
+            get { openSwiftUIUnimplementedFailure() }
+            set { openSwiftUIUnimplementedFailure() }
         }
 
         package init() {
@@ -57,7 +57,7 @@ package enum GestureDebug {
             frame: CGRect,
             properties: GestureDebug.Properties
         ) {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 }
@@ -165,7 +165,7 @@ extension _GestureOutputs {
         inputs: _GestureInputs,
         data: (Attribute<GestureDebug.Data>?, Attribute<GestureDebug.Data>?)
     ) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -174,12 +174,12 @@ extension GesturePhase {
     @_spi(ForSwiftUIOnly)
     package var descriptionWithoutValue: String {
         @_spi(ForSwiftUIOnly)
-        get { preconditionFailure("TODO") }
+        get { openSwiftUIUnimplementedFailure() }
     }
 }
 
 extension GestureDebug.Data {
     package func printTree() {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
