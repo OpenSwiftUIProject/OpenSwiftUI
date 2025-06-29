@@ -104,7 +104,7 @@ extension Gesture where Value == Body.Value {
     }
 }
 
-// MARK: - GestureInputs [6.5.4] [WIP]
+// MARK: - GestureInputs [6.5.4]
 
 /// Input (aka inherited) attributes for gesture objects.
 @available(OpenSwiftUI_v1_0, *)
@@ -120,6 +120,7 @@ public struct _GestureInputs {
     package var resetSeed: Attribute<UInt32>
 
     @_spi(ForOpenSwiftUIOnly)
+    @available(OpenSwiftUI_v6_0, *)
     public struct InheritedPhase: OptionSet, Defaultable {
         public let rawValue: Int
 
@@ -137,7 +138,7 @@ public struct _GestureInputs {
     package var inheritedPhase: Attribute<_GestureInputs.InheritedPhase>
 
     package var failedPhase: Attribute<GesturePhase<Void>> {
-        get { preconditionFailure("TODO") }
+        intern(.failed, id: .failedValue)
     }
 
     package var options: _GestureInputs.Options
@@ -153,15 +154,24 @@ public struct _GestureInputs {
         inheritedPhase: Attribute<_GestureInputs.InheritedPhase>,
         gesturePreferenceKeys: Attribute<PreferenceKeys>
     ) {
-
-        preconditionFailure("TODO")
+        self.viewInputs = inputs
+        self.viewInputs.time = time
+        self.viewSubgraph = viewSubgraph
+        self.preferences = .init(hostKeys: gesturePreferenceKeys)
+        self.events = events
+        self.resetSeed = resetSeed
+        self.inheritedPhase = inheritedPhase
+        self.options = []
+        self.platformInputs = .init()
     }
 
     package mutating func mergeViewInputs(
         _ other: _ViewInputs,
         viewSubgraph: Subgraph
     ) {
-        preconditionFailure("TODO")
+        self.viewInputs = other
+        self.viewInputs.copyCaches()
+        self.viewSubgraph = viewSubgraph
     }
 
     package func animatedPosition() -> Attribute<ViewOrigin> {
@@ -178,11 +188,29 @@ public struct _GestureInputs {
     }
 
     package func makeIndirectOutputs<Value>() -> _GestureOutputs<Value> {
-        preconditionFailure("TODO")
+        let phase: Attribute<GesturePhase<Value>> = intern(.defaultValue, id: .defaultValue)
+        var outputs = _GestureOutputs(phase: IndirectAttribute(source: phase).projectedValue)
+        if options.contains(.includeDebugOutput) {
+            let debugData: Attribute<GestureDebug.Data> = intern(.defaultValue, id: .defaultValue)
+            outputs.debugData = IndirectAttribute(source: debugData).projectedValue
+        }
+        outputs.preferences = preferences.makeIndirectOutputs()
+        return outputs
     }
 
     package func makeDefaultOutputs<Value>() -> _GestureOutputs<Value> {
-        preconditionFailure("TODO")
+        let phase = Attribute(DefaultRule<GesturePhase<Value>>())
+        var outputs = _GestureOutputs(phase: phase)
+        if options.contains(.includeDebugOutput) {
+            let debugData = Attribute(DefaultRule<GestureDebug.Data>())
+            outputs.debugData = debugData
+        }
+        outputs.preferences = preferences.makeIndirectOutputs()
+        return outputs
+    }
+
+    package mutating func copyCaches() {
+        viewInputs.copyCaches()
     }
 }
 

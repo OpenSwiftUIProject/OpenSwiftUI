@@ -25,7 +25,7 @@ open class ResponderNode {
     }
 
     open func makeGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
-        _GestureOutputs(phase: inputs.intern(.failed, id: .failedValue))
+        _GestureOutputs(phase: inputs.failedPhase)
     }
 
     open func resetGesture() {}

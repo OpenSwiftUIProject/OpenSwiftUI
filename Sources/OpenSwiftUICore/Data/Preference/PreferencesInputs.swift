@@ -42,23 +42,14 @@ package struct PreferencesInputs {
     }
     
     package func makeIndirectOutputs() -> PreferencesOutputs {
-        struct AddPreference: PreferenceKeyVisitor {
-            var outputs: PreferencesOutputs
-            
-            mutating func visit<K>(key: K.Type) where K: PreferenceKey {
-                let source = ViewGraph.current.intern(K.defaultValue, for: K.self, id: .preferenceKeyDefault)
-                
-                @IndirectAttribute(source: source)
-                var indirect: K.Value
-                
-                outputs.appendPreference(key: K.self, value: $indirect)
-            }
-        }
-        
-        var visitor = AddPreference(outputs: PreferencesOutputs())
+        var outputs = PreferencesOutputs()
         for key in keys {
-            key.visitKey(&visitor)
+            func project<K>(_ key: K.Type) where K: PreferenceKey {
+                let source = ViewGraph.current.intern(key.defaultValue, id: .preferenceKeyDefault)
+                outputs.appendPreference(key: key, value: IndirectAttribute(source: source).projectedValue)
+            }
+            project(key)
         }
-        return visitor.outputs
+        return outputs
     }
 }
