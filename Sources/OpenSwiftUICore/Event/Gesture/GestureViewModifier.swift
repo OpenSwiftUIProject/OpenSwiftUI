@@ -175,7 +175,7 @@ extension AnyGestureResponder {
         makeChild: (_GestureInputs) -> _GestureOutputs<Void>
     ) -> _GestureOutputs<Void> {
         let inputs = inputs
-        var outputs: _GestureOutputs<Void> = inputs.makeDefaultOutputs()
+        let outputs: _GestureOutputs<Void> = inputs.makeDefaultOutputs()
         guard viewSubgraph.isValid else {
             return outputs
         }
@@ -191,9 +191,9 @@ extension AnyGestureResponder {
         childSubgraph!.apply {
             let subgraph = (childViewSubgraph ?? childSubgraph)!
             var childInputs = inputs
-            var viewInputs = self.inputs
-            viewInputs.copyCaches()
-            childInputs.viewInputs = viewInputs
+            childInputs.viewInputs = self.inputs
+            childInputs.copyCaches()
+            childInputs.viewSubgraph = subgraph
             let childOutputs = makeChild(childInputs)
             outputs.overrideDefaultValues(childOutputs)
         }
@@ -270,6 +270,8 @@ extension AnyGestureResponder {
         gestureGraph.gestureDependency
     }
 }
+
+// MARK: - GestureResponder [6.5.4] [WIP]
 
 private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGestureResponder where Modifier: GestureViewModifier {
     let modifier: Attribute<Modifier>
@@ -366,7 +368,7 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
 
     override func makeGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
         makeWrappedGesture(inputs: inputs) { childInputs in
-            var childViewInputs = childInputs.viewInputs
+            let childViewInputs = childInputs.viewInputs
             let closure: () -> _GestureOutputs<Void> = { [self] in
                 if inputs.options.contains(.skipCombiners) {
                     let childGesture = Attribute(GestureViewChild(
