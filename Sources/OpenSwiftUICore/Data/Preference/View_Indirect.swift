@@ -12,7 +12,7 @@ import OpenGraphShims
 #endif
 
 extension _ViewInputs {
-    func makeIndirectOutputs() -> _ViewOutputs {
+    package func makeIndirectOutputs() -> _ViewOutputs {
         let indirectPreferenceOutputs = preferences.makeIndirectOutputs()
         var outputs = _ViewOutputs()
         outputs.preferences = indirectPreferenceOutputs
