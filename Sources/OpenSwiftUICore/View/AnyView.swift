@@ -92,23 +92,23 @@ extension AnyView: DynamicView {
 @usableFromInline
 class AnyViewStorageBase {
     fileprivate var childType: any Any.Type {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate func makeChildView(view: Attribute<AnyView>, inputs: _ViewInputs) -> _ViewOutputs {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate func makeChildViewList(view: Attribute<AnyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate func visitContent<Visitor>(_ visitor: inout Visitor) where Visitor: ViewVisitor {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate var content: any View {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 }
 

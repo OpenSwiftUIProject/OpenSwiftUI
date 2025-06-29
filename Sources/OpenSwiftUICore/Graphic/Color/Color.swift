@@ -215,15 +215,15 @@ package class AnyColorBox: AnyShapeStyleBox, @unchecked Sendable {
         shape.result = .color(color)
     }
 
-    package func resolve(in environment: EnvironmentValues) -> Color.Resolved { openSwiftUIBaseClassAbstractMethod() }
-    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) { openSwiftUIBaseClassAbstractMethod() }
+    package func resolve(in environment: EnvironmentValues) -> Color.Resolved { _openSwiftUIBaseClassAbstractMethod() }
+    package func apply(color: Color, to shape: inout _ShapeStyle_Shape) { _openSwiftUIBaseClassAbstractMethod() }
     #if canImport(Darwin)
-    package var staticColor: CGColor? { openSwiftUIBaseClassAbstractMethod() }
+    package var staticColor: CGColor? { _openSwiftUIBaseClassAbstractMethod() }
     #endif
-    package var kitColor: AnyObject? { openSwiftUIBaseClassAbstractMethod() }
-    package func hash(into hasher: inout Hasher) { openSwiftUIBaseClassAbstractMethod() }
-    package var description: String { openSwiftUIBaseClassAbstractMethod() }
-    package func opacity(at level: Int, environment: EnvironmentValues) -> Float { openSwiftUIBaseClassAbstractMethod() }
+    package var kitColor: AnyObject? { _openSwiftUIBaseClassAbstractMethod() }
+    package func hash(into hasher: inout Hasher) { _openSwiftUIBaseClassAbstractMethod() }
+    package var description: String { _openSwiftUIBaseClassAbstractMethod() }
+    package func opacity(at level: Int, environment: EnvironmentValues) -> Float { _openSwiftUIBaseClassAbstractMethod() }
 }
 
 extension AnyColorBox { // 6.4.41

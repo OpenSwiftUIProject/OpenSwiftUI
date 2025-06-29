@@ -50,15 +50,15 @@ extension HVStack {
     }
 
     public func makeCache(subviews: Subviews) -> Cache {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func updateCache(_ cache: inout Cache, subviews: Self.Subviews) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func spacing(subviews: Subviews, cache: inout Cache) -> ViewSpacing {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func sizeThatFits(
@@ -66,7 +66,7 @@ extension HVStack {
         subviews: Self.Subviews,
         cache: inout Self.Cache
     ) -> CGSize {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func placeSubviews(
@@ -75,7 +75,7 @@ extension HVStack {
         subviews: Self.Subviews,
         cache: inout Self.Cache
     ) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func explicitAlignment(
@@ -85,7 +85,7 @@ extension HVStack {
         subviews: Self.Subviews,
         cache: inout Self.Cache
     ) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public func explicitAlignment(
@@ -95,6 +95,6 @@ extension HVStack {
         subviews: Self.Subviews,
         cache: inout Self.Cache
     ) -> CGFloat? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }

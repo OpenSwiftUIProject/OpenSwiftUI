@@ -126,14 +126,14 @@ extension Never: ShapeStyle {
     public typealias Resolved = Never
     
     public static func _makeView<S>(view: _GraphValue<_ShapeView<S, Never>>, inputs: _ViewInputs) -> _ViewOutputs where S: Shape{
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 }
 
 @available(OpenSwiftUI_v5_0, *)
 extension ShapeStyle where Resolved == Never {
     public func resolve(in: EnvironmentValues) -> Self.Resolved {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
     
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {}

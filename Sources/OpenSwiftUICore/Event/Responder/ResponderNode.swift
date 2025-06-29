@@ -12,7 +12,7 @@ open class ResponderNode {
     public init() {}
 
     open var nextResponder: ResponderNode? {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     open func bindEvent(_ event: any EventType) -> ResponderNode? {
@@ -29,7 +29,7 @@ open class ResponderNode {
     }
 
     open func resetGesture() {
-        openSwiftUIEmptyStub()
+        _openSwiftUIEmptyStub()
     }
 
     final package var sequence: some Sequence<ResponderNode> {

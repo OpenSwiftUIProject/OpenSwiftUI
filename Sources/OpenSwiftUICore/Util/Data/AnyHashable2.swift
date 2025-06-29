@@ -9,7 +9,7 @@
 fileprivate class AnyHashableBox {
     func `as`<T>(type: T.Type) -> T? where T: Hashable { nil }
     var description: String { "" }
-    var anyValue: any Hashable { openSwiftUIBaseClassAbstractMethod() }
+    var anyValue: any Hashable { _openSwiftUIBaseClassAbstractMethod() }
     func isEqual(to other: AnyHashableBox) -> Bool { false }
     func hash(into hasher: inout Hasher) {}
 }

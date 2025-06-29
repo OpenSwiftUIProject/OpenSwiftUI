@@ -266,7 +266,7 @@ extension Shape where Self == Circle {
 /// edge.
 @frozen public struct Circle: Shape {
     nonisolated public func path(in rect: CGRect) -> Path {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// Creates a new circle shape.

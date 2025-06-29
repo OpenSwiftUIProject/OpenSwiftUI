@@ -22,7 +22,7 @@ extension RendererLeafView {
     }
     
     func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package static func makeLeafView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {

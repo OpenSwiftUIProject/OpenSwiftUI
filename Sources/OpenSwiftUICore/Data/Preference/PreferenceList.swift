@@ -178,11 +178,11 @@ private class PreferenceNode: CustomStringConvertible {
         return nil
     }
     
-    func find(from _: PreferenceNode?) -> PreferenceNode? { openSwiftUIBaseClassAbstractMethod() }
-    func combine(from _: PreferenceNode?, next _: PreferenceNode?) -> PreferenceNode? { openSwiftUIBaseClassAbstractMethod() }
-    func copy(next _: PreferenceNode?) -> PreferenceNode { openSwiftUIBaseClassAbstractMethod() }
-    class var _includesRemovedValues: Bool { openSwiftUIBaseClassAbstractMethod() }
-    var description: String { openSwiftUIBaseClassAbstractMethod() }
+    func find(from _: PreferenceNode?) -> PreferenceNode? { _openSwiftUIBaseClassAbstractMethod() }
+    func combine(from _: PreferenceNode?, next _: PreferenceNode?) -> PreferenceNode? { _openSwiftUIBaseClassAbstractMethod() }
+    func copy(next _: PreferenceNode?) -> PreferenceNode { _openSwiftUIBaseClassAbstractMethod() }
+    class var _includesRemovedValues: Bool { _openSwiftUIBaseClassAbstractMethod() }
+    var description: String { _openSwiftUIBaseClassAbstractMethod() }
 }
 
 // MARK: - PreferenceNode

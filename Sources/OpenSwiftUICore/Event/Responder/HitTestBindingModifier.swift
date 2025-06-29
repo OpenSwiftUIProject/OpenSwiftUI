@@ -15,7 +15,7 @@ package struct HitTestBindingModifier: ViewModifier, MultiViewModifier, Primitiv
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        openSwiftUIUnimplementedWarning()
+        _openSwiftUIUnimplementedWarning()
         return body(_Graph(), inputs)
     }
 
@@ -23,7 +23,7 @@ package struct HitTestBindingModifier: ViewModifier, MultiViewModifier, Primitiv
 }
 
 extension ViewResponder {
-    package static var hitTestKey: UInt32 { openSwiftUIUnimplementedFailure() }
+    package static var hitTestKey: UInt32 { _openSwiftUIUnimplementedFailure() }
 
     package static let minOpacityForHitTest: Double = 0.0
 
@@ -33,7 +33,7 @@ extension ViewResponder {
         cacheKey: UInt32? = nil,
         options: ContainsPointsOptions = .platformDefault
     ) -> ViewResponder? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     private func hitTest(
@@ -43,10 +43,10 @@ extension ViewResponder {
         cacheKey: UInt32?,
         options: ContainsPointsOptions
     ) -> ViewResponder? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
 private func hitPoints(point: PlatformPoint, radius: CGFloat) -> ([PlatformPoint], [Double]) {
-    openSwiftUIUnimplementedFailure()
+    _openSwiftUIUnimplementedFailure()
 }

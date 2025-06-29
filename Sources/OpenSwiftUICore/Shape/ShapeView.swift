@@ -137,7 +137,7 @@ public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, 
     }
 
     nonisolated public static func _makeView(view: _GraphValue<_ShapeView<Content, Style>>, inputs: _ViewInputs) -> _ViewOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func shape(in size: CGSize) -> FramedShape {

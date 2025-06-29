@@ -135,7 +135,7 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     }
 
     override public final func linkURL(_ parameters: LinkURLParameters) -> URL? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

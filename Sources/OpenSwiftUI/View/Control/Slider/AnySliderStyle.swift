@@ -13,7 +13,7 @@ protocol SliderStyle {
 
 private class AnyStyleBox {
     func body(configuration _: Slider<SliderStyleLabel, SliderStyleValueLabel>) -> AnyView {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 }
 

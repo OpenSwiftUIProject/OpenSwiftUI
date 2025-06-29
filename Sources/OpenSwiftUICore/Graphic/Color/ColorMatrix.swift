@@ -58,7 +58,7 @@ public struct _ColorMatrix: Equatable, Codable {
     
     public init(color: Color, in environment: EnvironmentValues) {
         // Blocked by Color
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package init(_ m: ColorMatrix) {
@@ -171,7 +171,7 @@ extension _ColorMatrix {
     }
     
     package init?(_ filter: GraphicsFilter, premultiplied: Bool = false) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package init(colorMultiply c: Color.Resolved, premultiplied: Bool = false) {

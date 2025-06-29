@@ -47,7 +47,7 @@ public struct WindowGroup<Content>: Scene where Content: View {
 
     // FIXME
     public var body: some Scene {
-        openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     var title: Text?

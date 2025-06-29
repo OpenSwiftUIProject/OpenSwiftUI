@@ -174,7 +174,7 @@ extension Layout {
         properties: LayoutProperties,
         list: Attribute<any ViewList>
     ) -> _ViewOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

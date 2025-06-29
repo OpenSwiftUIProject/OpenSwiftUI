@@ -20,14 +20,14 @@ extension LayoutGesture {
         gesture: _GraphValue<Self>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Void> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func updateEventBindings(
         _ events: inout [EventID : any EventType],
         proxy: LayoutGestureChildProxy
     ) {
-        openSwiftUIEmptyStub()
+        _openSwiftUIEmptyStub()
     }
 }
 
@@ -45,24 +45,24 @@ package struct DefaultLayoutGesture: LayoutGesture {
 package struct LayoutGestureChildProxy: RandomAccessCollection {
     package struct Child {
         package func binds(_ binding: EventBinding) -> Bool {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         package func containsGlobalLocation(_ p: PlatformPoint) -> Bool {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 
     package var startIndex: Int {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package var endIndex: Int {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package subscript(index: Int) -> LayoutGestureChildProxy.Child {
-        get { openSwiftUIUnimplementedFailure() }
+        get { _openSwiftUIUnimplementedFailure() }
     }
 
     package func bindChild(
@@ -70,6 +70,6 @@ package struct LayoutGestureChildProxy: RandomAccessCollection {
         event: any EventType,
         id: EventID
     ) -> (from: EventBinding?, to: EventBinding?)? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }

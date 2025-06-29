@@ -50,18 +50,18 @@ open class PlatformViewDefinition: @unchecked Sendable {
     }
   
     open class var system: PlatformViewDefinition.System { .init(base: .swiftUIView) }
-    open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { openSwiftUIBaseClassAbstractMethod() }
+    open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
     #if canImport(Darwin)
-    open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { openSwiftUIBaseClassAbstractMethod() }
+    open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
     #endif
-    open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { openSwiftUIBaseClassAbstractMethod() }
-    open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { openSwiftUIBaseClassAbstractMethod() }
-    open class func setPath(_ path: Path, shapeView: AnyObject) { openSwiftUIBaseClassAbstractMethod() }
-    open class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) { openSwiftUIBaseClassAbstractMethod() }
-    open class func getRBLayer(drawingView: AnyObject) -> AnyObject? { openSwiftUIBaseClassAbstractMethod() }
-    open class func setIgnoresEvents(_ state: Bool, of view: AnyObject) { openSwiftUIBaseClassAbstractMethod() }
-    open class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) { openSwiftUIBaseClassAbstractMethod() }
-    open class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) { openSwiftUIBaseClassAbstractMethod() }
+    open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setPath(_ path: Path, shapeView: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func getRBLayer(drawingView: AnyObject) -> AnyObject? { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setIgnoresEvents(_ state: Bool, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
 }
 
 extension DisplayList.ViewUpdater {

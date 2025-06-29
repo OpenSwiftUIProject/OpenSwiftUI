@@ -11,16 +11,16 @@ class FocusStoreLocation<A: Hashable>: AnyLocation<A>, @unchecked Sendable {
     }
     
     override func get() -> A {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     override func set(_ value: A, transaction: Transaction) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     typealias Value = A
     
-    override init() { openSwiftUIBaseClassAbstractMethod() }
+    override init() { _openSwiftUIBaseClassAbstractMethod() }
     
     var store: FocusStore
     weak var host: GraphHost?

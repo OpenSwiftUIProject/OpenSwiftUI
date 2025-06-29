@@ -103,7 +103,7 @@ open class MultiViewResponder: ViewResponder {
 
     override final public var children: [ViewResponder] {
         get { _children }
-        set { openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
     }
 
     open func childrenDidChange() {

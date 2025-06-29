@@ -40,14 +40,14 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         init(_ path: CGPath) {
             kind = .cgPath
             //data = PathData(path)
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         #endif
 
         package init(takingPath path: OBPath) {
             kind = .obPath
             //data = PathData(path)
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         #if canImport(CoreGraphics)
@@ -57,7 +57,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             case .cgPath:
                 // data.cgPath
                 // let rbPath = OBPathMakeWithCGPath
-                openSwiftUIUnimplementedFailure()
+                _openSwiftUIUnimplementedFailure()
             case .obPath:
                 obPath = data.obPath.assumingMemoryBound(to: OBPath.self).pointee
             case .buffer:
@@ -71,7 +71,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
         @usableFromInline
         package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -130,7 +130,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             return
         }
         storage = .path(PathBox(path.mutableCopy()!))
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     #endif
     
@@ -224,7 +224,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             storage = .empty
             return
         }
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// Creates a path as an ellipse within the given rectangle.
@@ -284,7 +284,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             return nil
         }
         storage = .path(PathBox(mutablePath))
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
         #else
         return nil
         #endif
@@ -293,27 +293,27 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// A description of the path that may be used to recreate the path
     /// via `init?(_:)`.
     public var description: String {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     #if canImport(CoreGraphics)
     /// An immutable path representing the elements in the path.
     public var cgPath: CGPath {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     #endif
 
     package func retainOBPath() -> OBPath {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package mutating func withMutableBuffer(do body: (UnsafeMutableRawPointer) -> Void) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// A Boolean value indicating whether the path contains zero elements.
     public var isEmpty: Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// A rectangle containing all path segments.
@@ -322,7 +322,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// in the path but not including control points for Bézier
     /// curves.
     public var boundingRect: CGRect {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     /// Returns true if the path contains a specified point.
@@ -330,11 +330,11 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// If `eoFill` is true, this method uses the even-odd rule to define which
     /// points are inside the path. Otherwise, it uses the non-zero rule.
     public func contains(_ p: CGPoint, eoFill: Bool = false) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func contains(points: [CGPoint], eoFill: Bool = false, origin: CGPoint = .zero) -> BitVector64 {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// An element of a path.
@@ -369,13 +369,13 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
     /// Calls `body` with each element in the path.
     public func forEach(_ body: (Path.Element) -> Void) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// Returns a stroked copy of the path using `style` to define how the
     /// stroked outline is created.
     public func strokedPath(_ style: StrokeStyle) -> Path {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     /// Returns a partial copy of the path.
@@ -384,15 +384,15 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// which must be fractions between zero and one defining points
     /// linearly-interpolated along the path.
     public func trimmedPath(from: CGFloat, to: CGFloat) -> Path {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func rect() -> CGRect? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func roundedRect() -> FixedRoundedRect? {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -416,11 +416,11 @@ extension Path: Shape {
 
 extension Path: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package init(from decoder: inout ProtobufDecoder) throws {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

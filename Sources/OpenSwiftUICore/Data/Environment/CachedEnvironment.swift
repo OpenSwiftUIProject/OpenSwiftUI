@@ -63,7 +63,7 @@ package struct CachedEnvironment {
         role: ShapeRole,
         mode: Attribute<_ShapeStyle_ResolverMode>?
     ) -> Attribute<_ShapeStyle_Pack> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

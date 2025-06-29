@@ -900,7 +900,7 @@ extension PropertyList {
 
         /// A textual representation of the element.
         @usableFromInline
-        package var description: String { openSwiftUIBaseClassAbstractMethod() }
+        package var description: String { _openSwiftUIBaseClassAbstractMethod() }
 
         /// Checks if this element matches another element, ignoring specified types.
         ///
@@ -909,7 +909,7 @@ extension PropertyList {
         ///   - ignoredTypes: Types to ignore during comparison.
         /// - Returns: `true` if the elements match, otherwise `false`.
         func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
-            openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIBaseClassAbstractMethod()
         }
 
         /// Creates a copy of this element with the specified before and after elements.
@@ -919,7 +919,7 @@ extension PropertyList {
         ///   - after: The element to link after this one.
         /// - Returns: A new element with the same value but different links.
         func copy(before: Element?, after: Element?) -> Element {
-            openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIBaseClassAbstractMethod()
         }
 
         /// Extracts a value of the specified type from this element.
@@ -927,7 +927,7 @@ extension PropertyList {
         /// - Parameter type: The type to extract the value as.
         /// - Returns: The extracted value.
         func value<T>(as type: T.Type) -> T {
-            openSwiftUIBaseClassAbstractMethod()
+            _openSwiftUIBaseClassAbstractMethod()
         }
     }
 }

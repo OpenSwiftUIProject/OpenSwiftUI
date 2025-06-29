@@ -42,31 +42,31 @@ extension DisplayList {
         package var platformViewMode: DisplayList.GraphicsRenderer.PlatformViewMode
         
         package init(platformViewMode: DisplayList.GraphicsRenderer.PlatformViewMode) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func render(at time: Time, do body: () -> Void) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func renderDisplayList(_ list: DisplayList, at time: Time, in ctx: inout GraphicsContext) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func render(list: DisplayList, in ctx: inout GraphicsContext) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func render(item: DisplayList.Item, in ctx: inout GraphicsContext) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func drawImplicitLayer(in ctx: inout GraphicsContext, content: (inout GraphicsContext) -> Void) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         package func renderPlatformView(_ view: AnyObject?, in ctx: GraphicsContext, size: CGSize, viewType: any Any.Type) {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
     }
 }

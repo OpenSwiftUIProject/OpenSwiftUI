@@ -15,5 +15,5 @@ protocol AccessibilityConfigurationModifier {
 }
 
 extension AccessibilityConfigurationModifier where Configuration == Never {
-    var configuration: Configuration { openSwiftUIBaseClassAbstractMethod() }
+    var configuration: Configuration { _openSwiftUIBaseClassAbstractMethod() }
 }

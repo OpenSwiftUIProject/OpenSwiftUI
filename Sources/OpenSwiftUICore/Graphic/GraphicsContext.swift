@@ -491,6 +491,6 @@ public struct GraphicsContext {
 
 extension GraphicsContext {
     package func draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle) {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }

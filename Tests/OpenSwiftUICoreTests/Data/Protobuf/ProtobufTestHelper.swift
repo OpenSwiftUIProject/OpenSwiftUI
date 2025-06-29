@@ -376,7 +376,7 @@ struct EquatableCodableMessage<T>: ProtobufMessage where T: Codable, T: Equatabl
     }
     
     init(from decoder: inout ProtobufDecoder) throws {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     func encode(to encoder: inout ProtobufEncoder) throws {

@@ -46,8 +46,8 @@ package class AnyResolvedPaint: Equatable {
     package var isCALayerCompatible: Bool { false }
     package func isEqual(to other: AnyResolvedPaint) -> Bool { false }
     package func visit<V>(_ visitor: inout V) where V : ResolvedPaintVisitor {}
-    package func encode(to encoder: any Encoder) throws { openSwiftUIBaseClassAbstractMethod() }
-    package func encode(to encoder: inout ProtobufEncoder) throws { openSwiftUIBaseClassAbstractMethod() }
+    package func encode(to encoder: any Encoder) throws { _openSwiftUIBaseClassAbstractMethod() }
+    package func encode(to encoder: inout ProtobufEncoder) throws { _openSwiftUIBaseClassAbstractMethod() }
     package static func == (lhs: AnyResolvedPaint, rhs: AnyResolvedPaint) -> Bool { lhs.isEqual(to: rhs) }
 }
 

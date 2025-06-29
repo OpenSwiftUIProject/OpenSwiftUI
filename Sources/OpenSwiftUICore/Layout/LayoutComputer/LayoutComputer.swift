@@ -70,25 +70,25 @@ package struct LayoutComputer: Equatable {
 // MARK: - AnyLayoutEngineBox
 
 private class AnyLayoutEngineBox {
-    func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine { openSwiftUIBaseClassAbstractMethod() }
+    func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine { _openSwiftUIBaseClassAbstractMethod() }
 
-    func layoutPriority() -> Double { openSwiftUIBaseClassAbstractMethod() }
+    func layoutPriority() -> Double { _openSwiftUIBaseClassAbstractMethod() }
 
-    func ignoresAutomaticPadding() -> Bool { openSwiftUIBaseClassAbstractMethod() }
+    func ignoresAutomaticPadding() -> Bool { _openSwiftUIBaseClassAbstractMethod() }
 
-    func requiresSpacingProjection() -> Bool { openSwiftUIBaseClassAbstractMethod() }
+    func requiresSpacingProjection() -> Bool { _openSwiftUIBaseClassAbstractMethod() }
 
-    func spacing() -> Spacing { openSwiftUIBaseClassAbstractMethod() }
+    func spacing() -> Spacing { _openSwiftUIBaseClassAbstractMethod() }
 
-    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize { openSwiftUIBaseClassAbstractMethod() }
+    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize { _openSwiftUIBaseClassAbstractMethod() }
 
-    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat { openSwiftUIBaseClassAbstractMethod() }
+    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat { _openSwiftUIBaseClassAbstractMethod() }
 
-    func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] { openSwiftUIBaseClassAbstractMethod() }
+    func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] { _openSwiftUIBaseClassAbstractMethod() }
 
-    func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? { openSwiftUIBaseClassAbstractMethod() }
+    func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? { _openSwiftUIBaseClassAbstractMethod() }
 
-    var debugContentDescription: String? { openSwiftUIBaseClassAbstractMethod() }
+    var debugContentDescription: String? { _openSwiftUIBaseClassAbstractMethod() }
 }
 
 // MARK: - LayoutEngineBox

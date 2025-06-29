@@ -28,7 +28,7 @@ extension DisplayList {
         var wasValid: Bool
 
         init() {
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
         
         func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
@@ -56,7 +56,7 @@ extension DisplayList {
 
         var platform: Platform {
             // TODO
-            openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedFailure()
         }
 
         var exportedObject: AnyObject? {

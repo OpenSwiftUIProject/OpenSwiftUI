@@ -40,11 +40,11 @@ extension ShapeStyledLeafView {
     }
 
     package func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func contentPath(size: CGSize) -> Path {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package static func makeLeafView(
@@ -54,13 +54,13 @@ extension ShapeStyledLeafView {
         interpolatorGroup: ShapeStyle.InterpolatorGroup? = nil,
         data: ShapeUpdateData
     ) -> _ViewOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
 extension ShapeStyledLeafView where ShapeUpdateData == () {
     package mutating func mustUpdate(data: ShapeUpdateData, position: Attribute<ViewOrigin>) -> Bool {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     @inlinable
@@ -71,16 +71,16 @@ extension ShapeStyledLeafView where ShapeUpdateData == () {
         interpolatorGroup: ShapeStyle.InterpolatorGroup? = nil,
         data: ShapeUpdateData
     ) -> _ViewOutputs {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
 package struct ShapeStyledResponderData<V>: ContentResponder where V: ShapeStyledLeafView {
     package func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func contentPath(size: CGSize) -> Path {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }

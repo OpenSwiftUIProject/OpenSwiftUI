@@ -23,11 +23,11 @@ package struct ColorView: RendererLeafView, Animatable {
     }
     
     package var descriptionAttributes: [(name: String, value: String)] {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
     
     package func content() -> DisplayList.Content.Value {

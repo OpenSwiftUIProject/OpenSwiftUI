@@ -34,7 +34,7 @@ public struct FocusedValues {
     
     /// Reads and writes values associated with a given focused value key.
     public subscript<Key>(key: Key.Type) -> Key.Value? where Key: FocusedValueKey {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 

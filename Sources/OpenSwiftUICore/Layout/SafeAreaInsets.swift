@@ -70,7 +70,7 @@ package struct SafeAreaInsets: Equatable {
     }
     
     package func resolve(regions: SafeAreaRegions, in ctx: _PositionAwarePlacementContext) -> EdgeInsets {
-        // openSwiftUIUnimplementedFailure()
+        // _openSwiftUIUnimplementedFailure()
         .zero
     }
 
@@ -79,7 +79,7 @@ package struct SafeAreaInsets: Equatable {
         regions: SafeAreaRegions,
         to: _PositionAwarePlacementContext
     )  {
-        // openSwiftUIUnimplementedFailure()
+        // _openSwiftUIUnimplementedFailure()
     }
 }
 

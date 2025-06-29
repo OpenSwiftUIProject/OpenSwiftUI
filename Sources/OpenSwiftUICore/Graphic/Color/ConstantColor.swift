@@ -164,7 +164,7 @@ extension Color.Resolved : Animatable {
         get {
             if Self.legacyInterpolation {
                 // ResolvedGradient.Color.Space.convertIn(self)
-                openSwiftUIUnimplementedFailure()
+                _openSwiftUIUnimplementedFailure()
             } else {
                 return AnimatablePair(
                     linearRed.scaled(by: .unitScale),
@@ -182,7 +182,7 @@ extension Color.Resolved : Animatable {
         set {
             if Self.legacyInterpolation {
                 // ResolvedGradient.Color.Space.convertOut(self)
-                openSwiftUIUnimplementedFailure()
+                _openSwiftUIUnimplementedFailure()
             } else {
                 linearRed = newValue.first.scaled(by: .inverseUnitScale)
                 linearGreen = newValue.second.first.scaled(by: .inverseUnitScale)

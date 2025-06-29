@@ -28,7 +28,7 @@ package struct MapGesture<From, To>: GestureModifier {
 //            gesture: modifier[offset: { .of(&$0.body) }],
 //            inputs: inputs
 //        )
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package typealias BodyValue = From
@@ -44,11 +44,11 @@ extension Gesture {
     }
 
     public func map<T>(_ body: @escaping (Value) -> T) -> _MapGesture<Self, T> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     package func discrete(_ enabled: Bool = true) -> ModifierGesture<MapGesture<Value, Value>, Self> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -58,7 +58,7 @@ public struct _MapGesture<Content, Value>: PrimitiveGesture where Content: Gestu
         gesture: _GraphValue<_MapGesture<Content, Value>>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Value> {
-        openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedFailure()
     }
 
     public typealias Body = Never
