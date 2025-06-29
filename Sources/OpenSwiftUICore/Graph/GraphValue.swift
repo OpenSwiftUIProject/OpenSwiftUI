@@ -51,9 +51,3 @@ public struct _GraphValue<Value>: Equatable {
 
 @available(*, unavailable)
 extension _GraphValue: Sendable {}
-
-extension Attribute {
-    func unsafeBitCast<V>(to type: V.Type) -> Attribute<V> {
-        unsafeOffset(at: 0, as: V.self)
-    }
-}

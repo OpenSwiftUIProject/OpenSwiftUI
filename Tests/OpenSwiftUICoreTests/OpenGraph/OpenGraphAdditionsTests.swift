@@ -1,13 +1,15 @@
 //
-//  Metadata+OpenSwiftUITests.swift
+//  OpenGraphAdditionsTests.swift
 //  OpenSwiftUICoreTests
 
 import OpenGraphShims
 import OpenSwiftUICore
 import Testing
 
+// MARK: - MetadataAdditionsTests
+
 @Suite(.enabled(if: swiftToolchainSupported))
-struct Metadata_OpenSwiftUITests {
+struct MetadataAdditionsTests {
     class T1 {}
 
     struct T2 {}
@@ -44,7 +46,6 @@ struct Metadata_OpenSwiftUITests {
         #expect(t2Type.genericType(at: 1) == P2.self)
     }
 
-    #if OPENSWIFTUI_SUPPORT_2024_API
     @Test
     func projectEnum() {
         enum T: Equatable {
@@ -73,7 +74,6 @@ struct Metadata_OpenSwiftUITests {
         metadata.projectEnum(at: &t, tag: 2) { _ in }
         #expect(t == .empty)
     }
-    #endif
 
     @Test
     func compareEnumTagsTest() {

@@ -13,6 +13,8 @@ package struct AnyAttribute: RawRepresentable, Hashable {
     package init(rawValue: UInt32) {
         self.rawValue = rawValue
     }
+
+    package typealias Flags = OGAttributeFlags
 }
 
 package struct AttributeInfo {
