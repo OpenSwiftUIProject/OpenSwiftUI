@@ -26,7 +26,9 @@ extension LayoutGesture {
     package func updateEventBindings(
         _ events: inout [EventID : any EventType],
         proxy: LayoutGestureChildProxy
-    ) {}
+    ) {
+        openSwiftUIEmptyStub()
+    }
 }
 
 // MARK: - DefaultLayoutGesture [6.5.4] [WIP]
@@ -43,24 +45,24 @@ package struct DefaultLayoutGesture: LayoutGesture {
 package struct LayoutGestureChildProxy: RandomAccessCollection {
     package struct Child {
         package func binds(_ binding: EventBinding) -> Bool {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
 
         package func containsGlobalLocation(_ p: PlatformPoint) -> Bool {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 
     package var startIndex: Int {
-        get { preconditionFailure("TODO") }
+        get { openSwiftUIUnimplementedFailure() }
     }
 
     package var endIndex: Int {
-        get { preconditionFailure("TODO") }
+        get { openSwiftUIUnimplementedFailure() }
     }
 
     package subscript(index: Int) -> LayoutGestureChildProxy.Child {
-        get { preconditionFailure("TODO") }
+        get { openSwiftUIUnimplementedFailure() }
     }
 
     package func bindChild(
@@ -68,6 +70,6 @@ package struct LayoutGestureChildProxy: RandomAccessCollection {
         event: any EventType,
         id: EventID
     ) -> (from: EventBinding?, to: EventBinding?)? {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }

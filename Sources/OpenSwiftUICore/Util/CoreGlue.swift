@@ -45,43 +45,43 @@ open class CoreGlue: NSObject {
     #endif
 
     open func maxVelocity(_ velocity: CGFloat) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func nextUpdate(nextTime: Time, interval: Double, reason: UInt32?) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func hasTestHost() -> Bool {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func isInstantiated(graph: Graph) -> Bool {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open var defaultImplicitRootType: DefaultImplicitRootTypeResult {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open var defaultSpacing: CGSize {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
 
     }
     open func makeDefaultLayoutComputer() -> MakeDefaultLayoutComputerResult {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func makeDefaultLayoutComputer(graph: Graph) -> MakeDefaultLayoutComputerResult {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func startChildGeometries(_ params: StartChildGeometriesParameters) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func endChildGeometries(_ params: EndChildGeometriesParameters) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func makeLayoutView<L>(
@@ -89,27 +89,27 @@ open class CoreGlue: NSObject {
         inputs: _ViewInputs,
         body: (_Graph, _ViewInputs) -> _ViewListOutputs
     ) -> _ViewOutputs where L: Layout {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func addDisplayListTreeValue(outputs: inout _ViewOutputs) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
 //    open func updateData(_ data: inout _ViewDebug.Data, value: TreeValue) {
-//        preconditionFailure("")
+//        openSwiftUIBaseClassAbstractMethod()
 //    }
 
     open func makeForEachView<D, ID, C>(view: _GraphValue<ForEach<D, ID, C>>, inputs: _ViewInputs) -> _ViewOutputs? where D: RandomAccessCollection, ID: Hashable, C: View {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func makeForEachViewList<D, ID, C>(view: _GraphValue<ForEach<D, ID, C>>, inputs: _ViewListInputs) -> _ViewListOutputs? where D: RandomAccessCollection, ID: Hashable, C: View {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
 //    open func defaultOpenURLAction(env: EnvironmentValues) -> OpenURLAction {
-//        preconditionFailure("")
+//        openSwiftUIBaseClassAbstractMethod()
 //    }
 
     #if canImport(Darwin)
@@ -219,35 +219,35 @@ open class CoreGlue2: NSObject {
     #endif
 
     open func initializeTestApp() {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func isStatusBarHidden() -> Bool? {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func configureEmptyEnvironment(_: inout EnvironmentValues) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func configureDefaultEnvironment(_: inout EnvironmentValues) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open func makeRootView(base: AnyView, rootFocusScope: Namespace.ID) -> AnyView {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open var systemDefaultDynamicTypeSize: DynamicTypeSize {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     open var codableAttachmentCellType: CoreGlue2.CodableAttachmentCellTypeResult {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     open func linkURL(_ parameters: LinkURLParameters) -> URL? {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     package func linkURL(at point: CGPoint, in size: CGSize, stringDrawing: ResolvedStyledText.StringDrawing) -> URL? {
@@ -255,13 +255,13 @@ open class CoreGlue2: NSObject {
     }
 
     open func transformingEquivalentAttributes(_ attributedString: AttributedString) -> AttributedString {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     #if canImport(CoreText)
     @objc(makeSummarySymbolHostIsOn:font:foregroundColor:)
     open func makeSummarySymbolHost(isOn: Bool, font: CTFont, foregroundColor: CGColor) -> AnyObject {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
     #endif
 

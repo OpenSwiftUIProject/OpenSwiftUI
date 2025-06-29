@@ -23,7 +23,7 @@ package struct HitTestBindingModifier: ViewModifier, MultiViewModifier, Primitiv
 }
 
 extension ViewResponder {
-    package static var hitTestKey: UInt32 { preconditionFailure("TODO") }
+    package static var hitTestKey: UInt32 { openSwiftUIUnimplementedFailure() }
 
     package static let minOpacityForHitTest: Double = 0.0
 

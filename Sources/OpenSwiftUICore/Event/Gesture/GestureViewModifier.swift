@@ -392,7 +392,7 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
 //            }
 //            // TODO: GestureViewDebug
 //            return closure()
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 
@@ -660,7 +660,7 @@ extension Optional: Gesture where Wrapped: Gesture {
         gesture: _GraphValue<Optional<Wrapped>>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Wrapped.Value> {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     public typealias Body = Never

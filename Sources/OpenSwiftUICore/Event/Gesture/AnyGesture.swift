@@ -47,7 +47,7 @@ extension AnyGesture: Sendable {}
 class AnyGestureStorageBase<Value> {
 
     fileprivate func matches(_ other: AnyGestureStorageBase<Value>) -> Bool {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate func makeChild(
@@ -55,11 +55,11 @@ class AnyGestureStorageBase<Value> {
         container: Attribute<AnyGestureInfo<Value>.Value>,
         inputs: _GestureInputs
     ) -> _GestureOutputs<Value> {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 
     fileprivate func updateChild(context: AnyRuleContext) {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
 }
 

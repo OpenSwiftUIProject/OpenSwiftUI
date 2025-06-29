@@ -34,7 +34,7 @@ extension _VariadicView.Children: View, MultiView, PrimitiveView {
         @Attribute var children: _VariadicView.Children
 
         var value: Value {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 }
@@ -48,11 +48,11 @@ extension _VariadicView.Children: RandomAccessCollection {
         var traits: ViewTraitCollection
         
         public var id: AnyHashable {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
 
         }
         public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID : Hashable {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
 
         /// The value of each trait associated with the view. Changing
@@ -63,20 +63,20 @@ extension _VariadicView.Children: RandomAccessCollection {
         }
 
         public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
     
     public var startIndex: Int {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     public var endIndex: Int {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     public subscript(index: Int) -> Element {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -106,7 +106,7 @@ package struct _ViewList_Backing {
     package func visitViews<V>(applying v: inout V, from start: inout Int) -> Bool where V: ViewListVisitor {
         Update.ensure {
             children.list.applySublists(from: &start, list: nil) { sublist in
-                preconditionFailure("TODO")
+                openSwiftUIUnimplementedFailure()
             }
         }
     }
@@ -114,17 +114,17 @@ package struct _ViewList_Backing {
 
 extension ViewList.Backing {
     package func visitAll<V>(applying v: inout V) where V: ViewListVisitor {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func visitViews<V>(applying v: inout V, from start: Int) where V: ViewListVisitor {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 
 extension ViewList.Backing {
     package var ids: [AnyHashable] {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -220,7 +220,7 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
     }
 
     func makeItem(placeholder: ViewList.View, seed: UInt32) -> Value {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     mutating func reuseItem(info: inout Value, placeholder: ViewList.View) -> Bool {
@@ -268,7 +268,7 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
     }
 
     mutating func updateValue() {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     func destroy() {

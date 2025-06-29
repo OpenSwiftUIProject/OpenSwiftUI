@@ -207,7 +207,7 @@ public import DeveloperToolsSupport
 extension Color {
     /// Initialize a `Color` with a color resource.
     public init(_ resource: ColorResource) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 #endif

@@ -73,7 +73,7 @@ extension PlatformViewRepresentable {
 
     nonisolated static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         // TODO
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     var body: Never {

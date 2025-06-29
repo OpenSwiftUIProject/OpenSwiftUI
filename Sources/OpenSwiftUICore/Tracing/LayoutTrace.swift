@@ -44,11 +44,11 @@ package struct LayoutTrace {
         }
 
         func traceSizeThatFits(_ attribute: AnyAttribute?, proposal: _ProposedSize, _ block: () -> CGSize) -> CGSize {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
 
         func traceLengthThatFits(_ attribute: AnyAttribute?, proposal: _ProposedSize, in axis: Axis, _ block: () -> CGFloat) -> CGFloat {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
 
         func traceChildGeometries(_ attribute: AnyAttribute?, at parentSize: ViewSize, origin: CGPoint, _ block: () -> [ViewGeometry]) -> [ViewGeometry] {
@@ -60,7 +60,7 @@ package struct LayoutTrace {
         }
 
         func traceContentDescription(_ attribute: AnyAttribute?, _ description: String) {
-            preconditionFailure("TODO")
+            openSwiftUIUnimplementedFailure()
         }
     }
 }

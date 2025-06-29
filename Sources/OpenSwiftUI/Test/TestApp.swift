@@ -24,6 +24,6 @@ extension _TestApp {
         #endif
         Color.Resolved.legacyInterpolation = true
         let rootView = RootView()
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }

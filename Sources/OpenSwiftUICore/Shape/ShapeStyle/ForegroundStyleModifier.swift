@@ -189,7 +189,7 @@ public struct _ForegroundStyleModifier<Style>: PrimitiveViewModifier, ViewInputs
     }
     
     public nonisolated static func _makeViewInputs(modifier: _GraphValue<_ForegroundStyleModifier<Style>>, inputs: inout _ViewInputs) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
     
     public typealias Body = Never
@@ -215,7 +215,7 @@ public struct _ForegroundStyleModifier2<S1, S2>: PrimitiveViewModifier, ViewInpu
     }
 
     nonisolated public static func _makeViewInputs(modifier: _GraphValue<_ForegroundStyleModifier2<S1, S2>>, inputs: inout _ViewInputs) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     public typealias Body = Never
@@ -242,7 +242,7 @@ public struct _ForegroundStyleModifier3<S1, S2, S3>: PrimitiveViewModifier, View
     }
 
     nonisolated public static func _makeViewInputs(modifier: _GraphValue<_ForegroundStyleModifier3<S1, S2, S3>>, inputs: inout _ViewInputs) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     @available(iOS 15.0, tvOS 15.0, watchOS 8.0, macOS 12.0, *)

@@ -85,7 +85,7 @@ extension _AnyAnimatableData: Sendable {}
 @usableFromInline
 package class _AnyAnimatableDataVTable {
     package class var zero: Any {
-        preconditionFailure("")
+        openSwiftUIBaseClassAbstractMethod()
     }
     
     package class func isEqual(_ lhs: Any, _ rhs: Any) -> Bool { false }

@@ -584,7 +584,7 @@ extension _UIHostingView: ViewRendererHost {
     }
 
     package func updateScrollableContainerSize() {
-        // preconditionFailure("TODO")
+        // openSwiftUIUnimplementedFailure()
     }
 
     var shouldDisableUIKitAnimations: Bool {

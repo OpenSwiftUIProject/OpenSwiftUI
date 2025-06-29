@@ -34,7 +34,7 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
 
     init(rootResponder: AnyGestureResponder) {
         self.rootResponder = rootResponder
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package var description: String {
@@ -42,7 +42,7 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
     }
 
     override package func instantiateOutputs() {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     override package func uninstantiateOutputs() {
@@ -90,7 +90,7 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
         guard let rootResponder, rootResponder.isValid else {
             return .failed
         }
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func resetEvents() {

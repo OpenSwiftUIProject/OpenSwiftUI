@@ -48,19 +48,19 @@ final public class EventBindingManager {
         _ identifier: EventID,
         to: ResponderNode?
     ) -> (from: EventBinding?, to: EventBinding?)? {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func willRemoveResponder(_ from: ResponderNode) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     private func sendDownstream(_ events: [EventID: any EventType]) -> Set<EventID> {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     @discardableResult
@@ -74,23 +74,23 @@ final public class EventBindingManager {
     }
 
     package func send<E>(_ event: E, id: Int) where E: EventType {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
-    package var rootResponder: ResponderNode? { preconditionFailure("TODO") }
+    package var rootResponder: ResponderNode? { openSwiftUIUnimplementedFailure() }
 
-    package var focusedResponder: ResponderNode? { preconditionFailure("TODO") }
+    package var focusedResponder: ResponderNode? { openSwiftUIUnimplementedFailure() }
 
     package func reset(resetForwardedEventDispatchers: Bool = false) {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func isActive<E>(for eventType: E.Type) -> Bool where E: EventType {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 
     package func binds<E>(_ event: E) -> Bool where E: EventType {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 

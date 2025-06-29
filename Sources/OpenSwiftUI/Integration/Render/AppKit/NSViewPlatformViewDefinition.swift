@@ -57,7 +57,7 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     }
     
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
     }
 }
 #endif

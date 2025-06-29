@@ -33,7 +33,7 @@ extension _GraphInputs {
         #elseif os(iOS) || os(visionOS)
         AnyInterfaceIdiom(.phone)
         #else
-        preconditionFailure("TODO")
+        openSwiftUIUnimplementedFailure()
         #endif
     }
 }

@@ -70,25 +70,25 @@ package struct LayoutComputer: Equatable {
 // MARK: - AnyLayoutEngineBox
 
 private class AnyLayoutEngineBox {
-    func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine { preconditionFailure("") }
+    func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine { openSwiftUIBaseClassAbstractMethod() }
 
-    func layoutPriority() -> Double { preconditionFailure("") }
+    func layoutPriority() -> Double { openSwiftUIBaseClassAbstractMethod() }
 
-    func ignoresAutomaticPadding() -> Bool { preconditionFailure("") }
+    func ignoresAutomaticPadding() -> Bool { openSwiftUIBaseClassAbstractMethod() }
 
-    func requiresSpacingProjection() -> Bool { preconditionFailure("") }
+    func requiresSpacingProjection() -> Bool { openSwiftUIBaseClassAbstractMethod() }
 
-    func spacing() -> Spacing { preconditionFailure("") }
+    func spacing() -> Spacing { openSwiftUIBaseClassAbstractMethod() }
 
-    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize { preconditionFailure("") }
+    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize { openSwiftUIBaseClassAbstractMethod() }
 
-    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat { preconditionFailure("") }
+    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat { openSwiftUIBaseClassAbstractMethod() }
 
-    func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] { preconditionFailure("") }
+    func childGeometries(at parentSize: ViewSize, origin: CGPoint) -> [ViewGeometry] { openSwiftUIBaseClassAbstractMethod() }
 
-    func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? { preconditionFailure("") }
+    func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? { openSwiftUIBaseClassAbstractMethod() }
 
-    var debugContentDescription: String? { preconditionFailure("") }
+    var debugContentDescription: String? { openSwiftUIBaseClassAbstractMethod() }
 }
 
 // MARK: - LayoutEngineBox
