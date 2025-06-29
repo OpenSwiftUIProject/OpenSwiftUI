@@ -27,11 +27,12 @@ public struct AnyGesture<Value>: PrimitiveGesture, Gesture {
         inputs: _GestureInputs
     ) -> _GestureOutputs<Value> {
         let outputs: _GestureOutputs<Value> = inputs.makeIndirectOutputs()
+        let currentSubgraph = Subgraph.current!
         let info = Attribute(AnyGestureInfo<Value>(
             gesture: gesture.value,
             inputs: inputs,
             outputs: outputs,
-            parentSubgraph: Subgraph.current!
+            parentSubgraph: currentSubgraph
         ))
         info.setFlags(.active, mask: .mask)
         outputs.setIndirectDependency(info.identifier)
