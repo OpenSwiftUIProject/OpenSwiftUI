@@ -7,6 +7,7 @@
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
 package import Foundation
+import OpenGraphShims
 
 // MARK: - _DisplayList_Identity
 
@@ -425,6 +426,29 @@ extension DisplayList {
             static let _4 = RestoreOptions(rawValue: 1 << 2)
             static let _8 = RestoreOptions(rawValue: 1 << 3)
         }
+    }
+}
+
+extension PreferencesInputs {
+    @inline(__always)
+    var requiresDisplayList: Bool {
+        get {
+            contains(DisplayList.Key.self)
+        }
+        set {
+            if newValue {
+                add(DisplayList.Key.self)
+            } else {
+                remove(DisplayList.Key.self)
+            }
+        }
+    }
+}
+
+extension PreferencesOutputs {
+    var displayList: Attribute<DisplayList>? {
+        get { self[DisplayList.Key.self] }
+        set { self[DisplayList.Key.self] = newValue }
     }
 }
 

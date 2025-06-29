@@ -237,7 +237,7 @@ extension _ViewInputs {
         inputs.size = viewGraph.intern(ViewSize.zero, id: .defaultValue)
         inputs.requestsLayoutComputer = false
         inputs.needsGeometry = false
-        inputs.preferences.remove(DisplayList.Key.self)
+        inputs.preferences.requiresDisplayList = false
         inputs.preferences.requiresViewResponders = false
         return inputs
     }

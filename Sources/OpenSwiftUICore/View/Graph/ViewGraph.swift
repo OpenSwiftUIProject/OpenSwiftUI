@@ -35,7 +35,7 @@ package final class ViewGraph: GraphHost {
         fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
             inputs.preferences.add(HostPreferencesKey.self)
             if contains(.displayList) {
-                inputs.preferences.add(DisplayList.Key.self)
+                inputs.preferences.requiresDisplayList = true
             }
             if contains(.viewResponders) {
                 inputs.preferences.requiresViewResponders = true
@@ -257,7 +257,7 @@ package final class ViewGraph: GraphHost {
             rootGeometry.$childLayoutComputer = outputs.layoutComputer
         }
         if requestedOutputs.contains(.displayList) {
-            if let displayList = outputs.preferences[DisplayList.Key.self] {
+            if let displayList = outputs.preferences.displayList {
                 _rootDisplayList = WeakAttribute(rootSubgraph.apply {
                     Attribute(RootDisplayList(content: displayList, time: data.$time))
                 })
