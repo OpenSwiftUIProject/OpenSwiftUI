@@ -368,30 +368,31 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
 
     override func makeGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
         makeWrappedGesture(inputs: inputs) { childInputs in
-            let childViewInputs = childInputs.viewInputs
-            let closure: () -> _GestureOutputs<Void> = { [self] in
-                if inputs.options.contains(.skipCombiners) {
-                    let childGesture = Attribute(GestureViewChild(
-                        modifier: modifier,
-                        isEnabled: childViewInputs.isEnabled,
-                        viewPhase: childViewInputs.viewPhase
-                    ))
-                    return AnyGesture<Void>.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
-                } else {
-                    let childGesture = Attribute(CombiningGestureViewChild(
-                        modifier: modifier,
-                        isEnabled: childViewInputs.isEnabled,
-                        viewPhase: childViewInputs.viewPhase,
-                        node: self
-                    ))
-                    return Modifier.Combiner.Result.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
-                }
-            }
-            guard inputs.options.contains(.includeDebugOutput) else {
-                return closure()
-            }
-            // TODO: GestureViewDebug
-            return closure()
+//            let childViewInputs = childInputs.viewInputs
+//            let closure: () -> _GestureOutputs<Void> = { [self] in
+//                if inputs.options.contains(.skipCombiners) {
+//                    let childGesture = Attribute(GestureViewChild(
+//                        modifier: modifier,
+//                        isEnabled: childViewInputs.isEnabled,
+//                        viewPhase: childViewInputs.viewPhase
+//                    ))
+//                    return AnyGesture<Void>.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
+//                } else {
+//                    let childGesture = Attribute(CombiningGestureViewChild(
+//                        modifier: modifier,
+//                        isEnabled: childViewInputs.isEnabled,
+//                        viewPhase: childViewInputs.viewPhase,
+//                        node: self
+//                    ))
+//                    return Modifier.Combiner.Result.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
+//                }
+//            }
+//            guard inputs.options.contains(.includeDebugOutput) else {
+//                return closure()
+//            }
+//            // TODO: GestureViewDebug
+//            return closure()
+            preconditionFailure("TODO")
         }
     }
 
@@ -549,13 +550,13 @@ private struct GestureViewDebug<Modifier> where Modifier: GestureViewModifier {
 // MARK: - SubviewsGesture [6.5.4]
 
 private struct SubviewsGesture: PrimitiveGesture, PrimitiveDebuggableGesture {
-    internal typealias Value = ()
+    typealias Value = ()
 
-    internal typealias Body = Never
+    typealias Body = Never
 
-    internal let node: AnyGestureResponder
+    let node: AnyGestureResponder
 
-    fileprivate static func _makeGesture(gesture: _GraphValue<Self>, inputs: _GestureInputs) -> _GestureOutputs<Void> {
+    static func _makeGesture(gesture: _GraphValue<Self>, inputs: _GestureInputs) -> _GestureOutputs<Void> {
         let outputs: _GestureOutputs<Void> = inputs.makeIndirectOutputs()
         let currentSubgraph = Subgraph.current!
         let subviewValue = Attribute(SubviewsPhase(
