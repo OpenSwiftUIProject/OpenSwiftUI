@@ -44,23 +44,21 @@ extension AsyncAttribute {
     package static var flags: Flags { [] }
 }
 
-// MARK: - DefaultRule [WIP]
+// MARK: - DefaultRule [6.5.4]
 
 package struct DefaultRule<T>: Rule, AsyncAttribute, CustomStringConvertible where T: Defaultable {
-    package init() {
-        preconditionFailure("TODO")
-    }
+    @WeakAttribute var weakValue: T.Value?
 
-    package static var initialValue: T.Value? {
-        get { preconditionFailure("TODO") }
-    }
+    package init() {}
+
+    package static var initialValue: T.Value? { T.defaultValue }
 
     package var value: T.Value {
-        get { preconditionFailure("TODO") }
+        weakValue ?? T.defaultValue
     }
 
     package var description: String {
-        get { preconditionFailure("TODO") }
+        "∨ \(T.Value.self)"
     }
 
     package typealias Value = T.Value
@@ -71,7 +69,12 @@ extension Attribute {
         _ value: Attribute<Value>?,
         type: T.Type
     ) where Value == T.Value, T: Defaultable {
-        preconditionFailure("TODO")
+        mutateBody(
+            as: DefaultRule<T>.self,
+            invalidating: true
+        ) { defaultRule in
+            defaultRule.$weakValue = value
+        }
     }
 
     package func invalidateValueIfNeeded() -> Bool {

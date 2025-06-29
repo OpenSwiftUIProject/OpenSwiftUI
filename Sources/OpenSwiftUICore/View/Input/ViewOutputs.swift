@@ -18,7 +18,7 @@ public struct _ViewOutputs {
             _layoutComputer.attribute
         }
         set {
-            _layoutComputer = OptionalAttribute(newValue)
+            _layoutComputer.attribute = newValue
             preferences.debugProperties.insert(.layoutComputer)
         }
     }

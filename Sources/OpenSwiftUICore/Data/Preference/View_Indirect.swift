@@ -30,8 +30,8 @@ extension _ViewInputs {
 extension _ViewOutputs {
     package func setIndirectDependency(_ dependency: AnyAttribute?) {
         preferences.setIndirectDependency(dependency)
-        if let target = layoutComputer?.identifier {
-            target.indirectDependency = dependency
+        if let layoutComputer {
+            layoutComputer.identifier.indirectDependency = dependency
         }
     }
         
@@ -41,12 +41,15 @@ extension _ViewOutputs {
            let source = childOutputs.layoutComputer?.identifier {
             target.source = source
         }
+        if let layoutComputer, let childLayoutComputer = childOutputs.layoutComputer {
+            layoutComputer.identifier.source = childLayoutComputer.identifier
+        }
     }
 
     package func detachIndirectOutputs() {
         preferences.detachIndirectOutputs()
-        if let target = layoutComputer?.identifier {
-            target.source = .nil
+        if let layoutComputer {
+            layoutComputer.identifier.source = .nil
         }
     }
 }
