@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
+package import CoreGraphicsShims
 package import Foundation
 import OpenGraphShims
 
@@ -99,7 +100,11 @@ package struct DisplayList: Equatable {
         // TODO
         items.append(contentsOf: other.items)
 //        _openSwiftUIUnimplementedFailure()
-    }    
+    }
+
+    package var isEmpty: Bool {
+        items.isEmpty
+    }
 }
 
 @available(*, unavailable)
@@ -205,9 +210,7 @@ extension DisplayList {
     }
         
     package enum Transform {
-        #if canImport(Darwin)
         case affine(CGAffineTransform)
-        #endif
         case projection(ProjectionTransform)
         // case rotation(_RotationEffect.Data)
         // case rotation3D(_Rotation3DEffect.Data)
