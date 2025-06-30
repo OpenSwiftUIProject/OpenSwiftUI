@@ -48,7 +48,18 @@ extension GeometryEffect {
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        if modifier is _GraphValue<_RotationEffect> {
+            _openSwiftUIUnimplementedFailure()
+        } else if modifier is _GraphValue<_Rotation3DEffect> {
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            DefaultGeometryEffectProvider
+                ._makeGeometryEffect(
+                    modifier: modifier,
+                    inputs: inputs,
+                    body: body
+                )
+        }
     }
 
     nonisolated public static func _makeViewList(
@@ -80,6 +91,55 @@ protocol GeometryEffectProvider {
         layoutDirection: LayoutDirection
     ) -> DisplayList.Effect
 }
+
+extension GeometryEffectProvider {
+    // FIXME: inputs relations
+    static func _makeGeometryEffect(
+        modifier: _GraphValue<Effect>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        guard inputs.needsGeometry else {
+            return body(_Graph(), inputs)
+        }
+        var newInputs = inputs
+        let animatableEffect = Effect.makeAnimatable(value: modifier, inputs: inputs.base)
+        newInputs.transform = Attribute(
+            GeometryEffectTransform(
+                effect: animatableEffect,
+                size: inputs.animatedCGSize(),
+                position: inputs.animatedPosition(),
+                transform: inputs.transform,
+                layoutDirection: inputs.layoutDirection
+            )
+        )
+        let zeroPoint = ViewGraph.current.$zeroPoint
+        newInputs.position = zeroPoint
+        newInputs.containerPosition = zeroPoint
+        newInputs.size = Attribute(
+            RoundedSize(
+                position: inputs.position,
+                size: inputs.size,
+                pixelLength: inputs.mapEnvironment(id: .pixelLength) { $0.pixelLength }
+            )
+        )
+        var outputs = body(_Graph(), newInputs)
+        outputs.preferences.displayList = Attribute(
+            GeometryEffectDisplayList<Self>(
+                identity: .init(),
+                effect: animatableEffect,
+                position: newInputs.animatedPosition(),
+                size: newInputs.animatedCGSize(),
+                layoutDirection: newInputs.layoutDirection,
+                containerPosition: newInputs.containerPosition,
+                content: .init(outputs.preferences.displayList),
+                options: .init()
+            )
+        )
+        return outputs
+    }
+}
+
 
 // MARK: - RoundedSize [6.5.4]
 
