@@ -8,7 +8,7 @@
 
 package import CoreGraphicsShims
 package import Foundation
-import OpenGraphShims
+package import OpenGraphShims
 
 // MARK: - _DisplayList_Identity
 
@@ -434,7 +434,7 @@ extension DisplayList {
 
 extension PreferencesInputs {
     @inline(__always)
-    var requiresDisplayList: Bool {
+    package var requiresDisplayList: Bool {
         get {
             contains(DisplayList.Key.self)
         }
@@ -449,7 +449,8 @@ extension PreferencesInputs {
 }
 
 extension PreferencesOutputs {
-    var displayList: Attribute<DisplayList>? {
+    @inline(__always)
+    package var displayList: Attribute<DisplayList>? {
         get { self[DisplayList.Key.self] }
         set { self[DisplayList.Key.self] = newValue }
     }

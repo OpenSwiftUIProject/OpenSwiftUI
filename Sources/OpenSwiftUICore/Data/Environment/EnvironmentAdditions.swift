@@ -7,6 +7,7 @@
 //  ID: 1B17C64D9E901A0054B49B69A4A2439D (SwiftUICore)
 
 public import Foundation
+package import OpenGraphShims
 
 // MARK: - EnvironmentValues + Display [6.4.41]
 
@@ -41,6 +42,12 @@ extension EnvironmentValues {
 
 extension CachedEnvironment.ID {
     package static let pixelLength: CachedEnvironment.ID = .init()
+}
+
+extension _ViewInputs {
+    package var pixelLength: Attribute<CGFloat> {
+        mapEnvironment(id: .pixelLength) { $0.pixelLength }
+    }
 }
 
 private struct DisplayGamutKey: EnvironmentKey {

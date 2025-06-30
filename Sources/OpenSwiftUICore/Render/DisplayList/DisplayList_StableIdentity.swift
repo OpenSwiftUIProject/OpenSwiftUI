@@ -95,12 +95,24 @@ extension _DisplayList_StableIdentityMap: ProtobufMessage {
     }
 }
 
-// TODO: Blocked by _ViewInputs
-//extension _ViewInputs {
-//    package mutating func configureStableIDs(root: _DisplayList_StableIdentityRoot) {
-//    package func pushIdentity(_ identity: _DisplayList_Identity)
-//    package func makeStableIdentity() -> _DisplayList_StableIdentity
-//}
+extension _ViewInputs {
+    package mutating func configureStableIDs(root: _DisplayList_StableIdentityRoot) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func pushIdentity(_ identity: _DisplayList_Identity) {
+        
+        guard base.needsStableDisplayListIDs else {
+            return
+        }
+        self[_DisplayList_StableIdentityScope.self].attribute!.value.pushIdentity(identity)
+    }
+
+    package func makeStableIdentity() -> _DisplayList_StableIdentity {
+        // Log.internalError("expected stable IDs to be supported")
+        _openSwiftUIUnimplementedFailure()
+    }
+}
 
 extension _GraphInputs {
     private func pushScope<ID>(id: ID) where ID: StronglyHashable {
@@ -110,7 +122,7 @@ extension _GraphInputs {
     }
 
     package mutating func pushStableID<ID>(_ id: ID) where ID: Hashable {
-        guard options.contains(.needsStableDisplayListIDs) else {
+        guard needsStableDisplayListIDs else {
             return
         }
         if let stronglyHashable = id as? StronglyHashable {
@@ -121,23 +133,21 @@ extension _GraphInputs {
     }
     
     package mutating func pushStableIndex(_ index: Int) {
-        guard options.contains(.needsStableDisplayListIDs) else {
+        guard needsStableDisplayListIDs else {
             return
         }
         pushScope(id: index)
     }
     
     package mutating func pushStableType(_ type: any Any.Type) {
-        #if OPENSWIFTUI_SUPPORT_2024_API
-        guard options.contains(.needsStableDisplayListIDs) else {
+        guard needsStableDisplayListIDs else {
             return
         }
         pushScope(id: makeStableTypeData(type))
-        #endif
     }
     
     package var stableIDScope: WeakAttribute<DisplayList.StableIdentityScope>? {
-        guard !options.contains(.needsStableDisplayListIDs) else {
+        guard !needsStableDisplayListIDs else { // Question
             return nil
         }
         let result = self[_DisplayList_StableIdentityScope.self]
@@ -145,11 +155,9 @@ extension _GraphInputs {
     }
 }
 
-#if OPENSWIFTUI_SUPPORT_2024_API
 package func makeStableTypeData(_ type: any Any.Type) -> StrongHash {
     unsafeBitCast(Metadata(type).signature, to: StrongHash.self)
 }
-#endif
 
 package func makeStableIDData<ID>(from id: ID) -> StrongHash? {
     guard let encodable = id as? Encodable else {

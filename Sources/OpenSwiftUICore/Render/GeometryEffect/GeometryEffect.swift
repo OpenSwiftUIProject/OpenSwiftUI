@@ -48,7 +48,18 @@ extension GeometryEffect {
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        if modifier is _GraphValue<_RotationEffect> {
+            _openSwiftUIUnimplementedFailure()
+        } else if modifier is _GraphValue<_Rotation3DEffect> {
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            DefaultGeometryEffectProvider
+                ._makeGeometryEffect(
+                    modifier: modifier,
+                    inputs: inputs,
+                    body: body
+                )
+        }
     }
 
     nonisolated public static func _makeViewList(
@@ -80,6 +91,62 @@ protocol GeometryEffectProvider {
         layoutDirection: LayoutDirection
     ) -> DisplayList.Effect
 }
+
+extension GeometryEffectProvider {
+    static func _makeGeometryEffect(
+        modifier: _GraphValue<Effect>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        guard inputs.needsGeometry else {
+            return body(_Graph(), inputs)
+        }
+        let animatableEffect = Effect.makeAnimatable(value: modifier, inputs: inputs.base)
+        let transform = Attribute(
+            GeometryEffectTransform(
+                effect: animatableEffect,
+                size: inputs.animatedCGSize(),
+                position: inputs.animatedPosition(),
+                transform: inputs.transform,
+                layoutDirection: inputs.layoutDirection
+            )
+        )
+        let size = Attribute(
+            RoundedSize(
+                position: inputs.position,
+                size: inputs.size,
+                pixelLength: inputs.pixelLength
+            )
+        )
+        var newInputs = inputs
+        let zeroPoint = ViewGraph.current.$zeroPoint
+        newInputs.transform = transform
+        newInputs.position = zeroPoint
+        newInputs.containerPosition = zeroPoint
+        newInputs.size = size
+        var outputs = body(_Graph(), newInputs)
+        guard inputs.preferences.requiresDisplayList else {
+            return outputs
+        }
+        let identity = DisplayList.Identity()
+        inputs.pushIdentity(identity)
+        let displayList = Attribute(
+            GeometryEffectDisplayList<Self>(
+                identity: .init(),
+                effect: animatableEffect,
+                position: inputs.animatedPosition(),
+                size: inputs.animatedCGSize(), // Verify: Still get a new size here
+                layoutDirection: inputs.layoutDirection,
+                containerPosition: inputs.containerPosition,
+                content: .init(outputs.preferences.displayList),
+                options: .init()
+            )
+        )
+        outputs.preferences.displayList = displayList
+        return outputs
+    }
+}
+
 
 // MARK: - RoundedSize [6.5.4]
 
