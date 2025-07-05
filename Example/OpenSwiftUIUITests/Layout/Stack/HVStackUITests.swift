@@ -8,8 +8,10 @@ import SnapshotTesting
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct HVStackUITests {
+    // MARK: - Stack Frame + Element Frame
+
     @Test
-    func fixFrameForHStack() {
+    func stackFrameElementFrameHStack() {
         struct ContentView: View {
             var body: some View {
                 HStack {
@@ -26,7 +28,7 @@ struct HVStackUITests {
     }
 
     @Test
-    func fixFrameForVStack() {
+    func stackFrameElementFrameVStack() {
         struct ContentView: View {
             var body: some View {
                 VStack {
@@ -43,7 +45,7 @@ struct HVStackUITests {
     }
 
     @Test
-    func fixFrameForHVStack() {
+    func stackFrameElementFrameHVStack() {
         struct ContentView: View {
             var body: some View {
                 VStack {
@@ -58,15 +60,15 @@ struct HVStackUITests {
                 .background { Color.black }
             }
         }
-        withKnownIssue("Spacing is not implemented") {
-            openSwiftUIAssertSnapshot(
-                of: ContentView()
-            )
-        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
     }
 
+    // MARK: - Element Frame
+
     @Test
-    func fixElementForHVStack() {
+    func elementFrameHVStack() {
         struct ContentView: View {
             var body: some View {
                 VStack {
@@ -80,15 +82,55 @@ struct HVStackUITests {
                 .background { Color.black }
             }
         }
-        withKnownIssue("Spacing is not implemented") {
-            openSwiftUIAssertSnapshot(
-                of: ContentView()
-            )
-        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
     }
 
     @Test
-    func equalSizeForHVStack() {
+    func elementFrameSpacingHVStack() {
+        struct ContentView: View {
+            var body: some View {
+                VStack(spacing: 20) {
+                    Color.red.frame(width: 40, height: 40)
+                    Color.blue.frame(width: 40, height: 40)
+                    HStack(spacing: 30) {
+                        Color.green.frame(width: 40, height: 40)
+                        Color.yellow.frame(width: 40, height: 40)
+                    }
+                }
+                .background { Color.black }
+            }
+        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
+    }
+
+    @Test
+    func elementFrameAlignmentHVStack() {
+        struct ContentView: View {
+            var body: some View {
+                VStack(alignment: .leading) {
+                    Color.red.frame(width: 30, height: 30)
+                    Color.blue.frame(width: 40, height: 40)
+                    HStack(alignment: .top) {
+                        Color.green.frame(width: 50, height: 50)
+                        Color.yellow.frame(width: 60, height: 60)
+                    }
+                }
+                .background { Color.black }
+            }
+        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
+    }
+
+    // MARK: - No frame constraint
+
+    @Test
+    func defaultHVStack() {
         struct ContentView: View {
             var body: some View {
                 VStack {
