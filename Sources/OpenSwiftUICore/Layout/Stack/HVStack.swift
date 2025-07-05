@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 package import Foundation
 
@@ -62,29 +62,34 @@ extension HVStack {
         )
     }
 
-    public func updateCache(_ cache: inout Cache, subviews: Self.Subviews) {
-        _openSwiftUIUnimplementedFailure()
+    public func updateCache(_ cache: inout Cache, subviews: Subviews) {
+        cache.stack.update(
+            children: subviews,
+            majorAxis: Self.majorAxis,
+            minorAxisAlignment: alignment.key,
+            uniformSpacing: spacing
+        )
     }
 
     public func spacing(subviews: Subviews, cache: inout Cache) -> ViewSpacing {
-        _openSwiftUIUnimplementedFailure()
+        cache.stack.spacing()
     }
 
     public func sizeThatFits(
         proposal: ProposedViewSize,
-        subviews: Self.Subviews,
-        cache: inout Self.Cache
+        subviews: Subviews,
+        cache: inout Cache
     ) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        cache.stack.sizeThatFits(proposal)
     }
 
     public func placeSubviews(
         in bounds: CGRect,
         proposal: ProposedViewSize,
-        subviews: Self.Subviews,
-        cache: inout Self.Cache
+        subviews: Subviews,
+        cache: inout Cache
     ) {
-        _openSwiftUIUnimplementedFailure()
+        cache.stack.placeSubviews(in: bounds, proposedSize: proposal)
     }
 
     public func explicitAlignment(
@@ -94,7 +99,11 @@ extension HVStack {
         subviews: Subviews,
         cache: inout Cache
     ) -> CGFloat? {
-        cache.stack.explicitAlignment(guide.key, in: bounds, proposal: proposal)
+        cache.stack.explicitAlignment(
+            guide.key,
+            in: bounds,
+            proposal: proposal
+        )
     }
 
     public func explicitAlignment(
@@ -104,6 +113,10 @@ extension HVStack {
         subviews: Subviews,
         cache: inout Cache
     ) -> CGFloat? {
-        cache.stack.explicitAlignment(guide.key, in: bounds, proposal: proposal)
+        cache.stack.explicitAlignment(
+            guide.key,
+            in: bounds,
+            proposal: proposal
+        )
     }
 }

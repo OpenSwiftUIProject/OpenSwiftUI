@@ -88,6 +88,27 @@ struct StackLayout {
         }
     }
 
+    func update(
+        children: LayoutSubviews,
+        majorAxis: Axis,
+        minorAxisAlignment: AlignmentKey,
+        uniformSpacing: CGFloat?
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func spacing() -> ViewSpacing {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func sizeThatFits(_ proposedSize: ProposedViewSize) -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func placeSubviews(in bounds: CGRect, proposedSize: ProposedViewSize) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     func explicitAlignment(
         _ key: AlignmentKey,
         in bounds: CGRect,
