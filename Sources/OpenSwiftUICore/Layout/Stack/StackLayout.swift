@@ -322,8 +322,32 @@ extension StackLayout {
         ///
         /// - Returns: The computed spacing value
         func spacing() -> Spacing {
-            _openSwiftUIUnimplementedWarning()
-            return .zero
+            var spacing = proxies.isEmpty ? Spacing.zero : Spacing(minima: [:])
+            let proxiesCount = proxies.count
+            guard proxiesCount != 0 else {
+                return spacing
+            }
+            for (index, subview) in proxies.enumerated() {
+                let startEdge: Edge.Set
+                if index == 0 {
+                    startEdge = majorAxis == .horizontal ? .leading : .top
+                } else {
+                    startEdge = []
+                }
+                let endEdge: Edge.Set
+                if index == proxies.count - 1 {
+                    endEdge = majorAxis == .horizontal ? .trailing : .bottom
+                } else {
+                    endEdge = []
+                }
+                var edgeSet: Edge.Set = majorAxis == .horizontal ? .vertical : .horizontal
+                edgeSet.insert(startEdge)
+                edgeSet.insert(endEdge)
+                let absoluteEdgeSet = AbsoluteEdge.Set(edgeSet, layoutDirection: proxies.layoutDirection)
+                let subviewSpacing = subview.proxy.spacing()
+                spacing.incorporate(absoluteEdgeSet, of: subviewSpacing)
+            }
+            return spacing
         }
 
         /// Calculates explicit alignment for a given key.
