@@ -149,8 +149,12 @@ struct StackLayout {
     ///
     /// - Returns: The computed view spacing
     mutating func spacing() -> ViewSpacing {
-        _openSwiftUIUnimplementedWarning()
-        return .init(.zero)
+        withUnmanagedImplementation { impl in
+            ViewSpacing(
+                impl.spacing(),
+                layoutDirection: impl.proxies.layoutDirection
+            )
+        }
     }
 
     /// Calculates the size that fits the given proposed size.
@@ -160,7 +164,7 @@ struct StackLayout {
     mutating func sizeThatFits(_ proposedSize: ProposedViewSize) -> CGSize {
         withUnmanagedImplementation { impl in
             impl.placeChildren(in: proposedSize)
-            return impl.header.pointee.stackSize
+            return impl.stackSize
         }
     }
 
@@ -206,17 +210,65 @@ extension StackLayout {
         _ body: (UnmanagedImplementation) -> V
     ) -> V {
         withUnsafeMutablePointer(to: &header) { headerPtr in
-            children.withUnsafeMutableBufferPointer { childPtr in
-                body(UnmanagedImplementation(header: headerPtr, children: childPtr))
+            children.withUnsafeMutableBufferPointer { childrenPtr in
+                body(UnmanagedImplementation(headerPtr: headerPtr, childrenPtr: childrenPtr))
             }
         }
     }
 
     /// Unmanaged implementation providing direct pointer access for performance.
     private struct UnmanagedImplementation {
-        let header: UnsafeMutablePointer<Header>
+        let headerPtr: UnsafeMutablePointer<Header>
 
-        let children: UnsafeMutableBufferPointer<Child>
+        let childrenPtr: UnsafeMutableBufferPointer<Child>
+
+        @inline(__always)
+        var minorAxisAlignment: AlignmentKey {
+            headerPtr.pointee.minorAxisAlignment
+        }
+
+        @inline(__always)
+        var uniformSpacing: CGFloat? {
+            headerPtr.pointee.uniformSpacing
+        }
+
+        @inline(__always)
+        var majorAxis: Axis {
+            headerPtr.pointee.majorAxis
+        }
+
+        @inline(__always)
+        var minorAxis: Axis {
+            headerPtr.pointee.majorAxis.otherAxis
+        }
+
+        @inline(__always)
+        var internalSpacing: CGFloat {
+            get { headerPtr.pointee.internalSpacing }
+            nonmutating set { headerPtr.pointee.internalSpacing = newValue }
+        }
+
+        @inline(__always)
+        var lastProposedSize: ProposedViewSize {
+            get { headerPtr.pointee.lastProposedSize }
+            nonmutating set { headerPtr.pointee.lastProposedSize = newValue }
+        }
+
+        @inline(__always)
+        var stackSize: CGSize {
+            get { headerPtr.pointee.stackSize }
+            nonmutating set { headerPtr.pointee.stackSize = newValue }
+        }
+
+        @inline(__always)
+        var proxies: LayoutSubviews {
+            headerPtr.pointee.proxies
+        }
+
+        @inline(__always)
+        var resizeChildrenWithTrailingOverflow: Bool {
+            headerPtr.pointee.resizeChildrenWithTrailingOverflow
+        }
 
         // FIXME: [Copilot Generated]
         /// Commits the final placement of children within bounds.
@@ -230,12 +282,8 @@ extension StackLayout {
         ) {
             placeChildren(in: proposedSize)
             
-            guard !children.isEmpty else { return }
-            
-            let majorAxis = header.pointee.majorAxis
-            let minorAxis = majorAxis.otherAxis
-            let stackSize = header.pointee.stackSize
-            
+            guard !childrenPtr.isEmpty else { return }
+
             // Calculate offsets to center the stack within bounds
             let majorOffset = bounds.origin[majorAxis] + 
                 (bounds.size[majorAxis] - stackSize[majorAxis]) / 2
@@ -243,7 +291,7 @@ extension StackLayout {
                 (bounds.size[minorAxis] - stackSize[minorAxis]) / 2
             
             // Place each child view at its calculated position
-            for (index, child) in children.enumerated() {
+            for (index, child) in childrenPtr.enumerated() {
                 let finalOrigin = CGPoint(
                     child.geometry.origin[majorAxis] + majorOffset,
                     in: majorAxis,
@@ -262,7 +310,7 @@ extension StackLayout {
                     by: child.geometry.dimensions.size[minorAxis]
                 )
                 
-                header.pointee.proxies[index].place(
+                proxies[index].place(
                     at: finalBounds.origin,
                     anchor: .topLeading,
                     proposal: childProposal
@@ -290,10 +338,10 @@ extension StackLayout {
         ) -> CGFloat? {
             let proposal = proposalWhenPlacing(in: size)
             placeChildren(in: proposal)
-            guard !children.isEmpty else {
+            guard !childrenPtr.isEmpty else {
                 return nil
             }
-            let alignments = children.map {
+            let alignments = childrenPtr.map {
                 $0.geometry.dimensions[explicit: key]
             }
             return key.id.combineExplicit(alignments)
@@ -303,16 +351,16 @@ extension StackLayout {
         ///
         /// - Parameter proposedSize: The proposed size for layout
         func placeChildren(in proposedSize: ProposedViewSize) {
-            guard header.pointee.lastProposedSize != proposedSize, !children.isEmpty else {
+            guard lastProposedSize != proposedSize, !childrenPtr.isEmpty else {
                 return
             }
             placeChildren1(in: proposedSize) { child in
-                proposedSize[header.pointee.majorAxis.otherAxis]
+                proposedSize[minorAxis]
             }
-            if header.pointee.resizeChildrenWithTrailingOverflow {
+            if resizeChildrenWithTrailingOverflow {
                 resizeAnyChildrenWithTrailingOverflow(in: proposedSize)
             }
-            header.pointee.lastProposedSize = proposedSize
+            lastProposedSize = proposedSize
         }
 
         /// Primary child placement implementation.
@@ -324,7 +372,7 @@ extension StackLayout {
             in proposedSize: ProposedViewSize,
             minorProposalForChild: (Child) -> CGFloat?
         ) {
-            if proposedSize[header.pointee.majorAxis] != nil {
+            if proposedSize[majorAxis] != nil {
                 sizeChildrenGenerallyWithConcreteMajorProposal(
                     in: proposedSize,
                     minorProposalForChild: minorProposalForChild
@@ -337,27 +385,24 @@ extension StackLayout {
             }
             var majorValue: CGFloat = 0.0
             var minorRange: ClosedRange<CGFloat> = 0.0 ... 0.0
-            for child in children {
-                let minorAxis = header.pointee.majorAxis.otherAxis
+            for child in childrenPtr {
                 let childRange = child.geometry.frame[minorAxis]
                 minorRange = minorRange.union(childRange)
             }
-            for (index, child) in children.enumerated() {
-                let majorAxis = header.pointee.majorAxis
-                let minorAxis = majorAxis.otherAxis
+            for (index, child) in childrenPtr.enumerated() {
                 let majorOrigin = majorValue + child.distanceToPrevious
                 if !majorOrigin.isNaN {
-                    children[index].geometry.origin[majorAxis] = majorOrigin
+                    childrenPtr[index].geometry.origin[majorAxis] = majorOrigin
                 }
                 let minorOrigin = child.geometry.origin[minorAxis] - minorRange.lowerBound
                 if !minorOrigin.isNaN {
-                    children[index].geometry.origin[minorAxis] = minorOrigin
+                    childrenPtr[index].geometry.origin[minorAxis] = minorOrigin
                 }
                 majorValue = majorOrigin + child.geometry.dimensions.size[majorAxis]
             }
-            header.pointee.stackSize = CGSize(
+            stackSize = CGSize(
                 majorValue,
-                in: header.pointee.majorAxis,
+                in: majorAxis,
                 by: minorRange.length
             )
         }
@@ -376,22 +421,20 @@ extension StackLayout {
             in size: ProposedViewSize,
             minorProposalForChild: (Child) -> CGFloat?
         ) {
-            guard !children.isEmpty else { return }
-            
-            let majorAxis = header.pointee.majorAxis
-            let availableSpace = size[majorAxis]! - header.pointee.internalSpacing
-            
+            guard !childrenPtr.isEmpty else { return }
+            let availableSpace = size[majorAxis]! - internalSpacing
+
             // First pass: get ideal sizes for all children
             var idealSizes: [CGFloat] = []
             var totalIdealSize: CGFloat = 0
             
-            for (index, child) in children.enumerated() {
+            for (index, child) in childrenPtr.enumerated() {
                 let proposal = ProposedViewSize(
                     nil,
                     in: majorAxis,
                     by: minorProposalForChild(child)
                 )
-                let dimensions = header.pointee.proxies[index].dimensions(in: proposal)
+                let dimensions = proxies[index].dimensions(in: proposal)
                 let idealSize = dimensions.size[majorAxis]
                 idealSizes.append(idealSize)
                 totalIdealSize += idealSize
@@ -399,20 +442,20 @@ extension StackLayout {
             
             // If total ideal size fits, use ideal sizes
             if totalIdealSize <= availableSpace {
-                for (index, child) in children.enumerated() {
+                for (index, child) in childrenPtr.enumerated() {
                     let proposal = ProposedViewSize(
                         idealSizes[index],
                         in: majorAxis,
                         by: minorProposalForChild(child)
                     )
-                    let dimensions = header.pointee.proxies[index].dimensions(in: proposal)
-                    let minorAlignment = dimensions[header.pointee.minorAxisAlignment]
+                    let dimensions = proxies[index].dimensions(in: proposal)
+                    let minorAlignment = dimensions[minorAxisAlignment]
                     let origin = CGPoint(
                         0.0,
                         in: majorAxis,
                         by: -minorAlignment.mappingNaN(to: .infinity)
                     )
-                    children[index].geometry = ViewGeometry(
+                    childrenPtr[index].geometry = ViewGeometry(
                         origin: origin,
                         dimensions: dimensions
                     )
@@ -421,22 +464,22 @@ extension StackLayout {
             }
             
             // Need to distribute space based on priorities and flexibility
-            prioritize(children, proposedSize: size)
-            
+            prioritize(childrenPtr, proposedSize: size)
+
             // Calculate distributed sizes based on layout priorities
             var remainingSpace = availableSpace
             var processedIndices = Set<Int>()
             
             // Sort by layout priority (higher priority gets preference)
-            let sortedIndices = children.indices.sorted { i, j in
-                children[i].layoutPriority > children[j].layoutPriority
+            let sortedIndices = childrenPtr.indices.sorted { i, j in
+                childrenPtr[i].layoutPriority > childrenPtr[j].layoutPriority
             }
             
             for index in sortedIndices {
                 guard !processedIndices.contains(index) else { continue }
                 
-                let child = children[index]
-                let remainingChildren = children.count - processedIndices.count
+                let child = childrenPtr[index]
+                let remainingChildren = childrenPtr.count - processedIndices.count
                 let targetSize = min(idealSizes[index], remainingSpace / CGFloat(remainingChildren))
                 
                 let proposal = ProposedViewSize(
@@ -444,17 +487,17 @@ extension StackLayout {
                     in: majorAxis,
                     by: minorProposalForChild(child)
                 )
-                let dimensions = header.pointee.proxies[index].dimensions(in: proposal)
+                let dimensions = proxies[index].dimensions(in: proposal)
                 let actualSize = dimensions.size[majorAxis]
                 
-                let minorAlignment = dimensions[header.pointee.minorAxisAlignment]
+                let minorAlignment = dimensions[minorAxisAlignment]
                 let origin = CGPoint(
                     0.0,
                     in: majorAxis,
                     by: -minorAlignment.mappingNaN(to: .infinity)
                 )
                 
-                children[index].geometry = ViewGeometry(
+                childrenPtr[index].geometry = ViewGeometry(
                     origin: origin,
                     dimensions: dimensions
                 )
@@ -473,25 +516,24 @@ extension StackLayout {
             in size: ProposedViewSize,
             minorProposalForChild: (Child) -> CGFloat?
         ) {
-            guard !children.isEmpty else {
+            guard !childrenPtr.isEmpty else {
                 return
             }
             let majorOrigin: CGFloat = 0.0
-            let majorAxis = header.pointee.majorAxis
-            for (index, child) in children.enumerated() {
+            for (index, child) in childrenPtr.enumerated() {
                 let proposal = ProposedViewSize(
                     nil,
                     in: majorAxis,
                     by: minorProposalForChild(child)
                 )
-                let dimensions = header.pointee.proxies[index].dimensions(in: proposal)
-                let minorAlignment = dimensions[header.pointee.minorAxisAlignment]
+                let dimensions = proxies[index].dimensions(in: proposal)
+                let minorAlignment = dimensions[minorAxisAlignment]
                 let origin = CGPoint(
                     majorOrigin,
                     in: majorAxis,
                     by: -minorAlignment.mappingNaN(to: .infinity)
                 )
-                children[index].geometry = ViewGeometry(
+                childrenPtr[index].geometry = ViewGeometry(
                     origin: origin,
                     dimensions: dimensions
                 )
@@ -504,8 +546,7 @@ extension StackLayout {
         /// - Returns: The proposed size for placement
         func proposalWhenPlacing(in size: ViewSize) -> ProposedViewSize {
             let proposal = size.proposal
-            let axis = header.pointee.majorAxis
-            return if axis == .horizontal {
+            return if majorAxis == .horizontal {
                 ProposedViewSize(
                     width: proposal.width,
                     height: proposal.height ?? size.height
