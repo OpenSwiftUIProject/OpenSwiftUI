@@ -237,7 +237,7 @@ package func _openSwiftUIPlatformUnimplementedFailure(_ function: String = #func
 
 @_transparent
 package func _openSwiftUIUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
-    print("[Warning]: \(function) is unimplemented")
+    print("\(file):\(line): Warning: \(function) is unimplemented")
     #if DEBUG && OPENSWIFTUI_DEVELOPMENT
     _openSwiftUIUnimplementedFailure(function, file: file, line: line)
     #endif
@@ -245,7 +245,7 @@ package func _openSwiftUIUnimplementedWarning(_ function: String = #function, fi
 
 @_transparent
 package func _openSwiftUIPlatformUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
-    print("[Warning]: \(function) is unimplemented on this platform")
+    print("\(file):\(line): Warning: \(function) is unimplemented on this platform")
     #if DEBUG && OPENSWIFTUI_DEVELOPMENT
     _openSwiftUIPlatformUnimplementedFailure(function, file: file, line: line)
     #endif
