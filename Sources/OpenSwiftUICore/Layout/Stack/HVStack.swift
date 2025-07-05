@@ -2,7 +2,7 @@
 //  HVStack.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.4.41
+//  Audited for 6.5.4
 //  Status: WIP
 
 package import Foundation
@@ -19,6 +19,7 @@ package protocol HVStack: Layout, _VariadicView_UnaryViewRoot where Cache == _St
     static var resizeChildrenWithTrailingOverflow: Bool { get }
 }
 
+@available(OpenSwiftUI_v4_0, *)
 public struct _StackLayoutCache {
     var stack: StackLayout
 }
@@ -50,7 +51,15 @@ extension HVStack {
     }
 
     public func makeCache(subviews: Subviews) -> Cache {
-        _openSwiftUIUnimplementedFailure()
+        Cache(
+            stack: StackLayout(
+                minorAxisAlignment: alignment.key,
+                uniformSpacing: spacing,
+                majorAxis: Self.majorAxis,
+                proxies: subviews,
+                resizeChildrenWithTrailingOverflow: Self.resizeChildrenWithTrailingOverflow
+            )
+        )
     }
 
     public func updateCache(_ cache: inout Cache, subviews: Self.Subviews) {
@@ -82,19 +91,19 @@ extension HVStack {
         of guide: HorizontalAlignment,
         in bounds: CGRect,
         proposal: ProposedViewSize,
-        subviews: Self.Subviews,
-        cache: inout Self.Cache
+        subviews: Subviews,
+        cache: inout Cache
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        cache.stack.explicitAlignment(guide.key, in: bounds, proposal: proposal)
     }
 
     public func explicitAlignment(
         of guide: VerticalAlignment,
         in bounds: CGRect,
         proposal: ProposedViewSize,
-        subviews: Self.Subviews,
-        cache: inout Self.Cache
+        subviews: Subviews,
+        cache: inout Cache
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        cache.stack.explicitAlignment(guide.key, in: bounds, proposal: proposal)
     }
 }
