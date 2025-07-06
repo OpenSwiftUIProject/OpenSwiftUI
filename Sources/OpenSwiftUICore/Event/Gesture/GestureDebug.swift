@@ -20,6 +20,10 @@ package enum GestureDebug {
         case combiner
     }
 
+    private enum ChildrenBox {
+        indirect case value(Data.Children)
+    }
+
     package struct Data {
         package var kind: GestureDebug.Kind
         package var type: any Any.Type
@@ -28,7 +32,7 @@ package enum GestureDebug {
         package var resetSeed: UInt32
         package var frame: CGRect
         package var properties: GestureDebug.Properties
-        // private var childrenBox: GestureDebug.ChildrenBox
+        private var childrenBox: GestureDebug.ChildrenBox
 
         package typealias Children = ArrayWith2Inline<GestureDebug.Data>
 
@@ -45,6 +49,7 @@ package enum GestureDebug {
             resetSeed = 0
             frame = .zero
             properties = .init()
+            childrenBox = .value([]) // FIXME
         }
 
         package init(
@@ -169,17 +174,26 @@ extension _GestureOutputs {
     }
 }
 
-@_spi(ForSwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension GesturePhase {
-    @_spi(ForSwiftUIOnly)
     package var descriptionWithoutValue: String {
-        @_spi(ForSwiftUIOnly)
-        get { _openSwiftUIUnimplementedFailure() }
+        switch self {
+        case let .possible(value): value == nil ? "" : "possible(some)"
+        case .active: "active"
+        case .ended: "ended"
+        case .failed: "failed"
+        }
     }
 }
 
 extension GestureDebug.Data {
     package func printTree() {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private typealias Indent = String
+
+    private func printSubtree(parent: GestureDebug.Data?, indent: Indent) {
         _openSwiftUIUnimplementedFailure()
     }
 }

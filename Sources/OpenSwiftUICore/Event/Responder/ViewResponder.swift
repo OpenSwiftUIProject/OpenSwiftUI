@@ -51,7 +51,7 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
 
     final package weak var parent: ViewResponder? = nil {
         willSet {
-            guard let parent, newValue == nil else {
+            guard parent != nil, newValue == nil else {
                 return
             }
             guard let host, let eventGraphHost = host.as(EventGraphHost.self) else {

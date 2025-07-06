@@ -6,7 +6,7 @@
 
 // MARK: - GesturePhase [6.5.4]
 
-@_spi(ForOnlySwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
 public enum GesturePhase<Wrapped> {
     case possible(Wrapped?)
@@ -15,14 +15,14 @@ public enum GesturePhase<Wrapped> {
     case failed
 }
 
-@_spi(ForOnlySwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 @available(*, unavailable)
 extension GesturePhase: Sendable {}
 
-@_spi(ForOnlySwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension GesturePhase: Equatable where Wrapped: Equatable {}
 
-@_spi(ForOnlySwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension GesturePhase {
     package var unwrapped: Wrapped? {
         switch self {
@@ -84,14 +84,14 @@ extension GesturePhase {
 
 // MARK: - GesturePhase + Defaultable [6.5.4]
 
-@_spi(ForOnlySwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension GesturePhase: Defaultable {
     package static var defaultValue: GesturePhase<Wrapped> { .failed }
 }
 
 // MARK: - GestureCategory + Defaultable [6.5.4]
 
-@_spi(ForOnlySwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension GestureCategory: Defaultable {
     package static var defaultValue: GestureCategory { .magnify }
 }
