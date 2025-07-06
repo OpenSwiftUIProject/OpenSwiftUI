@@ -144,11 +144,9 @@ struct HVStackUITests {
                 .background { Color.black }
             }
         }
-        withKnownIssue("Proposal implmentation is not correct") {
-            openSwiftUIAssertSnapshot(
-                of: ContentView()
-            )
-        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
     }
 
     @Test
@@ -166,10 +164,25 @@ struct HVStackUITests {
                 .background { Color.black }
             }
         }
-        withKnownIssue("Proposal implmentation is not correct") {
-            openSwiftUIAssertSnapshot(
-                of: ContentView()
-            )
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
+    }
+
+    @Test("Verify red and blue should have the same size")
+    func sameSizeInVStack() {
+        struct ContentView: View {
+            var body: some View {
+                VStack(spacing: 20) {
+                    Color.red
+                    Color.yellow
+                        .frame(width: 10, height: 10)
+                    Color.blue
+                }
+            }
         }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
     }
 }
