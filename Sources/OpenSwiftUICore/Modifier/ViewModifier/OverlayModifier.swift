@@ -89,6 +89,35 @@ extension _OverlayModifier: Sendable {}
 
 // MARK: - View + Overlay [6.4.41] [WIP]
 
+@available(OpenSwiftUI_v1_0, *)
+extension View {
+    /// Layers a secondary view in front of this view.
+    ///
+    /// When you apply an overlay to a view, the original view continues to
+    /// provide the layout characteristics for the resulting view. In the
+    /// following example, the heart image is shown overlaid in front of, and
+    /// aligned to the bottom of the folder image.
+    ///
+    ///     Image(systemName: "folder")
+    ///         .font(.system(size: 55, weight: .thin))
+    ///         .overlay(Text("❤️"), alignment: .bottom)
+    ///
+    /// ![View showing placement of a heart overlaid onto a folder
+    /// icon.](View-overlay-1)
+    ///
+    /// - Parameters:
+    ///   - overlay: The view to layer in front of this view.
+    ///   - alignment: The alignment for `overlay` in relation to this view.
+    ///
+    /// - Returns: A view that layers `overlay` in front of the view.
+    @available(*, deprecated, message: "Use `overlay(alignment:content:)` instead.")
+    @inlinable
+    @_disfavoredOverload
+    nonisolated public func overlay<Overlay>(_ overlay: Overlay, alignment: Alignment = .center) -> some View where Overlay: View {
+        modifier(_OverlayModifier(overlay: overlay, alignment: alignment))
+    }
+}
+
 @available(OpenSwiftUI_v3_0, *)
 extension View {
     /// Layers the views that you specify in front of this view.
