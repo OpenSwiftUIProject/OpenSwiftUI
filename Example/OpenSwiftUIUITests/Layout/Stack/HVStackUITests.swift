@@ -144,11 +144,9 @@ struct HVStackUITests {
                 .background { Color.black }
             }
         }
-        withKnownIssue("Proposal implmentation is not correct") {
-            openSwiftUIAssertSnapshot(
-                of: ContentView()
-            )
-        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView()
+        )
     }
 
     @Test
@@ -166,7 +164,7 @@ struct HVStackUITests {
                 .background { Color.black }
             }
         }
-        withKnownIssue("Proposal implmentation is not correct") {
+        withKnownIssue("layoutPriority is not implemented for HVStack yet") {
             openSwiftUIAssertSnapshot(
                 of: ContentView()
             )

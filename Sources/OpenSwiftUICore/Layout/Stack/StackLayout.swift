@@ -431,7 +431,6 @@ extension StackLayout {
             )
         }
 
-        // FIXME: [Copliot Generated]
         /// Sizes children when given a concrete major axis proposal.
         ///
         /// This method handles the complex case where the major axis has a specific
@@ -445,89 +444,76 @@ extension StackLayout {
             in size: ProposedViewSize,
             minorProposalForChild: (Child) -> CGFloat?
         ) {
-            guard !childrenPtr.isEmpty else { return }
-            let availableSpace = size[majorAxis]! - internalSpacing
-
-            // First pass: get ideal sizes for all children
-            var idealSizes: [CGFloat] = []
-            var totalIdealSize: CGFloat = 0
-            
-            for (index, child) in childrenPtr.enumerated() {
-                let proposal = ProposedViewSize(
-                    nil,
-                    in: majorAxis,
-                    by: minorProposalForChild(child)
-                )
-                let dimensions = proxies[index].dimensions(in: proposal)
-                let idealSize = dimensions.size[majorAxis]
-                idealSizes.append(idealSize)
-                totalIdealSize += idealSize
-            }
-            
-            // If total ideal size fits, use ideal sizes
-            if totalIdealSize <= availableSpace {
-                for (index, child) in childrenPtr.enumerated() {
-                    let proposal = ProposedViewSize(
-                        idealSizes[index],
-                        in: majorAxis,
-                        by: minorProposalForChild(child)
-                    )
-                    let dimensions = proxies[index].dimensions(in: proposal)
-                    let minorAlignment = dimensions[minorAxisAlignment]
-                    let origin = CGPoint(
-                        0.0,
-                        in: majorAxis,
-                        by: -minorAlignment.mappingNaN(to: .infinity)
-                    )
-                    childrenPtr[index].geometry = ViewGeometry(
-                        origin: origin,
-                        dimensions: dimensions
-                    )
-                }
-                return
-            }
-            
-            // Need to distribute space based on priorities and flexibility
+            Swift.assert(size[majorAxis] != nil)
             prioritize(childrenPtr, proposedSize: size)
-
-            // Calculate distributed sizes based on layout priorities
-            var remainingSpace = availableSpace
-            var processedIndices = Set<Int>()
-            
-            // Sort by layout priority (higher priority gets preference)
-            let sortedIndices = childrenPtr.indices.sorted { i, j in
-                childrenPtr[i].layoutPriority > childrenPtr[j].layoutPriority
-            }
-            
-            for index in sortedIndices {
-                guard !processedIndices.contains(index) else { continue }
-                
-                let child = childrenPtr[index]
-                let remainingChildren = childrenPtr.count - processedIndices.count
-                let targetSize = min(idealSizes[index], remainingSpace / CGFloat(remainingChildren))
-                
-                let proposal = ProposedViewSize(
-                    targetSize,
-                    in: majorAxis,
-                    by: minorProposalForChild(child)
-                )
-                let dimensions = proxies[index].dimensions(in: proposal)
-                let actualSize = dimensions.size[majorAxis]
-                
-                let minorAlignment = dimensions[minorAxisAlignment]
-                let origin = CGPoint(
-                    0.0,
-                    in: majorAxis,
-                    by: -minorAlignment.mappingNaN(to: .infinity)
-                )
-                
-                childrenPtr[index].geometry = ViewGeometry(
-                    origin: origin,
-                    dimensions: dimensions
-                )
-                
-                remainingSpace -= actualSize
-                processedIndices.insert(index)
+            let childrenBasePtr = childrenPtr.baseAddress ?? .null
+            guard !childrenPtr.isEmpty else { return }
+            var availableSpace = size[majorAxis]! - internalSpacing
+            let majorOrigin: CGFloat = 0.0
+            var index = 0
+            let count = childrenPtr.count
+            while index != count {
+                let currentChild = childrenBasePtr.advanced(by: index)
+                let fittingOrder = currentChild.pointee.fittingOrder
+                let fittingChild = childrenBasePtr.advanced(by: fittingOrder)
+                let fittingChildPriority = fittingChild.pointee.layoutPriority
+                let targetIndex: Int
+                if !fittingChildPriority.isNaN {
+                    targetIndex = childrenPtr[index+1..<count].firstIndex { child in
+                        childrenBasePtr.advanced(by: child.fittingOrder).pointee.layoutPriority != fittingChildPriority
+                    } ?? childrenPtr.count
+                    Swift.assert(targetIndex >= index)
+                } else {
+                    targetIndex = index
+                }
+                Swift.assert(targetIndex <= count)
+                let majorAxisRangeCacheMinTotal: CGFloat
+                if fittingOrder == childrenPtr[0].fittingOrder {
+                    majorAxisRangeCacheMinTotal = childrenPtr[targetIndex ..< count].reduce(into: .zero) {
+                        $0 += childrenPtr[$1.fittingOrder].majorAxisRangeCache.min!
+                    }
+                    availableSpace -= majorAxisRangeCacheMinTotal
+                } else {
+                    majorAxisRangeCacheMinTotal = childrenPtr[index ..< targetIndex].reduce(into: .zero) {
+                        $0 += childrenPtr[$1.fittingOrder].majorAxisRangeCache.min!
+                    }
+                    availableSpace += majorAxisRangeCacheMinTotal
+                }
+                if targetIndex != index {
+                    Swift.assert(targetIndex >= 0)
+                    let currentPriorityChildCount = targetIndex - index
+                    assert(currentPriorityChildCount > 0)
+                    var remainingCount = currentPriorityChildCount
+                    while currentPriorityChildCount != 0 {
+                        let currentIndexChild = childrenBasePtr.advanced(by: index)
+                        let currentIndexFittingOrder = currentIndexChild.pointee.fittingOrder
+                        let evenSplitAvailableSpace = max(availableSpace / CGFloat(remainingCount), majorOrigin)
+                        let proposal = _ProposedSize(
+                            evenSplitAvailableSpace,
+                            in: majorAxis,
+                            by: minorProposalForChild(currentIndexChild.pointee)
+                        )
+                        let dimensions = proxies[currentIndexFittingOrder]
+                            .proxy
+                            .dimensions(in: proposal)
+                        let minorAlignment = dimensions[minorAxisAlignment]
+                        let origin = CGPoint(
+                            majorOrigin,
+                            in: majorAxis,
+                            by: -minorAlignment.mappingNaN(to: .infinity)
+                        )
+                        childrenPtr[currentIndexFittingOrder].geometry = ViewGeometry(
+                            origin: origin,
+                            dimensions: dimensions
+                        )
+                        let takenSpace = dimensions.size[majorAxis]
+                        availableSpace = (availableSpace - takenSpace).mappingNaN(to: availableSpace)
+                        remainingCount &-= 1
+                        if remainingCount == 0 { break }
+                        index &+= 1
+                    }
+                }
+                index = targetIndex
             }
         }
         
