@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (resize is not implemented yet)
+//  Status: Complete
 //  ID: 00690F480F8D293143B214DBE6D72CD0 (SwiftUICore)
 
 import Foundation
@@ -679,7 +679,20 @@ extension StackLayout {
         ///
         /// - Parameter size: The proposed size constraint
         func resizeAnyChildrenWithTrailingOverflow(in size: ProposedViewSize) {
-            _openSwiftUIUnimplementedWarning()
+            let minorProposal = size[minorAxis] ?? .infinity
+            let minorStackSize = stackSize[minorAxis]
+            guard minorStackSize > minorProposal else {
+                return
+            }
+            for child in childrenPtr {
+                guard child.geometry.dimensions.size[minorAxis] != minorStackSize else {
+                    return
+                }
+            }
+            placeChildren1(in: size) { child in
+                let minorMaxValue = child.geometry.frame[minorAxis].upperBound
+                return minorProposal - max(minorMaxValue - minorProposal, .zero)
+            }
         }
     }
 }
