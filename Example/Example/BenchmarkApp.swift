@@ -19,7 +19,8 @@ import UIKit
 struct BenchmarkApp {
     static func main() {
         _TestApp().runBenchmarks([
-            Benchmark(),
+            RedBenchmark(),
+            BlueBenchmark(),
         ])
     }
 }
@@ -36,10 +37,17 @@ extension UIHostingController: _ViewTest where Content == AnyView {
 #endif
 
 struct PerformanceTest: _PerformanceTest {
-    var name = "RedColor Test"
+    var name: String { "PerformanceTest" }
+
+    let view: AnyView
+
+    init(_ view: some View) {
+        self.view = AnyView(view)
+    }
+
     func runTest(host: _BenchmarkHost, options: [AnyHashable : Any]) {
         #if os(iOS)
-        let test = _makeUIHostingController(AnyView(RedColor())) as! UIHostingController<AnyView>
+        let test = _makeUIHostingController(view) as! UIHostingController<AnyView>
         test.setUpTest()
         test.render()
         test._forEachIdentifiedView { proxy in
@@ -52,7 +60,6 @@ struct PerformanceTest: _PerformanceTest {
         test.tearDownTest()
         #endif
     }
-
 }
 
 struct RedColor: View {
@@ -63,15 +70,29 @@ struct RedColor: View {
     }
 }
 
-struct Benchmark: _Benchmark {
-    func setUpTest() {
-        print("DSF")
-    }
+struct BlueColor: View {
+    var id: String { "BlueColor" }
 
+    var body: some View {
+        Color.blue._identified(by: id)
+    }
+}
+
+struct RedBenchmark: _Benchmark {
     func measure(host: _BenchmarkHost) -> [Double] {
         return [
             host.measureAction {
-                PerformanceTest().runTest(host: host, options: [:])
+                PerformanceTest(RedColor()).runTest(host: host, options: [:])
+            },
+        ]
+    }
+}
+
+struct BlueBenchmark: _Benchmark {
+    func measure(host: _BenchmarkHost) -> [Double] {
+        return [
+            host.measureAction {
+                PerformanceTest(BlueColor()).runTest(host: host, options: [:])
             },
         ]
     }
