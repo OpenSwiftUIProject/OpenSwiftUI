@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete (update and resize is not implemented yet)
 //  ID: 00690F480F8D293143B214DBE6D72CD0 (SwiftUICore)
 
 import Foundation
@@ -18,6 +18,26 @@ struct StackLayout {
     private struct MajorAxisRangeCache {
         var min: CGFloat?
         var max: CGFloat?
+
+        @inline(__always)
+        mutating func getMin(_ makeValue: () -> CGFloat) -> CGFloat {
+            guard let min else {
+                let min = makeValue()
+                self.min = min
+                return min
+            }
+            return min
+        }
+
+        @inline(__always)
+        mutating func getMax(_ makeValue: () -> CGFloat) -> CGFloat {
+            guard let max else {
+                let max = makeValue()
+                self.max = max
+                return max
+            }
+            return max
+        }
     }
 
     /// Header containing shared layout configuration and state.
@@ -221,6 +241,11 @@ extension StackLayout {
         let headerPtr: UnsafeMutablePointer<Header>
 
         let childrenPtr: UnsafeMutableBufferPointer<Child>
+
+        @inline(__always)
+        var count: Int {
+            childrenPtr.count
+        }
 
         @inline(__always)
         var minorAxisAlignment: AlignmentKey {
@@ -446,21 +471,20 @@ extension StackLayout {
         ) {
             Swift.assert(size[majorAxis] != nil)
             prioritize(childrenPtr, proposedSize: size)
-            let childrenBasePtr = childrenPtr.baseAddress ?? .null
+            let priorityPtr = UnsafeMutableBufferProjectionPointer(childrenPtr, \.layoutPriority)
+            let fittingOrderPtr = UnsafeMutableBufferProjectionPointer(childrenPtr, \.fittingOrder)
             guard !childrenPtr.isEmpty else { return }
             var availableSpace = size[majorAxis]! - internalSpacing
             let majorOrigin: CGFloat = 0.0
             var index = 0
             let count = childrenPtr.count
             while index != count {
-                let currentChild = childrenBasePtr.advanced(by: index)
-                let fittingOrder = currentChild.pointee.fittingOrder
-                let fittingChild = childrenBasePtr.advanced(by: fittingOrder)
-                let fittingChildPriority = fittingChild.pointee.layoutPriority
+                let fittingOrder = fittingOrderPtr[index]
+                let fittingPriority = priorityPtr[fittingOrder]
                 let targetIndex: Int
-                if !fittingChildPriority.isNaN {
+                if !fittingPriority.isNaN {
                     targetIndex = childrenPtr[index+1..<count].firstIndex { child in
-                        childrenBasePtr.advanced(by: child.fittingOrder).pointee.layoutPriority != fittingChildPriority
+                        priorityPtr[child.fittingOrder] != fittingPriority
                     } ?? childrenPtr.count
                     Swift.assert(targetIndex >= index)
                 } else {
@@ -485,13 +509,12 @@ extension StackLayout {
                     assert(currentPriorityChildCount > 0)
                     var remainingCount = currentPriorityChildCount
                     while currentPriorityChildCount != 0 {
-                        let currentIndexChild = childrenBasePtr.advanced(by: index)
-                        let currentIndexFittingOrder = currentIndexChild.pointee.fittingOrder
+                        let currentIndexFittingOrder = fittingOrderPtr[index]
                         let evenSplitAvailableSpace = max(availableSpace / CGFloat(remainingCount), majorOrigin)
                         let proposal = _ProposedSize(
                             evenSplitAvailableSpace,
                             in: majorAxis,
-                            by: minorProposalForChild(currentIndexChild.pointee)
+                            by: minorProposalForChild(childrenPtr[index])
                         )
                         let dimensions = proxies[currentIndexFittingOrder]
                             .proxy
@@ -572,13 +595,76 @@ extension StackLayout {
         /// Prioritizes children for layout calculations.
         ///
         /// - Parameters:
-        ///   - children: The children to prioritize
+        ///   - childrenPtr: The children to prioritize
         ///   - proposedSize: The proposed size context
         func prioritize(
-            _ children: UnsafeMutableBufferPointer<Child>,
+            _ childrenPtr: UnsafeMutableBufferPointer<Child>,
             proposedSize: ProposedViewSize
         ) {
-            _openSwiftUIUnimplementedWarning()
+            guard (proposedSize[minorAxis] != lastProposedSize[minorAxis]) ||
+                    (lastProposedSize[majorAxis] == nil) else {
+                return
+            }
+            for index in childrenPtr.indices {
+                childrenPtr[index].majorAxisRangeCache = .init()
+            }
+            let priorityPtr = UnsafeMutableBufferProjectionPointer(childrenPtr, \.layoutPriority)
+            let majorAxisRangeCachePtr = UnsafeMutableBufferProjectionPointer(childrenPtr, \.majorAxisRangeCache)
+            var fittingOrderPtr = UnsafeMutableBufferProjectionPointer(childrenPtr, \.fittingOrder)
+            func areInDecreasingFittingPriority(i0: Int, i1: Int) -> Bool {
+                let priority0 = priorityPtr[i0]
+                let priority1 = priorityPtr[i1]
+                guard priority0 == priority1 else {
+                    return priority0 > priority1
+                }
+                let i0RangeMin = majorAxisRangeCachePtr[i0].getMin {
+                    proxies[i0].lengthThatFits(
+                        .init(0, in: majorAxis, by: proposedSize[minorAxis]),
+                        in: majorAxis
+                    )
+                }
+                let i0RangeMax = majorAxisRangeCachePtr[i0].getMax {
+                    proxies[i0].lengthThatFits(
+                        .init(.infinity, in: majorAxis, by: proposedSize[minorAxis]),
+                        in: majorAxis
+                    )
+                }
+                let i1RangeMin = majorAxisRangeCachePtr[i1].getMin {
+                    proxies[i1].lengthThatFits(
+                        .init(0, in: majorAxis, by: proposedSize[minorAxis]),
+                        in: majorAxis
+                    )
+                }
+                let i1RangeMax = majorAxisRangeCachePtr[i1].getMax {
+                    proxies[i1].lengthThatFits(
+                        .init(.infinity, in: majorAxis, by: proposedSize[minorAxis]),
+                        in: majorAxis
+                    )
+                }
+                let i0Estimate = _LayoutTraits.FlexibilityEstimate(minLength: i0RangeMin, maxLength: i0RangeMax)
+                let i1Estimate = _LayoutTraits.FlexibilityEstimate(minLength: i1RangeMin, maxLength: i1RangeMax)
+                return i0Estimate < i1Estimate
+            }
+            if count <= 32 {
+                fittingOrderPtr.insertionSort(by: areInDecreasingFittingPriority(i0:i1:))
+            } else {
+                fittingOrderPtr.sort(by: areInDecreasingFittingPriority(i0:i1:))
+            }
+            let firstFittingOrder = fittingOrderPtr[0]
+            let firstPriority = priorityPtr[firstFittingOrder]
+            for index in childrenPtr.indices.reversed() {
+                let fittingOrder = fittingOrderPtr[index]
+                guard priorityPtr[fittingOrder] != firstPriority else {
+                    continue
+                }
+                guard majorAxisRangeCachePtr[fittingOrder].min == nil else {
+                    continue
+                }
+                majorAxisRangeCachePtr[fittingOrder].min = proxies[fittingOrder].lengthThatFits(
+                    .init(0, in: majorAxis, by: proposedSize[minorAxis]),
+                    in: majorAxis
+                )
+            }
         }
 
         /// Resizes children that have trailing overflow.
