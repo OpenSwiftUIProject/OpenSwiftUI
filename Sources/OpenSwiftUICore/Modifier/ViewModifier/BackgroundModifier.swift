@@ -44,6 +44,56 @@ extension _BackgroundModifier : Sendable {}
 
 // MARK: - View + Background [6.4.41] [WIP]
 
+@available(OpenSwiftUI_v1_0, *)
+extension View {
+    /// Layers the given view behind this view.
+    ///
+    /// Use `background(_:alignment:)` when you need to place one view behind
+    /// another, with the background view optionally aligned with a specified
+    /// edge of the frontmost view.
+    ///
+    /// The example below creates two views: the `Frontmost` view, and the
+    /// `DiamondBackground` view. The `Frontmost` view uses the
+    /// `DiamondBackground` view for the background of the image element inside
+    /// the `Frontmost` view's ``VStack``.
+    ///
+    ///     struct DiamondBackground: View {
+    ///         var body: some View {
+    ///             VStack {
+    ///                 Rectangle()
+    ///                     .fill(.gray)
+    ///                     .frame(width: 250, height: 250, alignment: .center)
+    ///                     .rotationEffect(.degrees(45.0))
+    ///             }
+    ///         }
+    ///     }
+    ///
+    ///     struct Frontmost: View {
+    ///         var body: some View {
+    ///             VStack {
+    ///                 Image(systemName: "folder")
+    ///                     .font(.system(size: 128, weight: .ultraLight))
+    ///                     .background(DiamondBackground())
+    ///             }
+    ///         }
+    ///     }
+    ///
+    /// ![A view showing a large folder image with a gray diamond placed behind
+    /// it as its background view.](View-background-1)
+    ///
+    /// - Parameters:
+    ///   - background: The view to draw behind this view.
+    ///   - alignment: The alignment with a default value of
+    ///     ``Alignment/center`` that you use to position the background view.
+    @available(*, deprecated, message: "Use `background(alignment:content:)` instead.")
+    @inlinable
+    @_disfavoredOverload
+    nonisolated public func background<Background>(_ background: Background, alignment: Alignment = .center) -> some View where Background: View {
+        modifier(_BackgroundModifier(background: background, alignment: alignment))
+    }
+
+}
+
 @available(OpenSwiftUI_v3_0, *)
 extension View {
     /// Layers the views that you specify behind this view.
