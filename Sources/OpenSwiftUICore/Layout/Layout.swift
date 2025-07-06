@@ -643,12 +643,10 @@ extension Layout {
             inputs.dynamicStackOrientation = OptionalAttribute(dynamicStackOrientation)
             properties = LayoutProperties()
         } else {
-            if let orientation = layoutProperties.stackOrientation {
-                inputs.stackOrientation = orientation
-            } else {
+            properties = layoutProperties
+            if properties.stackOrientation == nil {
                 inputs.dynamicStackOrientation = OptionalAttribute()
             }
-            properties = LayoutProperties()
         }
         inputs.stackOrientation = properties.stackOrientation
         if inputs.archivedView.isArchived {
