@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (update and resize is not implemented yet)
+//  Status: Complete (resize is not implemented yet)
 //  ID: 00690F480F8D293143B214DBE6D72CD0 (SwiftUICore)
 
 import Foundation
@@ -156,13 +156,21 @@ struct StackLayout {
     ///   - majorAxis: The primary axis for the layout
     ///   - minorAxisAlignment: Alignment along the minor axis
     ///   - uniformSpacing: Optional uniform spacing between children
-    func update(
-        children: LayoutSubviews,
+    mutating func update(
+        children proxies: LayoutSubviews,
         majorAxis: Axis,
         minorAxisAlignment: AlignmentKey,
         uniformSpacing: CGFloat?
     ) {
-        _openSwiftUIUnimplementedFailure()
+        header = Header(
+            minorAxisAlignment: minorAxisAlignment,
+            uniformSpacing: uniformSpacing,
+            majorAxis: majorAxis,
+            proxies: proxies,
+            resizeChildrenWithTrailingOverflow: header.resizeChildrenWithTrailingOverflow
+        )
+        children.removeAll(keepingCapacity: true)
+        makeChildren()
     }
 
     /// Calculates the spacing for this stack layout.
