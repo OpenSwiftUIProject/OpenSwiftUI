@@ -82,18 +82,14 @@ extension _BenchmarkHost {
 }
 
 package func summarize(_ measurements: [(any _Benchmark, [Double])]) -> String {
-    let benchmarkData = measurements.map { (String(describing: $0.0), $0.1) }
-    
+    let benchmarkData = measurements.map { (String(describing: type(of: $0.0)), $0.1) }
     let maxNameLength = benchmarkData.map { $0.0.count }.max() ?? 0
-    
     let results: [String] = benchmarkData.map { (name, values) in
+        let total = values.reduce(0, +)
         let padding = maxNameLength - name.count + 1
         let paddingString = String(repeating: " ", count: padding)
-        
-        let average = values.reduce(0, +) / Double(values.count)
-        let milliseconds = average * 1000.0
-        
-        return "\(name)\(paddingString): \(String(format: "%.3f", milliseconds))ms"
+        let milliseconds = total * 1000.0
+        return "\(name):\(paddingString)\(String(format: "%.3f ms", milliseconds))"
     }
     return results.joined(separator: "\n")
 }
