@@ -303,7 +303,6 @@ extension StackLayout {
             headerPtr.pointee.resizeChildrenWithTrailingOverflow
         }
 
-        // FIXME: [Copilot Generated]
         /// Commits the final placement of children within bounds.
         ///
         /// - Parameters:
@@ -313,41 +312,54 @@ extension StackLayout {
             in bounds: CGRect,
             proposedSize: ProposedViewSize
         ) {
-            placeChildren(in: proposedSize)
-            
-            guard !childrenPtr.isEmpty else { return }
-
-            // Calculate offsets to center the stack within bounds
-            let majorOffset = bounds.origin[majorAxis] + 
-                (bounds.size[majorAxis] - stackSize[majorAxis]) / 2
-            let minorOffset = bounds.origin[minorAxis] + 
-                (bounds.size[minorAxis] - stackSize[minorAxis]) / 2
-            
-            // Place each child view at its calculated position
-            for (index, child) in childrenPtr.enumerated() {
-                let finalOrigin = CGPoint(
-                    child.geometry.origin[majorAxis] + majorOffset,
-                    in: majorAxis,
-                    by: child.geometry.origin[minorAxis] + minorOffset
-                )
-                
-                let finalBounds = CGRect(
-                    origin: finalOrigin,
-                    size: child.geometry.dimensions.size.value
-                )
-                
-                // Get the child-specific proposed size
-                let childProposal = ProposedViewSize(
-                    child.geometry.dimensions.size[majorAxis],
-                    in: majorAxis,
-                    by: child.geometry.dimensions.size[minorAxis]
-                )
-                
-                proxies[index].place(
-                    at: finalBounds.origin,
-                    anchor: .topLeading,
-                    proposal: childProposal
-                )
+            let proposal = proposalWhenPlacing(in: ViewSize(bounds.size, proposal: .init(proposedSize)))
+            placeChildren(in: proposal)
+            let layoutDirection = proxies.layoutDirection
+            if majorAxis == .horizontal {
+                var currentMajorPosition = layoutDirection == .rightToLeft ? bounds.maxX : bounds.minX
+                let minorBasePosition = bounds.minY
+                for (child, proxy) in zip(childrenPtr, proxies) {
+                    let geometry = child.geometry
+                    let frame = geometry.frame
+                    let majorOrigin: CGFloat
+                    if layoutDirection == .rightToLeft {
+                        majorOrigin = currentMajorPosition - child.distanceToPrevious
+                        currentMajorPosition = majorOrigin - frame.width
+                    } else {
+                        majorOrigin = currentMajorPosition + child.distanceToPrevious
+                        currentMajorPosition = majorOrigin + frame.width
+                    }
+                    let finalMajorOrigin = majorOrigin.mappingNaN(to: frame.origin.x)
+                    let finalMinorOrigin = frame.origin.y + minorBasePosition
+                    proxy.place(
+                        in: ViewGeometry(
+                            origin: CGPoint(x: finalMajorOrigin, y: finalMinorOrigin),
+                            dimensions: geometry.dimensions
+                        ),
+                        layoutDirection: layoutDirection
+                    )
+                }
+            } else {
+                var currentMajorPosition = bounds.minY
+                let minorBasePosition = bounds.minX
+                for (child, proxy) in zip(childrenPtr, proxies) {
+                    let geometry = child.geometry
+                    let frame = geometry.frame
+                    let majorOrigin = currentMajorPosition + child.distanceToPrevious
+                    currentMajorPosition = majorOrigin + frame.height
+                    let finalMajorOrigin = majorOrigin.mappingNaN(to: frame.origin.y)
+                    let minorOrigin = layoutDirection == .rightToLeft 
+                        ? frame.maxX 
+                        : frame.origin.x
+                    let finalMinorOrigin = minorOrigin + minorBasePosition
+                    proxy.place(
+                        in: ViewGeometry(
+                            origin: CGPoint(x: finalMinorOrigin, y: finalMajorOrigin),
+                            dimensions: geometry.dimensions
+                        ),
+                        layoutDirection: layoutDirection
+                    )
+                }
             }
         }
 
