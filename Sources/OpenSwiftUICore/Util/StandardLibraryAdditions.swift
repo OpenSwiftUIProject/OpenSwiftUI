@@ -841,3 +841,78 @@ package struct EquatableOptionalObject<T>: Equatable where T: AnyObject {
         return lhs.wrappedValue === rhs.wrappedValue
     }
 }
+
+// MARK: - BidirectionalCollection + insertionSort [6.5.4]
+
+extension BidirectionalCollection where Self: MutableCollection {
+    /// Sorts the collection in place using the insertion sort algorithm with a custom comparison.
+    ///
+    /// Insertion sort is a simple sorting algorithm that builds the sorted collection one element
+    /// at a time by repeatedly taking elements from the unsorted portion and inserting them
+    /// into their correct position in the sorted portion.
+    ///
+    /// This implementation is stable, meaning that elements that compare equal retain their
+    /// relative order from the original collection.
+    ///
+    /// - Parameter areInIncreasingOrder: A predicate that returns `true` if its first
+    ///   argument should be ordered before its second argument; otherwise, `false`.
+    ///   If `areInIncreasingOrder` throws an error during the sort, the elements may be
+    ///   in an invalid order, but the `mutating` guarantee is still upheld.
+    /// - Complexity: O(*n*²) in the worst case, where *n* is the length of the collection.
+    ///   Best case is O(*n*) when the collection is already sorted.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// var numbers = [3, 1, 4, 1, 5, 9]
+    /// numbers.insertionSort(by: <)
+    /// // numbers is now [1, 1, 3, 4, 5, 9]
+    /// ```
+    package mutating func insertionSort(by areInIncreasingOrder: (Element, Element) throws -> Bool) rethrows {
+        guard !isEmpty else { return }
+        var currentIndex = index(after: startIndex)
+
+        while currentIndex != endIndex {
+            let currentElement = self[currentIndex]
+            var insertionIndex = currentIndex
+            repeat {
+                let previousIndex = index(before: insertionIndex)
+                let previousElement = self[previousIndex]
+                do {
+                    guard try areInIncreasingOrder(currentElement, previousElement) else {
+                        break
+                    }
+                    self[insertionIndex] = previousElement
+                } catch {
+                    self[insertionIndex] = currentElement
+                    throw error
+                }
+                formIndex(before: &insertionIndex)
+            } while insertionIndex != startIndex
+
+            if insertionIndex != currentIndex {
+                self[insertionIndex] = currentElement
+            }
+            formIndex(after: &currentIndex)
+        }
+    }
+}
+
+extension BidirectionalCollection where Self: MutableCollection, Element: Comparable {
+    /// Sorts the collection in place using the insertion sort algorithm.
+    ///
+    /// This method sorts the collection using the less-than operator (`<`) for comparison.
+    /// Elements are arranged in ascending order.
+    ///
+    /// - Complexity: O(*n*²) in the worst case, where *n* is the length of the collection.
+    ///   Best case is O(*n*) when the collection is already sorted.
+    ///
+    /// Example usage:
+    /// ```swift
+    /// var numbers = [3, 1, 4, 1, 5, 9]
+    /// numbers.insertionSort()
+    /// // numbers is now [1, 1, 3, 4, 5, 9]
+    /// ```
+    package mutating func insertionSort() {
+        insertionSort(by: <)
+    }
+}
