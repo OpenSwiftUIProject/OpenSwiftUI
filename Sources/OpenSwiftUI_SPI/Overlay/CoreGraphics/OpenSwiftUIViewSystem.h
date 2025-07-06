@@ -13,7 +13,7 @@
 typedef OPENSWIFTUI_ENUM(uint8_t, OpenSwiftUIViewSystem) {
     OpenSwiftUIViewSystemUIView,
     OpenSwiftUIViewSystemNSView,
-    OpenSwiftUIViewSystemSwiftUIView,
+    OpenSwiftUIViewSystemCALayer,
 } OPENSWIFTUI_SWIFT_NAME(ViewSystem);
 
 #endif /* OpenSwiftUIViewSystem_h */

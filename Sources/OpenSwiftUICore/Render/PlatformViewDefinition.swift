@@ -6,7 +6,7 @@
 //  Status: Blocked by PlatformDrawable and GraphicsContext
 
 import OpenSwiftUI_SPI
-#if canImport(Darwin)
+#if canImport(QuartzCore)
 public import QuartzCore
 #else
 import Foundation
@@ -49,7 +49,7 @@ open class PlatformViewDefinition: @unchecked Sendable {
         }
     }
   
-    open class var system: PlatformViewDefinition.System { .init(base: .swiftUIView) }
+    open class var system: PlatformViewDefinition.System { .init(base: .caLayer) }
     open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
     #if canImport(Darwin)
     open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
@@ -91,6 +91,17 @@ extension DisplayList.ViewUpdater.Platform {
     var definition: PlatformViewDefinition.Type {
         return unsafeBitCast(rawValue & ~3, to: PlatformViewDefinition.Type.self)
     }
+
+    @inline(__always)
+    var viewSystem: ViewSystem {
+        return unsafeBitCast(UInt8(rawValue & 3), to: ViewSystem.self)
+    }
+
+    #if canImport(QuartzCore)
+    package func viewLayer(_ view: AnyObject) -> CALayer {
+        CoreViewLayer(system: viewSystem, view: view)
+    }
+    #endif
 }
 
 extension DisplayList.GraphicsRenderer {
