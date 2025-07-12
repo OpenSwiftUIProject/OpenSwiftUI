@@ -12,4 +12,10 @@ let shouldRecord: Bool? = nil
 @_exported import SwiftUI
 let shouldRecord: Bool? = true
 #endif
-let diffTool: SnapshotTestingConfiguration.DiffTool = .default
+let diffTool: SnapshotTestingConfiguration.DiffTool = .odiff
+
+extension SnapshotTestingConfiguration.DiffTool {
+    static let odiff = Self {
+        "odiff \"\($0)\" \"\($1)\""
+    }
+}
