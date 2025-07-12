@@ -1,6 +1,6 @@
 //
 //  AppearanceActionModifierExample.swift
-//  HostingExample
+//  SharedExample
 
 #if OPENSWIFTUI
 import OpenSwiftUI
