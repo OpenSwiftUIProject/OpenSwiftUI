@@ -6,7 +6,9 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
+package import CoreGraphicsShims
 package import Foundation
+package import OpenGraphShims
 
 // MARK: - _DisplayList_Identity
 
@@ -98,7 +100,11 @@ package struct DisplayList: Equatable {
         // TODO
         items.append(contentsOf: other.items)
 //        _openSwiftUIUnimplementedFailure()
-    }    
+    }
+
+    package var isEmpty: Bool {
+        items.isEmpty
+    }
 }
 
 @available(*, unavailable)
@@ -204,9 +210,7 @@ extension DisplayList {
     }
         
     package enum Transform {
-        #if canImport(Darwin)
         case affine(CGAffineTransform)
-        #endif
         case projection(ProjectionTransform)
         // case rotation(_RotationEffect.Data)
         // case rotation3D(_Rotation3DEffect.Data)
@@ -425,6 +429,30 @@ extension DisplayList {
             static let _4 = RestoreOptions(rawValue: 1 << 2)
             static let _8 = RestoreOptions(rawValue: 1 << 3)
         }
+    }
+}
+
+extension PreferencesInputs {
+    @inline(__always)
+    package var requiresDisplayList: Bool {
+        get {
+            contains(DisplayList.Key.self)
+        }
+        set {
+            if newValue {
+                add(DisplayList.Key.self)
+            } else {
+                remove(DisplayList.Key.self)
+            }
+        }
+    }
+}
+
+extension PreferencesOutputs {
+    @inline(__always)
+    package var displayList: Attribute<DisplayList>? {
+        get { self[DisplayList.Key.self] }
+        set { self[DisplayList.Key.self] = newValue }
     }
 }
 
