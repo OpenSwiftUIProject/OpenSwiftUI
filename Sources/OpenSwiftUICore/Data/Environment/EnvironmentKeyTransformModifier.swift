@@ -73,7 +73,7 @@ private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute, CustomStri
             modifier.transform(&newValue)
         }
         guard !environmentChanged,
-              let valueChanged = oldValue.map({ compareValues($0, newValue, mode: ._2) }), !valueChanged,
+              let valueChanged = oldValue.map({ compareValues($0, newValue, mode: .equatableUnlessPOD) }), !valueChanged,
               let keyPathChanged = oldKeyPath.map({ $0 == keyPath }), !keyPathChanged,
               hasValue
         else {
