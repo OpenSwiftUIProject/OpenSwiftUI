@@ -33,7 +33,7 @@ struct EnvironmentKeyTests {
         #expect(OptionalStringEnvironmentKey._valuesEqual(nil, "test") == false)
     }
 
-    #if canImport(Darwin) // FIXME: compareValues is not implemented on OG yet
+    #if OPENGRAPH_ATTRIBUTEGRAPH // FIXME: compareValues is not implemented on OG yet
     @Test
     func nonEquatableValuesComparison() {
         let struct1 = CustomStructEnvironmentKey.CustomStruct(value: 100)
