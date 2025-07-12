@@ -1,6 +1,6 @@
 //
 //  NamespaceExample.swift
-//  HostingExample
+//  SharedExample
 
 #if OPENSWIFTUI
 import OpenSwiftUI

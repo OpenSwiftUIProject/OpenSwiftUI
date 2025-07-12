@@ -66,9 +66,6 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        MyViewThatFitsByLayout {
-            Color.red.frame(width: 50, height: 50)
-            Color.green.frame(width: 50, height: 50)
-        }.frame(width: 200, height: 200)
+        EquatableDemoView(count: 0, tag: 0)
     }
 }
