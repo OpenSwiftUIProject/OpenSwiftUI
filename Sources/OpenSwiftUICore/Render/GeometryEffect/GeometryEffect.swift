@@ -16,7 +16,7 @@ package import OpenGraphShims
 /// The only change the effect makes to the view's ancestors and descendants is
 /// to change the coordinate transform to and from them.
 @available(OpenSwiftUI_v1_0, *)
-public protocol GeometryEffect: Animatable, ViewModifier where Body == Never {
+public protocol GeometryEffect: Animatable, ViewModifier, _RemoveGlobalActorIsolation where Body == Never {
     /// Returns the current value of the effect.
     func effectValue(size: CGSize) -> ProjectionTransform
 
