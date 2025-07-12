@@ -38,7 +38,7 @@ extension Transaction {
     }
 
     package var isAnimated: Bool {
-        guard let animation,
+        guard animation != nil,
               !disablesAnimations else {
             return false
         }
