@@ -5,6 +5,7 @@
 //  Status: Complete
 //  ID: 72FB21917F353796516DFC9915156779 (SwiftUICore)
 
+import CoreGraphicsShims
 public import Foundation
 import OpenGraphShims
 

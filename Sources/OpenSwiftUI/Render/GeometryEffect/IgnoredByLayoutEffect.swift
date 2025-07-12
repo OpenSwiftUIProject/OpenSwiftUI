@@ -5,6 +5,8 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+public import Foundation
+
 /// A geometry effect type that prevents another geometry effect
 /// affecting coordinate space conversions during layout, i.e. the
 /// transform introduced by the other effect is only used when
