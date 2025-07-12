@@ -2,7 +2,7 @@
 //  GraphValue.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 
 public import OpenGraphShims
@@ -10,20 +10,26 @@ public import OpenGraphShims
 /// A transient reference to a value in the view hierarchy's dataflow
 /// graph. "Transient" means that these values must never be stored,
 /// only passed around while initializing views.
+@available(OpenSwiftUI_v1_0, *)
 public struct _GraphValue<Value>: Equatable {
     package var value: Attribute<Value>
     
+    @available(OpenSwiftUI_v6_0, *)
     @_spi(ForOpenSwiftUIOnly)
     public init(_ value: Attribute<Value>) {
         self.value = value
     }
     
+    @available(OpenSwiftUI_v6_0, *)
     @_spi(ForOpenSwiftUIOnly)
+    @inlinable
     public init<U>(_ value: U) where Value == U.Value, U: Rule {
         self.init(Attribute(value))
     }
     
+    @available(OpenSwiftUI_v6_0, *)
     @_spi(ForOpenSwiftUIOnly)
+    @inlinable
     public init<U>(_ value: U) where Value == U.Value, U: StatefulRule {
         self.init(Attribute(value))
     }
