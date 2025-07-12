@@ -40,7 +40,7 @@ extension _ViewTest {
         setEnvironment(EnvironmentValues())
         setSize(initSize())
         setSafeAreaInsets(.zero)
-        setRooTestView(initRootView())
+        setRootTestView(initRootView())
         withRenderOptions(.simple) {
             render()
         }
@@ -48,7 +48,7 @@ extension _ViewTest {
 
     public func tearDownTest() {
         resetEvents()
-        setRooTestView(EmptyView())
+        setRootTestView(EmptyView())
         #if os(iOS)
         func performRender() {
             withRenderOptions(.simple) {
@@ -73,7 +73,7 @@ extension _ViewTest {
     }
 
     public func setTestView<V>(_ view: V) where V: View {
-        setRooTestView(view)
+        setRootTestView(view)
     }
 
     public var rootView: Self.RootView {
@@ -89,7 +89,7 @@ extension _ViewTest {
         findState()!.wrappedValue.id
     }
 
-    private func setRooTestView<V>(_ view: V) where V: View {
+    private func setRootTestView<V>(_ view: V) where V: View {
         let state = findState()!
         let host = _TestApp.host!
         if let viewRendererHost = host as? ViewRendererHost {
