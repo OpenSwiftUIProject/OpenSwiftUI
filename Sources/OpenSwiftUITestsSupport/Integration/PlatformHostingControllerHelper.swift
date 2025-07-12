@@ -15,7 +15,7 @@ extension PlatformHostingController {
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         window.rootViewController = self
         window.makeKeyAndVisible()
-        view.layoutSubviews()
+        view.layoutIfNeeded()
         #else
         let window = NSWindow(
             contentRect: CGRect(x: 0, y: 0, width: 100, height: 100),
@@ -25,7 +25,7 @@ extension PlatformHostingController {
         )
         window.contentViewController = self
         window.makeKeyAndOrderFront(nil)
-        view.layout()
+        view.layoutSubtreeIfNeeded()
         #endif
     }
 }
