@@ -2,7 +2,7 @@
 //  TransactionAnimation.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for iOS 6.0.87
 //  Status: Complete
 //  ID: 39EC6D46662E6D7A6963F5C611934B0A (SwiftUI)
 //  ID: D98E9A1069CEEADA58829ED440E36F30 (SwiftUICore)

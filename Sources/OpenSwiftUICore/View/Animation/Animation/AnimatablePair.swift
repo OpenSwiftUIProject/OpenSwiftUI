@@ -2,7 +2,7 @@
 //  AnimatablePair.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// A pair of animatable values, which is itself animatable.

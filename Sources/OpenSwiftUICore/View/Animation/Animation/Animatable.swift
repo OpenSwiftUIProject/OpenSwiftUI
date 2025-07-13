@@ -2,12 +2,13 @@
 //  Animatable.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.4.41
 //  Status: Complete
 
 public import Foundation
 package import OpenGraphShims
 
-// MARK: - Animatable [6.4.41]
+// MARK: - Animatable
 
 /// A type that describes how to animate a property of a view.
 public protocol Animatable {
@@ -22,7 +23,7 @@ public protocol Animatable {
     static func _makeAnimatable(value: inout _GraphValue<Self>, inputs: _GraphInputs)
 }
 
-// MARK: - Animateble + Extension [6.4.41]
+// MARK: - Animateble + Extension
 
 extension Animatable where Self: VectorArithmetic {
     public var animatableData: Self {
@@ -77,7 +78,7 @@ extension Animatable {
     }
 }
 
-// MARK: - EmptyAnimatableData [6.4.41]
+// MARK: - EmptyAnimatableData
 
 /// An empty type for animatable data.
 ///
