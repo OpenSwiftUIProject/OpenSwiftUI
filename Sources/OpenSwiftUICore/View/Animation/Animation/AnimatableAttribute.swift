@@ -2,13 +2,14 @@
 //  AnimatableAttribute.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Blocked by Trace
 //  ID: 35ADF281214A25133F1A6DF28858952D (SwiftUICore)
 
 package import Foundation
 package import OpenGraphShims
 
-// MARK: - AnimatableAttribute [6.4.41] [TODO]
+// MARK: - AnimatableAttribute
 
 package struct AnimatableAttribute<Value>: StatefulRule, AsyncAttribute, ObservedAttribute, CustomStringConvertible where Value: Animatable {
     @Attribute var source: Value
@@ -28,18 +29,26 @@ package struct AnimatableAttribute<Value>: StatefulRule, AsyncAttribute, Observe
     }
 
     package mutating func updateValue() {
-        // TODO
-        // Blocked by helper
+        var sourceValue = $source.changedValue()
+        helper.update(
+            value: &sourceValue,
+            defaultAnimation: nil,
+            environment: $environment
+        )
+        guard sourceValue.changed || !hasValue else {
+            return
+        }
+        value = sourceValue.value
     }
 
     package var description: String { "Animatable<\(Value.self)>" }
 
     package mutating func destroy() {
-        // helper.animatorState?.removeListeners()
+        helper.removeListeners()
     }
 }
 
-// MARK: - AnimatableFrameAttribute [6.4.41] [TODO]
+// MARK: - AnimatableFrameAttribute
 
 package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedAttribute {
     @Attribute
@@ -82,27 +91,36 @@ package struct AnimatableFrameAttribute: StatefulRule, AsyncAttribute, ObservedA
         let (position, positionChanged) = $position.changedValue()
         let (size, sizeChanged) = $size.changedValue()
         let (pixelLength, pixelLengthChanged) = $pixelLength.changedValue()
-        let changed = positionChanged || sizeChanged || pixelLengthChanged
+        let anyChanged = positionChanged || sizeChanged || pixelLengthChanged
         var rect = CGRect(origin: position, size: size.value)
         rect.roundCoordinatesToNearestOrUp(toMultipleOf: pixelLength)
         let viewFrame = ViewFrame(
             origin: rect.origin,
             size: ViewSize(value: rect.size, proposal: size._proposal)
         )
+        var sourceValue = (
+            value: viewFrame,
+            changed: anyChanged
+        )
         if !animationsDisabled {
-            // TODO: helper
+            helper.update(
+                value: &sourceValue,
+                defaultAnimation: nil,
+                environment: $environment
+            )
         }
-        if changed || !hasValue {
-            value = viewFrame
+        guard sourceValue.changed || !hasValue else {
+            return
         }
+        value = sourceValue.value
     }
 
     package mutating func destroy() {
-        // helper.animatorState?.removeListeners()
+        helper.removeListeners()
     }
 }
 
-// MARK: - AnimatableFrameAttributeVFD [6.4.41] [TODO]
+// MARK: - AnimatableFrameAttributeVFD
 
 package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, ObservedAttribute {
     @Attribute
@@ -148,45 +166,54 @@ package struct AnimatableFrameAttributeVFD: StatefulRule, AsyncAttribute, Observ
         let (position, positionChanged) = $position.changedValue()
         let (size, sizeChanged) = $size.changedValue()
         let (pixelLength, pixelLengthChanged) = $pixelLength.changedValue()
-        let changed = positionChanged || sizeChanged || pixelLengthChanged
+        let anyChanged = positionChanged || sizeChanged || pixelLengthChanged
         var rect = CGRect(origin: position, size: size.value)
         rect.roundCoordinatesToNearestOrUp(toMultipleOf: pixelLength)
         let viewFrame = ViewFrame(
             origin: rect.origin,
             size: ViewSize(value: rect.size, proposal: size._proposal)
         )
+        var sourceValue = (
+            value: viewFrame,
+            changed: anyChanged
+        )
         if !animationsDisabled {
-            // TODO
+            helper.update(
+                value: &sourceValue,
+                defaultAnimation: nil,
+                environment: $environment
+            )
         }
-        if changed || !hasValue {
-            value = viewFrame
+        guard sourceValue.changed || !hasValue else {
+            return
         }
+        value = sourceValue.value
     }
 
     package mutating func destroy() {
-        // helper.animatorState?.removeListeners()
+        helper.removeListeners()
     }
 }
 
-// MARK: - AnimatableAttributeHelper [FIXME]
+// MARK: - AnimatableAttributeHelper
 
 package struct AnimatableAttributeHelper<Value> where Value: Animatable {
     @Attribute
-    private var phase: _GraphInputs.Phase
+    package var phase: _GraphInputs.Phase
 
     @Attribute
-    private var time: Time
+    package var time: Time
 
     @Attribute
-    private var transaction: Transaction
+    package var transaction: Transaction
 
-    private var previousModelData: Value.AnimatableData?
+    private var previousModelData: Value.AnimatableData? = nil
 
-    private var animatorState: AnimatorState<Value.AnimatableData>?
+    private var animatorState: AnimatorState<Value.AnimatableData>? = nil
 
     private var resetSeed: UInt32 = 0
 
-    init(
+    package init(
         phase: Attribute<_GraphInputs.Phase>,
         time: Attribute<Time>,
         transaction: Attribute<Transaction>
@@ -194,6 +221,152 @@ package struct AnimatableAttributeHelper<Value> where Value: Animatable {
         _phase = phase
         _time = time
         _transaction = transaction
+    }
+
+    package var isAnimating: Bool {
+        animatorState != nil
+    }
+
+    @inline(__always)
+    private mutating func updateAnimatorStateIfNeeded(
+        value: (value: Value, changed: Bool),
+        animationTime: inout Time,
+        environment: Attribute<EnvironmentValues>,
+        sampleCollector: (Value.AnimatableData, Time) -> Void
+    ) {
+        guard value.changed else {
+            return
+        }
+        let modelData = value.value.animatableData
+        defer { previousModelData = modelData }
+        guard let previousModelData, modelData != previousModelData else {
+            return
+        }
+        let transaction: Transaction = Graph.withoutUpdate { self.transaction }
+        guard let animation = transaction.effectiveAnimation else {
+            return
+        }
+        var interval = modelData
+        interval -= previousModelData
+        animationTime = time
+
+        let state: AnimatorState<Value.AnimatableData>
+        if let animatorState {
+            state = animatorState
+            animatorState.combine(
+                newAnimation: animation,
+                newInterval: interval,
+                at: animationTime,
+                in: transaction,
+                environment: environment
+            )
+            // TODO: CustomEventTrace
+        } else {
+            state = AnimatorState(
+                animation: animation,
+                interval: interval,
+                at: animationTime,
+                in: transaction
+            )
+            // TODO: CustomEventTrace
+            animatorState = state
+        }
+        state.addListeners(transaction: transaction)
+    }
+
+    @inline(__always)
+    private mutating func updateValueIfNeeded(
+        value: inout (value: Value, changed: Bool),
+        animationTime: Time,
+        environment: Attribute<EnvironmentValues>,
+        sampleCollector: (Value.AnimatableData, Time) -> Void
+    ) {
+        guard let animatorState else {
+            return
+        }
+        var animatableData = value.value.animatableData
+        let isAnimationOver = animatorState.update(
+            &animatableData,
+            at: animationTime,
+            environment: environment
+        )
+        // let attribute = AnyAttribute.current // For tracing
+        if isAnimationOver {
+            // TODO: [Trace] CustomEventTrace + OGGraphAddTraceEvent
+            // TODO: Signpost
+            removeListeners()
+            self.animatorState = nil
+        } else {
+            // TODO: [Trace] CustomEventTrace + OGGraphAddTraceEvent
+            sampleCollector(animatableData, time)
+            animatorState.nextUpdate()
+        }
+        value.value.animatableData = animatableData
+        value.changed = true
+    }
+
+    package mutating func update(
+        value: inout (value: Value, changed: Bool),
+        defaultAnimation: Animation?,
+        environment: Attribute<EnvironmentValues>,
+        sampleCollector: (Value.AnimatableData, Time) -> Void
+    ) {
+        var animationTime = -Time.infinity
+        if let animatorState {
+            let (time, timeChanged) = $time.changedValue()
+            if timeChanged {
+                animationTime = time
+            }
+        }
+        let reseted = checkReset()
+        if reseted {
+            value.changed = true
+        }
+        updateAnimatorStateIfNeeded(
+            value: value,
+            animationTime: &animationTime,
+            environment: environment,
+            sampleCollector: sampleCollector
+        )
+        updateValueIfNeeded(
+            value: &value,
+            animationTime: animationTime,
+            environment: environment,
+            sampleCollector: sampleCollector
+        )
+    }
+
+    package mutating func update(
+        value: inout (value: Value, changed: Bool),
+        defaultAnimation: Animation?,
+        environment: Attribute<EnvironmentValues>
+    ) {
+        update(
+            value: &value,
+            defaultAnimation: defaultAnimation,
+            environment: environment
+        ) { _, _ in
+            _openSwiftUIEmptyStub()
+        }
+    }
+
+    package mutating func checkReset() -> Bool {
+        guard phase.resetSeed != resetSeed else {
+            return false
+        }
+        reset()
+        return true
+    }
+
+    package mutating func reset() {
+        removeListeners()
+        animatorState = nil
+        previousModelData = nil
+        resetSeed = phase.resetSeed
+    }
+
+    package mutating func removeListeners() {
+        animatorState?.removeListeners()
     }
 }
 
