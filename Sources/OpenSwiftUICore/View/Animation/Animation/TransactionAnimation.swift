@@ -32,9 +32,19 @@ extension Transaction {
         set { self[AnimationFrameIntervalKey.self] = newValue }
     }
 
+    package var animationFrameInterval: Double? {
+        get { _animationFrameInterval }
+        set { _animationFrameInterval = newValue }
+    }
+
     package var _animationReason: UInt32? {
         get { self[AnimationReasonKey.self] }
         set { self[AnimationReasonKey.self] = newValue }
+    }
+
+    package var animationReason: UInt32? {
+        get { _animationReason }
+        set { _animationReason = newValue }
     }
 
     package var isAnimated: Bool {
