@@ -108,7 +108,7 @@ public struct UnitCurve {
         case .circularEaseIn:
             return abs(progress / sqrt(1 - progress * progress))
         case .circularEaseOut:
-            return abs((progress - 1.0) / sqrt(-(progress - 2.0) * (progress - 1.0)))
+            return abs((progress - 1.0) / sqrt(-(progress - 2.0) * progress))
         case .circularEaseInOut:
             if progress >= 0.5 {
                 return abs((progress + progress - 2) / sqrt(((progress * -4.0 + 8.0) * progress) - 3.0))
@@ -279,12 +279,12 @@ extension UnitCurve {
         }
 
         package func value(at time: Double) -> Double {
-            let t = solveX(time, epsilon: .ulpOfOne)
-            return round(t * (cy + t * (by + ay * t)) * pow(2, 20)) * .ulpOfOne
+            let t = solveX(time, epsilon: pow(2, -20))
+            return round(t * (cy + t * (by + ay * t)) * pow(2, 20)) * pow(2, -20)
         }
 
         package func velocity(at time: Double) -> Double {
-            let t = solveX(time, epsilon: .ulpOfOne)
+            let t = solveX(time, epsilon: pow(2, -20))
             let x = cx + (bx + bx) * t + (ax * 3 * t)
             let y = cy + (by + by) * t + (ay * 3 * t)
             guard x != y else {
@@ -293,7 +293,7 @@ extension UnitCurve {
             guard x != 0 else {
                 return y < 0 ? -.infinity : .infinity
             }
-            return round((y / x) * pow(2, 20)) * .ulpOfOne
+            return round((y / x) * pow(2, 20)) * pow(2, -20)
         }
 
         // TODO: Implemented by Copilot. Verify this via unit test later
