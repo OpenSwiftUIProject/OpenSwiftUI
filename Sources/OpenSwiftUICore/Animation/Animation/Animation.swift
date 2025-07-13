@@ -234,7 +234,7 @@ extension Animation: CustomStringConvertible, CustomDebugStringConvertible, Cust
     }
 
     public var customMirror: Mirror {
-        Mirror(box, children: ["base": box.base])
+        Mirror(self, children: ["base": box.base])
     }
 }
 
