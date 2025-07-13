@@ -369,9 +369,3 @@ final private class InternalAnimationBox<Base>: AnimationBox<Base>, @unchecked S
         Animation(InternalCustomAnimationModifiedContent(base: _base, modifier: modifier))
     }
 }
-
-extension Animation {
-    static var `default`: Animation {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
