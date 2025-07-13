@@ -2,7 +2,8 @@
 //  CustomAnimationModifier.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 
 package import Foundation
 
@@ -40,7 +41,7 @@ extension CustomAnimationModifier {
         time: TimeInterval,
         context: AnimationContext<V>
     ) -> V? where V: VectorArithmetic, B: CustomAnimation {
-        _openSwiftUIUnimplementedFailure()
+        nil
     }
 
     package func shouldMerge<V, B>(
@@ -51,7 +52,12 @@ extension CustomAnimationModifier {
         time: TimeInterval,
         context: inout AnimationContext<V>
     ) -> Bool where V: VectorArithmetic, B: CustomAnimation {
-        _openSwiftUIUnimplementedFailure()
+        self == previous && base.shouldMerge(
+            previous: Animation(previousBase),
+            value: value,
+            time: time,
+            context: &context
+        )
     }
 }
 
@@ -72,7 +78,12 @@ package struct CustomAnimationModifiedContent<Base, Modifier>: InternalCustomAni
         time: TimeInterval,
         context: inout AnimationContext<V>
     ) -> V? where V: VectorArithmetic {
-        _openSwiftUIUnimplementedFailure()
+        modifier.animate(
+            base: base,
+            value: value,
+            time: time,
+            context: &context
+        )
     }
 
     package func velocity<V>(
@@ -80,7 +91,12 @@ package struct CustomAnimationModifiedContent<Base, Modifier>: InternalCustomAni
         time: TimeInterval,
         context: AnimationContext<V>
     ) -> V? where V: VectorArithmetic {
-        _openSwiftUIUnimplementedFailure()
+        modifier.velocity(
+            base: base,
+            value: value,
+            time: time,
+            context: context
+        )
     }
 
     package func shouldMerge<V>(
@@ -89,46 +105,54 @@ package struct CustomAnimationModifiedContent<Base, Modifier>: InternalCustomAni
         time: TimeInterval,
         context: inout AnimationContext<V>
     ) -> Bool where V: VectorArithmetic {
-        _openSwiftUIUnimplementedFailure()
+        guard let previousBase = previous.base as? Base else {
+            return false
+        }
+        return modifier.shouldMerge(
+            base: base,
+            previous: modifier,
+            previousBase: previousBase,
+            value: value,
+            time: time,
+            context: &context
+        )
     }
 
     package var function: Animation.Function {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package func hash(into hasher: inout Hasher) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package static func == (a: CustomAnimationModifiedContent<Base, Modifier>, b: CustomAnimationModifiedContent<Base, Modifier>) -> Bool {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package var hashValue: Int {
-        _openSwiftUIUnimplementedFailure()
+        modifier.function(base: .custom(base))
     }
 }
 
-extension CustomAnimationModifiedContent {
+extension CustomAnimationModifiedContent: EncodableAnimation {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        let encodableAnimation: any EncodableAnimation
+        if let encodableBase = base as? EncodableAnimation {
+            encodableAnimation = encodableBase
+        } else {
+            encodableAnimation = DefaultAnimation()
+        }
+        try encodableAnimation.encodeAnimation(to: &encoder)
+        if let encodableModifier = modifier as? ProtobufEncodableMessage {
+            try encodableModifier.encode(to: &encoder)
+        }
     }
 }
 
 package struct InternalCustomAnimationModifiedContent<Base, Modifier>: InternalCustomAnimation where Base: InternalCustomAnimation, Modifier: CustomAnimationModifier {
     package typealias _Base = CustomAnimationModifiedContent<Base, Modifier>
-    package var _base: InternalCustomAnimationModifiedContent<Base, Modifier>._Base
+
+    package var _base: _Base
 
     package init(base: Base, modifier: Modifier) {
-        _openSwiftUIUnimplementedFailure()
+        _base = _Base(base: base, modifier: modifier)
     }
 
     package var base: Base {
-        _openSwiftUIUnimplementedFailure()
+        _base.base
     }
 
     package var modifier: Modifier {
-        _openSwiftUIUnimplementedFailure()
+        _base.modifier
     }
 
     package func animate<V>(
@@ -136,7 +160,12 @@ package struct InternalCustomAnimationModifiedContent<Base, Modifier>: InternalC
         time: TimeInterval,
         context: inout AnimationContext<V>
     ) -> V? where V: VectorArithmetic {
-        _openSwiftUIUnimplementedFailure()
+        modifier.animate(
+            base: base,
+            value: value,
+            time: time,
+            context: &context
+        )
     }
 
     package func velocity<V>(
@@ -144,7 +173,12 @@ package struct InternalCustomAnimationModifiedContent<Base, Modifier>: InternalC
         time: TimeInterval,
         context: AnimationContext<V>
     ) -> V? where V: VectorArithmetic {
-        _openSwiftUIUnimplementedFailure()
+        modifier.velocity(
+            base: base,
+            value: value,
+            time: time,
+            context: context
+        )
     }
 
     package func shouldMerge<V>(
@@ -153,28 +187,26 @@ package struct InternalCustomAnimationModifiedContent<Base, Modifier>: InternalC
         time: TimeInterval,
         context: inout AnimationContext<V>
     ) -> Bool where V: VectorArithmetic {
-        _openSwiftUIUnimplementedFailure()
+        guard let previousBase = previous.base as? Base else {
+            return false
+        }
+        return modifier.shouldMerge(
+            base: base,
+            previous: modifier,
+            previousBase: previousBase,
+            value: value,
+            time: time,
+            context: &context
+        )
     }
 
     package var function: Animation.Function {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package func hash(into hasher: inout Hasher) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package static func == (a: InternalCustomAnimationModifiedContent<Base, Modifier>, b: InternalCustomAnimationModifiedContent<Base, Modifier>) -> Bool {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package var hashValue: Int {
-        _openSwiftUIUnimplementedFailure()
+        modifier.function(base: base.function)
     }
 }
 
-extension InternalCustomAnimationModifiedContent {
+extension InternalCustomAnimationModifiedContent: EncodableAnimation {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        try _base.encode(to: &encoder)
     }
 }
