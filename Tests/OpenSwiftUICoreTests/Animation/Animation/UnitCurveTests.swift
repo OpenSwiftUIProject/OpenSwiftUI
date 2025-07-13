@@ -38,7 +38,7 @@ struct UnitCurveTests {
         let startPoint = UnitPoint(x: 0.25, y: 0.1)
         let endPoint = UnitPoint(x: 0.75, y: 0.9)
         let solver = UnitCurve.CubicSolver(startControlPoint: startPoint, endControlPoint: endPoint)
-        #expect(solver.velocity(at: 0.5).isApproximatelyEqual(to: 0.399, absoluteTolerance: 0.001))
+        #expect(solver.velocity(at: 0.5).isApproximatelyEqual(to: 1.199, absoluteTolerance: 0.001))
     }
 
     // MARK: - Edge Cases

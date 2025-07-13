@@ -285,8 +285,8 @@ extension UnitCurve {
 
         package func velocity(at time: Double) -> Double {
             let t = solveX(time, epsilon: pow(2, -20))
-            let x = cx + (bx + bx) * t + (ax * 3 * t)
-            let y = cy + (by + by) * t + (ay * 3 * t)
+            let x = cx + ((bx + bx) + (ax * 3 * t)) * t
+            let y = cy + ((by + by) + (ay * 3 * t)) * t
             guard x != y else {
                 return 1.0
             }
