@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by FluidSpringAnimation and BezierAnimation
+//  Status: Blocked by FluidSpringAnimation
 
 package import Foundation
 
@@ -93,10 +93,26 @@ package struct DefaultAnimation: InternalCustomAnimation {
     static let base: Animation = {
         if isDeployedOnOrAfter(Semantics.v5) {
             // TODO: FluidSpringAnimation()
+            Animation(
+                BezierAnimation(
+                    curve: .init(
+                        startControlPoint: .init(x: 0.42, y: 0),
+                        endControlPoint: .init(x: 0.58, y: 1)
+                    ),
+                    duration: 0.35
+                )
+            )
         } else {
-            // TODO: BezierAnimation
+            Animation(
+                BezierAnimation(
+                    curve: .init(
+                        startControlPoint: .init(x: 0.42, y: 0),
+                        endControlPoint: .init(x: 0.58, y: 1)
+                    ),
+                    duration: 0.35
+                )
+            )
         }
-        _openSwiftUIUnimplementedFailure()
     }()
 
     package init() {
