@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Function
+//  Status: Complete
 //  ID: 4FD7A1D5440B1394D12A74675615ED20 (SwiftUICore)
 
 public import Foundation
@@ -143,7 +143,9 @@ public struct Animation: Equatable, Sendable {
         indirect case `repeat`(count: Double, autoreverses: Bool, Animation.Function)
 
         package static func custom<T>(_ anim: T) -> Animation.Function where T: CustomAnimation {
-            _openSwiftUIUnimplementedFailure()
+            .customFunction { time, context in
+                anim.animate(value: 1.0, time: time, context: &context)
+            }
         }
     }
 
@@ -154,7 +156,20 @@ public struct Animation: Equatable, Sendable {
 
 extension Animation.Function {
     package var bezierForm: (duration: Double, cp1: CGPoint, cp2: CGPoint)? {
-        _openSwiftUIUnimplementedFailure()
+        switch self {
+        case let .linear(duration):
+            (duration, CGPoint(x: 0.0, y: 0.0), CGPoint(x: 1.0, y: 1.0))
+        case let .circularEaseIn(duration):
+            (duration, CGPoint(x: 0.55, y: 0.0), CGPoint(x: 1.0, y: 0.45))
+        case let .circularEaseOut(duration):
+            (duration, CGPoint(x: 0.0, y: 0.55), CGPoint(x: 0.45, y: 1.0))
+        case let .circularEaseInOut(duration):
+            (duration, CGPoint(x: 0.85, y: 0), CGPoint(x: 0.15, y: 1.0))
+        case let .bezier(duration, cp1, cp2):
+            (duration, cp1, cp2)
+        default:
+            nil
+        }
     }
 }
 
