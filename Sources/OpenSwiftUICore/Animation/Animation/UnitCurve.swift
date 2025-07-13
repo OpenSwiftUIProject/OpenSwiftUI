@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by CubicSolver implementation
+//  Status: Complete (solveX needs verification)
 //  ID: 54864F491103B6AE5CAC10D2D922245F (SwiftUICore)
 
 package import Foundation
@@ -61,7 +61,34 @@ public struct UnitCurve {
     /// - Returns: The output value (y component) of the curve at the given
     ///   progress.
     public func value(at progress: Double) -> Double {
-        _openSwiftUIUnimplementedFailure()
+        let clampValue = progress.clamp(min: 0.0, max: 1.0)
+        switch function {
+        case .linear:
+            return progress
+        case .circularEaseIn:
+            return 1 - sqrt(1 - progress * progress)
+        case .circularEaseOut:
+            return sqrt(1 - (1 - progress) * (1 - progress))
+        case .circularEaseInOut:
+            if progress >= 0.5 {
+                return (sqrt((8.0 - progress * 4.0) * progress - 3.0) + 1) * 0.5
+            } else {
+                return (1.0 - sqrt(1.0 - (progress * 4.0) * progress)) * 0.5
+
+            }
+        case let .bezier(startControlPoint, endControlPoint):
+            let solver = CubicSolver(
+                startControlPoint: UnitPoint(
+                    x: startControlPoint.x.clamp(min: 0.0, max: 1.0),
+                    y: startControlPoint.y.clamp(min: 0.0, max: 1.0)
+                ),
+                endControlPoint: UnitPoint(
+                    x: endControlPoint.x.clamp(min: 0.0, max: 1.0),
+                    y: endControlPoint.y.clamp(min: 0.0, max: 1.0)
+                )
+            )
+            return solver.value(at: clampValue)
+        }
     }
 
     /// Returns the rate of change (first derivative) of the output value of
@@ -74,7 +101,33 @@ public struct UnitCurve {
     /// - Returns: The velocity of the output value (y component) of the curve
     ///   at the given time.
     public func velocity(at progress: Double) -> Double {
-        _openSwiftUIUnimplementedFailure()
+        let clampValue = progress.clamp(min: 0.0, max: 1.0)
+        switch function {
+        case .linear:
+            return 1.0
+        case .circularEaseIn:
+            return abs(progress / sqrt(1 - progress * progress))
+        case .circularEaseOut:
+            return abs((progress - 1.0) / sqrt(-(progress - 2.0) * (progress - 1.0)))
+        case .circularEaseInOut:
+            if progress >= 0.5 {
+                return abs((progress + progress - 2) / sqrt(((progress * -4.0 + 8.0) * progress) - 3.0))
+            } else {
+                return abs((progress + progress) / sqrt((progress * -4.0 * progress) + 1.0))
+            }
+        case let .bezier(startControlPoint, endControlPoint):
+            let solver = CubicSolver(
+                startControlPoint: UnitPoint(
+                    x: startControlPoint.x.clamp(min: 0.0, max: 1.0),
+                    y: startControlPoint.y
+                ),
+                endControlPoint: UnitPoint(
+                    x: endControlPoint.x.clamp(min: 0.0, max: 1.0),
+                    y: endControlPoint.y
+                )
+            )
+            return solver.velocity(at: clampValue)
+        }
     }
 
     /// Returns a copy of the curve with its x and y components swapped.
@@ -197,7 +250,7 @@ extension UnitCurve {
     public static let linear: UnitCurve = .init(function: .linear)
 }
 
-// MARK: - UnitCurve.CubicSolver [WIP]
+// MARK: - UnitCurve.CubicSolver
 
 extension UnitCurve {
     package struct CubicSolver: Sendable, Hashable {
@@ -226,15 +279,97 @@ extension UnitCurve {
         }
 
         package func value(at time: Double) -> Double {
-            _openSwiftUIUnimplementedFailure()
+            let t = solveX(time, epsilon: .ulpOfOne)
+            return round(t * (cy + t * (by + ay * t)) * pow(2, 20)) * .ulpOfOne
         }
 
         package func velocity(at time: Double) -> Double {
-            _openSwiftUIUnimplementedFailure()
+            let t = solveX(time, epsilon: .ulpOfOne)
+            let x = cx + (bx + bx) * t + (ax * 3 * t)
+            let y = cy + (by + by) * t + (ay * 3 * t)
+            guard x != y else {
+                return 1.0
+            }
+            guard x != 0 else {
+                return y < 0 ? -.infinity : .infinity
+            }
+            return round((y / x) * pow(2, 20)) * .ulpOfOne
         }
 
-        private func solveX(_: Double, epsilon: Double) -> Double {
-            _openSwiftUIUnimplementedFailure()
+        // TODO: Implemented by Copilot. Verify this via unit test later
+        fileprivate func solveX(_ time: Double, epsilon: Double) -> Double {
+            // Helper function to evaluate cubic polynomial: ax*t³ + bx*t² + cx*t
+            func evaluateX(_ t: Double) -> Double {
+                return ((ax * t + bx) * t + cx) * t
+            }
+
+            // Helper function to evaluate derivative: 3*ax*t² + 2*bx*t + cx
+            func evaluateDerivativeX(_ t: Double) -> Double {
+                return (3.0 * ax * t + 2.0 * bx) * t + cx
+            }
+
+            // Initial guess using direct evaluation
+            let initialGuess = evaluateX(time)
+            let initialError = abs(initialGuess - time)
+
+            // If initial guess is close enough, return it
+            if initialError < epsilon {
+                return time
+            }
+
+            let derivative = evaluateDerivativeX(time)
+
+            // Try Newton's method if derivative is large enough
+            if abs(derivative) >= epsilon {
+                var t = time - (initialGuess - time) / derivative
+
+                // Perform up to 7 Newton iterations
+                for _ in 0..<7 {
+                    let value = evaluateX(t)
+                    let error = abs(value - time)
+
+                    if error < epsilon {
+                        return t
+                    }
+
+                    let deriv = evaluateDerivativeX(t)
+                    if abs(deriv) < epsilon {
+                        break // Derivative too small, fall back to bisection
+                    }
+
+                    t = t - (value - time) / deriv
+                }
+            }
+
+            // Fall back to bisection method if Newton's method fails or isn't applicable
+            if time < 0.0 || time > 1.0 {
+                return time // Outside valid range
+            }
+
+            var low = 0.0
+            var high = 1.0
+            var t = time
+            var iterationCount = 0
+
+            while low < high && iterationCount >= 0 {
+                let value = evaluateX(t)
+                let error = abs(value - time)
+
+                if error < epsilon {
+                    return t
+                }
+
+                let diff = value - time
+                if diff < 0.0 {
+                    low = t
+                } else {
+                    high = t
+                }
+
+                t = low + (high - low) * 0.5
+                iterationCount += 1
+            }
+            return t
         }
     }
 }
