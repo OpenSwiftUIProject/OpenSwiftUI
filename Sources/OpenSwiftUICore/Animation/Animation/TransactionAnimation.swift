@@ -2,7 +2,7 @@
 //  TransactionAnimation.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for iOS 6.0.87
 //  Status: Complete
 //  ID: 39EC6D46662E6D7A6963F5C611934B0A (SwiftUI)
 //  ID: D98E9A1069CEEADA58829ED440E36F30 (SwiftUICore)
@@ -32,13 +32,23 @@ extension Transaction {
         set { self[AnimationFrameIntervalKey.self] = newValue }
     }
 
+    package var animationFrameInterval: Double? {
+        get { _animationFrameInterval }
+        set { _animationFrameInterval = newValue }
+    }
+
     package var _animationReason: UInt32? {
         get { self[AnimationReasonKey.self] }
         set { self[AnimationReasonKey.self] = newValue }
     }
 
+    package var animationReason: UInt32? {
+        get { _animationReason }
+        set { _animationReason = newValue }
+    }
+
     package var isAnimated: Bool {
-        guard let animation,
+        guard animation != nil,
               !disablesAnimations else {
             return false
         }

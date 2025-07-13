@@ -2,7 +2,7 @@
 //  AnyAnimatableData.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 7ABB4C511D8E2C0F1768F58E8C14509E (SwiftUICore)
 

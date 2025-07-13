@@ -2,9 +2,10 @@
 //  VectorMath.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.4.41
 //  Status: Complete
 
-// MARK: - VectorMath [6.4.41]
+// MARK: - VectorMath
 
 /// Adds the "vector space" numeric operations for any type that
 /// conforms to Animatable.

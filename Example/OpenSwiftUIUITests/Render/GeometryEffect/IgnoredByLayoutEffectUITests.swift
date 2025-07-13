@@ -8,7 +8,7 @@ import SnapshotTesting
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct IgnoredByLayoutEffectUITests {
-    @Test(.disabled("Animation is not implmemented yet"))
+    @Test
     func offsetIgnoredByLayout() {
         struct ContentView: View {
             var body: some View {

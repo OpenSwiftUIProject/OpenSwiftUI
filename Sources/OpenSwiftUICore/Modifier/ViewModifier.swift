@@ -150,7 +150,7 @@ extension MultiViewModifier {
 // MARK: - ViewModifier + _GraphInputsModifier
 
 extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
-    public static func _makeView(
+    nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
@@ -160,7 +160,7 @@ extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
         return body(_Graph(), inputs)
     }
     
-    public static func _makeViewList(
+    nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
@@ -170,7 +170,7 @@ extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
         return body(_Graph(), inputs)
     }
 
-    public static func _viewListCount(
+    nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
