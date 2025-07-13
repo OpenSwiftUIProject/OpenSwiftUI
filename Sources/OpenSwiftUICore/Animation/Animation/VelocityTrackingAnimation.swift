@@ -51,5 +51,5 @@ extension Transaction {
 
 extension Animation {
     // FIXME: VelocityTrackingAnimation
-    static let velocityTracking: Animation = Animation()
+    static let velocityTracking: Animation = .default
 }
