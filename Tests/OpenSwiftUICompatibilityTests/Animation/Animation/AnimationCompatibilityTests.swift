@@ -4,7 +4,7 @@
 
 import Testing
 
-struct AnimationTests {
+struct AnimationCompatibilityTests {
     @Test
     func description() {
         let animation = Animation.default
