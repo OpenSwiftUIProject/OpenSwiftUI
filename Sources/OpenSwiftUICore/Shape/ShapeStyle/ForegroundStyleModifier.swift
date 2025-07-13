@@ -176,19 +176,17 @@ extension View {
 
 @available(OpenSwiftUI_v3_0, *)
 @frozen
-@MainActor
-@preconcurrency
 public struct _ForegroundStyleModifier<Style>: PrimitiveViewModifier, ViewInputsModifier where Style: ShapeStyle {
-    nonisolated package static var graphInputsSemantics: Semantics? { .v4 }
-    
+    package static var graphInputsSemantics: Semantics? { .v4 }
+
     public var style: Style
     
     @inlinable
-    nonisolated public init(style: Style) {
+    public init(style: Style) {
         self.style = style
     }
     
-    public nonisolated static func _makeViewInputs(modifier: _GraphValue<_ForegroundStyleModifier<Style>>, inputs: inout _ViewInputs) {
+    nonisolated public static func _makeViewInputs(modifier: _GraphValue<_ForegroundStyleModifier<Style>>, inputs: inout _ViewInputs) {
         _openSwiftUIUnimplementedFailure()
     }
     

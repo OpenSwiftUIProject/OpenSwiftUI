@@ -10,7 +10,7 @@
 public actor _ImpossibleActor: Sendable {
     public static var shared = _ImpossibleActor()
     
-    public nonisolated var unownedExecutor: UnownedSerialExecutor {
+    nonisolated public var unownedExecutor: UnownedSerialExecutor {
         _ImpossibleExecutor().asUnownedSerialExecutor()
     }
 }
