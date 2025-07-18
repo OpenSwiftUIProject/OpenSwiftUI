@@ -149,7 +149,7 @@ extension ArchivedViewInput.DeploymentVersion {
 
 extension _GraphInputs {
     @inline(__always)
-    var archivedView: ArchivedViewInput.Value {
+    package var archivedView: ArchivedViewInput.Value {
         get { self[ArchivedViewInput.self] }
         set { self[ArchivedViewInput.self] = newValue }
     }
@@ -157,7 +157,15 @@ extension _GraphInputs {
 
 extension _ViewInputs {
     @inline(__always)
-    var archivedView: ArchivedViewInput.Value {
+    package var archivedView: ArchivedViewInput.Value {
+        get { self[ArchivedViewInput.self] }
+        set { self[ArchivedViewInput.self] = newValue }
+    }
+}
+
+extension _ViewListInputs {
+    @inline(__always)
+    package var archivedView: ArchivedViewInput.Value {
         get { self[ArchivedViewInput.self] }
         set { self[ArchivedViewInput.self] = newValue }
     }
