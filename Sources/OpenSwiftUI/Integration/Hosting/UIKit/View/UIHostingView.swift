@@ -330,11 +330,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         render(interval: interval, targetTimestamp: nil)
         Update.unlock()
     }
-    
-    package func modifyViewInputs(_ inputs: inout _ViewInputs) {
-        // TODO
-    }
-    
+
     override dynamic open var frame: CGRect {
         get {
             super.frame
