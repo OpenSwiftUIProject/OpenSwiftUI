@@ -96,37 +96,6 @@ public struct _ValueTransactionModifier<Value>: ViewModifier, _GraphInputsModifi
 @available(*, unavailable)
 extension _ValueTransactionModifier: Sendable {}
 
-/// A stateful rule that tracks value changes to determine when to update transactions.
-///
-/// This structure maintains state about a value being monitored, comparing new values
-/// with the previous ones to detect changes.
-struct ValueTransactionSeed<V>: StatefulRule, AsyncAttribute where V: Equatable {
-    var _value: Attribute<V>
-    var _transactionSeed: Attribute<UInt32>
-    var oldValue: V?
-
-    init(value: Attribute<V>, transactionSeed: Attribute<UInt32>, oldValue: V? = nil) {
-        self._value = value
-        self._transactionSeed = transactionSeed
-        self.oldValue = oldValue
-    }
-
-    typealias Value = UInt32
-
-    mutating func updateValue() {
-        let newValue = _value.value
-        if let oldValue {
-            guard oldValue != newValue else {
-                return
-            }
-            value = Graph.withoutUpdate { _transactionSeed.value }
-        } else {
-            value = .max
-        }
-        oldValue = newValue
-    }
-}
-
 private struct ChildValueTransaction: Rule, AsyncAttribute {
     @Attribute var valueTransactionSeed: UInt32
     @Attribute var transform: (inout Transaction) -> ()
