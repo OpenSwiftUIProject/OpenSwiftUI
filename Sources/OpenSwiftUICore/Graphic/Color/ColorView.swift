@@ -15,11 +15,8 @@ package struct ColorView: RendererLeafView, Animatable {
     }
 
     nonisolated package static func _makeView(view: _GraphValue<ColorView>, inputs: _ViewInputs) -> _ViewOutputs {
-        var inputs = inputs
-        if inputs.base.options.isEmpty {
-            // TODO: AnimatableAttribute
-        }
-        return makeLeafView(view: view, inputs: inputs)
+        let animatable = makeAnimatable(value: view, inputs: inputs.base)
+        return makeLeafView(view: .init(animatable), inputs: inputs)
     }
     
     package var descriptionAttributes: [(name: String, value: String)] {
