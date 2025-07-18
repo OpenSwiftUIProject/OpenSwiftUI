@@ -143,14 +143,10 @@ public struct UnitCurve {
     ///
     public var inverse: UnitCurve {
         switch function {
-        case .linear:
-            .init(function: .linear)
-        case .circularEaseIn:
-            .init(function: .circularEaseOut)
-        case .circularEaseOut:
-            .init(function: .circularEaseIn)
-        case .circularEaseInOut:
-            .init(function: .circularEaseInOut)
+        case .linear: .linear
+        case .circularEaseIn: .circularEaseOut
+        case .circularEaseOut: .circularEaseIn
+        case .circularEaseInOut: .circularEaseInOut
         case let .bezier(startControlPoint, endControlPoint):
             .bezier(
                 startControlPoint: UnitPoint(x: startControlPoint.y, y: startControlPoint.x),
