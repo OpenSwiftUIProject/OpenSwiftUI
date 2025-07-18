@@ -2,16 +2,15 @@
 //  AnyUIHostingView.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 
 #if os(iOS)
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
-
-protocol AnyUIHostingView: AnyObject {
+package protocol AnyUIHostingView: AnyObject {
     var eventBridge: UIKitEventBindingBridge { get set }
-    func displayLinkTimer(timestamp: Time, targetTimestamp: Time, isAsyncThread: Bool)
     var debugName: String? { get }
 }
 #endif
