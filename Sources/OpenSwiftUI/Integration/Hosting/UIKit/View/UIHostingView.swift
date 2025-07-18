@@ -15,29 +15,6 @@ import OpenSwiftUI_SPI
 
 import OpenSwiftUISymbolDualTestsSupport
 
-final class UIHostingViewDebugLayer: CALayer {
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-    
-    override init(layer: Any) {
-        super.init(layer: layer)
-    }
-    
-    override init() {
-        super.init()
-    }
-    
-    override var name: String? {
-        get {
-            (delegate as? AnyUIHostingView)?.debugName ?? super.name
-        }
-        set {
-            super.name = newValue
-        }
-    }
-}
-
 /// A UIView which hosts an OpenSwiftUI View hierarchy.
 @available(macOS, unavailable)
 open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Content: View {
