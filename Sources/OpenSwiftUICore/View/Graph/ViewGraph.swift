@@ -510,30 +510,7 @@ extension ViewGraph {
     }
 }
 
-// MARK: - RootDisplayList
 
-private struct RootDisplayList: Rule, AsyncAttribute {
-    @Attribute var content: DisplayList
-    @Attribute var time: Time
-    
-    var value: (DisplayList, DisplayList.Version) {
-        var displayList = content
-        let version = DisplayList.Version(forUpdate: ())
-        displayList.applyViewGraphTransform(time: $time, version: version)
-        return (content, version)
-    }
-}
-
-// MARK: - RootTransform
-
-private struct RootTransform: Rule {
-    var value: ViewTransform {
-        guard let delegate = ViewGraph.current.delegate else {
-            return ViewTransform()
-        }
-        return delegate.rootTransform()
-    }
-}
 
 // MARK: - RootGeometry
 
@@ -660,5 +637,38 @@ package struct RootGeometry: Rule, AsyncAttribute {
 extension Graph {
     package func viewGraph() -> ViewGraph {
         unsafeBitCast(context, to: ViewGraph.self)
+    }
+}
+
+// MARK: - RootTransformProvider
+
+protocol RootTransformProvider {
+    func rootTransform() -> ViewTransform
+}
+
+// MARK: - RootDisplayList
+
+private struct RootDisplayList: Rule, AsyncAttribute {
+    @Attribute var content: DisplayList
+    @Attribute var time: Time
+
+    var value: (DisplayList, DisplayList.Version) {
+        var displayList = content
+        let version = DisplayList.Version(forUpdate: ())
+        displayList.applyViewGraphTransform(time: $time, version: version)
+        return (content, version)
+    }
+}
+
+// MARK: - RootTransform [6.5.4]
+
+private struct RootTransform: Rule {
+    var value: ViewTransform {
+        guard let delegate = ViewGraph.current.delegate,
+              let provider = delegate.as(RootTransformProvider.self)
+        else {
+            return ViewTransform()
+        }
+        return provider.rootTransform()
     }
 }
