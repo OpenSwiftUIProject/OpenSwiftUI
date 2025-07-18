@@ -34,6 +34,10 @@ typedef struct CAColorMatrix CAColorMatrix;
 
 // OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted)
 
+@interface CADisplayLink (OpenSwiftUI_SPI)
+- (void)setHighFrameRateReasons_openswiftui_safe_wrapper:(const uint32_t *)reasons count:(NSInteger)count OPENSWIFTUI_SWIFT_NAME(setHighFrameRateReasons(_:count:));
+@end
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* CoreAnimation.h */

@@ -43,5 +43,11 @@
 }
 @end
 
+@implementation CADisplayLink (OpenSwiftUI_SPI)
+- (void)setHighFrameRateReasons_openswiftui_safe_wrapper:(const uint32_t *)reasons count:(NSInteger)count {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setHighFrameRateReasons:count:", , const uint32_t *, NSInteger);
+    return func(self, selector, reasons, count);
+}
+@end
 
 #endif /* CoreAnimation.h */
