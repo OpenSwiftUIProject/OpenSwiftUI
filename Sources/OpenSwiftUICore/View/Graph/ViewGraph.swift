@@ -205,9 +205,10 @@ package final class ViewGraph: GraphHost {
     package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature {
         features[feature]
     }
-    
+
     override package func instantiateOutputs() {
         let outputs = globalSubgraph.apply {
+            // Audited for 6.5.4
             var inputs = _ViewInputs(
                 graphInputs,
                 position: $position,
@@ -225,12 +226,6 @@ package final class ViewGraph: GraphHost {
                 preferenceBridge.wrapInputs(&inputs)
             }
             _ViewDebug.initialize(inputs: &inputs)
-            if _VariableFrameDurationIsSupported() {
-                inputs.base.options.formUnion(.supportsVariableFrameDuration)
-            }
-            if let delegate {
-                delegate.modifyViewInputs(&inputs)
-            }
             if inputs.needsGeometry {
                 // inputs.makeRootMatchedGeometryScope()
             }
