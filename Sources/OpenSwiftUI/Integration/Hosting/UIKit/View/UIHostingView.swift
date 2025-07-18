@@ -238,6 +238,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         // TODO
         super.init(frame: .zero)
         // TODO
+
+        if _UIUpdateAdaptiveRateNeeded() {
+            viewGraph.append(feature: EnableVFDFeature())
+        }
+
         initializeViewGraph()
         // RepresentableContextValues.current =
 
@@ -320,7 +325,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         let interval = if let displayLink, displayLink.willRender {
             0.0
         } else {
-            renderInterval(timestamp: .systemUptime) / UIAnimationDragCoefficient()
+            renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
         }
         render(interval: interval, targetTimestamp: nil)
         Update.unlock()
@@ -445,6 +450,13 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     static func defaultViewGraphOutputs() -> ViewGraph.Outputs { .defaults }
+
+    // Audited for 6.5.4
+    private struct EnableVFDFeature: ViewGraphFeature {
+        func modifyViewInputs(inputs: inout _ViewInputs, graph: ViewGraph) {
+            inputs.base.options.insert(.supportsVariableFrameDuration)
+        }
+    }
 }
 
 extension _UIHostingView {

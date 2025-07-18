@@ -47,7 +47,12 @@ OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);
 
 OPENSWIFTUI_EXPORT
-double UIAnimationDragCoefficient(void);
+float UIAnimationDragCoefficient(void);
+
+// MARK: - UIUpdate related private API from UIKitCore
+
+OPENSWIFTUI_EXPORT
+bool _UIUpdateAdaptiveRateNeeded();
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
