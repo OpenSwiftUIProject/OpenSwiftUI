@@ -14,7 +14,4 @@ protocol AnyUIHostingView: AnyObject {
     func displayLinkTimer(timestamp: Time, targetTimestamp: Time, isAsyncThread: Bool)
     var debugName: String? { get }
 }
-
-// FIXME:
-class UIKitEventBindingBridge {}
 #endif
