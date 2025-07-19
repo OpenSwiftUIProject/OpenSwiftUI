@@ -12,16 +12,8 @@ import Foundation
 struct AppearanceActionModifierExample: View {
     @State private var first = true
 
-    var color: Color {
-        #if os(macOS)
-        Color(nsColor: first ? .red : .blue)
-        #else
-        Color(uiColor: first ? .red : .blue)
-        #endif
-    }
-
     var body: some View {
-        color
+        Color(platformColor: first ? .red : .blue)
             .onAppear {
                 print("View appear")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {

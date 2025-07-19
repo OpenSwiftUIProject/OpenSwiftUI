@@ -13,17 +13,8 @@ struct NamespaceExample: View {
     @State private var first = true
     @Namespace private var id
 
-    var color: Color {
-        #if os(macOS)
-        Color.red
-        #else
-
-        Color(uiColor: first ? .red : .blue)
-        #endif
-    }
-
     var body: some View {
-        color
+        Color(platformColor: first ? .red : .blue)
             .onAppear {
                 print("View appear \(id)")
                 DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
