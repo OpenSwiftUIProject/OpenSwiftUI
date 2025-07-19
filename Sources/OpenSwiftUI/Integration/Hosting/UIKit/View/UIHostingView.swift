@@ -52,19 +52,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     package var currentTimestamp: Time = .zero
 
     package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
-    
-    package var renderingPhase: ViewRenderingPhase = .none
-    
-    package var externalUpdateCount: Int = .zero
-    
-    var parentPhase: _GraphInputs.Phase? = nil
 
-    var isRotatingWindow: Bool = false
-    
     var allowUIKitAnimations: Int32 = .zero
-    
-    var allowUIKitAnimationsForNextUpdate: Bool = false
-    
+
     var disabledBackgroundColor: Bool = false
     
     var allowFrameChanges: Bool = true
@@ -119,15 +109,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
     
-    var traitCollectionOverride: UITraitCollection? = nil {
-        didSet {
-            guard traitCollectionOverride != oldValue else {
-                return
-            }
-            invalidateProperties(.environment)
-        }
-    }
-    
     weak var viewController: UIHostingController<Content>? = nil {
         didSet {
             updateBackgroundColor()
@@ -137,21 +118,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     var currentEvent: UIEvent? = nil
     
     // var eventBridge: UIKitEventBindingBridge
-    
-    var displayLink: DisplayLink? = nil
-    
-    var lastRenderTime: Time = .zero
 
-    var canAdvanceTimeAutomatically = true
-    
-    var pendingPreferencesUpdate: Bool = false
-    
-    var pendingPostDisappearPreferencesUpdate: Bool = false
-    
-    var nextTimerTime: Time? = nil
-
-    var updateTimer: Timer? = nil
-    
     var colorScheme: ColorScheme? = nil {
         didSet {
             didChangeColorScheme(from: oldValue)
@@ -161,46 +128,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     // TODO
     
     // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
-    
-    private weak var observedWindow: UIWindow? = nil
-    
-    private weak var observedScene: UIWindowScene? = nil
-    
-    private var _sceneActivationState: UIScene.ActivationState? = nil
-    
-    var sceneActivationState: UIScene.ActivationState? {
-        get {
-            let selector = Selector(("_windowHostingScene"))
-            guard let window,
-                  window.responds(to: selector),
-                  (window.perform(selector).takeRetainedValue() as? UIWindowScene) != nil else {
-                return nil
-            }
-            return _sceneActivationState
-        }
-        set {
-            _sceneActivationState = newValue
-        }
-    }
-    
-    var isEnteringForeground: Bool = false
-    
-    var isExitingForeground: Bool = false
-    
-    var isCapturingSnapshots: Bool = false
-    
-    var updatesWillBeVisible: Bool {
-        guard let sceneActivationState else {
-            return false
-        }
-        guard !isHiddenForReuse else {
-            return false
-        }
-        return switch sceneActivationState {
-            case .foregroundActive, .foregroundInactive: true
-            default: isEnteringForeground || isCapturingSnapshots
-        }
-    }
     
     package var accessibilityEnabled: Bool {
         get {
@@ -281,16 +208,14 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     override dynamic open func didMoveToWindow() {
         Update.begin()
-        if window != nil {
-            traitCollectionOverride = nil
-            initialInheritedEnvironment = nil
-            invalidateProperties(.transform)
-        }
+        // TODO:
         // updateKeyboardAvoidance()
         // eventBridge.hostingView(self, didMoveToWindow: window)
-        // TODO: rootViewDelegate
-        base.didMoveToWindow()
+        if let viewController {
+            // viewController._didMoveToWindow()
+        }
         // TODO
+        base.didMoveToWindow()
         Update.end()
     }
 
@@ -516,11 +441,42 @@ extension _UIHostingView {
     private func frameDidChange(oldValue: CGRect) {
         // TODO
     }
+
+    package var isInSizeTransition: Bool {
+        _base.isInSizeTransition
+    }
+
+    package var isRotatingWindow: Bool {
+        _base.isRotatingWindow
+    }
+
+    package var sceneActivationState: UIScene.ActivationState? {
+        _base.sceneActivationState
+    }
+
+    package var isResizingSheet: Bool {
+        // TODO
+        return false
+    }
+
+    package var isTabSidebarMorphing: Bool {
+        // TODO
+        return false
+    }
 }
 
 extension _UIHostingView: ViewRendererHost {
+    package var renderingPhase: ViewRenderingPhase {
+        get { base.renderingPhase }
+        set { base.renderingPhase = newValue }
+    }
+    
+    package var externalUpdateCount: Int {
+        get { base.externalUpdateCount }
+        set { base.externalUpdateCount = newValue }
+    }
+    
     package func updateEnvironment() {
-
         // FIXME
         var environment = EnvironmentValues()
         environment.displayScale = traitCollection.displayScale
@@ -543,11 +499,6 @@ extension _UIHostingView: ViewRendererHost {
 
     package func updateScrollableContainerSize() {
         // _openSwiftUIUnimplementedFailure()
-    }
-
-    var shouldDisableUIKitAnimations: Bool {
-        // FIXME
-        false
     }
 
     package func renderDisplayList(
@@ -608,11 +559,11 @@ extension _UIHostingView: ViewRendererHost {
                 Self.performWithoutAnimation {
                     renderedTime = render()
                 }
-                allowUIKitAnimationsForNextUpdate = false
+                base.allowUIKitAnimationsForNextUpdate = false
                 return renderedTime
             } else {
                 let renderedTime = render()
-                allowUIKitAnimationsForNextUpdate = false
+                base.allowUIKitAnimationsForNextUpdate = false
                 return renderedTime
             }
         }
@@ -735,7 +686,7 @@ extension _UIHostingView: TestHost {
             }
         }
         advanceTimeForTest(interval: interval)
-        canAdvanceTimeAutomatically = false
+        _base.canAdvanceTimeAutomatically = false
         var times = 16
         repeat {
             times -= 1
@@ -748,7 +699,7 @@ extension _UIHostingView: TestHost {
             CATransaction.flush()
         } while shouldContinue()
         CoreTesting.needsRender = false
-        canAdvanceTimeAutomatically = true
+        _base.canAdvanceTimeAutomatically = true
     }
 }
 
@@ -787,8 +738,23 @@ extension UIView {
     }
 }
 
+// MARK: - _UIHostingView + UIHostingViewBaseDelegate [6.5.4]
+
 extension _UIHostingView: UIHostingViewBaseDelegate {
-    func sceneActivationStateDidChange() {
+    package var shouldDisableUIKitAnimations: Bool {
+        guard allowUIKitAnimations == 0,
+              !base.allowUIKitAnimationsForNextUpdate,
+              !isInSizeTransition,
+              !isResizingSheet,
+              !isRotatingWindow,
+              !isTabSidebarMorphing
+        else {
+            return false
+        }
+        return true
+    }
+
+    package func sceneActivationStateDidChange() {
         _openSwiftUIUnimplementedWarning()
     }
 }
