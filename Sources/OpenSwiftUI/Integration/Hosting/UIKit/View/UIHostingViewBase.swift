@@ -269,7 +269,21 @@ package class UIHostingViewBase {
     }
 
     package func updateRemovedState(uiView: UIView?) {
-        _openSwiftUIUnimplementedFailure()
+        guard let uiView = uiView ?? self.uiView else {
+            return
+        }
+        var removedState: GraphHost.RemovedState = []
+        if uiView.window == nil {
+            removedState.insert(.unattached)
+        }
+        if isHiddenForReuse {
+            removedState.insert(.hiddenForReuse)
+            cancelAsyncRendering()
+            clearDisplayLink()
+        }
+        Update.ensure {
+            viewGraph.removedState = removedState
+        }
     }
 
     package func updateSceneActivationState() {
@@ -396,6 +410,13 @@ package class UIHostingViewBase {
                 displayLink.enableAsyncRendering()
             }
         }
+    }
+
+    package func clearDisplayLink() {
+        Update.locked {
+            displayLink?.invalidate()
+        }
+        displayLink = nil
     }
 
     // MARK: - UIView related
