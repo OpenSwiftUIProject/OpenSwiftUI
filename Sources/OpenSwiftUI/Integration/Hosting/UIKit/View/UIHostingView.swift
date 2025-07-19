@@ -785,7 +785,7 @@ extension _UIHostingView: TestHost {
 
     public func _renderForTest(interval: Double) {
         func shouldContinue() -> Bool {
-            if propertiesNeedingUpdate == [], !CoreTesting.needRender {
+            if propertiesNeedingUpdate == [], !CoreTesting.needsRender {
                 false
             } else {
                 times >= 0
@@ -796,7 +796,7 @@ extension _UIHostingView: TestHost {
         var times = 16
         repeat {
             times -= 1
-            CoreTesting.needRender = false
+            CoreTesting.needsRender = false
             updateGraph { host in
                 host.flushTransactions()
             }
@@ -804,7 +804,7 @@ extension _UIHostingView: TestHost {
             render(targetTimestamp: nil)
             CATransaction.flush()
         } while shouldContinue()
-        CoreTesting.needRender = false
+        CoreTesting.needsRender = false
         canAdvanceTimeAutomatically = true
     }
 }
