@@ -67,12 +67,12 @@ package final class ViewGraph: GraphHost {
     @OptionalAttribute var scrollableContainerSize: ViewSize?
     
     @Attribute var gestureTime: Time
-    // @Attribute var gestureEvents: [EventID : EventType]
-    // @Attribute var inheritedPhase: _GestureInputs.InheritedPhase
+    @Attribute var gestureEvents: [EventID : EventType]
+    @Attribute var inheritedPhase: _GestureInputs.InheritedPhase
     @Attribute var gestureResetSeed: UInt32
-    // @OptionalAttribute var rootPhase: GesturePhase<Void>?
-    // @OptionalAttribute package var gestureDebug: GestureDebug.Data?
-    // @OptionalAttribute package var gestureCategory: GestureCategory?
+    @OptionalAttribute var rootPhase: GesturePhase<Void>?
+    @OptionalAttribute package var gestureDebug: GestureDebug.Data?
+    @OptionalAttribute package var gestureCategory: GestureCategory?
     @Attribute package var gesturePreferenceKeys: PreferenceKeys
     var eventSubgraph: Subgraph?
     
@@ -155,8 +155,8 @@ package final class ViewGraph: GraphHost {
         _safeAreaInsets = Attribute(value: _SafeAreaInsetsModifier(elements: [.init(regions: .container, insets: .zero)]))
         _defaultLayoutComputer = Attribute(value: .defaultValue)
         _gestureTime = Attribute(value: .zero)
-        // _gestureEvents
-        // _inheritedPhase
+        _gestureEvents = Attribute(value: [:])
+        _inheritedPhase = Attribute(value: .defaultValue)
         _gestureResetSeed = Attribute(value: .zero)
         _gesturePreferenceKeys = Attribute(value: .init())
         _rootGeometry = Attribute(RootGeometry(
@@ -314,9 +314,7 @@ package final class ViewGraph: GraphHost {
 
 extension ViewGraph {
     package func setRootView<Root>(_ view: Root) where Root: View {
-        @Attribute(identifier: rootView)
-        var rootView: Root
-        rootView = view
+        rootView.unsafeCast(to: Root.self).value = view
     }
     
     package func setSize(_ size: ViewSize) {
@@ -518,7 +516,27 @@ extension ViewGraph {
     }
 }
 
+extension ViewGraph {
+    package var responderNode: ResponderNode? {
+        _openSwiftUIUnimplementedFailure()
+    }
 
+    package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func sendEvents(
+        _ events: [EventID: any EventType],
+        rootNode: ResponderNode,
+        at time: Time
+    ) -> GesturePhase<Void> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func resetEvents() {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
 
 // MARK: - RootGeometry
 
