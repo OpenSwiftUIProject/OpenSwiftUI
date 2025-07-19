@@ -265,7 +265,27 @@ package class UIHostingViewBase {
     }
 
     package func requestUpdate(after delay: Double) {
-        _openSwiftUIUnimplementedFailure()
+        Update.lock()
+        if delay != .zero || (viewGraph.mayDeferUpdate && displayLink?.willRender == true) {
+            let delay = Double(UIAnimationDragCoefficient()) * delay
+            if delay >= 0.25 {
+                startUpdateTimer(delay: delay)
+            } else {
+                startDisplayLink(delay: delay)
+            }
+        } else {
+            if Thread.isMainThread {
+                requestImmediateUpdate()
+            } else {
+                DispatchQueue.main.async { [weak self] in
+                    guard let self else {
+                        return
+                    }
+                    requestImmediateUpdate()
+                }
+            }
+        }
+        Update.unlock()
     }
 
     package func updateRemovedState(uiView: UIView?) {
@@ -296,7 +316,12 @@ package class UIHostingViewBase {
             return
         }
         guard updatesAtFullFidelity else {
-            // TODO:
+            cancelAsyncRendering()
+            clearDisplayLink()
+            clearUpdateTimer()
+            if uiView.layer.needsLayout() {
+                requestImmediateUpdate()
+            }
             return
         }
         uiView.setNeedsLayout()
@@ -469,6 +494,13 @@ package class UIHostingViewBase {
                 updateRemovedState(uiView: nil)
             }
         }
+        updateSceneNotifications()
+        updateWindowNotifications()
+        requestUpdateForFidelity()
+        if window == nil {
+            isRotatingWindow = false
+        }
+        host.invalidateProperties(.environment)
     }
 
     // MARK: - Notification
