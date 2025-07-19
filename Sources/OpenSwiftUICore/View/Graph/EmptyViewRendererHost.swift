@@ -2,7 +2,7 @@
 //  EmptyViewRendererHost.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 
 final package class EmptyViewRendererHost: ViewRendererHost {
@@ -20,6 +20,7 @@ final package class EmptyViewRendererHost: ViewRendererHost {
         Update.begin()
         viewGraph = ViewGraph(rootViewType: EmptyView.self, requestedOutputs: [])
         viewGraph.setEnvironment(environment)
+        viewGraph.setRootView(EmptyView())
         initializeViewGraph()
         Update.end()
     }
@@ -34,19 +35,7 @@ final package class EmptyViewRendererHost: ViewRendererHost {
 
     package func updateSafeArea() {}
 
-    package func updateScrollableContainerSize() {}
+    package func updateContainerSize() {}
 
-    package func renderDisplayList(
-        _ list: DisplayList,
-        asynchronously: Bool,
-        time: Time,
-        nextTime: Time,
-        targetTimestamp: Time?,
-        version: DisplayList.Version,
-        maxVersion: DisplayList.Version
-    ) -> Time {
-        .infinity
-    }
-    
     package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {}
 }

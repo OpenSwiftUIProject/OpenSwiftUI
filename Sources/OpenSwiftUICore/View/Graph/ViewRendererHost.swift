@@ -2,69 +2,52 @@
 //  ViewRendererHost.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
-//  Status: WIP
-//  ID: 76C8A4B3FC8EE0F99045B3425CD62255
+//  Audited for 6.5.4
+//  Status: Blocked by OGValueState and Trace
+//  ID: 76C8A4B3FC8EE0F99045B3425CD62255 (SwiftUICore)
 
 package import Foundation
 import OpenGraphShims
 
-// MARK: - ViewRendererHostProperties
-
-package struct ViewRendererHostProperties: OptionSet {
-    package let rawValue: UInt16
-    package init(rawValue: UInt16) {
-        self.rawValue = rawValue
-    }
-    package static let rootView: ViewRendererHostProperties = .init(rawValue: 1 << 0)
-    package static let environment: ViewRendererHostProperties = .init(rawValue: 1 << 1)
-    package static let focusedValues: ViewRendererHostProperties = .init(rawValue: 1 << 2)
-    package static let transform: ViewRendererHostProperties = .init(rawValue: 1 << 3)
-    package static let size: ViewRendererHostProperties = .init(rawValue: 1 << 4)
-    package static let safeArea: ViewRendererHostProperties = .init(rawValue: 1 << 5)
-    package static let scrollableContainerSize: ViewRendererHostProperties = .init(rawValue: 1 << 6)
-    package static let focusStore: ViewRendererHostProperties = .init(rawValue: 1 << 7)
-    package static let accessibilityFocusStore: ViewRendererHostProperties = .init(rawValue: 1 << 8)
-    package static let focusedItem: ViewRendererHostProperties = .init(rawValue: 1 << 9)
-    package static let accessibilityFocus: ViewRendererHostProperties = .init(rawValue: 1 << 10)
-    package static let all: ViewRendererHostProperties  = [.rootView, .environment, .focusedValues, .transform, .size, .safeArea, .scrollableContainerSize, .focusStore, .accessibilityFocusStore, .focusedItem, .accessibilityFocus]
-}
-
-// MARK: - ViewRenderingPhase
-
-package enum ViewRenderingPhase {
-    case none
-    case rendering
-    case renderingAsync
-}
-
-@available(*, unavailable)
-extension ViewRenderingPhase: Sendable {}
-
-// MARK: - ViewRendererHost
+// MARK: - ViewRendererHost [6.5.4]
 
 package protocol ViewRendererHost: ViewGraphDelegate {
     var viewGraph: ViewGraph { get }
+
     var currentTimestamp: Time { get set }
+
+    var responderNode: ResponderNode? { get }
+
     var propertiesNeedingUpdate: ViewRendererHostProperties { get set }
+
     var renderingPhase: ViewRenderingPhase { get set }
+
     var externalUpdateCount: Int { get set }
+
     func updateRootView()
+
     func updateEnvironment()
-    func updateFocusedItem()
-    func updateFocusedValues()
+
     func updateTransform()
+
     func updateSize()
+
     func updateSafeArea()
-    func updateScrollableContainerSize()
+
+    func updateContainerSize()
+
     func updateFocusStore()
-    func updateAccessibilityFocus()
-    func updateAccessibilityFocusStore()
+
+    func updateFocusedItem()
+
+    func updateFocusedValues()
+
     func updateAccessibilityEnvironment()
-    func renderDisplayList(_ list: DisplayList, asynchronously: Bool, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time
-    func didRender()
 }
 
+// MARK: - ViewRendererHost + default implementation [6.5.4]
+
+@available(OpenSwiftUI_v1_0, *)
 extension ViewRendererHost {
     package var isRendering: Bool {
         renderingPhase != .none
@@ -105,16 +88,18 @@ extension ViewRendererHost {
     }
     
     @_spi(ForOpenSwiftUIOnly)
+    @available(OpenSwiftUI_v6_0, *)
     public func updateViewGraph<T>(body: (ViewGraph) -> T) -> T {
-        Update.begin()
-        defer { Update.end() }
-        return Graph.withoutUpdate {
-            updateGraph()
-            return body(viewGraph)
+        Update.perform {
+            Graph.withoutUpdate {
+                updateGraph()
+                return body(viewGraph)
+            }
         }
     }
     
     @_spi(ForOpenSwiftUIOnly)
+    @available(OpenSwiftUI_v6_0, *)
     public func graphDidChange() {
         Update.locked {
             if !isRendering {
@@ -122,19 +107,20 @@ extension ViewRendererHost {
             }
         }
     }
-    
-    package func didRender() {}
-    
+
     @_spi(ForOpenSwiftUIOnly)
-    public func preferencesDidChange() {}
+    @available(OpenSwiftUI_v6_0, *)
+    public func preferencesDidChange() {
+        _openSwiftUIEmptyStub()
+    }
     
     package func invalidateProperties(_ props: ViewRendererHostProperties, mayDeferUpdate: Bool = true) {
         Update.locked {
             guard !propertiesNeedingUpdate.contains(props) else {
                 return
             }
-            propertiesNeedingUpdate.insert(props)
-            viewGraph.setNeedsUpdate(mayDeferUpdate: mayDeferUpdate)
+            propertiesNeedingUpdate = propertiesNeedingUpdate.union(props)
+            viewGraph.setNeedsUpdate(mayDeferUpdate: mayDeferUpdate, values: propertiesNeedingUpdate)
             requestUpdate(after: .zero)
         }
     }
@@ -148,12 +134,8 @@ extension ViewRendererHost {
                 updateRootView()
             }
             if properties.contains(.environment) {
-                propertiesNeedingUpdate.remove(.rootView)
+                propertiesNeedingUpdate.remove(.environment)
                 updateEnvironment()
-            }
-            if properties.contains(.focusedValues) {
-                propertiesNeedingUpdate.remove(.focusedValues)
-                updateFocusedValues()
             }
             if properties.contains(.transform) {
                 propertiesNeedingUpdate.remove(.transform)
@@ -167,36 +149,36 @@ extension ViewRendererHost {
                 propertiesNeedingUpdate.remove(.safeArea)
                 updateSafeArea()
             }
-            if properties.contains(.scrollableContainerSize) {
-                propertiesNeedingUpdate.remove(.scrollableContainerSize)
-                updateScrollableContainerSize()
+            if properties.contains(.containerSize) {
+                propertiesNeedingUpdate.remove(.containerSize)
+                updateContainerSize()
             }
             if properties.contains(.focusStore) {
                 propertiesNeedingUpdate.remove(.focusStore)
                 updateFocusStore()
             }
-            if properties.contains(.accessibilityFocusStore) {
-                propertiesNeedingUpdate.remove(.accessibilityFocusStore)
-                updateAccessibilityFocusStore()
-            }
             if properties.contains(.focusedItem) {
                 propertiesNeedingUpdate.remove(.focusedItem)
                 updateFocusedItem()
             }
-            if properties.contains(.accessibilityFocus) {
-                propertiesNeedingUpdate.remove(.accessibilityFocus)
-                updateAccessibilityFocus()
+            if properties.contains(.focusedValues) {
+                propertiesNeedingUpdate.remove(.focusedValues)
+                updateFocusedValues()
             }
         }
     }
     
     package func updateTransform() {
-        // Blocked by ValueState
+        // Blocked by OGValueState
         // viewGraph.$rootTransform.valueState
-        // _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
     }
-    
-    package func render(interval: Double = 0, updateDisplayList: Bool = true, targetTimestamp: Time? = nil) {
+
+    package func render(
+        interval: Double = 0,
+        updateDisplayList: Bool = true,
+        targetTimestamp: Time?
+    ) {
         Update.begin()
         defer { Update.end() }
         guard !isRendering else {
@@ -214,9 +196,7 @@ extension ViewRendererHost {
                 updateGraph()
             }
             renderingPhase = .rendering
-            
-            var displayList: DisplayList = .init()
-            var version: DisplayList.Version = .init()
+            var (displayList, version) = (DisplayList(), DisplayList.Version())
             Signpost.renderUpdate.traceInterval(
                 object: self,
                 nil
@@ -242,7 +222,6 @@ extension ViewRendererHost {
             }
             var nextTime = viewGraph.nextUpdate.views.time
             if updateDisplayList {
-                let maxVersion = DisplayList.Version(forUpdate: ())
                 nextTime = renderDisplayList(
                     displayList,
                     asynchronously:false,
@@ -250,7 +229,7 @@ extension ViewRendererHost {
                     nextTime: nextTime,
                     targetTimestamp: targetTimestamp,
                     version: version,
-                    maxVersion: maxVersion
+                    maxVersion: DisplayList.Version(forUpdate: ())
                 )
             }
             renderingPhase = .none
@@ -261,10 +240,119 @@ extension ViewRendererHost {
         }
     }
     
-    package func renderAsync(interval: Double = 0, targetTimestamp: Time?) -> Time? {
-        _openSwiftUIUnimplementedFailure()
+    package func renderAsync(
+        interval: Double = 0,
+        targetTimestamp: Time?
+    ) -> Time? {
+        Update.assertIsLocked()
+        guard !isRendering,
+              !propertiesNeedingUpdate.isEmpty else {
+            return nil
+        }
+        let viewGraph = viewGraph
+        guard !viewGraph.hasPendingTransactions else {
+            return nil
+        }
+        return Update.perform {
+            currentTimestamp += interval
+            let time = currentTimestamp
+            renderingPhase = .renderingAsync
+            if let (list, version) = viewGraph.updateOutputsAsync(at: time) {
+                let renderTime = renderDisplayList(
+                    list,
+                    asynchronously: true,
+                    time: time,
+                    nextTime: viewGraph.nextUpdate.views.time,
+                    targetTimestamp: targetTimestamp,
+                    version: version,
+                    maxVersion: .init(forUpdate: ())
+                )
+                renderingPhase = .none
+                return renderTime
+            } else {
+                renderingPhase = .none
+                return nil
+            }
+
+        }
     }
-    
+
+    package func renderDisplayList(
+        _ list: DisplayList,
+        asynchronously: Bool,
+        time: Time,
+        nextTime: Time,
+        targetTimestamp: Time?,
+        version: DisplayList.Version,
+        maxVersion: DisplayList.Version
+    ) -> Time {
+        guard let delegate = self.as(ViewGraphRenderDelegate.self),
+              let renderer = self.as(DisplayList.ViewRenderer.self)
+        else { return .infinity }
+
+        func renderOnMainThread() -> Time {
+            var context = ViewGraphRenderContext(
+                contentsScale: .zero,
+                opaqueBackground: false
+            )
+            delegate.updateRenderContext(&context)
+            var environment = DisplayList.ViewRenderer.Environment(
+                contentsScale: context.contentsScale
+            )
+            #if os(macOS)
+            if isAppKitBased() {
+                environment.opaqueBackground = context.opaqueBackground
+            }
+            #endif
+            let rootView = delegate.renderingRootView
+            // TODO: CustomEventTrace
+            return delegate.withMainThreadRender(wasAsync: false) {
+                #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
+                renderer.swiftUI_render(
+                    rootView: self,
+                    from: list,
+                    time: time,
+                    nextTime: nextTime,
+                    version: version,
+                    maxVersion: maxVersion,
+                    environment: environment
+                )
+                #else
+                renderer.render(
+                    rootView: self,
+                    from: list,
+                    time: time,
+                    nextTime: nextTime,
+                    version: version,
+                    maxVersion: maxVersion,
+                    environment: environment
+                )
+                #endif
+            }
+        }
+        if asynchronously {
+            // TODO: CustomEventTrace
+            if let renderedTime = renderer.renderAsync(
+                to: list,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            ) {
+                return renderedTime
+            } else {
+                var renderedTime = nextTime
+                Update.syncMain {
+                    renderedTime = renderOnMainThread()
+                }
+                return renderedTime
+            }
+        } else {
+            return renderOnMainThread()
+        }
+    }
+
     package func advanceTimeForTest(interval: Double) {
         guard interval >= 0 else {
             preconditionFailure("Test render timestamps must monotonically increase.")
@@ -274,6 +362,7 @@ extension ViewRendererHost {
     }
     
     @_spi(Private)
+    @available(OpenSwiftUI_v4_0, *)
     public func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {
         updateViewGraph { graph in
             graph.preferenceValue(key)
@@ -285,36 +374,33 @@ extension ViewRendererHost {
     }
     
     package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
-        updateViewGraph { graph in
-            // FIXME:
-            // graph.sizeThatFits(proposal, layoutComputer: layoutComputer, insets: rootViewInsets)
-            CGSize.zero
+        updateViewGraph { $0.sizeThatFits(proposal)
         }
     }
     package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        updateViewGraph { $0.explicitAlignment(of: guide, at: size) }
     }
     
     package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        updateViewGraph { $0.explicitAlignment(of: guide, at: size) }
     }
     
     package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        updateViewGraph { $0.alignment(of: guide, at: size) }
     }
     
     package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        updateViewGraph { $0.alignment(of: guide, at: size) }
     }
     
     package var centersRootView: Bool {
         get { viewGraph.centersRootView }
         set { viewGraph.centersRootView = newValue }
     }
-    
-//    package var responderNode: ResponderNode? {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+
+    package var responderNode: ResponderNode? {
+        updateViewGraph { $0.rootResponders?.first }
+    }
     
     package var isRootHost: Bool {
         guard let bridge = viewGraph.preferenceBridge else {
@@ -323,29 +409,70 @@ extension ViewRendererHost {
         return bridge.viewGraph == nil
     }
     
-    private var enclosingHosts: [ViewRendererHost] { _openSwiftUIUnimplementedFailure() }
-    package func performExternalUpdate(_ update: () -> Void) { _openSwiftUIUnimplementedFailure() }
-    package func updateFocusedItem() {}
-    package func updateFocusedValues() {}
-    package func updateFocusStore() {}
-    package func updateAccessibilityFocus() {}
-    package func updateAccessibilityFocusStore() {}
-    package func updateAccessibilityEnvironment() {}
+    private var enclosingHosts: [ViewRendererHost] {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func performExternalUpdate(_ update: () -> Void) {
+        Update.assertIsLocked()
+        for host in enclosingHosts {
+            host.externalUpdateCount += 1
+        }
+        update()
+        for host in enclosingHosts {
+            guard host.externalUpdateCount >= 1 else {
+                preconditionFailure("Unbalanced will/did update functions.")
+            }
+            host.externalUpdateCount -= 1
+        }
+    }
+
+    package func updateFocusStore() {
+        _openSwiftUIEmptyStub()
+    }
+
+    package func updateFocusedItem() {
+        _openSwiftUIEmptyStub()
+    }
+
+    package func updateFocusedValues() {
+        _openSwiftUIEmptyStub()
+    }
+
+    package func updateAccessibilityEnvironment() {
+        _openSwiftUIEmptyStub()
+    }
 }
 
-// MARK: - ViewRendererHost + Gesture [TODO]
+// MARK: - ViewRendererHost + Gesture [6.5.4]
 
 package let hostingViewCoordinateSpace: CoordinateSpace.ID = .init()
 
-//extension ViewRendererHost {
-//    package var nextGestureUpdateTime: Time {
-//        get
-//    }
-//    package func sendEvents(_ events: [EventID : any EventType], rootNode: ResponderNode, at time: Time) -> GesturePhase<Void>
-//    package func resetEvents()
-//    package func gestureCategory() -> GestureCategory?
-//    package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase)
-//}
+extension ViewRendererHost {
+    package var nextGestureUpdateTime: Time {
+        viewGraph.nextUpdate.gestures.time
+    }
+
+    package func sendEvents(
+        _ events: [EventID : any EventType],
+        rootNode: ResponderNode,
+        at time: Time
+    ) -> GesturePhase<Void> {
+        viewGraph.sendEvents(events, rootNode: rootNode, at: time)
+    }
+
+    package func resetEvents() {
+        viewGraph.resetEvents()
+    }
+
+    package func gestureCategory() -> GestureCategory? {
+        viewGraph.gestureCategory
+    }
+
+    package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
+        viewGraph.inheritedPhase = phase
+    }
+}
 
 extension ViewRendererHost {
     package func sendTestEvents(_ events: [EventID : any EventType]) {
@@ -387,11 +514,16 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - ViewRendererHost + rootContentPath [TODO]
+// MARK: - ViewRendererHost + rootContentPath
 
 extension ViewRendererHost {
     package func rootContentPath(kind: ContentShapeKinds) -> Path {
-        _openSwiftUIUnimplementedFailure()
+        guard let responderNode,
+              let viewResponder = responderNode as? ViewResponder
+        else { return Path() }
+        var path = Path()
+        viewResponder.addContentPath(to: &path, kind: kind, in: .root, observer: nil)
+        return path
     }
 }
 

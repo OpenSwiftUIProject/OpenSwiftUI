@@ -7,7 +7,7 @@
 
 package import Foundation
 
-package protocol ViewGraphRenderDelegate {
+package protocol ViewGraphRenderDelegate: AnyObject {
     var renderingRootView: AnyObject { get }
     func updateRenderContext(_ context: inout ViewGraphRenderContext)
     func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time
