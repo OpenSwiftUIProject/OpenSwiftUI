@@ -53,6 +53,34 @@ extension UITraitCollection {
             _openSwiftUIUnimplementedWarning()
         }
     }
+
+    @inline(__always)
+    package var environment: EnvironmentValues {
+        if let wrapper = _environmentWrapper,
+           let wrapper = wrapper as? EnvironmentWrapper {
+            return wrapper.environment
+        } else {
+            var environment = EnvironmentValues()
+            environment.configureForRoot()
+            environment.configureForPlatform(traitCollection: self)
+            return environment
+        }
+    }
+
+    func resolvedEnvironment(base environment: EnvironmentValues) -> EnvironmentValues {
+        // TODO
+        _openSwiftUIUnimplementedWarning()
+        return environment
+    }
+
+    var viewPhase: ViewPhase {
+        if let wrapper = _environmentWrapper,
+           let wrapper = wrapper as? EnvironmentWrapper {
+            wrapper.phase
+        } else {
+            .init()
+        }
+    }
 }
 
 @objc(SwiftUIEnvironmentWrapper)

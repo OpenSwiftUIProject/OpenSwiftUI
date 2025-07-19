@@ -32,7 +32,19 @@ typedef struct CAColorMatrix CAColorMatrix;
 + (NSValue *)valueWithCAColorMatrix_openswiftui_safe_wrapper:(CAColorMatrix)t OPENSWIFTUI_SWIFT_NAME(init(caColorMatrix:));
 @end
 
-// OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted)
+@interface CADisplay : NSObject {
+    void * _impl;
+}
+@end
+
+@interface CADisplayLink (OpenSwiftUI_SPI)
+
++ (instancetype)displayLinkWithDisplay_openswiftui_safe_wrapper:(CADisplay *)display target:(id)target selector:(SEL)selector OPENSWIFTUI_SWIFT_NAME(init(display:target:selector:));
+
+@property(readonly, assign, nonatomic) CADisplay* display_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(display);
+
+- (void)setHighFrameRateReasons_openswiftui_safe_wrapper:(const uint32_t *)reasons count:(NSInteger)count OPENSWIFTUI_SWIFT_NAME(setHighFrameRateReasons(_:count:));
+@end
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

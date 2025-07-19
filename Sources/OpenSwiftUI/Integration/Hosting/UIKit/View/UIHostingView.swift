@@ -15,29 +15,6 @@ import OpenSwiftUI_SPI
 
 import OpenSwiftUISymbolDualTestsSupport
 
-final class UIHostingViewDebugLayer: CALayer {
-    required init?(coder: NSCoder) {
-        super.init(coder: coder)
-    }
-    
-    override init(layer: Any) {
-        super.init(layer: layer)
-    }
-    
-    override init() {
-        super.init()
-    }
-    
-    override var name: String? {
-        get {
-            (delegate as? AnyUIHostingView)?.debugName ?? super.name
-        }
-        set {
-            super.name = newValue
-        }
-    }
-}
-
 /// A UIView which hosts an OpenSwiftUI View hierarchy.
 @available(macOS, unavailable)
 open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Content: View {
@@ -46,9 +23,28 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     private var _rootView: Content
-    
-    final package let viewGraph: ViewGraph
-    
+
+    private let _base: UIHostingViewBase
+
+    var base: UIHostingViewBase {
+        let base = _base
+        if base.uiView == nil {
+            base.uiView = self
+        }
+        if base.host == nil {
+            base.host = self
+        }
+        if base.delegate == nil {
+            base.delegate = self
+        }
+        if base.renderer.host == nil {
+            base.renderer.host = self
+        }
+        return base
+    }
+
+    final package var viewGraph: ViewGraph { _base.viewGraph }
+
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
 
     // final package let eventBindingManager: EventBindingManager
@@ -56,19 +52,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     package var currentTimestamp: Time = .zero
 
     package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
-    
-    package var renderingPhase: ViewRenderingPhase = .none
-    
-    package var externalUpdateCount: Int = .zero
-    
-    var parentPhase: _GraphInputs.Phase? = nil
 
-    var isRotatingWindow: Bool = false
-    
     var allowUIKitAnimations: Int32 = .zero
-    
-    var allowUIKitAnimationsForNextUpdate: Bool = false
-    
+
     var disabledBackgroundColor: Bool = false
     
     var allowFrameChanges: Bool = true
@@ -95,10 +81,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     // var keyboardTrackingElement: UIHostingKeyboardTrackingElement? = nil
     
-    package var isHiddenForReuse: Bool = false {
-        didSet {
-            updateRemovedState()
-        }
+    package var isHiddenForReuse: Bool {
+        get { _base.isHiddenForReuse }
+        set { _base.isHiddenForReuse = true }
     }
     
     var registeredForGeometryChanges: Bool = false
@@ -124,15 +109,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
     
-    var traitCollectionOverride: UITraitCollection? = nil {
-        didSet {
-            guard traitCollectionOverride != oldValue else {
-                return
-            }
-            invalidateProperties(.environment)
-        }
-    }
-    
     weak var viewController: UIHostingController<Content>? = nil {
         didSet {
             updateBackgroundColor()
@@ -142,21 +118,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     var currentEvent: UIEvent? = nil
     
     // var eventBridge: UIKitEventBindingBridge
-    
-    var displayLink: DisplayLink? = nil
-    
-    var lastRenderTime: Time = .zero
 
-    var canAdvanceTimeAutomatically = true
-    
-    var pendingPreferencesUpdate: Bool = false
-    
-    var pendingPostDisappearPreferencesUpdate: Bool = false
-    
-    var nextTimerTime: Time? = nil
-
-    var updateTimer: Timer? = nil
-    
     var colorScheme: ColorScheme? = nil {
         didSet {
             didChangeColorScheme(from: oldValue)
@@ -165,53 +127,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     // TODO
     
-    var focusedValues: FocusedValues = .init() {
-        didSet {
-            invalidateProperties(.focusedValues)
-        }
-    }
-    
     // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
-    
-    private weak var observedWindow: UIWindow? = nil
-    
-    private weak var observedScene: UIWindowScene? = nil
-    
-    private var _sceneActivationState: UIScene.ActivationState? = nil
-    
-    var sceneActivationState: UIScene.ActivationState? {
-        get {
-            let selector = Selector(("_windowHostingScene"))
-            guard let window,
-                  window.responds(to: selector),
-                  (window.perform(selector).takeRetainedValue() as? UIWindowScene) != nil else {
-                return nil
-            }
-            return _sceneActivationState
-        }
-        set {
-            _sceneActivationState = newValue
-        }
-    }
-    
-    var isEnteringForeground: Bool = false
-    
-    var isExitingForeground: Bool = false
-    
-    var isCapturingSnapshots: Bool = false
-    
-    var updatesWillBeVisible: Bool {
-        guard let sceneActivationState else {
-            return false
-        }
-        guard !isHiddenForReuse else {
-            return false
-        }
-        return switch sceneActivationState {
-            case .foregroundActive, .foregroundInactive: true
-            default: isEnteringForeground || isCapturingSnapshots
-        }
-    }
     
     package var accessibilityEnabled: Bool {
         get {
@@ -231,17 +147,26 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     required public init(rootView: Content) {
         _rootView = rootView
         Update.begin()
-        viewGraph = ViewGraph(
-            rootViewType: ModifiedContent<ModifiedContent<Content, EditModeScopeModifier>, HitTestBindingModifier>.self,
-            requestedOutputs: Self.defaultViewGraphOutputs()
+        var options = Self.defaultViewGraphOutputs().options
+        if Self.requiresExplicitGeometryChangedRegistration {
+            options.formUnion(.registeredForGeometryChanges)
+        }
+        _base = UIHostingViewBase(
+            rootViewType: ModifiedContent<
+                ModifiedContent<
+                    Content,
+                    EditModeScopeModifier
+                >,
+                HitTestBindingModifier
+            >.self,
+            options: options
         )
         // TODO
-        super.init(frame: .zero)
-        // TODO
-
         if _UIUpdateAdaptiveRateNeeded() {
-            viewGraph.append(feature: EnableVFDFeature())
+            _base.viewGraph.append(feature: EnableVFDFeature())
         }
+        // TODO
+        super.init(frame: .zero)
 
         initializeViewGraph()
         // RepresentableContextValues.current =
@@ -260,15 +185,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     deinit {
-        updateRemovedState()
-        NotificationCenter.default.removeObserver(self)
-        clearDisplayLink()
-        clearUpdateTimer()
-        invalidate()
-        Update.ensure {
-            viewGraph.preferenceBridge = nil
-            viewGraph.invalidate()
-        }
+        base.tearDown(uiView: self, host: self)
         HostingViewRegistry.shared.remove(self)
     }
     
@@ -291,44 +208,20 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     override dynamic open func didMoveToWindow() {
         Update.begin()
-        if window != nil {
-            traitCollectionOverride = nil
-            initialInheritedEnvironment = nil
-            invalidateProperties(.transform)
-        }
+        // TODO:
         // updateKeyboardAvoidance()
         // eventBridge.hostingView(self, didMoveToWindow: window)
-        // TODO: rootViewDelegate
-        if window != nil {
-            updateRemovedState()
-            // updateEventBridge()
-        } else {
-            UIApplication.shared._performBlockAfterCATransactionCommits { [weak self] in
-                guard let self else { return }
-                updateRemovedState()
-            }
+        if let viewController {
+            // viewController._didMoveToWindow()
         }
         // TODO
+        base.didMoveToWindow()
         Update.end()
     }
 
     override dynamic open func layoutSubviews() {
         super.layoutSubviews()
-        guard window != nil else {
-            return
-        }
-        guard canAdvanceTimeAutomatically else {
-            return
-        }
-        Update.lock()
-        cancelAsyncRendering()
-        let interval = if let displayLink, displayLink.willRender {
-            0.0
-        } else {
-            renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
-        }
-        render(interval: interval, targetTimestamp: nil)
-        Update.unlock()
+        base.layoutSubviews()
     }
 
     override dynamic open var frame: CGRect {
@@ -407,31 +300,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         []
     }
     
-    // FIXME
-    func cancelAsyncRendering() {
-        Update.locked {
-            displayLink?.cancelAsyncRendering()
-        }
-    }
-    
-    // FIXME
-    private func renderInterval(timestamp: Time) -> Double {
-        if lastRenderTime == .zero || lastRenderTime > timestamp {
-            lastRenderTime = timestamp - 1e-6
-        }
-        let interval = timestamp - lastRenderTime
-        lastRenderTime = timestamp
-        return interval
-    }
-    
-    // TODO
-    func clearDisplayLink() {
-    }
-    
-    // TODO
-    func clearUpdateTimer() {
-    }
-    
     @_spi(Private)
     @available(iOS, deprecated, message: "Use UIHostingController/safeAreaRegions or _UIHostingView/safeAreaRegions")
     final public var addsKeyboardToSafeAreaInsets: Bool {
@@ -445,7 +313,27 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
     
-    static func defaultViewGraphOutputs() -> ViewGraph.Outputs { .defaults }
+    package class func defaultViewGraphOutputs() -> ViewGraph.Outputs {
+        .defaults
+    }
+
+    package class var ignoresPresentations: Bool {
+        false
+    }
+
+    package class var createsUIInteractions: Bool {
+        true
+    }
+
+    package class var requiresExplicitGeometryChangedRegistration: Bool {
+        true
+    }
+
+    package var focusedValues: FocusedValues = .init() {
+        didSet {
+            invalidateProperties(.focusedValues)
+        }
+    }
 
     // Audited for 6.5.4
     private struct EnableVFDFeature: ViewGraphFeature {
@@ -522,20 +410,6 @@ extension _UIHostingView {
         transparentBackgroundReasons.setValue(isEnabled, for: reason)
     }
     
-    func updateRemovedState() {
-        var removedState: GraphHost.RemovedState = []
-        if window == nil {
-            removedState.insert(.unattached)
-        }
-        if isHiddenForReuse {
-            removedState.insert(.hiddenForReuse)
-            clearDisplayLink()
-        }
-        Update.ensure {
-            viewGraph.removedState = removedState
-        }
-    }
-    
     func safeAreaRegionsDidChange(from oldSafeAreaRegions: SafeAreaRegions) {
         guard safeAreaRegions != oldSafeAreaRegions else {
             return
@@ -567,9 +441,41 @@ extension _UIHostingView {
     private func frameDidChange(oldValue: CGRect) {
         // TODO
     }
+
+    package var isInSizeTransition: Bool {
+        _base.isInSizeTransition
+    }
+
+    package var isRotatingWindow: Bool {
+        _base.isRotatingWindow
+    }
+
+    package var sceneActivationState: UIScene.ActivationState? {
+        _base.sceneActivationState
+    }
+
+    package var isResizingSheet: Bool {
+        // TODO
+        return false
+    }
+
+    package var isTabSidebarMorphing: Bool {
+        // TODO
+        return false
+    }
 }
 
 extension _UIHostingView: ViewRendererHost {
+    package var renderingPhase: ViewRenderingPhase {
+        get { base.renderingPhase }
+        set { base.renderingPhase = newValue }
+    }
+    
+    package var externalUpdateCount: Int {
+        get { base.externalUpdateCount }
+        set { base.externalUpdateCount = newValue }
+    }
+    
     package func updateEnvironment() {
         // FIXME
         var environment = EnvironmentValues()
@@ -593,11 +499,6 @@ extension _UIHostingView: ViewRendererHost {
 
     package func updateScrollableContainerSize() {
         // _openSwiftUIUnimplementedFailure()
-    }
-
-    var shouldDisableUIKitAnimations: Bool {
-        // FIXME
-        false
     }
 
     package func renderDisplayList(
@@ -658,11 +559,11 @@ extension _UIHostingView: ViewRendererHost {
                 Self.performWithoutAnimation {
                     renderedTime = render()
                 }
-                allowUIKitAnimationsForNextUpdate = false
+                base.allowUIKitAnimationsForNextUpdate = false
                 return renderedTime
             } else {
                 let renderedTime = render()
-                allowUIKitAnimationsForNextUpdate = false
+                base.allowUIKitAnimationsForNextUpdate = false
                 return renderedTime
             }
         }
@@ -698,13 +599,6 @@ extension _UIHostingView: ViewRendererHost {
 
     public func preferencesDidChange() {
         // TODO
-    }
-}
-
-extension UITraitCollection {
-    var baseEnvironment: EnvironmentValues {
-        // TODO
-        EnvironmentValues()
     }
 }
 
@@ -792,7 +686,7 @@ extension _UIHostingView: TestHost {
             }
         }
         advanceTimeForTest(interval: interval)
-        canAdvanceTimeAutomatically = false
+        _base.canAdvanceTimeAutomatically = false
         var times = 16
         repeat {
             times -= 1
@@ -805,7 +699,7 @@ extension _UIHostingView: TestHost {
             CATransaction.flush()
         } while shouldContinue()
         CoreTesting.needsRender = false
-        canAdvanceTimeAutomatically = true
+        _base.canAdvanceTimeAutomatically = true
     }
 }
 
@@ -841,6 +735,27 @@ extension UIView {
         for view in subviews {
             view.forEachDescendantHost(body: body)
         }
+    }
+}
+
+// MARK: - _UIHostingView + UIHostingViewBaseDelegate [6.5.4]
+
+extension _UIHostingView: UIHostingViewBaseDelegate {
+    package var shouldDisableUIKitAnimations: Bool {
+        guard allowUIKitAnimations == 0,
+              !base.allowUIKitAnimationsForNextUpdate,
+              !isInSizeTransition,
+              !isResizingSheet,
+              !isRotatingWindow,
+              !isTabSidebarMorphing
+        else {
+            return false
+        }
+        return true
+    }
+
+    package func sceneActivationStateDidChange() {
+        _openSwiftUIUnimplementedWarning()
     }
 }
 

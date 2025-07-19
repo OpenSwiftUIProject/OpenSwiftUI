@@ -137,6 +137,7 @@ open class GraphHost: CustomReflectable {
         }
         
         package static let unattached = RemovedState(rawValue: 1 << 0)
+        
         package static let hiddenForReuse = RemovedState(rawValue: 1 << 1)
     }
     

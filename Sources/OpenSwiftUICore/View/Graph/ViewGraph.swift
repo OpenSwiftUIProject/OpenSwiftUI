@@ -302,6 +302,14 @@ package final class ViewGraph: GraphHost {
     private func removePreferenceOutlets(isInvalidating: Bool) {
         // TODO
     }
+
+    // FIXME
+    package func updatePreferenceBridge(
+        environment: EnvironmentValues,
+        deferredUpdate: () -> Void
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 
 extension ViewGraph {
