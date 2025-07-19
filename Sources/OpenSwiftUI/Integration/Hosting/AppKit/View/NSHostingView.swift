@@ -321,76 +321,23 @@ extension NSHostingView: ViewRendererHost {
         // TODO
     }
 
-    package func updateScrollableContainerSize() {
+    package func updateContainerSize() {
         // TODO
-    }
-
-    package func renderDisplayList(
-        _ list: DisplayList,
-        asynchronously: Bool,
-        time: Time,
-        nextTime: Time,
-        targetTimestamp: Time?,
-        version: DisplayList.Version,
-        maxVersion: DisplayList.Version
-    ) -> Time {
-        func render() -> Time {
-            let scale = window?.screen?.backingScaleFactor ?? 1
-            let environment = DisplayList.ViewRenderer.Environment(contentsScale: scale, opaqueBackground: isOpaque)
-            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
-
-            return renderer.swiftUI_render(
-                rootView: self,
-                from: list,
-                time: time,
-                nextTime: nextTime,
-                version: version,
-                maxVersion: maxVersion,
-                environment: environment
-            )
-
-            #else
-            return renderer.render(
-                rootView: self,
-                from: list,
-                time: time,
-                nextTime: nextTime,
-                version: version,
-                maxVersion: maxVersion,
-                environment: environment
-            )
-            #endif
-        }
-
-        if asynchronously {
-            if let renderedTime = renderer.renderAsync(
-                to: list,
-                time: time,
-                nextTime: nextTime,
-                targetTimestamp: targetTimestamp,
-                version: version,
-                maxVersion: maxVersion
-            ) {
-                return renderedTime
-            } else {
-                var renderedTime = nextTime
-                Update.syncMain {
-                    renderedTime = render()
-                }
-                return renderedTime
-            }
-        } else {
-            var renderedTime = nextTime
-            Update.syncMain {
-                renderedTime = render()
-            }
-            return renderedTime
-        }
     }
 
     package func updateRootView() {
         let rootView = makeRootView()
         viewGraph.setRootView(rootView)
+    }
+
+    package func `as`<T>(_ type: T.Type) -> T? {
+        if ViewGraphRenderDelegate.self == T.self {
+            return unsafeBitCast(self as any ViewGraphRenderDelegate, to: T.self)
+        } else if DisplayList.ViewRenderer.self == T.self {
+            return unsafeBitCast(renderer, to: T.self)
+        } else {
+            return nil
+        }
     }
 
     package func requestUpdate(after: Double) {
@@ -424,4 +371,21 @@ extension NSHostingView/*: TestHost*/ {
         }
     }
 }
+
+// FIXME
+extension NSHostingView: ViewGraphRenderDelegate {
+    package var renderingRootView: AnyObject {
+        self
+    }
+    
+    package func updateRenderContext(_ context: inout ViewGraphRenderContext) {
+        context.contentsScale = window?.backingScaleFactor ?? 1.0
+    }
+    
+    package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
+        // TODO
+        return body()
+    }
+}
+
 #endif

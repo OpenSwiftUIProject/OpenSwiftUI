@@ -414,7 +414,7 @@ extension _UIHostingView {
         guard safeAreaRegions != oldSafeAreaRegions else {
             return
         }
-        invalidateProperties([.safeArea, .scrollableContainerSize])
+        invalidateProperties([.safeArea, .containerSize])
     }
     
     func updateBackgroundColor() {
@@ -465,6 +465,21 @@ extension _UIHostingView {
     }
 }
 
+extension _UIHostingView: ViewGraphDelegate {
+    package func `as`<T>(_ type: T.Type) -> T? {
+        guard let value = base.as(type) else {
+            // TODO
+            return nil
+        }
+        return value
+    }
+
+    package func requestUpdate(after: Double) {
+        // TODO
+        requestImmediateUpdate()
+    }
+}
+
 extension _UIHostingView: ViewRendererHost {
     package var renderingPhase: ViewRenderingPhase {
         get { base.renderingPhase }
@@ -497,86 +512,13 @@ extension _UIHostingView: ViewRendererHost {
         }
     }
 
-    package func updateScrollableContainerSize() {
+    package func updateContainerSize() {
         // _openSwiftUIUnimplementedFailure()
-    }
-
-    package func renderDisplayList(
-        _ list: DisplayList,
-        asynchronously: Bool,
-        time: Time,
-        nextTime: Time,
-        targetTimestamp: Time?,
-        version: DisplayList.Version,
-        maxVersion: DisplayList.Version
-    ) -> Time {
-        func render() -> Time {
-            let scale = window?.screen.scale ?? 1
-            let environment = DisplayList.ViewRenderer.Environment(contentsScale: scale)
-            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
-            return renderer.swiftUI_render(
-                rootView: self,
-                from: list,
-                time: time,
-                nextTime: nextTime,
-                version: version,
-                maxVersion: maxVersion,
-                environment: environment
-            )
-            #else
-            return renderer.render(
-                rootView: self,
-                from: list,
-                time: time,
-                nextTime: nextTime,
-                version: version,
-                maxVersion: maxVersion,
-                environment: environment
-            )
-            #endif
-        }
-
-        if asynchronously {
-            if let renderedTime = renderer.renderAsync(
-                to: list,
-                time: time,
-                nextTime: nextTime,
-                targetTimestamp: targetTimestamp,
-                version: version,
-                maxVersion: maxVersion
-            ) {
-                return renderedTime
-            } else {
-                var renderedTime = nextTime
-                Update.syncMain {
-                    renderedTime = render()
-                }
-                return renderedTime
-            }
-        } else {
-            if Self.areAnimationsEnabled, shouldDisableUIKitAnimations {
-                var renderedTime = nextTime // FIXME
-                Self.performWithoutAnimation {
-                    renderedTime = render()
-                }
-                base.allowUIKitAnimationsForNextUpdate = false
-                return renderedTime
-            } else {
-                let renderedTime = render()
-                base.allowUIKitAnimationsForNextUpdate = false
-                return renderedTime
-            }
-        }
     }
     
     package func updateRootView() {
         let rootView = makeRootView()
         viewGraph.setRootView(rootView)
-    }
-    
-    package func requestUpdate(after: Double) {
-        // TODO
-        requestImmediateUpdate()
     }
 
     func requestImmediateUpdate() {

@@ -196,9 +196,12 @@ open class GraphHost: CustomReflectable {
         return graph.counter(for: ._6) != 0
     }
     
-    package final func setNeedsUpdate(mayDeferUpdate: Bool) {
+    package final func setNeedsUpdate(mayDeferUpdate: Bool, values: ViewRendererHostProperties) {
         self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
-        data.graph?.setNeedsUpdate()
+        if let graph = data.graph {
+            // TODO: Trace
+            graph.setNeedsUpdate()
+        }
     }
 
     // MARK: - GraphHost.ConstantID

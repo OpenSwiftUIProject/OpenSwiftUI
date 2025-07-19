@@ -88,7 +88,7 @@ package class UIHostingViewBase {
 
     package var updateTimer: Timer?
 
-    package var canAdvanceTimeAutomatically: Bool = false
+    package var canAdvanceTimeAutomatically: Bool = true
 
     package var pendingPreferencesUpdate: Bool = false
 
@@ -160,7 +160,7 @@ package class UIHostingViewBase {
 
     package func `as`<T>(_ type: T.Type) -> T? {
         if ViewGraphRenderDelegate.self == T.self {
-            return unsafeBitCast(self, to: T.self)
+            return unsafeBitCast(self as any ViewGraphRenderDelegate, to: T.self)
         } else if DisplayList.ViewRenderer.self == T.self {
             return unsafeBitCast(renderer, to: T.self)
         } else {
@@ -432,7 +432,7 @@ package class UIHostingViewBase {
     package func layoutSubviews() {
         guard let host,
               let uiView,
-              let window = uiView.window,
+              uiView.window != nil,
               canAdvanceTimeAutomatically
         else {
             return
