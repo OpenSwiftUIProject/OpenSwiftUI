@@ -94,12 +94,15 @@ package final class ViewGraph: GraphHost {
     
     package struct NextUpdate {
         package private(set) var time: Time = .infinity
+
         private var _interval: Double = .infinity
+
         package var interval: Double {
-            _interval.isFinite ? .zero : _interval
+            _interval.isFinite ? _interval : .zero
         }
+
         package private(set) var reasons: Set<UInt32> = []
-        
+
         package mutating func at(_ next: Time) {
             time = next < time ? next : time
         }
