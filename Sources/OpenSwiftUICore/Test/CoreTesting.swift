@@ -9,7 +9,7 @@
 package enum CoreTesting {
     package static var isRunning: Bool = false
 
-    package static var needRender: Bool = false
+    package static var needsRender: Bool = false
 
     package static var neeedsRunLoopTurn: Bool {
         false

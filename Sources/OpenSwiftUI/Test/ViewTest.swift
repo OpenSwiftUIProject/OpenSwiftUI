@@ -260,7 +260,7 @@ extension _ViewTest {
         let commonMode = RunLoop.Mode.common
         let interval = 0.001
         var times = 17
-        while CoreTesting.needRender || CoreTesting.neeedsRunLoopTurn {
+        while CoreTesting.needsRender || CoreTesting.neeedsRunLoopTurn {
             // let modes = [defaultMode, commonMode]
             let date = Date(timeIntervalSinceNow: interval)
             if !RunLoop.current.run(mode: defaultMode, before: date) {
@@ -272,7 +272,7 @@ extension _ViewTest {
                 break
             }
         }
-        if CoreTesting.needRender || CoreTesting.neeedsRunLoopTurn {
+        if CoreTesting.needsRender || CoreTesting.neeedsRunLoopTurn {
             Log.unitTests.log(level: .default, "Render or run loop turn needed after max iterations")
         }
     }
