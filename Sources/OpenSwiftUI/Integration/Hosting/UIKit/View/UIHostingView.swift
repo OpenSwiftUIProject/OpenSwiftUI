@@ -23,7 +23,13 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     private var _rootView: Content
-    
+
+//    private let _base: UIHostingViewBase
+
+    var base: UIHostingViewBase {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     final package let viewGraph: ViewGraph
     
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
@@ -276,36 +282,14 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         // updateKeyboardAvoidance()
         // eventBridge.hostingView(self, didMoveToWindow: window)
         // TODO: rootViewDelegate
-        if window != nil {
-            updateRemovedState()
-            // updateEventBridge()
-        } else {
-            UIApplication.shared._performBlockAfterCATransactionCommits { [weak self] in
-                guard let self else { return }
-                updateRemovedState()
-            }
-        }
+        base.didMoveToWindow()
         // TODO
         Update.end()
     }
 
     override dynamic open func layoutSubviews() {
         super.layoutSubviews()
-        guard window != nil else {
-            return
-        }
-        guard canAdvanceTimeAutomatically else {
-            return
-        }
-        Update.lock()
-        cancelAsyncRendering()
-        let interval = if let displayLink, displayLink.willRender {
-            0.0
-        } else {
-            renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
-        }
-        render(interval: interval, targetTimestamp: nil)
-        Update.unlock()
+        base.layoutSubviews()
     }
 
     override dynamic open var frame: CGRect {
@@ -548,6 +532,7 @@ extension _UIHostingView {
 
 extension _UIHostingView: ViewRendererHost {
     package func updateEnvironment() {
+
         // FIXME
         var environment = EnvironmentValues()
         environment.displayScale = traitCollection.displayScale
@@ -675,13 +660,6 @@ extension _UIHostingView: ViewRendererHost {
 
     public func preferencesDidChange() {
         // TODO
-    }
-}
-
-extension UITraitCollection {
-    var baseEnvironment: EnvironmentValues {
-        // TODO
-        EnvironmentValues()
     }
 }
 
