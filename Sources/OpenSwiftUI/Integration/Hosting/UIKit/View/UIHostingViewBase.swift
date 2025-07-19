@@ -7,43 +7,71 @@
 //  ID: 529B7E967685565FD5A0228999A3F1FE (SwiftUI)
 
 #if os(iOS)
-import QuartzCore
-import UIKit
+package import QuartzCore
+package import UIKit
 
+import COpenSwiftUI
 import OpenGraphShims
 import OpenSwiftUI_SPI
 @_spi(ForOpenSwiftUIOnly)
-import OpenSwiftUICore
-import COpenSwiftUI
+package import OpenSwiftUICore
 
 // MARK: - UIHostingViewBase [WIP]
 
-class UIHostingViewBase {
-    weak var uiView: UIView?
-    weak var host: ViewRendererHost?
-    weak var delegate: UIHostingViewBaseDelegate?
+package class UIHostingViewBase {
+    package weak var uiView: UIView?
+    package weak var host: ViewRendererHost?
+    package weak var delegate: UIHostingViewBaseDelegate?
 
-    struct Options: OptionSet {
-        let rawValue: Int
+    package struct Options: OptionSet {
+        package let rawValue: Int
 
-        init(rawValue: Int) {
+        package init(rawValue: Int) {
             self.rawValue = rawValue
         }
+
+        package static let displayList: UIHostingViewBase.Options = .init(rawValue: 1 << 0)
+
+        package static let platformItemList: UIHostingViewBase.Options = .init(rawValue: 1 << 1)
+
+        package static let viewResponders: UIHostingViewBase.Options = .init(rawValue: 1 << 2)
+
+        package static let layout: UIHostingViewBase.Options = .init(rawValue: 1 << 3)
+
+        package static let focus: UIHostingViewBase.Options = .init(rawValue: 1 << 4)
+
+        package static let registeredForGeometryChanges: UIHostingViewBase.Options = .init(rawValue: 1 << 5)
     }
 
-    let options: UIHostingViewBase.Options
-    let viewGraph: ViewGraph
-    let renderer: DisplayList.ViewRenderer
-    let eventBindingManager: EventBindingManager
-    var currentTimestamp: Time
-    var propertiesNeedingUpdate: ViewRendererHostProperties
-    var renderingPhase: ViewRenderingPhase
-    var externalUpdateCount: Int
-    var parentPhase: _GraphInputs.Phase?
-    var initialInheritedEnvironment: EnvironmentValues?
-    var inheritedEnvironment: EnvironmentValues?
-    var environmentOverride: EnvironmentValues?
-    var traitCollectionOverride: UITraitCollection? {
+    package let options: UIHostingViewBase.Options
+
+    package let viewGraph: ViewGraph
+
+    package let renderer: DisplayList.ViewRenderer = .init(
+        platform: .init(
+            definition: UIViewPlatformViewDefinition.self
+        )
+    )
+
+    package let eventBindingManager: EventBindingManager = .init()
+
+    package var currentTimestamp: Time = .zero
+
+    package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
+
+    package var renderingPhase: ViewRenderingPhase = .none
+
+    package var externalUpdateCount: Int = .zero
+
+    package var parentPhase: _GraphInputs.Phase?
+
+    package var initialInheritedEnvironment: EnvironmentValues?
+
+    package var inheritedEnvironment: EnvironmentValues?
+
+    package var environmentOverride: EnvironmentValues?
+
+    package var traitCollectionOverride: UITraitCollection? {
         didSet {
             guard traitCollectionOverride != oldValue, let host else {
                 return
@@ -51,34 +79,48 @@ class UIHostingViewBase {
             host.invalidateProperties(.environment)
         }
     }
-    var displayLink: DisplayLink?
-    var lastRenderTime: Time
-    var nextTimerTime: Time?
-    var updateTimer: Timer?
-    var canAdvanceTimeAutomatically: Bool
-    var pendingPreferencesUpdate: Bool
-    var pendingPostDisappearPreferencesUpdate: Bool
-    var allowUIKitAnimationsForNextUpdate: Bool
 
-    var isHiddenForReuse: Bool {
+    package var displayLink: DisplayLink?
+
+    package var lastRenderTime: Time = .zero
+
+    package var nextTimerTime: Time?
+
+    package var updateTimer: Timer?
+
+    package var canAdvanceTimeAutomatically: Bool = false
+
+    package var pendingPreferencesUpdate: Bool = false
+
+    package var pendingPostDisappearPreferencesUpdate: Bool = false
+
+    package var allowUIKitAnimationsForNextUpdate: Bool = false
+
+    package var isHiddenForReuse: Bool = false {
         didSet { updateRemovedState(uiView: nil) }
     }
-    
-    var isEnteringForeground: Bool
-    var isExitingForeground: Bool
-    var isCapturingSnapshots: Bool
-    var isRotatingWindow: Bool
-    var isInSizeTransition: Bool
+
+    package var isEnteringForeground: Bool = false
+
+    package var isExitingForeground: Bool = false
+
+    package var isCapturingSnapshots: Bool = false
+
+    package var isRotatingWindow: Bool = false
+
+    package var isInSizeTransition: Bool = false
+
     private var _sceneActivationState: UIScene.ActivationState?
 
     @inline(__always)
-    var sceneActivationState: UIScene.ActivationState? {
+    package var sceneActivationState: UIScene.ActivationState? {
         get {
             let selector = Selector(("_windowHostingScene"))
             guard let uiView,
                   let window = uiView.window,
                   window.responds(to: selector),
-                  (window.perform(selector).takeRetainedValue() as? UIWindowScene) != nil else {
+                  (window.perform(selector).takeRetainedValue() as? UIWindowScene) != nil
+            else {
                 return nil
             }
             return _sceneActivationState
@@ -88,21 +130,25 @@ class UIHostingViewBase {
         }
     }
 
-    var registeredForGeometryChanges: Bool
+    package var registeredForGeometryChanges: Bool = false
 
-    weak var observedWindow: UIWindow?
+    package weak var observedWindow: UIWindow?
 
-    weak var observedScene: UIWindowScene? {
+    package weak var observedScene: UIWindowScene? {
         didSet {
             updateSceneActivationState()
         }
     }
 
-    init<V>(rootViewType: V.Type, options: Options) where V: View {
-        _openSwiftUIUnimplementedFailure()
+    package init<V>(rootViewType: V.Type, options: Options) where V: View {
+        self.options = options
+        self.viewGraph = ViewGraph(
+            rootViewType: rootViewType,
+            requestedOutputs: .init(options)
+        )
     }
 
-    func tearDown(uiView: UIView, host: ViewRendererHost) {
+    package func tearDown(uiView: UIView, host: ViewRendererHost) {
         NotificationCenter.default.removeObserver(self)
         updateRemovedState(uiView: uiView)
         host.invalidate()
@@ -112,7 +158,7 @@ class UIHostingViewBase {
         }
     }
 
-    func `as`<T>(_ type: T.Type) -> T? {
+    package func `as`<T>(_ type: T.Type) -> T? {
         if ViewGraphRenderDelegate.self == T.self {
             return unsafeBitCast(self, to: T.self)
         } else if DisplayList.ViewRenderer.self == T.self {
@@ -126,7 +172,7 @@ class UIHostingViewBase {
 
     // MARK: - Update
 
-    func startUpdateEnvironment() -> EnvironmentValues {
+    package func startUpdateEnvironment() -> EnvironmentValues {
         guard let uiView else {
             return EnvironmentValues()
         }
@@ -155,7 +201,7 @@ class UIHostingViewBase {
         return environment
     }
 
-    func endUpdateEnvironment(_ environment: EnvironmentValues) {
+    package func endUpdateEnvironment(_ environment: EnvironmentValues) {
         guard let uiView, let host else {
             return
         }
@@ -170,15 +216,15 @@ class UIHostingViewBase {
         }
     }
 
-    func updateTransformWithoutGeometryObservation() {
+    package func updateTransformWithoutGeometryObservation() {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func updateContainerSize() {
+    package func updateContainerSize() {
         _openSwiftUIUnimplementedFailure()
     }
 
-    var updatesAtFullFidelity: Bool {
+    package var updatesAtFullFidelity: Bool {
         guard uiView != nil, let sceneActivationState, !isHiddenForReuse else {
             return false
         }
@@ -188,7 +234,7 @@ class UIHostingViewBase {
             isCapturingSnapshots
     }
 
-    func requestImmediateUpdate() {
+    package func requestImmediateUpdate() {
         guard let view = uiView else {
             return
         }
@@ -218,32 +264,32 @@ class UIHostingViewBase {
         CoreTesting.needsRender = true
     }
 
-    func requestUpdate(after delay: Double) {
+    package func requestUpdate(after delay: Double) {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func updateRemovedState(uiView: UIView?) {
+    package func updateRemovedState(uiView: UIView?) {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func updateSceneActivationState() {
+    package func updateSceneActivationState() {
         _sceneActivationState = observedScene?.activationState
         delegate?.sceneActivationStateDidChange()
     }
 
-    func requestUpdateForFidelity() {
+    package func requestUpdateForFidelity() {
         guard let uiView else {
             return
         }
         guard updatesAtFullFidelity else {
-            // TODO
+            // TODO:
             return
         }
         uiView.setNeedsLayout()
         requestUpdate(after: .zero)
     }
 
-    func renderInterval(timestamp: Time) -> Double {
+    package func renderInterval(timestamp: Time) -> Double {
         if lastRenderTime == Time() || lastRenderTime > timestamp {
             lastRenderTime = timestamp - 1e-6
         }
@@ -252,7 +298,7 @@ class UIHostingViewBase {
         return interval
     }
 
-    func updateGraphPhaseIfNeeded(newParentPhase: ViewPhase) {
+    package func updateGraphPhaseIfNeeded(newParentPhase: ViewPhase) {
         guard let parentPhase else {
             viewGraph.setPhase(newParentPhase)
             parentPhase = newParentPhase
@@ -267,7 +313,7 @@ class UIHostingViewBase {
         self.parentPhase = newParentPhase
     }
 
-    func cancelAsyncRendering() {
+    package func cancelAsyncRendering() {
         _ = Update.locked {
             displayLink?.cancelAsyncRendering()
             return displayLink == nil ? nil : ()
@@ -276,7 +322,7 @@ class UIHostingViewBase {
 
     // MARK: - DisplayLink and Timer
 
-    func startDisplayLink(delay: Double) {
+    package func startDisplayLink(delay: Double) {
         guard let uiView else { return }
         if displayLink == nil, updatesAtFullFidelity, let window = uiView.window {
             displayLink = DisplayLink(host: self, window: window)
@@ -293,7 +339,7 @@ class UIHostingViewBase {
         clearUpdateTimer()
     }
 
-    func startUpdateTimer(delay: Double) {
+    package func startUpdateTimer(delay: Double) {
         guard Thread.isMainThread else {
             displayLink?.cancelAsyncRendering()
             Update.syncMain {
@@ -310,7 +356,7 @@ class UIHostingViewBase {
         updateTimer?.invalidate()
         nextTimerTime = updateTime
         updateTimer = withDelay(delay) { [self] in
-            guard let uiView else {
+            guard uiView != nil else {
                 return
             }
             updateTimer = nil
@@ -319,7 +365,7 @@ class UIHostingViewBase {
         }
     }
 
-    func clearUpdateTimer() {
+    package func clearUpdateTimer() {
         guard Thread.isMainThread else {
             return
         }
@@ -328,7 +374,7 @@ class UIHostingViewBase {
         nextTimerTime = nil
     }
 
-    func displayLinkTimer(
+    package func displayLinkTimer(
         timestamp: Time,
         targetTimestamp: Time,
         isAsyncThread: Bool
@@ -340,13 +386,13 @@ class UIHostingViewBase {
         let interval = renderInterval(timestamp: timestamp) / Double(UIAnimationDragCoefficient())
         let targetTimestamp: Time? = targetTimestamp
         if isAsyncThread {
-
         } else {
             host.render(interval: interval, targetTimestamp: targetTimestamp)
             if let displayLink,
                displayLink.willRender,
                !viewGraph.updateRequiredMainThread,
-               isLinkedOnOrAfter(.v3) {
+               isLinkedOnOrAfter(.v3)
+            {
                 displayLink.enableAsyncRendering()
             }
         }
@@ -354,15 +400,15 @@ class UIHostingViewBase {
 
     // MARK: - UIView related
 
-    func frameDidChange(oldValue: CGRect) {
+    package func frameDidChange(oldValue: CGRect) {
         _openSwiftUIUnimplementedWarning()
     }
 
-    func _geometryChanged(_: UnsafeRawPointer, forAncestor: UIView?) {
+    package func _geometryChanged(_: UnsafeRawPointer, forAncestor: UIView?) {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func layoutSubviews() {
+    package func layoutSubviews() {
         guard let host,
               let uiView,
               let window = uiView.window,
@@ -381,12 +427,12 @@ class UIHostingViewBase {
         Update.unlock()
     }
 
-    func didMoveToWindow() {
+    package func didMoveToWindow() {
         guard let uiView, let host else {
             return
         }
         let window = uiView.window
-        if let window {
+        if window != nil {
             traitCollectionOverride = nil
             initialInheritedEnvironment = nil
             host.invalidateProperties(.transform)
@@ -406,7 +452,7 @@ class UIHostingViewBase {
 
     // MARK: - Notification
 
-    func setupNotifications() {
+    package func setupNotifications() {
         let center = NotificationCenter.default
         center.addObserver(
             self,
@@ -493,22 +539,22 @@ class UIHostingViewBase {
     // MARK: - ObjC API
 
     @objc
-    func windowDidRotate(with notification: Notification) {
+    package func windowDidRotate(with notification: Notification) {
         isRotatingWindow = false
     }
 
     @objc
-    func windowWillRotate(with notification: Notification) {
+    package func windowWillRotate(with notification: Notification) {
         isRotatingWindow = true
     }
 
     @objc
-    func windowDidMoveToScene(with notification: Notification) {
+    package func windowDidMoveToScene(with notification: Notification) {
         updateSceneNotifications()
     }
 
     @objc
-    func sceneWillEnterForeground() {
+    package func sceneWillEnterForeground() {
         updateSceneActivationState()
         isEnteringForeground = true
         onNextMainRunLoop { [self] in
@@ -520,40 +566,40 @@ class UIHostingViewBase {
     }
 
     @objc
-    func sceneDidEnterBackground() {
+    package func sceneDidEnterBackground() {
         sceneDidActivate()
     }
 
     @objc
-    func sceneWillDeactivate() {
+    package func sceneWillDeactivate() {
         updateSceneActivationState()
         isExitingForeground = true
     }
 
     @objc
-    func sceneDidActivate() {
+    package func sceneDidActivate() {
         updateSceneActivationState()
         isExitingForeground = false
         requestUpdateForFidelity()
     }
 
     @objc
-    func sceneDidUpdateSystemUserInterfaceStyle() {
+    package func sceneDidUpdateSystemUserInterfaceStyle() {
         externalEnvironmentDidChange()
     }
 
     @objc
-    func willBeginSnapshotSession() {
+    package func willBeginSnapshotSession() {
         isCapturingSnapshots = true
     }
 
     @objc
-    func didEndSnapshotSession() {
+    package func didEndSnapshotSession() {
         isCapturingSnapshots = false
     }
 
     @objc
-    func externalEnvironmentDidChange() {
+    package func externalEnvironmentDidChange() {
         host?.invalidateProperties(.environment)
     }
 }
@@ -561,18 +607,18 @@ class UIHostingViewBase {
 // MARK: - UIHostingViewBase + ViewGraphRenderDelegate
 
 extension UIHostingViewBase: ViewGraphRenderDelegate {
-    var renderingRootView: AnyObject {
+    package var renderingRootView: AnyObject {
         uiView ?? .init()
     }
-    
-    func updateRenderContext(_ context: inout ViewGraphRenderContext) {
+
+    package func updateRenderContext(_ context: inout ViewGraphRenderContext) {
         guard let uiView else {
             return
         }
         context.contentsScale = uiView.window?.screen.scale ?? 1.0
     }
-    
-    func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
+
+    package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
         let shouldDisableUIKitAnimations = delegate?.shouldDisableUIKitAnimations ?? false
         guard UIView.areAnimationsEnabled, shouldDisableUIKitAnimations else {
             let time = body()
@@ -595,15 +641,60 @@ extension UIHostingViewBase: ViewGraphRenderDelegate {
 
 // MARK: - UIHostingViewBaseDelegate
 
-protocol UIHostingViewBaseDelegate: AnyObject {
+package protocol UIHostingViewBaseDelegate: AnyObject {
     var shouldDisableUIKitAnimations: Bool { get }
     func sceneActivationStateDidChange()
+}
+
+// MARK: ViewGraph.Outputs + UIHostingViewBase.Options
+
+extension ViewGraph.Outputs {
+    package init(_ options: UIHostingViewBase.Options) {
+        var outputs: ViewGraph.Outputs = []
+        if options.contains(.displayList) {
+            outputs.formUnion(.displayList)
+        }
+        if options.contains(.platformItemList) {
+            outputs.formUnion(.platformItemList)
+        }
+        if options.contains(.viewResponders) {
+            outputs.formUnion(.viewResponders)
+        }
+        if options.contains(.layout) {
+            outputs.formUnion(.layout)
+        }
+        if options.contains(.focus) {
+            outputs.formUnion(.focus)
+        }
+        self = outputs
+    }
+
+    @inline(__always)
+    package var options: UIHostingViewBase.Options {
+        var options: UIHostingViewBase.Options = []
+        if contains(.displayList) {
+            options.formUnion(.displayList)
+        }
+        if contains(.platformItemList) {
+            options.formUnion(.platformItemList)
+        }
+        if contains(.viewResponders) {
+            options.formUnion(.viewResponders)
+        }
+        if contains(.layout) {
+            options.formUnion(.layout)
+        }
+        if contains(.focus) {
+            options.formUnion(.focus)
+        }
+        return options
+    }
 }
 
 // MARK: - DisplayLink
 
 @objc
-final class DisplayLink: NSObject {
+final package class DisplayLink: NSObject {
     private static var asyncThread: Thread? = nil
     private static var asyncRunloop: RunLoop? = nil
     private static var asyncPending: Bool = false
@@ -615,7 +706,7 @@ final class DisplayLink: NSObject {
     private var interval: Double = .zero
     private var reasons: Set<UInt32> = []
 
-    enum ThreadName: Hashable {
+    package enum ThreadName: Hashable {
         case main
         case async
     }
@@ -623,7 +714,7 @@ final class DisplayLink: NSObject {
     private var currentThread: ThreadName = .main
     private var nextThread: ThreadName = .main
 
-    init(host: UIHostingViewBase, window: UIWindow) {
+    package init(host: UIHostingViewBase, window: UIWindow) {
         super.init()
         self.host = host
         link = window.screen.displayLink(
@@ -633,7 +724,7 @@ final class DisplayLink: NSObject {
         link?.add(to: .main, forMode: .common)
     }
 
-    func setNextUpdate(delay: Double, interval: Double, reasons: Set<UInt32>) {
+    package func setNextUpdate(delay: Double, interval: Double, reasons: Set<UInt32>) {
         let newNextUpdate: Time
         if delay >= 0.01 {
             newNextUpdate = (currentUpdate ?? .systemUptime) + interval
@@ -666,7 +757,7 @@ final class DisplayLink: NSObject {
         }
     }
 
-    func invalidate() {
+    package func invalidate() {
         Update.locked {
             if let link, link.isPaused {
                 link.invalidate()
@@ -734,7 +825,7 @@ final class DisplayLink: NSObject {
                 if Self.asyncRunloop == nil {
                     let threadName = "org.OpenSwiftUI.OpenSwiftUI.AsyncRenderer"
                     while true {
-                        if Self.asyncThread == nil { // FIXME
+                        if Self.asyncThread == nil { // FIXME:
                             let thread = Thread(
                                 target: DisplayLink.self,
                                 selector: #selector(DisplayLink.asyncThread(with:)),
@@ -788,19 +879,18 @@ final class DisplayLink: NSObject {
         Update.unlock()
     }
 
-
     @inline(__always)
-    var willRender: Bool {
+    package var willRender: Bool {
         nextUpdate < .infinity
     }
 
     @inline(__always)
-    func cancelAsyncRendering() {
+    package func cancelAsyncRendering() {
         nextThread = .main
     }
 
     @inline(__always)
-    func enableAsyncRendering() {
+    package func enableAsyncRendering() {
         nextThread = .async
     }
 }

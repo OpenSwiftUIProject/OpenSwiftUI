@@ -27,11 +27,24 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     private let _base: UIHostingViewBase
 
     var base: UIHostingViewBase {
-        _openSwiftUIUnimplementedFailure()
+        let base = _base
+        if base.uiView == nil {
+            base.uiView = self
+        }
+        if base.host == nil {
+            base.host = self
+        }
+        if base.delegate == nil {
+            base.delegate = self
+        }
+        if base.renderer.host == nil {
+            base.renderer.host = self
+        }
+        return base
     }
 
-    final package let viewGraph: ViewGraph
-    
+    final package var viewGraph: ViewGraph { _base.viewGraph }
+
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
 
     // final package let eventBindingManager: EventBindingManager
@@ -147,12 +160,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     // TODO
     
-    var focusedValues: FocusedValues = .init() {
-        didSet {
-            invalidateProperties(.focusedValues)
-        }
-    }
-    
     // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
     
     private weak var observedWindow: UIWindow? = nil
@@ -213,18 +220,26 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     required public init(rootView: Content) {
         _rootView = rootView
         Update.begin()
-        viewGraph = ViewGraph(
-            rootViewType: ModifiedContent<ModifiedContent<Content, EditModeScopeModifier>, HitTestBindingModifier>.self,
-            requestedOutputs: Self.defaultViewGraphOutputs()
+        var options = Self.defaultViewGraphOutputs().options
+        if Self.requiresExplicitGeometryChangedRegistration {
+            options.formUnion(.registeredForGeometryChanges)
+        }
+        _base = UIHostingViewBase(
+            rootViewType: ModifiedContent<
+                ModifiedContent<
+                    Content,
+                    EditModeScopeModifier
+                >,
+                HitTestBindingModifier
+            >.self,
+            options: options
         )
         // TODO
-        _base = .init(rootViewType: Content.self, options: [])
-        super.init(frame: .zero)
-        // TODO
-
         if _UIUpdateAdaptiveRateNeeded() {
-            viewGraph.append(feature: EnableVFDFeature())
+            _base.viewGraph.append(feature: EnableVFDFeature())
         }
+        // TODO
+        super.init(frame: .zero)
 
         initializeViewGraph()
         // RepresentableContextValues.current =
@@ -373,7 +388,27 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
     
-    static func defaultViewGraphOutputs() -> ViewGraph.Outputs { .defaults }
+    package class func defaultViewGraphOutputs() -> ViewGraph.Outputs {
+        .defaults
+    }
+
+    package class var ignoresPresentations: Bool {
+        false
+    }
+
+    package class var createsUIInteractions: Bool {
+        true
+    }
+
+    package class var requiresExplicitGeometryChangedRegistration: Bool {
+        true
+    }
+
+    package var focusedValues: FocusedValues = .init() {
+        didSet {
+            invalidateProperties(.focusedValues)
+        }
+    }
 
     // Audited for 6.5.4
     private struct EnableVFDFeature: ViewGraphFeature {
@@ -749,6 +784,12 @@ extension UIView {
         for view in subviews {
             view.forEachDescendantHost(body: body)
         }
+    }
+}
+
+extension _UIHostingView: UIHostingViewBaseDelegate {
+    func sceneActivationStateDidChange() {
+        _openSwiftUIUnimplementedWarning()
     }
 }
 
