@@ -167,11 +167,13 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
         // TODO
         super.init(frame: .zero)
-
-        initializeViewGraph()
+        // TODO
+        let base = base
+        if let host = base.host {
+            host.initializeViewGraph()
+            base.setupNotifications()
+        }
         // RepresentableContextValues.current =
-
-        renderer.host = self
 
         // TODO
         HostingViewRegistry.shared.add(self)
@@ -465,7 +467,7 @@ extension _UIHostingView {
     }
 }
 
-extension _UIHostingView: ViewGraphDelegate {
+extension _UIHostingView: ViewRendererHost {
     package func `as`<T>(_ type: T.Type) -> T? {
         guard let value = base.as(type) else {
             // TODO
@@ -474,13 +476,6 @@ extension _UIHostingView: ViewGraphDelegate {
         return value
     }
 
-    package func requestUpdate(after: Double) {
-        // TODO
-        requestImmediateUpdate()
-    }
-}
-
-extension _UIHostingView: ViewRendererHost {
     package var renderingPhase: ViewRenderingPhase {
         get { base.renderingPhase }
         set { base.renderingPhase = newValue }
@@ -521,26 +516,20 @@ extension _UIHostingView: ViewRendererHost {
         viewGraph.setRootView(rootView)
     }
 
-    func requestImmediateUpdate() {
-        // FIXME
-        setNeedsLayout()
-    }
-
     package func outputsDidChange(outputs: ViewGraph.Outputs) {
-        // TODO
+        _openSwiftUIUnimplementedWarning()
     }
     
     package func focusDidChange() {
-        // TODO
-    }
-    
-    package func rootTransform() -> ViewTransform {
         _openSwiftUIUnimplementedWarning()
-        return ViewTransform()
+    }
+
+    package func requestUpdate(after delay: Double) {
+        base.requestUpdate(after: delay)
     }
 
     public func preferencesDidChange() {
-        // TODO
+        _openSwiftUIUnimplementedWarning()
     }
 }
 
