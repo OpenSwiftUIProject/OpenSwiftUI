@@ -24,7 +24,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     private var _rootView: Content
 
-//    private let _base: UIHostingViewBase
+    private let _base: UIHostingViewBase
 
     var base: UIHostingViewBase {
         _openSwiftUIUnimplementedFailure()
@@ -78,10 +78,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     // var keyboardTrackingElement: UIHostingKeyboardTrackingElement? = nil
     
-    package var isHiddenForReuse: Bool = false {
-        didSet {
-            updateRemovedState()
-        }
+    package var isHiddenForReuse: Bool {
+        get { _base.isHiddenForReuse }
+        set { _base.isHiddenForReuse = true }
     }
     
     var registeredForGeometryChanges: Bool = false
@@ -219,6 +218,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             requestedOutputs: Self.defaultViewGraphOutputs()
         )
         // TODO
+        _base = .init(rootViewType: Content.self, options: [])
         super.init(frame: .zero)
         // TODO
 
@@ -448,20 +448,6 @@ extension _UIHostingView {
     
     func setWantsTransparentBackground(for reason: HostingViewTransparentBackgroundReason, _ isEnabled: Bool) {
         transparentBackgroundReasons.setValue(isEnabled, for: reason)
-    }
-    
-    func updateRemovedState() {
-        var removedState: GraphHost.RemovedState = []
-        if window == nil {
-            removedState.insert(.unattached)
-        }
-        if isHiddenForReuse {
-            removedState.insert(.hiddenForReuse)
-            clearDisplayLink()
-        }
-        Update.ensure {
-            viewGraph.removedState = removedState
-        }
     }
     
     func safeAreaRegionsDidChange(from oldSafeAreaRegions: SafeAreaRegions) {

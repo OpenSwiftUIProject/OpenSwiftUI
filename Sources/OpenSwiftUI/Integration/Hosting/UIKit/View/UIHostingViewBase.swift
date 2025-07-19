@@ -59,7 +59,11 @@ class UIHostingViewBase {
     var pendingPreferencesUpdate: Bool
     var pendingPostDisappearPreferencesUpdate: Bool
     var allowUIKitAnimationsForNextUpdate: Bool
-    var isHiddenForReuse: Bool
+
+    var isHiddenForReuse: Bool {
+        didSet { updateRemovedState(uiView: nil) }
+    }
+    
     var isEnteringForeground: Bool
     var isExitingForeground: Bool
     var isCapturingSnapshots: Bool
