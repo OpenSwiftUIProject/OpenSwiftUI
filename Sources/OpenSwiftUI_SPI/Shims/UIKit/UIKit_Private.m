@@ -75,5 +75,11 @@
 }
 @end
 
+@implementation UITraitCollection (OpenSwiftUI_SPI)
+- (NSObject *)_environmentWrapper_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSObject *, @"_environmentWrapper", nil);
+    return func(self, selector);
+}
+@end
 
 #endif /* UIKit.h */

@@ -242,9 +242,9 @@ extension EnvironmentValues: Sendable {}
 /// A property key that provides access to environment values.
 ///
 /// This type bridges between the `EnvironmentKey` protocol and the internal `PropertyKey` system.
-private struct EnvironmentPropertyKey<Key>: PropertyKey where Key: EnvironmentKey {
+package struct EnvironmentPropertyKey<Key>: PropertyKey where Key: EnvironmentKey {
     /// The default value for this property key, obtained from the environment key.
-    static var defaultValue: Key.Value {
+    package static var defaultValue: Key.Value {
         Key.defaultValue
     }
 }
