@@ -1,9 +1,6 @@
 //
 //  EnvironmentValuesOpenURLTests.swift
-//
-//
-//  Created by Kyle on 2023/11/28.
-//
+//  OpenSwiftUITests
 
 import Foundation
 @testable import OpenSwiftUI

@@ -2,7 +2,7 @@
 //  EnvironmentKey.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 
 import OpenGraphShims
@@ -137,4 +137,12 @@ package protocol DerivedEnvironmentKey {
     /// - Parameter values: The current environment values.
     /// - Returns: The derived value for this key.
     static func value(in: EnvironmentValues) -> Value
+}
+
+package protocol BridgedEnvironmentKey: EnvironmentKey {}
+
+package protocol BridgedEnvironmentResolver {
+    static func read<K>(for key: K.Type, from environment: EnvironmentValues) -> K.Value where K: EnvironmentKey
+
+    static func write<K>(for key: K.Type, to environment: inout EnvironmentValues, value: K.Value) where K: EnvironmentKey
 }

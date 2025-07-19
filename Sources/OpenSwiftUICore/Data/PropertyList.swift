@@ -78,7 +78,7 @@ package protocol PropertyKeyLookup {
     ///
     /// - Parameter secondaryValue: The secondary value to use for lookup.
     /// - Returns: The primary value if found, or `nil` if not found.
-    static func lookup(in: Secondary.Value) -> Primary.Value?
+    static func lookup(in value: Secondary.Value) -> Primary.Value?
 }
 
 // MARK: - PropertyList
