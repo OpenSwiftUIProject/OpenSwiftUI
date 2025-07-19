@@ -94,14 +94,18 @@ class UIHostingViewBase {
         }
     }
 
-    var updatesAtFullFidelity: Bool {
-        guard uiView != nil, let sceneActivationState, !isHiddenForReuse else {
-            return false
+    init<V>(rootViewType: V.Type, options: Options) where V: View {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func tearDown(uiView: UIView, host: ViewRendererHost) {
+        NotificationCenter.default.removeObserver(self)
+        updateRemovedState(uiView: uiView)
+        host.invalidate()
+        Update.ensure {
+            viewGraph.preferenceBridge = nil
+            viewGraph.invalidate()
         }
-        return sceneActivationState == .foregroundActive ||
-            sceneActivationState == .foregroundInactive ||
-            isEnteringForeground ||
-            isCapturingSnapshots
     }
 
     func `as`<T>(_ type: T.Type) -> T? {
@@ -113,6 +117,10 @@ class UIHostingViewBase {
             return nil
         }
     }
+
+    //    func _baselineOffsets(at: CGSize) -> _UIBaselineOffsetPair
+
+    // MARK: - Update
 
     func startUpdateEnvironment() -> EnvironmentValues {
         guard let uiView else {
@@ -166,6 +174,16 @@ class UIHostingViewBase {
         _openSwiftUIUnimplementedFailure()
     }
 
+    var updatesAtFullFidelity: Bool {
+        guard uiView != nil, let sceneActivationState, !isHiddenForReuse else {
+            return false
+        }
+        return sceneActivationState == .foregroundActive ||
+            sceneActivationState == .foregroundInactive ||
+            isEnteringForeground ||
+            isCapturingSnapshots
+    }
+
     func requestImmediateUpdate() {
         guard let view = uiView else {
             return
@@ -209,10 +227,6 @@ class UIHostingViewBase {
         delegate?.sceneActivationStateDidChange()
     }
 
-    init<V>(rootViewType: V.Type, options: Options) where V: View {
-        _openSwiftUIUnimplementedFailure()
-    }
-
     func requestUpdateForFidelity() {
         guard let uiView else {
             return
@@ -225,19 +239,28 @@ class UIHostingViewBase {
         requestUpdate(after: .zero)
     }
 
-
     func renderInterval(timestamp: Time) -> Double {
-        _openSwiftUIUnimplementedFailure()
+        if lastRenderTime == Time() || lastRenderTime > timestamp {
+            lastRenderTime = timestamp - 1e-6
+        }
+        let interval = timestamp - lastRenderTime
+        lastRenderTime = timestamp
+        return interval
     }
-
-    func _geometryChanged(_: UnsafeRawPointer, forAncestor: UIView?) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-//    func _baselineOffsets(at: CGSize) -> _UIBaselineOffsetPair
 
     func updateGraphPhaseIfNeeded(newParentPhase: ViewPhase) {
-        _openSwiftUIUnimplementedFailure()
+        guard let parentPhase else {
+            viewGraph.setPhase(newParentPhase)
+            parentPhase = newParentPhase
+            return
+        }
+        if parentPhase.resetSeed != newParentPhase.resetSeed {
+            viewGraph.incrementPhase()
+        }
+        if parentPhase.isBeingRemoved != newParentPhase.isBeingRemoved {
+            viewGraph.data.phase.isBeingRemoved = newParentPhase.isBeingRemoved
+        }
+        self.parentPhase = newParentPhase
     }
 
     func cancelAsyncRendering() {
@@ -247,17 +270,58 @@ class UIHostingViewBase {
         }
     }
 
-    func startDisplayLink(delay: Double) {
-        _openSwiftUIUnimplementedFailure()
+    // MARK: - DisplayLink and Timer
 
+    func startDisplayLink(delay: Double) {
+        guard let uiView else { return }
+        if displayLink == nil, updatesAtFullFidelity, let window = uiView.window {
+            displayLink = DisplayLink(host: self, window: window)
+        }
+        guard let displayLink else {
+            startUpdateTimer(delay: delay)
+            return
+        }
+        displayLink.setNextUpdate(
+            delay: delay,
+            interval: viewGraph.nextUpdate.views.interval,
+            reasons: viewGraph.nextUpdate.gestures.reasons
+        )
+        clearUpdateTimer()
     }
 
     func startUpdateTimer(delay: Double) {
-        _openSwiftUIUnimplementedFailure()
+        guard Thread.isMainThread else {
+            displayLink?.cancelAsyncRendering()
+            Update.syncMain {
+                startUpdateTimer(delay: delay)
+            }
+            return
+        }
+        let delay = max(delay, 0.1)
+        cancelAsyncRendering()
+        let updateTime = currentTimestamp + delay
+        guard updateTime < (nextTimerTime ?? .infinity) else {
+            return
+        }
+        updateTimer?.invalidate()
+        nextTimerTime = updateTime
+        updateTimer = withDelay(delay) { [self] in
+            guard let uiView else {
+                return
+            }
+            updateTimer = nil
+            nextTimerTime = nil
+            requestImmediateUpdate()
+        }
     }
 
     func clearUpdateTimer() {
-        _openSwiftUIUnimplementedFailure()
+        guard Thread.isMainThread else {
+            return
+        }
+        updateTimer?.invalidate()
+        updateTimer = nil
+        nextTimerTime = nil
     }
 
     func displayLinkTimer(
@@ -265,12 +329,32 @@ class UIHostingViewBase {
         targetTimestamp: Time,
         isAsyncThread: Bool
     ) {
-        _openSwiftUIUnimplementedFailure()
+        guard let host else {
+            return
+        }
+        clearUpdateTimer()
+        let interval = renderInterval(timestamp: timestamp) / Double(UIAnimationDragCoefficient())
+        let targetTimestamp: Time? = targetTimestamp
+        if isAsyncThread {
+
+        } else {
+            host.render(interval: interval, targetTimestamp: targetTimestamp)
+            if let displayLink,
+               displayLink.willRender,
+               !viewGraph.updateRequiredMainThread,
+               isLinkedOnOrAfter(.v3) {
+                displayLink.enableAsyncRendering()
+            }
+        }
     }
 
     // MARK: - UIView related
 
     func frameDidChange(oldValue: CGRect) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func _geometryChanged(_: UnsafeRawPointer, forAncestor: UIView?) {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -520,31 +604,30 @@ final class DisplayLink: NSObject {
     private static var asyncRunloop: RunLoop? = nil
     private static var asyncPending: Bool = false
 
-    private weak var host: UIHostingViewBase?
-    private var link: CADisplayLink?
-    private var nextUpdate: Time
-    private var currentUpdate: Time?
-    private var interval: Double
-    private var reasons: Set<UInt32>
+    private weak var host: UIHostingViewBase? = nil
+    private var link: CADisplayLink? = nil
+    private var nextUpdate: Time = .infinity
+    private var currentUpdate: Time? = nil
+    private var interval: Double = .zero
+    private var reasons: Set<UInt32> = []
 
     enum ThreadName: Hashable {
         case main
         case async
     }
 
-    private var currentThread: ThreadName
-    private var nextThread: ThreadName
+    private var currentThread: ThreadName = .main
+    private var nextThread: ThreadName = .main
 
-    #if os(iOS)
-    init(host: AnyUIHostingView, window: UIWindow) {
-        _openSwiftUIUnimplementedFailure()
+    init(host: UIHostingViewBase, window: UIWindow) {
+        super.init()
+        self.host = host
+        link = window.screen.displayLink(
+            withTarget: self,
+            selector: #selector(displayLinkTimer(_:))
+        )
+        link?.add(to: .main, forMode: .common)
     }
-
-    #elseif os(macOS)
-    init(host: AnyUIHostingView, window: NSWindow) {
-        _openSwiftUIUnimplementedFailure()
-    }
-    #endif
 
     func setNextUpdate(delay: Double, interval: Double, reasons: Set<UInt32>) {
         let newNextUpdate: Time
@@ -635,7 +718,7 @@ final class DisplayLink: NSObject {
                 currentUpdate = nil
                 if nextUpdate == .infinity {
                     if nextThread == .async {
-                        nextThread = .main
+                        cancelAsyncRendering()
                         nextUpdate = linkTime
                     }
                 }
@@ -656,7 +739,7 @@ final class DisplayLink: NSObject {
                             thread.qualityOfService = .userInteractive
                             thread.name = threadName
                             guard _NSThreadStart(thread) else {
-                                nextThread = .main
+                                cancelAsyncRendering()
                                 break
                             }
                             Self.asyncThread = thread
@@ -710,6 +793,11 @@ final class DisplayLink: NSObject {
     @inline(__always)
     func cancelAsyncRendering() {
         nextThread = .main
+    }
+
+    @inline(__always)
+    func enableAsyncRendering() {
+        nextThread = .async
     }
 }
 #endif

@@ -243,15 +243,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     deinit {
-        updateRemovedState()
-        NotificationCenter.default.removeObserver(self)
-        clearDisplayLink()
-        clearUpdateTimer()
-        invalidate()
-        Update.ensure {
-            viewGraph.preferenceBridge = nil
-            viewGraph.invalidate()
-        }
+        base.tearDown(uiView: self, host: self)
         HostingViewRegistry.shared.remove(self)
     }
     
@@ -366,31 +358,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     final public func _viewDebugData() -> [_ViewDebug.Data] {
         // TODO
         []
-    }
-    
-    // FIXME
-    func cancelAsyncRendering() {
-        Update.locked {
-            displayLink?.cancelAsyncRendering()
-        }
-    }
-    
-    // FIXME
-    private func renderInterval(timestamp: Time) -> Double {
-        if lastRenderTime == .zero || lastRenderTime > timestamp {
-            lastRenderTime = timestamp - 1e-6
-        }
-        let interval = timestamp - lastRenderTime
-        lastRenderTime = timestamp
-        return interval
-    }
-    
-    // TODO
-    func clearDisplayLink() {
-    }
-    
-    // TODO
-    func clearUpdateTimer() {
     }
     
     @_spi(Private)
