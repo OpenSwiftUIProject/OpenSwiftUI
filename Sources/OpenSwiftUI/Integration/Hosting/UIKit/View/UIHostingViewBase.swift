@@ -425,6 +425,19 @@ package class UIHostingViewBase {
         let interval = renderInterval(timestamp: timestamp) / Double(UIAnimationDragCoefficient())
         let targetTimestamp: Time? = targetTimestamp
         if isAsyncThread {
+            let renderedTime = host.renderAsync(interval: interval, targetTimestamp: targetTimestamp)
+            if let renderedTime {
+                if renderedTime.seconds.isFinite {
+                    let delay = max(renderedTime - currentTimestamp, 1e-6)
+                    requestUpdate(after: delay)
+                }
+                if viewGraph.updateRequiredMainThread {
+                    displayLink?.cancelAsyncRendering()
+                }
+            } else {
+                displayLink?.cancelAsyncRendering()
+                requestUpdate(after: .zero)
+            }
         } else {
             host.render(interval: interval, targetTimestamp: targetTimestamp)
             if let displayLink,

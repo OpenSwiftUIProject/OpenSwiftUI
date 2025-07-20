@@ -273,7 +273,6 @@ extension ViewRendererHost {
                 renderingPhase = .none
                 return nil
             }
-
         }
     }
 
