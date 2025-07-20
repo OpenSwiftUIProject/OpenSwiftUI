@@ -2,7 +2,7 @@
 //  Transaction.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: B2543BCA257433E04979186A1DC2B6BC (SwiftUICore)
 
@@ -51,6 +51,7 @@ import OpenSwiftUI_SPI
 ///                 transaction.animation = .default.repeatCount(3)
 ///             }
 ///         }
+@available(OpenSwiftUI_v5_0, *)
 public protocol TransactionKey {
     /// The associated type representing the type of the transaction key's
     /// value.
@@ -62,12 +63,14 @@ public protocol TransactionKey {
     static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Swift.Bool
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension TransactionKey {
     public static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
         compareValues(lhs, rhs)
     }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension TransactionKey where Value: Equatable {
     public static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
         lhs == rhs
@@ -95,6 +98,7 @@ private struct TransactionPropertyKey<Key>: PropertyKey where Key: TransactionKe
 /// The root transaction for a state change comes from the binding that changed,
 /// plus any global values set by calling ``withTransaction(_:_:)`` or
 /// ``withAnimation(_:_:)``
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct Transaction {
     @usableFromInline
@@ -189,6 +193,7 @@ extension Transaction: Sendable {}
 ///
 /// - Returns: The result of executing the closure with the specified
 ///   transaction.
+@available(OpenSwiftUI_v1_0, *)
 public func withTransaction<Result>(
     _ transaction: Transaction,
     _ body: () throws -> Result
@@ -218,6 +223,7 @@ public func withTransaction<Result>(
 ///
 /// - Returns: The result of executing the closure with the specified
 ///   transaction value.
+@available(OpenSwiftUI_v1_0, *)
 @_alwaysEmitIntoClient
 public func withTransaction<R, V>(
     _ keyPath: WritableKeyPath<Transaction, V>,
@@ -239,4 +245,19 @@ private var threadTransactionData: AnyObject? {
             newValue.map { Unmanaged.passUnretained($0).toOpaque() }
         )
     }
+}
+
+/// Returns the result of recomputing the view's body with the provided
+/// animation.
+///
+/// This function sets the given ``Animation`` as the ``Transaction/animation``
+/// property of the thread's current ``Transaction``.
+@available(OpenSwiftUI_v1_0, *)
+public func withAnimation<Result>(
+    _ animation: Animation? = .default,
+    _ body: () throws -> Result
+) rethrows -> Result {
+    var transaction = Transaction()
+    transaction.animation = animation
+    return try withTransaction(transaction, body)
 }
