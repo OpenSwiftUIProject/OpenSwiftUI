@@ -2,7 +2,7 @@
 //  LayoutView.swift
 //  OpenSwiftUICore
 //
-//  Status: Blocked by makeDynamicView
+//  Status: Complete
 //  ID: A7DFBD5AC47BCDAAE5525781FBD33CF6 (SwiftUICore)
 
 package import Foundation
@@ -166,15 +166,6 @@ extension Layout {
             }
             return outputs
         }
-    }
-
-    static func makeDynamicView(
-        root: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        properties: LayoutProperties,
-        list: Attribute<any ViewList>
-    ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
     }
 }
 

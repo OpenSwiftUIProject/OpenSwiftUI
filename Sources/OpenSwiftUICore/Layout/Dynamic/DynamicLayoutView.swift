@@ -7,6 +7,17 @@
 
 import OpenGraphShims
 
+extension Layout {
+    static func makeDynamicView(
+        root: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        properties: LayoutProperties,
+        list: Attribute<any ViewList>
+    ) -> _ViewOutputs {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 // MARK: - DynamicLayoutComputer
 
 private struct DynamicLayoutComputer<L>: StatefulRule, AsyncAttribute, CustomStringConvertible where L: Layout {
@@ -32,7 +43,6 @@ private struct DynamicLayoutComputer<L>: StatefulRule, AsyncAttribute, CustomStr
     }
 
     var description: String {
-        "\(L.self) → LayoutComputer"
         "\(L.self) → LayoutComputer"
     }
 }
