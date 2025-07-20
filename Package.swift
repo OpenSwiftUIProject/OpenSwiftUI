@@ -59,7 +59,6 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("InternalImportsByDefault"),
     .enableUpcomingFeature("InferSendableFromCaptures"),
     .unsafeFlags(["-Wwarning", "DeprecatedDeclaration"]), // We want to use deprecated APIs in test targets
-    .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     // FIXME: -unavailable-decl-optimization=stub is not working somehow (eg. Color.vibrancy). Dig into this later
     .unsafeFlags(["-unavailable-decl-optimization=stub"]),
     .swiftLanguageMode(.v5),
