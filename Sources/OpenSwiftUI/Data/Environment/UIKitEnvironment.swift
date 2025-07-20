@@ -83,7 +83,7 @@ extension UITraitCollection {
     }
 }
 
-@objc(SwiftUIEnvironmentWrapper)
+@objc(OpenSwiftUIEnvironmentWrapper)
 private final class EnvironmentWrapper: NSObject, NSSecureCoding {
     let environment: EnvironmentValues
     let phase: ViewPhase
