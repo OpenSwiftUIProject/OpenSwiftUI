@@ -236,7 +236,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             }
             let oldValue = super.frame
             super.frame = newValue
-            frameDidChange(oldValue: oldValue)
+            base.frameDidChange(oldValue: oldValue)
         }
     }
 
@@ -250,7 +250,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             }
             let oldValue = super.bounds
             super.bounds = newValue
-            frameDidChange(oldValue: oldValue)
+            base.frameDidChange(oldValue: oldValue)
         }
     }
 
@@ -437,10 +437,6 @@ extension _UIHostingView {
     }
     
     func didChangeColorScheme(from oldColorScheme: ColorScheme?) {
-        // TODO
-    }
-    
-    private func frameDidChange(oldValue: CGRect) {
         // TODO
     }
 

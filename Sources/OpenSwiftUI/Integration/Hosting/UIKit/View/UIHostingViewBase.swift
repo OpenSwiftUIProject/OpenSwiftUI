@@ -460,7 +460,12 @@ package class UIHostingViewBase {
     // MARK: - UIView related
 
     package func frameDidChange(oldValue: CGRect) {
-        _openSwiftUIUnimplementedWarning()
+        guard let uiView, let host, uiView.bounds.size != .zero else {
+            return
+        }
+        var props: ViewRendererHostProperties = [.size, .containerSize]
+        props.insert(.safeArea)
+        host.invalidateProperties(props, mayDeferUpdate: false)
     }
 
     package func _geometryChanged(_: UnsafeRawPointer, forAncestor: UIView?) {
