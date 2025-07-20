@@ -1,5 +1,5 @@
 //
-//  AppearanceActionModifierTests.swift
+//  AppearanceActionModifierCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 #if canImport(Darwin)
@@ -9,7 +9,7 @@ import Foundation
 import OpenSwiftUITestsSupport
 
 @MainActor
-struct AppearanceActionModifierTests {
+struct AppearanceActionModifierCompatibilityTests {
     @Test
     func appear() async throws {
         struct ContentView: View {
@@ -58,7 +58,7 @@ struct AppearanceActionModifierTests {
         workaroundIssue87(vc)
         #expect(Helper.result.hasPrefix("A"))
         var timeout = 5
-        while !Helper.result.hasPrefix("AAD") && timeout > 0{
+        while !Helper.result.hasPrefix("AAD"), timeout > 0 {
             try await Task.sleep(for: .seconds(1))
             timeout -= 1
         }
