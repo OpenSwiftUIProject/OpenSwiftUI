@@ -45,7 +45,7 @@ See Example folder and try it with ExampleApp
 
 ## Build
 
-The current suggested toolchain to build the project is Swift 6.1 / Xcode 16.3.
+The current suggested toolchain to build the project is Swift 6.1.2 / Xcode 16.4 with macOS 15.5 or iOS 18.5 Simulator.
 
 ### Build without testing framework
 
@@ -102,6 +102,14 @@ for various platforms:
 >
 > So most of the core feature is only available on Apple platform built with
 > AttributeGraph varient.
+
+### Current supported feature
+
+- Color rendering
+- Layout system
+- Animation system
+- onAppear/onDisappear modifier
+- Basic geometry effect
 
 ## Products
 
