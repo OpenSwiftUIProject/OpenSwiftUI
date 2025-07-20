@@ -1,8 +1,8 @@
 //
 //  EmptyView.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A view that doesn't contain any content.
@@ -32,16 +32,16 @@ public struct EmptyView: PrimitiveView {
     @inlinable
     public init() {}
     
-    public static func _makeView(view: _GraphValue<EmptyView>, inputs: _ViewInputs) -> _ViewOutputs {
+    nonisolated public static func _makeView(view: _GraphValue<EmptyView>, inputs: _ViewInputs) -> _ViewOutputs {
         _ViewOutputs()
     }
 
-    public static func _makeViewList(view: _GraphValue<EmptyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
+    nonisolated public static func _makeViewList(view: _GraphValue<EmptyView>, inputs: _ViewListInputs) -> _ViewListOutputs {
         .emptyViewList(inputs: inputs)
     }
 
     @available(OpenSwiftUI_v2_0, *)
-    public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+    nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         0
     }
 }
