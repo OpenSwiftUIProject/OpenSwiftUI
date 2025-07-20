@@ -6,7 +6,7 @@
 //  Status: Blocked by other ShapeStyle and Animatable
 //  ID: 4DBF651155A4B32ED86C55EAB1B96C61 (SwiftUICore)
 
-package struct _ShapeStyle_Pack: Equatable {
+package struct _ShapeStyle_Pack: Equatable, Animatable {
     package struct Style: Equatable, Sendable {
         package var fill: _ShapeStyle_Pack.Fill
         package var opacity: Float

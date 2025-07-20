@@ -308,8 +308,8 @@ extension View {
 extension _ViewInputs {
     package func resolvedShapeStyles(
         role: ShapeRole,
-        mode: Attribute<_ShapeStyle_ResolverMode>? = nil
-    ) -> Attribute<_ShapeStyle_Pack> {
+        mode: Attribute<ShapeStyle.ResolverMode>? = nil
+    ) -> Attribute<ShapeStyle.Pack> {
         base.cachedEnvironment.wrappedValue.resolvedShapeStyles(
             for: self,
             role: role,

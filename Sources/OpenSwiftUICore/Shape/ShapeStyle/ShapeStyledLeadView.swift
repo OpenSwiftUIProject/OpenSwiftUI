@@ -15,7 +15,7 @@ package protocol ShapeStyledLeafView: ContentResponder {
 
     mutating func mustUpdate(data: ShapeUpdateData, position: Attribute<ViewOrigin>) -> Bool
 
-    typealias FramedShape =  (shape: ShapeStyle.RenderedShape.Shape, frame: CGRect)
+    typealias FramedShape = (shape: ShapeStyle.RenderedShape.Shape, frame: CGRect)
 
     func shape(in size: CGSize) -> FramedShape
 
@@ -69,7 +69,6 @@ extension ShapeStyledLeafView where ShapeUpdateData == () {
         inputs: _ViewInputs,
         styles: Attribute<ShapeStyle.Pack>,
         interpolatorGroup: ShapeStyle.InterpolatorGroup? = nil,
-        data: ShapeUpdateData
     ) -> _ViewOutputs {
         _openSwiftUIUnimplementedFailure()
     }

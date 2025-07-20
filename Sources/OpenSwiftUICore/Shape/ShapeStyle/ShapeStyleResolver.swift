@@ -13,7 +13,7 @@ package struct ShapeStyleResolver<Style>: StatefulRule, AsyncAttribute, Observed
     @Attribute var environment: EnvironmentValues
     var role: ShapeRole
     var animationsDisabled: Bool
-    // var helper: AnimatableAttributeHelper<_ShapeStyle_Pack>
+    var helper: AnimatableAttributeHelper<_ShapeStyle_Pack>
     let tracker: PropertyList.Tracker
     
     package typealias Value = _ShapeStyle_Pack
@@ -23,8 +23,8 @@ package struct ShapeStyleResolver<Style>: StatefulRule, AsyncAttribute, Observed
         mode: OptionalAttribute<_ShapeStyle_ResolverMode> = .init(),
         environment: Attribute<EnvironmentValues>,
         role: ShapeRole,
-        animationsDisabled: Bool
-    // helper: AnimatableAttributeHelper<_ShapeStyle_Pack>
+        animationsDisabled: Bool,
+        helper: AnimatableAttributeHelper<_ShapeStyle_Pack>
     ) {
         _openSwiftUIUnimplementedFailure()
     }
