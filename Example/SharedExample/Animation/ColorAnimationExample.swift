@@ -7,7 +7,6 @@ import OpenSwiftUI
 #else
 import SwiftUI
 #endif
-import Foundation
 
 struct ColorAnimationExample: View {
     @State private var showRed = false
