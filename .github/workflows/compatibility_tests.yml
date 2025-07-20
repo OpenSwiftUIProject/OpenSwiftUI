@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.3"]
+        xcode-version: ["16.4"]
         release: [2024]
     runs-on: ${{ matrix.os }}
     env:
@@ -60,11 +60,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.3"]
+        xcode-version: ["16.4"]
         release: [2024]
-        ios-version: ["18.0"]
+        ios-version: ["18.5"]
         include:
-          - ios-version: "18.0"
+          - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
     runs-on: ${{ matrix.os }}
     env:
