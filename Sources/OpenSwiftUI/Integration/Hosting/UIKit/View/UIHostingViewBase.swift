@@ -119,7 +119,7 @@ package class UIHostingViewBase {
             guard let uiView,
                   let window = uiView.window,
                   window.responds(to: selector),
-                  (window.perform(selector).takeRetainedValue() as? UIWindowScene) != nil
+                  (window.perform(selector).takeUnretainedValue() as? UIWindowScene) != nil
             else {
                 return nil
             }

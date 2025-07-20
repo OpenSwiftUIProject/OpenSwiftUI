@@ -187,7 +187,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
     
     deinit {
-        base.tearDown(uiView: self, host: self)
+        _base.tearDown(uiView: self, host: self)
         HostingViewRegistry.shared.remove(self)
     }
     
