@@ -2,7 +2,7 @@
 //  Stack.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A generic last-in-first-out (LIFO) stack data structure.
@@ -190,5 +190,151 @@ extension Stack: GraphReusable where Value: GraphReusable {
                 return false
             }
         } while true
+    }
+}
+
+/// A fixed-capacity stack data structure that can hold up to 3 elements.
+///
+/// `Stack3` is a specialized stack implementation optimized for scenarios where
+/// you need to store a small, fixed number of elements (maximum 3). It uses a
+/// tuple-based storage mechanism for efficient memory usage and fast access.
+///
+/// The stack follows the last-in-first-out (LIFO) principle. When the stack
+/// reaches its maximum capacity and a new element is pushed, the oldest element
+/// is automatically removed to make room for the new one.
+///
+/// ## Example Usage
+///
+/// ```swift
+/// var stack = Stack3<String>()
+/// 
+/// // Push elements
+/// stack.push("first")
+/// stack.push("second")
+/// stack.push("third")
+/// 
+/// // Check if stack contains a value
+/// let hasSecond = stack.contains("second") // true
+/// 
+/// // Pop elements (LIFO order)
+/// let last = stack.pop() // "third"
+/// let middle = stack.pop() // "second"
+/// let first = stack.pop() // "first"
+/// let empty = stack.pop() // nil
+/// ```
+///
+/// - Note: This type is optimized for performance when working with a small,
+///   bounded number of elements and is particularly useful in scenarios where
+///   memory allocation needs to be minimized.
+package struct Stack3<Value> where Value: Equatable {
+    var store: (Value?, Value?, Value?)
+
+    /// Creates a new, empty stack with capacity for 3 elements.
+    ///
+    /// The newly created stack contains no elements and is ready to accept
+    /// up to 3 values via the `push(_:)` method.
+    ///
+    /// - Complexity: O(1)
+    package init() {
+        store = (nil, nil, nil)
+    }
+
+    /// Returns a Boolean value indicating whether the stack contains the specified element.
+    ///
+    /// This method searches through all stored elements in the stack and returns
+    /// `true` if any of them is equal to the provided value.
+    ///
+    /// - Parameter value: The value to search for in the stack.
+    /// - Returns: `true` if the stack contains the specified value; otherwise, `false`.
+    /// - Complexity: O(1) - The stack has a fixed maximum size of 3 elements.
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// var stack = Stack3<Int>()
+    /// stack.push(10)
+    /// stack.push(20)
+    /// 
+    /// let containsTen = stack.contains(10) // true
+    /// let containsThirty = stack.contains(30) // false
+    /// ```
+    package func contains(_ value: Value) -> Bool {
+        store.0 == value || store.1 == value || store.2 == value
+    }
+
+    /// Adds a new element to the top of the stack.
+    ///
+    /// If the stack is not at full capacity (less than 3 elements), the new
+    /// element is added to the next available position. If the stack is already
+    /// at maximum capacity, the oldest element is removed and all remaining
+    /// elements are shifted to make room for the new element at the top.
+    ///
+    /// - Parameter value: The element to add to the stack.
+    /// - Complexity: O(1)
+    ///
+    /// ## Behavior
+    ///
+    /// - **Empty stack**: Element goes to position 0
+    /// - **One element**: Element goes to position 1
+    /// - **Two elements**: Element goes to position 2
+    /// - **Three elements**: Elements shift left, new element goes to position 2
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// var stack = Stack3<String>()
+    /// stack.push("A") // Stack: ["A", nil, nil]
+    /// stack.push("B") // Stack: ["A", "B", nil]
+    /// stack.push("C") // Stack: ["A", "B", "C"]
+    /// stack.push("D") // Stack: ["B", "C", "D"] (A is removed)
+    /// ```
+    package mutating func push(_ value: Value) {
+        if store.0 == nil {
+            store.0 = value
+        } else if store.1 == nil {
+            store.1 = value
+        } else if store.2 == nil {
+            store.2 = value
+        } else {
+            store = (store.1, store.2, value)
+        }
+    }
+
+    /// Removes and returns the element at the top of the stack.
+    ///
+    /// This method follows the last-in-first-out (LIFO) principle, removing
+    /// the most recently added element first. The method searches from the
+    /// highest position (position 2) down to the lowest position (position 0)
+    /// and returns the first non-nil value found.
+    ///
+    /// - Returns: The element at the top of the stack, or `nil` if the stack is empty.
+    /// - Complexity: O(1)
+    ///
+    /// ## Example
+    ///
+    /// ```swift
+    /// var stack = Stack3<Int>()
+    /// stack.push(1)
+    /// stack.push(2)
+    /// stack.push(3)
+    /// 
+    /// let first = stack.pop() // 3
+    /// let second = stack.pop() // 2
+    /// let third = stack.pop() // 1
+    /// let fourth = stack.pop() // nil (stack is empty)
+    /// ```
+    package mutating func pop() -> Value? {
+        if let value = store.2 {
+            store.2 = nil
+            return value
+        } else if let value = store.1 {
+            store.1 = nil
+            return value
+        } else if let value = store.0 {
+            store.0 = nil
+            return value
+        } else {
+            return nil
+        }
     }
 }
