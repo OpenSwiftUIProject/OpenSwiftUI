@@ -14,6 +14,11 @@ extension Layout {
         properties: LayoutProperties,
         list: Attribute<any ViewList>
     ) -> _ViewOutputs {
+        let requiresScrollable = inputs.preferences.requiresScrollable
+        let requiresScrollTargetRole = inputs.preferences.requiresScrollTargetRole
+        // inputs.ScrollTargetRole
+        // RemovePreferenceInput
+
         _openSwiftUIUnimplementedFailure()
     }
 }
