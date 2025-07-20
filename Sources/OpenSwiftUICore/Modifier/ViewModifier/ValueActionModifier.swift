@@ -119,7 +119,8 @@ public struct _ValueActionModifier<Value>: ViewModifier, PrimitiveViewModifier, 
     }
 
     func sendAction(old: Self?) {
-        action((old ?? self).value)
+        let action = (old ?? self).action
+        action(value)
     }
 
     nonisolated public static func _makeView(
