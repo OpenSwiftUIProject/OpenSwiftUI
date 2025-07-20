@@ -100,3 +100,20 @@ struct StackTests {
         #expect(stack1 != stack2)
     }
 }
+
+struct Stack3Tests {
+    @Test
+    func basic() {
+        var stack: Stack3<Int> = Stack3()
+        stack.push(1)
+        #expect(stack.contains(1))
+        stack.push(2)
+        stack.push(3)
+        stack.push(4)
+        #expect(!stack.contains(1))
+        #expect(stack.pop() == 4)
+        #expect(stack.pop() == 3)
+        #expect(stack.pop() == 2)
+        #expect(stack.pop() == nil)
+    }
+}
