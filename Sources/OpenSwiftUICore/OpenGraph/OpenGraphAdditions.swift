@@ -25,12 +25,17 @@ extension OGInputOptions {
 extension Subgraph {
     package typealias Flags = OGAttributeFlags
     package typealias ChildFlags = OGAttributeFlags
+
+    package func isAncestor(_ other: Subgraph) -> Bool {
+        // FIXME: OGSubgraphIsAncestor(self, other)
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
 }
 
 extension Graph {
     package typealias TraceOptions = TraceFlags
 }
-
 
 // MARK: - Defaultable [6.5.4]
 
