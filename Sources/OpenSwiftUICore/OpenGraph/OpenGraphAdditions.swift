@@ -15,6 +15,13 @@ extension OGSearchOptions {
 }
 
 // FIXME
+extension OGInputOptions {
+    package static var _4: OGInputOptions {
+        .init(rawValue: 1 << 2)
+    }
+}
+
+// FIXME
 extension Subgraph {
     package typealias Flags = OGAttributeFlags
     package typealias ChildFlags = OGAttributeFlags
