@@ -1,9 +1,7 @@
 //
 //  ColorAnimationExample.swift
 //  SharedExample
-//
-//  Created by Kyle on 2025/7/20.
-//
+
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else

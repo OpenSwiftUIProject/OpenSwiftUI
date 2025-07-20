@@ -7,7 +7,6 @@ import OpenSwiftUI
 #else
 import SwiftUI
 #endif
-import Foundation
 
 struct AppearanceActionModifierExample: View {
     @State private var first = true
