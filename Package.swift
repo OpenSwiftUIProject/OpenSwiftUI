@@ -58,6 +58,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .enableUpcomingFeature("BareSlashRegexLiterals"),
     .enableUpcomingFeature("InternalImportsByDefault"),
     .enableUpcomingFeature("InferSendableFromCaptures"),
+    .unsafeFlags(["-Wwarning", "DeprecatedDeclaration"]), // We want to use deprecated APIs in test targets
     .define("OPENSWIFTUI_SUPPRESS_DEPRECATED_WARNINGS"),
     // FIXME: -unavailable-decl-optimization=stub is not working somehow (eg. Color.vibrancy). Dig into this later
     .unsafeFlags(["-unavailable-decl-optimization=stub"]),
@@ -136,7 +137,6 @@ if warningsAsErrorsCondition {
     // items we want to ignore:
     // [error_from_clang] [error_in_future_swift_version]
     // sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
-    sharedSwiftSettings.append(.unsafeFlags(["-Werror", "DeprecatedDeclaration"]))
     sharedSwiftSettings.append(.unsafeFlags(["-Werror", "Unsafe"]))
     sharedSwiftSettings.append(.unsafeFlags(["-Werror", "UnknownWarningGroup"]))
     sharedSwiftSettings.append(.unsafeFlags(["-Werror", "ExistentialAny"]))
