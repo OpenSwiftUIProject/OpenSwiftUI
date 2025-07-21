@@ -295,7 +295,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             UIEdgeInsets(top: explicitSafeAreaInsets.top, left: explicitSafeAreaInsets.leading, bottom: explicitSafeAreaInsets.bottom, right: explicitSafeAreaInsets.trailing)
         }
     }
-    
+
+    override dynamic open func sizeThatFits(_ size: CGSize) -> CGSize {
+        base._layoutSizeThatFits(size)
+    }
+
     // FIXME
     final public func _viewDebugData() -> [_ViewDebug.Data] {
         // TODO

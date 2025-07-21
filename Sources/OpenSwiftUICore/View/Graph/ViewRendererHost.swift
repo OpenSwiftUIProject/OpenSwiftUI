@@ -373,8 +373,7 @@ extension ViewRendererHost {
     }
     
     package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
-        updateViewGraph { $0.sizeThatFits(proposal)
-        }
+        updateViewGraph { $0.sizeThatFits(proposal) }
     }
     package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
         updateViewGraph { $0.explicitAlignment(of: guide, at: size) }

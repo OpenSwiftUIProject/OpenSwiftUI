@@ -168,6 +168,22 @@ package class UIHostingViewBase {
         }
     }
 
+    func _layoutSizeThatFits(
+        _ size: CGSize
+        // fixedAxes: _UILayoutAxes
+    ) -> CGSize {
+        guard let host else {
+            return .zero
+        }
+        let maxValue = 2777780.0
+        let fittingSize = host.sizeThatFits(.init(
+            width: size.width >= maxValue ? nil : size.width,
+            height: size.height >= maxValue ? nil : size.height
+        ))
+        let pixelLength = host.viewGraph.environment.pixelLength
+        return fittingSize.rounded(.up, toMultipleOf: pixelLength)
+    }
+
     //    func _baselineOffsets(at: CGSize) -> _UIBaselineOffsetPair
 
     // MARK: - Update
