@@ -115,6 +115,19 @@ let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: !buildForDar
 
 let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: !buildForDarwinPlatform)
 
+// MARK: - [env] OPENSWIFTUI_RENDER_GTK
+
+let renderGTKCondition = envEnable("OPENSWIFTUI_RENDER_GTK", default: !buildForDarwinPlatform)
+
+let cgtkTarget = Target.systemLibrary(
+    name: "CGTK",
+    pkgConfig: "gtk4",
+    providers: [
+        .brew(["gtk4"]),
+        .apt(["libgtk-4-dev clang"]),
+    ]
+)
+
 // MARK: - [env] OPENGSWIFTUI_SWIFTUI_RENDER
 
 let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER", default: buildForDarwinPlatform)
@@ -394,35 +407,47 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
     ],
     targets: [
-        // TODO: Add SwiftGTK as an backend alternative for UIKit/AppKit on Linux and macOS
-        .systemLibrary(
-            name: "CGTK",
-            pkgConfig: "gtk4",
-            providers: [
-                .brew(["gtk4"]),
-                .apt(["libgtk-4-dev clang"]),
-            ]
-        ),
         coreGraphicsShimsTarget,
-        coreGraphicsShimsTestTarget,
-
         openSwiftUISPITarget,
-        openSwiftUISPITestTarget,
-
         openSwiftUICoreTarget,
-        openSwiftUICoreTestTarget,
-
         cOpenSwiftUITarget,
         openSwiftUITarget,
         openSwiftUITestsSupportTarget,
         openSwiftUIExtensionTarget,
-        openSwiftUITestTarget,
-        openSwiftUICompatibilityTestTarget,
-
         openSwiftUIBridgeTarget,
-        openSwiftUIBridgeTestTarget,
     ]
 )
+
+if renderGTKCondition {
+    package.targets.append(cgtkTarget)
+}
+
+if !compatibilityTestCondition {
+    package.targets.append(contentsOf: [
+        coreGraphicsShimsTestTarget,
+        openSwiftUISPITestTarget,
+        openSwiftUICoreTestTarget,
+        openSwiftUITestTarget,
+        openSwiftUIBridgeTestTarget,
+    ])
+}
+
+if buildForDarwinPlatform {
+    package.targets.append(openSwiftUICompatibilityTestTarget)
+}
+
+// MARK: - SymbolLocator
+
+if symbolLocatorCondition {
+    package.dependencies.append(
+        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0")
+    )
+
+    package.targets += [
+        openSwiftUISymbolDualTestsSupportTarget,
+        openSwiftUISymbolDualTestsTarget,
+    ]
+}
 
 extension Target {
     func addAGSettings() {
@@ -553,19 +578,6 @@ if swiftCryptoCondition {
     )
     openSwiftUICoreTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
-}
-
-// MARK: - SymbolLocator
-
-if symbolLocatorCondition {
-    package.dependencies.append(
-        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0")
-    )
-
-    package.targets += [
-        openSwiftUISymbolDualTestsSupportTarget,
-        openSwiftUISymbolDualTestsTarget,
-    ]
 }
 
 extension [Platform] {
