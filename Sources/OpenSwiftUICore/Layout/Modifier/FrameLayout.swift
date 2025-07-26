@@ -261,15 +261,17 @@ public struct _FlexFrameLayout: UnaryLayout, FrameLayoutCommon {
     }
 
     private func childProposal(myProposal: _ProposedSize) -> _ProposedSize {
-        let width: CGFloat? = if let idealWidth {
-            min(max(myProposal.width ?? idealWidth, minWidth ?? -.infinity), maxWidth ?? .infinity)
+        let width: CGFloat?
+        if let w = myProposal.width ?? idealWidth {
+            width = w.clamp(min: minWidth ?? -.infinity, max: maxWidth ?? .infinity)
         } else {
-            nil
+            width = nil
         }
-        let height: CGFloat? = if let idealHeight {
-            min(max(myProposal.height ?? idealHeight, minHeight ?? -.infinity), maxHeight ?? .infinity)
+        let height: CGFloat?
+        if let h = myProposal.height ?? idealHeight {
+            height = h.clamp(min: minHeight ?? -.infinity, max: maxHeight ?? .infinity)
         } else {
-            nil
+            height = nil
         }
         return _ProposedSize(width: width, height: height)
     }
