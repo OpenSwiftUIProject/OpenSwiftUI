@@ -140,12 +140,9 @@ open class NSHostingController<Content>: NSViewController where Content: View {
         return result
     }
     
-    
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         host.forEachIdentifiedView(body: body)
     }
-    
-    
 }
 
 #endif

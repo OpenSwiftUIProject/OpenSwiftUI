@@ -163,6 +163,7 @@ struct FlexFrameLayoutTests {
         #expect(layout.maxHeight == nil)
     }
 
+    #if canImport(Darwin)
     @MainActor
     @Test
     func maxWidthInfinityExpandsToParentProposal() {
@@ -178,4 +179,5 @@ struct FlexFrameLayoutTests {
         let size = viewController.sizeThatFits(in: .zero)
         #expect(size == CGSize(width: 200, height: 200))
     }
+    #endif
 }

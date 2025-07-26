@@ -154,10 +154,6 @@ if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
 
-if compatibilityTestCondition {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPATIBILITY_TEST"))
-}
-
 // MARK: - [env] OPENSWIFTUI_IGNORE_AVAILABILITY
 
 let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild)
@@ -268,7 +264,9 @@ let openSwiftUITestsSupportTarget = Target.target(
     dependencies: [
         "OpenSwiftUI",
     ],
-    swiftSettings: sharedSwiftSettings
+    cSettings: sharedCSettings + (compatibilityTestCondition ? [.define("OPENSWIFTUI_COMPATIBILITY_TEST", to: "1")] : []),
+    cxxSettings: sharedCxxSettings + (compatibilityTestCondition ? [.define("OPENSWIFTUI_COMPATIBILITY_TEST", to: "1")] : []),
+    swiftSettings: sharedSwiftSettings + (compatibilityTestCondition ? [.define("OPENSWIFTUI_COMPATIBILITY_TEST")] : [])
 )
 
 let openSwiftUIExtensionTarget = Target.target(
@@ -300,9 +298,9 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
         .product(name: "Numerics", package: "swift-numerics"),
     ] + (compatibilityTestCondition ? [] : ["OpenSwiftUI"]),
     exclude: ["README.md"],
-    cSettings: sharedCSettings,
-    cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    cSettings: sharedCSettings + (compatibilityTestCondition ? [.define("OPENSWIFTUI_COMPATIBILITY_TEST", to: "1")] : []),
+    cxxSettings: sharedCxxSettings + (compatibilityTestCondition ? [.define("OPENSWIFTUI_COMPATIBILITY_TEST", to: "1")] : []),
+    swiftSettings: sharedSwiftSettings + (compatibilityTestCondition ? [.define("OPENSWIFTUI_COMPATIBILITY_TEST")] : [])
 )
 
 // MARK: - [env] OPENSWIFTUI_BRIDGE_FRAMEWORK
