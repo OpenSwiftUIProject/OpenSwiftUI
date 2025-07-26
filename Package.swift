@@ -26,7 +26,11 @@ let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM")
 
 // https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
 // By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
-let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", default: false)
+let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS")
+
+// SPI will use arm64-apple-ios instead of arm64-apple-ios-simulator for the iOS build.
+// AG does not support linking with that architecture.
+let isSPIBuild = envEnable("SPI_BUILD")
 
 // MARK: - Env and Config
 
@@ -85,7 +89,7 @@ if development {
 
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
+let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
 
 if linkCoreUI {
     sharedCSettings.append(
@@ -174,8 +178,8 @@ if !compatibilityTestCondition {
 
 // MARK: - [env] OPENSWIFTUI_IGNORE_AVAILABILITY
 
-let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild)
-sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(ignoreAvailability: !isSPIDocGenerationBuild && !compatibilityTestCondition))
+let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
+sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(ignoreAvailability: ignoreAvailability))
 
 // MARK: - CoreGraphicsShims Target
 
@@ -503,7 +507,7 @@ extension Target {
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
+let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
@@ -515,7 +519,7 @@ if attributeGraphCondition {
     openSwiftUIBridgeTestTarget.addAGSettings()
 }
 
-let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIDocGenerationBuild)
+let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 if renderBoxCondition {
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
@@ -527,7 +531,7 @@ if renderBoxCondition {
     openSwiftUIBridgeTestTarget.addRBSettings()
 }
 
-if attributeGraphCondition || renderBoxCondition || isSPIDocGenerationBuild {
+if attributeGraphCondition || renderBoxCondition {
     let release = Context.environment["DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
     package.platforms = switch release {
         case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
