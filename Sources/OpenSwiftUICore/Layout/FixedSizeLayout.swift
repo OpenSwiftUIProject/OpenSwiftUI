@@ -52,6 +52,10 @@ extension _FixedSizeLayout: UnaryLayout {
             height: vertical ? nil : proposedSize.height)
         )
     }
+
+    package func layoutPriority(child: LayoutProxy) -> Double {
+        child.layoutPriority
+    }
 }
 
 // MARK: - View + fixedSize [6.4.41]

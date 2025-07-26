@@ -31,8 +31,12 @@ package protocol UnaryLayout: Animatable, MultiViewModifier, PrimitiveViewModifi
 }
 
 extension UnaryLayout {
+    package func spacing(in context: SizeAndSpacingContext, child: LayoutProxy) -> Spacing {
+        child.spacing()
+    }
+    
     package func layoutPriority(child: LayoutProxy) -> Double {
-        child.layoutPriority
+        .zero
     }
 
     package func ignoresAutomaticPadding(child: LayoutProxy) -> Bool {
@@ -45,10 +49,6 @@ extension UnaryLayout {
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
         makeViewImpl(modifier: modifier, inputs: inputs, body: body)
-    }
-
-    package func spacing(in context: SizeAndSpacingContext, child: LayoutProxy) -> Spacing {
-        child.spacing()
     }
 }
 
