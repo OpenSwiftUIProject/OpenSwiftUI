@@ -252,7 +252,6 @@ extension StatefulRule where Value == LayoutComputer {
         } create: {
             engine
         }
-
     }
 
     package mutating func updateIfNotEqual<E>(to engine: E) where E: Equatable, E: LayoutEngine {
