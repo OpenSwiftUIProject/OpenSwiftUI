@@ -210,7 +210,7 @@ package final class ViewGraph: GraphHost {
     }
 
     override package func instantiateOutputs() {
-        let outputs = globalSubgraph.apply {
+        let outputs = rootSubgraph.apply {
             // Audited for 6.5.4
             var inputs = _ViewInputs(
                 graphInputs,
