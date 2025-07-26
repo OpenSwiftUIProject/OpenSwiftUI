@@ -2,10 +2,10 @@
 //  PlatformAlias.swift
 //  OpenSwiftUITestsSupport
 
-#if OPENSWIFTUI_COMPATIBILITY_TEST
-package import SwiftUI
-#else
+#if OPENSWIFTUI
 package import OpenSwiftUI
+#else
+package import SwiftUI
 #endif
 
 #if os(iOS)
