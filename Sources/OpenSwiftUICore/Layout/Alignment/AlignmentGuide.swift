@@ -1243,7 +1243,7 @@ public struct AlignmentKey: Hashable, Comparable {
     @inline(__always)
     var index: Int { Int(bits / 2 - 1) }
 
-    package init(id: AlignmentID.Type, axis: Axis) {
+    package init(id: any AlignmentID.Type, axis: Axis) {
         let index = Self.$typeCache.access { cache in
             let identifier = ObjectIdentifier(id)
             if let value = cache.typeIDs[identifier] {

@@ -19,8 +19,8 @@ package struct ViewSize: Equatable {
     /// The proposed size that led to this view size.
     ///
     /// Uses NaN values to represent nil dimensions in the proposal.
-    var _proposal: CGSize
-    
+    private(set) var _proposal: CGSize
+
     /// Creates a new view size with the specified value and proposal.
     ///
     /// - Parameters:
