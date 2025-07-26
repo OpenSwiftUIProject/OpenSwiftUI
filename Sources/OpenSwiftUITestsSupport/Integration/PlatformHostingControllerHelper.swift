@@ -9,7 +9,7 @@ import UIKit
 import AppKit
 #endif
 
-extension PlatformHostingController {
+extension PlatformViewController {
     package func triggerLayout() {
         #if os(iOS)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
@@ -28,19 +28,5 @@ extension PlatformHostingController {
         view.layoutSubtreeIfNeeded()
         #endif
     }
-}
-
-// FIXME: A workaround to bypass the Issue #87
-package func workaroundIssue87(_ vc: PlatformViewController) {
-//    #if OPENSWIFTUI
-    // TODO: Use swift-test exist test feature to detect the crash instead or sliently workaroun it
-    CrashWorkaround.shared.objects.append(vc)
-//    #endif
-}
-
-private final class CrashWorkaround {
-    private init() {}
-    static let shared = CrashWorkaround()
-    var objects: [Any?] = []
 }
 #endif

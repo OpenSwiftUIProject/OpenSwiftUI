@@ -23,7 +23,7 @@ struct PlatformHostingControllerTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        workaroundIssue87(vc)
+        withExtendedLifetime(vc) {}
     }
 
     @Test(
@@ -42,7 +42,7 @@ struct PlatformHostingControllerTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        workaroundIssue87(vc)
+        withExtendedLifetime(vc) {}
     }
 }
 #endif

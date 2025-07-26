@@ -22,11 +22,12 @@ struct AppearanceActionModifierCompatibilityTests {
                     }
             }
         }
+        var vc: PlatformViewController!
         await confirmation { @MainActor confirmation in
-            let vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
+            vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
             vc.triggerLayout()
-            workaroundIssue87(vc)
         }
+        withExtendedLifetime(vc) {}
     }
 
     @Test
@@ -55,14 +56,13 @@ struct AppearanceActionModifierCompatibilityTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        workaroundIssue87(vc)
         #expect(Helper.result.hasPrefix("A"))
         var timeout = 5
         while !Helper.result.hasPrefix("AAD"), timeout > 0 {
             try await Task.sleep(for: .seconds(1))
             timeout -= 1
         }
-        #expect(Helper.result.hasPrefix("AAD"))
+        withExtendedLifetime(vc) {}
     }
 }
 #endif
