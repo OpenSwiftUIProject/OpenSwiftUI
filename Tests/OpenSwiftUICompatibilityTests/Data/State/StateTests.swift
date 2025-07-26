@@ -24,11 +24,12 @@ struct StateTests {
                     }
             }
         }
+        var vc: PlatformViewController!
         await confirmation { @MainActor confirmation in
-            let vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
+            vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
             vc.triggerLayout()
-            workaroundIssue87(vc)
         }
+        withExtendedLifetime(vc) {}
     }
 }
 #endif

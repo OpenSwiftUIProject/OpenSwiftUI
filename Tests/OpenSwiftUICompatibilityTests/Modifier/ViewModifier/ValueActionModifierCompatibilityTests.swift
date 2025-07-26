@@ -40,19 +40,21 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 2) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
-        #expect(Helper.results == [1, 2])
+        withExtendedLifetime(vc) {
+            #expect(Helper.results == [1, 2])
+        }
     }
 
     // MARK: - onChange with two parameters (oldValue, newValue)
@@ -88,20 +90,22 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 2) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
-        #expect(Helper.oldValues == [0, 1])
-        #expect(Helper.newValues == [1, 2])
+        withExtendedLifetime(vc) {
+            #expect(Helper.oldValues == [0, 1])
+            #expect(Helper.newValues == [1, 2])
+        }
     }
 
     // MARK: - onChange with zero parameters
@@ -128,18 +132,19 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 2) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
+        withExtendedLifetime(vc) {}
     }
 
     // MARK: - onChange with initial parameter
@@ -175,20 +180,22 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 3) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
-        #expect(Helper.oldValues == [0, 0, 1])
-        #expect(Helper.newValues == [0, 1, 2])
+        withExtendedLifetime(vc) {
+            #expect(Helper.oldValues == [0, 0, 1])
+            #expect(Helper.newValues == [0, 1, 2])
+        }
     }
 
     @Test
@@ -205,10 +212,10 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
+        var vc: PlatformViewController!
         await confirmation { @MainActor confirmation in
-            let vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
+            vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
             vc.triggerLayout()
-            workaroundIssue87(vc)
         }
     }
 
@@ -247,20 +254,22 @@ struct ValueActionModifierCompatibilityTests {
                     }
             }
         }
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 2) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
-        #expect(Helper.lastOldValue == 1)
-        #expect(Helper.lastNewValue == 2)
+        withExtendedLifetime(vc) {
+            #expect(Helper.lastOldValue == 1)
+            #expect(Helper.lastNewValue == 2)
+        }
     }
 
     // MARK: - String value changes
@@ -292,20 +301,21 @@ struct ValueActionModifierCompatibilityTests {
                     }
             }
         }
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 2) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
-
-        #expect(Helper.lastValue == "final")
+        withExtendedLifetime(vc) {
+            #expect(Helper.lastValue == "final")
+        }
     }
 
     // MARK: - Boolean value changes
@@ -340,20 +350,21 @@ struct ValueActionModifierCompatibilityTests {
                     }
             }
         }
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 3) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: ContentView(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
-
-        #expect(Helper.toggleCount == 3)
+        withExtendedLifetime(vc) {
+            #expect(Helper.toggleCount == 3)
+        }
     }
 }
 #endif

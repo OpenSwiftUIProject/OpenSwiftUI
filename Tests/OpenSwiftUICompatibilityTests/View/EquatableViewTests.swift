@@ -102,18 +102,19 @@ struct EquatableViewTests {
         #elseif os(macOS)
         let expectedCount = 1 ... 3 // FIXME: Not expected, local 3 while CI 1 or 2 :(
         #endif
+        var vc: PlatformViewController!
         await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: NonEquatableNumberViewWrapper(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
+        withExtendedLifetime(vc) {}
     }
 
     @Test
@@ -123,18 +124,19 @@ struct EquatableViewTests {
         #elseif os(macOS)
         let expectedCount = 1 ... 3 // FIXME: Not expected, local 2 while CI 1 or 2 :(
         #endif
+        var vc: PlatformViewController!
         await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: EquatableNumberViewWrapper(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
+        withExtendedLifetime(vc) {}
     }
 
     #if OPENSWIFTUI
@@ -169,18 +171,19 @@ struct EquatableViewTests {
 
     @Test
     func equatableProxy() async throws {
+        var vc: PlatformViewController!
         await confirmation(expectedCount: 1) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                let vc = PlatformHostingController(
+                vc = PlatformHostingController(
                     rootView: EquatableProxyNumberViewWrapper(
                         confirmation: confirmation,
                         continuation: continuation
                     )
                 )
                 vc.triggerLayout()
-                workaroundIssue87(vc)
             }
         }
+        withExtendedLifetime(vc) {}
     }
     #endif
 }
