@@ -2,10 +2,10 @@
 //  Export.swift
 //  OpenSwiftUICompatibilityTests
 
-#if OPENSWIFTUI_COMPATIBILITY_TEST
-@_exported import SwiftUI
-let compatibilityTestEnabled = true
-#else
+#if OPENSWIFTUI
 @_exported import OpenSwiftUI
 let compatibilityTestEnabled = false
+#else
+@_exported import SwiftUI
+let compatibilityTestEnabled = true
 #endif

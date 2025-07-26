@@ -3,7 +3,7 @@
 //  OpenSwiftUICompatibilityTests
 
 import Testing
-#if !OPENSWIFTUI_COMPATIBILITY_TEST
+#if OPENSWIFTUI
 @_spi(ForTestOnly)
 import OpenSwiftUI
 #endif
@@ -38,23 +38,23 @@ struct ColorResolvedTests {
         swiftUIExpected: String,
         openSwiftUIExpected: String
     ) {
-        #if OPENSWIFTUI_COMPATIBILITY_TEST
+        #if OPENSWIFTUI
+        Update.locked {
+            Color.Resolved._alignWithSwiftUIImplementation = false
+            let resolved = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
+            #expect(resolved.description == openSwiftUIExpected)
+
+            Color.Resolved._alignWithSwiftUIImplementation = true
+            let resolved2 = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
+            #expect(resolved2.description == swiftUIExpected)
+        }
+        #else
         guard #available(iOS 17, macOS 14, *) else {
             print("This test is not available")
             return
         }
         let resolved = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
         #expect(resolved.description == swiftUIExpected)
-        #else
-        Update.locked {
-            Color.Resolved._alignWithSwiftUIImplementation = false
-            let resolved = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
-            #expect(resolved.description == openSwiftUIExpected)
-            
-            Color.Resolved._alignWithSwiftUIImplementation = true
-            let resolved2 = Color.Resolved(colorSpace: colorSpace, red: red, green: green, blue: blue, opacity: opacity)
-            #expect(resolved2.description == swiftUIExpected)
-        }
         #endif
     }
 }

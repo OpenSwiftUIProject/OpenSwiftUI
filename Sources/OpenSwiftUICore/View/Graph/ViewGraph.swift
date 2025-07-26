@@ -466,10 +466,42 @@ extension ViewGraph {
 
 //package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
 extension ViewGraph {
-    package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+    private var layoutComputer: LayoutComputer? {
+        guard requestedOutputs.contains(.layout) else {
+            preconditionFailure("Cannot fetch layout computer without layout output")
+        }
+        instantiateIfNeeded()
+        return rootLayoutComputer
     }
-    
+
+    private var rootViewInsets: EdgeInsets {
+        guard !safeAreaInsets.elements.isEmpty else {
+            return .zero
+        }
+        // FIXME
+        return .zero
+    }
+
+    static func sizeThatFits(
+        _ proposal: _ProposedSize,
+        layoutComputer: LayoutComputer?,
+        insets: EdgeInsets
+    ) -> CGSize {
+        var proposal = proposal
+        proposal.width = proposal.width.map { max($0 - insets.horizontal, .zero) }
+        proposal.height = proposal.width.map { max($0 - insets.vertical, .zero) }
+        let fittingSize = if let layoutComputer {
+            layoutComputer.sizeThatFits(proposal)
+        } else {
+            CGSize(width: 10.0, height: 10.0)
+        }
+        return fittingSize.outset(by: insets)
+    }
+
+    package func sizeThatFits(_ proposal: _ProposedSize) -> CGSize {
+        Self.sizeThatFits(proposal, layoutComputer: layoutComputer, insets: rootViewInsets)
+    }
+
     package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
         _openSwiftUIUnimplementedFailure()
     }

@@ -137,7 +137,7 @@ struct EquatableViewTests {
         }
     }
 
-    #if !OPENSWIFTUI_COMPATIBILITY_TEST
+    #if OPENSWIFTUI
     struct Number: Equatable {
         var value: Int
 

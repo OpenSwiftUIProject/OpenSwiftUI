@@ -2,8 +2,10 @@
 //  FrameLayoutTests.swift
 //  OpenSwiftUICoreTests
 
+import Foundation
 import Numerics
 @testable import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
 // MARK: - FlexFrameLayoutTests
@@ -160,4 +162,22 @@ struct FlexFrameLayoutTests {
         #expect(layout.idealHeight == nil)
         #expect(layout.maxHeight == nil)
     }
+
+    #if canImport(Darwin)
+    @MainActor
+    @Test
+    func maxWidthInfinityExpandsToParentProposal() {
+        struct ContentView: View {
+            var body: some View {
+                Color.red
+                    .frame(maxWidth: .infinity)
+                    .frame(width: 200, height: 200)
+            }
+        }
+        let viewController = PlatformHostingController(rootView: ContentView())
+        viewController.triggerLayout()
+        let size = viewController.sizeThatFits(in: .zero)
+        #expect(size == CGSize(width: 200, height: 200))
+    }
+    #endif
 }
