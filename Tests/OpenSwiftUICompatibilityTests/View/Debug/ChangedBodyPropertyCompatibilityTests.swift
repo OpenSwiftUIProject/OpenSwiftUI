@@ -2,7 +2,7 @@
 //  ChangedBodyPropertyCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
-#if canImport(Darwin) && !OPENSWIFTUI_SWIFT_LOG
+#if !OPENSWIFTUI_SWIFT_LOG
 import Testing
 import OSLog
 import OpenSwiftUITestsSupport

@@ -8,8 +8,6 @@ import Testing
 
 // MARK: - EquatableViewCompatibilityTests
 
-#if canImport(Darwin)
-
 struct EquatableViewCompatibilityTests {
     // Inspired by https://swiftui-lab.com/equatableview/
     // NOTES:
@@ -191,4 +189,3 @@ struct EquatableViewCompatibilityTests {
 extension Int {
     fileprivate var isEven: Bool { self % 2 == 0 }
 }
-#endif
