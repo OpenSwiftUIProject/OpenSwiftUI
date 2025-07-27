@@ -200,11 +200,11 @@ extension Transaction {
     }
 
     package mutating func addAnimationLogicalListener(allFinished: @escaping () -> Void) {
-        addAnimationListener(AllFinishedListener(allFinished: { _ in allFinished() }))
+        addAnimationLogicalListener(AllFinishedListener(allFinished: { _ in allFinished() }))
     }
 
     package mutating func addAnimationLogicalListener(allFinished: @escaping (Transaction.AnimationCompletionInfo) -> Void) {
-        addAnimationListener(AllFinishedListener(allFinished: allFinished))
+        addAnimationLogicalListener(AllFinishedListener(allFinished: allFinished))
     }
 
     package struct AnimationCompletionInfo {
