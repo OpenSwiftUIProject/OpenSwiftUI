@@ -42,8 +42,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
       "state" : {
-        "revision" : "1bd1a26ef304337ad2dbb4a947593d642f71ed8a",
-        "version" : "0.2.0"
+        "revision" : "546053c03f282df1a8270853da6692e1b078be09",
+        "version" : "0.2.1"
       }
     }
   ],
