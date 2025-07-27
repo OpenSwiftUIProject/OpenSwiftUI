@@ -2,7 +2,6 @@
 //  AppearanceActionModifierCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
-#if canImport(Darwin)
 import Testing
 
 import Foundation
@@ -65,4 +64,3 @@ struct AppearanceActionModifierCompatibilityTests {
         withExtendedLifetime(vc) {}
     }
 }
-#endif

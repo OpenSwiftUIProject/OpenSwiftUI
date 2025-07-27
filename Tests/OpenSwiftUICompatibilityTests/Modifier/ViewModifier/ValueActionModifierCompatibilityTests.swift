@@ -2,7 +2,6 @@
 //  ValueActionModifierCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
-#if canImport(Darwin)
 import Testing
 
 import Foundation
@@ -367,4 +366,3 @@ struct ValueActionModifierCompatibilityTests {
         }
     }
 }
-#endif

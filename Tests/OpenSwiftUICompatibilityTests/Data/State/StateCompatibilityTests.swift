@@ -5,7 +5,6 @@
 import Testing
 import OpenSwiftUITestsSupport
 
-#if canImport(Darwin)
 struct StateCompatibilityTests {
     @Test
     func appear() async throws {
@@ -32,4 +31,3 @@ struct StateCompatibilityTests {
         withExtendedLifetime(vc) {}
     }
 }
-#endif

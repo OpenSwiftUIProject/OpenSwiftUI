@@ -8,8 +8,6 @@ import Testing
 
 // MARK: - EquatableViewCompatibilityTests
 
-#if canImport(Darwin)
-
 struct EquatableViewCompatibilityTests {
     // Inspired by https://swiftui-lab.com/equatableview/
     // NOTES:
@@ -27,11 +25,7 @@ struct EquatableViewCompatibilityTests {
 
         var body: some View {
             confirmation()
-            #if os(iOS)
-            return Color(uiColor: number.isEven ? .red : .blue)
-            #elseif os(macOS)
-            return Color(nsColor: number.isEven ? .red : .blue)
-            #endif
+            return Color(platformColor: number.isEven ? .red : .blue)
         }
     }
 
@@ -62,11 +56,7 @@ struct EquatableViewCompatibilityTests {
 
         var body: some View {
             confirmation()
-            #if os(iOS)
-            return Color(uiColor: number.isEven ? .red : .blue)
-            #elseif os(macOS)
-            return Color(nsColor: number.isEven ? .red : .blue)
-            #endif
+            return Color(platformColor: number.isEven ? .red : .blue)
         }
 
         nonisolated static func == (lhs: Self, rhs: Self) -> Bool {
@@ -97,11 +87,7 @@ struct EquatableViewCompatibilityTests {
 
     @Test
     func nonEquatable() async throws {
-        #if os(iOS)
-        let expectedCount = 1 ... 3 // FIXME: Not expected, probably due to triggerLayout implementation. local 1 while CI is 3 :(
-        #elseif os(macOS)
-        let expectedCount = 1 ... 3 // FIXME: Not expected, local 3 while CI 1 or 2 :(
-        #endif
+        let expectedCount = 3
         var vc: PlatformViewController!
         await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
@@ -119,11 +105,7 @@ struct EquatableViewCompatibilityTests {
 
     @Test
     func equatable() async throws {
-        #if os(iOS)
-        let expectedCount = 1 ... 3 // FIXME: Not expected, probably due to triggerLayout implementation. local 1 which CI is 1 or 2 :(
-        #elseif os(macOS)
-        let expectedCount = 1 ... 3 // FIXME: Not expected, local 2 while CI 1 or 2 :(
-        #endif
+        let expectedCount = 2
         var vc: PlatformViewController!
         await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
             await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
@@ -191,4 +173,3 @@ struct EquatableViewCompatibilityTests {
 extension Int {
     fileprivate var isEven: Bool { self % 2 == 0 }
 }
-#endif

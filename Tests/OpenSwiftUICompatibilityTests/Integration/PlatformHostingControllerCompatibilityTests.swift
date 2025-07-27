@@ -2,7 +2,6 @@
 //  PlatformHostingControllerCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
-#if canImport(Darwin)
 import Testing
 import OpenSwiftUITestsSupport
 
@@ -45,4 +44,3 @@ struct PlatformHostingControllerCompatibilityTests {
         withExtendedLifetime(vc) {}
     }
 }
-#endif
