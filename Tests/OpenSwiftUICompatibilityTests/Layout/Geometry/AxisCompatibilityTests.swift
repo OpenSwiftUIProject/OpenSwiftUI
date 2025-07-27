@@ -1,10 +1,10 @@
 //
-//  AxisTests.swift
+//  AxisCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 
-struct AxisTests {
+struct AxisCompatibilityTests {
     @Test
     func example() {
         let h = Axis.horizontal

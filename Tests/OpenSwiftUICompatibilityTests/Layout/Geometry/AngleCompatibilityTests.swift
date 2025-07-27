@@ -1,10 +1,10 @@
 //
-//  AngleTests.swift
+//  AngleCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 
-struct AngleTests {
+struct AngleCompatibilityTests {
     private func helper(radians: Double, degrees: Double) {
         let a1 = Angle(radians: radians)
         #expect(a1.radians == radians)

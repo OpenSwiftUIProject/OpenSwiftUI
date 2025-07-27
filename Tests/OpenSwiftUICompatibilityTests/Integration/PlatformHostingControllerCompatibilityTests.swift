@@ -1,5 +1,5 @@
 //
-//  PlatformHostingControllerTests.swift
+//  PlatformHostingControllerCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 #if canImport(Darwin)
@@ -7,7 +7,7 @@ import Testing
 import OpenSwiftUITestsSupport
 
 @MainActor
-struct PlatformHostingControllerTests {
+struct PlatformHostingControllerCompatibilityTests {
     @Test(
         .bug(
             "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",

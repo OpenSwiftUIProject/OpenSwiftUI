@@ -1,10 +1,10 @@
 //
-//  IdentifiedViewTreeTests.swift
+//  IdentifiedViewTreeCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 
-struct IdentifiedViewTreeTests {
+struct IdentifiedViewTreeCompatibilityTests {
     @Test
     func forEachEmpty() async {
         let tree = _IdentifiedViewTree.empty
