@@ -66,6 +66,17 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        SpringAnimationExample()
+        ColorRepresentable()
+    }
+}
+
+struct ColorRepresentable: UIViewRepresentable {
+    func makeUIView(context: Context) -> some UIView {
+        let v = UIView()
+        v.backgroundColor = .red
+        return v
+    }
+
+    func updateUIView(_ uiView: UIViewType, context: Context) {
     }
 }
