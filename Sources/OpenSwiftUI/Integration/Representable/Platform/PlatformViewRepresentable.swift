@@ -2,7 +2,7 @@
 //  PlatformViewRepresentable.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: A513612C07DFA438E70B9FA90719B40D (SwiftUI)
 
@@ -10,14 +10,20 @@
 import AppKit
 typealias PlatformView = NSView
 typealias PlatformViewController = NSViewController
+typealias PlatformHostingController = NSHostingController
+typealias PlatformViewResponder = NSViewResponder
 #elseif canImport(UIKit)
 import UIKit
 typealias PlatformView = UIView
 typealias PlatformViewController = UIViewController
+typealias PlatformHostingController = UIHostingController
+typealias PlatformViewResponder = UIViewResponder
 #else
 import Foundation
 typealias PlatformView = NSObject
 typealias PlatformViewController = NSObject
+typealias PlatformHostingController = NSObject
+typealias PlatformViewResponder = NSObject
 #endif
 import OpenSwiftUICore
 import OpenGraphShims
@@ -25,11 +31,11 @@ import OpenGraphShims
 // MARK: - PlatformViewRepresentable
 
 protocol PlatformViewRepresentable: View {
-    static var dynamicProperties: DynamicPropertyCache.Fields { get }
-
     associatedtype PlatformViewProvider
 
     associatedtype Coordinator
+
+    static var dynamicProperties: DynamicPropertyCache.Fields { get }
 
     func makeViewProvider(context: Context) -> PlatformViewProvider
 
