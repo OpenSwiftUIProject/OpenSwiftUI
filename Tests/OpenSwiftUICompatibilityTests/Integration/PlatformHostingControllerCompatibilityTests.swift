@@ -22,7 +22,6 @@ struct PlatformHostingControllerCompatibilityTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        withExtendedLifetime(vc) {}
     }
 
     @Test(
@@ -41,6 +40,5 @@ struct PlatformHostingControllerCompatibilityTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        withExtendedLifetime(vc) {}
     }
 }

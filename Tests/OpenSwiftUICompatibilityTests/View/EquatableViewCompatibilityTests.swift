@@ -87,38 +87,26 @@ struct EquatableViewCompatibilityTests {
 
     @Test
     func nonEquatable() async throws {
-        let expectedCount = 3
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: NonEquatableNumberViewWrapper(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 3) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: NonEquatableNumberViewWrapper(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {}
     }
 
     @Test
     func equatable() async throws {
-        let expectedCount = 2
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: EquatableNumberViewWrapper(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: EquatableNumberViewWrapper(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {}
     }
 
     #if OPENSWIFTUI
@@ -153,19 +141,14 @@ struct EquatableViewCompatibilityTests {
 
     @Test
     func equatableProxy() async throws {
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 1) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: EquatableProxyNumberViewWrapper(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow { confirmation, continuation in
+            PlatformHostingController(
+                rootView: EquatableProxyNumberViewWrapper(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {}
     }
     #endif
 }

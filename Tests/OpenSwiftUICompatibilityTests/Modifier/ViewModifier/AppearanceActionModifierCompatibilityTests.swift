@@ -21,12 +21,14 @@ struct AppearanceActionModifierCompatibilityTests {
                     }
             }
         }
-        var vc: PlatformViewController!
-        await confirmation { @MainActor confirmation in
-            vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
-            vc.triggerLayout()
+        
+        try await triggerLayoutWithWindow { confirmation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation
+                )
+            )
         }
-        withExtendedLifetime(vc) {}
     }
 
     @Test
@@ -38,14 +40,21 @@ struct AppearanceActionModifierCompatibilityTests {
 
         struct ContentView: View {
             @State private var toggle = false
+            var continuation: UnsafeContinuation<Void, Never>
 
             var body: some View {
                 Color.red
                     .onAppear {
-                        Helper.result += "A"
-                        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
-                            toggle.toggle()
+                        if Helper.result.isEmpty {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                toggle.toggle()
+                            }
+                        } else {
+                            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+                                continuation.resume()
+                            }
                         }
+                        Helper.result += "A"
                     }
                     .onDisappear {
                         Helper.result += "D"
@@ -53,14 +62,14 @@ struct AppearanceActionModifierCompatibilityTests {
                     .id(toggle)
             }
         }
-        let vc = PlatformHostingController(rootView: ContentView())
-        vc.triggerLayout()
-        #expect(Helper.result.hasPrefix("A"))
-        var timeout = 5
-        while !Helper.result.hasPrefix("AAD"), timeout > 0 {
-            try await Task.sleep(for: .seconds(1))
-            timeout -= 1
+
+        try await triggerLayoutWithWindow { continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    continuation: continuation
+                )
+            )
         }
-        withExtendedLifetime(vc) {}
+        #expect(Helper.result == "AADD")
     }
 }

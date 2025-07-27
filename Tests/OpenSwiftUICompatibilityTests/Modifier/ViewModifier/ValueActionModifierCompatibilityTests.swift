@@ -38,22 +38,16 @@ struct ValueActionModifierCompatibilityTests {
                     }
             }
         }
-
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 2) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {
-            #expect(Helper.results == [1, 2])
-        }
+        #expect(Helper.results == [1, 2])
     }
 
     // MARK: - onChange with two parameters (oldValue, newValue)
@@ -89,22 +83,16 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 2) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {
-            #expect(Helper.oldValues == [0, 1])
-            #expect(Helper.newValues == [1, 2])
-        }
+        #expect(Helper.oldValues == [0, 1])
+        #expect(Helper.newValues == [1, 2])
     }
 
     // MARK: - onChange with zero parameters
@@ -131,19 +119,14 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 2) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {}
     }
 
     // MARK: - onChange with initial parameter
@@ -179,22 +162,16 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 3) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 3) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {
-            #expect(Helper.oldValues == [0, 0, 1])
-            #expect(Helper.newValues == [0, 1, 2])
-        }
+        #expect(Helper.oldValues == [0, 0, 1])
+        #expect(Helper.newValues == [0, 1, 2])
     }
 
     @Test
@@ -211,10 +188,12 @@ struct ValueActionModifierCompatibilityTests {
             }
         }
 
-        var vc: PlatformViewController!
-        await confirmation { @MainActor confirmation in
-            vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
-            vc.triggerLayout()
+        try await triggerLayoutWithWindow { confirmation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation
+                )
+            )
         }
     }
 
@@ -253,22 +232,16 @@ struct ValueActionModifierCompatibilityTests {
                     }
             }
         }
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 2) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {
-            #expect(Helper.lastOldValue == 1)
-            #expect(Helper.lastNewValue == 2)
-        }
+        #expect(Helper.lastOldValue == 1)
+        #expect(Helper.lastNewValue == 2)
     }
 
     // MARK: - String value changes
@@ -300,32 +273,21 @@ struct ValueActionModifierCompatibilityTests {
                     }
             }
         }
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 2) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
+            )
         }
-        withExtendedLifetime(vc) {
-            #expect(Helper.lastValue == "final")
-        }
+        #expect(Helper.lastValue == "final")
     }
 
     // MARK: - Boolean value changes
 
     @Test
     func booleanValueChanges() async throws {
-        enum Helper {
-            @MainActor
-            static var toggleCount = 0
-        }
-
         struct ContentView: View {
             @State private var isOn = false
             let confirmation: Confirmation
@@ -344,25 +306,18 @@ struct ValueActionModifierCompatibilityTests {
                         }
                     }
                     .onChange(of: isOn) {
-                        Helper.toggleCount += 1
                         confirmation()
                     }
             }
         }
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 3) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+
+        try await triggerLayoutWithWindow(expectedCount: 3) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
-        }
-        withExtendedLifetime(vc) {
-            #expect(Helper.toggleCount == 3)
+            )
         }
     }
 }
