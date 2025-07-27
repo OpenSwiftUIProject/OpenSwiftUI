@@ -15,11 +15,11 @@ package func changedBodyProperties<Body>(of type: Body.Type) -> [String] {
     var index = 0
     repeat {
         let options = [
-            Graph.descriptionFormat.takeUnretainedValue(): "stack/frame",
+            Graph.descriptionFormat: "stack/frame",
             "frame_index": index,
         ] as NSDictionary
         guard let description = Graph.description(nil, options: options),
-              let dict = description.takeUnretainedValue() as? [String: Any],
+              let dict = description as? [String: Any],
               let nodeID = dict["node-id"] as? UInt32,
               let selfType = dict["self-type"] as? BodyAccessorRule.Type,
               selfType.container == Body.self
