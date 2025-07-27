@@ -12,12 +12,24 @@ typealias PlatformHostingController = NSHostingController
 typealias PlatformViewController = NSViewController
 typealias PlatformView = NSView
 typealias PlatformImage = NSImage
+typealias PlatformColor = NSColor
+extension Color {
+    init(platformColor: PlatformColor) {
+        self.init(nsColor: platformColor)
+    }
+}
 #else
 import UIKit
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewController = UIViewController
 typealias PlatformView = UIView
 typealias PlatformImage = UIImage
+typealias PlatformColor = UIColor
+extension Color {
+    init(platformColor: PlatformColor) {
+        self.init(uiColor: platformColor)
+    }
+}
 #endif
 
 let defaultSize = CGSize(width: 200, height: 200)
