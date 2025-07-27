@@ -238,7 +238,9 @@ public func withTransaction<R, V>(
 @_transparent
 private var threadTransactionData: AnyObject? {
     get {
-        _threadTransactionData() as AnyObject?
+        _threadTransactionData().map {
+            Unmanaged<AnyObject>.fromOpaque($0).takeUnretainedValue()
+        }
     }
     set {
         _setThreadTransactionData(
