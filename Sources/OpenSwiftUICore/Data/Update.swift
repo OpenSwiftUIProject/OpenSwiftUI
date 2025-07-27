@@ -114,7 +114,16 @@ package enum Update {
         actions.append(action)
         end()
     }
-    
+
+    @discardableResult
+    package static func enqueueAction(
+        reason: ()?, // FIXME
+        _ action: @escaping () -> Void
+    ) -> UInt32 {
+        enqueueAction(action)
+        return .zero
+    }
+
     @inlinable
     @inline(__always)
     package static func locked<T>(_ body: () throws -> T) rethrows -> T {
