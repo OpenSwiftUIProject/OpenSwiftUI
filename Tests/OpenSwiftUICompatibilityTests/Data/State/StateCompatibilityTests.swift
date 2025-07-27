@@ -23,11 +23,13 @@ struct StateCompatibilityTests {
                     }
             }
         }
-        var vc: PlatformViewController!
-        await confirmation { @MainActor confirmation in
-            vc = PlatformHostingController(rootView: ContentView(confirmation: confirmation))
-            vc.triggerLayout()
+        
+        try await triggerLayoutWithWindow { confirmation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation
+                )
+            )
         }
-        withExtendedLifetime(vc) {}
     }
 }

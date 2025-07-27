@@ -39,7 +39,6 @@ struct ChangedBodyPropertyCompatibilityTests {
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         try verifyLog(expected: "ChangedBodyPropertyCompatibilityTests.ContentView: @self changed.")
-        withExtendedLifetime(vc) {}
     }
     
     #if !OPENSWIFTUI
@@ -57,7 +56,6 @@ struct ChangedBodyPropertyCompatibilityTests {
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         try verifyLog(expected: "ChangedBodyPropertyCompatibilityTests.ContentView: @self changed.")
-        withExtendedLifetime(vc) {}
     }
     
     #if !OPENSWIFTUI
@@ -75,7 +73,6 @@ struct ChangedBodyPropertyCompatibilityTests {
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
         try verifyLog(expected: "ChangedBodyPropertyCompatibilityTests.ContentView: @self, @identity, _name changed.")
-        withExtendedLifetime(vc) {}
     }
 }
 #endif

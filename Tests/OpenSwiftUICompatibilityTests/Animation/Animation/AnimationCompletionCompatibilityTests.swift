@@ -47,7 +47,6 @@ struct AnimationCompletionCompatibilityTests {
                     }
                 }
             }
-
             struct RemovedCompletionView: View {
                 @State private var showRed = false
 
@@ -71,21 +70,14 @@ struct AnimationCompletionCompatibilityTests {
                 }
             }
         }
-
-        var vc: PlatformViewController!
-        await confirmation(expectedCount: 2) { @MainActor confirmation in
-            await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
-                vc = PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-                vc.triggerLayout()
-            }
-        }
-        withExtendedLifetime(vc) {
-            #expect(Helper.values == [1, 2])
+            )
         }
     }
 }

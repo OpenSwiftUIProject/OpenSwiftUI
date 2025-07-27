@@ -10,6 +10,7 @@ package import SwiftUI
 
 #if os(iOS)
 package import UIKit
+package typealias PlatformWindow = UIWindow
 package typealias PlatformViewController = UIViewController
 package typealias PlatformView = UIView
 package typealias PlatformViewControllerRepresentable = UIViewControllerRepresentable
@@ -24,6 +25,7 @@ extension Color {
 }
 #elseif os(macOS)
 package import AppKit
+package typealias PlatformWindow = NSWindow
 package typealias PlatformViewController = NSViewController
 package typealias PlatformView = NSView
 // package typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
