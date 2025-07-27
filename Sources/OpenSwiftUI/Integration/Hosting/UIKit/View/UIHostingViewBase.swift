@@ -910,7 +910,7 @@ final package class DisplayLink: NSObject {
             if nextThread == .async {
                 Self.asyncPending = true
                 if Self.asyncRunloop == nil {
-                    let threadName = "org.OpenSwiftUI.OpenSwiftUI.AsyncRenderer"
+                    let threadName = "org.OpenSwiftUIProject.OpenSwiftUI.AsyncRenderer"
                     while true {
                         if Self.asyncThread == nil { // FIXME:
                             let thread = Thread(
