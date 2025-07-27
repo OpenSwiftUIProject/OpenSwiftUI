@@ -152,6 +152,4 @@ struct PlatformViewRepresentableContext<Representable: PlatformViewRepresentable
     }
 }
 
-// MARK: - PlatformViewCoordinator
 
-class PlatformViewCoordinator: NSObject {}
