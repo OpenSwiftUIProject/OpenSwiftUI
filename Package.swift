@@ -432,13 +432,13 @@ if renderGTKCondition {
 }
 
 if !compatibilityTestCondition {
-    package.targets.append(contentsOf: [
+    package.targets += [
         coreGraphicsShimsTestTarget,
         openSwiftUISPITestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUIBridgeTestTarget,
-    ])
+    ]
 }
 
 if buildForDarwinPlatform {
@@ -451,11 +451,12 @@ if symbolLocatorCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0")
     )
-
     package.targets += [
-        openSwiftUISymbolDualTestsSupportTarget,
-        openSwiftUISymbolDualTestsTarget,
+        openSwiftUISymbolDualTestsSupportTarget
     ]
+    if !compatibilityTestCondition {
+        package.targets.append(openSwiftUISymbolDualTestsTarget)
+    }
 }
 
 extension Target {
