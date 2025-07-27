@@ -1,5 +1,5 @@
 //
-//  IdentifiedViewProxyTests.swift
+//  IdentifiedViewProxyCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
@@ -8,7 +8,7 @@ import UIKit
 #endif
 
 @MainActor
-struct IdentifiedViewProxyTests {
+struct IdentifiedViewProxyCompatibilityTests {
     @Test
     func boundingRect() async {
         #if os(iOS) && OPENSWIFTUI_COMPATIBILITY_TEST // FIXME: add _identified modifier

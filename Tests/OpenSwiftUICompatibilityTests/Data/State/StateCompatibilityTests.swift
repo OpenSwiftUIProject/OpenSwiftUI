@@ -1,12 +1,12 @@
 //
-//  StateTests.swift
+//  StateCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 import OpenSwiftUITestsSupport
 
 #if canImport(Darwin)
-struct StateTests {
+struct StateCompatibilityTests {
     @Test
     func appear() async throws {
         struct ContentView: View {

@@ -1,16 +1,16 @@
 //
-//  EquatableViewTests.swift
-//  OpenSwiftUITests
+//  EquatableViewCompatibilityTests.swift
+//  OpenSwiftUICompatibilityTests
 
 import Foundation
 import OpenSwiftUITestsSupport
 import Testing
 
-// MARK: - EquatableViewTests
+// MARK: - EquatableViewCompatibilityTests
 
 #if canImport(Darwin)
 
-struct EquatableViewTests {
+struct EquatableViewCompatibilityTests {
     // Inspired by https://swiftui-lab.com/equatableview/
     // NOTES:
     // 1. Even we implement Equatable and use EquatableView, the body will still call 2 times.

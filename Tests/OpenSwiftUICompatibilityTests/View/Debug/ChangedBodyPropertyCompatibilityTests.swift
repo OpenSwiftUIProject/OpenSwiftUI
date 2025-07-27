@@ -1,5 +1,5 @@
 //
-//  ChangedBodyPropertyTests.swift
+//  ChangedBodyPropertyCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 #if canImport(Darwin) && !OPENSWIFTUI_SWIFT_LOG
@@ -8,7 +8,7 @@ import OSLog
 import OpenSwiftUITestsSupport
 
 @MainActor
-struct ChangedBodyPropertyTests {
+struct ChangedBodyPropertyCompatibilityTests {
     @available(iOS 15, macOS 12, *)
     private func verifyLog(expected: String) throws {
         let store = try OSLogStore(scope: .currentProcessIdentifier)
@@ -38,7 +38,7 @@ struct ChangedBodyPropertyTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        try verifyLog(expected: "ChangedBodyPropertyTests.ContentView: @self changed.")
+        try verifyLog(expected: "ChangedBodyPropertyCompatibilityTests.ContentView: @self changed.")
         withExtendedLifetime(vc) {}
     }
     
@@ -56,7 +56,7 @@ struct ChangedBodyPropertyTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        try verifyLog(expected: "ChangedBodyPropertyTests.ContentView: @self changed.")
+        try verifyLog(expected: "ChangedBodyPropertyCompatibilityTests.ContentView: @self changed.")
         withExtendedLifetime(vc) {}
     }
     
@@ -74,7 +74,7 @@ struct ChangedBodyPropertyTests {
         }
         let vc = PlatformHostingController(rootView: ContentView())
         vc.triggerLayout()
-        try verifyLog(expected: "ChangedBodyPropertyTests.ContentView: @self, @identity, _name changed.")
+        try verifyLog(expected: "ChangedBodyPropertyCompatibilityTests.ContentView: @self, @identity, _name changed.")
         withExtendedLifetime(vc) {}
     }
 }

@@ -1,10 +1,10 @@
 //
-//  AnyViewTests.swift
+//  AnyViewCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 
-struct AnyViewTests {
+struct AnyViewCompatibilityTests {
     @Test
     func testInitFromValue() {
         let empty = EmptyView()

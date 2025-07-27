@@ -1,11 +1,11 @@
 //
-//  RGBColorSpaceTests.swift
+//  RGBColorSpaceCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 import Numerics
 
-struct RGBColorSpaceTests {
+struct RGBColorSpaceCompatibilityTests {
     struct IO {
         var input: (hue: Double, saturation: Double, brightness: Double)
         var output: (red: Double, green: Double, blue: Double)

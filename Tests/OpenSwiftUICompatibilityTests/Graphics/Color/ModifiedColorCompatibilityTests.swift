@@ -1,11 +1,11 @@
 //
-//  ModifiedColorTests.swift
+//  ModifiedColorCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 import Numerics
 
-struct ModifiedColorTests {
+struct ModifiedColorCompatibilityTests {
     @available(OpenSwiftUI_v1_0, *)
     @Test(arguments:
         [

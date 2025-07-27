@@ -1,10 +1,10 @@
 //
-//  EnvironmentValuesTests.swift
+//  EnvironmentValuesCompatibilityTests.swift
 //  OpenSwiftUICompatibilityTests
 
 import Testing
 
-struct EnvironmentValuesTests {
+struct EnvironmentValuesCompatibilityTests {
     struct BoolKey: EnvironmentKey {
         fileprivate static var name: String { "EnvironmentPropertyKey<BoolKey>" }
         
