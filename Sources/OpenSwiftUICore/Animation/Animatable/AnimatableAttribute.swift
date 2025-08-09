@@ -312,7 +312,7 @@ package struct AnimatableAttributeHelper<Value> where Value: Animatable {
         sampleCollector: (Value.AnimatableData, Time) -> Void
     ) {
         var animationTime = -Time.infinity
-        if let animatorState {
+        if animatorState != nil {
             let (time, timeChanged) = $time.changedValue()
             if timeChanged {
                 animationTime = time
@@ -603,6 +603,7 @@ final package class AnimatorState<V> where V: VectorArithmetic {
             time: elapsed,
             environment: environment
         )
+        state = context.state
         value += newValue
         value -= interval
         previousAnimationValue = newValue

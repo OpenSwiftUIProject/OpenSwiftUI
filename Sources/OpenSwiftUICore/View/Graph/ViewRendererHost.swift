@@ -246,7 +246,7 @@ extension ViewRendererHost {
     ) -> Time? {
         Update.assertIsLocked()
         guard !isRendering,
-              !propertiesNeedingUpdate.isEmpty else {
+              propertiesNeedingUpdate.isEmpty else {
             return nil
         }
         let viewGraph = viewGraph

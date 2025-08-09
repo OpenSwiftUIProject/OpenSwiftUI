@@ -33,7 +33,7 @@ extension Animation {
     }
 }
 
-struct ElasticEaseInEaseOutView: View {
+struct ElasticEaseInEaseOutAnimationExample: View {
     @State private var isActive = false
 
     var body: some View {

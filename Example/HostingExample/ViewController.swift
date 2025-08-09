@@ -66,6 +66,6 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        AnimationCompleteExample()
+        SpringAnimationExample()
     }
 }

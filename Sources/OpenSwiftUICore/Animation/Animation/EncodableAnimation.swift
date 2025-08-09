@@ -35,7 +35,17 @@ extension EncodableAnimation {
     }
 }
 
-// TODO: SpringAnimation and FluidSpringAnimation should conform to EncodableAnimation
+extension SpringAnimation: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? {
+        .init(rawValue: 2)
+    }
+}
+
+extension FluidSpringAnimation: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? {
+        .init(rawValue: 3)
+    }
+}
 
 extension DefaultAnimation: EncodableAnimation {
     package static var leafProtobufTag: CodableAnimation.Tag? {

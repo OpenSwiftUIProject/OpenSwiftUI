@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by FluidSpringAnimation
+//  Status: Complete
 
 package import Foundation
 
@@ -92,8 +92,7 @@ extension Animation {
 package struct DefaultAnimation: InternalCustomAnimation {
     static let base: Animation = {
         if isDeployedOnOrAfter(Semantics.v5) {
-            // TODO: FluidSpringAnimation()
-            .easeInOut
+            .spring
         } else {
             .easeInOut
         }
