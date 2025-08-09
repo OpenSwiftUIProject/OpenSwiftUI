@@ -70,9 +70,8 @@ extension Spring {
     /// Calculates the value of the spring at a given time given a target amount of change.
     public func value<V>(target: V, initialVelocity: V = .zero, time: TimeInterval) -> V where V: VectorArithmetic {
         if angularFrequency > 0 {
-            let sincos = __sincos_stret(angularFrequency * time)
-            let sinval = sincos.__sinval
-            let cosval = sincos.__cosval
+            let sinval = sin(angularFrequency * time)
+            let cosval = cos(angularFrequency * time)
 
             let displacement = (target.scaled(by: decayConstant) - initialVelocity).scaled(by: sinval / angularFrequency) + target.scaled(by: cosval)
             return target - displacement.scaled(by: exp(-decayConstant * time))
@@ -97,9 +96,8 @@ extension Spring {
     public func velocity<V>(target: V, initialVelocity: V = .zero, time: TimeInterval) -> V where V: VectorArithmetic {
         if angularFrequency > 0 {
             let dampingTerm = exp(-decayConstant * time)
-            let sincos = __sincos_stret(angularFrequency * time)
-            let sinval = sincos.__sinval
-            let cosval = sincos.__cosval
+            let sinval = sin(angularFrequency * time)
+            let cosval = cos(angularFrequency * time)
 
             let targetTerm = target.scaled(by: (angularFrequency * sinval + decayConstant * cosval) * dampingTerm)
             let displacementFactor = (decayConstant * sinval - angularFrequency * cosval) * dampingTerm / angularFrequency
