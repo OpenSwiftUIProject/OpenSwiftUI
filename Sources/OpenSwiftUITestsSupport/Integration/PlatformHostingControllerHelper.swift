@@ -76,4 +76,20 @@ package func triggerLayoutWithWindow(
     withExtendedLifetime(window) {}
 }
 
+@MainActor
+package func triggerLayoutWithWindow(
+    expectedCount: some RangeExpression<Int> & Sendable & Sequence<Int>,
+    _ body: @escaping @MainActor (Confirmation, UnsafeContinuation<Void, Never>) -> PlatformViewController
+) async throws {
+    var window: PlatformWindow!
+    await confirmation(expectedCount: expectedCount) { @MainActor confirmation in
+        await withUnsafeContinuation { (continuation: UnsafeContinuation<Void, Never>) in
+            let vc = body(confirmation, continuation)
+            vc.triggerLayout()
+            window = vc.view.window
+        }
+    }
+    withExtendedLifetime(window) {}
+}
+
 #endif
