@@ -5,6 +5,8 @@
 //  Audited for 6.0.87
 //  Status: Complete
 
+// MARK: - AnimatablePair
+
 /// A pair of animatable values, which is itself animatable.
 @frozen
 public struct AnimatablePair<First, Second>: VectorArithmetic where First: VectorArithmetic, Second: VectorArithmetic {
@@ -68,3 +70,12 @@ public struct AnimatablePair<First, Second>: VectorArithmetic where First: Vecto
 }
 
 extension AnimatablePair: Sendable where First: Sendable, Second: Sendable {}
+
+
+// MARK: - AnimatablePair + CustomDebugStringConvertible [OpenSwiftUI Addition]
+
+extension AnimatablePair: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "\(first), \(second)"
+    }
+}

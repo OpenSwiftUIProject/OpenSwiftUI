@@ -8,6 +8,8 @@
 
 public import Foundation
 
+// MARK: - FluidSpringAnimation
+
 package struct FluidSpringAnimation: InternalCustomAnimation {
     package var response: Double
     package var dampingFraction: Double
@@ -135,6 +137,8 @@ package struct FluidSpringAnimation: InternalCustomAnimation {
     }
 }
 
+// MARK: - SpringState
+
 private struct SpringState<V>: AnimationStateKey where V: VectorArithmetic {
     var offset: V = .zero
     var velocity: V = .zero
@@ -151,12 +155,34 @@ private struct SpringState<V>: AnimationStateKey where V: VectorArithmetic {
     init() {}
 }
 
+// MARK: - SpringState + CustomDebugStringConvertible [OpenSwiftUI Addition]
+
+extension SpringState: CustomDebugStringConvertible {
+    var debugDescription: String {
+        #"""
+        SpringState<
+            offset: \#(offset),
+            velocity: \#(velocity),
+            force: \#(force),
+            time: \#(time),
+            startTime: \#(startTime),
+            blendStart: \#(blendStart),
+            blendInterval: \#(blendInterval)
+        >
+        """#
+    }
+}
+
+// MARK: - AnimationContext + SpringState
+
 extension AnimationContext {
     fileprivate var springState: SpringState<Value> {
         get { state[SpringState<Value>.self] }
         set { state[SpringState<Value>.self] = newValue }
     }
 }
+
+// MARK: - Spring Functions
 
 @_alwaysEmitIntoClient
 func springStiffness(response: Double) -> Double {
