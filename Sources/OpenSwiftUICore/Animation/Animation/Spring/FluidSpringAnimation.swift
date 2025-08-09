@@ -40,7 +40,7 @@ package struct FluidSpringAnimation: InternalCustomAnimation {
             let blendValue = springState.blendInterval * (1.0 - progress * progress * (3.0 - progress * 2.0))
             r = response + blendValue
         } else {
-            r = .zero
+            r = response
         }
         let stiffness = min(r > 0 ? pow(.tau / r, 2) : 1.0, 45000.0)
         if time - springState.startTime >= r {
@@ -74,6 +74,7 @@ package struct FluidSpringAnimation: InternalCustomAnimation {
             t += 1 / 300
         }
         springState.time = t
+        context.springState = springState
 
         guard max(
             springState.velocity.magnitudeSquared,
