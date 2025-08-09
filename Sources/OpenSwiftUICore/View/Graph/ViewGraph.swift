@@ -380,7 +380,8 @@ extension ViewGraph {
     
     package func updateOutputsAsync(at time: Time) -> (list: DisplayList, version: DisplayList.Version)? {
         beginNextUpdate(at: time)
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return nil
     }
     
     package func displayList() -> (DisplayList, DisplayList.Version) {
