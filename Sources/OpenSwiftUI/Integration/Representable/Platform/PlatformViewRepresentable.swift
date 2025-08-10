@@ -110,30 +110,105 @@ extension PlatformViewRepresentable where PlatformViewProvider: PlatformViewCont
 
 #endif
 
-// MARK: - PlatformViewChild
+// MARK: - PlatformViewChild [WIP]
 
-//struct PlatformViewChild<Representable: PlatformViewRepresentable> {
-//    @Attribute var view: Representable
-//    @Attribute var environment: EnvironmentValues
-//    @Attribute var transaction: Transaction
-//    @Attribute var phase: _GraphInputs.Phase
-//    @Attribute var position: CGPoint
-//    @Attribute var size: ViewSize
-//    @Attribute var transform: ViewTransform
-//    @OptionalAttribute var focusedValues: FocusedValues?
-//    let parentID: ScrapeableID
-//    let bridge: PreferenceBridge
-//    let importer: EmptyPreferenceImporter
-//    var links: _DynamicPropertyBuffer
-//    var coordinator: Representable.Coordinator?
-//    var platformView: PlatformViewHost<Representable>?
-//    var resetSeed: UInt32
-//    let tracker: PropertyList.Tracker
-//
-//    private func reset() {
-//        //
-//    }
-//}
+// TODO: ScrapeableAttribute
+struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
+    @Attribute var view: Content
+    @Attribute var environment: EnvironmentValues
+    @Attribute var transaction: Transaction
+    @Attribute var phase: _GraphInputs.Phase
+    @Attribute var position: ViewOrigin
+    @Attribute var size: ViewSize
+    @Attribute var transform: ViewTransform
+    @OptionalAttribute var focusedValues: FocusedValues?
+    let parentID: ScrapeableID
+    let bridge: PreferenceBridge
+    let importer: EmptyPreferenceImporter
+    var links: _DynamicPropertyBuffer
+    var coordinator: Content.Coordinator?
+    var platformView: PlatformViewHost<Content>?
+    var resetSeed: UInt32
+    let tracker: PropertyList.Tracker
+
+    init(
+        view: Attribute<Content>,
+        environment: Attribute<EnvironmentValues>,
+        transaction: Attribute<Transaction>,
+        phase: Attribute<_GraphInputs.Phase>,
+        position: Attribute<ViewOrigin>,
+        size: Attribute<ViewSize>,
+        transform: Attribute<ViewTransform>,
+        focusedValues: OptionalAttribute<FocusedValues>,
+        parentID: ScrapeableID,
+        bridge: PreferenceBridge,
+        importer: EmptyPreferenceImporter,
+        links: _DynamicPropertyBuffer,
+        coordinator: Content.Coordinator?,
+        platformView: PlatformViewHost<Content>?,
+        resetSeed: UInt32 = 0
+    ) {
+        self._view = view
+        self._environment = environment
+        self._transaction = transaction
+        self._phase = phase
+        self._position = position
+        self._size = size
+        self._transform = transform
+        self._focusedValues = focusedValues
+        self.parentID = parentID
+        self.bridge = bridge
+        self.importer = importer
+        self.links = links
+        self.coordinator = coordinator
+        self.platformView = platformView
+        self.resetSeed = resetSeed
+        self.tracker = .init()
+    }
+
+    typealias Value = ViewLeafView<Content>
+
+    mutating func updateValue() {
+        Signpost.platformUpdate.traceInterval(
+            object: nil,
+            "PlatformUpdate: (%p) %{public}@ [ %p ]",
+            [
+                AnyAttribute.current!.graph.graphIdentity(),
+                "\(Content.self)",
+                platformView.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0,
+            ]
+        ) {
+            // TODO
+            if coordinator == nil {
+                coordinator = view.makeCoordinator()
+            }
+            if platformView == nil {
+                let representableContext = PlatformViewRepresentableContext<Content>(
+                    coordinator: coordinator!,
+                    preferenceBridge: bridge,
+                    transaction: transaction,
+                    environmentStorage: .eager(environment)
+                )
+                let provider = view.makeViewProvider(context: representableContext)
+                platformView = PlatformViewHost(
+                    importer: importer,
+                    environment: environment,
+                    viewPhase: phase,
+                    representedViewProvider: provider
+                )
+            }
+            value = ViewLeafView(
+                content: view,
+                platformView: platformView!,
+                coordinator: coordinator!
+            )
+        }
+    }
+
+    private func reset() {
+        // TODO
+    }
+}
 
 // MARK: - ViewLeafView
 
