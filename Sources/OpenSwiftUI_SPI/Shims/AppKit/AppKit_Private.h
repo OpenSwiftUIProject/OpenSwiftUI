@@ -28,6 +28,6 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif /* AppKit.h */
+#endif /* __has_include(<AppKit/AppKit.h>) */
 
 #endif /* AppKit_Private_h */

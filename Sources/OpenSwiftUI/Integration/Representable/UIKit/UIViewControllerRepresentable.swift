@@ -48,6 +48,7 @@ import OpenGraphShims
 /// properties. Don't directly set these layout-related properties on the view
 /// managed by a `UIViewControllerRepresentable` instance from your own
 /// code because that conflicts with OpenSwiftUI and results in undefined behavior.
+@available(OpenSwiftUI_v1_0, *)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
@@ -89,6 +90,7 @@ public protocol UIViewControllerRepresentable: View where Body == Never {
     func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context)
 
     @_spi(Private)
+    @available(OpenSwiftUI_v3_0, *)
     func _resetUIViewController(_ uiViewController: UIViewControllerType, coordinator: Coordinator, destroy: () -> Void)
 
     /// Cleans up the presented view controller (and coordinator) in
@@ -142,51 +144,92 @@ public protocol UIViewControllerRepresentable: View where Body == Never {
     /// - Returns: The composite size of the represented view controller.
     ///   Returning a value of `nil` indicates that the system should use the
     ///   default sizing algorithm.
-    func sizeThatFits(_ proposal: ProposedViewSize, uiViewController: UIViewControllerType, context: Context) -> CGSize?
+    @available(OpenSwiftUI_v4_0, *)
+    func sizeThatFits(
+        _ proposal: ProposedViewSize,
+        uiViewController: UIViewControllerType,
+        context: Context
+    ) -> CGSize?
 
     /// Returns the tree of identified views within the platform view.
     func _identifiedViewTree(in uiViewController: UIViewControllerType) -> _IdentifiedViewTree
 
     /// Provides options for the specified platform view, which can be used to
     /// drive the bridging implementation for the representable.
+    @available(OpenSwiftUI_v5_0, *)
     static func _layoutOptions(_ provider: UIViewControllerType) -> LayoutOptions
 
     typealias Context = UIViewControllerRepresentableContext<Self>
 
+    @available(OpenSwiftUI_v5_0, *)
     typealias LayoutOptions = _PlatformViewRepresentableLayoutOptions
 }
 
 // MARK: - UIViewControllerRepresentable + Extension
 
+@available(OpenSwiftUI_v1_0, *)
 @available(macOS, unavailable)
 extension UIViewControllerRepresentable where Coordinator == () {
     public func makeCoordinator() -> Coordinator {
-        return
+        _openSwiftUIEmptyStub()
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 @available(macOS, unavailable)
 extension UIViewControllerRepresentable {
-    public func _resetUIViewController(_ uiViewController: UIViewControllerType, coordinator: Coordinator, destroy: () -> Void) {
+    @available(OpenSwiftUI_v3_0, *)
+    public func _resetUIViewController(
+        _ uiViewController: UIViewControllerType,
+        coordinator: Coordinator,
+        destroy: () -> Void
+    ) {
         destroy()
     }
 
-    public func sizeThatFits(_ proposal: ProposedViewSize, uiViewController: UIViewControllerType, context: Context) -> CGSize? { nil }
+    public func sizeThatFits(
+        _ proposal: ProposedViewSize,
+        uiViewController: UIViewControllerType,
+        context: Context
+    ) -> CGSize? {
+        nil
+    }
 
-    public static func dismantleUIViewController(_ uiViewController: UIViewControllerType, coordinator: Coordinator) {}
+    public static func dismantleUIViewController(
+        _ uiViewController: UIViewControllerType,
+        coordinator: Coordinator
+    ) {
+        _openSwiftUIEmptyStub()
+    }
 
-    nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+    nonisolated public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
         _openSwiftUIUnimplementedFailure()
     }
 
-    nonisolated public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+    nonisolated public static func _makeViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
         .unaryViewList(view: view, inputs: inputs)
     }
 
-    public func _identifiedViewTree(in uiViewController: UIViewControllerType) -> _IdentifiedViewTree { .empty }
+    public func _identifiedViewTree(
+        in uiViewController: UIViewControllerType
+    ) -> _IdentifiedViewTree {
+        .empty
+    }
 
-    // FIXME
-    public static func _layoutOptions(_ provider: UIViewControllerType) -> LayoutOptions { .init(rawValue: 1) }
+    @available(OpenSwiftUI_v5_0, *)
+    public static func _layoutOptions(
+        _ provider: UIViewControllerType
+    ) -> LayoutOptions {
+        .init(
+            rawValue: 1
+        )
+    }
 
     /// Declares the content and behavior of this view.
     public var body: Never {
@@ -223,6 +266,7 @@ private struct UnsupportedDisplayList: Rule {
 /// controller. For example, use the provided environment values to configure
 /// the appearance of your view controller and views. Don't create this
 /// structure yourself.
+@available(OpenSwiftUI_v1_0, *)
 @available(macOS, unavailable)
 @available(watchOS, unavailable)
 @MainActor
@@ -289,6 +333,7 @@ public struct UIViewControllerRepresentableContext<Representable> where Represen
     /// - Parameters:
     ///   - changes: A closure that changes animatable properties.
     ///   - completion: A closure to execute after the animation completes.
+    @available(OpenSwiftUI_v6_0, *)
     public func animate(changes: () -> Void, completion: (() -> Void)? = nil) {
         guard let animation = transaction.animation, !transaction.disablesAnimations else {
             changes()

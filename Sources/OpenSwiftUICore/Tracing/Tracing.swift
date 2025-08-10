@@ -87,7 +87,7 @@ package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
             [
                 current.rawValue,
                 1,
-                current.graph.counter(for: ._4) // FIXME: UInt
+                current.graph.graphIdentity()
             ]
         )
         #endif
@@ -101,4 +101,17 @@ package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
         ],
         closure: body
     )
+}
+
+extension Graph {
+    package func graphIdentity() -> UInt {
+        // FIXME: remove numericCast
+        numericCast(counter(for: ._4))
+    }
+}
+
+extension ViewGraph {
+    package var graphIdentity: UInt {
+        graph.graphIdentity()
+    }
 }

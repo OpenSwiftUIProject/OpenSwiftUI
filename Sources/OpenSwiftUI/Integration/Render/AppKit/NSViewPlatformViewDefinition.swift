@@ -59,5 +59,17 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
         _openSwiftUIUnimplementedFailure()
     }
+
+    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
+        Self.initView(view as! NSView, kind: kind)
+    }
+
+    override class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    override class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) {
+        _openSwiftUIUnimplementedWarning()
+    }
 }
 #endif

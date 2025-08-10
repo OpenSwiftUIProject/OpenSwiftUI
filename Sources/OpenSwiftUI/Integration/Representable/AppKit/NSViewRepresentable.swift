@@ -1,24 +1,24 @@
 //
-//  UIViewRepresentable.swift
+//  NSViewRepresentable.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: WIP
-//  ID: 19642D833A8FE469B137699ED1426762 (SwiftUI)
+//  ID: 38FE679A85C91B802D25DB73BF37B09F (SwiftUI)
 
-#if os(iOS)
+#if os(macOS)
 
-public import UIKit
+public import AppKit
 public import OpenSwiftUICore
 import OpenGraphShims
 
-// MARK: - UIViewRepresentable
+// MARK: - NSViewRepresentable
 
-/// A wrapper for a UIKit view that you use to integrate that view into your
-/// OpenSwiftUI view hierarchy.
+/// A wrapper that you use to integrate an AppKit view into your SwiftUI view
+/// hierarchy.
 ///
-/// Use a ``UIViewRepresentable`` instance to create and manage a
-/// [UIView](https://developer.apple.com/documentation/UIKit/UIView) object in your OpenSwiftUI
+/// Use an `NSViewRepresentable` instance to create and manage an
+/// [NSView](https://developer.apple.com/documentation/appkit/nsview) object in your OpenSwiftUI
 /// interface. Adopt this protocol in one of your app's custom instances, and
 /// use its methods to create, update, and tear down your view. The creation and
 /// update processes parallel the behavior of OpenSwiftUI views, and you use them to
@@ -28,10 +28,10 @@ import OpenGraphShims
 /// disappearing.
 ///
 /// To add your view into your OpenSwiftUI interface, create your
-/// ``UIViewRepresentable`` instance and add it to your OpenSwiftUI interface. The
+/// ``NSViewRepresentable`` instance and add it to your OpenSwiftUI interface. The
 /// system calls the methods of your representable instance at appropriate times
 /// to create and update the view. The following example shows the inclusion of
-/// a custom `MyRepresentedCustomView` structure in the view hierarchy.
+/// a custom `MyRepresentedCustomView` struct in the view hierarchy.
 ///
 ///     struct ContentView: View {
 ///        var body: some View {
@@ -43,64 +43,65 @@ import OpenGraphShims
 ///     }
 ///
 /// The system doesn't automatically communicate changes occurring within your
-/// view to other parts of your OpenSwiftUI interface. When you want your view to
-/// coordinate with other OpenSwiftUI views, you must provide a
-/// ``UIViewRepresentable/Coordinator`` instance to facilitate those
+/// view controller to other parts of your OpenSwiftUI interface. When you want your
+/// view controller to coordinate with other OpenSwiftUI views, you must provide a
+/// ``NSViewControllerRepresentable/Coordinator`` object to facilitate those
 /// interactions. For example, you use a coordinator to forward target-action
-/// and delegate messages from your view to any OpenSwiftUI views.
+/// and delegate messages from your view controller to any OpenSwiftUI views.
 ///
-/// - Warning: OpenSwiftUI fully controls the layout of the UIKit view's
-/// [center](https://developer.apple.com/documentation/UIKit/UIView/1622627-center),
-/// [bounds](https://developer.apple.com/documentation/UIKit/UIView/1622580-bounds),
-/// [frame](https://developer.apple.com/documentation/UIKit/UIView/1622621-frame), and
-/// [transform](https://developer.apple.com/documentation/UIKit/UIView/1622459-transform)
+/// - Warning: OpenSwiftUI fully controls the layout of the AppKit view using the view's
+/// [frame](https://developer.apple.com/documentation/appkit/nsview/1483713-frame) and
+/// [bounds](https://developer.apple.com/documentation/appkit/nsview/1483817-bounds)
 /// properties. Don't directly set these layout-related properties on the view
-/// managed by a `UIViewRepresentable` instance from your own
+/// managed by an `NSViewRepresentable` instance from your own
 /// code because that conflicts with OpenSwiftUI and results in undefined behavior.
 @available(OpenSwiftUI_v1_0, *)
-@available(macOS, unavailable)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor
+@available(visionOS, unavailable)
 @preconcurrency
-public protocol UIViewRepresentable: View where Body == Never {
+@MainActor
+public protocol NSViewRepresentable: View where Body == Never {
     /// The type of view to present.
-    associatedtype UIViewType: UIView
-    
+    associatedtype NSViewType: NSView
+
     /// Creates the view object and configures its initial state.
     ///
     /// You must implement this method and use it to create your view object.
     /// Configure the view using your app's current data and contents of the
     /// `context` parameter. The system calls this method only once, when it
     /// creates your view for the first time. For all subsequent updates, the
-    /// system calls the ``UIViewRepresentable/updateUIView(_:context:)``
+    /// system calls the ``NSViewRepresentable/updateNSView(_:context:)``
     /// method.
     ///
     /// - Parameter context: A context structure containing information about
     ///   the current state of the system.
     ///
-    /// - Returns: Your UIKit view configured with the provided information.
-    func makeUIView(context: Context) -> UIViewType
+    /// - Returns: Your AppKit view configured with the provided information.
+    func makeNSView(context: Context) -> NSViewType
 
     /// Updates the state of the specified view with new information from
-    /// OpenSwiftUI
+    /// OpenSwiftUI.
     ///
     /// When the state of your app changes, OpenSwiftUI updates the portions of your
     /// interface affected by those changes. OpenSwiftUI calls this method for any
-    /// changes affecting the corresponding UIKit view. Use this method to
+    /// changes affecting the corresponding AppKit view. Use this method to
     /// update the configuration of your view to match the new state information
     /// provided in the `context` parameter.
     ///
     /// - Parameters:
-    ///   - uiView: Your custom view object.
+    ///   - nsView: Your custom view object.
     ///   - context: A context structure containing information about the current
     ///     state of the system.
-    func updateUIView(_ uiView: UIViewType, context: Context)
-    
+    func updateNSView(_ nsView: NSViewType, context: Context)
+
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
-    func _resetUIView(_ uiView: UIViewType, coordinator: Coordinator, destroy: () -> Void)
+    func _resetNSView(_ nsView: NSViewType, coordinator: Coordinator, destroy: () -> Void)
 
-    /// Cleans up the presented UIKit view (and coordinator) in anticipation of
+
+    /// Cleans up the presented AppKit view (and coordinator) in anticipation of
     /// their removal.
     ///
     /// Use this method to perform additional clean-up work related to your
@@ -108,15 +109,15 @@ public protocol UIViewRepresentable: View where Body == Never {
     /// or update other parts of your OpenSwiftUI interface.
     ///
     /// - Parameters:
-    ///   - uiView: Your custom view object.
-    ///   - coordinator: The custom coordinator instance you use to communicate
-    ///     changes back to Open If you do not use a custom coordinator, the
+    ///   - nsView: Your custom view object.
+    ///   - coordinator: The custom coordinator you use to communicate changes
+    ///     back to SwiftUI. If you do not use a custom coordinator instance, the
     ///     system provides a default instance.
-    static func dismantleUIView(_ uiView: UIViewType, coordinator: Coordinator)
-    
+    static func dismantleNSView(_ nsView: NSViewType, coordinator: Coordinator)
+
     /// A type to coordinate with the view.
     associatedtype Coordinator = Void
-    
+
     /// Creates the custom instance that you use to communicate changes from
     /// your view to other parts of your OpenSwiftUI interface.
     ///
@@ -125,28 +126,28 @@ public protocol UIViewRepresentable: View where Body == Never {
     /// can communicate with other parts of your interface. For example, you
     /// might provide an instance that binds its variables to OpenSwiftUI
     /// properties, causing the two to remain synchronized. If your view doesn't
-    /// interact with other parts of your app, providing a coordinator is
-    /// unnecessary.
+    /// interact with other parts of your app, you don't have to provide a
+    /// coordinator.
     ///
-    /// OpenSwiftUI calls this method before calling the
-    /// ``UIViewRepresentable/makeUIView(context:)`` method. The system provides
-    /// your coordinator either directly or as part of a context structure when
-    /// calling the other methods of your representable instance.
+    /// SwiftUI calls this method before calling the
+    /// ``NSViewRepresentable/makeNSView(context:)`` method. The system provides
+    /// your coordinator instance either directly or as part of a context
+    /// structure when calling the other methods of your representable instance.
     func makeCoordinator() -> Coordinator
 
     /// Returns the tree of identified views within the platform view.
-    func _identifiedViewTree(in uiView: UIViewType) -> _IdentifiedViewTree
+    func _identifiedViewTree(in nsView: NSViewType) -> _IdentifiedViewTree
 
     /// Given a proposed size, returns the preferred size of the composite view.
     ///
     /// This method may be called more than once with different proposed sizes
-    /// during the same layout pass. OpenSwiftUI views choose their own size, so one
+    /// during the same layout pass. SwiftUI views choose their own size, so one
     /// of the values returned from this function will always be used as the
     /// actual size of the composite view.
     ///
     /// - Parameters:
     ///   - proposal: The proposed size for the view.
-    ///   - uiView: Your custom view object.
+    ///   - nsView: Your custom view object.
     ///   - context: A context structure containing information about the
     ///     current state of the system.
     ///
@@ -154,9 +155,11 @@ public protocol UIViewRepresentable: View where Body == Never {
     ///   Returning a value of `nil` indicates that the system should use the
     ///   default sizing algorithm.
     @available(OpenSwiftUI_v4_0, *)
+    @MainActor
+    @preconcurrency
     func sizeThatFits(
         _ proposal: ProposedViewSize,
-        uiView: UIViewType,
+        nsView: NSViewType,
         context: Context
     ) -> CGSize?
 
@@ -164,11 +167,14 @@ public protocol UIViewRepresentable: View where Body == Never {
     func _overrideSizeThatFits(
         _ size: inout CGSize,
         in proposedSize: _ProposedSize,
-        uiView: UIViewType
+        nsView: NSViewType
     )
 
     /// Custom layoutTraits hook.
-    func _overrideLayoutTraits(_ layoutTraits: inout _LayoutTraits, for uiView: UIViewType)
+    func _overrideLayoutTraits(
+        _ layoutTraits: inout _LayoutTraits,
+        for nsView: NSViewType
+    )
 
     /// Modify inherited view inputs that would be inherited by any contained
     /// host views.
@@ -178,44 +184,53 @@ public protocol UIViewRepresentable: View where Body == Never {
     /// inputs provided to the view representable view itself, as well as from
     /// the inputs constructed by a child host (though is used as a set of
     /// partial inputs for the latter).
-    @available(OpenSwiftUI_v3_0, *)
+    @available(OpenSwiftUI_v2_3, *)
     static func _modifyBridgedViewInputs(_ inputs: inout _ViewInputs)
+
+    @available(OpenSwiftUI_v4_0, *)
+    static var _invalidatesSizeOnConstraintChanges: Bool { get }
 
     /// Provides options for the specified platform view, which can be used to
     /// drive the bridging implementation for the representable.
-    @available(OpenSwiftUI_v5_0, *)
-    static func _layoutOptions(_ provider: UIViewType) -> LayoutOptions
+    @available(OpenSwiftUI_v4_0, *)
+    static func _layoutOptions(_ provider: NSViewType) -> LayoutOptions
 
-    typealias Context = UIViewRepresentableContext<Self>
+    typealias Context = NSViewRepresentableContext<Self>
 
-    @available(OpenSwiftUI_v5_0, *)
+    @available(OpenSwiftUI_v4_0, *)
     typealias LayoutOptions = _PlatformViewRepresentableLayoutOptions
 }
 
-// MARK: - UIViewRepresentable + Extension
+// MARK: - NSViewRepresentable + Extension
 
 @available(OpenSwiftUI_v1_0, *)
-@available(macOS, unavailable)
-extension UIViewRepresentable where Coordinator == () {
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension NSViewRepresentable where Coordinator == () {
     public func makeCoordinator() -> Coordinator {
         _openSwiftUIEmptyStub()
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
-@available(macOS, unavailable)
-extension UIViewRepresentable {
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension NSViewRepresentable {
     @available(OpenSwiftUI_v3_0, *)
-    public func _resetUIView(
-        _ uiView: UIViewType,
+    public func _resetNSView(
+        _ nsView: NSViewType,
         coordinator: Coordinator,
         destroy: () -> Void
     ) {
         destroy()
     }
 
-    public static func dismantleUIView(
-        _ uiView: UIViewType,
+    public static func dismantleNSView(
+        _ nsView: NSViewType,
         coordinator: Coordinator
     ) {
         _openSwiftUIEmptyStub()
@@ -226,7 +241,7 @@ extension UIViewRepresentable {
         inputs: _ViewInputs
     ) -> _ViewOutputs {
         typealias Adapter = PlatformViewRepresentableAdaptor<Self>
-        precondition(isLinkedOnOrAfter(.v4) ? Metadata(Self.self).isValueType : true, "UIViewRepresentables must be value types: \(Self.self)")
+        precondition(isLinkedOnOrAfter(.v4) ? Metadata(Self.self).isValueType : true, "NSViewRepresentables must be value types: \(Self.self)")
         return Adapter._makeView(view: view.unsafeBitCast(to: Adapter.self), inputs: inputs)
     }
 
@@ -238,7 +253,7 @@ extension UIViewRepresentable {
     }
 
     public func _identifiedViewTree(
-        in uiView: UIViewType
+        in nsView: NSViewType
     ) -> _IdentifiedViewTree {
         .empty
     }
@@ -246,7 +261,7 @@ extension UIViewRepresentable {
     @available(OpenSwiftUI_v4_0, *)
     public func sizeThatFits(
         _ proposal: ProposedViewSize,
-        uiView: UIViewType,
+        nsView: NSViewType,
         context: Context
     ) -> CGSize? {
         nil
@@ -255,33 +270,38 @@ extension UIViewRepresentable {
     public func _overrideSizeThatFits(
         _ size: inout CGSize,
         in proposedSize: _ProposedSize,
-        uiView: UIViewType
+        nsView: NSViewType
     ) {
         _openSwiftUIEmptyStub()
     }
+
 
     public func _overrideLayoutTraits(
         _ layoutTraits: inout _LayoutTraits,
-        for uiView: UIViewType
+        for nsView: NSViewType
     ) {
         _openSwiftUIEmptyStub()
     }
 
-    @available(OpenSwiftUI_v3_0, *)
+    @available(OpenSwiftUI_v2_3, *)
     public static func _modifyBridgedViewInputs(
         _ inputs: inout _ViewInputs
     ) {
         _openSwiftUIEmptyStub()
     }
 
-    @available(OpenSwiftUI_v5_0, *)
+    @available(OpenSwiftUI_v4_0, *)
+    public static var _invalidatesSizeOnConstraintChanges: Bool {
+        true
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
     public static func _layoutOptions(
-        _ provider: UIViewType
+        _ provider: NSViewType
     ) -> LayoutOptions {
         .init(rawValue: 1)
     }
 
-    /// Declares the content and behavior of this view.
     public var body: Never {
         bodyError()
     }
@@ -289,31 +309,31 @@ extension UIViewRepresentable {
 
 // MARK: - PlatformViewRepresentableAdaptor
 
-private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: UIViewRepresentable {
+private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: NSViewRepresentable {
     var base: Base
 
     static var dynamicProperties: DynamicPropertyCache.Fields {
         DynamicPropertyCache.fields(of: Base.self)
     }
 
-    typealias PlatformViewProvider = Base.UIViewType
+    typealias PlatformViewProvider = Base.NSViewType
 
     typealias Coordinator = Base.Coordinator
 
     func makeViewProvider(context: Context) -> PlatformViewProvider {
-        base.makeUIView(context: .init(context))
+        base.makeNSView(context: .init(context))
     }
 
     func updateViewProvider(_ provider: PlatformViewProvider, context: Context) {
-        base.updateUIView(provider, context: .init(context))
+        base.updateNSView(provider, context: .init(context))
     }
 
     func resetViewProvider(_ provider: PlatformViewProvider, coordinator: Coordinator, destroy: () -> Void) {
-        base._resetUIView(provider, coordinator: coordinator, destroy: destroy)
+        base._resetNSView(provider, coordinator: coordinator, destroy: destroy)
     }
 
     static func dismantleViewProvider(_ provider: PlatformViewProvider, coordinator: Coordinator) {
-        Base.dismantleUIView(provider, coordinator: coordinator)
+        Base.dismantleNSView(provider, coordinator: coordinator)
     }
 
     func makeCoordinator() -> Coordinator {
@@ -325,11 +345,11 @@ private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable
     }
 
     func sizeThatFits(_ proposal: ProposedViewSize, provider: PlatformViewProvider, context: Context) -> CGSize? {
-        base.sizeThatFits(proposal, uiView: provider, context: .init(context))
+        base.sizeThatFits(proposal, nsView: provider, context: .init(context))
     }
 
     func overrideSizeThatFits(_ size: inout CGSize, in proposedSize: _ProposedSize, platformView: PlatformViewProvider) {
-        base._overrideSizeThatFits(&size, in: proposedSize, uiView: platformView)
+        base._overrideSizeThatFits(&size, in: proposedSize, nsView: platformView)
     }
 
     func overrideLayoutTraits(_ traits: inout _LayoutTraits, for provider: PlatformViewProvider) {
@@ -340,7 +360,7 @@ private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable
         Base._modifyBridgedViewInputs(&inputs)
     }
 
-    static func shouldEagerlyUpdateSafeArea(_ provider: Base.UIViewType) -> Bool {
+    static func shouldEagerlyUpdateSafeArea(_ provider: Base.NSViewType) -> Bool {
         false
     }
 
@@ -349,36 +369,58 @@ private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable
     }
 }
 
-// MARK: - UIViewRepresentableContext
+// MARK: - NSViewRepresentableContext
 
 /// Contextual information about the state of the system that you use to create
-/// and update your UIKit view.
+/// and update your AppKit view.
 ///
-/// A ``UIViewRepresentableContext`` structure contains details about the
+/// An ``NSViewRepresentableContext`` structure contains details about the
 /// current state of the system. When creating and updating your view, the
 /// system creates one of these structures and passes it to the appropriate
-/// method of your custom ``UIViewRepresentable`` instance. Use the information
+/// method of your custom ``NSViewRepresentable`` instance. Use the information
 /// in this structure to configure your view. For example, use the provided
 /// environment values to configure the appearance of your view. Don't create
 /// this structure yourself.
 @available(OpenSwiftUI_v1_0, *)
-@available(macOS, unavailable)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
 @available(watchOS, unavailable)
-@MainActor
+@available(visionOS, unavailable)
 @preconcurrency
-public struct UIViewRepresentableContext<Representable> where Representable: UIViewRepresentable {
+@MainActor
+public struct NSViewRepresentableContext<View> where View: NSViewRepresentable {
     var values: RepresentableContextValues
 
-    /// The view's associated coordinator.
-    public let coordinator: Representable.Coordinator
+    /// An instance you use to communicate your AppKit view's behavior and state
+    /// out to OpenSwiftUI objects.
+    ///
+    /// The coordinator is a custom instance you define. When updating your
+    /// view, communicate changes to OpenSwiftUI by updating the properties of your
+    /// coordinator, or by calling relevant methods to make those changes. The
+    /// implementation of those properties and methods are responsible for
+    /// updating the appropriate SwiftUI values. For example, you might define a
+    /// property in your coordinator that binds to a OpenSwiftUI value, as shown in
+    /// the following code example. Changing the property updates the value of
+    /// the corresponding OpenSwiftUI variable.
+    ///
+    ///     class Coordinator: NSObject {
+    ///        @Binding var rating: Int
+    ///        init(rating: Binding<Int>) {
+    ///           $rating = rating
+    ///        }
+    ///     }
+    ///
+    /// To create and configure your custom coordinator, implement the
+    /// ``NSViewControllerRepresentable/makeCoordinator()`` method of your
+    /// ``NSViewControllerRepresentable`` object.
+    public let coordinator: View.Coordinator
 
     /// The current transaction.
-    public private(set) var transaction: Transaction {
-        get { values.transaction }
-        set { values.transaction = newValue }
+    public var transaction: Transaction {
+        values.transaction
     }
 
-    /// The current environment.
+    /// Environment data that describes the current state of the system.
     ///
     /// Use the environment values to configure the state of your view when
     /// creating or updating it.
@@ -391,16 +433,24 @@ public struct UIViewRepresentableContext<Representable> where Representable: UIV
         }
     }
 
-    init<R>(_ context: PlatformViewRepresentableContext<R>) where R: PlatformViewRepresentable, R.Coordinator == Representable.Coordinator {
+    init<R>(_ context: PlatformViewRepresentableContext<R>) where R: PlatformViewRepresentable, R.Coordinator == View.Coordinator {
         values = context.values
         coordinator = context.coordinator
     }
+}
 
+@available(OpenSwiftUI_v6_0, *)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension NSViewRepresentableContext {
     /// Animates changes using the animation in the current transaction.
     ///
-    /// This combines [animate(with:changes:completion:)](https://developer.apple.com/documentation/uikit/uiview/4429628-animate)
-    /// with the current transaction's animation. When you start an OpenSwiftUI
-    /// animation using ``OpenSwiftUICore/withAnimation(_:_:)`` and have a mutated
+    /// This combines
+    /// [animate(with:changes:completion:)](https://developer.apple.com/documentation/appkit/nsanimationcontext/4433144-animate)
+    /// with the current transaction's animation. When you start a OpenSwiftUI
+    /// animation using ``OpenSwiftUI/withAnimation(_:_:)`` and have a mutated
     /// OpenSwiftUI state that causes the representable object to update, use
     /// this method to animate changes in the representable object using the
     /// same `Animation` timing.
@@ -420,34 +470,34 @@ public struct UIViewRepresentableContext<Representable> where Representable: UIV
     ///         }
     ///     }
     ///
-    ///     struct MyRepresentable: UIViewRepresentable {
+    ///     struct MyRepresentable: NSViewRepresentable {
     ///         @Binding var isCollapsed: Bool
     ///
-    ///         func updateUIView(_ uiView: UIViewType, context: Context) {
-    ///             if isCollapsed && !uiView.isCollapsed {
+    ///         func updateNSView(_ nsView: NSViewType, context: Context) {
+    ///             if isCollapsed && !nsView.isCollapsed {
     ///                 context.animate {
-    ///                     uiView.collapseSubview()
-    ///                     uiView.layout()
+    ///                     nsView.collapseSubview()
+    ///                     nsView.layoutSubtreeIfNeeded()
     ///                 }
     ///             }
     ///         }
     ///     }
     ///
+    ///
     /// - Parameters:
     ///   - changes: A closure that changes animatable properties.
     ///   - completion: A closure to execute after the animation completes.
-    @available(OpenSwiftUI_v6_0, *)
-    @available(macOS, unavailable)
-    @available(watchOS, unavailable)
     public func animate(changes: () -> Void, completion: (() -> Void)? = nil) {
-        guard let animation = transaction.animation, !transaction.disablesAnimations else {
+        if let animation = transaction.animation,
+           !transaction.disablesAnimations
+        {
+            // TODO: OpenSwiftUI + AppKit shims
+//            NSAnimationContext.animate(animation, changes: changes,
+//                completion: completion)
+        } else {
             changes()
             completion?()
-            return
         }
-        // TODO
-        // UIKitAnimationBridge.withAnimation
     }
 }
-
 #endif

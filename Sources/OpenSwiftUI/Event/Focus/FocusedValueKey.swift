@@ -6,6 +6,7 @@
 //  Status: WIP
 
 import OpenSwiftUICore
+import OpenGraphShims
 
 @available(OpenSwiftUI_v2_0, *)
 @propertyWrapper
@@ -97,5 +98,12 @@ extension FocusedValues: Sendable {}
 extension FocusedValues: Equatable {
     public static func == (lhs: FocusedValues, rhs: FocusedValues) -> Bool {
         lhs.seed.matches(rhs.seed)
+    }
+}
+
+// FIXME
+struct FocusedValuesInputKey: ViewInput {
+    static var defaultValue: OptionalAttribute<FocusedValues> {
+        .init()
     }
 }

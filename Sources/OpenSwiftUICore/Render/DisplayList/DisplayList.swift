@@ -31,6 +31,7 @@ package struct _DisplayList_Identity: Hashable, Codable, CustomStringConvertible
     }
     
     package static let none = _DisplayList_Identity(value: 0)
+
     package var description: String { "#\(value)" }
 }
 
@@ -182,7 +183,7 @@ extension DisplayList {
         }
     }
 
-//    package typealias ViewFactory = _DisplayList_ViewFactory
+    package typealias ViewFactory = _DisplayList_ViewFactory
 
     package enum Effect {
         case identity
@@ -448,6 +449,14 @@ extension PreferencesInputs {
     }
 }
 
+extension _ViewOutputs {
+    @inline(__always)
+    package var displayList: Attribute<DisplayList>? {
+        get { preferences.displayList }
+        set { preferences.displayList = newValue }
+    }
+}
+
 extension PreferencesOutputs {
     @inline(__always)
     package var displayList: Attribute<DisplayList>? {
@@ -491,16 +500,11 @@ extension GraphicsContext {
     }
 }
 
-package protocol PlatformGroupFactory {}
 package protocol _DisplayList_AnyEffectAnimation {}
 
 public struct ContentTransition {
     package struct State {}
 }
-package protocol _DisplayList_ViewFactory {}
-
-package protocol PlatformViewFactory {}
-package protocol PlatformLayerFactory {}
 
 package struct GraphicsImage {}
 package struct ResolvedShadowStyle {}

@@ -493,4 +493,16 @@ extension GraphicsContext {
     package func draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle) {
         _openSwiftUIUnimplementedFailure()
     }
+
+    // FIXME
+    #if canImport(CoreGraphics)
+    static func renderingTo(
+        cgContext: CGContext,
+        environment: EnvironmentValues,
+        deviceScale: CGFloat?,
+        content: (inout GraphicsContext) -> ()
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+    #endif
 }

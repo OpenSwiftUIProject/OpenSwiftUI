@@ -60,6 +60,6 @@ bool _UIUpdateAdaptiveRateNeeded();
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif /* UIKit.h */
+#endif /* __has_include(<UIKit/UIKit.h>) */
 
 #endif /* UIKit_Private_h */

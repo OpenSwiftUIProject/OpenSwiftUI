@@ -61,7 +61,7 @@ extension ViewRendererHost {
             object: self,
             "",
             [
-                viewGraph.graph.counter(for: ._4), // FIXME: UInt
+                viewGraph.graph.graphIdentity(), // FIXME: UInt
                 UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
             ]
         )
@@ -76,7 +76,7 @@ extension ViewRendererHost {
             object: self,
             "",
             [
-                viewGraph.graph.counter(for: ._4), // FIXME: UInt
+                viewGraph.graph.graphIdentity(), // FIXME: UInt
                 UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
             ]
         )
