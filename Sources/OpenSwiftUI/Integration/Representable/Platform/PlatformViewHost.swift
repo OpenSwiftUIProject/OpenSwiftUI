@@ -280,6 +280,7 @@ extension PlatformViewHost: SafeAreaHelperDelegate {
         Content.shouldEagerlyUpdateSafeArea(representedViewProvider)
     }
 }
+#endif
 
 func enableUnifiedLayout() -> Bool {
     isLinkedOnOrAfter(.maximal) || EnableUnifiedLayoutFeature.isEnabled
@@ -294,4 +295,3 @@ private struct EnableUnifiedLayoutFeature: UserDefaultKeyedFeature {
 
     static var cachedValue: Bool?
 }
-#endif

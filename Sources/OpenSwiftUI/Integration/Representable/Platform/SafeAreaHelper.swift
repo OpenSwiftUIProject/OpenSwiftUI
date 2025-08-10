@@ -6,6 +6,8 @@
 //  Status: WIP (Unimplemented)
 //  ID: 36F4CE8257AE99191765DF6F47D9C4C0 (SwiftUI?)
 
+#if canImport(Darwin)
+
 protocol SafeAreaHelperDelegate: AnyObject {
     var _safeAreaInsets: PlatformEdgeInsets { get set }
     var defaultSafeAreaInsets: PlatformEdgeInsets { get }
@@ -58,3 +60,5 @@ extension PlatformView {
         }
     }
 }
+
+#endif

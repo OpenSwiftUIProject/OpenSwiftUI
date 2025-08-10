@@ -32,11 +32,12 @@ extension AnyViewFactory where Self: View {
 
 // MARK: - PlatformLayerFactory [TODO]
 
-#if canImport(QuartzCore)
 package protocol PlatformLayerFactory: AnyViewFactory {
+    #if canImport(QuartzCore)
     var platformLayerType: CALayer.Type { get }
 
     func updatePlatformLayer(_ layer: CALayer)
+    #endif
 
     func renderPlatformLayer(
         in ctx: GraphicsContext,
@@ -55,7 +56,6 @@ extension PlatformLayerFactory {
         _openSwiftUIUnimplementedFailure()
     }
 }
-#endif
 
 // MARK: - PlatformViewFactory [TODO]
 

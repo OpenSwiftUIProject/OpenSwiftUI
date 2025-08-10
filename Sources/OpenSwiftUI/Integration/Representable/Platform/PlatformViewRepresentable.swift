@@ -6,18 +6,18 @@
 //  Status: WIP
 //  ID: A513612C07DFA438E70B9FA90719B40D (SwiftUI)
 
-#if canImport(AppKit)
-import AppKit
-typealias PlatformView = NSView
-typealias PlatformViewController = NSViewController
-typealias PlatformHostingController = NSHostingController
-typealias PlatformViewResponder = NSViewResponder
-#elseif canImport(UIKit)
+#if os(iOS)
 import UIKit
 typealias PlatformView = UIView
 typealias PlatformViewController = UIViewController
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewResponder = UIViewResponder
+#elseif os(macOS)
+import AppKit
+typealias PlatformView = NSView
+typealias PlatformViewController = NSViewController
+typealias PlatformHostingController = NSHostingController
+typealias PlatformViewResponder = NSViewResponder
 #else
 import Foundation
 typealias PlatformView = NSObject
@@ -25,6 +25,7 @@ typealias PlatformViewController = NSObject
 typealias PlatformHostingController = NSObject
 typealias PlatformViewResponder = NSObject
 #endif
+
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import OpenGraphShims
@@ -79,6 +80,7 @@ extension PlatformViewRepresentable {
     }
 
     nonisolated static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        #if canImport(Darwin)
         guard !inputs.archivedView.isArchived else {
             var outputs = _ViewOutputs()
             guard inputs.preferences.requiresDisplayList else {
@@ -128,6 +130,9 @@ extension PlatformViewRepresentable {
         var outputs = PlatformViewChild<Self>.Value.makeDebuggableView(view: .init(child), inputs: inputs)
         // TODO
         return outputs
+        #else
+        _openSwiftUIUnimplementedFailure()
+        #endif
     }
 
     var body: Never {
@@ -135,7 +140,7 @@ extension PlatformViewRepresentable {
     }
 }
 
-#if canImport(UIKit) || canImport(AppKit)
+#if canImport(Darwin)
 
 extension PlatformViewRepresentable where PlatformViewProvider: PlatformView {
     static func platformView(for provider: PlatformViewProvider) -> PlatformView {
@@ -152,8 +157,6 @@ extension PlatformViewRepresentable where PlatformViewProvider: PlatformViewCont
 
     static var isViewController: Bool { true }
 }
-
-#endif
 
 // MARK: - PlatformViewChild [WIP]
 
@@ -642,3 +645,5 @@ private struct PlatformViewLayoutEngine<Content>: LayoutEngine where Content: Pl
         }
     }
 }
+
+#endif
