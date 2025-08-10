@@ -22,3 +22,10 @@ package struct ScrapeableID: Hashable {
         self.value = value
     }
 }
+
+// FIXME
+extension _ViewInputs {
+    package var scrapeableParentID: ScrapeableID {
+        .none
+    }
+}

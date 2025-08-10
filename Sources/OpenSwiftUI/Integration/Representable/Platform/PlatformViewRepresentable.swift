@@ -73,7 +73,7 @@ protocol PlatformViewRepresentable: View {
     typealias LayoutOptions = _PlatformViewRepresentableLayoutOptions
 }
 
-// MARK: - PlatformViewRepresentable + Extension [WIP]
+// MARK: - PlatformViewRepresentable + Extension
 
 extension PlatformViewRepresentable {
     static var dynamicProperties: DynamicPropertyCache.Fields {
@@ -81,8 +81,55 @@ extension PlatformViewRepresentable {
     }
 
     nonisolated static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        guard !inputs.archivedView.isArchived else {
+            var outputs = _ViewOutputs()
+            guard inputs.preferences.requiresDisplayList else {
+                return outputs
+            }
+            let identity = DisplayList.Identity()
+            inputs.pushIdentity(identity)
+            outputs.displayList = Attribute(
+                PlatformArchivedDisplayList(
+                    identity: identity,
+                    view: view.value,
+                    position: inputs.animatedPosition(),
+                    size: inputs.animatedSize(),
+                    containerPosition: inputs.containerPosition
+                )
+            )
+            return outputs
+        }
+        var inputs = inputs
+        let bridge = PreferenceBridge()
+        let fields = dynamicProperties
+        let buffer = _DynamicPropertyBuffer(
+            fields: fields,
+            container: view,
+            inputs: &inputs.base
+        )
+        let child = Attribute(
+            PlatformViewChild(
+                view: view.value,
+                environment: inputs.environment,
+                transaction: inputs.transaction,
+                phase: inputs.viewPhase,
+                position: inputs.position,
+                size: inputs.size,
+                transform: inputs.transform,
+                focusedValues: inputs.base[FocusedValuesInputKey.self],
+                parentID: inputs.scrapeableParentID,
+                bridge: bridge,
+                importer: .init(graph: .current), // FIXME
+                links: buffer,
+                coordinator: nil,
+                platformView: nil
+            )
+        )
+        buffer.traceMountedProperties(to: view, fields: fields)
         // TODO
-        _openSwiftUIUnimplementedFailure()
+        var outputs = PlatformViewChild<Self>.Value.makeDebuggableView(view: .init(child), inputs: inputs)
+        // TODO
+        return outputs
     }
 
     var body: Never {
