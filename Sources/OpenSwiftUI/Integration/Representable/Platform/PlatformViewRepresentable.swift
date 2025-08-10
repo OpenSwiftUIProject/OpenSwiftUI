@@ -12,12 +12,14 @@ typealias PlatformView = NSView
 typealias PlatformViewController = NSViewController
 typealias PlatformHostingController = NSHostingController
 typealias PlatformViewResponder = NSViewResponder
+typealias PlatformEdgeInsets = NSEdgeInsets
 #elseif canImport(UIKit)
 import UIKit
 typealias PlatformView = UIView
 typealias PlatformViewController = UIViewController
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewResponder = UIViewResponder
+typealias PlatformEdgeInsets = UIEdgeInsets
 #else
 import Foundation
 typealias PlatformView = NSObject
@@ -311,18 +313,88 @@ private struct LeafLayoutEnvironment: StatefulRule {
     }
 }
 
-// MARK: - PlatformViewDisplayList [WIP]
+// MARK: - PlatformViewDisplayList
 
-struct PlatformViewDisplayList<A> where A: PlatformViewRepresentable {
-    let identity: _DisplayList_Identity
-    var _view: Attribute<ViewLeafView<A>>
-    var _position: Attribute<CGPoint>
-    var _containerPosition: Attribute<CGPoint>
-    var _size: Attribute<ViewSize>
-    var _transform: Attribute<ViewTransform>
-    var _environment: Attribute<EnvironmentValues>
-    var _safeAreaInsets: OptionalAttribute<SafeAreaInsets>
+private struct PlatformViewDisplayList<Content>: StatefulRule where Content: PlatformViewRepresentable {
+    let identity: DisplayList.Identity
+    @Attribute var view: ViewLeafView<Content>
+    @Attribute var position: ViewOrigin
+    @Attribute var containerPosition: ViewOrigin
+    @Attribute var size: ViewSize
+    @Attribute var transform: ViewTransform
+    @Attribute var environment: EnvironmentValues
+    @OptionalAttribute var safeAreaInsets: SafeAreaInsets?
     var contentSeed: DisplayList.Seed
+
+    init(
+        identity: DisplayList.Identity,
+        view: Attribute<ViewLeafView<Content>>,
+        position: Attribute<CGPoint>,
+        containerPosition: Attribute<CGPoint>,
+        size: Attribute<ViewSize>,
+        transform: Attribute<ViewTransform>,
+        environment: Attribute<EnvironmentValues>,
+        safeAreaInsets: OptionalAttribute<SafeAreaInsets>,
+        contentSeed: DisplayList.Seed
+    ) {
+        self.identity = identity
+        self._view = view
+        self._position = position
+        self._containerPosition = containerPosition
+        self._size = size
+        self._transform = transform
+        self._environment = environment
+        self._safeAreaInsets = safeAreaInsets
+        self.contentSeed = contentSeed
+    }
+
+    typealias Value = DisplayList
+
+    mutating func updateValue() {
+        let version = DisplayList.Version(forUpdate: ())
+        let (view, viewChanged) = $view.changedValue()
+        if viewChanged {
+            contentSeed = .init(version)
+        }
+        var frame = CGRect(
+            origin: CGPoint(position - containerPosition),
+            size: size.value
+        )
+        let layoutOption = Content.layoutOptions(view.representedViewProvider)
+        if layoutOption.contains(.propagatesSafeArea) {
+            let placementContext = _PositionAwarePlacementContext(
+                context: AnyRuleContext(context),
+                size: _size,
+                environment: _environment,
+                transform: _transform,
+                position: _position,
+                safeAreaInsets: _safeAreaInsets
+            )
+            let edgeInsets = placementContext.safeAreaInsets(matching: .all)
+            let isRTL = environment.layoutDirection == .rightToLeft
+            let platformEdgeInsets = PlatformEdgeInsets(
+                top: edgeInsets.top,
+                left: isRTL ? edgeInsets.trailing : edgeInsets.leading,
+                bottom: edgeInsets.bottom,
+                right: isRTL ? edgeInsets.leading : edgeInsets.trailing
+            )
+            frame.origin -= CGSize(width: platformEdgeInsets.left, height: platformEdgeInsets.top)
+            frame.size.width += edgeInsets.horizontal
+            frame.size.height += edgeInsets.vertical
+            view.platformView.updateSafeAreaInsets(platformEdgeInsets)
+        }
+        var item = DisplayList.Item(
+            .content(.init(
+                .platformView(view),
+                seed: contentSeed
+            )),
+            frame: frame,
+            identity: identity,
+            version: version
+        )
+        item.canonicalize()
+        value = DisplayList(item)
+    }
 }
 
 // MARK: - PlatformViewLayoutEngine [WIP] Blocked by PlatformViewHost

@@ -122,10 +122,10 @@ private struct LeafDisplayList<V>: StatefulRule, CustomStringConvertible where V
     }
 
     mutating func updateValue() {
-        let (view, changed) = $view.changedValue()
+        let (view, viewChanged) = $view.changedValue()
         let content = view.content()
         let version = DisplayList.Version(forUpdate: ())
-        if changed {
+        if viewChanged {
             contentSeed = .init(version)
         }
         var item = DisplayList.Item(

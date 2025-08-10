@@ -37,7 +37,7 @@ class PlatformViewHost<Representable>: /*_UIConstraintBasedLayoutHostingView*/ P
 
 //    let safeAreaHelper: UIView.SafeAreaHelper
 
-    //    var _safeAreaInsets: UIEdgeInsets
+    private var _safeAreaInsets: PlatformEdgeInsets
 
     var inLayoutSizeThatFits: Bool
 
@@ -76,6 +76,11 @@ class PlatformViewHost<Representable>: /*_UIConstraintBasedLayoutHostingView*/ P
             return
         }
         // super._setHostsLayoutEngine(a)
+    }
+
+    func updateSafeAreaInsets(_ insets: PlatformEdgeInsets?) {
+        // TODO
+        _openSwiftUIUnimplementedWarning()
     }
 }
 
