@@ -9,11 +9,21 @@
 #if canImport(Darwin)
 import OpenSwiftUICore
 import Foundation
+import OpenSwiftUI_SPI
 
 // MARK: - PlatformViewHost [WIP]
 
-class PlatformViewHost<Representable>: /*_UIConstraintBasedLayoutHostingView*/ PlatformView, AnyPlatformViewProviderHost
-    where Representable: PlatformViewRepresentable {
+#if canImport(AppKit)
+import AppKit
+typealias PlatformEdgeInsets = NSEdgeInsets
+typealias PlatformConstraintBasedLayoutHostingView = _NSConstraintBasedLayoutHostingView
+#elseif canImport(UIKit)
+import UIKit
+typealias PlatformEdgeInsets = UIEdgeInsets
+typealias PlatformConstraintBasedLayoutHostingView = _UIConstraintBasedLayoutHostingView
+#endif
+
+class PlatformViewHost<Representable>: PlatformConstraintBasedLayoutHostingView, AnyPlatformViewProviderHost where Representable: PlatformViewRepresentable {
     var importer: EmptyPreferenceImporter
 
     var environment: EnvironmentValues

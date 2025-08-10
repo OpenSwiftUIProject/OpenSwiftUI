@@ -12,14 +12,12 @@ typealias PlatformView = NSView
 typealias PlatformViewController = NSViewController
 typealias PlatformHostingController = NSHostingController
 typealias PlatformViewResponder = NSViewResponder
-typealias PlatformEdgeInsets = NSEdgeInsets
 #elseif canImport(UIKit)
 import UIKit
 typealias PlatformView = UIView
 typealias PlatformViewController = UIViewController
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewResponder = UIViewResponder
-typealias PlatformEdgeInsets = UIEdgeInsets
 #else
 import Foundation
 typealias PlatformView = NSObject
