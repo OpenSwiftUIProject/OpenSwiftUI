@@ -268,20 +268,65 @@ extension ViewLeafView: PlatformViewFactory {
         }
     }
 }
-//
-//struct PlatformArchivedDisplayList<A> where A: PlatformViewRepresentable {
-//    let identity: _DisplayList_Identity
-//    var _view: Attribute<A>
-//    var _position: Attribute<CGPoint>
-//    var _size: Attribute<ViewSize>
-//    var _containerPosition: Attribute<CGPoint>
-//}
-//
-//struct PlatformViewRepresentableContext<A> where A: PlatformViewRepresentable {
-//    var values: RepresentableContextValues
-//    let coordinator: A.Coordinator
-//}
-//
+
+// MARK: - PlatformArchivedDisplayList
+
+struct PlatformArchivedDisplayList<Content>: Rule where Content: PlatformViewRepresentable {
+    let identity: DisplayList.Identity
+    @Attribute var view: Content
+    @Attribute var position: ViewOrigin
+    @Attribute var size: ViewSize
+    @Attribute var containerPosition: CGPoint
+
+    init(
+        identity: DisplayList.Identity,
+        view: Attribute<Content>,
+        position: Attribute<ViewOrigin>,
+        size: Attribute<ViewSize>,
+        containerPosition: Attribute<CGPoint>
+    ) {
+        self.identity = identity
+        self._view = view
+        self._position = position
+        self._size = size
+        self._containerPosition = containerPosition
+    }
+
+    var value: DisplayList {
+        let version = DisplayList.Version(forUpdate: ())
+        let contentSeed = DisplayList.Seed(version)
+        let content = DisplayList.Content(
+            .platformView(Factory()),
+            seed: contentSeed
+        )
+        let frame = CGRect(
+            origin: CGPoint(position - containerPosition),
+            size: size.value
+        )
+        var item = DisplayList.Item(
+            .content(content),
+            frame: frame,
+            identity: identity,
+            version: version
+        )
+        item.canonicalize()
+        return DisplayList(item)
+    }
+
+    struct Factory: PlatformViewFactory {
+        var viewType: any Any.Type {
+            Content.self
+        }
+        
+        func makePlatformView() -> AnyObject? {
+            preconditionFailure("")
+        }
+
+        func updatePlatformView(_ view: inout AnyObject) {
+            preconditionFailure("")
+        }
+    }
+}
 
 // MARK: - InvalidatableLeafLayoutComputer
 
@@ -356,8 +401,8 @@ private struct PlatformViewDisplayList<Content>: StatefulRule where Content: Pla
     init(
         identity: DisplayList.Identity,
         view: Attribute<ViewLeafView<Content>>,
-        position: Attribute<CGPoint>,
-        containerPosition: Attribute<CGPoint>,
+        position: Attribute<ViewOrigin>,
+        containerPosition: Attribute<ViewOrigin>,
         size: Attribute<ViewSize>,
         transform: Attribute<ViewTransform>,
         environment: Attribute<EnvironmentValues>,

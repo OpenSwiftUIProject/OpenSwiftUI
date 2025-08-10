@@ -33,17 +33,21 @@ struct RepresentableContextValues {
 
 // MARK: - PlatformViewRepresentableContext
 
-struct PlatformViewRepresentableContext<Representable: PlatformViewRepresentable> {
+struct PlatformViewRepresentableContext<Content: PlatformViewRepresentable> {
     var values: RepresentableContextValues
-    let coordinator: Representable.Coordinator
+    let coordinator: Content.Coordinator
 
     init(
-        coordinator: Representable.Coordinator,
+        coordinator: Content.Coordinator,
         preferenceBridge: PreferenceBridge?,
         transaction: Transaction,
         environmentStorage: RepresentableContextValues.EnvironmentStorage
     ) {
-        self.values = .init(preferenceBridge: preferenceBridge, transaction: transaction, environmentStorage: environmentStorage)
+        self.values = .init(
+            preferenceBridge: preferenceBridge,
+            transaction: transaction,
+            environmentStorage: environmentStorage
+        )
         self.coordinator = coordinator
     }
 
