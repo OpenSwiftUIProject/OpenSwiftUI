@@ -28,7 +28,8 @@ struct ColorRepresentableExample: PlatformViewRepresentable {
     #elseif os(macOS)
     func makeNSView(context: Context) -> some NSView {
         let v = NSView()
-        v.backgroundColor = .red
+        v.wantsLayer = true
+        v.layer?.backgroundColor = NSColor.red.cgColor
         return v
     }
 

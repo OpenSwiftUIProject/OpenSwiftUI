@@ -12,7 +12,7 @@
 #include <UIKit/UIKit.h>
 
 @interface UIView (NSLayoutConstraint_UIKitAdditions)
-- (BOOL)_wantsConstraintBasedLayout;
+@property (nonatomic, assign, readonly) BOOL _wantsConstraintBasedLayout;
 - (void)_setHostsLayoutEngine:(BOOL)hostsLayoutEngine;
 @end
 

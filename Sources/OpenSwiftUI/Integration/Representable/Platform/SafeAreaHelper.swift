@@ -15,14 +15,24 @@ protocol SafeAreaHelperDelegate: AnyObject {
 
 #if os(iOS)
 import UIKit
+typealias PlatformEdgeInsets = UIEdgeInsets
+#elseif os(macOS)
+import AppKit
+typealias PlatformEdgeInsets = NSEdgeInsets
+extension NSEdgeInsets {
+    static var zero: NSEdgeInsets {
+        NSEdgeInsetsZero
+    }
+}
+#endif
 
-extension UIView {
+extension PlatformView {
     final class SafeAreaHelper {
-        private var pendingSafeAreaInsets: UIEdgeInsets?
-        private var lastParentSafeAreaInsets: UIEdgeInsets?
+        private var pendingSafeAreaInsets: PlatformEdgeInsets?
+        private var lastParentSafeAreaInsets: PlatformEdgeInsets?
 
         func updateSafeAreaInsets<Delegate>(
-            _ insets: UIEdgeInsets?,
+            _ insets: PlatformEdgeInsets?,
             delegate: Delegate
         ) where Delegate: SafeAreaHelperDelegate {
             _openSwiftUIUnimplementedWarning()
@@ -36,7 +46,7 @@ extension UIView {
 
         func resolvedSafeAreaInsets<Delegate>(
             delegate: Delegate
-        ) -> UIEdgeInsets where Delegate: SafeAreaHelperDelegate {
+        ) -> PlatformEdgeInsets where Delegate: SafeAreaHelperDelegate {
             _openSwiftUIUnimplementedWarning()
             return .zero
         }
@@ -48,4 +58,3 @@ extension UIView {
         }
     }
 }
-#endif
