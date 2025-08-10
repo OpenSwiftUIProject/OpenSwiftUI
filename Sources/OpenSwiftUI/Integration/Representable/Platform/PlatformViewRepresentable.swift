@@ -253,11 +253,35 @@ extension ViewLeafView: PlatformViewFactory {
 //    let coordinator: A.Coordinator
 //}
 //
-//struct InvalidatableLeafLayoutComputer<A> where A: PlatformViewRepresentable {
-//    var _view: Attribute<ViewLeafView<A>>
-//    var _environment: Attribute<EnvironmentValues>
-//    weak var graphHost: GraphHost?
-//}
+
+// MARK: - InvalidatableLeafLayoutComputer
+
+private struct InvalidatableLeafLayoutComputer<Content>: StatefulRule, CustomStringConvertible where Content: PlatformViewRepresentable {
+    @Attribute var view: ViewLeafView<Content>
+    @Attribute var environment: EnvironmentValues
+    weak var graphHost: GraphHost?
+
+    typealias Value = LayoutComputer
+
+    mutating func updateValue() {
+        if view.platformView.layoutInvalidator == nil {
+            view.platformView.layoutInvalidator = PlatformViewLayoutInvalidator(
+                graphHost: graphHost,
+                layoutComputer: WeakAttribute(attribute)
+            )
+        }
+        let engine = PlatformViewLayoutEngine(
+            view: view,
+            environment: $environment,
+            context: AnyRuleContext(context)
+        )
+        update(to: engine)
+    }
+
+    var description: String {
+        "InvalidatableLeafLayoutComputer"
+    }
+}
 
 // MARK: - LeafLayoutEnvironment
 
