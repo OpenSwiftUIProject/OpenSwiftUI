@@ -258,12 +258,36 @@ extension ViewLeafView: PlatformViewFactory {
 //    var _environment: Attribute<EnvironmentValues>
 //    weak var graphHost: GraphHost?
 //}
-//
-//struct LeafLayoutEnvironment {
-//    var _environment: Attribute<EnvironmentValues>
-//    let tracker: PropertyList.Tracker
-//}
-//
+
+// MARK: - LeafLayoutEnvironment
+
+private struct LeafLayoutEnvironment: StatefulRule {
+    @Attribute var environment: EnvironmentValues
+    let tracker: PropertyList.Tracker
+
+    typealias Value = EnvironmentValues
+
+    func updateValue() {
+        let (env, envChanged) = $environment.changedValue()
+        let shouldReset: Bool
+        if !hasValue {
+            shouldReset = true
+        } else if envChanged, tracker.hasDifferentUsedValues(env.plist) {
+            shouldReset = true
+        } else {
+            shouldReset = false
+        }
+        if shouldReset {
+            tracker.reset()
+            value = EnvironmentValues(
+                environment.plist,
+                tracker: tracker
+            )
+        }
+    }
+}
+
+// MARK: - PlatformViewDisplayList [WIP]
 
 struct PlatformViewDisplayList<A> where A: PlatformViewRepresentable {
     let identity: _DisplayList_Identity
