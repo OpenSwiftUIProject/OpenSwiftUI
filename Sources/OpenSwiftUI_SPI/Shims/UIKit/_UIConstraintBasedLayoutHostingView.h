@@ -19,6 +19,11 @@
 
 #include <UIKit/UIKit.h>
 
+typedef struct BaselineOffset {
+    CGFloat firstTextBaseline;
+    CGFloat lastTextBaseline;
+} BaselineOffset;
+
 @interface _UIConstraintBasedLayoutHostingView : UIView {
     /* instance variables */
     BOOL _hasAddedConstraints;
@@ -40,7 +45,7 @@
 - (void)updateConstraints;
 - (UIEdgeInsets)alignmentRectInsets;
 - (BOOL)_layoutHeightDependsOnWidth;
-- (CGPoint)_baselineOffsetsAtSize:(CGSize)size;
+- (BaselineOffset)_baselineOffsetsAtSize:(CGSize)size;
 - (CGSize)sizeThatFits:(CGSize)fits;
 - (CGSize)_layoutSizeThatFits:(CGSize)fits fixedAxes:(unsigned long long)axes;
 

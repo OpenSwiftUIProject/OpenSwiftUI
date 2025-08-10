@@ -589,7 +589,7 @@ private struct PlatformViewDisplayList<Content>: StatefulRule where Content: Pla
     }
 }
 
-// MARK: - PlatformViewLayoutEngine [WIP] Blocked by PlatformViewHost
+// MARK: - PlatformViewLayoutEngine
 
 private struct PlatformViewLayoutEngine<Content>: LayoutEngine where Content: PlatformViewRepresentable {
     var cache: ViewSizeCache
@@ -621,17 +621,14 @@ private struct PlatformViewLayoutEngine<Content>: LayoutEngine where Content: Pl
 
     func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
         if k == VerticalAlignment.firstTextBaseline.key {
-            // TODO: PlatformViewHost
-            // viewSize.value
-            // view._baselineOffsetAtSize()
-            _openSwiftUIUnimplementedWarning()
-            return nil
+            let baseline = view.platformView._baselineOffsets(at: viewSize.value)
+            let firstTextBaseline = baseline.firstTextBaseline
+            return firstTextBaseline.isNaN ? .zero : firstTextBaseline
         } else if k == VerticalAlignment.lastTextBaseline.key {
-            // viewSize.value
-            // view._baselineOffsetAtSize()
-            // viewSize.height
-            _openSwiftUIUnimplementedWarning()
-            return nil
+            let baseline = view.platformView._baselineOffsets(at: viewSize.value)
+            let lastTextBaseline = baseline.lastTextBaseline
+            let height = viewSize.height
+            return lastTextBaseline.isNaN ? height : height - lastTextBaseline
         } else {
             return nil
         }

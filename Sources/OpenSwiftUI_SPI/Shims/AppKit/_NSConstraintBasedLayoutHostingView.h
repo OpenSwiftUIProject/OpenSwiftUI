@@ -20,6 +20,11 @@
 
 #include <AppKit/AppKit.h>
 
+typedef struct BaselineOffset {
+    CGFloat firstTextBaseline;
+    CGFloat lastTextBaseline;
+} BaselineOffset;
+
 @interface _NSConstraintBasedLayoutHostingView : NSView {
     /* instance variables */
     BOOL _hasAddedConstraints;
@@ -32,7 +37,7 @@
 
 /* instance methods */
 - (void)dealloc;
-- (CGPoint)_baselineOffsetsAtSize:(CGSize)size;
+- (BaselineOffset)_baselineOffsetsAtSize:(CGSize)size;
 - (void)_informContainerThatSubviewsNeedUpdateConstraints;
 - (void)_intrinsicContentSizeInvalidatedForChildView:(id)view;
 - (BOOL)_layoutHeightDependsOnWidth;
