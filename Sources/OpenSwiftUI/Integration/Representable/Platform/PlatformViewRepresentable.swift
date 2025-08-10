@@ -228,19 +228,27 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
                 coordinator = view.makeCoordinator()
             }
             if platformView == nil {
-                let representableContext = PlatformViewRepresentableContext<Content>(
-                    coordinator: coordinator!,
-                    preferenceBridge: bridge,
-                    transaction: transaction,
-                    environmentStorage: .eager(environment)
-                )
-                let provider = view.makeViewProvider(context: representableContext)
-                platformView = PlatformViewHost(
-                    importer: importer,
-                    environment: environment,
-                    viewPhase: phase,
-                    representedViewProvider: provider
-                )
+                let host = ViewGraph.viewRendererHost
+                // TODO: StatefulRule.withObservation
+                Graph.withoutUpdate {
+                    let representableContext = PlatformViewRepresentableContext<Content>(
+                        coordinator: coordinator!,
+                        preferenceBridge: bridge,
+                        transaction: transaction,
+                        environmentStorage: .eager(environment)
+                    )
+                    representableContext.values.asCurrent {
+                        let provider = view.makeViewProvider(context: representableContext)
+                        let environment = environment.removingTracker()
+                        platformView = PlatformViewHost(
+                            provider,
+                            host: host,
+                            environment: environment,
+                            viewPhase: phase,
+                            importer: importer
+                        )
+                    }
+                }
             }
             value = ViewLeafView(
                 content: view,

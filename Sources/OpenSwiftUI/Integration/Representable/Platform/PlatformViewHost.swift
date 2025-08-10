@@ -32,7 +32,7 @@ final class PlatformViewHost<Content>: PlatformConstraintBasedLayoutHostingView,
 
     let representedViewProvider: Content.PlatformViewProvider
 
-    weak var host: ViewRendererHost?
+    weak var host: ViewRendererHost? = nil
 
     enum ViewControllerParentingMode {
         case willMoveToSuperview
@@ -41,7 +41,7 @@ final class PlatformViewHost<Content>: PlatformConstraintBasedLayoutHostingView,
 
     var viewHierarchyMode: ViewControllerParentingMode?
 
-    var focusedValues: FocusedValues = .init()
+    var focusedValues: FocusedValues
 
     weak var responder: PlatformViewResponder?
 
@@ -49,7 +49,12 @@ final class PlatformViewHost<Content>: PlatformConstraintBasedLayoutHostingView,
     let safeAreaHelper: UIView.SafeAreaHelper = .init()
     #endif
 
-    var _safeAreaInsets: PlatformEdgeInsets = .zero
+    var _safeAreaInsets: PlatformEdgeInsets = .init(
+        top: .greatestFiniteMagnitude,
+        left: .greatestFiniteMagnitude,
+        bottom: .greatestFiniteMagnitude,
+        right: .greatestFiniteMagnitude
+    )
 
     var inLayoutSizeThatFits: Bool = false
 
@@ -62,20 +67,30 @@ final class PlatformViewHost<Content>: PlatformConstraintBasedLayoutHostingView,
     var cachedLayoutTraits: _LayoutTraits?
 
     init(
-        importer: EmptyPreferenceImporter,
+        _ provider: Content.PlatformViewProvider,
+        host: ViewRendererHost?,
         environment: EnvironmentValues,
         viewPhase: _GraphInputs.Phase,
-        representedViewProvider: Content.PlatformViewProvider
+        importer: EmptyPreferenceImporter
     ) {
-        self.importer = importer
         self.environment = environment
-        self.viewPhase = .invalid
-        self.representedViewProvider = representedViewProvider
+        self.viewPhase = viewPhase
+        self.representedViewProvider = provider
+        self.host = host
         self.focusedValues = .init()
-        super.init(frame: .zero)
-        // TODO
-        addSubview(Content.platformView(for: representedViewProvider))
-        _openSwiftUIUnimplementedWarning()
+        self.importer = importer
+        super.init(hostedView: nil)
+        if Content.isViewController {
+            viewHierarchyMode = isLinkedOnOrAfter(.v6) ? .willMoveToSuperview : .didMoveToWindow
+        }
+        if isLinkedOnOrAfter(.v6) {
+            layer.allowsGroupOpacity = false
+            layer.allowsGroupBlending = false
+        }
+        if !Content.isViewController {
+            hostedView = Content.platformView(for: representedViewProvider)
+        }
+        updateEnvironment(environment, viewPhase: viewPhase)
     }
 
     required init?(coder: NSCoder) {
@@ -107,6 +122,10 @@ final class PlatformViewHost<Content>: PlatformConstraintBasedLayoutHostingView,
             return traits
         }
         return cachedLayoutTraits
+    }
+
+    func updateEnvironment(_ environment: EnvironmentValues, viewPhase: _GraphInputs.Phase) {
+        _openSwiftUIUnimplementedWarning()
     }
 
     override var hostedView: UIView? {
