@@ -82,4 +82,4 @@
 }
 @end
 
-#endif /* UIKit.h */
+#endif /* __has_include(<UIKit/UIKit.h>) */

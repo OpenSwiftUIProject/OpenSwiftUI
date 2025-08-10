@@ -14,6 +14,10 @@
 #ifndef _NSConstraintBasedLayoutHostingView_h
 #define _NSConstraintBasedLayoutHostingView_h
 
+#include "OpenSwiftUIBase.h"
+
+#if __has_include(<AppKit/AppKit.h>)
+
 #include <AppKit/AppKit.h>
 
 @interface _NSConstraintBasedLayoutHostingView : NSView {
@@ -21,7 +25,7 @@
     BOOL _hasAddedConstraints;
 }
 
-@property (retain) NSView *hostedView;
+@property (retain, nullable) NSView *hostedView;
 
 /* class methods */
 + (BOOL)requiresConstraintBasedLayout;
@@ -44,5 +48,7 @@
 - (void)willRemoveSubview:(id)subview;
 
 @end
+
+#endif /* __has_include(<AppKit/AppKit.h>) */
 
 #endif /* _NSConstraintBasedLayoutHostingView_h */

@@ -28,5 +28,5 @@
 }
 @end
 
-#endif /* AppKit.h */
+#endif /* __has_include(<AppKit/AppKit.h>) */
 
