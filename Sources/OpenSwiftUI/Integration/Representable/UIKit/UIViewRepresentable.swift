@@ -196,8 +196,9 @@ extension UIViewRepresentable {
     public static func dismantleUIView(_ uiView: UIViewType, coordinator: Coordinator) {}
 
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        typealias Adapter = PlatformViewRepresentableAdaptor<Self>
         precondition(isLinkedOnOrAfter(.v4) ? Metadata(Self.self).isValueType : true, "UIViewRepresentables must be value types: \(Self.self)")
-        return PlatformViewRepresentableAdaptor<Self>._makeView(view: view.unsafeCast(), inputs: inputs)
+        return Adapter._makeView(view: view.unsafeBitCast(to: Adapter.self), inputs: inputs)
     }
 
     nonisolated public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {

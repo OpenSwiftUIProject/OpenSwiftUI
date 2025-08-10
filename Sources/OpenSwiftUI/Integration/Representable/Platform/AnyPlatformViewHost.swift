@@ -33,7 +33,8 @@ protocol PlatformLayoutContainer: AnyObject {
 
 class EmptyPreferenceImporter {
     init(graph: ViewGraph) {
-        _openSwiftUIBaseClassAbstractMethod()
+        _openSwiftUIUnimplementedWarning()
+        // _openSwiftUIBaseClassAbstractMethod()
     }
 
     func writePreferences(
