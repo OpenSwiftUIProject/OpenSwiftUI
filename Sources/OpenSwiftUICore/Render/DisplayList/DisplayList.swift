@@ -31,7 +31,7 @@ package struct _DisplayList_Identity: Hashable, Codable, CustomStringConvertible
     }
     
     package static let none = _DisplayList_Identity(value: 0)
-    
+
     package var description: String { "#\(value)" }
 }
 
@@ -446,6 +446,14 @@ extension PreferencesInputs {
                 remove(DisplayList.Key.self)
             }
         }
+    }
+}
+
+extension _ViewOutputs {
+    @inline(__always)
+    package var displayList: Attribute<DisplayList>? {
+        get { preferences.displayList }
+        set { preferences.displayList = newValue }
     }
 }
 

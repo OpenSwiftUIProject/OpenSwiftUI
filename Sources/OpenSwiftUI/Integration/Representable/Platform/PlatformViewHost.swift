@@ -12,7 +12,7 @@ import Foundation
 
 // MARK: - PlatformViewHost [WIP]
 
-class PlatformViewHost<Representable>: /*_UIConstraintBasedLayoutHostingView*/ PlatformView
+class PlatformViewHost<Representable>: /*_UIConstraintBasedLayoutHostingView*/ PlatformView, AnyPlatformViewProviderHost
     where Representable: PlatformViewRepresentable {
     var importer: EmptyPreferenceImporter
 
@@ -66,6 +66,21 @@ class PlatformViewHost<Representable>: /*_UIConstraintBasedLayoutHostingView*/ P
         super.didAddSubview(subview)
         _openSwiftUIUnimplementedFailure()
     }
+
+    func layoutTraits() -> _LayoutTraits {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    /*override*/ func _setHostsLayoutEngine(_ a: Bool) {
+        guard enableUnifiedLayout() else {
+            return
+        }
+        // super._setHostsLayoutEngine(a)
+    }
+}
+
+func enableUnifiedLayout() -> Bool {
+    isLinkedOnOrAfter(.maximal) || EnableUnifiedLayoutFeature.isEnabled
 }
 
 // MARK: - EnableUnifiedLayoutFeature
