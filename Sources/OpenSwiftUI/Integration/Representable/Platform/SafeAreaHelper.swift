@@ -6,15 +6,15 @@
 //  Status: WIP (Unimplemented)
 //  ID: 36F4CE8257AE99191765DF6F47D9C4C0 (SwiftUI?)
 
-#if os(iOS)
-import UIKit
-
 protocol SafeAreaHelperDelegate: AnyObject {
-    var _safeAreaInsets: UIEdgeInsets { get set }
-    var defaultSafeAreaInsets: UIEdgeInsets { get }
-    var containerView: UIView { get }
+    var _safeAreaInsets: PlatformEdgeInsets { get set }
+    var defaultSafeAreaInsets: PlatformEdgeInsets { get }
+    var containerView: PlatformView { get }
     var shouldEagerlyUpdatesSafeArea: Bool { get }
 }
+
+#if os(iOS)
+import UIKit
 
 extension UIView {
     final class SafeAreaHelper {

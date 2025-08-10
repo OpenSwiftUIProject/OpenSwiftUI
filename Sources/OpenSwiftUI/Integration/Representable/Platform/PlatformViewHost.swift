@@ -11,8 +11,6 @@ import OpenSwiftUICore
 import Foundation
 import OpenSwiftUI_SPI
 
-// MARK: - PlatformViewHost [WIP]
-
 #if canImport(AppKit)
 import AppKit
 typealias PlatformEdgeInsets = NSEdgeInsets
@@ -23,14 +21,16 @@ typealias PlatformEdgeInsets = UIEdgeInsets
 typealias PlatformConstraintBasedLayoutHostingView = _UIConstraintBasedLayoutHostingView
 #endif
 
-class PlatformViewHost<Representable>: PlatformConstraintBasedLayoutHostingView, AnyPlatformViewProviderHost where Representable: PlatformViewRepresentable {
+// MARK: - PlatformViewHost [WIP]
+
+final class PlatformViewHost<Content>: PlatformConstraintBasedLayoutHostingView, AnyPlatformViewProviderHost where Content: PlatformViewRepresentable {
     var importer: EmptyPreferenceImporter
 
     var environment: EnvironmentValues
 
     var viewPhase: _GraphInputs.Phase
 
-    let representedViewProvider: Representable.PlatformViewProvider
+    let representedViewProvider: Content.PlatformViewProvider
 
     weak var host: ViewRendererHost?
 
@@ -41,21 +41,23 @@ class PlatformViewHost<Representable>: PlatformConstraintBasedLayoutHostingView,
 
     var viewHierarchyMode: ViewControllerParentingMode?
 
-    var focusedValues: FocusedValues
+    var focusedValues: FocusedValues = .init()
 
     weak var responder: PlatformViewResponder?
 
-//    let safeAreaHelper: UIView.SafeAreaHelper
+    #if os(iOS)
+    let safeAreaHelper: UIView.SafeAreaHelper = .init()
+    #endif
 
-    private var _safeAreaInsets: PlatformEdgeInsets
+    var _safeAreaInsets: PlatformEdgeInsets = .zero
 
-    var inLayoutSizeThatFits: Bool
+    var inLayoutSizeThatFits: Bool = false
 
     var cachedImplementsFittingSize: Bool?
 
     var layoutInvalidator: PlatformViewLayoutInvalidator?
 
-    var invalidationPending: Bool
+    var invalidationPending: Bool = false
 
     var cachedLayoutTraits: _LayoutTraits?
 
@@ -63,34 +65,127 @@ class PlatformViewHost<Representable>: PlatformConstraintBasedLayoutHostingView,
         importer: EmptyPreferenceImporter,
         environment: EnvironmentValues,
         viewPhase: _GraphInputs.Phase,
-        representedViewProvider: Representable.PlatformViewProvider
+        representedViewProvider: Content.PlatformViewProvider
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.importer = importer
+        self.environment = environment
+        self.viewPhase = .invalid
+        self.representedViewProvider = representedViewProvider
+        self.focusedValues = .init()
+        super.init(frame: .zero)
+        // TODO
+        addSubview(Content.platformView(for: representedViewProvider))
+        _openSwiftUIUnimplementedWarning()
     }
 
     required init?(coder: NSCoder) {
         fatalError("init(coder:) has not been implemented")
     }
 
-    override func didAddSubview(_ subview: PlatformView) {
-        super.didAddSubview(subview)
-        _openSwiftUIUnimplementedFailure()
+    private func intrinsicLayoutTraits() -> _LayoutTraits {
+        func dimension(value: CGFloat, axis: NSLayoutConstraint.Axis) -> _LayoutTraits.Dimension {
+            if value == UIView.noIntrinsicMetric {
+                return .init(min: .zero, ideal: .zero, max: .infinity)
+            } else {
+                let idealValue = max(value, .zero)
+                let compression = contentCompressionResistancePriority(for: axis)
+                let hugging = contentHuggingPriority(for: axis)
+                let minValue = compression >= .defaultHigh ? idealValue : .zero
+                let maxValue = hugging >= .defaultHigh ? idealValue : .infinity
+                return .init(min: minValue, ideal: idealValue, max: maxValue)
+            }
+        }
+        let width = dimension(value: intrinsicContentSize.width, axis: .horizontal)
+        let height = dimension(value: intrinsicContentSize.height, axis: .vertical)
+        return .init(width: width, height: height)
     }
 
     func layoutTraits() -> _LayoutTraits {
-        _openSwiftUIUnimplementedFailure()
+        guard let cachedLayoutTraits else {
+            let traits = intrinsicLayoutTraits()
+            cachedLayoutTraits = traits
+            return traits
+        }
+        return cachedLayoutTraits
     }
 
-    /*override*/ func _setHostsLayoutEngine(_ a: Bool) {
+    override var hostedView: UIView? {
+        get { super.hostedView }
+        set { super.hostedView = newValue }
+    }
+
+    override func didAddSubview(_ subview: PlatformView) {
+        super.didAddSubview(subview)
+        guard let viewController = representedViewProvider as? PlatformViewController else {
+            return
+        }
+        let view = viewController.view
+        if hostedView == nil, view != nil {
+            hostedView = view
+        }
+    }
+
+    override func _setHostsLayoutEngine(_ hostsLayoutEngine: Bool) {
         guard enableUnifiedLayout() else {
             return
         }
-        // super._setHostsLayoutEngine(a)
+        super._setHostsLayoutEngine(hostsLayoutEngine)
     }
 
     func updateSafeAreaInsets(_ insets: PlatformEdgeInsets?) {
-        // TODO
-        _openSwiftUIUnimplementedWarning()
+        safeAreaHelper.updateSafeAreaInsets(insets, delegate: self)
+    }
+
+    private func layoutHostedView() {
+        let enableUnifiedLayout =  enableUnifiedLayout()
+        guard let hostedView else {
+            return
+        }
+        let wantsConstraintBasedLayout = hostedView._wantsConstraintBasedLayout()
+        guard !enableUnifiedLayout || !wantsConstraintBasedLayout else {
+            return
+        }
+        guard bounds.width != .zero, bounds.height != .zero else {
+            return
+        }
+        hostedView.frame = hostedView.frame(forAlignmentRect: bounds)
+    }
+
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layoutHostedView()
+    }
+
+    override func contentCompressionResistancePriority(for axis: NSLayoutConstraint.Axis) -> UILayoutPriority {
+        if Content.isViewController {
+            return super.contentCompressionResistancePriority(for: axis)
+        } else {
+            let platformView = Content.platformView(for: representedViewProvider)
+            return platformView.contentCompressionResistancePriority(for: axis)
+        }
+    }
+
+    override func contentHuggingPriority(for axis: NSLayoutConstraint.Axis) -> UILayoutPriority {
+        if Content.isViewController {
+            return super.contentHuggingPriority(for: axis)
+        } else {
+            let platformView = Content.platformView(for: representedViewProvider)
+            return platformView.contentHuggingPriority(for: axis)
+        }
+    }
+}
+
+extension PlatformViewHost: SafeAreaHelperDelegate {
+    var defaultSafeAreaInsets: PlatformEdgeInsets {
+        super.safeAreaInsets
+    }
+    
+    var containerView: PlatformView {
+        self
+    }
+    
+    var shouldEagerlyUpdatesSafeArea: Bool {
+        Content.shouldEagerlyUpdateSafeArea(representedViewProvider)
     }
 }
 
