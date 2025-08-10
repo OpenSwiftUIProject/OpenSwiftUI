@@ -135,7 +135,7 @@ extension PlatformViewRepresentable where PlatformViewProvider: PlatformViewCont
 //    }
 //}
 
-// MARK: - ViewLeafView [WIP] Blocked by PlatformViewDisplayList
+// MARK: - ViewLeafView
 
 struct ViewLeafView<Content>: PrimitiveView, UnaryView where Content: PlatformViewRepresentable {
     let content: Content
@@ -212,8 +212,35 @@ struct ViewLeafView<Content>: PrimitiveView, UnaryView where Content: PlatformVi
     ) -> _ViewOutputs {
         var outputs = _ViewOutputs()
         if inputs.preferences.requiresDisplayList {
-            // WIP
-            // PlatformViewDisplayList
+            let identity = DisplayList.Identity()
+            inputs.pushIdentity(identity)
+            outputs.displayList = Attribute(
+                PlatformViewDisplayList(
+                    identity: identity,
+                    view: view.value,
+                    position: inputs.animatedPosition(),
+                    containerPosition: inputs.containerPosition,
+                    size: inputs.animatedSize(),
+                    transform: inputs.transform,
+                    environment: inputs.environment,
+                    safeAreaInsets: inputs.safeAreaInsets,
+                    contentSeed: .init()
+                )
+            )
+        }
+        if inputs.requestsLayoutComputer {
+            outputs.layoutComputer = Attribute(
+                InvalidatableLeafLayoutComputer(
+                    view: view.value,
+                    environment: Attribute(
+                        LeafLayoutEnvironment(
+                            environment: inputs.environment,
+                            tracker: .init()
+                        )
+                    ),
+                    graphHost: .currentHost
+                )
+            )
         }
         return outputs
     }
