@@ -54,5 +54,9 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
             break
         }
     }
+
+    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
+        Self.initView(view as! UIView, kind: kind)
+    }
 }
 #endif

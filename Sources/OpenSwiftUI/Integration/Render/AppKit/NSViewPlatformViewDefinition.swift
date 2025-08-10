@@ -59,5 +59,9 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
         _openSwiftUIUnimplementedFailure()
     }
+
+    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
+        Self.initView(view as! NSView, kind: kind)
+    }
 }
 #endif
