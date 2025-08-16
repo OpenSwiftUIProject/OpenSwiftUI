@@ -170,6 +170,15 @@ extension Semantics {
     /// Fall 2024 (iOS 18.0, macOS 15.0, watchOS 11.0, tvOS 18.0)
     package static let v6 = Semantics(version: openSwiftUI_v6_0_os_versions)
 
+    /// 2024 (2024.2.0) SDK version set
+    package static let v6_1 = Semantics(version: openSwiftUI_v6_1_os_versions)
+
+    /// 2024 (2024.2.0) SDK version set
+    package static let v6_2 = Semantics(version: openSwiftUI_v6_2_os_versions)
+
+    /// 2024 (2024.4.0) SDK version set
+    package static let v6_4 = Semantics(version: openSwiftUI_v6_4_os_versions)
+
     /// Fall 2025 (future release)
     package static let v7 = Semantics(version: openSwiftUI_v7_0_os_versions)
 }

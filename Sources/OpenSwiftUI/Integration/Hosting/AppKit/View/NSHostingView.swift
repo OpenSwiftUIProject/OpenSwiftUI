@@ -267,6 +267,13 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         needsUpdateConstraints = true
         needsLayout = true
     }
+
+    @objc(swiftui_addRenderedSubview:positioned:relativeTo:) // FIXME: ViewUpdater -> AppKitAddSubview
+    private func openswiftui_addRenderedSubview(_ view: NSView, positioned place: NSWindow.OrderingMode, relativeTo otherView: NSView?) {
+        isInsertingRenderedSubview = true
+        addSubview(view, positioned: place, relativeTo: otherView)
+        isInsertingRenderedSubview = false
+    }
 }
 
 @available(iOS, unavailable)

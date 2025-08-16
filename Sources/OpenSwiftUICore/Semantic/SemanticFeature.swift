@@ -87,6 +87,20 @@ package struct _SemanticFeature_v6: SemanticFeature {
     package init() {}
 }
 
+package struct _SemanticFeature_v6_1: SemanticFeature {
+    package static let introduced = Semantics.v6_1
+
+    @inlinable
+    package init() {}
+}
+
+package struct _SemanticFeature_v6_4: SemanticFeature {
+    package static let introduced = Semantics.v6_4
+
+    @inlinable
+    package init() {}
+}
+
 extension Semantics {
     package typealias ColumnarNavigationViewsUseUnaryWrappers = _SemanticFeature_v2
     package typealias ImagesLayoutAsText = _SemanticFeature_v2

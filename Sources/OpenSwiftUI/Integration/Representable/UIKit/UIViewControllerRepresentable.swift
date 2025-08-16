@@ -2,8 +2,8 @@
 //  UIViewControllerRepresentable.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Blocked by makePreferenceWriter & UIKitAnimationBridge
 //  ID: F0196C17270D74A1F1A35F1926215FB3 (SwiftUI)
 
 #if os(iOS)
@@ -206,7 +206,26 @@ extension UIViewControllerRepresentable {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        guard !inputs.isInHostingConfiguration else {
+            Log.externalWarning("\(Self.self) is a UIViewControllerRepresentable. UIViewControllerRepresentable is not supported inside of UIHostingConfiguration.")
+            var outputs = _ViewOutputs()
+            if inputs.preferences.requiresDisplayList {
+                outputs.displayList = Attribute(
+                    UnsupportedDisplayList(
+                        identity: DisplayList.Identity(),
+                        position: inputs.animatedPosition(),
+                        size: inputs.animatedSize(),
+                        containerPosition: inputs.containerPosition
+                    )
+                )
+            }
+            return outputs
+        }
+        typealias Adapter = PlatformViewControllerRepresentableAdaptor<Self>
+        precondition(isLinkedOnOrAfter(.v4) ? Metadata(Self.self).isValueType : true, "UIViewControllerRepresentables must be value types: \(Self.self)")
+        var outputs = Adapter._makeView(view: view.unsafeBitCast(to: Adapter.self), inputs: inputs)
+        // TODO: outputs.preferences.makePreferenceWriter HostingGestureOverlayAuthorityKey
+        return outputs
     }
 
     nonisolated public static func _makeViewList(
@@ -226,9 +245,7 @@ extension UIViewControllerRepresentable {
     public static func _layoutOptions(
         _ provider: UIViewControllerType
     ) -> LayoutOptions {
-        .init(
-            rawValue: 1
-        )
+        .init(rawValue: 1)
     }
 
     /// Declares the content and behavior of this view.
@@ -248,10 +265,86 @@ private struct UnsupportedDisplayList: Rule {
     var value: DisplayList {
         let version = DisplayList.Version(forUpdate: ())
         let seed = DisplayList.Seed(version)
-        let position = position
-        let containerPosition = containerPosition
-        let size = size.value
-        preconditionFailure("TODO: EmptyViewFactory")
+        let frame = CGRect(
+            origin: CGPoint(position - containerPosition),
+            size: size.value
+        )
+        var item = DisplayList.Item(
+            .content(.init(.platformView(EmptyViewFactory()), seed: seed)),
+            frame: frame,
+            identity: identity,
+            version: version
+        )
+        item.canonicalize()
+        return DisplayList(item)
+    }
+}
+
+// MARK: - PlatformViewRepresentableAdaptor
+
+struct PlatformViewControllerRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: UIViewControllerRepresentable {
+    var base: Base
+
+    typealias PlatformViewProvider = Base.UIViewControllerType
+
+    typealias Coordinator = Base.Coordinator
+    
+    static var dynamicProperties: DynamicPropertyCache.Fields {
+        DynamicPropertyCache.fields(of: Base.self)
+    }
+
+    func makeViewProvider(context: Context) -> PlatformViewProvider {
+        base.makeUIViewController(context: .init(context))
+    }
+
+    func updateViewProvider(_ provider: PlatformViewProvider, context: Context) {
+        base.updateUIViewController(provider, context: .init(context))
+    }
+
+    func resetViewProvider(_ provider: PlatformViewProvider, coordinator: Coordinator, destroy: () -> Void) {
+        base._resetUIViewController(provider, coordinator: coordinator, destroy: destroy)
+    }
+
+    static func dismantleViewProvider(_ provider: PlatformViewProvider, coordinator: Coordinator) {
+        Base.dismantleUIViewController(provider, coordinator: coordinator)
+    }
+
+    func makeCoordinator() -> Coordinator {
+        base.makeCoordinator()
+    }
+
+    func _identifiedViewTree(in provider: PlatformViewProvider) -> _IdentifiedViewTree {
+        base._identifiedViewTree(in: provider)
+    }
+
+    func sizeThatFits(_ proposal: ProposedViewSize, provider: PlatformViewProvider, context: Context) -> CGSize? {
+        base.sizeThatFits(proposal, uiViewController: provider, context: .init(context))
+    }
+    
+    func overrideSizeThatFits(_ size: inout CGSize, in proposedSize: _ProposedSize, platformView: PlatformViewProvider) {
+        _openSwiftUIEmptyStub()
+    }
+
+    func overrideLayoutTraits(_ traits: inout _LayoutTraits, for provider: PlatformViewProvider) {
+        let preferredContentSize = provider.preferredContentSize
+        if preferredContentSize.width > .zero {
+            traits.idealSize.width = preferredContentSize.width
+        }
+        if preferredContentSize.height > .zero {
+            traits.idealSize.height = preferredContentSize.height
+        }
+    }
+
+    static func modifyBridgedViewInputs(_ inputs: inout _ViewInputs) {
+        _openSwiftUIEmptyStub()
+    }
+
+    static func shouldEagerlyUpdateSafeArea(_ provider: PlatformViewProvider) -> Bool {
+        false
+    }
+
+    static func layoutOptions(_ provider: PlatformViewProvider) -> LayoutOptions {
+        Base._layoutOptions(provider)
     }
 }
 

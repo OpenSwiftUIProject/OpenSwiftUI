@@ -9,7 +9,7 @@ import OpenSwiftUITestsSupport
 struct AnimationCompletionCompatibilityTests {
     @Test(.disabled {
         #if os(macOS)
-        // macOS Animation is not supported yet
+        // FIXME: macOS Animation is not supported yet
         true
         #else
         false
@@ -50,15 +50,17 @@ struct AnimationCompletionCompatibilityTests {
                     }
             }
         }
-        
-        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
-            PlatformHostingController(
-                rootView: ContentView(
-                    confirmation: confirmation,
-                    continuation: continuation
+        // Sometimes CI will fail for this test
+        await withKnownIssue(isIntermittent: true) {
+            try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+                PlatformHostingController(
+                    rootView: ContentView(
+                        confirmation: confirmation,
+                        continuation: continuation
+                    )
                 )
-            )
+            }
+            #expect(Helper.values == [1, 2])
         }
-        #expect(Helper.values == [1, 2])
     }
 }

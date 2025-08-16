@@ -35,7 +35,7 @@ struct PlatformViewRepresentableUITests {
                 return v
             }
 
-            func updateNSView(_ uiView: NSViewType, context: Context) {}
+            func updateNSView(_ nsView: NSViewType, context: Context) {}
             #endif
         }
         struct ContentView: View {

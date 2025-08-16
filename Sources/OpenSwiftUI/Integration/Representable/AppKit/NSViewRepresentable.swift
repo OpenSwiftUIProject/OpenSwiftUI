@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by Animation
 //  ID: 38FE679A85C91B802D25DB73BF37B09F (SwiftUI)
 
 #if os(macOS)
@@ -312,13 +312,13 @@ extension NSViewRepresentable {
 private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: NSViewRepresentable {
     var base: Base
 
-    static var dynamicProperties: DynamicPropertyCache.Fields {
-        DynamicPropertyCache.fields(of: Base.self)
-    }
-
     typealias PlatformViewProvider = Base.NSViewType
 
     typealias Coordinator = Base.Coordinator
+    
+    static var dynamicProperties: DynamicPropertyCache.Fields {
+        DynamicPropertyCache.fields(of: Base.self)
+    }
 
     func makeViewProvider(context: Context) -> PlatformViewProvider {
         base.makeNSView(context: .init(context))
@@ -411,8 +411,8 @@ public struct NSViewRepresentableContext<View> where View: NSViewRepresentable {
     ///     }
     ///
     /// To create and configure your custom coordinator, implement the
-    /// ``NSViewControllerRepresentable/makeCoordinator()`` method of your
-    /// ``NSViewControllerRepresentable`` object.
+    /// ``NSViewRepresentable/makeCoordinator()`` method of your
+    /// ``NSViewRepresentable`` object.
     public let coordinator: View.Coordinator
 
     /// The current transaction.
