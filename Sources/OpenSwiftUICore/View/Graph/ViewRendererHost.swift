@@ -61,7 +61,7 @@ extension ViewRendererHost {
             object: self,
             "",
             [
-                viewGraph.graph.graphIdentity(), // FIXME: UInt
+                viewGraph.graph.graphIdentity(),
                 UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
             ]
         )
@@ -76,7 +76,7 @@ extension ViewRendererHost {
             object: self,
             "",
             [
-                viewGraph.graph.graphIdentity(), // FIXME: UInt
+                viewGraph.graph.graphIdentity(),
                 UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
             ]
         )
@@ -525,22 +525,22 @@ extension ViewRendererHost {
     }
 }
 
-// MARK: - ViewRendererHost + Graph [TODO]
+// MARK: - ViewRendererHost + Graph
 
 extension ViewRendererHost {
     package func startProfiling() {
-//        Graph.startProfiling(viewGraph.graph)
+        viewGraph.graph.startProfiling()
     }
     
     package func stopProfiling() {
-//        Graph.stopProfiling(viewGraph.graph)
+        viewGraph.graph.stopProfiling()
     }
     
     package func resetProfile() {
-        // Graph.resetProfile(viewGraph.graph)
+        viewGraph.graph.resetProfile()
     }
     
     package func archiveJSON(name: String? = nil) {
-        // viewGraph.graph.archiveJSON(name: name)
+        viewGraph.graph.archiveJSON(name: name)
     }
 }

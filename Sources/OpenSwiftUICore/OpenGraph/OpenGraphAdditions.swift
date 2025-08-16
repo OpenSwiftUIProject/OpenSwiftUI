@@ -7,24 +7,6 @@
 
 package import OpenGraphShims
 
-// FIXME
-extension Subgraph {
-    package typealias ChildFlags = Flags
-}
-
-extension AnyAttribute {
-    package typealias Flags = Subgraph.Flags
-}
-
-extension _AttributeBody {
-    package typealias Flags = _AttributeType.Flags
-}
-
-extension Graph {
-    package typealias TraceOptions = TraceFlags
-}
-
-
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
@@ -112,7 +94,7 @@ extension AnyAttribute.Flags {
 
 extension Subgraph.ChildFlags {
     package static var secondary: Subgraph.ChildFlags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 0)
     }
 }
 
@@ -277,7 +259,7 @@ extension Graph {
     }
 
     package static func startTracing(options: Graph.TraceOptions? = nil) {
-        Graph.startTracing(nil, flags: options ?? ProcessEnvironment.tracingOptions)
+        Graph.startTracing(nil, options: options ?? ProcessEnvironment.tracingOptions)
     }
 
     package static func stopTracing() {
