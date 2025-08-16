@@ -1,5 +1,5 @@
 //
-//  CAFrameRateRange+Extension.swift
+//  CAFrameRateRangeUtil.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
