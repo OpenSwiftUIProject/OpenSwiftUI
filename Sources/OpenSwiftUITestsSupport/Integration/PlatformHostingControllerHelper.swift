@@ -44,6 +44,10 @@ package func triggerLayoutWithWindow(
         vc.triggerLayout()
         window = vc.view.window
     }
+    #if os(macOS)
+    window.isReleasedWhenClosed = false
+    window.close()
+    #endif
     withExtendedLifetime(window) {}
 }
 
@@ -57,6 +61,10 @@ package func triggerLayoutWithWindow(
         vc.triggerLayout()
         window = vc.view.window
     }
+    #if os(macOS)
+    window.isReleasedWhenClosed = false
+    window.close()
+    #endif
     withExtendedLifetime(window) {}
 }
 
@@ -73,6 +81,10 @@ package func triggerLayoutWithWindow(
             window = vc.view.window
         }
     }
+    #if os(macOS)
+    window.isReleasedWhenClosed = false
+    window.close()
+    #endif
     withExtendedLifetime(window) {}
 }
 
@@ -89,6 +101,10 @@ package func triggerLayoutWithWindow(
             window = vc.view.window
         }
     }
+    #if os(macOS)
+    window.isReleasedWhenClosed = false
+    window.close()
+    #endif
     withExtendedLifetime(window) {}
 }
 
