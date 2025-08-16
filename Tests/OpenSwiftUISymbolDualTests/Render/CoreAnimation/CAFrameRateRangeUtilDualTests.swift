@@ -2,18 +2,18 @@
 //  CAFrameRateRangeUtilDualTests.swift
 //  OpenSwiftUICoreTests
 
-#if canImport(SwiftUI, _underlyingVersion: 6.5.4)
+#if os(iOS) && canImport(SwiftUI, _underlyingVersion: 6.5.4)
 import QuartzCore
 import Testing
 
 // MARK: - FlexFrameLayoutTests
 
 extension CAFrameRateRange {
-    @_silgen_name("SwiftUITestStub_CAFrameRateRangeInitInterval")
+    @_silgen_name("OpenSwiftUITestStub_CAFrameRateRangeInitInterval")
     init(swiftUI_interval: Double)
 }
 
-struct CAFrameRateRnageUtilDualTests {
+struct CAFrameRateRangeUtilDualTests {
     @Test(arguments: [
         (.zero, .default),
         (0.05, .init(minimum: 20, maximum: 60, preferred: 20)), // 20

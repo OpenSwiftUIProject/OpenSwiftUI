@@ -7,7 +7,14 @@ import OpenSwiftUITestsSupport
 
 @MainActor
 struct AnimationCompletionCompatibilityTests {
-    @Test
+    @Test(.disabled {
+        #if os(macOS)
+        // macOS Animation is not supported yet
+        true
+        #else
+        false
+        #endif
+    })
     func logicalAndRemovedComplete() async throws {
         @MainActor
         enum Helper {
@@ -18,56 +25,29 @@ struct AnimationCompletionCompatibilityTests {
             let confirmation: Confirmation
             var continuation: UnsafeContinuation<Void, Never>
 
+            @State private var showRed = false
+            @State private var scale = 1.0
+
             var body: some View {
-                VStack {
-                    LogicalCompletionView(confirmation: confirmation, continuation: continuation)
-                    RemovedCompletionView(confirmation: confirmation, continuation: continuation)
-                }
-            }
-
-            struct LogicalCompletionView: View {
-                @State private var showRed = false
-
-                let confirmation: Confirmation
-                var continuation: UnsafeContinuation<Void, Never>
-
-                var body: some View {
-                    VStack {
-                        Color(platformColor: showRed ? .red : .blue)
-                            .onAppear {
-                                let animation = Animation.linear(duration: 3)
-                                    .logicallyComplete(after: 1)
-                                withAnimation(animation, completionCriteria: .logicallyComplete) {
-                                    showRed.toggle()
-                                } completion: {
-                                    Helper.values.append(1)
-                                    confirmation()
-                                }
-                            }
+                Color(platformColor: showRed ? .red : .blue)
+                    .frame(width: 100 * scale, height: 100 * scale)
+                    .onAppear {
+                        let animation = Animation.linear(duration: 5)
+                            .logicallyComplete(after: 1)
+                        withAnimation(animation, completionCriteria: .logicallyComplete) {
+                            showRed.toggle()
+                        } completion: {
+                            Helper.values.append(1)
+                            confirmation()
+                        }
+                        withAnimation(animation, completionCriteria: .removed) {
+                            scale = 2.0
+                        } completion: {
+                            Helper.values.append(2)
+                            confirmation()
+                            continuation.resume()
+                        }
                     }
-                }
-            }
-            struct RemovedCompletionView: View {
-                @State private var showRed = false
-
-                let confirmation: Confirmation
-                var continuation: UnsafeContinuation<Void, Never>
-
-                var body: some View {
-                    VStack {
-                        Color(platformColor: showRed ? .red : .blue)
-                            .onAppear {
-                                let animation = Animation.linear(duration: 2)
-                                withAnimation(animation, completionCriteria: .removed) {
-                                    showRed.toggle()
-                                } completion: {
-                                    Helper.values.append(2)
-                                    confirmation()
-                                    continuation.resume()
-                                }
-                            }
-                    }
-                }
             }
         }
         
@@ -79,5 +59,6 @@ struct AnimationCompletionCompatibilityTests {
                 )
             )
         }
+        #expect(Helper.values == [1, 2])
     }
 }

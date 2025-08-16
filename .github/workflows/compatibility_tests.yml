@@ -32,11 +32,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: ./.github/actions/setup-xcode
         with:
           xcode-version: ${{ matrix.xcode-version }}
-      - name: Swift version
-        run: swift --version
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
@@ -84,11 +82,9 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
-        uses: maxim-lobanov/setup-xcode@v1
+        uses: ./.github/actions/setup-xcode
         with:
           xcode-version: ${{ matrix.xcode-version }}
-      - name: Swift version
-        run: swift --version
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash

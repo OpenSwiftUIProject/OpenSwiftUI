@@ -153,6 +153,12 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         preconditionFailure("init(coder:) has not been implemented")
     }
 
+    deinit {
+        updateRemovedState()
+        // TODO
+        HostingViewRegistry.shared.remove(self)
+    }
+
     /// The renderer configuration of the hosting view.
     public final var _rendererConfiguration: _RendererConfiguration {
         get {
