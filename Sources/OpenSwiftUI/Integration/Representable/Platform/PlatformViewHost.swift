@@ -205,6 +205,28 @@ where Content: PlatformViewRepresentable {
         }
         super._setHostsLayoutEngine(hostsLayoutEngine)
     }
+    #else
+    override func viewWillMove(toSuperview newSuperview: NSView?) {
+        defer { super.viewWillMove(toSuperview: newSuperview) }
+        guard let newSuperview else {
+            return
+        }
+        guard let viewController = representedViewProvider as? PlatformViewController else {
+            return
+        }
+        let view = viewController.view
+        guard view.superview != newSuperview else {
+            return
+        }
+        hostedView = view
+        needsUpdateConstraints = true
+    }
+
+    override func viewDidMoveToSuperview() {
+        defer { super.viewDidMoveToSuperview() }
+        // TODO
+        // updateConstraintsForSubtreeIfNeeded()
+    }
     #endif
 
     #if os(iOS)
