@@ -13,8 +13,14 @@ clone_checkout_og() {
   cd ..
   if [ ! -d OpenBox ]; then
     gh repo clone OpenSwiftUIProject/OpenBox
+    cd OpenBox
+  else
+    echo "OpenBox already exists, skipping clone."
+    cd OpenBox
+    git fetch --all --quiet
+    git stash --quiet || true
+    git reset --hard --quiet origin/main
   fi
-  cd OpenBox
   git checkout --quiet $revision
 }
 
