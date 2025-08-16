@@ -27,9 +27,6 @@ let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM")
 // https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
 // By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
 let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS")
-
-// SPI will use arm64-apple-ios instead of arm64-apple-ios-simulator for the iOS build.
-// AG does not support linking with that architecture.
 let isSPIBuild = envEnable("SPI_BUILD")
 
 // MARK: - Env and Config
