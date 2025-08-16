@@ -2,7 +2,7 @@
 //  AnyAttributeFix.swift
 //  OpenSwiftUICore
 
-#if !canImport(Darwin)
+#if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
 package import OpenGraphShims
 
 // This is a workaround to partially "fix" the Swift compiler bug on non-Darwin platforms.
@@ -14,7 +14,37 @@ package struct AnyAttribute: RawRepresentable, Hashable {
         self.rawValue = rawValue
     }
 
-    package typealias Flags = OGAttributeFlags
+
+    package struct Flags: OptionSet {
+        package let rawValue: UInt8
+
+        package init(rawValue: UInt8) {
+            self.rawValue = rawValue
+        }
+
+        package static let none: Flags = Flags(rawValue: 0)
+        package static let all: Flags = Flags(rawValue: 0xFF)
+
+        package static var transactional: Self {
+            .init(rawValue: 1 << 0)
+        }
+
+        package static var removable: Self {
+            .init(rawValue: 1 << 1)
+        }
+
+        package static var invalidatable: Self {
+            .init(rawValue: 1 << 2)
+        }
+
+        package static var scrapeable: Self {
+            .init(rawValue: 1 << 3)
+        }
+
+        package static var secondary: Self {
+            .init(rawValue: 1 << 0)
+        }
+    }
 }
 
 package struct AttributeInfo {
@@ -65,7 +95,7 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func setFlags(_ newFlags: OGAttributeFlags, mask: OGAttributeFlags) {
+    package func setFlags(_ newFlags: Subgraph.Flags, mask: Subgraph.Flags) {
         preconditionFailure("#39")
     }
 
@@ -160,13 +190,21 @@ extension AnyOptionalAttribute {
 }
 
 extension Graph {
-    package static func setInvalidationCallback(_ graph: Graph, callback: ((AnyAttribute) -> Void)?) {
+    package func onInvalidation(_ callback: @escaping (AnyAttribute) -> Void) {
         preconditionFailure("#39")
     }
 }
 
 extension Subgraph {
-    package func forEach(_ flags: OGAttributeFlags, _ callback: (AnyAttribute) -> Void) {
+    package func forEach(_ flags: AnyAttribute.Flags, _ callback: (AnyAttribute) -> Void) {
+        preconditionFailure("#39")
+    }
+
+    package func isDirty(flags: AnyAttribute.Flags) -> Bool {
+        preconditionFailure("#39")
+    }
+
+    package func update(flags: AnyAttribute.Flags) {
         preconditionFailure("#39")
     }
 }
@@ -180,9 +218,21 @@ extension Rule where Self: Hashable {
     }
 }
 
-extension [AnyAttribute] {
-    package var anyInputsChanged: Bool {
-        false
+extension Graph {
+    package static func anyInputsChanged(excluding excludedInputs: [AnyAttribute]) -> Bool {
+        preconditionFailure("#39")
     }
 }
+
+extension Attribute {
+    package func setFlags(_ newFlags: AnyAttribute.Flags, mask: AnyAttribute.Flags) {
+        preconditionFailure("#39")
+    }
+
+    var flags: AnyAttribute.Flags {
+        get { preconditionFailure("#39") }
+        nonmutating set { preconditionFailure("#39") }
+    }
+}
+
 #endif

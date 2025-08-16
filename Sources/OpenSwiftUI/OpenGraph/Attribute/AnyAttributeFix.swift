@@ -2,7 +2,7 @@
 //  AnyAttributeFix.swift
 //  OpenSwiftUI
 
-#if !canImport(Darwin)
+#if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
 package import OpenGraphShims
 
 package typealias AnyAttribute = OpenSwiftUICore.AnyAttribute
@@ -52,7 +52,7 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func setFlags(_ newFlags: OGAttributeFlags, mask: OGAttributeFlags) {
+    package func setFlags(_ newFlags: Flags, mask: Flags) {
         preconditionFailure("#39")
     }
 
@@ -72,7 +72,7 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func breadthFirstSearch(options: OGSearchOptions = [], _: (AnyAttribute) -> Bool) -> Bool {
+    package func breadthFirstSearch(options: SearchOptions = [], _: (AnyAttribute) -> Bool) -> Bool {
         preconditionFailure("#39")
     }
 
@@ -143,14 +143,40 @@ extension AnyOptionalAttribute {
 }
 
 extension Graph {
-    package static func setInvalidationCallback(_ graph: Graph, callback: ((AnyAttribute) -> Void)?) {
+    package func onInvalidation(_ callback: @escaping (AnyAttribute) -> Void) {
         preconditionFailure("#39")
     }
 }
 
 extension Subgraph {
-    package func forEach(_ flags: OGAttributeFlags, _ callback: (AnyAttribute) -> Void) {
+    package func forEach(_ flags: AnyAttribute.Flags, _ callback: (AnyAttribute) -> Void) {
+        preconditionFailure("#39")
+    }
+
+    package func isDirty(flags: AnyAttribute.Flags) -> Bool {
+        preconditionFailure("#39")
+    }
+
+    package func update(flags: AnyAttribute.Flags) {
         preconditionFailure("#39")
     }
 }
+
+extension Graph {
+    package static func anyInputsChanged(excluding excludedInputs: [AnyAttribute]) -> Bool {
+        preconditionFailure("#39")
+    }
+}
+
+extension Attribute {
+    package func setFlags(_ newFlags: AnyAttribute.Flags, mask: AnyAttribute.Flags) {
+        preconditionFailure("#39")
+    }
+
+    var flags: AnyAttribute.Flags {
+        get { preconditionFailure("#39") }
+        nonmutating set { preconditionFailure("#39") }
+    }
+}
+
 #endif
