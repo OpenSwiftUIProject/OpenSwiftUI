@@ -48,6 +48,11 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_setFocusInteractionEnabled:", , BOOL);
     func(self, selector, enabled);
 }
+
+- (UIViewController *)_viewControllerForAncestor_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(UIViewController *, @"_viewControllerForAncestor", nil);
+    return func(self, selector);
+}
 @end
 
 @implementation UIViewController (OpenSwiftUI_SPI)

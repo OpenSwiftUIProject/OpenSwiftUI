@@ -347,6 +347,13 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             inputs.base.options.insert(.supportsVariableFrameDuration)
         }
     }
+
+    @objc(swiftui_insertRenderedSubview:atIndex:) // FIXME: ViewUpdater -> CoreViewAddSubview
+    private func openswiftui_insertRenderedSubview(_ view: UIView, at index: Int) {
+        isInsertingRenderedSubview = true
+        insertSubview(view, at: index)
+        isInsertingRenderedSubview = false
+    }
 }
 
 extension _UIHostingView {
@@ -687,6 +694,14 @@ extension _UIHostingView: UIHostingViewBaseDelegate {
 
     package func sceneActivationStateDidChange() {
         _openSwiftUIUnimplementedWarning()
+    }
+}
+
+// MARK: - _UIHostingView + UIViewControllerProvider [6.5.4]
+
+extension _UIHostingView: UIViewControllerProvider {
+    var uiViewController: UIViewController? {
+        viewController
     }
 }
 
