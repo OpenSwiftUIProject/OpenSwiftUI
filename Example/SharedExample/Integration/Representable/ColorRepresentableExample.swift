@@ -1,5 +1,5 @@
 //
-//  ColorRepresentable.swift
+//  ColorRepresentableExample.swift
 //  SharedExample
 
 #if OPENSWIFTUI
@@ -11,12 +11,14 @@ import SwiftUI
 #if os(iOS)
 import UIKit
 typealias PlatformViewRepresentable = UIViewRepresentable
+typealias PlatformViewControllerRepresentable = UIViewControllerRepresentable
 #elseif os(macOS)
 import AppKit
 typealias PlatformViewRepresentable = NSViewRepresentable
+typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
 #endif
 
-struct ColorRepresentableExample: PlatformViewRepresentable {
+struct ColorViewRepresentableExample: PlatformViewRepresentable {
     #if os(iOS)
     func makeUIView(context: Context) -> some UIView {
         let v = UIView()
@@ -33,6 +35,26 @@ struct ColorRepresentableExample: PlatformViewRepresentable {
         return v
     }
 
-    func updateNSView(_ uiView: NSViewType, context: Context) {}
+    func updateNSView(_ nsView: NSViewType, context: Context) {}
+    #endif
+}
+
+struct ColorViewControllerRepresentableExample: PlatformViewControllerRepresentable {
+    #if os(iOS)
+    func makeUIViewController(context: Context) -> some UIViewController {
+        let vc = UIViewController()
+        vc.view.backgroundColor = .red
+        return vc
+    }
+    func updateUIViewController(_ uiViewController: UIViewControllerType, context: Context) {}
+    #elseif os(macOS)
+    func makeNSViewController(context: Context) -> some NSViewController {
+        let vc = NSViewController()
+        vc.view.wantsLayer = true
+        vc.view.layer?.backgroundColor = NSColor.red.cgColor
+        return vc
+    }
+
+    func updateNSViewController(_ nsViewController: NSViewControllerType, context: Context) {}
     #endif
 }
