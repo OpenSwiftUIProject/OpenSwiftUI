@@ -477,8 +477,12 @@ extension _UIHostingView {
 extension _UIHostingView: ViewRendererHost {
     package func `as`<T>(_ type: T.Type) -> T? {
         guard let value = base.as(type) else {
-            // TODO
-            return nil
+            // FocusHost
+            if UIViewControllerProvider.self == type {
+                return unsafeBitCast(self as any UIViewControllerProvider, to: T.self)
+            } else { // TODO
+                return nil
+            }
         }
         return value
     }

@@ -166,6 +166,39 @@ where Content: PlatformViewRepresentable {
         }
     }
 
+    override func didMoveToWindow() {
+        defer { super.didMoveToWindow() }
+        guard window != nil else { return }
+        guard let viewController = representedViewProvider as? PlatformViewController else {
+            return
+        }
+        let view = viewController.view
+        guard let host, let controllerProvider = host.as(UIViewControllerProvider.self) else {
+            return
+        }
+        let parentController = if isLinkedOnOrAfter(.v6_4) {
+            controllerProvider.containingViewController
+        } else {
+            controllerProvider.uiViewController
+        }
+        guard let parentController, let viewHierarchyMode else { return }
+        switch viewHierarchyMode {
+        case .willMoveToSuperview:
+            if viewController.parent !== parentController {
+                parentController.addChild(viewController)
+            }
+            let notCurrentContext = viewController.presentedViewController?.modalPresentationStyle != .currentContext
+            let isBeingDismissed = viewController.presentedViewController?.isBeingDismissed ?? false
+            guard hostedView == nil, notCurrentContext || isBeingDismissed else {
+                return
+            }
+        case .didMoveToWindow:
+            parentController.addChild(viewController)
+        }
+        hostedView = view
+        viewController.didMove(toParent: parentController)
+    }
+
     override func _setHostsLayoutEngine(_ hostsLayoutEngine: Bool) {
         guard enableUnifiedLayout() else {
             return
