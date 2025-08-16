@@ -132,7 +132,7 @@ public struct _ValueActionModifier<Value>: ViewModifier, PrimitiveViewModifier, 
             modifier: modifier.value,
             phase: inputs.viewPhase
         ))
-        dispatcher.flags = .active
+        dispatcher.flags = .transactional
         return body(_Graph(), inputs)
     }
 
@@ -152,7 +152,7 @@ public struct _ValueActionModifier<Value>: ViewModifier, PrimitiveViewModifier, 
             modifier: modifier.value,
             phase: inputs.base.phase
         ))
-        dispatcher.flags = .active
+        dispatcher.flags = .transactional
         return body(_Graph(), inputs)
     }
 }
@@ -363,7 +363,7 @@ struct _ValueActionModifier2<Value>: ViewModifier, PrimitiveViewModifier, ValueA
             modifier: modifier.value,
             phase: inputs.viewPhase
         ))
-        dispatcher.flags = .active
+        dispatcher.flags = .transactional
         return body(_Graph(), inputs)
     }
 
@@ -376,7 +376,7 @@ struct _ValueActionModifier2<Value>: ViewModifier, PrimitiveViewModifier, ValueA
             modifier: modifier.value,
             phase: inputs.base.phase
         ))
-        dispatcher.flags = .active
+        dispatcher.flags = .transactional
         return body(_Graph(), inputs)
     }
 }
@@ -399,7 +399,7 @@ struct _ValueActionModifier3<Value>: ViewModifier, PrimitiveViewModifier where V
             oldValue: nil,
             lastResetSeed: .zero
         ))
-        dispatcher.flags = .active
+        dispatcher.flags = .transactional
         return body(_Graph(), inputs)
     }
 
@@ -415,7 +415,7 @@ struct _ValueActionModifier3<Value>: ViewModifier, PrimitiveViewModifier where V
             oldValue: nil,
             lastResetSeed: .zero
         ))
-        dispatcher.flags = .active
+        dispatcher.flags = .transactional
         return body(_Graph(), inputs)
     }
 }

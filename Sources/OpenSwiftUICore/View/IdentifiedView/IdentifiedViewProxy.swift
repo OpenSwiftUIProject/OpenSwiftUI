@@ -67,7 +67,7 @@ extension _BenchmarkHost {
         }
         return render.findIdentifier(identifier, root: nil) { attribute in
             var predicate = ViewValuePredicate<V>(view: nil)
-            _ = attribute.breadthFirstSearch(options: ._2) { anyAttribute in
+            _ = attribute.breadthFirstSearch(options: .searchOutputs) { anyAttribute in
                 predicate.apply(to: anyAttribute)
             }
             return predicate.view
@@ -94,7 +94,7 @@ extension ViewRendererHost {
     ) -> Binding<S>? where I: Hashable, V: View {
         findIdentifier(id, root: nil) { attribute in
             var predicate = ViewStatePredicate<V, S>()
-            _ = attribute.breadthFirstSearch(options: ._2) { anyAttribute in
+            _ = attribute.breadthFirstSearch(options: .searchOutputs) { anyAttribute in
                 predicate.apply(to: anyAttribute)
             }
             return predicate.state
@@ -108,7 +108,7 @@ extension ViewRendererHost {
     ) -> V? where I: Hashable {
         let root = root ?? viewGraph.rootView
         var v: V? = nil
-        _ = root.breadthFirstSearch(options: ._2) { attribute in
+        _ = root.breadthFirstSearch(options: .searchOutputs) { attribute in
             func project<T>(type: T.Type) -> Bool {
                 let bodyValue = attribute._bodyPointer.assumingMemoryBound(to: type).pointee
                 guard let provider = bodyValue as? IdentifierProvider else {

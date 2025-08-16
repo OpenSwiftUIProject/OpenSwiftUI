@@ -13,8 +13,14 @@ clone_checkout_dpf() {
   cd ..
   if [ ! -d DarwinPrivateFrameworks ]; then
     gh repo clone OpenSwiftUIProject/DarwinPrivateFrameworks
+    cd DarwinPrivateFrameworks
+  else
+    echo "DarwinPrivateFrameworks already exists, skipping clone."
+    cd DarwinPrivateFrameworks
+    git fetch --all --quiet
+    git stash --quiet || true
+    git reset --hard --quiet origin/main
   fi
-  cd DarwinPrivateFrameworks
   git checkout --quiet $revision
 }
 

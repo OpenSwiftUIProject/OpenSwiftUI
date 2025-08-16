@@ -13,8 +13,14 @@ clone_checkout_og() {
   cd ..
   if [ ! -d OpenGraph ]; then
     gh repo clone OpenSwiftUIProject/OpenGraph
+    cd OpenGraph
+  else
+    echo "OpenGraph already exists, skipping clone."
+    cd OpenGraph
+    git fetch --all --quiet
+    git stash --quiet || true
+    git reset --hard --quiet origin/main
   fi
-  cd OpenGraph
   git checkout --quiet $revision
 }
 

@@ -68,6 +68,14 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v5),
 ]
 
+// MARK: - [env] OPENSWIFTUI_ANY_ATTRIBUTE_FIX
+
+// For #39
+let anyAttributeFix = envEnable("OPENSWIFTUI_ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
+if anyAttributeFix {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_ANY_ATTRIBUTE_FIX"))
+}
+
 // MARK: - [env] OPENSWIFTUI_TARGET_RELEASE
 
 let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024

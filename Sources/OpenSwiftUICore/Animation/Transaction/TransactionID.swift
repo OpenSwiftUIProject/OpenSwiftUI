@@ -17,7 +17,7 @@ package struct TransactionID: Comparable, Hashable {
 
     @inlinable
     package init(graph: Graph) {
-        id = Int(graph.counter(for: ._1))
+        id = Int(graph.counter(for: .transactions))
     }
 
     @inlinable

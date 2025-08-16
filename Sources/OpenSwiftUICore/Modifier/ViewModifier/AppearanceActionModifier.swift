@@ -31,7 +31,7 @@ public struct _AppearanceActionModifier: ViewModifier, PrimitiveViewModifier {
     ) -> _ViewOutputs {
         let effect = AppearanceEffect(modifier: modifier.value, phase: inputs.viewPhase)
         let attribute = Attribute(effect)
-        attribute.flags = [.active, .removable]
+        attribute.flags = [.transactional, .removable]
         return body(_Graph(), inputs)
     }
     

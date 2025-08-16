@@ -416,14 +416,13 @@ extension ViewGraph {
                     continuation()
                 }
                 counter2 &+= 1
-                data.globalSubgraph.update(flags: .active)
+                data.globalSubgraph.update(flags: .transactional)
             } while (continuations.count != 0 && counter2 != 8)
             inTransaction = false
             preferencesChanged = preferencesChanged || updatePreferences()
             observedSizeThatFitsChanged = observedSizeThatFitsChanged || updateObservedSizeThatFits()
             updatedOutputs.formUnion(updateRequestedOutputs())
-        } while (data.globalSubgraph.isDirty(1) && counter1 != 8)
-        
+        } while (needsTransaction && counter1 != 8)
 //        guard preferencesChanged || observedSizeThatFitsChanged || !updatedOutputs.isEmpty || needsFocusUpdate else {
 //            return
 //        }

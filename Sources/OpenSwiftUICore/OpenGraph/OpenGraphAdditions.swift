@@ -7,24 +7,6 @@
 
 package import OpenGraphShims
 
-// FIXME
-extension OGSearchOptions {
-    package static var _2: OGSearchOptions {
-        .init(rawValue: 2)
-    }
-}
-
-// FIXME
-extension Subgraph {
-    package typealias Flags = OGAttributeFlags
-    package typealias ChildFlags = OGAttributeFlags
-}
-
-extension Graph {
-    package typealias TraceOptions = TraceFlags
-}
-
-
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
@@ -33,14 +15,11 @@ package protocol Defaultable {
     static var defaultValue: Value { get }
 }
 
-// MARK: - AsyncAttribute
+// MARK: - AsyncAttribute [6.5.4]
 
 package protocol AsyncAttribute: _AttributeBody {}
 
 extension AsyncAttribute {
-    // FIXME
-    package typealias Flags = OGAttributeTypeFlags
-
     package static var flags: Flags { [] }
 }
 
@@ -95,29 +74,31 @@ package protocol InvalidatableAttribute: _AttributeBody {
     static func willInvalidate(attribute: AnyAttribute)
 }
 
+#if !OPENSWIFTUI_ANY_ATTRIBUTE_FIX
 extension AnyAttribute.Flags {
     package static var transactional: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 0)
     }
 
     package static var removable: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 1)
     }
 
     package static var invalidatable: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 2)
     }
 
     package static var scrapeable: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 3)
     }
 }
 
 extension Subgraph.ChildFlags {
     package static var secondary: Subgraph.ChildFlags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 0)
     }
 }
+#endif
 
 extension Subgraph {
     package func addSecondaryChild(_ child: Subgraph) {
@@ -156,7 +137,7 @@ extension Subgraph {
 
 extension Attribute {
     package func syncMainIfReferences<T>(do body: (Value) -> T) -> T {
-        let (value, flags) = valueAndFlags(options: [._2])
+        let (value, flags) = valueAndFlags(options: [.inputOptionsSyncMainRef])
         if flags.contains(.requiresMainThread) {
             var result: T?
             Update.syncMain {

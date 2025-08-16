@@ -74,7 +74,7 @@ extension Animatable {
         )
         let newValue = _GraphValue(animatable)
         value = newValue
-        value.value.setFlags(.active, mask: .mask)
+        value.value.setFlags(.transactional, mask: .all)
     }
 }
 

@@ -170,7 +170,7 @@ package struct DynamicPropertyCache {
         switch typeID.kind {
         case .enum, .optional:
             var taggedFields: [TaggedFields] = []
-            _ = typeID.forEachField(options: [._2, ._4]) { name, offset, fieldType in
+            _ = typeID.forEachField(options: [.continueAfterUnknownField, .enumerateEnumCases]) { name, offset, fieldType in
                 var fields: [Field] = []
                 let tupleType = TupleType(fieldType)
                 for index in tupleType.indices {
@@ -190,7 +190,7 @@ package struct DynamicPropertyCache {
             fields = Fields(layout: .sum(type, taggedFields))
         case .struct, .tuple:
             var fieldArray: [Field] = []
-            _ = typeID.forEachField(options: [._2]) { name, offset, fieldType in
+            _ = typeID.forEachField(options: [.continueAfterUnknownField]) { name, offset, fieldType in
                 guard let dynamicPropertyType = fieldType as? DynamicProperty.Type else {
                     return true
                 }
@@ -283,15 +283,15 @@ package protocol BodyAccessorRule {
 // MARK: - RuleThreadFlags
 
 private protocol RuleThreadFlags {
-    static var value: OGAttributeTypeFlags { get }
+    static var value: _AttributeType.Flags { get }
 }
 
 private struct AsyncThreadFlags: RuleThreadFlags {
-    static var value: OGAttributeTypeFlags { .asyncThread }
+    static var value: _AttributeType.Flags { .asyncThread }
 }
 
 private struct MainThreadFlags: RuleThreadFlags {
-    static var value: OGAttributeTypeFlags { .mainThread }
+    static var value: _AttributeType.Flags { .mainThread }
 }
 
 // MARK: - StaticBody
@@ -313,7 +313,7 @@ extension StaticBody: StatefulRule {
         accessor.updateBody(of: container, changed: true)
     }
     
-    static var flags: OGAttributeTypeFlags { ThreadFlags.value }
+    static var flags: Flags { ThreadFlags.value }
 }
 
 extension StaticBody: BodyAccessorRule {
@@ -383,7 +383,7 @@ extension DynamicBody: StatefulRule {
         accessor.updateBody(of: container, changed: changed)
     }
     
-    static var flags: OGAttributeTypeFlags { ThreadFlags.value }
+    static var flags: Flags { ThreadFlags.value }
 }
 
 extension DynamicBody: ObservedAttribute {

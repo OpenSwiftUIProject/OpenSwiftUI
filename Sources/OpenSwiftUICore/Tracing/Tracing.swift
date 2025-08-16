@@ -106,7 +106,7 @@ package func traceRuleBody<Body>(_ v: any Any.Type, body: () -> Body) -> Body {
 extension Graph {
     package func graphIdentity() -> UInt {
         // FIXME: remove numericCast
-        numericCast(counter(for: ._4))
+        numericCast(counter(for: .contextID))
     }
 }
 

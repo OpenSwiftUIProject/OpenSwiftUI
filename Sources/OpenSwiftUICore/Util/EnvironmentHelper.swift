@@ -51,5 +51,5 @@ package enum ProcessEnvironment {
         return UInt32(atoi(env))
     }
 
-    static let tracingOptions: Graph.TraceFlags = .init(rawValue: uint32(forKey: "OPENSWIFTUI_TRACE"))
+    static let tracingOptions: Graph.TraceOptions = .init(rawValue: uint32(forKey: "OPENSWIFTUI_TRACE"))
 }

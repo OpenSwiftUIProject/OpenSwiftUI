@@ -156,7 +156,7 @@ extension CachedEnvironment.AnimatedFrame {
             )
             frameAttribute = Attribute(attribute)
         }
-        frameAttribute.flags = .active
+        frameAttribute.flags = .transactional
         self.init(
             inputs: inputs.base,
             position: inputs.position,

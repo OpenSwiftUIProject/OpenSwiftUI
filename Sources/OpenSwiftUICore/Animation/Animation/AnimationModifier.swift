@@ -32,7 +32,7 @@ public struct _AnimationModifier<Value>: ViewModifier, PrimitiveViewModifier whe
                 transactionSeed: transactionSeed
             )
         )
-        seed.flags = .active
+        seed.flags = .transactional
         inputs.transaction = Attribute(
             ChildTransaction(
                 valueTransactionSeed: seed,
@@ -104,7 +104,7 @@ public struct _AnimationView<Content>: View, PrimitiveView where Content: Equata
                 transactionSeed: transactionSeed
             )
         )
-        seed.flags = .active
+        seed.flags = .transactional
         inputs.transaction = Attribute(
             ChildTransaction(
                 valueTransactionSeed: seed,

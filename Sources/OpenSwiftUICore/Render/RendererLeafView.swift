@@ -117,7 +117,7 @@ private struct LeafDisplayList<V>: StatefulRule, CustomStringConvertible where V
 
     typealias Value = DisplayList
 
-    static var flags: OGAttributeTypeFlags {
+    static var flags: Flags {
         V.requiresMainThread ? .mainThread : []
     }
 

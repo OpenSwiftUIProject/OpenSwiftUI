@@ -82,7 +82,7 @@ public struct _ValueTransactionModifier<Value>: ViewModifier, _GraphInputsModifi
             transactionSeed: transactionSeed
         )
         let seedAttribute = Attribute(seed)
-        seedAttribute.flags = .active
+        seedAttribute.flags = .transactional
         let child = ChildValueTransaction(
             valueTransactionSeed: seedAttribute,
             transform: modifier.value[keyPath: \.transform],
