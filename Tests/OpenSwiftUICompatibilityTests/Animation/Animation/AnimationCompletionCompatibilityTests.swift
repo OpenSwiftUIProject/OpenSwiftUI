@@ -7,7 +7,14 @@ import OpenSwiftUITestsSupport
 
 @MainActor
 struct AnimationCompletionCompatibilityTests {
-    @Test
+    @Test(.disabled {
+        #if os(macOS)
+        // macOS Animation is not supported yet
+        true
+        #else
+        false
+        #endif
+    })
     func logicalAndRemovedComplete() async throws {
         @MainActor
         enum Helper {
@@ -79,5 +86,6 @@ struct AnimationCompletionCompatibilityTests {
                 )
             )
         }
+        #expect(Helper.values == [1, 2])
     }
 }
