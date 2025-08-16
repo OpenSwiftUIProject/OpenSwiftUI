@@ -4,10 +4,10 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN
+#if OPENSWIFTUI_TARGET_OS_IOS
 
 #import <SymbolLocator.h>
 
-DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_CAFrameRateRangeInitInterval, SwiftUI, $sSo16CAFrameRateRangeV7SwiftUIE8intervalABSd_tcfC);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_CAFrameRateRangeInitInterval, SwiftUICore, $sSo16CAFrameRateRangeV7SwiftUIE8intervalABSd_tcfC);
 
 #endif
