@@ -292,14 +292,14 @@ extension UIViewRepresentable {
 private struct PlatformViewRepresentableAdaptor<Base>: PlatformViewRepresentable where Base: UIViewRepresentable {
     var base: Base
 
-    static var dynamicProperties: DynamicPropertyCache.Fields {
-        DynamicPropertyCache.fields(of: Base.self)
-    }
-
     typealias PlatformViewProvider = Base.UIViewType
 
     typealias Coordinator = Base.Coordinator
 
+    static var dynamicProperties: DynamicPropertyCache.Fields {
+        DynamicPropertyCache.fields(of: Base.self)
+    }
+    
     func makeViewProvider(context: Context) -> PlatformViewProvider {
         base.makeUIView(context: .init(context))
     }
