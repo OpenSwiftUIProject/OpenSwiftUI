@@ -15,7 +15,7 @@ package func changedBodyProperties<Body>(of type: Body.Type) -> [String] {
     var index = 0
     repeat {
         let options = [
-            Graph.descriptionFormat: "stack/frame",
+            DescriptionOption.format: "stack/frame",
             "frame_index": index,
         ] as NSDictionary
         guard let description = Graph.description(nil, options: options),

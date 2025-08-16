@@ -160,14 +160,13 @@ open class GraphHost: CustomReflectable {
     package init(data: Data) {
         mainThreadPrecondition()
         self.data = data
-        // FIXME: API needs to be updated in OG
-        Graph.setUpdateCallback(graph) { [weak self] in
+        graph.onUpdate { [weak self] in
             guard let self,
                   let graphDelegate
             else { return }
             graphDelegate.updateGraph { _ in }
         }
-        Graph.setInvalidationCallback(graph) { [weak self] attribute in
+        graph.onInvalidation { [weak self] attribute in
             guard let self else { return }
             graphInvalidation(from: attribute)
         }
@@ -188,12 +187,12 @@ open class GraphHost: CustomReflectable {
     }
     
     package static var isUpdating: Bool {
-        sharedGraph.counter(for: ._7) != 0
+        sharedGraph.counter(for: .threadUpdating) != 0
     }
     
     package final var isUpdating: Bool {
         guard isValid else { return false }
-        return graph.counter(for: ._6) != 0
+        return graph.counter(for: .contextThreadUpdating) != 0
     }
     
     package final func setNeedsUpdate(mayDeferUpdate: Bool, values: ViewRendererHostProperties) {
@@ -484,7 +483,7 @@ extension GraphHost {
     }
     
     package final var needsTransaction: Bool {
-        globalSubgraph.isDirty(1)
+        globalSubgraph.isDirty(flags: .transactional)
     }
     
     package final func startTransactionUpdate() {
@@ -501,7 +500,7 @@ extension GraphHost {
                 currentContinuation()
             }
             count &+= 1
-            subgraph.update(flags: .active)
+            subgraph.update(flags: .transactional)
             postUpdate(!continuations.isEmpty)
         } while count != 8 && !continuations.isEmpty
         inTransaction = false

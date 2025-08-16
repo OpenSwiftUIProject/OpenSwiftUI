@@ -8,16 +8,16 @@
 package import OpenGraphShims
 
 // FIXME
-extension OGSearchOptions {
-    package static var _2: OGSearchOptions {
-        .init(rawValue: 2)
-    }
+extension Subgraph {
+    package typealias ChildFlags = Flags
 }
 
-// FIXME
-extension Subgraph {
-    package typealias Flags = OGAttributeFlags
-    package typealias ChildFlags = OGAttributeFlags
+extension AnyAttribute {
+    package typealias Flags = Subgraph.Flags
+}
+
+extension _AttributeBody {
+    package typealias Flags = _AttributeType.Flags
 }
 
 extension Graph {
@@ -33,14 +33,11 @@ package protocol Defaultable {
     static var defaultValue: Value { get }
 }
 
-// MARK: - AsyncAttribute
+// MARK: - AsyncAttribute [6.5.4]
 
 package protocol AsyncAttribute: _AttributeBody {}
 
 extension AsyncAttribute {
-    // FIXME
-    package typealias Flags = OGAttributeTypeFlags
-
     package static var flags: Flags { [] }
 }
 
@@ -97,19 +94,19 @@ package protocol InvalidatableAttribute: _AttributeBody {
 
 extension AnyAttribute.Flags {
     package static var transactional: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 0)
     }
 
     package static var removable: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 1)
     }
 
     package static var invalidatable: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 2)
     }
 
     package static var scrapeable: Subgraph.Flags {
-        get { _openSwiftUIUnimplementedFailure() }
+        .init(rawValue: 1 << 3)
     }
 }
 
@@ -156,7 +153,7 @@ extension Subgraph {
 
 extension Attribute {
     package func syncMainIfReferences<T>(do body: (Value) -> T) -> T {
-        let (value, flags) = valueAndFlags(options: [._2])
+        let (value, flags) = valueAndFlags(options: [.inputOptionsSyncMainRef])
         if flags.contains(.requiresMainThread) {
             var result: T?
             Update.syncMain {
@@ -280,7 +277,7 @@ extension Graph {
     }
 
     package static func startTracing(options: Graph.TraceOptions? = nil) {
-        Graph.startTracing(nil, options: options ?? ProcessEnvironment.tracingOptions)
+        Graph.startTracing(nil, flags: options ?? ProcessEnvironment.tracingOptions)
     }
 
     package static func stopTracing() {

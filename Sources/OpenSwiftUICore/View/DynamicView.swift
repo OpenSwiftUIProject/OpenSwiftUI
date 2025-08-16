@@ -37,7 +37,7 @@ extension DynamicView {
             outputs: outputs
         )
         let attribute = Attribute(container)
-        attribute.flags = .active
+        attribute.flags = .transactional
         outputs.setIndirectDependency(attribute.identifier)
         return outputs
     }

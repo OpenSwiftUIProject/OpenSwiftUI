@@ -22,7 +22,7 @@ final class DynamicPropertyCacheTests: XCTestCase {
         
         
         let t = Metadata(DynamicPropertyCache.Fields?.self)
-        let result = t.forEachField(options: ._4) { name, index, type in
+        let result = t.forEachField(options: [.enumerateEnumCases]) { name, index, type in
             let s = String(cString: name)
             print("\(s) \(index) \(type)")
             return true

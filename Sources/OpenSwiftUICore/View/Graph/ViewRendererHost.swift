@@ -213,7 +213,7 @@ extension ViewRendererHost {
                     }
                     isFirst = false
                     if !Update.canDispatch {
-                        shouldContinue = shouldContinue && viewGraph.globalSubgraph.isDirty(1)
+                        shouldContinue = shouldContinue && viewGraph.needsTransaction
                     }
                     guard shouldContinue else {
                         break
@@ -529,11 +529,11 @@ extension ViewRendererHost {
 
 extension ViewRendererHost {
     package func startProfiling() {
-        Graph.startProfiling(viewGraph.graph)
+//        Graph.startProfiling(viewGraph.graph)
     }
     
     package func stopProfiling() {
-        Graph.stopProfiling(viewGraph.graph)
+//        Graph.stopProfiling(viewGraph.graph)
     }
     
     package func resetProfile() {

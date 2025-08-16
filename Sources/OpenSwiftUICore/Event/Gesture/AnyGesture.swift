@@ -34,7 +34,7 @@ public struct AnyGesture<Value>: PrimitiveGesture, Gesture {
             outputs: outputs,
             parentSubgraph: currentSubgraph
         ))
-        info.setFlags(.active, mask: .mask)
+        info.setFlags(.transactional, mask: .all)
         outputs.setIndirectDependency(info.identifier)
         return outputs
     }

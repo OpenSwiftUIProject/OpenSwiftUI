@@ -85,7 +85,7 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func breadthFirstSearch(options: OGSearchOptions = [], _: (AnyAttribute) -> Bool) -> Bool {
+    package func breadthFirstSearch(options: SearchOptions = [], _: (AnyAttribute) -> Bool) -> Bool {
         preconditionFailure("#39")
     }
 
