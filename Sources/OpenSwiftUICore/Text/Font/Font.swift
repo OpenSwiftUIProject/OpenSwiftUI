@@ -208,7 +208,7 @@ private class FontBox<Base>: AnyFontBox, @unchecked Sendable where Base: FontPro
     }
 }
 
-// MARK: - Font.Context [WIP]
+// MARK: - Font.Context
 
 extension Font {
     @_spi(Private)
