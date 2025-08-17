@@ -543,6 +543,9 @@ if attributeGraphCondition || renderBoxCondition {
         case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
         default: nil
     }
+} else {
+    // For SPI build issue
+    package.platforms = [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
 }
 
 if linkCoreUI {
