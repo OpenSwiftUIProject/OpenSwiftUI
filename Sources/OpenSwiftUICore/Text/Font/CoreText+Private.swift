@@ -15,9 +15,14 @@ import CoreFoundation
 @_silgen_name("CTFontDescriptorGetWeight")
 package func CTFontDescriptorGetWeight(_ descriptor: CTFontDescriptor) -> CGFloat
 
-
 @_silgen_name("CTFontDescriptorGetTextStyleSize")
-package func CTFontDescriptorGetTextStyleSize()
+package func CTFontDescriptorGetTextStyleSize(
+    _ textStyle: CFString,
+    _ sizeCategory: CFString,
+    _: Int32,
+    _ weight: inout CGFloat,
+    _: Int
+) -> CGFloat
 
 // MARK: - CTFontTextStyle
 

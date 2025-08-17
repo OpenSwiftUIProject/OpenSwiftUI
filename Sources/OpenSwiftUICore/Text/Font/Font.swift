@@ -11,7 +11,7 @@ public import Foundation
 public import CoreText
 #endif
 
-// MARK: - Font [WIP]
+// MARK: - Font
 
 /// An environment-dependent font.
 ///
@@ -27,9 +27,12 @@ public struct Font: Hashable, Sendable {
     }
 
     func resolveTraits(in enviroment: EnvironmentValues) -> ResolvedTraits {
-        // resolveTraits(in: enviroment.fontResolutionContext)
-        // FontModifiersKey in _25811D44B7BE5E768C1CBA33158F398B
-        _openSwiftUIUnimplementedFailure()
+        let context = enviroment.fontResolutionContext
+        var traits = provider.resolveTraits(in: context)
+        for modifier in enviroment.fontModifiers {
+            modifier.modify(traits: &traits)
+        }
+        return traits
     }
 
     init(box: AnyFontBox) {
@@ -72,8 +75,21 @@ public struct Font: Hashable, Sendable {
             weight: Font.Weight?,
             dynamicTypeSize: DynamicTypeSize
         ) {
-            // CTFontDescriptorGetTextStyleSize
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            var w: CGFloat = 0.0
+            let size = CTFontDescriptorGetTextStyleSize(
+                textStyle.ctTextStyle,
+                dynamicTypeSize.ctTextSize,
+                -1,
+                &w,
+                0
+            )
+            self.pointSize = size
+            self.weight = weight?.value ?? w
+            self.width = nil
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
 
         public init(
@@ -88,13 +104,27 @@ public struct Font: Hashable, Sendable {
             )
         }
 
-//        public init(
-//            textStyle: Font.PrivateTextStyle,
-//            weight: Font.Weight?,
-//            dynamicTypeSize: DynamicTypeSize
-//        ) {
-//            _openSwiftUIUnimplementedFailure()
-//        }
+        public init(
+            textStyle: Font.PrivateTextStyle,
+            weight: Font.Weight?,
+            dynamicTypeSize: DynamicTypeSize
+        ) {
+            #if canImport(CoreText)
+            var w: CGFloat = 0.0
+            let size = CTFontDescriptorGetTextStyleSize(
+                textStyle.value,
+                dynamicTypeSize.ctTextSize,
+                -1,
+                &w,
+                0
+            )
+            self.pointSize = size
+            self.weight = weight?.value ?? w
+            self.width = nil
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
     }
 
     public func hash(into hasher: inout Hasher) {
