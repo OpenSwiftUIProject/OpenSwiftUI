@@ -185,7 +185,7 @@ struct ValueTransactionSeed<V>: StatefulRule, AsyncAttribute where V: Equatable 
             guard oldValue != newValue else {
                 return
             }
-            value = Graph.withoutUpdate { transactionSeed}
+            value = Graph.withoutUpdate { transactionSeed }
         } else {
             value = .max
         }

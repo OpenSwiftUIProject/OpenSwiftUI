@@ -397,7 +397,8 @@ extension ViewGraph {
     // FIXME
     private func updateOutputs(async: Bool) {
         instantiateIfNeeded()
-        
+        data.transactionSeed &+= 1
+
         // let oldCachedSizeThatFits = cachedSizeThatFits
         
         var preferencesChanged = false
