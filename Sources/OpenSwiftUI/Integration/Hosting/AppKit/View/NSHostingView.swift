@@ -101,6 +101,10 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     private var needsDeferredUpdate = false
 
+    package var updateTimer: Timer?
+    
+    package var nextTimerTime: Time?
+    
     private var isPerformingLayout: Bool {
         if renderingPhase == .rendering {
             return true
@@ -109,12 +113,12 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     }
 
     open override var isFlipped: Bool { true }
-    
+
     open override var layerContentsRedrawPolicy: NSView.LayerContentsRedrawPolicy {
-        set { }
+        set {}
         get { .duringViewResize }
     }
-    
+
     /// Creates a hosting view object that wraps the specified SwiftUI view.
     ///
     /// - Parameter rootView: The root view of the SwiftUI view hierarchy that
@@ -242,16 +246,39 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     public final func _viewDebugData() -> [_ViewDebug.Data] { [] }
 
     func clearUpdateTimer() {
-        // TODO
+        guard Thread.isMainThread else {
+            return
+        }
+        updateTimer?.invalidate()
+        updateTimer = nil
+        nextTimerTime = nil
     }
 
     func cancelAsyncRendering() {
-        // TODO    
+        // TODO
     }
 
     package func makeViewDebugData() -> Data? {
         Update.ensure {
             _ViewDebug.serializedData(viewGraph.viewDebugData())
+        }
+    }
+
+    func setUpdateTimer(delay: Double) {
+        
+        let delay = max(delay, 0.1)
+        cancelAsyncRendering()
+        let updateTime = currentTimestamp + delay
+        guard updateTime < (nextTimerTime ?? .infinity) else {
+            return
+        }
+        updateTimer?.invalidate()
+        nextTimerTime = updateTime
+        updateTimer = withDelay(delay) { [weak self] in
+            guard let self else { return }
+            updateTimer = nil
+            nextTimerTime = nil
+            setNeedsUpdate()
         }
     }
 
@@ -340,9 +367,33 @@ extension NSHostingView: ViewRendererHost {
         }
     }
 
-    package func requestUpdate(after: Double) {
-        // TODO
-        setNeedsUpdate()
+    package func requestUpdate(after delay: Double) {
+        if Thread.isMainThread {
+            Update.locked {
+                cancelAsyncRendering()
+            }
+
+            var adjustedDelay = delay
+
+            if NSEvent.modifierFlags.contains(.shift), UserDefaults.standard.bool(forKey: "NSAnimationSlowMotionOnShift") {
+                adjustedDelay *= 10.0
+            }
+
+            if adjustedDelay >= 0.25 {
+                setUpdateTimer(delay: adjustedDelay)
+            } else if canAdvanceTimeAutomatically {
+                needsDeferredUpdate = true
+            } else {
+                setNeedsUpdate()
+            }
+
+            // TODO: Notify delegate
+        } else {
+            onNextMainRunLoop { [weak self] in
+                guard let self else { return }
+                requestUpdate(after: delay)
+            }
+        }
     }
 }
 
@@ -357,7 +408,7 @@ extension NSHostingView: HostingViewProtocol {
     }
 }
 
-extension NSHostingView/*: TestHost*/ {
+extension NSHostingView /*: TestHost */ {
     func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         let tree = preferenceValue(_IdentifiedViewsKey.self)
         let adjustment = { [weak self](rect: inout CGRect) in
@@ -377,11 +428,11 @@ extension NSHostingView: ViewGraphRenderDelegate {
     package var renderingRootView: AnyObject {
         self
     }
-    
+
     package func updateRenderContext(_ context: inout ViewGraphRenderContext) {
         context.contentsScale = window?.backingScaleFactor ?? 1.0
     }
-    
+
     package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
         // TODO
         return body()
