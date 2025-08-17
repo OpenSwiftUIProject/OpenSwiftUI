@@ -8,6 +8,8 @@ import CoreFoundation
 
 // MARK: - Private CoreText APIs
 
+// MARK: - CTFontDescriptor private API
+
 /// Private CoreText function to get the weight value from a font descriptor.
 ///
 /// - Parameter descriptor: The font descriptor to query.
@@ -23,6 +25,29 @@ package func CTFontDescriptorGetTextStyleSize(
     _ weight: UnsafePointer<CGFloat>?,
     _ size: UnsafePointer<CGFloat>? // FIXME
 ) -> CGFloat
+
+@_silgen_name("CTFontDescriptorCreateWithTextStyleAndAttributes")
+package func CTFontDescriptorCreateWithTextStyleAndAttributes(
+    _ textStyle: CFString,
+    _ sizeCategory: CFString,
+    _ attributes: CFDictionary
+) -> CTFontDescriptor
+
+// MARK: - CTFont private API
+
+@_silgen_name("CTFontIsSystemUIFont")
+package func CTFontIsSystemUIFont(_ font: CTFont) -> Bool
+
+@_silgen_name("CTFontGetWeight")
+package func CTFontGetWeight(_ font: CTFont) -> CGFloat
+
+// MARK: - TraitKey
+
+@_silgen_name("kCTFontUIFontDesignTrait")
+let kCTFontUIFontDesignTrait: CFString
+
+@_silgen_name("kCTFontLegibilityWeightAttribute")
+let kCTFontLegibilityWeightAttribute: CFString
 
 // MARK: - CTFontTextStyle
 
@@ -138,6 +163,14 @@ let kCTFontContentSizeCategoryAccessibilityXXL: CFString
 
 @_silgen_name("kCTFontContentSizeCategoryAccessibilityXXXL")
 let kCTFontContentSizeCategoryAccessibilityXXXL: CFString
+
+// MARK: - CTFontWeight
+
+@_silgen_name("kCTFontWeightRegular")
+let kCTFontWeightRegular: CGFloat
+
+@_silgen_name("kCTFontWeightHeavy")
+let kCTFontWeightHeavy: CGFloat
 
 // MARK: - CTFontWidth
 
