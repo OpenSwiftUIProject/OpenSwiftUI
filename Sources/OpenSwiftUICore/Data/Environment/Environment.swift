@@ -250,6 +250,9 @@ public struct Environment<Value>: DynamicProperty {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
+extension Environment: Sendable where Value: Sendable {}
+
 private struct EnvironmentBox<Value>: DynamicPropertyBox {
     @Attribute var environment: EnvironmentValues
     var keyPath: KeyPath<EnvironmentValues, Value>?
