@@ -489,7 +489,7 @@ package struct BezierAnimation: InternalCustomAnimation {
         guard duration > 0, duration >= elapsed else {
             return nil
         }
-        return curve.value(at: elapsed.clamp(min: 0.0, max: 1.0))
+        return curve.value(at: (elapsed / duration).clamp(min: 0.0, max: 1.0))
     }
 
     package var function: Animation.Function {

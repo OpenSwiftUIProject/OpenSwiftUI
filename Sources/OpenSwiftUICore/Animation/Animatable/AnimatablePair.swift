@@ -76,6 +76,6 @@ extension AnimatablePair: Sendable where First: Sendable, Second: Sendable {}
 
 extension AnimatablePair: CustomDebugStringConvertible {
     public var debugDescription: String {
-        "\(first), \(second)"
+        "(\(first), \(second))"
     }
 }
