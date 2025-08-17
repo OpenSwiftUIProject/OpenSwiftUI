@@ -71,6 +71,10 @@ extension EnvironmentValues {
 
 // MARK: - EnvironmentValues + ? [6.4.41]
 
+private struct LegibilityWeightKey: EnvironmentKey {
+    static var defaultValue: LegibilityWeight? { nil }
+}
+
 private struct LocaleKey: EnvironmentKey {
     static let defaultValue: Locale = Locale(identifier: "")
 }
@@ -116,10 +120,10 @@ extension EnvironmentValues {
     ///
     /// This value reflects the value of the Bold Text display setting found in
     /// the Accessibility settings.
-//    public var legibilityWeight: LegibilityWeight? {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
+    public var legibilityWeight: LegibilityWeight? {
+        get { self[LegibilityWeightKey.self] }
+        set { self[LegibilityWeightKey.self] = newValue }
+    }
 
     /// The current locale that views should use.
     public var locale: Locale {

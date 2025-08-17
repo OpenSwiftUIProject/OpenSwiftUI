@@ -136,7 +136,7 @@ package protocol DerivedEnvironmentKey {
     ///
     /// - Parameter values: The current environment values.
     /// - Returns: The derived value for this key.
-    static func value(in: EnvironmentValues) -> Value
+    static func value(in environment: EnvironmentValues) -> Value
 }
 
 package protocol BridgedEnvironmentKey: EnvironmentKey {}

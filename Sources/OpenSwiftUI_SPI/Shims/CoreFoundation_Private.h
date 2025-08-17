@@ -2,8 +2,8 @@
 //  CoreFoundation_Private.h
 //  OpenSwiftUI_SPI
 
-#ifndef CoreFoundation_Private_h
-#define CoreFoundation_Private_h
+#ifndef OpenSwiftUI_SPI_CoreFoundation_Private_h
+#define OpenSwiftUI_SPI_CoreFoundation_Private_h
 
 #include "OpenSwiftUIBase.h"
 
@@ -13,4 +13,4 @@
 OPENSWIFTUI_EXPORT
 bool _CFMZEnabled(void);
 
-#endif /* CoreFoundation_Private_h */
+#endif /* OpenSwiftUI_SPI_CoreFoundation_Private_h */

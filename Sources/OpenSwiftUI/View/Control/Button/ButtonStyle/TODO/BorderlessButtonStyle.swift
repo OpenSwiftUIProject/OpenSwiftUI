@@ -69,12 +69,13 @@ private struct BorderlessButtonStyleBase: ButtonStyle {
         case .large: .body
         case .extraLarge: .body
         }
-        let font = Font(provider: Font.TextStyleProvider(
-            textStyle: style,
-            design: .default,
-            weight: isDefault ? .regular : .semibold
-        ))
-        return font
+//        let font = Font(provider: Font.TextStyleProvider(
+//            textStyle: style,
+//            design: .default,
+//            weight: isDefault ? .regular : .semibold
+//        ))
+//        return font
+        return .body
     }
 
 //    internal var accessibilityShowButtonShapes: Bool
