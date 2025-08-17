@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: A1A6E08ED7787270EADAD2AE750791A9 (SwiftUICore)
 
 #if canImport(CoreText)
@@ -141,22 +141,40 @@ extension FontDefinition {
         textStyle: Font.TextStyle?,
         in context: Font.Context
     ) -> CTFontDescriptor {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        let newSize: CGFloat
+        if _SemanticFeature_v2.isEnabled, let textStyle {
+            newSize = round(Font.scaleFactor(textStyle: textStyle, in: .init(context.sizeCategory)) * size)
+        } else {
+            newSize = size
+        }
+        return CTFontDescriptorCreateWithNameAndSize(name as CFString, newSize)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 
 @_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
 extension FontDefinition {
-    @_spi(Private)
-    @available(OpenSwiftUI_v4_0, *)
     public static func resolvePrivateTextStyleFont(
         textStyle: CFString,
         design: CFString?,
         weight: Font.Weight?,
         in context: Font.Context
     ) -> CTFontDescriptor {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        CTFontDescriptor.fontDescriptor(
+            textStyle: textStyle,
+            design: design,
+            weight: weight,
+            sizeCategory: context.sizeCategory,
+            legibilityWeight: context.legibilityWeight
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     @_spi(Private)
@@ -167,7 +185,15 @@ extension FontDefinition {
         weight: Font.Weight?,
         in context: Font.Context
     ) -> Font.ResolvedTraits {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        Font.ResolvedTraits(
+            textStyle: .init(value: textStyle),
+            weight: weight,
+            dynamicTypeSize: .init(context.sizeCategory)
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     @_spi(Private)
@@ -178,7 +204,16 @@ extension FontDefinition {
         weight: Font.Weight,
         in context: Font.Context
     ) -> CTFontDescriptor {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        CTFontDescriptor.fontDescriptor(
+            size: size,
+            design: design,
+            weight: weight,
+            legibilityWeight: context.legibilityWeight
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     @_spi(Private)
@@ -189,23 +224,37 @@ extension FontDefinition {
         weight: Font.Weight,
         in context: Font.Context
     ) -> Font.ResolvedTraits {
-        _openSwiftUIUnimplementedFailure()
+        Font.ResolvedTraits(
+            pointSize: size,
+            weight: weight.value
+        )
     }
 
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)
     public static func resolveFont(_ font: CTFont) -> CTFontDescriptor {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        CTFontCopyFontDescriptor(font)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)
     public static func resolveFontInfo(_ font: CTFont) -> Font.ResolvedTraits {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        Font.ResolvedTraits(
+            pointSize: font.pointSize,
+            weight: font.weight
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 
-// MARK: - DefaultFontDefinition [WIP]
+// MARK: - DefaultFontDefinition
 
 @_spi(Private)
 @available(OpenSwiftUI_v2_0, *)
@@ -218,7 +267,17 @@ public enum DefaultFontDefinition: FontDefinition {
         weight: Font.Weight?,
         in context: Font.Context
     ) -> CTFontDescriptor {
+        #if canImport(CoreText)
+        CTFontDescriptor.fontDescriptor(
+            textStyle: textStyle.ctTextStyle,
+            design: design?.ctFontDesign,
+            weight: weight,
+            sizeCategory: context.sizeCategory,
+            legibilityWeight: context.legibilityWeight
+        )
+        #else
         _openSwiftUIUnimplementedFailure()
+        #endif
     }
 
     @_spi(Private)
@@ -229,7 +288,16 @@ public enum DefaultFontDefinition: FontDefinition {
         weight: Font.Weight?,
         in context: Font.Context
     ) -> CTFontDescriptor {
+        #if canImport(CoreText)
+        CTFontDescriptor.fontDescriptor(
+            size: size,
+            design: design?.ctFontDesign ?? kCTFontUIFontDesignDefault,
+            weight: weight,
+            legibilityWeight: context.legibilityWeight
+        )
+        #else
         _openSwiftUIUnimplementedFailure()
+        #endif
     }
 }
 
