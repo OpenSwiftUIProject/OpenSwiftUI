@@ -370,8 +370,20 @@ extension Font {
 
     private static var fontCache: ObjectCache<Resolved, CTFont> = {
         let cache: ObjectCache<Resolved, CTFont> = ObjectCache { resolved in
-//            resolved.font
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            let context = resolved.context
+            var descriptor = resolved.font.resolve(in: context)
+            for modifier in resolved.modifiers {
+                modifier.modify(descriptor: &descriptor, in: context)
+            }
+            return CTFontCreateWithFontDescriptor(
+                descriptor,
+                0.0,
+                nil
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
         return cache
     }()
