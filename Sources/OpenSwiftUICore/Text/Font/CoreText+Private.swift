@@ -134,6 +134,23 @@ let kCTFontContentSizeCategoryAccessibilityXXL: CFString
 @_silgen_name("kCTFontContentSizeCategoryAccessibilityXXXL")
 let kCTFontContentSizeCategoryAccessibilityXXXL: CFString
 
+// MARK: - CTFontWidth
+
+@_silgen_name("kCTFontWidthCompressed")
+let kCTFontWidthCompressed: CGFloat
+
+@_silgen_name("kCTFontWidthCondensed")
+let kCTFontWidthCondensed: CGFloat
+
+@_silgen_name("kCTFontWidthExpanded")
+let kCTFontWidthExpanded: CGFloat
+
+@_silgen_name("kCTFontWidthStandard")
+let kCTFontWidthStandard: CGFloat
+
+@_silgen_name("kCTFontWidthTrait")
+let kCTFontWidthTrait: CGFloat
+
 #else
 
 public import Foundation

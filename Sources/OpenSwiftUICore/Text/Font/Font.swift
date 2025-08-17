@@ -22,6 +22,10 @@ public import CoreText
 public struct Font: Hashable, Sendable {
     private var provider: AnyFontBox
 
+    func resolve(in context: Context) -> CTFontDescriptor {
+        provider.resolve(in: context)
+    }
+
     func resolveTraits(in enviroment: EnvironmentValues) -> ResolvedTraits {
         // resolveTraits(in: enviroment.fontResolutionContext)
         // FontModifiersKey in _25811D44B7BE5E768C1CBA33158F398B
@@ -118,6 +122,12 @@ extension Font.ResolvedTraits: Sendable {}
 protocol FontProvider: Hashable {
     func resolve(in context: Font.Context) -> CTFontDescriptor
     func resolveTraits(in context: Font.Context) -> Font.ResolvedTraits
+}
+
+extension FontProvider {
+    func resolveTraits(in context: Font.Context) -> Font.ResolvedTraits {
+        .init(resolve(in: context))
+    }
 }
 
 // MARK: - FontBox
@@ -291,18 +301,3 @@ extension Font {
 
     private static var ratioCache: [RatioKey: CGFloat] = [:]
 }
-
-
-
-// TODO
-
-extension Font {
-    @frozen
-    public struct Weight: Hashable {
-        var value: CGFloat
-        public static let regular: Weight = .init(value: 0)
-
-        public static let semibold: Weight = .init(value: 0.3)
-    }
-}
-

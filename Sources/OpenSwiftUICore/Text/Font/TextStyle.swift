@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 6C3CB9FA926D33389A872165D2448E11 (SwiftUICore)
 
 #if canImport(CoreText)
