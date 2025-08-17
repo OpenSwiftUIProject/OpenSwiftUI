@@ -8,8 +8,10 @@
 
 #if canImport(CoreText)
 public import CoreText
-#endif
+#else
 public import CoreFoundation
+public import Foundation
+#endif
 
 // MARK: - FontDefinition
 

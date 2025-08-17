@@ -8,6 +8,8 @@
 public import Foundation
 #if canImport(CoreText)
 import CoreText
+#else
+import CoreFoundation
 #endif
 
 @available(OpenSwiftUI_v1_0, *)
@@ -108,6 +110,7 @@ extension Font {
         )
     }
 
+    #if canImport(CoreText)
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
     public static func system(
@@ -123,6 +126,7 @@ extension Font {
             )
         )
     }
+    #endif
 
     /// A design to use for fonts.
     public enum Design: Hashable, Sendable {
@@ -151,9 +155,9 @@ extension Font {
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
     public struct PrivateDesign: Hashable {
+        #if canImport(CoreText)
         var value: CFString
 
-        #if canImport(CoreText)
         public static let compact: Font.PrivateDesign = .init(
             value: kCTFontUIFontDesignCompact
         )
@@ -216,6 +220,7 @@ extension Font {
         }
     }
 
+    #if canImport(CoreText)
     private struct PrivateSystemDesignProvider: FontProvider {
         var size: CGFloat
         var weight: Font.Weight
@@ -241,4 +246,5 @@ extension Font {
                 )
         }
     }
+    #endif
 }

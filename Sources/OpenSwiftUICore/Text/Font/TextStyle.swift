@@ -8,6 +8,9 @@
 
 #if canImport(CoreText)
 import CoreText
+package import CoreFoundation
+#else
+import CoreFoundation
 #endif
 
 @available(OpenSwiftUI_v1_0, *)
@@ -281,9 +284,9 @@ extension Font {
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
     public struct PrivateTextStyle: Hashable {
+        #if canImport(CoreText)
         var value: CFString
 
-        #if canImport(CoreText)
         public static let footnote2: Font.PrivateTextStyle = .init(
             value: kCTUIFontTextStyleFootnote2
         )
@@ -308,7 +311,6 @@ extension Font {
 extension Font.PrivateTextStyle: Sendable {}
 
 #if canImport(CoreText)
-package import CoreFoundation
 extension Font.TextStyle {
     package var ctTextStyle: CFString {
         switch self {
@@ -395,6 +397,7 @@ extension Font {
         }
     }
 
+    #if canImport(CoreText)
     private struct PrivateTextStyleProvider: FontProvider {
         var style: CFString
         var design: CFString?
@@ -420,4 +423,5 @@ extension Font {
                 )
         }
     }
+    #endif
 }

@@ -136,8 +136,11 @@ let kCTFontContentSizeCategoryAccessibilityXXXL: CFString
 
 #else
 
+public import Foundation
+
 // Placeholder for CoreText when not available.
-public class CTFontDescriptor: Hashable {}
-public class CTFont: Hashable {}
+public class CTFontDescriptor: NSObject {}
+
+public class CTFont: NSObject {}
 
 #endif
