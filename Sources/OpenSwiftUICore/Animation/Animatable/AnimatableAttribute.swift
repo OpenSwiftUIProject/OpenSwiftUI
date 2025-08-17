@@ -672,15 +672,3 @@ private struct FrameVelocityFilter {
         previous = (time, rect)
     }
 }
-
-// FIXME
-func combineAnimation<A>(
-    into: inout Animation,
-    state: inout AnimationState<A>,
-    value: A,
-    elapsed: Double,
-    newAnimation: Animation,
-    newValue: A
-) -> () where A: VectorArithmetic {
-    _openSwiftUIUnimplementedFailure()
-}
