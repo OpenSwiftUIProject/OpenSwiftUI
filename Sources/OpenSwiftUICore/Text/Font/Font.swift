@@ -82,7 +82,7 @@ public struct Font: Hashable, Sendable {
                 dynamicTypeSize.ctTextSize,
                 -1,
                 &w,
-                0
+                nil
             )
             self.pointSize = size
             self.weight = weight?.value ?? w
@@ -116,7 +116,7 @@ public struct Font: Hashable, Sendable {
                 dynamicTypeSize.ctTextSize,
                 -1,
                 &w,
-                0
+                nil
             )
             self.pointSize = size
             self.weight = weight?.value ?? w
@@ -231,33 +231,80 @@ extension Font {
     }
 
     @_spi(Private)
-    public func platformFont(in context: Font.Context) -> CTFont {
-        _openSwiftUIUnimplementedFailure()
+    public func platformFont(
+        in context: Font.Context
+    ) -> CTFont {
+        Self.fontCache[Resolved(
+            font: self,
+            modifiers: [],
+            context: context
+        )]
     }
 
     package func platformFont(
         in context: Font.Context,
         modifiers: [AnyFontModifier]
     ) -> CTFont {
-        _openSwiftUIUnimplementedFailure()
+        Self.fontCache[Resolved(
+            font: self,
+            modifiers: modifiers,
+            context: context
+        )]
     }
 
     package func platformFont(
         in environment: EnvironmentValues,
         modifiers: [AnyFontModifier]
     ) -> CTFont {
-        _openSwiftUIUnimplementedFailure()
+        Self.fontCache[Resolved(
+            font: self,
+            modifiers: modifiers,
+            context: environment.fontResolutionContext
+        )]
     }
 
-    package func platformFont(in environment: EnvironmentValues) -> CTFont {
-        _openSwiftUIUnimplementedFailure()
+    package func platformFont(
+        in environment: EnvironmentValues
+    ) -> CTFont {
+        Self.fontCache[Resolved(
+            font: self,
+            modifiers: environment.fontModifiers,
+            context: environment.fontResolutionContext
+        )]
     }
 
     package static func scaleFactor(
         textStyle: Font.TextStyle,
         in category: DynamicTypeSize
     ) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        let key = RatioKey(textStyle: textStyle, category: category)
+        if let value = Self.ratioCache[key] {
+            return value
+        } else {
+            var s1 = CGFloat.zero
+            var s2 = CGFloat.zero
+            _ = CTFontDescriptorGetTextStyleSize(
+                textStyle.ctTextStyle,
+                category.ctTextSize,
+                -1,
+                nil,
+                &s1
+            )
+            _ = CTFontDescriptorGetTextStyleSize(
+                textStyle.ctTextStyle,
+                CoreGlue2.shared.systemDefaultDynamicTypeSize.ctTextSize,
+                -1,
+                nil,
+                &s2
+            )
+            let ratio = s1 / s2
+            Self.ratioCache[key] = ratio
+            return ratio
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 
