@@ -2,7 +2,7 @@
 //  DynamicTypeSize.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: B498FA81088CF7FADFFFFFC897E05C74 (SwiftUICore)
 
@@ -11,6 +11,7 @@
 /// For more information, see
 /// [Typography](https://developer.apple.com/design/human-interface-guidelines/ios/visual-design/typography/)
 /// in the Human Interface Guidelines.
+@available(OpenSwiftUI_v3_0, *)
 public enum DynamicTypeSize: Hashable, Comparable, CaseIterable, Sendable {
     /// An extra small size.
     case xSmall
@@ -52,8 +53,12 @@ public enum DynamicTypeSize: Hashable, Comparable, CaseIterable, Sendable {
     /// with accessibility.
     public var isAccessibilitySize: Bool {
         switch self {
-        case .accessibility1, .accessibility2, .accessibility3, .accessibility4, .accessibility5: true
-        default: false
+        case .accessibility1, .accessibility2,
+             .accessibility3, .accessibility4,
+             .accessibility5:
+            true
+        default:
+            false
         }
     }
 
@@ -67,6 +72,17 @@ private struct DynamicTypeSizeKey: EnvironmentKey {
 }
 
 extension EnvironmentValues {
+    /// The current Dynamic Type size.
+    ///
+    /// This value changes as the user's chosen Dynamic Type size changes. The
+    /// default value is device-dependent.
+    ///
+    /// When limiting the Dynamic Type size, consider if adding a
+    /// large content view with ``View/accessibilityShowsLargeContentViewer()``
+    /// would be appropriate.
+    ///
+    /// On macOS, this value cannot be changed by users and does not affect the
+    /// text size.
     public var dynamicTypeSize: DynamicTypeSize {
         get { self[DynamicTypeSizeKey.self] }
         set { self[DynamicTypeSizeKey.self] = newValue }
@@ -75,12 +91,67 @@ extension EnvironmentValues {
 
 @available(OpenSwiftUI_v3_0, *)
 extension View {
+    /// Sets the Dynamic Type size within the view to the given value.
+    ///
+    /// As an example, you can set a Dynamic Type size in `ContentView` to be
+    /// ``DynamicTypeSize/xLarge`` (this can be useful in previews to see your
+    /// content at a different size) like this:
+    ///
+    ///     ContentView()
+    ///         .dynamicTypeSize(.xLarge)
+    ///
+    /// If a Dynamic Type size range is applied after setting a value,
+    /// the value is limited by that range:
+    ///
+    ///     ContentView() // Dynamic Type size will be .large
+    ///         .dynamicTypeSize(...DynamicTypeSize.large)
+    ///         .dynamicTypeSize(.xLarge)
+    ///
+    /// When limiting the Dynamic Type size, consider if adding a
+    /// large content view with ``View/accessibilityShowsLargeContentViewer()``
+    /// would be appropriate.
+    ///
+    /// - Parameter size: The size to set for this view.
+    ///
+    /// - Returns: A view that sets the Dynamic Type size to the specified
+    ///   `size`.
     nonisolated public func dynamicTypeSize(_ size: DynamicTypeSize) -> some View {
-        self.environment(\.dynamicTypeSize, size)
+        environment(\.dynamicTypeSize, size)
     }
 
+    /// Limits the Dynamic Type size within the view to the given range.
+    ///
+    /// As an example, you can constrain the maximum Dynamic Type size in
+    /// `ContentView` to be no larger than ``DynamicTypeSize/large``:
+    ///
+    ///     ContentView()
+    ///         .dynamicTypeSize(...DynamicTypeSize.large)
+    ///
+    /// If the Dynamic Type size is limited to multiple ranges, the result is
+    /// their intersection:
+    ///
+    ///     ContentView() // Dynamic Type sizes are from .small to .large
+    ///         .dynamicTypeSize(.small...)
+    ///         .dynamicTypeSize(...DynamicTypeSize.large)
+    ///
+    /// A specific Dynamic Type size can still be set after a range is applied:
+    ///
+    ///     ContentView() // Dynamic Type size is .xLarge
+    ///         .dynamicTypeSize(.xLarge)
+    ///         .dynamicTypeSize(...DynamicTypeSize.large)
+    ///
+    /// When limiting the Dynamic Type size, consider if adding a
+    /// large content view with ``View/accessibilityShowsLargeContentViewer()``
+    /// would be appropriate.
+    ///
+    /// - Parameter range: The range of sizes that are allowed in this view.
+    ///
+    /// - Returns: A view that constrains the Dynamic Type size of this view
+    ///   within the specified `range`.
     nonisolated public func dynamicTypeSize<T>(_ range: T) -> some View where T: RangeExpression, T.Bound == DynamicTypeSize {
-        self.transformEnvironment(\.dynamicTypeSize) { $0 = $0.clamped(to: range) }
+        transformEnvironment(\.dynamicTypeSize) {
+            $0 = $0.clamped(to: range)
+        }
     }
 }
 
