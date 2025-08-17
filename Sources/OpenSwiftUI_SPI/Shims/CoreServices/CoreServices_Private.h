@@ -4,10 +4,10 @@
 //
 //  Status: WIP
 
-#ifndef CoreServices_Private_h
-#define CoreServices_Private_h
+#ifndef OpenSwiftUI_SPI_CoreServices_Private_h
+#define OpenSwiftUI_SPI_CoreServices_Private_h
 
 #include "Private/LSOpenConfiguration.h"
 #include "Private/LSApplicationWorkspace.h"
 
-#endif /* CoreServices_Private_h */
+#endif /* OpenSwiftUI_SPI_CoreServices_Private_h */

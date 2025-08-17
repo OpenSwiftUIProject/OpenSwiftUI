@@ -1,11 +1,8 @@
 //
 //  CTFontLegibilityWeight.h
 //  OpenSwiftUI_SPI
-//
-//  Status: WIP
 
-#ifndef CTFontLegibilityWeight_h
-#define CTFontLegibilityWeight_h
+#pragma once
 
 #include "OpenSwiftUIBase.h"
 
@@ -29,5 +26,3 @@ typedef CF_ENUM(CFIndex, CTFontLegibilityWeight) {
 CF_ASSUME_NONNULL_END
 
 #endif /* CoreText.h */
-
-#endif /* CTFontLegibilityWeight_h */

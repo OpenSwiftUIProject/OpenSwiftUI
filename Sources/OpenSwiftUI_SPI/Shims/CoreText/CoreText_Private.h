@@ -4,9 +4,10 @@
 //
 //  Status: WIP
 
-#ifndef CoreText_Private_h
-#define CoreText_Private_h
+#ifndef OpenSwiftUI_SPI_CoreText_Private_h
+#define OpenSwiftUI_SPI_CoreText_Private_h
 
 #include "Private/CTFontLegibilityWeight.h"
+#include "Private/CoreTextSPI.h"
 
-#endif /* CoreText_Private_h */
+#endif /* OpenSwiftUI_SPI_CoreText_Private_h */
