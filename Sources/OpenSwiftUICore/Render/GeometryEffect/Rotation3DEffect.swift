@@ -5,8 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-public import Foundation
-import CoreGraphicsShims
+public import CoreGraphicsShims
 
 // MARK: - RotationEffect
 

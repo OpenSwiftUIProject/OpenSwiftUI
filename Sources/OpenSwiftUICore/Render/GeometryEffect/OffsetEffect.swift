@@ -5,8 +5,7 @@
 //  Status: Complete
 //  ID: 72FB21917F353796516DFC9915156779 (SwiftUICore)
 
-import CoreGraphicsShims
-public import Foundation
+public import CoreGraphicsShims
 import OpenGraphShims
 
 /// Allows you to redefine origin of the child within its coordinate
