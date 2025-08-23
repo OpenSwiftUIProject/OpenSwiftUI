@@ -2,7 +2,7 @@
 //  TransactionID.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenGraphShims

@@ -2,7 +2,7 @@
 //  Transaction.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: B2543BCA257433E04979186A1DC2B6BC (SwiftUICore)
 
@@ -74,18 +74,6 @@ extension TransactionKey {
 extension TransactionKey where Value: Equatable {
     public static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
         lhs == rhs
-    }
-}
-
-// MARK: - TransactionPropertyKey
-
-private struct TransactionPropertyKey<Key>: PropertyKey where Key: TransactionKey {
-    typealias Value = Key.Value
-
-    static var defaultValue: Value { Key.defaultValue }
-
-    static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
-        Key._valuesEqual(lhs, rhs)
     }
 }
 
@@ -262,4 +250,16 @@ public func withAnimation<Result>(
     var transaction = Transaction()
     transaction.animation = animation
     return try withTransaction(transaction, body)
+}
+
+// MARK: - TransactionPropertyKey
+
+private struct TransactionPropertyKey<Key>: PropertyKey where Key: TransactionKey {
+    typealias Value = Key.Value
+
+    static var defaultValue: Value { Key.defaultValue }
+
+    static func valuesEqual(_ lhs: Value, _ rhs: Value) -> Bool {
+        Key._valuesEqual(lhs, rhs)
+    }
 }
