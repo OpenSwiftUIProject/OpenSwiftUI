@@ -62,8 +62,11 @@ The current suggested toolchain to build the project is Swift 6.1.2 / Xcode 16.4
 > [!NOTE]
 > This project's configuration is heavily based on many environment variables.
 >
-> You can use tools like [EnvPane](https://github.com/hschmidt/EnvPane/releases/) or [MenuHelper](https://github.com/Kyle-Ye/MenuHelper/releases)
-> on macOS platform to manage the environment variable more easily.
+> You can use the following tools on macOS platform to manage the environment variable more easily.
+> 
+> - [EnvPane](https://github.com/hschmidt/EnvPane/releases/): A macOS preference pane for environment variables
+> - [MenuHelper](https://github.com/Kyle-Ye/MenuHelper/releases): A Finder Extension App to improve your efficiency.
+> - launchctl via `Scripts/sync_launchagent.sh`
 
 ## Supported platforms
 
