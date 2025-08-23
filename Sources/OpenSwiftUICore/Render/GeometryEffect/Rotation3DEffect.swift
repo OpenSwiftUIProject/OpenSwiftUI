@@ -67,14 +67,18 @@ public struct _Rotation3DEffect: GeometryEffect, Equatable {
         package var transform: ProjectionTransform {
             let i = CATransform3DIdentity
             let t1 = CATransform3DTranslate(i, anchor.x, anchor.y, anchor.z)
-            // FIXME: Issue
-            let r = CATransform3DRotate(CATransform3DConcat(i, t1), angle.radians, axis.x, axis.y, axis.z)
+            var p = i
+            p.m34 = -1 / perspective
+            let r = CATransform3DRotate(CATransform3DConcat(p, t1), angle.radians, axis.x, axis.y, axis.z)
             let t2 = CATransform3DTranslate(r, -anchor.x, -anchor.y, -anchor.z)
             var transform = ProjectionTransform(t2)
-            if abs(flipWidth) <= .greatestFiniteMagnitude {
-                // FIXME
-                transform = transform.concatenating(.init(r))
-                transform = transform.concatenating(.init(t1))
+            if flipWidth.isFinite {
+                let base = ProjectionTransform(
+                    m11: -1, m12: 0, m13: 0,
+                    m21: 0, m22: 1, m23: 0,
+                    m31: flipWidth, m32: 0, m33: 1
+                )
+                transform = base.concatenating(transform).concatenating(base)
             }
             return transform
         }

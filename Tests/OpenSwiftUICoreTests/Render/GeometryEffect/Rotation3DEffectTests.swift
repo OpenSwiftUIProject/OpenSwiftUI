@@ -13,10 +13,20 @@ struct Rotation3DEffectDualTests {
     private static func makeEffect() -> _Rotation3DEffect {
         _Rotation3DEffect(
             angle: .radians(.pi / 4),
-            axis: (x: 1.0, y: 0.0, z: 0.0),
+            axis: (x: 1, y: 0, z: 0),
             anchor: .center,
             anchorZ: 2,
             perspective: 2,
+        )
+    }
+
+    private static func makeEffect2() -> _Rotation3DEffect {
+        _Rotation3DEffect(
+            angle: .radians(.pi / 3),
+            axis: (x: 0, y: 1, z: 0),
+            anchor: .center,
+            anchorZ: 1,
+            perspective: 1,
         )
     }
 
@@ -30,57 +40,108 @@ struct Rotation3DEffectDualTests {
             return (leftData, rightData)
         }
 
-        @Test
-        func dataInit() {
-            let (leftData, rightData) = Self.makeData()
-            #expect(leftData.isAlmostEqual(
-                to: .init(
-                    angle: .radians(.pi / 4),
-                    axis: (x: 1, y: 0, z: 0),
-                    anchor: (x: 50, y: 25, z: 2),
-                    perspective: 50,
-                    flipWidth: .nan
-                )
-            ))
-            #expect(rightData.isAlmostEqual(
-                to: .init(
-                    angle: .radians(.pi / 4),
-                    axis: (x: 1, y: 0, z: 0),
-                    anchor: (x: 50, y: 25, z: 2),
-                    perspective: 50,
-                    flipWidth: 100
-                )
-            ))
+        private static func makeData2() -> (_Rotation3DEffect.Data, _Rotation3DEffect.Data) {
+            let effect = makeEffect2()
+            let size = CGSize(width: 100, height: 50)
+            let leftData = _Rotation3DEffect.Data(effect, size: size, layoutDirection: .leftToRight)
+            let rightData = _Rotation3DEffect.Data(effect, size: size, layoutDirection: .rightToLeft)
+            return (leftData, rightData)
         }
 
-        @Test
-        func transform() {
-            let (leftData, rightData) = Self.makeData()
-            #expect(leftData.transform.m11.isAlmostEqual(to: 1.0))
-            #expect(leftData.transform.m12.isAlmostEqual(to: 0.0))
-            #expect(leftData.transform.m13.isAlmostEqual(to: 0.0))
-            #expect(leftData.transform.m21.isAlmostEqual(to: 0.0))
-            #expect(leftData.transform.m22.isAlmostEqual(to: 0.7071067811865476))
-            #expect(leftData.transform.m23.isAlmostEqual(to: 0.0))
-            #expect(leftData.transform.m31.isAlmostEqual(to: 0.0))
-            #expect(leftData.transform.m32.isAlmostEqual(to: 8.736544032709405))
-            #expect(leftData.transform.m33.isAlmostEqual(to: 1.0))
+        @Test(
+            arguments: [
+                (
+                    makeData().0,
+                    _Rotation3DEffect.Data(
+                        angle: .radians(.pi / 4),
+                        axis: (x: 1, y: 0, z: 0),
+                        anchor: (x: 50, y: 25, z: 2),
+                        perspective: 50,
+                        flipWidth: .nan
+                    )
+                ),
+                (
+                    makeData().1,
+                    _Rotation3DEffect.Data(
+                        angle: .radians(.pi / 4),
+                        axis: (x: 1, y: 0, z: 0),
+                        anchor: (x: 50, y: 25, z: 2),
+                        perspective: 50,
+                        flipWidth: 100
+                    )
+                ),
+                (
+                    makeData2().0,
+                    _Rotation3DEffect.Data(
+                        angle: .radians(.pi / 3),
+                        axis: (x: 0, y: 1, z: 0),
+                        anchor: (x: 50, y: 25, z: 1),
+                        perspective: 100,
+                        flipWidth: .nan
+                    )
+                ),
+                (
+                    makeData2().1,
+                    _Rotation3DEffect.Data(
+                        angle: .radians(.pi / 3),
+                        axis: (x: 0, y: 1, z: 0),
+                        anchor: (x: 50, y: 25, z: 1),
+                        perspective: 100,
+                        flipWidth: 100
+                    )
+                ),
+            ]
+        )
+        func dataInit(_ data: _Rotation3DEffect.Data, expected: _Rotation3DEffect.Data) {
+            #expect(data.isAlmostEqual(to: expected))
+        }
 
-            #expect(rightData.transform.m11.isAlmostEqual(to: 1.0))
-            #expect(rightData.transform.m12.isAlmostEqual(to: 0.0))
-            #expect(rightData.transform.m13.isAlmostEqual(to: 0.0))
-            #expect(rightData.transform.m21.isAlmostEqual(to: 0.0))
-            #expect(rightData.transform.m22.isAlmostEqual(to: 0.5000000000000001))
-            #expect(rightData.transform.m23.isAlmostEqual(to: 0.0))
-            #expect(rightData.transform.m31.isAlmostEqual(to: 100.0))
-            #expect(rightData.transform.m32.isAlmostEqual(to: 56.17766952966369))
-            #expect(rightData.transform.m33.isAlmostEqual(to: 1.0))
+        @Test(
+            arguments: [
+                (
+                    makeData().0,
+                    ProjectionTransform(
+                        m11: 1.0, m12: 0.0, m13: 0.0,
+                        m21: -0.7071067811865475, m22: 0.35355339059327384, m23: -0.014142135623730949,
+                        m31: 19.09188309203678, m32: 18.282485578727798, m33: 1.3818376618407355
+                    )
+                ),
+                (
+                    makeData().1,
+                    ProjectionTransform(
+                        m11: 1.0, m12: 0.0, m13: 0.0,
+                        m21: -0.7071067811865475, m22: 0.35355339059327384, m23: -0.014142135623730949,
+                        m31: 19.09188309203678, m32: 18.282485578727798, m33: 1.3818376618407355
+                    )
+                ),
+                (
+                    makeData2().0,
+                    ProjectionTransform(
+                        m11: 0.9330127018922194, m12: 0.21650635094610965, m13: 0.008660254037844387,
+                        m21: 0.0, m22: 1.0, m23: 0.0,
+                        m31: 2.7333395016045907, m32: -10.700317547305483, m33: 0.5719872981077807
+                    )
+                ),
+                (
+                    makeData2().1,
+                    ProjectionTransform(
+                        m11: 0.06698729810778081, m12: -0.21650635094610965, m13: -0.008660254037844387,
+                        m21: 0.0, m22: 1.0, m23: 0.0,
+                        m31: 47.766660498395396, m32: 10.950317547305483, m33: 1.4380127018922193
+                    )
+                ),
+            ]
+        )
+        func transform(data: _Rotation3DEffect.Data, transform: ProjectionTransform) {
+            #expect(data.transform.isAlmostEqual(to: transform))
         }
 
         @Test(
             arguments: [
                 (makeData().0, "09182d4454fb21e93f150000803f2d00004842350000c8413d000000404500004842"),
                 (makeData().1, "09182d4454fb21e93f150000803f2d00004842350000c8413d0000004045000048424d0000c842"),
+                (makeData2().0, "0965732d3852c1f03f1d0000803f2d00004842350000c8413d0000803f450000c842"),
+                (makeData2().1, "0965732d3852c1f03f1d0000803f2d00004842350000c8413d0000803f450000c8424d0000c842"),
                 (_Rotation3DEffect.Data.init(flipWidth: .zero), ""),
                 (_Rotation3DEffect.Data.init(flipWidth: .nan), ""),
                 (_Rotation3DEffect.Data.init(flipWidth: .infinity), ""),

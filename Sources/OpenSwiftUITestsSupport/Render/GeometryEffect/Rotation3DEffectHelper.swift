@@ -26,20 +26,16 @@ extension _Rotation3DEffect.Data: Hashable {
         flipWidth.hash(into: &hasher)
     }
 
-    package static func ~= (lhs: _Rotation3DEffect.Data, rhs: _Rotation3DEffect.Data) -> Bool {
-        lhs.angle.radians.isAlmostEqual(to: rhs.angle.radians) &&
-        lhs.axis.x.isAlmostEqual(to: rhs.axis.x) &&
-        lhs.axis.y.isAlmostEqual(to: rhs.axis.y) &&
-        lhs.axis.z.isAlmostEqual(to: rhs.axis.z) &&
-        lhs.anchor.x.isAlmostEqual(to: rhs.anchor.x) &&
-        lhs.anchor.y.isAlmostEqual(to: rhs.anchor.y) &&
-        lhs.anchor.z.isAlmostEqual(to: rhs.anchor.z) &&
-        lhs.perspective.isAlmostEqual(to: rhs.perspective) &&
-        (lhs.flipWidth.isNaN && rhs.flipWidth.isNaN || lhs.flipWidth.isAlmostEqual(to: rhs.flipWidth))
-    }
-
     package func isAlmostEqual(to other: _Rotation3DEffect.Data) -> Bool {
-        self ~= other
+        angle.radians.isAlmostEqual(to: other.angle.radians) &&
+        axis.x.isAlmostEqual(to: other.axis.x) &&
+        axis.y.isAlmostEqual(to: other.axis.y) &&
+        axis.z.isAlmostEqual(to: other.axis.z) &&
+        anchor.x.isAlmostEqual(to: other.anchor.x) &&
+        anchor.y.isAlmostEqual(to: other.anchor.y) &&
+        anchor.z.isAlmostEqual(to: other.anchor.z) &&
+        perspective.isAlmostEqual(to: other.perspective) &&
+        (flipWidth.isNaN && other.flipWidth.isNaN || flipWidth.isAlmostEqual(to: other.flipWidth))
     }
 
     package init(
