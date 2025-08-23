@@ -169,9 +169,15 @@ extension ViewRendererHost {
     }
     
     package func updateTransform() {
-        // Blocked by OGValueState
-        // viewGraph.$rootTransform.valueState
-        _openSwiftUIUnimplementedWarning()
+        let viewGraph = viewGraph
+        let rootTransform = viewGraph.$rootTransform
+        guard !rootTransform.valueState.contains(.dirty) else {
+            return
+        }
+        rootTransform.invalidateValue()
+        if let delegate = viewGraph.delegate {
+            delegate.graphDidChange()
+        }
     }
 
     package func render(
