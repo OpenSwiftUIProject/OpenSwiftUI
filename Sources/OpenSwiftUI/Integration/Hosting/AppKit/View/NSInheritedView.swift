@@ -10,7 +10,7 @@
 import OpenSwiftUI_SPI
 import AppKit
 
-final class _NSInheritedView: NSView {
+class _NSInheritedView: NSView {
     var hitTestsAsOpaque: Bool = false
 
     override init(frame frameRect: NSRect) {

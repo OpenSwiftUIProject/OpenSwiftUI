@@ -2,8 +2,9 @@
 //  NSViewPlatformViewDefinition.swift
 //  OpenSwiftUI
 //
-//  Audited for macOS 15.0
+//  Audited for 6.0.87
 //  Status: WIP
+//  ID: 33EEAA67E0460DA84AE814EA027152BA (SwiftUI?)
 
 #if os(macOS)
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
@@ -11,7 +12,8 @@ import AppKit
 import OpenSwiftUISymbolDualTestsSupport
 import COpenSwiftUI
 
-// TODO
+// MARK: - NSViewPlatformViewDefinition [TODO]
+
 final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override final class var system: PlatformViewDefinition.System { .nsView }
 
@@ -64,12 +66,44 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         Self.initView(view as! NSView, kind: kind)
     }
 
+    override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
+        guard let view = projectionView as? _NSProjectionView else {
+            return
+        }
+        view.projectionTransform = transform
+        view.layer?.transform = .init(transform)
+    }
+
     override class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) {
         _openSwiftUIUnimplementedWarning()
     }
 
     override class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) {
         _openSwiftUIUnimplementedWarning()
+    }
+}
+
+// MARK: - _NSProjectionView [6.5.4]
+
+@objc
+private class _NSProjectionView: _NSInheritedView {
+    var projectionTransform: ProjectionTransform
+
+    override init(frame frameRect: NSRect) {
+        projectionTransform = .init()
+        super.init(frame: frameRect)
+    }
+
+    required init?(coder: NSCoder) {
+        projectionTransform = .init()
+        super.init(coder: coder)
+    }
+
+    override var wantsUpdateLayer: Bool { true }
+
+    override func _updateLayerGeometryFromView() {
+        super._updateLayerGeometryFromView()
+        layer?.transform = .init(projectionTransform)
     }
 }
 #endif
