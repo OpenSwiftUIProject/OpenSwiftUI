@@ -2,13 +2,14 @@
 //  GeometryEffect.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 9ED0B9F1F6CE74691B78276C750FEDD3 (SwiftUICore)
 
 public import Foundation
 package import OpenGraphShims
 
-// MARK: - GeometryEffect [6.5.4] [WIP]
+// MARK: - GeometryEffect
 
 /// An effect that changes the visual appearance of a view, largely without
 /// changing its ancestors or descendants.
@@ -48,10 +49,20 @@ extension GeometryEffect {
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        if modifier is _GraphValue<_RotationEffect> {
-            _openSwiftUIUnimplementedFailure()
-        } else if modifier is _GraphValue<_Rotation3DEffect> {
-            _openSwiftUIUnimplementedFailure()
+        if let modifier = modifier as? _GraphValue<_RotationEffect> {
+            _RotationEffect
+                ._makeGeometryEffect(
+                    modifier: modifier,
+                    inputs: inputs,
+                    body: body
+                )
+        } else if let modifier = modifier as? _GraphValue<_Rotation3DEffect> {
+            _Rotation3DEffect
+                ._makeGeometryEffect(
+                    modifier: modifier,
+                    inputs: inputs,
+                    body: body
+                )
         } else {
             DefaultGeometryEffectProvider
                 ._makeGeometryEffect(
@@ -79,7 +90,7 @@ extension GeometryEffect {
     }
 }
 
-// MARK: - GeometryEffectProvider [6.5.4]
+// MARK: - GeometryEffectProvider
 
 protocol GeometryEffectProvider {
     associatedtype Effect: GeometryEffect
@@ -147,8 +158,7 @@ extension GeometryEffectProvider {
     }
 }
 
-
-// MARK: - RoundedSize [6.5.4]
+// MARK: - RoundedSize
 
 package struct RoundedSize: Rule, AsyncAttribute {
     @Attribute var position: CGPoint
@@ -174,7 +184,7 @@ package struct RoundedSize: Rule, AsyncAttribute {
     }
 }
 
-// MARK: - DefaultGeometryEffectProvider [6.5.4]
+// MARK: - DefaultGeometryEffectProvider
 
 struct DefaultGeometryEffectProvider<Effect>: GeometryEffectProvider where Effect: GeometryEffect {
     static func resolve(
@@ -206,7 +216,37 @@ struct DefaultGeometryEffectProvider<Effect>: GeometryEffectProvider where Effec
     }
 }
 
-// MARK: - GeometryEffectDisplayList [6.5.4]
+// MARK: - Rotation + GeometryEffectProvider
+
+extension _RotationEffect: GeometryEffectProvider {
+    typealias Effect = Self
+
+    static func resolve(
+        effect: _RotationEffect,
+        origin: inout CGPoint,
+        size: CGSize,
+        layoutDirection: LayoutDirection
+    ) -> DisplayList.Effect {
+        let data = _RotationEffect.Data(effect, size: size, layoutDirection: layoutDirection)
+        return .transform(.rotation(data))
+    }
+}
+
+extension _Rotation3DEffect: GeometryEffectProvider {
+    typealias Effect = Self
+
+    static func resolve(
+        effect: _Rotation3DEffect,
+        origin: inout CGPoint,
+        size: CGSize,
+        layoutDirection: LayoutDirection
+    ) -> DisplayList.Effect {
+        let data = _Rotation3DEffect.Data(effect, size: size, layoutDirection: layoutDirection)
+        return .transform(.rotation3D(data))
+    }
+}
+
+// MARK: - GeometryEffectDisplayList
 
 private struct GeometryEffectDisplayList<Provider>: Rule, AsyncAttribute, CustomStringConvertible
     where Provider: GeometryEffectProvider {
@@ -246,7 +286,7 @@ private struct GeometryEffectDisplayList<Provider>: Rule, AsyncAttribute, Custom
     }
 }
 
-// MARK: - GeometryEffectTransform [6.5.4]
+// MARK: - GeometryEffectTransform
 
 private struct GeometryEffectTransform<Effect>: Rule, AsyncAttribute where Effect: GeometryEffect {
     @Attribute var effect: Effect
