@@ -1,6 +1,6 @@
 //
 //  CAFrameRateRangeUtilDualTests.swift
-//  OpenSwiftUICoreTests
+//  OpenSwiftUISymbolDualTests
 
 #if os(iOS) && canImport(SwiftUI, _underlyingVersion: 6.5.4)
 import QuartzCore

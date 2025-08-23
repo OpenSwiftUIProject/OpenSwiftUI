@@ -2,9 +2,10 @@
 //  ProtobufDecoderTests.swift
 //  OpenSwiftUICoreTests
 
-import OpenSwiftUICore
-import Testing
 import Foundation
+import OpenSwiftUICore
+import OpenSwiftUITestsSupport
+import Testing
 
 struct ProtobufDecoderTests {
     @Test
