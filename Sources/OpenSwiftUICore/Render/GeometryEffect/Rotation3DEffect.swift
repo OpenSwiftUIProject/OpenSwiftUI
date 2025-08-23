@@ -214,11 +214,29 @@ extension _Rotation3DEffect.Data: ProtobufMessage {
         encoder.cgFloatField(6, anchor.y)
         encoder.cgFloatField(7, anchor.z)
         encoder.cgFloatField(8, perspective)
-        // TODO
-        encoder.cgFloatField(9, flipWidth, defaultValue: .nan)
+        var flipWidth = flipWidth
+        if flipWidth.isInfinite || flipWidth.isNaN {
+            flipWidth = .zero
+        }
+        encoder.cgFloatField(9, flipWidth)
     }
 
     package init(from decoder: inout ProtobufDecoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var data = _Rotation3DEffect.Data()
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: data.angle = try .init(radians: decoder.doubleField(field))
+            case 2: data.axis.x = try CGFloat(decoder.floatField(field))
+            case 3: data.axis.y = try CGFloat(decoder.floatField(field))
+            case 4: data.axis.z = try CGFloat(decoder.floatField(field))
+            case 5: data.anchor.x = try decoder.cgFloatField(field)
+            case 6: data.anchor.y = try decoder.cgFloatField(field)
+            case 7: data.anchor.z = try decoder.cgFloatField(field)
+            case 8: data.perspective = try decoder.cgFloatField(field)
+            case 9: data.flipWidth = try decoder.cgFloatField(field)
+            default: try decoder.skipField(field)
+            }
+        }
+        self = data
     }
 }
