@@ -56,10 +56,35 @@ package protocol ScrapeableAttribute: _AttributeBody {
     static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item?
 }
 
-// MARK: - ScrapeableAttachmentViewModifier [WIP]
+// MARK: - ScrapeableAttachmentViewModifier
 
-private struct ScrapeableAttachmentViewModifier: ViewModifier {
+private struct ScrapeableAttachmentViewModifier: MultiViewModifier, PrimitiveViewModifier {
     var content: ScrapeableContent.Content?
+
+    nonisolated static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        if inputs.needsGeometry, inputs.preferences.requiresDisplayList {
+            let localID = ScrapeableID()
+            let attachment = Attribute(
+                Attachment(
+                    content: modifier.value[keyPath: \.content],
+                    position: inputs.position,
+                    size: inputs.size,
+                    transform:  inputs.transform,
+                    localID: localID,
+                    parentID: inputs.scrapeableParentID
+                )
+            )
+            attachment.flags = [attachment.flags, .scrapeable]
+            inputs.scrapeableParentID = localID
+        }
+        let outputs = body(_Graph(), inputs)
+        return outputs
+    }
 
     struct Attachment: Rule, ScrapeableAttribute {
         @Attribute var content: ScrapeableContent.Content?
@@ -74,7 +99,18 @@ private struct ScrapeableAttachmentViewModifier: ViewModifier {
         }
 
         static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
-            _openSwiftUIUnimplementedFailure()
+            let pointer = ident.info.body.assumingMemoryBound(to: Attachment.self)
+            guard let content = pointer.pointee.content else {
+                return nil
+            }
+            return .init(
+                content,
+                ids: pointer.pointee.localID,
+                pointer.pointee.parentID,
+                position: pointer.pointee.$position,
+                size: pointer.pointee.$size,
+                transform: pointer.pointee.$transform
+            )
         }
     }
 }
@@ -116,7 +152,11 @@ package struct ScrapeableContent {
             size: Attribute<ViewSize>,
             transform: Attribute<ViewTransform>
         ) {
-            _openSwiftUIUnimplementedFailure()
+            self.localID = localID
+            self.parentID = parentID
+            self.content = content
+            self.size = size.value.value
+            self.transform = transform.value.withPosition(position.value)
         }
     }
 
@@ -125,20 +165,21 @@ package struct ScrapeableContent {
 
         package private(set) var children: [ScrapeableContent.Node]
 
-        init(item: Item, children: [ScrapeableContent.Node], moved: Bool = false) {
+        private var moved: Bool
+
+        init(item: Item, children: [ScrapeableContent.Node] = [], moved: Bool = false) {
             self.item = item
             self.children = children
             self.moved = moved
         }
-
-        private var moved = false
     }
 
     package var nodes: [ScrapeableContent.Node]
+
     package var children: [ScrapeableContent]
 
     package var isEmpty: Bool {
-        _openSwiftUIUnimplementedFailure()
+        nodes.isEmpty && children.isEmpty
     }
 }
 
@@ -150,7 +191,21 @@ extension Subgraph {
 
         var map: [Key: [ScrapeableContent.Node]] = [:]
 
+        mutating func addItem(_ item: ScrapeableContent.Item, for subgraph: Subgraph) {
+            let key = Key(subgraph: subgraph)
+            var nodes = map[key] ?? []
+            nodes.append(.init(item: item))
+            map[key] = nodes
+        }
+
         func content(for subgraph: Subgraph, updated: inout Set<ObjectIdentifier>) -> ScrapeableContent? {
+            let (isInserted, m) = updated.insert(ObjectIdentifier(subgraph))
+            guard isInserted else {
+                return nil
+            }
+            let key = Key(subgraph: subgraph)
+            let content = ScrapeableContent(nodes: map[key] ?? [], children: [])
+            // subgraph.childCount / OGSubgraphGetChildCount
             _openSwiftUIUnimplementedFailure()
         }
 
@@ -160,25 +215,48 @@ extension Subgraph {
     }
 
     package func scrapeContent() -> ScrapeableContent {
-        _openSwiftUIUnimplementedFailure()
+        var map = Map()
+        forEach(.scrapeable) { attribute in
+            guard let attr = attribute._bodyType as? ScrapeableAttribute.Type, // FIXME
+                  let item = attr.scrapeContent(from: attribute) else {
+                return
+            }
+            map.addItem(item, for: self)
+        }
+        var updated: Set<ObjectIdentifier> = []
+        return map.content(for: self, updated: &updated) ?? .init(nodes: [], children: [])
     }
 }
 
 extension ViewGraph {
     final package func scrapeContent() -> ScrapeableContent {
-        _openSwiftUIUnimplementedFailure()
+        rootSubgraph.scrapeContent()
     }
 }
 
 extension ViewRendererHost {
     package func scrapeContent() -> ScrapeableContent {
-        _openSwiftUIUnimplementedFailure()
+        updateViewGraph { viewGraph in
+            viewGraph.scrapeContent()
+        }
     }
 }
 
+// MARK: - ScrapeableContent + CustomStringConvertible
+
 extension ScrapeableContent: CustomStringConvertible {
-    private func print(into printer: inout SExpPrinter) {
-        _openSwiftUIUnimplementedFailure()
+    fileprivate func print(into printer: inout SExpPrinter) {
+        for node in nodes {
+            node.print(into: &printer)
+        }
+        guard !children.isEmpty else {
+            return
+        }
+        printer.push("children")
+        for child in children {
+            child.print(into: &printer)
+        }
+        printer.pop()
     }
 
     package var description: String {
@@ -189,13 +267,38 @@ extension ScrapeableContent: CustomStringConvertible {
 }
 
 extension ScrapeableContent.Node: CustomStringConvertible {
+    fileprivate func print(into printer: inout SExpPrinter) {
+        item.print(into: &printer)
+        guard !children.isEmpty else {
+            return
+        }
+        printer.push("children")
+        for child in children {
+            child.print(into: &printer)
+        }
+        printer.pop()
+    }
+
     final package var description: String {
-        _openSwiftUIUnimplementedFailure()
+        var printer = SExpPrinter(tag: "(scrapeable-content-node")
+        print(into: &printer)
+        return printer.end()
     }
 }
 
 extension ScrapeableContent.Item: CustomStringConvertible {
+    fileprivate func print(into printer: inout SExpPrinter) {
+        printer.push("item")
+        if size != .zero {
+            printer.print("#:size (\(size.width) \(size.height))", newline: false)
+        }
+        // TODO: switch Content
+        printer.pop()
+    }
+
     package var description: String {
-        _openSwiftUIUnimplementedFailure()
+        var printer = SExpPrinter(tag: "(scrapeable-content-item")
+        print(into: &printer)
+        return printer.end()
     }
 }

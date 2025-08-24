@@ -23,7 +23,8 @@ package struct SExpPrinter {
     
     package mutating func print(_ string: String, newline: Bool = true) {
         if newline, depth != 0 {
-            output.append("\n\(indent)")
+            output.append("\n")
+            output.append(indent)
         } else {
             output.append(" ")
         }
