@@ -1734,7 +1734,13 @@ private struct PlacementData {
     let frame: CGRect
     let layoutDirection: LayoutDirection
 
-    static var current: UnsafeMutablePointer<PlacementData>? { placementData }
+    static var current: PlacementData? {
+        if let placementData {
+            placementData.pointee
+        } else {
+            nil
+        }
+    }
 
     mutating func setGeometry(_ geometry: ViewGeometry, at index: Int, layoutDirection: LayoutDirection) {
         if geometrys[index].isInvalid {
@@ -1765,12 +1771,18 @@ private struct AlignmentData {
     let ptr: UnsafeMutableRawPointer
     let viewSize: ViewSize
 
-    static var current: UnsafeMutablePointer<AlignmentData>? { alignmentData }
+    static var current: AlignmentData? {
+        if let alignmentData {
+            alignmentData.pointee
+        } else {
+            nil
+        }
+    }
 
     func asCurrent<Result>(do body: () throws -> Result) rethrows -> Result {
-        try withUnsafePointer(to: self) { ptr in
-            let oldData = alignmentData
-            defer { alignmentData = oldData }
+        let oldData = alignmentData
+        defer { alignmentData = oldData }
+        return try withUnsafePointer(to: self) { ptr in
             alignmentData = .init(mutating: ptr)
             return try body()
         }

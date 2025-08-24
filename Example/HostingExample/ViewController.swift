@@ -66,8 +66,6 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        FlowLayoutDemo()
-            .frame(width: 500)
-            .padding()
+        GeometryReaderExample()
     }
 }
