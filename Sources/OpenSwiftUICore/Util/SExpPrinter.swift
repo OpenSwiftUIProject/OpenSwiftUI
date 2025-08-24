@@ -17,15 +17,8 @@ package struct SExpPrinter {
     }
     
     package mutating func end() -> String {
-        if depth == 0 {
-            output.append(")")
-            return output
-        } else {
-            depth -= 1
-            indent.removeLast(2)
-            output.append(")")
-            return output
-        }
+        pop()
+        return output
     }
     
     package mutating func print(_ string: String, newline: Bool = true) {
@@ -56,12 +49,10 @@ package struct SExpPrinter {
     }
     
     package mutating func pop() {
-        if depth == 0 {
-            output.append(")")
-        }  else {
+        if depth != 0 {
             depth -= 1
             indent.removeLast(2)
-            output.append(")")
         }
+        output.append(")")
     }
 }
