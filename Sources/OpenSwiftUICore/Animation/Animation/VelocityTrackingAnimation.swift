@@ -63,7 +63,7 @@ private struct VelocityTrackingAnimation: CustomAnimation {
         context: inout AnimationContext<V>
     ) -> V? where V : VectorArithmetic {
         var sampler = context.velocityState.sampler
-        if sampler.isEmpty { // FIXME: Verify this logic
+        if sampler.isEmpty { // FIXME: Verify this logic when gesture is implemented
             sampler.addSample(value, time: .init(seconds: time))
             context.velocityState = .init(sampler: sampler)
         }
