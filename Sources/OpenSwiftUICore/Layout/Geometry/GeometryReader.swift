@@ -27,10 +27,43 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
     }
 
     public nonisolated static func _makeView(
-        view: _GraphValue<GeometryReader<Content>>,
+        view: _GraphValue<Self>,
         inputs: _ViewInputs,
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        var inputs = inputs
+        let child = Attribute(Child(
+            view: view.value,
+            size: inputs.size,
+            position: inputs.position,
+            transform: inputs.transform,
+            environment: inputs.environment,
+            safeAreaInsets: inputs.safeAreaInsets,
+            seed: .zero
+        ))
+        var geometry: Attribute<ViewGeometry>!
+        if inputs.needsGeometry {
+            let rootGeometry = Attribute(RootGeometry(
+                layoutDirection: .init(inputs.layoutDirection),
+                proposedSize: inputs.size
+            ))
+            inputs.position = Attribute(LayoutPositionQuery(
+                parentPosition: inputs.position,
+                localPosition: rootGeometry.origin()
+            ))
+            inputs.size = rootGeometry.size()
+            geometry = rootGeometry
+        }
+        var outputs = _VariadicView.Tree._makeView(
+            view: .init(child),
+            inputs: inputs
+        )
+        if inputs.needsGeometry {
+            geometry.mutateBody(as: RootGeometry.self, invalidating: true) { geometry in
+                geometry.$childLayoutComputer = outputs.layoutComputer
+            }
+        }
+        outputs.layoutComputer = nil
+        return outputs
     }
 
     private struct Child: StatefulRule, AsyncAttribute {
@@ -44,7 +77,8 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
 
         typealias Value = _VariadicView.Tree<_LayoutRoot<GeometryReaderLayout>, Content>
 
-        func updateValue() {
+        mutating func updateValue() {
+            seed &+= 1
             let proxy = GeometryProxy(
                 owner: .current!,
                 size: $size,
@@ -54,7 +88,9 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
                 safeAreaInsets: $safeAreaInsets,
                 seed: seed,
             )
-            _openSwiftUIUnimplementedFailure()
+            // TODO: Observation
+            let content = view.content(proxy)
+            value = .init(root: .init(GeometryReaderLayout()), content: content)
         }
     }
 }
