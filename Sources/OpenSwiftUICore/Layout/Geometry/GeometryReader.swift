@@ -8,13 +8,17 @@
 
 public import Foundation
 package import OpenGraphShims
+import OpenSwiftUI_SPI
 
 // MARK: - GeometryReader [WIP]
 
+/// A container view that defines its content as a function of its own size and
+/// coordinate space.
+///
+/// This view returns a flexible preferred size to its parent layout.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Content: View {
-
     public var content: (GeometryProxy) -> Content
 
     @inlinable
@@ -22,11 +26,36 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
         self.content = content
     }
 
-    nonisolated public static func _makeView(
+    public nonisolated static func _makeView(
         view: _GraphValue<GeometryReader<Content>>,
-        inputs: _ViewInputs
+        inputs: _ViewInputs,
     ) -> _ViewOutputs {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    private struct Child: StatefulRule, AsyncAttribute {
+        @Attribute var view: GeometryReader
+        @Attribute var size: ViewSize
+        @Attribute var position: ViewOrigin
+        @Attribute var transform: ViewTransform
+        @Attribute var environment: EnvironmentValues
+        @OptionalAttribute var safeAreaInsets: SafeAreaInsets?
+        var seed: UInt32
+
+        typealias Value = _VariadicView.Tree<_LayoutRoot<GeometryReaderLayout>, Content>
+
+        func updateValue() {
+            let proxy = GeometryProxy(
+                owner: .current!,
+                size: $size,
+                environment: $environment,
+                transform: $transform,
+                position: $position,
+                safeAreaInsets: $safeAreaInsets,
+                seed: seed,
+            )
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 }
 
@@ -39,6 +68,14 @@ extension GeometryReader: Sendable {}
 /// of the container view.
 @available(OpenSwiftUI_v1_0, *)
 public struct GeometryProxy {
+    var owner: AnyWeakAttribute
+    var _size: WeakAttribute<ViewSize>
+    var _environment: WeakAttribute<EnvironmentValues>
+    var _transform: WeakAttribute<ViewTransform>
+    var _position: WeakAttribute<ViewOrigin>
+    var _safeAreaInsets: WeakAttribute<SafeAreaInsets>
+    var seed: UInt32
+
     package init(
         owner: AnyAttribute,
         size: Attribute<ViewSize>,
@@ -46,22 +83,49 @@ public struct GeometryProxy {
         transform: Attribute<ViewTransform>,
         position: Attribute<ViewOrigin>,
         safeAreaInsets: Attribute<SafeAreaInsets>?,
-        seed: UInt32
+        seed: UInt32,
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.owner = AnyWeakAttribute(owner)
+        self._size = WeakAttribute(size)
+        self._environment = WeakAttribute(environment)
+        self._transform = WeakAttribute(transform)
+        self._position = WeakAttribute(position)
+        self._safeAreaInsets = WeakAttribute(safeAreaInsets)
+        self.seed = seed
     }
 
     package var context: AnyRuleContext {
-        _openSwiftUIUnimplementedFailure()
+        AnyRuleContext(attribute: owner.attribute ?? .nil)
     }
 
     /// The size of the container view.
     public var size: CGSize {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            guard let size = _size.attribute else {
+                return .zero
+            }
+            return context[size].value
+        }
     }
 
-    package var placementContext: _PositionAwarePlacementContext? {
-        _openSwiftUIUnimplementedFailure()
+    private var placementContext: _PositionAwarePlacementContext? {
+        Update.assertIsLocked()
+        guard let owner = owner.attribute,
+              let size = _size.attribute,
+              let environment = _environment.attribute,
+              let transform = _transform.attribute,
+              let position = _position.attribute
+        else {
+            return nil
+        }
+        return _PositionAwarePlacementContext(
+            context: .init(attribute: owner),
+            size: size,
+            environment: environment,
+            transform: transform,
+            position: position,
+            safeAreaInsets: .init(_safeAreaInsets.attribute),
+        )
     }
 
     /// Resolves the value of an anchor to the container view.
@@ -71,7 +135,12 @@ public struct GeometryProxy {
 
     /// The safe area inset of the container view.
     public var safeAreaInsets: EdgeInsets {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            guard let placementContext else {
+                return .zero
+            }
+            return placementContext.safeAreaInsets()
+        }
     }
 
     /// Returns the container view's bounds rectangle, converted to a defined
@@ -80,7 +149,15 @@ public struct GeometryProxy {
     @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     public func frame(in coordinateSpace: CoordinateSpace) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
+        let size = size
+        return Update.perform {
+            guard let placementContext else {
+                return .zero
+            }
+            var rect = CGRect(origin: .zero, size: size)
+            rect.convert(from: placementContext, to: coordinateSpace)
+            return rect
+        }
     }
 
     @_spi(Private)
@@ -97,15 +174,29 @@ public struct GeometryProxy {
     }
 
     package var environment: EnvironmentValues {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            guard let environment = _environment.attribute else {
+                return EnvironmentValues()
+            }
+            return context[environment]
+        }
     }
 
     package static var current: GeometryProxy? {
-        _openSwiftUIUnimplementedFailure()
+        if let data = _threadGeometryProxyData() {
+            data.assumingMemoryBound(to: GeometryProxy.self).pointee
+        } else {
+            nil
+        }
     }
 
     package func asCurrent<Result>(do body: () throws -> Result) rethrows -> Result {
-        _openSwiftUIUnimplementedFailure()
+        let old = _threadGeometryProxyData()
+        defer { _setThreadGeometryProxyData(old) }
+        return try withUnsafePointer(to: self) { ptr in
+            _setThreadGeometryProxyData(.init(mutating: ptr))
+            return try body()
+        }
     }
 }
 
@@ -128,7 +219,7 @@ extension GeometryProxy {
 extension GeometryProxy {
     package func convert(
         globalPoint: CGPoint,
-        to coordinateSpace: some CoordinateSpaceProtocol
+        to coordinateSpace: some CoordinateSpaceProtocol,
     ) -> CGPoint {
         _openSwiftUIUnimplementedFailure()
     }
@@ -152,7 +243,7 @@ private struct GeometryReaderLayout: Layout {
     func sizeThatFits(
         proposal: ProposedViewSize,
         subviews: Subviews,
-        cache: inout ()
+        cache: inout (),
     ) -> CGSize {
         proposal.replacingUnspecifiedDimensions(by: .zero)
     }
@@ -161,7 +252,7 @@ private struct GeometryReaderLayout: Layout {
         in bounds: CGRect,
         proposal: ProposedViewSize,
         subviews: Subviews,
-        cache: inout ()
+        cache: inout (),
     ) {
         guard !subviews.isEmpty else {
             return
@@ -172,7 +263,7 @@ private struct GeometryReaderLayout: Layout {
             subview.place(
                 at: bounds.origin,
                 anchor: anchor,
-                dimensions: dimensions
+                dimensions: dimensions,
             )
         }
     }

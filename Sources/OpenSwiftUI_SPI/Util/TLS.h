@@ -11,17 +11,16 @@
 #include "OpenSwiftUIBase.h"
 
 OPENSWIFTUI_EXPORT
-void _setThreadGeometryProxyData(void  * _Nullable data);
+void _setThreadGeometryProxyData(void *_Nullable data);
 
 OPENSWIFTUI_EXPORT
-void * _Nullable _threadGeometryProxyData(void);
+void *_Nullable _threadGeometryProxyData(void);
 
 OPENSWIFTUI_EXPORT
 uint32_t _threadTransactionID(bool increase);
 
-
 OPENSWIFTUI_EXPORT
-void _setThreadTransactionData(void  * _Nullable data);
+void _setThreadTransactionData(void * _Nullable data);
 
 OPENSWIFTUI_EXPORT
 void * _Nullable _threadTransactionData(void);
