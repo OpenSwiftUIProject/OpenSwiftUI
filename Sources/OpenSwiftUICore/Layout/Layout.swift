@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: WIP
+//  Status: Complete
 //  ID: 57DDCF0A00C1B77B475771403C904EF9 (SwiftUICore)
 
 #if canImport(Darwin)
@@ -15,7 +15,7 @@ public import Foundation
 package import OpenGraphShims
 import OpenSwiftUI_SPI
 
-// MARK: - Layout [WIP]
+// MARK: - Layout
 
 /// A type that defines the geometry of a collection of views.
 ///
@@ -709,7 +709,18 @@ extension Layout {
         subviews: Subviews,
         cache: inout Cache
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        guard let alignmentData, alignmentData.pointee.type == .alignment else {
+            return nil
+        }
+        let function = alignmentData.pointee.function
+        let key = guide.key
+        let viewSize = alignmentData.pointee.viewSize
+        let data = alignmentData.pointee.ptr
+        return function.defaultAlignment(
+            key,
+            size: viewSize,
+            data: data
+        )
     }
 
     public func explicitAlignment(
@@ -719,11 +730,39 @@ extension Layout {
         subviews: Subviews,
         cache: inout Cache
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        guard let alignmentData, alignmentData.pointee.type == .alignment else {
+            return nil
+        }
+        let function = alignmentData.pointee.function
+        let key = guide.key
+        let viewSize = alignmentData.pointee.viewSize
+        let data = alignmentData.pointee.ptr
+        return function.defaultAlignment(
+            key,
+            size: viewSize,
+            data: data
+        )
     }
 
     public func spacing(subviews: Subviews, cache: inout Cache) -> ViewSpacing {
-        _openSwiftUIUnimplementedFailure()
+        guard !subviews.isEmpty else {
+            return .zero
+        }
+        var spacing = Spacing(minima: [:])
+        let subviewsLayoutDirection = subviews.layoutDirection
+        guard subviews.count != 0 else {
+            return ViewSpacing(spacing, layoutDirection: subviewsLayoutDirection)
+        }
+        var layoutDirection: LayoutDirection! = nil
+        for subview in subviews {
+            let subviewSpacing = subview.proxy.spacing()
+            layoutDirection = layoutDirection ?? subviewsLayoutDirection
+            spacing.incorporate(
+                .init(.all, layoutDirection: layoutDirection),
+                of: subviewSpacing
+            )
+        }
+        return ViewSpacing(spacing, layoutDirection: layoutDirection)
     }
 }
 
@@ -1213,15 +1252,14 @@ struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layo
             let proposal = parentSize.proposal
             let frame = CGRect(origin: origin, size: parentSize.value)
             var data = PlacementData(
-                unknown: false,
                 geometrys: Array(repeating: ViewGeometry.invalidValue, count: count),
                 invalidCount: 0,
                 frame: frame,
                 layoutDirection: layoutDirection
             )
             withUnsafeMutablePointer(to: &data) { data in
-                let oldData = threadLayoutData
-                threadLayoutData = data
+                let oldData = placementData
+                placementData = data
                 layout.placeSubviews(
                     in: frame,
                     proposal: ProposedViewSize(proposal),
@@ -1232,7 +1270,7 @@ struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layo
                     ),
                     cache: &cache
                 )
-                threadLayoutData = oldData
+                placementData = oldData
                 guard data.pointee.invalidCount != count else {
                     return
                 }
@@ -1253,6 +1291,7 @@ struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layo
         }
     }
 
+    // 6.5.4
     mutating func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
         if cachedAlignmentSize != viewSize {
             cachedAlignmentSize = viewSize
@@ -1260,9 +1299,42 @@ struct ViewLayoutEngine<L>: DefaultAlignmentFunction, LayoutEngine where L: Layo
             cachedAlignment = .init()
         }
         let key = ObjectIdentifier(k.id)
+        // NOTE: Not using get API here to avoid conflict access
         guard let value = cachedAlignment.find(key) else {
-            let value = withUnsafePointer(to: self) { ptr in
-                Self.defaultAlignment(k, size: viewSize, data: UnsafeMutableRawPointer(mutating: ptr))
+            let value = withUnsafeMutablePointer(to: &self) { ptr in
+                let alignmentData = AlignmentData(
+                    function: Self.self,
+                    ptr: ptr,
+                    viewSize: viewSize
+                )
+                return alignmentData.asCurrent {
+                    switch k.axis {
+                    case .horizontal:
+                        ptr.pointee.layout.explicitAlignment(
+                            of: HorizontalAlignment(k.id),
+                            in: .init(origin: .zero, size: viewSize.value),
+                            proposal: .init(viewSize.proposal),
+                            subviews: .init(
+                                context: ptr.pointee.proxies.context,
+                                storage: .direct(ptr.pointee.proxies.attributes),
+                                layoutDirection: ptr.pointee.layoutDirection
+                            ),
+                            cache: &ptr.pointee.cache
+                        )
+                    case .vertical:
+                        ptr.pointee.layout.explicitAlignment(
+                            of: VerticalAlignment(k.id),
+                            in: .init(origin: .zero, size: viewSize.value),
+                            proposal: .init(viewSize.proposal),
+                            subviews: .init(
+                                context: ptr.pointee.proxies.context,
+                                storage: .direct(ptr.pointee.proxies.attributes),
+                                layoutDirection: ptr.pointee.layoutDirection
+                            ),
+                            cache: &ptr.pointee.cache
+                        )
+                    }
+                }
             }
             cachedAlignment.put(key, value: value)
             return value
@@ -1635,9 +1707,9 @@ public struct LayoutSubview: Equatable {
     }
 
     package func place(in geometry: ViewGeometry, layoutDirection: LayoutDirection = .leftToRight) {
-        let layoutData = threadLayoutData!
-        Swift.precondition(!layoutData.pointee.unknown)
-        layoutData.pointee.setGeometry(
+        let placementData = placementData!
+        Swift.precondition(placementData.pointee.type == .placement)
+        placementData.pointee.setGeometry(
             geometry,
             at: numericCast(index),
             layoutDirection: layoutDirection
@@ -1648,20 +1720,21 @@ public struct LayoutSubview: Equatable {
 @available(*, unavailable)
 extension LayoutSubview: Sendable {}
 
+private enum LayoutDataType {
+    case placement
+    case alignment
+}
+
 // MARK: - PlacementData [6.4.41]
 
 private struct PlacementData {
-    var unknown: Bool // FIXME
-
+    let type: LayoutDataType = .placement
     var geometrys: [ViewGeometry]
-
     var invalidCount: Int
+    let frame: CGRect
+    let layoutDirection: LayoutDirection
 
-    var frame: CGRect
-
-    var layoutDirection: LayoutDirection
-
-    static var current: UnsafeMutablePointer<PlacementData>? { threadLayoutData }
+    static var current: UnsafeMutablePointer<PlacementData>? { placementData }
 
     mutating func setGeometry(_ geometry: ViewGeometry, at index: Int, layoutDirection: LayoutDirection) {
         if geometrys[index].isInvalid {
@@ -1674,12 +1747,40 @@ private struct PlacementData {
     }
 }
 
-// MARK: - threadLayoutData
-
 @_transparent
-private var threadLayoutData: UnsafeMutablePointer<PlacementData>? {
+private var placementData: UnsafeMutablePointer<PlacementData>? {
     get {
         _threadLayoutData()?.assumingMemoryBound(to: PlacementData.self)
+    }
+    set {
+        _setThreadLayoutData(newValue)
+    }
+}
+
+// MARK: - AlignmentData [6.5.4]
+
+private struct AlignmentData {
+    let type: LayoutDataType = .alignment
+    let function: any DefaultAlignmentFunction.Type
+    let ptr: UnsafeMutableRawPointer
+    let viewSize: ViewSize
+
+    static var current: UnsafeMutablePointer<AlignmentData>? { alignmentData }
+
+    func asCurrent<Result>(do body: () throws -> Result) rethrows -> Result {
+        try withUnsafePointer(to: self) { ptr in
+            let oldData = alignmentData
+            defer { alignmentData = oldData }
+            alignmentData = .init(mutating: ptr)
+            return try body()
+        }
+   }
+}
+
+@_transparent
+private var alignmentData: UnsafeMutablePointer<AlignmentData>? {
+    get {
+        _threadLayoutData()?.assumingMemoryBound(to: AlignmentData.self)
     }
     set {
         _setThreadLayoutData(newValue)

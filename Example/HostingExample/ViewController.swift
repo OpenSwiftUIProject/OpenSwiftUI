@@ -66,6 +66,8 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        TransactionExample()
+        FlowLayoutDemo()
+            .frame(width: 500)
+            .padding()
     }
 }
