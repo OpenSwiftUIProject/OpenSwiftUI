@@ -131,7 +131,9 @@ package struct ScrapeableContent {
         case accessibilityProperties(AccessibilityProperties, EnvironmentValues, AnyInterfaceIdiom)
         case intelligenceProvider(Any)
         case opacity(Double)
+        #if canImport(Darwin)
         case userActivity(NSUserActivity)
+        #endif
         case hidden
         case presentationContainer
         case presentationContainerChild
@@ -187,6 +189,17 @@ extension Subgraph {
     private struct Map {
         struct Key: Hashable {
             var subgraph: Subgraph
+
+            #if !canImport(Darwin)
+            // FIXME: Subgraph on non-Darwin platform does not conform to Hashable by default
+            func hash(into hasher: inout Hasher) {
+                hasher.combine(ObjectIdentifier(subgraph))
+            }
+
+            static func == (a: Key, b: Key) -> Bool {
+                ObjectIdentifier(a.subgraph) == ObjectIdentifier(b.subgraph)
+            }
+            #endif
         }
 
         var map: [Key: [ScrapeableContent.Node]] = [:]
