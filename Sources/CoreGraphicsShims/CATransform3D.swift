@@ -103,6 +103,15 @@ public func CATransform3DMakeAffineTransform(_ m: CGAffineTransform) -> CATransf
     )
 }
 
+public func CATransform3DMakeTranslation(_ tx: CGFloat, _ ty: CGFloat, _ tz: CGFloat) -> CATransform3D {
+    return CATransform3D(
+        m11: 1,  m12: 0,  m13: 0,  m14: 0,
+        m21: 0,  m22: 1,  m23: 0,  m24: 0,
+        m31: 0,  m32: 0,  m33: 1,  m34: 0,
+        m41: tx, m42: ty, m43: tz, m44: 1
+    )
+}
+
 public func CATransform3DMakeScale(_ sx: CGFloat, _ sy: CGFloat, _ sz: CGFloat) -> CATransform3D {
     return CATransform3D(
         m11: sx, m12: 0,  m13: 0,  m14: 0,
@@ -112,13 +121,88 @@ public func CATransform3DMakeScale(_ sx: CGFloat, _ sy: CGFloat, _ sz: CGFloat) 
     )
 }
 
-public func CATransform3DMakeTranslation(_ tx: CGFloat, _ ty: CGFloat, _ tz: CGFloat) -> CATransform3D {
+/// Returns a transform that rotates by `angle` radians about the vector
+/// `(x, y, z)`. If the vector has length zero the identity transform is
+/// returned.
+public func CATransform3DMakeRotation(_ angle: CGFloat, _ x: CGFloat, _ y: CGFloat, _ z: CGFloat) -> CATransform3D {
+    let ax = Double(x)
+    let ay = Double(y)
+    let az = Double(z)
+    let len = sqrt(ax * ax + ay * ay + az * az)
+    guard len > 0 else {
+        return CATransform3DIdentity
+    }
+
+    let ux = CGFloat(ax / len)
+    let uy = CGFloat(ay / len)
+    let uz = CGFloat(az / len)
+
+    let a = Double(angle)
+    let c = CGFloat(cos(a))
+    let s = CGFloat(sin(a))
+    let omc = 1 - c
+
+    // Compute standard rotation matrix components (Rodrigues' formula)
+    let r11 = c + ux * ux * omc
+    let r12 = ux * uy * omc - uz * s
+    let r13 = ux * uz * omc + uy * s
+
+    let r21 = uy * ux * omc + uz * s
+    let r22 = c + uy * uy * omc
+    let r23 = uy * uz * omc - ux * s
+
+    let r31 = uz * ux * omc - uy * s
+    let r32 = uz * uy * omc + ux * s
+    let r33 = c + uz * uz * omc
+
+    // Store the transpose of the standard rotation matrix into CATransform3D
+    // so that the effective transform used by this implementation matches the
+    // expected row/column layout when applied to points.
+    let m11 = r11
+    let m12 = r21
+    let m13 = r31
+    let m14: CGFloat = 0.0
+
+    let m21 = r12
+    let m22 = r22
+    let m23 = r32
+    let m24: CGFloat = 0.0
+
+    let m31 = r13
+    let m32 = r23
+    let m33 = r33
+    let m34: CGFloat = 0.0
+
+    let m41: CGFloat = 0.0
+    let m42: CGFloat = 0.0
+    let m43: CGFloat = 0.0
+    let m44: CGFloat = 1.0
+
     return CATransform3D(
-        m11: 1,  m12: 0,  m13: 0,  m14: 0,
-        m21: 0,  m22: 1,  m23: 0,  m24: 0,
-        m31: 0,  m32: 0,  m33: 1,  m34: 0,
-        m41: tx, m42: ty, m43: tz, m44: 1
+        m11: m11, m12: m12, m13: m13, m14: m14,
+        m21: m21, m22: m22, m23: m23, m24: m24,
+        m31: m31, m32: m32, m33: m33, m34: m34,
+        m41: m41, m42: m42, m43: m43, m44: m44
     )
+}
+
+/// Translate `t` by `(tx, ty, tz)` and return the result:
+/// t' = translate(tx, ty, tz) * t.
+public func CATransform3DTranslate(_ t: CATransform3D, _ tx: CGFloat, _ ty: CGFloat, _ tz: CGFloat) -> CATransform3D {
+    return CATransform3DConcat(CATransform3DMakeTranslation(tx, ty, tz), t)
+}
+
+/// Scale `t` by `(sx, sy, sz)` and return the result:
+/// t' = scale(sx, sy, sz) * t.
+public func CATransform3DScale(_ t: CATransform3D, _ sx: CGFloat, _ sy: CGFloat, _ sz: CGFloat) -> CATransform3D {
+    return CATransform3DConcat(CATransform3DMakeScale(sx, sy, sz), t)
+}
+
+/// Rotate `t` by `angle` radians about the vector `(x, y, z)` and return
+/// the result. If the vector has zero length the behavior is undefined:
+/// t' = rotation(angle, x, y, z) * t.
+public func CATransform3DRotate(_ t: CATransform3D, _ angle: CGFloat, _ x: CGFloat, _ y: CGFloat, _ z: CGFloat) -> CATransform3D {
+    return CATransform3DConcat(CATransform3DMakeRotation(angle, x, y, z), t)
 }
 
 public func CATransform3DConcat(_ a: CATransform3D, _ b: CATransform3D) -> CATransform3D {

@@ -14,45 +14,33 @@ struct ProjectionTransformTests {
     @Test
     func defaultInit() {
         let transform = ProjectionTransform()
-        #expect(transform.m11.isApproximatelyEqual(to: 1.0))
-        #expect(transform.m12.isApproximatelyEqual(to: 0.0))
-        #expect(transform.m13.isApproximatelyEqual(to: 0.0))
-        #expect(transform.m21.isApproximatelyEqual(to: 0.0))
-        #expect(transform.m22.isApproximatelyEqual(to: 1.0))
-        #expect(transform.m23.isApproximatelyEqual(to: 0.0))
-        #expect(transform.m31.isApproximatelyEqual(to: 0.0))
-        #expect(transform.m32.isApproximatelyEqual(to: 0.0))
-        #expect(transform.m33.isApproximatelyEqual(to: 1.0))
+        #expect(transform.isAlmostEqual(to: .init(
+            m11: 1.0, m12: 0.0, m13: 0.0,
+            m21: 0.0, m22: 1.0, m23: 0.0,
+            m31: 0.0, m32: 0.0, m33: 1.0
+        )))
     }
     
     @Test
     func cgAffineTransformInit() {
         let affine = CGAffineTransform(a: 2, b: 3, c: 4, d: 5, tx: 6, ty: 7)
         let transform = ProjectionTransform(affine)
-        #expect(transform.m11.isApproximatelyEqual(to: 2))
-        #expect(transform.m12.isApproximatelyEqual(to: 3))
-        #expect(transform.m21.isApproximatelyEqual(to: 4))
-        #expect(transform.m22.isApproximatelyEqual(to: 5))
-        #expect(transform.m31.isApproximatelyEqual(to: 6))
-        #expect(transform.m32.isApproximatelyEqual(to: 7))
-        #expect(transform.m13.isApproximatelyEqual(to: 0))
-        #expect(transform.m23.isApproximatelyEqual(to: 0))
-        #expect(transform.m33.isApproximatelyEqual(to: 1))
+        #expect(transform.isAlmostEqual(to: .init(
+            m11: 2, m12: 3, m13: 0,
+            m21: 4, m22: 5, m23: 0,
+            m31: 6, m32: 7, m33: 1
+        )))
     }
     
     @Test
     func caTransform3DInit() {
         let t3d = CATransform3DMakeTranslation(1, 2, 3)
         let transform = ProjectionTransform(t3d)
-        #expect(transform.m11.isApproximatelyEqual(to: 1))
-        #expect(transform.m12.isApproximatelyEqual(to: 0))
-        #expect(transform.m13.isApproximatelyEqual(to: t3d.m14))
-        #expect(transform.m21.isApproximatelyEqual(to: 0))
-        #expect(transform.m22.isApproximatelyEqual(to: 1))
-        #expect(transform.m23.isApproximatelyEqual(to: t3d.m24))
-        #expect(transform.m31.isApproximatelyEqual(to: 1))
-        #expect(transform.m32.isApproximatelyEqual(to: 2))
-        #expect(transform.m33.isApproximatelyEqual(to: t3d.m44))
+        #expect(transform.isAlmostEqual(to: .init(
+            m11: 1, m12: 0, m13: t3d.m14,
+            m21: 0, m22: 1, m23: t3d.m24,
+            m31: 1, m32: 2, m33: t3d.m44
+        )))
     }
 
     // MARK: - Property Tests

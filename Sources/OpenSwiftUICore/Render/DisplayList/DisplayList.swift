@@ -213,8 +213,8 @@ extension DisplayList {
     package enum Transform {
         case affine(CGAffineTransform)
         case projection(ProjectionTransform)
-        // case rotation(_RotationEffect.Data)
-        // case rotation3D(_Rotation3DEffect.Data)
+        case rotation(_RotationEffect.Data)
+        case rotation3D(_Rotation3DEffect.Data)
     }
     
 //    package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation

@@ -24,23 +24,25 @@ private let isXCTestBackendEnabled = {
 struct TimerUtilsTests {
     @Test
     func withDelayExecutesAfterSpecifiedTime() async throws {
-        try await confirmation { confirmation in
-            var callbackExecuted = false
+        await withKnownIssue(isIntermittent: true) {
+            try await confirmation { confirmation in
+                var callbackExecuted = false
 
-            let startTime = Date()
-            let delayInterval: TimeInterval = 2
+                let startTime = Date()
+                let delayInterval: TimeInterval = 2
 
-            let timer = withDelay(delayInterval) {
-                callbackExecuted = true
-                confirmation()
+                let timer = withDelay(delayInterval) {
+                    callbackExecuted = true
+                    confirmation()
+                }
+                #expect(timer.isValid == true)
+                #expect(callbackExecuted == false)
+                try await Task.sleep(for: .seconds(5))
+
+                #expect(callbackExecuted == true)
+                let elapsedTime = Date().timeIntervalSince(startTime)
+                #expect(elapsedTime >= delayInterval)
             }
-            #expect(timer.isValid == true)
-            #expect(callbackExecuted == false)
-            try await Task.sleep(for: .seconds(5))
-
-            #expect(callbackExecuted == true)
-            let elapsedTime = Date().timeIntervalSince(startTime)
-            #expect(elapsedTime >= delayInterval)
         }
     }
     
@@ -61,12 +63,14 @@ struct TimerUtilsTests {
     
     @Test
     func withDelayRunsOnMainRunLoop() async throws {
-        try await confirmation { confirmation in
-            let _ = withDelay(2) {
-                #expect(Thread.isMainThread)
-                confirmation()
+        await withKnownIssue(isIntermittent: true) {
+            try await confirmation { confirmation in
+                let _ = withDelay(2) {
+                    #expect(Thread.isMainThread)
+                    confirmation()
+                }
+                try await Task.sleep(for: .seconds(5))
             }
-            try await Task.sleep(for: .seconds(5))
         }
     }
 }

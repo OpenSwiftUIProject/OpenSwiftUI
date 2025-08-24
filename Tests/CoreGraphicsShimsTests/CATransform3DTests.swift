@@ -82,4 +82,44 @@ struct CATransform3DTests {
         // Should return the same matrix for non-invertible input
         #expect(CATransform3DEqualToTransform(result, singular))
     }
+
+    @Test
+    func rotationZ90_affineMapsPoint() {
+        let rot = CATransform3DMakeRotation(CGFloat.pi / 2, 0, 0, 1)
+        let cg = CATransform3DGetAffineTransform(rot)
+        let p = CGPoint(x: 1, y: 0)
+        let res = p.applying(cg)
+        #expect(res.x.isApproximatelyEqual(to: 0.0, absoluteTolerance: 0.001))
+        #expect(res.y.isApproximatelyEqual(to: 1.0, absoluteTolerance: 0.001))
+    }
+
+    @Test
+    func rotationAxisZeroIsIdentity() {
+        let rot = CATransform3DMakeRotation(1.0, 0, 0, 0)
+        #expect(CATransform3DEqualToTransform(rot, CATransform3DIdentity))
+    }
+
+    @Test
+    func translateOnIdentityEqualsMakeTranslation() {
+        let res = CATransform3DTranslate(CATransform3DIdentity, 5, 6, 7)
+        let expected = CATransform3DMakeTranslation(5, 6, 7)
+        #expect(CATransform3DEqualToTransform(res, expected))
+    }
+
+    @Test
+    func rotateConcatProperty() {
+        let angle = CGFloat.pi / 3
+        let ax: CGFloat = 1.0
+        let ay: CGFloat = 0.5
+        let az: CGFloat = -0.25
+        let t = CATransform3DMakeTranslation(10, 20, 30)
+        let result = CATransform3DRotate(t, angle, ax, ay, az)
+        let expected = CATransform3DConcat(CATransform3DMakeRotation(angle, ax, ay, az), t)
+        #expect(result.m11.isApproximatelyEqual(to: expected.m11))
+        #expect(result.m12.isApproximatelyEqual(to: expected.m12))
+        #expect(result.m21.isApproximatelyEqual(to: expected.m21))
+        #expect(result.m22.isApproximatelyEqual(to: expected.m22))
+        #expect(result.m41.isApproximatelyEqual(to: expected.m41))
+        #expect(result.m42.isApproximatelyEqual(to: expected.m42))
+    }
 }

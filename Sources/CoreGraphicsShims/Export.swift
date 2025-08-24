@@ -4,6 +4,8 @@
 
 #if canImport(CoreGraphics)
 @_exported import CoreGraphics
+#else
+@_exported import Foundation
 #endif
 
 #if canImport(QuartzCore)

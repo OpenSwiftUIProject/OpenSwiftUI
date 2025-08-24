@@ -1,0 +1,16 @@
+//
+//  Rotation3DEffect+TestSub.c
+//  OpenSwiftUISymbolDualTestsSupport
+
+#include "OpenSwiftUIBase.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+#import <SymbolLocator.h>
+
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub__Rotation3DEffectDataInit, SwiftUI, $s7SwiftUI17_Rotation3DEffectV4DataVAEycfC);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub__Rotation3DEffectDataInitEffect, SwiftUI, $s7SwiftUI17_Rotation3DEffectV4DataV_4size15layoutDirectionAeC_So6CGSizeVAA06LayoutH0OtcfC);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub__Rotation3DEffectDataTransform, SwiftUI, $s7SwiftUI17_Rotation3DEffectV4DataV9transformAA19ProjectionTransformVvg);
+
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub__Rotation3DEffectDataEncode, SwiftUI, $s7SwiftUI17_Rotation3DEffectV4DataVAAE6encode2toyAA15ProtobufEncoderVz_tKF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub__Rotation3DEffectDataDecode, SwiftUI, $s7SwiftUI17_Rotation3DEffectV4DataVAAE4fromAeA15ProtobufDecoderVz_tKcfC);
+#endif

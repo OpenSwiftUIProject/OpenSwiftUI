@@ -26,6 +26,10 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
     NSViewVibrantBlendingStyle_1 = 1,
 };
 
+@interface NSView ()
+- (void)_updateLayerGeometryFromView;
+@end
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* __has_include(<AppKit/AppKit.h>) */

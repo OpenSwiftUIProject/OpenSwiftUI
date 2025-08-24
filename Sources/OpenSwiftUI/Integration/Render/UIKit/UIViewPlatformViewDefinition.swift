@@ -2,7 +2,7 @@
 //  UIViewPlatformViewDefinition.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: A34643117F00277B93DEBAB70EC06971 (SwiftUI?)
 
@@ -10,8 +10,10 @@
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
+import OpenSwiftUI_SPI
 
-// TODO
+// MARK: - UIViewPlatformViewDefinition [TODO]
+
 final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override final class var system: PlatformViewDefinition.System { .uiView }
 
@@ -57,6 +59,11 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
 
     override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
         Self.initView(view as! UIView, kind: kind)
+    }
+
+    override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
+        let layer = CoreViewLayer(system: .uiView, view: projectionView)
+        layer.transform = .init(transform)
     }
 }
 #endif

@@ -2,9 +2,10 @@
 //  ProtobufEncoderTests.swift
 //  OpenSwiftUICoreTests
 
-import OpenSwiftUICore
-import Testing
 import Foundation
+import OpenSwiftUICore
+import OpenSwiftUITestsSupport
+import Testing
 
 // FIXME: extra () is a workaround for swiftlang/swift-testing#756
 struct ProtobufEncoderTests {
