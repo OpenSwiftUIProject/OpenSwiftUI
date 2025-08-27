@@ -220,7 +220,7 @@ extension UnitPoint {
 
 extension UnitPoint: Animatable {
     public var animatableData: AnimatablePair<CGFloat, CGFloat> {
-        get { AnimatablePair(x.scaled(by: .unitScale), x.scaled(by: .unitScale)) }
+        get { AnimatablePair(x.scaled(by: .unitScale), y.scaled(by: .unitScale)) }
         set { x = newValue.first.scaled(by: .inverseUnitScale) ; y = newValue.second.scaled(by: .inverseUnitScale) }
     }
 }
