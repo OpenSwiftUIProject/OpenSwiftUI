@@ -3,6 +3,7 @@
 //  OpenSwiftUICoreTests
 
 import Foundation
+import OpenCoreGraphicsShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import Testing
@@ -48,7 +49,6 @@ struct ViewTransformTests {
     
     @Test
     func viewTransformDescription() {
-        #if canImport(CoreGraphics)
         var transform = ViewTransform()
         transform.appendTranslation(CGSize(width: 10, height: 10))
         #expect(transform.description == #"""
@@ -62,20 +62,5 @@ struct ViewTransformTests {
         #expect(transform.description == #"""
         ((10.0, 10.0), CoordinateSpaceElement(name: AnyHashable("a"))); SizedSpaceElement(name: AnyHashable("b"), size: (20.0, 20.0))
         """#)
-        #else
-        var transform = ViewTransform()
-        transform.appendTranslation(CGSize(width: 10, height: 10))
-        #expect(transform.description == #"""
-        CGSize(width: 10.0, height: 10.0)
-        """#)
-        transform.appendCoordinateSpace(name: "a")
-        #expect(transform.description == #"""
-        (CGSize(width: 10.0, height: 10.0), CoordinateSpaceElement(name: AnyHashable("a")))
-        """#)
-        transform.appendSizedSpace(name: "b", size: .init(width: 20, height: 20))
-        #expect(transform.description == #"""
-        (CGSize(width: 10.0, height: 10.0), CoordinateSpaceElement(name: AnyHashable("a"))); SizedSpaceElement(name: AnyHashable("b"), size: Foundation.CGSize(width: 20.0, height: 20.0))
-        """#)
-        #endif
     }
 }
