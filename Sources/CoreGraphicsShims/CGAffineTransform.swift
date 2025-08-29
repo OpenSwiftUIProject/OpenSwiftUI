@@ -53,17 +53,15 @@ extension CGAffineTransform {
     }
 
     public func translatedBy(x tx: CGFloat, y ty: CGFloat) -> CGAffineTransform {
-        let t = CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: Double(tx), ty: Double(ty))
-        return concatenating(t)
+        CGAffineTransform(a: 1, b: 0, c: 0, d: 1, tx: Double(tx), ty: Double(ty)).concatenating(self)
     }
 
     public func scaledBy(x sx: CGFloat, y sy: CGFloat) -> CGAffineTransform {
-        let s = CGAffineTransform(a: Double(sx), b: 0, c: 0, d: Double(sy), tx: 0, ty: 0)
-        return concatenating(s)
+        CGAffineTransform(a: Double(sx), b: 0, c: 0, d: Double(sy), tx: 0, ty: 0).concatenating(self)
     }
 
     public func rotated(by angle: CGFloat) -> CGAffineTransform {
-        return concatenating(CGAffineTransform(rotationAngle: angle))
+        CGAffineTransform(rotationAngle: angle).concatenating(self)
     }
 
     public func inverted() -> CGAffineTransform {
