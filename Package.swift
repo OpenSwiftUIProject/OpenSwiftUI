@@ -186,22 +186,6 @@ if !compatibilityTestCondition {
 let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
 sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(ignoreAvailability: ignoreAvailability))
 
-// MARK: - CoreGraphicsShims Target
-
-let coreGraphicsShimsTarget = Target.target(
-    name: "CoreGraphicsShims",
-    swiftSettings: sharedSwiftSettings
-)
-let coreGraphicsShimsTestTarget = Target.testTarget(
-    name: "CoreGraphicsShimsTests",
-    dependencies: [
-        "CoreGraphicsShims",
-        .product(name: "Numerics", package: "swift-numerics"),
-    ],
-    exclude: ["README.md"],
-    swiftSettings: sharedSwiftSettings
-)
-
 // MARK: - OpenSwiftUISPI Target
 
 let openSwiftUISPITarget = Target.target(
@@ -236,7 +220,8 @@ let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
         "OpenSwiftUI_SPI",
-        "CoreGraphicsShims",
+        .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
+        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
@@ -276,7 +261,8 @@ let openSwiftUITarget = Target.target(
     dependencies: [
         "OpenSwiftUICore",
         "COpenSwiftUI",
-        "CoreGraphicsShims",
+        .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
+        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
         .product(name: "OpenGraphShims", package: "OpenGraph"),
         .product(name: "OpenBoxShims", package: "OpenBox"),
     ],
@@ -421,7 +407,6 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
     ],
     targets: [
-        coreGraphicsShimsTarget,
         openSwiftUISPITarget,
         openSwiftUICoreTarget,
         cOpenSwiftUITarget,
@@ -438,7 +423,6 @@ if renderGTKCondition {
 
 if !compatibilityTestCondition {
     package.targets += [
-        coreGraphicsShimsTestTarget,
         openSwiftUISPITestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
@@ -555,6 +539,7 @@ if linkCoreUI {
 
 if useLocalDeps {
     var dependencies: [Package.Dependency] = [
+        .package(path: "../OpenCoreGraphics"),
         .package(path: "../OpenGraph"),
         .package(path: "../OpenBox"),
     ]
@@ -564,6 +549,7 @@ if useLocalDeps {
     package.dependencies += dependencies
 } else {
     var dependencies: [Package.Dependency] = [
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenCoreGraphics", branch: "main"),
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenBox", branch: "main"),

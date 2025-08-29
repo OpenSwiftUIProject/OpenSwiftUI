@@ -10,7 +10,7 @@
 public import Foundation
 package import OpenBoxShims
 import OpenSwiftUI_SPI
-public import CoreGraphicsShims
+public import OpenCoreGraphicsShims
 
 #if canImport(CoreGraphics)
 @_silgen_name("__CGPathParseString")

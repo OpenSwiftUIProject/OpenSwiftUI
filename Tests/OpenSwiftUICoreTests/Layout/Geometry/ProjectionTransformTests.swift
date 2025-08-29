@@ -2,9 +2,9 @@
 //  ProjectionTransformTests.swift
 //  OpenSwiftUICoreTests
 
-import CoreGraphicsShims
 import Foundation
 import Numerics
+import OpenQuartzCoreShims
 import OpenSwiftUICore
 import Testing
 

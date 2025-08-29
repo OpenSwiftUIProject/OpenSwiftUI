@@ -6,7 +6,7 @@
 //  Status: Complete
 
 public import Foundation
-public import CoreGraphicsShims
+public import OpenCoreGraphicsShims
 
 /// The characteristics of a stroke that traces a path.
 @frozen
