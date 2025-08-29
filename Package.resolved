@@ -1,5 +1,5 @@
 {
-  "originHash" : "7164fe444083ea8709bd92f41f5872d41b6a8bc539389b307beb39347bbbf905",
+  "originHash" : "ab8bc707b0e15c72f40e788831881b7a09b99df76f95fd09712e31d2550b8ade",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "09f6bd3d766b0fd99aa67bdcacd3105bf508a7c4"
+        "revision" : "4aa30d65aae91b8cd3aa7e6b5910d281a77e9af0"
       }
     },
     {
@@ -16,7 +16,16 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenBox",
       "state" : {
         "branch" : "main",
-        "revision" : "00748723bc575376fcde3921b0229fd0c7cdec0b"
+        "revision" : "f757b0ab3c243d4e60b5c5cb66128ab6fb81940a"
+      }
+    },
+    {
+      "identity" : "opencoregraphics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
+      "state" : {
+        "branch" : "main",
+        "revision" : "d4fdffac749beec6108eaf345f69da5d222b6dd1"
       }
     },
     {
@@ -25,7 +34,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "93aea21ce7374e1aa135a470ca439563774cf5a0"
+        "revision" : "43739e647189207da56903cd55f97ac45eb4ef71"
       }
     },
     {

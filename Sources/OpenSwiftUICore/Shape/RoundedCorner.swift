@@ -6,7 +6,7 @@
 //  Status: WIP
 
 public import Foundation
-package import CoreGraphicsShims
+package import OpenCoreGraphicsShims
 
 // MARK: - RoundedCornerStyle
 

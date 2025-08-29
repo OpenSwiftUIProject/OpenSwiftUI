@@ -6,7 +6,7 @@
 //  Status: Complete
 
 public import Foundation
-public import CoreGraphicsShims
+public import OpenQuartzCoreShims
 
 @frozen
 public struct ProjectionTransform {

@@ -9,7 +9,7 @@
 
 public import Foundation
 package import OpenGraphShims
-package import CoreGraphicsShims
+package import OpenQuartzCoreShims
 import OpenSwiftUI_SPI
 
 /// Namespace for view debug information.

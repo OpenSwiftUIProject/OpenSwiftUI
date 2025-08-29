@@ -9,7 +9,7 @@
 
 package import Foundation
 #if !canImport(Darwin)
-package import CoreGraphicsShims
+package import OpenCoreGraphicsShims
 #endif
 
 @_spi(ForOpenSwiftUIOnly)

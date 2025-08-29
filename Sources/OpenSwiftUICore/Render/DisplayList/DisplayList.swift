@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
-package import CoreGraphicsShims
+package import OpenCoreGraphicsShims
 package import Foundation
 package import OpenGraphShims
 

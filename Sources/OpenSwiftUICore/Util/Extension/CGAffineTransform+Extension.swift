@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-package import CoreGraphicsShims
+package import OpenCoreGraphicsShims
 package import Foundation
 
 extension CGAffineTransform {
