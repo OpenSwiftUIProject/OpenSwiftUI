@@ -8,7 +8,7 @@
 //  ID: 59349949219F590F26B6A55CEC9D59A2 (SwiftUICore)
 
 import OpenSwiftUI_SPI
-import OpenGraphShims
+import OpenAttributeGraphShims
 #if canImport(os)
 package import os.signpost
 #endif

@@ -10,7 +10,7 @@
 
 public import UIKit
 public import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - UIViewControllerRepresentable
 

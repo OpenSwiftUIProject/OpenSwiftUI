@@ -6,7 +6,7 @@
 //  Status: Complete
 
 public import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - Animatable
 

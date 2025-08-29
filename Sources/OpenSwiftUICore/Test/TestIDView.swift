@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: CC151E1A36B4405FF56CDABA5D46BF1E (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - TestIDView + View extension [6.4.41]
 

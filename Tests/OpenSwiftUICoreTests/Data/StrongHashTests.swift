@@ -2,10 +2,10 @@
 //  StrongHashTests.swift
 //  OpenSwiftUICoreTests
 
+import Foundation
+import OpenRenderBoxShims
 import OpenSwiftUICore
 import Testing
-import Foundation
-import OpenBoxShims
 
 struct StrongHashTests {
     @Test(
@@ -109,7 +109,7 @@ struct StrongHashTests {
         ]
     )
     func obUUID(hash: StrongHash, expectedBytes: (UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8)) {
-        let uuid = OBUUID(hash: hash)
+        let uuid = ORBUUID(hash: hash)
         #expect(uuid.bytes.0 == expectedBytes.0)
         #expect(uuid.bytes.1 == expectedBytes.1)
         #expect(uuid.bytes.2 == expectedBytes.2)

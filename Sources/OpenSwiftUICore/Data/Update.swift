@@ -8,7 +8,7 @@
 //  ID: 61534957AEEC2EDC447ABDC13B4D426F (SwiftUICore)
 
 import OpenSwiftUI_SPI
-import OpenGraphShims
+import OpenAttributeGraphShims
 import Foundation
 
 package enum Update {

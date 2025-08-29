@@ -5,7 +5,7 @@
 //  Status: Complete
 
 public import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - _IdentifiedViewProxy [6.4.41]
 

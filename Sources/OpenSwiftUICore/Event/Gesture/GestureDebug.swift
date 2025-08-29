@@ -6,7 +6,7 @@
 //  ID: 40D5679141F478561068F8E300838A67 (SwiftUICore)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 package enum GestureDebug {

@@ -8,7 +8,7 @@
 
 package import OpenCoreGraphicsShims
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - _DisplayList_Identity
 

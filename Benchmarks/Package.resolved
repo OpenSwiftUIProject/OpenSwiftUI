@@ -12,7 +12,7 @@
     {
       "identity" : "opengraph",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
         "revision" : "6835ce0972f40ef76f1214dc0efc75ec19082631"

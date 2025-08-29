@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package struct ReuseTrace {
     package static func register(graph: Graph) {
@@ -21,7 +21,7 @@ package struct ReuseTrace {
     package static func traceReuseFailure(_ name: UnsafePointer<CChar>) {
         // TODO
         // guard let recorder else { return }
-        // OGGraphAddTraceEvent
+        // OAGGraphAddTraceEvent
         // recorder.graph.addTraceEvent(name)
     }
 

@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 08168374F4710A99DCB15B5E8768D632
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 /// A property wrapper type that can read and write a value managed by OpenSwiftUI.
 ///

@@ -5,7 +5,7 @@
 //  Status: Unimplmented
 //  ID: BECD07FC80B4CA0BF429B041392E806A (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - RepeatGesture [6.5.4]
 

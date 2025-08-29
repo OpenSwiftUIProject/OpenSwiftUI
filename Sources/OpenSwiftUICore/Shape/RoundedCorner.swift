@@ -70,10 +70,10 @@ package struct FixedRoundedRect: Equatable {
     }
 
     // TODO: RenderBox
-    // package func withTemporaryPath<R>(_ body: (OBPath) -> R) -> R
+    // package func withTemporaryPath<R>(_ body: (ORBPath) -> R) -> R
 
     package func contains(_ point: CGPoint) -> Bool {
-        // TODO: OBPath
+        // TODO: ORBPath
         _openSwiftUIUnimplementedFailure()
     }
 

@@ -6,7 +6,7 @@
 //  ID: 9F92ACD17B554E8AB7D29ABB1E796415 (SwiftUI)
 //  ID: CE1D93D8ECBBEB5FE2E32E69A123E7CB (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - View default implmementation [6.0.87]
 

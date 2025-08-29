@@ -4,7 +4,7 @@
 
 import Testing
 import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 protocol TestProtocol {}
 

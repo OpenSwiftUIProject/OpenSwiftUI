@@ -7,16 +7,16 @@ filepath() {
 
 REPO_ROOT="$(dirname $(dirname $(dirname $(filepath $0))))"
 
-clone_checkout_og() {
+clone_checkout_openrenderbox() {
   cd $REPO_ROOT
-  revision=$(Scripts/CI/get_revision.sh openbox)
+  revision=$(Scripts/CI/get_revision.sh openrenderbox)
   cd ..
-  if [ ! -d OpenBox ]; then
-    gh repo clone OpenSwiftUIProject/OpenBox
-    cd OpenBox
+  if [ ! -d OpenRenderBox ]; then
+    gh repo clone OpenSwiftUIProject/OpenRenderBox
+    cd OpenRenderBox
   else
-    echo "OpenBox already exists, skipping clone."
-    cd OpenBox
+    echo "OpenRenderBox already exists, skipping clone."
+    cd OpenRenderBox
     git fetch --all --quiet
     git stash --quiet || true
     git reset --hard --quiet origin/main
@@ -24,10 +24,10 @@ clone_checkout_og() {
   git checkout --quiet $revision
 }
 
-update_og() {
-  cd $REPO_ROOT/../OpenBox
+update_openrenderbox() {
+  cd $REPO_ROOT/../OpenRenderBox
   ./Scripts/CI/darwin_setup_build.sh
 }
 
-clone_checkout_og
-update_og
+clone_checkout_openrenderbox
+update_openrenderbox

@@ -7,7 +7,7 @@
 //  ID: D63C4EB7F2B205694B6515509E76E98B (SwiftUI)
 //  ID: 7D9EDEF832940A362646A6E979F296C8 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 #if canImport(Darwin)
 import Foundation
 #else

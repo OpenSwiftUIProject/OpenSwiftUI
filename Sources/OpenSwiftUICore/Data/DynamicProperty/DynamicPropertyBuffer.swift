@@ -7,7 +7,7 @@
 //  ID: 68550FF604D39F05971FE35A26EE75B0 (SwiftUI)
 //  ID: F3A89CF4357225EF49A7DD673FDFEE02 (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 private let nullPtr: UnsafeMutableRawPointer = Unmanaged.passUnretained(unsafeBitCast(0, to: AnyObject.self)).toOpaque()
 

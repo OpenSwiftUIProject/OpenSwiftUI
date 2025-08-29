@@ -4,7 +4,7 @@
 
 import OpenSwiftUICore
 import Testing
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 @MainActor
 struct ZIndexTests {

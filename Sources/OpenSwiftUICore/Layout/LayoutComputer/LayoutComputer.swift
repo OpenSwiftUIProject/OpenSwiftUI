@@ -7,7 +7,7 @@
 //  ID: 91FCB5522C30220AE13689E45789FEF2 (SwiftUICore)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package struct LayoutComputer: Equatable {
     fileprivate var box: AnyLayoutEngineBox

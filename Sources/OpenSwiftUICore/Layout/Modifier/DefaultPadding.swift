@@ -7,7 +7,7 @@
 //  ID: 47C1BD8C61550BB60F4F3D12F752D53D (SwiftUICore)
 
 import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 @available(OpenSwiftUI_v3_0, *)
 extension EnvironmentValues {

@@ -7,7 +7,7 @@
 //  ID: 0EC4D15D4D4D8FD0340271BA6BA4D1B4
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - ScrapeableID
 
@@ -218,7 +218,7 @@ extension Subgraph {
             }
             let key = Key(subgraph: subgraph)
             let content = ScrapeableContent(nodes: map[key] ?? [], children: [])
-            // subgraph.childCount / OGSubgraphGetChildCount
+            // subgraph.childCount / OAGSubgraphGetChildCount
             _openSwiftUIUnimplementedFailure()
         }
 

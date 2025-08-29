@@ -191,7 +191,7 @@ sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(
 let openSwiftUISPITarget = Target.target(
     name: "OpenSwiftUI_SPI",
     dependencies: [
-        .product(name: "OpenBox", package: "OpenBox"),
+        .product(name: "OpenRenderBox", package: "OpenRenderBox"),
     ],
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
@@ -222,8 +222,8 @@ let openSwiftUICoreTarget = Target.target(
         "OpenSwiftUI_SPI",
         .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
-        .product(name: "OpenGraphShims", package: "OpenGraph"),
-        .product(name: "OpenBoxShims", package: "OpenBox"),
+        .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
+        .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
@@ -263,8 +263,8 @@ let openSwiftUITarget = Target.target(
         "COpenSwiftUI",
         .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
-        .product(name: "OpenGraphShims", package: "OpenGraph"),
-        .product(name: "OpenBoxShims", package: "OpenBox"),
+        .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
+        .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
@@ -454,7 +454,7 @@ extension Target {
         // "could not determine executable path for bundle 'AttributeGraph.framework'"
         dependencies.append(.product(name: "AttributeGraph", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
+        swiftSettings.append(.define("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
     }
 
@@ -463,7 +463,7 @@ extension Target {
         // "could not determine executable path for bundle 'RenderBox.framework'"
         dependencies.append(.product(name: "RenderBox", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENBOX_RENDERBOX"))
+        swiftSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
         self.swiftSettings = swiftSettings
     }
 
@@ -497,7 +497,7 @@ extension Target {
 
 let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
 
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
+let attributeGraphCondition = envEnable("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
@@ -509,7 +509,7 @@ if attributeGraphCondition {
     openSwiftUIBridgeTestTarget.addAGSettings()
 }
 
-let renderBoxCondition = envEnable("OPENBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
+let renderBoxCondition = envEnable("OPENRENDERBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 if renderBoxCondition {
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
@@ -540,8 +540,8 @@ if linkCoreUI {
 if useLocalDeps {
     var dependencies: [Package.Dependency] = [
         .package(path: "../OpenCoreGraphics"),
-        .package(path: "../OpenGraph"),
-        .package(path: "../OpenBox"),
+        .package(path: "../OpenAttributeGraph"),
+        .package(path: "../OpenRenderBox"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
@@ -551,8 +551,8 @@ if useLocalDeps {
     var dependencies: [Package.Dependency] = [
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCoreGraphics", branch: "main"),
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenGraph", branch: "main"),
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenBox", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenAttributeGraph", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))

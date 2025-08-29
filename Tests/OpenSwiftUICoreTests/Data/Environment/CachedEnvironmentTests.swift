@@ -2,7 +2,7 @@
 //  CachedEnvironmentTests.swift
 //  OpenSwiftUICoreTests
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 @testable import OpenSwiftUICore
 import OpenSwiftUITestsSupport

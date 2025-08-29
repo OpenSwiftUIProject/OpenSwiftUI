@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 9FF97745734808976F608CE0DC13C39C (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - GraphInput [6.4.41]
 

@@ -7,7 +7,7 @@
 //  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (?)
 //  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (?)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - _VariadicView.Children + View [WIP]
 

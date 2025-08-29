@@ -6,7 +6,7 @@
 //
 
 import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 import Testing
 import Foundation
 

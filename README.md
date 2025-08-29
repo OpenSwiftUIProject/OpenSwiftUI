@@ -39,7 +39,7 @@ The author of this project is not responsible for any consequences that may aris
 See Example folder and try it with ExampleApp
 
 > [!IMPORTANT]  
-> Clone OpenGraph in the same directory before running the example.
+> Clone OpenAttributeGraph in the same directory before running the example.
 >
 > See [Example/README.md](Example/README.md) for more detail.
 
@@ -99,7 +99,7 @@ for various platforms:
 [^4]: Build is supported. Test is not supported yet dut to upstream issue.
 
 > [!NOTE]
-> The cross-platform OpenGraph is not fully implemented.
+> The cross-platform OpenAttributeGraph is not fully implemented.
 >
 > It is only API compatible with AttributeGraph now.
 >

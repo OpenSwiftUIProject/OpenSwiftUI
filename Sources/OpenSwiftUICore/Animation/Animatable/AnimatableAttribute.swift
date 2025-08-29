@@ -7,7 +7,7 @@
 //  ID: 35ADF281214A25133F1A6DF28858952D (SwiftUICore)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - AnimatableAttribute
 
@@ -292,12 +292,12 @@ package struct AnimatableAttributeHelper<Value> where Value: Animatable {
         )
         // let attribute = AnyAttribute.current // For tracing
         if isAnimationOver {
-            // TODO: [Trace] CustomEventTrace + OGGraphAddTraceEvent
+            // TODO: [Trace] CustomEventTrace + OAGGraphAddTraceEvent
             // TODO: Signpost
             removeListeners()
             self.animatorState = nil
         } else {
-            // TODO: [Trace] CustomEventTrace + OGGraphAddTraceEvent
+            // TODO: [Trace] CustomEventTrace + OAGGraphAddTraceEvent
             sampleCollector(animatableData, time)
             animatorState.nextUpdate()
         }

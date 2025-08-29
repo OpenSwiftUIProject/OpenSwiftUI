@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 /// Contextual values that a custom animation can use to manage state and
 /// access a view's environment.

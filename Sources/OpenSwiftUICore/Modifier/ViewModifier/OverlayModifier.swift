@@ -5,7 +5,7 @@
 //  Status: WIP
 
 import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - makeSecondaryLayerView [6.4.41]
 

@@ -9,7 +9,7 @@ import OpenSwiftUITestsSupport
 struct PlatformHostingControllerCompatibilityTests {
     @Test(
         .bug(
-            "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
+            "https://github.com/OpenSwiftUIProject/OpenAttributeGraph/issues/",
             id: 58,
             "[verifiesFix]: Attribute setter crash for basic AnyView"
         )
@@ -26,7 +26,7 @@ struct PlatformHostingControllerCompatibilityTests {
 
     @Test(
         .bug(
-            "https://github.com/OpenSwiftUIProject/OpenGraph/issues/",
+            "https://github.com/OpenSwiftUIProject/OpenAttributeGraph/issues/",
             id: 81,
             "[verifiesFix]: BodyAccessor crash for non empty View instance"
         )

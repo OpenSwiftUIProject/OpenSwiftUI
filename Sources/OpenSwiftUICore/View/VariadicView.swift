@@ -7,7 +7,7 @@
 //  ID: 00F12C0E37A19C593ECA0DBD3BE26541 (SwiftUI)
 //  ID: DC167C463E6601B3880A23A75ACAA63B (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - _VariadicView
 

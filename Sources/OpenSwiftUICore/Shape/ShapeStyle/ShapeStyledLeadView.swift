@@ -6,7 +6,7 @@
 //  Status: WIP
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package protocol ShapeStyledLeafView: ContentResponder {
     static var animatesSize: Bool { get }

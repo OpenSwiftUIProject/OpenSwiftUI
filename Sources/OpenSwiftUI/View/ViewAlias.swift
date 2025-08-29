@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: D9F7AF928092578A4B8FA861B49E2161 (SwiftUI)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 // MARK: - ViewAlias

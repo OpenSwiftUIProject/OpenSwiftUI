@@ -7,7 +7,7 @@
 //  ID: BA60BF7120E939C5C25B2A488163D4AC (SwiftUICore)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - EnvironmentFetch
 

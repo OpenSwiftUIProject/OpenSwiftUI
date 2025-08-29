@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 3FB6ABB0477B815AB3C89DD5EDC9F0F0 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package protocol DynamicView {
     static var canTransition: Bool { get }

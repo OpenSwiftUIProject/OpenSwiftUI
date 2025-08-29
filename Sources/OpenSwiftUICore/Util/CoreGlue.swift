@@ -9,7 +9,7 @@ public import Foundation
 #if canImport(CoreText)
 public import CoreText
 #endif
-public import OpenGraphShims
+public import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 // MARK: - CoreGlue

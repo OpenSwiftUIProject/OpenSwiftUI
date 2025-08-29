@@ -8,7 +8,7 @@
 //  ID: 3591905F51357E95FA93E39751507471 (SwiftUICore)
 
 public import Foundation
-package import OpenBoxShims
+package import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 public import OpenCoreGraphicsShims
 
@@ -44,7 +44,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         }
         #endif
 
-        package init(takingPath path: OBPath) {
+        package init(takingPath path: ORBPath) {
             kind = .obPath
             //data = PathData(path)
             _openSwiftUIUnimplementedFailure()
@@ -52,18 +52,18 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
         #if canImport(CoreGraphics)
         private func prepareBuffer() {
-            let obPath: OBPath
+            let obPath: ORBPath
             switch kind {
             case .cgPath:
                 // data.cgPath
-                // let rbPath = OBPathMakeWithCGPath
+                // let rbPath = ORBPathMakeWithCGPath
                 _openSwiftUIUnimplementedFailure()
             case .obPath:
-                obPath = data.obPath.assumingMemoryBound(to: OBPath.self).pointee
+                obPath = data.obPath.assumingMemoryBound(to: ORBPath.self).pointee
             case .buffer:
                 return
             }
-            // OBPath.Storage.init
+            // ORBPath.Storage.init
             // storage.appendPath
             obPath.release()
         }
@@ -303,7 +303,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     }
     #endif
 
-    package func retainOBPath() -> OBPath {
+    package func retainORBPath() -> ORBPath {
         _openSwiftUIUnimplementedFailure()
     }
 

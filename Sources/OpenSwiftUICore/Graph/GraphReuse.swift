@@ -7,7 +7,7 @@
 //  ID: 3E2D3733C4CBF57EC1EA761D02CE8317 (SwiftUICore)
 
 import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 #if OPENSWIFTUI_SWIFT_LOG
 import Logging
 #else

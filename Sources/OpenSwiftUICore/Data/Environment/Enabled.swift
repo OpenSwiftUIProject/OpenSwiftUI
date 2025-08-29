@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 09CE35833F3876FE3A3A46977D61FC64 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - EnabledKey [6.5.4]
 

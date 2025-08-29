@@ -14,7 +14,7 @@ import WASILibc
 #else
 #error("Unsupported Platform")
 #endif
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 package enum EnvironmentHelper {
     @_transparent

@@ -8,7 +8,7 @@
 #if !canImport(Darwin)
 package import Foundation
 #endif
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - ViewInputs [6.0.87]
 

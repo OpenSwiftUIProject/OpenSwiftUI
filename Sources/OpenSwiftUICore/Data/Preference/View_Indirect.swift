@@ -6,9 +6,9 @@
 //  Status: Complete
 
 #if canImport(Darwin)
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 #else
-import OpenGraphShims
+import OpenAttributeGraphShims
 #endif
 
 extension _ViewInputs {

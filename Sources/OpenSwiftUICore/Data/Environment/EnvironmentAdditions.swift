@@ -7,7 +7,7 @@
 //  ID: 1B17C64D9E901A0054B49B69A4A2439D (SwiftUICore)
 
 public import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - EnvironmentValues + Root
 

@@ -8,7 +8,7 @@
 //  ID: C5308685324599C90E2F7A588812BB29 (SwiftUICore)
 
 import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 /// A type-erased ShapeStyle value.
 @frozen

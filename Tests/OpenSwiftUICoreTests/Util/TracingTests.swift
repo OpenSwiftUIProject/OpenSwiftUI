@@ -3,15 +3,15 @@
 //  OpenSwiftUICoreTests
 
 @testable import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 import Testing
 
-@Suite(.disabled(if: !attributeGraphEnabled, "Not implemented in OG yet"))
+@Suite(.disabled(if: !attributeGraphEnabled, "Not implemented in OAG yet"))
 struct TracingTests {
     struct Demo {}
     
     @Test(
-        .disabled(if: !attributeGraphEnabled, "OGTypeDescription is not implemented yet"),
+        .disabled(if: !attributeGraphEnabled, "OAGTypeDescription is not implemented yet"),
         arguments: [
             (type: Int.self, nominalName: "Int"),
             (type: String.self, nominalName: "String"),

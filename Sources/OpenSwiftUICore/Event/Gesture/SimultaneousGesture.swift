@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: FD72499B2A88A75B09DC7635754CA91F (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 @available(OpenSwiftUI_v1_0, *)
 extension Gesture {

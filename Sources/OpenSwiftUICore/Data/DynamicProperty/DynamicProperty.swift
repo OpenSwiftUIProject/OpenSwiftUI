@@ -7,7 +7,7 @@
 //  ID: 49D2A32E637CD497C6DE29B8E060A506 (SwiftUI)
 //  ID: A4C1D658B3717A3062FEFC91A812D6EB (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - DynamicProperty
 

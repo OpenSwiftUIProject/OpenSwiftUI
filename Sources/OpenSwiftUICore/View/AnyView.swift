@@ -7,7 +7,7 @@
 //  ID: A96961F3546506F21D8995C6092F15B5 (SwiftUI)
 //  ID: 7578D05D331D7F1A2E0C2F8DEF38AAD4 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 // MARK: - AnyView

@@ -28,7 +28,7 @@ typealias PlatformViewResponder = NSObject
 
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - PlatformViewRepresentable
 

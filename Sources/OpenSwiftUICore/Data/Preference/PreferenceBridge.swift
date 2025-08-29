@@ -7,7 +7,7 @@
 //  ID: A9FAE381E99529D5274BA37A9BC9B074 (SwiftUI)
 //  ID: DF57A19C61B44C613EB77C1D47FC679A (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package final class PreferenceBridge {
     package weak var viewGraph: ViewGraph?

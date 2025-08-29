@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: WIP
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package struct ShapeStyleResolver<Style>: StatefulRule, AsyncAttribute, ObservedAttribute where Style: ShapeStyle {
     @OptionalAttribute var style: Style?

@@ -6,7 +6,7 @@
 //  Status: Blocked by ArichevedView
 //  ID: 530459AF10BEFD7ED901D8CE93C1E289 (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 @available(OpenSwiftUI_v1_0, *)
 @frozen

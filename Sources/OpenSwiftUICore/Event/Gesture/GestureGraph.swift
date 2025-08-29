@@ -4,7 +4,7 @@
 //
 //  Status: WIP
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - GestureGraphDelegate [6.5.4]
 

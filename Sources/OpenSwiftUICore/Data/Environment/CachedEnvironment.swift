@@ -7,7 +7,7 @@
 //  ID: B62A4B04AF9F1325924A089D63071424 (SwiftUICore)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - CachedEnvironment [6.4.41] [WIP]
 

@@ -8,7 +8,7 @@
 //  ID: E479C0E92CDD045BAF2EF653123E2E0B (SwiftUICore)
 
 import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - _ViewListInputs
 

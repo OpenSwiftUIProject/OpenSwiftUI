@@ -7,7 +7,7 @@
 //  Status: WIP
 
 package import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - RendererLeafView [TODO]
 

@@ -12,7 +12,7 @@ import Foundation
 #else
 public import Foundation
 #endif
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 // MARK: - Layout

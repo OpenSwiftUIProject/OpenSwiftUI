@@ -7,7 +7,7 @@
 //  ID: 59D15989E597719355BF0EAE6CB41FF9 (SwiftUI)
 //  ID: EAF68AEE5E08E2f44FEB886FE6A27001 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - PreferenceCombiner
 
