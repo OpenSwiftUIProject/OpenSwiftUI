@@ -7,7 +7,7 @@
 //  ID: 8817D3B1C81ADA2B53E3500D727F785A (SwiftUI)
 //  ID: 3EDE22C3B37C9BBEF12EC9D1A4B340F3 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - _AppearanceActionModifier [WIP]
 

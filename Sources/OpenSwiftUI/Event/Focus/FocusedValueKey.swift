@@ -6,7 +6,7 @@
 //  Status: WIP
 
 import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 @available(OpenSwiftUI_v2_0, *)
 @propertyWrapper

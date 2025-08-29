@@ -6,7 +6,7 @@
 //  Status: Complete
 
 import OpenSwiftUI_SPI
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - ProtocolDescriptor
 

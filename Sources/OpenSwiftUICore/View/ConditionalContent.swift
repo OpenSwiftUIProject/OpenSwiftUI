@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C (SwiftUI)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - ConditionalContent [6.4.41]
 

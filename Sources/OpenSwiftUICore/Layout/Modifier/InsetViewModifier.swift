@@ -7,7 +7,7 @@
 //  ID: 9508EA06E054356A38E761213D9FFC07 (SwiftUICore)
 
 public import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - View + _InsetViewModifier
 

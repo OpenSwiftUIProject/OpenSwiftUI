@@ -5,7 +5,7 @@
 //  Status: WIP
 //  ID: D3405DB583003A73D556A7797845B7F4 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - PreferenceTransformModifier [6.4.41]
 

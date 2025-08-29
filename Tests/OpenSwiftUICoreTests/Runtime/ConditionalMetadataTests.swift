@@ -2,7 +2,7 @@
 //  ConditionalMetadataTests.swift
 //  OpenSwiftUICoreTests
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 @testable import OpenSwiftUICore
 import Testing
 

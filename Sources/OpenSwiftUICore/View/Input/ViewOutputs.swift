@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 /// The output (aka synthesized) attributes returned by each view.
 public struct _ViewOutputs {

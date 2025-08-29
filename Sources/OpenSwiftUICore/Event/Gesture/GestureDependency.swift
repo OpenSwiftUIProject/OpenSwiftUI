@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 8687835E41FEE17B108D67665C1D2D0B (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - GestureDependency [6.5.4]
 

@@ -11,7 +11,7 @@ package import QuartzCore
 package import UIKit
 
 import COpenSwiftUI
-import OpenGraphShims
+import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 @_spi(ForOpenSwiftUIOnly)
 package import OpenSwiftUICore

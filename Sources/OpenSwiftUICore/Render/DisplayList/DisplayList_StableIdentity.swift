@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 6C8682BE0755616E63B02969BA08C92E
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package struct _DisplayList_StableIdentity: Hashable, Codable {
     package var hash: StrongHash

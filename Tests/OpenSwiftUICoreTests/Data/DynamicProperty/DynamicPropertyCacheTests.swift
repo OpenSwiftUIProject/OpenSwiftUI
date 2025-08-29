@@ -7,7 +7,7 @@
 
 import XCTest
 @testable import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 final class DynamicPropertyCacheTests: XCTestCase {
     func testExample() throws {

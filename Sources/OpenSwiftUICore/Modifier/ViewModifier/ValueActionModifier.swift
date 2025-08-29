@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 4B528D9D60F208F316B29B7D53AC1FB9 (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - View + onChange
 

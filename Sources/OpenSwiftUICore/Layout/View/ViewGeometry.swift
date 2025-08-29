@@ -6,7 +6,7 @@
 //  Status: Complete
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 /// A type that represents the position and dimensions of a view in its parent's coordinate space.
 ///

@@ -8,7 +8,7 @@
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)
 
 import OpenSwiftUI_SPI
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - PropertyKey
 

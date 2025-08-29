@@ -1,8 +1,8 @@
 //
-//  OpenGraphAdditionsTests.swift
+//  OpenAttributeGraphAdditionsTests.swift
 //  OpenSwiftUICoreTests
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 import Testing
 

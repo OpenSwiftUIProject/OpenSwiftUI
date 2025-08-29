@@ -1,5 +1,5 @@
 {
-  "originHash" : "ab8bc707b0e15c72f40e788831881b7a09b99df76f95fd09712e31d2550b8ade",
+  "originHash" : "f229c995beae82593994793abdd0fb2239bd44bded0c9672a73e95e1a2baecf5",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -11,12 +11,12 @@
       }
     },
     {
-      "identity" : "openbox",
+      "identity" : "openattributegraph",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenBox",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "f757b0ab3c243d4e60b5c5cb66128ab6fb81940a"
+        "revision" : "cc5a58ccf7720bf096fc487c2a518ae1c5139c4d"
       }
     },
     {
@@ -29,12 +29,12 @@
       }
     },
     {
-      "identity" : "opengraph",
+      "identity" : "openrenderbox",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenGraph",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "43739e647189207da56903cd55f97ac45eb4ef71"
+        "revision" : "a288f586e9ecac85b259d433a795d4104cb929a5"
       }
     },
     {

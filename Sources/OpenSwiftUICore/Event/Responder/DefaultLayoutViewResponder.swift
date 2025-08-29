@@ -4,7 +4,7 @@
 //
 //  Status: Complete
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - DefaultLayoutResponderFilter [6.5.4]
 

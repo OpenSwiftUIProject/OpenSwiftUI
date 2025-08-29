@@ -6,7 +6,7 @@
 //  Status: Complete
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 /// A structure that represents the size of a view and its associated size proposal.
 ///

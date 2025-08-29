@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 /// A key for accessing values in the environment.
 ///

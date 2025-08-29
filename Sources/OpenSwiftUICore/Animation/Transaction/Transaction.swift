@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: B2543BCA257433E04979186A1DC2B6BC (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 // MARK: - TransactionKey

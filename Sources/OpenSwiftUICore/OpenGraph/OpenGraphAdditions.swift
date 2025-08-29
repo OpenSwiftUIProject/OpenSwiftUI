@@ -1,11 +1,11 @@
 //
-//  OpenGraphAdditions.swift
+//  OpenAttributeGraphAdditions.swift
 //  OpenSwiftUICore
 //
 //  Status: WIP
 //  ID: 372497ED4F569296C4450147CA418CD0 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - Defaultable [6.5.4]
 

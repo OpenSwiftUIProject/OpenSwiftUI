@@ -7,7 +7,7 @@
 //  ID: D4C7BC89F06A89A4754FA9F578FD2C57 (SwiftUI)
 //  ID: ADF2FC9997986A8A2C672C0F3AA33367 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - IDView
 

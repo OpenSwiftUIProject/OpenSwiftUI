@@ -8,7 +8,7 @@
 //  ID: 43DA1754B0518AF1D72B90677BF266DB (SwiftUICore)
 
 public import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 package import OpenQuartzCoreShims
 import OpenSwiftUI_SPI
 

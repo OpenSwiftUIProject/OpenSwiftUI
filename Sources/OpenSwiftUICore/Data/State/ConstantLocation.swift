@@ -5,7 +5,7 @@
 //  Audited for iOS 15.5
 //  Status: Complete
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 struct ConstantLocation<Value>: Location {
     var value: Value

@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 package struct UniqueID: Hashable {
     @inlinable

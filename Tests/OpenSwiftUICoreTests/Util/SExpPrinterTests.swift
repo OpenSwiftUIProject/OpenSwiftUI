@@ -3,7 +3,7 @@
 //  OpenSwiftUICoreTests
 
 import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 import Testing
 
 struct SExpPrinterTests {

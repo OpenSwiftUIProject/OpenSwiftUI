@@ -10,7 +10,7 @@ public import Foundation
 #if canImport(QuartzCore)
 import QuartzCore
 #endif
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - Benchmark [6.4.41]
 

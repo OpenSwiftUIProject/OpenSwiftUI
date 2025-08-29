@@ -8,7 +8,7 @@
 //  ID: 54C853EF26D00A0E6B1785C3902A74F4 (SwiftUICore)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - LayoutDirection
 

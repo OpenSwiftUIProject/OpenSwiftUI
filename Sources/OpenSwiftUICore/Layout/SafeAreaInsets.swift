@@ -7,7 +7,7 @@
 //  ID: C4DC82F2A500E9B6DEA3064A36584B42 (SwiftUICore)
 
 import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - SafeAreaRegions [6.4.41]
 

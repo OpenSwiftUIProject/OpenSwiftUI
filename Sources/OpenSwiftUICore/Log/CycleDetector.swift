@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - UpdateCycleDetector
 

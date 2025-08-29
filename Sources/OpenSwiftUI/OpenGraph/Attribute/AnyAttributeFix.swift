@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 
 #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package typealias AnyAttribute = OpenSwiftUICore.AnyAttribute
 package typealias AttributeInfo = OpenSwiftUICore.AttributeInfo
@@ -56,11 +56,11 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func addInput(_ attribute: AnyAttribute, options: OGInputOptions = [], token: Int) {
+    package func addInput(_ attribute: AnyAttribute, options: OAGInputOptions = [], token: Int) {
         preconditionFailure("#39")
     }
 
-    package func addInput<Value>(_ attribute: Attribute<Value>, options: OGInputOptions = [], token: Int) {
+    package func addInput<Value>(_ attribute: Attribute<Value>, options: OAGInputOptions = [], token: Int) {
         preconditionFailure("#39")
     }
 

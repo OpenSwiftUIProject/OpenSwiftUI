@@ -7,7 +7,7 @@
 //  ID: 1DBD4F024EFF0E73A70DB6DD05D5B548 (SwiftUI)
 //  ID: E370275CDB55AC7AD9ACF0420859A9E8 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - EnvironmentKeyTransformModifier
 

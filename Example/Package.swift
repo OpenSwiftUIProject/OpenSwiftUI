@@ -22,7 +22,7 @@ let package = Package(
     products: [.executable(name: "Example", targets: ["Example"])],
     dependencies: [
         .package(path: "../"),
-        .package(path: "../../OpenGraph")
+        .package(path: "../../OpenAttributeGraph")
     ],
     targets: [
         exampleTarget,
@@ -43,19 +43,19 @@ func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
 }
 
 #if os(macOS)
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH", default: true)
+let attributeGraphCondition = envEnable("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH", default: true)
 #else
-let attributeGraphCondition = envEnable("OPENGRAPH_ATTRIBUTEGRAPH")
+let attributeGraphCondition = envEnable("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH")
 #endif
 
 extension Target {
     func addAGSettings() {
         // FIXME: Weird SwiftPM behavior for binary Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'AttributeGraph.framework'"
-        dependencies.append(.product(name: "AttributeGraph", package: "OpenGraph"))
+        dependencies.append(.product(name: "AttributeGraph", package: "OpenAttributeGraph"))
 
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENGRAPH_ATTRIBUTEGRAPH"))
+        swiftSettings.append(.define("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
     }
 }

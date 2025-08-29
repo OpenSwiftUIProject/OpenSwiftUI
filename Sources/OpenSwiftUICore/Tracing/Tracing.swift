@@ -16,7 +16,7 @@ import Musl
 #elseif os(WASI)
 import WASILibc
 #endif
-import OpenGraphShims
+import OpenAttributeGraphShims
 import Foundation
 import OpenSwiftUI_SPI
 #if canImport(Darwin)

@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: A1B10B5AB036C34AB7DD2EE8825FCA93 (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: View + transaction
 

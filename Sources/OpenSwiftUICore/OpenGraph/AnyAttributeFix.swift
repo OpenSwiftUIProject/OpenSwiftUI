@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 
 #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // This is a workaround to partially "fix" the Swift compiler bug on non-Darwin platforms.
 // "Fix" here means we do not have to write #if canImport(Darwin) everywhere.
@@ -99,11 +99,11 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func addInput(_ attribute: AnyAttribute, options: OGInputOptions = [], token: Int) {
+    package func addInput(_ attribute: AnyAttribute, options: OAGInputOptions = [], token: Int) {
         preconditionFailure("#39")
     }
 
-    package func addInput<Value>(_ attribute: Attribute<Value>, options: OGInputOptions = [], token: Int) {
+    package func addInput<Value>(_ attribute: Attribute<Value>, options: OAGInputOptions = [], token: Int) {
         preconditionFailure("#39")
     }
 
@@ -211,7 +211,7 @@ extension Subgraph {
 
 extension Rule where Self: Hashable {
     package func cachedValue(
-        options: OGCachedValueOptions = [],
+        options: OAGCachedValueOptions = [],
         owner: AnyAttribute?
     ) -> Value {
         preconditionFailure("#39")

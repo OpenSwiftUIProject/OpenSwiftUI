@@ -7,7 +7,7 @@
 //  ID: EBDC911C9EE054BAE3D86F947C24B7C3 (RELEASE_2021)
 //  ID: 4F21368B1C1680817451AC25B55A8D48 (RELEASE_2024)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {

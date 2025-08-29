@@ -8,7 +8,7 @@
 //  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (SwiftUICore)
 
 import OpenSwiftUI_SPI
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 import Foundation
 
 // MARK: - GraphDelegate

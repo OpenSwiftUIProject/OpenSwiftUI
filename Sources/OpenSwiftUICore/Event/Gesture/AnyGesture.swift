@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 9726BF9F3BA5F571B5F201AD7C8C86F0 (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - AnyGesture [6.5.4]
 

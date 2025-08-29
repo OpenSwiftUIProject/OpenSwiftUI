@@ -7,7 +7,7 @@
 
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - AnyPlatformViewHost
 

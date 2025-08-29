@@ -4,7 +4,7 @@
 
 import Testing
 @testable import OpenSwiftUICore
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 extension TestProtocolDescriptor: TupleDescriptor {
     static var typeCache: [ObjectIdentifier: TupleTypeDescription<Self>] = [:]

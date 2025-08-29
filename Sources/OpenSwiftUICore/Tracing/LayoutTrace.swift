@@ -6,7 +6,7 @@
 //  Status: WIP
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 //extension Graph.NamedTraceEvent {
 //    package static let update: Graph.NamedTraceEvent
@@ -18,7 +18,7 @@ package import OpenGraphShims
 
 package struct LayoutTrace {
     package static func register(graph: Graph) {
-        // TODO: OGGraphRegisterNamedTraceEvent
+        // TODO: OAGGraphRegisterNamedTraceEvent
         recorder = Recorder(graph: graph)
     }
 

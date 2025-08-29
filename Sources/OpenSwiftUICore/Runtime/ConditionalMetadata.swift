@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 2319071E64CA2FA820BFB26F46C6ECC6 (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - ConditionalProtocolDescriptor
 

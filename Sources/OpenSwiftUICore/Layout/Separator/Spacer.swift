@@ -7,7 +7,7 @@
 //  ID: 81D5572A9475F8358655E25B09BAFBA9 (SwiftUICore)
 
 public import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - Spacer
 

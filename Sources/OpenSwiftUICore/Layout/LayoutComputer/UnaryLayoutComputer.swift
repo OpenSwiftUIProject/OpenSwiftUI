@@ -6,7 +6,7 @@
 //  ID: 1C3B77B617AD058A6802F719E38F5D79 (SwiftUICore?)
 
 import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - UnaryLayout + _PositionAwarePlacementContext [6.4.41] [TODO]
 

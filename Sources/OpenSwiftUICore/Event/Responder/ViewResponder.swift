@@ -6,7 +6,7 @@
 //  ID: 5DC9CCF050AF89FBA971AEC7E32C63B6 (SwiftUICore)
 
 public import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - ViewRespondersKey [6.5.4]
 

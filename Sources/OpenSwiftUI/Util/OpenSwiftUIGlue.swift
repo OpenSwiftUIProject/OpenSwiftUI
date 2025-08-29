@@ -8,7 +8,7 @@
 public import Foundation
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
-public import OpenGraphShims
+public import OpenAttributeGraphShims
 import COpenSwiftUI
 
 // MARK: - OpenSwiftUIGlue

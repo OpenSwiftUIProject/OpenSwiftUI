@@ -2,7 +2,7 @@
 //  ViewInputsTest.swift
 //  OpenSwiftUICoreTests
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import Testing

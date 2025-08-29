@@ -6,7 +6,7 @@
 //  ID: 79611CB2B7848ECB3D9EC1F26B13F28F (SwiftUI)
 //  ID: DE681AB5F1A334FA14ECABDE70CB1955 (SwiftUICore)
 
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - TupleView [6.4.41]
 

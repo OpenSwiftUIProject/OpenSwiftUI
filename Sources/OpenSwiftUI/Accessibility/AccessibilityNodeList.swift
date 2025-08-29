@@ -1,4 +1,4 @@
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // FIXME
 struct AccessibilityNodeList {

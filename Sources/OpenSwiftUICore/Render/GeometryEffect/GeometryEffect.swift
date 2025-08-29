@@ -7,7 +7,7 @@
 //  ID: 9ED0B9F1F6CE74691B78276C750FEDD3 (SwiftUICore)
 
 public import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - GeometryEffect
 

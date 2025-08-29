@@ -3,11 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by OGValueState and Trace
+//  Status: Blocked by OAGValueState and Trace
 //  ID: 76C8A4B3FC8EE0F99045B3425CD62255 (SwiftUICore)
 
 package import Foundation
-import OpenGraphShims
+import OpenAttributeGraphShims
 
 // MARK: - ViewRendererHost [6.5.4]
 

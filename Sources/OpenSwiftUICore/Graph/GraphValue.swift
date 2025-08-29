@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-public import OpenGraphShims
+public import OpenAttributeGraphShims
 
 /// A transient reference to a value in the view hierarchy's dataflow
 /// graph. "Transient" means that these values must never be stored,

@@ -6,7 +6,7 @@
 //  ID: A7DFBD5AC47BCDAAE5525781FBD33CF6 (SwiftUICore?)
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - UnaryLayout [6.4.41]
 

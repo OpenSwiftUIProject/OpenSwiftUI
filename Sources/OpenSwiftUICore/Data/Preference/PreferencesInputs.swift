@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 package struct PreferencesInputs {
     package var keys: PreferenceKeys

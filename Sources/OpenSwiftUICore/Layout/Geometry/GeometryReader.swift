@@ -7,7 +7,7 @@
 //  ID: 7D6D22DF7076CCC1FC5284D8E2D1B049 (SwiftUICore)
 
 public import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 // MARK: - GeometryReader [WIP]

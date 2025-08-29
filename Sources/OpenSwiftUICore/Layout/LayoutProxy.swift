@@ -6,7 +6,7 @@
 //  Status: Complete
 
 package import Foundation
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 /// A collection of attributes that can be applied to layout calculations.
 ///

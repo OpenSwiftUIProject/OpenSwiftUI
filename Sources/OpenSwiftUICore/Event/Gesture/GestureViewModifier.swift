@@ -5,7 +5,7 @@
 //  Status: WIP
 //  ID: 9DF46B4E935FF03A55FF3DDFB0B1FF2B (SwiftUICore)
 
-package import OpenGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - GestureViewModifier [6.5.4]
 
