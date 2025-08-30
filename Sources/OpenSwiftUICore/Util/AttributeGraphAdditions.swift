@@ -1,11 +1,18 @@
 //
-//  OpenAttributeGraphAdditions.swift
+//  AttributeGraphAdditions.swift
 //  OpenSwiftUICore
 //
 //  Status: WIP
 //  ID: 372497ED4F569296C4450147CA418CD0 (SwiftUICore)
 
 package import OpenAttributeGraphShims
+
+extension Subgraph {
+    package func removeObserver(_ id: Int) {
+        // TODO
+        _openSwiftUIUnimplementedFailure()
+    }
+}
 
 // MARK: - Defaultable [6.5.4]
 
