@@ -99,30 +99,10 @@ package func _withObservation<V, T>(
     ObservationRegistrar.latestAccessLists = []
     defer { ObservationRegistrar.latestAccessLists = previousAccessLists }
 
-    var accessList: ObservationTracking._AccessList?
-    let result = try withUnsafeMutablePointer(to: &accessList) { ptr in
-        let previous = _ThreadLocal.value
-        _ThreadLocal.value = UnsafeMutableRawPointer(ptr)
-        defer { _ThreadLocal.value = previous }
-        return try work()
+    let (result, _) = try _withObservation(do: work)
+    for accessList in ObservationRegistrar.latestAccessLists {
+        installObservationSlow(accessList: accessList, attribute: attribute)
     }
-
-    // TODO
-    // Install observation if we collected any accesses
-    if let accessList {
-        _installObservation(accessList: accessList, attribute: attribute)
-    }
-    
-    // Merge any access lists collected from nested observations
-    // Since merge is internal, we'll just append to our tracking list
-    if !ObservationRegistrar.latestAccessLists.isEmpty {
-        if accessList == nil {
-            // If we don't have an access list yet, use the first nested one
-            accessList = ObservationRegistrar.latestAccessLists.first
-        }
-        // Additional nested access lists will be handled by the observation system
-    }
-    
     return result
 }
 
@@ -144,92 +124,42 @@ private func installObservationSlow<T>(
     // TODO
 }
 
-// MARK: - Rule + Observation [WIP]
+// MARK: - Rule + Observation
 
 extension Rule {
     @inline(__always)
     package func withObservation<T>(do work: () throws -> T) rethrows -> T {
-        // For rules, we track observation access and install it on the rule's attribute
-        var accessList: ObservationTracking._AccessList?
-        let result = try withUnsafeMutablePointer(to: &accessList) { ptr in
-            let previous = _ThreadLocal.value
-            _ThreadLocal.value = UnsafeMutableRawPointer(ptr)
-            defer {
-                _ThreadLocal.value = previous
-            }
-            return try work()
-        }
-        
-        // Install observation tracking if we collected any accesses
-        if let accessList {
-            // Get the rule's associated attribute and install observation
-            // This would typically be done through the rule's context
-            // For now, save the access list for later installation
-            ObservationRegistrar.latestAccessLists.append(accessList)
-        }
-        
-        return result
+        try _withObservation(attribute: attribute, do: work)
     }
 
     package var observationInstaller: (ObservationTracking._AccessList) -> Void {
-        return { accessList in
-            // This closure will be called to install observation tracking
-            // on the rule's attribute when needed
-            let tracking = ObservationTracking(accessList)
-            ObservationTracking._installTracking(
-                tracking,
-                willSet: { _ in
-                    // Trigger rule re-evaluation
-                },
-                didSet: { _ in
-                    // Trigger rule re-evaluation
-                }
-            )
+        { [attribute] accessList in
+            guard attribute.subgraph.isValid else {
+                return
+            }
+            attribute.subgraph.apply {
+                installObservationSlow(accessList: accessList, attribute: attribute)
+            }
         }
     }
 }
 
-// MARK: - StatefulRule + Observation [WIP]
+// MARK: - StatefulRule + Observation
 
 extension StatefulRule {
     @inline(__always)
     package func withObservation<T>(do work: () throws -> T) rethrows -> T {
-        // For stateful rules, we track observation access and install it on the rule's attribute
-        var accessList: ObservationTracking._AccessList?
-        let result = try withUnsafeMutablePointer(to: &accessList) { ptr in
-            let previous = _ThreadLocal.value
-            _ThreadLocal.value = UnsafeMutableRawPointer(ptr)
-            defer {
-                _ThreadLocal.value = previous
-            }
-            return try work()
-        }
-        
-        // Install observation tracking if we collected any accesses
-        if let accessList {
-            // Get the rule's associated attribute and install observation
-            // This would typically be done through the rule's context
-            // For now, save the access list for later installation
-            ObservationRegistrar.latestAccessLists.append(accessList)
-        }
-        
-        return result
+        try _withObservation(attribute: attribute, do: work)
     }
 
     package var observationInstaller: (ObservationTracking._AccessList) -> Void {
-        return { accessList in
-            // This closure will be called to install observation tracking
-            // on the rule's attribute when needed
-            let tracking = ObservationTracking(accessList)
-            ObservationTracking._installTracking(
-                tracking,
-                willSet: { _ in
-                    // Trigger rule re-evaluation
-                },
-                didSet: { _ in
-                    // Trigger rule re-evaluation
-                }
-            )
+        { [attribute] accessList in
+            guard attribute.subgraph.isValid else {
+                return
+            }
+            attribute.subgraph.apply {
+                installObservationSlow(accessList: accessList, attribute: attribute)
+            }
         }
     }
 }
