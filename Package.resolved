@@ -1,5 +1,5 @@
 {
-  "originHash" : "f229c995beae82593994793abdd0fb2239bd44bded0c9672a73e95e1a2baecf5",
+  "originHash" : "2432e3fbb351913595eab925a316b1813a5e4b112660f54286c5b94f893e6fd1",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -29,6 +29,15 @@
       }
     },
     {
+      "identity" : "openobservation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "07e0d9c39c616dff07598ad7c1c1221524f734b9"
+      }
+    },
+    {
       "identity" : "openrenderbox",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
@@ -44,6 +53,15 @@
       "state" : {
         "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
         "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
       }
     },
     {

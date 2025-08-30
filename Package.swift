@@ -224,6 +224,7 @@ let openSwiftUICoreTarget = Target.target(
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
         .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
         .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
+        .product(name: "OpenObservation", package: "OpenObservation"),
     ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
@@ -542,6 +543,7 @@ if useLocalDeps {
         .package(path: "../OpenCoreGraphics"),
         .package(path: "../OpenAttributeGraph"),
         .package(path: "../OpenRenderBox"),
+        .package(path: "../OpenObservation"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
@@ -553,6 +555,7 @@ if useLocalDeps {
         // FIXME: on Linux platform: OG contains unsafe build flags which prevents us using version dependency
         .package(url: "https://github.com/OpenSwiftUIProject/OpenAttributeGraph", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
