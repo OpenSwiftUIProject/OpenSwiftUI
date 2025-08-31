@@ -124,6 +124,26 @@ The Package.swift heavily uses environment variables for conditional compilation
 - Library evolution mode generates .swiftinterface files
 - Various private framework integrations can be toggled
 
+## Git and GitHub Workflow
+
+**IMPORTANT: This project uses GitBulter for version control management**
+
+### Critical Git Rules
+- **NEVER change branches** - The user manages branches through GitBulter
+- **ALWAYS commit to the specific branch** the user tells you, without changing HEAD
+- **ALWAYS create pull requests** using `gh pr create` with the exact branch specified by the user
+- **DO NOT switch branches** when creating pull requests or commits
+
+### Commit Workflow
+1. Make changes on the current branch as instructed
+2. Commit changes only when explicitly asked by the user
+3. Use the exact branch name provided by the user for commits
+
+### Pull Request Workflow
+1. Create PR using `gh pr create` from the specified branch
+2. Do not change HEAD or switch branches during PR creation
+3. Target the appropriate base branch as instructed
+
 ## Important Notes
 
 - This project uses private Apple APIs and frameworks - NOT for App Store distribution
