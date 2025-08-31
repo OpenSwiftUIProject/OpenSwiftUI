@@ -1,5 +1,5 @@
 //
-//  OpenAttributeGraphAdditions.swift
+//  AttributeGraphAdditions.swift
 //  OpenSwiftUICore
 //
 //  Status: WIP

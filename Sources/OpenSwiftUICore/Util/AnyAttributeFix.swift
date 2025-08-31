@@ -1,14 +1,61 @@
 //
 //  AnyAttributeFix.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 
 #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
 package import OpenAttributeGraphShims
 
-package typealias AnyAttribute = OpenSwiftUICore.AnyAttribute
-package typealias AttributeInfo = OpenSwiftUICore.AttributeInfo
+// This is a workaround to partially "fix" the Swift compiler bug on non-Darwin platforms.
+// "Fix" here means we do not have to write #if canImport(Darwin) everywhere.
+// See #39 for more details.
+package struct AnyAttribute: RawRepresentable, Hashable {
+    package var rawValue: UInt32
+    package init(rawValue: UInt32) {
+        self.rawValue = rawValue
+    }
 
-package typealias AttributeType = OpenSwiftUICore.AttributeType
+
+    package struct Flags: OptionSet {
+        package let rawValue: UInt8
+
+        package init(rawValue: UInt8) {
+            self.rawValue = rawValue
+        }
+
+        package static let none: Flags = Flags(rawValue: 0)
+        package static let all: Flags = Flags(rawValue: 0xFF)
+
+        package static var transactional: Self {
+            .init(rawValue: 1 << 0)
+        }
+
+        package static var removable: Self {
+            .init(rawValue: 1 << 1)
+        }
+
+        package static var invalidatable: Self {
+            .init(rawValue: 1 << 2)
+        }
+
+        package static var scrapeable: Self {
+            .init(rawValue: 1 << 3)
+        }
+
+        package static var secondary: Self {
+            .init(rawValue: 1 << 0)
+        }
+    }
+}
+
+package struct AttributeInfo {
+    package var type: UnsafePointer<AttributeType>
+    package var body: UnsafeRawPointer
+}
+
+package struct AttributeType {
+    package var typeID: Metadata
+    package var valueTypeID: Metadata
+}
 
 extension AnyAttribute {
     package static var `nil`: AnyAttribute { AnyAttribute(rawValue: 0x2) }
@@ -30,7 +77,11 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func createIndirect() -> AnyAttribute {
+    package var subgraph: Subgraph {
+        preconditionFailure("#39")
+    }
+
+    package var subgraph2: Subgraph? {
         preconditionFailure("#39")
     }
 }
@@ -52,7 +103,7 @@ extension AnyAttribute {
         preconditionFailure("#39")
     }
 
-    package func setFlags(_ newFlags: Flags, mask: Flags) {
+    package func setFlags(_ newFlags: Subgraph.Flags, mask: Subgraph.Flags) {
         preconditionFailure("#39")
     }
 
@@ -140,6 +191,10 @@ extension AnyOptionalAttribute {
         get { preconditionFailure("#39") }
         nonmutating set { preconditionFailure("#39") }
     }
+
+    package init(_ attribute: AnyAttribute?) {
+        preconditionFailure("#39")
+    }
 }
 
 extension Graph {
@@ -158,6 +213,15 @@ extension Subgraph {
     }
 
     package func update(flags: AnyAttribute.Flags) {
+        preconditionFailure("#39")
+    }
+}
+
+extension Rule where Self: Hashable {
+    package func cachedValue(
+        options: OAGCachedValueOptions = [],
+        owner: AnyAttribute?
+    ) -> Value {
         preconditionFailure("#39")
     }
 }

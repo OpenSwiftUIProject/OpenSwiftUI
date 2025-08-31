@@ -1,5 +1,5 @@
 {
-  "originHash" : "f229c995beae82593994793abdd0fb2239bd44bded0c9672a73e95e1a2baecf5",
+  "originHash" : "2432e3fbb351913595eab925a316b1813a5e4b112660f54286c5b94f893e6fd1",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "4aa30d65aae91b8cd3aa7e6b5910d281a77e9af0"
+        "revision" : "00977e88d14f98c248bf1c8370855ad6ecc35977"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "cc5a58ccf7720bf096fc487c2a518ae1c5139c4d"
+        "revision" : "d0a060c05377350dea911601dc5416738c000541"
       }
     },
     {
@@ -26,6 +26,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "1a1b9ad092ed373a3c94df7b589e3e099da93699"
+      }
+    },
+    {
+      "identity" : "openobservation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1eb29e56b75f86cf7ee1593e315bafc1ab07be3d"
       }
     },
     {
@@ -44,6 +53,15 @@
       "state" : {
         "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
         "version" : "1.0.3"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
       }
     },
     {
