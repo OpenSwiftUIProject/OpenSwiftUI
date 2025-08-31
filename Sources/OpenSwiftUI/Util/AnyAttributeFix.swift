@@ -33,6 +33,14 @@ extension AnyAttribute {
     package func createIndirect() -> AnyAttribute {
         preconditionFailure("#39")
     }
+
+    package var subgraph: Subgraph {
+        preconditionFailure("#39")
+    }
+
+    package var subgraph2: Subgraph? {
+        preconditionFailure("#39")
+    }
 }
 
 extension AnyAttribute {

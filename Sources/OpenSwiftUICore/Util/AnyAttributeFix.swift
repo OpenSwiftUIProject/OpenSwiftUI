@@ -76,6 +76,14 @@ extension AnyAttribute {
     package func invalidateValue() {
         preconditionFailure("#39")
     }
+
+    package var subgraph: Subgraph {
+        preconditionFailure("#39")
+    }
+
+    package var subgraph2: Subgraph? {
+        preconditionFailure("#39")
+    }
 }
 
 extension AnyAttribute {
