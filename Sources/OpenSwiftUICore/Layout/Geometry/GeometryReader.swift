@@ -88,8 +88,11 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
                 safeAreaInsets: $safeAreaInsets,
                 seed: seed,
             )
-            // TODO: Observation
-            let content = view.content(proxy)
+            let content = withObservation {
+                $view.syncMainIfReferences { v in
+                    v.content(proxy)
+                }
+            }
             value = .init(root: .init(GeometryReaderLayout()), content: content)
         }
     }

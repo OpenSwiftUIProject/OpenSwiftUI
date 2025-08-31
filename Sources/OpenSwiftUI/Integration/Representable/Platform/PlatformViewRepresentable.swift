@@ -232,24 +232,25 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
             }
             if platformView == nil {
                 let host = ViewGraph.viewRendererHost
-                // TODO: StatefulRule.withObservation
-                Graph.withoutUpdate {
-                    let representableContext = PlatformViewRepresentableContext<Content>(
-                        coordinator: coordinator!,
-                        preferenceBridge: bridge,
-                        transaction: transaction,
-                        environmentStorage: .eager(environment)
-                    )
-                    representableContext.values.asCurrent {
-                        let provider = view.makeViewProvider(context: representableContext)
-                        let environment = environment.removingTracker()
-                        platformView = PlatformViewHost(
-                            provider,
-                            host: host,
-                            environment: environment,
-                            viewPhase: phase,
-                            importer: importer
+                withObservation {
+                    Graph.withoutUpdate {
+                        let representableContext = PlatformViewRepresentableContext<Content>(
+                            coordinator: coordinator!,
+                            preferenceBridge: bridge,
+                            transaction: transaction,
+                            environmentStorage: .eager(environment)
                         )
+                        representableContext.values.asCurrent {
+                            let provider = view.makeViewProvider(context: representableContext)
+                            let environment = environment.removingTracker()
+                            platformView = PlatformViewHost(
+                                provider,
+                                host: host,
+                                environment: environment,
+                                viewPhase: phase,
+                                importer: importer
+                            )
+                        }
                     }
                 }
             }

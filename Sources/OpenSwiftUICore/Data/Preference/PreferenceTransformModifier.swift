@@ -88,7 +88,7 @@ extension PreferencesOutputs {
     }
 }
 
-// MARK: - PreferenceTransform [6.0.87]
+// MARK: - PreferenceTransform [6.5.4]
 
 private struct PreferenceTransform<K>: Rule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
     @Attribute var transform: (inout K.Value) -> Void
@@ -97,8 +97,9 @@ private struct PreferenceTransform<K>: Rule, AsyncAttribute, CustomStringConvert
     var value: K.Value {
         var value = childValue ?? K.defaultValue
         $transform.syncMainIfReferences { transform in
-            // TODO: Observation support
-            transform(&value)
+            withObservation {
+                transform(&value)
+            }
         }
         return value
     }
