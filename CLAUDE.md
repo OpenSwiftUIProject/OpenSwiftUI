@@ -130,19 +130,37 @@ The Package.swift heavily uses environment variables for conditional compilation
 
 ### Critical Git Rules
 - **NEVER change branches** - The user manages branches through GitBulter
-- **ALWAYS commit to the specific branch** the user tells you, without changing HEAD
+- **NEVER run git commit commands** - The user commits through GitBulter GUI
 - **ALWAYS create pull requests** using `gh pr create` with the exact branch specified by the user
-- **DO NOT switch branches** when creating pull requests or commits
+- **DO NOT switch branches** when creating pull requests
 
 ### Commit Workflow
-1. Make changes on the current branch as instructed
-2. Commit changes only when explicitly asked by the user
-3. Use the exact branch name provided by the user for commits
+When asked to commit changes:
+1. **Generate a commit message** and provide it to the user
+2. **List the files to be committed** (specify if not all files)
+3. **Let the user commit through GitBulter GUI** - do not run git commit commands
+4. Wait for user confirmation before proceeding with any PR creation
+
+Example response when asked to commit:
+```
+Here's the commit message for you to use in GitBulter:
+
+"Add feature X to improve Y
+
+- Implemented new functionality
+- Updated tests
+- Fixed related issues"
+
+Files to commit:
+- src/feature.swift
+- tests/feature_test.swift
+```
 
 ### Pull Request Workflow
-1. Create PR using `gh pr create` from the specified branch
-2. Do not change HEAD or switch branches during PR creation
-3. Target the appropriate base branch as instructed
+1. Only create PR after user confirms the commit is done
+2. Use `gh pr create` from the specified branch
+3. Push using: `git push origin <branch-name>`
+4. Do not change HEAD or switch branches during PR creation
 
 ## Important Notes
 
