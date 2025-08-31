@@ -11,4 +11,5 @@ cd $REPO_ROOT
 Scripts/CI/opencoregraphics_setup.sh
 Scripts/CI/openattributegraph_setup.sh
 Scripts/CI/openrenderbox_setup.sh
+Scripts/CI/openobservation_setup.sh
 Scripts/CI/framework_setup.sh
