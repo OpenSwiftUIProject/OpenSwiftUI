@@ -266,7 +266,7 @@ private struct StatePropertyBox<Value>: DynamicPropertyBox {
                 signal: signal
             )
         }
-        let signalChanged = signal.changedValue()?.changed ?? false
+        let signalChanged = signal.changedValue(options: [])?.changed ?? false
         property._value = location!.updateValue
         property._location = location!
         return (signalChanged ? location!.wasRead : false) || locationChanged
