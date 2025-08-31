@@ -17,7 +17,7 @@ public import Combine
 /// you store in a view hierarchy. Create a state object in an ``App``,
 /// ``Scene``, or ``View`` by applying the `@StateObject` attribute to a
 /// property declaration and providing an initial value that conforms to the
-/// [ObservableObject](https://developer.apple.com/documentation/combine/observableobject)
+/// [ObservableObject](https://swiftpackageindex.com/openswiftuiproject/opencombine/main/documentation/opencombine/observableobject)
 /// protocol. Declare state objects as private to prevent setting them from a
 /// memberwise initializer, which can conflict with the storage management that
 /// OpenSwiftUI provides:
@@ -47,7 +47,7 @@ public import Combine
 /// > Note: If you need to store a value type, like a structure, string, or
 ///   integer, use the ``State`` property wrapper instead. Also use ``State``
 ///   if you need to store a reference type that conforms to the
-///   [Observable](https://developer.apple.com/documentation/observation/observable())
+///   [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable())
 ///   protocol. To learn more about Observation in OpenSwiftUI, see
 ///   <doc:Managing-model-data-in-your-app>.
 ///

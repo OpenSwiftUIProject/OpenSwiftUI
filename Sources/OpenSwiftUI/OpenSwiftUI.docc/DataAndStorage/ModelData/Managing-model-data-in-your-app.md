@@ -20,16 +20,15 @@ thanks to Observation. With Observation, a view in OpenSwiftUI can form
 dependencies on observable data models and update the UI when data changes.
 
 > Note:
-> [Observation](https://developer.apple.com/documentation/observation) support
-> in OpenSwiftUI is available starting with iOS 17, iPadOS 17, macOS 14,
-> tvOS 17, and watchOS 10. For information about adopting Observation in
+> [OpenObservation](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation) support
+> in OpenSwiftUI has no explicit availability limit. For information about adopting Observation in
 > existing apps, see
 > [Migrating from the Observable Object protocol to the Observable macro](https://developer.apple.com/documentation/swiftui/migrating-from-the-observable-object-protocol-to-the-observable-macro).
 
 ### Make model data observable
 
 To make data changes visible to OpenSwiftUI, apply the
-[Observable()](https://developer.apple.com/documentation/observation/observable())
+[Observable()](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable())
 macro to your data model. This macro generates code that adds observation
 support to your data model at compile time, keeping your data model code focused
 on the properties that store data. For example, the following code defines a
@@ -48,10 +47,10 @@ type to use for your data model, see
 [Choosing Between Structures and Classes](https://developer.apple.com/documentation/swift/choosing-between-structures-and-classes).
 
 > Important:
-> The [Observable()](https://developer.apple.com/documentation/observation/observable())
+> The [Observable()](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable())
 > macro, in addition to adding observation functionality, also conforms your
 > data model type to the
-> [Observable](https://developer.apple.com/documentation/observation/observable)
+> [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 > protocol, which serves as a signal to other APIs that your type supports
 > observation. Don’t apply the `Observable` protocol by itself to your data
 > model type, since that alone doesn’t add any observation functionality.
@@ -473,7 +472,7 @@ struct BookEditView: View {
 ```
 
 You can use the ``Bindable`` property wrapper on properties and variables to an
-[Observable](https://developer.apple.com/documentation/observation/observable)
+[Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 object. This includes global variables, properties that exists outside of
 OpenSwiftUI types, or even local variables. For example, you can create a
 `@Bindable` variable within a view’s ``View/body-swift.property``:

@@ -52,7 +52,7 @@ public import os
 ///
 /// You can also use `Environment` to get an observable object from a view's
 /// environment. The observable object must conform to the
-/// <doc://com.apple.documentation/documentation/Observation/Observable>
+/// [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 /// protocol, and your app must set the object in the environment using the
 /// the object itself or a key path.
 ///

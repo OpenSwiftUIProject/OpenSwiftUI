@@ -52,7 +52,7 @@
 /// `isPlaying` state.
 ///
 /// > Note: To create bindings to properties of a type that conforms to the
-/// [Observable](https://developer.apple.com/documentation/Observation/Observable)
+/// [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 /// protocol, use the ``Bindable`` property wrapper. For more information,
 /// see <doc:Migrating-from-the-observable-object-protocol-to-the-observable-macro>.
 @frozen

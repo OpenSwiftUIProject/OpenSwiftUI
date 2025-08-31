@@ -16,7 +16,7 @@ public import Combine
 ///
 /// Add the `@ObservedObject` attribute to a parameter of an OpenSwiftUI ``View``
 /// when the input is an
-/// [ObservableObject](https://developer.apple.com/documentation/combine/observableobject)
+/// [ObservableObject](https://swiftpackageindex.com/openswiftuiproject/opencombine/main/documentation/opencombine/observableobject)
 /// and you want the view to update when the object's published properties
 /// change. You typically do this to pass a ``StateObject`` into a subview.
 ///
@@ -57,13 +57,13 @@ public import Combine
 /// above example.
 ///
 /// > Note: Don't wrap objects conforming to the
-/// [Observable](https://developer.apple.com/documentation/Observation/Observable)
+/// [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 /// protocol with `@ObservedObject`. OpenSwiftUI automatically tracks dependencies
 /// to `Observable` objects used within body and updates dependent views when
 /// their data changes. Attempting to wrap an `Observable` object with
 /// `@ObservedObject` may cause a compiler error, because it requires that its
 /// wrapped object to conform to the
-/// [ObservableObject](https://developer.apple.com/documentation/combine/observableobject)
+/// [ObservableObject](https://swiftpackageindex.com/openswiftuiproject/opencombine/main/documentation/opencombine/observableobject)
 /// protocol.
 /// >
 /// > If the view needs a binding to a property of an `Observable` object in
