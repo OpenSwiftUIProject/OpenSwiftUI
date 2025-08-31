@@ -10,7 +10,15 @@ package import OpenAttributeGraphShims
 extension Subgraph {
     package func removeObserver(_ id: Int) {
         // TODO
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+    }
+}
+
+extension AnyAttribute {
+    package var subgraph2: Subgraph? {
+        // TODO
+        _openSwiftUIUnimplementedWarning()
+        return subgraph
     }
 }
 

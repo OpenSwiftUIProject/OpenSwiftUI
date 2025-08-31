@@ -3,9 +3,10 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by TraceEvent
 //  ID: 7DF024579E4FC31D4E92A33BBA0366D6 (SwiftUI?)
 
+import Foundation
 package import OpenAttributeGraphShims
 @_spi(OpenSwiftUI)
 package import OpenObservation
@@ -15,6 +16,24 @@ package import OpenObservation
 private struct ObservationEntry {
     let context: AnyObject
     var properties: Set<AnyKeyPath>
+
+    func union(_ entry: ObservationEntry) -> ObservationEntry {
+        ObservationEntry(context: context, properties: properties.union(entry.properties))
+    }
+}
+
+extension ObservationTracking._AccessList {
+    mutating func merge(_ other: ObservationTracking._AccessList) {
+        withUnsafeMutablePointer(to: &self) { ptr1 in
+            withUnsafePointer(to: other) { ptr2 in
+                let selfPtr = UnsafeMutableRawPointer(mutating: ptr1)
+                    .assumingMemoryBound(to: [ObjectIdentifier: ObservationEntry].self)
+                let otherPtr = UnsafeRawPointer(ptr2)
+                    .assumingMemoryBound(to: [ObjectIdentifier: ObservationEntry].self)
+                selfPtr.pointee.merge(otherPtr.pointee) { $0.union($1) }
+            }
+        }
+    }
 }
 
 // MARK: - ObservationGraphMutation
@@ -71,7 +90,7 @@ extension ObservationRegistrar {
     fileprivate static var invalidations: ThreadSpecific<[AnyWeakAttribute: (mutation: ObservationGraphMutation, accessList: ObservationTracking._AccessList)]> = .init([:])
 }
 
-// MARK: - Observation Utilities [WIP]
+// MARK: - Observation Utilities
 
 @inline(__always)
 package func _withObservation<T>(
@@ -121,7 +140,52 @@ private func installObservationSlow<T>(
     accessList: ObservationTracking._AccessList,
     attribute: Attribute<T>
 ) {
-    // TODO
+    guard let subgraph = attribute.identifier.subgraph2 else {
+        return
+    }
+    let weakViewGraph = WeakUncheckedSendable(ViewGraph.current)
+    let weakAttribute = AnyWeakAttribute(attribute.identifier)
+
+    var newAccessList = accessList
+    let removedValue = ObservationRegistrar.invalidations.value.removeValue(forKey: weakAttribute)
+    if let removedValue {
+        newAccessList.merge(removedValue.accessList)
+        removedValue.mutation.cancel()
+    }
+
+    let tracking = ObservationTracking(newAccessList)
+    let observerID = subgraph.addObserver {
+        let removedValue = ObservationRegistrar.invalidations.value.removeValue(forKey: weakAttribute)
+        if let removedValue {
+            removedValue.mutation.cancel()
+        }
+    }
+    let mutation = ObservationGraphMutation(
+        invalidatingMutation: InvalidatingGraphMutation(attribute: weakAttribute),
+        observationTracking: [tracking],
+        subgraphObservers: [(subgraph, observerID)]
+    )
+    ObservationRegistrar.invalidations.value[weakAttribute] = (mutation: mutation, accessList: newAccessList)
+    ObservationTracking._installTracking(
+        tracking,
+        willSet: { tracking in
+            guard subgraph.isValid else { return }
+            Update.ensure {
+                guard let attribute = weakAttribute.attribute,
+                      let viewGraph = weakViewGraph.value else {
+                    mutation.cancel()
+                    return
+                }
+                // TODO: transaction result
+                let _ = viewGraph.asyncTransaction(
+                    Transaction.current,
+                    mutation: mutation,
+                    style: Thread.isMainThread ? .immediate : .deferred,
+                )
+                // TODO: AGGraphAddTraceEvent
+            }
+        }
+    )
 }
 
 // MARK: - Rule + Observation
