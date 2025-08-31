@@ -7,21 +7,6 @@
 
 package import OpenAttributeGraphShims
 
-extension Subgraph {
-    package func removeObserver(_ id: Int) {
-        // TODO
-        _openSwiftUIUnimplementedWarning()
-    }
-}
-
-extension AnyAttribute {
-    package var subgraph2: Subgraph? {
-        // TODO
-        _openSwiftUIUnimplementedWarning()
-        return subgraph
-    }
-}
-
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
