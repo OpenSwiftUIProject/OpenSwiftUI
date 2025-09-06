@@ -42,6 +42,6 @@ public struct EmptyView: PrimitiveView {
 
     @available(OpenSwiftUI_v2_0, *)
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
-        0
+        inputs.options.contains(.isNonEmptyParent) ? 1 : 0
     }
 }
