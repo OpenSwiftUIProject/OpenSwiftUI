@@ -1,7 +1,6 @@
 //
-//  ObservationUtilTests.swift
+//  ObservationUtilsTests.swift
 //  OpenSwiftUICoreTests
-//
 
 import Testing
 import OpenAttributeGraphShims
@@ -38,11 +37,9 @@ struct ObservationUtilTests {
         #expect(accessList != nil)
     }
 
+    #if canImport(Darwin)
     @MainActor
-    @Test(
-        "_withObservation with attribute installation",
-        .disabled("retain a invalid ptr and cause crash. Investigate it later.") // TODO
-    )
+    @Test("_withObservation with attribute installation")
     func withObservationAttribute() {
         let model = TestModel()
         let viewGraph = ViewGraph(rootViewType: EmptyView.self)
@@ -86,7 +83,8 @@ struct ObservationUtilTests {
         #expect(outerResult == 50)
         #expect(outerAccessList != nil)
     }
-    
+    #endif
+
     @Test("ObservationRegistrar latestAccessLists tracking")
     func latestAccessListsTracking() {
         let model = TestModel()

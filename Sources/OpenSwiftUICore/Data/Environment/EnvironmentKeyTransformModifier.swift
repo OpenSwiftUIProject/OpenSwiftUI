@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for iOS 18.0
-//  Status: Blocked by Observation
+//  Status: Complete
 //  ID: 1DBD4F024EFF0E73A70DB6DD05D5B548 (SwiftUI)
 //  ID: E370275CDB55AC7AD9ACF0420859A9E8 (SwiftUICore)
 
@@ -63,14 +63,14 @@ private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute, CustomStri
     
     typealias Value = EnvironmentValues
     
-    // FIXME
     mutating func updateValue() {
         var (environment, environmentChanged) = _environment.changedValue()
         let keyPath = modifier.keyPath
         var newValue = environment[keyPath: keyPath]
         $modifier.syncMainIfReferences { modifier in
-            // TODO: Observation
-            modifier.transform(&newValue)
+            withObservation {
+                modifier.transform(&newValue)
+            }
         }
         guard !environmentChanged,
               let valueChanged = oldValue.map({ compareValues($0, newValue, mode: .equatableUnlessPOD) }), !valueChanged,

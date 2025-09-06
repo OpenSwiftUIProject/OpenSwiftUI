@@ -13,6 +13,8 @@ package typealias AttributeType = OpenSwiftUICore.AttributeType
 extension AnyAttribute {
     package static var `nil`: AnyAttribute { AnyAttribute(rawValue: 0x2) }
 
+    package static var currentWasModified: Bool { false }
+
     package var source: AnyAttribute? {
         get { preconditionFailure("#39") }
         nonmutating set { preconditionFailure("#39") }

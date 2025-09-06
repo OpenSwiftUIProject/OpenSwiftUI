@@ -136,10 +136,11 @@ The Package.swift heavily uses environment variables for conditional compilation
 
 ### Commit Workflow
 When asked to commit changes:
-1. **Generate a commit message** and provide it to the user
-2. **List the files to be committed** (specify if not all files)
-3. **Let the user commit through GitBulter GUI** - do not run git commit commands
-4. Wait for user confirmation before proceeding with any PR creation
+1. **Generate a commit message** and provide it to the user (formatted without extra spaces)
+2. **Save the commit message** to `.claude/tmp/commit-message.md` for easy copying
+3. **List the files to be committed** (specify if not all files)
+4. **Let the user commit through GitBulter GUI** - do not run git commit commands
+5. Wait for user confirmation before proceeding with any PR creation
 
 Example response when asked to commit:
 ```
@@ -154,6 +155,8 @@ Here's the commit message for you to use in GitBulter:
 Files to commit:
 - src/feature.swift
 - tests/feature_test.swift
+
+(Saved to .claude/tmp/commit-message.md)
 ```
 
 ### Pull Request Workflow
