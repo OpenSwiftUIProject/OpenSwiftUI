@@ -37,6 +37,7 @@ struct ObservationUtilTests {
         #expect(accessList != nil)
     }
 
+    #if canImport(Darwin)
     @MainActor
     @Test("_withObservation with attribute installation")
     func withObservationAttribute() {
@@ -82,7 +83,8 @@ struct ObservationUtilTests {
         #expect(outerResult == 50)
         #expect(outerAccessList != nil)
     }
-    
+    #endif
+
     @Test("ObservationRegistrar latestAccessLists tracking")
     func latestAccessListsTracking() {
         let model = TestModel()
