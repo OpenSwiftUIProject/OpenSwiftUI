@@ -2,13 +2,14 @@
 //  TupleView.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 79611CB2B7848ECB3D9EC1F26B13F28F (SwiftUI)
 //  ID: DE681AB5F1A334FA14ECABDE70CB1955 (SwiftUICore)
 
 import OpenAttributeGraphShims
 
-// MARK: - TupleView [6.4.41]
+// MARK: - TupleView
 
 /// A View created from a swift tuple of View values.
 @available(OpenSwiftUI_v1_0, *)
@@ -45,21 +46,21 @@ public struct TupleView<T>: PrimitiveView, View {
         var makeList = MakeList(
             view: view,
             inputs: inputs,
-            index: 0,
-            offset: 0,
-            wrapChildren: inputs.options.contains(.tupleViewCreatesUnaryElements),
-            outputs: []
+            wrapChildren: inputs.options.contains(.tupleViewCreatesUnaryElements)
         )
         if inputs.options.contains(.tupleViewCreatesUnaryElements),
            makeList.inputs.options.contains(.tupleViewCreatesUnaryElements) {
             makeList.inputs.options.subtract([.requiresSections, .tupleViewCreatesUnaryElements])
+        }
+        guard !contentTypes.isEmpty else {
+            return _ViewListOutputs.concat([], inputs: makeList.inputs)
         }
         for (index, conformance) in contentTypes {
             makeList.index = index
             makeList.offset = tupleType.elementOffset(at: index)
             conformance.visitType(visitor: &makeList)
         }
-        return _ViewListOutputs.concat(makeList.outputs, inputs: inputs)
+        return _ViewListOutputs.concat(makeList.outputs, inputs: makeList.inputs)
     }
 
     @available(OpenSwiftUI_v2_0, *)
@@ -70,7 +71,7 @@ public struct TupleView<T>: PrimitiveView, View {
         if inputs.options.contains(.tupleViewCreatesUnaryElements) {
             return contentTypes.count
         } else {
-            var countViews = CountViews(inputs: inputs, result: 0)
+            var countViews = CountViews(inputs: inputs)
             for contentType in contentTypes {
                 contentType.1.visitType(visitor: &countViews)
             }
@@ -94,10 +95,10 @@ public struct TupleView<T>: PrimitiveView, View {
     private struct MakeList: ViewTypeVisitor {
         var view: _GraphValue<TupleView<T>>
         var inputs: _ViewListInputs
-        var index: Int
-        var offset: Int
+        var index: Int = .zero
+        var offset: Int = .zero
         let wrapChildren: Bool
-        var outputs: [_ViewListOutputs]
+        var outputs: [_ViewListOutputs] = []
 
         mutating func visit<V>(type: V.Type) where V : View {
             inputs.base.pushStableIndex(index)
@@ -114,7 +115,7 @@ public struct TupleView<T>: PrimitiveView, View {
 
     private struct CountViews: ViewTypeVisitor {
         var inputs: _ViewListCountInputs
-        var result: Int?
+        var result: Int? = .zero
 
         mutating func visit<V>(type: V.Type) where V : View {
             guard let oldResult = result,
