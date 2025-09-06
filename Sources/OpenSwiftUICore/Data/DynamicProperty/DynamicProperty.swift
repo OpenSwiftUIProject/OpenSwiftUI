@@ -309,8 +309,11 @@ private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> 
 extension StaticBody: StatefulRule {
     typealias Value = Accessor.Body
 
+    // Audited with 6.5.4
     func updateValue() {
-        accessor.updateBody(of: container, changed: true)
+        withObservation {
+            accessor.updateBody(of: container, changed: true)
+        }
     }
     
     static var flags: Flags { ThreadFlags.value }
@@ -370,19 +373,26 @@ private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>
 extension DynamicBody: StatefulRule {
     typealias Value = Accessor.Body
 
+    // Audited with 6.5.4
     mutating func updateValue() {
         if resetSeed != phase.resetSeed {
             links.reset()
             resetSeed = phase.resetSeed
         }
-        var (container, containerChanged) = $container.changedValue()
-        let linkChanged = withUnsafeMutablePointer(to: &container) {
-            links.update(container: $0, phase: phase)
+        var (container, changed) = $container.changedValue()
+        withObservation {
+            withUnsafeMutablePointer(to: &container) {
+                if links.update(container: $0, phase: phase) {
+                    changed = true
+                }
+            }
+            accessor.updateBody(
+                of: container,
+                changed: changed || !hasValue || AnyAttribute.currentWasModified
+            )
         }
-        let changed = linkChanged || containerChanged || !hasValue
-        accessor.updateBody(of: container, changed: changed)
     }
-    
+
     static var flags: Flags { ThreadFlags.value }
 }
 

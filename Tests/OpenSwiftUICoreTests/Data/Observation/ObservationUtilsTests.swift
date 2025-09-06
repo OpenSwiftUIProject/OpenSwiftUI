@@ -1,7 +1,6 @@
 //
-//  ObservationUtilTests.swift
+//  ObservationUtilsTests.swift
 //  OpenSwiftUICoreTests
-//
 
 import Testing
 import OpenAttributeGraphShims
@@ -39,10 +38,7 @@ struct ObservationUtilTests {
     }
 
     @MainActor
-    @Test(
-        "_withObservation with attribute installation",
-        .disabled("retain a invalid ptr and cause crash. Investigate it later.") // TODO
-    )
+    @Test("_withObservation with attribute installation")
     func withObservationAttribute() {
         let model = TestModel()
         let viewGraph = ViewGraph(rootViewType: EmptyView.self)

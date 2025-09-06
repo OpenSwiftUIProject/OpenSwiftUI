@@ -1,10 +1,10 @@
 //
-//  ObservationUtil.swift
+//  ObservationUtils.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Blocked by TraceEvent
-//  ID: 7DF024579E4FC31D4E92A33BBA0366D6 (SwiftUI?)
+//  ID: 7DF024579E4FC31D4E92A33BBA0366D6 (SwiftUICore)
 
 import Foundation
 package import OpenAttributeGraphShims
