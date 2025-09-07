@@ -510,10 +510,6 @@ extension GraphicsContext {
 
 package protocol _DisplayList_AnyEffectAnimation {}
 
-public struct ContentTransition {
-    package struct State {}
-}
-
 package struct GraphicsImage: Equatable {
     package init() {}
 }
