@@ -6,7 +6,7 @@
 //  Status: Complete
 
 import OpenAttributeGraphShims
-package import OpenSwiftUI_SPI
+package import OpenCoreGraphicsShims
 
 // MARK: - Transition
 
