@@ -72,7 +72,7 @@ package enum Update {
             Signpost.viewHost.traceEvent(
                 type: .begin,
                 object: trackHost,
-                "",
+                "ViewHost: (%p) update began PlatformHost [ %p ]",
                 [
                     0,
                     UInt(bitPattern: Unmanaged.passUnretained(trackHost).toOpaque()),
@@ -89,7 +89,7 @@ package enum Update {
             Signpost.viewHost.traceEvent(
                 type: .end,
                 object: trackHost,
-                "",
+                "ViewHost: (%p) update ended PlatformHost [ %p ]",
                 [
                     0,
                     UInt(bitPattern: Unmanaged.passUnretained(trackHost).toOpaque()),
