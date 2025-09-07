@@ -11,6 +11,7 @@
 public import OpenSwiftUICore
 public import AppKit
 import OpenSwiftUI_SPI
+import COpenSwiftUI
 
 /// An AppKit view that hosts a SwiftUI view hierarchy.
 ///
@@ -95,11 +96,19 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         }
     }
 
+    private var displayLink: DisplayLink?
+
     package var externalUpdateCount: Int = .zero
 
     private var canAdvanceTimeAutomatically = true
 
     private var needsDeferredUpdate = false
+
+    package var updateTimer: Timer?
+
+    package var lastUpdateTime: Time = .zero
+
+    package var nextTimerTime: Time?
 
     private var isPerformingLayout: Bool {
         if renderingPhase == .rendering {
@@ -196,10 +205,26 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             context.allowsImplicitAnimation = false
             isUpdating = true
             // TODO
-            render(targetTimestamp: Time())
+            render(targetTimestamp: nil)
             // TODO
             isUpdating = false
             // TODO
+            if needsDeferredUpdate {
+                if !viewGraph.updateRequiredMainThread {
+                    if isLinkedOnOrAfter(.v3) {
+                        if startAsyncRendering() {
+                            needsDeferredUpdate = false
+                        }
+                    }
+                }
+            }
+            if needsDeferredUpdate {
+                onNextMainRunLoop { [weak self] in
+                    guard let self else { return }
+                    setNeedsUpdate()
+                }
+                needsDeferredUpdate = false
+            }
         }
     }
 
@@ -248,16 +273,125 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     public final func _viewDebugData() -> [_ViewDebug.Data] { [] }
 
     func clearUpdateTimer() {
-        // TODO
+        guard Thread.isMainThread else {
+            return
+        }
+        updateTimer?.invalidate()
+        updateTimer = nil
+        nextTimerTime = nil
+    }
+
+    private func startAsyncRendering() -> Bool {
+        if let displayLink {
+            DisplayLinkSetNextTime(displayLink, .zero)
+            return true
+        }
+        guard let window,
+              let screen = window.screen
+        else {
+            return false
+        }
+        
+        // TODO: screen.displayID
+        let displayID = CGMainDisplayID()
+         
+        let link = DisplayLinkCreate(displayID) { [weak self] link, seconds in
+            guard let self else { return }
+            Update.locked {
+                guard let displayLink = self.displayLink, displayLink == link else {
+                    return
+                }
+                let targetTimestamp = Time(seconds: seconds)
+                self.advanceTime(with: targetTimestamp)
+                let nextRenderTime = self.renderAsync(targetTimestamp: nil)
+                if let nextRenderTime {
+                    if nextRenderTime.seconds.isFinite && !self.viewGraph.updateRequiredMainThread {
+                        let interval = max(nextRenderTime - self.currentTimestamp, 1e-6)
+                        DisplayLinkSetNextTime(link, interval + seconds)
+                    } else {
+                        DisplayLinkDestroy(link)
+                        self.displayLink = nil
+
+                        let targetTime: Time
+                        if nextRenderTime.seconds.isFinite {
+                            targetTime = Time(seconds: max(nextRenderTime - self.currentTimestamp, 1e-6))
+                        } else {
+                            targetTime = .zero
+                        }
+                        onNextMainRunLoop { [weak self] in
+                            guard let self else { return }
+                            requestUpdate(after: targetTime.seconds)
+                        }
+                    }
+                    CATransaction.flush()
+                } else {
+                    DisplayLinkDestroy(link)
+                    self.displayLink = nil
+                    onNextMainRunLoop { [weak self] in
+                        guard let self else { return }
+                        requestUpdate(after: .zero)
+                    }
+                }
+            }
+        }
+        displayLink = link
+        if let displayLink {
+            DisplayLinkSetNextTime(displayLink, .zero)
+        }
+        return displayLink != nil
     }
 
     func cancelAsyncRendering() {
-        // TODO    
+        if let displayLink {
+            DisplayLinkDestroy(displayLink)
+            self.displayLink = nil
+            setNeedsUpdate()
+        }
+    }
+
+    package func advanceTime(with time: Time) {
+        if lastUpdateTime.seconds == 0.0 || time < lastUpdateTime {
+            lastUpdateTime = time
+            return
+        }
+
+        let timeDelta = time.seconds - lastUpdateTime.seconds
+
+        var timeScaleFactor = 1.0
+
+        if NSEvent.modifierFlags.contains(.shift) {
+            if UserDefaults.standard.bool(forKey: "NSAnimationSlowMotionOnShift") {
+                timeScaleFactor = 10.0
+            }
+        }
+
+        let scaledDelta = timeDelta / timeScaleFactor
+
+        currentTimestamp = Time(seconds: currentTimestamp.seconds + scaledDelta)
+
+        lastUpdateTime = time
     }
 
     package func makeViewDebugData() -> Data? {
         Update.ensure {
             _ViewDebug.serializedData(viewGraph.viewDebugData())
+        }
+    }
+
+    func setUpdateTimer(delay: Double) {
+        let delay = max(delay, 0.1)
+        cancelAsyncRendering()
+        let updateTime = currentTimestamp + delay
+        guard updateTime < (nextTimerTime ?? .infinity) else {
+            return
+        }
+        updateTimer?.invalidate()
+        nextTimerTime = updateTime
+        updateTimer = withDelay(delay) { [weak self] in
+            guard let self else { return }
+            updateTimer = nil
+            nextTimerTime = nil
+            setNeedsUpdate()
         }
     }
 
@@ -353,9 +487,34 @@ extension NSHostingView: ViewRendererHost {
         }
     }
 
-    package func requestUpdate(after: Double) {
-        // TODO
-        setNeedsUpdate()
+    package func requestUpdate(after delay: Double) {
+        if Thread.isMainThread {
+            Update.locked {
+                cancelAsyncRendering()
+            }
+
+            var adjustedDelay = delay
+
+            if NSEvent.modifierFlags.contains(.shift),
+               UserDefaults.standard.bool(forKey: "NSAnimationSlowMotionOnShift") {
+                adjustedDelay *= 10.0
+            }
+
+            if adjustedDelay >= 0.25 {
+                setUpdateTimer(delay: adjustedDelay)
+            } else if isUpdating {
+                needsDeferredUpdate = true
+            } else {
+                setNeedsUpdate()
+            }
+
+            // TODO: Notify delegate
+        } else {
+            onNextMainRunLoop { [weak self] in
+                guard let self else { return }
+                requestUpdate(after: delay)
+            }
+        }
     }
 }
 
