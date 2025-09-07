@@ -6,8 +6,8 @@
 //  WIP
 
 package enum GraphicsFilter {
-    // case blur(BlurStyle)
-    // case variableBlur(VariableBlurStyle)
+    case blur(BlurStyle)
+    case variableBlur(VariableBlurStyle)
     case averageColor
     // case shadow(ResolvedShadowStyle)
     case projection(ProjectionTransform)
@@ -36,10 +36,6 @@ package enum GraphicsFilter {
             self.amount = amount
             self.bias = bias
         }
-        
-        package static func == (lhs: GraphicsFilter.ColorMonochrome, rhs: GraphicsFilter.ColorMonochrome) -> Bool {
-            lhs.color == rhs.color && lhs.amount == rhs.amount && lhs.bias == rhs.bias
-        }
     }
 
     package struct Curve: Equatable {
@@ -61,10 +57,6 @@ package enum GraphicsFilter {
             self.curve = curve
             self.amount = amount
         }
-        
-        package static func == (a: GraphicsFilter.LuminanceCurve, b: GraphicsFilter.LuminanceCurve) -> Bool {
-            a.curve == b.curve && a.amount == b.amount
-        }
     }
 
     package struct ColorCurves: Equatable {
@@ -78,10 +70,6 @@ package enum GraphicsFilter {
             self.greenCurve = greenCurve
             self.blueCurve = blueCurve
             self.opacityCurve = opacityCurve
-        }
-        
-        package static func == (a: GraphicsFilter.ColorCurves, b: GraphicsFilter.ColorCurves) -> Bool {
-            a.redCurve == b.redCurve && a.greenCurve == b.greenCurve && a.blueCurve == b.blueCurve && a.opacityCurve == b.opacityCurve
         }
     }
 
@@ -98,6 +86,7 @@ package enum GraphicsFilter {
 
 package enum GraphicsBlendMode: Equatable {
     case blendMode(GraphicsContext.BlendMode)
+
     case caFilter(AnyObject)
     
     package init(_ mode: BlendMode) {
@@ -128,6 +117,7 @@ package enum GraphicsBlendMode: Equatable {
     }
 
     package static let normal: GraphicsBlendMode = .blendMode(.normal)
+
     package static func == (lhs: GraphicsBlendMode, rhs: GraphicsBlendMode) -> Bool {
         switch (lhs, rhs) {
             case (.blendMode(let lhs), .blendMode(let rhs)): lhs == rhs

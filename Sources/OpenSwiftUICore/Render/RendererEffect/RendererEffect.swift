@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 49800242E3DD04CB91F7CE115272DDC3 (SwiftUICore)
 
 package import Foundation
@@ -236,17 +236,19 @@ private struct RendererEffectDisplayList<Effect>: Rule, AsyncAttribute, Scrapeab
     }
 }
 
-// MARK: - RendererEffect conformances [TODO]
+// MARK: - GraphicsFilter + RendererEffect
 
 extension GraphicsFilter: RendererEffect {
     package func effectValue(size: CGSize) -> DisplayList.Effect {
-        _openSwiftUIUnimplementedFailure()
+        .filter(self)
     }
 }
 
+// MARK: - GraphicsBlendMode + RendererEffect
+
 extension GraphicsBlendMode: RendererEffect {
     package func effectValue(size: CGSize) -> DisplayList.Effect {
-        _openSwiftUIUnimplementedFailure()
+        .blendMode(self)
     }
 }
 
