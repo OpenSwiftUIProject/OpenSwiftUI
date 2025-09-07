@@ -433,6 +433,14 @@ extension DisplayList {
     }
 }
 
+extension _ViewInputs {
+    @inline(__always)
+    var displayListOptions: DisplayList.Options {
+        get { self[DisplayList.Options.self] }
+        set { self[DisplayList.Options.self] = newValue }
+    }
+}
+
 extension PreferencesInputs {
     @inline(__always)
     package var requiresDisplayList: Bool {
