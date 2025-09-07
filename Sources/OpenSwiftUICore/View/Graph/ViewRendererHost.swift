@@ -59,7 +59,7 @@ extension ViewRendererHost {
         Signpost.viewHost.traceEvent(
             type: .event,
             object: self,
-            "",
+            "ViewHost: (%p) initialized PlatformHost [ %p ]",
             [
                 viewGraph.graph.graphIdentity(),
                 UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
@@ -74,7 +74,7 @@ extension ViewRendererHost {
         Signpost.viewHost.traceEvent(
             type: .event,
             object: self,
-            "",
+            "ViewHost: (%p) invalidated PlatformHost [ %p ]",
             [
                 viewGraph.graph.graphIdentity(),
                 UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
