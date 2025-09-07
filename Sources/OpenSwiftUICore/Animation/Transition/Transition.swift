@@ -298,6 +298,13 @@ public struct TransitionProperties: Sendable {
 
 // MARK: - IdentityTransition
 
+@available(OpenSwiftUI_v1_0, *)
+extension AnyTransition {
+    /// A transition that returns the input view, unmodified, as the output
+    /// view.
+    public static let identity: AnyTransition = .init(IdentityTransition())
+}
+
 @available(OpenSwiftUI_v5_0, *)
 extension Transition where Self == IdentityTransition {
     /// A transition that returns the input view, unmodified, as the output
