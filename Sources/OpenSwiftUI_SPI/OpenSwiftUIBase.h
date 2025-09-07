@@ -68,6 +68,12 @@
 # define OPENSWIFTUI_SWIFT_NAME(_name)
 #endif
 
+#if __has_attribute(swift_wrapper)
+#define OPENSWIFTUI_SWIFT_STRUCT __attribute__((swift_wrapper(struct)))
+#else
+#define OPENSWIFTUI_SWIFT_STRUCT
+#endif
+
 #define OPENSWIFTUI_ENUM CF_ENUM
 #define OPENSWIFTUI_CLOSED_ENUM CF_CLOSED_ENUM
 #define OPENSWIFTUI_OPTIONS CF_OPTIONS
