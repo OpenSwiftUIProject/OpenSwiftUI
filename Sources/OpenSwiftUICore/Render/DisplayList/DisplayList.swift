@@ -433,6 +433,14 @@ extension DisplayList {
     }
 }
 
+extension _ViewInputs {
+    @inline(__always)
+    var displayListOptions: DisplayList.Options {
+        get { self[DisplayList.Options.self] }
+        set { self[DisplayList.Options.self] = newValue }
+    }
+}
+
 extension PreferencesInputs {
     @inline(__always)
     package var requiresDisplayList: Bool {
@@ -506,7 +514,23 @@ public struct ContentTransition {
     package struct State {}
 }
 
-package struct GraphicsImage {}
+package struct GraphicsImage: Equatable {
+    package init() {}
+}
+
+extension GraphicsImage: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        // GraphicsImage is currently empty, no fields to encode
+    }
+    
+    package init(from decoder: inout ProtobufDecoder) throws {
+        // GraphicsImage is currently empty, skip all fields
+        while let field = try decoder.nextField() {
+            try decoder.skipField(field)
+        }
+        self = GraphicsImage()
+    }
+}
 package struct ResolvedShadowStyle {}
 
 package struct StyledTextContentView {}

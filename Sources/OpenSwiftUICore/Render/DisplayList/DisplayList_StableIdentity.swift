@@ -101,7 +101,6 @@ extension _ViewInputs {
     }
 
     package func pushIdentity(_ identity: _DisplayList_Identity) {
-        
         guard base.needsStableDisplayListIDs else {
             return
         }
