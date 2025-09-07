@@ -7,14 +7,7 @@ import OpenSwiftUITestsSupport
 
 @MainActor
 struct AnimationCompletionCompatibilityTests {
-    @Test(.disabled {
-        #if os(macOS)
-        // FIXME: macOS Animation is not supported yet
-        true
-        #else
-        false
-        #endif
-    })
+    @Test
     func logicalAndRemovedComplete() async throws {
         @MainActor
         enum Helper {
@@ -39,28 +32,30 @@ struct AnimationCompletionCompatibilityTests {
                         } completion: {
                             Helper.values.append(1)
                             confirmation()
+                            if Helper.values.count == 2 {
+                                continuation.resume()
+                            }
                         }
                         withAnimation(animation, completionCriteria: .removed) {
                             scale = 2.0
                         } completion: {
                             Helper.values.append(2)
                             confirmation()
-                            continuation.resume()
+                            if Helper.values.count == 2 {
+                                continuation.resume()
+                            }
                         }
                     }
             }
         }
-        // Sometimes CI will fail for this test
-        await withKnownIssue(isIntermittent: true) {
-            try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
-                PlatformHostingController(
-                    rootView: ContentView(
-                        confirmation: confirmation,
-                        continuation: continuation
-                    )
+        try await triggerLayoutWithWindow(expectedCount: 2) { confirmation, continuation in
+            PlatformHostingController(
+                rootView: ContentView(
+                    confirmation: confirmation,
+                    continuation: continuation
                 )
-            }
-            #expect(Helper.values == [1, 2])
+            )
         }
+        #expect(Helper.values == [1, 2])
     }
 }
