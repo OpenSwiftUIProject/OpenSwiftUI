@@ -4,7 +4,7 @@
 //
 //  Status: Complete for iOS
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -21,7 +21,7 @@ class TestingAppDelegate: DelegateBaseClass, PlatformApplicationDelegate {
 
     static var application: PlatformApplication?
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
         true
     }

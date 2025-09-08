@@ -2,7 +2,7 @@
 //  UIHostingViewBaseTests.swift
 //  OpenSwiftUICoreTests
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import Foundation
 import Testing
 @testable import OpenSwiftUI

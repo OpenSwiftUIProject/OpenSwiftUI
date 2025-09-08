@@ -2,7 +2,7 @@
 //  CAFrameRateRangeUtilTests.swift
 //  OpenSwiftUICoreTests
 
-#if os(iOS) && canImport(QuartzCore)
+#if (os(iOS) || os(visionOS)) && canImport(QuartzCore)
 import Testing
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore

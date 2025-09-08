@@ -10,7 +10,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS && OPENSWIFTUI_LINK_COREUI
+#if (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI
 
 #import <UIKit/UIKit.h>
 #import <CoreUI/CUITypes.h>
@@ -21,6 +21,6 @@ CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom);
 OPENSWIFTUI_EXPORT
 CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom);
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS && OPENSWIFTUI_LINK_COREUI */
+#endif /* (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI */
 
 #endif /* CoreUI_UIUserInterfaceIdiom_h */

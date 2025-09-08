@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: A513612C07DFA438E70B9FA90719B40D (SwiftUI)
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformView = UIView
 typealias PlatformViewController = UIViewController

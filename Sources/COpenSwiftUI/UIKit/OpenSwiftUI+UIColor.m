@@ -7,7 +7,7 @@
 
 #import "OpenSwiftUI+UIColor.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 
 BOOL _UIColorDependsOnTraitCollection(UIColor *color) {
     static IMP UIColor_imp = nil;

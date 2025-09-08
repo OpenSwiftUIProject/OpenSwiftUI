@@ -6,7 +6,7 @@
 //  Status: Blocked by makePreferenceWriter & UIKitAnimationBridge
 //  ID: F0196C17270D74A1F1A35F1926215FB3 (SwiftUI)
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 
 public import UIKit
 public import OpenSwiftUICore

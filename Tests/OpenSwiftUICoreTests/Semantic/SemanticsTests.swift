@@ -42,7 +42,7 @@ struct SemanticsTests {
     @Test
     func semanticsIsLinkedOnOrAfterAndIsDeployedOnOrAfter() {
         // This is currently tied with the toolchain's xctest binary
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         #if compiler(<6.2) && compiler(>=6.1)
         // Path: /Applications/Xcode-16.3.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
         // SDK version: 18.4

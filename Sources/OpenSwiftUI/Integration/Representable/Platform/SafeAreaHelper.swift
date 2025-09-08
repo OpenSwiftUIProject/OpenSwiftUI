@@ -15,7 +15,7 @@ protocol SafeAreaHelperDelegate: AnyObject {
     var shouldEagerlyUpdatesSafeArea: Bool { get }
 }
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformEdgeInsets = UIEdgeInsets
 #elseif os(macOS)

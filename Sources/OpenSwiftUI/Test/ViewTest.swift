@@ -8,7 +8,7 @@
 public import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 public import UIKit
 #endif
 
@@ -27,7 +27,7 @@ public protocol _ViewTest: _Test {
     func setTestView<V>(_ view: V) where V: View
 }
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 private enum Error: Swift.Error {
     case failedToReenableAnimations(String)
     case failedToDismissPresentation(String)
@@ -49,7 +49,7 @@ extension _ViewTest {
     public func tearDownTest() {
         resetEvents()
         setRootTestView(EmptyView())
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         func performRender() {
             withRenderOptions(.simple) {
                 render()
@@ -63,7 +63,7 @@ extension _ViewTest {
 
     @available(OpenSwiftUI_v4_4, *)
     public func tearDownTestWithError() throws {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         guard !UIView.areAnimationsEnabled else {
             return
         }
@@ -202,7 +202,7 @@ extension _ViewTest {
         _TestApp.setTestEnvironment(environment)
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     public var systemColorScheme: UIUserInterfaceStyle? {
         let view = _TestApp.host! as! UIView
         guard let window = view.window,

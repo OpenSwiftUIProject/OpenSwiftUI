@@ -6,7 +6,7 @@
 //  Status: Blocked by Color
 //  ID: 1246D37251EA3A918B392E2B95F8B7EF
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 
 private struct Switch: UIViewRepresentable {

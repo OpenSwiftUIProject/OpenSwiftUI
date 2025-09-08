@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 
 /// Options for how a hosting controller tracks its content’s size.
 @available(macOS, unavailable)

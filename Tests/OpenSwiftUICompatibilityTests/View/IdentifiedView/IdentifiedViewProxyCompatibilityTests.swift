@@ -3,7 +3,7 @@
 //  OpenSwiftUICompatibilityTests
 
 import Testing
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -11,7 +11,7 @@ import UIKit
 struct IdentifiedViewProxyCompatibilityTests {
     @Test
     func boundingRect() async {
-        #if os(iOS) && OPENSWIFTUI_COMPATIBILITY_TEST // FIXME: add _identified modifier
+        #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_COMPATIBILITY_TEST // FIXME: add _identified modifier
         let identifier = "Test"
         let hosting = UIHostingController(rootView: AnyView(EmptyView())._identified(by: identifier))
         await confirmation { @MainActor confirmation in

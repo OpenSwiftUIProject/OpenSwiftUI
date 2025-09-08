@@ -15,7 +15,7 @@ struct CoreFoundationPrivateTests {
         #elseif targetEnvironment(simulator)
             #expect(result == false)
         #else
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             #expect(result == true)
             #else
             #expect(result == false)

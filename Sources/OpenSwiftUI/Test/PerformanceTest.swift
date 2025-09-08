@@ -4,7 +4,7 @@
 //
 //  Status: Complete
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -29,7 +29,7 @@ extension __App {
 @available(OpenSwiftUI_v1_0, *)
 extension _BenchmarkHost {
     public func _started(test: _PerformanceTest) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         UIApplication.shared.startedTest(test.name)
         #elseif os(macOS)
         NSApplication.shared.startedTest(test.name)
@@ -38,7 +38,7 @@ extension _BenchmarkHost {
     }
 
     public func _finished(test: _PerformanceTest) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         UIApplication.shared.finishedTest(test.name)
         #elseif os(macOS)
         NSApplication.shared.finishedTest(test.name)
@@ -47,7 +47,7 @@ extension _BenchmarkHost {
     }
 
     public func _failed(test: _PerformanceTest) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         UIApplication.shared.failedTest(test.name, withFailure: nil)
         #elseif os(macOS)
         NSApplication.shared.failedTest(test.name, withFailure: nil)

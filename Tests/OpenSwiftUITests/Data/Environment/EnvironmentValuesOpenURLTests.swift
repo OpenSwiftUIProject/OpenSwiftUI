@@ -7,7 +7,7 @@ import Foundation
 import Testing
 
 struct EnvironmentValuesOpenURLTests {
-    #if os(iOS) || os(macOS) || os(tvOS)
+    #if os(iOS) || os(visionOS) || os(macOS) || os(tvOS)
     @Test
     func testOpenURLActionKey() {
         let value = OpenURLActionKey.defaultValue

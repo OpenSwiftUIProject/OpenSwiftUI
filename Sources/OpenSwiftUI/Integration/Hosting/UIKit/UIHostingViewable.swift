@@ -5,7 +5,7 @@
 //  Audited for iOS 18.0
 //  Status: Complete
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 public import Foundation
 import UIKit
 

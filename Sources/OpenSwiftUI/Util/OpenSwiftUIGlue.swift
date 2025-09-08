@@ -85,14 +85,14 @@ public func OpenSwiftUIGlue2Class() -> CoreGlue2.Type {
 @objc(OpenSwiftUIGlue2)
 #endif
 final public class OpenSwiftUIGlue2: CoreGlue2 {
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     override public final func initializeTestApp() {
         _PerformTestingSwizzles()
     }
     #endif
 
     override public final func isStatusBarHidden() -> Bool? {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         guard let scene = UIApplication.shared.connectedScenes.first,
               let windowScene = scene as? UIWindowScene
         else {
@@ -109,7 +109,7 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     }
 
     override public final func configureDefaultEnvironment(_: inout EnvironmentValues) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         #else
         // TODO
         #endif
@@ -120,7 +120,7 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     }
 
     override public final var systemDefaultDynamicTypeSize: DynamicTypeSize {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let size = _UIApplicationDefaultContentSizeCategory()
         let dynamicSize = DynamicTypeSize(size)
         return dynamicSize ?? .large

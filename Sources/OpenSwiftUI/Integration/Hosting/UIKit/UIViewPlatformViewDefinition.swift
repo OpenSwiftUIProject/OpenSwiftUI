@@ -2,17 +2,17 @@
 //  UIViewPlatformViewDefinition.swift
 //  OpenSwiftUI
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: A34643117F00277B93DEBAB70EC06971 (SwiftUI?)
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
 import OpenSwiftUI_SPI
 
-// MARK: - UIViewPlatformViewDefinition [TODO]
+// MARK: - UIViewPlatformViewDefinition [TODO] [6.0.87]
 
 final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override final class var system: PlatformViewDefinition.System { .uiView }
@@ -31,8 +31,18 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         return view
     }
 
+    // Audited for 6.5.4
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
-        _openSwiftUIUnimplementedFailure()
+        let cls: UIView.Type
+        if kind == .shape {
+            cls = _UIShapeHitTestingView.self
+        } else {
+            cls = kind.isContainer ? _UIInheritedView.self : _UIGraphicsView.self
+        }
+        let layer = type.init()
+        let view = _UIKitCreateCustomView(cls, layer)
+        initView(view, kind: kind)
+        return view
     }
 
     private static func initView(_ view: UIView, kind: PlatformViewDefinition.ViewKind) {
@@ -66,4 +76,64 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         layer.transform = .init(transform)
     }
 }
+
+// MARK: - _UIGraphicsView
+
+class _UIGraphicsView: UIView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func _shouldAnimateProperty(withKey key: String) -> Bool {
+        if layer.hasBeenCommitted {
+            super._shouldAnimateProperty(withKey: key)
+        } else {
+            false
+        }
+    }
+}
+
+// MARK: - _UIInheritedView
+
+final class _UIInheritedView: _UIGraphicsView {
+    override init(frame: CGRect) {
+        super.init(frame: frame)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard !UIViewIgnoresTouchEvents(self) else {
+            return nil
+        }
+        for subview in subviews.reversed() {
+            let convertedPoint = convert(point, to: subview)
+            let result = subview.hitTest(convertedPoint, with: event)
+            if let result {
+                return result
+            }
+        }
+        return nil
+    }
+}
+
+// MARK: - _UIShapeHitTestingView
+
+private final class _UIShapeHitTestingView: _UIGraphicsView {
+    var path: Path = .init()
+
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard super.hitTest(point, with: event) != nil, path.contains(point, eoFill: false) else {
+            return nil
+        }
+        return self
+    }
+}
+
 #endif

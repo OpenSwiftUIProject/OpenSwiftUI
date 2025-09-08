@@ -5,9 +5,16 @@
 //  Status: WIP
 //  Audited for 6.5.4
 
-#import "OpenSwiftUICoreView.h"
+#include "OpenSwiftUICoreView.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
+
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+#include <UIKit/UIKit.h>
+#include "Shims/UIKit/UIKit_Private.h"
+#else
+#include <AppKit/AppKit.h>
+#endif
 
 CALayer * OpenSwiftUICoreViewLayer(OpenSwiftUIViewSystem system, id view) {
     if (system == OpenSwiftUIViewSystemCALayer) {
@@ -16,5 +23,11 @@ CALayer * OpenSwiftUICoreViewLayer(OpenSwiftUIViewSystem system, id view) {
         return [view layer];
     }
 }
+
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+UIView * _UIKitCreateCustomView(Class class, CALayer *layer) {
+    return [[class alloc] _initWithLayer:layer];
+}
+#endif
 
 #endif /* OPENSWIFTUI_TARGET_OS_DARWIN */

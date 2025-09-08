@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: FAF0B683EB49BE9BABC9009857940A1E (SwiftUI)
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
@@ -381,8 +381,13 @@ extension _UIHostingView {
            let keyboardFrame,
            let window,
            keyboardFrame.size.isNonEmpty {
+            #if !os(visionOS)
             let convertedKeyboardFrame = convert(keyboardFrame, from: window.screen.coordinateSpace)
             bottomInset = convertedKeyboardFrame.minY - bounds.maxY
+            #else
+            // FIXME
+            bottomInset = .zero
+            #endif
         } else {
             bottomInset = 0.0
         }
@@ -647,6 +652,10 @@ extension _UIHostingView: TestHost {
 
 extension UIDevice {
     package var screenSize: CGSize {
+        #if os(visionOS)
+        // FIXME
+        return .zero
+        #else
         let screenBounds = UIScreen.main.bounds
         let screenWidth = screenBounds.width
         let screenHeight = screenBounds.height
@@ -668,6 +677,7 @@ extension UIDevice {
             finalHeight = screenHeight
         }
         return CGSize(width: finalWidth, height: finalHeight)
+        #endif
     }
 }
 

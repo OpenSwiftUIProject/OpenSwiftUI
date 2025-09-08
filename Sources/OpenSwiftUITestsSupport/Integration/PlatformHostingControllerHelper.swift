@@ -3,7 +3,7 @@
 //  OpenSwiftUITestsSupport
 
 #if canImport(Darwin)
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 package import UIKit
 #elseif os(macOS)
 package import AppKit
@@ -14,7 +14,7 @@ package import Testing
 extension PlatformViewController {
     // NOTE: Remember to withExtendedLifetime for window to ensure it is not deallocated duration animation or update.
     package func triggerLayout() {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let window = UIWindow(frame: CGRect(x: 0, y: 0, width: 100, height: 100))
         window.rootViewController = self
         window.makeKeyAndVisible()

@@ -7,14 +7,16 @@
 
 #include "OpenSwiftUITesting_Swizzles.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <objc/runtime.h>
 #include "UIKit/OpenSwiftUITesting_Swizzles+UIKit.h"
 
 void _PerformTestingSwizzles() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
+        #if !OPENSWIFTUI_TARGET_OS_VISION
         [UIScreen _performOpenSwiftUITestingOverrides];
+        #endif
         [UICollectionView _performOpenSwiftUITestingOverrides];
     });
 }
@@ -34,4 +36,4 @@ void _SwizzleMethods(Class class, SEL originalSelector, SEL swizzledSelector) {
     }
 }
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS */
+#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION */

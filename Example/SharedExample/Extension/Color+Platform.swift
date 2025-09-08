@@ -11,7 +11,7 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformColor = UIColor
 #elseif os(macOS)
@@ -21,7 +21,7 @@ typealias PlatformColor = NSColor
 
 extension Color {
     init(platformColor: PlatformColor) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         self.init(uiColor: platformColor)
         #elseif os(macOS)
         self.init(nsColor: platformColor)

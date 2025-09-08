@@ -18,7 +18,7 @@ struct DyldPrivateTests {
             version: .min
         )) == true)
         
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         if #unavailable(iOS 19) {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
@@ -87,7 +87,7 @@ struct DyldPrivateTests {
         #if targetEnvironment(macCatalyst)
             #expect(platform == .MACCATALYST)
         #elseif targetEnvironment(simulator)
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             #expect(platform == .IOSSIMULATOR)
             #elseif os(tvOS)
             #expect(platform == .TVOSSIMULATOR)
@@ -99,7 +99,7 @@ struct DyldPrivateTests {
             preconditionFailure("Unsupported Darwin simulator platform")
             #endif
         #else
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             #expect(platform == .IOS)
             #elseif os(macOS)
             #expect(platform == .MACOS)

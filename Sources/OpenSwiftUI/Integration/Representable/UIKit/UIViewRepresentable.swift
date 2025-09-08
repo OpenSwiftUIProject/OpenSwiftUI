@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 19642D833A8FE469B137699ED1426762 (SwiftUI)
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 
 public import UIKit
 public import OpenSwiftUICore

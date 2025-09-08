@@ -7,7 +7,7 @@
 
 #include "OpenSwiftUI+UIApplication.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <objc/runtime.h>
 
 UIContentSizeCategory _UIApplicationDefaultContentSizeCategory() {
@@ -24,4 +24,4 @@ UIContentSizeCategory _UIApplicationDefaultContentSizeCategory() {
     return func(UIApplication.class, selector);
 }
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS */
+#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION */

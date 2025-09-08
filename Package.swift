@@ -604,7 +604,7 @@ extension [SwiftSetting] {
     /// setting availability definitions, which was added in
     /// [swift#65218](https://github.com/swiftlang/swift/pull/65218).
     fileprivate static func availabilityMacroSettings(ignoreAvailability: Bool) -> Self {
-        let minimumVersion = "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0"
+        let minimumVersion = "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0, visionOS 1.0"
         return [
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_0:\(ignoreAvailability ? minimumVersion : "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_4:\(ignoreAvailability ? minimumVersion : "iOS 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2")"),
