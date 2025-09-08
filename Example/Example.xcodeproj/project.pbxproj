@@ -106,9 +106,11 @@
 				);
 				/Localized/Main.storyboard = (
 					ios,
+					xros,
 				);
 				SceneDelegate.swift = (
 					ios,
+					xros,
 				);
 			};
 			target = 27D49DF72BA604FB00F6E2E2 /* HostingExample */;
