@@ -812,7 +812,11 @@ final package class DisplayLink: NSObject {
         super.init()
         self.host = host
         #if os(visionOS)
-        // FIXME
+        // FIXME: setup a private SDK for visionOS build
+        link = window.screen.displayLink(
+            withTarget: self,
+            selector: #selector(displayLinkTimer(_:))
+        )
         #else
         link = window.screen.displayLink(
             withTarget: self,
