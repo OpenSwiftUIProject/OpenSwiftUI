@@ -235,9 +235,8 @@ public struct PeriodicTimelineSchedule: TimelineSchedule, Sendable {
         }
 
         public mutating func next() -> Date? {
-            var result = date
-            date += interval
-            return result
+            defer { date += interval }
+            return date
         }
     }
 
@@ -307,11 +306,13 @@ public struct EveryMinuteTimelineSchedule: TimelineSchedule, Sendable {
             guard let nextDate else {
                 return nil
             }
-            self.nextDate = Calendar.current.nextDate(
-                after: nextDate,
-                matching: Self.zeroSecondComponents,
-                matchingPolicy: .nextTime
-            )
+            defer {
+                self.nextDate = Calendar.current.nextDate(
+                    after: nextDate,
+                    matching: Self.zeroSecondComponents,
+                    matchingPolicy: .nextTime
+                )
+            }
             return nextDate
         }
     }

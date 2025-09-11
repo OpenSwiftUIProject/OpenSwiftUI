@@ -7,90 +7,62 @@ import Foundation
 
 struct TimelineScheduleTests {
     @Test
-    func periodicTimelineScheduleEntries() {
+    func periodicTimelineScheduleEntries() throws {
         let startDate = Date(timeIntervalSince1970: 0)
         let interval: TimeInterval = 5.0
         
         let schedule = PeriodicTimelineSchedule(from: startDate, by: interval)
-        let entries = schedule.entries(from: Date(timeIntervalSince1970: 12), mode: TimelineScheduleMode.normal)
+        let entries = schedule.entries(from: Date(timeIntervalSince1970: 12), mode: .normal)
         
         var iterator = entries.makeIterator()
         
-        // First entry should be aligned to a boundary
-        let firstEntry = iterator.next()
-        #expect(firstEntry != nil)
-        if let first = firstEntry {
-            #expect(first.timeIntervalSince1970.isApproximatelyEqual(to: 10.0))
-        }
+        let e1 = iterator.next()
+        try #expect(#require(e1).timeIntervalSince1970.isApproximatelyEqual(to: 10.0))
         
-        // Second entry should be 5 seconds later
-        let secondEntry = iterator.next()
-        #expect(secondEntry != nil)
-        if let second = secondEntry {
-            #expect(second.timeIntervalSince1970.isApproximatelyEqual(to: 15.0))
-        }
+        let e2 = iterator.next()
+        try #expect(#require(e2).timeIntervalSince1970.isApproximatelyEqual(to: 15.0))
         
-        // Third entry should be 5 seconds later
-        let thirdEntry = iterator.next()
-        #expect(thirdEntry != nil)
-        if let third = thirdEntry {
-            #expect(third.timeIntervalSince1970.isApproximatelyEqual(to: 20.0))
-        }
+        let e3 = iterator.next()
+        try #expect(#require(e3).timeIntervalSince1970.isApproximatelyEqual(to: 20.0))
     }
     
     @Test
-    func everyMinuteTimelineScheduleEntries() {
+    func everyMinuteTimelineScheduleEntries() throws {
         let calendar = Calendar.current
         let startDate = Date()
         
         let schedule = EveryMinuteTimelineSchedule()
-        let entries = schedule.entries(from: startDate, mode: TimelineScheduleMode.normal)
+        let entries = schedule.entries(from: startDate, mode: .normal)
         
         var iterator = entries.makeIterator()
         
-        // First entry should be at the current or next minute boundary
-        let firstEntry = iterator.next()
-        #expect(firstEntry != nil)
+        let entry1 = iterator.next()
+        let e1 = try #require(entry1)
+        let components1 = calendar.dateComponents([.second, .nanosecond], from: e1)
+        #expect(components1.second == 0)
+        #expect(components1.nanosecond == 0)
+        let timeDiff = e1.timeIntervalSince(startDate)
+        #expect(timeDiff >= -60 && timeDiff < 60)
         
-        if let first = firstEntry {
-            let components = calendar.dateComponents([.second, .nanosecond], from: first)
-            #expect(components.second == 0)
-            #expect(components.nanosecond == 0)
-            
-            // Should be within the current minute or the next minute
-            let timeDiff = first.timeIntervalSince(startDate)
-            #expect(timeDiff >= -60 && timeDiff < 60)
-        }
+        let entry2 = iterator.next()
+        let e2 = try #require(entry2)
+        let diff2 = e2.timeIntervalSince(e1)
+        #expect(diff2.isApproximatelyEqual(to: 60.0))
+        let components2 = calendar.dateComponents([.second, .nanosecond], from: e2)
+        #expect(components2.second == 0)
+        #expect(components2.nanosecond == 0)
         
-        // Second entry should be exactly one minute later
-        let secondEntry = iterator.next()
-        #expect(secondEntry != nil)
-        
-        if let first = firstEntry, let second = secondEntry {
-            let diff = second.timeIntervalSince(first)
-            #expect(diff.isApproximatelyEqual(to: 60.0))
-            
-            let components = calendar.dateComponents([.second, .nanosecond], from: second)
-            #expect(components.second == 0)
-            #expect(components.nanosecond == 0)
-        }
-        
-        // Third entry should be exactly one minute after the second
-        let thirdEntry = iterator.next()
-        #expect(thirdEntry != nil)
-        
-        if let second = secondEntry, let third = thirdEntry {
-            let diff = third.timeIntervalSince(second)
-            #expect(diff.isApproximatelyEqual(to: 60.0))
-            
-            let components = calendar.dateComponents([.second, .nanosecond], from: third)
-            #expect(components.second == 0)
-            #expect(components.nanosecond == 0)
-        }
+        let entry3 = iterator.next()
+        let e3 = try #require(entry3)
+        let diff3 = e3.timeIntervalSince(e2)
+        #expect(diff3.isApproximatelyEqual(to: 60.0))
+        let components3 = calendar.dateComponents([.second, .nanosecond], from: e3)
+        #expect(components3.second == 0)
+        #expect(components3.nanosecond == 0)
     }
     
     @Test
-    func explicitTimelineScheduleEntries() {
+    func explicitTimelineScheduleEntries() throws {
         let dates = [
             Date(timeIntervalSince1970: 100),
             Date(timeIntervalSince1970: 200),
@@ -98,73 +70,89 @@ struct TimelineScheduleTests {
         ]
         
         let schedule = ExplicitTimelineSchedule(dates)
-        let entries = schedule.entries(from: Date(timeIntervalSince1970: 0), mode: TimelineScheduleMode.normal)
+        let entries = schedule.entries(from: Date(timeIntervalSince1970: 0), mode: .normal)
         
         var iterator = entries.makeIterator()
         
-        let first = iterator.next()
-        #expect(first?.timeIntervalSince1970.isApproximatelyEqual(to: 100) ?? false)
+        let e1 = iterator.next()
+        try #expect(#require(e1).timeIntervalSince1970.isApproximatelyEqual(to: 100))
         
-        let second = iterator.next()
-        #expect(second?.timeIntervalSince1970.isApproximatelyEqual(to: 200) ?? false)
+        let e2 = iterator.next()
+        try #expect(#require(e2).timeIntervalSince1970.isApproximatelyEqual(to: 200))
         
-        let third = iterator.next()
-        #expect(third?.timeIntervalSince1970.isApproximatelyEqual(to: 300) ?? false)
+        let e3 = iterator.next()
+        try #expect(#require(e3).timeIntervalSince1970.isApproximatelyEqual(to: 300))
         
-        let fourth = iterator.next()
-        #expect(fourth == nil)
+        #expect(iterator.next() == nil)
     }
     
     @Test
-    func periodicTimelineScheduleWithPastStartDate() {
+    func periodicTimelineScheduleWithPastStartDate() throws {
         let startDate = Date(timeIntervalSince1970: 0)
         let interval: TimeInterval = 10.0
         
         let schedule = PeriodicTimelineSchedule(from: startDate, by: interval)
         let queryDate = Date(timeIntervalSince1970: 25)
-        let entries = schedule.entries(from: queryDate, mode: TimelineScheduleMode.normal)
+        let entries = schedule.entries(from: queryDate, mode: .normal)
         
         var iterator = entries.makeIterator()
         
-        // Should align to the most recent 10-second boundary (20)
-        let firstEntry = iterator.next()
-        #expect(firstEntry != nil)
-        if let first = firstEntry {
-            #expect(first.timeIntervalSince1970.isApproximatelyEqual(to: 20.0))
-        }
+        let e1 = iterator.next()
+        try #expect(#require(e1).timeIntervalSince1970.isApproximatelyEqual(to: 20.0))
         
-        // Next should be at 30
-        let secondEntry = iterator.next()
-        #expect(secondEntry != nil)
-        if let second = secondEntry {
-            #expect(second.timeIntervalSince1970.isApproximatelyEqual(to: 30.0))
-        }
+        let e2 = iterator.next()
+        try #expect(#require(e2).timeIntervalSince1970.isApproximatelyEqual(to: 30.0))
     }
     
     @Test
-    func periodicTimelineScheduleAlignedStart() {
+    func periodicTimelineScheduleAlignedStart() throws {
         let startDate = Date(timeIntervalSince1970: 0)
         let interval: TimeInterval = 5.0
         
         let schedule = PeriodicTimelineSchedule(from: startDate, by: interval)
-        // Query date is exactly on a boundary
         let queryDate = Date(timeIntervalSince1970: 15)
-        let entries = schedule.entries(from: queryDate, mode: TimelineScheduleMode.normal)
+        let entries = schedule.entries(from: queryDate, mode: .normal)
         
         var iterator = entries.makeIterator()
         
-        // First entry should be at the query date itself
-        let firstEntry = iterator.next()
-        #expect(firstEntry != nil)
-        if let first = firstEntry {
-            #expect(first.timeIntervalSince1970.isApproximatelyEqual(to: 15.0))
-        }
+        let e1 = iterator.next()
+        try #expect(#require(e1).timeIntervalSince1970.isApproximatelyEqual(to: 15.0))
         
-        // Next should be at 20
-        let secondEntry = iterator.next()
-        #expect(secondEntry != nil)
-        if let second = secondEntry {
-            #expect(second.timeIntervalSince1970.isApproximatelyEqual(to: 20.0))
-        }
+        let e2 = iterator.next()
+        try #expect(#require(e2).timeIntervalSince1970.isApproximatelyEqual(to: 20.0))
+    }
+    
+    @Test
+    func animationTimelineScheduleNormalMode() throws {
+        let startDate = Date(timeIntervalSince1970: 0.0)
+
+        let schedule = AnimationTimelineSchedule(minimumInterval: 1.5)
+        let entries = schedule.entries(from: startDate, mode: .normal)
+        
+        var iterator = entries.makeIterator()
+        let e1 = iterator.next()
+        try #expect(#require(e1).timeIntervalSince1970.isAlmostEqual(to: 0.0))
+        let e2 = iterator.next()
+        try #expect(#require(e2).timeIntervalSince1970.isAlmostEqual(to: 1.5))
+        let e3 = iterator.next()
+        try #expect(#require(e3).timeIntervalSince1970.isAlmostEqual(to: 3.0))
+    }
+    
+    @Test
+    func animationTimelineScheduleLowFrequencyMode() {
+        let schedule = AnimationTimelineSchedule()
+        let entries = schedule.entries(from: .init(), mode: .lowFrequency)
+        var iterator = entries.makeIterator()
+        #expect(iterator.next() == nil)
+        #expect(iterator.next() == nil)
+    }
+    
+    @Test
+    func animationTimelineSchedulePaused() {
+        let schedule = AnimationTimelineSchedule(paused: true)
+        let entries = schedule.entries(from: .init(), mode: .normal)
+        var iterator = entries.makeIterator()
+        #expect(iterator.next() == nil)
+        #expect(iterator.next() == nil)
     }
 }
