@@ -9,12 +9,15 @@
 #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 
 import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 import OpenSwiftUICore
 import OpenSwiftUI_SPI
 
+// MARK: - AnyAlwaysOnBridge
+
 class AnyAlwaysOnBridge {
-    func invalidate(for: String) {
+    func invalidate(for reason: String) {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
@@ -23,16 +26,93 @@ class AnyAlwaysOnBridge {
     }
 }
 
-//class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
-//    weak var hostingController:PlatformHostingController<Content>?
-//    private var updatingTraitsCount: UInt64
-////  private var frameSpecifier: BLSAnimationFrameSpecifier? From: BacklightServices
-//    var isLuminanceReduced: Bool
-//    var isUpdatingForFrameSpecifier: Bool
-//    var timelineRegistrationsSeed: VersionSeed
-//    // var timelineRegistrations: [DateSequenceTimeline]
-//}
-//
+// MARK: AlwaysOnBridge [WIP]
+
+final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
+    weak var hostingController:PlatformHostingController<Content>?
+
+    private var updatingTraitsCount: UInt64 = .zero
+
+    private var frameSpecifier: BLSAnimationFrameSpecifier? = nil
+
+    var isLuminanceReduced: Bool = false
+
+    var isUpdatingForFrameSpecifier: Bool = false
+
+    var timelineRegistrationsSeed: VersionSeed = .empty
+
+    var timelineRegistrations: [DateSequenceTimeline] = [] {
+        didSet {
+            // TODO
+        }
+    }
+
+    func configureTransaction(_ transaction: inout Transaction) {
+        updatingTraitsCount &+= 1
+        transaction.addAnimationListener {
+            DispatchQueue.main.async {
+                self.updatingTraitsCount &-= 1
+            }
+        }
+    }
+
+    func hostingControllerWillDisappear() {
+        guard frameSpecifier != nil else { return }
+        frameSpecifier = nil
+        hostingController!.host.invalidateProperties(.environment)
+    }
+
+    override func invalidate(for reason: String) {
+        let host = hostingController!.host
+        guard let window = host.window,
+              let scene = window.windowScene,
+              let backlightSceneEnvironment = scene._backlightSceneEnvironment
+        else { return }
+        backlightSceneEnvironment.invalidateAllTimelines(forReason: reason)
+    }
+
+    var isActiveHost: Bool {
+        let host = hostingController!.host
+        guard let window = host.window,
+              let scene = window.windowScene
+        else { return false }
+        var controllers: [any UIViewController & _UIBacklightEnvironmentObserver] = []
+        for window in scene.windows {
+            controllers.append(contentsOf: window.rootViewController?._effectiveControllersForAlwaysOnTimelines ?? [])
+        }
+        return controllers.contains { $0 === hostingController }
+    }
+
+    func preferencesDidChange(_ preference: PreferenceValues) {
+        let value = preference[AlwaysOnTimelinesKey.self]
+        guard !value.seed.matches(timelineRegistrationsSeed) else {
+            return
+        }
+        timelineRegistrationsSeed = value.seed
+        timelineRegistrations = value.value
+    }
+
+    func timelines(for _: DateInterval) -> [BLSAlwaysOnTimeline] {
+        timelineRegistrations
+    }
+
+    func update(environment: inout EnvironmentValues) {
+        // TODO
+        isLuminanceReduced = environment.isLuminanceReduced
+    }
+
+    func update(with specifier: BLSAlwaysOnFrameSpecifier?) {
+        isUpdatingForFrameSpecifier = true
+        frameSpecifier = specifier
+        let viewGraph = hostingController!.host.viewGraph
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+        transaction.disablesContentTransitions = true
+        viewGraph.emptyTransaction(transaction)
+        hostingController!.host.invalidateProperties(.environment)
+        hostingController!.host.layoutIfNeeded()
+    }
+}
 
 // MARK: AlwaysOnTimelinesKey
 
@@ -102,6 +182,8 @@ struct AlwaysOnTimelinePreferenceWriter: Rule {
 
 // FIXME: BLSAlwaysOnFrameSpecifier
 
-class BLSAlwaysOnFrameSpecifier {}
+class BLSAlwaysOnFrameSpecifier: BLSAnimationFrameSpecifier {}
+
+class BLSAnimationFrameSpecifier {}
 
 #endif

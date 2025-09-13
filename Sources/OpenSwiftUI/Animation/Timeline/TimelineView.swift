@@ -11,6 +11,10 @@ import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
+#if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+import BacklightServices
+#endif
+
 @available(OpenSwiftUI_v3_0, *)
 public struct TimelineView<Schedule, Content> where Schedule: TimelineSchedule {
     public struct Context {
@@ -79,12 +83,11 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
         @Attribute var phase: _GraphInputs.Phase
         @Attribute var time: Time
         @WeakAttribute var referenceDate: (Date?)?
-
-        #if os(iOS) || os(visionOS)
-//        var id: TimelineIdentifier
-//        @Attribute var frameSpecifier: BLSAlwaysOnFrameSpecifier?
-//        @Attribute var fidelity: BLSUpdateFidelity
-//        @Attribute var invalidationHandler: TimelineInvalidationAction
+        #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+        var id: TimelineIdentifier
+        @Attribute var frameSpecifier: BLSAlwaysOnFrameSpecifier?
+        @Attribute var fidelity: BLSUpdateFidelity
+        @Attribute var invalidationHandler: TimelineInvalidationAction
         var hadFrameSpecifier: Bool
         #endif
         var resetSeed: UInt32
@@ -93,17 +96,17 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
         var nextTime: Double
         var cadence: Context.Cadence
 
-        #if os(iOS) || os(visionOS)
+        #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
         init(
             view: Attribute<TimelineView>,
             schedule: Attribute<Schedule>,
             phase: Attribute<_GraphInputs.Phase>,
             time: Attribute<Time>,
             referenceDate: WeakAttribute<Date?>,
-//            id: TimelineIdentifier,
-//            frameSpecifier: Attribute<BLSAlwaysOnFrameSpecifier?>,
-//            fidelity: Attribute<BLSUpdateFidelity>,
-//            invalidationHandler: Attribute<TimelineInvalidationAction>,
+            id: TimelineIdentifier,
+            frameSpecifier: Attribute<BLSAlwaysOnFrameSpecifier?>,
+            fidelity: Attribute<BLSUpdateFidelity>,
+            invalidationHandler: Attribute<TimelineInvalidationAction>,
             hadFrameSpecifier: Bool,
             resetSeed: UInt32,
             iterator: Schedule.Entries.Iterator? = nil,
@@ -116,10 +119,10 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
             self._phase = phase
             self._time = time
             self._referenceDate = referenceDate
-//            self.id = id
-//            self._frameSpecifier = frameSpecifier
-//            self._fidelity = fidelity
-//            self._invalidationHandler = invalidationHandler
+            self.id = id
+            self._frameSpecifier = frameSpecifier
+            self._fidelity = fidelity
+            self._invalidationHandler = invalidationHandler
             self.hadFrameSpecifier = hadFrameSpecifier
             self.resetSeed = resetSeed
             self.iterator = iterator

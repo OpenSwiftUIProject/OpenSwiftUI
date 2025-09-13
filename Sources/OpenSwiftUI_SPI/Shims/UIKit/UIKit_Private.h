@@ -13,6 +13,10 @@
 
 #import <UIKit/UIKit.h>
 
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+#include <BacklightServices/BLSBacklightFBSSceneEnvironment.h>
+#endif
+
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIApplication (OpenSwiftUI_SPI)
@@ -32,8 +36,21 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, nullable) UIViewController *_viewControllerForAncestor_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_viewControllerForAncestor);
 @end
 
+@protocol _UIBacklightEnvironmentObserver <NSObject>
+- (void)_timelinesForDateInterval:(NSDateInterval *)dateInterval;
+- (void)_timelinesForDateInterval:(NSDateInterval *)dateInterval completion:(void (^)(void))completion;
+- (void)_updateWithFrameSpecifier:(id)frameSpecifier;
+- (void)_updateWithFrameSpecifier:(id)frameSpecifier completion:(void (^)(void))completion;
+@optional
+- (void)_willEnterAlwaysOn;
+- (void)_didEnterAlwaysOn;
+- (void)_willExitAlwaysOn;
+- (void)_didExitAlwaysOn;
+@end
+
 @interface UIViewController (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);
+@property (nonatomic, readonly, nullable) NSArray<UIViewController<_UIBacklightEnvironmentObserver> *> *_effectiveControllersForAlwaysOnTimelines;
 @end
 
 #if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
@@ -45,6 +62,9 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIWindowScene (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) UIUserInterfaceStyle _systemUserInterfaceStyle_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_systemUserInterfaceStyle);
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+@property (nonatomic, readonly, nullable) BLSBacklightFBSSceneEnvironment *_backlightSceneEnvironment_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_backlightSceneEnvironment);
+#endif
 @end
 
 @interface UITraitCollection (OpenSwiftUI_SPI)

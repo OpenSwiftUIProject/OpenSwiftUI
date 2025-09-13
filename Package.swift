@@ -558,6 +558,7 @@ if linkCoreUI {
 
 if linkBacklightServices {
     openSwiftUITarget.addBacklightServicesSettings()
+    openSwiftUISPITarget.addBacklightServicesSettings()
 }
 
 if useLocalDeps {
