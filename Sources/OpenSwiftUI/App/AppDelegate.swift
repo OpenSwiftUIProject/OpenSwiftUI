@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias DelegateBaseClass = UIResponder
 typealias PlatformApplication = UIApplication
@@ -25,7 +25,7 @@ typealias PlatformApplicationDelegate = AnyObject
 #endif
 
 class AppDelegate: DelegateBaseClass {
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     var fallbackDelegate: UIApplicationDelegate?
     
     // WIP

@@ -10,7 +10,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 
 #import <UIKit/UIKit.h>
 
@@ -21,6 +21,6 @@ UIContentSizeCategory _UIApplicationDefaultContentSizeCategory();
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS */
+#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION */
 
 #endif /* OpenSwiftUI_UIApplication_h */

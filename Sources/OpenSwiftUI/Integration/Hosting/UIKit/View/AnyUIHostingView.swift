@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 

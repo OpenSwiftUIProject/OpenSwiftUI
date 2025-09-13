@@ -1,4 +1,4 @@
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 public import UIKit
 
 @available(macOS, unavailable)

@@ -10,7 +10,7 @@
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #include <Foundation/Foundation.h>
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <UIKit/UIKit.h>
 #else
 #include <AppKit/AppKit.h>

@@ -47,7 +47,7 @@ public struct KeyboardShortcut {
     }
 }
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(visionOS) || os(tvOS)
 import UIKit
 
 @available(tvOS, unavailable)

@@ -6,7 +6,7 @@ import Testing
 import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 

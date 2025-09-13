@@ -6,7 +6,7 @@ import Testing
 @testable import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -31,7 +31,7 @@ struct ViewAliasTests {
 //                    }
 //            }
 //        }
-//        #if os(iOS)
+//        #if os(iOS) || os(visionOS)
 //        let hostingView = _UIHostingView(rootView: ContentView())
 //        hostingView.render()
 //        #endif

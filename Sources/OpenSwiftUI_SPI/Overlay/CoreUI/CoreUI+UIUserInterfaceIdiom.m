@@ -7,7 +7,7 @@
 
 #include "CoreUI+UIUserInterfaceIdiom.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS && OPENSWIFTUI_LINK_COREUI
+#if (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI
 #include "../../Shims/UIKit/UIKit_Private.h"
 
 CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
@@ -24,6 +24,7 @@ CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
 }
 
 CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
+    #if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
     switch (idiom) {
         case UIUserInterfaceIdiomPhone: {
             CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
@@ -51,6 +52,9 @@ CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
         case UIUserInterfaceIdiomVision: return CUISubtypeAppleVision;
         default: return CUISubtypeNormal;
     }
+    #else
+    return CUISubtypeAppleVision
+    #endif
 }
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS && OPENSWIFTUI_LINK_COREUI */
+#endif /* (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI */

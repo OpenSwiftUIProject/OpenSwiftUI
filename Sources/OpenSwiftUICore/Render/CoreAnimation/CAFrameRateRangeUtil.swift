@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-#if os(iOS) && canImport(QuartzCore)
+#if (os(iOS) || os(visionOS)) && canImport(QuartzCore)
 import QuartzCore
 
 extension CAFrameRateRange {

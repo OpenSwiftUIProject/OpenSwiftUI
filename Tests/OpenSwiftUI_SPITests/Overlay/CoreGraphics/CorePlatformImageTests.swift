@@ -14,7 +14,7 @@ struct CorePlatformImageTests {
     @Test
     func nilCGImage() {
         let image: NSObject
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         image = UIImage()
         #elseif os(macOS)
         image = NSImage(size: CGSize(width: 100, height: 100))
@@ -27,7 +27,7 @@ struct CorePlatformImageTests {
     @Test
     func nonNilCGImage() {
         let image: NSObject
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         image = UIImage.add
         #elseif os(macOS)
         image = NSImage(named: NSImage.addTemplateName)!

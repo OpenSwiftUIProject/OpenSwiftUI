@@ -4,6 +4,7 @@
 //
 //  Audited for iOS 18.0
 //  Status: Blocked by PlatformDrawable and GraphicsContext
+//  ID: 8BBC66CBE42B8A65F8A2F3799C81A349 (SwiftUICore)
 
 import OpenSwiftUI_SPI
 #if canImport(QuartzCore)
@@ -50,6 +51,9 @@ open class PlatformViewDefinition: @unchecked Sendable {
     }
   
     open class var system: PlatformViewDefinition.System { .init(base: .caLayer) }
+    #if os(visionOS) // TODO: VWT alignment issue when running for Designed for iPad
+    open class func makeView(kind: PlatformViewDefinition.ViewKind, item: Any) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
+    #endif
     open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
     #if canImport(Darwin)
     open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }

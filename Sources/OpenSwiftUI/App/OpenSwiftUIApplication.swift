@@ -8,7 +8,7 @@
 
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(visionOS) || os(tvOS)
 import UIKit
 private final class OpenSwiftUIApplication: UIApplication {
     @objc override init() {
@@ -45,7 +45,7 @@ func runApp(_ app: some App) -> Never {
 // MARK: - runTestingApp [6.4.41] [iOS]
 
 func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escaping (any TestHost, any TestHost) -> ()) -> Never where V1: View, V2: View {
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     TestingSceneDelegate.connectCallback = { (window: UIWindow, comparisonWindow: UIWindow) in
         CoreTesting.isRunning = true
         let rootVC = UIHostingController(rootView: rootView)
@@ -71,13 +71,13 @@ private func KitRendererCommon(_ delegateType: AnyObject.Type) -> Never {
     let closure = { (argv: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) in
         let argc = CommandLine.argc
         #if canImport(Darwin)
-        #if os(iOS) || os(tvOS) || os(macOS)
+        #if os(iOS) || os(visionOS) || os(tvOS) || os(macOS)
         let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
         #endif
         let delegateClassName = NSStringFromClass(delegateType)
         #endif
 
-        #if os(iOS) || os(tvOS)
+        #if os(iOS) || os(visionOS) || os(tvOS)
         let code = UIApplicationMain(argc, argv, principalClassName, delegateClassName)
         #elseif os(watchOS)
         let code = WKApplicationMain(argc, argv, delegateClassName)

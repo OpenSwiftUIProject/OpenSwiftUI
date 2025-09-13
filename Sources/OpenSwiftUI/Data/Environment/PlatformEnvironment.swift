@@ -7,7 +7,7 @@
 
 import OpenSwiftUI_SPI
 import OpenSwiftUICore
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias TraitCollection = UITraitCollection
 #elseif os(macOS)
@@ -52,7 +52,7 @@ extension EnvironmentValues {
         // resolvedTextProvider = OpenSwiftUIResolvedTextProvider.self
         // hasSystemOpenURLAction = true
 
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         // bridgedEnvironmentResolver = UITraitBridgedEnvironmentResolver.self
         #if OPENSWIFTUI_LINK_COREUI
         let idiom = traitCollection?.userInterfaceIdiom ?? UIDevice.current.userInterfaceIdiom

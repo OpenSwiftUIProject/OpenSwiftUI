@@ -12,7 +12,7 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #endif
 
@@ -24,7 +24,7 @@ struct BenchmarkApp {
         ])
     }
 }
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 extension UIHostingController: _Test where Content == AnyView {}
 extension UIHostingController: _ViewTest where Content == AnyView {
     public func initRootView() -> AnyView {
@@ -46,7 +46,7 @@ struct PerformanceTest: _PerformanceTest {
     }
 
     func runTest(host: _BenchmarkHost, options: [AnyHashable : Any]) {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         let test = _makeUIHostingController(view) as! UIHostingController<AnyView>
         test.setUpTest()
         test.render()

@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if canImport(Darwin)
-#if os(iOS) || os(tvOS)
+#if os(iOS) || os(visionOS) || os(tvOS)
 import UIKit
 #if os(iOS) && !targetEnvironment(macCatalyst)
 import OpenSwiftUI_SPI
@@ -19,7 +19,7 @@ import AppKit
 struct OpenURLActionKey: EnvironmentKey {
     static let defaultValue = OpenURLAction(
         handler: .system { url, completion in
-            #if os(iOS) || os(tvOS)
+            #if os(iOS) || os(visionOS) || os(tvOS)
             UIApplication.shared.open(url, options: [:], completionHandler: completion)
             #elseif os(macOS)
             NSWorkspace.shared.open(url, configuration: .init()) { _, error in

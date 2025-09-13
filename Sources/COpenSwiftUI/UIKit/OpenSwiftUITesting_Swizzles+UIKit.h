@@ -10,16 +10,18 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <UIKit/UIKit.h>
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+#if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
 @interface UIScreen (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides;
 - (CGFloat)_OpenSwiftUITesting_currentScreenScale;
 - (BOOL)_OpenSwiftUITesting_wantsWideContentMargins;
 @end
+#endif
 
 @interface UICollectionView (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides;
@@ -28,6 +30,6 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS */
+#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION */
 
 #endif /* OpenSwiftUITesting_Swizzles_UIKit_h */

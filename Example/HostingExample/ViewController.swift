@@ -11,13 +11,13 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 class ViewController: UINavigationController {
     override func viewDidAppear(_ animated: Bool) {
         pushViewController(EntryViewController(), animated: false)

@@ -8,7 +8,7 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformViewRepresentable = UIViewRepresentable
 typealias PlatformViewControllerRepresentable = UIViewControllerRepresentable
@@ -19,7 +19,7 @@ typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
 #endif
 
 struct ColorViewRepresentableExample: PlatformViewRepresentable {
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     func makeUIView(context: Context) -> some UIView {
         let v = UIView()
         v.backgroundColor = .red
@@ -40,7 +40,7 @@ struct ColorViewRepresentableExample: PlatformViewRepresentable {
 }
 
 struct ColorViewControllerRepresentableExample: PlatformViewControllerRepresentable {
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     func makeUIViewController(context: Context) -> some UIViewController {
         let vc = UIViewController()
         vc.view.backgroundColor = .red

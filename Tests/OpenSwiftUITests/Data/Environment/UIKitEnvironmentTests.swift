@@ -2,7 +2,7 @@
 //  UIKitEnvironmentTests.swift
 //  OpenSwiftUITests
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 @testable import OpenSwiftUI
 import Testing
 import UIKit

@@ -11,7 +11,7 @@ import OpenSwiftUICore
 import Foundation
 import OpenSwiftUI_SPI
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformConstraintBasedLayoutHostingView = _UIConstraintBasedLayoutHostingView
 #elseif os(macOS)
@@ -49,7 +49,7 @@ where Content: PlatformViewRepresentable {
 
     let safeAreaHelper: PlatformView.SafeAreaHelper = .init()
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     var _safeAreaInsets: PlatformEdgeInsets = .init(
         top: .greatestFiniteMagnitude,
         left: .greatestFiniteMagnitude,
@@ -92,7 +92,7 @@ where Content: PlatformViewRepresentable {
         if Content.isViewController {
             viewHierarchyMode = isLinkedOnOrAfter(.v6) ? .willMoveToSuperview : .didMoveToWindow
         }
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         if isLinkedOnOrAfter(.v6) {
             layer.allowsGroupOpacity = false
             layer.allowsGroupBlending = false
@@ -109,7 +109,7 @@ where Content: PlatformViewRepresentable {
     }
 
     private func intrinsicLayoutTraits() -> _LayoutTraits {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         func dimension(value: CGFloat, axis: NSLayoutConstraint.Axis) -> _LayoutTraits.Dimension {
             if value == PlatformView.noIntrinsicMetric {
                 return .init(min: .zero, ideal: .zero, max: .infinity)
@@ -154,7 +154,7 @@ where Content: PlatformViewRepresentable {
         set { super.hostedView = newValue }
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     override func didAddSubview(_ subview: PlatformView) {
         super.didAddSubview(subview)
         guard let viewController = representedViewProvider as? PlatformViewController else {
@@ -229,7 +229,7 @@ where Content: PlatformViewRepresentable {
     }
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     private func layoutHostedView() {
         let enableUnifiedLayout =  enableUnifiedLayout()
         guard let hostedView else {
@@ -260,7 +260,7 @@ where Content: PlatformViewRepresentable {
     }
     #endif
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     override func contentCompressionResistancePriority(for axis: NSLayoutConstraint.Axis) -> UILayoutPriority {
         if Content.isViewController {
             return super.contentCompressionResistancePriority(for: axis)
@@ -320,7 +320,7 @@ extension PlatformViewHost: SafeAreaHelperDelegate {
     #endif
 
     var defaultSafeAreaInsets: PlatformEdgeInsets {
-        #if os(iOS)
+        #if os(iOS) || os(visionOS)
         super.safeAreaInsets
         #elseif os(macOS)
         super.computedSafeAreaInsets

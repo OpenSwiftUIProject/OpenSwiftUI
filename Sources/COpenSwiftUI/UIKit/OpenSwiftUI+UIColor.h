@@ -10,7 +10,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_IOS
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 
 #import <UIKit/UIKit.h>
 
@@ -28,6 +28,6 @@ BOOL _UIColorDependsOnTraitCollection(UIColor *color);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
-#endif /* OPENSWIFTUI_TARGET_OS_IOS */
+#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION */
 
 #endif /* OpenSwiftUI_UIColor_h */

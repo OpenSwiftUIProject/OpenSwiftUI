@@ -5,7 +5,7 @@
 import Testing
 import SnapshotTesting
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformViewControllerRepresentable = UIViewControllerRepresentable
 #elseif os(macOS)
@@ -19,7 +19,7 @@ struct PlatformViewControllerRepresentableUITests {
     @Test
     func plainColorView() {
         struct PlainColorView: PlatformViewControllerRepresentable {
-            #if os(iOS)
+            #if os(iOS) || os(visionOS)
             func makeUIViewController(context: Context) -> some UIViewController {
                 let vc = UIViewController()
                 vc.view.backgroundColor = .red

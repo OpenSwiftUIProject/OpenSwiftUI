@@ -8,7 +8,7 @@ package import OpenSwiftUI
 package import SwiftUI
 #endif
 
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 package import UIKit
 package typealias PlatformWindow = UIWindow
 package typealias PlatformViewController = UIViewController

@@ -8,7 +8,7 @@
 
 import CoreUI
 import OpenSwiftUICore
-#if os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
 #elseif os(macOS)
 import AppKit
@@ -18,7 +18,7 @@ struct KitCoreUINamedColorProvider: CoreUINamedColorProvider {
     static func effectiveCGColor(cuiColor: CUINamedColor, in environment: EnvironmentValues) -> CGColor? {
         let name = cuiColor.systemColorName
         let selector = Selector(name)
-        #if os(iOS) // 6.4.41
+        #if os(iOS) || os(visionOS) // 6.4.41
         guard UIColor.responds(to: selector) else {
             return nil
         }
@@ -40,7 +40,7 @@ struct KitCoreUINamedColorProvider: CoreUINamedColorProvider {
         #endif
     }
 
-    #if os(iOS)
+    #if os(iOS) || os(visionOS)
     @inline(__always)
     static func withTraitCollection(
         cuiColor: CUINamedColor,
