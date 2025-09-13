@@ -31,6 +31,17 @@ class DateSequenceTimeline: BLSAlwaysOnTimeline {
         // TODO
         return [0]
     }
+
+    static func == (lhs: DateSequenceTimeline, rhs: DateSequenceTimeline) -> Bool {
+        func areEqual<T>(_ a: T, _ b: Any) -> Bool where T: Equatable {
+            guard let b = b as? T else {
+                return false
+            }
+            return a == b
+        }
+        // TODO
+        return false
+    }
 }
 
 // MARK: TimelineIdentifier

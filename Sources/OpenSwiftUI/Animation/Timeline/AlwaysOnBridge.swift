@@ -33,7 +33,7 @@ final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
 
     private var updatingTraitsCount: UInt64 = .zero
 
-    private var frameSpecifier: BLSAnimationFrameSpecifier? = nil
+    private var frameSpecifier: BLSAlwaysOnFrameSpecifier? = nil
 
     var isLuminanceReduced: Bool = false
 
@@ -44,6 +44,7 @@ final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
     var timelineRegistrations: [DateSequenceTimeline] = [] {
         didSet {
             // TODO
+            invalidate(for: "Timeline registrations changed.")
         }
     }
 
@@ -97,7 +98,11 @@ final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
     }
 
     func update(environment: inout EnvironmentValues) {
-        // TODO
+        environment.suppliedBridges.formUnion(.alwaysOnBridge)
+        if isActiveHost {
+            environment[AlwaysOnFrameSpecifier.self] = frameSpecifier
+        }
+        environment[AlwaysOnInvalidationKey.self] = .init(bridge: self)
         isLuminanceReduced = environment.isLuminanceReduced
     }
 
@@ -179,11 +184,5 @@ struct AlwaysOnTimelinePreferenceWriter: Rule {
         return [DateSequenceTimeline(identifier: id, schedule: schedule)]
     }
 }
-
-// FIXME: BLSAlwaysOnFrameSpecifier
-
-class BLSAlwaysOnFrameSpecifier: BLSAnimationFrameSpecifier {}
-
-class BLSAnimationFrameSpecifier {}
 
 #endif
