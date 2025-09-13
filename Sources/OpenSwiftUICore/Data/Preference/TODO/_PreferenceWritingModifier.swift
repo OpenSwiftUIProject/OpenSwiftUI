@@ -1,3 +1,5 @@
+package import OpenAttributeGraphShims
+
 @frozen
 public struct _PreferenceWritingModifier<Key>: ViewModifier where Key: PreferenceKey {
     public var value: Key.Value
@@ -18,5 +20,15 @@ extension View {
     @inlinable
     public func preference<K>(key: K.Type = K.self, value: K.Value) -> some View where K : PreferenceKey {
         modifier(_PreferenceWritingModifier<K>(value: value))
+    }
+}
+
+extension PreferencesOutputs {
+    package mutating func makePreferenceWriter<K>(
+        inputs: PreferencesInputs,
+        key _: K.Type,
+        value: @autoclosure () -> Attribute<K.Value>
+    ) where K: PreferenceKey {
+        _openSwiftUIUnimplementedFailure()
     }
 }

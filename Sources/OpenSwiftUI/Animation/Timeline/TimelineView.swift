@@ -22,7 +22,10 @@ public struct TimelineView<Schedule, Content> where Schedule: TimelineSchedule {
 
         public let date: Date
         public let cadence: Cadence
+
+        #if os(iOS) || os(visionOS)
         // TODO: let invalidationAction: TimelineInvalidationAction
+        #endif
     }
 
     var schedule: Schedule
@@ -76,17 +79,21 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
         @Attribute var phase: _GraphInputs.Phase
         @Attribute var time: Time
         @WeakAttribute var referenceDate: (Date?)?
+
+        #if os(iOS) || os(visionOS)
 //        var id: TimelineIdentifier
 //        @Attribute var frameSpecifier: BLSAlwaysOnFrameSpecifier?
 //        @Attribute var fidelity: BLSUpdateFidelity
 //        @Attribute var invalidationHandler: TimelineInvalidationAction
         var hadFrameSpecifier: Bool
+        #endif
         var resetSeed: UInt32
         var iterator: Schedule.Entries.Iterator?
         var currentTime: Double
         var nextTime: Double
         var cadence: Context.Cadence
 
+        #if os(iOS) || os(visionOS)
         init(
             view: Attribute<TimelineView>,
             schedule: Attribute<Schedule>,
@@ -120,6 +127,31 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
             self.nextTime = nextTime
             self.cadence = cadence
         }
+        #else
+        init(
+            view: Attribute<TimelineView>,
+            schedule: Attribute<Schedule>,
+            phase: Attribute<_GraphInputs.Phase>,
+            time: Attribute<Time>,
+            referenceDate: WeakAttribute<Date?>,
+            resetSeed: UInt32,
+            iterator: Schedule.Entries.Iterator? = nil,
+            currentTime: Double,
+            nextTime: Double,
+            cadence: Context.Cadence
+        ) {
+            self._view = view
+            self._schedule = schedule
+            self._phase = phase
+            self._time = time
+            self._referenceDate = referenceDate
+            self.resetSeed = resetSeed
+            self.iterator = iterator
+            self.currentTime = currentTime
+            self.nextTime = nextTime
+            self.cadence = cadence
+        }
+        #endif
 
         typealias Value = Content
 

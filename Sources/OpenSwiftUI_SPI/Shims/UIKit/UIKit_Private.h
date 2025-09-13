@@ -51,6 +51,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) NSObject *_environmentWrapper_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_environmentWrapper);
 @end
 
+@interface _UIAlwaysOnEnvironment : NSObject
+@property (class, nonatomic, readonly) BOOL _alwaysOnSupported;
+@end
+
 OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);
 

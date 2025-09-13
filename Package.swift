@@ -95,17 +95,19 @@ if development {
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
 let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
-
+sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
+sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
 if linkCoreUI {
-    sharedCSettings.append(
-        .define("OPENSWIFTUI_LINK_COREUI")
-    )
-    sharedCxxSettings.append(
-        .define("OPENSWIFTUI_LINK_COREUI")
-    )
-    sharedSwiftSettings.append(
-        .define("OPENSWIFTUI_LINK_COREUI")
-    )
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_COREUI"))
+}
+
+// MARK: - [env] OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+
+let linkBacklightServices = envEnable("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
+sharedCSettings.append(.define("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", to: linkBacklightServices ? "1" : "0"))
+sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", to: linkBacklightServices ? "1" : "0"))
+if linkBacklightServices {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_BACKLIGHTSERVICES"))
 }
 
 // MARK: - [env] OPENGSWIFTUI_SYMBOL_LOCATOR
@@ -484,6 +486,12 @@ extension Target {
         dependencies.append(.product(name: "CoreUI", package: "DarwinPrivateFrameworks"))
     }
 
+    func addBacklightServicesSettings() {
+        // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
+        // "could not determine executable path for bundle 'BacklightServices.framework'"
+        dependencies.append(.product(name: "BacklightServices", package: "DarwinPrivateFrameworks"))
+    }
+
     func addOpenCombineSettings() {
         dependencies.append(.product(name: "OpenCombine", package: "OpenCombine"))
         var swiftSettings = swiftSettings ?? []
@@ -548,6 +556,10 @@ if linkCoreUI {
     openSwiftUISPITarget.addCoreUISettings()
 }
 
+if linkBacklightServices {
+    openSwiftUITarget.addBacklightServicesSettings()
+}
+
 if useLocalDeps {
     var dependencies: [Package.Dependency] = [
         .package(path: "../OpenCoreGraphics"),
@@ -555,7 +567,7 @@ if useLocalDeps {
         .package(path: "../OpenRenderBox"),
         .package(path: "../OpenObservation"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkBacklightServices {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
     package.dependencies += dependencies
@@ -568,7 +580,8 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI {
-        dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
+        dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
+//        dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
 }
