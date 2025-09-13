@@ -15,11 +15,13 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+#if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
 @interface UIScreen (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides;
 - (CGFloat)_OpenSwiftUITesting_currentScreenScale;
 - (BOOL)_OpenSwiftUITesting_wantsWideContentMargins;
 @end
+#endif
 
 @interface UICollectionView (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides;

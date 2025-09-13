@@ -36,10 +36,12 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);
 @end
 
+#if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
 @interface UIScreen (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) CGRect _referenceBounds_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_referenceBounds);
 @property (nonatomic, readonly) CGFloat _pointsPerInch_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_pointsPerInch);
 @end
+#endif
 
 @interface UIWindowScene (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) UIUserInterfaceStyle _systemUserInterfaceStyle_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_systemUserInterfaceStyle);

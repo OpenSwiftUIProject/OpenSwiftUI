@@ -24,35 +24,37 @@ CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
 }
 
 CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
-//    switch (idiom) {
-//        case UIUserInterfaceIdiomPhone: {
-//            CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
-//            double height = CGRectGetHeight(bounds);
-//            if (height > 667.0) {
-//                return CUISubtypeIPhonePlus;
-//            } else if (height > 568.0) {
-//                return CUISubtypeIPhone47Inch;
-//            } else if (height > 480.0) {
-//                return CUISubtypeIPhone4Inch;
-//            } else {
-//                return CUISubtypeNormal;
-//            }
-//        }
-//        case UIUserInterfaceIdiomPad: {
-//            CGFloat pointsPerInch = UIScreen.mainScreen._pointsPerInch_openswiftui_safe_wrapper;
-//            return pointsPerInch == 163.0 ? CUISubtypeIPadMini : CUISubtypeNormal;
-//        }
-//        case UIUserInterfaceIdiomTV: {
-//            CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
-//            double height = CGRectGetHeight(bounds) * UIScreen.mainScreen.scale;
-//            return height < 1080.0 ? CUISubtypeAppleTVHD : CUISubtypeNormal;
-//        }
-//        case /* UIUserInterfaceIdiomWatch */ 4: return CUISubtypeAppleWatch38;
-//        case UIUserInterfaceIdiomVision: return CUISubtypeAppleVision;
-//        default: return CUISubtypeNormal;
-//    }
-    // FIXME: UIScreen
-    return CUISubtypeNormal;
+    #if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
+    switch (idiom) {
+        case UIUserInterfaceIdiomPhone: {
+            CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
+            double height = CGRectGetHeight(bounds);
+            if (height > 667.0) {
+                return CUISubtypeIPhonePlus;
+            } else if (height > 568.0) {
+                return CUISubtypeIPhone47Inch;
+            } else if (height > 480.0) {
+                return CUISubtypeIPhone4Inch;
+            } else {
+                return CUISubtypeNormal;
+            }
+        }
+        case UIUserInterfaceIdiomPad: {
+            CGFloat pointsPerInch = UIScreen.mainScreen._pointsPerInch_openswiftui_safe_wrapper;
+            return pointsPerInch == 163.0 ? CUISubtypeIPadMini : CUISubtypeNormal;
+        }
+        case UIUserInterfaceIdiomTV: {
+            CGRect bounds = UIScreen.mainScreen._referenceBounds_openswiftui_safe_wrapper;
+            double height = CGRectGetHeight(bounds) * UIScreen.mainScreen.scale;
+            return height < 1080.0 ? CUISubtypeAppleTVHD : CUISubtypeNormal;
+        }
+        case /* UIUserInterfaceIdiomWatch */ 4: return CUISubtypeAppleWatch38;
+        case UIUserInterfaceIdiomVision: return CUISubtypeAppleVision;
+        default: return CUISubtypeNormal;
+    }
+    #else
+    return CUISubtypeAppleVision
+    #endif
 }
 
 #endif /* (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI */

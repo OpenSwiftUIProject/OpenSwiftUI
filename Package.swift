@@ -175,8 +175,8 @@ if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
 // MARK: - [env] OPENSWIFTUI_COMPATIBILITY_TEST
 
 let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
-sharedCSettings.append(.define("OPENSWIFTUI", to: compatibilityTestCondition ? "0" : "1"))
-sharedCxxSettings.append(.define("OPENSWIFTUI", to: compatibilityTestCondition ? "0" : "1"))
+sharedCSettings.append(.define("OPENSWIFTUI", to: compatibilityTestCondition ? "1" : "0"))
+sharedCxxSettings.append(.define("OPENSWIFTUI", to: compatibilityTestCondition ? "1" : "0"))
 if !compatibilityTestCondition {
     sharedSwiftSettings.append(.define("OPENSWIFTUI"))
 }
@@ -185,6 +185,16 @@ if !compatibilityTestCondition {
 
 let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
 sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(ignoreAvailability: ignoreAvailability))
+
+// MARK: - [env] OPENSWIFTUI_INTERNAL_XR_SDK
+
+// Run @OpenSwiftUIProject/DarwinPrivateFrameworks repo's Scripts/install_internal_sdk.sh XRSimulator to install internal XRSimulator SDK
+let internalXRSDK = envEnable("OPENSWIFTUI_INTERNAL_XR_SDK")
+sharedCSettings.append(.define("OPENSWIFTUI_INTERNAL_XR_SDK", to: internalXRSDK ? "1" : "0"))
+sharedCxxSettings.append(.define("OPENSWIFTUI_INTERNAL_XR_SDK", to: internalXRSDK ? "1" : "0"))
+if internalXRSDK {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_INTERNAL_XR_SDK"))
+}
 
 // MARK: - OpenSwiftUISPI Target
 

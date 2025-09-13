@@ -14,7 +14,7 @@
 void _PerformTestingSwizzles() {
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        #if !OPENSWIFTUI_TARGET_OS_VISION
+        #if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
         [UIScreen _performOpenSwiftUITestingOverrides];
         #endif
         [UICollectionView _performOpenSwiftUITestingOverrides];

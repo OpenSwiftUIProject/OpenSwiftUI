@@ -811,13 +811,7 @@ final package class DisplayLink: NSObject {
     package init(host: UIHostingViewBase, window: UIWindow) {
         super.init()
         self.host = host
-        #if os(visionOS)
-        // FIXME: setup a private SDK for visionOS build
-        link = window.screen.displayLink(
-            withTarget: self,
-            selector: #selector(displayLinkTimer(_:))
-        )
-        #else
+        #if !os(visionOS) || OPENSWIFTUI_INTERNAL_XR_SDK
         link = window.screen.displayLink(
             withTarget: self,
             selector: #selector(displayLinkTimer(_:))
