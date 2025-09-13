@@ -110,6 +110,6 @@ struct OpacityButtonHighlightModifier: ViewModifier {
         content
         // TODO: Fix visionOS build issue with opacity modifier
 //            .opacity(highlighted ? pressedOpacity : 1.0)
-            .contentShape(Rectangle(), eoFill: false)
+//            .contentShape(Rectangle(), eoFill: false)
     }
 }
