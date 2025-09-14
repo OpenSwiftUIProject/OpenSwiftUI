@@ -107,7 +107,7 @@ public enum TimelineScheduleMode: Sendable {
     case lowFrequency
 }
 
-// MARK: - TimelineSchedule + lazyEntries [WIP]
+// MARK: - TimelineSchedule + entries extension
 
 extension UInt {
     package static var minimumTimelineScheduleLimit: UInt { 60 }
@@ -116,41 +116,50 @@ extension UInt {
 extension TimelineSchedule {
     package func entries(
         within interval: DateInterval,
-        mode: TimelineScheduleMode,
+        mode: TimelineScheduleMode = .normal,
         limit: UInt?
     ) -> [Date] {
-        return []
-//        AnySequence(entries(within: range, mode: mode, limit: limit))
+        let start = interval.start
+        let end = interval.end
+        let rounededEnd = Date(timeIntervalSinceReferenceDate: end.timeIntervalSinceReferenceDate.rounded())
+        return Array(entries(within: start ..< rounededEnd, mode: mode, limit: limit))
     }
 
     package func lazyEntries(
-        with range: Range<Date>,
+        within range: Range<Date>,
         mode: TimelineScheduleMode = .normal,
         limit: UInt?
     ) -> AnySequence<Date> {
         AnySequence(entries(within: range, mode: mode, limit: limit))
     }
 
-    private func entries(within range: Range<Date>, mode: TimelineScheduleMode, limit: UInt?) -> [Date] {
-        // FIXME
-        var dates: [Date] = []
-        var count: UInt = 0
-        let maxCount = limit ?? UInt.max
-
-        for date in entries(from: range.lowerBound, mode: mode) {
-            guard date < range.upperBound else { break }
-            dates.append(date)
-            count += 1
-            if count >= maxCount { break }
-        }
-
-        return dates
+    private func entries(
+        within range: Range<Date>,
+        mode: TimelineScheduleMode,
+        limit: UInt?
+    ) -> some Sequence<Date> {
+        entries(from: range.lowerBound, mode: mode)
+            .lazy
+            .abort(after: limit)
+            .drop(while: { $0 < range.lowerBound })
+            .prefix(while: { $0 < range.upperBound })
     }
 }
 
 extension LazySequenceProtocol where Element == Date {
-    private func abort(after: UInt?) -> LazyPrefixWhileSequence<Elements> {
-        _openSwiftUIUnimplementedFailure()
+    fileprivate func abort(after limit: UInt?) -> LazyPrefixWhileSequence<Elements> {
+        var limit = limit
+        return prefix(while: { date in
+            guard limit != 0 else {
+                Log.timelineScheduleSequences.log("""
+                TimelineSchedule exceeded max length of \(UInt.zero)! Prefix: \(elements.prefix(5).map(\.timeIntervalSinceReferenceDate.description).joined(separator: ", "))
+                Base type: \(PrefixSequence<Elements>.self)
+                """)
+                return false
+            }
+            limit?.unsafeDecrement()
+            return true
+        })
     }
 }
 

@@ -29,7 +29,7 @@ class DateSequenceTimeline: BLSAlwaysOnTimeline {
             return entry.requestedFidelity
         } else {
             let entries = schedule.lazyEntries(
-                with: interval.start ..< .distantFuture,
+                within: interval.start ..< .distantFuture,
                 mode: .lowFrequency,
                 limit: .minimumTimelineScheduleLimit
             )
