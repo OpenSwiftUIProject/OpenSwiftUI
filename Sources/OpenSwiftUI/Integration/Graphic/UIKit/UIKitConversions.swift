@@ -235,4 +235,25 @@ extension UITraitEnvironmentLayoutDirection {
     }
 }
 
+// MARK: - UIUserInterfaceIdiom Conversions
+
+extension UIUserInterfaceIdiom {
+    package var idiom: AnyInterfaceIdiom? {
+        switch self {
+        case .phone: AnyInterfaceIdiom(.phone)
+        case .pad: AnyInterfaceIdiom(.pad)
+        case .tv: AnyInterfaceIdiom(.tv)
+        case .carPlay: AnyInterfaceIdiom(.carPlay)
+        case .watch: AnyInterfaceIdiom(.watch)
+        case .mac: AnyInterfaceIdiom(.mac)
+        case .vision: AnyInterfaceIdiom(.vision)
+        default: nil
+        }
+    }
+}
+
+extension UIUserInterfaceIdiom {
+    static let watch = UIUserInterfaceIdiom(rawValue: 4)!
+}
+
 #endif

@@ -7,13 +7,13 @@
 //  ID: FAF0B683EB49BE9BABC9009857940A1E (SwiftUI)
 
 #if os(iOS) || os(visionOS)
+public import UIKit
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
-public import UIKit
-import OpenSwiftUI_SPI
-
 import OpenSwiftUISymbolDualTestsSupport
+import OpenSwiftUI_SPI
 
 /// A UIView which hosts an OpenSwiftUI View hierarchy.
 @available(macOS, unavailable)
@@ -143,7 +143,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             // AccessibilityFocus.changed(from: nil, to: nil, within: self)
         }
     }
-    
+
+    // private weak var delegate: UIHostingViewDelegate?
+
     required public init(rootView: Content) {
         _rootView = rootView
         Update.begin()
@@ -167,6 +169,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
         // TODO
         super.init(frame: .zero)
+        _base.viewGraph.append(feature: HostViewGraph(host: self))
         // TODO
         let base = base
         if let host = base.host {
@@ -715,6 +718,35 @@ extension _UIHostingView: UIHostingViewBaseDelegate {
 extension _UIHostingView: UIViewControllerProvider {
     var uiViewController: UIViewController? {
         viewController
+    }
+}
+
+// MARK: _UIHostingView.HostViewGraph [6.5.4] [Blocked by Gesture System]
+
+extension _UIHostingView {
+    private struct HostViewGraph: ViewGraphFeature {
+        weak var host: _UIHostingView?
+
+        func modifyViewInputs(inputs: inout _ViewInputs, graph: ViewGraph) {
+            guard let host else {
+                return
+            }
+            // inputs.eventBindingBridgeFactory = UIKitResponderEventBindingBridge.Factory.self
+            // inputs.gestureContainerFactory = UIKitGestureContainerFactory.self
+            // host.delegate?.xx
+            var idiom = inputs[InterfaceIdiomInput.self]
+            if idiom == nil {
+                Update.syncMain {
+                    idiom = host.traitCollection.userInterfaceIdiom.idiom ?? UIDevice.current.userInterfaceIdiom.idiom
+                }
+            }
+            idiom.map { inputs[InterfaceIdiomInput.self] = $0 }
+            let box: WeakBox<UIView> = WeakBox(host)
+            let boxAttr = Attribute(value: box)
+            // inputs[UIKitHostContainerFocusItemInput.self] = boxAttr
+            inputs.textAlwaysOnProvider = OpenSwiftUITextAlwaysOnProvider.self
+            // navigationBridge?.updateViewInputs(&inputs)
+        }
     }
 }
 
