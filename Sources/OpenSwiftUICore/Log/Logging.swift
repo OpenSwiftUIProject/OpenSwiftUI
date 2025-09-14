@@ -23,12 +23,32 @@ extension Logger {
 
 extension Logger.Level {
     #if DEBUG
-    package static let `default`: Logger.Level = .debug
+    public static let `default`: Logger.Level = .debug
     #else
-    package static let `default`: Logger.Level = .info
+    public static let `default`: Logger.Level = .info
     #endif
 }
 
+extension Logger {
+    @inlinable
+    public func log(
+        _ message: @autoclosure () -> Logger.Message,
+        metadata: @autoclosure () -> Logger.Metadata? = nil,
+        file: String = #fileID,
+        function: String = #function,
+        line: UInt = #line
+    ) {
+        self.log(
+            level: .default,
+            message(),
+            metadata: metadata(),
+            source: nil,
+            file: file,
+            function: function,
+            line: line
+        )
+    }
+}
 #else
 public import os.log
 
