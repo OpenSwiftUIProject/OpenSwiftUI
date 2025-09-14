@@ -39,8 +39,10 @@ class DateSequenceTimeline: BLSAlwaysOnTimeline {
             }
             return a == b
         }
-        // TODO
-        return false
+        guard let equatable = lhs.schedule as? any Equatable else {
+            return lhs === rhs
+        }
+        return areEqual(equatable, rhs.schedule)
     }
 }
 

@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: ED1CCB5A10919A16BDE683BBA73F40A5 (SwiftUI)
 
 #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
@@ -26,7 +26,7 @@ class AnyAlwaysOnBridge {
     }
 }
 
-// MARK: AlwaysOnBridge [WIP]
+// MARK: - AlwaysOnBridge
 
 final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
     weak var hostingController:PlatformHostingController<Content>?
@@ -43,7 +43,37 @@ final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
 
     var timelineRegistrations: [DateSequenceTimeline] = [] {
         didSet {
-            // TODO
+            let oldCount = oldValue.count
+            let newCount = timelineRegistrations.count
+            var oldIndex = 0
+            var newIndex = 0
+            while true {
+                let oldElement: DateSequenceTimeline?
+                if oldIndex != oldCount {
+                    oldElement = oldValue[oldIndex]
+                    oldIndex += 1
+                } else {
+                    oldElement = nil
+                }
+                let newElement: DateSequenceTimeline?
+                if newIndex != newCount {
+                    newElement = timelineRegistrations[newIndex]
+                } else {
+                    newElement = nil
+                }
+
+                guard let oldElement, let newElement else {
+                    if oldElement == nil && newElement == nil {
+                        return
+                    } else {
+                        break
+                    }
+                }
+                guard oldElement == newElement else {
+                    break
+                }
+                newIndex &+= 1
+            }
             invalidate(for: "Timeline registrations changed.")
         }
     }
@@ -119,7 +149,7 @@ final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
     }
 }
 
-// MARK: AlwaysOnTimelinesKey
+// MARK: - AlwaysOnTimelinesKey
 
 struct AlwaysOnTimelinesKey: HostPreferenceKey {
     static let defaultValue: [DateSequenceTimeline] = []
