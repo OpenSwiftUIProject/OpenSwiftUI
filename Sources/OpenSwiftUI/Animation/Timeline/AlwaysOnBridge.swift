@@ -181,7 +181,6 @@ struct OpenSwiftUITextAlwaysOnProvider: TextAlwaysOnProvider {
         schedule: @autoclosure () -> Attribute<(any TimelineSchedule)?>,
         outputs: inout _ViewOutputs
     ) {
-
         guard _UIAlwaysOnEnvironment._alwaysOnSupported else {
             return
         }

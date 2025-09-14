@@ -65,11 +65,17 @@ package struct EventBindingBridgeFactoryInput: ViewInput {
 }
 
 extension _ViewInputs {
+    @inline(__always)
+    package var eventBindingBridgeFactory: (any EventBindingBridgeFactory.Type)? {
+        get { self[EventBindingBridgeFactoryInput.self] }
+        set { self[EventBindingBridgeFactoryInput.self] = newValue }
+    }
+
     package func makeEventBindingBridge(
         bindingManager: EventBindingManager,
         responder: any AnyGestureResponder
     ) -> any EventBindingBridge & GestureGraphDelegate {
-        guard let factory = self[EventBindingBridgeFactoryInput.self] else {
+        guard let factory = eventBindingBridgeFactory else {
             preconditionFailure("Event binding factory must be configured")
         }
         return factory.makeEventBindingBridge(
