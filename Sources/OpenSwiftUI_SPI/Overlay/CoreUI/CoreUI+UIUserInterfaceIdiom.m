@@ -53,7 +53,7 @@ CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
         default: return CUISubtypeNormal;
     }
     #else
-    return CUISubtypeAppleVision
+    return CUISubtypeAppleVision;
     #endif
 }
 

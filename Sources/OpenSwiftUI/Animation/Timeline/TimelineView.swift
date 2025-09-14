@@ -416,6 +416,7 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
             }
             #else
             while nextTime <= currentReferenceTime, let next = iterator?.next() {
+                currentTime = nextTime
                 nextTime = next.timeIntervalSinceReferenceDate
             }
             #endif
