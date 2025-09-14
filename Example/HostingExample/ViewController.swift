@@ -66,6 +66,8 @@ class ViewController: NSViewController {
 
 struct ContentView: View {
     var body: some View {
-        ObservationExample()
+        TimelineView(.animation) { context in
+            Color(platformColor: Bool.random() ? .red : .blue)
+        }
     }
 }

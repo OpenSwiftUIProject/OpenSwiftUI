@@ -348,9 +348,107 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
 
         typealias Value = Content
 
-        func updateValue() {
-            // TODO
+        mutating func updateValue() {
+            let previousCurrentTime = currentTime
+            if phase.resetSeed != resetSeed {
+                resetSeed = phase.resetSeed
+                iterator = nil
+                currentTime = -.infinity
+                nextTime = .infinity
+                hadFrameSpecifier = false
+            }
+            var (_, scheduleChanged) = $schedule.changedValue()
+            let (_, viewChanged) = $view.changedValue()
+            var changed = viewChanged
+            let (referenceDate, referenceDateChanged) = $referenceDate?.changedValue() ?? (nil, false)
+            #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+            let (frameSpecifier, frameSpecifierChanged) = $frameSpecifier.changedValue()
+            let (fidelity, fidelityChanged) = $fidelity.changedValue()
+            if frameSpecifierChanged || !hasValue {
+                if (frameSpecifier != nil) != hadFrameSpecifier {
+                    iterator = nil
+                    hadFrameSpecifier = frameSpecifier != nil
+                }
+            }
+            if fidelityChanged {
+                changed = true
+                scheduleChanged = true
+            }
+            #endif
+            let refDate = referenceDate ?? Date()
+            let currentReferenceTime = refDate.timeIntervalSinceReferenceDate
+            if scheduleChanged || iterator == nil || referenceDateChanged {
+                var mode = TimelineScheduleMode.normal
+                if frameSpecifier != nil {
+                    mode = .lowFrequency
+                }
+                nextTime = .infinity
+                if referenceDate == nil {
+                    let schedule = view.schedule
+                    let entries = schedule.entries(from: refDate, mode: mode)
+                    iterator = entries.makeIterator()
+                    if let next = iterator?.next() {
+                        currentTime = next.timeIntervalSinceReferenceDate
+                        if let next = iterator?.next() {
+                            nextTime = next.timeIntervalSinceReferenceDate
+                        }
+                    }
+                } else {
+                    currentTime = currentReferenceTime
+                }
+            }
+            #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+            if let frameSpecifier {
+                if updateFromBacklightServices(frameSpecifier: frameSpecifier) {
+                    scheduleChanged = true
+                }
+            } else {
+                while nextTime <= currentReferenceTime, let next = iterator?.next() {
+                    nextTime = next.timeIntervalSinceReferenceDate
+                }
+            }
+            if !currentTime.isFinite {
+                currentTime = currentReferenceTime
+            }
+            if currentTime != previousCurrentTime || changed || AnyAttribute.currentWasModified || !hasValue {
+                let date = Date(timeIntervalSinceReferenceDate: currentTime)
+                let cadence: TimelineView<PeriodicTimelineSchedule, Never>.Context.Cadence = switch fidelity {
+                case .unspecified, .never, .milliseconds: .minutes
+                case .minutes: .seconds
+                case .seconds: .live
+                @unknown default: .minutes
+                }
+                let context: TimelineView<PeriodicTimelineSchedule, Never>.Context = .init(
+                    date: date,
+                    cadence: cadence,
+                    invalidationAction: invalidationHandler
+                )
+                value = withObservation {
+                    $view.syncMainIfReferences { timelineView in
+                        timelineView.content(unsafeBitCast(context, to: Context.self))
+                    }
+                }
+            }
+            if nextTime != .infinity {
+                let interval = nextTime - currentReferenceTime
+                let viewGraph = ViewGraph.current
+                let nextUpdateTime = interval + time
+                viewGraph.nextUpdate.views.at(nextUpdateTime)
+            }
+            #endif
         }
+
+        #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+        mutating func updateFromBacklightServices(frameSpecifier: BLSAlwaysOnFrameSpecifier) -> Bool {
+            let entrySpecifier = frameSpecifier.entrySpecifier(forTimelineIdentifier: id)
+            if let entrySpecifier {
+                let presentationTime = entrySpecifier.timelineEntry.presentationTime
+                currentTime = presentationTime.timeIntervalSinceReferenceDate
+                nextTime = .infinity
+            }
+            return entrySpecifier != nil
+        }
+        #endif
     }
 }
 
