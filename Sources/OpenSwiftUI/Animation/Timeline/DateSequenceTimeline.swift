@@ -44,7 +44,29 @@ class DateSequenceTimeline: BLSAlwaysOnTimeline {
     }
 }
 
-// MARK: TimelineIdentifier
+// MARK: - TimelineView.Context + invalidate
+
+@available(OpenSwiftUI_v4_0, *)
+@available(macOS, unavailable)
+@available(tvOS, unavailable)
+extension TimelineView.Context {
+
+    /// Resets any pre-rendered views the system has from the timeline.
+    ///
+    /// When entering Always On Display, the system might pre-render frames. If the
+    /// content of these frames must change in a way that isn't reflected by
+    /// the schedule or the timeline view's current bindings --- for example, because
+    /// the user changes the title of a future calendar event --- call this method to
+    /// request that the frames be regenerated.
+    public func invalidateTimelineContent() {
+        guard let bridge = invalidationAction.bridge else {
+            return
+        }
+        bridge.invalidate(for: "Explicit timeline invalidation")
+    }
+}
+
+// MARK: - TimelineIdentifier
 
 @objc
 class TimelineIdentifier: NSObject {
@@ -68,10 +90,20 @@ class TimelineIdentifier: NSObject {
     }
 }
 
-// MARK: UpdateFidelityKey
+// MARK: - UpdateFidelityKey
 
 private struct UpdateFidelityKey: EnvironmentKey {
     static var defaultValue: BLSUpdateFidelity = .seconds
+}
+
+extension CachedEnvironment.ID {
+    static let updateFidelity: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    var updateFidelity: Attribute<BLSUpdateFidelity> {
+        mapEnvironment(id: .updateFidelity) { $0[UpdateFidelityKey.self] }
+    }
 }
 
 // MARK: - TimelineView.AlwaysOnTimelinePreferenceWriter

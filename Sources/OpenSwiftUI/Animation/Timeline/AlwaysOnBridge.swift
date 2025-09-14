@@ -145,10 +145,30 @@ private struct AlwaysOnFrameSpecifier: EnvironmentKey {
     static var defaultValue: BLSAlwaysOnFrameSpecifier? { nil }
 }
 
+extension CachedEnvironment.ID {
+    static let alwaysOnFrameSpecifier: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    var alwaysOnFrameSpecifier: Attribute<BLSAlwaysOnFrameSpecifier?> {
+        mapEnvironment(id: .alwaysOnFrameSpecifier) { $0[AlwaysOnFrameSpecifier.self] }
+    }
+}
+
 // MARK: - AlwaysOnInvalidationKey
 
 private struct AlwaysOnInvalidationKey: EnvironmentKey {
     static let defaultValue: TimelineInvalidationAction = .init()
+}
+
+extension CachedEnvironment.ID {
+    static let alwaysOnInvalidationAction: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    var alwaysOnInvalidationAction: Attribute<TimelineInvalidationAction> {
+        mapEnvironment(id: .alwaysOnInvalidationAction) { $0[AlwaysOnInvalidationKey.self] }
+    }
 }
 
 // MARK: - OpenSwiftUITextAlwaysOnProvider

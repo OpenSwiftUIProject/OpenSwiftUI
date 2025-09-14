@@ -36,6 +36,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property(nonatomic, readonly, nullable) UIViewController *_viewControllerForAncestor_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_viewControllerForAncestor);
 @end
 
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 @protocol _UIBacklightEnvironmentObserver <NSObject>
 - (void)_timelinesForDateInterval:(NSDateInterval *)dateInterval;
 - (void)_timelinesForDateInterval:(NSDateInterval *)dateInterval completion:(void (^)(void))completion;
@@ -47,10 +48,13 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (void)_willExitAlwaysOn;
 - (void)_didExitAlwaysOn;
 @end
+#endif
 
 @interface UIViewController (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) BOOL _canShowWhileLocked_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_canShowWhileLocked);
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 @property (nonatomic, readonly, nullable) NSArray<UIViewController<_UIBacklightEnvironmentObserver> *> *_effectiveControllersForAlwaysOnTimelines;
+#endif
 @end
 
 #if !OPENSWIFTUI_TARGET_OS_VISION || OPENSWIFTUI_INTERNAL_XR_SDK
@@ -71,9 +75,11 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, readonly, nullable) NSObject *_environmentWrapper_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_environmentWrapper);
 @end
 
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 @interface _UIAlwaysOnEnvironment : NSObject
 @property (class, nonatomic, readonly) BOOL _alwaysOnSupported;
 @end
+#endif
 
 OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);

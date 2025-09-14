@@ -15,20 +15,123 @@ public import OpenSwiftUICore
 import BacklightServices
 #endif
 
+// MARK: - TimelineView
+
+/// A view that updates according to a schedule that you provide.
+///
+/// A timeline view acts as a container with no appearance of its own. Instead,
+/// it redraws the content it contains at scheduled points in time.
+/// For example, you can update the face of an analog timer once per second:
+///
+///     TimelineView(.periodic(from: startDate, by: 1)) { context in
+///         AnalogTimerView(date: context.date)
+///     }
+///
+/// The closure that creates the content receives an input of type ``Context``
+/// that you can use to customize the content's appearance. The context includes
+/// the ``Context/date`` that triggered the update. In the example above,
+/// the timeline view sends that date to an analog timer that you create so the
+/// timer view knows how to draw the hands on its face.
+///
+/// The context also includes a ``Context/cadence-swift.property``
+/// property that you can use to hide unnecessary detail. For example, you
+/// can use the cadence to decide when it's appropriate to display the
+/// timer's second hand:
+///
+///     TimelineView(.periodic(from: startDate, by: 1.0)) { context in
+///         AnalogTimerView(
+///             date: context.date,
+///             showSeconds: context.cadence <= .seconds)
+///     }
+///
+/// The system might use a cadence that's slower than the schedule's
+/// update rate. For example, a view on watchOS might remain visible when the
+/// user lowers their wrist, but update less frequently, and thus require
+/// less detail.
+///
+/// You can define a custom schedule by creating a type that conforms to the
+/// ``TimelineSchedule`` protocol, or use one of the built-in schedule types:
+/// * Use an ``TimelineSchedule/everyMinute`` schedule to update at the
+///   beginning of each minute.
+/// * Use a ``TimelineSchedule/periodic(from:by:)`` schedule to update
+///   periodically with a custom start time and interval between updates.
+/// * Use an ``TimelineSchedule/explicit(_:)`` schedule when you need a finite number, or
+///   irregular set of updates.
+///
+/// For a schedule containing only dates in the past,
+/// the timeline view shows the last date in the schedule.
+/// For a schedule containing only dates in the future,
+/// the timeline draws its content using the current date
+/// until the first scheduled date arrives.
 @available(OpenSwiftUI_v3_0, *)
 public struct TimelineView<Schedule, Content> where Schedule: TimelineSchedule {
+
+    /// Information passed to a timeline view's content callback.
+    ///
+    /// The context includes both the ``date`` from the schedule that triggered
+    /// the callback, and a ``cadence-swift.property`` that you can use
+    /// to customize the appearance of your view. For example, you might choose
+    /// to display the second hand of an analog clock only when the cadence is
+    /// ``Cadence-swift.enum/seconds`` or faster.
     public struct Context {
+
+        /// A rate at which timeline views can receive updates.
+        ///
+        /// Use the cadence presented to content in a ``TimelineView`` to hide
+        /// information that updates faster than the view's current update rate.
+        /// For example, you could hide the millisecond component of a digital
+        /// timer when the cadence is ``seconds`` or ``minutes``.
+        ///
+        /// Because this enumeration conforms to the
+        /// [Comparable](https://developer.apple.com/documentation/swift/comparable)
+        /// protocol, you can compare cadences with relational operators.
+        /// Slower cadences have higher values, so you could perform the check
+        /// described above with the following comparison:
+        ///
+        ///     let hideMilliseconds = cadence > .live
+        ///
         public enum Cadence: Comparable, Sendable {
+
+            /// Updates the view continuously.
             case live
+
+            /// Updates the view approximately once per second.
             case seconds
+
+            /// Updates the view approximately once per minute.
             case minutes
         }
 
+        /// The date from the schedule that triggered the current view update.
+        ///
+        /// The first time a ``TimelineView`` closure receives this date, it
+        /// might be in the past. For example, if you create an
+        /// ``TimelineSchedule/everyMinute`` schedule at `10:09:55`, the
+        /// schedule creates entries `10:09:00`, `10:10:00`, `10:11:00`, and so
+        /// on. In response, the timeline view performs an initial update
+        /// immediately, at `10:09:55`, but the context contains the `10:09:00`
+        /// date entry. Subsequent entries arrive at their corresponding times.
         public let date: Date
+
+        /// The rate at which the timeline updates the view.
+        ///
+        /// Use this value to hide information that updates faster than the
+        /// view's current update rate. For example, you could hide the
+        /// millisecond component of a digital timer when the cadence is
+        /// anything slower than ``Cadence-swift.enum/live``.
+        ///
+        /// Because the ``Cadence-swift.enum`` enumeration conforms to the
+        /// [Comparable](https://developer.apple.com/documentation/swift/comparable)
+        /// protocol, you can compare cadences with relational operators.
+        /// Slower cadences have higher values, so you could perform the check
+        /// described above with the following comparison:
+        ///
+        ///     let hideMilliseconds = cadence > .live
+        ///
         public let cadence: Cadence
 
-        #if os(iOS) || os(visionOS)
-        // TODO: let invalidationAction: TimelineInvalidationAction
+        #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+        let invalidationAction: TimelineInvalidationAction
         #endif
     }
 
@@ -43,13 +146,41 @@ extension TimelineView: Sendable {}
 @available(*, unavailable)
 extension TimelineView.Context: Sendable {}
 
+/// Information passed to a timeline view's content callback.
+///
+/// The context includes both the date from the schedule that triggered
+/// the callback, and a cadence that you can use to customize the appearance of
+/// your view. For example, you might choose to display the second hand of an
+/// analog clock only when the cadence is
+/// ``TimelineView/Context/Cadence-swift.enum/seconds`` or faster.
+///
+/// > Note: This type alias uses a specific concrete instance of
+/// ``TimelineView/Context`` that all timeline views can use.
+/// It does this to prevent introducing an unnecessary generic parameter
+/// dependency on the context type.
 @available(OpenSwiftUI_v3_0, *)
 public typealias TimelineViewDefaultContext = TimelineView<EveryMinuteTimelineSchedule, Never>.Context
 
+// MARK: - TimelineView + View [WIP]
+
 @available(OpenSwiftUI_v3_0, *)
 extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
+
     public typealias Body = Never
 
+    /// Creates a new timeline view that uses the given schedule.
+    ///
+    /// - Parameters:
+    ///   - schedule: A schedule that produces a sequence of dates that
+    ///     indicate the instances when the view should update.
+    ///     Use a type that conforms to ``TimelineSchedule``, like
+    ///     ``TimelineSchedule/everyMinute``, or a custom timeline schedule
+    ///     that you define.
+    ///   - content: A closure that generates view content at the moments
+    ///     indicated by the schedule. The closure takes an input of type
+    ///     ``TimelineViewDefaultContext`` that includes the date from the schedule that
+    ///     prompted the update, as well as a ``Context/Cadence-swift.enum``
+    ///     value that the view can use to customize its appearance.
     @_alwaysEmitIntoClient
     nonisolated public init(
         _ schedule: Schedule,
@@ -60,6 +191,19 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
         }
     }
 
+    /// Creates a new timeline view that uses the given schedule.
+    ///
+    /// - Parameters:
+    ///   - schedule: A schedule that produces a sequence of dates that
+    ///     indicate the instances when the view should update.
+    ///     Use a type that conforms to ``TimelineSchedule``, like
+    ///     ``TimelineSchedule/everyMinute``, or a custom timeline schedule
+    ///     that you define.
+    ///   - content: A closure that generates view content at the moments
+    ///     indicated by the schedule. The closure takes an input of type
+    ///     ``Context`` that includes the date from the schedule that
+    ///     prompted the update, as well as a ``Context/Cadence-swift.enum``
+    ///     value that the view can use to customize its appearance.
     @available(*, deprecated, message: "Use TimelineViewDefaultContext for the type of the context parameter passed into TimelineView's content closure to resolve this warning. The new version of this initializer, using TimelineViewDefaultContext, improves compilation performance by using an independent generic type signature, which helps avoid unintended cyclical type dependencies.")
     @_disfavoredOverload
     nonisolated public init(
@@ -71,10 +215,56 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
     }
 
     nonisolated public static func _makeView(
-        view: _GraphValue<TimelineView<Schedule, Content>>,
+        view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+        let id = TimelineIdentifier()
+        let filter = UpdateFilter(
+            view: view.value,
+            schedule: view.value[offset: { .of(&$0.schedule) }],
+            phase: inputs.viewPhase,
+            time: inputs.time,
+            referenceDate: inputs.base.referenceDate,
+            id: id,
+            frameSpecifier: inputs.base.alwaysOnFrameSpecifier,
+            fidelity: inputs.base.updateFidelity,
+            invalidationHandler: inputs.base.alwaysOnInvalidationAction,
+            hadFrameSpecifier: false,
+            resetSeed: .zero,
+            currentTime: -.infinity,
+            nextTime: .infinity,
+            cadence: .live
+        )
+        let filterView = _GraphValue<Content>(filter)
+        var outputs = Content.makeDebuggableView(view: filterView, inputs: inputs)
+        outputs.preferences.makePreferenceTransformer(
+            inputs: inputs.preferences,
+            key: AlwaysOnTimelinesKey.self,
+            transform: Attribute(
+                AlwaysOnTimelinePreferenceWriter(
+                    id: id,
+                    schedule: view.value.unsafeBitCast(to: Schedule.self)
+                )
+            )
+        )
+        return outputs
+        #else
+        let filter = UpdateFilter(
+            view: view.value,
+            schedule: view.value[offset: { .of(&$0.schedule) }],
+            phase: inputs.viewPhase,
+            time: inputs.time,
+            referenceDate: inputs.base.referenceDate,
+            resetSeed: .zero,
+            currentTime: -.infinity,
+            nextTime: .infinity,
+            cadence: .live
+        )
+        let filterView = _GraphValue<Content>(filter)
+        let outputs = Content.makeDebuggableView(view: filterView, inputs: inputs)
+        return outputs
+        #endif
     }
 
     private struct UpdateFilter: StatefulRule, AsyncAttribute {
