@@ -18,9 +18,9 @@
 		27AF22B32E758F2900D534AB /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
 		27AF22B42E758F2900D534AB /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
 		27AF22B52E758F2900D534AB /* CoreUI.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27EE91722DD0C753006C85FD /* CoreUI.xcframework */; };
-		27AF22B62E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; };
-		27AF22B72E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; };
-		27AF22B82E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; };
+		27AF22B62E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; platformFilters = (ios, xros, ); };
+		27AF22B72E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; platformFilters = (ios, xros, ); };
+		27AF22B82E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; platformFilters = (ios, xros, ); };
 		27AF22B92E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */; };
 		27AF22BA2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27AF22BB2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };

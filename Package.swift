@@ -104,10 +104,27 @@ if linkCoreUI {
 // MARK: - [env] OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 
 let linkBacklightServices = envEnable("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
-sharedCSettings.append(.define("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", to: linkBacklightServices ? "1" : "0"))
-sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", to: linkBacklightServices ? "1" : "0"))
+sharedCSettings.append(
+    .define(
+        "OPENSWIFTUI_LINK_BACKLIGHTSERVICES",
+        to: linkBacklightServices ? "1" : "0",
+        .when(platforms: [.iOS, .visionOS])
+    )
+)
+sharedCxxSettings.append(
+    .define(
+        "OPENSWIFTUI_LINK_BACKLIGHTSERVICES",
+        to: linkBacklightServices ? "1" : "0",
+        .when(platforms: [.iOS, .visionOS])
+    )
+)
 if linkBacklightServices {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_BACKLIGHTSERVICES"))
+    sharedSwiftSettings.append(
+        .define(
+            "OPENSWIFTUI_LINK_BACKLIGHTSERVICES",
+            .when(platforms: [.iOS, .visionOS])
+        )
+    )
 }
 
 // MARK: - [env] OPENGSWIFTUI_SYMBOL_LOCATOR
@@ -489,7 +506,13 @@ extension Target {
     func addBacklightServicesSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'BacklightServices.framework'"
-        dependencies.append(.product(name: "BacklightServices", package: "DarwinPrivateFrameworks"))
+        dependencies.append(
+            .product(
+                name: "BacklightServices",
+                package: "DarwinPrivateFrameworks",
+                condition: .when(platforms: [.iOS, .visionOS])
+            )
+        )
     }
 
     func addOpenCombineSettings() {

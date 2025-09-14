@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: A009558074DBEAE1A969E3C6E8DD1422 (SwiftUI)
 
 public import Foundation
@@ -355,7 +355,9 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
                 iterator = nil
                 currentTime = -.infinity
                 nextTime = .infinity
+                #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
                 hadFrameSpecifier = false
+                #endif
             }
             var (_, scheduleChanged) = $schedule.changedValue()
             let (_, viewChanged) = $view.changedValue()
@@ -378,10 +380,14 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
             let refDate = referenceDate ?? Date()
             let currentReferenceTime = refDate.timeIntervalSinceReferenceDate
             if scheduleChanged || iterator == nil || referenceDateChanged {
+                #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
                 var mode = TimelineScheduleMode.normal
                 if frameSpecifier != nil {
                     mode = .lowFrequency
                 }
+                #else
+                let mode = TimelineScheduleMode.normal
+                #endif
                 nextTime = .infinity
                 if referenceDate == nil {
                     let schedule = view.schedule
@@ -407,11 +413,17 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
                     nextTime = next.timeIntervalSinceReferenceDate
                 }
             }
+            #else
+            while nextTime <= currentReferenceTime, let next = iterator?.next() {
+                nextTime = next.timeIntervalSinceReferenceDate
+            }
+            #endif
             if !currentTime.isFinite {
                 currentTime = currentReferenceTime
             }
             if currentTime != previousCurrentTime || changed || AnyAttribute.currentWasModified || !hasValue {
                 let date = Date(timeIntervalSinceReferenceDate: currentTime)
+                #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
                 let cadence: TimelineView<PeriodicTimelineSchedule, Never>.Context.Cadence = switch fidelity {
                 case .unspecified, .never, .milliseconds: .minutes
                 case .minutes: .seconds
@@ -423,6 +435,12 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
                     cadence: cadence,
                     invalidationAction: invalidationHandler
                 )
+                #else
+                let context: TimelineView<PeriodicTimelineSchedule, Never>.Context = .init(
+                    date: date,
+                    cadence: .live
+                )
+                #endif
                 value = withObservation {
                     $view.syncMainIfReferences { timelineView in
                         timelineView.content(unsafeBitCast(context, to: Context.self))
@@ -435,7 +453,6 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
                 let nextUpdateTime = interval + time
                 viewGraph.nextUpdate.views.at(nextUpdateTime)
             }
-            #endif
         }
 
         #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
