@@ -43,36 +43,8 @@ final class AlwaysOnBridge<Content>: AnyAlwaysOnBridge where Content: View {
 
     var timelineRegistrations: [DateSequenceTimeline] = [] {
         didSet {
-            let oldCount = oldValue.count
-            let newCount = timelineRegistrations.count
-            var oldIndex = 0
-            var newIndex = 0
-            while true {
-                let oldElement: DateSequenceTimeline?
-                if oldIndex != oldCount {
-                    oldElement = oldValue[oldIndex]
-                    oldIndex += 1
-                } else {
-                    oldElement = nil
-                }
-                let newElement: DateSequenceTimeline?
-                if newIndex != newCount {
-                    newElement = timelineRegistrations[newIndex]
-                } else {
-                    newElement = nil
-                }
-
-                guard let oldElement, let newElement else {
-                    if oldElement == nil && newElement == nil {
-                        return
-                    } else {
-                        break
-                    }
-                }
-                guard oldElement == newElement else {
-                    break
-                }
-                newIndex &+= 1
+            guard !oldValue.elementsEqual(timelineRegistrations) else {
+                return
             }
             invalidate(for: "Timeline registrations changed.")
         }
