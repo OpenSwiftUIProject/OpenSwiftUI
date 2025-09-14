@@ -604,8 +604,7 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
     if attributeGraphCondition || renderBoxCondition || linkCoreUI {
-        dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
-//        dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
+        dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
 }
