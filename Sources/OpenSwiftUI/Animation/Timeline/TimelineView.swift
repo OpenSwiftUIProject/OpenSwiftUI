@@ -425,9 +425,9 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
                 let date = Date(timeIntervalSinceReferenceDate: currentTime)
                 #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
                 let cadence: TimelineView<PeriodicTimelineSchedule, Never>.Context.Cadence = switch fidelity {
-                case .unspecified, .never, .milliseconds: .minutes
-                case .minutes: .seconds
-                case .seconds: .live
+                case .unspecified, .never, .minutes: .minutes
+                case .seconds: .seconds
+                case .milliseconds: .live
                 @unknown default: .minutes
                 }
                 let context: TimelineView<PeriodicTimelineSchedule, Never>.Context = .init(
