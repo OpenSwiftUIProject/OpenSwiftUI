@@ -94,6 +94,23 @@ The project uses **swift-testing framework** (not XCTest):
 - Use `@Test` attribute for test functions
 - Use `#expect()` for assertions instead of XCTest assertions
 - No comments in test case bodies - keep tests clean and self-explanatory
+- For floating-point comparisons, use `isApproximatelyEqual` instead of `==` to handle precision issues:
+  ```swift
+  #expect(value.isApproximatelyEqual(to: expectedValue))
+  ```
+
+### Compatibility Tests
+
+When writing tests in `OpenSwiftUICompatibilityTests`:
+- **DO NOT add conditional imports** - imports are handled in `Export.swift`
+- **NEVER use module-qualified types** (e.g., `SwiftUI.PeriodicTimelineSchedule`)
+- Write test code that works identically with both SwiftUI and OpenSwiftUI
+- Simply use types directly without any module prefixes:
+  ```swift
+  // No conditional imports needed - Export.swift handles this
+  let schedule = PeriodicTimelineSchedule(from: startDate, by: interval)
+  let entries = schedule.entries(from: queryDate, mode: .normal)
+  ```
 
 ### Code Style (from .github/copilot-instructions.md)
 

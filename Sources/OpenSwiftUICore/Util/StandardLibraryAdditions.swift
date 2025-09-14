@@ -91,6 +91,20 @@ extension UInt32 {
     package mutating func unsafeIncrement() {
         self = self &+ 1
     }
+
+    package mutating func unsafeDecrement() {
+        self = self &- 1
+    }
+}
+
+extension UInt {
+    package mutating func unsafeIncrement() {
+        self = self &+ 1
+    }
+
+    package mutating func unsafeDecrement() {
+        self = self &- 1
+    }
 }
 
 // MARK: - FixedWidthInteger + clamping [6.5.4]

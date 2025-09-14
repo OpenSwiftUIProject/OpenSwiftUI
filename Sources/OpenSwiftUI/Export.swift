@@ -10,6 +10,7 @@
 @_spi(SystemUI)
 @_spi(DoNotImport)
 public import OpenSwiftUICore
+package typealias UniqueID = OpenSwiftUICore.UniqueID
 
 #if canImport(CoreGraphics)
 @_exported import CoreGraphics

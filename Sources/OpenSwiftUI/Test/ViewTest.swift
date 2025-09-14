@@ -273,7 +273,7 @@ extension _ViewTest {
             }
         }
         if CoreTesting.needsRender || CoreTesting.neeedsRunLoopTurn {
-            Log.unitTests.log(level: .default, "Render or run loop turn needed after max iterations")
+            Log.unitTests.log("Render or run loop turn needed after max iterations")
         }
     }
 }

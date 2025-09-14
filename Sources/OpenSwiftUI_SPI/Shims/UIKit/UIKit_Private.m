@@ -80,6 +80,12 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIUserInterfaceStyle, @"_systemUserInterfaceStyle", UIUserInterfaceStyleUnspecified);
     return func(self, selector);
 }
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+- (BLSBacklightFBSSceneEnvironment *)_backlightSceneEnvironment_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BLSBacklightFBSSceneEnvironment *, @"_backlightSceneEnvironment", nil);
+    return func(self, selector);
+}
+#endif
 @end
 
 @implementation UITraitCollection (OpenSwiftUI_SPI)
