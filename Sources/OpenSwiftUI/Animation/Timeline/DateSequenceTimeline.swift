@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audit for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 4A16DECB179482C36B65AC864E5087D (SwiftUI?)
 
 #if (os(iOS) || os(visionOS)) && OPENSWIFTUI_LINK_BACKLIGHTSERVICES
@@ -11,7 +11,7 @@
 import BacklightServices
 import OpenAttributeGraphShims
 
-// MARK: - DateSequenceTimeline [WIP]
+// MARK: - DateSequenceTimeline
 
 class DateSequenceTimeline: BLSAlwaysOnTimeline {
     var schedule: any TimelineSchedule
@@ -21,15 +21,51 @@ class DateSequenceTimeline: BLSAlwaysOnTimeline {
         super.init(identifier: identifier, configure: nil)
     }
 
-
-    override func requestedFidelityForStartEntry(inDateInterval interval: Any, withPreviousEntry entry: Any) -> BLSUpdateFidelity {
-        // TODO
-        .milliseconds
+    override func requestedFidelityForStartEntry(
+        in interval: DateInterval,
+        withPreviousEntry entry: BLSAlwaysOnTimelineEntry?
+    ) -> BLSUpdateFidelity {
+        if let entry {
+            return entry.requestedFidelity
+        } else {
+            let entries = schedule.lazyEntries(
+                with: interval.start ..< .distantFuture,
+                mode: .lowFrequency,
+                limit: .minimumTimelineScheduleLimit
+            )
+            let iterator = entries.makeIterator()
+            guard let current = iterator.next(), let next = iterator.next() else {
+                return .unspecified
+            }
+            return estimatedFidelity(forPresentationTime: current, nextPresentationTime: next)
+        }
     }
 
-    override func unconfiguredEntries(forDateInterval interval: Any, previousEntry entry: Any) -> Any {
-        // TODO
-        return [0]
+    override func unconfiguredEntries(
+        for interval: DateInterval,
+        previousEntry entry: BLSAlwaysOnTimelineEntry?
+    ) -> [BLSAlwaysOnTimelineUnconfiguredEntry]? {
+        let clampedLimit = UInt((interval.duration * 4).clamp(min: -1, max: Double(UInt.max)))
+        let limit = max(.minimumTimelineScheduleLimit, clampedLimit)
+        let dates = schedule.entries(
+            within: interval,
+            mode: .lowFrequency,
+            limit: limit
+        )
+        guard !dates.isEmpty else {
+            return []
+        }
+        var unconfiguredEntries: [BLSAlwaysOnTimelineUnconfiguredEntry] = []
+        unconfiguredEntries.reserveCapacity(dates.count)
+        for date in dates {
+            let unconfiguredEntry = BLSAlwaysOnTimelineUnconfiguredEntry(
+                forPresentationTime: date,
+                withRequestedFidelity: .unspecified
+            )
+            unconfiguredEntries.append(unconfiguredEntry)
+        }
+
+        return unconfiguredEntries
     }
 
     static func == (lhs: DateSequenceTimeline, rhs: DateSequenceTimeline) -> Bool {
@@ -71,7 +107,7 @@ extension TimelineView.Context {
 // MARK: - TimelineIdentifier
 
 @objc
-class TimelineIdentifier: NSObject {
+class TimelineIdentifier: NSObject, NSCopying {
     private let identifier: UniqueID
 
     override init() {
@@ -89,6 +125,10 @@ class TimelineIdentifier: NSObject {
             return false
         }
         return identifier == other.identifier
+    }
+
+    func copy(with zone: NSZone? = nil) -> Any {
+        self
     }
 }
 

@@ -4,8 +4,11 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
+//  ID: 060A68BF8978E18F3139FB308E31B823
 
 public import Foundation
+
+// MARK: - TimelineSchedule
 
 /// A type that provides a sequence of dates for use as a schedule.
 ///
@@ -79,6 +82,8 @@ public protocol TimelineSchedule {
     func entries(from startDate: Date, mode: Self.Mode) -> Self.Entries
 }
 
+// MARK: - TimelineScheduleMode
+
 /// A mode of operation for timeline schedule updates.
 ///
 /// A ``TimelineView`` provides a mode when calling its schedule's
@@ -101,6 +106,55 @@ public enum TimelineScheduleMode: Sendable {
     /// this mode.
     case lowFrequency
 }
+
+// MARK: - TimelineSchedule + lazyEntries [WIP]
+
+extension UInt {
+    package static var minimumTimelineScheduleLimit: UInt { 60 }
+}
+
+extension TimelineSchedule {
+    package func entries(
+        within interval: DateInterval,
+        mode: TimelineScheduleMode,
+        limit: UInt?
+    ) -> [Date] {
+        return []
+//        AnySequence(entries(within: range, mode: mode, limit: limit))
+    }
+
+    package func lazyEntries(
+        with range: Range<Date>,
+        mode: TimelineScheduleMode = .normal,
+        limit: UInt?
+    ) -> AnySequence<Date> {
+        AnySequence(entries(within: range, mode: mode, limit: limit))
+    }
+
+    private func entries(within range: Range<Date>, mode: TimelineScheduleMode, limit: UInt?) -> [Date] {
+        // FIXME
+        var dates: [Date] = []
+        var count: UInt = 0
+        let maxCount = limit ?? UInt.max
+
+        for date in entries(from: range.lowerBound, mode: mode) {
+            guard date < range.upperBound else { break }
+            dates.append(date)
+            count += 1
+            if count >= maxCount { break }
+        }
+
+        return dates
+    }
+}
+
+extension LazySequenceProtocol where Element == Date {
+    private func abort(after: UInt?) -> LazyPrefixWhileSequence<Elements> {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - Concreate TimelineSchedule Types
 
 @available(OpenSwiftUI_v3_0, *)
 extension TimelineSchedule where Self == PeriodicTimelineSchedule {
@@ -235,7 +289,7 @@ public struct PeriodicTimelineSchedule: TimelineSchedule, Sendable {
         }
 
         public mutating func next() -> Date? {
-            defer { date += interval }
+            defer { date = date.addingTimeInterval(interval) }
             return date
         }
     }
@@ -258,10 +312,10 @@ public struct PeriodicTimelineSchedule: TimelineSchedule, Sendable {
     }
 
     public func entries(from startDate: Date, mode: TimelineScheduleMode) -> PeriodicTimelineSchedule.Entries {
-        let remainder = date
-            .timeIntervalSince(startDate)
-            .truncatingRemainder(dividingBy: interval)
-        return Entries(date: startDate + remainder, interval: interval)
+        let timeSinceScheduleStart = startDate.timeIntervalSince(date)
+        let remainder = timeSinceScheduleStart.truncatingRemainder(dividingBy: interval)
+        let alignedDate = startDate.addingTimeInterval(-remainder)
+        return Entries(date: alignedDate, interval: interval)
     }
 }
 
