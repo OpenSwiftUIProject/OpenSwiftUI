@@ -71,7 +71,12 @@ package struct SafeAreaInsets: Equatable {
     
     package func resolve(regions: SafeAreaRegions, in ctx: _PositionAwarePlacementContext) -> EdgeInsets {
         // _openSwiftUIUnimplementedFailure()
-        .zero
+
+        if let first = elements.first {
+            return first.insets
+        } else {
+            return .zero
+        }
     }
 
     private func adjust(

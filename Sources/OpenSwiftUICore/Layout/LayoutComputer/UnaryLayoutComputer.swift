@@ -204,11 +204,13 @@ private struct UnaryPositionAwareChildGeometry<L>: Rule, AsyncAttribute, CustomS
                 safeAreaInsets: _safeAreaInsets
             )
         )
-        return child.finallyPlaced(
+        var geometry = child.finallyPlaced(
             at: placement,
             in: parentSize.value,
             layoutDirection: layoutDirection
         )
+        geometry.origin += CGSize(position)
+        return geometry
     }
 
     var description: String {
