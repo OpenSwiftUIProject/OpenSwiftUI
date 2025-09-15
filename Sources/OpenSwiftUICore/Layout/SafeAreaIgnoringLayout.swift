@@ -67,7 +67,7 @@ public struct _SafeAreaRegionsIgnoringLayout: UnaryLayout {
         in context: _PositionAwarePlacementContext
     ) -> _Placement {
         let insets = context.safeAreaInsets(matching: regions).in(edges)
-        let size = context.proposedSize.inset(by: insets)
+        let size = context.proposedSize.inset(by: -insets)
         return _Placement(
             proposedSize: size,
             anchoring: .topLeading,
