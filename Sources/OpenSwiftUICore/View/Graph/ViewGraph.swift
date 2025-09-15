@@ -64,7 +64,7 @@ package final class ViewGraph: GraphHost {
     @Attribute var position: ViewOrigin
     @Attribute var dimensions: ViewSize
     
-    @OptionalAttribute var scrollableContainerSize: ViewSize?
+    @OptionalAttribute var containerSize: ViewSize?
     
     @Attribute var gestureTime: Time
     @Attribute var gestureEvents: [EventID : EventType]
@@ -154,7 +154,7 @@ package final class ViewGraph: GraphHost {
         _transform = _rootTransform
         _zeroPoint = Attribute(value: ViewOrigin())
         _proposedSize = Attribute(value: .zero)
-        _scrollableContainerSize = requestedOutputs.contains(.layout) ? OptionalAttribute(Attribute(value: .zero)) : OptionalAttribute()
+        _containerSize = requestedOutputs.contains(.layout) ? OptionalAttribute(Attribute(value: .zero)) : OptionalAttribute()
         _safeAreaInsets = Attribute(value: _SafeAreaInsetsModifier(elements: [.init(regions: .container, insets: .zero)]))
         _defaultLayoutComputer = Attribute(value: .defaultValue)
         _gestureTime = Attribute(value: .zero)
@@ -222,7 +222,7 @@ package final class ViewGraph: GraphHost {
             )
             if requestedOutputs.contains(.layout) {
                 inputs.base.options.formUnion([.viewRequestsLayoutComputer, .viewNeedsGeometry])
-                inputs.scrollableContainerSize = _scrollableContainerSize
+                inputs.containerSize = _containerSize
             }
             requestedOutputs.addRequestedPreferences(to: &inputs)
             if let preferenceBridge {
@@ -352,11 +352,11 @@ extension ViewGraph {
         return hasChange
     }
     
-    package func setScrollableContainerSize(_ size: ViewSize) {
-        guard let $scrollableContainerSize else {
+    package func setContainerSize(_ size: ViewSize) {
+        guard let $containerSize else {
             return
         }
-        let hasChange = $scrollableContainerSize.setValue(size)
+        let hasChange = $containerSize.setValue(size)
         if hasChange {
             delegate?.graphDidChange()
         }
