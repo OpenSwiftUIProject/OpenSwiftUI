@@ -97,8 +97,52 @@ package struct SafeAreaInsets: Equatable {
     }
 
     private func mergedInsets(regions: SafeAreaRegions) -> (selected: EdgeInsets, total: EdgeInsets) {
-        _openSwiftUIUnimplementedWarning()
-        return (.zero, .zero)
+        guard !elements.isEmpty else {
+            return (.zero, .zero)
+        }
+        var selected: EdgeInsets = .zero
+        var total: EdgeInsets = .zero
+
+        // Track which edges can still contribute to the selected insets.
+        // This prevents inner safe area modifiers from overriding outer ones.
+        // For example, if an outer modifier sets a top inset for a different region,
+        // an inner modifier matching our region shouldn't override that top edge.
+        var availableEdges: Edge.Set = .all
+
+        // Iterate through elements in reverse order (from innermost to outermost modifier).
+        // This ensures that outer modifiers take precedence over inner ones for each edge.
+        for element in elements.reversed() {
+            let insets = element.insets
+            if element.regions.isDisjoint(with: regions) {
+                if insets.leading != 0 {
+                    availableEdges.remove(.leading)
+                }
+                if insets.trailing != 0 {
+                    availableEdges.remove(.trailing)
+                }
+                if insets.top != 0 {
+                    availableEdges.remove(.top)
+                }
+                if insets.bottom != 0 {
+                    availableEdges.remove(.bottom)
+                }
+            } else {
+                if availableEdges.contains(.top) {
+                    selected.top += insets.top
+                }
+                if availableEdges.contains(.leading) {
+                    selected.leading += insets.leading
+                }
+                if availableEdges.contains(.bottom) {
+                    selected.bottom += insets.bottom
+                }
+                if availableEdges.contains(.trailing) {
+                    selected.trailing += insets.trailing
+                }
+            }
+            total += insets
+        }
+        return (selected, total)
     }
 }
 
