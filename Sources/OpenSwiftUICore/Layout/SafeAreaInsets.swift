@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by ViewTransform+CoordinateSpace
 //  ID: C4DC82F2A500E9B6DEA3064A36584B42 (SwiftUICore)
 
 import Foundation
@@ -88,12 +88,19 @@ package struct SafeAreaInsets: Equatable {
         return insets
     }
 
+    // FIXME: This does not handle coordinate space conversions.
     private func adjust(
         _ rect: inout CGRect,
         regions: SafeAreaRegions,
-        to: _PositionAwarePlacementContext
-    )  {
-        _openSwiftUIUnimplementedWarning()
+        to context: _PositionAwarePlacementContext
+    ) {
+        let (selectedInsets, _) = mergedInsets(regions: regions)
+        guard !selectedInsets.isEmpty else { return }
+        // TODO: ViewTransform coordinate space conversion
+        rect.origin.x -= selectedInsets.leading
+        rect.origin.y -= selectedInsets.top
+        rect.size.width += (selectedInsets.leading + selectedInsets.trailing)
+        rect.size.height += (selectedInsets.top + selectedInsets.bottom)
     }
 
     private func mergedInsets(regions: SafeAreaRegions) -> (selected: EdgeInsets, total: EdgeInsets) {
