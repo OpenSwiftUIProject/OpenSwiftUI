@@ -2,14 +2,14 @@
 //  SafeAreaInsets.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: C4DC82F2A500E9B6DEA3064A36584B42 (SwiftUICore)
 
 import Foundation
 package import OpenAttributeGraphShims
 
-// MARK: - SafeAreaRegions [6.4.41]
+// MARK: - SafeAreaRegions
 
 /// A set of symbolic safe area regions.
 @frozen
@@ -70,13 +70,22 @@ package struct SafeAreaInsets: Equatable {
     }
     
     package func resolve(regions: SafeAreaRegions, in ctx: _PositionAwarePlacementContext) -> EdgeInsets {
-        // _openSwiftUIUnimplementedFailure()
-
-        if let first = elements.first {
-            return first.insets
-        } else {
-            return .zero
+        let size = ctx.size
+        let rect = CGRect(origin: .zero, size: size)
+        var adjustedRect = rect
+        adjust(&adjustedRect, regions: regions, to: ctx)
+        var next = next
+        while case let .insets(nextInsets) = next {
+            nextInsets.adjust(&adjustedRect, regions: regions, to: ctx)
+            next = nextInsets.next
         }
+        var insets = EdgeInsets.zero
+        insets.top = rect.minY - adjustedRect.minY
+        insets.leading = rect.minX - adjustedRect.minX
+        insets.bottom = adjustedRect.maxY - rect.maxY
+        insets.trailing = adjustedRect.maxX - rect.maxX
+        insets.xFlipIfRightToLeft { ctx.layoutDirection }
+        return insets
     }
 
     private func adjust(
@@ -84,7 +93,12 @@ package struct SafeAreaInsets: Equatable {
         regions: SafeAreaRegions,
         to: _PositionAwarePlacementContext
     )  {
-        // _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    private func mergedInsets(regions: SafeAreaRegions) -> (selected: EdgeInsets, total: EdgeInsets) {
+        _openSwiftUIUnimplementedWarning()
+        return (.zero, .zero)
     }
 }
 
