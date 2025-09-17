@@ -82,7 +82,7 @@ public struct _ViewInputs {
     
     package var safeAreaInsets: OptionalAttribute<SafeAreaInsets>
     
-    package var scrollableContainerSize: OptionalAttribute<ViewSize>
+    package var containerSize: OptionalAttribute<ViewSize>
     
     // MARK: - base.options
     
@@ -153,7 +153,7 @@ public struct _ViewInputs {
         self.containerPosition = containerPosition
         self.size = size
         self.safeAreaInsets = OptionalAttribute()
-        self.scrollableContainerSize = OptionalAttribute()
+        self.containerSize = OptionalAttribute()
     }
     
     package static func invalidInputs(_ base: _GraphInputs) -> _ViewInputs {
@@ -258,7 +258,7 @@ extension _ViewInputs {
         self.containerPosition = containerPosition
         self.size = size
         self.safeAreaInsets = .init()
-        self.scrollableContainerSize = .init()
+        self.containerSize = .init()
     }
 }
 

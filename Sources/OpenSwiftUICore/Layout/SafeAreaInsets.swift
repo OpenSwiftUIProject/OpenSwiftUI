@@ -2,14 +2,14 @@
 //  SafeAreaInsets.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Blocked by ViewTransform+CoordinateSpace
 //  ID: C4DC82F2A500E9B6DEA3064A36584B42 (SwiftUICore)
 
 import Foundation
 package import OpenAttributeGraphShims
 
-// MARK: - SafeAreaRegions [6.4.41]
+// MARK: - SafeAreaRegions
 
 /// A set of symbolic safe area regions.
 @frozen
@@ -70,16 +70,86 @@ package struct SafeAreaInsets: Equatable {
     }
     
     package func resolve(regions: SafeAreaRegions, in ctx: _PositionAwarePlacementContext) -> EdgeInsets {
-        // _openSwiftUIUnimplementedFailure()
-        .zero
+        let size = ctx.size
+        let rect = CGRect(origin: .zero, size: size)
+        var adjustedRect = rect
+        adjust(&adjustedRect, regions: regions, to: ctx)
+        var next = next
+        while case let .insets(nextInsets) = next {
+            nextInsets.adjust(&adjustedRect, regions: regions, to: ctx)
+            next = nextInsets.next
+        }
+        var insets = EdgeInsets.zero
+        insets.top = rect.minY - adjustedRect.minY
+        insets.leading = rect.minX - adjustedRect.minX
+        insets.bottom = adjustedRect.maxY - rect.maxY
+        insets.trailing = adjustedRect.maxX - rect.maxX
+        insets.xFlipIfRightToLeft { ctx.layoutDirection }
+        return insets
     }
 
+    // FIXME: This does not handle coordinate space conversions.
     private func adjust(
         _ rect: inout CGRect,
         regions: SafeAreaRegions,
-        to: _PositionAwarePlacementContext
-    )  {
-        // _openSwiftUIUnimplementedFailure()
+        to context: _PositionAwarePlacementContext
+    ) {
+        let (selectedInsets, _) = mergedInsets(regions: regions)
+        guard !selectedInsets.isEmpty else { return }
+        // TODO: ViewTransform coordinate space conversion
+        rect.origin.x -= selectedInsets.leading
+        rect.origin.y -= selectedInsets.top
+        rect.size.width += (selectedInsets.leading + selectedInsets.trailing)
+        rect.size.height += (selectedInsets.top + selectedInsets.bottom)
+    }
+
+    private func mergedInsets(regions: SafeAreaRegions) -> (selected: EdgeInsets, total: EdgeInsets) {
+        guard !elements.isEmpty else {
+            return (.zero, .zero)
+        }
+        var selected: EdgeInsets = .zero
+        var total: EdgeInsets = .zero
+
+        // Track which edges can still contribute to the selected insets.
+        // This prevents inner safe area modifiers from overriding outer ones.
+        // For example, if an outer modifier sets a top inset for a different region,
+        // an inner modifier matching our region shouldn't override that top edge.
+        var availableEdges: Edge.Set = .all
+
+        // Iterate through elements in reverse order (from innermost to outermost modifier).
+        // This ensures that outer modifiers take precedence over inner ones for each edge.
+        for element in elements.reversed() {
+            let insets = element.insets
+            if element.regions.isDisjoint(with: regions) {
+                if insets.leading != 0 {
+                    availableEdges.remove(.leading)
+                }
+                if insets.trailing != 0 {
+                    availableEdges.remove(.trailing)
+                }
+                if insets.top != 0 {
+                    availableEdges.remove(.top)
+                }
+                if insets.bottom != 0 {
+                    availableEdges.remove(.bottom)
+                }
+            } else {
+                if availableEdges.contains(.top) {
+                    selected.top += insets.top
+                }
+                if availableEdges.contains(.leading) {
+                    selected.leading += insets.leading
+                }
+                if availableEdges.contains(.bottom) {
+                    selected.bottom += insets.bottom
+                }
+                if availableEdges.contains(.trailing) {
+                    selected.trailing += insets.trailing
+                }
+            }
+            total += insets
+        }
+        return (selected, total)
     }
 }
 
