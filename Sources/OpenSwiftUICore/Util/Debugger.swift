@@ -25,5 +25,26 @@ package let isDebuggerAttached: Bool = {
     return (info.kp_proc.p_flag & P_TRACED) != 0
 }()
 #else
-package let isDebuggerAttached: Bool = false
+import Foundation
+
+package let isDebuggerAttached: Bool = {
+    guard let statusData = try? Data(contentsOf: URL(fileURLWithPath: "/proc/self/status")),
+          let statusString = String(data: statusData, encoding: .utf8) else {
+        return false
+    }
+
+    for line in statusString.components(separatedBy: .newlines) {
+        if line.hasPrefix("TracerPid:") {
+            let components = line.components(separatedBy: .whitespaces)
+            if components.count >= 2,
+               let tracerPid = Int(components[1]),
+               tracerPid != 0 {
+                return true
+            }
+            break
+        }
+    }
+
+    return false
+}()
 #endif
