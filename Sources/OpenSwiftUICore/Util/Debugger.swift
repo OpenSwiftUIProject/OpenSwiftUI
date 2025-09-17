@@ -8,9 +8,7 @@
 #if canImport(Darwin)
 import Darwin
 import os
-#endif
 
-#if canImport(Darwin)
 package let isDebuggerAttached: Bool = {
     var info = kinfo_proc()
     var mib: [Int32] = [CTL_KERN, KERN_PROC, KERN_PROC_PID, getpid()]
