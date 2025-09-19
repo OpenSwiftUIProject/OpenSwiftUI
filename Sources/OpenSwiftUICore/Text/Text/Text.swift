@@ -86,6 +86,13 @@ public struct Text: Equatable, Sendable {
         _ context: String = #function,
         options: Text.ResolveOptions = []
     ) {
+        guard isDebuggerAttached else {
+            return
+        }
+//        guard isStyled(options: options) else {
+//
+//        }
+        // Only unstyled text can be used with %s
         _openSwiftUIUnimplementedFailure()
     }
 
