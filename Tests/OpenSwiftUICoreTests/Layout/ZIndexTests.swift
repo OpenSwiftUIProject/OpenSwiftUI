@@ -2,9 +2,9 @@
 //  ZIndexTests.swift
 //  OpenSwiftUICoreTests
 
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 import Testing
-import OpenAttributeGraphShims
 
 @MainActor
 struct ZIndexTests {

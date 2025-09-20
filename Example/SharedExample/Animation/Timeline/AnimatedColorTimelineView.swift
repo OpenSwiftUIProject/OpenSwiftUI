@@ -26,14 +26,14 @@ struct AnimatedColorTimelineView: View {
                     saturation: 0.8,
                     brightness: 0.9
                 )
-//                .ignoresSafeArea()
-                
+                .ignoresSafeArea()
+
                 VStack(spacing: 30) {
 //                    Text("Animated Colors")
 //                        .font(.largeTitle)
 //                        .fontWeight(.bold)
 //                        .foregroundColor(.white)
-                    
+
                     // Pulsing circle that changes color
 //                    Circle()
 //                        .fill(
@@ -47,7 +47,7 @@ struct AnimatedColorTimelineView: View {
                             width: 100 + sin(time * 3) * 20,
                             height: 100 + sin(time * 3) * 20
                         )
-                    
+
                     // Display current color values
                     let currentHue = (sin(time * 0.5) + 1) / 2
                     let _ = print(currentHue)
