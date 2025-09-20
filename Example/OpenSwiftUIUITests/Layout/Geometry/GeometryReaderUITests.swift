@@ -8,7 +8,7 @@ import Testing
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct GeometryReaderUITests {
-    @Test
+    @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/474"))
     func centerView() {
         struct ContentView: View {
             var body: some View {
@@ -24,6 +24,13 @@ struct GeometryReaderUITests {
             }
         }
         openSwiftUIAssertSnapshot(of: ContentView())
+        #if OPENSWIFTUI
+        withKnownIssue {
+            openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
+        }
+        #else
+        openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
+        #endif
     }
 
     @Test
