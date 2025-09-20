@@ -1,3 +1,11 @@
+//
+//  PositionLayout.swift
+//  OpenSwiftUICore
+//
+//  Audited for 6.5.4
+//  Status: Complete
+//  ID:  (SwiftUI)
+
 public import Foundation
 
 @_spi(ForOpenSwiftUIOnly)
