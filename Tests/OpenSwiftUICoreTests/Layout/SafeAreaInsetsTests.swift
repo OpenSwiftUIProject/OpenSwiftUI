@@ -8,6 +8,7 @@ import OpenSwiftUICore
 import Testing
 
 @MainActor
+@Suite(.enabled(if: attributeGraphEnabled, "OpenAttributeGraph is not ready yet"))
 struct SafeAreaInsetsTests {
     @Test
     func insets() {
