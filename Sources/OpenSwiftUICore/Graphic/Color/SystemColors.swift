@@ -206,19 +206,19 @@ package enum SystemColorType: ColorProvider {
     package var kitColor: AnyObject? {
         #if canImport(Darwin)
         switch self {
-            case .red: CoreColor.systemRedColor(with: .defaults)
-            case .orange: CoreColor.systemOrangeColor(with: .defaults)
-            case .yellow: CoreColor.systemYellowColor(with: .defaults)
-            case .green: CoreColor.systemGreenColor(with: .defaults)
-            case .teal: CoreColor.systemTealColor(with: .defaults)
-            case .mint: CoreColor.systemMintColor(with: .defaults)
-            case .cyan: CoreColor.systemCyanColor(with: .defaults)
-            case .blue: CoreColor.systemBlueColor(with: .defaults)
-            case .indigo: CoreColor.systemIndigoColor(with: .defaults)
-            case .purple: CoreColor.systemPurpleColor(with: .defaults)
-            case .pink: CoreColor.systemPinkColor(with: .defaults)
-            case .brown: CoreColor.systemBrownColor(with: .defaults)
-            case .gray: CoreColor.systemGrayColor(with: .defaults)
+            case .red: CoreColor.systemRedColor(with: .default)
+            case .orange: CoreColor.systemOrangeColor(with: .default)
+            case .yellow: CoreColor.systemYellowColor(with: .default)
+            case .green: CoreColor.systemGreenColor(with: .default)
+            case .teal: CoreColor.systemTealColor(with: .default)
+            case .mint: CoreColor.systemMintColor(with: .default)
+            case .cyan: CoreColor.systemCyanColor(with: .default)
+            case .blue: CoreColor.systemBlueColor(with: .default)
+            case .indigo: CoreColor.systemIndigoColor(with: .default)
+            case .purple: CoreColor.systemPurpleColor(with: .default)
+            case .pink: CoreColor.systemPinkColor(with: .default)
+            case .brown: CoreColor.systemBrownColor(with: .default)
+            case .gray: CoreColor.systemGrayColor(with: .default)
             default: nil
         }
         #else
