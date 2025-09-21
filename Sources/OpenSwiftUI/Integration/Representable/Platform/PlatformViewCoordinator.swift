@@ -13,6 +13,16 @@ import OpenSwiftUICore
 #if canImport(Darwin)
 @objc
 #endif
-class PlatformViewCoordinator: NSObject {}
-
-// TODO: weakDispatchUpdate
+class PlatformViewCoordinator: NSObject {
+    var weakDispatchUpdate: (() -> Void) -> Void {
+        { [weak self] update in
+            guard let self else {
+                update()
+                return
+            }
+            Update.dispatchImmediately { // FIXME: reason: nil
+                update()
+            }
+        }
+    }
+}
