@@ -1,9 +1,9 @@
 //
-//  UIUtils.swift
+//  CoreSystemUtils.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 import OpenSwiftUI_SPI
 
@@ -38,7 +38,9 @@ package func isAppKitBased() -> Bool {
     #endif
 }
 
+#if canImport(Darwin)
 extension CoreSystem {
     @inline(__always)
     static var defaults: CoreSystem = isAppKitBased() ? .appKit : .uiKit
 }
+#endif
