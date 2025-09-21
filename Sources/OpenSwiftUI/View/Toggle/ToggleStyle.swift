@@ -342,10 +342,12 @@ struct ToggleStateBool: Projection {
     }
 }
 
-// MARK: - ResolvedToggleStyle
+// MARK: - ResolvedToggleStyle [WIP]
 
 struct ResolvedToggleStyle: StyleableView {
     var configuration: ToggleStyleConfiguration
+
+    // FIXME: body: ResolvedToggleStyleBody
 
     static var defaultStyleModifier = ToggleStyleModifier(style: .switch)
 }
