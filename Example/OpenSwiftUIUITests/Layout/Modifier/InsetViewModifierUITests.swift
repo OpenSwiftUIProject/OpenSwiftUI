@@ -4,6 +4,7 @@
 
 import Testing
 
+@MainActor
 struct InsetViewModifierUITests {
     @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511"))
     func safeAreaPaddingWithEdgeInsets() {
@@ -15,10 +16,10 @@ struct InsetViewModifierUITests {
         }
         #if OPENSWIFTUI
         withKnownIssue {
-            openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
+            openSwiftUIAssertSnapshot(of: ContentView())
         }
         #else
-        openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
+        openSwiftUIAssertSnapshot(of: ContentView())
         #endif
     }
 }
