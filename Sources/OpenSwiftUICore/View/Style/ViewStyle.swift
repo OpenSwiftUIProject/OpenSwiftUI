@@ -42,7 +42,7 @@ extension StyleableView {
                 inputs: inputs
             )
         }
-        return (modifier._type as! AnyStyleModifierType.Type).makeView(
+        return modifier.type.makeView(
             view: view,
             modifier: modifier,
             inputs: inputs
@@ -67,7 +67,7 @@ extension StyleableView {
                 inputs: inputs
             )
         }
-        return (modifier._type as! AnyStyleModifierType.Type).makeViewList(
+        return modifier.type.makeViewList(
             view: view,
             modifier: modifier,
             inputs: inputs
@@ -85,7 +85,7 @@ extension StyleableView {
         guard let modifier = inputs.popLast(StyleInput<Configuration>.self) else {
             return MakeDefaultRepresentation<Self>.Value._viewListCount(inputs: inputs)
         }
-        return (modifier._type as! AnyStyleModifierType.Type).viewListCount(inputs: inputs)
+        return modifier.type.viewListCount(inputs: inputs)
     }
 }
 
@@ -116,7 +116,7 @@ extension StyleModifier {
         inputs.append(
             override ?? AnyStyleModifier(
                 value: modifier.value.identifier,
-                _type: StyleModifierType<Self>.self
+                type: StyleModifierType<Self>.self
             ),
             to: StyleInput<StyleConfiguration>.self
         )
@@ -133,7 +133,7 @@ extension StyleModifier {
         inputs.base.append(
             override ?? AnyStyleModifier(
                 value: modifier.value.identifier,
-                _type: StyleModifierType<Self>.self
+                type: StyleModifierType<Self>.self
             ),
             to: StyleInput<StyleConfiguration>.self
         )
@@ -148,7 +148,7 @@ extension StyleModifier {
         inputs.append(
             AnyStyleModifier(
                 value: .nil,
-                _type: StyleModifierType<Self>.self
+                type: StyleModifierType<Self>.self
             ),
             to: StyleInput<StyleConfiguration>.self
         )
@@ -186,7 +186,7 @@ struct AutomaticStyleOverrideModifier<I, M>: PrimitiveViewModifier, _GraphInputs
     static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
         inputs[StyleOverrideInput<I>.self] = AnyStyleModifier(
             value: modifier[offset: { .of(&$0.styleModifier) }].value.identifier,
-            _type: StyleModifierType<M>.self
+            type: StyleModifierType<M>.self
         )
     }
 }
@@ -213,11 +213,18 @@ private struct MakeDefaultRepresentation<V>: Rule where V: StyleableView {
 
 // MARK: - AnyStyleModifier
 
-struct AnyStyleModifier {
+private struct AnyStyleModifier {
     var value: AnyAttribute
     let _type: Any.Type
 
+    init(value: AnyAttribute, type: any AnyStyleModifierType.Type) {
+        self.value = value
+        self._type = type
+    }
 
+    var type: any AnyStyleModifierType.Type {
+        _type as! any AnyStyleModifierType.Type
+    }
 }
 
 // MARK: - StyleInput
