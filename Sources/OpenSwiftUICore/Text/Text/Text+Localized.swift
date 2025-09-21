@@ -1,22 +1,29 @@
 //
-//  LocalizedStringKey.swift
-//  OpenSwiftUI
+//  Text+Localized.swift
+//  OpenSwiftUICore
 //
-//  Created by Kyle on 2025/9/17.
-//
+//  Audited for 6.5.4
+//  Status: WIP
+//  ID: 8C53218A357EE528547B0855666BD2E5 (SwiftUICore)
 
 public import Foundation
 
 @available(OpenSwiftUI_v1_0, *)
 extension Text {
-    @_semantics("swiftui.init_with_localization")
+    @_semantics("openswiftui.init_with_localization")
     public init(
         _ key: LocalizedStringKey,
         tableName: String? = nil,
         bundle: Bundle? = nil,
         comment: StaticString? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(
+            anyTextStorage: LocalizedTextStorage(
+                key: key,
+                table: tableName,
+                bundle: bundle
+            )
+        )
     }
 }
 
@@ -31,12 +38,12 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         _openSwiftUIUnimplementedFailure()
     }
 
-    @_semantics("swiftui.localized_string_key.init_literal")
+    @_semantics("openswiftui.localized_string_key.init_literal")
     public init(stringLiteral value: String) {
         _openSwiftUIUnimplementedFailure()
     }
 
-    @_semantics("swiftui.localized_string_key.init_interpolation")
+    @_semantics("openswiftui.localized_string_key.init_interpolation")
     public init(stringInterpolation: LocalizedStringKey.StringInterpolation) {
         _openSwiftUIUnimplementedFailure()
     }
@@ -58,39 +65,39 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
     }
 
     public struct StringInterpolation: StringInterpolationProtocol {
-        @_semantics("swiftui.localized.interpolation_init")
+        @_semantics("openswiftui.localized.interpolation_init")
         public init(literalCapacity: Int, interpolationCount: Int) {
             _openSwiftUIUnimplementedFailure()
         }
 
-        @_semantics("swiftui.localized.appendLiteral")
+        @_semantics("openswiftui.localized.appendLiteral")
         public mutating func appendLiteral(_ literal: String) {
             _openSwiftUIUnimplementedFailure()
         }
 
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation(_ string: String) {
             _openSwiftUIUnimplementedFailure()
         }
 
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<Subject>(_ subject: Subject, formatter: Formatter? = nil) where Subject: ReferenceConvertible {
             _openSwiftUIUnimplementedFailure()
         }
 
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<Subject>(_ subject: Subject, formatter: Formatter? = nil) where Subject: NSObject {
             _openSwiftUIUnimplementedFailure()
         }
 
 //        @available(OpenSwiftUI_v2_5, *)
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<F>(_ input: F.FormatInput, format: F) where F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == String {
             _openSwiftUIUnimplementedFailure()
         }
 
         @available(OpenSwiftUI_v6_0, *)
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<F>(_ input: F.FormatInput, format: F) where F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == AttributedString {
             _openSwiftUIUnimplementedFailure()
         }
@@ -100,19 +107,19 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
             appendInterpolation(value, specifier: formatSpecifier(T.self))
         }
 
-        @_semantics("swiftui.localized.appendInterpolation_param_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_param_specifier")
         public mutating func appendInterpolation<T>(_ value: T, specifier: String) where T: _FormatSpecifiable {
             _openSwiftUIUnimplementedFailure()
         }
 
         @available(OpenSwiftUI_v2_0, *)
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation(_ text: Text) {
             _openSwiftUIUnimplementedFailure()
         }
 
 //        @available(OpenSwiftUI_v2_5, *)
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation(_ attributedString: AttributedString) {
             _openSwiftUIUnimplementedFailure()
         }
@@ -121,23 +128,23 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         public mutating func appendInterpolation<T>(_ view: T) where T: View {
             _openSwiftUIUnimplementedFailure()
         }
-
-        @available(OpenSwiftUI_v1_0, *)
-        public typealias StringLiteralType = String
     }
 
     public static func == (a: LocalizedStringKey, b: LocalizedStringKey) -> Bool {
         _openSwiftUIUnimplementedFailure()
     }
+}
 
-    @available(OpenSwiftUI_v1_0, *)
-    public typealias ExtendedGraphemeClusterLiteralType = String
+private final class LocalizedTextStorage: AnyTextStorage, @unchecked Sendable {
+    let key: LocalizedStringKey
+    let table: String?
+    let bundle: Bundle?
 
-    @available(OpenSwiftUI_v1_0, *)
-    public typealias StringLiteralType = String
-
-    @available(OpenSwiftUI_v1_0, *)
-    public typealias UnicodeScalarLiteralType = String
+    init(key: LocalizedStringKey, table: String?, bundle: Bundle?) {
+        self.key = key
+        self.table = table
+        self.bundle = bundle
+    }
 }
 
 @available(*, unavailable)

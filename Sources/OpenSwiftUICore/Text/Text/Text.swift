@@ -204,7 +204,7 @@ public struct Text: Equatable, Sendable {
         case let .anyTextStorage(anyTextStorage):
             var resolved = Text.ResolvedString()
             resolved.idiom = idiom
-            resolve(into: &resolved, in: environment, with: options)
+            storage.resolve(into: &resolved, in: environment, with: options)
             return resolved.string
         }
     }
@@ -431,24 +431,28 @@ extension Text {
     }
 }
 
+#if canImport(Darwin)
+
+// MARK: - Text.System
+
 extension Text {
     package enum System {
-//        package static let back: Text
-//        package static let cancel: Text
-//        package static let uiClose: Text
-//        package static let uiCopy: Text
-//        package static let uiDelete: Text
-//        package static let done: Text
-//        package static let edit: Text
-//        package static let uiLookUp: Text
-//        package static let off: Text
-//        package static let ok: Text
-//        package static let on: Text
-//        package static let paste: Text
-//        package static let search: Text
-//        package static let share: Text
-//        package static let shareEllipses: Text
-//        package static let rename: Text
+        package static let back: Text = Text.System.kitLocalized("Back")
+        package static let cancel: Text = Text.System.kitLocalized("Cancel")
+        package static let uiClose: Text = Text.System.kitLocalized("Close")
+        package static let uiCopy: Text = Text.System.kitLocalized("Copy")
+        package static let uiDelete: Text = Text.System.kitLocalized("Delete")
+        package static let done: Text = Text.System.kitLocalized("Done")
+        package static let edit: Text = Text.System.kitLocalized("Edit")
+        package static let uiLookUp: Text = Text.System.kitLocalized("LookUp")
+        package static let off: Text = Text.System.kitLocalized("Off")
+        package static let ok: Text = Text.System.kitLocalized("OK")
+        package static let on: Text = Text.System.kitLocalized("On")
+        package static let paste: Text = Text.System.kitLocalized("Paste")
+        package static let search: Text = Text.System.kitLocalized("Search")
+        package static let share: Text = Text.System.kitLocalized("Share")
+        package static let shareEllipses: Text = Text.System.kitLocalized("Share…")
+        package static let rename: Text = Text.System.kitLocalized("Rename")
     }
 }
 
@@ -462,13 +466,23 @@ extension String.System {
         tableName: String = "Localizable",
         comment: String
     ) -> String {
-        _openSwiftUIUnimplementedFailure()
+        NSLocalizedString(
+            key,
+            tableName: tableName,
+            bundle: .kit,
+            value: "",
+            comment: comment
+        )
     }
 }
 
 extension Bundle {
     package static var kit: Bundle {
-        _openSwiftUIUnimplementedFailure()
+        Bundle(
+            for: NSClassFromString(
+                isAppKitBased() ? "NSApplication" : "UIApplication"
+            )!
+        )
     }
 }
 
@@ -478,25 +492,36 @@ extension Text.System {
         tableName: String? = nil,
         comment: StaticString? = nil
     ) -> Text {
-        _openSwiftUIUnimplementedFailure()
+        Text(
+            key,
+            tableName: tableName ?? "Localizable",
+            bundle: .kit,
+            comment: comment
+        )
     }
 }
 
 extension Text.System {
-    package static func swiftUICoreLocalized(
+    package static func openSwiftUICoreLocalized(
         _ key: LocalizedStringKey,
         tableName: String = "Core",
         comment: StaticString? = nil
     ) -> Text {
-        _openSwiftUIUnimplementedFailure()
+        Text(
+            key,
+            tableName: tableName,
+            bundle: .openSwiftUICore,
+            comment: comment
+        )
     }
 }
+
+private class OpenSwiftUICoreClass: NSObject {}
 
 extension Bundle {
-    package static var swiftUICore: Bundle {
-        _openSwiftUIUnimplementedFailure()
+    package static var openSwiftUICore: Bundle {
+        Bundle(for: OpenSwiftUICoreClass.self)
     }
 }
 
-// FIXME
-extension Text: PrimitiveView, UnaryView {}
+#endif
