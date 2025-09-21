@@ -17,7 +17,6 @@ public typealias NSInteger = Int
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct Text: Equatable, Sendable {
-
     // MARK: - Text.Storage
 
     @usableFromInline
@@ -86,10 +85,14 @@ public struct Text: Equatable, Sendable {
         _ context: String = #function,
         options: Text.ResolveOptions = []
     ) {
-        _openSwiftUIUnimplementedFailure()
+        guard isDebuggerAttached, isStyled(options: options) else {
+            return
+        }
+        Log.runtimeIssues("Only unstyled text can be used with %s", [context])
     }
 
-    @available(OpenSwiftUI_v1_0, *)
+    // MARK: - Text.Modifier [WIP]
+
     @usableFromInline
     @frozen
     package enum Modifier: Equatable {
@@ -103,11 +106,29 @@ public struct Text: Equatable, Sendable {
         case rounded
         case anyTextModifier(AnyTextModifier)
 
+        func modify(style: inout Text.Style, environment: EnvironmentValues) {
+            // Blocked by Text.Style
+            _openSwiftUIUnimplementedWarning()
+        }
+
         @usableFromInline
         package static func == (lhs: Text.Modifier, rhs: Text.Modifier) -> Bool {
-            _openSwiftUIUnimplementedFailure()
+            switch (lhs, rhs) {
+            case let (.color(lColor), .color(rColor)): lColor == rColor
+            case let (.font(lFont), .font(rFont)): lFont == rFont
+            case (.italic, .italic): true
+            case let (.weight(lWeight), .weight(rWeight)): lWeight == rWeight
+            case let (.kerning(lValue), .kerning(rValue)): lValue == rValue
+            case let (.tracking(lValue), .tracking(rValue)): lValue == rValue
+            case let (.baseline(lValue), .baseline(rValue)): lValue == rValue
+            case (.rounded, .rounded): true
+            case let (.anyTextModifier(lAnyTextModifier), .anyTextModifier(rAnyTextModifier)): lAnyTextModifier.isEqual(to: rAnyTextModifier)
+            default: false
+            }
         }
     }
+
+    // MARK: - Text.ResolveOptions
 
     @_spi(ForOpenSwiftUIOnly)
     @available(OpenSwiftUI_v6_0, *)
@@ -155,11 +176,13 @@ public struct Text: Equatable, Sendable {
 
     @_disfavoredOverload
     public init<S>(_ content: S) where S: StringProtocol {
-        _openSwiftUIUnimplementedFailure()
+        storage = .verbatim(String(content))
     }
 
     package func modified(with modifier: Text.Modifier) -> Text {
-        _openSwiftUIUnimplementedFailure()
+        var modifiedText = self
+        modifiedText.modifiers.append(modifier)
+        return modifiedText
     }
 
     package func resolveStringCheckingForResolvables(
@@ -175,7 +198,15 @@ public struct Text: Equatable, Sendable {
         with options: Text.ResolveOptions = [],
         idiom: AnyInterfaceIdiom? = nil
     ) -> String {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case let .verbatim(string):
+            return string
+        case let .anyTextStorage(anyTextStorage):
+            var resolved = Text.ResolvedString()
+            resolved.idiom = idiom
+            resolve(into: &resolved, in: environment, with: options)
+            return resolved.string
+        }
     }
 
     package func resolve<T>(
@@ -190,23 +221,32 @@ public struct Text: Equatable, Sendable {
         in environment: EnvironmentValues,
         with options: Text.ResolveOptions = []
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        storage.resolvesToEmpty(in: environment, with: options)
     }
 
     package func isStyled(options: Text.ResolveOptions = []) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        if storage.isStyled(options: options) {
+            return true
+        }
+        for modifier in modifiers {
+            switch modifier {
+            case let .anyTextModifier(anyTextModifier):
+                if anyTextModifier.isStyled(options: options) {
+                    return true
+                }
+            default:
+                return true
+            }
+        }
+        return false
     }
 
     package func allowsTypesettingLanguage() -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        storage.allowsTypesettingLanguage()
     }
 
     package init(anyTextStorage: AnyTextStorage) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    public static func == (a: Text, b: Text) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        storage = .anyTextStorage(anyTextStorage)
     }
 }
 
@@ -216,7 +256,7 @@ extension Text.Storage: @unchecked Sendable {}
 @available(OpenSwiftUI_v1_0, *)
 extension Text.Modifier: @unchecked Sendable {}
 
-// MARK: - AnyTextStorage [WIP]
+// MARK: - AnyTextStorage
 
 @available(OpenSwiftUI_v1_0, *)
 @usableFromInline
@@ -229,14 +269,23 @@ package class AnyTextStorage {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-    func resolvesToEmpty(in environment: EnvironmentValues, with: Text.ResolveOptions) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+    func resolvesToEmpty(
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) -> Bool {
+        var resolved = Text.ResolvedString()
+        #if os(iOS) || os(visionOS)
+        resolved.idiom = .init(.phone)
+        #elseif os(macOS)
+        resolved.idiom = isCatalyst() ? .init(.pad) : .init(.mac)
+        #endif
+        resolve(into: &resolved, in: environment, with: options)
+        return resolved.string.isEmpty
     }
 
     func isEqual(to: AnyTextStorage) -> Bool {
         _openSwiftUIBaseClassAbstractMethod()
     }
-
 
     func isStyled(options: Text.ResolveOptions) -> Bool {
         _openSwiftUIBaseClassAbstractMethod()
@@ -247,29 +296,48 @@ package class AnyTextStorage {
     }
 
     var localizationInfo: _LocalizationInfo {
-        _openSwiftUIUnimplementedFailure()
+        .none
     }
 }
-
-
-//var debugDescription: Swift.String {
-//    get
-//}
 
 @available(OpenSwiftUI_v1_0, *)
 extension AnyTextStorage: @unchecked Sendable {}
 
-@available(OpenSwiftUI_v3_0, *)
+@available(OpenSwiftUI_v4_0, *)
 extension AnyTextStorage: CustomDebugStringConvertible {
     @usableFromInline
     package var debugDescription: String {
-        _openSwiftUIUnimplementedFailure()
+        var description = "<\(Self.self): \(self)>"
+        var resolved = Text.Resolved()
+        #if os(iOS) || os(visionOS)
+        resolved.idiom = .init(.phone)
+        #elseif os(macOS)
+        resolved.idiom = isCatalyst() ? .init(.pad) : .init(.mac)
+        #endif
+        resolve(into: &resolved, in: .init(), with: [])
+        if let attributedString = resolved.attributedString {
+            description.append(#": "\#(attributedString.string)""#)
+        }
+        return description
     }
 }
+
+// MARK: - AnyTextModifier [WIP]
 
 @available(OpenSwiftUI_v1_0, *)
 @usableFromInline
 package class AnyTextModifier {
+    func isStyled(options: Text.ResolveOptions) -> Bool {
+        true
+    }
+
+    func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
+    func isEqual(to: AnyTextModifier) -> Bool {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
 }
 
 @available(*, unavailable)
@@ -293,9 +361,6 @@ extension AnyTextModifier: Sendable {}
 //    final package func isEqual(to other: AnyTextModifier) -> Bool {
 //        _openSwiftUIUnimplementedFailure()
 //    }
-//
-//    @objc
-//    deinit {}
 //}
 //
 //final package class TextShadowModifier: AnyTextModifier {
@@ -306,9 +371,6 @@ extension AnyTextModifier: Sendable {}
 //    final package func isEqual(to other: AnyTextModifier) -> Bool {
 //        _openSwiftUIUnimplementedFailure()
 //    }
-//
-//    @objc
-//    deinit {}
 //}
 //
 //final package class TextTransitionModifier: AnyTextModifier {
@@ -319,19 +381,16 @@ extension AnyTextModifier: Sendable {}
 //    final package func isEqual(to other: AnyTextModifier) -> Bool {
 //        _openSwiftUIUnimplementedFailure()
 //    }
-//
-//    @objc
-//    deinit {}
 //}
 
 @available(OpenSwiftUI_v2_0, *)
 extension Text {
-    @available(OpenSwiftUI_v2_0, *)
     public func _resolveText(in environment: EnvironmentValues) -> String {
-
-        _openSwiftUIUnimplementedFailure()
+        resolveString(in: environment)
     }
 }
+
+// MARK: - _LocalizationInfo
 
 @available(OpenSwiftUI_v2_0, *)
 public enum _LocalizationInfo: Equatable {
@@ -365,9 +424,8 @@ extension Text {
 }
 
 @_spi(OpenSwiftUIPrivate)
-@available(OpenSwiftUI_v3_0, *)
+@available(OpenSwiftUI_v4_0, *)
 extension Text {
-    @_spi(OpenSwiftUIPrivate)
     public func contentTransition(_ transition: ContentTransition) -> Text {
         _openSwiftUIUnimplementedFailure()
     }
