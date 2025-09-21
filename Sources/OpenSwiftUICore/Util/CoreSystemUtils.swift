@@ -38,9 +38,13 @@ package func isAppKitBased() -> Bool {
     #endif
 }
 
-#if canImport(Darwin)
 extension CoreSystem {
     @inline(__always)
-    static var defaults: CoreSystem = isAppKitBased() ? .appKit : .uiKit
+    static var defaults: CoreSystem {
+        #if canImport(Darwin)
+        isAppKitBased() ? .appKit : .uiKit
+        #else
+        .unknown
+        #endif
+    }
 }
-#endif
