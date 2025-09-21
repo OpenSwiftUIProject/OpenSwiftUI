@@ -234,7 +234,7 @@ private class PlatformSwitchCoordinator: PlatformViewCoordinator {
         sender.setOn(isOn, animated: !_isOn.transaction.disablesAnimations)
     }
 }
-#else
+#elseif os(macOS)
 private class PlatformSwitchCoordinator: PlatformViewCoordinator {
     var _isOn: Binding<Bool>
 
