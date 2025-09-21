@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import OpenSwiftUI_SPI
+package import OpenSwiftUI_SPI
 
 // NOTE: use runtime check instead of #if targetEnvironment(macCatalyst)
 // Because Mac Catalyst will use macOS-varient build of OpenSwiftUICore.framework and Mac Catalyst/UIKitForMac varient of OpenSwiftUI.framework
@@ -40,7 +40,7 @@ package func isAppKitBased() -> Bool {
 
 extension CoreSystem {
     @inline(__always)
-    static var defaults: CoreSystem {
+    package static var `default`: CoreSystem {
         #if canImport(Darwin)
         isAppKitBased() ? .appKit : .uiKit
         #else

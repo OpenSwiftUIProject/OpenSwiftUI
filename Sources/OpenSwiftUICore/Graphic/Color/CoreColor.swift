@@ -2,6 +2,7 @@
 //  CoreColor.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.4.41
 //  Status: Complete
 //  ID: 4330A474F53D66045762501ED6F8A749 (SwiftUICore)
 
@@ -9,7 +10,7 @@
 package import Foundation
 import OpenSwiftUI_SPI
 
-// MARK: - Color.Resolved + PlatformColor [6.4.41]
+// MARK: - Color.Resolved + PlatformColor
 
 extension Color.Resolved {
     package init?(platformColor: AnyObject) {
@@ -17,7 +18,7 @@ extension Color.Resolved {
         var green: CGFloat = 0
         var blue: CGFloat = 0
         var alpha: CGFloat = 0
-        let result = CoreColorPlatformColorGetComponents(system: .defaults, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
+        let result = CoreColorPlatformColorGetComponents(system: .default, color: platformColor, red: &red, green: &green, blue: &blue, alpha: &alpha)
         if result {
             self.init(colorSpace: .sRGB, red: Float(red), green: Float(green), blue: Float(blue), opacity: Float(alpha))
         } else {
@@ -34,7 +35,7 @@ extension Color.Resolved {
     }
 }
 
-// MARK: - CoreColor + PlatformColor [6.4.41]
+// MARK: - CoreColor + PlatformColor
 
 extension CoreColor {
     package static func platformColor(resolvedColor: Color.Resolved) -> NSObject? {
@@ -42,14 +43,14 @@ extension CoreColor {
     }
     
     package static func platformColor(red: CGFloat, green: CGFloat, blue: CGFloat, alpha: CGFloat) -> NSObject? {
-        CorePlatformColorForRGBA(system: .defaults, red: red, green: green, blue: blue, alpha: alpha) as? NSObject
+        CorePlatformColorForRGBA(system: .default, red: red, green: green, blue: blue, alpha: alpha) as? NSObject
     }
 }
 
 #if OPENSWIFTUI_LINK_COREUI
 package import CoreUI
 
-// MARK: - CoreUINamedColorProvider [6.4.41]
+// MARK: - CoreUINamedColorProvider
 
 package protocol CoreUINamedColorProvider {
     static func effectiveCGColor(cuiColor: CUINamedColor, in environment: EnvironmentValues) -> CGColor?
