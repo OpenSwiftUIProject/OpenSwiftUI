@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: 1246D37251EA3A918B392E2B95F8B7EF (SwiftUI)
 
+@_spi(Private)
 import OpenSwiftUICore
 
 // MARK: - SwitchToggleStyle [WIP]
@@ -31,16 +32,18 @@ public struct SwitchToggleStyle: ToggleStyle {
     @Environment(\.controlSize)
     private var controlSize: ControlSize
 
-//    @Environment(\.tintColor)
-//    private var controlTint: Color?
+    @Environment(\.tintColor)
+    private var controlTint: Color?
 
-//    @Environment(\.placementTint)
-//    private var placementTint: [TintPlacement: AnyShapeStyle]
+    #if os(iOS) || os(visionOS)
+    @Environment(\.placementTint)
+    private var placementTint: [TintPlacement: AnyShapeStyle]
+    #endif
 
     @Environment(\.effectiveFont)
     private var font: Font
 
-    let tint: Color?
+    private let tint: Color?
 
     /// Creates a switch toggle style.
     ///
@@ -62,12 +65,17 @@ public struct SwitchToggleStyle: ToggleStyle {
         self.tint = tint
     }
 
+    // FIXME
     public func makeBody(configuration: Configuration) -> some View {
-        #if canImport(Darwin)
-        Switch(isOn: configuration.$isOn, tint: tint)
+        #if os(iOS) || os(visionOS)
+        Switch(_isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
             .fixedSize()
             // .contentShape(Capsule())
             // .accessibilityLabel
+            // .gesture
+        #elseif os(macOS)
+        Switch(_isOn: configuration.$isOn, tint: tint, font: font, _acceptsFirstMouse: .init(\.acceptsFirstMouse))
+            .fixedSize()
         #else
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
@@ -83,20 +91,19 @@ import UIKit
 import AppKit
 #endif
 
-// MARK: - Switch [WIP]
+// MARK: - Switch
 
 #if os(iOS) || os(visionOS)
+typealias PlatformSwitch = UISwitch
+
 private struct Switch: UIViewRepresentable {
-    typealias UIViewType = UISwitch
-
-    typealias Coordinator = PlatformSwitchCoordinator
-
-    @Binding var isOn: Bool
-
+    var _isOn: Binding<Bool>
     var tint: Color?
+    var thumbTint: AnyShapeStyle?
+    var font: Font
 
-    func makeUIView(context: Context) -> UISwitch {
-        let view = UISwitch()
+    func makeUIView(context: Context) -> PlatformSwitch {
+        let view = PlatformSwitch()
         view.addTarget(
             context.coordinator,
             action: #selector(PlatformSwitchCoordinator.isOnChanged),
@@ -105,61 +112,99 @@ private struct Switch: UIViewRepresentable {
         return view
     }
 
-    func updateUIView(_ uiView: UISwitch, context: Context) {
-        let isOn = isOn
-        let animated: Bool
-        if let _ = context.transaction.animation, !context.transaction.disablesAnimations {
-            animated = true
-        } else {
-            animated = false
+    func updateUIView(_ uiView: PlatformSwitch, context: Context) {
+        let isOn = _isOn.wrappedValue
+        let transaction = context.transaction
+        Update.enqueueAction(reason: nil) { [transaction] in
+            uiView.setOn(isOn, animated: transaction.disablesAnimations)
         }
-        uiView.setOn(isOn, animated: animated)
         uiView.preferredStyle = .sliding
-
-        let color: UIColor?
-        if let _ = tint {
-            // TODO: Resolve the color from the environment
-            color = nil
+        let newTintColor: UIColor? = if let tint {
+            (tint.resolve(in: context.environment).kitColor as! UIColor)
         } else {
-            color = nil
+            nil
         }
-        let onTintColor = uiView.onTintColor
-        if let color {
-            if onTintColor == nil || color != onTintColor {
-                uiView.onTintColor = color
-            }
-        } else {
-            if onTintColor != nil {
-                uiView.onTintColor = nil
+        if newTintColor != uiView.onTintColor {
+            uiView.onTintColor = newTintColor
+        }
+        if let thumbTint, let thumbColor = thumbTint.fallbackColor(in: context.environment) {
+            let newThumbColor = thumbColor.resolve(in: context.environment).kitColor as! UIColor
+            if newThumbColor != uiView.thumbTintColor {
+                uiView.thumbTintColor = newThumbColor
             }
         }
-        context.coordinator._isOn = $isOn
+        context.coordinator._isOn = _isOn
     }
-    func makeCoordinator() -> Coordinator {
-        PlatformSwitchCoordinator(isOn: $isOn)
+    func makeCoordinator() -> PlatformSwitchCoordinator {
+        PlatformSwitchCoordinator(isOn: _isOn)
     }
 }
 #elseif os(macOS)
+// FIXME
+protocol AcceptsFirstMouseCustomizing {
+    var customAcceptsFirstMouse: Bool? { get }
+}
+
+extension AcceptsFirstMouseCustomizing {
+    var effectiveAcceptsFirstMouse: Bool? {
+        // FIXME: Find via view hierarchy if not set directly
+        customAcceptsFirstMouse
+    }
+}
+
+extension EnvironmentValues {
+    var acceptsFirstMouse: Bool? {
+        // FIXME
+        get { controlSize == .mini }
+    }
+}
+
+private final class PlatformSwitch: NSSwitch, AcceptsFirstMouseCustomizing {
+    var customAcceptsFirstMouse: Bool?
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        if ResponderBasedHitTesting.enabled {
+            customAcceptsFirstMouse ?? super.acceptsFirstMouse(for: event)
+        } else {
+            effectiveAcceptsFirstMouse ?? super.acceptsFirstMouse(for: event)
+        }
+    }
+}
+
 private struct Switch: NSViewRepresentable {
-    typealias NSViewType = NSSwitch
-
-    typealias Coordinator = PlatformSwitchCoordinator
-
-    @Binding var isOn: Bool
-
+    var _isOn: Binding<Bool>
     var tint: Color?
+    var font: Font
+    var _acceptsFirstMouse: Environment<Bool?>
 
-    func makeNSView(context: Context) -> NSSwitch {
-        let view = NSSwitch()
+    func makeNSView(context: Context) -> PlatformSwitch {
+        let view = PlatformSwitch()
+        view.target = context.coordinator
         return view
     }
 
-    func updateNSView(_ nsView: NSSwitch, context: Context) {
-
+    func updateNSView(_ nsView: PlatformSwitch, context: Context) {
+        let isOn = _isOn.wrappedValue
+        if context.transaction.disablesAnimations {
+            nsView.state = isOn ? .on : .off
+        } else {
+            nsView.animator().state = isOn ? .on : .off
+        }
+        context.coordinator._isOn = _isOn
+        nsView.font = font.platformFont(in: context.environment)
+        if let superview = nsView.superview {
+            let appearance = superview.effectiveAppearance
+            nsView.appearance = if let tint, tint != Color.accent {
+                appearance.applyingTintColor(.init(tint))
+            } else {
+                nil
+            }
+        }
+        nsView.customAcceptsFirstMouse = _acceptsFirstMouse.wrappedValue
     }
 
-    func makeCoordinator() -> Coordinator {
-        PlatformSwitchCoordinator(isOn: $isOn)
+    func makeCoordinator() -> PlatformSwitchCoordinator {
+        PlatformSwitchCoordinator(isOn: _isOn)
     }
 }
 #endif

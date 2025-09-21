@@ -6,5 +6,5 @@
 
 extension Color {
     // FIXME
-    static var accent: Color { .clear }
+    public static var accent: Color { .clear }
 }
