@@ -1,6 +1,10 @@
 //
-//  ResolvedTextContainer.swift
+//  ResolvedText.swift
 //  OpenSwiftUICore
+//
+//  Audited for 6.5.4
+//  Status: WIP
+//  ID: 7AFAB46D18FA6D189589CFA78D8B2B2E (SwiftUICore)
 
 package import Foundation
 
@@ -56,5 +60,16 @@ extension ResolvedTextContainer {
         with options: Text.ResolveOptions,
     ) where S: StringProtocol {
         _openSwiftUIUnimplementedFailure()
+    }
+}
+
+extension EnvironmentValues {
+    private struct DisableLinkColorKey: EnvironmentKey {
+        static var defaultValue: Bool { false }
+    }
+
+    package var disableLinkColor: Bool {
+        get { self[DisableLinkColorKey.self] }
+        set { self[DisableLinkColorKey.self] = newValue }
     }
 }
