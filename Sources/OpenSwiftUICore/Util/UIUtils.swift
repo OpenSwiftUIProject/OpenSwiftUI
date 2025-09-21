@@ -2,12 +2,10 @@
 //  UIUtils.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4
 //  Status: WIP
 
 import OpenSwiftUI_SPI
-
-#if canImport(Darwin)
 
 // NOTE: use runtime check instead of #if targetEnvironment(macCatalyst)
 // Because Mac Catalyst will use macOS-varient build of OpenSwiftUICore.framework and Mac Catalyst/UIKitForMac varient of OpenSwiftUI.framework
@@ -24,8 +22,10 @@ package func isCatalyst() -> Bool {
 package func isUIKitBased() -> Bool {
     #if os(macOS) || targetEnvironment(macCatalyst)
     _CFMZEnabled()
-    #else
+    #elseif os(iOS) || os(visionOS)
     true
+    #else
+    false
     #endif
 }
 
@@ -42,5 +42,3 @@ extension CoreSystem {
     @inline(__always)
     static var defaults: CoreSystem = isAppKitBased() ? .appKit : .uiKit
 }
-
-#endif
