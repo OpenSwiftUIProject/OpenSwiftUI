@@ -21,6 +21,74 @@ package protocol StyleableView: View where Configuration == DefaultStyleModifier
     static var defaultStyleModifier: DefaultStyleModifier { get }
 }
 
+extension StyleableView {
+    package var body: some View { self }
+
+    nonisolated package static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        guard inputs.base.isCurrentStyleableView(Self.self) else {
+            inputs.base.setCurrentStyleableView(Self.self)
+            return Body._makeView(
+                view: _GraphValue(MakeResolvedRepresentation(view: view.value)),
+                inputs: inputs
+            )
+        }
+        guard let modifier = inputs.base.popLast(StyleInput<Configuration>.self) else {
+            return MakeDefaultRepresentation<Self>.Value.makeDebuggableView(
+                view: _GraphValue(MakeDefaultRepresentation(view: view.value)),
+                inputs: inputs
+            )
+        }
+        return (modifier._type as! AnyStyleModifierType.Type).makeView(
+            view: view,
+            modifier: modifier,
+            inputs: inputs
+        )
+    }
+    
+    nonisolated package static func _makeViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        guard inputs.base.isCurrentStyleableView(Self.self) else {
+            inputs.base.setCurrentStyleableView(Self.self)
+            return Body._makeViewList(
+                view: _GraphValue(MakeResolvedRepresentation(view: view.value)),
+                inputs: inputs
+            )
+        }
+        guard let modifier = inputs.base.popLast(StyleInput<Configuration>.self) else {
+            return MakeDefaultRepresentation<Self>.Value.makeDebuggableViewList(
+                view: _GraphValue(MakeDefaultRepresentation(view: view.value)),
+                inputs: inputs
+            )
+        }
+        return (modifier._type as! AnyStyleModifierType.Type).makeViewList(
+            view: view,
+            modifier: modifier,
+            inputs: inputs
+        )
+    }
+    
+    nonisolated package static func _viewListCount(
+        inputs: _ViewListCountInputs
+    ) -> Int? {
+        var inputs = inputs
+        guard inputs.isCurrentStyleableView(Self.self) else {
+            inputs.setCurrentStyleableView(Self.self)
+            return Body._viewListCount(inputs: inputs)
+        }
+        guard let modifier = inputs.popLast(StyleInput<Configuration>.self) else {
+            return MakeDefaultRepresentation<Self>.Value._viewListCount(inputs: inputs)
+        }
+        return (modifier._type as! AnyStyleModifierType.Type).viewListCount(inputs: inputs)
+    }
+}
+
 // MARK: - StyleModifier
 
 package protocol StyleModifier: MultiViewModifier, PrimitiveViewModifier {
@@ -35,6 +103,57 @@ package protocol StyleModifier: MultiViewModifier, PrimitiveViewModifier {
     var style: Style { get set }
 
     func styleBody(configuration: StyleConfiguration) -> StyleBody
+}
+
+extension StyleModifier {
+    nonisolated package static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        let override = inputs[StyleOverrideInput<Style>.self]
+        inputs.append(
+            override ?? AnyStyleModifier(
+                value: modifier.value.identifier,
+                _type: StyleModifierType<Self>.self
+            ),
+            to: StyleInput<StyleConfiguration>.self
+        )
+        return body(_Graph(), inputs)
+    }
+    
+    nonisolated package static func _makeViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        let override = inputs[StyleOverrideInput<Style>.self]
+        inputs.base.append(
+            override ?? AnyStyleModifier(
+                value: modifier.value.identifier,
+                _type: StyleModifierType<Self>.self
+            ),
+            to: StyleInput<StyleConfiguration>.self
+        )
+        return body(_Graph(), inputs)
+    }
+    
+    nonisolated package static func _viewListCount(
+        inputs: _ViewListCountInputs,
+        body: (_ViewListCountInputs) -> Int?
+    ) -> Int? {
+        var inputs = inputs
+        inputs.append(
+            AnyStyleModifier(
+                value: .nil,
+                _type: StyleModifierType<Self>.self
+            ),
+            to: StyleInput<StyleConfiguration>.self
+        )
+        return body(inputs)
+    }
 }
 
 // MARK: - AnyStyleModifierType
@@ -97,6 +216,8 @@ private struct MakeDefaultRepresentation<V>: Rule where V: StyleableView {
 struct AnyStyleModifier {
     var value: AnyAttribute
     let _type: Any.Type
+
+
 }
 
 // MARK: - StyleInput
@@ -205,6 +326,34 @@ private struct StyleModifierType<M>: AnyStyleModifierType where M: StyleModifier
 
 private struct StyleableViewContextInput: ViewInput {
     static var defaultValue: Any.Type? { nil }
+}
+
+extension _GraphInputs {
+    fileprivate func isCurrentStyleableView<V>(_: V.Type) -> Bool where V: StyleableView {
+        self[StyleableViewContextInput.self] == V.self
+    }
+
+    fileprivate mutating func setCurrentStyleableView<V>(_: V.Type) where V: StyleableView {
+        self[StyleableViewContextInput.self] = V.self
+    }
+
+    package mutating func resetCurrentStyleableView() {
+        self[StyleableViewContextInput.self] = nil
+    }
+}
+
+extension _ViewListCountInputs {
+    fileprivate func isCurrentStyleableView<V>(_: V.Type) -> Bool where V: StyleableView {
+        self[StyleableViewContextInput.self] == V.self
+    }
+
+    fileprivate mutating func setCurrentStyleableView<V>(_: V.Type) where V: StyleableView {
+        self[StyleableViewContextInput.self] = V.self
+    }
+
+    package mutating func resetCurrentStyleableView() {
+        self[StyleableViewContextInput.self] = nil
+    }
 }
 
 // MARK: - StyleBodyAccessor
