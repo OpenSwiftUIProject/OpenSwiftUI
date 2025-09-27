@@ -1,6 +1,7 @@
 // swift-tools-version: 6.1
 // The swift-tools-version declares the minimum version of Swift required to build this package.
 
+import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
@@ -242,7 +243,7 @@ let openSwiftUISPITestTarget = Target.testTarget(
 
 // MARK: - OpenSwiftUIMacros Target
 
-let openSwiftUIMacrosTarget = Target.executableTarget(
+let openSwiftUIMacrosTarget = Target.macro(
     name: "OpenSwiftUIMacros",
     dependencies: [
         .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
