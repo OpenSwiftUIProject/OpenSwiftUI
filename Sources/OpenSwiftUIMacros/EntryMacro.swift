@@ -1,16 +1,12 @@
 //
 //  EntryMacro.swift
-//  OpenSwiftUI
-//
-//  Created by OpenSwiftUI on [Date].
-//
+//  OpenSwiftUIMacros
 
-@_exported import SwiftSyntax
-@_exported import SwiftSyntaxBuilder
-@_exported import SwiftSyntaxMacros
+package import SwiftSyntax
+package import SwiftSyntaxMacros
 
-public struct EntryMacro: AccessorMacro, PeerMacro {
-    public static func expansion(
+package struct EntryMacro: AccessorMacro, PeerMacro {
+    package static func expansion(
         of node: AttributeSyntax,
         providingAccessorsOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
@@ -41,7 +37,7 @@ public struct EntryMacro: AccessorMacro, PeerMacro {
         ]
     }
 
-    public static func expansion(
+    package static func expansion(
         of node: AttributeSyntax,
         providingPeersOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext
@@ -62,7 +58,7 @@ public struct EntryMacro: AccessorMacro, PeerMacro {
             modifiers: [DeclModifierSyntax(name: .keyword(.private))],
             name: .identifier(keyName),
             inheritanceClause: InheritanceClauseSyntax {
-                InheritedTypeSyntax(type: IdentifierTypeSyntax(name: .identifier("SwiftUICore.EnvironmentKey")))
+                InheritedTypeSyntax(type: IdentifierTypeSyntax(name: .identifier("OpenSwiftUICore.EnvironmentKey")))
             }
         ) {
             VariableDeclSyntax(
@@ -95,10 +91,10 @@ public struct EntryMacro: AccessorMacro, PeerMacro {
     }
 }
 
-struct MacroExpansionErrorMessage: Error, CustomStringConvertible {
-    let description: String
+package struct MacroExpansionErrorMessage: Error, CustomStringConvertible {
+    package let description: String
 
-    init(_ description: String) {
+    package init(_ description: String) {
         self.description = description
     }
 }

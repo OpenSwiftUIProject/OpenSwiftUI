@@ -1,16 +1,12 @@
 //
 //  EntryDefaultValueMacro.swift
-//  OpenSwiftUI
-//
-//  Created by OpenSwiftUI on [Date].
-//
+//  OpenSwiftUIMacros
 
-@_exported import SwiftSyntax
-@_exported import SwiftSyntaxBuilder
-@_exported import SwiftSyntaxMacros
+package import SwiftSyntax
+package import SwiftSyntaxMacros
 
-public struct EntryDefaultValueMacro: AccessorMacro {
-    public static func expansion(
+package struct EntryDefaultValueMacro: AccessorMacro {
+    package static func expansion(
         of node: AttributeSyntax,
         providingAccessorsOf declaration: some DeclSyntaxProtocol,
         in context: some MacroExpansionContext

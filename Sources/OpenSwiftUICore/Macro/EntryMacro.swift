@@ -1,9 +1,6 @@
 //
 //  EntryMacro.swift
-//  OpenSwiftUI
-//
-//  Created by OpenSwiftUI on [Date].
-//
+//  OpenSwiftUICore
 
 @attached(accessor) @attached(peer, names: prefixed(__Key_)) public macro Entry() = #externalMacro(
     module: "OpenSwiftUIMacros", type: "EntryMacro"
