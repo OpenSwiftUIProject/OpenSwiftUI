@@ -240,6 +240,26 @@ let openSwiftUISPITestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
+// MARK: - OpenSwiftUIMacros Target
+
+let openSwiftUIMacrosTarget = Target.executableTarget(
+    name: "OpenSwiftUIMacros",
+    dependencies: [
+        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
+        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
+    ],
+    swiftSettings: sharedSwiftSettings
+)
+
+let openSwiftUIMacrosTestTarget = Target.testTarget(
+    name: "OpenSwiftUIMacrosTests",
+    dependencies: [
+        "OpenSwiftUIMacros",
+        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
+    ],
+    swiftSettings: sharedSwiftSettings
+)
+
 // MARK: - OpenSwiftUICore Target
 
 // NOTE:
@@ -249,6 +269,7 @@ let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
         "OpenSwiftUI_SPI",
+        "OpenSwiftUIMacros",
         .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
         .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
@@ -435,9 +456,11 @@ let package = Package(
     products: products,
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
     ],
     targets: [
         openSwiftUISPITarget,
+        openSwiftUIMacrosTarget,
         openSwiftUICoreTarget,
         cOpenSwiftUITarget,
         openSwiftUITarget,
@@ -454,6 +477,7 @@ if renderGTKCondition {
 if !compatibilityTestCondition {
     package.targets += [
         openSwiftUISPITestTarget,
+        openSwiftUIMacrosTestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUIBridgeTestTarget,
