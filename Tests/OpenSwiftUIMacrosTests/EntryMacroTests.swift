@@ -33,11 +33,14 @@ final class EntryMacroTests: XCTestCase {
                         self[__Key_myCustomValue.self] = newValue
                     }
                 }
-            }
 
-            private struct __Key_myCustomValue: OpenSwiftUICore.EnvironmentKey {
-                @__EntryDefaultValue
-                static var defaultValue: String = "Default value"
+                private struct __Key_myCustomValue: OpenSwiftUICore.EnvironmentKey {
+                    static var defaultValue: String {
+                        get {
+                            "Default value"
+                        }
+                    }
+                }
             }
             """,
             macros: testMacros
@@ -62,11 +65,14 @@ final class EntryMacroTests: XCTestCase {
                         self[__Key_intValue.self] = newValue
                     }
                 }
-            }
 
-            private struct __Key_intValue: OpenSwiftUICore.EnvironmentKey {
-                @__EntryDefaultValue
-                static var defaultValue: Int = 42
+                private struct __Key_intValue: OpenSwiftUICore.EnvironmentKey {
+                    static var defaultValue: Int {
+                        get {
+                            42
+                        }
+                    }
+                }
             }
             """,
             macros: testMacros
