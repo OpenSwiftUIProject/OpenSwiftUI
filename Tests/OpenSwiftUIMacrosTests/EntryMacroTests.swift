@@ -14,6 +14,10 @@ private let testMacros: [String: Macro.Type] = [
     "__EntryDefaultValue": EntryDefaultValueMacro.self,
 ]
 
+private let testEntryMacros: [String: Macro.Type] = [
+    "Entry": EntryMacro.self,
+]
+
 final class EntryMacroTests: XCTestCase {
     func testEntryMacroExpansion() {
         assertMacroExpansion(
@@ -44,6 +48,31 @@ final class EntryMacroTests: XCTestCase {
             }
             """,
             macros: testMacros
+        )
+        assertMacroExpansion(
+            """
+            extension EnvironmentValues {
+                @Entry var myCustomValue: String = "Default value"
+            }
+            """,
+            expandedSource:
+            """
+            extension EnvironmentValues {
+                var myCustomValue: String {
+                    get {
+                        self[__Key_myCustomValue.self]
+                    }
+                    set {
+                        self[__Key_myCustomValue.self] = newValue
+                    }
+                }
+
+                private struct __Key_myCustomValue: OpenSwiftUICore.EnvironmentKey {
+                    @__EntryDefaultValue static var defaultValue: String = "Default value"
+                }
+            }
+            """,
+            macros: testEntryMacros
         )
     }
 
@@ -198,7 +227,6 @@ final class EntryMacroTests: XCTestCase {
     }
 
     func testEntryMacroWithMemberFunctionCallInference() {
-        // Test the correct case where function name starts with uppercase (should succeed)
         assertMacroExpansion(
             """
             extension EnvironmentValues {
@@ -234,7 +262,37 @@ final class EntryMacroTests: XCTestCase {
             """,
             macros: testMacros
         )
+        assertMacroExpansion(
+            """
+            extension EnvironmentValues {
+                @Entry var custom = A.B()
+            }
+            enum A {
+                static func B() -> C { .init() }
+            }
+            """,
+            expandedSource:
+            """
+            extension EnvironmentValues {
+                var custom {
+                    get {
+                        self[__Key_custom.self]
+                    }
+                    set {
+                        self[__Key_custom.self] = newValue
+                    }
+                }
 
+                private struct __Key_custom: OpenSwiftUICore.EnvironmentKey {
+                    @__EntryDefaultValue static var defaultValue = A.B()
+                }
+            }
+            enum A {
+                static func B() -> C { .init() }
+            }
+            """,
+            macros: testEntryMacros
+        )
     }
 }
 
