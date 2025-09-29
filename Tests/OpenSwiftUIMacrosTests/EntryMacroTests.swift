@@ -96,6 +96,70 @@ final class EntryMacroTests: XCTestCase {
             macros: testMacros
         )
     }
+
+    func testEntryMacroWithInferredType() {
+        assertMacroExpansion(
+            """
+            extension EnvironmentValues {
+                @Entry var inferType = 0
+            }
+            """,
+            expandedSource:
+            """
+            extension EnvironmentValues {
+                var inferType {
+                    get {
+                        self[__Key_inferType.self]
+                    }
+                    set {
+                        self[__Key_inferType.self] = newValue
+                    }
+                }
+
+                private struct __Key_inferType: OpenSwiftUICore.EnvironmentKey {
+                    static var defaultValue: Int {
+                        get {
+                            0
+                        }
+                    }
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
+
+    func testEntryMacroWithOptionalType() {
+        assertMacroExpansion(
+            """
+            extension EnvironmentValues {
+                @Entry var optionalType: Int?
+            }
+            """,
+            expandedSource:
+            """
+            extension EnvironmentValues {
+                var optionalType: Int? {
+                    get {
+                        self[__Key_optionalType.self]
+                    }
+                    set {
+                        self[__Key_optionalType.self] = newValue
+                    }
+                }
+
+                private struct __Key_optionalType: OpenSwiftUICore.EnvironmentKey {
+                    static var defaultValue: Int? {
+                        get {
+                            nil
+                        }
+                    }
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
 }
 
 #endif
