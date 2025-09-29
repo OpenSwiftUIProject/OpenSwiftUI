@@ -25,6 +25,20 @@ package struct EntryMacro: AccessorMacro, PeerMacro {
             throw MacroExpansionErrorMessage("@Entry requires either a type annotation or an initial value")
         }
 
+        // Validate type inference for unsupported cases
+        if !hasType, let initializer = binding.initializer {
+            let initValue = initializer.value
+
+            // Check if this is a member function call that we cannot handle
+            if let functionCall = initValue.as(FunctionCallExprSyntax.self),
+               let memberAccess = functionCall.calledExpression.as(MemberAccessExprSyntax.self) {
+                let memberName = memberAccess.declName.baseName.text
+                if memberName.first?.isUppercase != true {
+                    throw MacroExpansionErrorMessage("@Entry with member function calls requires explicit type annotation. Use: @Entry var p: ReturnType = A.b()")
+                }
+            }
+        }
+
         let identifierText = identifier.text
         let keyName = "__Key_\(identifierText)"
 
@@ -93,15 +107,39 @@ package struct EntryMacro: AccessorMacro, PeerMacro {
                 type = TypeSyntax(IdentifierTypeSyntax(name: .identifier("String")))
             } else if initValue.is(BooleanLiteralExprSyntax.self) {
                 type = TypeSyntax(IdentifierTypeSyntax(name: .identifier("Bool")))
-            } else if let functionCall = initValue.as(FunctionCallExprSyntax.self),
-                      let identifierExpr = functionCall.calledExpression.as(DeclReferenceExprSyntax.self) {
-                // Handle function calls like CustomType()
-                let typeName = identifierExpr.baseName.text
-                type = TypeSyntax(IdentifierTypeSyntax(name: .identifier(typeName)))
+            } else if let functionCall = initValue.as(FunctionCallExprSyntax.self) {
+                // Handle different types of function calls
+                if let identifierExpr = functionCall.calledExpression.as(DeclReferenceExprSyntax.self) {
+                    // Simple function calls like CustomType()
+                    let typeName = identifierExpr.baseName.text
+                    type = TypeSyntax(IdentifierTypeSyntax(name: .identifier(typeName)))
+                } else if let memberAccess = functionCall.calledExpression.as(MemberAccessExprSyntax.self) {
+                    // Member access function calls like A.b()
+                    // We cannot determine the return type without type checking, but we can try
+                    // to extract it from context or require explicit annotation
+
+                    // For now, we'll look for a pattern where the function name suggests the return type
+                    // This is heuristic-based and limited, but covers some common cases
+                    let memberName = memberAccess.declName.baseName.text
+
+                    // Try some heuristics: if function name matches a type (like A.c() -> C)
+                    // This is a simplified approach for demonstration
+                    if memberName.first?.isUppercase == true {
+                        // Assume function name starting with uppercase is a type name
+                        let capitalizedName = String(memberName.prefix(1).uppercased() + memberName.dropFirst())
+                        type = TypeSyntax(IdentifierTypeSyntax(name: .identifier(capitalizedName)))
+                    } else {
+                        // For member access calls, we need explicit type annotation
+                        // because we cannot reliably infer the return type
+                        throw MacroExpansionErrorMessage("@Entry with member function calls requires explicit type annotation. Use: @Entry var p: ReturnType = A.b()")
+                    }
+                } else {
+                    // Other complex function call expressions
+                    throw MacroExpansionErrorMessage("@Entry with type inference requires explicit type for complex expressions. Use: @Entry var name: CustomType = CustomType()")
+                }
             } else {
                 // For other complex expressions, we cannot easily infer the type at compile time
-                // We could potentially use a more sophisticated approach, but for now we require explicit types
-                throw MacroExpansionErrorMessage("@Entry with type inference requires explicit type for complex expressions. Use: @Entry var name: CustomType = CustomType()")
+                throw MacroExpansionErrorMessage("@Entry with type inference requires explicit type for complex expressions")
             }
             defaultValue = initValue
         } else {

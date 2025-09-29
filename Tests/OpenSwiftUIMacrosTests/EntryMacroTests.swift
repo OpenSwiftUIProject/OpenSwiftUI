@@ -196,6 +196,27 @@ final class EntryMacroTests: XCTestCase {
             macros: testMacros
         )
     }
+
+    func testEntryMacroWithMemberFunctionCallInference() {
+        assertMacroExpansion(
+            """
+            extension EnvironmentValues {
+                @Entry var p = A.b()
+            }
+            """,
+            expandedSource:
+            """
+            extension EnvironmentValues {
+                var p = A.b()
+            }
+            """,
+            diagnostics: [
+                DiagnosticSpec(message: "@Entry with member function calls requires explicit type annotation. Use: @Entry var p: ReturnType = A.b()", line: 2, column: 5),
+                DiagnosticSpec(message: "@Entry with member function calls requires explicit type annotation. Use: @Entry var p: ReturnType = A.b()", line: 2, column: 5)
+            ],
+            macros: testMacros
+        )
+    }
 }
 
 #endif
