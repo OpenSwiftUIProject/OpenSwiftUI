@@ -117,7 +117,7 @@ final class EntryMacroTests: XCTestCase {
                 }
 
                 private struct __Key_inferType: OpenSwiftUICore.EnvironmentKey {
-                    static var defaultValue: Int {
+                    static var defaultValue {
                         get {
                             0
                         }
@@ -185,7 +185,7 @@ final class EntryMacroTests: XCTestCase {
                 }
 
                 private struct __Key_inferCustomType: OpenSwiftUICore.EnvironmentKey {
-                    static var defaultValue: CustomType {
+                    static var defaultValue {
                         get {
                             CustomType()
                         }
@@ -198,24 +198,43 @@ final class EntryMacroTests: XCTestCase {
     }
 
     func testEntryMacroWithMemberFunctionCallInference() {
+        // Test the correct case where function name starts with uppercase (should succeed)
         assertMacroExpansion(
             """
             extension EnvironmentValues {
-                @Entry var p = A.b()
+                @Entry var custom = A.B()
+            }
+            enum A {
+                static func B() -> C { .init() }
             }
             """,
             expandedSource:
             """
             extension EnvironmentValues {
-                var p = A.b()
+                var custom {
+                    get {
+                        self[__Key_custom.self]
+                    }
+                    set {
+                        self[__Key_custom.self] = newValue
+                    }
+                }
+
+                private struct __Key_custom: OpenSwiftUICore.EnvironmentKey {
+                    static var defaultValue {
+                        get {
+                            A.B()
+                        }
+                    }
+                }
+            }
+            enum A {
+                static func B() -> C { .init() }
             }
             """,
-            diagnostics: [
-                DiagnosticSpec(message: "@Entry with member function calls requires explicit type annotation. Use: @Entry var p: ReturnType = A.b()", line: 2, column: 5),
-                DiagnosticSpec(message: "@Entry with member function calls requires explicit type annotation. Use: @Entry var p: ReturnType = A.b()", line: 2, column: 5)
-            ],
             macros: testMacros
         )
+
     }
 }
 
