@@ -93,10 +93,15 @@ package struct EntryMacro: AccessorMacro, PeerMacro {
                 type = TypeSyntax(IdentifierTypeSyntax(name: .identifier("String")))
             } else if initValue.is(BooleanLiteralExprSyntax.self) {
                 type = TypeSyntax(IdentifierTypeSyntax(name: .identifier("Bool")))
+            } else if let functionCall = initValue.as(FunctionCallExprSyntax.self),
+                      let identifierExpr = functionCall.calledExpression.as(DeclReferenceExprSyntax.self) {
+                // Handle function calls like CustomType()
+                let typeName = identifierExpr.baseName.text
+                type = TypeSyntax(IdentifierTypeSyntax(name: .identifier(typeName)))
             } else {
-                // For complex expressions, we'll use the initializer expression type
-                // This is a simplified approach - in practice Swift's type inference is more complex
-                throw MacroExpansionErrorMessage("@Entry with type inference requires explicit type for complex expressions")
+                // For other complex expressions, we cannot easily infer the type at compile time
+                // We could potentially use a more sophisticated approach, but for now we require explicit types
+                throw MacroExpansionErrorMessage("@Entry with type inference requires explicit type for complex expressions. Use: @Entry var name: CustomType = CustomType()")
             }
             defaultValue = initValue
         } else {

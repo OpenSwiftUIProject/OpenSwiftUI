@@ -160,6 +160,42 @@ final class EntryMacroTests: XCTestCase {
             macros: testMacros
         )
     }
+
+    func testEntryMacroWithCustomTypeInference() {
+        assertMacroExpansion(
+            """
+            struct CustomType {}
+
+            extension EnvironmentValues {
+                @Entry var inferCustomType = CustomType()
+            }
+            """,
+            expandedSource:
+            """
+            struct CustomType {}
+
+            extension EnvironmentValues {
+                var inferCustomType {
+                    get {
+                        self[__Key_inferCustomType.self]
+                    }
+                    set {
+                        self[__Key_inferCustomType.self] = newValue
+                    }
+                }
+
+                private struct __Key_inferCustomType: OpenSwiftUICore.EnvironmentKey {
+                    static var defaultValue: CustomType {
+                        get {
+                            CustomType()
+                        }
+                    }
+                }
+            }
+            """,
+            macros: testMacros
+        )
+    }
 }
 
 #endif
