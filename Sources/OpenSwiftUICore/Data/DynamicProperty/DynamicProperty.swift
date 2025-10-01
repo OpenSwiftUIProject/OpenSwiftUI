@@ -139,17 +139,18 @@ extension DynamicProperty {
     public static var _propertyBehaviors: UInt32 { 0 }
 }
 
-// MARK: - DynamicPropertyCache [3.5.2]
+// MARK: - DynamicPropertyCache [6.5.4]
 
 package struct DynamicPropertyCache {
     package struct Fields {
-        var layout: Layout
-        package var behaviors: DynamicPropertyBehaviors
-
         enum Layout {
             case product([Field])
-            case sum(Any.Type, [TaggedFields])
+            case sum(any Any.Type, [TaggedFields])
         }
+
+        var layout: Layout
+
+        package var behaviors: DynamicPropertyBehaviors
         
         init(layout: Layout) {
             var behaviors: UInt32 = 0
@@ -169,9 +170,15 @@ package struct DynamicPropertyCache {
             self.behaviors = .init(rawValue: behaviors)
         }
 
-        // [WIP] [6.5.4]
-        func _name(at offset: Int) -> UnsafePointer<Int8>? {
-            nil
+        package func name(at offset: Int) -> String? {
+            _name(at: offset).flatMap { String(cString: $0, encoding: .utf8) }
+        }
+
+        package func _name(at offset: Int) -> UnsafePointer<Int8>? {
+            guard case let .product(fields) = layout else {
+                return nil
+            }
+            return fields.first(where: { $0.offset == offset })?.name
         }
     }
     
@@ -188,51 +195,56 @@ package struct DynamicPropertyCache {
     
     private static var cache = MutableBox([ObjectIdentifier: Fields]())
     
-    package static func fields(of type: Any.Type) -> Fields {
-        if let fields = cache.wrappedValue[ObjectIdentifier(type)] {
-            return fields
-        }
-        let fields: Fields
-        let typeID = Metadata(type)
-        switch typeID.kind {
-        case .enum, .optional:
-            var taggedFields: [TaggedFields] = []
-            _ = typeID.forEachField(options: [.continueAfterUnknownField, .enumerateEnumCases]) { name, offset, fieldType in
-                var fields: [Field] = []
-                let tupleType = TupleType(fieldType)
-                for index in tupleType.indices {
-                    guard let dynamicPropertyType = tupleType.type(at: index) as? DynamicProperty.Type else {
-                        break
+    package static func fields(of type: any Any.Type) -> Fields {
+        let identifier = ObjectIdentifier(type)
+        guard let fields = cache.wrappedValue[identifier] else {
+            var fields: Fields
+            let typeID = Metadata(type)
+            switch typeID.kind {
+            case .enum, .optional:
+                var taggedFields: [TaggedFields] = []
+                _ = typeID.forEachField(options: [.continueAfterUnknownField, .enumerateEnumCases]) { name, offset, fieldType in
+                    var fields: [Field] = []
+                    let tupleType = TupleType(fieldType)
+                    for index in tupleType.indices {
+                        guard let dynamicPropertyType = tupleType.type(at: index) as? DynamicProperty.Type else {
+                            continue
+                        }
+                        let offset = tupleType.elementOffset(at: index)
+                        let field = Field(type: dynamicPropertyType, offset: offset, name: name)
+                        fields.append(field)
                     }
-                    let offset = tupleType.elementOffset(at: index)
-                    let field = Field(type: dynamicPropertyType, offset: offset, name: name)
-                    fields.append(field)
-                }
-                if !fields.isEmpty {
-                    let taggedField = TaggedFields(tag: offset, fields: fields)
-                    taggedFields.append(taggedField)
-                }
-                return true
-            }
-            fields = Fields(layout: .sum(type, taggedFields))
-        case .struct, .tuple:
-            var fieldArray: [Field] = []
-            _ = typeID.forEachField(options: [.continueAfterUnknownField]) { name, offset, fieldType in
-                guard let dynamicPropertyType = fieldType as? DynamicProperty.Type else {
+                    if !fields.isEmpty {
+                        let taggedField = TaggedFields(tag: offset, fields: fields)
+                        taggedFields.append(taggedField)
+                    }
                     return true
                 }
-                let field = Field(type: dynamicPropertyType, offset: offset, name: name)
-                fieldArray.append(field)
-                return true
+                fields = Fields(layout: .sum(type, taggedFields))
+            case .struct, .tuple:
+                var fieldArray: [Field] = []
+                _ = typeID.forEachField(options: [.continueAfterUnknownField]) { name, offset, fieldType in
+                    guard let dynamicPropertyType = fieldType as? DynamicProperty.Type else {
+                        return true
+                    }
+                    let field = Field(type: dynamicPropertyType, offset: offset, name: name)
+                    fieldArray.append(field)
+                    return true
+                }
+                fields = Fields(layout: .product(fieldArray))
+            default:
+                fields = Fields(layout: .product([]))
             }
-            fields = Fields(layout: .product(fieldArray))
-        default:
-            fields = Fields(layout: .product([]))
+            if fields.behaviors.contains([.allowsAsync, .requiresMainThread]) {
+                Log.runtimeIssues(
+                    "%s is marked async, but contains properties that require the main thread.",
+                    ["\(type)"]
+                )
+                fields.behaviors.subtract(.allowsAsync)
+            }
+            cache.wrappedValue[identifier] = fields
+            return fields
         }
-        if fields.behaviors.contains(.init(rawValue: 3)) {
-            Log.runtimeIssues("%s is marked async, but contains properties that require the main thread.", ["\(type)"])
-        }
-        cache.wrappedValue[ObjectIdentifier(type)] = fields
         return fields
     }
 }
