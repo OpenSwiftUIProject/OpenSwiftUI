@@ -1,11 +1,8 @@
 //
 //  DynamicPropertyTests.swift
-//
-//
-//  Created by Kyle on 2023/11/4.
-//
+//  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
+import OpenSwiftUICore
 import Testing
 
 struct DynamicPropertyTests {
