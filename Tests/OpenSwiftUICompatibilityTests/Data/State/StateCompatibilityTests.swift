@@ -9,7 +9,7 @@ struct StateCompatibilityTests {
     @Test
     func appear() async throws {
         struct ContentView: View {
-            var confirmation: Confirmation
+            var continuation: UnsafeContinuation<Void, Never>
 
             @State private var toggle = false
             
@@ -18,16 +18,16 @@ struct StateCompatibilityTests {
                     .onAppear {
                         toggle.toggle()
                         if toggle {
-                            confirmation()
+                            continuation.resume()
                         }
                     }
             }
         }
         
-        try await triggerLayoutWithWindow { confirmation in
+        try await triggerLayoutWithWindow { continuation in
             PlatformHostingController(
                 rootView: ContentView(
-                    confirmation: confirmation
+                    continuation: continuation
                 )
             )
         }
