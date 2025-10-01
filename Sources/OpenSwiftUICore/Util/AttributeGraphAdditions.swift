@@ -178,18 +178,22 @@ package struct TreeElementFlags: OptionSet {
 
 // MARK: - TreeValueFlags [6.5.4]
 
+// FIXME: This should not be an OptionSet.
 package struct TreeValueFlags: OptionSet {
     package let rawValue: UInt32
 
     package init(rawValue: UInt32) {
-        _openSwiftUIUnimplementedFailure()
+        self.rawValue = rawValue
     }
 
-    // FIXME?
     package static let stateSignal: TreeValueFlags = .init(rawValue: 1)
+
     package static let environmentObjectSignal: TreeValueFlags = .init(rawValue: 2)
+
     package static let observedObjectSignal: TreeValueFlags = .init(rawValue: 3)
+
     package static let appStorageSignal: TreeValueFlags = .init(rawValue: 4)
+
     package static let sceneStorageSignal: TreeValueFlags = .init(rawValue: 5)
 }
 

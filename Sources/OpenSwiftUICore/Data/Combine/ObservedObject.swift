@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by addTreeValueSlow
+//  Status: Complete
 //  ID: C212C242BFEB175E53A59438AB276A7C (SwiftUICore)
 
 import OpenAttributeGraphShims
@@ -222,7 +222,13 @@ extension ObservedObject {
             invalidation: WeakAttribute(attribute)
         )
         buffer.append(box, fieldOffset: fieldOffset)
-        // TODO: addTreeValueSlow
+        addTreeValue(
+            attribute,
+            as: ObjectType.self,
+            at: fieldOffset,
+            in: Value.self,
+            flags: .observedObjectSignal
+        )
     }
 }
 
