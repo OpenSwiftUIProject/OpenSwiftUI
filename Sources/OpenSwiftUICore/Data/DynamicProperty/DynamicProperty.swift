@@ -2,20 +2,21 @@
 //  DynamicProperty.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.5.4 & 3.5.2
 //  Status: Complete
 //  ID: 49D2A32E637CD497C6DE29B8E060A506 (SwiftUI)
 //  ID: A4C1D658B3717A3062FEFC91A812D6EB (SwiftUICore)
 
 package import OpenAttributeGraphShims
 
-// MARK: - DynamicProperty
+// MARK: - DynamicProperty [6.5.4]
 
 /// An interface for a stored variable that updates an external property of a
 /// view.
 ///
 /// The view gives values to these properties prior to recomputing the view's
 /// ``View/body-swift.property``.
+@available(OpenSwiftUI_v1_0, *)
 public protocol DynamicProperty {
     /// Creates an instance of the dynamic `View` property
     /// represented by `self`.
@@ -28,8 +29,9 @@ public protocol DynamicProperty {
     
     /// Describes the static behaviors of the property type. Returns
     ///  a raw integer value from DynamicPropertyBehaviors.
+    @available(OpenSwiftUI_v3_0, *)
     static var _propertyBehaviors: UInt32 { get }
-    
+
     /// Updates the underlying value of the stored value.
     ///
     /// OpenSwiftUI calls this function before rendering a view's
@@ -38,7 +40,7 @@ public protocol DynamicProperty {
     mutating func update()
 }
 
-// MARK: - DynamicPropertyBehaviors
+// MARK: - DynamicPropertyBehaviors [6.5.4]
 
 package struct DynamicPropertyBehaviors: OptionSet {
     package let rawValue: UInt32
@@ -52,34 +54,49 @@ package struct DynamicPropertyBehaviors: OptionSet {
     }
 }
 
-// MARK: - DynamicPropertyBox
+// MARK: - DynamicPropertyBox [6.5.4]
 
 package protocol DynamicPropertyBox<Property>: DynamicProperty {
     associatedtype Property: DynamicProperty
+
     mutating func destroy()
+
     mutating func reset()
+
     mutating func update(property: inout Property, phase: ViewPhase) -> Bool
+
     func getState<Value>(type: Value.Type) -> Binding<Value>?
 }
 
-// MARK: - Default implementation for DynamicPropertyBox
+// MARK: - Default implementation for DynamicPropertyBox [6.5.4]
 
 extension DynamicPropertyBox {
-    package func destroy() {}
-    package func reset() {}
-    package func getState<S>(type: S.Type = S.self) -> Binding<S>? { nil }
+    package func destroy() {
+        _openSwiftUIEmptyStub()
+    }
+
+    package func reset() {
+        _openSwiftUIEmptyStub()
+    }
+
+    package func getState<S>(type: S.Type = S.self) -> Binding<S>? {
+        nil
+    }
 }
 
-// MARK: - Default implementation for DynamicProperty
+// MARK: - Default implementation for DynamicProperty [6.5.4]
 
 private struct EmbeddedDynamicPropertyBox<Value: DynamicProperty>: DynamicPropertyBox {
+
     typealias Property = Value
+
     func update(property: inout Property, phase _: ViewPhase) -> Bool {
         property.update()
         return false
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension DynamicProperty {
     public static func _makeProperty<Value>(
         in buffer: inout _DynamicPropertyBuffer,
@@ -114,12 +131,15 @@ extension DynamicProperty {
         )
     }
     
-    public mutating func update() {}
-    
+    public mutating func update() {
+        _openSwiftUIEmptyStub()
+    }
+
+    @available(OpenSwiftUI_v3_0, *)
     public static var _propertyBehaviors: UInt32 { 0 }
 }
 
-// MARK: - DynamicPropertyCache [2021]
+// MARK: - DynamicPropertyCache [3.5.2]
 
 package struct DynamicPropertyCache {
     package struct Fields {
@@ -147,6 +167,11 @@ package struct DynamicPropertyCache {
             }
             self.layout = layout
             self.behaviors = .init(rawValue: behaviors)
+        }
+
+        // [WIP] [6.5.4]
+        func _name(at offset: Int) -> UnsafePointer<Int8>? {
+            nil
         }
     }
     
@@ -212,6 +237,69 @@ package struct DynamicPropertyCache {
     }
 }
 
+// MARK: - DynamicProperty + TreeValue [6.5.4]
+
+extension DynamicProperty {
+    @inline(__always)
+    package static func addTreeValue<T>(
+        _ value: Attribute<T>,
+        at fieldOffset: Int,
+        in container: any Any.Type,
+        flags: TreeValueFlags = .init()
+    ) {
+        guard Subgraph.shouldRecordTree else {
+            return
+        }
+        addTreeValueSlow(
+            value.identifier,
+            as: T.self,
+            in: container,
+            fieldOffset: fieldOffset,
+            flags: flags
+        )
+    }
+
+    @inline(__always)
+    package static func addTreeValue<T, U>(
+        _ value: Attribute<T>,
+        as: U.Type,
+        at fieldOffset: Int,
+        in container: any Any.Type,
+        flags: TreeValueFlags = .init()
+    ) {
+        guard Subgraph.shouldRecordTree else {
+            return
+        }
+        addTreeValueSlow(
+            value.identifier,
+            as: U.self,
+            in: container,
+            fieldOffset: fieldOffset,
+            flags: flags
+        )
+    }
+
+    @inline(never)
+    package static func addTreeValueSlow<T>(
+        _ value: AnyAttribute,
+        as type: T.Type,
+        in container: any Any.Type,
+        fieldOffset: Int,
+        flags: TreeValueFlags = .init()
+    ) {
+        let containerFields = DynamicPropertyCache.fields(of: container)
+        "<unknown>".withCString { unknownStringPtr in
+            Subgraph.addTreeValue(
+                Attribute<T>(identifier: value),
+                forKey: containerFields._name(at: fieldOffset) ?? unknownStringPtr,
+                flags: flags.rawValue
+            )
+        }
+    }
+}
+
+// MARK: - BodyAccessor [3.5.2]
+
 package protocol BodyAccessor<Container, Body> {
     associatedtype Container
     associatedtype Body
@@ -271,7 +359,7 @@ extension BodyAccessor {
     }
 }
 
-// MARK: - BodyAccessorRule
+// MARK: - BodyAccessorRule [3.5.2]
 
 package protocol BodyAccessorRule {
     static var container: Any.Type { get }
@@ -282,7 +370,7 @@ package protocol BodyAccessorRule {
 
 // TO BE AUDITED
 
-// MARK: - RuleThreadFlags
+// MARK: - RuleThreadFlags [3.5.2]
 
 private protocol RuleThreadFlags {
     static var value: _AttributeType.Flags { get }
@@ -296,7 +384,7 @@ private struct MainThreadFlags: RuleThreadFlags {
     static var value: _AttributeType.Flags { .mainThread }
 }
 
-// MARK: - StaticBody
+// MARK: - StaticBody [3.5.2]
 
 private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
@@ -348,7 +436,7 @@ extension StaticBody: CustomStringConvertible {
     var description: String { "\(Accessor.Body.self)" }
 }
 
-// MARK: - DynamicBody
+// MARK: - DynamicBody [3.5.2]
 
 private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
