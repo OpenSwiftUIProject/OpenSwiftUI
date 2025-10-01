@@ -25,10 +25,11 @@ package enum Update {
     package static var isActive: Bool {
         depth != 0
     }
-    
+
+    // Audited [6.5.4]
     @inlinable
     package static var threadIsUpdating: Bool {
-        depth < dispatchDepth ? isOwner : false
+        depth > dispatchDepth ? isOwner : false
     }
     
     @inlinable
