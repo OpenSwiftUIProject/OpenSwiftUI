@@ -1,10 +1,13 @@
 //
 //  StateObject.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for 3.5.2
-//  Status: Blocked by DynamicProperty
+//  Audited for 6.5.4
+//  Status: Complete
+//  ID: BDD24532CFCFEBA7264ABA5DE20A4002 (SwiftUICore)
 
+import class Foundation.Thread
+import OpenAttributeGraphShims
 #if OPENSWIFTUI_OPENCOMBINE
 public import OpenCombine
 #else
@@ -173,10 +176,15 @@ public import Combine
 /// Also, changing the identity resets _all_ state held by the view, including
 /// values that you manage as ``State``, ``FocusState``, ``GestureState``,
 /// and so on.
+@available(OpenSwiftUI_v2_0, *)
 @frozen
 @propertyWrapper
-public struct StateObject<ObjectType> where ObjectType: ObservableObject {
+@preconcurrency
+@MainActor
+public struct StateObject<ObjectType>: DynamicProperty where ObjectType: ObservableObject {
     @usableFromInline
+    @preconcurrency
+    @MainActor
     @frozen
     enum Storage {
         case initially(() -> ObjectType)
@@ -224,8 +232,18 @@ public struct StateObject<ObjectType> where ObjectType: ObservableObject {
     ///
     /// - Parameter thunk: An initial value for the state object.
     @inlinable
-    public init(wrappedValue thunk: @autoclosure @escaping () -> ObjectType) {
+    nonisolated public init(wrappedValue thunk: @autoclosure @escaping () -> ObjectType) {
         storage = .initially(thunk)
+    }
+
+    var objectValue: ObservedObject<ObjectType> {
+        switch storage {
+        case let .initially(thunk):
+            Log.runtimeIssues("Accessing StateObject's object without being installed on a View. This will create a new instance each time.")
+            return ObservedObject(wrappedValue: thunk())
+        case let .object(value):
+            return value
+        }
     }
 
     /// The underlying value referenced by the state object.
@@ -269,26 +287,77 @@ public struct StateObject<ObjectType> where ObjectType: ObservableObject {
     public var projectedValue: ObservedObject<ObjectType>.Wrapper {
         objectValue.projectedValue
     }
-}
 
-extension StateObject: DynamicProperty {
-    public static func _makeProperty(in _: inout _DynamicPropertyBuffer, container _: _GraphValue<some Any>, fieldOffset _: Int, inputs _: inout _GraphInputs) {
-        // TODO:
+    private struct Box: DynamicPropertyBox {
+        var links: _DynamicPropertyBuffer
+        var object: ObservedObject<ObjectType>?
+
+        typealias Property = StateObject
+
+        func destroy() {
+            links.destroy()
+        }
+
+        mutating func reset() {
+            links.reset()
+            object = nil
+        }
+
+        mutating func update(property: inout Property, phase: ViewPhase) -> Bool {
+            var changed = false
+            if object == nil {
+                switch property.storage {
+                case let .initially(thunk):
+                    if !Thread.isMainThread {
+                        Log.runtimeIssues(
+                            "Updating StateObject<%s> from background\nthreads will cause undefined behavior; make sure to update it from the main thread.",
+                            ["\(ObjectType.self)"]
+                        )
+                    }
+                    var value: UncheckedSendable<ObservedObject<ObjectType>?> = UncheckedSendable(nil)
+                    value.value = ObservedObject(wrappedValue: thunk())
+                    self.object = value.value
+                case let .object(object):
+                    self.object = object
+                }
+                changed = true
+            }
+            var object = object!
+            defer { property.storage = .object(object) }
+            // NOTE: This should be withUnsafeMutablePointer IMO. Currently align with SwiftUI implementation.
+            return withUnsafePointer(to: object) { pointer in
+                links.update(container: UnsafeMutableRawPointer(mutating: pointer), phase: phase) || changed
+            }
+        }
     }
 
+    nonisolated public static func _makeProperty<V>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<V>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) {
+        var buf = _DynamicPropertyBuffer()
+        #if OPENSWIFTUI_RELEASE_2025
+        let attribute = ObservedObject<ObjectType>.makeBoxAndSignal(in: &buf, container: container, fieldOffset: 0)
+        buffer.append(Box(links: buf, object: nil), fieldOffset: fieldOffset)
+        addTreeValue(
+            attribute,
+            as: ObjectType.self,
+            at: fieldOffset,
+            in: V.self,
+            flags: .stateObjectSignal
+        )
+        #else
+        ObservedObject<ObjectType>._makeProperty(in: &buf, container: container, fieldOffset: 0, inputs: &inputs)
+        buffer.append(Box(links: buf, object: nil), fieldOffset: fieldOffset)
+        #endif
+    }
+}
+
+@available(OpenSwiftUI_v3_0, *)
+extension StateObject {
     public static var _propertyBehaviors: UInt32 {
         DynamicPropertyBehaviors.requiresMainThread.rawValue
-    }
-}
-
-extension StateObject {
-    var objectValue: ObservedObject<ObjectType> {
-        switch storage {
-        case let .initially(thunk):
-            Log.runtimeIssues("Accessing StateObject's object without being installed on a View. This will create a new instance each time.")
-            return ObservedObject(wrappedValue: thunk())
-        case let .object(value):
-            return value
-        }
     }
 }
