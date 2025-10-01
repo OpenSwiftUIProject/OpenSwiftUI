@@ -99,6 +99,13 @@ The project uses **swift-testing framework** (not XCTest):
   #expect(value.isApproximatelyEqual(to: expectedValue))
   ```
 
+**Exception: Macro Tests**
+- Macro tests must use **XCTest** framework (not swift-testing)
+- Import with `import XCTest`
+- Use `final class TestName: XCTestCase` with `func testName()` methods
+- Use XCTest assertions like `XCTAssertEqual()`, `XCTAssertTrue()`, etc.
+- For macro expansion testing, use `assertMacroExpansion` from `SwiftSyntaxMacrosTestSupport`
+
 ### Compatibility Tests
 
 When writing tests in `OpenSwiftUICompatibilityTests`:
