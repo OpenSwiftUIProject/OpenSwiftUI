@@ -2,7 +2,7 @@
 //  NSHostingView.swift
 //  OpenSwiftUI
 //
-//  Audited for macOS 15.0
+//  Audited for 6.0.87
 //  Status: WIP
 
 #if os(macOS)

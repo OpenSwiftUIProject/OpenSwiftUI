@@ -2,7 +2,7 @@
 //  AccessibilityValueByProxy.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Complete
 
 protocol AccessibilityValueByProxy: AccessibilityValue {

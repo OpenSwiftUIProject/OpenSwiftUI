@@ -2,7 +2,7 @@
 //  ColorRenderingMode.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// The set of possible working color spaces for color-compositing operations.

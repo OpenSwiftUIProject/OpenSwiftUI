@@ -2,7 +2,7 @@
 //  Color+CoreGraphics.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Blocked by ResolvedGradient
 //  ID: A45C110C8134A7DB30776EFC6CE1E8A6 (SwiftUICore?)
 

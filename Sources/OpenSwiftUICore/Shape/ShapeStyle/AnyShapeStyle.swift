@@ -2,7 +2,7 @@
 //  AnyShapeStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: ABC85937500395B09974756E9F651929 (SwiftUI)
 //  ID: C5308685324599C90E2F7A588812BB29 (SwiftUICore)

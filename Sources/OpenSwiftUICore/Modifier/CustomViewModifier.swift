@@ -2,7 +2,7 @@
 //  CustomViewModifier.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 0EAFD5A78D9C0B607C3C0964CF3A3038 (SwiftUI)
 //  ID: 2BA0A33A15B7F322F46AFB9D0D1A262D (SwiftUICore)

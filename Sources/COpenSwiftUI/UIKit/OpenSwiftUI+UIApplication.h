@@ -2,7 +2,7 @@
 //  OpenSwiftUI+UIApplication.h
 //  COpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 #ifndef OpenSwiftUI_UIApplication_h

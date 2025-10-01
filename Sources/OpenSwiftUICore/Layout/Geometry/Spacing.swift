@@ -2,7 +2,7 @@
 //  Spacing.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 127A76D3C8081D0134153BE9AE746714 (SwiftUI)
 //  ID: EF1C7FCB82CB27FA7772A4944789FD3D (SwiftUICore)

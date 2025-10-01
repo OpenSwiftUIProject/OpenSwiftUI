@@ -2,7 +2,7 @@
 //  OffsetShapeStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Blocked by _ShapeStyle_Pack
 
 package struct OffsetShapeStyle<Base>: ShapeStyle where Base: ShapeStyle {

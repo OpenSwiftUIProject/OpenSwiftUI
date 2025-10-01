@@ -2,7 +2,7 @@
 //  Update.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: EA173074DA35FA471DC70643259B7E74 (SwiftUI)
 //  ID: 61534957AEEC2EDC447ABDC13B4D426F (SwiftUICore)

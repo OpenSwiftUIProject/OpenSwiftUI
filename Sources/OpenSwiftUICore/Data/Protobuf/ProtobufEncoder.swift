@@ -2,7 +2,7 @@
 //  ProtobufEncoder.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: C7B3AAD101AF9EA76FC322BD6EF713E6 (SwiftUICore)
 

@@ -2,7 +2,7 @@
 //  DisplayList.ViewUpdater.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: B86250B2E056EB47628ECF46032DFA4C (SwiftUICore)
 

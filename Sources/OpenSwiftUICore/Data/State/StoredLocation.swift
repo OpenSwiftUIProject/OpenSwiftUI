@@ -2,7 +2,7 @@
 //  StoredLocation.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: EBDC911C9EE054BAE3D86F947C24B7C3 (RELEASE_2021)
 //  ID: 4F21368B1C1680817451AC25B55A8D48 (RELEASE_2024)

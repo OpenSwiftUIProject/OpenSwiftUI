@@ -2,7 +2,7 @@
 //  ColorScheme.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 387C753F3FFD2899BCB77252214CFCC6 (SwiftUI)
 //  ID: 0E72AB1FBE33AED1E73FF06F3DA3A071 (SwiftUICore)

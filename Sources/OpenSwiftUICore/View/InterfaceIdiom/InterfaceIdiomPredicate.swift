@@ -2,7 +2,7 @@
 //  InterfaceIdiomPredicate.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 #if OPENSWIFTUI_RELEASE_2024

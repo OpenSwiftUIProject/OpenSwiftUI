@@ -2,7 +2,7 @@
 //  VariadicView.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 00F12C0E37A19C593ECA0DBD3BE26541 (SwiftUI)
 //  ID: DC167C463E6601B3880A23A75ACAA63B (SwiftUICore)

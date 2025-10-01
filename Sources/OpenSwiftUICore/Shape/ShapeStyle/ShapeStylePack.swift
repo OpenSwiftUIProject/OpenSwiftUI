@@ -2,7 +2,7 @@
 //  ShapeStylePack.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Blocked by other ShapeStyle and Animatable
 //  ID: 4DBF651155A4B32ED86C55EAB1B96C61 (SwiftUICore)
 

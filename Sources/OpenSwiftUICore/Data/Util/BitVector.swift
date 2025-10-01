@@ -2,7 +2,7 @@
 //  BitVector.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 8433FC349A42D7F59B64CD7FA08D81A9 (SwiftUICore)
 

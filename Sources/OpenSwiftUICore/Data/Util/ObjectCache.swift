@@ -2,7 +2,7 @@
 //  ObjectCache.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: FCB2944DC319042A861E82C8B244E212
 

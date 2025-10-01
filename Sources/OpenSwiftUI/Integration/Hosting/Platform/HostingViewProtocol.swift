@@ -2,7 +2,7 @@
 //  HostingViewRegistry.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 08E507B775941708E73E5FD8531D9361 (SwiftUI)
 

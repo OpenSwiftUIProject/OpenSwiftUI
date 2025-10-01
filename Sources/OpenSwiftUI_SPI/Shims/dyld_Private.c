@@ -2,7 +2,7 @@
 //  dyld_Private.c
 //  OpenSwiftUI_SPI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 #include "dyld_Private.h"

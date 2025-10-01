@@ -2,7 +2,7 @@
 //  ButtonDefaultRenderingModeModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Complete
 //  ID: 6C985860B64B768EC9A2691B5DBA71A0
 

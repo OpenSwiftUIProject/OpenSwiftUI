@@ -2,7 +2,7 @@
 //  DisplayListPrinter.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: 11125C146A81D1913BFBD53B89D010C6 (SwiftUICore)
 

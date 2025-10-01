@@ -2,7 +2,7 @@
 //  OpenURLAction.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Complete
 //  ID: 1F1831D737D24A15A8A759DDE72CEF68
 

@@ -2,7 +2,7 @@
 //  CUIDesignLibraryCacheKey.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: EBD1C829A869D5EC3C2FDA55F4467D9A (SwiftUICore?)
 

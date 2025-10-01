@@ -2,7 +2,7 @@
 //  ImplicitShapeStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// A shape style representing the implicit base of style modifiers.

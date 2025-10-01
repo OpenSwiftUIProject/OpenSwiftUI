@@ -2,7 +2,7 @@
 //  LayoutTraits.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 950FC9541E969A331FB3CF1283EA4AEC (SwiftUICore)
 

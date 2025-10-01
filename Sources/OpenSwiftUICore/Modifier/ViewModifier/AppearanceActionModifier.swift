@@ -2,7 +2,7 @@
 //  AppearanceActionModifier.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 8817D3B1C81ADA2B53E3500D727F785A (SwiftUI)
 //  ID: 3EDE22C3B37C9BBEF12EC9D1A4B340F3 (SwiftUICore)

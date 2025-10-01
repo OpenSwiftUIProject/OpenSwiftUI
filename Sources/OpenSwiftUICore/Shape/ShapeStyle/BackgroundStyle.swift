@@ -2,7 +2,7 @@
 //  BackgroundStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: C7D4771CFE453D905E7BCD5A907D32EB (SwiftUICore)
 

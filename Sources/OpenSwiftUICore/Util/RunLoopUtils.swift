@@ -2,7 +2,7 @@
 //  RunLoopUtils.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 904CE3B9A8258172D2E69C7BF94D1428 (SwiftUICore)
 

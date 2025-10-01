@@ -2,7 +2,7 @@
 //  SeparatorShapeStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 43B3709EE4A9B8504AC89AFCD0D99421
 

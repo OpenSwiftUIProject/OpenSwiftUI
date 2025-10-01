@@ -2,7 +2,7 @@
 //  Angle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// A geometric angle whose value you access in either radians or degrees.

@@ -2,7 +2,7 @@
 //  ControlSizeKey.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Complete
 //  ID: 50E368DED9ACE8B6BEC08FF7781AF4B1
 

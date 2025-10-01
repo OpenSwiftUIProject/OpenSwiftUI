@@ -2,7 +2,7 @@
 //  DisplayListViewCache.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: A9949015C771FF99F7528BB7239FD006 (SwiftUICore)
 

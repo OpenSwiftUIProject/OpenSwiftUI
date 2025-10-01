@@ -2,7 +2,7 @@
 //  View.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 1ABF77B82C037C602A176AE349787FED (SwiftUICore)
 

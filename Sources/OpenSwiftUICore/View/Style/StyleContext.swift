@@ -2,7 +2,7 @@
 //  StyleContext.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: 2EF43D8D991A83294E93848563DD541B (SwiftUICore)
 

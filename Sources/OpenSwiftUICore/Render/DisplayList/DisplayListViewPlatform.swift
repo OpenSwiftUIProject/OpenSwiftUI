@@ -2,7 +2,7 @@
 //  PlatformViewDefinition.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Blocked by PlatformDrawable and GraphicsContext
 //  ID: 8BBC66CBE42B8A65F8A2F3799C81A349 (SwiftUICore)
 

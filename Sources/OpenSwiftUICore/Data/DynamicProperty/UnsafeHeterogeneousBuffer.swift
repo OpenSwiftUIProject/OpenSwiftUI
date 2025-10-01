@@ -2,7 +2,7 @@
 //  UnsafeHeterogeneousBuffer.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 568350FE259575B5E1AAA52AD722AAAC (SwiftUICore)
 

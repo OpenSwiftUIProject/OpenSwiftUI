@@ -2,7 +2,7 @@
 //  ViewGraphFeature.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 8A0FC0E1EA10CEEE185C2315B618A95C (SwiftUICore)
 

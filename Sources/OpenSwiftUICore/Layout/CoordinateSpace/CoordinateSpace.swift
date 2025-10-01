@@ -2,7 +2,7 @@
 //  CoordinateSpace.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// A resolved coordinate space created by the coordinate space protocol.

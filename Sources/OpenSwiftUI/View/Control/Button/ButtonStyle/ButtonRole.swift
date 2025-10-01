@@ -2,7 +2,7 @@
 //  ButtonRole.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Complete
 
 public struct ButtonRole: Equatable, Sendable {

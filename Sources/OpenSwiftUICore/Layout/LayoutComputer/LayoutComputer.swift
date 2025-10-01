@@ -2,7 +2,7 @@
 //  LayoutComputer.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 91FCB5522C30220AE13689E45789FEF2 (SwiftUICore)
 

@@ -2,7 +2,7 @@
 //  AnyView.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: A96961F3546506F21D8995C6092F15B5 (SwiftUI)
 //  ID: 7578D05D331D7F1A2E0C2F8DEF38AAD4 (SwiftUICore)

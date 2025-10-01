@@ -2,7 +2,7 @@
 //  DynamicView.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 3FB6ABB0477B815AB3C89DD5EDC9F0F0 (SwiftUICore)
 

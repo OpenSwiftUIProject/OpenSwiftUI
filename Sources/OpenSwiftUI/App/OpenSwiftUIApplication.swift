@@ -2,7 +2,7 @@
 //  OpenSwiftUIApplication.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: WIP
 //  ID: ACC2C5639A7D76F611E170E831FCA491
 

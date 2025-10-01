@@ -2,7 +2,7 @@
 //  EnvironmentValues.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 83E729E7BD00420AB79EFD8DF557072A (SwiftUI)
 //  ID: 0CBA6217BE011883F496E97230B6CF8F (SwiftUICore)

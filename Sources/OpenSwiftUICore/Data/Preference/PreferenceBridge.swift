@@ -2,7 +2,7 @@
 //  PreferenceBridge.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: A9FAE381E99529D5274BA37A9BC9B074 (SwiftUI)
 //  ID: DF57A19C61B44C613EB77C1D47FC679A (SwiftUICore)

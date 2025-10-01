@@ -2,7 +2,7 @@
 //  LegacyApp.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: F8F4CFB3FB453F4ECC15C05B76BCD1E4 (SwiftUI)
 

@@ -2,7 +2,7 @@
 //  SystemColors.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 9E3352CE4697DF56A738786E16992848 (SwiftUICore)
 
