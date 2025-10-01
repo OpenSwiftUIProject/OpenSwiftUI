@@ -195,6 +195,10 @@ package struct TreeValueFlags: OptionSet {
     package static let appStorageSignal: TreeValueFlags = .init(rawValue: 4)
 
     package static let sceneStorageSignal: TreeValueFlags = .init(rawValue: 5)
+
+    #if OPENSWIFTUI_SUPPORT_2025_API // Audited for 7.0.67
+    package static let stateObjectSignal: TreeValueFlags = .init(rawValue: 6)
+    #endif
 }
 
 // MARK: - Metadata Additions [6.5.4]

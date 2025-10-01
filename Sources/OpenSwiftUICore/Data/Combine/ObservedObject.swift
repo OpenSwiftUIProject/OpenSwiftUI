@@ -209,10 +209,42 @@ public struct ObservedObject<ObjectType>: DynamicProperty where ObjectType: Obse
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension ObservedObject {
-    public static func _makeProperty<Value>(
+    #if OPENSWIFTUI_RELEASE_2025 // Audited for 7.0.67
+    nonisolated static func makeBoxAndSignal<V>(
         in buffer: inout _DynamicPropertyBuffer,
-        container: _GraphValue<Value>,
+        container: _GraphValue<V>,
+        fieldOffset: Int
+    ) -> Attribute<()> {
+        let attribute = Attribute(value: ())
+        let box = ObservedObjectPropertyBox<ObjectType>(
+            host: .currentHost,
+            invalidation: WeakAttribute(attribute)
+        )
+        buffer.append(box, fieldOffset: fieldOffset)
+        return attribute
+    }
+
+    nonisolated public static func _makeProperty<V>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<V>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) {
+        let attribute = makeBoxAndSignal(in: &buffer, container: container, fieldOffset: fieldOffset)
+        addTreeValue(
+            attribute,
+            as: ObjectType.self,
+            at: fieldOffset,
+            in: V.self,
+            flags: .observedObjectSignal
+        )
+    }
+    #else
+    nonisolated public static func _makeProperty<V>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<V>,
         fieldOffset: Int,
         inputs: inout _GraphInputs
     ) {
@@ -226,14 +258,16 @@ extension ObservedObject {
             attribute,
             as: ObjectType.self,
             at: fieldOffset,
-            in: Value.self,
+            in: V.self,
             flags: .observedObjectSignal
         )
     }
+    #endif
 }
 
-extension ObservableObject {
-    public static var _propertyBehaviors: UInt32 {
+@available(OpenSwiftUI_v3_0, *)
+extension ObservedObject {
+    nonisolated public static var _propertyBehaviors: UInt32 {
         DynamicPropertyBehaviors.requiresMainThread.rawValue
     }
 }

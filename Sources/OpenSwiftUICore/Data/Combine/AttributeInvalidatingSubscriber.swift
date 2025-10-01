@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import Foundation
+import class Foundation.Thread
 import OpenAttributeGraphShims
 #if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
