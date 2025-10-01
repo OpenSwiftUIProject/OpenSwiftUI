@@ -1,15 +1,19 @@
 //
 //  ObservedObject.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for iOS 15.5
-//  Status: Blocked by DynamicProperty
+//  Audited for 6.5.4
+//  Status: Blocked by addTreeValueSlow
+//  ID: C212C242BFEB175E53A59438AB276A7C (SwiftUICore)
 
+import OpenAttributeGraphShims
 #if OPENSWIFTUI_OPENCOMBINE
 public import OpenCombine
 #else
 public import Combine
 #endif
+
+// MARK: - ObservedObject
 
 /// A property wrapper type that subscribes to an observable object and
 /// invalidates a view whenever the observable object changes.
@@ -70,25 +74,41 @@ public import Combine
 /// its body, wrap the object with the ``Bindable`` property wrapper instead;
 /// for example, `@Bindable var model: DataModel`. For more information, see
 /// <doc:Managing-model-data-in-your-app>.
+@available(OpenSwiftUI_v1_0, *)
+@preconcurrency
+@MainActor
 @propertyWrapper
 @frozen
-public struct ObservedObject<ObjectType> where ObjectType: ObservableObject {
+public struct ObservedObject<ObjectType>: DynamicProperty where ObjectType: ObservableObject {
+
     /// A wrapper of the underlying observable object that can create bindings
     /// to its properties.
+    @preconcurrency
+    @MainActor
     @dynamicMemberLookup
     @frozen
     public struct Wrapper {
+
         let root: ObjectType
+
+        init(root: ObjectType) {
+            self.root = root
+        }
 
         /// Gets a binding to the value of a specified key path.
         ///
         /// - Parameter keyPath: A key path to a specific  value.
         ///
         /// - Returns: A new binding.
-        public subscript<Subject>(dynamicMember keyPath: ReferenceWritableKeyPath<ObjectType, Subject>) -> Binding<Subject> {
+        public subscript<Subject>(
+            dynamicMember keyPath: ReferenceWritableKeyPath<ObjectType, Subject>
+        ) -> Binding<Subject> {
             Binding(root, keyPath: keyPath)
         }
     }
+
+    @usableFromInline
+    var _seed = 0
 
     /// Creates an observed object with an initial value.
     ///
@@ -142,9 +162,6 @@ public struct ObservedObject<ObjectType> where ObjectType: ObservableObject {
         self.wrappedValue = wrappedValue
     }
 
-    @usableFromInline
-    var _seed = 0
-
     /// The underlying value that the observed object references.
     ///
     /// The wrapped value property provides primary access to the observed
@@ -163,8 +180,6 @@ public struct ObservedObject<ObjectType> where ObjectType: ObservableObject {
     /// When you change a wrapped value, you can access the new value
     /// immediately. However, OpenSwiftUI updates views that display the value
     /// asynchronously, so the interface might not update immediately.
-    @MainActor
-    @preconcurrency
     public var wrappedValue: ObjectType
 
     /// A projection of the observed object that creates bindings to its
@@ -184,25 +199,70 @@ public struct ObservedObject<ObjectType> where ObjectType: ObservableObject {
     ///         }
     ///     }
     ///
-    @MainActor
-    @preconcurrency
+    /// > Important: A `Binding` created by the projected value must only be
+    /// read from, or written to by the main actor. Failing to do so may result
+    /// in undefined behavior, or data loss. When this occurs, OpenSwiftUI will
+    /// issue a runtime warning. In a future release, a crash will occur
+    /// instead.
     public var projectedValue: ObservedObject<ObjectType>.Wrapper {
         .init(root: wrappedValue)
     }
 }
 
-extension ObservedObject: DynamicProperty {
-    public static func _makeProperty(in _: inout _DynamicPropertyBuffer, container _: _GraphValue<some Any>, fieldOffset _: Int, inputs _: inout _GraphInputs) {
-        // TODO
+extension ObservedObject {
+    public static func _makeProperty<Value>(
+        in buffer: inout _DynamicPropertyBuffer,
+        container: _GraphValue<Value>,
+        fieldOffset: Int,
+        inputs: inout _GraphInputs
+    ) {
+        let attribute = Attribute(value: ())
+        let box = ObservedObjectPropertyBox<ObjectType>(
+            host: .currentHost,
+            invalidation: WeakAttribute(attribute)
+        )
+        buffer.append(box, fieldOffset: fieldOffset)
+        // TODO: addTreeValueSlow
     }
-
-    public static var _propertyBehaviors: UInt32 { 2 }
 }
 
-extension Binding {
-    init<ObjectType: ObservableObject>(_ root: ObjectType, keyPath: ReferenceWritableKeyPath<ObjectType, Value>) {
-        let location = ObservableObjectLocation(base: root, keyPath: keyPath)
-        let box = LocationBox(location)
-        self.init(value: location.get(), location: box)
+extension ObservableObject {
+    public static var _propertyBehaviors: UInt32 {
+        DynamicPropertyBehaviors.requiresMainThread.rawValue
+    }
+}
+
+// MARK: - ObservedObjectPropertyBox
+
+private struct ObservedObjectPropertyBox<ObjectType>: DynamicPropertyBox where ObjectType: ObservableObject {
+    typealias Upstream = ObjectType.ObjectWillChangePublisher
+
+    let subscriber: AttributeInvalidatingSubscriber<Upstream>
+
+    let lifetime: SubscriptionLifetime<Upstream> = .init()
+
+    var seed: Int = .zero
+
+    var lastObject: ObjectType?
+
+    init(host: GraphHost, invalidation: WeakAttribute<()>) {
+        subscriber = .init(host: host, attribute: invalidation)
+    }
+
+    typealias Property = ObservedObject<ObjectType>
+
+    mutating func update(property: inout Property, phase: ViewPhase) -> Bool {
+        let object = property.wrappedValue
+        let shouldForceSubscription = isLinkedOnOrAfter(.v6) ? false : Upstream.self != ObservableObjectPublisher.self
+        if object !== lastObject || lifetime.isUninitialized || shouldForceSubscription {
+            lifetime.subscribe(subscriber: subscriber, to: object.objectWillChange)
+        }
+        lastObject = object
+        let changed = subscriber.attribute.changedValue()?.changed ?? false
+        if changed {
+            seed &+= 1
+        }
+        property._seed = seed
+        return changed
     }
 }

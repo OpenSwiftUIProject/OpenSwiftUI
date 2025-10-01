@@ -42,9 +42,11 @@ public protocol DynamicProperty {
 
 package struct DynamicPropertyBehaviors: OptionSet {
     package let rawValue: UInt32
+
     package static let allowsAsync = DynamicPropertyBehaviors(rawValue: 1 << 0)
+
     package static let requiresMainThread  = DynamicPropertyBehaviors(rawValue: 1 << 1)
-    
+
     package init(rawValue: UInt32) {
         self.rawValue = rawValue
     }

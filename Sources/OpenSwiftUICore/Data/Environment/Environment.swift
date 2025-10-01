@@ -270,7 +270,7 @@ private struct EnvironmentBox<Value>: DynamicPropertyBox {
         guard case let .keyPath(propertyKeyPath) = property.content else {
             return false
         }
-        let (environment, environmentChanged) = _environment.changedValue(options: [])
+        let (environment, environmentChanged) = _environment.changedValue()
         let keyPathChanged = (propertyKeyPath != keyPath)
         if keyPathChanged { keyPath = propertyKeyPath }
         let valueChanged: Bool
