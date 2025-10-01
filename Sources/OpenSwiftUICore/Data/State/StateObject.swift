@@ -276,7 +276,9 @@ extension StateObject: DynamicProperty {
         // TODO:
     }
 
-    public static var _propertyBehaviors: UInt32 { 2 }
+    public static var _propertyBehaviors: UInt32 {
+        DynamicPropertyBehaviors.requiresMainThread.rawValue
+    }
 }
 
 extension StateObject {

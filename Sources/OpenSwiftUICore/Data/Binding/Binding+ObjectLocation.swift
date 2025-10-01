@@ -12,7 +12,7 @@ extension Binding {
     init<ObjectType: AnyObject>(
         _ root: ObjectType,
         keyPath: ReferenceWritableKeyPath<ObjectType, Value>,
-        isolation: (any Actor)?
+        isolation: (any Actor)? = #isolation
     ) {
         let location = ObjectLocation(base: root, keyPath: keyPath, isolation: isolation)
         let box = LocationBox(location)
