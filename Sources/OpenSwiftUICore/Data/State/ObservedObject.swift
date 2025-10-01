@@ -258,7 +258,7 @@ private struct ObservedObjectPropertyBox<ObjectType>: DynamicPropertyBox where O
             lifetime.subscribe(subscriber: subscriber, to: object.objectWillChange)
         }
         lastObject = object
-        let changed = subscriber.attribute.changedValue(options: [])?.changed ?? false
+        let changed = subscriber.attribute.changedValue()?.changed ?? false
         if changed {
             seed &+= 1
         }
