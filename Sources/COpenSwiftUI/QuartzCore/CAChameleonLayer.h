@@ -2,7 +2,7 @@
 //  CAChameleonLayer.h
 //  COpenSwiftUI
 //
-//  Audited for macOS 15.0
+//  Audited for 6.0.87
 //  Status: WIP
 
 #include "OpenSwiftUIBase.h"

@@ -2,7 +2,7 @@
 //  dyld_Private.h
 //  OpenSwiftUI_SPI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 //  Modified from: https://github.com/apple-oss-distributions/dyld/blob/dyld-1245.1/include/mach-o/dyld_priv.h

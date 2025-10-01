@@ -2,7 +2,7 @@
 //  AccessibilityButtonShapeModifier.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: WIP
 //  ID: 0D3243EDC3DD4D641848661DCC354D4B
 

@@ -2,7 +2,7 @@
 //  OpenSwiftUI+NSView.m
 //  COpenSwiftUI
 //
-//  Audited for macOS 15.0
+//  Audited for 6.0.87
 //  Status: WIP
 
 #import "OpenSwiftUI+NSView.h"

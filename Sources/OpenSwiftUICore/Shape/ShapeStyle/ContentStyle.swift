@@ -2,7 +2,7 @@
 //  ContentStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: BE30CA4BBA5F98638AD9D34F1557FB4D (SwiftUICore)
 

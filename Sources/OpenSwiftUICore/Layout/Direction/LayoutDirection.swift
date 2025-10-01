@@ -2,7 +2,7 @@
 //  LayoutDirection.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 9DE75C3EAC30FFAB943BCC50F6D5E8C1 (SwiftUI)
 //  ID: 54C853EF26D00A0E6B1785C3902A74F4 (SwiftUICore)

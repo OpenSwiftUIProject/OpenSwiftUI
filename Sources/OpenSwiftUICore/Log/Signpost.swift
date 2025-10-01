@@ -2,7 +2,7 @@
 //  Signpost.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 34756F646CF7AC3DBE2A8E0B344C962F (SwiftUI)
 //  ID: 59349949219F590F26B6A55CEC9D59A2 (SwiftUICore)

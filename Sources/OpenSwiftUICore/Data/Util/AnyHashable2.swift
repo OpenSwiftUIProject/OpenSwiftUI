@@ -2,7 +2,7 @@
 //  AnyHashable2.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 12EE2013F9611424839A13CDF1FE08D2 (SwiftUICore)
 

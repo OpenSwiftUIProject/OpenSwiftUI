@@ -2,7 +2,7 @@
 //  CGPoint+Math.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 public import Foundation

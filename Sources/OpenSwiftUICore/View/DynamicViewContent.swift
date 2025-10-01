@@ -2,7 +2,7 @@
 //  DynamicViewContent.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// A type of view that generates views from an underlying collection of data.

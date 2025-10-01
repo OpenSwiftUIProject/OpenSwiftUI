@@ -2,7 +2,7 @@
 //  ScenePhase.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: WIP
 //  ID: 130BB08D98602D712FD59CAC6992C14A
 

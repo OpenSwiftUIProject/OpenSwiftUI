@@ -2,7 +2,7 @@
 //  PropertyList.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 2B32D570B0B3D2A55DA9D4BFC1584D20 (SwiftUI)
 //  ID: D64CE6C88E7413721C59A34C0C940F2C (SwiftUICore)

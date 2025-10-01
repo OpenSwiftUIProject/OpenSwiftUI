@@ -2,7 +2,7 @@
 //  VariadicView_Children.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (?)
 //  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (?)

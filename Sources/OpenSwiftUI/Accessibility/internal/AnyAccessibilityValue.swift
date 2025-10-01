@@ -2,7 +2,7 @@
 //  AnyAccessibilityValue.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: WIP
 //  ID: 333660CD735494DA92CEC2878E6C8CC5
 

@@ -2,7 +2,7 @@
 //  PreferenceList.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Copmlete
 //  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD (SwiftUI)
 //  ID: 7B694C05291EA7AF22785AB458D1BC2F (SwiftUICore)

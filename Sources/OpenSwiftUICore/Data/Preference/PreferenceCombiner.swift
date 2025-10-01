@@ -2,7 +2,7 @@
 //  PreferenceCombiner.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 59D15989E597719355BF0EAE6CB41FF9 (SwiftUI)
 //  ID: EAF68AEE5E08E2f44FEB886FE6A27001 (SwiftUICore)

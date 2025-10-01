@@ -2,7 +2,7 @@
 //  ViewAlias.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: D9F7AF928092578A4B8FA861B49E2161 (SwiftUI)
 

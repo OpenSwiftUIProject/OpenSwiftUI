@@ -2,7 +2,7 @@
 //  AsyncImage.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: A80DD7B873FCFB98C142212B419D71F4 (SwiftUI)
 
@@ -317,7 +317,7 @@ public struct AsyncImage<Content>: View where Content : View {
             if let task = loadingState.task {
                 task.cancel()
             }
-            // SwiftUI iOS 18.0 implementation:
+            // SwiftUI 6.0.87 implementation:
             // loadingState.task = nil
             // loadingState.url = nil
             // loadingState.phase = .empty
@@ -336,7 +336,7 @@ public struct AsyncImage<Content>: View where Content : View {
     ///   - url: The URL being loaded.
     private func updateTask(_ task: Task<Void, Never>, url: URL) {
         loadingState.task?.cancel()
-        // SwiftUI iOS 18.0 implementation:
+        // SwiftUI 6.0.87 implementation:
         // loadingState.task = task
         // loadingState.url = url
         // OpenSwiftUI optimized implementation:

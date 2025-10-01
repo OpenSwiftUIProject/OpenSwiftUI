@@ -2,7 +2,7 @@
 //  EditMode.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: D7D98064D8079914AC08939D4AA110C8 (SwiftUI)
 

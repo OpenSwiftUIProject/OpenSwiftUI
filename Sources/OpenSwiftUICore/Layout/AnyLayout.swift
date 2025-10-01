@@ -2,7 +2,7 @@
 //  AnyLayout.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: D2D36AB6EC54BD879A165F3510222DD0 (SwiftUICore)
 

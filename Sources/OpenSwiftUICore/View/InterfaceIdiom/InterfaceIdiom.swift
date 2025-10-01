@@ -2,7 +2,7 @@
 //  InterfaceIdiom.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: 39057DDA72E946BD17E1F42CCA55F7F6 (SwiftUICore)
 

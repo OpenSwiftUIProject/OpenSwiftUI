@@ -2,7 +2,7 @@
 //  ForegroundStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: BEFE9363F68E039B4AB6422B8AA4535A (SwiftUICore)
 

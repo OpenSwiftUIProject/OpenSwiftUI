@@ -2,7 +2,7 @@
 //  Tracing.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: D59B7A281FFF29619A43A3D8F551CCE1 (SwiftUI)
 //  ID: 56D4CED87D5B226E2B40FB60C47D6F49 (SwiftUICore)

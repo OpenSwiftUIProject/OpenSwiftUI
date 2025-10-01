@@ -2,7 +2,7 @@
 //  Path.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: 31FD92B70C320DDD253E93C7417D779A (SwiftUI)
 //  ID: 3591905F51357E95FA93E39751507471 (SwiftUICore)

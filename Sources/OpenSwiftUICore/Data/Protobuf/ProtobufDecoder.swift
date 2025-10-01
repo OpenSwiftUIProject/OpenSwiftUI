@@ -2,7 +2,7 @@
 //  ProtobufDecoder.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 //  ID: FFA06CAF6B06DC3E21EC75547A0CD421 (SwiftUICore)
 

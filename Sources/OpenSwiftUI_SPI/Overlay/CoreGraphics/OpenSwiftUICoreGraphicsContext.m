@@ -2,7 +2,7 @@
 //  OpenSwiftUICoreGraphicsContext.h
 //  OpenSwiftUI_SPI
 //
-//  Audited for iOS 18.0 & macOS 15.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 #include "OpenSwiftUICoreGraphicsContext.h"

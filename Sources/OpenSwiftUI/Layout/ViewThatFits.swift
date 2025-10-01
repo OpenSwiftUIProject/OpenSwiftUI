@@ -2,7 +2,7 @@
 //  ViewThatFits.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Blocked by Layout Computer
 //  ID: F613AABF2A2A0496B46514894D5116C3 (SwiftUI)
 

@@ -2,7 +2,7 @@
 //  Link.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Blocked by Text and Accessibility
 
 public import Foundation

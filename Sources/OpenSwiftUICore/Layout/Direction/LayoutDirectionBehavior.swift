@@ -2,7 +2,7 @@
 //  LayoutDirectionBehavior.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 /// A description of what should happen when the layout direction changes.

@@ -2,7 +2,7 @@
 //  ContentShapeKinds.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: Complete
 
 import Foundation

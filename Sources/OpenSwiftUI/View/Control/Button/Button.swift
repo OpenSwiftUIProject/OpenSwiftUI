@@ -2,7 +2,7 @@
 //  ButtonRole.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 15.5
+//  Audited for 3.5.2
 //  Status: Empty
 
 public struct Button<Label>: View where Label: View {

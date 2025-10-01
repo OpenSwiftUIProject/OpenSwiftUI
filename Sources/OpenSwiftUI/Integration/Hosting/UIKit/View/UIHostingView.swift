@@ -2,7 +2,7 @@
 //  UIHostingView.swift
 //  OpenSwiftUI
 //
-//  Audited for iOS 18.0
+//  Audited for 6.0.87
 //  Status: WIP
 //  ID: FAF0B683EB49BE9BABC9009857940A1E (SwiftUI)
 
