@@ -3,8 +3,8 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
-//  ID: C212C242BFEB175E53A59438AB276A7C
+//  Status: Blocked by addTreeValueSlow
+//  ID: C212C242BFEB175E53A59438AB276A7C (SwiftUICore)
 
 import OpenAttributeGraphShims
 #if OPENSWIFTUI_OPENCOMBINE
@@ -12,6 +12,8 @@ public import OpenCombine
 #else
 public import Combine
 #endif
+
+// MARK: - ObservedObject
 
 /// A property wrapper type that subscribes to an observable object and
 /// invalidates a view whenever the observable object changes.
@@ -230,19 +232,37 @@ extension ObservableObject {
     }
 }
 
-// MARK: - ObservedObjectPropertyBox [WIP]
+// MARK: - ObservedObjectPropertyBox
 
 private struct ObservedObjectPropertyBox<ObjectType>: DynamicPropertyBox where ObjectType: ObservableObject {
-    var seed: Int
+    typealias Upstream = ObjectType.ObjectWillChangePublisher
+
+    let subscriber: AttributeInvalidatingSubscriber<Upstream>
+
+    let lifetime: SubscriptionLifetime<Upstream> = .init()
+
+    var seed: Int = .zero
+
     var lastObject: ObjectType?
 
     init(host: GraphHost, invalidation: WeakAttribute<()>) {
-        preconditionFailure("")
+        subscriber = .init(host: host, attribute: invalidation)
     }
 
     typealias Property = ObservedObject<ObjectType>
 
-    func update(property: inout Property, phase: ViewPhase) -> Bool {
-        .random()
+    mutating func update(property: inout Property, phase: ViewPhase) -> Bool {
+        let object = property.wrappedValue
+        let shouldForceSubscription = isLinkedOnOrAfter(.v6) ? false : Upstream.self != ObservableObjectPublisher.self
+        if object !== lastObject || lifetime.isUninitialized || shouldForceSubscription {
+            lifetime.subscribe(subscriber: subscriber, to: object.objectWillChange)
+        }
+        lastObject = object
+        let changed = subscriber.attribute.changedValue(options: [])?.changed ?? false
+        if changed {
+            seed &+= 1
+        }
+        property._seed = seed
+        return changed
     }
 }
