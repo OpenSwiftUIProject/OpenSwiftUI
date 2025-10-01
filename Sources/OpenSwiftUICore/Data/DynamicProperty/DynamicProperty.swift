@@ -2,7 +2,7 @@
 //  DynamicProperty.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.5.4 & 3.5.2
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 49D2A32E637CD497C6DE29B8E060A506 (SwiftUI)
 //  ID: A4C1D658B3717A3062FEFC91A812D6EB (SwiftUICore)
@@ -310,7 +310,7 @@ extension DynamicProperty {
     }
 }
 
-// MARK: - BodyAccessor [3.5.2]
+// MARK: - BodyAccessor [6.5.4]
 
 package protocol BodyAccessor<Container, Body> {
     associatedtype Container
@@ -325,14 +325,14 @@ extension BodyAccessor {
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
         guard Body.self != Never.self else {
-            preconditionFailure("\(Body.self) may not have Body == Never")
+            preconditionFailure("\(Container.self) may not have Body == Never")
         }
-        return withUnsafeMutablePointer(to: &inputs) { inputsPointer in
-            func project<Flags: RuleThreadFlags>(flags _: Flags.Type) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
+        return withUnsafePointer(to: inputs) { pointer in
+            func project<Flags>(flags _: Flags.Type) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) where Flags: RuleThreadFlags {
                 let buffer = _DynamicPropertyBuffer(
                     fields: fields,
                     container: container,
-                    inputs: &inputsPointer.pointee
+                    inputs: &inputs
                 )
                 if buffer._count == 0 {
                     buffer.destroy()
@@ -345,7 +345,7 @@ extension BodyAccessor {
                     let body = DynamicBody<Self, Flags>(
                         accessor: self,
                         container: container.value,
-                        phase: inputsPointer.pointee.phase,
+                        phase: pointer.pointee.phase,
                         links: buffer,
                         resetSeed: 0
                     )
@@ -371,7 +371,7 @@ extension BodyAccessor {
     }
 }
 
-// MARK: - BodyAccessorRule [3.5.2]
+// MARK: - BodyAccessorRule [6.5.4]
 
 package protocol BodyAccessorRule {
     static var container: Any.Type { get }
@@ -380,9 +380,7 @@ package protocol BodyAccessorRule {
     static func metaProperties<T>(as: T.Type, attribute: AnyAttribute) -> [(String, AnyAttribute)]
 }
 
-// TO BE AUDITED
-
-// MARK: - RuleThreadFlags [3.5.2]
+// MARK: - RuleThreadFlags [6.5.4]
 
 private protocol RuleThreadFlags {
     static var value: _AttributeType.Flags { get }
@@ -396,7 +394,7 @@ private struct MainThreadFlags: RuleThreadFlags {
     static var value: _AttributeType.Flags { .mainThread }
 }
 
-// MARK: - StaticBody [3.5.2]
+// MARK: - StaticBody [6.5.4]
 
 private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
@@ -411,7 +409,6 @@ private struct StaticBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> 
 extension StaticBody: StatefulRule {
     typealias Value = Accessor.Body
 
-    // Audited with 6.5.4
     func updateValue() {
         withObservation {
             accessor.updateBody(of: container, changed: true)
@@ -448,7 +445,7 @@ extension StaticBody: CustomStringConvertible {
     var description: String { "\(Accessor.Body.self)" }
 }
 
-// MARK: - DynamicBody [3.5.2]
+// MARK: - DynamicBody [6.5.4]
 
 private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags> {
     let accessor: Accessor
@@ -475,7 +472,6 @@ private struct DynamicBody<Accessor: BodyAccessor, ThreadFlags: RuleThreadFlags>
 extension DynamicBody: StatefulRule {
     typealias Value = Accessor.Body
 
-    // Audited with 6.5.4
     mutating func updateValue() {
         if resetSeed != phase.resetSeed {
             links.reset()
