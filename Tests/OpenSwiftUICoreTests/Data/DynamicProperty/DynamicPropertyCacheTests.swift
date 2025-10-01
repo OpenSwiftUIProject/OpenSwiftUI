@@ -6,7 +6,7 @@ import OpenAttributeGraphShims
 @testable import OpenSwiftUICore
 import Testing
 
-@Suite
+@Suite(.enabled(if: attributeGraphEnabled)) // FIXME: Change to swiftToolchainSupported when we implement forEachField
 struct DynamicPropertyCacheTests {
     @Test
     func size() {
