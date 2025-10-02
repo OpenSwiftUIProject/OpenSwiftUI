@@ -1,15 +1,12 @@
 //
 //  Logging.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for 6.0.87
 //  Status: Complete
 
-#if DEBUG
 import Foundation
-#else
-public import Foundation
-#endif
+import Testing
 
 #if OPENSWIFTUI_SWIFT_LOG
 public import Logging
@@ -162,14 +159,10 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
-        #if DEBUG
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
         )(.fault, dso, runtimeIssuesLog, message(), args())
-        #else
-        os_log(.fault, log: runtimeIssuesLog, message(), args())
-        #endif
     }
     
     #endif
