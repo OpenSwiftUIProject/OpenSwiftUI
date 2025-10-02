@@ -28,61 +28,17 @@ public struct _EnvironmentKeyTransformModifier<Value>: ViewModifier, _GraphInput
         self.transform = transform
     }
     
-    public static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
-        let childEnvironment = ChildEnvironment(
-            modifier: modifier.value,
-            environment: inputs.cachedEnvironment.wrappedValue.environment,
-            oldValue: nil,
-            oldKeyPath: nil
-        )
-        inputs.environment = Attribute(childEnvironment)
-    }
-}
-
-private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute, CustomStringConvertible {
-    @Attribute private var modifier: _EnvironmentKeyTransformModifier<Value>
-    @Attribute private var environment: EnvironmentValues
-    private var oldValue: Value?
-    private var oldKeyPath: WritableKeyPath<EnvironmentValues, Value>?
-    
-    init(
-        modifier: Attribute<_EnvironmentKeyTransformModifier<Value>>,
-        environment: Attribute<EnvironmentValues>,
-        oldValue: Value?,
-        oldKeyPath: WritableKeyPath<EnvironmentValues, Value>?
+    public static func _makeInputs(
+        modifier: _GraphValue<Self>,
+        inputs: inout _GraphInputs
     ) {
-        _modifier = modifier
-        _environment = environment
-        self.oldValue = oldValue
-        self.oldKeyPath = oldKeyPath
-    }
-    
-    var description: String {
-        "EnvironmentTransform: EnvironmentValues"
-    }
-    
-    typealias Value = EnvironmentValues
-    
-    mutating func updateValue() {
-        var (environment, environmentChanged) = _environment.changedValue()
-        let keyPath = modifier.keyPath
-        var newValue = environment[keyPath: keyPath]
-        $modifier.syncMainIfReferences { modifier in
-            withObservation {
-                modifier.transform(&newValue)
-            }
-        }
-        guard !environmentChanged,
-              let valueChanged = oldValue.map({ compareValues($0, newValue, mode: .equatableUnlessPOD) }), !valueChanged,
-              let keyPathChanged = oldKeyPath.map({ $0 == keyPath }), !keyPathChanged,
-              hasValue
-        else {
-            environment[keyPath: keyPath] = newValue
-            value = environment
-            oldValue = newValue
-            oldKeyPath = keyPath
-            return
-        }
+        let childEnvironment = Attribute(
+            ChildEnvironment(
+                modifier: modifier.value,
+                environment: inputs.environment
+            )
+        )
+        inputs.environment = childEnvironment
     }
 }
 
@@ -101,6 +57,63 @@ extension View {
             keyPath: keyPath,
             transform: transform
         ))
+    }
+}
+
+// MARK: - ChildEnvironment [6.5.4]
+
+private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute, CustomStringConvertible {
+    @Attribute var modifier: _EnvironmentKeyTransformModifier<Value>
+    @Attribute var environment: EnvironmentValues
+    var oldValue: Value?
+    var oldKeyPath: WritableKeyPath<EnvironmentValues, Value>?
+
+    init(
+        modifier: Attribute<_EnvironmentKeyTransformModifier<Value>>,
+        environment: Attribute<EnvironmentValues>,
+        oldValue: Value? = nil,
+        oldKeyPath: WritableKeyPath<EnvironmentValues, Value>? = nil
+    ) {
+        _modifier = modifier
+        _environment = environment
+        self.oldValue = oldValue
+        self.oldKeyPath = oldKeyPath
+    }
+
+    var description: String {
+        "EnvironmentTransform: EnvironmentValues"
+    }
+
+    typealias Value = EnvironmentValues
+
+    mutating func updateValue() {
+        let (environment, environmentChanged) = $environment.changedValue()
+        let newKeyPath = modifier.keyPath
+        var newValue = environment[keyPath: newKeyPath]
+        $modifier.syncMainIfReferences { modifier in
+            withObservation {
+                modifier.transform(&newValue)
+            }
+        }
+        let valueChanged = if !environmentChanged {
+            // FIXME: The map logic is buggy
+            oldValue.map{ compareValues($0, newValue, mode: .equatableUnlessPOD) } ?? true
+        } else {
+            true
+        }
+        let keyPathChanged = if !valueChanged {
+            // FIXME: The map logic is buggy
+            oldKeyPath.map({ $0 == newKeyPath }) ?? true
+        } else {
+            true
+        }
+        if environmentChanged || valueChanged || keyPathChanged || !hasValue {
+            var env = environment
+            env[keyPath: newKeyPath] = newValue
+            value = env
+            oldValue = newValue
+            oldKeyPath = newKeyPath
+        }
     }
 }
 
