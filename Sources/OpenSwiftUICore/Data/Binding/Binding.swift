@@ -1,10 +1,11 @@
 //
 //  Binding.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for 3.5.2
 //  Status: Complete
-//  ID: 5436F2B399369BE3B016147A5F8FE9F2
+//  ID: 5436F2B399369BE3B016147A5F8FE9F2 (SwiftUI)
+//  ID: C453EE81E759852CCC6400C47D93A43E (SwiftUICore)
 
 /// A property wrapper type that can read and write a value owned by a source of
 /// truth.
