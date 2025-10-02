@@ -1,14 +1,13 @@
 //
 //  Logging.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for 6.0.87
 //  Status: Complete
 
-#if DEBUG
 import Foundation
-#else
-public import Foundation
+#if canImport(Testing)
+public import Testing
 #endif
 
 #if OPENSWIFTUI_SWIFT_LOG
@@ -162,13 +161,28 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        #if canImport(Testing)
+        if Test.current != nil {
+            let comment: Comment = #"[Runtime Issue]: message - "\#(message().description)" args: \#(args())"#
+            #if swift(>=6.3)
+            Issue.record(comment, severity: .warning)
+            #else
+            // TODO: Wait for Swift 6.2 Issue handler
+            // Issue.record(comment)
+            #endif
+        }
+        #endif
+
         #if DEBUG
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
         )(.fault, dso, runtimeIssuesLog, message(), args())
         #else
-        os_log(.fault, log: runtimeIssuesLog, message(), args())
+        unsafeBitCast(
+            os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
+            to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
+        )(.fault, #dsohandle, runtimeIssuesLog, message(), args())
         #endif
     }
     
