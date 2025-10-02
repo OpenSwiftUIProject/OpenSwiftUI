@@ -96,14 +96,16 @@ private struct ChildEnvironment<Value>: StatefulRule, AsyncAttribute, CustomStri
             }
         }
         let valueChanged = if !environmentChanged {
-            // FIXME: The map logic is buggy
-            oldValue.map{ compareValues($0, newValue, mode: .equatableUnlessPOD) } ?? true
+            // SwiftUI implementation:
+            // oldValue.map { compareValues($0, newValue, mode: .equatableUnlessPOD) } ?? true
+            oldValue.map{ !compareValues($0, newValue, mode: .equatableUnlessPOD) } ?? true
         } else {
             true
         }
         let keyPathChanged = if !valueChanged {
-            // FIXME: The map logic is buggy
-            oldKeyPath.map({ $0 == newKeyPath }) ?? true
+            // SwiftUI implementation:
+            // oldKeyPath.map { $0 === newKeyPath } ?? true
+            oldKeyPath.map{ $0 !== newKeyPath } ?? true
         } else {
             true
         }
