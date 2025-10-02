@@ -6,7 +6,7 @@
 //  Status: Complete
 
 import Foundation
-import Testing
+public import Testing
 
 #if OPENSWIFTUI_SWIFT_LOG
 public import Logging
@@ -159,10 +159,26 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        if Test.current != nil {
+            let comment: Comment = #"[Runtime Issue]: message - "\#(message().description)" args: \#(args())"#
+            #if swift(>=6.3)
+            Issue.record(comment, severity: .warning)
+            #else
+            // TODO: Wait for Swift 6.2 Issue handler
+            // Issue.record(comment)
+            #endif
+        }
+        #if DEBUG
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
         )(.fault, dso, runtimeIssuesLog, message(), args())
+        #else
+        unsafeBitCast(
+            os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
+            to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
+        )(.fault, #dsohandle, runtimeIssuesLog, message(), args())
+        #endif
     }
     
     #endif
