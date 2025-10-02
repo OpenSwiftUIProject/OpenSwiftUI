@@ -11,3 +11,9 @@ let compatibilityTestEnabled = false
 @_exported import SwiftUI
 let compatibilityTestEnabled = true
 #endif
+
+#if OPENSWIFTUI_OPENCOMBINE
+@_exported import OpenCombine
+#else
+@_exported import Combine
+#endif

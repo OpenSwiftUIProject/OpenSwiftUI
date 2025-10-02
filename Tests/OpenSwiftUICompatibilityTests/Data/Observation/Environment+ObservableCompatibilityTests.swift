@@ -28,7 +28,7 @@ struct Environment_ObservableCompatibilityTests {
         }
 
         struct Subview: View {
-            @Environment(Model.self) var model
+            @Environment(Model.self) private var model
 
             var body: some View {
                 Color.red
@@ -57,7 +57,7 @@ struct Environment_ObservableCompatibilityTests {
         }
 
         struct Subview: View {
-            @Environment(Model.self) var model: Model?
+            @Environment(Model.self) private var model: Model?
 
             var body: some View {
                 Color.red
