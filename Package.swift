@@ -166,6 +166,15 @@ if swiftUIRenderCondition {
     sharedSwiftSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
 }
 
+// MARK: - [env] OPENSWIFTUI_LINK_TESTING
+
+// This should be disabled for UI test target due to link issue of Testing.
+// Only enable for non-UI test targets.
+let linkTesting = envEnable("OPENSWIFTUI_LINK_TESTING")
+if linkTesting {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_TESTING"))
+}
+
 // MARK: - [env] OPENSWIFTUI_WERROR
 
 let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)

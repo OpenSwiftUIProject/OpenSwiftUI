@@ -6,7 +6,7 @@
 //  Status: Complete
 
 import Foundation
-#if canImport(Testing)
+#if OPENSWIFTUI_LINK_TESTING
 public import Testing
 #endif
 
@@ -161,7 +161,7 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
-        #if canImport(Testing)
+        #if OPENSWIFTUI_LINK_TESTING
         if Test.current != nil {
             let comment: Comment = #"[Runtime Issue]: message - "\#(message().description)" args: \#(args())"#
             #if swift(>=6.3)

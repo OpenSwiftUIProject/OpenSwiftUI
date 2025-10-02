@@ -34,6 +34,7 @@ jobs:
       OPENRENDERBOX_USE_LOCAL_DEPS: 1
       OPENRENDERBOX_TARGET_RELEASE: ${{ matrix.release }}
       DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_LINK_TESTING: 0
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
