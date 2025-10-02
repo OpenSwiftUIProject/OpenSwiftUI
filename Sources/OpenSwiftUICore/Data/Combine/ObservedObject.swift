@@ -293,8 +293,8 @@ private struct ObservedObjectPropertyBox<ObjectType>: DynamicPropertyBox where O
 
     mutating func update(property: inout Property, phase: ViewPhase) -> Bool {
         let object = property.wrappedValue
-        let shouldForceSubscription = isLinkedOnOrAfter(.v6) ? false : Upstream.self != ObservableObjectPublisher.self
-        if object !== lastObject || lifetime.isUninitialized || shouldForceSubscription {
+        let shouldForceSubscription = isLinkedOnOrAfter(.v6) ? false : !ObjectType.hasDefaultPublisher
+        if lastObject == nil || object !== lastObject || lifetime.isUninitialized || shouldForceSubscription {
             lifetime.subscribe(subscriber: subscriber, to: object.objectWillChange)
         }
         lastObject = object
