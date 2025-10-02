@@ -6,7 +6,9 @@
 //  Status: Complete
 
 import Foundation
+#if canImport(Testing)
 public import Testing
+#endif
 
 #if OPENSWIFTUI_SWIFT_LOG
 public import Logging
@@ -159,6 +161,7 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        #if canImport(Testing)
         if Test.current != nil {
             let comment: Comment = #"[Runtime Issue]: message - "\#(message().description)" args: \#(args())"#
             #if swift(>=6.3)
@@ -168,6 +171,8 @@ package enum Log {
             // Issue.record(comment)
             #endif
         }
+        #endif
+
         #if DEBUG
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,

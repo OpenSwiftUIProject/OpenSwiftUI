@@ -10,6 +10,7 @@
 		27186AE32D538A76009E05F9 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
 		278EF52D2E2272F2009C32EB /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 278EF52C2E2272F2009C32EB /* Equatable */; };
 		278EF52F2E227304009C32EB /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 278EF52E2E227304009C32EB /* Equatable */; };
+		279080A52E8E601B0082B5B6 /* Testing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 279080912E8E5E7B0082B5B6 /* Testing.framework */; };
 		279284972DFF136E00234D64 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
 		2792849F2DFF137400234D64 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 2792849E2DFF137400234D64 /* SnapshotTesting */; };
 		279FED052DF4566D00320390 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
@@ -32,14 +33,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
-		279283BD2DFF11CE00234D64 /* PBXContainerItemProxy */ = {
-			isa = PBXContainerItemProxy;
-			containerPortal = 27CD0B412AFC8D37003665EB /* Project object */;
-			proxyType = 1;
-			remoteGlobalIDString = 27CD0B482AFC8D37003665EB;
-			remoteInfo = Example;
-		};
-		279283E32DFF11F900234D64 /* PBXContainerItemProxy */ = {
+		279080A32E8E600A0082B5B6 /* PBXContainerItemProxy */ = {
 			isa = PBXContainerItemProxy;
 			containerPortal = 27CD0B412AFC8D37003665EB /* Project object */;
 			proxyType = 1;
@@ -51,6 +45,7 @@
 /* Begin PBXFileReference section */
 		271D81642BB1E8E300A6D543 /* OpenAttributeGraph */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAttributeGraph; path = ../../OpenAttributeGraph; sourceTree = "<group>"; };
 		275751E32DEE1441003E467C /* TestingHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestingHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		279080912E8E5E7B0082B5B6 /* Testing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Testing.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework; sourceTree = DEVELOPER_DIR; };
 		279283B92DFF11CE00234D64 /* OpenSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 		27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = BacklightServices.xcframework; path = ../../DarwinPrivateFrameworks/BLS/2024/BacklightServices.xcframework; sourceTree = "<group>"; };
 		27B7FC802BB31FF500272BA5 /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
@@ -103,6 +98,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */,
+				279080A52E8E601B0082B5B6 /* Testing.framework in Frameworks */,
 				27AF22B82E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27AF22B42E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BC2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -185,6 +181,7 @@
 		27D49E0C2BA60AF600F6E2E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				279080912E8E5E7B0082B5B6 /* Testing.framework */,
 				27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */,
 				27EE91722DD0C753006C85FD /* CoreUI.xcframework */,
 				27E6C4D42D2842810010502F /* RenderBox.xcframework */,
@@ -230,8 +227,7 @@
 			buildRules = (
 			);
 			dependencies = (
-				279283BE2DFF11CE00234D64 /* PBXTargetDependency */,
-				279283E42DFF11F900234D64 /* PBXTargetDependency */,
+				279080A42E8E600A0082B5B6 /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				275751F62DEE1456003E467C /* OpenSwiftUIUITests */,
@@ -407,15 +403,10 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin PBXTargetDependency section */
-		279283BE2DFF11CE00234D64 /* PBXTargetDependency */ = {
-			isa = PBXTargetDependency;
-			target = 27CD0B482AFC8D37003665EB /* Example */;
-			targetProxy = 279283BD2DFF11CE00234D64 /* PBXContainerItemProxy */;
-		};
-		279283E42DFF11F900234D64 /* PBXTargetDependency */ = {
+		279080A42E8E600A0082B5B6 /* PBXTargetDependency */ = {
 			isa = PBXTargetDependency;
 			target = 275751E22DEE1441003E467C /* TestingHost */;
-			targetProxy = 279283E32DFF11F900234D64 /* PBXContainerItemProxy */;
+			targetProxy = 279080A32E8E600A0082B5B6 /* PBXContainerItemProxy */;
 		};
 /* End PBXTargetDependency section */
 
