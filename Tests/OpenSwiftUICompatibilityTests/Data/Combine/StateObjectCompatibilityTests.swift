@@ -4,11 +4,6 @@
 
 import Testing
 import OpenSwiftUITestsSupport
-#if OPENSWIFTUI_OPENCOMBINE
-import OpenCombine
-#else
-import Combine
-#endif
 
 @MainActor
 struct StateObjectCompatibilityTests {

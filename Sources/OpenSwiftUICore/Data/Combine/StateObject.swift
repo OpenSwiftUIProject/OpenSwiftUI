@@ -50,7 +50,7 @@ public import Combine
 /// > Note: If you need to store a value type, like a structure, string, or
 ///   integer, use the ``State`` property wrapper instead. Also use ``State``
 ///   if you need to store a reference type that conforms to the
-///   [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable())
+///   [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 ///   protocol. To learn more about Observation in OpenSwiftUI, see
 ///   <doc:Managing-model-data-in-your-app>.
 ///
