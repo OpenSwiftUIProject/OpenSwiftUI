@@ -1,6 +1,6 @@
 //
 //  PropertyListTestsStub.c
-//  OpenSwiftUISymbolDualTestsHelper
+//  OpenSwiftUISymbolDualTestsSupport
 
 #include "OpenSwiftUIBase.h"
 

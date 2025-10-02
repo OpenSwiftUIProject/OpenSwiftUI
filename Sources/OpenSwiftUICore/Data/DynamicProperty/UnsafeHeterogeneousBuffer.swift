@@ -13,7 +13,7 @@ package struct UnsafeHeterogeneousBuffer: Collection {
     
     package typealias VTable = _UnsafeHeterogeneousBuffer_VTable
     package typealias Element = _UnsafeHeterogeneousBuffer_Element
-    
+
     package struct Index: Equatable, Comparable {
         var index: Int32
         var offset: Int32
@@ -136,7 +136,7 @@ package struct UnsafeHeterogeneousBuffer: Collection {
     
     @discardableResult
     package mutating func append<T>(_ value: T, vtable: VTable.Type) -> Index {
-        let bytes = MemoryLayout<T>.size + MemoryLayout<UnsafeHeterogeneousBuffer.Item>.size
+        let bytes = (MemoryLayout<T>.size + MemoryLayout<UnsafeHeterogeneousBuffer.Item>.size + 0xf) & ~0xf
         let pointer = allocate(bytes)
         let element = _UnsafeHeterogeneousBuffer_Element(item: pointer.assumingMemoryBound(to: Item.self))
         element.item.initialize(to: Item(vtable: vtable, size: Int32(bytes), flags: 0))
@@ -183,11 +183,16 @@ open class _UnsafeHeterogeneousBuffer_VTable {
         false
     }
     
-    open class func moveInitialize(elt: _UnsafeHeterogeneousBuffer_Element, from: _UnsafeHeterogeneousBuffer_Element) {
+    open class func moveInitialize(
+        elt: _UnsafeHeterogeneousBuffer_Element,
+        from: _UnsafeHeterogeneousBuffer_Element
+    ) {
         _openSwiftUIBaseClassAbstractMethod()
     }
     
-    open class func deinitialize(elt: _UnsafeHeterogeneousBuffer_Element) {
+    open class func deinitialize(
+        elt: _UnsafeHeterogeneousBuffer_Element
+    ) {
         _openSwiftUIBaseClassAbstractMethod()
     }
 }
