@@ -11,6 +11,8 @@
 		278EF52D2E2272F2009C32EB /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 278EF52C2E2272F2009C32EB /* Equatable */; };
 		278EF52F2E227304009C32EB /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 278EF52E2E227304009C32EB /* Equatable */; };
 		279080A52E8E601B0082B5B6 /* Testing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 279080912E8E5E7B0082B5B6 /* Testing.framework */; };
+		279085F22E8EA9DC0082B5B6 /* Testing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 279080912E8E5E7B0082B5B6 /* Testing.framework */; };
+		279085F52E8EA9E40082B5B6 /* Testing.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = 279080912E8E5E7B0082B5B6 /* Testing.framework */; };
 		279284972DFF136E00234D64 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
 		2792849F2DFF137400234D64 /* SnapshotTesting in Frameworks */ = {isa = PBXBuildFile; productRef = 2792849E2DFF137400234D64 /* SnapshotTesting */; };
 		279FED052DF4566D00320390 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
@@ -123,6 +125,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27AF22B22E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
+				279085F52E8EA9E40082B5B6 /* Testing.framework in Frameworks */,
 				27AF22B62E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */,
 				278EF52F2E227304009C32EB /* Equatable in Frameworks */,
@@ -136,6 +139,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				27AF22B32E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
+				279085F22E8EA9DC0082B5B6 /* Testing.framework in Frameworks */,
 				27AF22B72E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */,
 				278EF52D2E2272F2009C32EB /* Equatable in Frameworks */,
