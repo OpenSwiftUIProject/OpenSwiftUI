@@ -153,3 +153,54 @@ extension Environment: DescriptiveDynamicProperty {
 extension Binding: DescriptiveDynamicProperty {
     package var _linkValue: Any { _value }
 }
+
+// MARK: - Trace + Link [6.5.4]
+
+@inline(__always)
+func traceLinkCreate(
+    field: DynamicPropertyCache.Field,
+    address: UnsafeRawPointer,
+    type: String,
+    typeLibrary: String,
+    identifier: UInt32,
+    identity: UInt
+) {
+    Signpost.linkCreate.traceEvent(
+        type: .event,
+        object: nil,
+        "Attached: %{public}@ [ %p ] to %{public}@ (in %{public}@) at offset +%d [%d] (%p)",
+        [
+            "\(field.type)",                    // %{public}@
+            UInt(bitPattern: address),          // %p
+            type,                               // %{public}@
+            typeLibrary,                        // %{public}@
+            field.offset,                       // %d
+            identifier,                         // %d
+            identity                            // %p
+        ]
+    )
+}
+
+@inline(__always)
+func traceLinkUpdate(property: some DynamicProperty, address: UnsafeRawPointer) {
+    Signpost.linkUpdate.traceEvent(
+        type: .event,
+        object: nil,
+        "Updated: %{public}@ [ %p ] - %@",
+        [
+            String(describing: type(of: property)), // %{public}@
+            UInt(bitPattern: address),              // %p
+            property.linkValueDescription,          // %@
+        ]
+    )
+}
+
+@inline(__always)
+func traceLinkDestroy(address: UnsafeRawPointer) {
+    Signpost.linkDestroy.traceEvent(
+        type: .event,
+        object: nil,
+        "Detached: [ %p ]",
+        [UInt(bitPattern: address)]
+    )
+}

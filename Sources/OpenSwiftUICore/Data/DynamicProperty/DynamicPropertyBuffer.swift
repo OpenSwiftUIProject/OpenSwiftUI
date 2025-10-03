@@ -94,12 +94,7 @@ public struct _DynamicPropertyBuffer {
     package func destroy() {
         if Signpost.linkCreate.isEnabled {
             for element in contents {
-                Signpost.linkDestroy.traceEvent(
-                    type: .event,
-                    object: nil,
-                    "Detached: [ %p ]",
-                    [UInt(bitPattern: element.address)]
-                )
+                traceLinkDestroy(address: element.address)
             }
         }
         contents.destroy()
@@ -126,20 +121,13 @@ public struct _DynamicPropertyBuffer {
                     guard index != fieldsArray.count else {
                         return
                     }
-                    let field = fieldsArray[index]
-                    Signpost.linkCreate.traceEvent(
-                        type: .event,
-                        object: nil,
-                        "Attached: %{public}@ [ %p ] to %{public}@ (in %{public}@) at offset +%d [%d] (%p)",
-                        [
-                            "\(field.type)",                    // %{public}@
-                            UInt(bitPattern: element.address),  // %p
-                            type,                               // %{public}@
-                            typeLibrary,                        // %{public}@
-                            field.offset,                       // %d
-                            identifier,                         // %d
-                            identity                            // %p
-                        ]
+                    traceLinkCreate(
+                        field: fieldsArray[index],
+                        address: element.address,
+                        type: type,
+                        typeLibrary: typeLibrary,
+                        identifier: identifier,
+                        identity: identity
                     )
                 }
             }
@@ -581,17 +569,7 @@ private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
         let propertyPointer = property.assumingMemoryBound(to: Box.Property.self)
         let changed = boxPointer.pointee.update(property: &propertyPointer.pointee, phase: phase)
         if changed {
-            let property = propertyPointer.pointee
-            Signpost.linkUpdate.traceEvent(
-                type: .event,
-                object: nil,
-                "Updated: %{public}@ [ %p ] - %@",
-                [
-                    String(describing: type(of: property)), // %{public}@
-                    UInt(bitPattern: elt.address),          // %p
-                    property.linkValueDescription,          // %@
-                ]
-            )
+            traceLinkUpdate(property: propertyPointer.pointee, address: elt.address)
         }
         return changed
     }
