@@ -1,0 +1,20 @@
+//
+//  UnsafeHeterogeneousBufferStub.c
+//  OpenSwiftUISymbolDualTestsSupport
+
+#include "OpenSwiftUIBase.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+
+#import <SymbolLocator.h>
+
+// MARK: - UnsafeHeterogeneousBuffer
+
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UnsafeHeterogeneousBuffer_Init, SwiftUI, $s7SwiftUI25UnsafeHeterogeneousBufferVACycfC);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UnsafeHeterogeneousBuffer_Destroy, SwiftUI, $s7SwiftUI25UnsafeHeterogeneousBufferV7destroyyyF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UnsafeHeterogeneousBuffer_Append, SwiftUI, $s7SwiftUI25UnsafeHeterogeneousBufferV6append_6vtableAC5IndexVx_AA01_cdE7_VTableCmtlF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UnsafeHeterogeneousBuffer_IsEmpty, SwiftUI, $s7SwiftUI25UnsafeHeterogeneousBufferV7isEmptySbvg);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UnsafeHeterogeneousBuffer_IndexAtOffset, SwiftUI, $s7SwiftUI26UnsafeHeterogeneousBufferV7indexAtE5offsetySi_tF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UnsafeHeterogeneousBuffer_Subscript, SwiftUI, $s7SwiftUI25UnsafeHeterogeneousBufferVyAA01_cdE8_ElementVAC5IndexVcig);
+
+#endif

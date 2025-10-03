@@ -56,7 +56,7 @@ package struct DynamicPropertyBehaviors: OptionSet {
 
 // MARK: - DynamicPropertyBox [6.5.4]
 
-package protocol DynamicPropertyBox<Property>: DynamicProperty {
+package protocol DynamicPropertyBox<Property> {
     associatedtype Property: DynamicProperty
 
     mutating func destroy()
@@ -334,7 +334,7 @@ extension BodyAccessor {
                     container: container,
                     inputs: &inputs
                 )
-                if buffer._count == 0 {
+                if buffer.isEmpty {
                     buffer.destroy()
                     let body = StaticBody<Self, Flags>(
                         accessor: self,
