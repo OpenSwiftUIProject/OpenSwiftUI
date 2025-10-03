@@ -251,6 +251,22 @@ extension OSSignpostID {
         }
     }
 }
+
+@inline(__always)
+func os_signpost(
+    _ type: OSSignpostType,
+    dso: UnsafeRawPointer = #dsohandle,
+    log: OSLog,
+    name: StaticString,
+    signpostID: OSSignpostID = .exclusive,
+    _ format: StaticString,
+    _ arguments: [any CVarArg]
+) {
+    unsafeBitCast(
+        os_signpost as (OSSignpostType, UnsafeRawPointer, OSLog, StaticString, OSSignpostID, StaticString, CVarArg...) -> Void,
+        to: ((OSSignpostType, UnsafeRawPointer, OSLog, StaticString, OSSignpostID, StaticString, [CVarArg]) -> Void).self
+    )(type, dso, log, name, signpostID, format, arguments)
+}
 #endif
 
 #if canImport(Darwin)
