@@ -115,3 +115,41 @@ extension ViewGraph {
         graph.graphIdentity()
     }
 }
+
+// MARK: - DescriptiveDynamicProperty [6.5.4]
+
+package protocol DescriptiveDynamicProperty {
+    var _linkValue: Any { get }
+}
+
+extension DescriptiveDynamicProperty {
+    fileprivate var linkValueDescription: String {
+        if let descriptiveDynamicProperty = _linkValue as? DescriptiveDynamicProperty {
+            descriptiveDynamicProperty.linkValueDescription
+        } else {
+            String(describing: _linkValue)
+        }
+    }
+}
+
+extension DynamicProperty {
+    fileprivate var linkValueDescription: String {
+        if let descriptiveDynamicProperty = self as? DescriptiveDynamicProperty {
+            descriptiveDynamicProperty.linkValueDescription
+        } else {
+            String(describing: self)
+        }
+    }
+}
+
+extension State: DescriptiveDynamicProperty {
+    package var _linkValue: Any { _value }
+}
+
+extension Environment: DescriptiveDynamicProperty {
+    package var _linkValue: Any { wrappedValue }
+}
+
+extension Binding: DescriptiveDynamicProperty {
+    package var _linkValue: Any { _value }
+}

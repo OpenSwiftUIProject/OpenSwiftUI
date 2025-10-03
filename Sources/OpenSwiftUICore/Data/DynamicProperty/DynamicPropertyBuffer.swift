@@ -425,7 +425,10 @@ public struct _DynamicPropertyBuffer {
         return allocatedBuffer.advanced(by: oldBuffer.distance(to: ptr))
     }
 
-    package func traceMountedProperties<Value>(to value: _GraphValue<Value>, fields: DynamicPropertyCache.Fields) {
+    package func traceMountedProperties<Value>(
+        to value: _GraphValue<Value>,
+        fields: DynamicPropertyCache.Fields
+    ) {
         // TODO: Signpost related
         _openSwiftUIUnimplementedWarning()
     }
@@ -578,7 +581,17 @@ private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
         let propertyPointer = property.assumingMemoryBound(to: Box.Property.self)
         let changed = boxPointer.pointee.update(property: &propertyPointer.pointee, phase: phase)
         if changed {
-            // TODO: OSSignpost
+            let property = propertyPointer.pointee
+            Signpost.linkUpdate.traceEvent(
+                type: .event,
+                object: nil,
+                "Updated: %{public}@ [ %p ] - %@",
+                [
+                    String(describing: type(of: property)), // %{public}@
+                    UInt(bitPattern: elt.address),          // %p
+                    property.linkValueDescription,          // %@
+                ]
+            )
         }
         return changed
     }
