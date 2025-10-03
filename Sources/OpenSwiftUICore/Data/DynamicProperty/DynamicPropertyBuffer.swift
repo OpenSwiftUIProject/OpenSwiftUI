@@ -92,7 +92,16 @@ public struct _DynamicPropertyBuffer {
     }
 
     package func destroy() {
-        // TODO: trace
+        if Signpost.linkCreate.isEnabled {
+            for element in contents {
+                Signpost.linkDestroy.traceEvent(
+                    type: .event,
+                    object: nil,
+                    "Detached: [ %p ]",
+                    [UInt(bitPattern: element.address)]
+                )
+            }
+        }
         contents.destroy()
     }
 
@@ -107,8 +116,34 @@ public struct _DynamicPropertyBuffer {
         to graphValue: _GraphValue<T>,
         fields: DynamicPropertyCache.Fields
     ) {
-        // TODO: trace
-        _openSwiftUIUnimplementedWarning()
+        if Signpost.linkCreate.isEnabled {
+            let type = String(describing: T.self)
+            let typeLibrary = Tracing.libraryName(defining: T.self)
+            let identifier = graphValue.value.identifier.rawValue
+            let identity = graphValue.value.graph.graphIdentity()
+            if case let .product(fieldsArray) = fields.layout {
+                for (index, element) in contents.enumerated() {
+                    guard index != fieldsArray.count else {
+                        return
+                    }
+                    let field = fieldsArray[index]
+                    Signpost.linkCreate.traceEvent(
+                        type: .event,
+                        object: nil,
+                        "Attached: %{public}@ [ %p ] to %{public}@ (in %{public}@) at offset +%d [%d] (%p)",
+                        [
+                            "\(field.type)",                    // %{public}@
+                            UInt(bitPattern: element.address),  // %p
+                            type,                               // %{public}@
+                            typeLibrary,                        // %{public}@
+                            field.offset,                       // %d
+                            identifier,                         // %d
+                            identity                            // %p
+                        ]
+                    )
+                }
+            }
+        }
     }
 
     package func update(container: UnsafeMutableRawPointer, phase: ViewPhase) -> Bool {
