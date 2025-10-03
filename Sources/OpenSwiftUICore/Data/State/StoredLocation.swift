@@ -35,7 +35,7 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
                 return false
             }
             box.$data.access { data in
-                _ = data.savedValue.removeFirst()
+                _ = data.savedValue.removeLast()
             }
             return true
         }
