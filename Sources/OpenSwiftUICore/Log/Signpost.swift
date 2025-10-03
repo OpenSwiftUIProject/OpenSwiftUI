@@ -11,6 +11,24 @@ import OpenSwiftUI_SPI
 import OpenAttributeGraphShims
 #if canImport(os)
 package import os.signpost
+#else
+public struct OSSignpostType: Hashable, Equatable, RawRepresentable {
+    public init(_ rawValue: UInt8) {
+        self.rawValue = rawValue
+    }
+
+    public init(rawValue: UInt8) {
+        self.rawValue = rawValue
+    }
+
+    public var rawValue: UInt8
+}
+
+extension OSSignpostType {
+    public static let event: OSSignpostType = .init(0)
+    public static let begin: OSSignpostType = .init(1)
+    public static let end: OSSignpostType = .init(2)
+}
 #endif
 
 extension Signpost {
@@ -179,7 +197,6 @@ package struct Signpost {
         #endif
     }
     
-    #if canImport(Darwin)
     @_transparent
     package func traceEvent(
         type: OSSignpostType,
@@ -190,6 +207,7 @@ package struct Signpost {
         guard isEnabled else {
             return
         }
+        #if canImport(Darwin)
         let id = OSSignpostID.makeExclusiveID(object)
         let args = args()
         switch style {
@@ -198,12 +216,11 @@ package struct Signpost {
             case let .os_log(name):
                 os_signpost(type, log: _signpostLog, name: name, signpostID: id, message, args)
         }
+        #endif
     }
-    #endif
     
     
     #if canImport(Darwin)
-    
     @inline(__always)
     private var styleCode: UInt8 {
         switch style {
