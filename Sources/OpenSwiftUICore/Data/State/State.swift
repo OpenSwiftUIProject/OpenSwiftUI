@@ -8,6 +8,9 @@
 //  ID: F6975D1F800AFE6093C23B3DBD777BCF (SwiftUICore)
 
 import OpenAttributeGraphShims
+public import OpenObservation
+
+// MARK: State
 
 /// A property wrapper type that can read and write a value managed by OpenSwiftUI.
 ///
@@ -253,7 +256,7 @@ import OpenAttributeGraphShims
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 @propertyWrapper
-public struct State<Value> {
+public struct State<Value>: DynamicProperty {
     /// The current or initial (if box == nil) value of the state
     @usableFromInline
     var _value: Value
@@ -292,7 +295,12 @@ public struct State<Value> {
     ///   property.
     public init(wrappedValue value: Value) {
         _value = value
-        _location = nil
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    @usableFromInline
+    init(wrappedValue thunk: @autoclosure @escaping () -> Value) where Value: AnyObject, Value: Observable {
+        _value = thunk()
     }
 
     /// Creates a state property that stores an initial value.
@@ -373,20 +381,7 @@ public struct State<Value> {
         }
         return Binding(value: value, location: _location)
     }
-}
 
-extension State where Value: ExpressibleByNilLiteral {
-    /// Creates a state property without an initial value.
-    ///
-    /// This initializer behaves like the ``init(wrappedValue:)`` initializer
-    /// with an input of `nil`. See that initializer for more information.
-    @inlinable
-    public init() {
-        self.init(wrappedValue: nil)
-    }
-}
-
-extension State {
     private func getValue(forReading: Bool) -> Value {
         guard let _location else {
             return _value
@@ -400,43 +395,83 @@ extension State {
             return _location.get()
         }
     }
-}
 
-extension State: DynamicProperty {
     public static func _makeProperty<V>(
         in buffer: inout _DynamicPropertyBuffer,
-        container _: _GraphValue<V>,
+        container: _GraphValue<V>,
         fieldOffset: Int,
-        inputs _: inout _GraphInputs
+        inputs: inout _GraphInputs
     ) {
         let attribute = Attribute(value: ())
         let box = StatePropertyBox<Value>(signal: WeakAttribute(attribute))
         buffer.append(box, fieldOffset: fieldOffset)
+        addTreeValue(
+            attribute,
+            as: Value.self,
+            at: fieldOffset,
+            in: V.self,
+            flags: .stateSignal
+        )
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
+extension State: Sendable where Value: Sendable {}
+
+@available(OpenSwiftUI_v1_0, *)
+extension State where Value: ExpressibleByNilLiteral {
+    /// Creates a state property without an initial value.
+    ///
+    /// This initializer behaves like the ``init(wrappedValue:)`` initializer
+    /// with an input of `nil`. See that initializer for more information.
+    @inlinable
+    public init() {
+        self.init(wrappedValue: nil)
+    }
+}
+
+// MARK: - StatePropertyBox
+
 private struct StatePropertyBox<Value>: DynamicPropertyBox {
     let signal: WeakAttribute<Void>
+
     var location: StoredLocation<Value>?
 
     typealias Property = State<Value>
-    func destroy() {}
-    mutating func reset() { location = nil }
+
+    func destroy() {
+        location?.invalidate()
+    }
+
+    mutating func reset() {
+        location?.invalidate()
+        location = nil
+    }
+
     mutating func update(property: inout State<Value>, phase: _GraphInputs.Phase) -> Bool {
-        let locationChanged = location == nil
-        if location == nil {
-            location = property._location as? StoredLocation ?? StoredLocation(
+        let oldLocation = location
+        var changed = oldLocation == nil
+        let newLocation: StoredLocation<Value>
+        if let oldLocation {
+            newLocation = oldLocation
+        } else {
+            newLocation = property._location as? StoredLocation ?? StoredLocation(
                 initialValue: property._value,
                 host: .currentHost,
                 signal: signal
             )
+            location = newLocation
         }
         let signalChanged = signal.changedValue()?.changed ?? false
-        property._value = location!.updateValue
-        property._location = location!
-        return (signalChanged ? location!.wasRead : false) || locationChanged
+        property._value = newLocation.updateValue
+        property._location = newLocation
+        if signalChanged {
+            changed = oldLocation == nil || newLocation.wasRead
+        }
+        return changed
     }
-    func getState<V>(type _: V.Type) -> Binding<V>? {
+
+    func getState<V>(type: V.Type) -> Binding<V>? {
         guard Value.self == V.self,
               let location
         else {
@@ -444,6 +479,6 @@ private struct StatePropertyBox<Value>: DynamicPropertyBox {
         }
         let value = location.get()
         let binding = Binding(value: value, location: location)
-        return binding as? Binding<V>
+        return (binding as! Binding<V>)
     }
 }

@@ -35,7 +35,7 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
                 return false
             }
             box.$data.access { data in
-                _ = data.savedValue.removeLast()
+                _ = data.savedValue.removeFirst()
             }
             return true
         }
@@ -65,7 +65,9 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
     }
 
     private final func beginUpdate() {
-        data.savedValue.removeFirst()
+        $data.access { data in
+            _ = data.savedValue.removeFirst()
+        }
         notifyObservers()
     }
 
