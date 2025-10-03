@@ -183,7 +183,7 @@ package struct DynamicPropertyCache {
     }
     
     struct Field {
-        var type: DynamicProperty.Type
+        var type: any DynamicProperty.Type
         var offset: Int
         var name: UnsafePointer<Int8>?
     }

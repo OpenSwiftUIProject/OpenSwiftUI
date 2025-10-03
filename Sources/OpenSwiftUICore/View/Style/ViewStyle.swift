@@ -266,10 +266,7 @@ private struct StyleModifierType<M>: AnyStyleModifierType where M: StyleModifier
             inputs: inputs
         )
         if let buffer {
-            buffer.traceMountedProperties(
-                to: view,
-                fields: fields
-            )
+            buffer.traceMountedProperties(to: view, fields: fields)
         }
         return outputs
     }
@@ -316,10 +313,7 @@ private struct StyleModifierType<M>: AnyStyleModifierType where M: StyleModifier
             inputs: inputs
         )
         if let buffer {
-            buffer.traceMountedProperties(
-                to: view,
-                fields: fields
-            )
+            buffer.traceMountedProperties(to: view, fields: fields)
         }
         return outputs
     }

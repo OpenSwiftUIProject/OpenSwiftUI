@@ -115,3 +115,92 @@ extension ViewGraph {
         graph.graphIdentity()
     }
 }
+
+// MARK: - DescriptiveDynamicProperty [6.5.4]
+
+package protocol DescriptiveDynamicProperty {
+    var _linkValue: Any { get }
+}
+
+extension DescriptiveDynamicProperty {
+    fileprivate var linkValueDescription: String {
+        if let descriptiveDynamicProperty = _linkValue as? DescriptiveDynamicProperty {
+            descriptiveDynamicProperty.linkValueDescription
+        } else {
+            String(describing: _linkValue)
+        }
+    }
+}
+
+extension DynamicProperty {
+    fileprivate var linkValueDescription: String {
+        if let descriptiveDynamicProperty = self as? DescriptiveDynamicProperty {
+            descriptiveDynamicProperty.linkValueDescription
+        } else {
+            String(describing: self)
+        }
+    }
+}
+
+extension State: DescriptiveDynamicProperty {
+    package var _linkValue: Any { _value }
+}
+
+extension Environment: DescriptiveDynamicProperty {
+    package var _linkValue: Any { wrappedValue }
+}
+
+extension Binding: DescriptiveDynamicProperty {
+    package var _linkValue: Any { _value }
+}
+
+// MARK: - Trace + Link [6.5.4]
+
+@inline(__always)
+func traceLinkCreate(
+    field: DynamicPropertyCache.Field,
+    address: UnsafeRawPointer,
+    type: String,
+    typeLibrary: String,
+    identifier: UInt32,
+    identity: UInt
+) {
+    Signpost.linkCreate.traceEvent(
+        type: .event,
+        object: nil,
+        "Attached: %{public}@ [ %p ] to %{public}@ (in %{public}@) at offset +%d [%d] (%p)",
+        [
+            "\(field.type)",                    // %{public}@
+            UInt(bitPattern: address),          // %p
+            type,                               // %{public}@
+            typeLibrary,                        // %{public}@
+            field.offset,                       // %d
+            identifier,                         // %d
+            identity                            // %p
+        ]
+    )
+}
+
+@inline(__always)
+func traceLinkUpdate(property: some DynamicProperty, address: UnsafeRawPointer) {
+    Signpost.linkUpdate.traceEvent(
+        type: .event,
+        object: nil,
+        "Updated: %{public}@ [ %p ] - %@",
+        [
+            String(describing: type(of: property)), // %{public}@
+            UInt(bitPattern: address),              // %p
+            property.linkValueDescription,          // %@
+        ]
+    )
+}
+
+@inline(__always)
+func traceLinkDestroy(address: UnsafeRawPointer) {
+    Signpost.linkDestroy.traceEvent(
+        type: .event,
+        object: nil,
+        "Detached: [ %p ]",
+        [UInt(bitPattern: address)]
+    )
+}

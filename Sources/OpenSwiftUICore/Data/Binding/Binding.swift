@@ -65,8 +65,10 @@ public struct Binding<Value> {
     /// The transaction captures the information needed to update the view when
     /// the binding value changes.
     public var transaction: Transaction
+
     package var location: AnyLocation<Value>
-    private var _value: Value
+
+    var _value: Value
 
     /// Creates a binding with closures that read and write the binding value.
     ///
