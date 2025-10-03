@@ -2,13 +2,14 @@
 //  Namespace.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 79F323039D8AB6E63210271E57AD5E86 (SwiftUICore)
 
 /// A dynamic property type that allows access to a namespace defined
 /// by the persistent identity of the object containing the property
 /// (e.g. a view).
+@available(OpenSwiftUI_v2_0, *)
 @frozen
 @propertyWrapper
 public struct Namespace: DynamicProperty, Sendable {
