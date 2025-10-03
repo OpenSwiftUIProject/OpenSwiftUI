@@ -2,13 +2,15 @@
 //  StoredLocation.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
-//  ID: EBDC911C9EE054BAE3D86F947C24B7C3 (RELEASE_2021)
-//  ID: 4F21368B1C1680817451AC25B55A8D48 (RELEASE_2024)
+//  Audited for 6.5.4
+//  Status: Complete
+//  ID: EBDC911C9EE054BAE3D86F947C24B7C3 (SwiftUI)
+//  ID: 4F21368B1C1680817451AC25B55A8D48 (SwiftUICore)
 
 import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
+
+// MARK: - StoredLocationBase
 
 package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecked Sendable {
     private struct Data {
@@ -32,9 +34,8 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
             else {
                 return false
             }
-            
             box.$data.access { data in
-                _ = data.savedValue.removeFirst()
+                _ = data.savedValue.removeLast()
             }
             return true
         }
@@ -42,6 +43,7 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
     
     @AtomicBox
     private var data: Data
+
     var _wasRead: Bool
     
     package init(initialValue value: Value) {
@@ -49,7 +51,32 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
         _data = AtomicBox(wrappedValue: Data(currentValue: value, savedValue: [], cache: .init()))
         super.init()
     }
-    
+
+    // MARK: - final properties and methods
+
+    final var updateValue: Value {
+        $data.access { data in
+            data.savedValue.first ?? data.currentValue
+        }
+    }
+
+    final var binding: Binding<Value> {
+        Binding(value: updateValue, location: self)
+    }
+
+    private final func beginUpdate() {
+        data.savedValue.removeFirst()
+        notifyObservers()
+    }
+
+    final func invalidate() {
+        $data.access { data in
+            data.cache.reset()
+        }
+    }
+
+    // MARK: - non-final methods
+
     fileprivate var isValid: Bool { true }
     
     // MARK: - abstract method
@@ -76,7 +103,15 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
     override package final func get() -> Value {
         data.currentValue
     }
-    
+
+    override package final func projecting<P: Projection>(
+        _ projection: P
+    )-> AnyLocation<P.Projected> where Value == P.Base {
+        $data.access { data in
+            data.cache.reference(for: projection, on: self)
+        }
+    }
+
     override package final func set(_ value: Value, transaction: Transaction) {
         guard !isUpdating else {
             Log.runtimeIssues("Modifying state during view update, this will cause undefined behavior.")
@@ -99,41 +134,23 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
         guard shouldCommit else {
             return
         }
-        var newTransaction = transaction.current
+        let transaction = transaction.current
         onMainThread { [weak self] in
             guard let self else {
                 return
             }
             let update = BeginUpdate(box: self)
-            commit(transaction: newTransaction, mutation: update)
+            commit(transaction: transaction, mutation: update)
         }
-    }
-    
-    override package final func projecting<P: Projection>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base {
-        data.cache.reference(for: projection, on: self)
     }
     
     override package func update() -> (Value, Bool) {
         _wasRead = true
         return (updateValue, true)
     }
-    
-    // MARK: - final properties and methods
-    
-    deinit {
-    }
-    
-    final var updateValue: Value {
-        $data.access { data in
-            data.savedValue.first ?? data.currentValue
-        }
-    }
-    
-    private final func beginUpdate() {
-        data.savedValue.removeFirst()
-        notifyObservers()
-    }
 }
+
+// MARK: - StoredLocation
 
 package final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked Sendable {
     weak var host: GraphHost?
@@ -141,7 +158,7 @@ package final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked
     
     init(initialValue value: Value, host: GraphHost?, signal: WeakAttribute<Void>) {
         self.host = host
-        _signal = signal
+        self._signal = signal
         super.init(initialValue: value)
     }
     
@@ -156,9 +173,7 @@ package final class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked
     override fileprivate func commit(transaction: Transaction, mutation: StoredLocationBase<Value>.BeginUpdate) {
         host?.asyncTransaction(
             transaction,
-            mutation: mutation,
-            style: .deferred,
-            mayDeferUpdate: true
+            mutation: mutation
         )
     }
     

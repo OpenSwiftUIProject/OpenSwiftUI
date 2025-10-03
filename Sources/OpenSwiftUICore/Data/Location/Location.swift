@@ -48,22 +48,30 @@ open class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
     }
     
     @_spi(ForOpenSwiftUIOnly)
-    open func get() -> Value { _openSwiftUIBaseClassAbstractMethod() }
-    
-    @_spi(ForOpenSwiftUIOnly)
-    open func set(_ value: Value, transaction: Transaction) { _openSwiftUIBaseClassAbstractMethod() }
-    
+    open func get() -> Value {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
     @_spi(ForOpenSwiftUIOnly)
     open func projecting<P>(_ projection: P) -> AnyLocation<P.Projected> where Value == P.Base, P: Projection {
         _openSwiftUIBaseClassAbstractMethod()
     }
-    
+
     @_spi(ForOpenSwiftUIOnly)
-    open func update() -> (Value, Bool) { _openSwiftUIBaseClassAbstractMethod() }
-    
+    open func set(_ value: Value, transaction: Transaction) {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
     @_spi(ForOpenSwiftUIOnly)
-    open func isEqual(to other: AnyLocation<Value>) -> Bool { self === other }
-    
+    open func update() -> (Value, Bool) {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
+    @_spi(ForOpenSwiftUIOnly)
+    open func isEqual(to other: AnyLocation<Value>) -> Bool {
+        self === other
+    }
+
     package override init() {
         super.init()
     }
