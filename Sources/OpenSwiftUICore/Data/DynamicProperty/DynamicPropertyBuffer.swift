@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Tracing
+//  Status: Complete
 //  ID: 68550FF604D39F05971FE35A26EE75B0 (SwiftUI)
 //  ID: F3A89CF4357225EF49A7DD673FDFEE02 (SwiftUICore)
 
@@ -300,8 +300,10 @@ public struct _DynamicPropertyBuffer {
         while count > 0 {
             let itemPointer = pointer.assumingMemoryBound(to: Item.self)
             let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
+            if Signpost.linkDestroy.isEnabled {
+                traceLinkDestroy(address: boxPointer)
+            }
             itemPointer.pointee.vtable.deinitialize(ptr: boxPointer)
-            // TODO: OSSignpost
             pointer += Int(itemPointer.pointee.size)
             count &-= 1
         }
@@ -417,8 +419,30 @@ public struct _DynamicPropertyBuffer {
         to value: _GraphValue<Value>,
         fields: DynamicPropertyCache.Fields
     ) {
-        // TODO: Signpost related
-        _openSwiftUIUnimplementedWarning()
+        if Signpost.linkCreate.isEnabled {
+            let type = String(describing: Value.self)
+            let typeLibrary = Tracing.libraryName(defining: Value.self)
+            let identifier = value.value.identifier.rawValue
+            let identity = value.value.graph.graphIdentity()
+            if case let .product(fieldsArray) = fields.layout {
+                var index = 0
+                var pointer = buf
+                while index < _count && index < fieldsArray.count {
+                    let itemPointer = pointer.assumingMemoryBound(to: Item.self)
+                    let boxPointer = pointer.advanced(by: MemoryLayout<Item>.size)
+                    traceLinkCreate(
+                        field: fieldsArray[index],
+                        address: boxPointer,
+                        type: type,
+                        typeLibrary: typeLibrary,
+                        identifier: identifier,
+                        identity: identity
+                    )
+                    pointer += Int(itemPointer.pointee.size)
+                    index &+= 1
+                }
+            }
+        }
     }
 
     package func applyChanged(to body: (Int) -> Void) {
@@ -537,7 +561,7 @@ private class BoxVTableBase {
 
 #if OPENSWIFTUI_SUPPORT_2024_API
 
-// MARK: - BoxVTable [6.5.4] [WIP]
+// MARK: - BoxVTable [6.5.4]
 
 private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
     override class func moveInitialize(
@@ -585,7 +609,7 @@ private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
 
 #else
 
-// MARK: - BoxVTable [3.5.2] [WIP]
+// MARK: - BoxVTable [3.5.2]
 
 private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
     override class func moveInitialize(ptr destination: UnsafeMutableRawPointer, from: UnsafeMutableRawPointer) {
@@ -614,7 +638,7 @@ private class BoxVTable<Box: DynamicPropertyBox>: BoxVTableBase {
         let propertyPointer = property.assumingMemoryBound(to: Box.Property.self)
         let changed = boxPointer.pointee.update(property: &propertyPointer.pointee, phase: phase)
         if changed {
-            // TODO: OSSignpost
+            traceLinkUpdate(property: propertyPointer.pointee, address: ptr)
         }
         return changed
     }
