@@ -245,7 +245,7 @@ extension _VariadicView.MultiViewRoot {
                 let implicitRootBodyInputs = inputs.implicitRootBodyInputs
                 let outputs = Body.makeDebuggableViewList(view: body, inputs: implicitRootBodyInputs)
                 if let buffer {
-                    buffer.traceMountedProperties(to: body, fields: fields)
+                    buffer.traceMountedProperties(to: root, fields: fields)
                 }
                 return outputs
             }
@@ -320,7 +320,7 @@ extension _VariadicView.ViewRoot {
         let (body, buffer) = makeBody(root: root, list: list, inputs: &inputs.base, fields: fields)
         let outputs = Body.makeDebuggableView(view: body, inputs: inputs)
         if let buffer {
-            buffer.traceMountedProperties(to: body, fields: fields)
+            buffer.traceMountedProperties(to: root, fields: fields)
         }
         return outputs
     }
@@ -337,7 +337,7 @@ extension _VariadicView.ViewRoot {
         let (body, buffer) = makeBody(root: root, list: list, inputs: &inputs.base, fields: fields)
         let outputs = Body.makeDebuggableViewList(view: body, inputs: inputs)
         if let buffer {
-            buffer.traceMountedProperties(to: body, fields: fields)
+            buffer.traceMountedProperties(to: root, fields: fields)
         }
         return outputs
     }

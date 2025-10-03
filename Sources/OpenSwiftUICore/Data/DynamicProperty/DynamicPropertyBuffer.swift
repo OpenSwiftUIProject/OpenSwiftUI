@@ -1,6 +1,6 @@
 //
 //  DynamicPropertyBuffer.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete

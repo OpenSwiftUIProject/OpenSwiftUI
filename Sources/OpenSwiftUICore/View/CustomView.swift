@@ -30,9 +30,10 @@ extension View {
         var inputs = inputs
         let (body, buffer) = makeBody(view: view, inputs: &inputs.base, fields: fields)
         if let buffer {
-            buffer.traceMountedProperties(to: body, fields: fields)
+            buffer.traceMountedProperties(to: view, fields: fields)
         }
-        return Body.makeDebuggableView(view: body, inputs: inputs)
+        let outputs = Body.makeDebuggableView(view: body, inputs: inputs)
+        return outputs
     }
     
     nonisolated package static func makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
@@ -41,7 +42,7 @@ extension View {
         let (body, buffer) = makeBody(view: view, inputs: &inputs.base, fields: fields)
         let outputs = Body.makeDebuggableViewList(view: body, inputs: inputs)
         if let buffer {
-            buffer.traceMountedProperties(to: body, fields: fields)
+            buffer.traceMountedProperties(to: view, fields: fields)
         }
         return outputs
     }
