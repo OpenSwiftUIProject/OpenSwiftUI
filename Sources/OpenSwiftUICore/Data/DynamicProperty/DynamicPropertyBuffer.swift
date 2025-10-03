@@ -79,14 +79,16 @@ public struct _DynamicPropertyBuffer {
                 active: nil
             )
             func project<Enum>(type _: Enum.Type) {
-                contents.append(box, vtable: EnumVTable<Enum>.self)
+                let index = contents.append(box, vtable: EnumVTable<Enum>.self)
+                contents[index].flags.fieldOffset = Int32(baseOffset)
             }
             _openExistential(type, do: project)
         }
     }
 
     package mutating func append<T>(_ box: T, fieldOffset: Int) where T: DynamicPropertyBox {
-        contents.append(box, vtable: BoxVTable<T>.self)
+        let index = contents.append(box, vtable: BoxVTable<T>.self)
+        contents[index].flags.fieldOffset =  Int32(fieldOffset)
     }
 
     package func destroy() {
@@ -112,12 +114,14 @@ public struct _DynamicPropertyBuffer {
     package func update(container: UnsafeMutableRawPointer, phase: ViewPhase) -> Bool {
         var changed = false
         for element in contents {
-            changed = changed || element.vtable(as: BoxVTableBase.self)
+            let updateResult = element.vtable(as: BoxVTableBase.self)
                 .update(
                     elt: element,
                     property: container.advanced(by: Int(element.flags.fieldOffset)),
                     phase: phase
                 )
+            element.flags.lastChanged = updateResult
+            changed = changed || updateResult
         }
         return changed
     }
@@ -148,7 +152,8 @@ extension UInt32 {
     private static var fieldOffsetMask: UInt32 { 0x7FFF_FFFF }
 
     fileprivate var fieldOffset: Int32 {
-        Int32(bitPattern: self & Self.fieldOffsetMask)
+        get { Int32(bitPattern: self & Self.fieldOffsetMask) }
+        set { self = UInt32(newValue) | (self & ~Self.fieldOffsetMask) }
     }
 
     @inline(__always)
