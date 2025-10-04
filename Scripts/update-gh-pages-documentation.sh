@@ -27,8 +27,8 @@ MINIMUM_ACCESS_LEVEL="public"
 TARGET_NAME="OpenSwiftUI"
 HOSTING_BASE_PATH=""
 CLEAN_BUILD=false
-SOURCE_SERVICE=""
-SOURCE_SERVICE_BASE_URL=""
+SOURCE_SERVICE="github"
+SOURCE_SERVICE_BASE_URL="https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main"
 
 # Colors for output
 RED='\033[0;31m'
@@ -58,7 +58,7 @@ OPTIONS:
     -h, --help                    Show this help message
 
 EXAMPLES:
-    # Build and publish to GitHub Pages
+    # Build and publish to GitHub Pages (source links enabled by default)
     $(basename "$0")
 
     # Publish using existing documentation build
@@ -70,10 +70,10 @@ EXAMPLES:
     # Document a specific target
     $(basename "$0") --target OpenSwiftUICore
 
-    # Build and publish with source links to GitHub
+    # Build and publish with custom source service (e.g., for a fork)
     $(basename "$0") \\
         --source-service github \\
-        --source-service-base-url https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main
+        --source-service-base-url https://github.com/yourname/OpenSwiftUI/blob/custom-branch
 
 EOF
     exit 0
