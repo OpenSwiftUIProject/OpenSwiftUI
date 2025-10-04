@@ -1,4 +1,3 @@
 version: 1
-builder:
-  configs:
-    - documentation_targets: [OpenSwiftUI]
+external_links:
+  documentation: "https://openswiftuiproject.github.io/OpenSwiftUI/documentation/openswiftui/"
