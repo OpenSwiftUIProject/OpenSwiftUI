@@ -217,11 +217,14 @@ if git show-ref --verify --quiet refs/heads/gh-pages; then
     }
 else
     log_info "Creating new gh-pages branch"
-    git worktree add --detach "$GH_PAGES_DIR"
-    cd "$GH_PAGES_DIR"
+    # Create an empty orphan branch first
     git checkout --orphan gh-pages
     git rm -rf . 2>/dev/null || true
-    cd "$REPO_ROOT"
+    git commit --allow-empty -m "Initialize gh-pages branch"
+    git checkout "$CURRENT_BRANCH"
+
+    # Now create worktree from the new branch
+    git worktree add "$GH_PAGES_DIR" gh-pages
 fi
 
 # Copy documentation to gh-pages worktree
@@ -233,7 +236,7 @@ touch "$GH_PAGES_DIR/.nojekyll"
 
 # Commit and push
 cd "$GH_PAGES_DIR"
-git add -A
+git add -Af .
 
 if git diff --cached --quiet; then
     log_info "No changes to documentation"
