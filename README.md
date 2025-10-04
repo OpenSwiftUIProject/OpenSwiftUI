@@ -19,8 +19,6 @@ Currently, this project is in early development.
 
 The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/documentation/openswiftui/) is hosted on GitHub Pages.
 
-A legacy version is available on [SwiftPackageIndex](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI/main/documentation/openswiftui), but it does not include OpenSwiftUICore APIs.
-
 ## Notes
 
 this project is for learning and research purposes only.
