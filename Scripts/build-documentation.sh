@@ -217,12 +217,18 @@ DEFAULT_SYMBOL_GRAPH_DIR="$SWIFT_BUILD_DIR/symbol-graphs"
 REBUILD_NEEDED=false
 if [[ ! -d "$DEFAULT_SYMBOL_GRAPH_DIR" ]] || [[ -z "$(ls -A "$DEFAULT_SYMBOL_GRAPH_DIR" 2>/dev/null)" ]]; then
     REBUILD_NEEDED=true
-    log_info "No existing symbol graphs found, building..."
+    log_info "No existing symbol graphs found, will perform clean build..."
 else
     log_info "Found existing symbol graphs, reusing them (use --clean to rebuild)"
 fi
 
 if [[ "$REBUILD_NEEDED" == true ]] || [[ "$CLEAN_BUILD" == true ]]; then
+    # Clean build to ensure symbol graphs are generated
+    if [[ "$REBUILD_NEEDED" == true ]]; then
+        log_info "Cleaning build to ensure symbol graph generation..."
+        swift package clean
+    fi
+
     log_info "Generating symbol graphs..."
     swift build \
         --target "$TARGET_NAME" \
