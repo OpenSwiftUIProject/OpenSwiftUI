@@ -263,3 +263,18 @@ By default, deployments use `git push --force` to prevent repository size growth
 - Trade-off: No documentation version history in git (use git tags on main branch for versioning instead)
 
 To preserve history: `./Scripts/update-gh-pages-documentation.sh --no-force --hosting-base-path /OpenSwiftUI`
+
+## Future Improvements
+
+The following improvements are planned for the documentation system:
+
+- [ ] **Remove default implementation** - Currently, the documentation includes default implementations from protocol extensions. These can clutter the documentation and make it harder to find the primary API declarations. Future work will add filtering to hide default implementations while keeping protocol requirements visible.
+
+- [ ] **Migrate to GitHub Actions** - The current deployment process uses a local `gh-pages` branch and manual script execution. Migrating to GitHub Actions would provide:
+  - Automatic documentation updates on every push to main
+  - Consistent build environment (no local machine dependencies)
+  - Build artifacts and logs available in GitHub UI
+  - Easier collaboration (no need to run deployment scripts locally)
+  - Integration with PR previews (optional)
+
+  This would replace the manual `./Scripts/update-gh-pages-documentation.sh` workflow with an automated CI/CD pipeline.
