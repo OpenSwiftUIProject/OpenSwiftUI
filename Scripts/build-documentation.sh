@@ -246,6 +246,65 @@ if ls "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}.symbols.json" >/dev/null 2>&1; t
     cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
     cp "$DEFAULT_SYMBOL_GRAPH_DIR/OpenSwiftUICore"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
     log_info "Symbol graphs for $TARGET_NAME copied successfully"
+
+    # Filter out symbols from unwanted modules (CoreFoundation, CoreGraphics, etc.)
+    log_info "Removing re-exported system framework symbols..."
+    python3 << EOF
+import json
+import sys
+import os
+
+def filter_symbol_graph(file_path, allowed_modules):
+    """Filter symbol graph to only include symbols from allowed modules."""
+    try:
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+
+        if 'symbols' in data and isinstance(data['symbols'], list):
+            original_count = len(data['symbols'])
+            # Filter symbols by extracting module from precise identifier
+            filtered_symbols = []
+            for symbol in data['symbols']:
+                precise = symbol.get('identifier', {}).get('precise', '')
+                module = None
+
+                # Extract module from mangled Swift names
+                if precise.startswith('s:'):
+                    rest = precise[2:]
+                    if rest and rest[0].isdigit():
+                        i = 0
+                        while i < len(rest) and rest[i].isdigit():
+                            i += 1
+                        if i > 0:
+                            mod_len = int(rest[:i])
+                            module = rest[i:i+mod_len]
+
+                # Keep if it's from an allowed module
+                if module and module in allowed_modules:
+                    filtered_symbols.append(symbol)
+
+            data['symbols'] = filtered_symbols
+            filtered_count = len(filtered_symbols)
+
+            # Write back
+            with open(file_path, 'w') as f:
+                json.dump(data, f)
+
+            print(f"  {os.path.basename(file_path)}: {original_count} -> {filtered_count} symbols", file=sys.stderr)
+            return True
+        return False
+    except Exception as e:
+        print(f"  Error filtering {file_path}: {e}", file=sys.stderr)
+        return False
+
+# List of allowed modules (OpenSwiftUI and OpenSwiftUICore only)
+allowed_modules = {'OpenSwiftUI', 'OpenSwiftUICore', '$TARGET_NAME'}
+
+# Filter the main OpenSwiftUI symbol graph
+symbol_file = '$SYMBOL_GRAPH_DIR/OpenSwiftUI.symbols.json'
+if os.path.exists(symbol_file):
+    filter_symbol_graph(symbol_file, allowed_modules)
+EOF
 else
     log_error "No symbol graphs found for $TARGET_NAME"
     log_error "Available symbol graphs:"
