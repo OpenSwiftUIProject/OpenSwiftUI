@@ -4,6 +4,10 @@ on:
   pull_request:
     types: [opened]
 
+permissions:
+  contents: read
+  pull-requests: write
+
 jobs:
   triage-pr:
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/pr-triage.yml@main

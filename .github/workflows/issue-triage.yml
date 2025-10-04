@@ -4,6 +4,10 @@ on:
   issues:
     types: [opened]
 
+permissions:
+  contents: read
+  issues: write
+
 jobs:
   triage-issue:
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/issue-triage.yml@main
