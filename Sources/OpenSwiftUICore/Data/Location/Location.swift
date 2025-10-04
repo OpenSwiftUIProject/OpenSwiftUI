@@ -2,9 +2,11 @@
 //  Location.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
-//  ID: 3C10A6E9BB0D4644A364890A9BD57D68
+//  ID: 3C10A6E9BB0D4644A364890A9BD57D68 (SwiftUICore)
+
+import OpenAttributeGraphShims
 
 // MARK: - Location
 
@@ -25,8 +27,13 @@ extension Location {
 // MARK: - AnyLocationBase
 
 /// The base type of all type-erased locations.
+@available(OpenSwiftUI_v1_0, *)
 @_documentation(visibility: private)
-open class AnyLocationBase {}
+open class AnyLocationBase {
+    init() {
+        _openSwiftUIEmptyStub()
+    }
+}
 
 @available(*, unavailable)
 extension AnyLocationBase: Sendable {}
@@ -39,6 +46,7 @@ extension AnyLocationBase: Sendable {}
 /// also the user types' responsibility to ensure that `get`, and `set` does
 /// not access the graph concurrently (`get` should not be called while graph
 /// is updating, for example).
+@available(OpenSwiftUI_v1_0, *)
 @_documentation(visibility: private)
 open class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
     @_spi(ForOpenSwiftUIOnly)
@@ -58,7 +66,7 @@ open class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
     }
 
     @_spi(ForOpenSwiftUIOnly)
-    open func set(_ value: Value, transaction: Transaction) {
+    open func set(_ newValue: Value, transaction: Transaction) {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
@@ -77,6 +85,7 @@ open class AnyLocation<Value>: AnyLocationBase, @unchecked Sendable {
     }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension AnyLocation: Equatable {
     public static func == (lhs: AnyLocation<Value>, rhs: AnyLocation<Value>) -> Bool {
         lhs.isEqual(to: rhs)
@@ -160,8 +169,134 @@ package struct LocationProjectionCache {
     }
 }
 
+// MARK: - FlattenedCollectionLocation
+
+package struct FlattenedCollectionLocation<Value, Base>: Location where Base: Collection, Base: Equatable, Base.Element: AnyLocation<Value> {
+    package let base: Base
+
+    package init(base: [AnyLocation<Value>]) {
+        self.base = base as! Base
+    }
+
+    private var primaryLocation: Base.Element { base.first! }
+
+    package var wasRead: Bool {
+        get { primaryLocation.wasRead }
+        set { primaryLocation.wasRead = newValue }
+    }
+
+    package func get() -> Value {
+        primaryLocation.get()
+    }
+
+    package func set(_ newValue: Value, transaction: Transaction) {
+        for location in base {
+            location.set(newValue, transaction: transaction)
+        }
+    }
+
+    package func update() -> (Value, Bool) {
+        primaryLocation.update()
+    }
+}
+
+// MARK: - ZipLocation
+
+package struct ZipLocation<A, B>: Location {
+    package let locations: (AnyLocation<A>, AnyLocation<B>)
+
+    package init(locations: (AnyLocation<A>, AnyLocation<B>)) {
+        self.locations = locations
+    }
+
+    package var wasRead: Bool {
+        get { locations.0.wasRead || locations.1.wasRead }
+        set {
+            locations.0.wasRead = newValue
+            locations.1.wasRead = newValue
+        }
+    }
+
+    package func get() -> (A, B) {
+        (locations.0.get(), locations.1.get())
+    }
+
+    package func set(_ newValue: (A, B), transaction: Transaction) {
+        locations.0.set(newValue.0, transaction: transaction)
+        locations.1.set(newValue.1, transaction: transaction)
+    }
+
+    package func update() -> ((A, B), Bool) {
+        let (a, aChanged) = locations.0.update()
+        let (b, bChanged) = locations.1.update()
+        return ((a, b), aChanged || bChanged)
+    }
+
+    package static func == (lhs: ZipLocation<A, B>, rhs: ZipLocation<A, B>) -> Bool {
+        lhs.locations == rhs.locations
+    }
+}
+
+// MARK: - ConstantLocation
+
+package struct ConstantLocation<Value>: Location {
+    package var value: Value
+
+    package init(value: Value) {
+        self.value = value
+    }
+
+    package var wasRead: Bool {
+        get { true }
+        nonmutating set {}
+    }
+
+    package func get() -> Value { value }
+
+    package func set(_: Value, transaction _: Transaction) {}
+
+    package static func == (lhs: ConstantLocation<Value>, rhs: ConstantLocation<Value>) -> Bool {
+        compareValues(lhs.value, rhs.value)
+    }
+}
+
+// MARK: - FunctionalLocation
+
+package struct FunctionalLocation<Value>: Location {
+    package struct Functions {
+        package var getValue: () -> Value
+        package var setValue: (Value, Transaction) -> Void
+    }
+
+    package var functions: Functions
+
+    package init(getValue: @escaping () -> Value, setValue: @escaping (Value, Transaction) -> Void) {
+        self.functions = .init(getValue: getValue, setValue: setValue)
+    }
+
+    package var wasRead: Bool {
+        get { true }
+        nonmutating set {}
+    }
+
+    package func get() -> Value {
+        functions.getValue()
+    }
+
+    package func set(_ newValue: Value, transaction: Transaction) {
+        functions.setValue(newValue, transaction)
+    }
+
+    package static func == (lhs: FunctionalLocation<Value>, rhs: FunctionalLocation<Value>) -> Bool {
+        compareValues(lhs, rhs)
+    }
+}
+
+// MARK: - ProjectedLocation
+
 private struct ProjectedLocation<L: Location, P: Projection>: Location where P.Base == L.Value {
     var location: L
+
     var projection: P
 
     init(location: L, projection: P) {
@@ -176,7 +311,9 @@ private struct ProjectedLocation<L: Location, P: Projection>: Location where P.B
         set { location.wasRead = newValue }
     }
 
-    func get() -> Value { projection.get(base: location.get()) }
+    func get() -> Value {
+        projection.get(base: location.get())
+    }
 
     func set(_ value: Value, transaction _: Transaction) {
         var base = location.get()
@@ -187,38 +324,5 @@ private struct ProjectedLocation<L: Location, P: Projection>: Location where P.B
         let (base, result) = location.update()
         let value = projection.get(base: base)
         return (value, result)
-    }
-}
-
-// MARK: - FlattenedCollectionLocation
-
-package struct FlattenedCollectionLocation<Value, Base>: Location where Base: Collection, Base: Equatable, Base.Element: AnyLocation<Value> {
-    package typealias Value = Value
-    
-    package let base: Base
-    
-    package init(base: [AnyLocation<Value>]) {
-        self.base = base as! Base
-    }
-    
-    private var primaryLocation: Base.Element { base.first! }
-    
-    package var wasRead: Bool {
-        get { primaryLocation.wasRead }
-        set { primaryLocation.wasRead = newValue }
-    }
-    
-    package func get() -> Value {
-        primaryLocation.get()
-    }
-    
-    package func set(_ newValue: Value, transaction: Transaction) {
-        for location in base {
-            location.set(newValue, transaction: transaction)
-        }
-    }
-    
-    package func update() -> (Value, Bool) {
-        primaryLocation.update()
     }
 }
