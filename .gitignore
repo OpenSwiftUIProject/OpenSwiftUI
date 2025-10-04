@@ -19,3 +19,4 @@ __Snapshots__
 Example/ReferenceImages/**/*.png
 
 .claude
+.docs
