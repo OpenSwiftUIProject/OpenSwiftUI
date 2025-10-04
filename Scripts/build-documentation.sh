@@ -245,12 +245,12 @@ if [[ "$REBUILD_NEEDED" == true ]] || [[ "$CLEAN_BUILD" == true ]]; then
 fi
 
 # Filter symbol graphs for the target module
-# Only include the target itself and OpenSwiftUICore, excluding re-exported system modules
+# Only include the target itself (which already includes re-exported OpenSwiftUICore symbols)
 log_info "Filtering symbol graphs for $TARGET_NAME..."
 if ls "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}.symbols.json" >/dev/null 2>&1; then
-    # Copy the main target and OpenSwiftUICore symbol graphs
+    # Copy only the main target symbol graphs
+    # OpenSwiftUI already includes OpenSwiftUICore symbols via @_exported import
     cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
-    cp "$DEFAULT_SYMBOL_GRAPH_DIR/OpenSwiftUICore"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
     log_info "Symbol graphs for $TARGET_NAME copied successfully"
 
     # Filter out symbols from unwanted modules (CoreFoundation, CoreGraphics, etc.)
