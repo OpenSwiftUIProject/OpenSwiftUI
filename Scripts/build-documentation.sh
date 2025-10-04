@@ -353,8 +353,19 @@ if [[ "$PREVIEW_MODE" == true ]]; then
         fi
     fi
 
+    # Detect the actual module name from the generated documentation
+    ACTUAL_MODULE=""
+    if [[ -d "$DOCC_OUTPUT_DIR/data/documentation" ]]; then
+        # Find the first .json file in data/documentation directory
+        ACTUAL_MODULE=$(ls "$DOCC_OUTPUT_DIR/data/documentation"/*.json 2>/dev/null | head -1 | xargs basename -s .json)
+    fi
+
     log_info "Starting preview server on port $PREVIEW_PORT..."
-    log_info "Documentation will be available at: http://localhost:$PREVIEW_PORT/documentation/$TARGET_NAME"
+    if [[ -n "$ACTUAL_MODULE" ]]; then
+        log_info "Documentation will be available at: http://localhost:$PREVIEW_PORT/documentation/$ACTUAL_MODULE"
+    else
+        log_info "Documentation will be available at: http://localhost:$PREVIEW_PORT/"
+    fi
     log_info "Press Ctrl+C to stop the server"
 
     cd "$DOCC_OUTPUT_DIR"
