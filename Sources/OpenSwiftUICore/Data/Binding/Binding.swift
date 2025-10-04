@@ -2,8 +2,8 @@
 //  Binding.swift
 //  OpenSwiftUICore
 //
-//  Audited for 3.5.2
-//  Status: Complete
+//  Audited for 6.5.4
+//  Status: WIP
 //  ID: 5436F2B399369BE3B016147A5F8FE9F2 (SwiftUI)
 //  ID: C453EE81E759852CCC6400C47D93A43E (SwiftUICore)
 
@@ -52,14 +52,24 @@
 /// Whenever the user taps the `PlayButton`, the `PlayerView` updates its
 /// `isPlaying` state.
 ///
+/// A binding conforms to ``Sendable`` only if its wrapped value type also
+/// conforms to ``Sendable``. It is always safe to pass a sendable binding
+/// between different concurrency domains. However, reading from or writing
+/// to a binding's wrapped value from a different concurrency domain may or
+/// may not be safe, depending on how the binding was created. OpenSwiftUI will
+/// issue a warning at runtime if it detects a binding being used in a way
+/// that may compromise data safety.
+///
 /// > Note: To create bindings to properties of a type that conforms to the
 /// [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
 /// protocol, use the ``Bindable`` property wrapper. For more information,
 /// see <doc:Migrating-from-the-observable-object-protocol-to-the-observable-macro>.
-@frozen
+///
+@available(OpenSwiftUI_v1_0, *)
 @propertyWrapper
 @dynamicMemberLookup
 public struct Binding<Value> {
+
     /// The binding's transaction.
     ///
     /// The transaction captures the information needed to update the view when
@@ -68,9 +78,25 @@ public struct Binding<Value> {
 
     package var location: AnyLocation<Value>
 
-    var _value: Value
+    package var _value: Value
 
     /// Creates a binding with closures that read and write the binding value.
+    ///
+    /// A binding conforms to Sendable only if its wrapped value type also
+    /// conforms to Sendable. It is always safe to pass a sendable binding
+    /// between different concurrency domains. However, reading from or writing
+    /// to a binding's wrapped value from a different concurrency domain may or
+    /// may not be safe, depending on how the binding was created. OpenSwiftUI will
+    /// issue a warning at runtime if it detects a binding being used in a way
+    /// that may compromise data safety.
+    ///
+    /// For a "computed" binding created using get and set closure parameters,
+    /// the safety of accessing its wrapped value from a different concurrency
+    /// domain depends on whether those closure arguments are isolated to
+    /// a specific actor. For example, a computed binding with closure arguments
+    /// that are known (or inferred) to be isolated to the main actor must only
+    /// ever access its wrapped value on the main actor as well, even if the
+    /// binding is also sendable.
     ///
     /// - Parameters:
     ///   - get: A closure that retrieves the binding value. The closure has no
@@ -86,6 +112,22 @@ public struct Binding<Value> {
 
     /// Creates a binding with a closure that reads from the binding value, and
     /// a closure that applies a transaction when writing to the binding value.
+    ///
+    /// A binding conforms to Sendable only if its wrapped value type also
+    /// conforms to Sendable. It is always safe to pass a sendable binding
+    /// between different concurrency domains. However, reading from or writing
+    /// to a binding's wrapped value from a different concurrency domain may or
+    /// may not be safe, depending on how the binding was created. OpenSwiftUI will
+    /// issue a warning at runtime if it detects a binding being used in a way
+    /// that may compromise data safety.
+    ///
+    /// For a "computed" binding created using get and set closure parameters,
+    /// the safety of accessing its wrapped value from a different concurrency
+    /// domain depends on whether those closure arguments are isolated to
+    /// a specific actor. For example, a computed binding with closure arguments
+    /// that are known (or inferred) to be isolated to the main actor must only
+    /// ever access its wrapped value on the main actor as well, even if the
+    /// binding is also sendable.
     ///
     /// - Parameters:
     ///   - get: A closure to retrieve the binding value. The closure has no
@@ -174,7 +216,7 @@ public struct Binding<Value> {
     public init(projectedValue: Binding<Value>) {
         self = projectedValue
     }
-    
+
     /// Returns a binding to the resulting value of a given key path.
     ///
     /// - Parameter keyPath: A key path to a specific resulting value.
@@ -186,6 +228,7 @@ public struct Binding<Value> {
 }
 
 extension Binding {
+
     /// Creates a binding by projecting the base value to an optional value.
     ///
     /// - Parameter base: A value to project to an optional value.
