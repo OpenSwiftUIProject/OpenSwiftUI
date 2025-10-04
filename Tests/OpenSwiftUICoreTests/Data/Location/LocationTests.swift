@@ -2,8 +2,12 @@
 //  LocationTests.swift
 //  OpenSwiftUICoreTests
 
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
-@testable import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+@testable
+#if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
+@_private(sourceFile: "Location.swift")
+#endif
+import OpenSwiftUICore
 import Testing
 
 struct LocationTests {
@@ -63,6 +67,7 @@ struct LocationTests {
         #expect(location.get() == 1)
     }
 
+    #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
     @Test
     func boxProjectingAndCache() {
         struct V {
@@ -101,4 +106,5 @@ struct LocationTests {
         box.cache.reset()
         #expect(box.cache.cache.isEmpty == true)
     }
+    #endif
 }

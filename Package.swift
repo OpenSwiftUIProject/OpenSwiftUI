@@ -225,6 +225,14 @@ if internalXRSDK {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_INTERNAL_XR_SDK"))
 }
 
+// MARK: - [env] OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
+
+let enablePrivateImports = envEnable("OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS", default: true)
+if enablePrivateImports {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS"))
+    sharedSwiftSettings.append(.unsafeFlags(["-Xfrontend", "-enable-private-imports"]))
+}
+
 // MARK: - OpenSwiftUISPI Target
 
 let openSwiftUISPITarget = Target.target(

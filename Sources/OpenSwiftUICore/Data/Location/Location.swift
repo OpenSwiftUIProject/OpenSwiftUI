@@ -89,10 +89,10 @@ extension AnyLocation: Sendable {}
 // MARK: - LocationBox
 
 final package class LocationBox<L>: AnyLocation<L.Value>, Location, @unchecked Sendable where L: Location {
-    final internal(set) package var location: L
-    
+    final private(set) package var location: L
+
     @AtomicBox
-    var cache = LocationProjectionCache()
+    private var cache = LocationProjectionCache()
 
     package init(_ location: L) {
         self.location = location
