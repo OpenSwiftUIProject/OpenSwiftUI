@@ -225,6 +225,7 @@ fi
 if [[ "$REBUILD_NEEDED" == true ]] || [[ "$CLEAN_BUILD" == true ]]; then
     log_info "Generating symbol graphs..."
     swift build \
+        --target "$TARGET_NAME" \
         -Xswiftc -emit-symbol-graph \
         -Xswiftc -emit-symbol-graph-dir \
         -Xswiftc "$DEFAULT_SYMBOL_GRAPH_DIR" \
@@ -238,13 +239,18 @@ if [[ "$REBUILD_NEEDED" == true ]] || [[ "$CLEAN_BUILD" == true ]]; then
 fi
 
 # Filter symbol graphs for the target module
+# Only include the target itself and OpenSwiftUICore, excluding re-exported system modules
 log_info "Filtering symbol graphs for $TARGET_NAME..."
-if ls "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}"*.symbols.json >/dev/null 2>&1; then
-    cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}"*.symbols.json "$SYMBOL_GRAPH_DIR/"
+if ls "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}.symbols.json" >/dev/null 2>&1; then
+    # Copy the main target and OpenSwiftUICore symbol graphs
+    cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
+    cp "$DEFAULT_SYMBOL_GRAPH_DIR/OpenSwiftUICore"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
     log_info "Symbol graphs for $TARGET_NAME copied successfully"
 else
-    log_warning "No symbol graphs found for $TARGET_NAME, using all available symbol graphs"
-    cp "$DEFAULT_SYMBOL_GRAPH_DIR"/*.symbols.json "$SYMBOL_GRAPH_DIR/"
+    log_error "No symbol graphs found for $TARGET_NAME"
+    log_error "Available symbol graphs:"
+    ls "$DEFAULT_SYMBOL_GRAPH_DIR"/*.symbols.json 2>/dev/null || echo "  (none)"
+    exit 1
 fi
 
 # Step 2: Find or create documentation catalog
