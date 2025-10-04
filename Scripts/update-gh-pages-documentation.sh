@@ -29,6 +29,7 @@ HOSTING_BASE_PATH=""
 CLEAN_BUILD=false
 SOURCE_SERVICE="github"
 SOURCE_SERVICE_BASE_URL="https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main"
+FORCE_PUSH=true  # Force push to save git repo size (avoids accumulating large binary files)
 
 # Colors for output
 RED='\033[0;31m'
@@ -54,6 +55,8 @@ OPTIONS:
     --source-service SERVICE      Source service (github, gitlab, bitbucket)
     --source-service-base-url URL Base URL for source service
                                   (e.g., https://github.com/user/repo/blob/main)
+    --no-force                    Don't force push (preserves gh-pages history)
+                                  Default: force push to save repo size
     --clean                       Clean build artifacts and force rebuild
     -h, --help                    Show this help message
 
@@ -118,6 +121,10 @@ while [[ $# -gt 0 ]]; do
             SOURCE_SERVICE_BASE_URL="$2"
             shift 2
             ;;
+        --no-force)
+            FORCE_PUSH=false
+            shift
+            ;;
         --clean)
             CLEAN_BUILD=true
             shift
@@ -135,6 +142,7 @@ done
 log_info "Configuration:"
 log_info "  Target: $TARGET_NAME"
 log_info "  Build Documentation: $BUILD_DOCS"
+log_info "  Force Push: $FORCE_PUSH"
 if [[ -n "$HOSTING_BASE_PATH" ]]; then
     log_info "  Hosting Base Path: $HOSTING_BASE_PATH"
 fi
@@ -234,7 +242,12 @@ else
     git commit -m "Update documentation (generated from $CURRENT_BRANCH@$(git -C "$REPO_ROOT" rev-parse --short HEAD))"
 
     log_info "Pushing to gh-pages branch..."
-    git push origin gh-pages
+    if [[ "$FORCE_PUSH" == true ]]; then
+        log_info "Using --force to save git repo size (avoids accumulating large binary files)"
+        git push --force origin gh-pages
+    else
+        git push origin gh-pages
+    fi
 
     log_info "${GREEN}✓${NC} Documentation published successfully!"
     log_info "GitHub Pages will be updated shortly at your repository's GitHub Pages URL"
