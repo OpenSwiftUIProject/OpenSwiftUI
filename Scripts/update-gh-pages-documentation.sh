@@ -30,6 +30,7 @@ CLEAN_BUILD=false
 SOURCE_SERVICE="github"
 SOURCE_SERVICE_BASE_URL="https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main"
 FORCE_PUSH=true  # Force push to save git repo size (avoids accumulating large binary files)
+ECHO_WITHOUT_PUSH=false  # Echo push command without actually pushing
 
 # Colors for output
 RED='\033[0;31m'
@@ -58,6 +59,7 @@ OPTIONS:
     --no-force                    Don't force push (preserves gh-pages history)
                                   Default: force push to save repo size
     --clean                       Clean build artifacts and force rebuild
+    --echo-without-push           Echo push command without actually pushing (for testing)
     -h, --help                    Show this help message
 
 EXAMPLES:
@@ -94,6 +96,14 @@ log_error() {
     echo -e "${RED}[ERROR]${NC} $1"
 }
 
+git_push() {
+    if [[ "$ECHO_WITHOUT_PUSH" == true ]]; then
+        echo "[echo without push]: git push $*"
+    else
+        git push "$@"
+    fi
+}
+
 # Parse command line arguments
 while [[ $# -gt 0 ]]; do
     case $1 in
@@ -127,6 +137,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --clean)
             CLEAN_BUILD=true
+            shift
+            ;;
+        --echo-without-push)
+            ECHO_WITHOUT_PUSH=true
             shift
             ;;
         -h|--help)
@@ -193,7 +207,7 @@ fi
 log_info "Using documentation from: $DOCC_OUTPUT_DIR"
 
 # Deploy to GitHub Pages
-GH_PAGES_DIR="$DOCS_DIR/gh-pages"
+GH_PAGES_DIR="$REPO_ROOT/gh-pages"
 
 log_info "Preparing GitHub Pages deployment..."
 
@@ -227,9 +241,10 @@ else
     git worktree add "$GH_PAGES_DIR" gh-pages
 fi
 
-# Copy documentation to gh-pages worktree
+# Copy documentation to gh-pages worktree docs folder
 log_info "Copying documentation files..."
-rsync -av --delete "$DOCC_OUTPUT_DIR/" "$GH_PAGES_DIR/"
+mkdir -p "$GH_PAGES_DIR/docs"
+rsync -av --delete "$DOCC_OUTPUT_DIR/" "$GH_PAGES_DIR/docs/"
 
 # Add .nojekyll to prevent GitHub Pages from processing with Jekyll
 touch "$GH_PAGES_DIR/.nojekyll"
@@ -247,9 +262,9 @@ else
     log_info "Pushing to gh-pages branch..."
     if [[ "$FORCE_PUSH" == true ]]; then
         log_info "Using --force to save git repo size (avoids accumulating large binary files)"
-        git push --force origin gh-pages
+        git_push --force origin gh-pages
     else
-        git push origin gh-pages
+        git_push origin gh-pages
     fi
 
     log_info "${GREEN}✓${NC} Documentation published successfully!"
