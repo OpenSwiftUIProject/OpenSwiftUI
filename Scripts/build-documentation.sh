@@ -250,7 +250,9 @@ log_info "Filtering symbol graphs for $TARGET_NAME..."
 if ls "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}.symbols.json" >/dev/null 2>&1; then
     # Copy only the main target symbol graphs
     # OpenSwiftUI already includes OpenSwiftUICore symbols via @_exported import
-    cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
+    # Use explicit patterns to avoid matching OpenSwiftUICore*.symbols.json
+    cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}.symbols.json" "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
+    cp "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}@"*.symbols.json "$SYMBOL_GRAPH_DIR/" 2>/dev/null || true
     log_info "Symbol graphs for $TARGET_NAME copied successfully"
 
     # Filter out symbols from unwanted modules (CoreFoundation, CoreGraphics, etc.)
