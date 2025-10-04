@@ -17,7 +17,9 @@ And the API design and documentation is to stay as compatible with the original 
 
 Currently, this project is in early development.
 
-You can find the API [documentation](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI/main/documentation/openswiftui) here.
+The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/documentation/openswiftui/) is hosted on GitHub Pages.
+
+A legacy version is available on [SwiftPackageIndex](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI/main/documentation/openswiftui), but it does not include OpenSwiftUICore APIs.
 
 ## Notes
 
