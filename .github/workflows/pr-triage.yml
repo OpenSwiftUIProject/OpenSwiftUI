@@ -1,0 +1,10 @@
+name: PR Triage
+
+on:
+  pull_request:
+    types: [opened]
+
+jobs:
+  triage-pr:
+    uses: OpenSwiftUIProject/github-workflows/.github/workflows/pr-triage.yml@main
+    secrets: inherit
