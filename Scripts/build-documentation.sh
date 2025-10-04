@@ -213,13 +213,13 @@ cd "$REPO_ROOT"
 SWIFT_BUILD_DIR=".build"
 DEFAULT_SYMBOL_GRAPH_DIR="$SWIFT_BUILD_DIR/symbol-graphs"
 
-# Check if symbol graphs already exist with correct access level
+# Check if symbol graphs already exist for the target
 REBUILD_NEEDED=false
-if [[ ! -d "$DEFAULT_SYMBOL_GRAPH_DIR" ]] || [[ -z "$(ls -A "$DEFAULT_SYMBOL_GRAPH_DIR" 2>/dev/null)" ]]; then
+if [[ ! -f "$DEFAULT_SYMBOL_GRAPH_DIR/${TARGET_NAME}.symbols.json" ]]; then
     REBUILD_NEEDED=true
-    log_info "No existing symbol graphs found, will perform clean build..."
+    log_info "No existing symbol graphs found for $TARGET_NAME, will perform clean build..."
 else
-    log_info "Found existing symbol graphs, reusing them (use --clean to rebuild)"
+    log_info "Found existing symbol graphs for $TARGET_NAME, reusing them (use --clean to rebuild)"
 fi
 
 if [[ "$REBUILD_NEEDED" == true ]] || [[ "$CLEAN_BUILD" == true ]]; then
