@@ -17,4 +17,7 @@ permissions:
 jobs:
   triage-pr:
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/pr-triage.yml@main
+    with:
+      # fromJSON workaround number inputs: https://github.com/orgs/community/discussions/67182#discussioncomment-8617964
+      pr_number: ${{ fromJSON(inputs.pr_number) }}
     secrets: inherit
