@@ -46,7 +46,7 @@ Build Swift documentation using DocC with optional local preview.
 
 OPTIONS:
     --preview                     Preview documentation locally with HTTP server
-    --minimum-access-level LEVEL  Set minimum access level (public, internal, private)
+    --minimum-access-level LEVEL  Set minimum access level (public, package, internal, private, fileprivate)
                                   Default: public
     --target TARGET               Target to document (default: OpenSwiftUI)
     --hosting-base-path PATH      Base path for hosting (e.g., /OpenSwiftUI)
@@ -147,11 +147,11 @@ done
 
 # Validate minimum access level
 case "$MINIMUM_ACCESS_LEVEL" in
-    public|internal|private|fileprivate)
+    public|package|internal|private|fileprivate)
         ;;
     *)
         log_error "Invalid minimum access level: $MINIMUM_ACCESS_LEVEL"
-        log_error "Valid values: public, internal, private, fileprivate"
+        log_error "Valid values: public, package, internal, private, fileprivate"
         exit 1
         ;;
 esac
