@@ -94,7 +94,7 @@ log_error() {
 # Function to run docc command
 rundocc() {
     if command -v xcrun >/dev/null 2>&1; then
-        xcrun docc "$@"
+        DOCC_HTML_DIR="/Users/kyle/tmp/Doc/swift-docc-render/dist" xcrun docc "$@"
     else
         docc "$@"
     fi
@@ -334,115 +334,141 @@ fi
 log_info "Building documentation archive..."
 
 if [[ -n "$DOCC_CATALOG" ]]; then
-    # We have a .docc catalog
     DOCC_ARGS=(
         "$DOCC_CATALOG"
-        --output-path "$DOCC_OUTPUT_DIR"
         --emit-digest
         --transform-for-static-hosting
+        --output-path "$DOCC_OUTPUT_DIR"
     )
+
+    if [[ "$PREVIEW_MODE" == true ]]; then
+        DOCC_ARGS+=(--port "$PREVIEW_PORT")
+    fi
 
     if [[ -n "$HOSTING_BASE_PATH" ]]; then
         DOCC_ARGS+=(--hosting-base-path "$HOSTING_BASE_PATH")
     fi
 
-    # Add source service configuration
     if [[ -n "$SOURCE_SERVICE" ]]; then
         DOCC_ARGS+=(--source-service "$SOURCE_SERVICE")
         DOCC_ARGS+=(--source-service-base-url "$SOURCE_SERVICE_BASE_URL")
         DOCC_ARGS+=(--checkout-path "$REPO_ROOT")
     fi
 
-    # Add symbol graph directory if we have symbol graphs
     if [[ -d "$SYMBOL_GRAPH_DIR" ]] && [[ -n "$(ls -A "$SYMBOL_GRAPH_DIR")" ]]; then
         DOCC_ARGS+=(--additional-symbol-graph-dir "$SYMBOL_GRAPH_DIR")
     fi
 
-    rundocc convert "${DOCC_ARGS[@]}"
+    if [[ "$PREVIEW_MODE" == true ]]; then
+        # Check if port is already in use
+        if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+            log_warning "Port $PREVIEW_PORT is already in use"
+
+            # Find the process using the port
+            PORT_PID=$(lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t)
+            PORT_PROCESS=$(ps -p $PORT_PID -o command= 2>/dev/null || echo "Unknown process")
+
+            log_info "Process using port $PREVIEW_PORT (PID $PORT_PID): $PORT_PROCESS"
+
+            # Ask user if they want to kill it
+            read -p "Do you want to kill this process and start the preview server? (y/N): " -n 1 -r
+            echo
+
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                log_info "Killing process $PORT_PID..."
+                kill $PORT_PID
+                sleep 1
+
+                # Verify it's killed
+                if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+                    log_error "Failed to kill process on port $PREVIEW_PORT"
+                    exit 1
+                fi
+                log_info "Process killed successfully"
+            else
+                log_error "Cannot start preview server. Please free port $PREVIEW_PORT or use --port option"
+                exit 1
+            fi
+        fi
+
+        log_info "Starting documentation preview server on port $PREVIEW_PORT..."
+        log_info "Press Ctrl+C to stop the server"
+        rundocc preview "${DOCC_ARGS[@]}"
+    else
+        rundocc convert "${DOCC_ARGS[@]}"
+    fi
 else
-    # No .docc catalog, create one from symbol graphs
     TEMP_DOCC_CATALOG="$BUILD_DIR/${TARGET_NAME}.docc"
     mkdir -p "$TEMP_DOCC_CATALOG"
 
-    # Copy symbol graphs into the catalog
     if [[ -d "$SYMBOL_GRAPH_DIR" ]] && [[ -n "$(ls -A "$SYMBOL_GRAPH_DIR")" ]]; then
         cp "$SYMBOL_GRAPH_DIR"/*.symbols.json "$TEMP_DOCC_CATALOG/"
     fi
 
     DOCC_ARGS=(
         "$TEMP_DOCC_CATALOG"
-        --output-path "$DOCC_OUTPUT_DIR"
         --emit-digest
         --transform-for-static-hosting
+        --output-path "$DOCC_OUTPUT_DIR"
     )
+
+    if [[ "$PREVIEW_MODE" == true ]]; then
+        DOCC_ARGS+=(--port "$PREVIEW_PORT")
+    fi
 
     if [[ -n "$HOSTING_BASE_PATH" ]]; then
         DOCC_ARGS+=(--hosting-base-path "$HOSTING_BASE_PATH")
     fi
 
-    # Add source service configuration
     if [[ -n "$SOURCE_SERVICE" ]]; then
         DOCC_ARGS+=(--source-service "$SOURCE_SERVICE")
         DOCC_ARGS+=(--source-service-base-url "$SOURCE_SERVICE_BASE_URL")
         DOCC_ARGS+=(--checkout-path "$REPO_ROOT")
     fi
 
-    rundocc convert "${DOCC_ARGS[@]}"
-fi
+    if [[ "$PREVIEW_MODE" == true ]]; then
+        # Check if port is already in use
+        if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+            log_warning "Port $PREVIEW_PORT is already in use"
 
-log_info "Documentation built successfully"
-log_info "Documentation output: $DOCC_OUTPUT_DIR"
+            # Find the process using the port
+            PORT_PID=$(lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t)
+            PORT_PROCESS=$(ps -p $PORT_PID -o command= 2>/dev/null || echo "Unknown process")
 
-# Step 4: Preview if requested
-if [[ "$PREVIEW_MODE" == true ]]; then
-    # Check if port is already in use
-    if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-        log_warning "Port $PREVIEW_PORT is already in use"
+            log_info "Process using port $PREVIEW_PORT (PID $PORT_PID): $PORT_PROCESS"
 
-        # Find the process using the port
-        PORT_PID=$(lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t)
-        PORT_PROCESS=$(ps -p $PORT_PID -o command= 2>/dev/null || echo "Unknown process")
+            # Ask user if they want to kill it
+            read -p "Do you want to kill this process and start the preview server? (y/N): " -n 1 -r
+            echo
 
-        log_info "Process using port $PREVIEW_PORT (PID $PORT_PID): $PORT_PROCESS"
+            if [[ $REPLY =~ ^[Yy]$ ]]; then
+                log_info "Killing process $PORT_PID..."
+                kill $PORT_PID
+                sleep 1
 
-        # Ask user if they want to kill it
-        read -p "Do you want to kill this process and start the preview server? (y/N): " -n 1 -r
-        echo
-
-        if [[ $REPLY =~ ^[Yy]$ ]]; then
-            log_info "Killing process $PORT_PID..."
-            kill $PORT_PID
-            sleep 1
-
-            # Verify it's killed
-            if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
-                log_error "Failed to kill process on port $PREVIEW_PORT"
+                # Verify it's killed
+                if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+                    log_error "Failed to kill process on port $PREVIEW_PORT"
+                    exit 1
+                fi
+                log_info "Process killed successfully"
+            else
+                log_error "Cannot start preview server. Please free port $PREVIEW_PORT or use --port option"
                 exit 1
             fi
-            log_info "Process killed successfully"
-        else
-            log_error "Cannot start preview server. Please free port $PREVIEW_PORT or use --port option"
-            exit 1
         fi
-    fi
 
-    # Detect the actual module name from the generated documentation
-    ACTUAL_MODULE=""
-    if [[ -d "$DOCC_OUTPUT_DIR/data/documentation" ]]; then
-        # Find the first .json file in data/documentation directory
-        ACTUAL_MODULE=$(ls "$DOCC_OUTPUT_DIR/data/documentation"/*.json 2>/dev/null | head -1 | xargs basename -s .json)
-    fi
-
-    log_info "Starting preview server on port $PREVIEW_PORT..."
-    if [[ -n "$ACTUAL_MODULE" ]]; then
-        log_info "Documentation will be available at: http://localhost:$PREVIEW_PORT/documentation/$ACTUAL_MODULE"
+        log_info "Starting documentation preview server on port $PREVIEW_PORT..."
+        log_info "Press Ctrl+C to stop the server"
+        rundocc preview "${DOCC_ARGS[@]}"
     else
-        log_info "Documentation will be available at: http://localhost:$PREVIEW_PORT/"
+        rundocc convert "${DOCC_ARGS[@]}"
     fi
-    log_info "Press Ctrl+C to stop the server"
+fi
 
-    cd "$DOCC_OUTPUT_DIR"
-    python3 -m http.server $PREVIEW_PORT
+if [[ "$PREVIEW_MODE" == false ]]; then
+    log_info "Documentation built successfully"
+    log_info "Documentation output: $DOCC_OUTPUT_DIR"
 fi
 
 log_info "Done!"
