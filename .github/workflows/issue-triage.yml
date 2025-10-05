@@ -3,6 +3,12 @@ name: Issue Triage
 on:
   issues:
     types: [opened]
+  workflow_dispatch:
+    inputs:
+      issue_number:
+        description: 'Issue number to triage'
+        required: true
+        type: number
 
 permissions:
   contents: read
@@ -11,4 +17,7 @@ permissions:
 jobs:
   triage-issue:
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/issue-triage.yml@main
+    with:
+      # fromJSON workaround number inputs: https://github.com/orgs/community/discussions/67182#discussioncomment-8617964
+      issue_number: ${{ fromJSON(inputs.issue_number) }}
     secrets: inherit

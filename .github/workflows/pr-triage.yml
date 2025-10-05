@@ -1,8 +1,10 @@
 name: PR Triage
 
 on:
-  pull_request_target:
-    types: [opened, reopened]
+  push:
+    branches:
+      - '**'  # All branches
+      - '!main'  # Exclude main if needed
   workflow_dispatch:
     inputs:
       pr_number:
@@ -16,5 +18,9 @@ permissions:
 
 jobs:
   triage-pr:
+    if: github.event.pull_request != null || inputs.pr_number != '' # Only run if it's part of a PR or pr_number is provided
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/pr-triage.yml@main
+    with:
+      # fromJSON workaround number inputs: https://github.com/orgs/community/discussions/67182#discussioncomment-8617964
+      pr_number: ${{ fromJSON(inputs.pr_number) }}
     secrets: inherit
