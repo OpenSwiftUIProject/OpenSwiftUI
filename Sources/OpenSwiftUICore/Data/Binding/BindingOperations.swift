@@ -7,6 +7,8 @@
 
 enum BindingOperations {}
 
+private var nilCoalescingGenerationCounter: Int = 0
+
 extension BindingOperations {
     struct ForceUnwrapping<Value>: Projection {
         func get(base: Value?) -> Value { base! }
@@ -16,6 +18,12 @@ extension BindingOperations {
     struct NilCoalescing<Value>: Projection {
         let defaultValue: Value
         let generation: Int
+
+        init(defaultValue: Value) {
+            self.defaultValue = defaultValue
+            // TODO
+            self.generation = nilCoalescingGenerationCounter
+        }
 
         func get(base: Value?) -> Value { base ?? defaultValue }
         func set(base: inout Value?, newValue: Value) { base = newValue }

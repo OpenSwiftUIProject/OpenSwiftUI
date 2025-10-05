@@ -212,6 +212,7 @@ package struct LocationProjectionCache {
 /// When setting values, all locations in the collection are updated. This is useful
 /// for scenarios where multiple locations need to be kept in sync.
 package struct FlattenedCollectionLocation<Value, Base>: Location where Base: Collection, Base: Equatable, Base.Element: AnyLocation<Value> {
+
     /// The collection of locations being aggregated.
     package let base: Base
 

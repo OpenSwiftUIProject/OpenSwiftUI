@@ -80,6 +80,21 @@ public struct Binding<Value> {
 
     package var _value: Value
 
+    package init(value: Value, location: AnyLocation<Value>, transaction: Transaction) {
+        self.transaction = transaction
+        self.location = location
+        self._value = value
+    }
+
+    package init(value: Value, location: AnyLocation<Value>) {
+        self.init(value: value, location: location, transaction: Transaction())
+    }
+
+    @usableFromInline
+    static func getIsolated(@_inheritActorContext _ get: @escaping @isolated(any) @Sendable () -> Value) -> () -> Value {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     /// Creates a binding with closures that read and write the binding value.
     ///
     /// A binding conforms to Sendable only if its wrapped value type also
@@ -225,54 +240,38 @@ public struct Binding<Value> {
     public subscript<Subject>(dynamicMember keyPath: WritableKeyPath<Value, Subject>) -> Binding<Subject> {
         projecting(keyPath)
     }
-}
 
-extension Binding {
-
-    /// Creates a binding by projecting the base value to an optional value.
-    ///
-    /// - Parameter base: A value to project to an optional value.
-    public init<V>(_ base: Binding<V>) where Value == V? {
-        self = base.projecting(BindingOperations.ToOptional())
-    }
-
-    /// Creates a binding by projecting the base value to an unwrapped value.
-    ///
-    /// - Parameter base: A value to project to an unwrapped value.
-    ///
-    /// - Returns: A new binding or `nil` when `base` is `nil`.
-    public init?(_ base: Binding<Value?>) {
-        guard let _ = base.wrappedValue else {
-            return nil
+    private func readValue() -> Value {
+        if Update.threadIsUpdating {
+            location.wasRead = true
+            return _value
+        } else {
+            return location.get()
         }
-        self = base.projecting(BindingOperations.ForceUnwrapping())
-    }
-
-    /// Creates a binding by projecting the base value to a hashable value.
-    ///
-    /// - Parameters:
-    ///   - base: A `Hashable` value to project to an `AnyHashable` value.
-    public init(_ base: Binding<some Hashable>) where Value == AnyHashable {
-        self = base.projecting(BindingOperations.ToAnyHashable())
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
+extension Binding: @unchecked Sendable where Value: Sendable {}
+
+// MARK: - Binding + Protocols
+
+@available(OpenSwiftUI_v3_0, *)
 extension Binding: Identifiable where Value: Identifiable {
+
     /// The stable identity of the entity associated with this instance,
     /// corresponding to the `id` of the binding's wrapped value.
     public var id: Value.ID { wrappedValue.id }
-
-    /// A type representing the stable identity of the entity associated with
-    /// an instance.
-    public typealias ID = Value.ID
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Binding: Sequence where Value: MutableCollection {
     public typealias Element = Binding<Value.Element>
     public typealias Iterator = IndexingIterator<Binding<Value>>
     public typealias SubSequence = Slice<Binding<Value>>
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Binding: Collection where Value: MutableCollection {
     public typealias Index = Value.Index
     public typealias Indices = Value.Indices
@@ -305,6 +304,7 @@ extension Binding: Collection where Value: MutableCollection {
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Binding: BidirectionalCollection where Value: BidirectionalCollection, Value: MutableCollection {
     public func index(before index: Binding<Value>.Index) -> Binding<Value>.Index {
         wrappedValue.index(before: index)
@@ -315,8 +315,12 @@ extension Binding: BidirectionalCollection where Value: BidirectionalCollection,
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Binding: RandomAccessCollection where Value: MutableCollection, Value: RandomAccessCollection {}
 
+// MARK: - Binding + Transaction / Animation
+
+@available(OpenSwiftUI_v1_0, *)
 extension Binding {
     /// Specifies a transaction for the binding.
     ///
@@ -342,11 +346,57 @@ extension Binding {
     }
 }
 
+// MARK: - Binding + Transform
+
+@available(OpenSwiftUI_v1_0, *)
+extension Binding {
+
+    package subscript<Subject>(
+        keyPath: WritableKeyPath<Value, Subject?>,
+        default defaultValue: Subject
+    ) -> Binding<Subject> {
+        let projection = keyPath.composed(
+            with: BindingOperations.NilCoalescing(
+                defaultValue: defaultValue,
+            )
+        )
+        return projecting(projection)
+    }
+
+    package func zip<T>(with rhs: Binding<T>) -> Binding<(Value, T)> {
+        let value = (self._value, rhs._value)
+        let box = LocationBox(ZipLocation(locations: (self.location, rhs.location)))
+        return Binding<(Value, T)>(value: value, location: box, transaction: transaction)
+    }
+
+    package func projecting<P: Projection>(_ p: P) -> Binding<P.Projected> where P.Base == Value {
+        Binding<P.Projected>(
+            value: p.get(base: _value),
+            location: location.projecting(p),
+            transaction: transaction
+        )
+    }
+}
+
+extension Binding {
+    package init(flattening source: some Collection<Binding<Value>>) {
+        let flattenLocation = FlattenedCollectionLocation<Value, [AnyLocation<Value>]>(base: source.map(\.location))
+        let value = flattenLocation.get()
+        let location = LocationBox(flattenLocation)
+        self.init(value: value, location: location)
+    }
+}
+
+// MARK: - Binding + DynamicProperty
+
+@available(OpenSwiftUI_v1_0, *)
 extension Binding: DynamicProperty {
+
     private struct ScopedLocation: Location {
         var base: AnyLocation<Value>
+
         var wasRead: Bool
-        
+
         init(base: AnyLocation<Value>) {
             self.base = base
             self.wasRead = base.wasRead
@@ -363,61 +413,73 @@ extension Binding: DynamicProperty {
         func update() -> (Value, Bool) {
             base.update()
         }
+
+        static func == (lhs: ScopedLocation, rhs: ScopedLocation) -> Bool {
+            lhs.base == rhs.base && lhs.wasRead == rhs.wasRead
+        }
     }
     
     private struct Box: DynamicPropertyBox {
         var location: LocationBox<ScopedLocation>?
 
-        typealias Property = Binding
-        func destroy() {}
-        func reset() {}
+        typealias Property = Binding<Value>
+
         mutating func update(property: inout Property, phase: _GraphInputs.Phase) -> Bool {
-            if let location {
-                if location.location.base !== property.location {
-                    self.location = LocationBox(ScopedLocation(base: property.location))
-                    if location.wasRead {
-                        self.location!.wasRead = true
-                    }
-                }
+            let newLocation: LocationBox<ScopedLocation>
+            if let location, location.location.base === property.location {
+                newLocation = location
             } else {
-                location = LocationBox(ScopedLocation(base: property.location))
+                let wasRead = location?.wasRead ?? false
+                let box = LocationBox(ScopedLocation(base: property.location))
+                location = box
+                if wasRead {
+                    box.wasRead = wasRead
+                }
+                newLocation = box
             }
-            let (value, changed) = location!.update()
-            property.location = location!
+            let (value, changed) = newLocation.update()
+            property.location = newLocation
             property._value = value
-            return changed ? location!.wasRead : false
+            return changed && newLocation.wasRead
         }
     }
     
     public static func _makeProperty<V>(
         in buffer: inout _DynamicPropertyBuffer,
-        container _: _GraphValue<V>,
+        container: _GraphValue<V>,
         fieldOffset: Int,
-        inputs _: inout _GraphInputs
+        inputs: inout _GraphInputs
     ) {
         buffer.append(Box(), fieldOffset: fieldOffset)
     }
 }
 
-// MARK: - Binding Internal API
-
 extension Binding {
-    package init(value: Value, location: AnyLocation<Value>, transaction: Transaction = Transaction()) {
-        self.transaction = transaction
-        self.location = location
-        self._value = value
+
+    /// Creates a binding by projecting the base value to an optional value.
+    ///
+    /// - Parameter base: A value to project to an optional value.
+    public init<V>(_ base: Binding<V>) where Value == V? {
+        self = base.projecting(BindingOperations.ToOptional())
     }
 
-    private func readValue() -> Value {
-        if GraphHost.isUpdating {
-            location.wasRead = true
-            return _value
-        } else {
-            return location.get()
+    /// Creates a binding by projecting the base value to an unwrapped value.
+    ///
+    /// - Parameter base: A value to project to an unwrapped value.
+    ///
+    /// - Returns: A new binding or `nil` when `base` is `nil`.
+    public init?(_ base: Binding<Value?>) {
+        guard let _ = base.wrappedValue else {
+            return nil
         }
+        self = base.projecting(BindingOperations.ForceUnwrapping())
     }
 
-    package func projecting<P: Projection>(_ p: P) -> Binding<P.Projected> where P.Base == Value {
-        Binding<P.Projected>(value: p.get(base: _value), location: location.projecting(p), transaction: transaction)
+    /// Creates a binding by projecting the base value to a hashable value.
+    ///
+    /// - Parameters:
+    ///   - base: A `Hashable` value to project to an `AnyHashable` value.
+    public init(_ base: Binding<some Hashable>) where Value == AnyHashable {
+        self = base.projecting(BindingOperations.ToAnyHashable())
     }
 }
