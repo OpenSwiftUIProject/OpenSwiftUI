@@ -144,9 +144,9 @@ package enum ProtobufFormat {
 // MARK: - CoddleByProtobuf
 
 /// A type that can be encoded and decoded using protobuf.
-package protocol CodaleByProtobuf: Codable, ProtobufMessage {}
+package protocol CodableByProtobuf: Codable, ProtobufMessage {}
 
-extension CodaleByProtobuf {
+extension CodableByProtobuf {
     /// Encodes the value to a protobuf representation.
     public func encode(to encoder: any Encoder) throws {
         let data = try ProtobufEncoder.encoding { protobufEncoder in
