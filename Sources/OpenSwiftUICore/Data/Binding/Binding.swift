@@ -3,9 +3,13 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 5436F2B399369BE3B016147A5F8FE9F2 (SwiftUI)
 //  ID: C453EE81E759852CCC6400C47D93A43E (SwiftUICore)
+
+#if OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK
+public import class Foundation.UserDefaults
+#endif
 
 /// A property wrapper type that can read and write a value owned by a source of
 /// truth.
@@ -92,9 +96,21 @@ public struct Binding<Value> {
 
     @usableFromInline
     static func getIsolated(@_inheritActorContext _ get: @escaping @isolated(any) @Sendable () -> Value) -> () -> Value {
-        _openSwiftUIUnimplementedFailure()
+        {
+            let enableRuntimeCheck = false
+            let nonisolatedGet = get as () -> Value
+            return if let isolation = extractIsolation(get),
+                      enableRuntimeCheck {
+                isolation.assumeIsolated { _ in
+                    nonisolatedGet()
+                }
+            } else {
+                nonisolatedGet()
+            }
+        }
     }
 
+    #if OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK
     /// Creates a binding with closures that read and write the binding value.
     ///
     /// A binding conforms to Sendable only if its wrapped value type also
@@ -119,7 +135,51 @@ public struct Binding<Value> {
     ///   - set: A closure that sets the binding value. The closure has the
     ///     following parameter:
     ///       - newValue: The new value of the binding value.
-    public init(get: @escaping () -> Value, set: @escaping (Value) -> Void) {
+    @_alwaysEmitIntoClient
+    public init(
+        @_inheritActorContext get: @escaping @isolated(any) @Sendable () -> Value,
+        @_inheritActorContext set: @escaping @isolated(any) @Sendable (Value) -> Void
+    ) {
+        self.init(isolatedGet: get, isolatedSet: set)
+    }
+
+    @usableFromInline
+    @_transparent
+    init(
+        @_inheritActorContext isolatedGet: @escaping @isolated(any) @Sendable () -> Value,
+        @_inheritActorContext isolatedSet: @escaping @isolated(any) @Sendable (Value) -> Void,
+    ) {
+        let enableRuntimeCheck = UserDefaults.standard.bool(
+            forKey: "org.OpenSwiftUIProject.OpenSwiftUI.EnableRuntimeConcurrencyCheck",
+        )
+        self.init(
+            get: {
+                let nonisolatedGet = isolatedGet as () -> Value
+                return if let isolation = extractIsolation(isolatedGet),
+                          enableRuntimeCheck
+                {
+                    isolation.assumeIsolated { _ in nonisolatedGet() }
+                } else {
+                    nonisolatedGet()
+                }
+            },
+            set: { value in
+                let nonisolatedSet = isolatedSet as (Value) -> Void
+                if let isolation = extractIsolation(isolatedSet),
+                   enableRuntimeCheck
+                {
+                    isolation.assumeIsolated { _ in
+                        nonisolatedSet(value)
+                    }
+                } else {
+                    nonisolatedSet(value)
+                }
+            },
+        )
+    }
+
+    @usableFromInline
+    init(get: @escaping () -> Value, set: @escaping (Value) -> Void) {
         let location = FunctionalLocation(getValue: get) { value, _ in set(value) }
         let box = LocationBox(location)
         self.init(value: get(), location: box)
@@ -151,11 +211,129 @@ public struct Binding<Value> {
     ///     following parameters:
     ///       - newValue: The new value of the binding value.
     ///       - transaction: The transaction to apply when setting a new value.
-    public init(get: @escaping () -> Value, set: @escaping (Value, Transaction) -> Void) {
+    @_alwaysEmitIntoClient
+    public init(
+        @_inheritActorContext get: @escaping @isolated(any) @Sendable () -> Value,
+        @_inheritActorContext set: @escaping @isolated(any) @Sendable (Value, Transaction) -> Void
+    ) {
+        self.init(isolatedGet: get, isolatedSet: set)
+    }
+
+    @usableFromInline
+    @_transparent
+    init(
+        @_inheritActorContext isolatedGet: @escaping @isolated(any) @Sendable () -> Value,
+        @_inheritActorContext isolatedSet: @escaping @isolated(any) @Sendable (Value, Transaction) -> Void,
+    ) {
+        let enableRuntimeCheck = UserDefaults.standard.bool(
+            forKey: "org.OpenSwiftUIProject.OpenSwiftUI.EnableRuntimeConcurrencyCheck",
+        )
+        self.init(
+            get: {
+                let nonisolatedGet = isolatedGet as () -> Value
+                return if let isolation = extractIsolation(isolatedGet),
+                          enableRuntimeCheck
+                {
+                    isolation.assumeIsolated { _ in nonisolatedGet() }
+                } else {
+                    nonisolatedGet()
+                }
+            },
+            set: { value, transaction in
+                let nonisolatedSet = isolatedSet as (Value, Transaction) -> Void
+                if let isolation = extractIsolation(isolatedSet),
+                   enableRuntimeCheck
+                {
+                    isolation.assumeIsolated { _ in
+                        nonisolatedSet(value, transaction)
+                    }
+                } else {
+                    nonisolatedSet(value, transaction)
+                }
+            },
+        )
+    }
+
+    @usableFromInline
+    init(get: @escaping () -> Value, set: @escaping (Value, Transaction) -> Void) {
         let location = FunctionalLocation(getValue: get, setValue: set)
         let box = LocationBox(location)
         self.init(value: get(), location: box)
     }
+    #else
+    /// Creates a binding with closures that read and write the binding value.
+    ///
+    /// A binding conforms to Sendable only if its wrapped value type also
+    /// conforms to Sendable. It is always safe to pass a sendable binding
+    /// between different concurrency domains. However, reading from or writing
+    /// to a binding's wrapped value from a different concurrency domain may or
+    /// may not be safe, depending on how the binding was created. OpenSwiftUI will
+    /// issue a warning at runtime if it detects a binding being used in a way
+    /// that may compromise data safety.
+    ///
+    /// For a "computed" binding created using get and set closure parameters,
+    /// the safety of accessing its wrapped value from a different concurrency
+    /// domain depends on whether those closure arguments are isolated to
+    /// a specific actor. For example, a computed binding with closure arguments
+    /// that are known (or inferred) to be isolated to the main actor must only
+    /// ever access its wrapped value on the main actor as well, even if the
+    /// binding is also sendable.
+    ///
+    /// - Parameters:
+    ///   - get: A closure that retrieves the binding value. The closure has no
+    ///     parameters, and returns a value.
+    ///   - set: A closure that sets the binding value. The closure has the
+    ///     following parameter:
+    ///       - newValue: The new value of the binding value.
+    @preconcurrency
+    public init(
+        @_inheritActorContext get: @escaping @isolated(any) @Sendable () -> Value,
+        @_inheritActorContext set: @escaping @isolated(any) @Sendable (Value) -> Void
+    ) {
+        let nonisolatedGet = get as () -> Value
+        let nonisolatedSet = set as (Value) -> Void
+        let location = FunctionalLocation(getValue: nonisolatedGet) { value, _ in nonisolatedSet(value) }
+        let box = LocationBox(location)
+        self.init(value: nonisolatedGet(), location: box)
+    }
+
+    /// Creates a binding with a closure that reads from the binding value, and
+    /// a closure that applies a transaction when writing to the binding value.
+    ///
+    /// A binding conforms to Sendable only if its wrapped value type also
+    /// conforms to Sendable. It is always safe to pass a sendable binding
+    /// between different concurrency domains. However, reading from or writing
+    /// to a binding's wrapped value from a different concurrency domain may or
+    /// may not be safe, depending on how the binding was created. OpenSwiftUI will
+    /// issue a warning at runtime if it detects a binding being used in a way
+    /// that may compromise data safety.
+    ///
+    /// For a "computed" binding created using get and set closure parameters,
+    /// the safety of accessing its wrapped value from a different concurrency
+    /// domain depends on whether those closure arguments are isolated to
+    /// a specific actor. For example, a computed binding with closure arguments
+    /// that are known (or inferred) to be isolated to the main actor must only
+    /// ever access its wrapped value on the main actor as well, even if the
+    /// binding is also sendable.
+    ///
+    /// - Parameters:
+    ///   - get: A closure to retrieve the binding value. The closure has no
+    ///     parameters, and returns a value.
+    ///   - set: A closure to set the binding value. The closure has the
+    ///     following parameters:
+    ///       - newValue: The new value of the binding value.
+    ///       - transaction: The transaction to apply when setting a new value.
+    public init(
+        @_inheritActorContext get: @escaping @isolated(any) @Sendable () -> Value,
+        @_inheritActorContext set: @escaping @isolated(any) @Sendable (Value, Transaction) -> Void
+    ) {
+        let nonisolatedGet = get as () -> Value
+        let nonisolatedSet = set as (Value, Transaction) -> Void
+        let location = FunctionalLocation(getValue: nonisolatedGet, setValue: nonisolatedSet)
+        let box = LocationBox(location)
+        self.init(value: nonisolatedGet(), location: box)
+    }
+    #endif
 
     /// Creates a binding with an immutable value.
     ///
@@ -401,15 +579,15 @@ extension Binding: DynamicProperty {
             self.base = base
             self.wasRead = base.wasRead
         }
-        
+
         func get() -> Value {
             base.get()
         }
-        
+
         func set(_ value: Value, transaction: Transaction) {
             base.set(value, transaction: transaction)
         }
-        
+
         func update() -> (Value, Bool) {
             base.update()
         }
@@ -418,7 +596,7 @@ extension Binding: DynamicProperty {
             lhs.base == rhs.base && lhs.wasRead == rhs.wasRead
         }
     }
-    
+
     private struct Box: DynamicPropertyBox {
         var location: LocationBox<ScopedLocation>?
 
@@ -443,7 +621,7 @@ extension Binding: DynamicProperty {
             return changed && newLocation.wasRead
         }
     }
-    
+
     public static func _makeProperty<V>(
         in buffer: inout _DynamicPropertyBuffer,
         container: _GraphValue<V>,
@@ -452,6 +630,15 @@ extension Binding: DynamicProperty {
     ) {
         buffer.append(Box(), fieldOffset: fieldOffset)
     }
+}
+
+// NOTE: This is currently not used
+struct EnableRuntimeConcurrencyCheck: UserDefaultKeyedFeature {
+    static var key: String { "org.OpenSwiftUIProject.OpenSwiftUI.EnableRuntimeConcurrencyCheck" }
+
+    static var cachedValue: Bool?
+
+    static var isEnabled: Bool { true }
 }
 
 extension Binding {
