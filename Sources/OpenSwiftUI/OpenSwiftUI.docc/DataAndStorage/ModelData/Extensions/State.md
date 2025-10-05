@@ -1,17 +1,14 @@
-# ``ObservedObject``
+# ``State``
 
 ## Topics
 
-### Creating an observed object
+### Creating a state
 
 - ``init(wrappedValue:)``
-
 - ``init(initialValue:)``
+- ``init()``
 
 ### Getting the value
 
 - ``wrappedValue``
-
 - ``projectedValue``
-
-- ``Wrapper``

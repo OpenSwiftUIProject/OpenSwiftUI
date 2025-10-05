@@ -11,6 +11,8 @@ that the user performs, OpenSwiftUI automatically updates the affected parts of
 the interface. As a result, the framework automatically performs most of the
 work that view controllers traditionally do.
 
+![](https://docs-assets.developer.apple.com/published/7a8488351b0c9f662b694bc1153162a5/model-data-hero%402x.png)
+
 The framework provides tools, like state variables and bindings, for connecting
 your app’s data to the user interface. These tools help you maintain a single
 source of truth for every piece of data in your app, in part by reducing the
@@ -69,17 +71,30 @@ in [The Swift Programming Language](https://www.swift.org/documentation/#the-swi
 
 ### Creating and sharing view state
 
+- <doc:managing-user-interface-state>
 - ``State``
-
+- ``Bindable``
 - ``Binding``
 
 ### Creating model data
 
-- <doc:Managing-model-data-in-your-app>
-
+- <doc:managing-model-data-in-your-app>
+- <doc:migrating-from-the-observable-object-protocol-to-the-observable-macro>
+- ``Observable()``
 - ``StateObject``
-
 - ``ObservedObject``
+- ``ObservableObject``
+
+### Responding to data changes
+
+- ``View/onChange(of:initial:_:)``
+- ``View/onReceive(_:perform:)``
+
+### Distributing model data throughout your app
+
+- ``View/environmentObject(_:)``
+- ``Scene/environmentObject(_:)``
+- ``EnvironmentObject``
 
 ### Managing dynamic data
 
