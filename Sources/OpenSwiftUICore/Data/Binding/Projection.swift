@@ -2,10 +2,13 @@
 //  Projection.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
+// MARK: - Projection
+
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 public protocol Projection: Hashable {
     associatedtype Base
     associatedtype Projected
@@ -20,13 +23,13 @@ extension Projection {
     }
 }
 
+// MARK: - ComposedProjection
+
 package struct ComposedProjection<Left, Right>: Projection where Left: Projection, Right: Projection, Left.Projected == Right.Base {
     let left: Left
+
     let right: Right
-    
-    package typealias Base = Left.Base
-    package typealias Projected = Right.Projected
-    
+
     package func get(base: Left.Base) -> Right.Projected {
         right.get(base: left.get(base: base))
     }
@@ -39,9 +42,9 @@ package struct ComposedProjection<Left, Right>: Projection where Left: Projectio
 }
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 extension WritableKeyPath: Projection {
-    public typealias Base = Root
-    public typealias Projected = Value
     public func get(base: Root) -> Value { base[keyPath: self] }
+
     public func set(base: inout Root, newValue: Value) { base[keyPath: self] = newValue }
 }
