@@ -271,6 +271,7 @@ struct CodableProxyTests {
 
     // MARK: - NSAttributedString.Key
 
+    #if canImport(Darwin)
     struct NSAttributedStringKeyTests {
         @Test
         func codingProxy() {
@@ -292,4 +293,5 @@ struct CodableProxyTests {
             #expect(decoded.base == .font)
         }
     }
+    #endif
 }
