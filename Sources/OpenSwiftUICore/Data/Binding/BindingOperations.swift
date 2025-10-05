@@ -40,6 +40,10 @@ extension Binding {
         self = base.projecting(BindingOperations.ToDouble())
     }
 
+    package init<V>(_ base: Binding<V>) where Value == Double, V: BinaryInteger {
+        self = base.projecting(BindingOperations.ToDoubleFromInteger())
+    }
+
     package static func == (lhs: Binding<Value>, rhs: Value) -> Binding<Bool> where Value: Hashable {
         lhs.projecting(BindingOperations.Equals(value: rhs))
     }

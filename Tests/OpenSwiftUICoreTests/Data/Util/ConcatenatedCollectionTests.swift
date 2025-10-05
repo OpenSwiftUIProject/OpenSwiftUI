@@ -2,7 +2,7 @@
 //  ConcatenatedCollectionTests.swift
 //  OpenSwiftUICoreTests
 //
-//  Status: Created by GitHub Copilot
+//  Author: GitHub Copilot
 
 import Testing
 @testable import OpenSwiftUICore

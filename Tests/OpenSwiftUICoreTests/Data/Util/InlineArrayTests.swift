@@ -2,7 +2,7 @@
 //  InlineArrayTests.swift
 //  OpenSwiftUICoreTests
 //
-//  Status: Created by GitHub Copilot
+//  Author: GitHub Copilot with Claude Sonnet 4.5
 
 @testable import OpenSwiftUICore
 import Testing
