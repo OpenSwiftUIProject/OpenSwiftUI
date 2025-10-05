@@ -640,33 +640,3 @@ struct EnableRuntimeConcurrencyCheck: UserDefaultKeyedFeature {
 
     static var isEnabled: Bool { true }
 }
-
-extension Binding {
-
-    /// Creates a binding by projecting the base value to an optional value.
-    ///
-    /// - Parameter base: A value to project to an optional value.
-    public init<V>(_ base: Binding<V>) where Value == V? {
-        self = base.projecting(BindingOperations.ToOptional())
-    }
-
-    /// Creates a binding by projecting the base value to an unwrapped value.
-    ///
-    /// - Parameter base: A value to project to an unwrapped value.
-    ///
-    /// - Returns: A new binding or `nil` when `base` is `nil`.
-    public init?(_ base: Binding<Value?>) {
-        guard let _ = base.wrappedValue else {
-            return nil
-        }
-        self = base.projecting(BindingOperations.ForceUnwrapping())
-    }
-
-    /// Creates a binding by projecting the base value to a hashable value.
-    ///
-    /// - Parameters:
-    ///   - base: A `Hashable` value to project to an `AnyHashable` value.
-    public init(_ base: Binding<some Hashable>) where Value == AnyHashable {
-        self = base.projecting(BindingOperations.ToAnyHashable())
-    }
-}
