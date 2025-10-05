@@ -22,22 +22,18 @@ You can integrate OpenSwiftUI views with objects from the [UIKit](https://develo
 
 ### Data and storage
 
-- <doc:Model-Data>
-
+- <doc:model-data>
 - <doc:Preferences>
 
 ### Views
 
 - <doc:Animations>
-
 - <doc:Controls-and-Indicators>
-
 - <doc:Drawing-and-Graphics>
 
 ### View Layout
 
 - <doc:Layout-Fundamentals>
-
 - <doc:Layout-Adjustments>
 
 ### Event Handling

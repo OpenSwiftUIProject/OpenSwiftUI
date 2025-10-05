@@ -1,17 +1,13 @@
-# ``State``
+# ``EnvironmentObject``
 
 ## Topics
 
-### Creating a state
-
-- ``init(wrappedValue:)``
-
-- ``init(initialValue:)``
+### Creating an environment object
 
 - ``init()``
 
 ### Getting the value
 
 - ``wrappedValue``
-
 - ``projectedValue``
+- ``Wrapper``
