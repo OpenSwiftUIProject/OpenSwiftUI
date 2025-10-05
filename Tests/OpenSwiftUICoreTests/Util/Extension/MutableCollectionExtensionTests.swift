@@ -1,12 +1,14 @@
 //
 //  MutableCollectionExtensionTests.swift
 //  OpenSwiftUICoreTests
+//
+//  Author: Copilot
 
 import Foundation
 import OpenSwiftUICore
 import Testing
 
-// MARK: - MutableCollectionExtensionTests [Implmeneted by Copilot]
+// MARK: - MutableCollectionExtensionTests
 
 struct MutableCollectionExtensionTests {
     // MARK: - remove(atOffsets:)

@@ -2,7 +2,7 @@
 //  DynamicPropertyBufferTests.swift
 //  OpenSwiftUICoreTests
 //
-//  Status: Created by GitHub Copilot with Claude Sonnet 4.5
+//  Author: GitHub Copilot with Claude Sonnet 4.5
 
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 @testable import OpenSwiftUICore

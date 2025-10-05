@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Implmeneted by Copilot
+//  Author: Implmeneted by Copilot
 
 public import Foundation
 

@@ -233,6 +233,13 @@ if enablePrivateImports {
     sharedSwiftSettings.append(.unsafeFlags(["-Xfrontend", "-enable-private-imports"]))
 }
 
+// MARK: - [env] OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK
+
+let enableRuntimeConcurrencyCheck = envEnable("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK", default: false)
+if enableRuntimeConcurrencyCheck {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK"))
+}
+
 // MARK: - OpenSwiftUISPI Target
 
 let openSwiftUISPITarget = Target.target(
