@@ -15,9 +15,11 @@ This guide walks you through the steps to integrate OpenSwiftUI into your Xcode 
 >
 > These private frameworks are ONLY for research and educational purposes.
 
-## Step 1: Add OpenSwiftUI Package Dependency
+## Integration Steps for Swift Package:
 
-### Using Branch or Revision (Recommended)
+### Step 1: Add OpenSwiftUI Package Dependency
+
+#### Using Branch or Revision (Recommended)
 
 Due to the use of `unsafeFlags` in the build configuration, you **cannot** use tagged releases (like `0.10.0`). Instead, you must specify either a **branch** or a **revision** dependency.
 
@@ -43,7 +45,9 @@ dependencies: [
 
 You can find the revision hash by checking the commit you want to use on GitHub.
 
-### In Xcode
+## Integration Steps for Xcode project:
+
+### Step 1: Add OpenSwiftUI Package Dependency
 
 1. In your Xcode project, go to **File → Add Package Dependencies...**
 2. Enter the repository URL: `https://github.com/OpenSwiftUIProject/OpenSwiftUI.git`
@@ -52,15 +56,16 @@ You can find the revision hash by checking the commit you want to use on GitHub.
 
 ![Add OpenSwiftUI Package Dependency](Screenshots/Integration/add-package-dependency.png)
 
-## Step 2: Handle DarwinPrivateFrameworks XCFrameworks
+### Step 2: Handle DarwinPrivateFrameworks XCFrameworks
 
 When building for Darwin platforms, you will likely encounter xcframework-related issues. You need to manually add the required private frameworks from DarwinPrivateFrameworks to your target.
 
-### Why This Is Needed
-
-OpenSwiftUI depends on private frameworks like AttributeGraph that are not publicly available. The DarwinPrivateFrameworks package provides these as xcframeworks, but they need to be manually configured in Xcode to avoid runtime issues.
-
-### Manual Setup Instructions
+> [!NOTE]
+> Why This Is Needed?
+>
+> OpenSwiftUI depends on private frameworks like AttributeGraph that are not publicly available.
+>
+> The DarwinPrivateFrameworks package provides these as xcframeworks, but they need to be manually configured in Xcode to avoid runtime issues.
 
 #### 1. Locate DarwinPrivateFrameworks
 
@@ -87,7 +92,7 @@ In Finder, you'll see the xcframework files (e.g., `AG/2024/AttributeGraph.xcfra
 
 This tells Xcode to link against the frameworks without embedding them, which is necessary for private SDK usage on macOS.
 
-### Required Frameworks
+### Step 3: Add Required Frameworks
 
 The following xcframeworks are typically needed:
 - **AttributeGraph.xcframework** - From `AG/2024/` directory
@@ -104,11 +109,15 @@ import OpenSwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Text("Hello, OpenSwiftUI!")
-            .padding()
+        VStack {
+            Color.red
+            Color.blue
+        }
     }
 }
 ```
+
+> NOTE: Only some API and View is supported.
 
 ## Platform-Specific Notes
 
