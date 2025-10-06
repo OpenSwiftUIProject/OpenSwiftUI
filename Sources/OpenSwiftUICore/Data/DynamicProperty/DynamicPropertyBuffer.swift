@@ -396,7 +396,7 @@ public struct _DynamicPropertyBuffer {
         while count > 0 {
             let newItemPointer = newBuffer.assumingMemoryBound(to: Item.self)
             let oldItemPointer = oldBuffer.assumingMemoryBound(to: Item.self)
-            newItemPointer.initialize(to: oldItemPointer.pointee)
+            newItemPointer.initialize(to: oldItemPointer.move())
             oldItemPointer.pointee.vtable.moveInitialize(
                 ptr: newBuffer.advanced(by: MemoryLayout<Item>.size),
                 from: oldBuffer.advanced(by: MemoryLayout<Item>.size)
