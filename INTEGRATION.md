@@ -4,9 +4,9 @@ This guide walks you through the steps to integrate OpenSwiftUI into your Xcode 
 
 ## Prerequisites
 
-- Xcode 16.0+
+- Xcode 16.4
 - Swift 6.1.2+
-- macOS 14.0+ (for macOS apps) or iOS 18.0+ (for iOS apps)
+- macOS 15.5 (for macOS apps) or iOS 18.5 (for iOS apps)
 
 ## Important Notes
 
@@ -122,6 +122,8 @@ Currently, AttributeGraph is missing some symbols for iOS device. Until OpenAttr
 
 **Workaround:** Use iOS Simulator for development and testing.
 
+**Future resolution:** This limitation will be lifted when OpenAttributeGraph is ready, which will unlock iOS device platform support.
+
 ### 2. ABI Compatibility Requirements
 
 ⚠️ **Important:** The current Render engine uses a private API of SwiftUI which does not guarantee ABI stability. Until OpenSwiftUI's ViewUpdater render engine is implemented, it is required to use the same ABI version.
@@ -131,6 +133,8 @@ Currently, AttributeGraph is missing some symbols for iOS device. Until OpenAttr
 - **macOS 15.5**
 
 **Impact:** Your target platform deployment version must match these specific versions to avoid runtime compatibility issues.
+
+**Future resolution:** This limitation will be lifted when OpenSwiftUI's own Render engine (ViewUpdater) is ready, which will remove the ABI version lock requirement and allow broader platform version support.
 
 ## Troubleshooting
 
