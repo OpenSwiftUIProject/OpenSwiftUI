@@ -36,9 +36,15 @@ The author of this project is not responsible for any consequences that may aris
 
 ## Usage
 
+### Integration Guide
+
+To integrate OpenSwiftUI into your own Xcode project, see **[INTEGRATION.md](INTEGRATION.md)** for detailed step-by-step instructions.
+
+### Example Application
+
 See Example folder and try it with ExampleApp
 
-> [!IMPORTANT]  
+> [!IMPORTANT]
 > Clone OpenAttributeGraph in the same directory before running the example.
 >
 > See [Example/README.md](Example/README.md) for more detail.
