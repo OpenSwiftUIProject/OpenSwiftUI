@@ -257,13 +257,24 @@ if git diff --cached --quiet; then
     log_info "No changes to documentation"
 else
     log_info "Committing documentation changes..."
-    git commit -m "Update documentation (generated from $CURRENT_BRANCH@$(git -C "$REPO_ROOT" rev-parse --short HEAD))"
 
-    log_info "Pushing to gh-pages branch..."
     if [[ "$FORCE_PUSH" == true ]]; then
+        # Use --amend to avoid accumulating commits with large binary files
+        # Check if there are any commits in the branch
+        if git rev-parse HEAD >/dev/null 2>&1; then
+            git commit --amend -m "Update documentation (generated from $CURRENT_BRANCH@$(git -C "$REPO_ROOT" rev-parse --short HEAD))"
+        else
+            # First commit on the branch
+            git commit -m "Update documentation (generated from $CURRENT_BRANCH@$(git -C "$REPO_ROOT" rev-parse --short HEAD))"
+        fi
+
+        log_info "Pushing to gh-pages branch..."
         log_info "Using --force to save git repo size (avoids accumulating large binary files)"
         git_push --force origin gh-pages
     else
+        git commit -m "Update documentation (generated from $CURRENT_BRANCH@$(git -C "$REPO_ROOT" rev-parse --short HEAD))"
+
+        log_info "Pushing to gh-pages branch..."
         git_push origin gh-pages
     fi
 
