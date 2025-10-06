@@ -113,7 +113,17 @@ The current supported platforms are macOS and iOS simulators. (visionOS simulato
 
 ### iOS Device Builds
 
-Currently, AttributeGraph is missing some symbols for iOS device and until OpenAttributeGraph is ready, this platform is not supported.
+Currently, AttributeGraph is missing some symbols for iOS device. Until OpenAttributeGraph is ready, this platform is not supported.
+
+### ABI Compatibility Requirements
+
+⚠️ **Important:** The current Render engine uses a private API of SwiftUI which does not guarantee ABI stability. Until OpenSwiftUI's ViewUpdater render engine is implemented, it is required to use the same ABI version.
+
+**Current supported ABI versions:**
+- **iOS 18.5**
+- **macOS 15.5**
+
+Ensure your target platform matches these versions to avoid runtime compatibility issues.
 
 ## Troubleshooting
 
