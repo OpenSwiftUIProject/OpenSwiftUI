@@ -10,7 +10,10 @@ This guide walks you through the steps to integrate OpenSwiftUI into your Xcode 
 
 ## Important Notes
 
-⚠️ **OpenSwiftUI uses private Apple APIs and frameworks - NOT for App Store distribution. These private frameworks are ONLY for research and educational purposes.**
+> [!WARNING]
+> OpenSwiftUI uses private Apple APIs and frameworks - NOT for App Store distribution.
+>
+> These private frameworks are ONLY for research and educational purposes.
 
 ## Step 1: Add OpenSwiftUI Package Dependency
 
