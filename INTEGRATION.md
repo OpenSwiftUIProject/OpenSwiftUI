@@ -47,7 +47,7 @@ You can find the revision hash by checking the commit you want to use on GitHub.
 3. Select "Branch" and enter `main` (or select "Commit" and enter a specific revision)
 4. Click **Add Package**
 
-![Add OpenSwiftUI Package Dependency](Screenshots/add-package-dependency.png)
+![Add OpenSwiftUI Package Dependency](Screenshots/Integration/add-package-dependency.png)
 
 ## Step 2: Handle DarwinPrivateFrameworks XCFrameworks
 
@@ -67,7 +67,7 @@ In Xcode's Project Navigator:
 - Find **Package Dependencies → DarwinPrivateFrameworks**
 - Right-click on **DarwinPrivateFrameworks** and select **Show in Finder**
 
-![Show DarwinPrivateFrameworks in Finder](Screenshots/show-in-finder.png)
+![Show DarwinPrivateFrameworks in Finder](Screenshots/Integration/show-in-finder.png)
 
 #### 2. Add XCFrameworks to Your Target
 
@@ -80,7 +80,7 @@ In Finder, you'll see the xcframework files (e.g., `AG/2024/AttributeGraph.xcfra
 4. Drag the xcframework files from Finder into this section
 5. **Important:** Set the embed option to **Do Not Embed**
 
-![Add XCFrameworks and Set to Do Not Embed](Screenshots/add-xcframeworks.png)
+![Add XCFrameworks and Set to Do Not Embed](Screenshots/Integration/add-xcframeworks.png)
 
 This tells Xcode to link against the frameworks without embedding them, which is necessary for private SDK usage on macOS.
 
