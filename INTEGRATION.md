@@ -1,6 +1,6 @@
 # How to Integrate OpenSwiftUI into Your Project
 
-This guide walks you through the steps to integrate OpenSwiftUI into your Xcode project.
+This guide walks you through the steps to integrate OpenSwiftUI into your project.
 
 ## Prerequisites
 
@@ -15,7 +15,7 @@ This guide walks you through the steps to integrate OpenSwiftUI into your Xcode 
 >
 > These private frameworks are ONLY for research and educational purposes.
 
-## Integration Steps for Swift Package:
+## Integration Steps for Swift Package Manager (SPM)
 
 ### Step 1: Add OpenSwiftUI Package Dependency
 
@@ -45,7 +45,7 @@ dependencies: [
 
 You can find the revision hash by checking the commit you want to use on GitHub.
 
-## Integration Steps for Xcode project:
+## Integration Steps for Xcode Project
 
 ### Step 1: Add OpenSwiftUI Package Dependency
 
@@ -100,9 +100,9 @@ The following xcframeworks are typically needed:
 
 For more details, see the [DarwinPrivateFrameworks README](https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks).
 
-## Step 3: Import and Use OpenSwiftUI
+## Using OpenSwiftUI in Your Code
 
-In your Swift files, import OpenSwiftUI just like you would import SwiftUI:
+Once you've completed the integration steps above, you can import and use OpenSwiftUI in your Swift files just like you would import SwiftUI:
 
 ```swift
 import OpenSwiftUI
@@ -117,7 +117,8 @@ struct ContentView: View {
 }
 ```
 
-> NOTE: Only some API and View is supported.
+> [!NOTE]
+> Only some APIs and Views are currently supported.
 
 ## Platform-Specific Notes
 
