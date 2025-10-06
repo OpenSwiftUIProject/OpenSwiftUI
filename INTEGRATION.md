@@ -120,6 +120,19 @@ struct ContentView: View {
 > [!NOTE]
 > Only some APIs and View types are currently supported.
 
+## Debugging and Development Tools
+
+### Debug Support
+
+OpenSwiftUI has **full debug support** for development and troubleshooting. You can use breakpoints, inspect variables, and debug your views just like with SwiftUI.
+
+![OpenSwiftUI Debug Support](Screenshots/Integration/openswiftui-debug.png)
+
+### Xcode Previews
+
+> [!NOTE]
+> Xcode Preview support is currently under development and will be available in a future release.
+
 ## Platform-Specific Notes
 
 The current supported platforms are macOS and iOS simulators. (visionOS simulator is also supported but not tested extensively and there is no CI for it yet.)
