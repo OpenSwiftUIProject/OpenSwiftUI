@@ -51,7 +51,7 @@ You can find the revision hash by checking the commit you want to use on GitHub.
 
 ## Step 2: Handle DarwinPrivateFrameworks XCFrameworks
 
-When building on macOS, you will likely encounter xcframework-related issues. You need to manually add the required private frameworks from DarwinPrivateFrameworks to your target.
+When building for Darwin platforms, you will likely encounter xcframework-related issues. You need to manually add the required private frameworks from DarwinPrivateFrameworks to your target.
 
 ### Why This Is Needed
 
@@ -109,25 +109,19 @@ struct ContentView: View {
 
 ## Platform-Specific Notes
 
-### macOS Applications
-
-For macOS apps, you must manually add and configure the xcframeworks as described in Step 2. Set them to **Do Not Embed** to avoid issues with private SDK usage.
-
-### iOS Applications (Simulator)
-
-For iOS Simulator builds, the xcframework configuration may also be required. Follow the same steps as macOS.
+The current supported platforms are macOS and iOS simulators. (visionOS simulator is also supported but not tested extensively and there is no CI for it yet.)
 
 ### iOS Device Builds
 
-iOS device builds may require additional configuration. Refer to the DarwinPrivateFrameworks documentation for device-specific instructions.
+Currently, AttributeGraph is missing some symbols for iOS device and until OpenAttributeGraph is ready, this platform is not supported.
 
 ## Troubleshooting
 
-### Build Errors Related to AttributeGraph
+### Install Errors Related to the private frameworks
 
 If you see errors like:
 ```
-dyld: Library not loaded: @rpath/AttributeGraph.framework/AttributeGraph
+AttributeGraph.framework has missing or invalid CFBundleExecutable in its Info.plist
 ```
 
 Make sure you've added the AttributeGraph.xcframework to your target and set it to "Do Not Embed".
@@ -138,39 +132,3 @@ If Xcode fails to resolve the package:
 1. Make sure you're using `branch: "main"` or a specific `revision:` instead of a version tag
 2. Try **File → Packages → Reset Package Caches**
 3. Clean the build folder (**Shift+Cmd+K**) and rebuild
-
-### Unsupported Platform
-
-OpenSwiftUI currently supports:
-- macOS 14.0+
-- iOS 18.0+
-
-Other platforms (watchOS, tvOS, visionOS) have limited or no support at this time.
-
-## Additional Resources
-
-- [OpenSwiftUI GitHub](https://github.com/OpenSwiftUIProject/OpenSwiftUI)
-- [DarwinPrivateFrameworks](https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks)
-- [OpenSwiftUI Documentation](https://github.com/OpenSwiftUIProject/OpenSwiftUI#readme)
-
-## Development and Debugging
-
-For development and debugging purposes, you can also clone the repository and its dependencies locally:
-
-```bash
-# Clone OpenSwiftUI
-git clone https://github.com/OpenSwiftUIProject/OpenSwiftUI.git
-cd OpenSwiftUI
-
-# Clone required dependencies in parent directory
-cd ..
-git clone https://github.com/OpenSwiftUIProject/OpenAttributeGraph.git
-git clone https://github.com/OpenSwiftUIProject/OpenRenderBox.git
-git clone https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git
-
-# Return to OpenSwiftUI and build
-cd OpenSwiftUI
-./Scripts/build.sh
-```
-
-See [CLAUDE.md](CLAUDE.md) for more development details.
