@@ -111,11 +111,18 @@ struct ContentView: View {
 
 The current supported platforms are macOS and iOS simulators. (visionOS simulator is also supported but not tested extensively and there is no CI for it yet.)
 
-### iOS Device Builds
+## Known Limitations
+
+### 1. iOS Device Builds Not Supported
 
 Currently, AttributeGraph is missing some symbols for iOS device. Until OpenAttributeGraph is ready, this platform is not supported.
 
-### ABI Compatibility Requirements
+**Affected platforms:**
+- iOS device builds (iPhone, iPad)
+
+**Workaround:** Use iOS Simulator for development and testing.
+
+### 2. ABI Compatibility Requirements
 
 ⚠️ **Important:** The current Render engine uses a private API of SwiftUI which does not guarantee ABI stability. Until OpenSwiftUI's ViewUpdater render engine is implemented, it is required to use the same ABI version.
 
@@ -123,7 +130,7 @@ Currently, AttributeGraph is missing some symbols for iOS device. Until OpenAttr
 - **iOS 18.5**
 - **macOS 15.5**
 
-Ensure your target platform matches these versions to avoid runtime compatibility issues.
+**Impact:** Your target platform deployment version must match these specific versions to avoid runtime compatibility issues.
 
 ## Troubleshooting
 
