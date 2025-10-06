@@ -118,7 +118,7 @@ struct ContentView: View {
 ```
 
 > [!NOTE]
-> Only some APIs and Views are currently supported.
+> Only some APIs and View types are currently supported.
 
 ## Platform-Specific Notes
 
