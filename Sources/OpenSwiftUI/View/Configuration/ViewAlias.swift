@@ -19,6 +19,8 @@ import OpenAttributeGraphShims
 ///
 /// Conforming types must provide an empty initializer and will inherit the view
 /// implementation from the source view when rendered.
+@MainActor
+@preconcurrency
 protocol ViewAlias: PrimitiveView {
     init()
 }

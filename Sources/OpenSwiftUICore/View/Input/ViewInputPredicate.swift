@@ -49,7 +49,6 @@ extension ViewInput where Self: ViewInputFlag {
 
 package protocol ViewInputBoolFlag: ViewInput, ViewInputFlag where Value == Bool {}
 
-
 extension ViewInputBoolFlag {
     @inlinable
     package static var defaultValue: Bool { false }
