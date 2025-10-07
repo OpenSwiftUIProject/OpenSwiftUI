@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: A513612C07DFA438E70B9FA90719B40D (SwiftUI)
 
 #if os(iOS) || os(visionOS)
@@ -158,9 +158,8 @@ extension PlatformViewRepresentable where PlatformViewProvider: PlatformViewCont
     static var isViewController: Bool { true }
 }
 
-// MARK: - PlatformViewChild [WIP]
+// MARK: - PlatformViewChild
 
-// TODO: ScrapeableAttribute
 struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
     @Attribute var view: Content
     @Attribute var environment: EnvironmentValues
@@ -233,30 +232,98 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
                 platformView.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0,
             ]
         ) {
-            // TODO
-            if coordinator == nil {
-                coordinator = view.makeCoordinator()
+            var (view, viewChanged) = $view.changedValue()
+            let (phase, phaseChanged) = $phase.changedValue()
+            var (environment, environmentChanged) = $environment.changedValue()
+            let (focusedValues, focusedValuesChanged) = $focusedValues?.changedValue() ?? (.init(), false)
+            if phase.resetSeed != resetSeed {
+                links.reset()
+                resetPlatformView()
+                resetSeed = phase.resetSeed
             }
-            if platformView == nil {
-                let host = ViewGraph.viewRendererHost
-                withObservation {
-                    Graph.withoutUpdate {
-                        let representableContext = PlatformViewRepresentableContext<Content>(
-                            coordinator: coordinator!,
-                            preferenceBridge: bridge,
-                            transaction: transaction,
-                            environmentStorage: .eager(environment)
+            let linksChanged = withUnsafeMutablePointer(to: &view) { pointer in
+                links.update(container: pointer, phase: phase)
+            }
+            var changed = linksChanged || !hasValue || viewChanged || phaseChanged || AnyAttribute.currentWasModified
+            let transaction = Graph.withoutUpdate {
+                if coordinator == nil {
+                    coordinator = view.makeCoordinator()
+                }
+                return self.transaction
+            }
+            environment.preferenceBridge = bridge
+            let context: PlatformViewRepresentableContext<Content>
+            if let platformView {
+                if environmentChanged, tracker.hasDifferentUsedValues(environment.plist) {
+                    tracker.reset()
+                    changed = true
+                }
+                if platformView.isPlatformFocusContainerHost {
+                    environment.focusGroupID = .inferred
+                }
+                let env = EnvironmentValues(environment.plist, tracker: tracker)
+                Graph.withoutUpdate {
+                    if phaseChanged  || environmentChanged {
+                        platformView.updateEnvironment(
+                            env.removingTracker(),
+                            viewPhase: phase
                         )
-                        representableContext.values.asCurrent {
-                            let provider = view.makeViewProvider(context: representableContext)
-                            let environment = environment.removingTracker()
-                            platformView = PlatformViewHost(
-                                provider,
+                    }
+                    if focusedValuesChanged {
+                        platformView.focusedValues = focusedValues
+                    }
+                }
+                context = PlatformViewRepresentableContext<Content>(
+                    coordinator: coordinator!,
+                    preferenceBridge: bridge,
+                    transaction: transaction,
+                    environmentStorage: .eager(env)
+                )
+            } else {
+                tracker.reset()
+                changed = true
+                let env = EnvironmentValues(environment.plist, tracker: tracker)
+                context = PlatformViewRepresentableContext<Content>(
+                    coordinator: coordinator!,
+                    preferenceBridge: bridge,
+                    transaction: transaction,
+                    environmentStorage: .eager(env)
+                )
+                let host = ViewGraph.viewRendererHost
+                platformView = withObservation {
+                    Graph.withoutUpdate {
+                        context.values.asCurrent {
+                            PlatformViewHost(
+                                view.makeViewProvider(context: context),
                                 host: host,
-                                environment: environment,
+                                environment: env.removingTracker(),
                                 viewPhase: phase,
                                 importer: importer
                             )
+                        }
+                    }
+                }
+            }
+            guard changed else {
+                return
+            }
+            let host = ViewGraph.viewRendererHost
+            withObservation {
+                Graph.withoutUpdate {
+                    guard let provider = representedViewProvider else {
+                        return
+                    }
+                    if let host {
+                        Update.ensure {
+                            host.performExternalUpdate {
+                                context.values.asCurrent {
+                                    view.updateViewProvider(provider, context: context)
+                                }
+                            }
+                        }
+                    } else {
+                        context.values.asCurrent {
+                            view.updateViewProvider(provider, context: context)
                         }
                     }
                 }
@@ -278,6 +345,14 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
             Content.dismantleViewProvider(representedViewProvider, coordinator: coordinator)
             reset()
         }
+    }
+}
+
+extension PlatformViewHost {
+    var isPlatformFocusContainerHost: Bool {
+        // TODO
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 }
 
