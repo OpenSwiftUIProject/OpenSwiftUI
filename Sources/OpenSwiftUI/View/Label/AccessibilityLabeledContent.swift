@@ -124,13 +124,6 @@ struct ResolvedPresentation: Rule {
 struct AccessibilityAttachmentModifier {}
 
 // FIXME
-enum Visibility {
-    case automatic
-    case visible
-    case hidden
-}
-
-// FIXME
 enum AccessibilityAttachment {
     enum Tree {}
 }
