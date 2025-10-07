@@ -3,24 +3,27 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: WIP
 //  ID: A513612C07DFA438E70B9FA90719B40D (SwiftUI)
 
 #if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformView = UIView
+typealias PlatformScrollView = UIScrollView
 typealias PlatformViewController = UIViewController
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewResponder = UIViewResponder
 #elseif os(macOS)
 import AppKit
 typealias PlatformView = NSView
+typealias PlatformScrollView = NSScrollView
 typealias PlatformViewController = NSViewController
 typealias PlatformHostingController = NSHostingController
 typealias PlatformViewResponder = NSViewResponder
 #else
 import Foundation
 typealias PlatformView = NSObject
+typealias PlatformScrollView = NSObject
 typealias PlatformViewController = NSObject
 typealias PlatformHostingController = NSObject
 typealias PlatformViewResponder = NSObject
@@ -72,7 +75,7 @@ protocol PlatformViewRepresentable: View {
     typealias LayoutOptions = _PlatformViewRepresentableLayoutOptions
 }
 
-// MARK: - PlatformViewRepresentable + Extension
+// MARK: - PlatformViewRepresentable + Extension [WIP]
 
 extension PlatformViewRepresentable {
     static var dynamicProperties: DynamicPropertyCache.Fields {
@@ -348,14 +351,6 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
     }
 }
 
-extension PlatformViewHost {
-    var isPlatformFocusContainerHost: Bool {
-        // TODO
-        _openSwiftUIUnimplementedWarning()
-        return false
-    }
-}
-
 extension PlatformViewChild: ObservedAttribute {
     mutating func destroy() {
         links.destroy()
@@ -411,6 +406,33 @@ extension PlatformViewChild: ScrapeableAttribute {
             size: pointer[].$size,
             transform: pointer[].$transform,
         )
+    }
+}
+
+// MARK: - PlatformViewHost + FocusContainer
+
+extension PlatformViewHost {
+    private struct UnarySubtreeSequence: Sequence {
+        weak var root: PlatformView?
+
+        func makeIterator() -> AnyIterator<PlatformView> {
+            var current = root
+            return AnyIterator { [weak current] ()-> PlatformView? in
+                #if canImport(Darwin)
+                guard let node = current else {
+                    return nil
+                }
+                current = node.subviews.first
+                return node
+                #else
+                return nil
+                #endif
+            }
+        }
+    }
+
+    var isPlatformFocusContainerHost: Bool {
+        UnarySubtreeSequence(root: self).first { $0 is PlatformScrollView } != nil
     }
 }
 
