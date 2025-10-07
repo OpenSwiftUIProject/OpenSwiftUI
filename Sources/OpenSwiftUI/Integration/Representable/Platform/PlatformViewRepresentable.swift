@@ -214,6 +214,13 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
         self.tracker = .init()
     }
 
+    var representedViewProvider: Content.PlatformViewProvider? {
+        guard let platformView else {
+            return nil
+        }
+        return platformView.representedViewProvider
+    }
+
     typealias Value = ViewLeafView<Content>
 
     mutating func updateValue() {
@@ -262,8 +269,73 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
         }
     }
 
-    private func reset() {
-        // TODO
+    mutating func resetPlatformView() {
+        guard let coordinator,
+              let representedViewProvider else {
+            return
+        }
+        view.resetViewProvider(representedViewProvider, coordinator: coordinator) {
+            Content.dismantleViewProvider(representedViewProvider, coordinator: coordinator)
+            reset()
+        }
+    }
+}
+
+extension PlatformViewChild: ObservedAttribute {
+    mutating func destroy() {
+        links.destroy()
+        if let coordinator, let representedViewProvider {
+            Update.syncMain {
+                Content.dismantleViewProvider(representedViewProvider, coordinator: coordinator)
+            }
+            reset()
+        }
+        bridge.invalidate()
+    }
+
+    private mutating func reset() {
+        coordinator = nil
+        platformView = nil
+    }
+}
+
+extension PlatformViewChild: InvalidatableAttribute {
+    static func willInvalidate(attribute: AnyAttribute) {
+        let pointer = attribute.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        pointer[].bridge.invalidate()
+    }
+}
+
+extension PlatformViewChild: RemovableAttribute {
+    static func willRemove(attribute: AnyAttribute) {
+        let pointer = attribute.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        pointer[].bridge.removedStateDidChange()
+    }
+
+    static func didReinsert(attribute: AnyAttribute) {
+        let pointer = attribute.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        pointer[].bridge.removedStateDidChange()
+    }
+}
+
+extension PlatformViewChild: ScrapeableAttribute {
+    static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
+        let pointer = ident.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        guard let platformView = pointer[].platformView else {
+            return nil
+        }
+        return .init(
+            .platformView(platformView),
+            ids: .none,
+            pointer[].parentID,
+            position: pointer[].$position,
+            size: pointer[].$size,
+            transform: pointer[].$transform,
+        )
     }
 }
 
