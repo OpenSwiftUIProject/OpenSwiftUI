@@ -413,8 +413,16 @@ extension ViewRendererHost {
         return bridge.viewGraph == nil
     }
     
-    private var enclosingHosts: [ViewRendererHost] {
-        _openSwiftUIUnimplementedFailure()
+    private var enclosingHosts: [any ViewRendererHost] {
+        guard let preferenceBridge = viewGraph.preferenceBridge,
+              let parentViewGraph = preferenceBridge.viewGraph,
+              let parentHost = parentViewGraph as? ViewRendererHost
+        else {
+            return [self]
+        }
+        var hosts = parentHost.enclosingHosts
+        hosts.append(self)
+        return hosts
     }
 
     package func performExternalUpdate(_ update: () -> Void) {

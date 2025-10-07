@@ -9,18 +9,21 @@
 #if os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformView = UIView
+typealias PlatformScrollView = UIScrollView
 typealias PlatformViewController = UIViewController
 typealias PlatformHostingController = UIHostingController
 typealias PlatformViewResponder = UIViewResponder
 #elseif os(macOS)
 import AppKit
 typealias PlatformView = NSView
+typealias PlatformScrollView = NSScrollView
 typealias PlatformViewController = NSViewController
 typealias PlatformHostingController = NSHostingController
 typealias PlatformViewResponder = NSViewResponder
 #else
 import Foundation
 typealias PlatformView = NSObject
+typealias PlatformScrollView = NSObject
 typealias PlatformViewController = NSObject
 typealias PlatformHostingController = NSObject
 typealias PlatformViewResponder = NSObject
@@ -72,7 +75,7 @@ protocol PlatformViewRepresentable: View {
     typealias LayoutOptions = _PlatformViewRepresentableLayoutOptions
 }
 
-// MARK: - PlatformViewRepresentable + Extension
+// MARK: - PlatformViewRepresentable + Extension [WIP]
 
 extension PlatformViewRepresentable {
     static var dynamicProperties: DynamicPropertyCache.Fields {
@@ -158,9 +161,8 @@ extension PlatformViewRepresentable where PlatformViewProvider: PlatformViewCont
     static var isViewController: Bool { true }
 }
 
-// MARK: - PlatformViewChild [WIP]
+// MARK: - PlatformViewChild
 
-// TODO: ScrapeableAttribute
 struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
     @Attribute var view: Content
     @Attribute var environment: EnvironmentValues
@@ -214,6 +216,13 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
         self.tracker = .init()
     }
 
+    var representedViewProvider: Content.PlatformViewProvider? {
+        guard let platformView else {
+            return nil
+        }
+        return platformView.representedViewProvider
+    }
+
     typealias Value = ViewLeafView<Content>
 
     mutating func updateValue() {
@@ -221,35 +230,103 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
             object: nil,
             "PlatformUpdate: (%p) %{public}@ [ %p ]",
             [
-                AnyAttribute.current!.graph.graphIdentity(),
+                attribute.graph.graphIdentity(),
                 "\(Content.self)",
                 platformView.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0,
             ]
         ) {
-            // TODO
-            if coordinator == nil {
-                coordinator = view.makeCoordinator()
+            var (view, viewChanged) = $view.changedValue()
+            let (phase, phaseChanged) = $phase.changedValue()
+            var (environment, environmentChanged) = $environment.changedValue()
+            let (focusedValues, focusedValuesChanged) = $focusedValues?.changedValue() ?? (.init(), false)
+            if phase.resetSeed != resetSeed {
+                links.reset()
+                resetPlatformView()
+                resetSeed = phase.resetSeed
             }
-            if platformView == nil {
-                let host = ViewGraph.viewRendererHost
-                withObservation {
-                    Graph.withoutUpdate {
-                        let representableContext = PlatformViewRepresentableContext<Content>(
-                            coordinator: coordinator!,
-                            preferenceBridge: bridge,
-                            transaction: transaction,
-                            environmentStorage: .eager(environment)
+            let linksChanged = withUnsafeMutablePointer(to: &view) { pointer in
+                links.update(container: pointer, phase: phase)
+            }
+            var changed = linksChanged || !hasValue || viewChanged || phaseChanged || AnyAttribute.currentWasModified
+            let transaction = Graph.withoutUpdate {
+                if coordinator == nil {
+                    coordinator = view.makeCoordinator()
+                }
+                return self.transaction
+            }
+            environment.preferenceBridge = bridge
+            let context: PlatformViewRepresentableContext<Content>
+            if let platformView {
+                if environmentChanged, tracker.hasDifferentUsedValues(environment.plist) {
+                    tracker.reset()
+                    changed = true
+                }
+                if platformView.isPlatformFocusContainerHost {
+                    environment.focusGroupID = .inferred
+                }
+                let env = EnvironmentValues(environment.plist, tracker: tracker)
+                Graph.withoutUpdate {
+                    if phaseChanged  || environmentChanged {
+                        platformView.updateEnvironment(
+                            env.removingTracker(),
+                            viewPhase: phase
                         )
-                        representableContext.values.asCurrent {
-                            let provider = view.makeViewProvider(context: representableContext)
-                            let environment = environment.removingTracker()
-                            platformView = PlatformViewHost(
-                                provider,
+                    }
+                    if focusedValuesChanged {
+                        platformView.focusedValues = focusedValues
+                    }
+                }
+                context = PlatformViewRepresentableContext<Content>(
+                    coordinator: coordinator!,
+                    preferenceBridge: bridge,
+                    transaction: transaction,
+                    environmentStorage: .eager(env)
+                )
+            } else {
+                tracker.reset()
+                changed = true
+                let env = EnvironmentValues(environment.plist, tracker: tracker)
+                context = PlatformViewRepresentableContext<Content>(
+                    coordinator: coordinator!,
+                    preferenceBridge: bridge,
+                    transaction: transaction,
+                    environmentStorage: .eager(env)
+                )
+                let host = ViewGraph.viewRendererHost
+                platformView = withObservation {
+                    Graph.withoutUpdate {
+                        context.values.asCurrent {
+                            PlatformViewHost(
+                                view.makeViewProvider(context: context),
                                 host: host,
-                                environment: environment,
+                                environment: env.removingTracker(),
                                 viewPhase: phase,
                                 importer: importer
                             )
+                        }
+                    }
+                }
+            }
+            guard changed else {
+                return
+            }
+            let host = ViewGraph.viewRendererHost
+            withObservation {
+                Graph.withoutUpdate {
+                    guard let provider = representedViewProvider else {
+                        return
+                    }
+                    if let host {
+                        Update.ensure {
+                            host.performExternalUpdate {
+                                context.values.asCurrent {
+                                    view.updateViewProvider(provider, context: context)
+                                }
+                            }
+                        }
+                    } else {
+                        context.values.asCurrent {
+                            view.updateViewProvider(provider, context: context)
                         }
                     }
                 }
@@ -262,8 +339,100 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
         }
     }
 
-    private func reset() {
-        // TODO
+    mutating func resetPlatformView() {
+        guard let coordinator,
+              let representedViewProvider else {
+            return
+        }
+        view.resetViewProvider(representedViewProvider, coordinator: coordinator) {
+            Content.dismantleViewProvider(representedViewProvider, coordinator: coordinator)
+            reset()
+        }
+    }
+}
+
+extension PlatformViewChild: ObservedAttribute {
+    mutating func destroy() {
+        links.destroy()
+        if let coordinator, let representedViewProvider {
+            Update.syncMain {
+                Content.dismantleViewProvider(representedViewProvider, coordinator: coordinator)
+            }
+            reset()
+        }
+        bridge.invalidate()
+    }
+
+    private mutating func reset() {
+        coordinator = nil
+        platformView = nil
+    }
+}
+
+extension PlatformViewChild: InvalidatableAttribute {
+    static func willInvalidate(attribute: AnyAttribute) {
+        let pointer = attribute.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        pointer[].bridge.invalidate()
+    }
+}
+
+extension PlatformViewChild: RemovableAttribute {
+    static func willRemove(attribute: AnyAttribute) {
+        let pointer = attribute.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        pointer[].bridge.removedStateDidChange()
+    }
+
+    static func didReinsert(attribute: AnyAttribute) {
+        let pointer = attribute.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        pointer[].bridge.removedStateDidChange()
+    }
+}
+
+extension PlatformViewChild: ScrapeableAttribute {
+    static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
+        let pointer = ident.info.body
+            .assumingMemoryBound(to: PlatformViewChild.self)
+        guard let platformView = pointer[].platformView else {
+            return nil
+        }
+        return .init(
+            .platformView(platformView),
+            ids: .none,
+            pointer[].parentID,
+            position: pointer[].$position,
+            size: pointer[].$size,
+            transform: pointer[].$transform,
+        )
+    }
+}
+
+// MARK: - PlatformViewHost + FocusContainer
+
+extension PlatformViewHost {
+    private struct UnarySubtreeSequence: Sequence {
+        weak var root: PlatformView?
+
+        func makeIterator() -> AnyIterator<PlatformView> {
+            var current = root
+            return AnyIterator { [weak current] ()-> PlatformView? in
+                #if canImport(Darwin)
+                guard let node = current else {
+                    return nil
+                }
+                current = node.subviews.first
+                return node
+                #else
+                return nil
+                #endif
+            }
+        }
+    }
+
+    var isPlatformFocusContainerHost: Bool {
+        UnarySubtreeSequence(root: self).first { $0 is PlatformScrollView } != nil
     }
 }
 

@@ -222,16 +222,16 @@ private struct RendererEffectDisplayList<Effect>: Rule, AsyncAttribute, Scrapeab
 
     static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
         let pointer = ident.info.body.assumingMemoryBound(to: Self.self)
-        guard let content = pointer.pointee.effect.scrapeableContent else {
+        guard let content = pointer[].effect.scrapeableContent else {
             return nil
         }
         return .init(
             content,
-            ids: pointer.pointee.localID,
-            pointer.pointee.parentID,
-            position: pointer.pointee.$position,
-            size: pointer.pointee.$size,
-            transform: pointer.pointee.$transform
+            ids: pointer[].localID,
+            pointer[].parentID,
+            position: pointer[].$position,
+            size: pointer[].$size,
+            transform: pointer[].$transform
         )
     }
 }

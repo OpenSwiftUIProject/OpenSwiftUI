@@ -100,16 +100,16 @@ private struct ScrapeableAttachmentViewModifier: MultiViewModifier, PrimitiveVie
 
         static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
             let pointer = ident.info.body.assumingMemoryBound(to: Attachment.self)
-            guard let content = pointer.pointee.content else {
+            guard let content = pointer[].content else {
                 return nil
             }
             return .init(
                 content,
-                ids: pointer.pointee.localID,
-                pointer.pointee.parentID,
-                position: pointer.pointee.$position,
-                size: pointer.pointee.$size,
-                transform: pointer.pointee.$transform
+                ids: pointer[].localID,
+                pointer[].parentID,
+                position: pointer[].$position,
+                size: pointer[].$size,
+                transform: pointer[].$transform
             )
         }
     }
