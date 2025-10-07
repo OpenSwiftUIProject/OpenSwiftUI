@@ -221,7 +221,7 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
             object: nil,
             "PlatformUpdate: (%p) %{public}@ [ %p ]",
             [
-                AnyAttribute.current!.graph.graphIdentity(),
+                attribute.graph.graphIdentity(),
                 "\(Content.self)",
                 platformView.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0,
             ]
