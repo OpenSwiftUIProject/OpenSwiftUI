@@ -415,11 +415,11 @@ private func find1<Key>(
     var currentElement = element.takeUnretainedValue()
     repeat {
         guard currentElement.skipFilter.mayContain(filter) else {
-            if currentElement.skip != nil {
-                continue
-            } else {
+            guard let skip = currentElement.skip else {
                 return nil
             }
+            currentElement = skip.takeUnretainedValue()
+            continue
         }
         if let before = currentElement.before {
             let result = find1(.passUnretained(before), key: key, filter: filter)
