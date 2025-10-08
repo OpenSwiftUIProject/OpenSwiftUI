@@ -86,7 +86,159 @@ private struct DynamicLayoutViewChildGeometry: StatefulRule, AsyncAttribute {
     }
 }
 
-// TODO: - DynamicLayoutViewAdaptor
+// MARK: - DynamicLayoutViewAdaptor [WIP] ContentTransition
+
+struct DynamicLayoutViewAdaptor: DynamicContainerAdaptor {
+    private struct MakeTransition: TransitionVisitor {
+        var containerInfo: Attribute<DynamicContainer.Info>
+        var uniqueId: UInt32
+        var item: DynamicViewListItem
+        var inputs: _ViewInputs
+        var makeElt: (_ViewInputs) -> _ViewOutputs
+        var outputs: _ViewOutputs?
+        var isArchived: Bool
+
+        mutating func visit<T>(_ transition: T) where T: Transition {
+            let helper =  TransitionHelper(
+                list: .init(item.list),
+                info: containerInfo,
+                uniqueID: uniqueId,
+                transition: transition,
+                phase: .identity
+            )
+            if isArchived {
+                makeArchivedTransition(helper: helper)
+            } else {
+                let transition = Attribute(
+                    ViewListTransition(helper: helper)
+                )
+                let makeElt = self.makeElt
+                outputs = T.makeView(
+                    view: .init(transition),
+                    inputs: inputs,
+                    body: { _, inputs in
+                        makeElt(inputs)
+                    }
+                )
+            }
+        }
+
+        mutating func makeArchivedTransition<T>(helper: TransitionHelper<T>) where T: Transition {
+            guard helper.transition.hasContentTransition else {
+                outputs = makeElt(inputs)
+                return
+            }
+            // TODO: archived transition
+            _openSwiftUIUnimplementedFailure()
+        }
+    }
+
+    struct ItemLayout {
+        var release: ViewList.Elements.Release?
+    }
+
+    @Attribute var items: ViewList
+    @OptionalAttribute var childGeometries: [ViewGeometry]?
+    var mutateLayoutMap: ((inout DynamicLayoutMap) -> ()) -> ()
+
+    func updatedItems() -> ViewList? {
+        let (items, itemsChanged) = $items.changedValue()
+        guard itemsChanged else {
+            return nil
+        }
+        return items
+    }
+
+    func foreachItem(
+        items: any ViewList,
+        _ body: (DynamicViewListItem) -> Void
+    ) {
+        var index = 0
+        items.applySublists(from: &index, list: $items) { sublist in
+            body(.init(
+                id: sublist.id,
+                elements: sublist.elements,
+                traits: sublist.traits,
+                list: sublist.list
+            ))
+            return true
+        }
+    }
+
+    static func containsItem(
+        _ items: any ViewList,
+        _ item: DynamicViewListItem
+    ) -> Bool {
+        var index = 0
+        let result = items.applySublists(from: &index, list: nil) { sublist in
+            sublist.id != item.id
+        }
+        return !result
+    }
+
+    func makeItemLayout(
+        item: DynamicViewListItem,
+        uniqueId: UInt32,
+        inputs: _ViewInputs,
+        containerInfo: Attribute<DynamicContainer.Info>,
+        containerInputs: (inout _ViewInputs) -> ()
+    ) -> (_ViewOutputs, DynamicLayoutViewAdaptor.ItemLayout) {
+        let isArchived = inputs.archivedView.isArchived
+        let traits = item.traits
+        let transition: AnyTransition?
+        if let t = traits.optionalTransition(ignoringIdentity: !isArchived) {
+            let prefersCrossFadeTransitions = Graph.withoutUpdate {
+                inputs.environment.value.accessibilityPrefersCrossFadeTransitions
+            }
+            transition = t.adjustedForAccessibility(prefersCrossFade: prefersCrossFadeTransitions)
+        } else {
+            transition = nil
+        }
+        var containerID = DynamicContainerID(uniqueId: uniqueId, viewIndex: 0)
+        let outputs = item.elements.makeAllElements(inputs: inputs) { elementInputs, body in
+            var elementInputs = elementInputs
+            if elementInputs.needsGeometry {
+                let childGeometry = Attribute(
+                    DynamicLayoutViewChildGeometry(
+                        containerInfo: containerInfo,
+                        childGeometries: $childGeometries!,
+                        id: containerID
+                    )
+                )
+                elementInputs.size = childGeometry.size()
+                elementInputs.position = childGeometry.origin()
+            }
+            let outputs: _ViewOutputs
+            if let transition {
+                var makeTransition = MakeTransition(
+                    containerInfo: containerInfo,
+                    uniqueId: uniqueId,
+                    item: item,
+                    inputs: elementInputs,
+                    makeElt: body,
+                    isArchived: isArchived
+                )
+                transition.visitBase(applying: &makeTransition)
+                outputs = makeTransition.outputs!
+            } else {
+                outputs = body(elementInputs)
+            }
+            mutateLayoutMap({
+                $0[containerID] = LayoutProxyAttributes(
+                    layoutComputer: .init(outputs.layoutComputer),
+                    traitsList: .init(item.list)
+                )
+            })
+            containerID.viewIndex &+= 1
+            return outputs
+        }
+        return (outputs ?? .init(), .init(release: item.elements.retain()))
+    }
+
+    func removeItemLayout(uniqueId: UInt32, itemLayout: ItemLayout) {
+        mutateLayoutMap({ $0.remove(uniqueId: uniqueId)})
+    }
+}
 
 // MARK: - DynamicLayoutComputer
 

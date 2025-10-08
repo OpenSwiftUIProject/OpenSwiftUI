@@ -12,6 +12,7 @@ import CommonCrypto
 #endif
 
 import Foundation
+import OpenAttributeGraphShims
 import OpenRenderBoxShims
 
 package protocol StronglyHashable {
@@ -149,9 +150,15 @@ package struct StrongHasher {
     }
     
     package mutating func combineType(_ type: any Any.Type) {
-//        let signature = OAGTypeGetSignature
-//        CC_SHA1_Update(&state, signature, 20)
-        preconditionFailure("Blocked by latest OAGTypeGetSignature")
+        let signature = Metadata(type).signature
+        _ = withUnsafePointer(to: signature.bytes) { ptr in
+            #if OPENSWIFTUI_SWIFT_CRYPTO
+            // TODO: Auditd signature API design
+            _openSwiftUIUnimplementedFailure()
+            #else
+            CC_SHA1_Update(&state, ptr, 20)
+            #endif
+        }
     }
 }
 
