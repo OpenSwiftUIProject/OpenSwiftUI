@@ -167,15 +167,6 @@ extension Layout {
             return outputs
         }
     }
-
-    static func makeDynamicView(
-        root: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        properties: LayoutProperties,
-        list: Attribute<any ViewList>
-    ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
-    }
 }
 
 package struct LayoutChildGeometries: Rule, AsyncAttribute {

@@ -60,9 +60,7 @@ package struct DynamicContainer {
 
         @inline(__always)
         subscript(_ index: Int) -> ItemInfo {
-            guard index >= 0 && index < items.count else {
-                preconditionFailure("invalid view index")
-            }
+            precondition(index >= 0 && index < items.count, "invalid view index")
             return items[index]
         }
 
