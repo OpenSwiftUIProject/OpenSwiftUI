@@ -3,10 +3,13 @@
 //  OpenSwiftUICore
 //
 //  Audited: 6.5.4
-//  Status: Blocked by ArichevedView
+//  Status: Complete
 //  ID: 530459AF10BEFD7ED901D8CE93C1E289 (SwiftUICore)
 
 import OpenAttributeGraphShims
+import OpenCoreGraphicsShims
+
+// MARK: - _AnimationModifier
 
 @available(OpenSwiftUI_v1_0, *)
 @frozen
@@ -50,8 +53,11 @@ public struct _AnimationModifier<Value>: ViewModifier, PrimitiveViewModifier whe
     ) -> _ViewOutputs {
         let archivedView = inputs.archivedView
         if archivedView.isArchived {
-            // makeArchivedView
-            _openSwiftUIUnimplementedFailure()
+            return makeArchivedView(
+                modifier: modifier,
+                inputs: inputs,
+                body: body
+            )
         } else {
             var inputs = inputs
             _makeInputs(modifier: modifier, inputs: &inputs.base)
@@ -66,18 +72,75 @@ public struct _AnimationModifier<Value>: ViewModifier, PrimitiveViewModifier whe
     ) -> _ViewListOutputs {
         let archivedView = inputs.archivedView
         if archivedView.isArchived {
-            // makeArchivedViewList
-            _openSwiftUIUnimplementedFailure()
+            return makeArchivedViewList(
+                modifier: modifier,
+                inputs: inputs,
+                body: body
+            )
         } else {
             var inputs = inputs
             _makeInputs(modifier: modifier, inputs: &inputs.base)
             return body(_Graph(), inputs)
         }
     }
+
+    nonisolated private static func makeArchivedView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var inputs = inputs
+        func project<T>(type: T.Type) -> _ViewOutputs where T: Encodable & Equatable {
+            let modifier = modifier.value.unsafeBitCast(to: _AnimationModifier<T>.self)
+            inputs.displayListOptions.formUnion(.disableCanonicalization)
+            let effect = Attribute(
+                ArchivedAnimationModifier(modifier: modifier)
+            )
+            return ArchivedAnimationModifier.Effect
+                ._makeRendererEffect(
+                    effect: .init(effect),
+                    inputs: inputs,
+                    body: body
+                )
+        }
+        guard let type = Value.self as? (any (Encodable & Equatable).Type) else {
+            return body(_Graph(), inputs)
+        }
+        return project(type: type)
+    }
+
+    nonisolated private static func makeArchivedViewList(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        var inputs = inputs
+        func project<T>(type: T.Type) where T: Encodable & Equatable {
+            let modifier = modifier.value.unsafeBitCast(to: _AnimationModifier<T>.self)
+            inputs.traits = Attribute(
+                ArchivedAnimationTrait(
+                    modifier: modifier,
+                    traits: .init(inputs.traits)
+                )
+            )
+            inputs.addTraitKey(ArchivedAnimationTraitKey.self)
+        }
+        if inputs.options.contains(.needsArchivedAnimationTraits),
+           let type = Value.self as? (any (Encodable & Equatable).Type) {
+            project(type: type)
+        }
+        return Self.makeMultiViewList(
+            modifier: modifier,
+            inputs: inputs,
+            body: body
+        )
+    }
 }
 
 @available(*, unavailable)
 extension _AnimationModifier: Sendable {}
+
+// MARK: - _AnimationView
 
 @available(OpenSwiftUI_v3_0, *)
 @frozen
@@ -193,7 +256,60 @@ struct ValueTransactionSeed<V>: StatefulRule, AsyncAttribute where V: Equatable 
     }
 }
 
-// TODO: Archived stuff
+// MARK: - ArchivedAnimationModifier
+
+private struct ArchivedAnimationModifier<Value>: Rule, AsyncAttribute where Value: Encodable, Value: Equatable {
+    struct Effect: _RendererEffect {
+        var animation: Animation?
+        var value: StrongHash
+
+        func effectValue(size: CGSize) -> DisplayList.Effect {
+            .interpolatorAnimation(.init(value: value, animation: animation))
+        }
+    }
+
+    @Attribute var modifier: _AnimationModifier<Value>
+
+    var value: Effect {
+        let value = (try? StrongHash(encodable: modifier.value)) ?? .random()
+        return Effect(animation: modifier.animation, value: value)
+    }
+}
+
+// MARK: - ArchivedAnimationTraitKey
+
+struct ArchivedAnimationTraitKey: _ViewTraitKey {
+    var animation: Animation?
+    var hash: StrongHash
+
+    static var defaultValue: ArchivedAnimationTraitKey? {
+        nil
+    }
+}
+
+extension ViewTraitCollection {
+    @inline(__always)
+    var archivedAnimationTrait: ArchivedAnimationTraitKey? {
+        get { self[ArchivedAnimationTraitKey.self] }
+        set { self[ArchivedAnimationTraitKey.self] = newValue }
+    }
+}
+
+// MARK: - ArchivedAnimationTrait
+
+private struct ArchivedAnimationTrait<Value>: Rule, AsyncAttribute where Value: Encodable, Value: Equatable {
+    @Attribute var modifier: _AnimationModifier<Value>
+    @OptionalAttribute var traits: ViewTraitCollection?
+
+    var value: ViewTraitCollection {
+        let value = (try? StrongHash(encodable: modifier.value)) ?? .random()
+        var traits = traits ?? .init()
+        traits.archivedAnimationTrait = .init(animation: modifier.animation, hash: value)
+        return traits
+    }
+}
+
+// MARK: - ChildTransaction
 
 private struct ChildTransaction: Rule, AsyncAttribute {
     @Attribute var valueTransactionSeed: UInt32
