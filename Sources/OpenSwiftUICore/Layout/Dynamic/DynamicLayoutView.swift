@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by Scrollable and ContentTransition
 //  ID: FF3C661D9D8317A1C8FE2B7FD4EDE12C (SwiftUICore)
 
 import OpenAttributeGraphShims
@@ -18,18 +18,16 @@ extension Layout {
         list: Attribute<any ViewList>
     ) -> _ViewOutputs {
         var inputs = inputs
-        let containsScrollable = inputs.preferences.containsScrollable
-        let containsScrollTargetRoleContent = inputs.preferences.containsScrollTargetRoleContent
+        let requiresScrollable = inputs.preferences.requiresScrollable
+        let requiresScrollTargetRoleContent = inputs.preferences.requiresScrollTargetRoleContent
         let scrollTargetRole = inputs.scrollTargetRole
         let scrollTargetRemovePreference = inputs.scrollTargetRemovePreference
         let withinAccessibilityRotor = inputs.withinAccessibilityRotor
-
-        // FIXME
-        var layoutComputer: Attribute<LayoutComputer>!
-        let childGeometry: Attribute<[ViewGeometry]>?
+        var childComputer: Attribute<LayoutComputer>?
+        let childGeometry: OptionalAttribute<[ViewGeometry]>
         let needLayout = inputs.requestsLayoutComputer || inputs.needsGeometry
-        if needLayout || containsScrollable || withinAccessibilityRotor {
-            layoutComputer = Attribute(
+        if needLayout || requiresScrollable || withinAccessibilityRotor {
+            let layoutComputer = Attribute(
                 DynamicLayoutComputer(
                     layout: root.value,
                     environment: inputs.environment,
@@ -37,32 +35,62 @@ extension Layout {
                     layoutMap: .init()
                 )
             )
-            childGeometry = Attribute(
+            childComputer = layoutComputer
+            childGeometry = .init(Attribute(
                 LayoutChildGeometries(
                     parentSize: inputs.size,
                     parentPosition: inputs.position,
                     layoutComputer: layoutComputer
                 )
-            )
+            ))
         } else {
-            childGeometry = nil // .nil here
+            childGeometry = .init()
         }
-
-        // var context2
         var childInputs = inputs
         childInputs.requestsLayoutComputer = false
 
-        if containsScrollTargetRoleContent && scrollTargetRemovePreference {
-            inputs.preferences.containsScrollTargetRoleContent = false
-            inputs.preferences.containsScrollStateRequest = false
+        if requiresScrollTargetRoleContent && scrollTargetRemovePreference {
+            inputs.preferences.requiresScrollTargetRoleContent = false
+            inputs.preferences.requiresScrollStateRequest = false
         }
-        if let role = scrollTargetRole.attribute {
+        if scrollTargetRole.attribute != nil {
             childInputs.base.scrollTargetRole = .init()
             childInputs.base.scrollTargetRemovePreference = true
             childInputs.base.setScrollPosition(storage: nil, kind: .scrollContent)
             childInputs.base.setScrollPositionAnchor(.init(), kind: .scrollContent)
         }
-        _openSwiftUIUnimplementedFailure()
+        func mapMutator(thunk: (inout DynamicLayoutMap) -> ()) -> () {
+            guard let childComputer else { return }
+            childComputer.mutateBody(
+                as: DynamicLayoutComputer<Self>.self,
+                invalidating: true
+            ) { computer in
+                thunk(&computer.layoutMap)
+            }
+        }
+        var (containerInfo, outputs) = DynamicContainer.makeContainer(
+            adaptor: DynamicLayoutViewAdaptor(
+                items: list,
+                childGeometries: childGeometry,
+                mutateLayoutMap: mapMutator(thunk:)
+            ),
+            inputs: childInputs
+        )
+        if let childComputer {
+            childComputer.mutateBody(
+                as: DynamicLayoutComputer<Self>.self,
+                invalidating: true
+            ) { computer in
+                computer.$containerInfo = containerInfo
+            }
+        }
+        if requiresScrollable || scrollTargetRole.attribute == nil || withinAccessibilityRotor {
+            // TODO: Scrollable related
+        }
+        if inputs.requestsLayoutComputer, let childComputer {
+            outputs.layoutComputer = childComputer
+        }
+        return outputs
     }
 }
 

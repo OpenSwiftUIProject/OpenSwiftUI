@@ -24,7 +24,7 @@ package struct UpdateScrollStateRequestKey: PreferenceKey {
 
 extension PreferencesInputs {
     @inline(__always)
-    package var containsScrollStateRequest: Bool {
+    package var requiresScrollStateRequest: Bool {
         get { contains(UpdateScrollStateRequestKey.self) }
         set {
             if newValue {

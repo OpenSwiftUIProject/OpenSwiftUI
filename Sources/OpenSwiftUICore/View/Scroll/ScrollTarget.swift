@@ -125,7 +125,7 @@ extension ScrollTargetRole {
 
 extension PreferencesInputs {
     @inline(__always)
-    package var containsScrollTargetRoleContent: Bool {
+    package var requiresScrollTargetRoleContent: Bool {
         get {
             contains(ScrollTargetRole.ContentKey.self)
         }
