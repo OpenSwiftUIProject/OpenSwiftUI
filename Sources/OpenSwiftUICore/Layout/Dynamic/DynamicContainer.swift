@@ -35,21 +35,35 @@ package struct DynamicContainer {
 
         package private(set) var indexMap: [UInt32: Int] = [:]
 
-        private var displayMap: [UInt32]?
+        private(set) var displayMap: [UInt32]?
 
-        private var removedCount: Int = .zero
+        private(set) var removedCount: Int = .zero
 
-        private var unusedCount: Int = .zero
+        private(set) var unusedCount: Int = .zero
 
-        private var allUnary: Bool = true
+        private(set) var allUnary: Bool = true
 
-        private var seed: UInt32 = .zero
+        private(set) var seed: UInt32 = .zero
 
-        private func viewIndex(id: ID) -> Int? {
+        func viewIndex(id: ID) -> Int? {
             guard let value = indexMap[id.uniqueId] else {
                 return nil
             }
             return value + Int(id.viewIndex)
+        }
+
+        func item(for subgraph: Subgraph) -> ItemInfo? {
+            items.first { info in
+                info.subgraph.isAncestor(of: subgraph)
+            }
+        }
+
+        @inline(__always)
+        subscript(_ index: Int) -> ItemInfo {
+            guard index >= 0 && index < items.count else {
+                preconditionFailure("invalid view index")
+            }
+            return items[index]
         }
 
         package static func == (lhs: DynamicContainer.Info, rhs: DynamicContainer.Info) -> Bool {
@@ -74,15 +88,11 @@ package struct DynamicContainer {
 
         fileprivate var removalOrder: UInt32 = .zero
 
-        fileprivate var precedingViewCount: Int32 = .zero
+        fileprivate(set) var precedingViewCount: Int32 = .zero
 
         fileprivate var resetSeed: UInt32 = .zero
 
         final package private(set) var phase: TransitionPhase?
-
-        final package func `for`<A>(_ type: A.Type) -> DynamicContainer._ItemInfo<A> where A: DynamicContainerAdaptor {
-            unsafeDowncast(self, to: DynamicContainer._ItemInfo<A>.self)
-        }
 
         package init(
             subgraph: Subgraph,
@@ -103,6 +113,15 @@ package struct DynamicContainer {
         package var list: Attribute<any ViewList>? { nil }
 
         package var id: ViewList.ID? { nil }
+
+        final package func `for`<A>(_ type: A.Type) -> DynamicContainer._ItemInfo<A> where A: DynamicContainerAdaptor {
+            unsafeDowncast(self, to: DynamicContainer._ItemInfo<A>.self)
+        }
+
+        @inline(__always)
+        var count: Int32 {
+            viewCount + precedingViewCount
+        }
     }
 
     final package class _ItemInfo<Adaptor>: DynamicContainer.ItemInfo where Adaptor: DynamicContainerAdaptor {
