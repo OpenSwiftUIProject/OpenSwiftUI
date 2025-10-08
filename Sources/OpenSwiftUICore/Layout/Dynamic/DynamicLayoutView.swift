@@ -7,6 +7,7 @@
 //  ID: FF3C661D9D8317A1C8FE2B7FD4EDE12C (SwiftUICore)
 
 import OpenAttributeGraphShims
+import OpenCoreGraphicsShims
 
 // MARK: - Layout + makeDynamicView
 
