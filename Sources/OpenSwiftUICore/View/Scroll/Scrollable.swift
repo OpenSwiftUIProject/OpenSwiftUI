@@ -28,7 +28,7 @@ package struct ScrollablePreferenceKey: PreferenceKey {
 
 extension PreferencesInputs {
     @inline(__always)
-    package var requiresScrollable: Bool {
+    package var containsScrollable: Bool {
         get {
             contains(ScrollablePreferenceKey.self)
         }
@@ -41,4 +41,3 @@ extension PreferencesInputs {
         }
     }
 }
-

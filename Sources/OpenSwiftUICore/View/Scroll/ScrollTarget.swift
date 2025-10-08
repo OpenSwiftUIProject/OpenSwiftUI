@@ -123,6 +123,22 @@ extension ScrollTargetRole {
     }
 }
 
+extension PreferencesInputs {
+    @inline(__always)
+    package var containsScrollTargetRoleContent: Bool {
+        get {
+            contains(ScrollTargetRole.ContentKey.self)
+        }
+        set {
+            if newValue {
+                add(ScrollTargetRole.ContentKey.self)
+            } else {
+                remove(ScrollTargetRole.ContentKey.self)
+            }
+        }
+    }
+}
+
 extension Transaction {
     private struct IsScrollStateValueUpdateKey: TransactionKey {
         static var defaultValue: Bool { false }
