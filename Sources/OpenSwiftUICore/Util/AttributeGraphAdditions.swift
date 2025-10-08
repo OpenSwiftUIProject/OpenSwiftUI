@@ -7,6 +7,13 @@
 
 package import OpenAttributeGraphShims
 
+// FIXME
+extension OAGInputOptions {
+    package static var _4: OAGInputOptions {
+        .init(rawValue: 1 << 2)
+    }
+}
+
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
