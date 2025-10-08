@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by DynamicPreferenceCombiner and DynamicContainerInfo
+//  Status: Blocked by DynamicPreferenceCombiner
 //  ID: E7D4CD2D59FB8C77D6C7E9C534464C17 (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -31,19 +31,19 @@ package struct DynamicContainer {
     package typealias ID = DynamicContainerID
 
     package struct Info: Equatable {
-        package private(set) var items: [DynamicContainer.ItemInfo] = []
+        package fileprivate(set) var items: [DynamicContainer.ItemInfo] = []
 
-        package private(set) var indexMap: [UInt32: Int] = [:]
+        package fileprivate(set) var indexMap: [UInt32: Int] = [:]
 
-        private(set) var displayMap: [UInt32]?
+        fileprivate(set) var displayMap: [UInt32]?
 
-        private(set) var removedCount: Int = .zero
+        fileprivate(set) var removedCount: Int = .zero
 
-        private(set) var unusedCount: Int = .zero
+        fileprivate(set) var unusedCount: Int = .zero
 
-        private(set) var allUnary: Bool = true
+        fileprivate(set) var allUnary: Bool = true
 
-        private(set) var seed: UInt32 = .zero
+        fileprivate(set) var seed: UInt32 = .zero
 
         func viewIndex(id: ID) -> Int? {
             guard let value = indexMap[id.uniqueId] else {
@@ -90,7 +90,7 @@ package struct DynamicContainer {
 
         fileprivate var resetSeed: UInt32 = .zero
 
-        final package private(set) var phase: TransitionPhase?
+        final package fileprivate(set) var phase: TransitionPhase?
 
         package init(
             subgraph: Subgraph,
@@ -112,8 +112,10 @@ package struct DynamicContainer {
 
         package var id: ViewList.ID? { nil }
 
-        final package func `for`<A>(_ type: A.Type) -> DynamicContainer._ItemInfo<A> where A: DynamicContainerAdaptor {
-            unsafeDowncast(self, to: DynamicContainer._ItemInfo<A>.self)
+        final package func `for`<Adapter>(
+            _ type: Adapter.Type
+        ) -> DynamicContainer._ItemInfo<Adapter> where Adapter: DynamicContainerAdaptor {
+            unsafeDowncast(self, to: DynamicContainer._ItemInfo<Adapter>.self)
         }
 
         @inline(__always)
@@ -240,26 +242,16 @@ private struct DynamicPreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringC
 
 // MARK: - DynamicContainerInfo [WIP]
 
-struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute where Adapter: DynamicContainerAdaptor { // FIXME
-    @Attribute
-    var asyncSignal: Void
-
+struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttribute, CustomStringConvertible where Adapter: DynamicContainerAdaptor {
+    @Attribute var asyncSignal: Void
     var adaptor: Adapter
-
     let inputs: _ViewInputs
-
     let outputs: _ViewOutputs
-
     let parentSubgraph: Subgraph
-
     var info: DynamicContainer.Info
-
     var lastUniqueId: UInt32
-
     var lastRemoved: UInt32
-
     var lastResetSeed: UInt32
-
     var needsPhaseUpdate: Bool
 
     init(
@@ -287,8 +279,194 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute where Adapter
 
     typealias Value = DynamicContainer.Info
 
-    func updateValue() {
+    mutating func updateValue() {
+        let viewPhase = inputs.viewPhase.value
+        let resetSeed = viewPhase.resetSeed
+        let disableTransitions: Bool
+        if resetSeed != lastResetSeed {
+            lastResetSeed = resetSeed
+            disableTransitions = true
+        } else {
+            disableTransitions = inputs.base.animationsDisabled
+        }
+        var needsUpdate = false
+        if needsPhaseUpdate {
+            for item in info.items {
+                guard item.phase == .willAppear else {
+                    continue
+                }
+                needsUpdate = true
+                item.phase = .identity
+            }
+            needsPhaseUpdate = false
+        }
+        let (changed, hasDepth) = updateItems(disableTransitions: disableTransitions)
+        if !changed {
+            for (index, item) in info.items.enumerated().reversed() {
+                guard let phase = item.phase else {
+                    continue
+                }
+                guard phase == .didDisappear else {
+                    break
+                }
+                if tryRemovingItem(at: index, disableTransitions: disableTransitions) {
+                    needsUpdate = true
+                }
+            }
+        }
+        if needsUpdate {
+            let totalCount = info.items.count
+            let unusedCount = info.unusedCount
+            let inusedCount = totalCount - unusedCount
+            let removedCount = info.removedCount
+            let validCount = inusedCount - removedCount
+            if validCount < inusedCount {
+                var slice = info.items[validCount..<inusedCount]
+                slice.sort { $0.removalOrder < $1.removalOrder }
+                info.items[validCount..<inusedCount] = slice
+            }
+            info.indexMap.removeAll(keepingCapacity: true)
+            info.allUnary = true
+            Swift.assert(inusedCount > 0)
+            if totalCount != unusedCount {
+                var precedingCount: Int32 = 0
+                var allUnary = true
+                for index in 0..<inusedCount {
+                    let item = info.items[index]
+                    info.indexMap[item.uniqueId] = index
+                    item.precedingViewCount = precedingCount
+                    allUnary = allUnary && item.viewCount == 1
+                    info.allUnary = allUnary
+                    precedingCount &+= item.viewCount
+                }
+            }
+            precondition(info.indexMap.count == inusedCount, "DynamicLayoutItem identifiers must be unique.")
+            if hasDepth {
+                let capacity = abs(removedCount != 0 ? validCount + inusedCount : validCount)
+                var displayMap: [UInt32] = []
+                displayMap.reserveCapacity(capacity)
+                for index in 0 ..< validCount {
+                    displayMap.append(numericCast(index))
+                }
+                func lessThen(_ lhs: UInt32, _ rhs: UInt32) -> Bool {
+                    info.items[Int(lhs)].zIndex < info.items[Int(rhs)].zIndex
+                }
+                if totalCount > 31 {
+                    displayMap.sort(by: lessThen(_:_:))
+                } else {
+                    displayMap.insertionSort(by: lessThen(_:_:))
+                }
+                if removedCount != 0 {
+                    func addRemoved() {
+                        for index in validCount ..< inusedCount {
+                            displayMap.append(numericCast(index))
+                        }
+                    }
+                    let hasAddRemoved: Bool
+                    if isLinkedOnOrAfter(.v5) {
+                        addRemoved()
+                        hasAddRemoved = true
+                    } else {
+                        hasAddRemoved = false
+                    }
+                    if validCount != 0 {
+                        for index in 0 ..< validCount {
+                            displayMap.append(numericCast(displayMap[index]))
+                        }
+                    }
+                    if !hasAddRemoved {
+                        addRemoved()
+                    }
+                    var slice = displayMap[validCount..<validCount + inusedCount]
+                    slice.insertionSort(by: lessThen(_:_:))
+                    displayMap[validCount..<validCount + inusedCount] = slice
+                }
+                info.displayMap = displayMap
+            } else {
+                info.displayMap = nil
+            }
+            if totalCount != unusedCount {
+                for index in 0 ..< inusedCount {
+                    let target: Int
+                    if let displayMap = info.displayMap {
+                        if removedCount == 0 {
+                            target = Int(displayMap[index])
+                        } else {
+                            target = Int(displayMap[info.items.count - (info.unusedCount + info.removedCount)])
+                        }
+                    } else {
+                        if removedCount == 0 {
+                            target = index
+                        } else {
+                            let i = index - info.removedCount
+                            target = i >= 0 ? i : info.items.count - (info.unusedCount + info.removedCount)
+                        }
+                    }
+                    info.items[target].subgraph.index = UInt32(index)
+                }
+            }
+        } else {
+            if info.items.isEmpty, hasValue {
+                return
+            }
+        }
+        info.seed &+= 1
+        value = info
+    }
+
+    func makeItem(
+        _ item: Adapter.Item,
+        uniqueId: Swift.UInt32,
+        container: Attribute<DynamicContainer.Info>,
+        disableTransitions: Bool
+    ) -> DynamicContainer.ItemInfo {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    private mutating func updateItems(
+        disableTransitions: Bool
+    ) -> (changed: Bool, hasDepth: Bool) {
+        guard let items = adaptor.updatedItems() else {
+            _openSwiftUIUnimplementedFailure()
+            return (false, false)
+        }
+        _openSwiftUIUnimplementedFailure()
+        return (false, false)
+    }
+
+    mutating func tryRemovingItem(
+        at index: Int,
+        disableTransitions: Bool
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+        return .random()
+    }
+
+    func unremoveItem(at index: Int) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func eraseItem(at index: Int) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    // DynamicPreferenceCombiner + ObservedAttribute
+
+    mutating func destroy() {
+        for item in info.items {
+            item.listener?.viewGraph = nil
+            if item.phase == nil {
+                let subgraph = item.subgraph
+                subgraph.willInvalidate(isInserted: false)
+                subgraph.invalidate()
+            }
+        }
+    }
+
+    // DynamicPreferenceCombiner + CustomStringConvertible
+
+    var description: String {
+        "DynamicContainer<\(Adapter.self)>"
     }
 }
 
