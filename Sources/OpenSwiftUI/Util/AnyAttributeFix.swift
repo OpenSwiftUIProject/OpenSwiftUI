@@ -158,6 +158,11 @@ extension Graph {
     }
 }
 
+// NOTE: Can't do Subgraph.init here
+package func Subgraph(graph: Graph, attribute: AnyAttribute) -> Subgraph {
+    preconditionFailure("#39")
+}
+
 extension Subgraph {
     package func forEach(_ flags: AnyAttribute.Flags, _ callback: (AnyAttribute) -> Void) {
         preconditionFailure("#39")
