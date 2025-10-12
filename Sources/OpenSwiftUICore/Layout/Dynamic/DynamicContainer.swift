@@ -340,7 +340,9 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             needsPhaseUpdate = false
         }
         let (changed, hasDepth) = updateItems(disableTransitions: disableTransitions)
-        if !changed {
+        if changed {
+            needsUpdate = true
+        } else {
             for (index, item) in info.items.enumerated().reversed() {
                 guard let phase = item.phase else {
                     continue
