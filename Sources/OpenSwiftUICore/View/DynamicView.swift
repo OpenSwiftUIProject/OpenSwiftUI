@@ -237,7 +237,12 @@ private struct DynamicViewList<V>: StatefulRule, AsyncAttribute where V: Dynamic
         }
 
         func bindID(_ id: inout ViewList.ID) {
-            id.bind(explicitID: id, owner: owner, isUnary: isUnary, reuseID: Int(bitPattern: ObjectIdentifier(Int.self)))
+            id.bind(
+                explicitID: self.id,
+                owner: owner,
+                isUnary: isUnary,
+                reuseID: Int(bitPattern: ObjectIdentifier(Int.self))
+            )
         }
     }
 }
