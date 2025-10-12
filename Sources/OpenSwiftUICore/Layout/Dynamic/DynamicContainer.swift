@@ -239,7 +239,7 @@ private struct DynamicPreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringC
     }
 }
 
-// MARK: - DynamicContainerInfo [WIP]
+// MARK: - DynamicContainerInfo
 
 struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttribute, CustomStringConvertible where Adapter: DynamicContainerAdaptor {
     @Attribute var asyncSignal: Void
@@ -582,37 +582,34 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         at index: Int,
         disableTransitions: Bool
     ) -> Bool {
-        let items = info.items
-        guard let phase = items[index].phase else {
+        guard let phase = info.items[index].phase else {
             return false
         }
         switch phase {
         case .willAppear:
             preconditionFailure("")
         case .identity:
-            guard !disableTransitions, items[index].needsTransitions else {
+            guard !disableTransitions, info.items[index].needsTransitions else {
                 eraseItem(at: index)
                 return true
             }
             lastRemoved = max(lastRemoved &+ 1, 1)
-            items[index].removalOrder = lastRemoved
+            info.items[index].removalOrder = lastRemoved
             info.removedCount &+= 1
-            items[index].phase = .didDisappear
-            if let listener = items[index].listener {
-                listener.viewGraph = nil
-            }
+            info.items[index].phase = .didDisappear
+            info.items[index].listener?.viewGraph = nil
             let newListener = DynamicAnimationListener(
                 viewGraph: .current,
                 asyncSignal: WeakAttribute($asyncSignal)
             )
-            items[index].listener = newListener
+            info.items[index].listener = newListener
             newListener.animationWasAdded()
             Update.enqueueAction { // TODO: reason
                 newListener.animationWasRemoved()
             }
             return false
         case .didDisappear:
-            let listener = items[index].listener!
+            let listener = info.items[index].listener!
             guard listener.count == 0 else {
                 return false
             }
@@ -622,25 +619,24 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
     }
 
     mutating func unremoveItem(at index: Int) {
-        let items = info.items
         let phase: TransitionPhase
-        switch items[index].phase {
+        switch info.items[index].phase {
         case .willAppear, .identity:
-            items[index].resetSeed &-= 1
+            info.items[index].resetSeed &-= 1
             phase = .identity
         case .didDisappear:
             info.removedCount &-= 1
-            items[index].removalOrder = 0
+            info.items[index].removalOrder = 0
             phase = .identity
         case nil:
             info.unusedCount &-= 1
-            let subgraph = items[index].subgraph
+            let subgraph = info.items[index].subgraph
             parentSubgraph.addChild(subgraph)
             subgraph.didReinsert()
             phase = .willAppear
         }
-        let newPhase = items[index].needsTransitions ? phase : .identity
-        items[index].phase = newPhase
+        let newPhase = info.items[index].needsTransitions ? phase : .identity
+        info.items[index].phase = newPhase
         guard newPhase == .willAppear else {
             return
         }
@@ -654,11 +650,44 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         }
     }
 
-    func eraseItem(at index: Int) {
-        _openSwiftUIUnimplementedWarning()
+    mutating func eraseItem(at index: Int) {
+        let phase = info.items[index].phase
+        switch phase {
+        case .identity, nil:
+            preconditionFailure("")
+        case .willAppear:
+            break
+        case .didDisappear:
+            info.removedCount &-= 1
+        }
+        let unusedCount = info.unusedCount
+        let maxUnusedItems = Adapter.maxUnusedItems
+        let subgraph = info.items[index].subgraph
+        let item = info.items[index].for(Adapter.self)
+        if unusedCount < maxUnusedItems {
+            info.items.remove(at: index)
+            item.removalOrder = 0
+            item.resetSeed &+= 1
+            item.phase = nil
+            item.listener?.viewGraph = nil
+            item.listener = nil
+            info.items.append(item)
+            info.unusedCount = unusedCount &+ 1
+            subgraph.willRemove()
+            parentSubgraph.removeChild(subgraph)
+        } else {
+            adaptor.removeItemLayout(
+                uniqueId: item.uniqueId,
+                itemLayout: item.itemLayout
+            )
+            item.listener?.viewGraph = nil
+            info.items.remove(at: index)
+            subgraph.willInvalidate(isInserted: true)
+            subgraph.invalidate()
+        }
     }
 
-    // DynamicPreferenceCombiner + ObservedAttribute
+    // MARK: - DynamicContainerInfo + ObservedAttribute
 
     mutating func destroy() {
         for item in info.items {
@@ -671,7 +700,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         }
     }
 
-    // DynamicPreferenceCombiner + CustomStringConvertible
+    // MARK: - DynamicContainerInfo + CustomStringConvertible
 
     var description: String {
         "DynamicContainer<\(Adapter.self)>"
