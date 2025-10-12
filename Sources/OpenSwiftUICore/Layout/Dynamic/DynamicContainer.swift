@@ -414,13 +414,68 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         value = info
     }
 
-    func makeItem(
+    mutating func makeItem(
         _ item: Adapter.Item,
-        uniqueId: Swift.UInt32,
+        uniqueId: UInt32,
         container: Attribute<DynamicContainer.Info>,
         disableTransitions: Bool
     ) -> DynamicContainer.ItemInfo {
-        _openSwiftUIUnimplementedFailure()
+        let phase: TransitionPhase
+        let needsTransitions = item.needsTransitions
+        if !disableTransitions && needsTransitions {
+            let weakAsyncSignal = WeakAttribute($asyncSignal)
+            GraphHost.currentHost.continueTransaction {
+                guard let asyncSignal = weakAsyncSignal.attribute else {
+                    return
+                }
+                asyncSignal.invalidateValue()
+            }
+            needsPhaseUpdate = true
+            phase = .willAppear
+        } else {
+            phase = .identity
+        }
+        let newSubgraph = Subgraph(
+            graph: parentSubgraph.graph,
+            attribute: item.list?.identifier ?? .nil
+        )
+        parentSubgraph.addChild(newSubgraph)
+        return newSubgraph.apply {
+            var inputs = inputs
+            inputs.copyCaches()
+            let (containerOutputs, itemLayout) = adaptor.makeItemLayout(
+                item: item,
+                uniqueId: uniqueId,
+                inputs: inputs,
+                containerInfo: container
+            ) {
+                $0.transaction = Attribute(
+                    DynamicTransaction(
+                        info: container,
+                        transaction: $0.transaction,
+                        uniqueId: uniqueId,
+                        wasRemoved: false
+                    )
+                )
+                $0.viewPhase = Attribute(
+                    DynamicViewPhase(
+                        info: container,
+                        phase: $0.viewPhase,
+                        uniqueId: uniqueId
+                    )
+                )
+            }
+            return DynamicContainer._ItemInfo<Adapter>(
+                item: item,
+                itemLayout: itemLayout,
+                subgraph: newSubgraph,
+                uniqueId: uniqueId,
+                viewCount: Int32(item.count),
+                phase: phase,
+                needsTransitions: needsTransitions,
+                outputs: containerOutputs
+            )
+        }
     }
 
     private mutating func updateItems(
