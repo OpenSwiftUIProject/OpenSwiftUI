@@ -14,6 +14,20 @@ extension OAGInputOptions {
     }
 }
 
+// FIXME
+
+extension Subgraph {
+    var index: UInt32 {
+        get {
+            _openSwiftUIUnimplementedWarning()
+            return .zero
+        }
+        set {
+            _openSwiftUIUnimplementedWarning()
+        }
+    }
+}
+
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
