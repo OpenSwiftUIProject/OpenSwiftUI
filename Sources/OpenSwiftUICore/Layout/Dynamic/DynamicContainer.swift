@@ -621,8 +621,37 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         }
     }
 
-    func unremoveItem(at index: Int) {
-        _openSwiftUIUnimplementedWarning()
+    mutating func unremoveItem(at index: Int) {
+        let items = info.items
+        let phase: TransitionPhase
+        switch items[index].phase {
+        case .willAppear, .identity:
+            items[index].resetSeed &-= 1
+            phase = .identity
+        case .didDisappear:
+            info.removedCount &-= 1
+            items[index].removalOrder = 0
+            phase = .identity
+        case nil:
+            info.unusedCount &-= 1
+            let subgraph = items[index].subgraph
+            parentSubgraph.addChild(subgraph)
+            subgraph.didReinsert()
+            phase = .willAppear
+        }
+        let newPhase = items[index].needsTransitions ? phase : .identity
+        items[index].phase = newPhase
+        guard newPhase == .willAppear else {
+            return
+        }
+        needsPhaseUpdate = true
+        let weakAsyncSignal = WeakAttribute($asyncSignal)
+        GraphHost.currentHost.continueTransaction {
+            guard let asyncSignal = weakAsyncSignal.attribute else {
+                return
+            }
+            asyncSignal.invalidateValue()
+        }
     }
 
     func eraseItem(at index: Int) {
