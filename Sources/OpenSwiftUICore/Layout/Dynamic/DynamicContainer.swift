@@ -147,7 +147,7 @@ package struct DynamicContainer {
             )
         }
 
-        package private(set) var item: Adaptor.Item
+        package fileprivate(set) var item: Adaptor.Item
 
         package let itemLayout: Adaptor.ItemLayout
 
@@ -426,28 +426,118 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
     private mutating func updateItems(
         disableTransitions: Bool
     ) -> (changed: Bool, hasDepth: Bool) {
+        var (changed, hasDepth) = (false, false)
         guard let items = adaptor.updatedItems() else {
-            _openSwiftUIUnimplementedFailure()
-            return (false, false)
+            hasDepth = info.displayMap != nil
+            return (changed, hasDepth)
         }
-        _openSwiftUIUnimplementedFailure()
-        return (false, false)
+        var target = 0
+        var count = info.items.count
+        adaptor.foreachItem(items: items) { item in
+            var reusedIndex = -1
+            var foundMatch = false
+            for index in target ..< count {
+                let inforItem = info.items[index].for(Adapter.self)
+                guard inforItem.item.matchesIdentity(of: item) else {
+                    if reusedIndex < 0, inforItem.phase == nil {
+                        reusedIndex = inforItem.item.canBeReused(by: item) ? index : reusedIndex
+                    }
+                    continue
+                }
+                foundMatch = true
+                if target != index {
+                    info.items.swapAt(target, index)
+                    changed = true
+                }
+                inforItem.item = item
+                if inforItem.phase != .identity {
+                    unremoveItem(at: target)
+                    changed = true
+                }
+                break
+            }
+            if !foundMatch {
+                if reusedIndex < 0 {
+                    if Adapter.Item.supportsReuse {
+                        for index in target ..< count {
+                            let infoItem = info.items[index].for(Adapter.self)
+                            guard !infoItem.needsTransitions,
+                               infoItem.item.canBeReused(by: item),
+                               !Adapter.containsItem(items, infoItem.item) else {
+                                continue
+                            }
+                            reusedIndex = index
+                            break
+                        }
+                    }
+                }
+                if reusedIndex >= 0 {
+                    let infoItem = info.items[reusedIndex].for(Adapter.self)
+                    infoItem.item = item
+                    unremoveItem(at: reusedIndex)
+                    if target < reusedIndex {
+                        info.items.swapAt(target, reusedIndex)
+                    }
+                } else {
+                    lastUniqueId &+= 1
+                    let createdItem = makeItem(
+                        item,
+                        uniqueId: lastUniqueId,
+                        container: attribute,
+                        disableTransitions: disableTransitions
+                    )
+                    info.items.append(createdItem)
+                    if target < count {
+                        info.items.swapAt(target, count)
+                    }
+                    count &+= 1
+                }
+                changed = true
+            }
+            let zIndex = item.zIndex
+            hasDepth = hasDepth || (zIndex != 0)
+
+            let infoItem = info.items[target]
+            if zIndex != infoItem.zIndex {
+                infoItem.zIndex = zIndex
+                changed = true
+            }
+            target &+= 1
+        }
+        for index in (target ..< count).reversed() {
+            let phase = info.items[index].phase
+            guard !tryRemovingItem(at: index, disableTransitions: disableTransitions) else {
+                changed = true
+                continue
+            }
+            let infoItem = info.items[index]
+            let zIndex = infoItem.zIndex
+            hasDepth = hasDepth || (zIndex != 0)
+            if zIndex != info.items[target].zIndex {
+                info.items[target].zIndex = zIndex
+                changed = true
+            }
+            if phase != info.items[target].phase {
+                changed = true
+            }
+        }
+        return (changed, hasDepth)
     }
 
     mutating func tryRemovingItem(
         at index: Int,
         disableTransitions: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
         return .random()
     }
 
     func unremoveItem(at index: Int) {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
     }
 
     func eraseItem(at index: Int) {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
     }
 
     // DynamicPreferenceCombiner + ObservedAttribute
