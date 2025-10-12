@@ -1383,9 +1383,24 @@ extension _ViewListOutputs {
     package mutating func multiModifier<T>(_ modifier: _GraphValue<T>, inputs: _ViewListInputs) where T: ViewModifier {
         switch views {
         case let .staticList(elements):
-            views = .staticList(ModifiedElements(base: elements, modifier: WeakAttribute(modifier.value), baseInputs: inputs.base))
-        case .dynamicList(_, _):
-            _openSwiftUIUnimplementedFailure()
+            views = .staticList(
+                ModifiedElements(
+                    base: elements,
+                    modifier: WeakAttribute(
+                        modifier.value
+                    ),
+                    baseInputs: inputs.base
+                )
+            )
+        case let .dynamicList(attribute, listModifier):
+            views = .dynamicList(
+                attribute,
+                ModifiedViewList.ListModifier(
+                    pred: listModifier,
+                    modifier: modifier,
+                    inputs: inputs.base
+                )
+            )
         }
     }
 
@@ -1563,6 +1578,102 @@ private struct ModifiedElements<Modifier>: ViewList.Elements where Modifier: Vie
     func retain() -> Release? {
         base.retain()
     }
+}
+
+// MARK: - ModifiedViewList [6.5.4]
+
+private struct ModifiedViewList<Modifier>: ViewList where Modifier: ViewModifier {
+    let base: ViewList
+    let modifier: WeakAttribute<Modifier>
+    let inputs: _GraphInputs
+
+    func count(style: IteratorStyle) -> Int {
+        base.count(style: style)
+    }
+
+    func estimatedCount(style: IteratorStyle) -> Int {
+        base.estimatedCount(style: style)
+    }
+
+    var traitKeys: ViewTraitKeys? {
+        base.traitKeys
+    }
+
+    var viewIDs: ID.Views? {
+        base.viewIDs
+    }
+
+    var traits: ViewTraitCollection {
+        base.traits
+    }
+
+    func applyNodes(
+        from start: inout Int,
+        style: IteratorStyle,
+        list: Attribute<any ViewList>?,
+        transform: inout SublistTransform,
+        to body: ApplyBody
+    ) -> Bool {
+        let item = Transform(modifier: modifier, inputs: inputs)
+        transform.push(item)
+        defer { transform.pop() }
+        return base.applyNodes(
+            from: &start,
+            style: style,
+            list: list,
+            transform: &transform,
+            to: body
+        )
+    }
+
+    func edit(
+        forID id: ID,
+        since transaction: TransactionID
+    ) -> Edit? {
+        base.edit(forID: id, since: transaction)
+    }
+
+    func firstOffset<OtherID>(
+        forID id: OtherID,
+        style: IteratorStyle
+    ) -> Int? where OtherID : Hashable {
+        base.firstOffset(forID: id, style: style)
+    }
+
+    struct Transform: ViewList.SublistTransform.Item {
+        var modifier: WeakAttribute<Modifier>
+        var inputs: _GraphInputs
+
+        func apply(sublist: inout _ViewList_Sublist) {
+            sublist.elements = ModifiedElements(base: sublist.elements, modifier: modifier, baseInputs: inputs)
+        }
+
+        func bindID(_ id: inout _ViewList_ID) {
+            _openSwiftUIEmptyStub()
+        }
+    }
+
+    class ListModifier: _ViewListOutputs.ListModifier {
+        let pred: _ViewListOutputs.ListModifier?
+        let modifier: WeakAttribute<Modifier>
+        let inputs: _GraphInputs
+
+        init(
+            pred: _ViewListOutputs.ListModifier?,
+            modifier: _GraphValue<Modifier>,
+            inputs: _GraphInputs
+        ) {
+            self.pred = pred
+            self.modifier = WeakAttribute(modifier.value)
+            self.inputs = inputs
+        }
+
+        override func apply(to list: inout any ViewList) {
+            pred?.apply(to: &list)
+            list = ModifiedViewList(base: list, modifier: modifier, inputs: inputs)
+        }
+    }
+
 }
 
 // MARK: - BaseViewList [6.4.41]
