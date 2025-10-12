@@ -89,7 +89,7 @@ private struct IDPhase<ID>: StatefulRule, AsyncAttribute where ID: Hashable {
     typealias Value = _GraphInputs.Phase
 
     mutating func updateValue() {
-        if lastID != id{
+        if lastID != id {
             if lastID != nil {
                 delta &+= 1
             }
