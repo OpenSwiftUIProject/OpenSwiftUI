@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by DynamicPreferenceCombiner
+//  Status: Complete
 //  ID: E7D4CD2D59FB8C77D6C7E9C534464C17 (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -167,7 +167,7 @@ package struct DynamicContainer {
         var outputs = _ViewOutputs()
         for key in inputs.preferences.keys {
             func project<K>(_ key: K.Type) where K: PreferenceKey {
-                outputs[key] = Attribute(DynamicPreferenceCombiner<K>(info: .init()))
+                outputs[key] = Attribute(DynamicPreferenceCombiner<K>())
             }
             project(key)
         }
@@ -222,21 +222,61 @@ private class DynamicAnimationListener: AnimationListener, @unchecked Sendable {
     }
 }
 
-// MARK: - DynamicPreferenceCombiner [WIP]
+// MARK: - DynamicPreferenceCombiner
 
 private struct DynamicPreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
-    @OptionalAttribute
-    var info: DynamicContainer.Info?
+    @OptionalAttribute var info: DynamicContainer.Info?
+
+    init() {
+        _openSwiftUIEmptyStub()
+    }
 
     var value: K.Value {
-        // TODO:
-        _openSwiftUIUnimplementedWarning()
-        return K.defaultValue
+        let info = info!
+        let inusedCount = info.items.count - info.unusedCount
+        let validCount = inusedCount - info.removedCount
+
+        var value = K.defaultValue
+        let includesRemovedValues = inusedCount != validCount && K._includesRemovedValues
+        let count = includesRemovedValues ? inusedCount : validCount
+
+        var initialValue = true
+        for index in 0 ..< count {
+            let itemIndex: Int
+            if let displayMap = info.displayMap {
+                if includesRemovedValues {
+                    itemIndex = Int(displayMap[validCount + index])
+                } else {
+                    itemIndex = Int(displayMap[index])
+                }
+            } else {
+                if includesRemovedValues {
+                    itemIndex = index >= info.removedCount ? index &- info.removedCount : validCount &+ index
+                } else {
+                    itemIndex = index
+                }
+            }
+            let item = info.items[itemIndex]
+            guard let attribute = item.outputs[K.self] else {
+                return value
+            }
+            if initialValue {
+                value = attribute.value
+            } else {
+                K.reduce(value: &value) {
+                    attribute.value
+                }
+            }
+            initialValue = false
+        }
+        return value
     }
 
     var description: String {
         "∪+ \(K.readableName)"
     }
+
+    static var initialValue: K.Value { K.defaultValue }
 }
 
 // MARK: - DynamicContainerInfo
