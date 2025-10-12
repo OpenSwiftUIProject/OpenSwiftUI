@@ -200,12 +200,11 @@ package struct DynamicContainer {
 private class DynamicAnimationListener: AnimationListener, @unchecked Sendable {
     weak var viewGraph: ViewGraph?
     let asyncSignal: WeakAttribute<Void>
-    var count: Int
+    var count: Int = 0
 
     init(viewGraph: ViewGraph?, asyncSignal: WeakAttribute<Void>) {
         self.viewGraph = viewGraph
         self.asyncSignal = asyncSignal
-        self.count = 0
     }
 
     override func animationWasAdded() {
@@ -583,8 +582,43 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         at index: Int,
         disableTransitions: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedWarning()
-        return .random()
+        let items = info.items
+        guard let phase = items[index].phase else {
+            return false
+        }
+        switch phase {
+        case .willAppear:
+            preconditionFailure("")
+        case .identity:
+            guard !disableTransitions, items[index].needsTransitions else {
+                eraseItem(at: index)
+                return true
+            }
+            lastRemoved = max(lastRemoved &+ 1, 1)
+            items[index].removalOrder = lastRemoved
+            info.removedCount &+= 1
+            items[index].phase = .didDisappear
+            if let listener = items[index].listener {
+                listener.viewGraph = nil
+            }
+            let newListener = DynamicAnimationListener(
+                viewGraph: .current,
+                asyncSignal: WeakAttribute($asyncSignal)
+            )
+            items[index].listener = newListener
+            newListener.animationWasAdded()
+            Update.enqueueAction { // TODO: reason
+                newListener.animationWasRemoved()
+            }
+            return false
+        case .didDisappear:
+            let listener = items[index].listener!
+            guard listener.count == 0 else {
+                return false
+            }
+            eraseItem(at: index)
+            return true
+        }
     }
 
     func unremoveItem(at index: Int) {
