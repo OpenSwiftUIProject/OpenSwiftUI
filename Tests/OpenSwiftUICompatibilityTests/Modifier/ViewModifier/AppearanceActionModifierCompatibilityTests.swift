@@ -54,9 +54,11 @@ struct AppearanceActionModifierCompatibilityTests {
                             }
                         }
                         Helper.result += "A"
+                        Helper.result += toggle ? "T" : "F"
                     }
                     .onDisappear {
                         Helper.result += "D"
+                        Helper.result += toggle ? "T" : "F"
                     }
                     .id(toggle)
             }
@@ -69,7 +71,6 @@ struct AppearanceActionModifierCompatibilityTests {
                 )
             )
         }
-        
-        await #expect(Helper.result == "AADD")
+        await #expect(Helper.result == "AFATDTDT")
     }
 }
