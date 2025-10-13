@@ -2,7 +2,7 @@
 //  IDView.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: D4C7BC89F06A89A4754FA9F578FD2C57 (SwiftUI)
 //  ID: ADF2FC9997986A8A2C672C0F3AA33367 (SwiftUICore)
@@ -11,6 +11,7 @@ package import OpenAttributeGraphShims
 
 // MARK: - IDView
 
+@available(OpenSwiftUI_v1_0, *)
 @usableFromInline
 @frozen
 package struct IDView<Content, ID>: View where Content: View, ID: Hashable {
@@ -42,6 +43,7 @@ extension View {
     ///
     /// When the proxy value specified by the `id` parameter changes, the
     /// identity of the view — for example, its state — is reset.
+    @available(OpenSwiftUI_v1_0, *)
     @inlinable
     nonisolated public func id<ID>(_ id: ID) -> some View where ID: Hashable {
         return IDView(self, id: id)
@@ -50,19 +52,19 @@ extension View {
 
 // MARK: - IDView + makeView implementation
 
+@available(OpenSwiftUI_v1_0, *)
 extension IDView {
     @usableFromInline
     package static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        // FIXME: makeImplicitRoot is not implemented yet
-//        if _SemanticFeature_v2.isEnabled {
-//            return makeImplicitRoot(view: view, inputs: inputs)
-//        } else {
+        if _SemanticFeature_v2.isEnabled {
+            return makeImplicitRoot(view: view, inputs: inputs)
+        } else {
             let id = view.value[offset: { .of(&$0.id) }]
             let phase = IDPhase(id: id, phase: inputs.viewPhase, lastID: nil, delta: 0)
             var inputs = inputs
             inputs.viewPhase = Attribute(phase)
             return Content.makeDebuggableView(view: view[offset: { .of(&$0.content)}], inputs: inputs)
-//        }
+        }
     }
 }
 
@@ -87,7 +89,7 @@ private struct IDPhase<ID>: StatefulRule, AsyncAttribute where ID: Hashable {
     typealias Value = _GraphInputs.Phase
 
     mutating func updateValue() {
-        if lastID != id{
+        if lastID != id {
             if lastID != nil {
                 delta &+= 1
             }
@@ -101,12 +103,14 @@ private struct IDPhase<ID>: StatefulRule, AsyncAttribute where ID: Hashable {
 
 // MARK: - IDView + makeViewList implementation
 
+@available(OpenSwiftUI_v1_0, *)
 extension IDView {
     @usableFromInline
     package static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
         makeDynamicViewList(metadata: (), view: view, inputs: inputs)
     }
 
+    @available(OpenSwiftUI_v2_0, *)
     @usableFromInline
     package static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         Content._viewListCount(inputs: inputs)

@@ -533,10 +533,10 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             var reusedIndex = -1
             var foundMatch = false
             for index in target ..< count {
-                let inforItem = info.items[index].for(Adapter.self)
-                guard inforItem.item.matchesIdentity(of: item) else {
-                    if reusedIndex < 0, inforItem.phase == nil {
-                        reusedIndex = inforItem.item.canBeReused(by: item) ? index : reusedIndex
+                let infoItem = info.items[index].for(Adapter.self)
+                guard infoItem.item.matchesIdentity(of: item) else {
+                    if reusedIndex < 0, infoItem.phase == nil {
+                        reusedIndex = infoItem.item.canBeReused(by: item) ? index : reusedIndex
                     }
                     continue
                 }
@@ -545,8 +545,8 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                     info.items.swapAt(target, index)
                     changed = true
                 }
-                inforItem.item = item
-                if inforItem.phase != .identity {
+                infoItem.item = item
+                if infoItem.phase != .identity {
                     unremoveItem(at: target)
                     changed = true
                 }
@@ -695,9 +695,9 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
     mutating func eraseItem(at index: Int) {
         let phase = info.items[index].phase
         switch phase {
-        case .identity, nil:
+        case .willAppear, nil:
             preconditionFailure("")
-        case .willAppear:
+        case .identity:
             break
         case .didDisappear:
             info.removedCount &-= 1
