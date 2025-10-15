@@ -268,6 +268,44 @@ struct OpacityResponderFilter: StatefulRule {
     }
 }
 
-// TODO: EmptyOpacityAccessibilityProvider
+// MARK: - OpacityAccessibilityProvider
 
-// TODO: _GraphInputs.OpacityAccessibilityProviderKey
+protocol OpacityAccessibilityProvider {
+    static func makeOpacity(
+        effect: @autoclosure () -> Attribute<_OpacityEffect>,
+        inputs: _ViewInputs,
+        outputs: inout _ViewOutputs
+    )
+}
+
+// MARK: - EmptyOpacityAccessibilityProvider
+
+struct EmptyOpacityAccessibilityProvider: OpacityAccessibilityProvider {
+    static func makeOpacity(
+        effect: @autoclosure () -> Attribute<_OpacityEffect>,
+        inputs: _ViewInputs,
+        outputs: inout _ViewOutputs
+    ) {
+        _openSwiftUIEmptyStub()
+    }
+}
+
+// MARK: - OpacityAccessibilityProviderKey
+
+extension _GraphInputs {
+    private struct OpacityAccessibilityProviderKey: GraphInput {
+        static let defaultValue: OpacityAccessibilityProvider.Type = EmptyOpacityAccessibilityProvider.self
+    }
+
+    var opacityAccessibilityProvider: OpacityAccessibilityProvider.Type {
+        get { self[OpacityAccessibilityProviderKey.self] }
+        set { self[OpacityAccessibilityProviderKey.self] = newValue }
+    }
+}
+
+extension _ViewInputs {
+    var opacityAccessibilityProvider: OpacityAccessibilityProvider.Type {
+        get { base.opacityAccessibilityProvider }
+        set { base.opacityAccessibilityProvider = newValue }
+    }
+}
