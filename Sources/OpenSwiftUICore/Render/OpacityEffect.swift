@@ -231,6 +231,17 @@ public struct OpacityTransition: Transition {
     }
 
     public static let properties: TransitionProperties = .init(hasMotion: false)
+
+    public func _makeContentTransition(
+        transition: inout _Transition_ContentTransition
+    ) {
+        switch transition.operation {
+        case .hasContentTransition:
+            transition.result = .bool(false)
+        case .effects:
+            transition.result = .effects([.init(type: .opacity)])
+        }
+    }
 }
 
 @available(*, unavailable)
