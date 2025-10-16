@@ -477,7 +477,7 @@ extension PreferencesOutputs {
 
 extension DisplayList.Item {
     package mutating func canonicalize(options: DisplayList.Options = .init()) {
-        // TODO
+        // TODO eg. .opacity(1.0) -> .identity
     }
 
     // package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool
