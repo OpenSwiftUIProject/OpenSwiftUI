@@ -62,10 +62,20 @@ extension DisplayList.Item {
             switch content.value {
             case let .placeholder(id: identity):
                 printer.print("@\(identity))")
+            case let .color(resolved):
+                // FIXME
+                printer.print("(c \(resolved))")
             default:
                 // TOOD
                 break
             }
+        case let .effect(effect, displayList):
+            // FIXME
+            printer.push("E")
+            for item in displayList.items {
+                item.printMinimally(into: &printer)
+            }
+            printer.pop()
         default:
             // TODO
             break
