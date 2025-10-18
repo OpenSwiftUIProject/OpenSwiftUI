@@ -35,30 +35,21 @@ struct IDViewTests {
         graph.setRootView(ContentView())
         graph.setProposedSize(CGSize(width: 100, height: 100))
         let (displayList, _) = graph.displayList()
-
         let expectRegex = try! Regex(#"""
         \(display-list
           \(item #:identity \d+ #:version \d+
-            \(frame \([^)]+\)\)\)\)
-        """#)
-        #expect(displayList.description.contains(expectRegex))
-        withKnownIssue("Blocked by DisplayList.print and canonicalize") {
-            let expectRegex = try! Regex(#"""
-            \(display-list
+            \(frame \([^)]+\)\)
+            \(effect
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
-                \(effect
-                  \(item #:identity \d+ #:version \d+
-                    \(frame \([^)]+\)\)
-                    \(content-seed \d+\)
-                    \(color #[0-9A-F]{8}\)\)
-                  \(item #:identity \d+ #:version \d+
-                    \(frame \([^)]+\)\)
-                    \(content-seed \d+\)
-                    \(color #[0-9A-F]{8}\)\)\)\)\)
-            """#)
-            #expect(displayList.description.contains(expectRegex))
-        }
+                \(content-seed \d+\)
+                \(color #[0-9A-F]{8}\)\)
+              \(item #:identity \d+ #:version \d+
+                \(frame \([^)]+\)\)
+                \(content-seed \d+\)
+                \(color #[0-9A-F]{8}\)\)\)\)\)
+        """#)
+        #expect(displayList.description.contains(expectRegex))
     }
     #endif
 }
