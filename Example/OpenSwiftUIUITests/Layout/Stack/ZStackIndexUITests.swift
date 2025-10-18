@@ -10,7 +10,7 @@ import SnapshotTesting
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct ZStackIndexUITests {
     @Test
-    func zIndexExample() {
+    func rotateOverlap() {
         struct ContentView: View {
             var body: some View {
                 VStack {
@@ -30,11 +30,9 @@ struct ZStackIndexUITests {
                 }
             }
         }
-        withKnownIssue {
-            openSwiftUIAssertSnapshot(
-                of: ContentView(),
-                size: CGSize(width: 200, height: 200)
-            )
-        }
+        openSwiftUIAssertSnapshot(
+            of: ContentView(),
+            size: CGSize(width: 200, height: 200)
+        )
     }
 }
