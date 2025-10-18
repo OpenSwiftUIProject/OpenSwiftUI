@@ -31,16 +31,22 @@ package struct DynamicLayoutMap {
             map.first(where: { $0.id == id })?.value ?? .init()
         }
         set {
-            let index = map.firstIndex(where: { $0.id == id })
-            if let index {
-                if newValue.isEmpty {
-                    map.remove(at: index)
-                } else {
-                    map[index].value = newValue
-                }
-            } else {
+            if map.isEmpty {
                 if !newValue.isEmpty {
                     map.insert((id, newValue), at: 0)
+                }
+            } else {
+                let index = map.lowerBound { $0.id < id }
+                if index != map.count, map[index].id == id {
+                    if newValue.isEmpty {
+                        map.remove(at: index)
+                    } else {
+                        map[index].value = newValue
+                    }
+                } else {
+                    if !newValue.isEmpty {
+                        map.insert((id, .init()), at: index)
+                    }
                 }
             }
             sortedSeed = .zero
