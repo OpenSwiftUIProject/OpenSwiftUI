@@ -25,6 +25,36 @@ protocol ViewAlias: PrimitiveView {
     init()
 }
 
+// Audited for 6.5.4
+
+extension ViewAlias {
+    nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
+        var inputs = inputs
+        guard let source = inputs.popLast(SourceInput<Self>.self) else {
+            return .init()
+        }
+        inputs.base.resetCurrentStyleableView()
+        return source.formula.makeView(view: view, source: source, inputs: inputs)
+    }
+
+    nonisolated public static func _makeViewList(view: _GraphValue<Self>, inputs: _ViewListInputs) -> _ViewListOutputs {
+        var inputs = inputs
+        guard let source = inputs.base.popLast(SourceInput<Self>.self) else {
+            return .emptyViewList(inputs: inputs)
+        }
+        inputs.base.resetCurrentStyleableView()
+        return source.formula.makeViewList(view: view, source: source, inputs: inputs)
+    }
+
+    nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        var inputs = inputs
+        guard let source = inputs.popLast(SourceInput<Self>.self) else {
+            return 0
+        }
+        return source.formula.viewListCount(source: source, inputs: inputs)
+    }
+}
+
 // MARK: - View + ViewAlias Extension
 
 extension View {
