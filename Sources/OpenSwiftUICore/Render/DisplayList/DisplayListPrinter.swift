@@ -32,10 +32,20 @@ extension DisplayList.Item {
             switch content.value {
             case let .placeholder(id: identity):
                 printer.print("(placeholder \(identity))")
+            case let .color(resolved):
+                // FIXME
+                printer.print("(color \(resolved))")
             default:
                 // TOOD
                 break
             }
+        case let .effect(effect, displayList):
+            // FIXME
+            printer.push("effect")
+            for item in displayList.items {
+                item.print(into: &printer)
+            }
+            printer.pop()
         default:
             // TODO
             break
