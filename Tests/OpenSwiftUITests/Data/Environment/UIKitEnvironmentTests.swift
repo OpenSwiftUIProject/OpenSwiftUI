@@ -7,10 +7,11 @@
 import Testing
 import UIKit
 
+@MainActor
 struct UIKitEnvironmentTests {
     @Test
     func overrideTrait() {
-        let trait = UITraitCollection.current
+        let trait = UITraitCollection()
         #expect(trait.layoutDirection == .unspecified)
         var environment = EnvironmentValues()
         environment.layoutDirection = .rightToLeft
