@@ -16,6 +16,7 @@ struct IDViewTests {
         _ = empty.id(UUID())
     }
 
+    #if canImport(Darwin)
     @Test
     func idViewDisplayList() {
         struct ContentView: View {
@@ -59,4 +60,5 @@ struct IDViewTests {
             #expect(displayList.description.contains(expectRegex))
         }
     }
+    #endif
 }
