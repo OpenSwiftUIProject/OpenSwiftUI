@@ -65,15 +65,20 @@ public struct SwitchToggleStyle: ToggleStyle {
         self.tint = tint
     }
 
-    // FIXME
     public func makeBody(configuration: Configuration) -> some View {
         #if os(iOS) || os(visionOS)
-        Switch(_isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
-            .fixedSize()
-            // .contentShape(Capsule())
-            // .accessibilityLabel
-            // .gesture
+        // FIXME
+        LabeledContent {
+            Switch(_isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
+                .fixedSize()
+                // .contentShape(Capsule())
+                // .accessibilityLabel
+                // .gesture
+        } label: {
+            configuration.label
+        }
         #elseif os(macOS)
+        // FIXME
         Switch(_isOn: configuration.$isOn, tint: tint, font: font, _acceptsFirstMouse: .init(\.acceptsFirstMouse))
             .fixedSize()
         #else
