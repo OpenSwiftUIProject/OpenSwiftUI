@@ -39,11 +39,10 @@ public struct AutomaticLabeledContentStyle: LabeledContentStyle {
             configuration.content
                 .modifier(_LabeledContentStyleModifier(style: self))
         } label: {
-            StaticIf(LabelVisibilityConfigured.self) {
-                labelsVisibility == .hidden ? nil : configuration.label
-            } else: {
-                configuration.label
-            }
+            configuration.label
+                .staticIf(LabelVisibilityConfigured.self) { label in
+                    labelsVisibility == .hidden ? nil : configuration.label
+                }
         }
     }
 }

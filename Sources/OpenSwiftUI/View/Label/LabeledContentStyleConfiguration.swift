@@ -93,43 +93,48 @@ extension View {
     }
 }
 
-// MARK: - ResolvedLabeledContent
+// MARK: - ResolvedLabeledContent [WIP]
 
 struct ResolvedLabeledContent: StyleableView {
+    var configuration: LabeledContentStyleConfiguration
+
+    static let defaultStyleModifier: _LabeledContentStyleModifier<AutomaticLabeledContentStyle> = .init(style: .init())
+
     struct _Body: View {
         var configuration: LabeledContentStyleConfiguration
 
         var body: some View {
-            LabeledContent {
-                configuration.content
-            } label: {
+            // FIXME
+            HStack {
                 configuration.label
-            }.viewAlias(LabeledContentStyleConfiguration.Label.self) {
-                configuration.label
-                    .modifier(
-                        AccessibilityLabeledContentLabelModifier(
-                            presentation: configuration.accessibilityPresentation
-                        )
-                    )
-            }.viewAlias(LabeledContentStyleConfiguration.Content.self) {
                 configuration.content
-                    .modifier(
-                        AccessibilityLabeledContentContentModifier(
-                            label: configuration.label,
-                            presentation: configuration.accessibilityPresentation
-                        )
-                    )
-            }.modifier(AccessibilityFrameModifier())
+            }
+//            LabeledContent {
+//                configuration.content
+//            } label: {
+//                configuration.label
+//            }.viewAlias(LabeledContentStyleConfiguration.Label.self) {
+//                configuration.label
+//                    .modifier(
+//                        AccessibilityLabeledContentLabelModifier(
+//                            presentation: configuration.accessibilityPresentation
+//                        )
+//                    )
+//            }.viewAlias(LabeledContentStyleConfiguration.Content.self) {
+//                configuration.content
+//                    .modifier(
+//                        AccessibilityLabeledContentContentModifier(
+//                            label: configuration.label,
+//                            presentation: configuration.accessibilityPresentation
+//                        )
+//                    )
+//            }.modifier(AccessibilityFrameModifier())
         }
     }
 
     var body: _Body {
         _Body(configuration: configuration)
     }
-
-    var configuration: LabeledContentStyleConfiguration
-
-    static let defaultStyleModifier: _LabeledContentStyleModifier<AutomaticLabeledContentStyle> = .init(style: .init())
 }
 
 // MARK: - _LabeledContentStyleModifier
