@@ -11,6 +11,7 @@ package import OpenAttributeGraphShims
 // MARK: - Animatable
 
 /// A type that describes how to animate a property of a view.
+@available(OpenSwiftUI_v1_0, *)
 public protocol Animatable {
     /// The type defining the data to animate.
     associatedtype AnimatableData: VectorArithmetic
@@ -25,6 +26,7 @@ public protocol Animatable {
 
 // MARK: - Animateble + Extension
 
+@available(OpenSwiftUI_v1_0, *)
 extension Animatable where Self: VectorArithmetic {
     public var animatableData: Self {
         get { self }
@@ -32,6 +34,7 @@ extension Animatable where Self: VectorArithmetic {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension Animatable where AnimatableData == EmptyAnimatableData {
     public var animatableData: EmptyAnimatableData {
         @inlinable
@@ -59,6 +62,7 @@ extension Attribute where Value: Animatable {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension Animatable {
     public static func _makeAnimatable(value: inout _GraphValue<Self>, inputs: _GraphInputs) {
         guard MemoryLayout<AnimatableData>.size != 0,
@@ -84,6 +88,7 @@ extension Animatable {
 ///
 /// This type is suitable for use as the `animatableData` property of
 /// types that do not have any animatable properties.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct EmptyAnimatableData: VectorArithmetic {
     @inlinable
@@ -113,10 +118,12 @@ public struct EmptyAnimatableData: VectorArithmetic {
     public static func == (_: EmptyAnimatableData, _: EmptyAnimatableData) -> Bool { true }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension Double: Animatable {
     public typealias AnimatableData = Double
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension CGFloat: Animatable {
     public typealias AnimatableData = CGFloat
 }

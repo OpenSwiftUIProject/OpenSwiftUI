@@ -385,7 +385,7 @@ extension ViewGraph {
     }
     
     package func displayList() -> (DisplayList, DisplayList.Version) {
-        _openSwiftUIUnimplementedFailure()
+        $rootDisplayList?.value ?? (.init(), .init())
     }
     
     private func beginNextUpdate(at time: Time) {

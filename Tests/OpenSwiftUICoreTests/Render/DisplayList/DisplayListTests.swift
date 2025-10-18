@@ -2,12 +2,13 @@
 //  DisplayListTests.swift
 //  OpenSwiftUICoreTests
 
+import Foundation
 import OpenSwiftUICore
 import Testing
 
+@MainActor
 struct DisplayListTests {
     @Test
-    @MainActor
     func version() {
         typealias Version = DisplayList.Version
         let v0 = Version()
