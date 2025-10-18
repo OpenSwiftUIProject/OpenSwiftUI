@@ -45,7 +45,7 @@ package struct DynamicLayoutMap {
                     }
                 } else {
                     if !newValue.isEmpty {
-                        map.insert((id, .init()), at: index)
+                        map.insert((id, newValue), at: index)
                     }
                 }
             }
