@@ -3,19 +3,17 @@
 //  OpenSwiftUICoreTests
 
 import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import Testing
 
 @MainActor
 struct ZIndexTests {
     @Test
-    func indexOrder() {
-        struct ContentView: View {
-            var body: some View {
-                Color.red
-                    .zIndex(0.5)
-            }
-        }
-        // TODO: Add a test helper to hook into makeViewList and retrieve the zIndex value to verify it
+    func traitCollectionZIndex() {
+        var collection = ViewTraitCollection()
+        #expect(collection.zIndex.isApproximatelyEqual(to: 0.0))
+        collection.zIndex = 1.5
+        #expect(collection.zIndex.isApproximatelyEqual(to: 1.5))
     }
 }

@@ -2,9 +2,10 @@
 //  ZIndex.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Controls the display order of overlapping views.
     ///
@@ -39,6 +40,8 @@ extension View {
     }
 
 }
+
+@available(OpenSwiftUI_v1_0, *)
 @usableFromInline
 package struct ZIndexTraitKey: _ViewTraitKey {
     @inlinable
