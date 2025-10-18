@@ -76,7 +76,7 @@ public struct SwitchToggleStyle: ToggleStyle {
                 // .gesture
         } label: {
             configuration.label
-        }
+        }.listLabeledContentPrefersHorizontalLayout()
         #elseif os(macOS)
         // FIXME
         Switch(_isOn: configuration.$isOn, tint: tint, font: font, _acceptsFirstMouse: .init(\.acceptsFirstMouse))
