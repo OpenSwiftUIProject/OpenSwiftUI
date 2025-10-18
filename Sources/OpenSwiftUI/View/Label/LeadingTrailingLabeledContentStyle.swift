@@ -8,6 +8,14 @@
 
 import OpenSwiftUICore
 
+// MARK: - LabeledContentUsesLegacyLayout
+
+struct LabeledContentUsesLegacyLayout: ViewInputPredicate {
+    static func evaluate(inputs: _GraphInputs) -> Bool {
+        !isLinkedOnOrAfter(.v6)
+    }
+}
+
 // MARK: - ListLabeledContentPrefersHorizontalLayout
 
 struct ListLabeledContentPrefersHorizontalLayout: ViewInputBoolFlag {}
