@@ -310,6 +310,24 @@ struct Cache3Tests {
     }
 }
 
+// MARK: - RandomAccessCollection + lowerBound
+
+struct RandomAccessCollectionLowerBoundTests {
+    @Test
+    func customPredicate() {
+        let array = [1, 3, 5, 7, 9, 11, 13, 15]
+        let index = array.lowerBound { $0 <= 9 }
+        #expect(index == 5)
+    }
+
+    @Test
+    func defaultPredicate() {
+        let array = [1, 3, 5, 7, 9, 11, 13, 15]
+        let index = array.lowerBound(of: 7)
+        #expect(index == 3)
+    }
+}
+
 // MARK: - CollectionOfTwoTests
 
 struct CollectionOfTwoTests {
