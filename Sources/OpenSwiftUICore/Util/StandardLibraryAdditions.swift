@@ -593,28 +593,35 @@ extension BidirectionalCollection where Self: MutableCollection, Element: Compar
     }
 }
 
-// MARK: - RandomAccessCollection Extensions [Copilot]
+// MARK: - RandomAccessCollection Extensions [6.5.4]
 
 extension RandomAccessCollection {
     package func lowerBound(_ predicate: (Element) -> Bool) -> Index {
-        var left = startIndex
-        var right = endIndex
-        
-        while left < right {
-            let mid = index(left, offsetBy: distance(from: left, to: right) / 2)
-            if predicate(self[mid]) {
-                right = mid
-            } else {
-                left = index(after: mid)
-            }
+        var result = startIndex
+        var remaining = count
+        guard remaining >= 1 else {
+            return result
         }
-        return left
+        repeat {
+            let half = remaining / 2
+            var mid = result
+            formIndex(&mid, offsetBy: half)
+
+            if predicate(self[mid]) {
+                result = mid
+                formIndex(after: &result)
+                remaining &+= -(half + 1)
+            } else {
+                remaining = half
+            }
+        } while remaining > 0
+        return result
     }
 }
 
 extension RandomAccessCollection where Element: Comparable {
     package func lowerBound(of value: Element) -> Index {
-        lowerBound { $0 >= value }
+        lowerBound { $0 < value }
     }
 }
 
