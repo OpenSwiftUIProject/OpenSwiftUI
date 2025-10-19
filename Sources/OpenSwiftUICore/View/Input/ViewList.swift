@@ -200,9 +200,13 @@ package protocol ViewList {
     typealias Edit = _ViewList_Edit
 
     func count(style: IteratorStyle) -> Int
+
     func estimatedCount(style: IteratorStyle) -> Int
+
     var traitKeys: ViewTraitKeys? { get }
+
     var viewIDs: ID.Views? { get }
+
     var traits: ViewTraitCollection { get }
 
     typealias ApplyBody = (inout Int, IteratorStyle, Node, inout SublistTransform) -> Bool
@@ -215,8 +219,16 @@ package protocol ViewList {
         transform: inout SublistTransform,
         to body: ApplyBody
     ) -> Bool
-    func edit(forID id: ID, since transaction: TransactionID) -> Edit?
-    func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable
+
+    func edit(
+        forID id: ID,
+        since transaction: TransactionID
+    ) -> Edit?
+
+    func firstOffset<OtherID>(
+        forID id: OtherID,
+        style: IteratorStyle
+    ) -> Int? where OtherID: Hashable
 }
 
 // MARK: - ViewList.IteratorStyle

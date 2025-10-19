@@ -232,6 +232,17 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         _openSwiftUIUnimplementedFailure()
     }
 
+    @discardableResult
+    func applyNodes(
+        from start: inout Int,
+        style: ViewList.IteratorStyle,
+        list: Attribute<any ViewList>?,
+        transform: inout ViewList.SublistTransform,
+        to body: ViewList.ApplyBody
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     func forEachItem(
         from: inout Int,
         style: _ViewList_IteratorStyle,
@@ -588,7 +599,80 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     }
 }
 
-// TODO: - ForEachList [WIP]
+// MARK: - ForEachList
+
+private struct ForEachList<Data, ID, Content>: ViewList where Data: RandomAccessCollection, ID: Hashable {
+    var state: ForEachState<Data, ID, Content>
+    var seed: UInt32
+
+    func count(style: IteratorStyle) -> Int {
+        state.count(style: style)
+    }
+
+    func estimatedCount(style: IteratorStyle) -> Int {
+        state.estimatedCount(style: style)
+    }
+
+    var traitKeys: ViewTraitKeys? {
+        state.traitKeys
+    }
+
+    var viewIDs: ViewList.ID.Views? {
+        state.viewIDs
+    }
+
+    var traits: ViewTraitCollection {
+        .init()
+    }
+
+    @discardableResult
+    func applyNodes(
+        from start: inout Int,
+        style: IteratorStyle,
+        list: Attribute<any ViewList>?,
+        transform: inout SublistTransform,
+        to body: ApplyBody
+    ) -> Bool {
+        state.applyNodes(
+            from: &start,
+            style: style,
+            list: list,
+            transform: &transform,
+            to: body
+        )
+    }
+
+    func edit(
+        forID id: ViewList.ID,
+        since transaction: TransactionID
+    ) -> Edit? {
+        state.edit(forID: id, since: transaction)
+    }
+
+    func firstOffset<OtherID>(
+        forID id: OtherID,
+        style: IteratorStyle
+    ) -> Int? where OtherID: Hashable {
+        state.firstOffset(forID: id, style: style)
+    }
+
+    struct Init: StatefulRule, AsyncAttribute, CustomStringConvertible {
+        @Attribute var info: ForEachState<Data, ID, Content>.Info
+        var seed: UInt32
+
+        typealias Value = any ViewList
+
+        mutating func updateValue() {
+            info.state.invalidateViewCounts()
+            seed &+= 1
+            value = ForEachList(state: info.state, seed: seed)
+        }
+
+        var description: String {
+            "Collection.List"
+        }
+    }
+}
 
 // MARK: - ForEach + id
 
