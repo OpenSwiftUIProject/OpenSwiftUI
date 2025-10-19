@@ -373,7 +373,41 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     }
 
     var viewIDs: ViewList.ID.Views? {
-        _openSwiftUIUnimplementedFailure()
+        guard parentSubgraph.isValid,
+              let perElement = fetchViewsPerElement()
+        else {
+            return nil
+        }
+        var start = 0
+        var viewIDs: ViewList.ID.Views?
+        forEachItem(
+            from: &start,
+            style: .init()
+        ) { _, _, item in
+            switch item.views {
+            case .staticList:
+                let base = StaticViewIDCollection(count: perElement)
+                viewIDs = ViewList.ID._Views(base, isDataDependent: false)
+            case let .dynamicList(attribute, _):
+                let viewList = RuleContext(attribute: list!)[attribute]
+                viewIDs = viewList.viewIDs
+            }
+            return false
+        }
+        guard let viewIDs,
+              !viewIDs.isDataDependent
+        else {
+            return nil
+        }
+        let idCollection = ForEachViewIDCollection(
+            base: viewIDs,
+            data: view!.data,
+            idGenerator: view!.idGenerator,
+            reuseID: view!.reuseID,
+            isUnary: perElement == 1,
+            owner: list!.identifier
+        )
+        return ViewList.ID._Views(idCollection, isDataDependent: true)
     }
 
     // MARK: - ForEachState.Item
