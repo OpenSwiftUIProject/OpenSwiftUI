@@ -2331,7 +2331,7 @@ private struct SubgraphList: ViewList {
         var subgraph: ViewList.Subgraph
 
         func apply(sublist: inout ViewList.Sublist) {
-            sublist.elements = SubgraphElements(base: sublist.elements, subgraph: subgraph)
+            sublist.elements = subgraph.wrapping(sublist.elements)
         }
 
         func bindID(_ id: inout ViewList.ID) {}

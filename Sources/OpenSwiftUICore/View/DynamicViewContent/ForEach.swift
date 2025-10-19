@@ -177,6 +177,419 @@ package struct ForEachEvictionInput: GraphInput {
     package static let evictByDefault: Bool = isLinkedOnOrAfter(.v6)
 }
 
+// MARK: - ForEachState [WIP]
+
+private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable {
+    let inputs: _ViewListInputs
+    let parentSubgraph: Subgraph
+    var info: Attribute<Info>?
+    var list: Attribute<any ViewList>?
+    var view: ForEach<Data, ID, Content>?
+    var viewsPerElement: Int??
+    var viewsCounts: [Int]
+    var viewsCountStyle: ViewList.IteratorStyle
+    var items: [ID: Item]
+    var edits: [ID: ViewList.Edit]
+    var lastTransaction: TransactionID
+    var firstInsertionOffset: Int
+    var contentID: Int
+    var seed: UInt32
+    var createdAllItems: Bool
+    var evictionSeed: UInt32
+    var pendingEviction: Bool
+    var evictedIDs: Set<ID>
+    var matchingStrategyCache: [ObjectIdentifier: IDTypeMatchingStrategy]
+
+    init(inputs: _ViewListInputs) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func invalidateViewCounts() {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func update(view: ForEach<Data, ID, Content>) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func eraseItem(_ item: Item) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func item(at: Data.Index, offset: Int) -> Item {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func uneraseItem(_ item: Item) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func evictItems(seed: UInt32) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func fetchViewsPerElement() -> Optional<Int> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func forEachItem(
+        from: inout Int,
+        style: _ViewList_IteratorStyle,
+        do: (inout Int, _ViewList_IteratorStyle, Item) -> Bool
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func count(style: _ViewList_IteratorStyle) -> Int {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func estimatedCount(style: _ViewList_IteratorStyle) -> Int {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func edit(forID: _ViewList_ID, since: TransactionID) -> Optional<_ViewList_Edit> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func matchingStrategy<T>(for type: T.Type) -> IDTypeMatchingStrategy {
+        let id = ObjectIdentifier(type)
+        guard let strategy = matchingStrategyCache[id] else {
+            _openSwiftUIUnimplementedFailure()
+        }
+        return strategy
+    }
+
+    func firstOffset<A1>(forID: A1, style: _ViewList_IteratorStyle) -> Optional<Int> where A1: Hashable {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var traitKeys: Optional<ViewTraitKeys> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var viewIDs: Optional<_ViewList_ID_Views> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    // MARK: - ForEachState.Item
+
+    class Item: ViewList.Subgraph {
+        let id: ID
+        let reuseID: Int
+        let views: _ViewListOutputs.Views
+        weak var state: ForEachState? = nil
+        var index: Data.Index
+        var offset: Int
+        var contentID: Int
+        var seed: UInt32
+        var isConstant: Bool
+        var timeToLive: Int8 = 8
+        var isRemoved: Bool = false
+        var hasWarned: Bool = false
+
+        init(
+            id: ID,
+            reuseID: Int,
+            views: _ViewListOutputs.Views,
+            subgraph: Subgraph,
+            index: Data.Index,
+            offset: Int,
+            contentID: Int,
+            seed: UInt32,
+            state: ForEachState?,
+            isConstant: Bool
+        ) {
+            self.id = id
+            self.reuseID = reuseID
+            self.views = views
+            self.state = state
+            self.index = index
+            self.offset = offset
+            self.contentID = contentID
+            self.seed = seed
+            self.isConstant = isConstant
+            super.init(subgraph: subgraph)
+        }
+
+        override func invalidate() {
+            guard let state else {
+                return
+            }
+            if let index = state.items.index(forKey: id) {
+                state.items.remove(at: index)
+            } else {
+                state.items = state.items.filter { (key, value) in
+                    value !== self
+                }
+            }
+        }
+
+        func applyTraits(to collection: inout ViewTraitCollection) {
+            collection.setValueIfUnset(contentID, for: DynamicViewContentIDTraitKey.self)
+            collection.setValueIfUnset(offset, for: DynamicViewContentOffsetTraitKey.self)
+            if isConstant {
+                collection.setTagIfUnset(for: Int.self, value: offset)
+            } else {
+                collection.setTagIfUnset(for: ID.self, value: id)
+            }
+        }
+    }
+
+    // MARK: - ForEachState.IDTypeMatchingStrategy
+
+    enum IDTypeMatchingStrategy {
+        case exact
+        case anyHashable
+        case customIDRepresentation
+        case noMatch
+    }
+
+    // MARK: - Evictor
+
+    struct Evictor: Rule, AsyncAttribute {
+        var state: ForEachState
+        @WeakAttribute var isEnabled: Bool?
+        @Attribute var updateSeed: UInt32
+
+        var value: Void {
+            if isEnabled ?? ForEachEvictionInput.evictByDefault {
+                state.evictItems(seed: updateSeed)
+            }
+        }
+    }
+
+    // MARK: - Info
+
+    struct Info {
+        var state: ForEachState
+        var seed: UInt32
+
+        struct Init: Rule, CustomStringConvertible {
+            @Attribute var view: ForEach<Data, ID, Content>
+            let state: ForEachState
+
+            var value: Info {
+                state.update(view: view)
+                return Info(state: state, seed: state.seed)
+            }
+
+            var description: String {
+                "Collection.Info"
+            }
+        }
+    }
+
+    // MARK: - StaticViewIDCollection
+
+    struct StaticViewIDCollection: RandomAccessCollection, Equatable {
+        var count: Int
+
+        var startIndex: Int { 0 }
+
+        var endIndex: Int { count }
+
+        subscript(position: Int) -> ViewList.ID {
+            _read {
+                yield ViewList.ID().elementID(at: position)
+            }
+        }
+    }
+
+    // MARK: - ForEachViewIDCollection
+
+    struct ForEachViewIDCollection: RandomAccessCollection, Equatable {
+        var base: ViewList.ID.Views
+        var data: Data
+        var idGenerator: ForEach<Data, ID, Content>.IDGenerator
+        var reuseID: KeyPath<Data.Element, Int>?
+        var isUnary: Bool
+        var owner: AnyAttribute
+        var baseCount: Int
+        var count: Int
+
+        init(
+            base: ViewList.ID.Views,
+            data: Data,
+            idGenerator: ForEach<Data, ID, Content>.IDGenerator,
+            reuseID _: KeyPath<Data.Element, Int>?,
+            isUnary: Bool,
+            owner: AnyAttribute
+        ) {
+            self.base = base
+            self.data = data
+            self.idGenerator = idGenerator
+            self.isUnary = isUnary
+            self.owner = owner
+            let endIndex = base.endIndex
+            baseCount = endIndex
+            count = data.count * endIndex
+        }
+
+        var startIndex: Int { 0 }
+
+        var endIndex: Int { count }
+
+        subscript(position: Int) -> ViewList.ID {
+            _read {
+                let dataOffset = position / baseCount
+                let baseIndex = position - dataOffset * baseCount
+                var id = base[baseIndex]
+                let dataIndex = data.index(data.startIndex, offsetBy: dataOffset)
+                let reuseID = reuseID.map { keyPath in
+                    data[dataIndex][keyPath: keyPath]
+                } ?? Int(bitPattern: ObjectIdentifier(Content.self))
+                switch idGenerator {
+                case .keyPath(let keyPath):
+                    let explicitID = idGenerator.makeID(
+                        data: data,
+                        index: dataIndex,
+                        offset: dataOffset
+                    )
+                    id.bind(
+                        explicitID: explicitID,
+                        owner: owner,
+                        isUnary: isUnary,
+                        reuseID: reuseID
+                    )
+                case .offset:
+                    let explicitID = Pair(dataOffset, owner)
+                    id.bind(
+                        explicitID: explicitID,
+                        owner: owner,
+                        isUnary: isUnary,
+                        reuseID: reuseID
+                    )
+                }
+                yield id
+            }
+        }
+
+        static func == (
+            lhs: ForEachViewIDCollection,
+            rhs: ForEachViewIDCollection
+        ) -> Bool {
+            lhs.base == rhs.base &&
+            lhs.isUnary == rhs.isUnary &&
+            lhs.owner == rhs.owner &&
+            compareValues(lhs.data, rhs.data)
+        }
+    }
+
+    // MARK: - Transform
+
+    struct Transform: ViewList.SublistTransform.Item {
+        var item: Item
+        var bindID: Bool
+        var isUnary: Bool
+        var isConstant: Bool
+
+        func apply(sublist: inout ViewList.Sublist) {
+            bindID(&sublist.id)
+            sublist.elements = item.wrapping(sublist.elements)
+            item.applyTraits(to: &sublist.traits)
+        }
+
+        func bindID(_ id: inout ViewList.ID) {
+            guard bindID,
+                  let state = item.state,
+                  let list = state.list
+            else {
+                return
+            }
+            if isConstant {
+                let explicitID = Pair(item.offset, list.identifier)
+                id.bind(
+                    explicitID: explicitID,
+                    owner: list.identifier,
+                    isUnary: isUnary,
+                    reuseID: item.reuseID
+                )
+            } else {
+                id.bind(
+                    explicitID: item.id,
+                    owner: list.identifier,
+                    isUnary: isUnary,
+                    reuseID: item.reuseID
+                )
+            }
+        }
+    }
+
+    // MARK: - ItemList
+
+    struct ItemList: Rule {
+        @Attribute var base: any ViewList
+        var item: Item?
+
+        var value: any ViewList {
+            WrappedList(base: base, item: item)
+        }
+
+        struct WrappedList: ViewList {
+            var base: any ViewList
+            var item: Item?
+
+            func count(style: IteratorStyle) -> Int {
+                base.count(style: style)
+            }
+
+            func estimatedCount(style: IteratorStyle) -> Int {
+                base.estimatedCount(style: style)
+            }
+
+            var traitKeys: ViewTraitKeys? {
+                base.traitKeys
+            }
+
+            var viewIDs: ViewList.ID.Views? {
+                base.viewIDs
+            }
+
+            var traits: ViewTraitCollection {
+                var traits = base.traits
+                if let item {
+                    item.applyTraits(to: &traits)
+                }
+                return traits
+            }
+
+            @discardableResult
+            func applyNodes(
+                from start: inout Int,
+                style: IteratorStyle,
+                list: Attribute<any ViewList>?,
+                transform: inout SublistTransform,
+                to body: ApplyBody
+            ) -> Bool {
+                base.applyNodes(
+                    from: &start,
+                    style: style,
+                    list: list,
+                    transform: &transform,
+                    to: body
+                )
+            }
+
+            func edit(
+                forID id: ViewList.ID,
+                since transaction: TransactionID
+            ) -> Edit? {
+                base.edit(forID: id, since: transaction)
+            }
+
+            func firstOffset<OtherID>(
+                forID id: OtherID,
+                style: IteratorStyle
+            ) -> Int? where OtherID: Hashable {
+                base.firstOffset(forID: id, style: style)
+            }
+        }
+    }
+}
+
+// TODO: - ForEachList [WIP]
+
 // MARK: - ForEach + id
 
 @available(OpenSwiftUI_v1_0, *)
