@@ -6,6 +6,7 @@
 //  Status: WIP
 //  ID: 1A3DD35AB7F6976908CD7AF959F34D1F (SwiftUICore)
 
+import Foundation
 package import OpenAttributeGraphShims
 
 // MARK: - ForEach
@@ -175,6 +176,18 @@ package struct ForEachEvictionInput: GraphInput {
     package static let defaultValue: WeakAttribute<Bool> = .init()
 
     package static let evictByDefault: Bool = isLinkedOnOrAfter(.v6)
+}
+
+// MARK: - LogForEachSlowPath
+
+private struct LogForEachSlowPath: UserDefaultKeyedFeature {    
+    static var key: String { "LogForEachSlowPath" }
+
+    static var cachedValue: Bool?
+
+    static var defaults: UserDefaults {
+        UserDefaults.openSwiftUI ?? .standard
+    }
 }
 
 // MARK: - ForEachState [WIP]

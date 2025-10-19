@@ -18,10 +18,13 @@ extension Feature {
 
 package protocol UserDefaultKeyedFeature: Feature {
     static var key: String { get }
+
     static var defaultFeatureValue: Bool { get }
+
     #if !os(WASI)
     static var defaults: UserDefaults { get }
     #endif
+
     static var cachedValue: Bool? { get set }
 }
 
@@ -47,6 +50,7 @@ extension UserDefaultKeyedFeature {
     }
     
     package static var defaultFeatureValue: Bool { false }
+
     #if !os(WASI)
     package static var defaults: UserDefaults { .standard }
     #endif
