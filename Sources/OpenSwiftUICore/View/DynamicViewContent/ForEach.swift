@@ -196,36 +196,37 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     let inputs: _ViewListInputs
     let parentSubgraph: Subgraph
     var info: Attribute<Info>?
-    var list: Attribute<any ViewList>?
-    var view: ForEach<Data, ID, Content>?
-    var viewsPerElement: Int??
-    var viewsCounts: [Int]
-    var viewsCountStyle: ViewList.IteratorStyle
-    var items: [ID: Item]
-    var edits: [ID: ViewList.Edit]
-    var lastTransaction: TransactionID
-    var firstInsertionOffset: Int
-    var contentID: Int
-    var seed: UInt32
-    var createdAllItems: Bool
-    var evictionSeed: UInt32
-    var pendingEviction: Bool
-    var evictedIDs: Set<ID>
-    var matchingStrategyCache: [ObjectIdentifier: IDTypeMatchingStrategy]
+    var list: Attribute<any ViewList>? = nil
+    var view: ForEach<Data, ID, Content>? = nil
+    var viewsPerElement: Int?? = nil
+    var viewsCounts: [Int] = []
+    var viewsCountStyle: ViewList.IteratorStyle = .init()
+    var items: [ID: Item] = [:]
+    var edits: [ID: ViewList.Edit] = [:]
+    var lastTransaction: TransactionID = .init()
+    var firstInsertionOffset: Int = -1
+    var contentID: Int = 0
+    var seed: UInt32 = 0
+    var createdAllItems: Bool = false
+    var evictionSeed: UInt32 = 0
+    var pendingEviction: Bool = false
+    var evictedIDs: Set<ID> = .init()
+    var matchingStrategyCache: [ObjectIdentifier: IDTypeMatchingStrategy] = [:]
 
     init(inputs: _ViewListInputs) {
-        _openSwiftUIUnimplementedFailure()
+        self.inputs = inputs
+        self.parentSubgraph = .current!
     }
 
     func invalidateViewCounts() {
-        _openSwiftUIUnimplementedFailure()
+        viewsCounts.removeAll(keepingCapacity: true)
     }
 
     func update(view: ForEach<Data, ID, Content>) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    func eraseItem(_ item: Item) {
+        guard parentSubgraph.isValid else {
+            return
+        }
+        invalidateViewCounts()
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -233,16 +234,76 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         _openSwiftUIUnimplementedFailure()
     }
 
+    func eraseItem(_ item: Item) {
+        item.subgraph.willRemove()
+        parentSubgraph.removeChild(item.subgraph)
+        item.isRemoved = true
+        item.timeToLive = 0
+        item.invalidate(isInserted: true)
+    }
+
     func uneraseItem(_ item: Item) {
-        _openSwiftUIUnimplementedFailure()
+        item.retain()
+        item.isRemoved = false
+        item.timeToLive = 8
+        parentSubgraph.addChild(item.subgraph)
+        item.subgraph.didReinsert()
     }
 
     func evictItems(seed: UInt32) {
-        _openSwiftUIUnimplementedFailure()
+        guard evictionSeed != seed, !pendingEviction else { return }
+        evictionSeed = seed
+        var evictItems: [Item] = []
+
+        let startIndex = items.startIndex
+        let endIndex = items.endIndex
+        let pendingEviction: Bool
+        if startIndex != endIndex {
+            var index = startIndex
+            var remainingEvictions = 64
+            while true {
+                let (id, item) = items[index]
+                if !item.isRemoved {
+                    let timeToLive = item.timeToLive - 1
+                    if timeToLive == 0 {
+                        if item.refcount == 1 {
+                            evictItems.append(item)
+                            evictedIDs.insert(id)
+                            remainingEvictions &-= 1
+                        }
+                    } else {
+                        item.timeToLive = timeToLive
+                    }
+                }
+                items.formIndex(after: &index)
+                guard remainingEvictions >= 1 else {
+                    break
+                }
+                guard index != endIndex else {
+                    remainingEvictions = 64
+                    break
+                }
+            }
+            pendingEviction = remainingEvictions == 0
+        } else {
+            pendingEviction = false
+        }
+        for evictItem in evictItems {
+            eraseItem(evictItem)
+        }
+        self.pendingEviction = pendingEviction
     }
 
-    func fetchViewsPerElement() -> Optional<Int> {
-        _openSwiftUIUnimplementedFailure()
+    func fetchViewsPerElement() -> Int? {
+        if let viewsPerElement {
+            return viewsPerElement
+        } else {
+            guard !view!.data.isEmpty else {
+                return nil
+            }
+            _ = item(at: view!.data.startIndex, offset: 0)
+            return viewsPerElement ?? nil
+        }
     }
 
     @discardableResult
@@ -256,19 +317,20 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         _openSwiftUIUnimplementedFailure()
     }
 
+    @discardableResult
     func forEachItem(
-        from: inout Int,
+        from start: inout Int,
         style: _ViewList_IteratorStyle,
-        do: (inout Int, _ViewList_IteratorStyle, Item) -> Bool
+        do body: (inout Int, ViewList.IteratorStyle, Item) -> Bool
     ) -> Bool {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func count(style: _ViewList_IteratorStyle) -> Int {
+    func count(style: ViewList.IteratorStyle) -> Int {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func estimatedCount(style: _ViewList_IteratorStyle) -> Int {
+    func estimatedCount(style: ViewList.IteratorStyle) -> Int {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -284,15 +346,33 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         return strategy
     }
 
-    func firstOffset<A1>(forID: A1, style: _ViewList_IteratorStyle) -> Optional<Int> where A1: Hashable {
+    func firstOffset<A1>(forID: A1, style: ViewList.IteratorStyle) -> Optional<Int> where A1: Hashable {
         _openSwiftUIUnimplementedFailure()
     }
 
-    var traitKeys: Optional<ViewTraitKeys> {
-        _openSwiftUIUnimplementedFailure()
+    var traitKeys: ViewTraitKeys? {
+        var traitKeys: ViewTraitKeys?
+        var start = 0
+        forEachItem(
+            from: &start,
+            style: .init()
+        ) { _, _, item in
+            switch item.views {
+            case .staticList:
+                traitKeys = .init()
+            case let .dynamicList(attribute, _):
+                let viewList = RuleContext(attribute: list!)[attribute]
+                traitKeys = viewList.traitKeys
+            }
+            return false
+        }
+        guard let traitKeys else {
+            return nil
+        }
+        return traitKeys.isDataDependent ? nil : traitKeys
     }
 
-    var viewIDs: Optional<_ViewList_ID_Views> {
+    var viewIDs: ViewList.ID.Views? {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -464,7 +544,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                     data[dataIndex][keyPath: keyPath]
                 } ?? Int(bitPattern: ObjectIdentifier(Content.self))
                 switch idGenerator {
-                case .keyPath(let keyPath):
+                case .keyPath:
                     let explicitID = idGenerator.makeID(
                         data: data,
                         index: dataIndex,
