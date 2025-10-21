@@ -383,10 +383,30 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     }
 
     func edit(
-        forID: ViewList.ID,
-        since: TransactionID
+        forID id: ViewList.ID,
+        since transaction: TransactionID
     ) -> ViewList.Edit? {
-        _openSwiftUIUnimplementedFailure()
+        switch view!.idGenerator {
+        case .keyPath:
+            guard let explicitID: ID = id.explicitID(owner: list!.identifier) else {
+                return nil
+            }
+            if transaction >= lastTransaction, let edit = edits[explicitID] {
+                return edit
+            }
+            guard let item = items[explicitID], item.seed == seed else {
+                return nil
+            }
+            switch item.views {
+            case .staticList:
+                return nil
+            case let .dynamicList(attribute, _):
+                let viewList = RuleContext(attribute: list!)[attribute]
+                return viewList.edit(forID: id, since: transaction)
+            }
+        case .offset:
+            return nil
+        }
     }
 
     func matchingStrategy<T>(
@@ -398,7 +418,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         }
         let strategy: IDTypeMatchingStrategy
         switch view!.idGenerator {
-        case let .keyPath(keyPath):
+        case .keyPath:
             if ID.self == T.self {
                 strategy = .exact
             } else {
