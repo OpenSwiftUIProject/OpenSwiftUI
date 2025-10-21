@@ -220,6 +220,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
 
     func invalidateViewCounts() {
         viewsCounts.removeAll(keepingCapacity: true)
+        viewsCountStyle = .init()
     }
 
     func update(view: ForEach<Data, ID, Content>) {
