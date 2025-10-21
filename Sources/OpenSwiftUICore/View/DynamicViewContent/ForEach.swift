@@ -345,11 +345,31 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         _openSwiftUIUnimplementedFailure()
     }
 
-    func matchingStrategy<T>(for type: T.Type) -> IDTypeMatchingStrategy {
+    func matchingStrategy<T>(
+        for type: T.Type
+    ) -> IDTypeMatchingStrategy where T: Hashable {
         let id = ObjectIdentifier(type)
-        guard let strategy = matchingStrategyCache[id] else {
-            _openSwiftUIUnimplementedFailure()
+        if let strategy = matchingStrategyCache[id] {
+            return strategy
         }
+        let strategy: IDTypeMatchingStrategy
+        switch view!.idGenerator {
+        case let .keyPath(keyPath):
+            if ID.self == T.self {
+                strategy = .exact
+            } else {
+                if isLinkedOnOrAfter(.v6), ID.self == AnyHashable.self {
+                    strategy = .anyHashable
+                } else if isLinkedOnOrAfter(.v6), ID.self is HasCustomIDRepresentation {
+                    strategy = .customIDRepresentation
+                } else {
+                    strategy = .noMatch
+                }
+            }
+        case .offset:
+            strategy = .noMatch
+        }
+        matchingStrategyCache[id] = strategy
         return strategy
     }
 
