@@ -333,15 +333,59 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         _openSwiftUIUnimplementedFailure()
     }
 
-    func count(style: ViewList.IteratorStyle) -> Int {
+    func count(
+        style: ViewList.IteratorStyle
+    ) -> Int {
+        guard parentSubgraph.isValid else {
+            return 0
+        }
+        let count = view!.data.count
+        guard count != 0 else {
+            return 0
+        }
+        if let perElement = fetchViewsPerElement() {
+            return style.applyGranularity(to: perElement * count)
+        } else {
+            if viewsCounts.count >= count, viewsCountStyle == style {
+                return viewsCounts[count-1]
+            } else {
+                var count = 0
+                var vcc = 0
+                var start = 0
+                forEachItem(
+                    from: &start,
+                    style: .init()
+                ) { _, _, item in
+                    switch item.views {
+                    case let.staticList(elements):
+                        count += style.applyGranularity(to: elements.count)
+                    case let .dynamicList(attribute, _):
+                        let viewList = RuleContext(attribute: list!)[attribute]
+                        count += viewList.count
+                    }
+                    let viewsCountsCount = viewsCounts.count
+                    if viewsCountsCount == 0 || (viewsCountsCount == vcc && viewsCountStyle == style) {
+                        viewsCounts.append(count)
+                        viewsCountStyle = style
+                    }
+                    vcc &+= 1
+                    return true
+                }
+                return count
+            }
+        }
+    }
+
+    func estimatedCount(
+        style: ViewList.IteratorStyle
+    ) -> Int {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func estimatedCount(style: ViewList.IteratorStyle) -> Int {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    func edit(forID: _ViewList_ID, since: TransactionID) -> Optional<_ViewList_Edit> {
+    func edit(
+        forID: ViewList.ID,
+        since: TransactionID
+    ) -> ViewList.Edit? {
         _openSwiftUIUnimplementedFailure()
     }
 
