@@ -178,6 +178,12 @@ package struct ForEachEvictionInput: GraphInput {
     package static let evictByDefault: Bool = isLinkedOnOrAfter(.v6)
 }
 
+// MARK: - HasCustomIDRepresentation
+
+protocol HasCustomIDRepresentation {
+    func containsID<ID>(_ id: ID) -> Bool where ID: Hashable
+}
+
 // MARK: - LogForEachSlowPath
 
 private struct LogForEachSlowPath: UserDefaultKeyedFeature {    
@@ -321,7 +327,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     @discardableResult
     func forEachItem(
         from start: inout Int,
-        style: _ViewList_IteratorStyle,
+        style: ViewList.IteratorStyle,
         do body: (inout Int, ViewList.IteratorStyle, Item) -> Bool
     ) -> Bool {
         _openSwiftUIUnimplementedFailure()
@@ -347,8 +353,78 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         return strategy
     }
 
-    func firstOffset<A1>(forID: A1, style: ViewList.IteratorStyle) -> Optional<Int> where A1: Hashable {
-        _openSwiftUIUnimplementedFailure()
+    func firstOffset<OtherID>(
+        forID id: OtherID,
+        style: ViewList.IteratorStyle
+    ) -> Int? where OtherID: Hashable {
+        guard parentSubgraph.isValid else {
+            return nil
+        }
+        let strategy = matchingStrategy(for: OtherID.self)
+        var firstOffset: Int?
+        var count = 0
+        var start = 0
+        forEachItem(
+            from: &start,
+            style: style
+        ) { _, style, item in
+            var nonOptionalFirstOffset = 0
+            let match: Bool
+            switch strategy {
+            case .exact, .anyHashable:
+                let itemID = item.id as? OtherID
+                match = id == itemID
+            case .customIDRepresentation:
+                let custom = item.id as! HasCustomIDRepresentation
+                match = custom.containsID(id)
+            case .noMatch:
+                match = false
+            }
+            if !match {
+                guard case let .dynamicList(attribute, _) = item.views else {
+                    count &+= 1
+                    return true
+                }
+                let viewList = RuleContext(attribute: list!)[attribute]
+                guard let offset = viewList.firstOffset(forID: id, style: style) else {
+                    count &+= 1
+                    return true
+                }
+                nonOptionalFirstOffset = offset
+            }
+            if count != 0 {
+                if let perElement = fetchViewsPerElement() {
+                    nonOptionalFirstOffset += count * style.applyGranularity(to: perElement)
+                } else {
+                    if viewsCounts.count >= count, viewsCountStyle == style {
+                        nonOptionalFirstOffset += viewsCounts[count-1]
+                    } else {
+                        var subCount = 0
+                        var subStart = 0
+                        forEachItem(
+                            from: &subStart,
+                            style: style
+                        ) { _, style, item in
+                            guard subCount != count else {
+                                return false
+                            }
+                            subCount &+= 1
+                            switch item.views {
+                            case let .staticList(elements):
+                                nonOptionalFirstOffset += style.applyGranularity(to: elements.count)
+                            case let .dynamicList(attribute, _):
+                                let viewList = RuleContext(attribute: list!)[attribute]
+                                nonOptionalFirstOffset += viewList.count
+                            }
+                            return true
+                        }
+                    }
+                }
+            }
+            firstOffset = nonOptionalFirstOffset
+            return false
+        }
+        return firstOffset
     }
 
     var traitKeys: ViewTraitKeys? {
