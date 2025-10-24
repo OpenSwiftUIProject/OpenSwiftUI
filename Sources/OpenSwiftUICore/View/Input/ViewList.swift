@@ -300,7 +300,14 @@ package struct _ViewList_Sublist {
     package var traits: ViewTraitCollection
     package var list: Attribute<ViewList>?
 
-    package init(start: Int, count: Int, id: _ViewList_ID, elements: any ViewList.Elements, traits: ViewList.Traits, list: Attribute<ViewList>?) {
+    package init(
+        start: Int,
+        count: Int,
+        id: _ViewList_ID,
+        elements: any ViewList.Elements,
+        traits: ViewList.Traits,
+        list: Attribute<ViewList>?
+    ) {
         self.start = start
         self.count = count
         self.id = id

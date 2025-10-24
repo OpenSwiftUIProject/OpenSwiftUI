@@ -321,7 +321,82 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         transform: inout ViewList.SublistTransform,
         to body: ViewList.ApplyBody
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        forEachItem(
+            from: &start,
+            style: style
+        ) {
+            start,
+            style,
+            item in
+            let idGenerator = view!.idGenerator
+            switch item.views {
+            case let .staticList(elements):
+                let elementsCount = elements.count
+                let count = style.applyGranularity(to: elementsCount)
+                guard start < count else {
+                    start &-= count
+                    return true
+                }
+                var id = ViewList.ID()
+                if idGenerator.isConstant {
+                    let owner = list!.identifier
+                    let explicitID = Pair(item.offset, owner)
+                    id.bind(
+                        explicitID: explicitID,
+                        owner: owner,
+                        isUnary: viewsPerElement == 1,
+                        reuseID: item.reuseID
+                    )
+                } else {
+                    id.bind(
+                        explicitID: item.id,
+                        owner: list!.identifier,
+                        isUnary: viewsPerElement == 1,
+                        reuseID: item.reuseID
+                    )
+                }
+                let sublist = ViewList.Sublist(
+                    start: start,
+                    count: elementsCount,
+                    id: id,
+                    elements: elements,
+                    traits: .init(),
+                    list: nil
+                )
+                let transformItem = Transform(
+                    item: item,
+                    bindID: false,
+                    isUnary: viewsPerElement == 1,
+                    isConstant: idGenerator.isConstant
+                )
+                transform.push(transformItem)
+                let result = body(&start, style, .sublist(sublist), &transform)
+                transform.pop()
+                start = 0
+                return result
+            case let .dynamicList(attribute, listModifier):
+                var viewList = RuleContext(attribute: list!)[attribute]
+                if let listModifier {
+                    listModifier.apply(to: &viewList)
+                }
+                let transformItem = Transform(
+                    item: item,
+                    bindID: true,
+                    isUnary: viewsPerElement == 1,
+                    isConstant: idGenerator.isConstant
+                )
+                transform.push(transformItem)
+                let result = viewList.applyNodes(
+                    from: &start,
+                    style: style,
+                    list: attribute,
+                    transform: &transform,
+                    to: body
+                )
+                transform.pop()
+                return result
+            }
+        }
     }
 
     @discardableResult
@@ -814,21 +889,20 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                 let reuseID = reuseID.map { keyPath in
                     data[dataIndex][keyPath: keyPath]
                 } ?? Int(bitPattern: ObjectIdentifier(Content.self))
-                switch idGenerator {
-                case .keyPath:
-                    let explicitID = idGenerator.makeID(
-                        data: data,
-                        index: dataIndex,
-                        offset: dataOffset
-                    )
+                if idGenerator.isConstant {
+                    let explicitID = Pair(dataOffset, owner)
                     id.bind(
                         explicitID: explicitID,
                         owner: owner,
                         isUnary: isUnary,
                         reuseID: reuseID
                     )
-                case .offset:
-                    let explicitID = Pair(dataOffset, owner)
+                } else {
+                    let explicitID = idGenerator.makeID(
+                        data: data,
+                        index: dataIndex,
+                        offset: dataOffset
+                    )
                     id.bind(
                         explicitID: explicitID,
                         owner: owner,
