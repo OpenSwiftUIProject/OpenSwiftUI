@@ -148,24 +148,77 @@ public struct ForEach<Data, ID, Content> where Data: RandomAccessCollection, ID:
 @available(*, unavailable)
 extension ForEach: Sendable {}
 
-// MARK: - ForEach + View [WIP]
+// MARK: - ForEach + View [Blocked by Subview]
 
 @available(OpenSwiftUI_v1_0, *)
 extension ForEach: View, PrimitiveView where Content: View {
     public typealias Body = Never
 
     nonisolated public static func _makeView(
-        view: _GraphValue<ForEach<Data, ID, Content>>,
+        view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        if let outputs = makeForEachView(view: view, inputs: inputs) {
+            return outputs
+        } else {
+            return makeImplicitRoot(view: view, inputs: inputs)
+        }
+    }
+
+    nonisolated static func makeForEachView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs? {
+        // TODO: Subview stuff
+        return nil
     }
 
     nonisolated public static func _makeViewList(
-        view: _GraphValue<ForEach<Data, ID, Content>>,
+        view: _GraphValue<Self>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
-        _openSwiftUIUnimplementedFailure()
+        if let outputs = makeForEachViewList(view: view, inputs: inputs) {
+            return outputs
+        } else {
+            let state = ForEachState<Data, ID, Content>(inputs: inputs)
+            let info = Attribute(
+                ForEachState.Info.Init(
+                    view: view.value,
+                    state: state
+                )
+            )
+            state.info = info
+            let eviction = inputs.base[ForEachEvictionInput.self]
+            if eviction != .init() || ForEachEvictionInput.evictByDefault {
+                let evictor = Attribute(
+                    ForEachState.Evictor(
+                        state: state,
+                        isEnabled: eviction,
+                        updateSeed: GraphHost.currentHost.data.$updateSeed,
+                    )
+                )
+                evictor.flags = .transactional
+            }
+            let list = Attribute(
+                ForEachList.Init(
+                    info: info,
+                    seed: .zero
+                )
+            )
+            state.list = list
+            return .init(
+                .dynamicList(list, nil),
+                nextImplicitID: inputs.implicitID
+            )
+        }
+    }
+
+    nonisolated static func makeForEachViewList(
+        view: _GraphValue<Self>,
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs? {
+        // TODO: Subview stuff
+        return nil
     }
 }
 
