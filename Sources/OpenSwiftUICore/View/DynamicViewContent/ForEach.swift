@@ -1148,7 +1148,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     }
 }
 
-// MARK: - ForEachChild [WIP]
+// MARK: - ForEachChild
 
 private struct ForEachChild<Data, ID, Content>: StatefulRule, CustomStringConvertible where Data: RandomAccessCollection, ID: Hashable, Content: View {
     @Attribute var info: ForEachState<Data, ID, Content>.Info
@@ -1157,11 +1157,19 @@ private struct ForEachChild<Data, ID, Content>: StatefulRule, CustomStringConver
     typealias Value = Content
 
     func updateValue() {
-        _openSwiftUIUnimplementedFailure()
+        let state = info.state
+        guard let item = state.items[id],
+              item.seed == state.seed else {
+            return
+        }
+        value = withObservation {
+            let forEach = state.view!
+            return forEach.content(forEach.data[item.index])
+        }
     }
 
     var description: String {
-        _openSwiftUIUnimplementedFailure()
+        "Collection[\(id)]"
     }
 }
 
