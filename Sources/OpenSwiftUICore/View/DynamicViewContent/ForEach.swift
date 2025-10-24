@@ -8,6 +8,7 @@
 
 import Foundation
 package import OpenAttributeGraphShims
+@_spi(OpenSwiftUI) import OpenObservation
 
 // MARK: - ForEach
 
@@ -198,7 +199,7 @@ private struct LogForEachSlowPath: UserDefaultKeyedFeature {
 
 // MARK: - ForEachState [WIP]
 
-private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable {
+private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable, Content: View {
     let inputs: _ViewListInputs
     let parentSubgraph: Subgraph
     var info: Attribute<Info>?
@@ -237,8 +238,118 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         _openSwiftUIUnimplementedFailure()
     }
 
-    func item(at: Data.Index, offset: Int) -> Item {
-        _openSwiftUIUnimplementedFailure()
+    func item(at index: Data.Index, offset: Int) -> Item {
+        let id = view!.idGenerator.makeID(
+            data: view!.data,
+            index: index,
+            offset: offset
+        )
+        evictedIDs.remove(id)
+        guard let item = items[id] else {
+            let subgraph = Subgraph(
+                graph: parentSubgraph.graph,
+                attribute: list!.identifier
+            )
+            parentSubgraph.addChild(subgraph)
+            var childInputs = inputs
+            childInputs.base.copyCaches()
+            childInputs.implicitID = 0
+            childInputs.options.formUnion(.canTransition)
+            let (content, accessList) = _withObservation {
+                let forEach = view!
+                return forEach.content(forEach.data[index])
+            }
+            var childList: Attribute<any ViewList>?
+            let childOutputs = subgraph.apply {
+                childInputs.base.pushStableID(id)
+                let child = Attribute(
+                    ForEachChild(
+                        info: info!,
+                        id: id
+                    )
+                )
+                _installObservation(
+                    accessLists: accessList.map { [$0] } ?? [],
+                    attribute: child
+                )
+                var outputs = Content.makeDebuggableViewList(
+                    view: .init(child),
+                    inputs: childInputs
+                )
+                if inputs.options.contains(.needsDynamicTraits) {
+                    let itemList = Attribute(
+                        ItemList(
+                            base: outputs.makeAttribute(inputs: inputs),
+                            item: nil
+                        )
+                    )
+                    childList = itemList
+                    itemList.addInput(list!, options: [._4], token: 0)
+                    outputs.views = .dynamicList(childList!, nil)
+                }
+                return outputs
+            }
+            let item = Item(
+                id: id,
+                reuseID: view!.reuseID.map {
+                    view!.data[index][keyPath: $0]
+                } ?? Int(bitPattern: ObjectIdentifier(Content.self)),
+                views: childOutputs.views,
+                subgraph: subgraph,
+                index: index,
+                offset: offset,
+                contentID: contentID,
+                seed: seed,
+                state: self,
+                isConstant: view!.idGenerator.isConstant
+            )
+            items[id] = item
+            if let childList {
+                childList.mutateBody(
+                    as: ItemList.self,
+                    invalidating: true
+                ) { itemList in
+                    itemList.item = item
+                }
+            }
+            if firstInsertionOffset <= offset {
+                edits[item.id] = .inserted
+            }
+            if viewsPerElement == nil {
+                let staticCount = childOutputs.staticCount
+                if let staticCount {
+                    viewsPerElement = staticCount
+                } else {
+                    viewsPerElement = Content._viewListCount(inputs: .init(childInputs))
+                    if LogForEachSlowPath.isEnabled,
+                       inputs.isInLazyContainer,
+                       let viewsPerElement,
+                       viewsPerElement == nil {
+                        Log.externalWarning("Unable to determine number of views per element in the collection \(Data.self). If this view only produces one view per element in the collection, consider wrapping your views in a VStack to take the fast path.")
+                    }
+                }
+            }
+            return item
+        }
+        if item.isRemoved {
+            uneraseItem(item)
+        }
+        if item.seed == seed {
+            if !item.hasWarned, item.index != index, isLinkedOnOrAfter(.v3) {
+                item.hasWarned = true
+                Log.externalWarning(
+                    "\(ForEach<Data, ID, Content>.self): the ID" +
+                    " occurs multiple times within the collection, this will give undefined results!"
+                )
+            }
+        } else {
+            item.index = index
+            item.offset = offset
+            item.contentID = contentID
+            item.seed = seed
+        }
+        item.timeToLive = 8
+        return item
     }
 
     func eraseItem(_ item: Item) {
@@ -1037,9 +1148,26 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     }
 }
 
+// MARK: - ForEachChild [WIP]
+
+private struct ForEachChild<Data, ID, Content>: StatefulRule, CustomStringConvertible where Data: RandomAccessCollection, ID: Hashable, Content: View {
+    @Attribute var info: ForEachState<Data, ID, Content>.Info
+    let id: ID
+
+    typealias Value = Content
+
+    func updateValue() {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var description: String {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 // MARK: - ForEachList
 
-private struct ForEachList<Data, ID, Content>: ViewList where Data: RandomAccessCollection, ID: Hashable {
+private struct ForEachList<Data, ID, Content>: ViewList where Data: RandomAccessCollection, ID: Hashable, Content: View {
     var state: ForEachState<Data, ID, Content>
     var seed: UInt32
 
