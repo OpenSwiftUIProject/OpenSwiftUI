@@ -379,7 +379,46 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     func estimatedCount(
         style: ViewList.IteratorStyle
     ) -> Int {
-        _openSwiftUIUnimplementedFailure()
+        guard parentSubgraph.isValid else {
+            return 0
+        }
+        let count = view!.data.count
+        guard count != 0 else {
+            return 0
+        }
+        if let perElement = fetchViewsPerElement() {
+            return style.applyGranularity(to: perElement * count)
+        } else {
+            if viewsCounts.count >= count, viewsCountStyle == style {
+                // [Q]: Why we need apply on estimatedCount while not on count?
+                return style.applyGranularity(to: viewsCounts[count-1])
+            } else {
+                var usedItemCount = 0 // 198
+                var totalCount = 0 // 1a0
+                for (_, item) in items {
+                    guard item.seed == seed else {
+                        continue
+                    }
+                    usedItemCount += 1
+                    switch item.views {
+                    case let .staticList(elements):
+                        totalCount += style.applyGranularity(to: elements.count)
+                    case let .dynamicList(attribute, _):
+                        let viewList = RuleContext(attribute: list!)[attribute]
+                        totalCount += viewList.estimatedCount(style: style)
+                    }
+                }
+                let unusedItemCount = view!.data.count - usedItemCount
+                guard unusedItemCount >= 1 else {
+                    return totalCount
+                }
+                guard usedItemCount >= 1 else {
+                    return totalCount + unusedItemCount
+                }
+                let unusedEstimate = Int(ceil(Double(totalCount) / Double(usedItemCount) * Double(unusedItemCount)))
+                return totalCount + unusedEstimate
+            }
+        }
     }
 
     func edit(
