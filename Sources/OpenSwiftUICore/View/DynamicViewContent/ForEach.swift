@@ -1437,6 +1437,8 @@ extension ForEach where Data == Range<Int>, ID == Int, Content: View {
     /// - Parameters:
     ///   - data: A constant range.
     ///   - content: The view builder that creates views dynamically.
+    @_semantics("openswiftui.requires_constant_range")
+    // NOTE: Use this to make Xcode Swift Toolchain emit warning for non-constant ranges. eg. "Non-constant range: not an integer range"
     @_semantics("swiftui.requires_constant_range")
     public init(_ data: Range<Int>, @ViewBuilder content: @escaping (Int) -> Content) {
         self.init(data, idGenerator: .offset, content: content)
