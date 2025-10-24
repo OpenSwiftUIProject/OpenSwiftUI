@@ -330,7 +330,44 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         style: ViewList.IteratorStyle,
         do body: (inout Int, ViewList.IteratorStyle, Item) -> Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard parentSubgraph.isValid else { return true }
+        let endIndex = view!.data.endIndex
+        var index = view!.data.startIndex
+        var offset: Int
+        if start >= 1 {
+            if let perElement = fetchViewsPerElement() {
+                let count = style.applyGranularity(to: perElement)
+                if start >= count {
+                    offset = min(view!.data.count, count < 2 ? start : start / count)
+                    view!.data.formIndex(&index, offsetBy: offset)
+                    start &-= count * offset
+                } else {
+                    offset = 0
+                }
+            } else {
+                if !viewsCounts.isEmpty, viewsCountStyle == style {
+                    offset = viewsCounts.lowerBound { start >= $0 }
+                    view!.data.formIndex(&index, offsetBy: offset)
+                    if offset >= 1 {
+                        start &-= viewsCounts[offset-1]
+                    }
+                } else {
+                    offset = 0
+                }
+            }
+        } else {
+            offset = 0
+        }
+        while index != endIndex {
+            let item = item(at: index, offset: offset)
+            guard body(&start, style, item) else {
+                return false
+            }
+            view!.data.formIndex(after: &index)
+            offset += 1
+        }
+        createdAllItems = true
+        return true
     }
 
     func count(
