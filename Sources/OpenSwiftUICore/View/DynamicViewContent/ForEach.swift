@@ -321,6 +321,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                         id: id
                     )
                 )
+                child.value = content
                 _installObservation(
                     accessLists: accessList.map { [$0] } ?? [],
                     attribute: child
