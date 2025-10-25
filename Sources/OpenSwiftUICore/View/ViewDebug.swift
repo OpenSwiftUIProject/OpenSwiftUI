@@ -136,12 +136,14 @@ extension ViewModifier {
     ) -> _ViewOutputs {
         Subgraph.beginTreeElement(value: modifier.value, flags: 0)
         var inputs = inputs
+        let prev = inputs.changedDebugProperties
         inputs.changedDebugProperties = []
         var outputs = _makeView(
             modifier: modifier,
             inputs: inputs,
             body: body
         )
+        inputs.changedDebugProperties = prev
         if Subgraph.shouldRecordTree {
             withUnsafePointer(to: inputs) { pointer in
                 _ViewDebug.reallyWrap(&outputs, value: modifier, inputs: pointer)
@@ -171,11 +173,13 @@ extension View {
     ) -> _ViewOutputs {
         Subgraph.beginTreeElement(value: view.value, flags: 0)
         var inputs = inputs
+        let prev = inputs.changedDebugProperties
         inputs.changedDebugProperties = []
         var outputs = _makeView(
             view: view,
             inputs: inputs
         )
+        inputs.changedDebugProperties = prev
         if Subgraph.shouldRecordTree {
             withUnsafePointer(to: inputs) { pointer in
                 _ViewDebug.reallyWrap(&outputs, value: view, inputs: pointer)
