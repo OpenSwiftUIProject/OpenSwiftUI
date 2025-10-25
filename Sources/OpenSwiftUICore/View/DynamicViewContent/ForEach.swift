@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by Subview
 //  ID: 1A3DD35AB7F6976908CD7AF959F34D1F (SwiftUICore)
 
 import Foundation
@@ -287,8 +287,23 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         guard parentSubgraph.isValid else {
             return
         }
+        contentID = UniqueID().value
+        let oldSeed = seed
+        seed &+= 1
         invalidateViewCounts()
-        _openSwiftUIUnimplementedFailure()
+        if self.view != nil, self.view!.idGenerator.isConstant {
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            self.view = view
+            edits.removeAll()
+            lastTransaction = TransactionID(graph: list!.graph)
+            guard firstInsertionOffset >= 0 else {
+                firstInsertionOffset = .max
+                createdAllItems = false
+                return
+            }
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     func item(at index: Data.Index, offset: Int) -> Item {
