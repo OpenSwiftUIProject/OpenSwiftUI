@@ -20,6 +20,7 @@
 # bleached: Boolean to mark a platform as bleached from the pulic SDKs
 
 platform    macos               macOS         MACOS            cmd_aliases=macosx,osx        dyld_version_define_name=MACOSX    min_max_define_name=MAC_OS_X    availability_aliases=macosx -short_version_numbers availability_deprecation_define_name=MACOS version_define_name=MAC -supports_legacy_environment_defines
+variant     macos               macOSApplicationExtension       MACOSAPPLICATIONEXTENSION
 version     macos               10.0
 version     macos               10.1
 version     macos               10.2
@@ -29,7 +30,9 @@ version     macos               10.5
 version     macos               10.6
 version     macos               10.7
 platform    ios                 iOS         IPHONE        dyld_version_define_name=IOS    min_max_define_name=IPHONE_OS platform_define_name=IOS availability_deprecation_define_name=IOS -supports_legacy_environment_defines
-variant        ios                    iosmac        MACCATALYST    availability_aliases=macCatalyst
+variant     ios                 iOSApplicationExtension IOSAPPLICATIONEXTENSION
+variant     ios                 macCatalyst   MACCATALYST
+variant     ios                 macCatalystApplicationExtension MACCATALYSTAPPLICATIONEXTENSION
 version     ios                 2.0
 version     ios                 2.1
 version     ios                 2.2
@@ -55,6 +58,7 @@ version     ios                 7.1
 version     ios                 8.0
 set         fall_2014           2014.9.1    0.0
 platform    watchos             watchOS     WATCHOS        ios_implicit_min=9.0    min_max_define_name=WATCH_OS -supports_legacy_environment_defines
+variant     watchos             watchOSApplicationExtension     WATCHOSAPPLICATIONEXTENSION
 version     watchos             1.0
 version     macos               10.10.2
 version     macos               10.10.3
@@ -65,6 +69,7 @@ version     ios                 8.3
 version     ios                 8.4
 version     ios                 9.0
 platform    tvos                tvOS        TVOS        cmd_aliases=appletvos    ios_implicit_min=9.0 min_max_define_name=TV_OS -supports_legacy_environment_defines
+variant     tvos                tvOSApplicationExtension        TVOSAPPLICATIONEXTENSION
 version     tvos                9.0
 version     watchos             2.0
 set         fall_2015           2015.9.1    0.0
@@ -99,7 +104,7 @@ version     macos               10.13
 version     ios                 11.0
 version     tvos                11.0
 version     watchos             4.0
-platform    bridgeos            bridgeOS    BRIDGEOS    ios_implicit_min=11.0 min_max_define_name=BRIDGE_OS
+platform    bridgeos            bridgeOS    BRIDGEOS    ios_implicit_min=11.0 min_max_define_name=BRIDGE_OS -bleached
 version     bridgeos            2.0
 set         fall_2017           2017.9.1    0.0
 version     macos               10.13.1
@@ -305,10 +310,10 @@ version     ios                 16.6
 version     tvos                16.6
 version     watchos             9.6
 version     bridgeos            7.6
-set         2022_SU_G           2022.37.0   22.6.0
-# Security updates shipped after 2022_SU_G
 version     macos               13.6
 version     ios                 16.7
+version     macos               13.7
+set         2022_SU_G           2022.37.0   22.6.0
 version     macos               14.0
 version     ios                 17.0
 version     tvos                17.0
@@ -316,7 +321,8 @@ version     watchos             10.0
 version     bridgeos            8.0
 version     driverkit           23.0
 set         fall_2023           2023.9.1    23.0.0
-platform    visionos            visionOS    VISIONOS      min_max_define_name=VISION_OS   cmd_aliases=xros availability_aliases=xros ios_implicit_min=17.1
+platform    visionos            visionOS    VISIONOS      min_max_define_name=VISION_OS   cmd_aliases=xros ios_implicit_min=17.1
+variant     visionos            visionOSApplicationExtension    VISIONOSAPPLICATIONEXTENSION
 version     visionos            1.0
 version     macos               14.1
 version     ios                 17.1
@@ -339,3 +345,83 @@ version     watchos             10.3
 version     bridgeos            8.3
 version     driverkit           23.3
 set         2023_SU_D           2023.14.1    23.3.0
+version     macos               14.4
+version     ios                 17.4
+version     tvos                17.4
+version     watchos             10.4
+version     bridgeos            8.4
+version     driverkit           23.4
+version     visionos            1.1
+set         2023_SU_E           2023.15.1    23.4.0
+version     macos               14.5
+version     ios                 17.5
+version     tvos                17.5
+version     watchos             10.5
+version     bridgeos            8.5
+version     driverkit           23.5
+version     visionos            1.2
+set         2023_SU_F           2023.16.1    23.5.0
+version     macos               14.7
+version     ios                 17.7
+version     tvos                17.6
+version     watchos             10.7
+version     bridgeos            8.6
+version     driverkit           23.6
+version     visionos            1.3
+set         2023_SU_G           2023.17.1    23.6.0
+version     macos               15.0
+version     ios                 18.0
+version     tvos                18.0
+version     watchos             11.0
+version     bridgeos            9.0
+version     driverkit           24.0
+version     visionos            2.0
+set         fall_2024           2024.0.0     24.0.0
+version     macos               15.1
+version     ios                 18.1
+version     tvos                18.1
+version     watchos             11.1
+version     bridgeos            9.1
+version     driverkit           24.1
+version     visionos            2.1
+set         2024_SU_B           2024.1.0     24.1.0
+version     macos               15.2
+version     ios                 18.2
+version     tvos                18.2
+version     watchos             11.2
+version     bridgeos            9.2
+version     driverkit           24.2
+version     visionos            2.2
+set         2024_SU_C           2024.2.0     24.2.0
+version     macos               15.3
+version     ios                 18.3
+version     tvos                18.3
+version     watchos             11.3
+version     bridgeos            9.3
+version     driverkit           24.3
+version     visionos            2.3
+set         2024_SU_D           2024.3.0     24.3.0
+version     macos               15.4
+version     ios                 18.4
+version     tvos                18.4
+version     watchos             11.4
+version     bridgeos            9.4
+version     driverkit           24.4
+version     visionos            2.4
+set         2024_SU_E           2024.4.0     24.4.0
+version     macos               15.5
+version     ios                 18.5
+version     tvos                18.5
+version     watchos             11.5
+version     bridgeos            9.5
+version     driverkit           24.5
+version     visionos            2.5
+set         2024_SU_F           2024.5.0     24.5.0
+version     macos               15.6
+version     ios                 18.6
+version     tvos                18.6
+version     watchos             11.6
+version     bridgeos            9.6
+version     driverkit           24.6
+version     visionos            2.6
+set         2024_SU_G           2024.6.0     24.6.0

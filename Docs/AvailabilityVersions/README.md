@@ -10,7 +10,7 @@ The OpenSwiftUI project uses a semantic versioning system defined in `Semantics.
 
 The version information used in `Semantics.swift` is derived from Apple's official availability definitions:
 
-- Current implementation is based on [AvailabilityVersions-143.7](https://github.com/apple-oss-distributions/AvailabilityVersions/blob/AvailabilityVersions-143.7/availability.dsl)
+- Current implementation is based on [AvailabilityVersions-151-patch](https://github.com/OpenSwiftUIProject/AvailabilityVersions/blob/AvailabilityVersions-151-patch/availability.dsl)
 - The availability DSL file defines the relationships between OS versions and their corresponding version sets
 
 ## Versioning Structure
@@ -40,7 +40,7 @@ When updating the project to support new OS versions:
 ## References
 
 - [The Apple Wiki Timeline](https://theapplewiki.com/wiki/Timeline)
-- [Apple OSS Distributions](https://github.com/apple-oss-distributions/AvailabilityVersions)
+- [AvailabilityVersions Fork](https://github.com/OpenSwiftUIProject/AvailabilityVersions)
 
 ## License
 
