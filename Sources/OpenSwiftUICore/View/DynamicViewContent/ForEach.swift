@@ -744,7 +744,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                     style: .init()
                 ) { _, _, item in
                     switch item.views {
-                    case let.staticList(elements):
+                    case let .staticList(elements):
                         count += style.applyGranularity(to: elements.count)
                     case let .dynamicList(attribute, _):
                         let viewList = RuleContext(attribute: list!)[attribute]

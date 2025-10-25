@@ -8,7 +8,7 @@
 package import Foundation
 
 extension UserDefaults {
-    package static let uiKit = UserDefaults(suiteName: "com.apple.UIKIt")
+    package static let uiKit = UserDefaults(suiteName: "com.apple.UIKit")
 
     package static let openSwiftUI = UserDefaults(suiteName: "org.OpenSwiftUIProject.OpenSwiftUI")
 }

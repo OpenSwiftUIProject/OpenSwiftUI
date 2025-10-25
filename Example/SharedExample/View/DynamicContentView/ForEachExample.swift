@@ -42,7 +42,7 @@ struct ForEachKeyPathExample: View {
     }
 }
 
-// TODO: Animataion test case
+// TODO: Animation test case
 struct ForEachDynamicView: View {
     @State var opacities = [0, 0.5, 1.0]
 
