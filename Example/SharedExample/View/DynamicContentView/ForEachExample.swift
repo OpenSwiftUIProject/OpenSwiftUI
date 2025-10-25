@@ -12,10 +12,11 @@ import SwiftUI
 
 struct ForEachExample: View {
     var body: some View {
-        HStack {
-            ForEachOffsetExample()
-            ForEachKeyPathExample()
-        }
+//        HStack {
+//            ForEachOffsetExample()
+//            ForEachKeyPathExample()
+//        }
+        ForEachDynamicView()
     }
 }
 
@@ -36,6 +37,26 @@ struct ForEachKeyPathExample: View {
         VStack(spacing: 0) {
             ForEach(opacities, id: \.self) { opacity in
                 Color.red.opacity(opacity)
+            }
+        }
+    }
+}
+
+// TODO: Animataion test case
+struct ForEachDynamicView: View {
+    @State var opacities = [0, 0.5, 1.0]
+
+    var body: some View {
+        VStack(spacing: 0) {
+            ForEach(opacities, id: \.self) { opacity in
+                Color.red.opacity(opacity)
+            }
+        }.onAppear {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
+                withAnimation(.spring) {
+                    opacities.insert(0.25, at: 1)
+                    opacities.insert(0.75, at: 3)
+                }
             }
         }
     }
