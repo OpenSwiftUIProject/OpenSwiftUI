@@ -25,6 +25,13 @@ public struct _PositionLayout: UnaryLayout {
         self.position = position
     }
 
+    package func placement(
+        of: LayoutProxy,
+        in context: PlacementContext
+    ) -> _Placement {
+        _Placement(proposedSize: context.size, anchoring: .center, at: position)
+    }
+
     package func sizeThatFits(
         in proposal: _ProposedSize,
         context: SizeAndSpacingContext,
@@ -34,14 +41,10 @@ public struct _PositionLayout: UnaryLayout {
     }
     
     package func spacing(in: SizeAndSpacingContext, child: LayoutProxy) -> Spacing {
-        if Semantics.StopProjectingAffectedSpacing.isEnabled {
-            return Spacing()
+        guard Semantics.StopProjectingAffectedSpacing.isEnabled else {
+            return child.spacing()
         }
-        return child.spacing()
-    }
-
-    package func placement(of: LayoutProxy, in context: PlacementContext) -> _Placement {
-        _Placement(proposedSize: context.size, anchoring: .center, at: position)
+        return Spacing()
     }
 }
 
