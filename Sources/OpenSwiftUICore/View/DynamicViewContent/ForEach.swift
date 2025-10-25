@@ -224,6 +224,16 @@ extension ForEach: View, PrimitiveView where Content: View {
 
 // MARK: - ForEachEvictionInput
 
+/// Graph input that controls memory eviction behavior for ForEach items.
+///
+/// ForEach caches view items to optimize performance when data changes.
+/// This input determines whether unused items should be evicted from the cache
+/// to free memory. Items are evicted when they haven't been accessed recently
+/// (determined by time-to-live counters).
+///
+/// The eviction behavior is controlled by:
+/// - A `WeakAttribute<Bool>` that can be set per ForEach instance
+/// - A static `evictByDefault` flag based on SDK linking version
 package struct ForEachEvictionInput: GraphInput {
     package typealias Value = WeakAttribute<Bool>
 
@@ -234,12 +244,33 @@ package struct ForEachEvictionInput: GraphInput {
 
 // MARK: - HasCustomIDRepresentation
 
+/// Protocol for types that provide custom ID matching logic.
+///
+/// Types conforming to this protocol can implement custom logic for determining
+/// if they contain a specific ID value. This is used during ID matching in ForEach
+/// when the ID type doesn't exactly match the queried type.
+///
+/// This enables advanced ID matching scenarios beyond simple equality checks,
+/// such as:
+/// - Composite IDs that contain multiple sub-IDs
+/// - Wrapped ID types that need custom unwrapping logic
+/// - ID types with hierarchical relationships
 protocol HasCustomIDRepresentation {
     func containsID<ID>(_ id: ID) -> Bool where ID: Hashable
 }
 
 // MARK: - LogForEachSlowPath
 
+/// Feature flag for logging when ForEach encounters non-constant view counts.
+///
+/// When enabled via the user default `-LogForEachSlowPath YES`, this logs
+/// warnings when ForEach cannot determine a constant number of views per element.
+/// This happens when the view builder contains conditional logic that produces
+/// a variable number of views.
+///
+/// Non-constant view counts prevent optimizations in lazy containers like List
+/// and LazyVStack, potentially impacting performance. The logged warnings help
+/// developers identify and fix these performance issues.
 private struct LogForEachSlowPath: UserDefaultKeyedFeature {    
     static var key: String { "LogForEachSlowPath" }
 
@@ -252,6 +283,31 @@ private struct LogForEachSlowPath: UserDefaultKeyedFeature {
 
 // MARK: - ForEachState
 
+/// Internal state manager for ForEach that coordinates item caching and view generation.
+///
+/// `ForEachState` is the central coordinator for a ForEach instance. It manages:
+///
+/// - **Item Cache**: Stores previously created view items by ID for reuse
+/// - **View Counts**: Caches the number of views per element for optimization
+/// - **Eviction**: Removes unused items from cache based on time-to-live
+/// - **Edits**: Tracks insertions/removals for transition animations
+/// - **ID Matching**: Provides strategies for matching different ID types
+///
+/// The state is created during `_makeViewList` and persists across updates to
+/// enable efficient view reuse when data changes.
+///
+/// ## Lifecycle
+///
+/// 1. Created with `_ViewListInputs` and parent subgraph
+/// 2. Updated via `update(view:)` when data changes
+/// 3. Creates/reuses `Item` instances via `item(at:offset:)`
+/// 4. Evicts unused items via `evictItems(seed:)`
+///
+/// ## Performance
+///
+/// - Constant ID types (offset-based) are optimized for minimal overhead
+/// - View count caching enables O(1) random access in lazy containers
+/// - Eviction prevents unbounded memory growth for long-lived ForEach instances
 private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable, Content: View {
     let inputs: _ViewListInputs
     let parentSubgraph: Subgraph
@@ -999,6 +1055,22 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
 
     // MARK: - ForEachState.Item
 
+    /// Cached view item for a single element in the ForEach data collection.
+    ///
+    /// Each `Item` represents one element from the ForEach's data, containing:
+    /// - The generated view hierarchy (`views`)
+    /// - Identity information (`id`, `reuseID`)
+    /// - Position tracking (`index`, `offset`)
+    /// - Lifecycle state (`seed`, `timeToLive`, `isRemoved`)
+    ///
+    /// Items are retained in `ForEachState.items` and reused across updates when
+    /// their ID matches. This enables efficient view updates and smooth transitions.
+    ///
+    /// ## Memory Management
+    ///
+    /// - `timeToLive`: Decremented each eviction cycle; removed when zero
+    /// - `refcount`: Reference count for subgraph lifecycle
+    /// - `isRemoved`: Marks items for cleanup without immediate invalidation
     class Item: ViewList.Subgraph {
         let id: ID
         let reuseID: Int
@@ -1072,6 +1144,17 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
 
     // MARK: - Evictor
 
+    /// Rule that performs periodic eviction of unused ForEach items.
+    ///
+    /// The `Evictor` runs as an async attribute that monitors the update seed
+    /// and evicts cached items that haven't been used recently. This prevents
+    /// unbounded memory growth in long-lived ForEach instances.
+    ///
+    /// Eviction behavior:
+    /// - Triggered when `updateSeed` changes
+    /// - Evicts up to 64 items per cycle
+    /// - Only evicts items with `timeToLive == 0` and `refcount == 1`
+    /// - Evicted IDs are tracked to prevent immediate recreation
     struct Evictor: Rule, AsyncAttribute {
         var state: ForEachState
         @WeakAttribute var isEnabled: Bool?
@@ -1086,6 +1169,11 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
 
     // MARK: - Info
 
+    /// Wrapper for ForEachState that tracks the current update seed.
+    ///
+    /// `Info` provides a value-type interface to the reference-type `ForEachState`.
+    /// It captures the state's seed at the time of creation, allowing downstream
+    /// code to detect when the state has been updated.
     struct Info {
         var state: ForEachState
         var seed: UInt32
@@ -1314,6 +1402,22 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
 
 // MARK: - ForEachChild
 
+/// View wrapper that generates content for a single ForEach element.
+///
+/// `ForEachChild` is a `StatefulRule` that creates and updates the view for one
+/// element in the ForEach's data collection. It uses observation to track access
+/// to the data element and automatically updates when the data changes.
+///
+/// The child is identified by its `id` and retrieves the current data element
+/// from `ForEachState` based on this ID. This indirection allows the same child
+/// to be reused even when the element's position in the collection changes.
+///
+/// ## Update Behavior
+///
+/// - Validates that the item still exists in the state
+/// - Checks that the item's seed matches the current state seed
+/// - Re-evaluates the content closure with the current data element
+/// - Installs observation to track data access
 private struct ForEachChild<Data, ID, Content>: StatefulRule, CustomStringConvertible where Data: RandomAccessCollection, ID: Hashable, Content: View {
     @Attribute var info: ForEachState<Data, ID, Content>.Info
     let id: ID
@@ -1339,6 +1443,23 @@ private struct ForEachChild<Data, ID, Content>: StatefulRule, CustomStringConver
 
 // MARK: - ForEachList
 
+/// ViewList implementation that provides the view hierarchy for a ForEach.
+///
+/// `ForEachList` conforms to the `ViewList` protocol and delegates all operations
+/// to the underlying `ForEachState`. It serves as the reactive bridge between
+/// the attribute graph and the state management layer.
+///
+/// The list is created via `Init` which sets up observation on the state's `Info`.
+/// When the info changes (indicating the ForEach data has updated), the list
+/// increments its seed and invalidates cached view counts, triggering a refresh.
+///
+/// ## Delegation Pattern
+///
+/// All ViewList protocol methods delegate to `ForEachState`:
+/// - `count`, `estimatedCount` → state item iteration
+/// - `applyNodes` → state's node application with transforms
+/// - `edit`, `firstOffset` → state's edit tracking and ID lookup
+/// - `traitKeys`, `viewIDs` → state's metadata computation
 private struct ForEachList<Data, ID, Content>: ViewList where Data: RandomAccessCollection, ID: Hashable, Content: View {
     var state: ForEachState<Data, ID, Content>
     var seed: UInt32
