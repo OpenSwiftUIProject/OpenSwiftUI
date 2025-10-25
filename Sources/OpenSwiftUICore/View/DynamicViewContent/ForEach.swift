@@ -302,7 +302,91 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                 createdAllItems = false
                 return
             }
-            _openSwiftUIUnimplementedFailure()
+            var index = view.data.startIndex
+            let endIndex = view.data.endIndex
+            let itemsCount = items.count
+            let evictedIDsCount = evictedIDs.count
+            var newEdits = edits
+            var newEvictedIDs = Set<ID>()
+            firstInsertionOffset = .zero
+            var allItemsProcessed = itemsCount == 0
+            var remainingItemsCount: Int
+            if itemsCount != 0 || evictedIDsCount != 0 {
+                remainingItemsCount = itemsCount
+                var remainingEvictedIDsCount = evictedIDsCount
+                var offset = 0
+                while index != endIndex {
+                    let idGenerator = view.idGenerator
+                    let id = idGenerator.makeID(
+                        data: view.data,
+                        index: index,
+                        offset: offset
+                    )
+                    let foundActiveItem: Bool
+                    if let item = items[id] {
+                        firstInsertionOffset = offset
+                        item.index = index
+                        item.offset = offset
+                        item.seed = seed
+                        remainingItemsCount &-= 1
+                        if item.isRemoved {
+                            foundActiveItem = false
+                        } else {
+                            newEdits = edits
+                            foundActiveItem = true
+                        }
+                    } else {
+                        foundActiveItem = false
+                    }
+                    if evictedIDs.contains(id) {
+                        newEvictedIDs.insert(id)
+                        remainingEvictedIDsCount &-= 1
+                    } else {
+                        if !foundActiveItem {
+                            edits[id] = .inserted
+                        }
+                    }
+                    view.data.formIndex(after: &index)
+                    allItemsProcessed = remainingItemsCount == 0
+                    guard remainingItemsCount != 0 || remainingEvictedIDsCount != 0 else {
+                        remainingItemsCount = 0
+                        allItemsProcessed = true
+                        break
+                    }
+                    offset &+= 1
+                }
+            } else {
+                remainingItemsCount = 0
+                allItemsProcessed = true
+            }
+            if !createdAllItems {
+                edits = newEdits
+            }
+            if !allItemsProcessed {
+                var itemsToErase: [Item] = []
+                var index = items.startIndex
+                let endIndex = items.endIndex
+                while index != endIndex {
+                    let (id, item) = items[index]
+                    if !item.isRemoved, item.seed != seed {
+                        itemsToErase.append(item)
+                        remainingItemsCount &-= 1
+                        edits[item.id] = .removed
+                    }
+                    items.formIndex(after: &index)
+                    guard remainingItemsCount != 0 else {
+                        break
+                    }
+                }
+                for item in itemsToErase {
+                    eraseItem(item)
+                }
+            }
+            if !createdAllItems {
+                firstInsertionOffset = .max
+            }
+            evictedIDs = newEvictedIDs
+            createdAllItems = false
         }
     }
 
