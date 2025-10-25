@@ -250,7 +250,7 @@ private struct LogForEachSlowPath: UserDefaultKeyedFeature {
     }
 }
 
-// MARK: - ForEachState [WIP]
+// MARK: - ForEachState
 
 private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection, ID: Hashable, Content: View {
     let inputs: _ViewListInputs
@@ -292,7 +292,18 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         seed &+= 1
         invalidateViewCounts()
         if self.view != nil, self.view!.idGenerator.isConstant {
-            _openSwiftUIUnimplementedFailure()
+            if self.view!.data.count != view.data.count {
+                Log.externalWarning("\(ForEach<Data, ID, Content>.self) count (\(view.data.count)) != its initial count (\(self.view!.data.count)). `ForEach(_:content:)` should only be used for *constant* data. Instead conform data to `Identifiable` or use `ForEach(_:id:content:)` and provide an explicit `id`!")
+            }
+            let oldData = self.view!.data
+            self.view = view
+            self.view!.data = oldData
+            for (_, item) in items {
+                item.contentID = contentID
+                if item.seed == oldSeed {
+                    item.seed = seed
+                }
+            }
         } else {
             self.view = view
             edits.removeAll()
@@ -367,7 +378,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                 var index = items.startIndex
                 let endIndex = items.endIndex
                 while index != endIndex {
-                    let (id, item) = items[index]
+                    let (_, item) = items[index]
                     if !item.isRemoved, item.seed != seed {
                         itemsToErase.append(item)
                         remainingItemsCount &-= 1
