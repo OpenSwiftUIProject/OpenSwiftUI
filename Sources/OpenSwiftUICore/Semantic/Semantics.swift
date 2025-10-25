@@ -322,14 +322,22 @@ let openSwiftUI_v5_2_os_versions = dyld_build_version_t(version: 0x07E7_0d01)
 /// macOS 15.0, iOS 18.0, watchOS 11.0, tvOS 18.0, bridgeOS 9.0, driverKit 24.0, visionOS 2.0
 let openSwiftUI_v6_0_os_versions = dyld_build_version_t(version: 0x07E8_0000)
 
-/// 2024 (2024.1.0) SDK version set
+/// 2024 SU B (2024.1.0) SDK version set
+///
+/// macOS 15.1, iOS 18.1, watchOS 11.1, tvOS 18.1, bridgeOS 9.1, driverKit 24.1, visionOS 2.1
 let openSwiftUI_v6_1_os_versions = dyld_build_version_t(version: 0x07E8_0100)
 
 /// 2024 (2024.2.0) SDK version set
+///
+/// macOS 15.2, iOS 18.2, watchOS 11.2, tvOS 18.2, bridgeOS 9.2, driverKit 24.2, visionOS 2.2
 let openSwiftUI_v6_2_os_versions = dyld_build_version_t(version: 0x07E8_0200)
 
 /// 2024 (2024.4.0) SDK version set
+///
+/// macOS 15.4, iOS 18.4, watchOS 11.4, tvOS 18.4, bridgeOS 9.4, driverKit 24.4, visionOS 2.4
 let openSwiftUI_v6_4_os_versions = dyld_build_version_t(version: 0x07E8_0400)
 
 /// Fall 2025 (2025.0.0) SDK version set
+///
+/// macOS 26.0, iOS 26.0, watchOS 26.0, tvOS 26.0, bridgeOS 26.0, driverKit 26.0, visionOS 26.0
 let openSwiftUI_v7_0_os_versions = dyld_build_version_t(version: 0x07E9_0000)

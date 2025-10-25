@@ -20,7 +20,7 @@ struct __attribute__((visibility("hidden"))) VersionSetEntry {
     }
 };
 
-static const std::array<VersionSetEntry, 44> sVersionMap = {{
+static const std::array<VersionSetEntry, 54> sVersionMap = {{
     { .set = 0x007db0901, .ios = 0x00050000, .macos = 0x000a0700 },
     { .set = 0x007dc0901, .ios = 0x00060000, .macos = 0x000a0800 },
     { .set = 0x007dd0901, .ios = 0x00070000, .macos = 0x000a0900 },
@@ -60,11 +60,21 @@ static const std::array<VersionSetEntry, 44> sVersionMap = {{
     { .set = 0x007e62200, .bridgeos = 0x00070200, .driverkit = 0x00160000, .ios = 0x00100300, .macos = 0x000d0200, .tvos = 0x00100300, .watchos = 0x00090300 },
     { .set = 0x007e62300, .bridgeos = 0x00070300, .driverkit = 0x00160400, .ios = 0x00100400, .macos = 0x000d0300, .tvos = 0x00100400, .watchos = 0x00090400 },
     { .set = 0x007e62400, .bridgeos = 0x00070400, .driverkit = 0x00160500, .ios = 0x00100500, .macos = 0x000d0400, .tvos = 0x00100500, .watchos = 0x00090500 },
-    { .set = 0x007e62500, .bridgeos = 0x00070600, .driverkit = 0x00160600, .ios = 0x00100600, .macos = 0x000d0500, .tvos = 0x00100600, .watchos = 0x00090600 },
+    { .set = 0x007e62500, .bridgeos = 0x00070600, .driverkit = 0x00160600, .ios = 0x00100700, .macos = 0x000d0700, .tvos = 0x00100600, .watchos = 0x00090600 },
     { .set = 0x007e70901, .bridgeos = 0x00080000, .driverkit = 0x00170000, .ios = 0x00110000, .macos = 0x000e0000, .tvos = 0x00110000, .watchos = 0x000a0000 },
     { .set = 0x007e70c01, .bridgeos = 0x00080100, .driverkit = 0x00170100, .ios = 0x00110100, .macos = 0x000e0100, .tvos = 0x00110100, .visionos = 0x00010000, .watchos = 0x000a0100 },
     { .set = 0x007e70d01, .bridgeos = 0x00080200, .driverkit = 0x00170200, .ios = 0x00110200, .macos = 0x000e0200, .tvos = 0x00110200, .visionos = 0x00010000, .watchos = 0x000a0200 },
-    { .set = 0x007e70e01, .bridgeos = 0x00080300, .driverkit = 0x00170300, .ios = 0x00110300, .macos = 0x000e0300, .tvos = 0x00110300, .visionos = 0x00010000, .watchos = 0x000a0300 }
+    { .set = 0x007e70e01, .bridgeos = 0x00080300, .driverkit = 0x00170300, .ios = 0x00110300, .macos = 0x000e0300, .tvos = 0x00110300, .visionos = 0x00010000, .watchos = 0x000a0300 },
+    { .set = 0x007e70f01, .bridgeos = 0x00080400, .driverkit = 0x00170400, .ios = 0x00110400, .macos = 0x000e0400, .tvos = 0x00110400, .visionos = 0x00010100, .watchos = 0x000a0400 },
+    { .set = 0x007e71001, .bridgeos = 0x00080500, .driverkit = 0x00170500, .ios = 0x00110500, .macos = 0x000e0500, .tvos = 0x00110500, .visionos = 0x00010200, .watchos = 0x000a0500 },
+    { .set = 0x007e71101, .bridgeos = 0x00080600, .driverkit = 0x00170600, .ios = 0x00110700, .macos = 0x000e0700, .tvos = 0x00110600, .visionos = 0x00010300, .watchos = 0x000a0700 },
+    { .set = 0x007e80000, .bridgeos = 0x00090000, .driverkit = 0x00180000, .ios = 0x00120000, .macos = 0x000f0000, .tvos = 0x00120000, .visionos = 0x00020000, .watchos = 0x000b0000 },
+    { .set = 0x007e80100, .bridgeos = 0x00090100, .driverkit = 0x00180100, .ios = 0x00120100, .macos = 0x000f0100, .tvos = 0x00120100, .visionos = 0x00020100, .watchos = 0x000b0100 },
+    { .set = 0x007e80200, .bridgeos = 0x00090200, .driverkit = 0x00180200, .ios = 0x00120200, .macos = 0x000f0200, .tvos = 0x00120200, .visionos = 0x00020200, .watchos = 0x000b0200 },
+    { .set = 0x007e80300, .bridgeos = 0x00090300, .driverkit = 0x00180300, .ios = 0x00120300, .macos = 0x000f0300, .tvos = 0x00120300, .visionos = 0x00020300, .watchos = 0x000b0300 },
+    { .set = 0x007e80400, .bridgeos = 0x00090400, .driverkit = 0x00180400, .ios = 0x00120400, .macos = 0x000f0400, .tvos = 0x00120400, .visionos = 0x00020400, .watchos = 0x000b0400 },
+    { .set = 0x007e80500, .bridgeos = 0x00090500, .driverkit = 0x00180500, .ios = 0x00120500, .macos = 0x000f0500, .tvos = 0x00120500, .visionos = 0x00020500, .watchos = 0x000b0500 },
+    { .set = 0x007e80600, .bridgeos = 0x00090600, .driverkit = 0x00180600, .ios = 0x00120600, .macos = 0x000f0600, .tvos = 0x00120600, .visionos = 0x00020600, .watchos = 0x000b0600 }
 }};
 };
 
