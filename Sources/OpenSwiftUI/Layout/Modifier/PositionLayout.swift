@@ -1,18 +1,21 @@
 //
 //  PositionLayout.swift
-//  OpenSwiftUICore
+//  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID:  (SwiftUI)
 
-public import Foundation
-
+public import OpenCoreGraphicsShims
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
 // MARK: - PositionLayout
 
+/// Allows you to redefine center of the child within its coördinate space
+///
+/// Child sizing: Respects the child's size
+/// Preferred size: CGSize of the child
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _PositionLayout: UnaryLayout {
     public var position: CGPoint
@@ -42,13 +45,14 @@ public struct _PositionLayout: UnaryLayout {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
     /// Positions the center of this view at the specified point in its parent's
     /// coordinate space.
     ///
     /// Use the `position(_:)` modifier to place the center of a view at a
     /// specific coordinate in the parent view using a
-    /// <doc://com.apple.documentation/documentation/CoreFoundation/CGPoint> to specify the `x`
+    /// [CGPoint](https://developer.apple.com/documentation/coregraphics/cgpoint)  to specify the `x`
     /// and `y` offset.
     ///
     ///     Text("Position by passing a CGPoint()")
@@ -59,7 +63,6 @@ extension View {
     ///   view.
     ///
     /// - Returns: A view that fixes the center of this view at `position`.
-
     @inlinable
     nonisolated public func position(_ position: CGPoint) -> some View {
         modifier(_PositionLayout(position: position))
@@ -80,9 +83,8 @@ extension View {
     ///   - y: The y-coordinate at which to place the center of this view.
     ///
     /// - Returns: A view that fixes the center of this view at `x` and `y`.
-
     @inlinable
     nonisolated public func position(x: CGFloat = 0, y: CGFloat = 0) -> some View {
-        position(.init(x: x, y: y))
+        position(CGPoint(x: x, y: y))
     }
 }
