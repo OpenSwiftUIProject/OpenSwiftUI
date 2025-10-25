@@ -541,7 +541,7 @@ package enum _ViewList_Node {
     }
 }
 
-// MARK: - ViewList + Extension [Blocked by ID.Views]
+// MARK: - ViewList + Extension [6.5.4] [WIP]
 
 extension ViewList {
     package var isEmpty: Bool { count == 0 }
@@ -615,16 +615,16 @@ extension ViewList {
     }
 
     package var allViewIDs: ID.Views {
-        if let viewIDs {
-            return viewIDs
-        } else {
+        guard let viewIDs else {
+            var base: [ViewList.ID] = []
             var start = 0
-            let result = applySublists(from: &start, style: .init(), list: nil) { sublist in
-                // sublist.elements append
-                true
+            applySublists(from: &start, style: .init(), list: nil) { sublist in
+                base.append(contentsOf: sublist.id.elementIDs(count: sublist.count))
+                return true
             }
-            _openSwiftUIUnimplementedFailure()
+            return ViewList.ID._Views(base, isDataDependent: true)
         }
+        return viewIDs
     }
 
     package func applyIDs(
@@ -634,7 +634,19 @@ extension ViewList {
         transform: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard style.granularity == 1, let viewIDs else {
+            return applyNodes(
+                from: &start,
+                style: style,
+                list: listAttribute,
+                transform: &transform
+            ) { start, style, node, transform in
+                _openSwiftUIUnimplementedWarning()
+                return false
+            }
+        }
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 
     package func applyIDs(
@@ -643,7 +655,7 @@ extension ViewList {
         transform t: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        applyIDs(from: &start, style: .init(), listAttribute: listAttribute, transform: &t, to: body)
     }
 
     package func applyIDs(
@@ -651,7 +663,8 @@ extension ViewList {
         listAttribute: Attribute<any ViewList>?,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        var t = ViewList.SublistTransform()
+        return applyIDs(from: &start, listAttribute: listAttribute, transform: &t, to: body)
     }
 
     package func applyIDs(
@@ -659,14 +672,44 @@ extension ViewList {
         transform t: inout ViewList.SublistTransform,
         to body: (ViewList.ID) -> Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        applyIDs(from: &start, listAttribute: nil, transform: &t, to: body)
     }
 
-    package func firstOffset(of id: ViewList.ID.Canonical, style: IteratorStyle) -> Int? {
-        _openSwiftUIUnimplementedFailure()
+    package func firstOffset(
+        of id: ViewList.ID.Canonical,
+        style: IteratorStyle
+    ) -> Int? {
+        if style.granularity == 1, let viewIDs {
+            return viewIDs.firstIndex { $0.canonicalID == id }
+        } else {
+            var firstOffset: Int? = nil
+            var offset = 0
+            var start = 0
+            applySublists(from: &start, style: style, list: nil) { sublist in
+                guard sublist.count != 0 else {
+                    return true
+                }
+                var index = id.index
+                var count = max(sublist.count, 0)
+                while count != 0 {
+                    let sublistID = sublist.id.canonicalID
+                    if index == 0, sublistID == id {
+                        firstOffset = offset
+                        break
+                    }
+                    offset &+= 1
+                    index &-= 1
+                    count &-= 1
+                }
+                return true
+            }
+            return firstOffset
+        }
     }
 
-    package func firstOffset(of id: ViewList.ID.Canonical) -> Int? {
+    package func firstOffset(
+        of id: ViewList.ID.Canonical
+    ) -> Int? {
         firstOffset(of: id, style: .init())
     }
 }
