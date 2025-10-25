@@ -8,51 +8,24 @@ import Testing
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct PositionLayoutUITests {
-
     @Test
-    func defaultPosition() {
+    func positionInZStack() {
         struct ContentView: View {
             var body: some View {
-                Color.blue
-                    .frame(width: 50, height: 30)
-                    .position()
-            }
-        }
-        openSwiftUIAssertSnapshot(of: ContentView())
-    }
-    
-    @Test
-    func specificXAxis() {
-        struct ContentView: View {
-            var body: some View {
-                Color.blue
-                    .frame(width: 50, height: 30)
-                    .position(x: 30)
-            }
-        }
-        openSwiftUIAssertSnapshot(of: ContentView())
-    }
-    
-    
-    @Test
-    func specificYAxis() {
-        struct ContentView: View {
-            var body: some View {
-                Color.blue
-                    .frame(width: 50, height: 30)
-                    .position(y: 40)
-            }
-        }
-        openSwiftUIAssertSnapshot(of: ContentView())
-    }
-    
-    @Test
-    func specificPosition() {
-        struct ContentView: View {
-            var body: some View {
-                Color.blue
-                    .frame(width: 50, height: 30)
-                    .position(x: 50, y: 60)
+                ZStack {
+                    Color.red
+                        .frame(width: 50, height: 50)
+                        .position()
+                    Color.green
+                        .frame(width: 50, height: 50)
+                        .position(x: 50)
+                    Color.blue
+                        .frame(width: 50, height: 50)
+                        .position(y: 50)
+                    Color.black
+                        .frame(width: 50, height: 50)
+                        .position(x: 50, y: 50)
+                }.frame(width: 100, height: 100)
             }
         }
         openSwiftUIAssertSnapshot(of: ContentView())
