@@ -200,9 +200,13 @@ package protocol ViewList {
     typealias Edit = _ViewList_Edit
 
     func count(style: IteratorStyle) -> Int
+
     func estimatedCount(style: IteratorStyle) -> Int
+
     var traitKeys: ViewTraitKeys? { get }
+
     var viewIDs: ID.Views? { get }
+
     var traits: ViewTraitCollection { get }
 
     typealias ApplyBody = (inout Int, IteratorStyle, Node, inout SublistTransform) -> Bool
@@ -215,8 +219,16 @@ package protocol ViewList {
         transform: inout SublistTransform,
         to body: ApplyBody
     ) -> Bool
-    func edit(forID id: ID, since transaction: TransactionID) -> Edit?
-    func firstOffset<OtherID>(forID id: OtherID, style: IteratorStyle) -> Int? where OtherID: Hashable
+
+    func edit(
+        forID id: ID,
+        since transaction: TransactionID
+    ) -> Edit?
+
+    func firstOffset<OtherID>(
+        forID id: OtherID,
+        style: IteratorStyle
+    ) -> Int? where OtherID: Hashable
 }
 
 // MARK: - ViewList.IteratorStyle
@@ -288,7 +300,14 @@ package struct _ViewList_Sublist {
     package var traits: ViewTraitCollection
     package var list: Attribute<ViewList>?
 
-    package init(start: Int, count: Int, id: _ViewList_ID, elements: any ViewList.Elements, traits: ViewList.Traits, list: Attribute<ViewList>?) {
+    package init(
+        start: Int,
+        count: Int,
+        id: _ViewList_ID,
+        elements: any ViewList.Elements,
+        traits: ViewList.Traits,
+        list: Attribute<ViewList>?
+    ) {
         self.start = start
         self.count = count
         self.id = id
@@ -2331,7 +2350,7 @@ private struct SubgraphList: ViewList {
         var subgraph: ViewList.Subgraph
 
         func apply(sublist: inout ViewList.Sublist) {
-            sublist.elements = SubgraphElements(base: sublist.elements, subgraph: subgraph)
+            sublist.elements = subgraph.wrapping(sublist.elements)
         }
 
         func bindID(_ id: inout ViewList.ID) {}
