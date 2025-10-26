@@ -6,6 +6,8 @@
 //  Status: WIP
 //  ID: 2EF43D8D991A83294E93848563DD541B (SwiftUICore)
 
+import OpenSwiftUI_SPI
+
 // MARK: - StyleContext
 
 package protocol StyleContext {
@@ -432,19 +434,19 @@ package protocol StyleContextVisitor {
     mutating func visit<C>(_ context: C.Type) where C: StyleContext
 }
 
-// MARK: - StyleContextDescriptor [WIP]
+// MARK: - StyleContextDescriptor
 
 package struct StyleContextDescriptor: TupleDescriptor {
     package static var typeCache: [ObjectIdentifier: TupleTypeDescription<StyleContextDescriptor>] = [:]
 
     package static var descriptor: UnsafeRawPointer {
-        _openSwiftUIUnimplementedFailure()
+        _styleContextProtocolDescriptor()
     }
 }
 
 extension TypeConformance where P == StyleContextDescriptor {
     package func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: StyleContextVisitor {
-        _openSwiftUIUnimplementedFailure()
+        visitor.pointee.visit(unsafeBitCast(self, to: (any StyleContext.Type).self))
     }
 }
 
