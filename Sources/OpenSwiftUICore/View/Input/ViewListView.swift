@@ -1,5 +1,5 @@
 //
-//  VariadicView_Children.swift
+//  ViewListView.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
@@ -8,77 +8,6 @@
 //  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (?)
 
 package import OpenAttributeGraphShims
-
-// MARK: - _VariadicView.Children + View [WIP]
-
-@available(OpenSwiftUI_v1_0, *)
-extension _VariadicView.Children: View, MultiView, PrimitiveView {
-    nonisolated public static func _makeViewList(
-        view: _GraphValue<Self>,
-        inputs: _ViewListInputs
-    ) -> _ViewListOutputs {
-        let child = _GraphValue(Child(children: view.value))
-        return ForEach._makeViewList(view: child, inputs: inputs)
-    }
-
-    @available(OpenSwiftUI_v2_0, *)
-    nonisolated public static func _viewListCount(
-        inputs: _ViewListCountInputs
-    ) -> Int? {
-        nil
-    }
-
-    private struct Child: Rule, AsyncAttribute {
-        typealias Value = ForEach<_VariadicView.Children, AnyHashable, _VariadicView.Children.Element>
-
-        @Attribute var children: _VariadicView.Children
-
-        var value: Value {
-            _openSwiftUIUnimplementedFailure()
-        }
-    }
-}
-
-// MARK: - _VariadicView.Children + RandomAccessCollection [WIP]
-
-@available(OpenSwiftUI_v1_0, *)
-extension _VariadicView.Children: RandomAccessCollection {
-    public struct Element: PrimitiveView, UnaryView, Identifiable {
-        var view: ViewList.View
-        var traits: ViewTraitCollection
-        
-        public var id: AnyHashable {
-            _openSwiftUIUnimplementedFailure()
-
-        }
-        public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID : Hashable {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        /// The value of each trait associated with the view. Changing
-        /// the traits will not affect the view in any way.
-        public subscript<Trait: _ViewTraitKey>(key: Trait.Type) -> Trait.Value {
-            get { traits[key] }
-            set { traits[key] = newValue }
-        }
-
-        public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-            _openSwiftUIUnimplementedFailure()
-        }
-    }
-    
-    public var startIndex: Int {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    public var endIndex: Int {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    public subscript(index: Int) -> Element {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
 
 // MARK: - ViewListVisitor
 
@@ -142,6 +71,16 @@ package struct _ViewList_View: PrimitiveView, View, UnaryView {
     var count: Int
     var contentSubgraph: Subgraph?
 
+    @inline(__always)
+    init(emptyViewID implicitID: Int) {
+        self.elements = EmptyViewListElements()
+        self.releaseElements = nil
+        self.id = .init(implicitID: implicitID)
+        self.index = .zero
+        self.count = .zero
+        self.contentSubgraph = nil
+    }
+
     package init(
         elements: any ViewList.Elements,
         id: ViewList.ID,
@@ -150,6 +89,7 @@ package struct _ViewList_View: PrimitiveView, View, UnaryView {
         contentSubgraph: Subgraph
     ) {
         self.elements = elements
+        releaseElements = elements.retain()
         self.id = id
         self.index = index
         self.count = count
