@@ -96,6 +96,10 @@ extension View {
 // MARK: - ResolvedLabeledContent
 
 struct ResolvedLabeledContent: StyleableView {
+    var configuration: LabeledContentStyleConfiguration
+
+    static let defaultStyleModifier: _LabeledContentStyleModifier<AutomaticLabeledContentStyle> = .init(style: .init())
+
     struct _Body: View {
         var configuration: LabeledContentStyleConfiguration
 
@@ -126,10 +130,6 @@ struct ResolvedLabeledContent: StyleableView {
     var body: _Body {
         _Body(configuration: configuration)
     }
-
-    var configuration: LabeledContentStyleConfiguration
-
-    static let defaultStyleModifier: _LabeledContentStyleModifier<AutomaticLabeledContentStyle> = .init(style: .init())
 }
 
 // MARK: - _LabeledContentStyleModifier

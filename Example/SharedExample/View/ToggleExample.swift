@@ -9,9 +9,9 @@ import SwiftUI
 #endif
 
 struct ToggleExample: View {
-    // FIXME: Fix Representable update logic and add test case
-    @State var toggle = false
-    
+    // FIXME: Add UI test case
+    @State private var toggle = false
+
     var body: some View {
         Toggle(isOn: $toggle) {
             Color.red

@@ -33,18 +33,21 @@ public struct AutomaticLabeledContentStyle: LabeledContentStyle {
         _openSwiftUIEmptyStub()
     }
 
-    // FIXME
+    // FIXME: Blocked by StyleContextAcceptsPredicate
     public func makeBody(configuration: AutomaticLabeledContentStyle.Configuration) -> some View {
-        LabeledContent {
+        HStack {
+            configuration.label
             configuration.content
-                .modifier(_LabeledContentStyleModifier(style: self))
-        } label: {
-            StaticIf(LabelVisibilityConfigured.self) {
-                labelsVisibility == .hidden ? nil : configuration.label
-            } else: {
-                configuration.label
-            }
         }
+//        LabeledContent {
+//            configuration.content
+//                .labeledContentStyle(self)
+//        } label: {
+//            configuration.label
+//                .staticIf(LabelVisibilityConfigured.self) { label in
+//                    labelsVisibility == .hidden ? nil : configuration.label
+//                }
+//        }
     }
 }
 
