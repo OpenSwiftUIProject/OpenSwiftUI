@@ -177,7 +177,7 @@ package struct ViewDescriptor: TupleDescriptor, ConditionalProtocolDescriptor {
     package static var typeCache: [ObjectIdentifier: TupleTypeDescription<ViewDescriptor>] = [:]
 
     package static var descriptor: UnsafeRawPointer {
-        _OpenSwiftUI_viewProtocolDescriptor()
+        _viewProtocolDescriptor()
     }
 
     private static var conditionalCache: [ObjectIdentifier: ConditionalTypeDescriptor<ViewDescriptor>] = [:]

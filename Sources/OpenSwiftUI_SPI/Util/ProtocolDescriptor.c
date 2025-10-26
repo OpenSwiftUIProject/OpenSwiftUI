@@ -1,6 +1,9 @@
 //
 //  ProtocolDescriptor.c
 //  OpenSwiftUI_SPI
+//
+//  Audit for 6.5.4
+//  Status: Complete
 
 #include "ProtocolDescriptor.h"
 
@@ -35,4 +38,32 @@ const void *$s15OpenSwiftUICore15GestureModifierMp;
 
 const void *_OpenSwiftUI_gestureModifierProtocolDescriptor(void) {
     return &$s15OpenSwiftUICore15GestureModifierMp;
+}
+
+OPENSWIFTUI_EXPORT
+const void *$s15OpenSwiftUICore20DefaultStyleModifierMp;
+
+const void *_OpenSwiftUI_defaultStyleModifierProtocolDescriptor(void) {
+    return &$s15OpenSwiftUICore15GestureModifierMp;
+}
+
+OPENSWIFTUI_EXPORT
+const void *$s15OpenSwiftUICore21StyleOverrideModifierMp;
+
+const void *_OpenSwiftUI_styleOverrideModifierProtocolDescriptor(void) {
+    return &$s15OpenSwiftUICore21StyleOverrideModifierMp;
+}
+
+OPENSWIFTUI_EXPORT
+const void *$s15OpenSwiftUICore27StyleWriterOverrideModifierMp;
+
+const void *_OpenSwiftUI_styleWriterOverrideModifierProtocolDescriptor(void) {
+    return &$s15OpenSwiftUICore27StyleWriterOverrideModifierMp;
+}
+
+OPENSWIFTUI_EXPORT
+const void *$s15OpenSwiftUICore12StyleContextMp;
+
+const void *_OpenSwiftUI_styleContextProtocolDescriptor(void) {
+    return &$s15OpenSwiftUICore12StyleContextMp;
 }

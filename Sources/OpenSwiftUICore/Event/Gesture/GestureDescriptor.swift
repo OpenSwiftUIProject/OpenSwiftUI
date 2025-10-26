@@ -12,7 +12,7 @@ package struct GestureDescriptor: TupleDescriptor {
     package static var typeCache: [ObjectIdentifier: TupleTypeDescription<GestureDescriptor>] = [:]
 
     package static var descriptor: UnsafeRawPointer {
-        _OpenSwiftUI_gestureProtocolDescriptor()
+        _gestureProtocolDescriptor()
     }
 }
 
@@ -22,6 +22,6 @@ package struct GestureModifierDescriptor: TupleDescriptor {
     package static var typeCache: [ObjectIdentifier: TupleTypeDescription<GestureModifierDescriptor>] = [:]
 
     package static var descriptor: UnsafeRawPointer {
-        _OpenSwiftUI_gestureModifierProtocolDescriptor()
+        _gestureModifierProtocolDescriptor()
     }
 }

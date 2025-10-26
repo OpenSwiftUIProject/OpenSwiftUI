@@ -385,8 +385,8 @@ extension _ViewDebug.Data {
             self.type = String(reflecting: anyType)
             self.readableType = Metadata(anyType).description
             self.flags = [
-                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
+                conformsToProtocol(anyType, _viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _viewModifierProtocolDescriptor()) ? .viewModifier : [],
             ]
             self.value = nil
             self.subattributes = nil
@@ -398,8 +398,8 @@ extension _ViewDebug.Data {
             self.type = String(reflecting: anyType)
             self.readableType = Metadata(anyType).description
             self.flags = [
-                conformsToProtocol(anyType, _OpenSwiftUI_viewProtocolDescriptor()) ? .view : [],
-                conformsToProtocol(anyType, _OpenSwiftUI_viewModifierProtocolDescriptor()) ? .viewModifier : [],
+                conformsToProtocol(anyType, _viewProtocolDescriptor()) ? .view : [],
+                conformsToProtocol(anyType, _viewModifierProtocolDescriptor()) ? .viewModifier : [],
             ]
             self.value = serializeValue ? SerializedAttribute.serialize(value: value) : nil
             self.subattributes = subattributes
