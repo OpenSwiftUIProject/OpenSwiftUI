@@ -1,11 +1,9 @@
 //
 //  StaticIf.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
-
-import OpenSwiftUICore
 
 /// A container view that conditionally renders one of two views based on a `ViewInputPredicate`.
 ///
@@ -228,7 +226,23 @@ extension ViewModifier {
     ///
     /// - Parameter predicate: The predicate type used to evaluate against view inputs.
     /// - Returns: A conditional modifier that applies the current modifier only when the predicate is true.
-    package func requiring<Predicate>(_ predicate: Predicate.Type) -> StaticIf<Predicate, Self, EmptyModifier> where Predicate: ViewInputPredicate {
+    package func requiring<Predicate>(
+        _ predicate: Predicate.Type
+    ) -> StaticIf<
+        Predicate,
+        Self,
+        EmptyModifier
+    > where Predicate: ViewInputPredicate {
         StaticIf(predicate, then: self)
+    }
+
+    package func requiring<each Q>(
+        _ queries: repeat (each Q).Type
+    ) -> StaticIf<
+        StyleContextAcceptsPredicate<(repeat each Q)>,
+        Self,
+        EmptyModifier
+    > where repeat each Q: StyleContext {
+        StaticIf(StyleContextAcceptsPredicate<(repeat each Q)>.self, then: self)
     }
 }

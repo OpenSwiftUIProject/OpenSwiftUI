@@ -295,7 +295,7 @@ extension StyleContext where Self == MenuBarExtraWindowStyleContext {
     }
 }
 
-// MARK: View + StyleContext [WIP]
+// MARK: View + StyleContext
 
 @available(OpenSwiftUI_v1_0, *)
 extension View {
@@ -304,12 +304,11 @@ extension View {
     }
 
     package func styleContext<C, P>(_ context: C, if predicate: P) -> some View where C: StyleContext, P: ViewInputPredicate {
-//        modifier(StyleContextWriter<C>() .requiring(P.self))
-        _openSwiftUIUnimplementedFailure()
+        modifier(StyleContextWriter<C>().requiring(P.self))
     }
 
     package func styleContext<C, P>(_ context: C, in requiredContext: P) -> some View where C: StyleContext, P: StyleContext {
-        _openSwiftUIUnimplementedFailure()
+        modifier(StyleContextWriter<C>().requiring(P.self))
     }
 
     /// Sets the style context of `self` to the default context.
