@@ -136,7 +136,7 @@ extension _GestureOutputs {
         }
         reallyWrap(
             type,
-            kind: conformsToProtocol(type, _OpenSwiftUI_gestureModifierProtocolDescriptor()) ? .modifier : .primitive,
+            kind: conformsToProtocol(type, _gestureModifierProtocolDescriptor()) ? .modifier : .primitive,
             properties: properties,
             inputs: inputs,
             data: (debugData, nil)
