@@ -111,7 +111,7 @@ private struct DynamicViewContainer<V>: StatefulRule, AsyncAttribute where V: Dy
         }
 
         func matches(type: Any.Type, id: V.ID?) -> Bool {
-            self.type == type && id.map { $0 == id } != false
+            self.type == type && id.map { $0 == self.id } != false
         }
     }
 }
