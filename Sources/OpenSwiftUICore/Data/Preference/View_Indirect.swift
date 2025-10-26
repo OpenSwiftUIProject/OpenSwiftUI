@@ -37,10 +37,6 @@ extension _ViewOutputs {
         
     package func attachIndirectOutputs(to childOutputs: _ViewOutputs) {
         preferences.attachIndirectOutputs(to: childOutputs.preferences)
-        if let target = layoutComputer?.identifier,
-           let source = childOutputs.layoutComputer?.identifier {
-            target.source = source
-        }
         if let layoutComputer, let childLayoutComputer = childOutputs.layoutComputer {
             layoutComputer.identifier.source = childLayoutComputer.identifier
         }
