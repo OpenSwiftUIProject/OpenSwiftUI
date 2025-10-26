@@ -4,11 +4,13 @@
 //
 //  Author: Claude Code with Claude Sonnet 4.5
 
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import Testing
 
 @MainActor
+@Suite(.enabled(if: swiftToolchainSupported))
 struct TupleStyleContextTests {
     @Test("Test TupleStyleContext accepts single context at index 0")
     func acceptsSingleContextAtIndexZero() {
@@ -141,6 +143,7 @@ struct TupleStyleContextTests {
 }
 
 @MainActor
+@Suite(.enabled(if: swiftToolchainSupported))
 struct StyleContextVisitorTests {
     private struct CollectingVisitor: StyleContextVisitor {
         var visitedTypes: [String] = []
@@ -170,6 +173,7 @@ struct StyleContextVisitorTests {
 }
 
 @MainActor
+@Suite(.enabled(if: swiftToolchainSupported))
 struct ConcreteStyleContextTests {
     @Test("Test WindowRootContext accepts itself")
     func windowRootContextAcceptsItself() {
