@@ -32,7 +32,15 @@ public struct AnyShapeStyle: ShapeStyle {
     
     /// Create an instance from `style`.
     public init<S>(_ style: S) where S: ShapeStyle {
-        storage = .init(box: ShapeStyleBox(style))
+        if let style = style as? AnyShapeStyle {
+            storage = style.storage
+        } else if let color = style as? Color {
+            storage = .init(box: color.provider)
+//        } else if let gradient = style as? AnyGradient {
+//            storage = .init(box: gradient.provider)
+        } else {
+            storage = .init(box: ShapeStyleBox(style))
+        }
     }
     
     public func _apply(to shape: inout _ShapeStyle_Shape) {
