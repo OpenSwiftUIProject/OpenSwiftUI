@@ -2,7 +2,7 @@
 //  ViewListView.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (?)
 //  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (?)
@@ -15,7 +15,7 @@ package protocol ViewListVisitor {
     mutating func visit(view: ViewList.View, traits: ViewTraitCollection) -> Bool
 }
 
-// MARK: - ViewList.Backing [WIP]
+// MARK: - ViewList.Backing
 
 extension ViewList {
     package typealias Backing = _ViewList_Backing
@@ -24,7 +24,7 @@ extension ViewList {
 package struct _ViewList_Backing {
     package var children: _VariadicView.Children
 
-    package var viewCount: Swift.Int {
+    package var viewCount: Int {
         children.list.count
     }
 
@@ -35,29 +35,82 @@ package struct _ViewList_Backing {
     package func visitViews<V>(applying v: inout V, from start: inout Int) -> Bool where V: ViewListVisitor {
         Update.ensure {
             children.list.applySublists(from: &start, list: nil) { sublist in
-                _openSwiftUIUnimplementedFailure()
+                var index = sublist.start
+                let count = sublist.count
+                if index < count {
+                    repeat {
+                        let view = ViewList.View(
+                            elements: sublist.elements,
+                            id: sublist.id,
+                            index: index,
+                            count: count,
+                            contentSubgraph: children.contentSubgraph
+                        )
+                        guard v.visit(view: view, traits: sublist.traits) else {
+                            return false
+                        }
+                        index &+= 1
+                    } while count != index
+                }
+                return true
             }
         }
     }
 }
 
 extension ViewList.Backing {
-    package func visitAll<V>(applying v: inout V) where V: ViewListVisitor {
-        _openSwiftUIUnimplementedFailure()
+    package func visitAll<V>(
+        applying v: inout V
+    ) where V: ViewListVisitor {
+        var start = 0
+        _ = visitViews(applying: &v, from: &start)
     }
 
-    package func visitViews<V>(applying v: inout V, from start: Int) where V: ViewListVisitor {
-        _openSwiftUIUnimplementedFailure()
+    package func visitViews<V>(
+        applying v: inout V,
+        from start: Int
+    ) where V: ViewListVisitor {
+        var start = start
+        _ = visitViews(applying: &v, from: &start)
     }
 }
 
 extension ViewList.Backing {
     package var ids: [AnyHashable] {
-        _openSwiftUIUnimplementedFailure()
+        Update.ensure {
+            var start = 0
+            var ids: [AnyHashable] = []
+            children.list.applySublists(from: &start, list: nil) { sublist in
+                var index = sublist.start
+                let count = sublist.count
+                if index < count {
+                    repeat {
+                        Swift.assert(index < count)
+                        let view = ViewList.View(
+                            elements: sublist.elements,
+                            id: sublist.id,
+                            index: index,
+                            count: count,
+                            contentSubgraph: children.contentSubgraph
+                        )
+                        let canonicalID = view.id.canonicalID
+                        let id: AnyHashable
+                        if let explicitID = canonicalID.explicitID {
+                            id = AnyHashable(explicitID.anyValue)
+                        } else {
+                            id = AnyHashable(canonicalID)
+                        }
+                        ids.append(id)
+                    } while count != index
+                }
+                return true
+            }
+            return ids
+        }
     }
 }
 
-// MARK: - _ViewList.View
+// MARK: - ViewList.View
 
 extension ViewList {
     package typealias View = _ViewList_View
@@ -113,6 +166,10 @@ package struct _ViewList_View: PrimitiveView, View, UnaryView {
         }
     }
 
+    package var subviewID: ViewList.ID {
+        id.elementID(at: index)
+    }
+
     nonisolated package static func _makeView(
         view: _GraphValue<Self>,
         inputs: _ViewInputs
@@ -148,8 +205,6 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
         self._placeholder = placeholder
         self.inputs = inputs
         self.outputs = outputs
-        // FIXME: The Subgraph.current call on the init default value or the call site will trigger a compiler crash (SIL -> IR) on Release build
-        // We workaround it by setting it to .current here
         self.parentSubgraph = .current!
     }
 
@@ -218,6 +273,8 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
         }
     }
 }
+
+// MARK: - PlaceholderViewPhase
 
 private struct PlaceholderViewPhase: Rule, AsyncAttribute {
     @Attribute var phase1: _GraphInputs.Phase
