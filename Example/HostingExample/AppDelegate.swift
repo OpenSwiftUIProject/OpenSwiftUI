@@ -44,7 +44,8 @@ enum App {
     }
 }
 
-class AppDelegate: NSObject, NSApplicationDelegate {
+@MainActor
+final class AppDelegate: NSObject, NSApplicationDelegate {
     static let shared = AppDelegate()
 
     lazy var windowController = WindowController()
