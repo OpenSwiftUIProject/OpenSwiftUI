@@ -6,6 +6,8 @@
 //  Status: WIP
 //  ID: 2EF43D8D991A83294E93848563DD541B (SwiftUICore)
 
+// TODO: View + StyleContext
+
 // MARK: - StyleContext
 
 package protocol StyleContext {
@@ -59,6 +61,10 @@ package struct StyleContextAcceptsAnyPredicate<each Query>: ViewInputPredicate w
     package static func evaluate(inputs: _GraphInputs) -> Bool {
         _openSwiftUIUnimplementedFailure()
     }
+}
+
+struct TupleStyleContext<T>: StyleContext {
+
 }
 
 // TODO
