@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Blocked by ResolvedLabeledContent
 
 import OpenSwiftUICore
 
@@ -104,7 +104,7 @@ struct ResolvedLabeledContent: StyleableView {
         var configuration: LabeledContentStyleConfiguration
 
         var body: some View {
-            // FIXME
+            // FIXME: recursive stack overflow
             HStack {
                 configuration.label
                 configuration.content
