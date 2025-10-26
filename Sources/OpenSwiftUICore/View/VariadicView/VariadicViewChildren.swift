@@ -1,5 +1,5 @@
 //
-//  VariadicView_Children.swift
+//  VariadicViewChildren.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
