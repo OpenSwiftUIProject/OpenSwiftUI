@@ -35,15 +35,16 @@ public struct AutomaticLabeledContentStyle: LabeledContentStyle {
 
     // FIXME
     public func makeBody(configuration: AutomaticLabeledContentStyle.Configuration) -> some View {
-        LabeledContent {
-            configuration.content
-                .modifier(_LabeledContentStyleModifier(style: self))
-        } label: {
-            configuration.label
-                .staticIf(LabelVisibilityConfigured.self) { label in
-                    labelsVisibility == .hidden ? nil : configuration.label
-                }
-        }
+//        LabeledContent {
+//            configuration.content
+//                .modifier(_LabeledContentStyleModifier(style: self))
+//        } label: {
+//            configuration.label
+//                .staticIf(LabelVisibilityConfigured.self) { label in
+//                    labelsVisibility == .hidden ? nil : configuration.label
+//                }
+//        }
+        Color.yellow
     }
 }
 

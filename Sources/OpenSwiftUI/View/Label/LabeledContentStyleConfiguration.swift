@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by ResolvedLabeledContent
+//  Status: Complete
 
 import OpenSwiftUICore
 
@@ -93,7 +93,7 @@ extension View {
     }
 }
 
-// MARK: - ResolvedLabeledContent [WIP]
+// MARK: - ResolvedLabeledContent
 
 struct ResolvedLabeledContent: StyleableView {
     var configuration: LabeledContentStyleConfiguration
@@ -104,31 +104,26 @@ struct ResolvedLabeledContent: StyleableView {
         var configuration: LabeledContentStyleConfiguration
 
         var body: some View {
-            // FIXME: recursive stack overflow
-            HStack {
-                configuration.label
+            LabeledContent {
                 configuration.content
-            }
-//            LabeledContent {
-//                configuration.content
-//            } label: {
-//                configuration.label
-//            }.viewAlias(LabeledContentStyleConfiguration.Label.self) {
-//                configuration.label
-//                    .modifier(
-//                        AccessibilityLabeledContentLabelModifier(
-//                            presentation: configuration.accessibilityPresentation
-//                        )
-//                    )
-//            }.viewAlias(LabeledContentStyleConfiguration.Content.self) {
-//                configuration.content
-//                    .modifier(
-//                        AccessibilityLabeledContentContentModifier(
-//                            label: configuration.label,
-//                            presentation: configuration.accessibilityPresentation
-//                        )
-//                    )
-//            }.modifier(AccessibilityFrameModifier())
+            } label: {
+                configuration.label
+            }.viewAlias(LabeledContentStyleConfiguration.Label.self) {
+                configuration.label
+                    .modifier(
+                        AccessibilityLabeledContentLabelModifier(
+                            presentation: configuration.accessibilityPresentation
+                        )
+                    )
+            }.viewAlias(LabeledContentStyleConfiguration.Content.self) {
+                configuration.content
+                    .modifier(
+                        AccessibilityLabeledContentContentModifier(
+                            label: configuration.label,
+                            presentation: configuration.accessibilityPresentation
+                        )
+                    )
+            }.modifier(AccessibilityFrameModifier())
         }
     }
 
