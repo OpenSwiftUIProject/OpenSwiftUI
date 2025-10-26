@@ -78,10 +78,10 @@ package enum Log {
     @inline(__always)
     package static func log(_ message: @autoclosure () -> String, unless condition: @autoclosure () -> Bool, file: StaticString, line: UInt) {
         guard !condition() else { return }
+        #if DEBUG
         #if OPENSWIFTUI_SWIFT_LOG
         internalErrorsLog.debug("\(message()) \(file) \(line)")
         #else
-        #if DEBUG && OPENSWIFTUI_SUPPORT_2022_API
         os_log(.default, log: internalErrorsLog, "%s %s: %s", message(), file.description, line.description)
         #endif
         #endif
@@ -114,17 +114,24 @@ package enum Log {
         #if OPENSWIFTUI_SWIFT_LOG
         internalErrorsLog.log(level: .error, "\(message()) - \(file): - please file a bug report")
         #else
-        #if OPENSWIFTUI_SUPPORT_2022_API
         os_log(.fault, log: internalErrorsLog, "%s %s: %s", message(), file.description, line.description)
         #endif
         print("\(message()) - \(file): - please file a bug report")
-        #endif
     }
     
     package static func internalError(_ message: @autoclosure () -> String) {
         internalError(message(), file: #fileID, line: #line)
     }
-        
+
+    @inline(__always)
+    package static func internalError(_ message: StaticString, _ args: any CVarArg...) {
+        #if OPENSWIFTUI_SWIFT_LOG
+        internalErrorsLog.log(level: .error, "\(String(format: message.description, arguments: args))")
+        #else
+        os_log(.fault, log: internalErrorsLog, message, args)
+        #endif
+    }
+
     package static func externalWarning(_ message: String) {
         #if OPENSWIFTUI_SWIFT_LOG
         unlocatedIssuesLog.log(level: .critical, "\(message)")
@@ -194,11 +201,9 @@ package enum Log {
     @usableFromInline
     package static var internalErrorsLog: Logger = Logger(subsystem: subsystem, category: "OpenSwiftUI")
     #else
-    #if OPENSWIFTUI_SUPPORT_2022_API
     @usableFromInline
     package static var internalErrorsLog: OSLog = OSLog(subsystem: subsystem, category: "OpenSwiftUI")
-    #endif
-    
+
     @usableFromInline
     package static var eventDebuggingLog: OSLog = OSLog(subsystem: "com.apple.diagnostics.events", category: "OpenSwiftUI")
     #endif
