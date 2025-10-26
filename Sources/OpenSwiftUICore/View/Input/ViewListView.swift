@@ -230,7 +230,7 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
         let child = Subgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(child)
         let shouldParentToPlaceholder = inputs.base[ViewListShouldParentToPlaceholderSubgraph.self]
-        if parentSubgraph != contentSubgraph, shouldParentToPlaceholder {
+        if parentSubgraph !== contentSubgraph, shouldParentToPlaceholder {
             contentSubgraph.addChild(child, tag: 1)
         }
         child.apply {
@@ -262,7 +262,7 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
         lastSubgraph = child
         lastRelease = placeholder.elements.retain()
         lastElements = placeholder.elements
-        if contentSubgraph.graph != child.graph {
+        if contentSubgraph.graph !== child.graph {
             let token = contentSubgraph.addObserver { [parentSubgraph, attribute] in
                 guard parentSubgraph.isValid else { return }
                 let infoPointer = UnsafeMutableRawPointer(mutating: attribute.identifier._bodyPointer)
