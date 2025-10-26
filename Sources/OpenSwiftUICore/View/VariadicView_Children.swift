@@ -2,14 +2,14 @@
 //  VariadicView_Children.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (?)
 //  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (?)
 
 package import OpenAttributeGraphShims
 
-// MARK: - _VariadicView.Children + View [WIP]
+// MARK: - _VariadicView.Children + View
 
 @available(OpenSwiftUI_v1_0, *)
 extension _VariadicView.Children: View, MultiView, PrimitiveView {
@@ -34,25 +34,26 @@ extension _VariadicView.Children: View, MultiView, PrimitiveView {
         @Attribute var children: _VariadicView.Children
 
         var value: Value {
-            _openSwiftUIUnimplementedFailure()
+            ForEach(children) { $0 }
         }
     }
 }
 
-// MARK: - _VariadicView.Children + RandomAccessCollection [WIP]
+// MARK: - _VariadicView.Children + RandomAccessCollection
 
 @available(OpenSwiftUI_v1_0, *)
 extension _VariadicView.Children: RandomAccessCollection {
+
     public struct Element: PrimitiveView, UnaryView, Identifiable {
         var view: ViewList.View
         var traits: ViewTraitCollection
         
         public var id: AnyHashable {
-            _openSwiftUIUnimplementedFailure()
-
+            view.viewID
         }
-        public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID : Hashable {
-            _openSwiftUIUnimplementedFailure()
+
+        public func id<ID>(as _: ID.Type = ID.self) -> ID? where ID: Hashable {
+            view.id.primaryExplicitID.flatMap{ $0.as(type: ID.self) }
         }
 
         /// The value of each trait associated with the view. Changing
@@ -63,20 +64,52 @@ extension _VariadicView.Children: RandomAccessCollection {
         }
 
         public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-            _openSwiftUIUnimplementedFailure()
+            ViewList.View._makeView(
+                view: view[\.view],
+                inputs: inputs
+            )
         }
     }
     
-    public var startIndex: Int {
-        _openSwiftUIUnimplementedFailure()
-    }
+    public var startIndex: Int { .zero }
 
-    public var endIndex: Int {
-        _openSwiftUIUnimplementedFailure()
-    }
+    public var endIndex: Int { Update.ensure { list.count } }
 
     public subscript(index: Int) -> Element {
-        _openSwiftUIUnimplementedFailure()
+        var element: Element?
+        Update.ensure {
+            var start = index
+            var transform = transform
+            list.applySublists(
+                from: &start,
+                list: nil,
+                transform: &transform
+            ) { sublist in
+                let index = sublist.start
+                let count = sublist.count
+                if index < count {
+                    element = Element(
+                        view: .init(
+                            elements: sublist.elements,
+                            id: sublist.id,
+                            index: index,
+                            count: count,
+                            contentSubgraph: contentSubgraph
+                        ),
+                        traits: sublist.traits
+                    )
+                }
+                return index >= count
+            }
+        }
+        guard let element else {
+            Log.internalError("Accessing invalid variadic view child at index %d", index)
+            return Element(
+                view: .init(emptyViewID: index),
+                traits: .init()
+            )
+        }
+        return element
     }
 }
 
@@ -142,6 +175,16 @@ package struct _ViewList_View: PrimitiveView, View, UnaryView {
     var count: Int
     var contentSubgraph: Subgraph?
 
+    @inline(__always)
+    init(emptyViewID implicitID: Int) {
+        self.elements = EmptyViewListElements()
+        self.releaseElements = nil
+        self.id = .init(implicitID: implicitID)
+        self.index = .zero
+        self.count = .zero
+        self.contentSubgraph = nil
+    }
+
     package init(
         elements: any ViewList.Elements,
         id: ViewList.ID,
@@ -150,6 +193,7 @@ package struct _ViewList_View: PrimitiveView, View, UnaryView {
         contentSubgraph: Subgraph
     ) {
         self.elements = elements
+        releaseElements = elements.retain()
         self.id = id
         self.index = index
         self.count = count
