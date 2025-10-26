@@ -3,9 +3,10 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 2EF43D8D991A83294E93848563DD541B (SwiftUICore)
 
+import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
 // MARK: - StyleContext
@@ -411,19 +412,74 @@ extension _ViewListCountInputs {
 
 package typealias StyleContextPrintingModifier = EmptyModifier
 
-// MARK: - TupleStyleContext [WIP]
+// MARK: - TupleStyleContext
 
 package struct TupleStyleContext<T>: StyleContext {
-    package static func acceptsAny<each Q>(_: repeat (each Q).Type) -> Bool where repeat each Q: StyleContext {
-        _openSwiftUIUnimplementedFailure()
+    package static func acceptsAny<each Q>(_ queries: repeat (each Q).Type) -> Bool where repeat each Q: StyleContext {
+        let desc = StyleContextDescriptor.tupleDescription(TupleType(T.self))
+        var visitor = QueryVisitor<repeat each Q>(accepts: false)
+        for (_, descriptor) in desc.contentTypes {
+            descriptor.visitType(visitor: &visitor)
+        }
+        return false
     }
 
     package static func visitStyle<V>(_ visitor: inout V) where V: StyleContextVisitor {
-        _openSwiftUIUnimplementedFailure()
+        let desc = StyleContextDescriptor.tupleDescription(TupleType(T.self))
+        for (_, descriptor) in desc.contentTypes {
+            descriptor.visitType(visitor: &visitor)
+        }
     }
 
     package static func accepts<Q>(_ query: Q.Type, at queryIndex: Int) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        let selfDesc = StyleContextDescriptor.tupleDescription(TupleType(T.self))
+        let queryDesc = StyleContextDescriptor.tupleDescription(TupleType(Q.self))
+        let selfCount = selfDesc.contentTypes.count
+        let queryCount = queryDesc.contentTypes.count
+        guard selfCount >= queryCount else {
+            return false
+        }
+        var visitor = QueryAtIndexVisitor<Q>(
+            index: queryIndex,
+            queryDesc: queryDesc,
+            accepts: true
+        )
+        for (index, descriptor) in selfDesc.contentTypes {
+            guard index >= queryIndex, index < queryCount else {
+                continue
+            }
+            descriptor.visitType(visitor: &visitor)
+        }
+        return visitor.accepts
+    }
+
+    private struct QueryAtIndexVisitor<U>: StyleContextVisitor {
+        var index: Int
+        var queryDesc: TupleTypeDescription<StyleContextDescriptor>
+        var accepts: Bool
+
+        mutating func visit<C>(_ context: C.Type) where C: StyleContext {
+            var visitor = ContextAcceptsVisitor<C>(accepts: false)
+            queryDesc.contentTypes[index].1.visitType(visitor: &visitor)
+            accepts = accepts && visitor.accepts
+            index &+= 1
+        }
+    }
+
+    private struct QueryVisitor<each U>: StyleContextVisitor where repeat each U: StyleContext {
+        var accepts: Bool
+
+        mutating func visit<C>(_ context: C.Type) where C: StyleContext {
+            accepts = accepts ? true : C.acceptsAny(repeat (each U).self)
+        }
+    }
+
+    private struct ContextAcceptsVisitor<U>: StyleContextVisitor where U: StyleContext {
+        var accepts: Bool
+
+        mutating func visit<C>(_ context: C.Type) where C: StyleContext {
+            accepts = U.accepts(context, at: 0)
+        }
     }
 }
 
