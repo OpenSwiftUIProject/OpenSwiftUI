@@ -28,9 +28,7 @@ struct LeadingTrailingLabeledContentStyle: LabeledContentStyle {
             configuration.label
                 .staticIf(_SemanticFeature_v4.self) { label in
                     VStack(alignment: .leading, spacing: spacing){
-                        LabelGroup {
-                            configuration.label
-                        }
+                        LabelGroup { label }
                     }
                 }
             Spacer().layoutPriority(-1)
