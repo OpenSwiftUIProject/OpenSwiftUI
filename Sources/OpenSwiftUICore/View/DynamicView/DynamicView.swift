@@ -39,6 +39,11 @@ extension DynamicView {
         let attribute = Attribute(container)
         attribute.flags = .transactional
         outputs.setIndirectDependency(attribute.identifier)
+        
+        if let layoutComputer = outputs.layoutComputer {
+            layoutComputer.identifier.indirectDependency = attribute.identifier
+        }
+        
         return outputs
     }
 

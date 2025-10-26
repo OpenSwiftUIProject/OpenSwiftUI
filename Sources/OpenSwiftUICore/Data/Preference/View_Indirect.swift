@@ -19,6 +19,8 @@ extension _ViewInputs {
         guard requestsLayoutComputer else {
             return outputs
         }
+        
+        // FIXME: Replace with `ViewGraph.current.$defaultLayoutComputer`
         let defaultLayoutComputer = CoreGlue.shared.makeDefaultLayoutComputer().value
         @IndirectAttribute(source: defaultLayoutComputer)
         var indirect: LayoutComputer
