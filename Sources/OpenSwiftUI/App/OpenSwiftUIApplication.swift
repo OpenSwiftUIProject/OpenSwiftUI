@@ -37,9 +37,7 @@ func runApp(_ app: some App) -> Never {
 //    graph.startProfilingIfNecessary()
 //    graph.instantiate()
 //    AppGraph.shared = graph
-    Update.ensure {
-        KitRendererCommon(AppDelegate.self)
-    }
+    KitRendererCommon(AppDelegate.self)
 }
 
 // MARK: - runTestingApp [6.4.41] [iOS]
