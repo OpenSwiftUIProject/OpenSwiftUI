@@ -34,6 +34,11 @@ enum AccessibilityLabeledContentPresentation {
 
 struct AccessibilityCombinedLabeledContent: ViewInputBoolFlag {}
 
+extension View {
+    func accessibilityLabeledContent() -> some View {
+        input(AccessibilityCombinedLabeledContent.self)
+    }
+}
 
 // MARK: - AccessibilityLabeledContentContentModifier [WIP]
 

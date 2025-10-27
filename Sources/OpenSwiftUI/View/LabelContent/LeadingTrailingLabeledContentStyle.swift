@@ -10,14 +10,6 @@ import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
-// MARK: - LabeledContentUsesLegacyLayout
-
-struct LabeledContentUsesLegacyLayout: ViewInputPredicate {
-    static func evaluate(inputs: _GraphInputs) -> Bool {
-        !isLinkedOnOrAfter(.v6)
-    }
-}
-
 // MARK: - LeadingTrailingLabeledContentStyle
 
 struct LeadingTrailingLabeledContentStyle: LabeledContentStyle {
@@ -41,6 +33,28 @@ struct LeadingTrailingLabeledContentStyle: LabeledContentStyle {
     }
 }
 
+// MARK: - LabeledContentUsesLegacyLayout
+
+struct LabeledContentUsesLegacyLayout: ViewInputPredicate {
+    static func evaluate(inputs: _GraphInputs) -> Bool {
+        !isLinkedOnOrAfter(.v6)
+    }
+}
+
+#if os(iOS) || os(visionOS)
+// MARK: - LeadingTrailingLabeledContentStyle_Phone [TODO]
+
+struct LeadingTrailingLabeledContentStyle_Phone: LabeledContentStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        _openSwiftUIUnimplementedWarning()
+        return VStack {
+            configuration.label
+            configuration.content
+        }
+    }
+}
+#endif
+
 // MARK: - ListLabeledContentPrefersHorizontalLayout
 
 struct ListLabeledContentPrefersHorizontalLayout: ViewInputBoolFlag {}
@@ -51,8 +65,4 @@ extension View {
     }
 }
 
-// MARK: - LeadingTrailingLabeledContentStyle_Phone [TODO]
-
-#if os(iOS) || os(visionOS)
-struct LeadingTrailingLabeledContentStyle_Phone {}
-#endif
+// TODO: AdaptiveLeadingTrailingLabeledContentStyle
