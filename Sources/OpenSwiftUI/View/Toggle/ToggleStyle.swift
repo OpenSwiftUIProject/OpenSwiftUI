@@ -347,9 +347,30 @@ struct ToggleStateBool: Projection {
 struct ResolvedToggleStyle: StyleableView {
     var configuration: ToggleStyleConfiguration
 
-    // FIXME: body: ResolvedToggleStyleBody
+    // WIP
+    var body: some View {
+        ResolvedToggleStyleBody(configuration: configuration).body
+            // AccessibilityToggleModifier
+    }
 
-    static var defaultStyleModifier = ToggleStyleModifier(style: .switch)
+    // FIXME: DefaultToggleStyle
+    static let defaultStyleModifier = ToggleStyleModifier(style: .switch)
+}
+
+// MARK: - ResolvedToggleStyleBody [WIP]
+
+private struct ResolvedToggleStyleBody: View /*ConditionallyArchivableView*/ {
+    let configuration: ToggleStyleConfiguration
+
+    var body: some View {
+        Toggle(isOn: configuration.$isOn) {
+            configuration.label
+        }
+    }
+//    struct ArchiveBody {
+//        let configuration: ToggleStyleConfiguration
+//        @Environment(\.isEnabled) private var isEnabled
+//    }
 }
 
 // MARK: - ToggleStyleModifier

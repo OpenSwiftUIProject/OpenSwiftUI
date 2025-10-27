@@ -243,7 +243,7 @@ public struct Environment<Value>: DynamicProperty {
     ) {
         buffer.append(
             EnvironmentBox<Value>(
-                environment: inputs.cachedEnvironment.wrappedValue.environment
+                environment: inputs.environment
             ),
             fieldOffset: fieldOffset
         )
