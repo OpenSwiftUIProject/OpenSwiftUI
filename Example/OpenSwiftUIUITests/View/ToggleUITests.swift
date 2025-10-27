@@ -26,4 +26,29 @@ struct ToggleUITests {
         }
         #endif
     }
+
+    @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/518", id: 518, "UIViewRepresentable size issue"))
+    func emptyViewLabel() {
+        struct ContentView: View {
+            @State private var toggle = false
+
+            var body: some View {
+                VStack {
+                    Toggle(isOn: $toggle) {
+                        EmptyView()
+                    }
+                    Color.red
+                }
+                .padding()
+                .background { Color.green }
+            }
+        }
+        #if os(iOS) || os(visionOS)
+        openSwiftUIAssertSnapshot(of: ContentView())
+        #else
+        withKnownIssue("checkBox style is not supported yet") {
+            openSwiftUIAssertSnapshot(of: ContentView())
+        }
+        #endif
+    }
 }
