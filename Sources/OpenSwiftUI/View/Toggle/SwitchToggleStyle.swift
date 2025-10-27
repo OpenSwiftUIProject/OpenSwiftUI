@@ -71,12 +71,16 @@ public struct SwitchToggleStyle: ToggleStyle {
         LabeledContent {
             Switch(_isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
                 .fixedSize()
-                // .contentShape(Capsule())
-                // .accessibilityLabel
-                // .gesture
+                .modifier(
+                    _EnvironmentKeyWritingModifier(keyPath: \.controlSize, value: controlSize)
+                        .requiring(GroupedFormStyleContext.self)
+                )
+                // TODO: TopAlignedFormValueKey
         } label: {
             configuration.label
-        }.listLabeledContentPrefersHorizontalLayout()
+        }
+        .listLabeledContentPrefersHorizontalLayout()
+        .accessibilityLabeledContent()
         #elseif os(macOS)
         // FIXME
         Switch(_isOn: configuration.$isOn, tint: tint, font: font, _acceptsFirstMouse: .init(\.acceptsFirstMouse))
