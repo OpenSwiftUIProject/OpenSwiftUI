@@ -304,6 +304,15 @@ where Content: PlatformViewRepresentable {
         safeAreaHelper.resolvedSafeAreaInsets(delegate: self)
     }
     #endif
+
+    override var intrinsicContentSize: CGSize {
+        if Content.isViewController {
+            return super.intrinsicContentSize
+        } else {
+            let platformView = Content.platformView(for: representedViewProvider)
+            return platformView.intrinsicContentSize
+        }
+    }
 }
 
 extension PlatformViewHost: SafeAreaHelperDelegate {
