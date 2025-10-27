@@ -9,7 +9,6 @@ import SwiftUI
 #endif
 
 struct ToggleExample: View {
-    // FIXME: Add UI test case
     @State private var toggle = false
 
     var body: some View {
