@@ -7,7 +7,7 @@
 //  Status: WIP
 
 package import Foundation
-import OpenAttributeGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - RendererLeafView [TODO]
 
@@ -26,22 +26,74 @@ extension RendererLeafView {
     }
     
     package static func makeLeafView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        // TODO
         var outputs = _ViewOutputs()
-        // FIXME
-        outputs.preferences.displayList = Attribute(
-            LeafDisplayList(
-                identity: .init(),
-                view: view.value,
-                position: inputs.animatedPosition(),
-                size: inputs.animatedCGSize(),
-                containerPosition: inputs.containerPosition,
-                options: .defaultValue,
-                contentSeed: .init()
+        
+        if inputs.preferences.requiresDisplayList {
+            let identity = DisplayList.Identity()
+            inputs.pushIdentity(identity)
+            
+            outputs.preferences.displayList = Attribute(
+                LeafDisplayList(
+                    identity: identity,
+                    view: view.value,
+                    position: inputs.animatedPosition(),
+                    size: inputs.animatedCGSize(),
+                    containerPosition: inputs.containerPosition,
+                    options: inputs.displayListOptions,
+                    contentSeed: DisplayList.Seed()
+                )
             )
-        )
+        }
+        
+        if inputs.preferences.requiresViewResponders {
+            outputs.preferences.viewResponders = Attribute(
+                LeafResponderFilter(
+                    data: view.value,
+                    size: inputs.animatedSize(),
+                    position: inputs.animatedPosition(),
+                    transform: inputs.transform
+                )
+            )
+        }
+        
+        // TODO
+//        outputs.makeContentPathPreferenceWriter(
+//            inputs: inputs,
+//            contentResponder: view.value
+//        )
+        
         return outputs
     }
+}
+
+package struct LeafResponderFilter<Data>: StatefulRule {
+    @Attribute private var data: Data
+    @Attribute private var size: ViewSize
+    @Attribute private var position: CGPoint
+    @Attribute private var transform: ViewTransform
+    package private(set) lazy var responder = LeafViewResponder<Data>()
+    
+    package init(
+        data: Attribute<Data>,
+        size: Attribute<ViewSize>,
+        position: Attribute<CGPoint>,
+        transform: Attribute<ViewTransform>
+    ) {
+        self._data = data
+        self._size = size
+        self._position = position
+        self._transform = transform
+    }
+    
+    package typealias Value = [ViewResponder]
+    
+    package func updateValue() {
+        _openSwiftUIUnimplementedWarning()
+    }
+}
+
+package final class LeafViewResponder<Data>: ViewResponder {
+    // TODO
 }
 
 // MARK: - LeafViewLayout
