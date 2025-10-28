@@ -363,7 +363,7 @@ package struct FunctionalLocation<Value>: Location {
     }
 
     package static func == (lhs: FunctionalLocation<Value>, rhs: FunctionalLocation<Value>) -> Bool {
-        compareValues(lhs, rhs)
+        compareValues(lhs.functions, rhs.functions)
     }
 }
 

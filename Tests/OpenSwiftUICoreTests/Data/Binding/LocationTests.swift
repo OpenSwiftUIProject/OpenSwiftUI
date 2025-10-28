@@ -136,5 +136,13 @@ struct LocationTests {
         location.set(2, transaction: .init())
         #expect(location.wasRead == true)
         #expect(location.get() == 4)
+
+        let location2 = FunctionalLocation {
+            value.count
+        } setValue: { newCount, _ in
+            value.count = newCount * newCount
+        }
+        #expect(location2 != location)
+        #expect(location == location)
     }
 }
