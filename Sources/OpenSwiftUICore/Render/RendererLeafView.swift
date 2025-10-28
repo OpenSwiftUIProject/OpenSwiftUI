@@ -29,17 +29,19 @@ extension RendererLeafView {
         // TODO
         var outputs = _ViewOutputs()
         // FIXME
-        outputs.preferences.displayList = Attribute(
-            LeafDisplayList(
-                identity: .init(),
-                view: view.value,
-                position: inputs.animatedPosition(),
-                size: inputs.animatedCGSize(),
-                containerPosition: inputs.containerPosition,
-                options: .defaultValue,
-                contentSeed: .init()
+        if inputs.preferences.requiresDisplayList {
+            outputs.preferences.displayList = Attribute(
+                LeafDisplayList(
+                    identity: .init(),
+                    view: view.value,
+                    position: inputs.animatedPosition(),
+                    size: inputs.animatedCGSize(),
+                    containerPosition: inputs.containerPosition,
+                    options: .defaultValue,
+                    contentSeed: .init()
+                )
             )
-        )
+        }
         return outputs
     }
 }
