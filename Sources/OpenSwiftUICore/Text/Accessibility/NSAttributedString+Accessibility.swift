@@ -1,11 +1,14 @@
 //
-//  Text+AccessibilityResolver.swift
+//  NSAttributedString+Accessibility.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: WIP
+//  ID: 2BDB458C6E5F105189088F0894A913CC (SwiftUICore)
 
 package import Foundation
+
+// MARK: - Accessibility + Text resolve [WIP]
 
 extension AccessibilityCore {
     package static func textResolvesToEmpty(_ text: Text, in environment: EnvironmentValues) -> Bool {
@@ -94,6 +97,8 @@ extension Text {
     }
 }
 
+// MARK: - AccessibilityTextAttributeResolver
+
 package protocol AccessibilityTextAttributeResolver {
     func resolveDefaultAttributes(_: inout [NSAttributedString.Key: Any])
 
@@ -112,11 +117,17 @@ package protocol AccessibilityTextAttributeResolver {
 }
 
 extension EnvironmentValues {
+    private struct AccessibilityTextAttributeResolverKey: EnvironmentKey {
+        static let defaultValue: (any AccessibilityTextAttributeResolver)? = nil
+    }
+
     package var accessibilityTextAttributeResolver: (any AccessibilityTextAttributeResolver)? {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+        get { self[AccessibilityTextAttributeResolverKey.self] }
+        set { self[AccessibilityTextAttributeResolverKey.self] = newValue }
     }
 }
+
+// MARK: - NSAttributedString + AX [WIP]
 
 extension NSAttributedString {
     convenience package init(axAttributedString: String) {
@@ -124,84 +135,86 @@ extension NSAttributedString {
     }
 }
 
+// MARK: - AX AttributedString Keys
+
 extension NSAttributedString.Key {
     package static var coreAXForegroundColor: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenForegroundColor") : .init("AXForegroundColor")
     }
 
     package static var coreAXFontName: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        .init("UIAccessibilityTokenFontName")
     }
 
     package static var coreAXFontSize: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        .init("UIAccessibilityTokenFontSize")
     }
 
     package static var coreAXFontFamily: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        .init("UIAccessibilityTokenFontFamily")
     }
 
     package static var coreAXStrikethrough: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenStrikethrough") : .init("AXStrikethrough")
     }
 
     package static var coreAXUnderline: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenUnderline") : .init("AXUnderline")
     }
 
     package static var coreAXAlignment: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenParagraphAlignment") : .init("AXATextAlignmentValue")
     }
 
     package static var coreAXAttachment: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenAttachment") : .init("AXAttachment")
     }
 
     package static var coreAXLink: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenLink") : .init("AXLink")
     }
 
     package static var coreAXTextHeadingLevel: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTextAttributeHeadingLevel") : .init("AXHeadingLevel")
     }
 
     package static var coreAXSpeechPitch: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilitySpeechAttributePitch") : .init("AXPitch")
     }
 
     package static var coreAXSpeechPunctuation: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilitySpeechAttributePunctuation") : .init("AXPunctuation")
     }
 
     package static var coreAXSpeechSpellOut: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilitySpeechAttributeSpellOut") : .init("AXSpellOut")
     }
 
     package static var coreAXSpeechIPANotation: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilitySpeechAttributeIPANotation") : .init("AXIPANotation")
     }
 
     package static var coreAXTextualContext: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTextAttributeContext") : .init("AXTextualContext")
     }
 
     package static var coreAXSpeechAnnouncementPriority: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilitySpeechAttributeAnnouncementPriority") : .init("AXAnnouncementPriority")
     }
 
     package static var coreAXSpeechLanguage: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilitySpeechAttributeLanguage") : .init("AXLanguage")
     }
 
-    package static let coreAXLabel: NSAttributedString.Key = .init("")
+    package static let coreAXLabel: NSAttributedString.Key = .init("OpenSwiftUI.accessibilityLabel")
 
     package static var coreAXDurationTimeMMSS: NSAttributedString.Key {
-        _openSwiftUIUnimplementedFailure()
+        isUIKitBased() ? .init("UIAccessibilityTokenDurationTimeMMSS") : .init("AXTokenDurationTimeMMSS")
     }
 }
 
 extension NSAttributedString.Key {
     package var isAccessibilityAttribute: Bool {
-        _openSwiftUIUnimplementedFailure()
+        rawValue.hasPrefix(isUIKitBased() ? "UIAccessibility" : "AX")
     }
 }
