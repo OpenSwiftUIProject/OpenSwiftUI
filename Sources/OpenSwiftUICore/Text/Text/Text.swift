@@ -263,7 +263,7 @@ extension Text.Modifier: @unchecked Sendable {}
 package class AnyTextStorage {
     func resolve<T>(
         into result: inout T,
-        in: EnvironmentValues,
+        in environment: EnvironmentValues,
         with options: Text.ResolveOptions
     ) where T: ResolvedTextContainer {
         _openSwiftUIBaseClassAbstractMethod()
@@ -283,7 +283,7 @@ package class AnyTextStorage {
         return resolved.string.isEmpty
     }
 
-    func isEqual(to: AnyTextStorage) -> Bool {
+    func isEqual(to other: AnyTextStorage) -> Bool {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
