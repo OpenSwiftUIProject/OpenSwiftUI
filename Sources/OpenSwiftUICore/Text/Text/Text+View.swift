@@ -19,6 +19,8 @@ extension Text: UnaryView, PrimitiveView {
     }
 }
 
+package class TextRendererBoxBase {}
+
 package struct AccessibilityStyledTextContentView<Provider>: View where Provider: TextAccessibilityProvider {
     package var text: ResolvedStyledText
 
@@ -37,17 +39,10 @@ package struct AccessibilityStyledTextContentView<Provider>: View where Provider
         _openSwiftUIUnimplementedFailure()
     }
 
-    @MainActor
-    @preconcurrency
     package var body: some View {
         _openSwiftUIUnimplementedFailure()
     }
-
-    @available(OpenSwiftUI_v1_0, *)
-    package typealias Body = some View
 }
-
-
 
 // FIXME:
 package class ResolvedStyledText {}
