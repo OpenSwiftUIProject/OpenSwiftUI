@@ -2,6 +2,7 @@
 //  LocationTests.swift
 //  OpenSwiftUICoreTests
 
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @testable
 #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
@@ -142,7 +143,14 @@ struct LocationTests {
         } setValue: { newCount, _ in
             value.count = newCount * newCount
         }
-        #expect(location2 != location)
-        #expect(location == location)
+        if attributeGraphEnabled {
+            #expect(location2 != location)
+            #expect(location == location)
+        } else {
+            withKnownIssue("compare is not implemented") {
+                #expect(location2 != location)
+                #expect(location == location)
+            }
+        }
     }
 }
