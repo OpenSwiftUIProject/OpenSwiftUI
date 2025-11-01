@@ -31,3 +31,15 @@ extension _ViewInputs {
         needsAccessibility && self[WithinAccessibilityRotor.self]
     }
 }
+
+// TODO
+
+extension AccessibilityCore {
+    package static func description(
+        for symbolName: String,
+        in environment: EnvironmentValues
+    ) -> String? {
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
