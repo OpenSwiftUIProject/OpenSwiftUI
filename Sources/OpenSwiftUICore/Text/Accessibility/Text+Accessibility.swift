@@ -106,6 +106,7 @@ package struct AccessibilityText: Equatable {
     }
 
     package init(_ string: Any) {
+        #if canImport(Darwin)
         let object = string as AnyObject
         if object.isKind(of: NSAttributedString.self) {
             self.storage = .attributed(object as! NSAttributedString)
@@ -116,6 +117,9 @@ package struct AccessibilityText: Equatable {
         } else {
             preconditionFailure("not a string type")
         }
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     package var text: Text {
