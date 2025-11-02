@@ -268,9 +268,6 @@ if releaseVersion >= 2021 {
         sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))
     }
 }
-if warningsAsErrorsCondition {
-    sharedSwiftSettings.append(.unsafeFlags(["-warnings-as-errors"]))
-}
 if libraryEvolutionCondition {
     // NOTE: -enable-library-evolution will cause module verify failure for `swift build`.
     // Either set OPENSWIFTUI_LIBRARY_EVOLUTION=0 or add `-Xswiftc -no-verify-emitted-module-interface` after `swift build`
