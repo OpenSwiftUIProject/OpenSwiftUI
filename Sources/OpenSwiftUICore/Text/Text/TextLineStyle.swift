@@ -49,6 +49,7 @@ extension Text {
             /// Draw a line of dashes.
             public static let dash: Text.LineStyle.Pattern = .init(nsUnderlineStyle: .patternDash)
 
+            /// Draw a line of alternating dashes and dots.
             public static let dashDot: Text.LineStyle.Pattern = .init(nsUnderlineStyle: .patternDashDot)
 
             /// Draw a line of alternating dashes and two dots.
