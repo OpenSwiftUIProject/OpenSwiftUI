@@ -381,7 +381,7 @@ extension Target {
         // "could not determine executable path for bundle 'AttributeGraph.framework'"
         dependencies.append(.product(name: "AttributeGraph", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH"))
+        swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
     }
 
@@ -793,7 +793,9 @@ if renderBoxCondition {
 }
 
 if attributeGraphCondition || renderBoxCondition {
-    let release = Context.environment["DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
+    let release = EnvManager.shared.withDomain("DarwinPrivateFrameworks") {
+        envIntValue("TARGET_RELEASE", default: 2024)
+    }
     package.platforms = switch release {
         case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
         default: nil
