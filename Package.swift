@@ -5,30 +5,111 @@ import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
-func envEnable(_ key: String, default defaultValue: Bool = false) -> Bool {
-    guard let value = Context.environment[key] else {
-        return defaultValue
+// MARK: - Env Manager
+
+@MainActor
+final class EnvManager {
+    static let shared = EnvManager()
+
+    private var domains: [String] = []
+
+    func register(domain: String) {
+        domains.append(domain)
     }
-    if value == "1" {
-        return true
-    } else if value == "0" {
-        return false
-    } else {
-        return defaultValue
+
+    func envEnable(rawKey: String, default defaultValue: Bool, searchInDomain: Bool) -> Bool {
+        if searchInDomain {
+            for domain in domains {
+                let key = "\(domain.uppercased())_\(rawKey)"
+                guard let (value, result) = _envEnable(key) else {
+                    continue
+                }
+                print("[Env] \(key)=\(value) -> \(result)")
+                return result
+            }
+            print("[Env] \(rawKey) not set -> \(defaultValue)(default)")
+            return defaultValue
+        } else {
+            guard let (value, result) = _envEnable(rawKey) else {
+                print("[Env] \(rawKey) not set -> \(defaultValue)(default)")
+                return defaultValue
+            }
+            print("[Env] \(rawKey)=\(value) -> \(result)")
+            return result
+        }
     }
+
+    func envValue(rawKey: String, default defaultValue: Int, searchInDomain: Bool) -> Int {
+        if searchInDomain {
+            for domain in domains {
+                let key = "\(domain.uppercased())_\(rawKey)"
+                guard let (value, result) = _envValue(key) else {
+                    continue
+                }
+                print("[Env] \(key)=\(value) -> \(result)")
+                return result
+            }
+            print("[Env] \(rawKey) not set -> \(defaultValue)(default)")
+            return defaultValue
+        } else {
+            guard let (value, result) = _envValue(rawKey) else {
+                print("[Env] \(rawKey) not set -> \(defaultValue)(default)")
+                return defaultValue
+            }
+            print("[Env] \(rawKey)=\(value) -> \(result)")
+            return result
+        }
+    }
+
+    private func _envEnable(_ key: String) -> (String, Bool)? {
+        guard let value = Context.environment[key] else {
+            return nil
+        }
+        let result: Bool
+        if value == "1" {
+            result = true
+        } else if value == "0" {
+            result = false
+        } else {
+            return nil
+        }
+        return (value, result)
+    }
+
+    private func _envValue(_ key: String) -> (String, Int)? {
+        guard let value = Context.environment[key] else {
+            return nil
+        }
+        let result: Int
+        guard let result = Int(value) else {
+            return nil
+        }
+        return (value, result)
+    }
+}
+EnvManager.shared.register(domain: "OPENSWIFTUI")
+
+@MainActor
+func envEnable(_ key: String, default defaultValue: Bool = false, searchInDomain: Bool = true) -> Bool {
+    EnvManager.shared.envEnable(rawKey: key, default: defaultValue, searchInDomain: searchInDomain)
+}
+
+@MainActor
+func envValue(_ key: String, default defaultValue: Int, searchInDomain: Bool = true) -> Int {
+    EnvManager.shared.envValue(rawKey: key, default: defaultValue, searchInDomain: searchInDomain)
 }
 
 #if os(macOS)
 // NOTE: #if os(macOS) check is not accurate if we are cross compiling for Linux platform. So we add an env key to specify it.
-let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM", default: true)
+let buildForDarwinPlatform = envEnable("BUILD_FOR_DARWIN_PLATFORM", default: true)
 #else
-let buildForDarwinPlatform = envEnable("OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM")
+let buildForDarwinPlatform = envEnable("BUILD_FOR_DARWIN_PLATFORM")
 #endif
 
 // https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
 // By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
-let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS")
-let isSPIBuild = envEnable("SPI_BUILD")
+let isSPIDocGenerationBuild = envEnable("SPI_GENERATE_DOCS", searchInDomain: false)
+let isSPIBuild = envEnable("SPI_BUILD", searchInDomain: false)
 
 // MARK: - Env and Config
 
@@ -68,14 +149,14 @@ var sharedSwiftSettings: [SwiftSetting] = [
 // MARK: - [env] OPENSWIFTUI_ANY_ATTRIBUTE_FIX
 
 // For #39
-let anyAttributeFix = envEnable("OPENSWIFTUI_ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
+let anyAttributeFix = envEnable("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
 if anyAttributeFix {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_ANY_ATTRIBUTE_FIX"))
 }
 
 // MARK: - [env] OPENSWIFTUI_TARGET_RELEASE
 
-let releaseVersion = Context.environment["OPENSWIFTUI_TARGET_RELEASE"].flatMap { Int($0) } ?? 2024
+let releaseVersion = envValue("TARGET_RELEASE", default: 2024)
 sharedCSettings.append(.define("OPENSWIFTUI_RELEASE", to: "\(releaseVersion)"))
 sharedSwiftSettings.append(.define("OPENSWIFTUI_RELEASE_\(releaseVersion)"))
 if releaseVersion >= 2024 {
@@ -86,7 +167,7 @@ if releaseVersion >= 2024 {
 
 // MARK: - [env] OPENSWIFTUI_DEVELOPMENT
 
-let development = envEnable("OPENSWIFTUI_DEVELOPMENT")
+let development = envEnable("DEVELOPMENT")
 
 if development {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
@@ -94,7 +175,7 @@ if development {
 
 // MARK: - [env] OPENSWIFTUI_LINK_COREUI
 
-let linkCoreUI = envEnable("OPENSWIFTUI_LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
+let linkCoreUI = envEnable("LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
 sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
 sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
 if linkCoreUI {
@@ -103,7 +184,7 @@ if linkCoreUI {
 
 // MARK: - [env] OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 
-let linkBacklightServices = envEnable("OPENSWIFTUI_LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
+let linkBacklightServices = envEnable("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
 sharedCSettings.append(
     .define(
         "OPENSWIFTUI_LINK_BACKLIGHTSERVICES",
@@ -127,25 +208,25 @@ if linkBacklightServices {
     )
 }
 
-// MARK: - [env] OPENGSWIFTUI_SYMBOL_LOCATOR
+// MARK: - [env] OPENSWIFTUI_SYMBOL_LOCATOR
 
-let symbolLocatorCondition = envEnable("OPENGSWIFTUI_SYMBOL_LOCATOR", default: buildForDarwinPlatform)
+let symbolLocatorCondition = envEnable("SYMBOL_LOCATOR", default: buildForDarwinPlatform)
 
 // MARK: - [env] OPENSWIFTUI_OPENCOMBINE
 
-let openCombineCondition = envEnable("OPENSWIFTUI_OPENCOMBINE", default: !buildForDarwinPlatform)
+let openCombineCondition = envEnable("OPENCOMBINE", default: !buildForDarwinPlatform)
 
 // MARK: - [env] OPENSWIFTUI_SWIFT_LOG
 
-let swiftLogCondition = envEnable("OPENSWIFTUI_SWIFT_LOG", default: !buildForDarwinPlatform)
+let swiftLogCondition = envEnable("SWIFT_LOG", default: !buildForDarwinPlatform)
 
 // MARK: - [env] OPENSWIFTUI_SWIFT_CRYPTO
 
-let swiftCryptoCondition = envEnable("OPENSWIFTUI_SWIFT_CRYPTO", default: !buildForDarwinPlatform)
+let swiftCryptoCondition = envEnable("SWIFT_CRYPTO", default: !buildForDarwinPlatform)
 
 // MARK: - [env] OPENSWIFTUI_RENDER_GTK
 
-let renderGTKCondition = envEnable("OPENSWIFTUI_RENDER_GTK", default: !buildForDarwinPlatform)
+let renderGTKCondition = envEnable("RENDER_GTK", default: !buildForDarwinPlatform)
 
 let cgtkTarget = Target.systemLibrary(
     name: "CGTK",
@@ -158,7 +239,7 @@ let cgtkTarget = Target.systemLibrary(
 
 // MARK: - [env] OPENGSWIFTUI_SWIFTUI_RENDER
 
-let swiftUIRenderCondition = envEnable("OPENSWIFTUI_SWIFTUI_RENDER", default: buildForDarwinPlatform)
+let swiftUIRenderCondition = envEnable("SWIFTUI_RENDER", default: buildForDarwinPlatform)
 if swiftUIRenderCondition {
     sharedCSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
     sharedCxxSettings.append(.define("_OPENSWIFTUI_SWIFTUI_RENDER"))
@@ -169,14 +250,14 @@ if swiftUIRenderCondition {
 
 // This should be disabled for UI test target due to link issue of Testing.
 // Only enable for non-UI test targets.
-let linkTesting = envEnable("OPENSWIFTUI_LINK_TESTING")
+let linkTesting = envEnable("LINK_TESTING")
 if linkTesting {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_TESTING"))
 }
 
 // MARK: - [env] OPENSWIFTUI_WERROR
 
-let warningsAsErrorsCondition = envEnable("OPENSWIFTUI_WERROR", default: isXcodeEnv && development)
+let warningsAsErrorsCondition = envEnable("WERROR", default: isXcodeEnv && development)
 if warningsAsErrorsCondition {
     // Hold off the werror feature as we can't avoid the concurrency warning.
     // Since there is no such group for diagnostic we want to ignore, we enable werror for all known groups instead.
@@ -199,7 +280,7 @@ if warningsAsErrorsCondition {
 
 // MARK: - [env] OPENSWIFTUI_LIBRARY_EVOLUTION
 
-let libraryEvolutionCondition = envEnable("OPENSWIFTUI_LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
+let libraryEvolutionCondition = envEnable("LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
 if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
     // NOTE: -enable-library-evolution will cause module verify failure for `swift build`.
     // Either set OPENSWIFTUI_LIBRARY_EVOLUTION=0 or add `-Xswiftc -no-verify-emitted-module-interface` after `swift build`
@@ -208,7 +289,7 @@ if libraryEvolutionCondition && !openCombineCondition && !swiftLogCondition {
 
 // MARK: - [env] OPENSWIFTUI_COMPATIBILITY_TEST
 
-let compatibilityTestCondition = envEnable("OPENSWIFTUI_COMPATIBILITY_TEST")
+let compatibilityTestCondition = envEnable("COMPATIBILITY_TEST")
 sharedCSettings.append(.define("OPENSWIFTUI", to: compatibilityTestCondition ? "1" : "0"))
 sharedCxxSettings.append(.define("OPENSWIFTUI", to: compatibilityTestCondition ? "1" : "0"))
 if !compatibilityTestCondition {
@@ -217,13 +298,13 @@ if !compatibilityTestCondition {
 
 // MARK: - [env] OPENSWIFTUI_IGNORE_AVAILABILITY
 
-let ignoreAvailability = envEnable("OPENSWIFTUI_IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
+let ignoreAvailability = envEnable("IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
 sharedSwiftSettings.append(contentsOf: [SwiftSetting].availabilityMacroSettings(ignoreAvailability: ignoreAvailability))
 
 // MARK: - [env] OPENSWIFTUI_INTERNAL_XR_SDK
 
 // Run @OpenSwiftUIProject/DarwinPrivateFrameworks repo's Scripts/install_internal_sdk.sh XRSimulator to install internal XRSimulator SDK
-let internalXRSDK = envEnable("OPENSWIFTUI_INTERNAL_XR_SDK")
+let internalXRSDK = envEnable("INTERNAL_XR_SDK")
 sharedCSettings.append(.define("OPENSWIFTUI_INTERNAL_XR_SDK", to: internalXRSDK ? "1" : "0"))
 sharedCxxSettings.append(.define("OPENSWIFTUI_INTERNAL_XR_SDK", to: internalXRSDK ? "1" : "0"))
 if internalXRSDK {
@@ -232,7 +313,7 @@ if internalXRSDK {
 
 // MARK: - [env] OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
 
-let enablePrivateImports = envEnable("OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS", default: true)
+let enablePrivateImports = envEnable("ENABLE_PRIVATE_IMPORTS", default: true)
 if enablePrivateImports {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS"))
     sharedSwiftSettings.append(.unsafeFlags(["-Xfrontend", "-enable-private-imports"]))
@@ -240,7 +321,7 @@ if enablePrivateImports {
 
 // MARK: - [env] OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK
 
-let enableRuntimeConcurrencyCheck = envEnable("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK", default: false)
+let enableRuntimeConcurrencyCheck = envEnable("ENABLE_RUNTIME_CONCURRENCY_CHECK", default: false)
 if enableRuntimeConcurrencyCheck {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK"))
 }
@@ -457,7 +538,7 @@ let openSwiftUISymbolDualTestsTarget = Target.testTarget(
 )
 
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
-let supportMultiProducts: Bool = envEnable("OPENSWIFTUI_SUPPORT_MULTI_PRODUCTS", default: true)
+let supportMultiProducts: Bool = envEnable("SUPPORT_MULTI_PRODUCTS", default: true)
 
 let libraryType: Product.Library.LibraryType?
 switch Context.environment["OPENSWIFTUI_LIBRARY_TYPE"] {
@@ -591,7 +672,7 @@ extension Target {
     }
 }
 
-let useLocalDeps = envEnable("OPENSWIFTUI_USE_LOCAL_DEPS")
+let useLocalDeps = envEnable("USE_LOCAL_DEPS")
 
 let attributeGraphCondition = envEnable("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
 if attributeGraphCondition {
