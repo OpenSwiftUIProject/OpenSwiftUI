@@ -55,7 +55,7 @@ extension Target {
         dependencies.append(.product(name: "AttributeGraph", package: "OpenAttributeGraph"))
 
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH"))
+        swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
     }
 }

@@ -17,18 +17,13 @@ jobs:
         release: [2024]
     runs-on: ${{ matrix.os }}
     env:
-      OPENSWIFTUI_WERROR: 1
-      OPENATTRIBUTEGRAPH_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
+      OPENSWIFTUI_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
-      OPENATTRIBUTEGRAPH_USE_LOCAL_DEPS: 1
-      OPENATTRIBUTEGRAPH_TARGET_RELEASE: ${{ matrix.release }}
-      OPENRENDERBOX_USE_LOCAL_DEPS: 1
-      OPENRENDERBOX_TARGET_RELEASE: ${{ matrix.release }}
-      DARWIN_PRIVATE_FRAMEWORKS_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_LINK_TESTING: 1
       GH_TOKEN: ${{ github.token }}
     steps:
