@@ -223,7 +223,7 @@ private struct DynamicViewList<V>: StatefulRule, AsyncAttribute where V: Dynamic
             self.isUnary = isUnary
             self.allItems = allItems
             super.init(subgraph: subgraph)
-            allItems.wrappedValue.append(.passRetained(self))
+            allItems.wrappedValue.append(.passUnretained(self))
         }
 
         override func invalidate() {
