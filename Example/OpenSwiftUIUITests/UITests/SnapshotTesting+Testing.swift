@@ -9,6 +9,7 @@ import Foundation
 #if canImport(AppKit)
 import AppKit
 typealias PlatformHostingController = NSHostingController
+typealias PlatformHostingView = NSHostingView
 typealias PlatformViewController = NSViewController
 typealias PlatformView = NSView
 typealias PlatformImage = NSImage
@@ -21,6 +22,7 @@ extension Color {
 #else
 import UIKit
 typealias PlatformHostingController = UIHostingController
+typealias PlatformHostingView = _UIHostingView
 typealias PlatformViewController = UIViewController
 typealias PlatformView = UIView
 typealias PlatformImage = UIImage
@@ -35,7 +37,7 @@ extension Color {
 let defaultSize = CGSize(width: 200, height: 200)
 
 func openSwiftUIAssertSnapshot<V: View>(
-    of value: @autoclosure () throws -> V,
+    of value: @autoclosure () -> V,
     perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
     named name: String? = nil,
@@ -48,7 +50,7 @@ func openSwiftUIAssertSnapshot<V: View>(
     column: UInt = #column
 ) {
     openSwiftUIAssertSnapshot(
-        of: PlatformHostingController(rootView: try value()),
+        of: PlatformHostingController(rootView: value()),
         as: .image(perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
@@ -62,7 +64,7 @@ func openSwiftUIAssertSnapshot<V: View>(
 }
 
 func openSwiftUIAssertSnapshot<V: View>(
-    of value: @autoclosure () throws -> V,
+    of value: @autoclosure () -> V,
     as snapshotting: Snapshotting<PlatformViewController, PlatformImage>,
     named name: String? = nil,
     record recording: Bool? = shouldRecord,
@@ -74,7 +76,7 @@ func openSwiftUIAssertSnapshot<V: View>(
     column: UInt = #column
 ) {
     openSwiftUIAssertSnapshot(
-        of: PlatformHostingController(rootView: try value()),
+        of: PlatformHostingController(rootView: value()),
         as: snapshotting,
         named: name,
         record: recording,
@@ -88,7 +90,7 @@ func openSwiftUIAssertSnapshot<V: View>(
 }
 
 func openSwiftUIAssertSnapshot<V: View, Format>(
-    of value: @autoclosure () throws -> V,
+    of value: @autoclosure () -> V,
     as snapshotting: Snapshotting<PlatformViewController, Format>,
     named name: String? = nil,
     record recording: Bool? = shouldRecord,
@@ -100,7 +102,7 @@ func openSwiftUIAssertSnapshot<V: View, Format>(
     column: UInt = #column
 ) {
     openSwiftUIAssertSnapshot(
-        of: PlatformHostingController(rootView: try value()),
+        of: PlatformHostingController(rootView: value()),
         as: snapshotting,
         named: name,
         record: recording,
@@ -114,7 +116,7 @@ func openSwiftUIAssertSnapshot<V: View, Format>(
 }
 
 private func openSwiftUIAssertSnapshot<Value, Format>(
-    of value: @autoclosure () throws -> Value,
+    of value: @autoclosure () -> Value,
     as snapshotting: Snapshotting<Value, Format>,
     named name: String? = nil,
     record recording: Bool? = shouldRecord,
@@ -131,7 +133,7 @@ private func openSwiftUIAssertSnapshot<Value, Format>(
     let os = "iOS_Simulator"
     #endif
     let snapshotDirectory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]! + "/\(os)/" + fileID.description
-    let failure = try verifySnapshot(
+    let failure = verifySnapshot(
         of: value(),
         as: snapshotting,
         named: name,
@@ -154,4 +156,50 @@ private func openSwiftUIAssertSnapshot<Value, Format>(
             column: Int(column)
         )
     )
+}
+
+// MARK: - Animation
+
+func openSwiftUIAssertAnimationSnapshot<V: AnimationTestView>(
+    of value: @autoclosure () -> V,
+    precision: Float = 1,
+    perceptualPrecision: Float = 1,
+    size: CGSize = defaultSize,
+    record recording: Bool? = shouldRecord,
+    timeout: TimeInterval = 5,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    testName: String = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) {
+    let vc = AnimationDebugController(value())
+    let model = V.model
+    var intervals = model.intervals
+    intervals.insert(.zero, at: 0)
+    intervals.enumerated().forEach { (index, interval) in
+        switch index {
+        case 0:
+            break
+        case 1:
+            vc.advance(interval: .zero)
+            vc.advance(interval: .zero)
+            vc.advance(interval: .zero)
+            vc.advance(interval: interval)
+        default:
+            vc.advance(interval: interval)
+        }
+        openSwiftUIAssertSnapshot(
+            of: vc,
+            as: .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size),
+            named: "\(index)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",
+            record: recording,
+            timeout: timeout,
+            fileID: fileID,
+            file: filePath,
+            testName: testName,
+            line: line,
+            column: column
+        )
+    }
 }

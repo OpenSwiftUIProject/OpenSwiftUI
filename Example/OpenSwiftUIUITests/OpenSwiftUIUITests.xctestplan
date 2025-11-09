@@ -11,6 +11,11 @@
   "defaultOptions" : {
     "environmentVariableEntries" : [
       {
+        "enabled" : false,
+        "key" : "SWIFTUI_PRINT_TREE",
+        "value" : "1"
+      },
+      {
         "key" : "SNAPSHOT_REFERENCE_DIR",
         "value" : "$(PROJECT_DIR)\/ReferenceImages"
       }
@@ -25,7 +30,7 @@
     {
       "target" : {
         "containerPath" : "container:Example.xcodeproj",
-        "identifier" : "275751F42DEE1456003E467C",
+        "identifier" : "279283B82DFF11CE00234D64",
         "name" : "OpenSwiftUIUITests"
       }
     }
