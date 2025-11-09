@@ -40,39 +40,15 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
-      - name: Record baseline images with SwiftUI
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration SwiftUIDebug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation || true
-      - name: Run UI tests with OpenSwiftUI
-        id: uitest
-        continue-on-error: true
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration OpenSwiftUIDebug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation 2>&1 | tee /tmp/ios-uitest.log
-      - name: Collect failed snapshots
-        if: always()
-        run: |
-          Scripts/CI/collect_uitest_failures.sh /tmp/ios-uitest.log /tmp/uitest-artifacts
-      - name: Upload test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Run UI Tests
+        id: run-tests
+        uses: ./.github/actions/uitests
         with:
-          name: ios-uitest-snapshots-${{ matrix.ios-version }}
-          path: /tmp/uitest-artifacts/
-          retention-days: 7
+          platform: ios
+          destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
+          artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}
       - name: Fail if tests failed
-        if: steps.uitest.outcome == 'failure'
+        if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
 
   macos_uitest:
@@ -85,7 +61,7 @@ jobs:
         release: [2024]
     runs-on: ${{ matrix.os }}
     env:
-      OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
+      OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
@@ -103,37 +79,13 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
-      - name: Record baseline images with SwiftUI
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration SwiftUIDebug \
-            -destination "platform=macOS" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation || true
-      - name: Run UI tests with OpenSwiftUI
-        id: uitest
-        continue-on-error: true
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration OpenSwiftUIDebug \
-            -destination "platform=macOS" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation 2>&1 | tee /tmp/macos-uitest.log
-      - name: Collect failed snapshots
-        if: always()
-        run: |
-          Scripts/CI/collect_uitest_failures.sh /tmp/macos-uitest.log /tmp/uitest-artifacts
-      - name: Upload test artifacts
-        if: always()
-        uses: actions/upload-artifact@v4
+      - name: Run UI Tests
+        id: run-tests
+        uses: ./.github/actions/uitests
         with:
-          name: macos-uitest-snapshots
-          path: /tmp/uitest-artifacts/
-          retention-days: 7
+          platform: macos
+          destination: "platform=macOS"
+          artifact-name: macos-uitest-snapshots
       - name: Fail if tests failed
-        if: steps.uitest.outcome == 'failure'
+        if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
