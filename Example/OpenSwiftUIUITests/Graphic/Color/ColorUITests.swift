@@ -57,4 +57,26 @@ struct ColorUITests {
             testName: "hsb_\(name)"
         )
     }
+
+    @Test
+    func colorAnimation() {
+        struct ContentView: View {
+            @State private var showRed = false
+            var body: some View {
+                VStack {
+                    Color(platformColor: showRed ? .red : .blue)
+                        .frame(width: showRed ? 50 : 100, height: showRed ? 50 : 100)
+                }
+                .animation(.easeInOut(duration: 1), value: showRed)
+                .onAppear {
+                    showRed.toggle()
+                }
+            }
+        }
+        let model = AnimationTestModel(duration: 1, count: 10)
+        openSwiftUIAssertAnimationSnapshot(
+            of: ContentView(),
+            model: model,
+        )
+    }
 }
