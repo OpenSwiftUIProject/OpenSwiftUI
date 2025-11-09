@@ -11,7 +11,7 @@ struct DynamicLayoutViewUITests {
     @Test
     func dynamicLayout() {
         struct ContentView: View {
-            @State var show = false
+            @State private var show = false
             var body: some View {
                 VStack {
                     Color.red

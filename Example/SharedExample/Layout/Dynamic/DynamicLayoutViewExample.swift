@@ -9,7 +9,7 @@ import SwiftUI
 #endif
 
 struct DynamicLayoutViewExample: View {
-    @State var show = false
+    @State private var show = false
     var body: some View {
         VStack {
             Color.red

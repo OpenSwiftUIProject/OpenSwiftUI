@@ -45,7 +45,7 @@ struct ForEachUITests {
                 AnimationTestModel(duration: 1.0, count: 5)
             }
 
-            @State var opacities = [0, 0.5, 1.0]
+            @State private var opacities = [0, 0.5, 1.0]
 
             var body: some View {
                 VStack(spacing: 0) {
