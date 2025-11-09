@@ -37,4 +37,29 @@ struct ForEachUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test
+    func insertAnimation() {
+        struct ContentView: AnimationTestView {
+            nonisolated static var model: AnimationTestModel {
+                AnimationTestModel(duration: 1.0, count: 5)
+            }
+
+            @State var opacities = [0, 0.5, 1.0]
+
+            var body: some View {
+                VStack(spacing: 0) {
+                    ForEach(opacities, id: \.self) { opacity in
+                        Color.red.opacity(opacity)
+                    }
+                }.onAppear {
+                    withAnimation(.spring(duration: Self.model.duration)) {
+                        opacities.insert(0.25, at: 1)
+                        opacities.insert(0.75, at: 3)
+                    }
+                }
+            }
+        }
+        openSwiftUIAssertAnimationSnapshot(of: ContentView())
+    }
 }
