@@ -40,24 +40,16 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
-      - name: Record baseline images with SwiftUI
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration SwiftUIDebug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation || true
-      - name: Run UI tests with OpenSwiftUI
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration OpenSwiftUIDebug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation
+      - name: Run UI Tests
+        id: run-tests
+        uses: ./.github/actions/uitests
+        with:
+          platform: ios
+          destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
+          artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}
+      - name: Fail if tests failed
+        if: steps.run-tests.outputs.test-result == 'failure'
+        run: exit 1
 
   macos_uitest:
     name: Execute UI tests on macOS
@@ -69,7 +61,7 @@ jobs:
         release: [2024]
     runs-on: ${{ matrix.os }}
     env:
-      OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
+      OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
@@ -87,21 +79,13 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
-      - name: Record baseline images with SwiftUI
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration SwiftUIDebug \
-            -destination "platform=macOS" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation || true
-      - name: Run UI tests with OpenSwiftUI
-        run: |
-          cd Example
-          xcodebuild test \
-            -scheme OpenSwiftUIUITests \
-            -configuration OpenSwiftUIDebug \
-            -destination "platform=macOS" \
-            -skipMacroValidation \
-            -skipPackagePluginValidation
+      - name: Run UI Tests
+        id: run-tests
+        uses: ./.github/actions/uitests
+        with:
+          platform: macos
+          destination: "platform=macOS"
+          artifact-name: macos-uitest-snapshots
+      - name: Fail if tests failed
+        if: steps.run-tests.outputs.test-result == 'failure'
+        run: exit 1
