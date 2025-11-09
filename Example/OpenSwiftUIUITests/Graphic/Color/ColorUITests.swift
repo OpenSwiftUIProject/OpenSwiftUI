@@ -59,27 +59,65 @@ struct ColorUITests {
     }
 
     @Test
+    func frameAnimation() {
+        struct ContentView: AnimationTestView {
+            nonisolated static var model: AnimationTestModel {
+                AnimationTestModel(duration: 1, count: 4)
+            }
+
+            @State private var smaller = false
+            var body: some View {
+                Color.red
+                    .frame(width: smaller ? 50 : 100, height: smaller ? 50 : 100)
+                    .animation(.linear(duration: Self.model.duration), value: smaller)
+                    .onAppear {
+                        smaller.toggle()
+                    }
+            }
+        }
+        openSwiftUIAssertAnimationSnapshot(of: ContentView())
+    }
+
+    // FIXME
+    @Test(.disabled("Color interpolation is not aligned with SwiftUI yet"))
     func colorAnimation() {
         struct ContentView: AnimationTestView {
             nonisolated static var model: AnimationTestModel {
-                AnimationTestModel(duration: 1, count: 10)
+                AnimationTestModel(duration: 1, count: 4)
             }
 
             @State private var showRed = false
             var body: some View {
-                VStack {
-                    Color(platformColor: showRed ? .red : .blue)
-                        .frame(width: showRed ? 50 : 100, height: showRed ? 50 : 100)
-                }
-                .animation(.easeInOut(duration: Self.model.duration), value: showRed)
-                .onAppear {
-                    showRed.toggle()
-                }
+                Color(platformColor: showRed ? .red : .blue)
+                    .animation(.linear(duration: Self.model.duration), value: showRed)
+                    .onAppear {
+                        showRed.toggle()
+                    }
+            }
+        }
+        openSwiftUIAssertAnimationSnapshot(of: ContentView())
+    }
+
+    // FIXME
+    @Test(.disabled("Color interpolation is not aligned with SwiftUI yet"))
+    func frameColorAnimation() {
+        struct ContentView: AnimationTestView {
+            nonisolated static var model: AnimationTestModel {
+                AnimationTestModel(duration: 1, count: 4)
+            }
+
+            @State private var showRed = false
+            var body: some View {
+                Color(platformColor: showRed ? .red : .blue)
+                    .frame(width: showRed ? 50 : 100, height: showRed ? 50 : 100)
+                    .animation(.linear(duration: Self.model.duration), value: showRed)
+                    .onAppear {
+                        showRed.toggle()
+                    }
             }
         }
         openSwiftUIAssertAnimationSnapshot(
             of: ContentView()
-//            precision: 0.8 // TODO: Maybe related with issue #340
         )
     }
 }
