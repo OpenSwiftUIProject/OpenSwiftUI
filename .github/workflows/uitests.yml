@@ -50,6 +50,8 @@ jobs:
             -skipMacroValidation \
             -skipPackagePluginValidation || true
       - name: Run UI tests with OpenSwiftUI
+        id: uitest
+        continue-on-error: true
         run: |
           cd Example
           xcodebuild test \
@@ -57,7 +59,21 @@ jobs:
             -configuration OpenSwiftUIDebug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
-            -skipPackagePluginValidation
+            -skipPackagePluginValidation 2>&1 | tee /tmp/ios-uitest.log
+      - name: Collect failed snapshots
+        if: always()
+        run: |
+          Scripts/CI/collect_uitest_failures.sh /tmp/ios-uitest.log /tmp/uitest-artifacts
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ios-uitest-snapshots-${{ matrix.ios-version }}
+          path: /tmp/uitest-artifacts/
+          retention-days: 7
+      - name: Fail if tests failed
+        if: steps.uitest.outcome == 'failure'
+        run: exit 1
 
   macos_uitest:
     name: Execute UI tests on macOS
@@ -97,6 +113,8 @@ jobs:
             -skipMacroValidation \
             -skipPackagePluginValidation || true
       - name: Run UI tests with OpenSwiftUI
+        id: uitest
+        continue-on-error: true
         run: |
           cd Example
           xcodebuild test \
@@ -104,4 +122,18 @@ jobs:
             -configuration OpenSwiftUIDebug \
             -destination "platform=macOS" \
             -skipMacroValidation \
-            -skipPackagePluginValidation
+            -skipPackagePluginValidation 2>&1 | tee /tmp/macos-uitest.log
+      - name: Collect failed snapshots
+        if: always()
+        run: |
+          Scripts/CI/collect_uitest_failures.sh /tmp/macos-uitest.log /tmp/uitest-artifacts
+      - name: Upload test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: macos-uitest-snapshots
+          path: /tmp/uitest-artifacts/
+          retention-days: 7
+      - name: Fail if tests failed
+        if: steps.uitest.outcome == 'failure'
+        run: exit 1
