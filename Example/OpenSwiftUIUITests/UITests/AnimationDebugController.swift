@@ -20,6 +20,10 @@ struct AnimationTestModel: Hashable {
     }
 }
 
+protocol AnimationTestView: View {
+    static var model: AnimationTestModel { get }
+}
+
 final class AnimationDebugController<V>: UIHostingController<V> where V: View {
     init(_ view: V) {
         super.init(rootView: view)

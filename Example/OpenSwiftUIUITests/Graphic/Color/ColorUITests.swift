@@ -60,7 +60,11 @@ struct ColorUITests {
 
     @Test
     func colorAnimation() {
-        struct ContentView: View {
+        struct ContentView: AnimationTestView {
+            nonisolated static var model: AnimationTestModel {
+                AnimationTestModel(duration: 1, count: 10)
+            }
+
             @State private var showRed = false
             var body: some View {
                 VStack {
@@ -73,10 +77,9 @@ struct ColorUITests {
                 }
             }
         }
-        let model = AnimationTestModel(duration: 1, count: 10)
         openSwiftUIAssertAnimationSnapshot(
-            of: ContentView(),
-            model: model,
+            of: ContentView()
+//            precision: 0.8 // TODO: Maybe related with issue #340
         )
     }
 }

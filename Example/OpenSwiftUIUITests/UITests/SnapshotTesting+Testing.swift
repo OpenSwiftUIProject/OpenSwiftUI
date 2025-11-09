@@ -158,9 +158,9 @@ private func openSwiftUIAssertSnapshot<Value, Format>(
 
 // MARK: - Animation
 
-func openSwiftUIAssertAnimationSnapshot<V: View>(
+func openSwiftUIAssertAnimationSnapshot<V: AnimationTestView>(
     of value: @autoclosure () -> V,
-    model: AnimationTestModel,
+    precision: Float = 1,
     perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
     record recording: Bool? = shouldRecord,
@@ -174,11 +174,12 @@ func openSwiftUIAssertAnimationSnapshot<V: View>(
     let vc = AnimationDebugController(value())
     // Flush the neccessary onAppear etc. stuff
     vc.advance(interval: .zero)
+    let model = V.model
     model.intervals.enumerated().forEach { (index, interval) in
         vc.advance(interval: interval)
         openSwiftUIAssertSnapshot(
             of: vc,
-            as: .image(perceptualPrecision: perceptualPrecision, size: size),
+            as: .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size),
             named: "\(index + 1)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",
             record: recording,
             timeout: timeout,
