@@ -3,7 +3,6 @@
 //  OpenSwiftUIUITests
 
 import Foundation
-import UIKit
 import OpenSwiftUI_SPI
 
 struct AnimationTestModel: Hashable {
@@ -40,8 +39,8 @@ final class AnimationDebugController<V>: PlatformHostingController<V> where V: V
         fatalError("init(coder:) has not been implemented")
     }
 
-    private var host: _UIHostingView<V> {
-        view as! _UIHostingView<V>
+    private var host: PlatformHostingView<V> {
+        view as! PlatformHostingView<V>
     }
 
     func advance(interval: Double) {
@@ -54,12 +53,16 @@ final class AnimationDebugController<V>: PlatformHostingController<V> where V: V
 
     override func viewDidLoad() {
         super.viewDidLoad()
+        #if os(iOS) || os(visionOS)
         Self.hookLayoutSubviews(type(of: host))
         Self.hookDisplayLinkTimer()
+        #endif
     }
 
+    #if os(iOS) || os(visionOS)
     var disableLayoutSubview = false
 
+    // Fix swift-snapshot framework snapshot will trigger uncessary _UIHostingView.layoutSubview issue
     static func hookLayoutSubviews(_ cls: AnyClass?) {
         let originalSelector = #selector(PlatformView.layoutSubviews)
         let swizzledSelector = #selector(PlatformView.swizzled_layoutSubviews)
@@ -89,8 +92,10 @@ final class AnimationDebugController<V>: PlatformHostingController<V> where V: V
     func swizzled_displayLinkTimerWithLink(_ sender: CADisplayLink) {
         sender.isPaused = true
     }
+    #endif
 }
 
+#if os(iOS) || os(visionOS)
 // Avoid generic parameter casting
 private protocol AnimationDebuggableController: PlatformViewController {
     var disableLayoutSubview: Bool { get set }
@@ -111,3 +116,4 @@ extension PlatformView {
         vc.disableLayoutSubview = true
     }
 }
+#endif

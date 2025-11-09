@@ -9,6 +9,7 @@ import Foundation
 #if canImport(AppKit)
 import AppKit
 typealias PlatformHostingController = NSHostingController
+typealias PlatformHostingView = NSHostingView
 typealias PlatformViewController = NSViewController
 typealias PlatformView = NSView
 typealias PlatformImage = NSImage
@@ -21,6 +22,7 @@ extension Color {
 #else
 import UIKit
 typealias PlatformHostingController = UIHostingController
+typealias PlatformHostingView = _UIHostingView
 typealias PlatformViewController = UIViewController
 typealias PlatformView = UIView
 typealias PlatformImage = UIImage

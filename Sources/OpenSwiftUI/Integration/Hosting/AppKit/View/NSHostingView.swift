@@ -416,12 +416,36 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 @available(visionOS, unavailable)
 extension NSHostingView {
     public func _renderForTest(interval: Double) {
-        // TODO
+        // FIXME: Copy from iOS version
+        _openSwiftUIUnimplementedWarning()
+
+        func shouldContinue() -> Bool {
+            if propertiesNeedingUpdate == [], !CoreTesting.needsRender {
+                false
+            } else {
+                times >= 0
+            }
+        }
+        advanceTimeForTest(interval: interval)
+        canAdvanceTimeAutomatically = false
+        var times = 16
+        repeat {
+            times -= 1
+            CoreTesting.needsRender = false
+            updateGraph { host in
+                host.flushTransactions()
+            }
+            RunLoop.flushObservers()
+            render(targetTimestamp: nil)
+            CATransaction.flush()
+        } while shouldContinue()
+        CoreTesting.needsRender = false
+        canAdvanceTimeAutomatically = true
     }
 
     public func _renderAsyncForTest(interval: Double) -> Bool {
-        // TODO
-        false
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 }
 
