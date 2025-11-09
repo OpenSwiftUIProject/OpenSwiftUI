@@ -18,6 +18,10 @@ struct AnimationTestModel: Hashable {
     init(duration: Double, count: Int) {
         intervals = Array(repeating: duration / Double(count), count: count)
     }
+
+    var duration: Double {
+        intervals.reduce(0, +)
+    }
 }
 
 protocol AnimationTestView: View {

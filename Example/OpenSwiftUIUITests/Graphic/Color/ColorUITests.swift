@@ -71,7 +71,7 @@ struct ColorUITests {
                     Color(platformColor: showRed ? .red : .blue)
                         .frame(width: showRed ? 50 : 100, height: showRed ? 50 : 100)
                 }
-                .animation(.easeInOut(duration: 1), value: showRed)
+                .animation(.easeInOut(duration: Self.model.duration), value: showRed)
                 .onAppear {
                     showRed.toggle()
                 }
