@@ -172,15 +172,25 @@ func openSwiftUIAssertAnimationSnapshot<V: AnimationTestView>(
     column: UInt = #column
 ) {
     let vc = AnimationDebugController(value())
-    // Flush the neccessary onAppear etc. stuff
-    vc.advance(interval: .zero)
     let model = V.model
-    model.intervals.enumerated().forEach { (index, interval) in
-        vc.advance(interval: interval)
+    var intervals = model.intervals
+    intervals.insert(.zero, at: 0)
+    intervals.enumerated().forEach { (index, interval) in
+        switch index {
+        case 0:
+            break
+        case 1:
+            vc.advance(interval: .zero)
+            vc.advance(interval: .zero)
+            vc.advance(interval: .zero)
+            vc.advance(interval: interval)
+        default:
+            vc.advance(interval: interval)
+        }
         openSwiftUIAssertSnapshot(
             of: vc,
             as: .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size),
-            named: "\(index + 1)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",
+            named: "\(index)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",
             record: recording,
             timeout: timeout,
             fileID: fileID,
