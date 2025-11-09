@@ -45,13 +45,13 @@ runs:
           -skipPackagePluginValidation 2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log
 
     - name: Collect failed snapshots
-      if: always()
+      if: steps.uitest.outcome == 'failure'
       shell: bash
       run: |
         Scripts/CI/collect_uitest_failures.sh /tmp/${{ inputs.platform }}-uitest.log /tmp/uitest-artifacts
 
     - name: Upload test artifacts
-      if: always()
+      if: steps.uitest.outcome == 'failure'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
