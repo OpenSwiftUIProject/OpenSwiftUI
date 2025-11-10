@@ -32,9 +32,10 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
                         data.table[index].used = data.clock
                         return itemData.value
                     } else {
-                        if diff < Int32(bitPattern: data.clock &- data.table[index].used) {
+                        let dist = Int32(bitPattern: data.clock &- data.table[index].used)
+                        if diff < dist {
                             targetOffset = offset
-                            diff = Int32.max
+                            diff = dist
                         }
                     }
                 } else {
