@@ -24,7 +24,7 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
         var targetOffset: Int = 0
         var diff: Int32 = Int32.min
         let value = $data.access { data -> Value? in
-            for offset in 0 ..< 3 {
+            for offset in 0 ..< 4 {
                 let index = bucket + offset
                 if let itemData = data.table[index].data {
                     if itemData.hash == hash, itemData.key == key {
