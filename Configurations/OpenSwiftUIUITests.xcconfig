@@ -4,3 +4,7 @@ CODE_SIGN_ENTITLEMENTS = TestingHost/TestingHost.entitlements
 
 // Remove -module_alias Testing=_Testing_Unavailable
 OTHER_SWIFT_FLAGS = $(OPENSWIFTUI_AVAILABILITY_MACRO)
+
+CLANG_ENABLE_MODULES = YES;
+
+SWIFT_OBJC_BRIDGING_HEADER = OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h
