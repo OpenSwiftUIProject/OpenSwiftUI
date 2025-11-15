@@ -23,17 +23,21 @@ grep -E 'odiff ".*" ".*"' "$TEST_LOG" | while IFS= read -r line; do
     failed_path=$(echo "$line" | sed -n 's/.*odiff "\([^"]*\)" "\([^"]*\)".*/\2/p')
 
     if [ -f "$reference_path" ]; then
+        foldername=$(basename "$(dirname "$reference_path")")
         filename=$(basename "$reference_path")
-        cp "$reference_path" "$OUTPUT_DIR/reference/$filename"
-        echo "Copied reference: $filename"
+        mkdir -p "$OUTPUT_DIR/reference/$foldername"
+        cp "$reference_path" "$OUTPUT_DIR/reference/$foldername/$filename"
+        echo "Copied reference: $foldername/$filename"
     else
         echo "Reference not found: $reference_path"
     fi
 
     if [ -f "$failed_path" ]; then
+        foldername=$(basename "$(dirname "$failed_path")")
         filename=$(basename "$failed_path")
-        cp "$failed_path" "$OUTPUT_DIR/failed/$filename"
-        echo "Copied failed: $filename"
+        mkdir -p "$OUTPUT_DIR/failed/$foldername"
+        cp "$failed_path" "$OUTPUT_DIR/failed/$foldername/$filename"
+        echo "Copied failed: $foldername/$filename"
     else
         echo "Failed snapshot not found: $failed_path"
     fi

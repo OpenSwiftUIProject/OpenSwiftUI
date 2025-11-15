@@ -7,6 +7,8 @@
 
 import Foundation
 
+// MARK: - View + speed Animation
+
 @available(OpenSwiftUI_v1_0, *)
 extension Animation {
     /// Changes the duration of an animation by adjusting its speed.
@@ -79,6 +81,8 @@ extension Animation {
     }
 }
 
+// MARK: - SpeedAnimation
+
 struct SpeedAnimation: CustomAnimationModifier {
     var speed: Double
 
@@ -117,6 +121,6 @@ struct SpeedAnimation: CustomAnimationModifier {
     }
 
     func function(base: Animation.Function) -> Animation.Function {
-        base
+        .speed(speed, base)
     }
 }

@@ -1,5 +1,5 @@
 //
-//  VelocitySamplerTests.swift
+//  VelocitySamplerDuleTests.swift
 //  OpenSwiftUISymbolDualTests
 
 #if canImport(SwiftUI, _underlyingVersion: 6.5.4)
@@ -33,7 +33,7 @@ extension VelocitySampler {
     }
 }
 
-struct VelocitySamplerTests {
+struct VelocitySamplerDuleTests {
     @Test
     func initialization() {
         let sampler = VelocitySampler<Double>(swiftUI: ())
