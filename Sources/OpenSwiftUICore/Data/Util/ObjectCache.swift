@@ -2,9 +2,9 @@
 //  ObjectCache.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
-//  ID: FCB2944DC319042A861E82C8B244E212
+//  ID: FCB2944DC319042A861E82C8B244E212 (SwiftUICore)
 
 final package class ObjectCache<Key, Value> where Key: Hashable {
     let constructor: (Key) -> Value
@@ -24,7 +24,7 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
         var targetOffset: Int = 0
         var diff: Int32 = Int32.min
         let value = $data.access { data -> Value? in
-            for offset in 0 ..< 3 {
+            for offset in 0 ..< 4 {
                 let index = bucket + offset
                 if let itemData = data.table[index].data {
                     if itemData.hash == hash, itemData.key == key {
@@ -32,9 +32,10 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
                         data.table[index].used = data.clock
                         return itemData.value
                     } else {
-                        if diff < Int32(bitPattern: data.clock &- data.table[index].used) {
+                        let dist = Int32(bitPattern: data.clock &- data.table[index].used)
+                        if diff < dist {
                             targetOffset = offset
-                            diff = Int32.max
+                            diff = dist
                         }
                     }
                 } else {
