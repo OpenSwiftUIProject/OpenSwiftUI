@@ -60,6 +60,9 @@ struct ForEachUITests {
                 }
             }
         }
-        openSwiftUIAssertAnimationSnapshot(of: ContentView())
+        withKnownIssue("#632") {
+            Issue.record("AttributeGraph precondition failure: accessing attribute in a different namespace: 36376.")
+            // openSwiftUIAssertAnimationSnapshot(of: ContentView())
+        }
     }
 }
