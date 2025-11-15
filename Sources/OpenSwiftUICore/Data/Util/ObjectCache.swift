@@ -2,9 +2,9 @@
 //  ObjectCache.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
-//  ID: FCB2944DC319042A861E82C8B244E212
+//  ID: FCB2944DC319042A861E82C8B244E212 (SwiftUICore)
 
 final package class ObjectCache<Key, Value> where Key: Hashable {
     let constructor: (Key) -> Value
