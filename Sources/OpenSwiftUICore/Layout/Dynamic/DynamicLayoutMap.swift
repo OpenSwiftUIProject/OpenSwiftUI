@@ -87,7 +87,7 @@ package struct DynamicLayoutMap {
         let lastActiveIndex = activeCount - 1
         if lastActiveIndex >= 0, !allUnary {
             let lastActiveItem = info.items[lastActiveIndex]
-            activeCount &+= Int(lastActiveItem.count)
+            activeCount = Int(lastActiveItem.count)
         }
         for index in 0 ..< activeCount {
             let targetIndex: Int
