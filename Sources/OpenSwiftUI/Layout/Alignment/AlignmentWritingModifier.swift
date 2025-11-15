@@ -8,67 +8,10 @@
 
 import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
+@_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
-// MARK: - _AlignmentWritingModifier
-
-struct _AlignmentWritingModifier: MultiViewModifier, PrimitiveViewModifier {
-    let key: AlignmentKey
-    let computeValue: @Sendable (ViewDimensions) -> CGFloat
-
-    init(key: AlignmentKey, computeValue: @Sendable @escaping (ViewDimensions) -> CGFloat) {
-        self.key = key
-        self.computeValue = computeValue
-    }
-
-    static func _makeView(
-        modifier: _GraphValue<Self>,
-        inputs: _ViewInputs,
-        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
-    ) -> _ViewOutputs {
-        var outputs = body(_Graph(), inputs)
-        if inputs.requestsLayoutComputer {
-            outputs.layoutComputer = Attribute(AlignmentModifiedLayoutComputer(
-                modifier: modifier.value,
-                childLayoutComputer: OptionalAttribute(outputs.layoutComputer)
-            ))
-        }
-        return outputs
-    }
-}
-
-// MARK: - AlignmentModifiedLayoutComputer
-
-private struct AlignmentModifiedLayoutComputer: StatefulRule, AsyncAttribute {
-    @Attribute var modifier: _AlignmentWritingModifier
-    @OptionalAttribute var childLayoutComputer: LayoutComputer?
-    
-    typealias Value = LayoutComputer
-
-    mutating func updateValue() {
-        update(to: Engine(
-            modifier: modifier,
-            childLayoutComputer: childLayoutComputer ?? .defaultValue
-        ))
-    }
-    
-    struct Engine: LayoutEngine {
-        var modifier: _AlignmentWritingModifier
-        var childLayoutComputer: LayoutComputer
-
-        func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
-            childLayoutComputer.sizeThatFits(proposedSize)
-        }
-        
-        func explicitAlignment(_ key: AlignmentKey, at size: ViewSize) -> CGFloat? {
-            guard key == modifier.key else {
-                return childLayoutComputer.explicitAlignment(key, at: size)
-            }
-            let dimensions = ViewDimensions(guideComputer: childLayoutComputer, size: size)
-            return modifier.computeValue(dimensions)
-        }
-    }
-}
+// MARK: - View + alignmentGuide
 
 extension View {
     /// Sets the view's horizontal alignment.
@@ -100,7 +43,7 @@ extension View {
     /// the difference of their absolute offsets.
     ///
     /// ![A view showing the two emoji offset from a text element using a
-    /// horizontal alignment guide.](SwiftUI-View-HAlignmentGuide.png)
+    /// horizontal alignment guide.](OpenSwiftUI-View-HAlignmentGuide.png)
     ///
     /// - Parameters:
     ///   - g: A ``HorizontalAlignment`` value at which to base the offset.
@@ -110,6 +53,7 @@ extension View {
     /// - Returns: A view modified with respect to its horizontal alignment
     ///   according to the computation performed in the method's closure.
     @preconcurrency
+    @inlinable
     nonisolated public func alignmentGuide(
         _ g: HorizontalAlignment,
         computeValue: @escaping (ViewDimensions) -> CGFloat
@@ -149,7 +93,7 @@ extension View {
     /// the difference of their absolute offsets.
     ///
     /// ![A view showing the two emoji offset from a text element using a
-    /// vertical alignment guide.](SwiftUI-View-VAlignmentGuide.png)
+    /// vertical alignment guide.](OpenSwiftUI-View-VAlignmentGuide.png)
     ///
     /// - Parameters:
     ///   - g: A ``VerticalAlignment`` value at which to base the offset.
@@ -159,10 +103,94 @@ extension View {
     /// - Returns: A view modified with respect to its vertical alignment
     ///   according to the computation performed in the method's closure.
     @preconcurrency
+    @inlinable
     nonisolated public func alignmentGuide(
         _ g: VerticalAlignment,
         computeValue: @escaping (ViewDimensions) -> CGFloat
     ) -> some View {
         modifier(_AlignmentWritingModifier(key: g.key, computeValue: computeValue))
+    }
+}
+
+// MARK: - _AlignmentWritingModifier
+
+/// A modifier that returns a value for a named alignment key.
+@available(OpenSwiftUI_v1_0, *)
+@frozen
+public struct _AlignmentWritingModifier: ViewModifier, MultiViewModifier, PrimitiveViewModifier {
+
+    /// The key being written.
+    public let key: AlignmentKey
+
+    /// How the key's associated value will be computed.
+    @usableFromInline
+    @preconcurrency
+    let computeValue: @Sendable (ViewDimensions) -> CGFloat
+
+    @usableFromInline
+    @preconcurrency
+    init(key: AlignmentKey, computeValue: @escaping @Sendable (ViewDimensions) -> CGFloat) {
+        self.key = key
+        self.computeValue = computeValue
+    }
+
+    nonisolated public static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var outputs = body(_Graph(), inputs)
+        if inputs.requestsLayoutComputer {
+            outputs.layoutComputer = Attribute(AlignmentModifiedLayoutComputer(
+                modifier: modifier.value,
+                childLayoutComputer: OptionalAttribute(outputs.layoutComputer)
+            ))
+        }
+        return outputs
+    }
+}
+
+@available(*, unavailable)
+extension _AlignmentWritingModifier: Sendable {}
+
+// MARK: - AlignmentModifiedLayoutComputer
+
+private struct AlignmentModifiedLayoutComputer: StatefulRule, AsyncAttribute {
+    @Attribute var modifier: _AlignmentWritingModifier
+    @OptionalAttribute var childLayoutComputer: LayoutComputer?
+    
+    typealias Value = LayoutComputer
+
+    mutating func updateValue() {
+        let engine = Engine(
+            modifier: modifier,
+            childLayoutComputer: childLayoutComputer ?? .defaultValue
+        )
+        update(to: engine)
+    }
+    
+    struct Engine: LayoutEngine {
+        var modifier: _AlignmentWritingModifier
+        var childLayoutComputer: LayoutComputer
+
+        func layoutPriority() -> Double {
+            childLayoutComputer.layoutPriority()
+        }
+
+        func spacing() -> Spacing {
+            childLayoutComputer.spacing()
+        }
+
+        func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+            childLayoutComputer.sizeThatFits(proposedSize)
+        }
+        
+        func explicitAlignment(_ key: AlignmentKey, at size: ViewSize) -> CGFloat? {
+            guard key == modifier.key else {
+                return childLayoutComputer.explicitAlignment(key, at: size)
+            }
+            let dimensions = ViewDimensions(guideComputer: childLayoutComputer, size: size)
+            return modifier.computeValue(dimensions)
+        }
     }
 }
