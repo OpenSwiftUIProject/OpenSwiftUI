@@ -47,6 +47,23 @@ extension FluidSpringAnimation: EncodableAnimation {
     }
 }
 
+extension RepeatAnimation: ProtobufEncodableMessage {
+   func encode(to encoder: inout ProtobufEncoder) throws {
+       encoder.messageField(5) { encoder in
+           if let repeatCount {
+               encoder.intField(1, repeatCount, defaultValue: .min)
+           }
+           encoder.boolField(2, autoreverses)
+       }
+   }
+}
+
+extension SpeedAnimation: ProtobufEncodableMessage {
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.doubleField(6, speed)
+    }
+}
+
 extension DefaultAnimation: EncodableAnimation {
     package static var leafProtobufTag: CodableAnimation.Tag? {
         .init(rawValue: 7)
