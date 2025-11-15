@@ -3,7 +3,6 @@
 //  OpenSwiftUIUITests
 
 import Foundation
-import OpenSwiftUI_SPI
 
 struct AnimationTestModel: Hashable {
     var intervals: [Double]
@@ -99,17 +98,23 @@ final class AnimationDebugController<V>: PlatformHostingController<V> where V: V
 // Avoid generic parameter casting
 private protocol AnimationDebuggableController: PlatformViewController {
     var disableLayoutSubview: Bool { get set }
+
+    func advance(interval: Double)
 }
 
 extension AnimationDebugController: AnimationDebuggableController {}
 
 extension PlatformView {
+    // Fix swift-snapshot-testing trigger extra layoutSubviews and advance time issue
     @objc func swizzled_layoutSubviews() {
         guard let vc = _viewControllerForAncestor as? AnimationDebuggableController else {
             swizzled_layoutSubviews()
             return
         }
         guard !vc.disableLayoutSubview else {
+            // superLayoutSubviews(type(of: self))
+            // Fix swift-snapshot-testing set initialFrame as .zero and then trigger setProposedSize(.zero) causing DisplayList layout issue (View is placed at topLeft instead of center)
+            vc.advance(interval: .zero)
             return
         }
         swizzled_layoutSubviews()

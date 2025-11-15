@@ -42,9 +42,8 @@ struct ForEachKeyPathExample: View {
     }
 }
 
-// TODO: Animation test case
 struct ForEachDynamicView: View {
-    @State var opacities = [0, 0.5, 1.0]
+    @State private var opacities = [0, 0.5, 1.0]
 
     var body: some View {
         VStack(spacing: 0) {

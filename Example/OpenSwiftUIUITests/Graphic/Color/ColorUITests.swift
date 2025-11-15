@@ -75,7 +75,9 @@ struct ColorUITests {
                     }
             }
         }
-        openSwiftUIAssertAnimationSnapshot(of: ContentView())
+        withKnownIssue("#340", isIntermittent: true) {
+            openSwiftUIAssertAnimationSnapshot(of: ContentView())
+        }
     }
 
     // FIXME

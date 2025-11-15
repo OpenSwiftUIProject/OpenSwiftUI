@@ -64,7 +64,7 @@ struct ChangedBodyPropertyCompatibilityTests {
     @Test
     func statePropertyView() throws {
         struct ContentView: View {
-            @State var name = ""
+            @State private var name = ""
             var body: some View {
                 let _ = Self._logChanges()
                 AnyView(EmptyView())
