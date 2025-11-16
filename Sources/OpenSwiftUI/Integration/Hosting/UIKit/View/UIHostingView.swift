@@ -13,7 +13,7 @@ import OpenAttributeGraphShims
 @_spi(Private)
 public import OpenSwiftUICore
 import OpenSwiftUISymbolDualTestsSupport
-import OpenSwiftUI_SPI
+import COpenSwiftUI
 
 /// A UIView which hosts an OpenSwiftUI View hierarchy.
 @available(macOS, unavailable)

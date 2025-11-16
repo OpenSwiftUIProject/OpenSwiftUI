@@ -7,10 +7,10 @@
 //  ID: A34643117F00277B93DEBAB70EC06971 (SwiftUI?)
 
 #if os(iOS) || os(visionOS)
+import COpenSwiftUI
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
-import OpenSwiftUI_SPI
 
 // MARK: - UIViewPlatformViewDefinition [TODO] [6.0.87]
 
