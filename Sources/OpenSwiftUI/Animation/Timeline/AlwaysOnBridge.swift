@@ -12,7 +12,7 @@ import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 import OpenSwiftUICore
-import OpenSwiftUI_SPI
+import COpenSwiftUI
 
 // MARK: - AnyAlwaysOnBridge
 

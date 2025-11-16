@@ -5,7 +5,7 @@
 //  Status: WIP
 //  ID: C3D4386B65791FA87065FFB821A7CBCF (SwiftUI)
 
-import OpenSwiftUI_SPI
+import COpenSwiftUI
 import OpenSwiftUICore
 #if os(iOS) || os(visionOS)
 import UIKit
