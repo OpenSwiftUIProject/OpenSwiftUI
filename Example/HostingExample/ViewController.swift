@@ -63,9 +63,3 @@ class ViewController: NSViewController {
     }
 }
 #endif
-
-struct ContentView: View {
-    var body: some View {
-        RepeatAnimationExample()
-    }
-}
