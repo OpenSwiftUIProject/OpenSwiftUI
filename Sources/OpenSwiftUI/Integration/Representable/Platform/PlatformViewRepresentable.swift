@@ -29,6 +29,7 @@ typealias PlatformHostingController = NSObject
 typealias PlatformViewResponder = NSObject
 #endif
 
+import COpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import OpenAttributeGraphShims

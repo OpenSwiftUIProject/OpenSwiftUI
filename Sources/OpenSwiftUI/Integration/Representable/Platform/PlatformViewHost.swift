@@ -7,9 +7,9 @@
 //  ID: BAC0C59DB8B5BCCA55C0A700794CB41E (SwiftUI)
 
 #if canImport(Darwin)
-import OpenSwiftUICore
 import Foundation
-import OpenSwiftUI_SPI
+import COpenSwiftUI
+import OpenSwiftUICore
 
 #if os(iOS) || os(visionOS)
 import UIKit
