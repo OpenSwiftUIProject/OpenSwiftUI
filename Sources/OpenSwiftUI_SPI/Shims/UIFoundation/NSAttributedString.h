@@ -7,10 +7,6 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN
-// FIXME: OpenSwiftUI_SPI currently will expose UIKit & AppKit which will conflict the following declaration
-#else
-
 typedef long NSInteger;
 
 // This defines currently supported values for NSUnderlineStyleAttributeName and NSStrikethroughStyleAttributeName. These values are or'ed together to produce an underline style.
@@ -30,6 +26,5 @@ typedef OPENSWIFTUI_OPTIONS(NSInteger, NSUnderlineStyle) {
     NSUnderlineStyleByWord API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0))            = 0x8000
 } API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0));
 
-#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
 
 #endif /* OpenSwiftUI_SPI_NSAttributedString_h */

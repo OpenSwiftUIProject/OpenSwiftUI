@@ -5,7 +5,7 @@
 //  Status: WIP
 
 #import "AppKit_Private.h"
-#import "../OpenSwiftUIShims.h"
+#import "Shims/OpenSwiftUIShims.h"
 
 #if __has_include(<AppKit/AppKit.h>)
 

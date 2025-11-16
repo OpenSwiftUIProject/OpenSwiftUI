@@ -92,6 +92,8 @@ float UIAnimationDragCoefficient(void);
 OPENSWIFTUI_EXPORT
 bool _UIUpdateAdaptiveRateNeeded();
 
+UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* __has_include(<UIKit/UIKit.h>) */

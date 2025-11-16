@@ -9,6 +9,11 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 #include "OpenSwiftUICoreGraphicsContext.h"
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+#include <UIKit/UIKit.h>
+#else
+#include <AppKit/AppKit.h>
+#endif
 
 Class OpenSwiftUICoreColorClass(OpenSwiftUICoreSystem system);
 
