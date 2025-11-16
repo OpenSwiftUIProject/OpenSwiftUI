@@ -9,7 +9,7 @@
 #if os(iOS) || os(visionOS) || os(tvOS)
 import UIKit
 #if os(iOS) && !targetEnvironment(macCatalyst)
-import OpenSwiftUI_SPI
+import COpenSwiftUI
 #endif
 #elseif os(macOS)
 import AppKit
