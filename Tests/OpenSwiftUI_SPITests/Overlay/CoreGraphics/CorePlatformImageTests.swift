@@ -8,6 +8,11 @@ import Foundation
 import OpenSwiftUI_SPI
 import OpenSwiftUICore
 import Testing
+#if os(iOS) || os(visionOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 @MainActor
 struct CorePlatformImageTests {

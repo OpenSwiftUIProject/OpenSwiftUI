@@ -607,9 +607,7 @@ let openSwiftUITarget = Target.target(
 
 let openSwiftUITestsSupportTarget = Target.target(
     name: "OpenSwiftUITestsSupport",
-    dependencies: [
-        "OpenSwiftUI",
-    ],
+    dependencies: (compatibilityTestCondition ? [] : ["OpenSwiftUI"]),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings

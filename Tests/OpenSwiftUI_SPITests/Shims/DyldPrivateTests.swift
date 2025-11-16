@@ -2,7 +2,7 @@
 //  DyldPrivateTests.swift
 //  OpenSwiftUI_SPITests
 
-import OpenSwiftUI_SPI
+import dyldPrivate
 import Testing
 
 struct DyldPrivateTests {

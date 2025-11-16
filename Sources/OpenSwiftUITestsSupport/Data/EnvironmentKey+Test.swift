@@ -2,6 +2,7 @@
 //  EnvironmentKey+Test.swift
 //  OpenSwiftUITestsSupport
 
+#if OPENSWIFTUI
 package import OpenSwiftUI
 
 package struct StringEnvironmentKey: EnvironmentKey {
@@ -37,3 +38,4 @@ package struct CustomStructEnvironmentKey: EnvironmentKey {
     
     package static let defaultValue = CustomStruct(value: 100)
 }
+#endif
