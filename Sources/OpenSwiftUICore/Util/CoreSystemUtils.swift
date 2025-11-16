@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+import CoreFoundation_Private
 package import OpenSwiftUI_SPI
 
 // NOTE: use runtime check instead of #if targetEnvironment(macCatalyst)

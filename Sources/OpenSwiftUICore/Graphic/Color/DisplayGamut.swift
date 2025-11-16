@@ -6,7 +6,7 @@
 //  Status: Complete
 
 #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
-import OpenSwiftUI_SPI
+import CoreUI_Private
 import CoreUI
 #endif
 

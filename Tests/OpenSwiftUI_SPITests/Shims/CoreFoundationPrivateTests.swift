@@ -2,7 +2,7 @@
 //  CoreFoundationPrivateTests.swift
 //  OpenSwiftUI_SPITests
 
-import OpenSwiftUI_SPI
+import CoreFoundation_Private
 import Testing
 
 struct CoreFoundationPrivateTests {

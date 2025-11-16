@@ -11,6 +11,7 @@ import COpenSwiftUI
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
+import CoreAnimation_Private
 
 // MARK: - UIViewPlatformViewDefinition [TODO] [6.0.87]
 

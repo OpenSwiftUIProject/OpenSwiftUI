@@ -12,8 +12,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-#include "Shims/UIFoundation/NSTextGraphicsContext.h"
-#include "Shims/UIFoundation/NSTextGraphicsContextProvider.h"
+@import UIFoundation_Private;
 
 void InitializeCoreTextGraphicsContextProvider(void);
 

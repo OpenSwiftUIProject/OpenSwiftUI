@@ -12,6 +12,7 @@ import CoreGraphics
 import Foundation
 #endif
 import OpenSwiftUI_SPI
+import CoreAnimation_Private
 
 // MARK: - ColorMatrix
 
@@ -366,7 +367,6 @@ extension _ColorMatrix {
 
 #if canImport(Darwin)
 extension _ColorMatrix {
-    @inline(__always)
     var caColorMatrix: CAColorMatrix {
         CAColorMatrix(
             m11: m11, m12: m12, m13: m13, m14: m14, m15: m15,

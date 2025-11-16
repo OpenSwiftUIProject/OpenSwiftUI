@@ -2,7 +2,7 @@
 //  KDebugPrivateTests.swift
 //  OpenSwiftUI_SPITests
 
-import OpenSwiftUI_SPI
+import kdebug_Private
 import Testing
 
 #if canImport(Darwin)
