@@ -9,7 +9,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <objc/runtime.h>
-#include "UIKit/OpenSwiftUITesting_Swizzles+UIKit.h"
+#include "OpenSwiftUITesting_Swizzles+UIKit.h"
 
 void _PerformTestingSwizzles() {
     static dispatch_once_t onceToken;

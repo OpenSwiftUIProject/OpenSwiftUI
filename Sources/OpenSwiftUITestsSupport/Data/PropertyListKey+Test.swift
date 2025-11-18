@@ -2,6 +2,7 @@
 //  PropertyListKey+Test.swift
 //  OpenSwiftUITestsSupport
 
+#if OPENSWIFTUI
 package import OpenSwiftUI
 
 package struct BoolKey: PropertyKey {
@@ -41,3 +42,4 @@ package struct StringFromIntLookup: PropertyKeyLookup {
         value == Secondary.defaultValue ? nil : "\(value)"
     }
 }
+#endif

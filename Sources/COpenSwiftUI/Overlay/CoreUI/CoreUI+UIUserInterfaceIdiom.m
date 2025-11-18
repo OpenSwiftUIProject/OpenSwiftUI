@@ -8,7 +8,7 @@
 #include "CoreUI+UIUserInterfaceIdiom.h"
 
 #if (OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION) && OPENSWIFTUI_LINK_COREUI
-#include "../../Shims/UIKit/UIKit_Private.h"
+#include "Shims/UIKit/UIKit_Private.h"
 
 CUIDeviceIdiom _CUIIdiomForIdiom(UIUserInterfaceIdiom idiom) {
     switch (idiom) {
@@ -52,6 +52,7 @@ CUISubtype _CUISubtypeForIdiom(UIUserInterfaceIdiom idiom) {
         case UIUserInterfaceIdiomVision: return CUISubtypeAppleVision;
         default: return CUISubtypeNormal;
     }
+    return CUISubtypeAppleVision;
     #else
     return CUISubtypeAppleVision;
     #endif

@@ -11,6 +11,7 @@
 import AppKit
 import OpenSwiftUISymbolDualTestsSupport
 import COpenSwiftUI
+import CoreAnimation_Private
 
 // MARK: - NSViewPlatformViewDefinition [TODO]
 

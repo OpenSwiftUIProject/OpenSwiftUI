@@ -3,7 +3,7 @@
 //  OpenSwiftUI_SPI
 
 #include "CoreFoundation_Private.h"
-#include "dyld_Private.h"
+#include "Shims/dyld/dyld_Private.h"
 
 bool _OpenSwiftUICFMZEnabled(void);
 

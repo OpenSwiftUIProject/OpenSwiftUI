@@ -131,11 +131,11 @@ struct TimelineScheduleTests {
         
         var iterator = entries.makeIterator()
         let e1 = iterator.next()
-        try #expect(#require(e1).timeIntervalSince1970.isAlmostEqual(to: 0.0))
+        try #expect(#require(e1).timeIntervalSince1970.isApproximatelyEqual(to: 0.0))
         let e2 = iterator.next()
-        try #expect(#require(e2).timeIntervalSince1970.isAlmostEqual(to: 1.5))
+        try #expect(#require(e2).timeIntervalSince1970.isApproximatelyEqual(to: 1.5))
         let e3 = iterator.next()
-        try #expect(#require(e3).timeIntervalSince1970.isAlmostEqual(to: 3.0))
+        try #expect(#require(e3).timeIntervalSince1970.isApproximatelyEqual(to: 3.0))
     }
     
     @Test

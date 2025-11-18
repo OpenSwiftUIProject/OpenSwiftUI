@@ -2,10 +2,11 @@
 //  UIKitPrivateTests.swift
 //  OpenSwiftUI_SPITests
 
-import OpenSwiftUI_SPI
+#if canImport(UIKit)
+import COpenSwiftUI
+import UIKit
 import Testing
 
-#if canImport(UIKit)
 @MainActor
 struct UIKitPrivateTests {
     @Test

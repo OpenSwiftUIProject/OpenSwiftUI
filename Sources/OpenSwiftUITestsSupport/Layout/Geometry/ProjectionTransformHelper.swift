@@ -2,6 +2,7 @@
 //  ProjectionTransformHelper.swift
 //  OpenSwiftUITestsSupport
 
+#if OPENSWIFTUI
 public import OpenSwiftUICore
 
 extension ProjectionTransform: Hashable {
@@ -29,3 +30,4 @@ extension ProjectionTransform: Hashable {
         m33.isAlmostEqual(to: other.m33)
     }
 }
+#endif

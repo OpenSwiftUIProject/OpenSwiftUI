@@ -4,7 +4,25 @@
 
 import Testing
 import OpenSwiftUITestsSupport
-import OpenSwiftUI_SPI
+
+#if OPENSWIFTUI
+// Fix NSUnderlineStyle missing type issue
+import UIFoundation_Private
+
+// Fix OpenSwiftUI'NSUnderlineStyle extension API failed to be imported issue due to type conflict
+extension NSUnderlineStyle {
+
+    /// Creates a ``NSUnderlineStyle`` from ``Text.LineStyle``.
+    ///
+    /// - Parameter lineStyle: A value of ``Text.LineStyle``
+    /// to wrap with ``NSUnderlineStyle``.
+    ///
+    /// - Returns: A new ``NSUnderlineStyle``.
+    init(_ lineStyle: Text.LineStyle) {
+        self = lineStyle.nsUnderlineStyle
+    }
+}
+#endif
 
 @MainActor
 struct TextLineStyleConversionsCompatibilityTests {

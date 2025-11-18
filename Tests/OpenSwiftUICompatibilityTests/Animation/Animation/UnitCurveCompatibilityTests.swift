@@ -3,6 +3,7 @@
 //  OpenSwiftUICompatibilityTests
 
 import Testing
+import Numerics
 
 // MARK: - UnitCurveTests
 
@@ -244,7 +245,7 @@ struct UnitCurveCompatibilityTests {
         let inverseEndPoint = UnitPoint(x: 0.9, y: 0.75)
         let inverse = UnitCurve.bezier(startControlPoint: inverseStartPoint, endControlPoint: inverseEndPoint)
 
-        #expect(inverse.value(at: 0.3).isAlmostEqual(to: curve.inverse.value(at: 0.3)))
-        #expect(inverse.value(at: 0.7).isAlmostEqual(to: curve.inverse.value(at: 0.7)))
+        #expect(inverse.value(at: 0.3).isApproximatelyEqual(to: curve.inverse.value(at: 0.3)))
+        #expect(inverse.value(at: 0.7).isApproximatelyEqual(to: curve.inverse.value(at: 0.7)))
     }
 }

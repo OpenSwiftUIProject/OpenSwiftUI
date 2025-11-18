@@ -580,6 +580,15 @@ let cOpenSwiftUITarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 
+let cOpenSwiftUITestTarget = Target.testTarget(
+    name: "COpenSwiftUITests",
+    dependencies: [
+        "OpenSwiftUI",
+        .product(name: "Numerics", package: "swift-numerics"),
+    ],
+    swiftSettings: sharedSwiftSettings
+)
+
 let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
@@ -598,9 +607,7 @@ let openSwiftUITarget = Target.target(
 
 let openSwiftUITestsSupportTarget = Target.target(
     name: "OpenSwiftUITestsSupport",
-    dependencies: [
-        "OpenSwiftUI",
-    ],
+    dependencies: (compatibilityTestCondition ? [] : ["OpenSwiftUI"]),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings
@@ -746,6 +753,7 @@ if renderGTKCondition {
 
 if !compatibilityTestCondition {
     package.targets += [
+        cOpenSwiftUITestTarget,
         openSwiftUISPITestTarget,
         openSwiftUIMacrosTestTarget,
         openSwiftUICoreTestTarget,

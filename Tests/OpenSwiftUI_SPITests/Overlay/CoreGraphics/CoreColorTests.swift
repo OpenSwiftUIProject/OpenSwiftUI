@@ -9,10 +9,10 @@ import Testing
 
 #if canImport(Darwin)
 
-#if os(macOS)
-import AppKit
-#elseif os(iOS)
+#if os(iOS) || os(visionOS)
 import UIKit
+#elseif os(macOS)
+import AppKit
 #endif
 
 @MainActor

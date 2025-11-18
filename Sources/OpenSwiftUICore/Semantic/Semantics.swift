@@ -5,7 +5,7 @@
 //  Audited for 6.0.87
 //  Status: Complete
 
-import OpenSwiftUI_SPI
+import dyldPrivate
 
 /// Determines if the current SDK version is equal to or newer than the specified semantic version.
 ///

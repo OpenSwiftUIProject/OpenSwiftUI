@@ -18,7 +18,7 @@ import WASILibc
 #endif
 import OpenAttributeGraphShims
 import Foundation
-import OpenSwiftUI_SPI
+import OpenSwiftUICSymbols
 #if canImport(Darwin)
 import os.log
 #endif

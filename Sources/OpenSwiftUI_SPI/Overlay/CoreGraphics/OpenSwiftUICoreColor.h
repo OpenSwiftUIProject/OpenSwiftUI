@@ -12,11 +12,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-#include <UIKit/UIKit.h>
-#else
-#include <AppKit/AppKit.h>
-#endif
+#include <CoreGraphics/CoreGraphics.h>
 #include "OpenSwiftUICoreSystem.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN

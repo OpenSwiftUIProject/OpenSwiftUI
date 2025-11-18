@@ -28,8 +28,8 @@ package import AppKit
 package typealias PlatformWindow = NSWindow
 package typealias PlatformViewController = NSViewController
 package typealias PlatformView = NSView
-// package typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
-// package typealias PlatformViewRepresentable = NSViewRepresentable
+package typealias PlatformViewControllerRepresentable = NSViewControllerRepresentable
+package typealias PlatformViewRepresentable = NSViewRepresentable
 package typealias PlatformHostingController = NSHostingController
 
 package typealias PlatformColor = NSColor

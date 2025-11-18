@@ -2,6 +2,7 @@
 //  Rotation3DEffectHelper.swift
 //  OpenSwiftUITestsSupport
 
+#if OPENSWIFTUI
 package import Foundation
 package import OpenSwiftUICore
 
@@ -54,3 +55,4 @@ extension _Rotation3DEffect.Data: Hashable {
         self = data
     }
 }
+#endif

@@ -9,7 +9,7 @@
 
 package import CoreText
 import Foundation
-package import OpenSwiftUI_SPI
+package import CoreText_Private
 
 extension CTFont {
     package var pointSize: CGFloat {

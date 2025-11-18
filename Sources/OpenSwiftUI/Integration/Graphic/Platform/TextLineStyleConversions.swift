@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-public import OpenSwiftUI_SPI
+public import UIFoundation_Private // FIXME
 
 @available(OpenSwiftUI_v3_0, *)
 extension Text.LineStyle {

@@ -2,6 +2,7 @@
 //  ProtobufTestHelper.swift
 //  OpenSwiftUICoreTests
 
+#if OPENSWIFTUI
 package import Foundation
 package import OpenSwiftUICore
 
@@ -459,4 +460,5 @@ extension ProtobufDecodableMessage where Self: Equatable {
         #expect(decodedValue == self)
     }
 }
+#endif
 #endif

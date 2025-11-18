@@ -1,0 +1,54 @@
+module OpenSwiftUI_SPI {
+    umbrella "Overlay/CoreGraphics"
+    export *
+
+    module Util {
+        umbrella "Util"
+        export *
+    }
+}
+
+module CoreAnimation_Private {
+    umbrella "Shims/CoreAnimation"
+    export *
+}
+
+module CoreFoundation_Private {
+    umbrella "Shims/CoreFoundation"
+    export *
+}
+
+module CoreText_Private {
+    umbrella "Shims/CoreText"
+    export *
+}
+
+module CoreUI_Private {
+    umbrella "Shims/CoreUI"
+    export *
+}
+
+module OpenSwiftUICSymbols {
+    umbrella "Shims/CSymbols"
+    export *
+}
+
+module dyldPrivate {
+    umbrella "Shims/dyld"
+    export *
+}
+
+module kdebug_Private {
+    umbrella "Shims/kdebug"
+    export *
+}
+
+module MobileGestaltPrivate {
+    umbrella "Shims/MobileGestalt"
+    export *
+}
+
+module UIFoundation_Private {
+    umbrella "Shims/UIFoundation"
+    export *
+}
