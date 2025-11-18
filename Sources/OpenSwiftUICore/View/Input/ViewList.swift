@@ -1369,11 +1369,6 @@ extension _ViewListOutputs {
         )
     }
 
-    // FIXME: Group
-    package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        _openSwiftUIUnimplementedFailure()
-    }
-
     package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
         let generator = TypedUnaryViewGenerator(view: .init(view.value))
         let elements = UnaryElements(body: generator, baseInputs: inputs.base)
