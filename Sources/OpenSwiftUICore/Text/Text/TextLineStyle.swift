@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-package import OpenSwiftUI_SPI
+package import UIFoundation_Private
 
 @available(OpenSwiftUI_v3_0, *)
 extension Text {
