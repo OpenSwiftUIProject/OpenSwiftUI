@@ -230,6 +230,7 @@ package struct AnimatableAttributeHelper<Value> where Value: Animatable {
     @inline(__always)
     private mutating func updateAnimatorStateIfNeeded(
         value: (value: Value, changed: Bool),
+        defaultAnimation: Animation?,
         animationTime: inout Time,
         environment: Attribute<EnvironmentValues>,
         sampleCollector: (Value.AnimatableData, Time) -> Void
@@ -243,7 +244,7 @@ package struct AnimatableAttributeHelper<Value> where Value: Animatable {
             return
         }
         let transaction: Transaction = Graph.withoutUpdate { self.transaction }
-        guard let animation = transaction.effectiveAnimation else {
+        guard let animation = transaction.effectiveAnimation ?? defaultAnimation else {
             return
         }
         var interval = modelData
@@ -324,6 +325,7 @@ package struct AnimatableAttributeHelper<Value> where Value: Animatable {
         }
         updateAnimatorStateIfNeeded(
             value: value,
+            defaultAnimation: defaultAnimation,
             animationTime: &animationTime,
             environment: environment,
             sampleCollector: sampleCollector
