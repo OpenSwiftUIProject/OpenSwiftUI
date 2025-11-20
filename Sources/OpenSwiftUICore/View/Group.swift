@@ -381,4 +381,12 @@ private struct MakeSection: Rule {
 
 // MARK: - GroupContainer
 
-private struct GroupContainer: _VariadicView_MultiViewRoot {}
+private struct GroupContainer: _VariadicView_MultiViewRoot {
+    nonisolated static func _makeViewList(
+        root: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        body(_Graph(), inputs)
+    }
+}
