@@ -45,7 +45,7 @@ public struct _ViewListInputs {
 
     package var options: _ViewListInputs.Options
 
-    private var _traits: OptionalAttribute<ViewTraitCollection>
+    private(set) var _traits: OptionalAttribute<ViewTraitCollection>
 
     package var traits: Attribute<ViewTraitCollection>? {
         get { _traits.attribute }

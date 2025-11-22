@@ -165,8 +165,17 @@ extension _ViewListOutputs {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        _openSwiftUIUnimplementedFailure()
+    package static func nonEmptyParentViewList(
+        inputs: _ViewListInputs
+    ) -> _ViewListOutputs {
+        var newInputs = inputs
+        newInputs.traits = Attribute(EmptyViewTrait(traits: inputs._traits))
+        newInputs.traitKeys?.insert(IsEmptyViewTraitKey.self)
+        let view = newInputs.base.intern(_UnaryViewAdaptor(EmptyView()), id: .defaultValue)
+        return unaryViewList(
+            view: .init(view),
+            inputs: newInputs
+        )
     }
 }
 
