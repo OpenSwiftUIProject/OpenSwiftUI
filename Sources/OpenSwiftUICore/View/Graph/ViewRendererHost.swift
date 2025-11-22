@@ -43,6 +43,16 @@ package protocol ViewRendererHost: ViewGraphDelegate {
     func updateFocusedValues()
 
     func updateAccessibilityEnvironment()
+
+    func renderDisplayList(
+        _ list: DisplayList,
+        asynchronously: Bool,
+        time: Time,
+        nextTime: Time,
+        targetTimestamp: Time?,
+        version: DisplayList.Version,
+        maxVersion: DisplayList.Version
+    ) -> Time
 }
 
 // MARK: - ViewRendererHost + default implementation [6.5.4]
@@ -292,7 +302,7 @@ extension ViewRendererHost {
         maxVersion: DisplayList.Version
     ) -> Time {
         guard let delegate = self.as(ViewGraphRenderDelegate.self),
-              let renderer = self.as(DisplayList.ViewRenderer.self)
+        let renderer = self.as(DisplayList.ViewRenderer.self)
         else { return .infinity }
 
         func renderOnMainThread() -> Time {

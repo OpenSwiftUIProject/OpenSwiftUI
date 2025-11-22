@@ -8,7 +8,7 @@
 
 package import Foundation
 
-protocol ViewRendererBase: AnyObject {
+package protocol ViewRendererBase: AnyObject {
     var platform: DisplayList.ViewUpdater.Platform { get }
     var exportedObject: AnyObject? { get }
     func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time
@@ -176,11 +176,11 @@ extension DisplayList {
             _openSwiftUIBaseClassAbstractMethod()
         }
 
-        var exportedObject: AnyObject? {
+        package var exportedObject: AnyObject? {
             platform.definition.getRBLayer(drawingView: drawingView!)
         }
 
-        func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
+        package func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
             // _openSwiftUIUnimplementedFailure()
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
@@ -191,15 +191,15 @@ extension DisplayList {
             return .zero
         }
 
-        func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
+        package func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
             _openSwiftUIUnimplementedFailure()
         }
 
-        func destroy(rootView: AnyObject) {
+        package func destroy(rootView: AnyObject) {
             _openSwiftUIUnimplementedFailure()
         }
 
-        var viewCacheIsEmpty: Bool {
+        package var viewCacheIsEmpty: Bool {
             _openSwiftUIUnimplementedFailure()
         }
     }

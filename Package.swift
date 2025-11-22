@@ -177,6 +177,7 @@ let openCombineCondition = envBoolValue("OPENCOMBINE", default: !buildForDarwinP
 let swiftLogCondition = envBoolValue("SWIFT_LOG", default: !buildForDarwinPlatform)
 let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwinPlatform)
 let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
+let shaftBackendCondition = envBoolValue("SHAFT_BACKEND")
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDER", default: buildForDarwinPlatform)
 
@@ -673,6 +674,21 @@ let openSwiftUIBridgeTestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
+// MARK: - OpenSwiftUIShaftBackend Target
+
+let openSwiftUIShaftBackendTarget = Target.target(
+    name: "OpenSwiftUIShaftBackend",
+    dependencies: [
+        "OpenSwiftUI",
+        "OpenSwiftUICore",
+        .product(name: "Shaft", package: "Shaft"),
+        .product(name: "ShaftSetup", package: "Shaft"),
+    ],
+    cSettings: sharedCSettings,
+    cxxSettings: sharedCxxSettings,
+    swiftSettings: sharedSwiftSettings + [.interoperabilityMode(.Cxx)]
+)
+
 // MARK: - OpenSwiftUISymbolDualTests Target
 
 let openSwiftUISymbolDualTestsSupportTarget = Target.target(
@@ -724,6 +740,9 @@ if supportMultiProducts {
         .library(name: "OpenSwiftUIExtension", targets: ["OpenSwiftUIExtension"]),
         .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
     ]
+}
+if shaftBackendCondition {
+    products.append(.library(name: "OpenSwiftUIShaftBackend", targets: ["OpenSwiftUIShaftBackend"]))
 }
 
 // MARK: - Package
@@ -848,6 +867,13 @@ if useLocalDeps {
     package.dependencies += dependencies
 }
 
+if shaftBackendCondition {
+    // Use relative path for easier local development
+    // package.dependencies.append(.package(path: "../../ShaftUI/Shaft"))
+    package.dependencies.append(.package(url: "https://github.com/ShaftUI/Shaft", branch: "main"))
+    package.targets.append(openSwiftUIShaftBackendTarget)
+}
+
 if openCombineCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
@@ -871,3 +897,5 @@ if swiftCryptoCondition {
     openSwiftUICoreTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
 }
+
+package.cxxLanguageStandard = .cxx17 // For building Shaft's Skia backend
