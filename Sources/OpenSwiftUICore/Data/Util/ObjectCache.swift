@@ -133,3 +133,49 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
         }
     }
 }
+
+#if DEBUG
+extension ObjectCache: CustomDebugStringConvertible {
+    package var debugDescription: String {
+        $data.access { data in
+            var description = "ObjectCache(clock: \(data.clock), items: \(data.table.filter { $0.data != nil }.count)/32)\n"
+            for (index, item) in data.table.enumerated() {
+                if let itemData = item.data {
+                    let bucket = index / 4
+                    let offset = index % 4
+                    let age = data.clock &- item.used
+                    description += "  [\(bucket):\(offset)] hash=\(itemData.hash), used=\(item.used), age=\(age)\n"
+                }
+            }
+            return description
+        }
+    }
+}
+
+extension ObjectCache {
+    package var count: Int {
+        $data.access { data in
+            data.table.filter { $0.data != nil }.count
+        }
+    }
+
+    package var currentClock: UInt32 {
+        $data.access { data in
+            data.clock
+        }
+    }
+
+    package var keys: [Key] {
+        $data.access { data in
+            data.table.compactMap { $0.data?.key }
+        }
+    }
+
+    package func reset() {
+        $data.access { data in
+            data.table = Array(repeating: Item(data: nil, used: 0), count: 32)
+            data.clock = 0
+        }
+    }
+}
+#endif
