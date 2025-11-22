@@ -14,13 +14,14 @@ struct ContentView: View {
     var body: some View {
         VStack {
             Color.red
-                .frame(width: 50, height: 30)
+                .frame(width: 100, height: 60)
             Spacer()
             Color.blue
-                .frame(width: 50, height: 30)
+                .frame(width: 100, height: 60)
+                .rotationEffect(.degrees(45))
             Spacer()
             Color.green
-                .frame(width: 50, height: 30)
+                .frame(width: 100, height: 60)
         }
     }
 }
