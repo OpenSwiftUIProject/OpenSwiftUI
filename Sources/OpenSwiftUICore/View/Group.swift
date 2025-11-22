@@ -191,7 +191,55 @@ extension _ViewListOutputs {
         headerType: H.Type,
         footerType: F.Type
     ) -> Int? where V: View, H: View, F: View {
-        _openSwiftUIUnimplementedFailure()
+        let options = inputs.options
+        var optionsWithoutNestedSections = options
+        if optionsWithoutNestedSections.contains(.requiresNonEmptyGroupParent) {
+            optionsWithoutNestedSections.subtract([.requiresNonEmptyGroupParent, .allowsNestedSections])
+        }
+        if optionsWithoutNestedSections.contains(.requiresSections) {
+            optionsWithoutNestedSections.subtract([.requiresSections, .allowsNestedSections])
+        }
+        let contentOptions = if options.contains(.allowsNestedSections) {
+            options
+        } else {
+            optionsWithoutNestedSections
+        }
+
+        var contentInputs = inputs
+        contentInputs.options = contentOptions
+        guard let contentCount = V._viewListCount(inputs: contentInputs) else {
+            return nil
+        }
+        var count = contentCount
+
+        var headerOptions = contentOptions
+        if options.contains(.requiresNonEmptyGroupParent) {
+            headerOptions.insert(.isNonEmptyParent)
+        }
+        var headerInputs = inputs
+        headerInputs.options = headerOptions
+        if options.contains(.resetHeaderStyleContext) {
+            headerInputs.resetStyleContext()
+        }
+        guard let headerCount = H._viewListCount(inputs: headerInputs) else {
+            return nil
+        }
+        count += headerCount
+
+        var footerOptions = contentOptions
+        if options.contains(.requiresNonEmptyGroupParent) {
+            footerOptions.remove(.requiresNonEmptyGroupParent)
+        }
+        var footerInputs = inputs
+        footerInputs.options = footerOptions
+        if options.contains(.resetFooterStyleContext) {
+            footerInputs.resetStyleContext()
+        }
+        guard let footerCount = F._viewListCount(inputs: footerInputs) else {
+            return nil
+        }
+        count += footerCount
+        return count
     }
 
     package static func nonEmptyParentViewList(
@@ -199,7 +247,7 @@ extension _ViewListOutputs {
     ) -> _ViewListOutputs {
         var newInputs = inputs
         newInputs.traits = Attribute(EmptyViewTrait(traits: inputs._traits))
-        newInputs.traitKeys?.insert(IsEmptyViewTraitKey.self)
+        newInputs.addTraitKey(IsEmptyViewTraitKey.self)
         let view = newInputs.base.intern(_UnaryViewAdaptor(EmptyView()), id: .defaultValue)
         return unaryViewList(
             view: .init(view),
@@ -368,7 +416,7 @@ private struct EmptyViewTrait: Rule {
 
 // MARK: - SectionedTrait
 
-private struct SectionedTrait {
+private struct SectionedTrait: Rule {
     @OptionalAttribute
     var traits: ViewTraitCollection?
 
@@ -385,7 +433,7 @@ private struct SectionedTrait {
 
 // MARK: - SectionFooterTrait
 
-private struct SectionFooterTrait {
+private struct SectionFooterTrait: Rule {
     @OptionalAttribute
     var traits: ViewTraitCollection?
 
