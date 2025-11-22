@@ -144,7 +144,36 @@ extension _ViewListOutputs {
         _ outputs: [_ViewListOutputs],
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
-        _openSwiftUIUnimplementedFailure()
+        var nextImplicitID = inputs.implicitID
+        var staticCount: Int? = 0
+        var lists: [Attribute<any ViewList>] = []
+        for output in outputs {
+            let list = output.makeAttribute(inputs: inputs)
+            lists.append(list)
+            nextImplicitID = output.nextImplicitID
+            if let currentStaticCount = staticCount,
+               let outputStaticCount = output.staticCount {
+                staticCount = outputStaticCount &+ currentStaticCount
+            } else {
+                staticCount = nil
+            }
+        }
+        if inputs.options.contains(.sectionsConcatenateFooter) {
+            lists[1] = Attribute(ViewList.Group.Init(lists: .init(lists.dropFirst())))
+            lists[2] = inputs.base.intern(EmptyViewList(), id: .defaultValue)
+        }
+        let section = Attribute(
+            MakeSection(
+                lists: lists,
+                isHierarchical: inputs.options.contains(.sectionsAreHierarchical),
+                traits: inputs._traits
+            )
+        )
+        return _ViewListOutputs(
+            .dynamicList(section, nil),
+            nextImplicitID: nextImplicitID,
+            staticCount: staticCount
+        )
     }
 
     package static func groupViewList<Parent, Footer>(
