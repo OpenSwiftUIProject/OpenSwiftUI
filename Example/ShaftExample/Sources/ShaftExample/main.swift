@@ -9,19 +9,19 @@ import Foundation
 import OpenSwiftUI
 import OpenSwiftUIShaftBackend
 
-
 // Define a simple OpenSwiftUI view
-struct ContentView: OpenSwiftUI.View {
-    var body: some OpenSwiftUI.View {
-        BlueColor()
-    }
-}
-
-struct BlueColor: OpenSwiftUI.View {
-    var id: String { "BlueColor" }
-
-    var body: some OpenSwiftUI.View {
-        Color.blue._identified(by: id)
+struct ContentView: View {
+    var body: some View {
+        VStack {
+            Color.red
+                .frame(width: 50, height: 30)
+            Spacer()
+            Color.blue
+                .frame(width: 50, height: 30)
+            Spacer()
+            Color.green
+                .frame(width: 50, height: 30)
+        }
     }
 }
 
