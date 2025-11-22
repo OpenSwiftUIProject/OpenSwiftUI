@@ -1,4 +1,4 @@
-# OpenSwiftUI Copilot Test Authoring Rules
+# OpenSwiftUI DualTests Rules
 
 This file documents precise rules and templates for writing Tests and DualTests used across the OpenSwiftUI repository. Follow these rules exactly when generating new test cases.
 

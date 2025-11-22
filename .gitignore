@@ -18,6 +18,7 @@ Example/Example.xcodeproj/xcshareddata
 __Snapshots__
 Example/ReferenceImages/**/*.png
 
-.claude
+.claude/*
+!.claude/commands/
 .docs
 gh-pages
