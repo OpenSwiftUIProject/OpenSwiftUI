@@ -50,11 +50,11 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
     /// - Returns: The value associated with the key, either from cache or newly constructed.
     final package subscript(key: Key) -> Value {
         let hash = key.hashValue
-        let bucket = (hash & ((1 << 3) - 1)) << 2
+        let bucket = (hash & (Data.bucketCount - 1)) * Data.waysPerBucket
         var targetOffset: Int = 0
         var diff: Int32 = Int32.min
         let value = $data.access { data -> Value? in
-            for offset in 0 ..< 4 {
+            for offset in 0 ..< Data.waysPerBucket {
                 let index = bucket + offset
                 if let itemData = data.table[index].data {
                     if itemData.hash == hash, itemData.key == key {
@@ -94,6 +94,7 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
     /// Each slot tracks when it was last used via the `used` timestamp, which is
     /// compared against the global `clock` to determine the least recently used item.
     private struct Item {
+
         /// The cached data tuple containing the key, hash, and value, or nil if empty.
         var data: (key: Key, hash: Int, value: Value)?
 
@@ -112,7 +113,24 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
 
     /// The internal data structure holding the cache table and global clock.
     private struct Data {
-        
+
+        /// The number of buckets in the cache.
+        ///
+        /// The cache uses 8 buckets to distribute keys based on their hash values.
+        /// Each bucket can hold multiple items (ways) for collision resolution.
+        static var bucketCount: Int { 8 }
+
+        /// The number of ways (slots) per bucket.
+        ///
+        /// Each bucket contains 4 ways, implementing a 4-way set-associative cache.
+        /// When all ways in a bucket are full, the least recently used item is evicted.
+        static var waysPerBucket: Int { 4 }
+
+        /// The total number of slots in the cache table.
+        ///
+        /// Computed as `bucketCount × waysPerBucket`, resulting in 32 total cache slots.
+        static var tableSize: Int { bucketCount * waysPerBucket }
+
         /// The hash table with 32 slots (8 buckets × 4 ways per bucket).
         var table: [Item]
 
@@ -128,7 +146,7 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
         var clock: UInt32
 
         init() {
-            self.table = Array(repeating: Item(data: nil, used: 0), count: 32)
+            self.table = Array(repeating: Item(data: nil, used: 0), count: Self.tableSize)
             self.clock = 0
         }
     }
@@ -138,11 +156,11 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
 extension ObjectCache: CustomDebugStringConvertible {
     package var debugDescription: String {
         $data.access { data in
-            var description = "ObjectCache(clock: \(data.clock), items: \(data.table.filter { $0.data != nil }.count)/32)\n"
+            var description = "ObjectCache(clock: \(data.clock), items: \(data.table.filter { $0.data != nil }.count)/\(Data.tableSize))\n"
             for (index, item) in data.table.enumerated() {
                 if let itemData = item.data {
-                    let bucket = index / 4
-                    let offset = index % 4
+                    let bucket = index / Data.waysPerBucket
+                    let offset = index % Data.waysPerBucket
                     let age = data.clock &- item.used
                     description += "  [\(bucket):\(offset)] hash=\(itemData.hash), used=\(item.used), age=\(age)\n"
                 }
@@ -173,7 +191,7 @@ extension ObjectCache {
 
     package func reset() {
         $data.access { data in
-            data.table = Array(repeating: Item(data: nil, used: 0), count: 32)
+            data.table = Array(repeating: Item(data: nil, used: 0), count: Data.tableSize)
             data.clock = 0
         }
     }
