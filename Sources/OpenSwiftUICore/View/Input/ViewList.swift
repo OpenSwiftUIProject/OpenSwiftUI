@@ -45,7 +45,7 @@ public struct _ViewListInputs {
 
     package var options: _ViewListInputs.Options
 
-    private var _traits: OptionalAttribute<ViewTraitCollection>
+    private(set) var _traits: OptionalAttribute<ViewTraitCollection>
 
     package var traits: Attribute<ViewTraitCollection>? {
         get { _traits.attribute }
@@ -1367,11 +1367,6 @@ extension _ViewListOutputs {
             nextImplicitID: implicitID &+ staticCount,
             staticCount: staticCount
         )
-    }
-
-    // FIXME: Group
-    package static func nonEmptyParentViewList(inputs: _ViewListInputs) -> _ViewListOutputs {
-        _openSwiftUIUnimplementedFailure()
     }
 
     package static func unaryViewList<V>(view: _GraphValue<V>, inputs: _ViewListInputs) -> _ViewListOutputs where V: View {
