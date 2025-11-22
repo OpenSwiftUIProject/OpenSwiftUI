@@ -6,18 +6,48 @@
 //  Status: Complete
 //  ID: FCB2944DC319042A861E82C8B244E212 (SwiftUICore)
 
+/// A thread-safe cache that stores key-value pairs with automatic eviction.
+///
+/// `ObjectCache` implements a set-associative cache with LRU (Least Recently Used)
+/// eviction policy. When a bucket is full and a new item needs to be inserted, the least
+/// recently used item in that bucket is evicted.
+///
+/// For example:
+///
+///     let cache = ObjectCache<String, ExpensiveObject> { key in
+///         ExpensiveObject(key: key)
+///     }
+///
+///     let value = cache["myKey"]
+///
 final package class ObjectCache<Key, Value> where Key: Hashable {
+
+    /// The constructor function used to create new values for cache misses.
     let constructor: (Key) -> Value
-    
+
+    /// The internal cache data structure, protected by atomic access.
     @AtomicBox
     private var data: Data
-    
+
+    /// Creates a new cache with the specified constructor function.
+    ///
+    /// - Parameter constructor: A closure that creates a value for a given key.
+    ///   This closure is called when a key is accessed but not found in the cache.
     @inlinable
     package init(constructor: @escaping (Key) -> Value) {
         self.constructor = constructor
         self.data = Data()
     }
-    
+
+    /// Accesses the value associated with the given key.
+    ///
+    /// If the key exists in the cache, returns the cached value and updates its
+    /// access time. If the key doesn't exist, calls the constructor to create a
+    /// new value, stores it in the cache (potentially evicting the least recently
+    /// used item in the same bucket), and returns the new value.
+    ///
+    /// - Parameter key: The key to look up.
+    /// - Returns: The value associated with the key, either from cache or newly constructed.
     final package subscript(key: Key) -> Value {
         let hash = key.hashValue
         let bucket = (hash & ((1 << 3) - 1)) << 2
@@ -58,21 +88,45 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
             return value
         }
     }
-    
+
+    /// A cache slot that can hold an item or be empty.
+    ///
+    /// Each slot tracks when it was last used via the `used` timestamp, which is
+    /// compared against the global `clock` to determine the least recently used item.
     private struct Item {
+        /// The cached data tuple containing the key, hash, and value, or nil if empty.
         var data: (key: Key, hash: Int, value: Value)?
+
+        /// The clock value when this item was last accessed or inserted.
+        ///
+        /// This timestamp is used for LRU eviction. When a bucket is full, the item
+        /// with the smallest `used` value (i.e., the one with the largest time distance
+        /// from the current clock) is evicted.
         var used: UInt32
-        
+
         init(data: (key: Key, hash: Int, value: Value)?, used: UInt32) {
             self.data = data
             self.used = used
         }
     }
-    
+
+    /// The internal data structure holding the cache table and global clock.
     private struct Data {
-        var table: [Item]
-        var clock: UInt32
         
+        /// The hash table with 32 slots (8 buckets × 4 ways per bucket).
+        var table: [Item]
+
+        /// A monotonically increasing counter used for LRU tracking.
+        ///
+        /// The `clock` is incremented on every cache access (hit or miss). Each item's
+        /// `used` field stores the clock value at its last access. When eviction is needed,
+        /// the item with the oldest `used` value (largest difference from current clock)
+        /// is selected for replacement.
+        ///
+        /// This implements a pseudo-LRU policy that efficiently approximates true LRU
+        /// without maintaining a global ordering of all items.
+        var clock: UInt32
+
         init() {
             self.table = Array(repeating: Item(data: nil, used: 0), count: 32)
             self.clock = 0
