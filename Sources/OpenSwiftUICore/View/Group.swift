@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by _ViewListOutputs
+//  Status: Complete
 //  ID: C1B8B6896BB94C69479F427820712D02 (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -137,7 +137,7 @@ extension Group: View, MultiView, PrimitiveView where Content: View {
     }
 }
 
-// MARK: - _ViewListOutputs + Group [WIP]
+// MARK: - _ViewListOutputs + Group
 
 extension _ViewListOutputs {
     package static func sectionListOutputs(
@@ -176,13 +176,84 @@ extension _ViewListOutputs {
         )
     }
 
+    @inline(__always)
+    private static func groupViewListOptions(
+        from options: _ViewListInputs.Options
+    ) -> _ViewListInputs.Options {
+        var optionsWithoutNestedSections = options
+        if optionsWithoutNestedSections.contains(.requiresNonEmptyGroupParent) {
+            optionsWithoutNestedSections.subtract([.requiresNonEmptyGroupParent, .allowsNestedSections])
+        }
+        if optionsWithoutNestedSections.contains(.requiresSections) {
+            optionsWithoutNestedSections.subtract([.requiresSections, .allowsNestedSections])
+        }
+        if options.contains(.allowsNestedSections) {
+            return options
+        } else {
+            return optionsWithoutNestedSections
+        }
+    }
+
     package static func groupViewList<Parent, Footer>(
         parent: _GraphValue<Parent>,
         footer: Attribute<Footer>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs where Parent: View, Footer: View {
-        _openSwiftUIUnimplementedFailure()
+        let options = inputs.options
+        let groupOptionss = groupViewListOptions(from: options)
+
+        var headerInputs = inputs
+        headerInputs.options = groupOptionss
+        if options.contains(.requiresDepthAndSections) {
+            headerInputs.traits = Attribute(SectionedTrait(traits: headerInputs._traits))
+            headerInputs.addTraitKey(IsSectionedTraitKey.self)
+        }
+
+        if options.contains(.requiresNonEmptyGroupParent) {
+            headerInputs.options.insert(.isNonEmptyParent)
+            headerInputs.traits = Attribute(SectionHeaderTrait(traits: headerInputs._traits))
+            headerInputs.addTraitKey(IsSectionHeaderTraitKey.self)
+        }
+        if options.contains(.resetHeaderStyleContext) {
+            headerInputs.base.resetStyleContext()
+        }
+        let headerOutputs = Parent.makeDebuggableViewList(
+            view: parent,
+            inputs: headerInputs
+        )
+
+        var contentInputs = inputs
+        contentInputs.implicitID = headerOutputs.nextImplicitID
+        contentInputs.options = groupOptionss
+        if options.contains(.requiresDepthAndSections) {
+            contentInputs.traits = Attribute(DepthTrait(traits: headerInputs._traits))
+            contentInputs.addTraitKey(DepthTraitKey.self)
+        }
+        let contentOutputs = body(.init(), contentInputs)
+
+        var footerInputs = inputs
+        footerInputs.implicitID = contentOutputs.nextImplicitID
+        footerInputs.options = groupOptionss
+        if options.contains(.requiresNonEmptyGroupParent) {
+            footerInputs.options.subtract(.requiresNonEmptyGroupParent)
+            footerInputs.traits = Attribute(SectionFooterTrait(traits: footerInputs._traits))
+            footerInputs.addTraitKey(IsSectionFooterTraitKey.self)
+        }
+        if options.contains(.resetFooterStyleContext) {
+            footerInputs.base.resetStyleContext()
+        }
+        let footerOutputs = Footer.makeDebuggableViewList(
+            view: .init(footer),
+            inputs: footerInputs
+        )
+
+        let outputs = [headerOutputs, contentOutputs, footerOutputs]
+        if options.contains(.requiresSections) {
+            return .sectionListOutputs(outputs, inputs: inputs)
+        } else {
+            return .concat(outputs, inputs: inputs)
+        }
     }
 
     package static func groupViewListCount<V, H, F>(
@@ -192,27 +263,16 @@ extension _ViewListOutputs {
         footerType: F.Type
     ) -> Int? where V: View, H: View, F: View {
         let options = inputs.options
-        var optionsWithoutNestedSections = options
-        if optionsWithoutNestedSections.contains(.requiresNonEmptyGroupParent) {
-            optionsWithoutNestedSections.subtract([.requiresNonEmptyGroupParent, .allowsNestedSections])
-        }
-        if optionsWithoutNestedSections.contains(.requiresSections) {
-            optionsWithoutNestedSections.subtract([.requiresSections, .allowsNestedSections])
-        }
-        let contentOptions = if options.contains(.allowsNestedSections) {
-            options
-        } else {
-            optionsWithoutNestedSections
-        }
+        let groupOptionss = groupViewListOptions(from: options)
 
         var contentInputs = inputs
-        contentInputs.options = contentOptions
+        contentInputs.options = groupOptionss
         guard let contentCount = V._viewListCount(inputs: contentInputs) else {
             return nil
         }
         var count = contentCount
 
-        var headerOptions = contentOptions
+        var headerOptions = groupOptionss
         if options.contains(.requiresNonEmptyGroupParent) {
             headerOptions.insert(.isNonEmptyParent)
         }
@@ -226,7 +286,7 @@ extension _ViewListOutputs {
         }
         count += headerCount
 
-        var footerOptions = contentOptions
+        var footerOptions = groupOptionss
         if options.contains(.requiresNonEmptyGroupParent) {
             footerOptions.remove(.requiresNonEmptyGroupParent)
         }
