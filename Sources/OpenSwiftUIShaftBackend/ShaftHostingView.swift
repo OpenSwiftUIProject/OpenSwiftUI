@@ -67,6 +67,8 @@ final class ShaftHostingViewImpl<Content: OpenSwiftUI.View>: OpenSwiftUICore.Vie
         
         // Trigger initial render BEFORE runApp (which blocks)
         viewGraph.updateOutputs(at: Time.zero)
+
+        render(targetTimestamp: nil)
         
         // Run the Shaft app with our bridge widget (this blocks)
         Shaft.runApp(bridgeWidget)
