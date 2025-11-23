@@ -373,7 +373,9 @@ private struct StyleBodyAccessor<V, M>: BodyAccessor where V: StyleableView, M: 
             return
         }
         setBody {
-            styleModifier.styleBody(configuration: view.configuration as! M.StyleConfiguration)
+            var styleModifier = styleModifier
+            styleModifier.style = container
+            return styleModifier.styleBody(configuration: view.configuration as! M.StyleConfiguration)
         }
     }
 }
