@@ -1,10 +1,11 @@
 //
 //  Environment.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for 3.5.2
+//  Audited for 6.5.4
 //  Status: Complete
-//  ID: 7B48F30970137591804EEB8D0D309152
+//  ID: 7B48F30970137591804EEB8D0D309152 (SwiftUI)
+//  ID: 24E0E088473ED74681D096110CC5FC9A (SwiftUICore)
 
 import OpenAttributeGraphShims
 #if OPENSWIFTUI_SWIFT_LOG
@@ -12,6 +13,8 @@ public import Logging
 #else
 public import os
 #endif
+
+// MARK: - Environment
 
 /// A property wrapper that reads a value from a view's environment.
 ///
@@ -46,7 +49,7 @@ public import os
 ///
 /// For the complete list of environment values provided by OpenSwiftUI, see the
 /// properties of the ``EnvironmentValues`` structure. For information about
-/// creating custom environment values, see the ``EnvironmentKey`` protocol.
+/// creating custom environment values, see the ``Entry()`` macro.
 ///
 /// ### Get an observable object
 ///
@@ -57,7 +60,7 @@ public import os
 /// the object itself or a key path.
 ///
 /// To set the object in the environment using the object itself, use the
-/// ``View/environment(_:)-4516h`` modifier:
+/// ``View/environment(_:)`` modifier:
 ///
 ///     @Observable
 ///     class Library {
@@ -94,7 +97,7 @@ public import os
 /// By default, reading an object from the environment returns a non-optional
 /// object when using the object type as the key. This default behavior assumes
 /// that a view in the current hierarchy previously stored a non-optional
-/// instance of the type using the ``View/environment(_:)-4516h`` modifier. If
+/// instance of the type using the ``View/environment(_:)`` modifier. If
 /// a view attempts to retrieve an object using its type and that object isn't
 /// in the environment, OpenSwiftUI throws an exception.
 ///
@@ -141,18 +144,25 @@ public import os
 ///         }
 ///     }
 ///
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 @propertyWrapper
 public struct Environment<Value>: DynamicProperty {
+
     @usableFromInline
     @frozen
-    enum Content {
+    internal enum Content: @unchecked Sendable {
+
+        /// A key path describing how to dereference the view's current
+        /// environment to produce the linked value.
         case keyPath(KeyPath<EnvironmentValues, Value>)
+
+        /// The view's current value of the environment property.
         case value(Value)
     }
 
     @usableFromInline
-    var content: Content
+    internal var content: Content
 
     /// Creates an environment property to read the specified key path.
     ///
@@ -194,7 +204,6 @@ public struct Environment<Value>: DynamicProperty {
     ///         }
     ///     }
     ///
-    // Audited for RELEASE_2023
     @inlinable
     public var wrappedValue: Value {
         switch content {
@@ -231,7 +240,7 @@ public struct Environment<Value>: DynamicProperty {
     }
 
     @usableFromInline
-    func error() -> Never {
+    internal func error() -> Never {
         preconditionFailure("Reading Environment<\(Value.self)> outside View.body")
     }
 
