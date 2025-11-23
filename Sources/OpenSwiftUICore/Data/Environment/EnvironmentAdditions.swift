@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by controlActiveState
+//  Status: Complete
 //  ID: 1B17C64D9E901A0054B49B69A4A2439D (SwiftUICore)
 
 public import Foundation
@@ -829,8 +829,8 @@ extension EnvironmentValues {
     @available(watchOS, unavailable)
     @available(visionOS, unavailable)
     public var controlActiveState: ControlActiveState {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+        get { appearsActive ? .key : .inactive }
+        set { appearsActive = (newValue == .key || newValue == .active) }
     }
 
     /// The horizontal size class of this environment.
