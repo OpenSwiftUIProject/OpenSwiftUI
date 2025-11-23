@@ -689,6 +689,14 @@ extension EnvironmentValues {
 
 // MARK: - EnvironmentValues + Control
 
+private struct DividerThicknessKey: EnvironmentKey {
+    static var defaultValue: CGFloat? { nil }
+}
+
+private struct DisplayCornerRadiusKey: EnvironmentKey {
+    static var defaultValue: CGFloat? { nil }
+}
+
 private struct ImageScaleKey: EnvironmentKey {
     static var defaultValue: Image.Scale { .medium }
 }
@@ -717,13 +725,39 @@ private struct CalendarKey: EnvironmentKey {
     static let defaultValue: Calendar = .autoupdatingCurrent
 }
 
+private struct HorizontalUserInterfaceSizeClassKey: EnvironmentKey {
+    static var defaultValue: UserInterfaceSizeClass? { .regular }
+}
+
+private struct VerticalUserInterfaceSizeClassKey: EnvironmentKey {
+    static var defaultValue: UserInterfaceSizeClass? { .regular }
+}
+
+extension CachedEnvironment.ID {
+    package static let horizontalSizeClass: CachedEnvironment.ID = .init()
+
+    package static let verticalSizeClass: CachedEnvironment.ID = .init()
+
+    package static let isPlatterPresent: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    package var horizontalSizeClass: Attribute<UserInterfaceSizeClass?> {
+        mapEnvironment(id: .horizontalSizeClass) { $0.horizontalSizeClass }
+    }
+
+    package var verticalSizeClass: Attribute<UserInterfaceSizeClass?> {
+        mapEnvironment(id: .verticalSizeClass) { $0.verticalSizeClass }
+    }
+}
+
 @available(OpenSwiftUI_v1_0, *)
 extension EnvironmentValues {
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
     public var dividerThickness: CGFloat {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+        get { self[DividerThicknessKey.self] ?? (dynamicTypeSize.isAccessibilitySize ? 1.0 : pixelLength) }
+        set { self[DividerThicknessKey.self] = newValue }
     }
 
     package var defaultRenderingMode: Image.TemplateRenderingMode {
@@ -738,8 +772,8 @@ extension EnvironmentValues {
     @available(watchOS, unavailable)
     @available(macCatalyst, unavailable)
     public var displayCornerRadius: CGFloat? {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+        get { self[DisplayCornerRadiusKey.self] }
+        set { self[DisplayCornerRadiusKey.self] = newValue }
     }
 
     /// The font weight to apply to text.
@@ -776,41 +810,111 @@ extension EnvironmentValues {
         set { self[DisplayGamutKey.self] = newValue }
     }
 
-//    @available(iOS, unavailable)
-//    @available(macOS, deprecated, message: "Use `EnvironmentValues.appearsActive` instead.")
-//    @available(tvOS, unavailable)
-//    @available(watchOS, unavailable)
-//    @available(visionOS, unavailable)
-//    public var controlActiveState: ControlActiveState {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
-//
-//    @available(OpenSwiftUI_v1_0, *)
-//    public var horizontalSizeClass: UserInterfaceSizeClass? {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
-//
-//    @available(OpenSwiftUI_v1_0, *)
-//    @usableFromInline
-//    var realHorizontalSizeClass: UserInterfaceSizeClass? {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
-//
-//    @available(OpenSwiftUI_v1_0, *)
-//    public var verticalSizeClass: UserInterfaceSizeClass? {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
-//
-//    @available(OpenSwiftUI_v1_0, *)
-//    @usableFromInline
-//    var realVerticalSizeClass: UserInterfaceSizeClass? {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
+    /// The active appearance expected of controls in a window.
+    ///
+    /// `ControlActiveState` and `EnvironmentValues.controlActiveState` are
+    /// deprecated, use `EnvironmentValues.appearsActive` instead.
+    ///
+    /// Starting with macOS 15.0, the value of this environment property is
+    /// strictly mapped to and from `EnvironmentValues.appearsActive` as follows:
+    /// - `appearsActive == true`, `controlActiveState` returns `.key`
+    /// - `appearsActive == false`, `controlActiveState` returns `.inactive`
+    /// - `controlActiveState` is set to `.key` or `.active`, `appearsActive`
+    ///   will be set to `true`.
+    /// - `controlActiveState` is set to `.inactive`, `appearsActive` will be
+    ///    set to `false`.
+    @available(iOS, unavailable)
+    @available(macOS, deprecated, message: "Use `EnvironmentValues.appearsActive` instead.")
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    @available(visionOS, unavailable)
+    public var controlActiveState: ControlActiveState {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
+
+    /// The horizontal size class of this environment.
+    ///
+    /// You receive a ``UserInterfaceSizeClass`` value when you read this
+    /// environment value. The value tells you about the amount of horizontal
+    /// space available to the view that reads it. You can read this
+    /// size class like any other of the ``EnvironmentValues``, by creating a
+    /// property with the ``Environment`` property wrapper:
+    ///
+    ///     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+    ///
+    /// OpenSwiftUI sets this size class based on several factors, including:
+    ///
+    /// * The current device type.
+    /// * The orientation of the device.
+    /// * The appearance of Slide Over and Split View on iPad.
+    ///
+    /// Several built-in views change their behavior based on this size class.
+    /// For example, a ``NavigationView`` presents a multicolumn view when
+    /// the horizontal size class is ``UserInterfaceSizeClass/regular``,
+    /// but a single column otherwise. You can also adjust the appearance of
+    /// custom views by reading the size class and conditioning your views.
+    /// If you do, be prepared to handle size class changes while
+    /// your app runs, because factors like device orientation can change at
+    /// runtime.
+    ///
+    /// In watchOS, the horizontal size class is always
+    /// ``UserInterfaceSizeClass/compact``. In macOS, and tvOS, it's always
+    /// ``UserInterfaceSizeClass/regular``.
+    ///
+    /// Writing to the horizontal size class in the environment
+    /// before macOS 14.0, tvOS 17.0, and watchOS 10.0 is not supported.
+    @available(OpenSwiftUI_v1_0, *)
+    public var horizontalSizeClass: UserInterfaceSizeClass? {
+        get { realHorizontalSizeClass }
+        set { realHorizontalSizeClass = newValue }
+    }
+
+    @available(OpenSwiftUI_v1_0, *)
+    @usableFromInline
+    var realHorizontalSizeClass: UserInterfaceSizeClass? {
+        get { self[HorizontalUserInterfaceSizeClassKey.self] }
+        set { self[HorizontalUserInterfaceSizeClassKey.self] = newValue }
+    }
+
+    /// The vertical size class of this environment.
+    ///
+    /// You receive a ``UserInterfaceSizeClass`` value when you read this
+    /// environment value. The value tells you about the amount of vertical
+    /// space available to the view that reads it. You can read this
+    /// size class like any other of the ``EnvironmentValues``, by creating a
+    /// property with the ``Environment`` property wrapper:
+    ///
+    ///     @Environment(\.verticalSizeClass) private var verticalSizeClass
+    ///
+    /// SwiftUI sets this size class based on several factors, including:
+    ///
+    /// * The current device type.
+    /// * The orientation of the device.
+    ///
+    /// You can adjust the appearance of custom views by reading this size
+    /// class and conditioning your views. If you do, be prepared to
+    /// handle size class changes while your app runs, because factors like
+    /// device orientation can change at runtime.
+    ///
+    /// In watchOS, the vertical size class is always
+    /// ``UserInterfaceSizeClass/compact``. In macOS, and tvOS, it's always
+    /// ``UserInterfaceSizeClass/regular``.
+    ///
+    /// Writing to the vertical size class in the environment
+    /// before macOS 14.0, tvOS 17.0, and watchOS 10.0 is not supported.
+    @available(OpenSwiftUI_v1_0, *)
+    public var verticalSizeClass: UserInterfaceSizeClass? {
+        get { realVerticalSizeClass }
+        set { realVerticalSizeClass = newValue }
+    }
+
+    @available(OpenSwiftUI_v1_0, *)
+    @usableFromInline
+    var realVerticalSizeClass: UserInterfaceSizeClass? {
+        get { self[VerticalUserInterfaceSizeClassKey.self] }
+        set { self[VerticalUserInterfaceSizeClassKey.self] = newValue }
+    }
 }
 
 // MARK: - EnvironmentValues + Vibrant
