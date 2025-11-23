@@ -250,52 +250,96 @@ public struct Environment<Value>: DynamicProperty {
         fieldOffset: Int,
         inputs: inout _GraphInputs
     ) {
-        buffer.append(
-            EnvironmentBox<Value>(
-                environment: inputs.environment
-            ),
-            fieldOffset: fieldOffset
-        )
+        if Value.self == EnvironmentValues.self {
+            buffer.append(
+                FullEnvironmentBox(environment: inputs.environment),
+                fieldOffset: fieldOffset
+            )
+        } else {
+            buffer.append(
+                EnvironmentBox<Value>(environment: inputs.environment),
+                fieldOffset: fieldOffset
+            )
+        }
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Environment: Sendable where Value: Sendable {}
 
-private struct EnvironmentBox<Value>: DynamicPropertyBox {
+// MARK: - FullEnvironmentBox
+
+private struct FullEnvironmentBox: DynamicPropertyBox {
     @Attribute var environment: EnvironmentValues
-    var keyPath: KeyPath<EnvironmentValues, Value>?
-    var value: Value?
-    
-    init(environment: Attribute<EnvironmentValues>) {
-        _environment = environment
-        keyPath = nil
-        value = nil
-    }
-        
-    func destroy() {}
-    func reset() {}
-    mutating func update(property: inout Environment<Value>, phase _: _GraphInputs.Phase) -> Bool {
+    var keyPath: KeyPath<EnvironmentValues, EnvironmentValues>?
+    var value: EnvironmentValues?
+    var tracker: PropertyList.Tracker = .init()
+
+    typealias Property = Environment<EnvironmentValues>
+
+    mutating func update(property: inout Property, phase _: ViewPhase) -> Bool {
         guard case let .keyPath(propertyKeyPath) = property.content else {
             return false
         }
-        let (environment, environmentChanged) = _environment.changedValue()
+        let (environment, environmentChanged) = $environment.changedValue()
         let keyPathChanged = (propertyKeyPath != keyPath)
-        if keyPathChanged { keyPath = propertyKeyPath }
+        if keyPathChanged {
+            keyPath = propertyKeyPath
+        }
         let valueChanged: Bool
         if keyPathChanged || environmentChanged {
             let newValue = environment[keyPath: propertyKeyPath]
-            if let value, compareValues(value, newValue) {
+            if let value, !tracker.hasDifferentUsedValues(environment.plist) {
                 valueChanged = false
             } else {
-                value = newValue
+                tracker.reset()
+                tracker.initializeValues(from: newValue.plist)
+                value = EnvironmentValues(newValue.plist, tracker: tracker)
                 valueChanged = true
             }
         } else {
             valueChanged = false
         }
-        let value: Value = self.value!
-        property.content = .value(value)
+        property.content = .value(value!)
+        return valueChanged
+    }
+}
+
+// MARK: - EnvironmentBox
+
+private struct EnvironmentBox<Value>: DynamicPropertyBox {
+    @Attribute var environment: EnvironmentValues
+    var keyPath: KeyPath<EnvironmentValues, Value>?
+    var value: Value?
+    var hadObservation: Bool = false
+
+    typealias Property = Environment<Value>
+
+    mutating func update(property: inout Property, phase _: ViewPhase) -> Bool {
+        guard case let .keyPath(propertyKeyPath) = property.content else {
+            return false
+        }
+        let (environment, environmentChanged) = $environment.changedValue()
+        let keyPathChanged = (propertyKeyPath != keyPath)
+        var valueChanged = environmentChanged
+        if keyPathChanged {
+            keyPath = propertyKeyPath
+            valueChanged = true
+        }
+        if keyPathChanged || environmentChanged || hadObservation {
+            let (newValue, accessList) = _withObservation {
+                environment[keyPath: propertyKeyPath]
+            }
+            hadObservation = accessList != nil
+            if let value, compareValues(value, newValue) {
+                valueChanged = false
+            } else {
+                value = newValue
+            }
+        } else {
+            valueChanged = false
+        }
+        property.content = .value(value!)
         return valueChanged
     }
 }
