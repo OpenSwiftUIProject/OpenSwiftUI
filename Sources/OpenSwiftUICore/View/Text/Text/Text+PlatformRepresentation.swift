@@ -20,7 +20,7 @@ package protocol PlatformTextRepresentable {
 
     static func makeRepresentation(
         inputs: _ViewInputs,
-        context: Attribute<Self.Context>,
+        context: Attribute<Context>,
         outputs: inout _ViewOutputs
     )
 
