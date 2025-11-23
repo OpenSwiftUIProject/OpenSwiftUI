@@ -17,7 +17,7 @@ struct FinishLaunchTestAction {
         #if os(iOS) || os(visionOS)
         UIApplication.shared.finishedTest(UIApplication.shared._launchTestName())
         #else
-        preconditionFailure("Unimplemented for other platform")
+        _openSwiftUIPlatformUnimplementedWarning()
         #endif
     }
 }

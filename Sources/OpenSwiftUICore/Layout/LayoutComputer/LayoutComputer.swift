@@ -101,9 +101,7 @@ private class LayoutEngineBox<Engine>: AnyLayoutEngineBox where Engine: LayoutEn
     }
 
     override func mutateEngine<E, R>(as type: E.Type, do body: (inout E) -> R) -> R where E: LayoutEngine {
-        guard Engine.self == E.self else {
-            preconditionFailure("Mismatched engine type")
-        }
+        precondition(Engine.self == E.self, "Mismatched engine type")
         return withUnsafePointer(to: &engine) { ptr in
             body(&UnsafeMutableRawPointer(mutating: UnsafeRawPointer(ptr)).assumingMemoryBound(to: E.self).pointee)
         }

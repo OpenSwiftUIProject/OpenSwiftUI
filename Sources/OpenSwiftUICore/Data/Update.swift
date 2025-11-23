@@ -60,9 +60,10 @@ package enum Update {
         guard lockAssertionsAreEnabled else {
             return
         }
-        guard isOwner else {
-            preconditionFailure("OpenSwiftUI is active without having taken its own lock - missing Update.ensure()?")
-        }
+        precondition(
+            isOwner,
+            "OpenSwiftUI is active without having taken its own lock - missing Update.ensure()?"
+        )
     }
     
     package static func begin() {
@@ -184,10 +185,10 @@ package enum Update {
                     }
                     for action in actions {
                         action()
-                        let newDepth = depth
-                        guard newDepth == oldDepth else {
-                            preconditionFailure("Action caused unbalanced updates.")
-                        }
+                        precondition(
+                            depth == oldDepth,
+                            "Action caused unbalanced updates."
+                        )
                     }
                 }
             }

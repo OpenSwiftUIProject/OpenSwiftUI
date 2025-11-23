@@ -161,9 +161,10 @@ extension ViewModifier {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        guard Metadata(Self.self).isValueType else {
-            preconditionFailure("view modifiers must be value types: \(Self.self)")
-        }
+        precondition(
+            Metadata(Self.self).isValueType,
+            "view modifiers must be value types: \(Self.self)"
+        )
         let accessor = ModifierBodyAccessor<Self>()
         return accessor.makeBody(container: modifier, inputs: &inputs, fields: fields)
     }

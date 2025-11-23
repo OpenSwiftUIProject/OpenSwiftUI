@@ -473,7 +473,7 @@ extension ProtobufDecoder {
     /// - Returns: The decodable value resulting from the plist data.
     func value<T>(fromBinaryPlist data: Data, type: T.Type = T.self) throws -> T where T: Decodable {
         #if os(WASI)
-        preconditionFailure("PropertyListDecoder is not avaiable on WASI")
+        _openSwiftUIPlatformUnimplementedFailure()
         #else
         let decoder = PropertyListDecoder()
         decoder.userInfo = userInfo

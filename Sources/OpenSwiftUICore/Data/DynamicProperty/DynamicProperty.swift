@@ -324,9 +324,10 @@ extension BodyAccessor {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        guard Body.self != Never.self else {
-            preconditionFailure("\(Container.self) may not have Body == Never")
-        }
+        precondition(
+            Body.self != Never.self,
+            "\(Container.self) may not have Body == Never"
+        )
         return withUnsafePointer(to: inputs) { pointer in
             func project<Flags>(flags _: Flags.Type) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) where Flags: RuleThreadFlags {
                 let buffer = _DynamicPropertyBuffer(

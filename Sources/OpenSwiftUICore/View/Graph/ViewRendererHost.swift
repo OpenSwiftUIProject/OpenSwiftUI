@@ -359,9 +359,10 @@ extension ViewRendererHost {
     }
 
     package func advanceTimeForTest(interval: Double) {
-        guard interval >= 0 else {
-            preconditionFailure("Test render timestamps must monotonically increase.")
-        }
+        precondition(
+            interval >= 0,
+            "Test render timestamps must monotonically increase."
+        )
         let advancedTime = currentTimestamp + interval
         currentTimestamp = advancedTime == currentTimestamp ? Time(seconds: nextafter(advancedTime.seconds, Double.infinity)) : advancedTime
     }
@@ -432,9 +433,10 @@ extension ViewRendererHost {
         }
         update()
         for host in enclosingHosts {
-            guard host.externalUpdateCount >= 1 else {
-                preconditionFailure("Unbalanced will/did update functions.")
-            }
+            precondition(
+                host.externalUpdateCount >= 1,
+                "Unbalanced will/did update functions."
+            )
             host.externalUpdateCount -= 1
         }
     }

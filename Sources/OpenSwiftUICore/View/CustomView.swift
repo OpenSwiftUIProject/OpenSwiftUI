@@ -52,9 +52,10 @@ extension View {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        guard Metadata(Self.self).isValueType else {
-            preconditionFailure("views must be value types (either a struct or an enum); \(Self.self) is a class.")
-        }
+        precondition(
+            Metadata(Self.self).isValueType,
+            "views must be value types (either a struct or an enum); \(Self.self) is a class."
+        )
         let accessor = ViewBodyAccessor<Self>()
         return accessor.makeBody(container: view, inputs: &inputs, fields: fields)
     }

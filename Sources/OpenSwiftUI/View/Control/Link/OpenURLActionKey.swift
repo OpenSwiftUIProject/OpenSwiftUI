@@ -26,7 +26,7 @@ struct OpenURLActionKey: EnvironmentKey {
                 completion(error != nil)
             }
             #else
-            preconditionFailure("Unimplemented")
+            _openSwiftUIPlatformUnimplementedWarning()
             #endif
         },
         isDefault: true
@@ -51,7 +51,7 @@ struct OpenSensitiveURLActionKey: EnvironmentKey {
             }
             workspace.open(url, configuration: config, completionHandler: completion)
             #else
-            preconditionFailure("Unimplemented")
+            _openSwiftUIPlatformUnimplementedWarning()
             #endif
         },
         isDefault: true
