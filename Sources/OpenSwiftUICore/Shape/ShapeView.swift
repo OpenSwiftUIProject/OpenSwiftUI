@@ -136,7 +136,10 @@ public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, 
         self.fillStyle = fillStyle
     }
 
-    nonisolated public static func _makeView(view: _GraphValue<_ShapeView<Content, Style>>, inputs: _ViewInputs) -> _ViewOutputs {
+    nonisolated public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
         _openSwiftUIUnimplementedFailure()
     }
 

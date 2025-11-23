@@ -289,7 +289,6 @@ extension PrimitiveSpacer {
     ) -> _ViewOutputs {
         var outputs = _ViewOutputs()
         if inputs.requestsLayoutComputer {
-
             let computer = if let orientation = axis ?? inputs.stackOrientation {
                 SpacerLayoutComputer(
                     spacer: view.value,
