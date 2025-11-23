@@ -468,9 +468,10 @@ extension ViewGraph {
 //package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
 extension ViewGraph {
     private var layoutComputer: LayoutComputer? {
-        guard requestedOutputs.contains(.layout) else {
-            preconditionFailure("Cannot fetch layout computer without layout output")
-        }
+        precondition(
+            requestedOutputs.contains(.layout),
+            "Cannot fetch layout computer without layout output"
+        )
         instantiateIfNeeded()
         return rootLayoutComputer
     }

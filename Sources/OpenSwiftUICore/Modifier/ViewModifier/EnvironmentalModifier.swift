@@ -74,9 +74,10 @@ extension EnvironmentalModifier {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<ResolvedModifier>, _DynamicPropertyBuffer?) {
-        guard Metadata(Self.self).isValueType else {
-            preconditionFailure("Environmental modifiers must be value types: \(Self.self)")
-        }
+        precondition(
+            Metadata(Self.self).isValueType,
+            "Environmental modifiers must be value types: \(Self.self)"
+        )
         var fields = fields
         if !fields.behaviors.contains(.requiresMainThread), !_requiresMainThread {
             fields.behaviors.formUnion(

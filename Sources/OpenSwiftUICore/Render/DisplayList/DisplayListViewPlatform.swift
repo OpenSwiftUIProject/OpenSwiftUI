@@ -115,7 +115,8 @@ extension DisplayList.GraphicsRenderer {
             layer.bounds = CGRect(origin: .zero, size: size)
             layer.layoutIfNeeded()
         }
-        preconditionFailure("Blocked by GraphicsContext")
+        // TODO: Blocked by GraphicsContext
+        _openSwiftUIUnimplementedFailure()
         // ctx.drawLayer
     }
     #endif

@@ -29,7 +29,7 @@ final package class ThreadSpecific<T> {
     }
 
     deinit {
-        preconditionFailure("\(Self.self).deinit is unsafe and would leak", file: #file, line: #line)
+        preconditionFailure("\(Self.self).deinit is unsafe and would leak")
     }
     
     private final var box: UnsafeMutablePointer<Any> {

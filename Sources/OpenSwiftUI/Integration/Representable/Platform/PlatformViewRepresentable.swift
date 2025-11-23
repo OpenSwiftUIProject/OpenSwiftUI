@@ -621,11 +621,11 @@ struct PlatformArchivedDisplayList<Content>: Rule where Content: PlatformViewRep
         }
         
         func makePlatformView() -> AnyObject? {
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         }
 
         func updatePlatformView(_ view: inout AnyObject) {
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         }
     }
 }

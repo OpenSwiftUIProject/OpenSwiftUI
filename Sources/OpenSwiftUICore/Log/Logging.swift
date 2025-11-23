@@ -256,6 +256,11 @@ extension os.OSLog {
 // MARK: - OpenSwiftUI addition: abstract and stub call
 
 @_transparent
+package func _openSwiftUIUnreachableCode(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
+    preconditionFailure("", file: file, line: line)
+}
+
+@_transparent
 package func _openSwiftUIBaseClassAbstractMethod(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
     preconditionFailure("", file: file, line: line)
 }
@@ -269,12 +274,12 @@ package func _openSwiftUIEmptyStub(_ function: String = #function, file: StaticS
 
 @_transparent
 package func _openSwiftUIUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
-    preconditionFailure("TODO", file: file, line: line)
+    preconditionFailure("Unimplemented yet", file: file, line: line)
 }
 
 @_transparent
 package func _openSwiftUIPlatformUnimplementedFailure(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) -> Never {
-    preconditionFailure("TODO", file: file, line: line)
+    preconditionFailure("Unimplemented for this platform yet", file: file, line: line)
 }
 
 @_transparent

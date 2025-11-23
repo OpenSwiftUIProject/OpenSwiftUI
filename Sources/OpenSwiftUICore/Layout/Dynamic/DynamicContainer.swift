@@ -629,7 +629,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         }
         switch phase {
         case .willAppear:
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         case .identity:
             guard !disableTransitions, info.items[index].needsTransitions else {
                 eraseItem(at: index)
@@ -696,7 +696,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         let phase = info.items[index].phase
         switch phase {
         case .willAppear, nil:
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         case .identity:
             break
         case .didDisappear:

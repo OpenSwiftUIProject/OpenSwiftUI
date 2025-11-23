@@ -70,7 +70,7 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
                         rect = rect.applying(transform)
                     }
                     #else
-                    preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                    _openSwiftUIPlatformUnimplementedWarning()
                     #endif
                 case .projectionTransform:
                     rect = nil
@@ -100,7 +100,7 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
                         geometry.containerSize = geometry.containerSize.applying(transform)
                     }
                     #else
-                    preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                    _openSwiftUIPlatformUnimplementedWarning()
                     #endif
                 case .projectionTransform:
                     geometry = nil
@@ -684,7 +684,7 @@ extension CGPoint: ApplyViewTransform, ViewTransformable {
                     self = applying(matrix)
                 }
                 #else
-                preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                _openSwiftUIPlatformUnimplementedWarning()
                 #endif
             case let .projectionTransform(matrix, inverse):
                 self = inverse ? unapplying(matrix) : applying(matrix)
@@ -712,7 +712,7 @@ extension [CGPoint]: ApplyViewTransform, ViewTransformable {
                 let tranform = inverse ? matrix.inverted() : matrix
                 self = map { $0.applying(tranform) }
                 #else
-                preconditionFailure("CGAffineTransform+applying is not available on this platform")
+                _openSwiftUIPlatformUnimplementedWarning()
                 #endif
             case let .projectionTransform(matrix, inverse):
                 apply(matrix, inverse: inverse)

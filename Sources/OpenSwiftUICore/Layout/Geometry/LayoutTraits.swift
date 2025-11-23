@@ -59,14 +59,11 @@ public struct _LayoutTraits: Equatable {
         }
 
         private func _checkInvariant() {
-            guard min >= 0,
-                  min.isFinite,
-                  ideal < .infinity,
-                  min <= ideal,
-                  ideal <= max
-            else {
-                preconditionFailure("malformed dimension \(self)")
-            }
+            precondition(
+                min >= 0 && min.isFinite && ideal < .infinity &&
+                min <= ideal && ideal <= max,
+                "malformed dimension \(self)"
+            )
         }
     }
 
