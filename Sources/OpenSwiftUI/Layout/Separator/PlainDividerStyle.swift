@@ -6,6 +6,7 @@
 //  Status: Blocked by Shape
 //  ID: 4E7A7B805FC8F5CEEF99A1E333CA7AA7 (SwiftUI)
 
+import OpenCoreGraphicsShims
 @_spi(Private)
 import OpenSwiftUICore
 
