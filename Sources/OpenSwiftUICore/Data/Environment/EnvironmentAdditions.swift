@@ -9,6 +9,154 @@
 public import Foundation
 package import OpenAttributeGraphShims
 
+// MARK: - Image + Additions
+
+@available(OpenSwiftUI_v1_0, *)
+extension Image {
+
+    /// A type that indicates how OpenSwiftUI renders images.
+    public enum TemplateRenderingMode: Sendable {
+
+        /// A mode that renders all non-transparent pixels as the foreground
+        /// color.
+        case template
+
+        /// A mode that renders pixels of bitmap images as-is.
+        ///
+        /// For system images created from the SF Symbol set, multicolor symbols
+        /// respect the current foreground and accent colors.
+        case original
+    }
+
+    /// A scale to apply to vector images relative to text.
+    ///
+    /// Use this type with the ``View/imageScale(_:)`` modifier, or the
+    /// ``EnvironmentValues/imageScale`` environment key, to set the image scale.
+    ///
+    /// The following example shows the three `Scale` values as applied to
+    /// a system symbol image, each set against a text view:
+    ///
+    ///     HStack { Image(systemName: "swift").imageScale(.small); Text("Small") }
+    ///     HStack { Image(systemName: "swift").imageScale(.medium); Text("Medium") }
+    ///     HStack { Image(systemName: "swift").imageScale(.large); Text("Large") }
+    ///
+    /// ![Vertically arranged text views that read Small, Medium, and
+    /// Large. On the left of each view is a system image that uses the Swift symbol.
+    /// The image next to the Small text is slightly smaller than the text.
+    /// The image next to the Medium text matches the size of the text. The
+    /// image next to the Large text is larger than the
+    /// text.](OpenSwiftUI-EnvironmentAdditions-Image-scale.png)
+    ///
+    @available(OpenSwiftUI_macOS_v2_0, *)
+    public enum Scale: Hashable, Sendable {
+
+        /// A scale that produces small images.
+        case small
+
+        /// A scale that produces medium-sized images.
+        case medium
+
+        /// A scale that produces large images.
+        case large
+
+        @_spi(ForOpenSwiftUIOnly)
+        @available(OpenSwiftUI_v6_0, *)
+        case _fittingCircleRadius(_fixedPointFraction: UInt16)
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        @available(*, deprecated, renamed: "_controlCenter_large")
+        @_alwaysEmitIntoClient
+        public static func fittingCircleRadius(pointSizeMultiple: CGFloat) -> Image.Scale {
+            ._controlCenter_large
+        }
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        case _controlCenter_small, _controlCenter_medium, _controlCenter_large
+    }
+}
+
+// MARK: - UserInterfaceSizeClass
+
+/// A set of values that indicate the visual size available to the view.
+///
+/// You receive a size class value when you read either the
+/// ``EnvironmentValues/horizontalSizeClass`` or
+/// ``EnvironmentValues/verticalSizeClass`` environment value. The value tells
+/// you about the amount of space available to your views in a given
+/// direction. You can read the size class like any other of the
+/// ``EnvironmentValues``, by creating a property with the ``Environment``
+/// property wrapper:
+///
+///     @Environment(\.horizontalSizeClass) private var horizontalSizeClass
+///     @Environment(\.verticalSizeClass) private var verticalSizeClass
+///
+/// OpenSwiftUI sets the size class based on several factors, including:
+///
+/// * The current device type.
+/// * The orientation of the device.
+/// * The appearance of Slide Over and Split View on iPad.
+///
+/// Several built-in views change their behavior based on the size class.
+/// For example, a ``NavigationView`` presents a multicolumn view when
+/// the horizontal size class is ``UserInterfaceSizeClass/regular``,
+/// but a single column otherwise. You can also adjust the appearance of
+/// custom views by reading the size class and conditioning your views.
+/// If you do, be prepared to handle size class changes while
+/// your app runs, because factors like device orientation can change at
+/// runtime.
+@available(OpenSwiftUI_v1_0, *)
+public enum UserInterfaceSizeClass: Sendable {
+
+    /// The compact size class.
+    case compact
+
+    /// The regular size class.
+    case regular
+}
+
+// MARK: - DisplayGamut
+
+#if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+import CoreUI_Private
+import CoreUI
+#endif
+
+@_spi(Private)
+public enum DisplayGamut: Int {
+    case sRGB
+    case displayP3
+
+    package static var deviceDefault: DisplayGamut {
+        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+        switch _CUIDefaultDisplayGamut() {
+        case .SRGB: .sRGB
+        case .P3: .displayP3
+        }
+        #else
+        return .sRGB
+        #endif
+    }
+
+    #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+    @inline(__always)
+    var cuiDisplayGamut: CUIDisplayGamut {
+        switch self {
+        case .sRGB: .SRGB
+        case .displayP3: .P3
+        }
+    }
+    #endif
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension DisplayGamut: Sendable {}
+
+@_spi(Private)
+extension DisplayGamut: ProtobufEnum {}
+
 // MARK: - View + Font [WIP]
 
 extension View {
