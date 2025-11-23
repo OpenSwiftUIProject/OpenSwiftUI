@@ -9,43 +9,62 @@ import SnapshotTesting
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct DividerUITests {
 
-    // MARK: - Basic Spacer in HStack
+    // MARK: - Basic Divider in HVStack
 
-    @Test("TODO: Fix colorScheme issue")
+    @Test
     func dividerWithColorScheme() {
         struct ContentView: View {
             var body: some View {
                 HStack {
                     VStack {
                         VStack {
-                            Color.red
+                            Color.primary
                             Divider()
-                            Color.blue
+                            Color.primary
                         }
-                        HStack {
-                            Color.red
-                            Divider()
-                            Color.blue
-                        }
-                    }.colorScheme(.light)
-                    VStack {
-                        HStack {
-                            Color.red
-                            Divider()
-                            Color.blue
-                        }
+                        .dynamicTypeSize(.large)
+                        .colorScheme(.light)
                         VStack {
-                            Color.red
+                            Color.primary
                             Divider()
-                            Color.blue
+                            Color.primary
                         }
-                    }.colorScheme(.dark)
+                        .dynamicTypeSize(.large)
+                        .colorScheme(.dark)
+                    }
+                    Divider()
+                        .dynamicTypeSize(.large)
+                        .colorScheme(.light)
+                    Divider()
+                        .dynamicTypeSize(.accessibility1)
+                        .colorScheme(.dark)
+                    VStack {
+                        VStack {
+                            Color.primary
+                            Divider()
+                            Color.primary
+                        }
+                        .dynamicTypeSize(.accessibility1)
+                        .colorScheme(.light)
+                        VStack {
+                            Color.primary
+                            Divider()
+                            Color.primary
+                        }
+                        .dynamicTypeSize(.accessibility1)
+                        .colorScheme(.dark)
+                    }
                 }
-                .background(Color.green)
+                .background(Color.red)
+                .frame(width: 200, height: 200)
             }
         }
+        #if os(iOS)
+        openSwiftUIAssertSnapshot(of: ContentView())
+        #else
         withKnownIssue("Path/Shape is not implemented") {
             openSwiftUIAssertSnapshot(of: ContentView())
         }
+        #endif
     }
 }
