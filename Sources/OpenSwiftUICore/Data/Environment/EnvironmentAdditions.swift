@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by controlActiveState
 //  ID: 1B17C64D9E901A0054B49B69A4A2439D (SwiftUICore)
 
 public import Foundation
@@ -933,6 +933,11 @@ extension EnvironmentValues {
         set { self[AllowsVibrantBlendingKey.self] = newValue }
     }
 
+    /// If `true`, artwork and colors should use their "vibrant" variant,
+    /// primarily appropriate for display on top of blur material backgrounds.
+    ///
+    /// Exposed as SPI for ControlCenter and NotificationCenter.
+    @available(OpenSwiftUI_macOS_v2_0, *)
     @available(iOS, unavailable)
     @available(macOS, deprecated, message: "Use `backgroundMaterial` instead")
     @available(tvOS, unavailable)
@@ -940,13 +945,7 @@ extension EnvironmentValues {
     @available(visionOS, unavailable)
     public var _useVibrantStyling: Bool {
         get { backgroundMaterial != nil }
-        set {
-            if newValue {
-                backgroundMaterial = nil
-            } else {
-                backgroundMaterial = .regular
-            }
-        }
+        set { backgroundMaterial = .init(if: !newValue, then: .regular) }
     }
 
     @available(OpenSwiftUI_v3_0, *)
