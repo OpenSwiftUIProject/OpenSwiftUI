@@ -193,7 +193,7 @@ public enum LegibilityWeight: Hashable, Sendable {
     case bold
 }
 
-// MARK: - View + Additions
+// MARK: - View + Text Additions
 
 @available(OpenSwiftUI_v1_0, *)
 extension View {
@@ -279,10 +279,227 @@ extension View {
         environment(\.font, font)
     }
 
+    /// Modifies the fonts of all child views to use fixed-width digits, if
+    /// possible, while leaving other characters proportionally spaced.
+    ///
+    /// Using fixed-width digits allows you to easily align numbers of the
+    /// same size in a table-like arrangement. This feature is also known as
+    /// "tabular figures" or "tabular numbers."
+    ///
+    /// This modifier only affects numeric characters, and leaves all other
+    /// characters unchanged.
+    ///
+    /// The following example shows the effect of `monospacedDigit()` on
+    /// multiple child views. The example consists of two ``VStack`` views
+    /// inside an ``HStack``. Each `VStack` contains two ``Button`` views, with
+    /// the second `VStack` applying the `monospacedDigit()` modifier to its
+    /// contents. As a result, the digits in the buttons in the trailing
+    /// `VStack` are the same width, which in turn gives the buttons equal widths.
+    ///
+    ///     var body: some View {
+    ///         HStack(alignment: .top) {
+    ///             VStack(alignment: .leading) {
+    ///                 Button("Delete 111 messages") {}
+    ///                 Button("Delete 222 messages") {}
+    ///             }
+    ///             VStack(alignment: .leading) {
+    ///                 Button("Delete 111 messages") {}
+    ///                 Button("Delete 222 messages") {}
+    ///             }
+    ///             .monospacedDigit()
+    ///         }
+    ///         .padding()
+    ///         .navigationTitle("monospacedDigit() Child Views")
+    ///     }
+    ///
+    /// ![A macOS window showing four buttons, arranged in two columns. Each
+    /// column's buttons contain the same text: Delete 111 messages and Delete
+    /// 222 messages. The right column's buttons have fixed width, or
+    /// monospaced, digits, which make the 1 characters wider than they would be
+    /// in a proportional font. Because the 1 and 2 characters are the same
+    /// width in the right column, the buttons are the same
+    /// width.](View-monospacedDigit-1)
+    ///
+    /// If a child view's base font doesn't support fixed-width digits, the font
+    /// remains unchanged.
+    ///
+    /// - Returns: A view whose child views' fonts use fixed-width numeric
+    /// characters, while leaving other characters proportionally spaced.
+    @available(OpenSwiftUI_v3_0, *)
+    nonisolated public func monospacedDigit() -> some View {
+        transformEnvironment(\.fontModifiers) {
+            $0.append(.static(Font.MonospacedDigitModifier.self))
+        }
+    }
+
+    /// Modifies the fonts of all child views to use the fixed-width variant of
+    /// the current font, if possible.
+    ///
+    /// If a child view's base font doesn't support fixed-width, the font
+    /// remains unchanged.
+    ///
+    /// - Returns: A view whose child views' fonts use fixed-width characters,
+    /// while leaving other characters proportionally spaced.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func monospaced(_ isActive: Bool = true) -> some View {
+        transformEnvironment(\.fontModifiers) {
+            let modifier: AnyFontModifier = .static(Font.MonospacedModifier.self)
+            if isActive {
+                $0.append(modifier)
+            } else {
+                $0.removeAll { $0.isEqual(to: modifier)}
+            }
+        }
+    }
+
+    /// Sets the font weight of the text in this view.
+    ///
+    /// - Parameter weight: One of the available font weights.
+    ///   Providing `nil` removes the effect of any font weight
+    ///   modifier applied higher in the view hierarchy.
+    ///
+    /// - Returns: A view that uses the font weight you specify.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func fontWeight(_ weight: Font.Weight?) -> some View {
+        transformEnvironment(\.fontModifiers) {
+            if let weight {
+                $0.append(.dynamic(Font.WeightModifier(weight: weight)))
+            } else {
+                $0.removeAll {
+                    $0 is AnyDynamicFontModifier<Font.WeightModifier>
+                    || $0.isEqual(to: .static(Font.BoldModifier.self))
+                }
+            }
+        }
+    }
+
+    /// Sets the font width of the text in this view.
+    ///
+    /// - Parameter width: One of the available font widths.
+    ///   Providing `nil` removes the effect of any font width
+    ///   modifier applied higher in the view hierarchy.
+    ///
+    /// - Returns: A view that uses the font width you specify.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func fontWidth(_ width: Font.Width?) -> some View {
+        transformEnvironment(\.fontModifiers) {
+            if let width {
+                $0.append(.dynamic(Font.WidthModifier(width: width.value)))
+            } else {
+                $0.removeAll {
+                    $0 is AnyDynamicFontModifier<Font.WidthModifier>
+                }
+            }
+        }
+    }
+
+    /// Applies a bold font weight to the text in this view.
+    ///
+    /// - Parameter isActive: A Boolean value that indicates
+    ///   whether bold font styling is added. The default value is `true`.
+    ///
+    /// - Returns: A view with bold text.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func bold(_ isActive: Bool = true) -> some View {
+        transformEnvironment(\.fontModifiers) {
+            let modifier: AnyFontModifier = .static(Font.BoldModifier.self)
+            if isActive {
+                $0.append(modifier)
+            } else {
+                $0.removeAll { $0.isEqual(to: modifier)}
+            }
+        }
+    }
+
+    /// Applies italics to the text in this view.
+    ///
+    /// - Parameter isActive: A Boolean value that indicates
+    ///   whether italic styling is added. The default value is `true`.
+    ///
+    /// - Returns: A View with italic text.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func italic(_ isActive: Bool = true) -> some View {
+        transformEnvironment(\.fontModifiers) {
+            let modifier: AnyFontModifier = .static(Font.ItalicModifier.self)
+            if isActive {
+                $0.append(modifier)
+            } else {
+                $0.removeAll { $0.isEqual(to: modifier)}
+            }
+        }
+    }
+
+    /// Sets the font design of the text in this view.
+    ///
+    /// - Parameter design: One of the available font designs.
+    ///   Providing `nil` removes the effect of any font design
+    ///   modifier applied higher in the view hierarchy.
+    ///
+    /// - Returns: A view that uses the font design you specify.
+    @available(OpenSwiftUI_v4_1, *)
+    nonisolated public func fontDesign(_ design: Font.Design?) -> some View {
+        transformEnvironment(\.fontModifiers) {
+            if let design {
+                $0.append(.dynamic(Font.DesignModifier(design: design)))
+            } else {
+                $0.removeAll {
+                    $0 is AnyDynamicFontModifier<Font.DesignModifier>
+                }
+            }
+        }
+    }
+
+    @_spi(UIFrameworks)
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func symbolFont(_ font: Font?) -> some View {
+       environment(\.symbolFont, font)
+    }
+
     @_spi(UIFrameworks)
     @available(OpenSwiftUI_v5_0, *)
     nonisolated public func defaultFont(_ font: Font?) -> some View {
         environment(\.defaultFont, font)
+    }
+
+    @_spi(UIFrameworks)
+    @available(OpenSwiftUI_v5_0, *)
+    nonisolated public func defaultSymbolFont(_ font: Font?) -> some View {
+        environment(\.defaultSymbolFont, font)
+    }
+
+    /// Sets the spacing, or kerning, between characters for the text in this view.
+    ///
+    /// - Parameter kerning: The spacing to use between individual characters in text.
+    ///   Value of `0` sets the kerning to the system default value.
+    ///
+    /// - Returns: A view where text has the specified amount of kerning.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func kerning(_ kerning: CGFloat) -> some View {
+        environment(\.defaultKerning, kerning)
+    }
+
+    /// Sets the tracking for the text in this view.
+    ///
+    /// - Parameter tracking: The amount of additional space, in points, that
+    ///   the view should add to each character cluster after layout. Value of `0`
+    ///   sets the tracking to the system default value.
+    ///
+    /// - Returns: A view where text has the specified amount of tracking.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func tracking(_ tracking: CGFloat) -> some View {
+        environment(\.defaultTracking, tracking)
+    }
+
+    /// Sets the vertical offset for the text relative to its baseline
+    /// in this view.
+    ///
+    /// - Parameter baselineOffset: The amount to shift the text
+    ///   vertically (up or down) relative to its baseline.
+    ///
+    /// - Returns: A view where text is above or below its baseline.
+    @available(OpenSwiftUI_v4_0, *)
+    nonisolated public func baselineOffset(_ baselineOffset: CGFloat) -> some View {
+        environment(\.defaultBaselineOffset, baselineOffset)
     }
 }
 
@@ -302,7 +519,7 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - EnvironementValues + Font
+// MARK: - EnvironementValues + Text Additions
 
 private struct FontKey: EnvironmentKey {
     static var defaultValue: Font? { nil }
@@ -449,6 +666,7 @@ extension _ViewInputs {
 
 @available(OpenSwiftUI_v1_0, *)
 extension EnvironmentValues {
+
     /// The display scale of this environment.
     public var displayScale: CGFloat {
         get { self[DisplayScaleKey.self] }
@@ -469,10 +687,22 @@ extension EnvironmentValues {
     }
 }
 
-// MARK: - EnvironmentValues + ? [6.4.41]
+// MARK: - EnvironmentValues + Control
+
+private struct ImageScaleKey: EnvironmentKey {
+    static var defaultValue: Image.Scale { .medium }
+}
 
 private struct LegibilityWeightKey: EnvironmentKey {
     static var defaultValue: LegibilityWeight? { nil }
+}
+
+private struct DisplayGamutKey: EnvironmentKey {
+    static var defaultValue: DisplayGamut { .sRGB }
+}
+
+private struct DefaultRenderingModeKey: EnvironmentKey {
+    static var defaultValue: Image.TemplateRenderingMode { .original }
 }
 
 private struct LocaleKey: EnvironmentKey {
@@ -487,10 +717,6 @@ private struct CalendarKey: EnvironmentKey {
     static let defaultValue: Calendar = .autoupdatingCurrent
 }
 
-private struct DisplayGamutKey: EnvironmentKey {
-    static var defaultValue: DisplayGamut { .sRGB }
-}
-
 @available(OpenSwiftUI_v1_0, *)
 extension EnvironmentValues {
     @_spi(Private)
@@ -500,10 +726,10 @@ extension EnvironmentValues {
         set { _openSwiftUIUnimplementedFailure() }
     }
 
-//    package var defaultRenderingMode: Image.TemplateRenderingMode {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
+    package var defaultRenderingMode: Image.TemplateRenderingMode {
+        get { self[DefaultRenderingModeKey.self] }
+        set { self[DefaultRenderingModeKey.self] = newValue }
+    }
 
     @_spi(ClarityBoard)
     @available(OpenSwiftUI_v4_0, *)
