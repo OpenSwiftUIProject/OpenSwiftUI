@@ -157,6 +157,42 @@ extension DisplayGamut: Sendable {}
 @_spi(Private)
 extension DisplayGamut: ProtobufEnum {}
 
+// MARK: - ControlActiveState
+
+/// The active appearance expected of controls in a window.
+///
+/// `ControlActiveState` and `EnvironmentValues.controlActiveState` are
+/// deprecated, use `EnvironmentValues.appearsActive` instead.
+@available(*, deprecated, message: "Use `EnvironmentValues.appearsActive` instead.")
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+public enum ControlActiveState: Equatable, CaseIterable, Sendable {
+
+    case key
+
+    case active
+
+    case inactive
+}
+
+// MARK: - LegibilityWeight
+
+/// The Accessibility Bold Text user setting options.
+///
+/// The app can't override the user's choice before iOS 16, tvOS 16 or
+/// watchOS 9.0.
+@available(OpenSwiftUI_v1_0, *)
+public enum LegibilityWeight: Hashable, Sendable {
+
+    /// Use regular font weight (no Accessibility Bold).
+    case regular
+
+    /// Use heavier font weight (force Accessibility Bold).
+    case bold
+}
+
 // MARK: - View + Font [WIP]
 
 extension View {
