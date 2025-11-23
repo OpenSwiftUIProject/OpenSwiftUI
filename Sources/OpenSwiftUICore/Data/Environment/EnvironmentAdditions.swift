@@ -193,9 +193,53 @@ public enum LegibilityWeight: Hashable, Sendable {
     case bold
 }
 
-// MARK: - View + Font [WIP]
+// MARK: - View + Additions
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
+
+    /// Scales images within the view according to one of the relative sizes
+    /// available including small, medium, and large images sizes.
+    ///
+    /// The example below shows the relative scaling effect. The system renders
+    /// the image at a relative size based on the available space and
+    /// configuration options of the image it is scaling.
+    ///
+    ///     VStack {
+    ///         HStack {
+    ///             Image(systemName: "heart.fill")
+    ///                 .imageScale(.small)
+    ///             Text("Small")
+    ///         }
+    ///         HStack {
+    ///             Image(systemName: "heart.fill")
+    ///                 .imageScale(.medium)
+    ///             Text("Medium")
+    ///         }
+    ///
+    ///         HStack {
+    ///             Image(systemName: "heart.fill")
+    ///                 .imageScale(.large)
+    ///             Text("Large")
+    ///         }
+    ///     }
+    ///
+    /// ![A view showing small, medium, and large hearts rendered at a size
+    /// relative to the available space.](OpenSwiftUI-View-imageScale.png)
+    ///
+    /// - Parameter scale: One of the relative sizes provided by the image scale
+    ///   enumeration.
+    @available(OpenSwiftUI_macOS_v2_0, *)
+    nonisolated public func imageScale(_ scale: Image.Scale) -> some View {
+        environment(\.imageScale, scale)
+    }
+
+    @_spi(Private)
+    @available(OpenSwiftUI_v4_0, *)
+    @available(*, deprecated, message: "Use View/textSizing(.adjustsForOversizedCharacters)")
+    nonisolated public func adjustsTextFrameForOversizedCharacters(_ adjustsTextFrame: Bool = true) -> some View {
+        environment(\.textSizing, adjustsTextFrame ? .adjustsForOversizedCharacters : .standard)
+    }
 
     /// Sets the default font for text in this view.
     ///
@@ -354,12 +398,12 @@ extension EnvironmentValues {
         set { self[SymbolFontKey.self] = newValue }
     }
 
-//    /// The image scale for this environment.
-//    @available(macOS 11.0, *)
-//    public var imageScale: Image.Scale {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
+    /// The image scale for this environment.
+    @available(OpenSwiftUI_macOS_v2_0, *)
+    public var imageScale: Image.Scale {
+        get { self[ImageScaleKey.self] }
+        set { self[ImageScaleKey.self] = newValue }
+    }
 
     package var isInTouchBar: Bool {
         get { self[InTouchBarKey.self] }
