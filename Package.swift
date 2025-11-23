@@ -456,6 +456,7 @@ extension [SwiftSetting] {
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_0:\(ignoreAvailability ? minimumVersion : "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_4:\(ignoreAvailability ? minimumVersion : "iOS 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v2_0:\(ignoreAvailability ? minimumVersion : "iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0")"),
+            .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_macOS_v2_0:\(ignoreAvailability ? minimumVersion : "macOS 11.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v2_1:\(ignoreAvailability ? minimumVersion : "iOS 14.2, macOS 11.0, tvOS 14.1, watchOS 7.1")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v2_3:\(ignoreAvailability ? minimumVersion : "iOS 14.5, macOS 11.3, tvOS 14.5, watchOS 7.4")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v3_0:\(ignoreAvailability ? minimumVersion : "iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0")"),
