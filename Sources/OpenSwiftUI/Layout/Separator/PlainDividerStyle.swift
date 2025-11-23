@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Blocked by Shape
 //  ID: 4E7A7B805FC8F5CEEF99A1E333CA7AA7 (SwiftUI)
 
 @_spi(Private)
@@ -22,8 +22,10 @@ struct PlainDividerStyle: DividerStyle {
     private var thickness: CGFloat
 
     func makeBody(configuration: DividerStyleConfiguration) -> some View {
-        DividerShape(base: Rectangle())
-            .fill(PlainDividerShapeStyle())
+        // TODO: Shape is not implemented yet
+        Color(provider: PlainDividerShapeStyle())
+//        DividerShape(base: Rectangle())
+//            .fill(PlainDividerShapeStyle())
             .frame(
                 width: configuration.orientation == .horizontal ? nil : thickness,
                 height: configuration.orientation == .horizontal ? thickness : nil
