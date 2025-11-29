@@ -156,7 +156,9 @@ extension Text {
 //        private var superscript: Text.Superscript?
 //        private var typesettingConfiguration: TypesettingConfiguration
 //        private var customAttributes: [TextAttributeModifierBase]
-        private var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
+        #if canImport(Darwin)
+//        private var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
+        #endif
         package var clearedFontModifiers: Set<ObjectIdentifier>
 
         init() {

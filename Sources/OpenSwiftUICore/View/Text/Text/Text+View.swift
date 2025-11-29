@@ -7,6 +7,7 @@
 //  ID: 641995D812913A47B866B20B88782376 (SwiftUICore)
 
 import OpenAttributeGraphShims
+public import OpenCoreGraphicsShims
 
 // MARK: - Text + View [WIP]
 
@@ -34,6 +35,91 @@ extension Text: UnaryView, PrimitiveView {
         .init()
     }
 }
+
+// MARK: - TextLayoutProperties
+
+@_spi(Private)
+@available(OpenSwiftUI_v3_0, *)
+public struct TextLayoutProperties: Equatable {
+    public var lineLimit: Int?
+
+    package var lowerLineLimit: Int?
+
+//    public var truncationMode: Text.TruncationMode
+
+    public var multilineTextAlignment: TextAlignment
+
+    public var layoutDirection: LayoutDirection
+
+    package var transitionStyle: ContentTransition.Style
+
+    public var minScaleFactor: CGFloat
+
+    public var lineSpacing: CGFloat
+
+    public var lineHeightMultiple: CGFloat
+
+    public var maximumLineHeight: CGFloat
+
+    public var minimumLineHeight: CGFloat
+
+    public var hyphenationFactor: CGFloat
+
+//    package var writingMode: Text.WritingMode
+
+    package var bodyHeadOutdent: CGFloat
+
+    package var pixelLength: CGFloat
+
+    package var textSizing: Text.Sizing
+
+    package var widthIsFlexible: Bool {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
+
+    package var sizeFitting: Bool {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
+
+    package init() {
+        _openSwiftUIUnimplementedFailure()
+
+    }
+
+    public init(_ env: EnvironmentValues) {
+        _openSwiftUIUnimplementedFailure()
+
+    }
+
+    package func update(
+        _ env: inout EnvironmentValues,
+        from old: TextLayoutProperties
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public static func == (a: TextLayoutProperties, b: TextLayoutProperties) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension TextLayoutProperties: Sendable {}
+
+@_spi(Private)
+extension TextLayoutProperties: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 
 // MARK: - ResolvedTextFilter [WIP]
 
