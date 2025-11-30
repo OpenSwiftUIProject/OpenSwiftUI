@@ -248,6 +248,11 @@ extension EnvironmentValues {
         set { self[MinimumLineHeightKey.self] = newValue }
     }
 
+    var hyphenationDisabled: Bool {
+        get { self[HyphenationDisabledKey.self] }
+        set { self[HyphenationDisabledKey.self] = newValue }
+    }
+
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
     public var hyphenationFactor: CGFloat {
@@ -461,6 +466,10 @@ extension View {
     @available(OpenSwiftUI_v2_0, *)
     nonisolated public func minimumLineHeight(_ lineHeight: CGFloat) -> some View {
         environment(\.minimumLineHeight, lineHeight)
+    }
+
+    func hyphenationDisabled(_ flag: Bool) -> some View {
+        environment(\.hyphenationDisabled, flag)
     }
 
     @_spi(Private)

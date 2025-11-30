@@ -45,13 +45,13 @@ public struct TextLayoutProperties: Equatable {
 
     package var lowerLineLimit: Int?
 
-//    public var truncationMode: Text.TruncationMode = 
+    public var truncationMode: Text.TruncationMode = .tail
 
-    public var multilineTextAlignment: TextAlignment
+    public var multilineTextAlignment: TextAlignment = .leading
 
-    public var layoutDirection: LayoutDirection
+    public var layoutDirection: LayoutDirection = .leftToRight
 
-    package var transitionStyle: ContentTransition.Style
+    package var transitionStyle: ContentTransition.Style = .default
 
     public var minScaleFactor: CGFloat = 1.0
 
@@ -59,9 +59,9 @@ public struct TextLayoutProperties: Equatable {
 
     public var lineHeightMultiple: CGFloat = .zero
 
-//    public var maximumLineHeight: CGFloat =
+    public var maximumLineHeight: CGFloat = MaximumLineHeightKey.defaultValue
 
-//    public var minimumLineHeight: CGFloat
+    public var minimumLineHeight: CGFloat = MinimumLineHeightKey.defaultValue
 
     public var hyphenationFactor: CGFloat = .zero
 
@@ -75,45 +75,119 @@ public struct TextLayoutProperties: Equatable {
 
     package var textSizing: Text.Sizing = .standard
 
-    // package var textShape: TextShape
+    private var textShape: TextShape = .bounds
 
-    // package var flags: Flags
+    private struct Flags: OptionSet {
+        var rawValue: UInt8
+
+        static let widthIsFlexible = Flags(rawValue: 1 << 0)
+
+        static let sizeFitting = Flags(rawValue: 1 << 1)
+    }
+
+    private var flags: Flags = []
 
     package var widthIsFlexible: Bool {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+        get { flags.contains(.widthIsFlexible) }
+        set { flags.setValue(newValue, for: .widthIsFlexible) }
     }
 
     package var sizeFitting: Bool {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+        get { flags.contains(.sizeFitting) }
+        set { flags.setValue(newValue, for: .sizeFitting) }
     }
 
     package init() {
-        _openSwiftUIUnimplementedFailure()
-
-    }
-
-    private struct Key: DerivedEnvironmentKey {
-        static func value(in environment: EnvironmentValues) -> TextLayoutProperties {
-            // TODO
-            .init()
-        }
+        _openSwiftUIEmptyStub()
     }
 
     public init(_ env: EnvironmentValues) {
         self = env[Key.self]
     }
 
+    private struct Key: DerivedEnvironmentKey {
+        static func value(in environment: EnvironmentValues) -> TextLayoutProperties {
+            TextLayoutProperties(from: environment)
+        }
+    }
+
+    init(from env: EnvironmentValues) {
+        lineLimit = env.lineLimit
+        lowerLineLimit = env.lowerLineLimit
+        truncationMode = env.truncationMode
+        multilineTextAlignment = env.multilineTextAlignment
+        layoutDirection = env.layoutDirection
+        transitionStyle = env.contentTransitionStyle
+        minScaleFactor = env.minimumScaleFactor
+        lineSpacing = env.lineSpacing
+        lineHeightMultiple = env.lineHeightMultiple
+        maximumLineHeight = env.maximumLineHeight
+        minimumLineHeight = env.minimumLineHeight
+        hyphenationFactor = env.hyphenationFactor
+        hyphenationDisabled = env.hyphenationDisabled
+        writingMode = env.writingMode
+        bodyHeadOutdent = env.bodyHeadOutdent
+        pixelLength = env.pixelLength
+        textSizing = env.textSizing
+        textShape = env.textShape
+        widthIsFlexible = switch env.textJustification.storage {
+        case .full(let full): full.flexible
+        case .none: false
+        }
+    }
+
     package func update(
         _ env: inout EnvironmentValues,
         from old: TextLayoutProperties
     ) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    public static func == (a: TextLayoutProperties, b: TextLayoutProperties) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        if lineLimit != old.lineLimit {
+            env.lineLimit = lineLimit
+        }
+        if lowerLineLimit != old.lowerLineLimit {
+            env.lowerLineLimit = lowerLineLimit
+        }
+        if truncationMode != old.truncationMode {
+            env.truncationMode = truncationMode
+        }
+        if multilineTextAlignment != old.multilineTextAlignment {
+            env.multilineTextAlignment = multilineTextAlignment
+        }
+        if layoutDirection != old.layoutDirection {
+            env.layoutDirection = layoutDirection
+        }
+        if minScaleFactor != old.minScaleFactor {
+            env.minimumScaleFactor = minScaleFactor
+        }
+        if lineSpacing != old.lineSpacing {
+            env.lineSpacing = lineSpacing
+        }
+        if lineHeightMultiple != old.lineHeightMultiple {
+            env.lineHeightMultiple = lineHeightMultiple
+        }
+        if maximumLineHeight != old.maximumLineHeight {
+            env.maximumLineHeight = maximumLineHeight
+        }
+        if minimumLineHeight != old.minimumLineHeight {
+            env.minimumLineHeight = minimumLineHeight
+        }
+        if hyphenationFactor != old.hyphenationFactor {
+            env.hyphenationFactor = hyphenationFactor
+        }
+        if hyphenationDisabled != old.hyphenationDisabled {
+            env.hyphenationDisabled = hyphenationDisabled
+        }
+        if transitionStyle != old.transitionStyle {
+            env.contentTransitionStyle = transitionStyle
+        }
+        if textSizing != old.textSizing {
+            env.textSizing = textSizing
+        }
+        if writingMode != old.writingMode {
+            env.writingMode = writingMode
+        }
+        if textShape != old.textShape {
+            env.textShape = textShape
+        }
     }
 }
 
@@ -131,7 +205,6 @@ extension TextLayoutProperties: ProtobufMessage {
         _openSwiftUIUnimplementedFailure()
     }
 }
-
 
 // MARK: - ResolvedTextFilter [WIP]
 
@@ -194,4 +267,33 @@ extension ResolvedStyledText {
 
 private struct TextFilter {
 
+}
+
+// FIXME
+
+extension EnvironmentValues {
+    private struct LineLimitKey: EnvironmentKey {
+        static var defaultValue: Int? { nil }
+    }
+
+    public var lineLimit: Int? {
+        get { self[LineLimitKey.self] }
+        set { self[LineLimitKey.self] = newValue }
+    }
+
+    private struct LowerLineLimitKey: EnvironmentKey {
+        static var defaultValue: Int? { nil }
+    }
+
+    package var lowerLineLimit: Int? {
+        get { self[LowerLineLimitKey.self] }
+        set { self[LowerLineLimitKey.self] = newValue }
+    }
+}
+
+extension EnvironmentValues {
+    var contentTransitionStyle: ContentTransition.Style {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
 }
