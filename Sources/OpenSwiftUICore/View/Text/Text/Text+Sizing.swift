@@ -6,6 +6,46 @@
 //  Status: Complete
 //  ID: 22747AAF70EE5063D02F299CE90A18BE (SwiftUICore)
 
+// MARK: TextSizingModifier
+
+protocol TextSizingModifier: Equatable {
+    func updateLayoutMargins(_ margins: inout EdgeInsets)
+}
+
+class AnyTextSizingModifier: Equatable, TextSizingModifier, @unchecked Sendable {
+    static func == (lhs: AnyTextSizingModifier, rhs: AnyTextSizingModifier) -> Bool {
+        lhs.isEqual(to: rhs)
+    }
+
+    func updateLayoutMargins(_ margins: inout EdgeInsets) {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
+    func isEqual(to other: AnyTextSizingModifier) -> Bool {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+}
+
+private class ConcreteTextSizingModifier<M>: AnyTextSizingModifier, @unchecked Sendable where M: TextSizingModifier {
+    let modifier: M
+
+    init(modifier: M) {
+        self.modifier = modifier
+    }
+
+    override func updateLayoutMargins(_ margins: inout EdgeInsets) {
+        modifier.updateLayoutMargins(&margins)
+    }
+
+    override func isEqual(to other: AnyTextSizingModifier) -> Bool {
+        guard let other = other as? ConcreteTextSizingModifier else {
+            return false
+        }
+        return modifier == other.modifier
+    }
+}
+
+
 // MARK: - Text + Sizing
 
 @_spi(Private)
@@ -22,6 +62,8 @@ extension Text {
 
         package var storage: Text.Sizing.Storage
 
+        private var modifiers: [AnyTextSizingModifier] = []
+
         package init(_ storage: Text.Sizing.Storage) {
             self.storage = storage
         }
@@ -33,6 +75,16 @@ extension Text {
         public static let adjustsForOversizedCharacters: Text.Sizing = .init(.adjustsForOversizedCharacters)
     }
 }
+
+//extension Text.Sizing {
+//    func layoutMargins(
+//        for: NSAttributedString,
+//        metrics: inout NSAttributedString.EncodedFontMetrics?
+//        layoutProperties: LayoutProperties
+//    ) {
+//        _openSwiftUIUnimplementedFailure()
+//    }
+//}
 
 private struct TextSizingKey: EnvironmentKey {
     static let defaultValue: Text.Sizing = .standard
