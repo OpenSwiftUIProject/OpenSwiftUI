@@ -36,6 +36,88 @@ extension Text: UnaryView, PrimitiveView {
     }
 }
 
+// MARK: - AccessibilityStyledTextContentView
+
+package struct AccessibilityStyledTextContentView<Provider>: View where Provider: TextAccessibilityProvider {
+    package var text: ResolvedStyledText
+
+    package var unresolvedText: Text
+
+    package var renderer: TextRendererBoxBase?
+
+    package var needsDrawingGroup: Bool
+
+    package init(
+        text: ResolvedStyledText,
+        unresolvedText: Text,
+        renderer: TextRendererBoxBase? = nil,
+        needsDrawingGroup: Bool = false
+    ) {
+        self.text = text
+        self.unresolvedText = unresolvedText
+        self.renderer = renderer
+        self.needsDrawingGroup = needsDrawingGroup
+    }
+
+    package var body: some View {
+        Provider.makeView(
+            content: StyledTextContentView(
+                text: text,
+                renderer: renderer,
+                needsDrawingGroup: needsDrawingGroup
+            ),
+            text: unresolvedText,
+            resolved: text
+        )
+    }
+}
+
+// MARK: - StyledTextContentView [Blocked by Shape and TextRendererBoxBase]
+
+package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafView {
+    package var text: ResolvedStyledText
+    package var renderer: TextRendererBoxBase?
+    package var needsDrawingGroup: Bool
+
+    package init(
+        text: ResolvedStyledText,
+        renderer: TextRendererBoxBase? = nil,
+        needsDrawingGroup: Bool = false
+    ) {
+        self.text = text
+        self.renderer = renderer
+        self.needsDrawingGroup = needsDrawingGroup
+    }
+
+    package static var animatesSize: Bool {
+        false
+    }
+
+    package func shape(in size: CGSize) -> FramedShape {
+        let frame = if let renderer {
+            // TODO
+            CGRect.zero
+        } else {
+            CGRect(origin: .zero, size: size)
+        }
+        let shape: ShapeStyle.RenderedShape.Shape = .text(self)
+        return (shape, frame)
+    }
+
+    nonisolated package static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        // TODO
+        .init()
+    }
+
+    package typealias Body = Never
+
+    package typealias ShapeUpdateData = Void
+}
+
+
 // MARK: - TextLayoutProperties
 
 @_spi(Private)
@@ -195,6 +277,8 @@ public struct TextLayoutProperties: Equatable {
 @available(*, unavailable)
 extension TextLayoutProperties: Sendable {}
 
+// MARK: - TextLayoutProperties + ProtobufMessage [TODO]
+
 @_spi(Private)
 extension TextLayoutProperties: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
@@ -226,34 +310,14 @@ struct ResolvedTextHelper {
 
 package class TextRendererBoxBase {}
 
-package struct AccessibilityStyledTextContentView<Provider>: View where Provider: TextAccessibilityProvider {
-    package var text: ResolvedStyledText
-
-    package var unresolvedText: Text
-
-    package var renderer: TextRendererBoxBase?
-
-    package var needsDrawingGroup: Bool
-
-    package init(
-        text: ResolvedStyledText,
-        unresolvedText: Text,
-        renderer: TextRendererBoxBase? = nil,
-        needsDrawingGroup: Bool = false
-    ) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package var body: some View {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
 
 // FIXME:
 
 @available(OpenSwiftUI_v6_0, *)
 @usableFromInline
 package class ResolvedStyledText: CustomStringConvertible {
+    var layoutProperties: TextLayoutProperties = .init()
+
     @usableFromInline
     package var description: String {
         _openSwiftUIUnimplementedFailure()

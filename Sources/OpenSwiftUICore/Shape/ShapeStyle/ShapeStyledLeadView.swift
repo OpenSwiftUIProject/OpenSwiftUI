@@ -15,7 +15,7 @@ package protocol ShapeStyledLeafView: ContentResponder {
 
     mutating func mustUpdate(data: ShapeUpdateData, position: Attribute<ViewOrigin>) -> Bool
 
-    typealias FramedShape =  (shape: ShapeStyle.RenderedShape.Shape, frame: CGRect)
+    typealias FramedShape = (shape: ShapeStyle.RenderedShape.Shape, frame: CGRect)
 
     func shape(in size: CGSize) -> FramedShape
 

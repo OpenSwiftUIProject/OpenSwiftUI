@@ -529,7 +529,6 @@ extension GraphicsImage: ProtobufMessage {
 }
 package struct ResolvedShadowStyle {}
 
-package struct StyledTextContentView: PrimitiveView {}
 package struct RasterizationOptions {}
 package protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
 public struct PlatformDrawableOptions {}
