@@ -134,8 +134,170 @@ extension Text {
 //        }
     }
 
-    // TODO
-    package struct Style {}
+    // MARK: - Text.Style [WIP]
+
+    package struct Style {
+        private var baseFont: TextStyleFont
+        private var fontModifiers: [AnyFontModifier]
+        private var color: TextStyleColor
+        private var backgroundColor: Color?
+        private var baselineOffset: CGFloat?
+        private var kerning: CGFloat?
+        private var tracking: CGFloat?
+        private var strikethrough: LineStyle
+        private var underline: LineStyle
+//        private var encapsulation: Text.Encapsulation?
+        private var speech: AccessibilitySpeechAttributes?
+        package var accessibility: AccessibilityTextAttributes?
+//        private var glyphInfo: CTGlyphInfo?
+//        private var shadow: TextShadowModifier?
+//        private var transition: TextTransitionModifier?
+//        private var scale: Text.Scale?
+//        private var superscript: Text.Superscript?
+//        private var typesettingConfiguration: TypesettingConfiguration
+//        private var customAttributes: [TextAttributeModifierBase]
+        #if canImport(Darwin)
+//        private var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
+        #endif
+        package var clearedFontModifiers: Set<ObjectIdentifier>
+
+        init() {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        // MARK: - Text.Style.LineStyle
+
+        package enum LineStyle {
+            case implicit
+            case explicit(Text.LineStyle)
+            case `default`
+
+            package func resolve(
+                in environment: EnvironmentValues,
+                fallbackStyle: @autoclosure () -> Text.LineStyle?
+            ) -> Text.LineStyle.Resolved? {
+                let style: Text.LineStyle
+                switch self {
+                case .implicit:
+                    guard let fallbackStyle = fallbackStyle() else {
+                        return nil
+                    }
+                    style = fallbackStyle
+                case let .explicit(lineStyle):
+                    style = lineStyle
+                case .default:
+                    return nil
+                }
+                return Text.LineStyle.Resolved(
+                    nsUnderlineStyle: style.nsUnderlineStyle,
+                    color: style.color?.resolve(in: environment)
+                )
+            }
+        }
+
+        // MARK: - Text.Style.TextStyleColor [WIP]
+
+        package enum TextStyleColor {
+            case implicit
+            case explicit(AnyShapeStyle)
+            case `default`
+            case foregroundKeyColor(base: AnyShapeStyle)
+
+            package func resolve(
+                in environment: EnvironmentValues,
+                with options: Text.ResolveOptions,
+                properties: inout Text.ResolvedProperties,
+                includeDefaultAttributes: Bool = true
+            ) -> Color.Resolved? {
+                let style: AnyShapeStyle
+                switch self {
+                case .implicit:
+                    guard includeDefaultAttributes else {
+                        return nil
+                    }
+                    guard !options.contains(.foregroundKeyColor) else {
+                        return .init(linearWhite: -1, opacity: 1)
+                    }
+                    let s = environment.defaultForegroundStyle
+                    style = .init(s?.fallbackColor(in: environment, level: 0) ?? .primary)
+                case .explicit(let anyShapeStyle):
+                    style = anyShapeStyle
+                case .default:
+                    guard includeDefaultAttributes else {
+                        return nil
+                    }
+                    guard !options.contains(.foregroundKeyColor) else {
+                        return .init(linearWhite: -1, opacity: 1)
+                    }
+                    let s = environment.foregroundStyle
+                    style = .init(s?.fallbackColor(in: environment, level: 0) ?? .primary)
+                case .foregroundKeyColor(let base):
+                    guard !options.contains(.allowsKeyColors) else {
+                        return .init(linearWhite: -1, opacity: 1)
+                    }
+                    style = base
+                }
+                if options.contains(.allowsKeyColors) {
+                    var shape = _ShapeStyle_Shape(
+                        operation: .resolveStyle(name: .foreground, levels: 0..<1),
+                        environment: environment,
+                        role: .stroke
+                    )
+                    style._apply(to: &shape)
+                    let shapeStyle = shape.stylePack[.foreground, 0]
+                    return properties.addCustomStyle(shapeStyle)
+                } else {
+                    let color = style.fallbackColor(in: environment, level: 0) ?? .foreground
+                    return color.resolve(in: environment)
+                }
+            }
+        }
+
+        // MARK: - Text.Style.TextStyleFont
+
+        package enum TextStyleFont {
+            case implicit
+            case explicit(Font)
+            case `default`
+
+            package func resolve(
+                in environment: EnvironmentValues,
+                includeDefaultAttributes: Bool = true
+            ) -> Font? {
+                guard case let .explicit(font) = self else {
+                    guard includeDefaultAttributes else {
+                        return nil
+                    }
+                    if case .implicit = self {
+                        return environment.effectiveFont
+                    } else { // default
+                        return environment.defaultFont ?? environment.fallbackFont
+                    }
+                }
+                return font
+            }
+        }
+
+        package func fontTraits(in environment: EnvironmentValues) -> Font.ResolvedTraits {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package mutating func addFontModifier<M>(_ modifier: M) where M: FontModifier {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package mutating func addFontModifier<M>(type: M.Type) where M: StaticFontModifier {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package mutating func removeFontModifier<M>(ofType _: M.Type) where M: FontModifier {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package mutating func removeFontModifier<M>(ofType _: M.Type) where M: StaticFontModifier {
+            _openSwiftUIUnimplementedFailure()
+        }
+    }
 
     package struct ResolvedProperties {
         package var insets: EdgeInsets

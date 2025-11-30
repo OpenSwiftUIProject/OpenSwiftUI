@@ -11,12 +11,21 @@ package import Foundation
 // MARK: - Accessibility + Text resolve [WIP]
 
 extension AccessibilityCore {
-    package static func textResolvesToEmpty(_ text: Text, in environment: EnvironmentValues) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+    package static func textResolvesToEmpty(
+        _ text: Text,
+        in environment: EnvironmentValues
+    ) -> Bool {
+        guard let storedAccessibilityLabel = text.storedAccessibilityLabel else {
+            return text.resolvesToEmpty(in: environment, with: .includeAccessibility)
+        }
+        return textResolvesToEmpty(storedAccessibilityLabel, in: environment)
     }
 
-    package static func textsResolveToEmpty(_ texts: [Text], in environment: EnvironmentValues) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+    package static func textsResolveToEmpty(
+        _ texts: [Text],
+        in environment: EnvironmentValues
+    ) -> Bool {
+        texts.allSatisfy { textResolvesToEmpty($0, in: environment) }
     }
 
     package static func textResolvedToPlainText(
@@ -25,7 +34,15 @@ extension AccessibilityCore {
         updateResolvableAttributes: Bool = false,
         idiom: AnyInterfaceIdiom? = nil
     ) -> String {
-        _openSwiftUIUnimplementedFailure()
+        guard let storedAccessibilityLabel = text.storedAccessibilityLabel else {
+            _openSwiftUIUnimplementedFailure()
+        }
+        return textResolvedToPlainText(
+            storedAccessibilityLabel,
+            in: environment,
+            updateResolvableAttributes: updateResolvableAttributes,
+            idiom: idiom
+        )
     }
 
     package static func textsResolvedToPlainText(
