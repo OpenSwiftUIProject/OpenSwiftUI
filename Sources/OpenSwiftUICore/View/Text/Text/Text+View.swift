@@ -115,6 +115,16 @@ package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafV
     package typealias Body = Never
 
     package typealias ShapeUpdateData = Void
+
+    private struct ArchivedTransitionEnvironment: Rule, AsyncAttribute {
+        @Attribute var view: StyledTextContentView
+        @Attribute var environment: EnvironmentValues
+
+        var value: EnvironmentValues {
+            _openSwiftUIUnimplementedWarning()
+            return environment
+        }
+    }
 }
 
 
