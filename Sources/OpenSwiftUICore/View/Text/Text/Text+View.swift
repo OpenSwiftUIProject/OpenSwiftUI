@@ -45,7 +45,7 @@ public struct TextLayoutProperties: Equatable {
 
     package var lowerLineLimit: Int?
 
-//    public var truncationMode: Text.TruncationMode
+//    public var truncationMode: Text.TruncationMode = 
 
     public var multilineTextAlignment: TextAlignment
 
@@ -53,25 +53,31 @@ public struct TextLayoutProperties: Equatable {
 
     package var transitionStyle: ContentTransition.Style
 
-    public var minScaleFactor: CGFloat
+    public var minScaleFactor: CGFloat = 1.0
 
-    public var lineSpacing: CGFloat
+    public var lineSpacing: CGFloat = .zero
 
-    public var lineHeightMultiple: CGFloat
+    public var lineHeightMultiple: CGFloat = .zero
 
-    public var maximumLineHeight: CGFloat
+//    public var maximumLineHeight: CGFloat =
 
-    public var minimumLineHeight: CGFloat
+//    public var minimumLineHeight: CGFloat
 
-    public var hyphenationFactor: CGFloat
+    public var hyphenationFactor: CGFloat = .zero
 
-//    package var writingMode: Text.WritingMode
+    package var hyphenationDisabled: Bool = false
 
-    package var bodyHeadOutdent: CGFloat
+    package var writingMode: Text.WritingMode = .horizontalTopToBottom
 
-    package var pixelLength: CGFloat
+    package var bodyHeadOutdent: CGFloat = .zero
 
-    package var textSizing: Text.Sizing
+    package var pixelLength: CGFloat = 1.0
+
+    package var textSizing: Text.Sizing = .standard
+
+    // package var textShape: TextShape
+
+    // package var flags: Flags
 
     package var widthIsFlexible: Bool {
         get { _openSwiftUIUnimplementedFailure() }
@@ -88,9 +94,15 @@ public struct TextLayoutProperties: Equatable {
 
     }
 
-    public init(_ env: EnvironmentValues) {
-        _openSwiftUIUnimplementedFailure()
+    private struct Key: DerivedEnvironmentKey {
+        static func value(in environment: EnvironmentValues) -> TextLayoutProperties {
+            // TODO
+            .init()
+        }
+    }
 
+    public init(_ env: EnvironmentValues) {
+        self = env[Key.self]
     }
 
     package func update(
