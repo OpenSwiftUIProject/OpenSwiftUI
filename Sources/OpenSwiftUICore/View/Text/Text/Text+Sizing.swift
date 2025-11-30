@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 22747AAF70EE5063D02F299CE90A18BE (SwiftUICore)
 
 // MARK: - Text + Sizing
@@ -23,7 +23,7 @@ extension Text {
         package var storage: Text.Sizing.Storage
 
         package init(_ storage: Text.Sizing.Storage) {
-            _openSwiftUIUnimplementedFailure()
+            self.storage = storage
         }
 
         public static let standard: Text.Sizing = .init(.standard)
@@ -43,4 +43,19 @@ extension EnvironmentValues {
         get { self[TextSizingKey.self] }
         set { self[TextSizingKey.self] = newValue }
     }
+}
+
+// MARK: - PreferTextLayoutManagerInput
+
+private struct PreferTextLayoutManagerInputModifier: ViewInputsModifier {
+    static func _makeViewInputs(
+        modifier: _GraphValue<Self>,
+        inputs: inout _ViewInputs
+    ) {
+        inputs[PreferTextLayoutManagerInput.self] = true
+    }
+}
+
+package struct PreferTextLayoutManagerInput: ViewInput {
+    package static var defaultValue: Bool { false }
 }
