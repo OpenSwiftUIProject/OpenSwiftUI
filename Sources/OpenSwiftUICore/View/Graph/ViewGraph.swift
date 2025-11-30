@@ -148,6 +148,10 @@ package final class ViewGraph: GraphHost {
         self.rootViewType = rootViewType
         self.requestedOutputs = requestedOutputs
         let data = GraphHost.Data()
+        let oldCurrentSubgraph = Subgraph.current
+        defer {
+            Subgraph.current = oldCurrentSubgraph
+        }
         Subgraph.current = data.globalSubgraph
         rootView = Attribute(type: Root.self).identifier
         _rootTransform = Attribute(RootTransform())
@@ -188,7 +192,6 @@ package final class ViewGraph: GraphHost {
             }
         }
         super.init(data: data)
-        Subgraph.current = nil
     }
     
     deinit {
