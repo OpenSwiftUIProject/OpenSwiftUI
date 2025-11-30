@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 @available(OpenSwiftUI_v1_0, *)
 extension AnyTransition {
@@ -37,24 +37,22 @@ extension Transition where Self == SlideTransition {
 ///
 /// - SeeAlso: `MoveTransition`
 @available(OpenSwiftUI_v5_0, *)
-@MainActor
-@preconcurrency
 public struct SlideTransition: Transition {
 
-    @MainActor
-    @preconcurrency
     public init() {
         _openSwiftUIEmptyStub()
     }
 
-    @MainActor
-    @preconcurrency
     public func body(
         content: Content,
         phase: TransitionPhase
     ) -> some View {
-        // TODO: MoveTransition
-        content
+        let edge: Edge? = switch phase {
+        case .willAppear: .leading
+        case .identity: nil
+        case .didDisappear: .trailing
+        }
+        content.modifier(MoveTransition.MoveLayout(edge: edge))
     }
 }
 
