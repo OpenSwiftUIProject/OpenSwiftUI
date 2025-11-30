@@ -130,7 +130,10 @@ public struct TextLayoutProperties: Equatable {
         pixelLength = env.pixelLength
         textSizing = env.textSizing
         textShape = env.textShape
-        // TODO: flags
+        widthIsFlexible = switch env.textJustification.storage {
+        case .full(let full): full.flexible
+        case .none: false
+        }
     }
 
     package func update(

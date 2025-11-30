@@ -19,7 +19,7 @@ public struct TextJustification: Sendable, Equatable {
         case none
     }
 
-    private var storage: Storage
+    var storage: Storage
 
     public static let none: TextJustification = .init(storage: .none)
 
