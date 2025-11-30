@@ -2336,6 +2336,7 @@ private struct SubgraphElements: ViewList.Elements {
         guard subgraph.isValid else {
             return nil
         }
+        subgraph.retain()
         return Release(base: base.retain(), subgraph: subgraph)
     }
 }
