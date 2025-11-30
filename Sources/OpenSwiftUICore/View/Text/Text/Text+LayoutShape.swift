@@ -104,3 +104,7 @@ package struct TextShape: Equatable {
         )
     }
 }
+
+extension EnvironmentValues {
+    @Entry var textShape: TextShape = .bounds
+}
