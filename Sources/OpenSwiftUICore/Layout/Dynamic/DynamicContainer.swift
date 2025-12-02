@@ -258,7 +258,7 @@ private struct DynamicPreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringC
             }
             let item = info.items[itemIndex]
             guard let attribute = item.outputs[K.self] else {
-                return value
+                continue
             }
             if initialValue {
                 value = attribute.value
