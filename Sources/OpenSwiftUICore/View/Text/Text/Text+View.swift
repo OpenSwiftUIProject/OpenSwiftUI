@@ -6,8 +6,10 @@
 //  Status: WIP
 //  ID: 641995D812913A47B866B20B88782376 (SwiftUICore)
 
+import Foundation
 import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
+import UIFoundation_Private
 
 // MARK: - Text + View [WIP]
 
@@ -313,11 +315,6 @@ struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
         ResolvedStyledText()
     }
 }
-
-struct ResolvedTextHelper {
-
-}
-
 // FIXME:
 
 @available(OpenSwiftUI_v6_0, *)
@@ -335,9 +332,147 @@ extension ResolvedStyledText {
     package class StringDrawing {}
 }
 
+// MARK: - TextDrawingContext
 
-private struct TextFilter {
+#if !canImport(Darwin)
+class NSStringDrawingContext {}
+#endif
 
+@_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
+final public class TextDrawingContext {
+    @AtomicBox
+    var ctx: NSStringDrawingContext
+
+    init(ctx: NSStringDrawingContext) {
+        self.ctx = ctx
+    }
+
+    static let shared: TextDrawingContext = {
+        let ctx = NSStringDrawingContext()
+        #if canImport(Darwin)
+        ctx.wrapsForTruncationMode = true
+        ctx.wantsBaselineOffset = true
+        ctx.wantsScaledLineHeight = true
+        ctx.wantsScaledBaselineOffset = true
+        ctx.cachesLayout = true
+        #endif
+        return TextDrawingContext(ctx: ctx)
+    }()
+}
+
+@_spi(ForOpenSwiftUIOnly)
+@available(*, unavailable)
+extension TextDrawingContext: Sendable {}
+
+//extension ResolvedStyledText {
+//    package static func styledText(
+//        storage: NSAttributedString?,
+//        layoutProperties: TextLayoutProperties,
+//        layoutMargins: EdgeInsets?,
+//        stylePadding: EdgeInsets,
+//        archiveOptions: ArchivedViewInput.Value,
+//        isCollapsible: Bool,
+//        features: Text.ResolvedProperties.Features,
+//        suffix: ResolvedTextSuffix,
+//        attachments: Text.ResolvedProperties.CustomAttachments,
+//        styles: [_ShapeStyle_Pack.Style],
+//        transitions: [Text.ResolvedProperties.Transition],
+//        scaleFactorOverride: CGFloat?,
+//        isInitialResolution: Bool = true
+//    ) -> ResolvedStyledText
+//
+//    package static func styledText(
+//        storage: NSAttributedString?,
+//        stylePadding: EdgeInsets = EdgeInsets(),
+//        layoutProperties: TextLayoutProperties,
+//        archiveOptions: ArchivedViewInput.Value = .init(),
+//        isCollapsible: Bool = false,
+//        features: Text.ResolvedProperties.Features = .init(),
+//        suffix: ResolvedTextSuffix = .none,
+//        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
+//        styles: [_ShapeStyle_Pack.Style] = .init(),
+//        transitions: [Text.ResolvedProperties.Transition] = .init()
+//    ) -> ResolvedStyledText
+//
+//    package static func styledText(
+//        storage: NSAttributedString?,
+//        stylePadding: EdgeInsets = EdgeInsets(),
+//        environment: EnvironmentValues,
+//        archiveOptions: ArchivedViewInput.Value = .init(),
+//        isCollapsible: Bool = false,
+//        features: Text.ResolvedProperties.Features = .init(),
+//        suffix: ResolvedTextSuffix = .none,
+//        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
+//        styles: [_ShapeStyle_Pack.Style] = .init(),
+//        transitions: [Text.ResolvedProperties.Transition] = .init(),
+//        writingMode: Text.WritingMode? = nil,
+//        sizeFitting: Bool = false
+//    ) -> ResolvedStyledText
+//}
+
+// MARK: - CodableResolvedStyledText [WIP]
+
+struct CodableResolvedStyledText: ProtobufMessage {
+    var base: ResolvedStyledText
+
+    init(from decoder: inout ProtobufDecoder) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func encode(to encoder: inout ProtobufEncoder) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - ResolvedTextHelper [WIP] SizeFittingTextResolver
+
+struct ResolvedTextHelper {
+    enum NextUpdate {
+        case time(Time)
+        case recipe(lastTime: Time, lastDate: Date, reduceFrequency: Bool, resolved: ResolvedStyledText)
+        case none
+    }
+
+    var _time: Attribute<Time>
+    var _referenceDate: WeakAttribute<Date?>
+    let includeDefaultAttributes: Bool
+    let allowsKeyColors: Bool
+    let archiveOptions: ArchivedViewInput.Value
+    let features: Text.ResolvedProperties.Features
+    let attachmentsAsAuxiliaryMetadata: Bool
+    let idiom: AnyInterfaceIdiom
+    let tracker: PropertyList.Tracker
+    var lastText: Text?
+    var nextUpdate: ResolvedTextHelper.NextUpdate
+    var sizeVariant: TextSizeVariant
+}
+
+//extension ResolvedTextHelper: SizeFittingTextResolver {
+//    typealias Input = (text: Text?, env: EnvironmentValues, renderer: TextRendererBoxBase?)
+//    typealias Engine = StyledTextLayoutEngine
+//}
+
+// TextChildQuery
+
+// ResolvedOptionalTextFilter
+
+// DynamicTextView
+
+// StyledTextLayoutEngine TODO
+
+struct StyledTextLayoutEngine: LayoutEngine {
+    var text: ResolvedStyledText
+    var renderer: TextRendererBoxBase?
+
+    func spacing() -> Spacing {
+//        text
+        .init()
+    }
+
+    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        .zero
+    }
 }
 
 // FIXME

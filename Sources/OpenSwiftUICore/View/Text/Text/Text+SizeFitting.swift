@@ -151,3 +151,29 @@ extension TextSizeVariant: Codable {
         try container.encode(rawValue)
     }
 }
+
+// MARK: - SizeFittingTextResolver [WIP]
+
+protocol SizeFittingTextResolver: LayoutEngine {
+    associatedtype Input
+    associatedtype Engine: LayoutEngine
+
+    func shouldUpdate(for input: Input, inputChanged: Bool) -> Bool
+    func value(for input: Input) -> SizeFittingTextCacheValue<Engine>
+    var narrowerVariant: Self { get }
+}
+
+protocol TextSizeFittingLogic {
+    func suggestedVariant(for proposedSize: _ProposedSize) -> TextSizeVariant?
+    func onInvalidation(of variant: TextSizeVariant)
+}
+
+class SizeFittingTextCache {
+
+}
+
+struct SizeFittingTextCacheValue<Engine> where Engine: LayoutEngine {
+    var text: ResolvedStyledText
+    var engine: Engine
+    var renderer: TextRendererBoxBase?
+}
