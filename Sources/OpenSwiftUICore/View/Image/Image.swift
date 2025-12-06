@@ -11,17 +11,17 @@ public import CoreGraphics
 
 @frozen
 public struct Image: Equatable, Sendable {
-    // FIXME
-    package static var redacted: Image {
-        _openSwiftUIUnimplementedFailure()
-    }
-
     #if canImport(CoreGraphics)
     // FIXME
     public init(decorative: CGImage, scale: CGFloat, orientation: Image.Orientation) {
         _openSwiftUIUnimplementedFailure()
     }
     #endif
+
+    // FIXME
+    package enum Resolved {}
+
+    package enum NamedResolved {}
 }
 
 
