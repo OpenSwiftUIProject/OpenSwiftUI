@@ -2,8 +2,7 @@
 //  NSAttributedString.h
 //  OpenSwiftUI_SPI
 
-#ifndef OpenSwiftUI_SPI_NSAttributedString_h
-#define OpenSwiftUI_SPI_NSAttributedString_h
+#pragma once
 
 #include "OpenSwiftUIBase.h"
 
@@ -26,5 +25,16 @@ typedef OPENSWIFTUI_OPTIONS(NSInteger, NSUnderlineStyle) {
     NSUnderlineStyleByWord API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0))            = 0x8000
 } API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0));
 
+#if OPENSWIFTUI_TARGET_OS_DARWIN
 
-#endif /* OpenSwiftUI_SPI_NSAttributedString_h */
+#import <Foundation/Foundation.h>
+
+OPENSWIFTUI_ASSUME_NONNULL_BEGIN
+
+@interface NSAttributedString (NSStringDrawing)
+- (NSAttributedString *)_ui_attributedSubstringFromRange:(NSRange)range scaledByScaleFactor:(CGFloat)factor;
+@end
+
+OPENSWIFTUI_ASSUME_NONNULL_END
+
+#endif
