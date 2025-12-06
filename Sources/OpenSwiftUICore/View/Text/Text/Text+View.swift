@@ -318,9 +318,6 @@ struct ResolvedTextHelper {
 
 }
 
-package class TextRendererBoxBase {}
-
-
 // FIXME:
 
 @available(OpenSwiftUI_v6_0, *)
