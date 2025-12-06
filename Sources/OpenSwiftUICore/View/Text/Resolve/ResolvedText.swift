@@ -137,27 +137,27 @@ extension Text {
     // MARK: - Text.Style [WIP]
 
     package struct Style {
-        private var baseFont: TextStyleFont
-        private var fontModifiers: [AnyFontModifier]
-        private var color: TextStyleColor
-        private var backgroundColor: Color?
-        private var baselineOffset: CGFloat?
-        private var kerning: CGFloat?
-        private var tracking: CGFloat?
-        private var strikethrough: LineStyle
-        private var underline: LineStyle
-//        private var encapsulation: Text.Encapsulation?
-        private var speech: AccessibilitySpeechAttributes?
+        internal var baseFont: TextStyleFont
+        internal var fontModifiers: [AnyFontModifier]
+        internal var color: TextStyleColor
+        internal var backgroundColor: Color?
+        internal var baselineOffset: CGFloat?
+        internal var kerning: CGFloat?
+        internal var tracking: CGFloat?
+        internal var strikethrough: LineStyle
+        internal var underline: LineStyle
+        internal var encapsulation: Text.Encapsulation?
+        internal var speech: AccessibilitySpeechAttributes?
         package var accessibility: AccessibilityTextAttributes?
-//        private var glyphInfo: CTGlyphInfo?
-//        private var shadow: TextShadowModifier?
-//        private var transition: TextTransitionModifier?
-//        private var scale: Text.Scale?
-//        private var superscript: Text.Superscript?
-//        private var typesettingConfiguration: TypesettingConfiguration
-//        private var customAttributes: [TextAttributeModifierBase]
+//        internal var glyphInfo: CTGlyphInfo?
+//        internal var shadow: TextShadowModifier?
+//        internal var transition: TextTransitionModifier?
+//        internal var scale: Text.Scale?
+//        internal var superscript: Text.Superscript?
+        internal var typesettingConfiguration: TypesettingConfiguration
+//        internal var customAttributes: [TextAttributeModifierBase]
         #if canImport(Darwin)
-//        private var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
+//        internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
         #endif
         package var clearedFontModifiers: Set<ObjectIdentifier>
 
