@@ -1,5 +1,5 @@
 //
-//  NSMutableParagraphStyle.h
+//  NSParagraphStyle.h
 //  OpenSwiftUI_SPI
 
 #pragma once
@@ -10,10 +10,12 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface NSMutableParagraphStyle : NSObject
-
+@interface NSParagraphStyle : NSObject
 // TODO
+@end
 
+@interface NSMutableParagraphStyle : NSObject
+// TODO
 @end
 
 OPENSWIFTUI_ASSUME_NONNULL_END

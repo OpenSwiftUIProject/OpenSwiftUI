@@ -31,8 +31,12 @@ typedef OPENSWIFTUI_OPTIONS(NSInteger, NSUnderlineStyle) {
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface NSAttributedString (NSStringDrawing)
-- (NSAttributedString *)_ui_attributedSubstringFromRange:(NSRange)range scaledByScaleFactor:(CGFloat)factor;
+@interface NSAttributedString (OpenSwiftUI_SPI)
+- (NSAttributedString *)_ui_attributedSubstringFromRange_openswiftui_safe_wrapper:(NSRange)range scaledByScaleFactor:(CGFloat)factor OPENSWIFTUI_SWIFT_NAME(_ui_attributedSubstring(from:scaledBy:));
+@end
+
+@interface NSMutableAttributedString (OpenSwiftUI_SPI)
+@property(readonly, assign, nonatomic) BOOL isEmptyOrTerminatedByParagraphSeparator_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(isEmptyOrTerminatedByParagraphSeparator);
 @end
 
 OPENSWIFTUI_ASSUME_NONNULL_END

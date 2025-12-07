@@ -8,6 +8,7 @@
 package import UIFoundation_Private
 
 #if !canImport(Darwin)
+class NSParagraphStyle {}
 class NSMutableParagraphStyle {}
 #endif
 
@@ -89,7 +90,7 @@ extension NSAttributedString {
         #if canImport(Darwin)
         return _ui_attributedSubstring(
             from: NSRange(location: 0, length: length),
-            scaledByScaleFactor: factor
+            scaledBy: factor
         )
         #else
         _openSwiftUIPlatformUnimplementedWarning()

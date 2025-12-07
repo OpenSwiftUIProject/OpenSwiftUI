@@ -177,3 +177,17 @@ struct SizeFittingTextCacheValue<Engine> where Engine: LayoutEngine {
     var engine: Engine
     var renderer: TextRendererBoxBase?
 }
+
+// TODO
+
+extension EnvironmentValues {
+    private struct TextSizeVariantKey: EnvironmentKey {
+        static let defaultValue: TextSizeVariant = .regular
+    }
+
+    @inline(__always)
+    var textSizeVariant: TextSizeVariant {
+        get { self[TextSizeVariantKey.self] }
+        set { self[TextSizeVariantKey.self] = newValue }
+    }
+}

@@ -7,6 +7,9 @@
 //  ID: 7AFAB46D18FA6D189589CFA78D8B2B2E (SwiftUICore)
 
 package import Foundation
+package import UIFoundation_Private
+
+// MARK: - ResolvedTextContainer
 
 package protocol ResolvedTextContainer {
     var style: Text.Style { get set }
@@ -27,24 +30,24 @@ package protocol ResolvedTextContainer {
         isUniqueSizeVariant: Bool
     )
 
-//    mutating func append(
-//        _ image: Image.Resolved,
-//        in environment: EnvironmentValues,
-//        with options: Text.ResolveOptions
-//    )
-//
-//    mutating func append(
-//        _ namedImage: Image.NamedResolved,
-//        in environment: EnvironmentValues,
-//        with options: Text.ResolveOptions
-//    )
-//
-//    mutating func append<R>(
-//        resolvable: R,
-//        in environment: EnvironmentValues,
-//        with options: Text.ResolveOptions,
-//        transition: ContentTransition?
-//    ) where R: ResolvableStringAttribute
+    mutating func append(
+        _ image: Image.Resolved,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    )
+
+    mutating func append(
+        _ namedImage: Image.NamedResolved,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    )
+
+    mutating func append<R>(
+        resolvable: R,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions,
+        transition: ContentTransition?
+    ) where R: ResolvableStringAttribute
 }
 
 extension ResolvedTextContainer {
@@ -53,7 +56,12 @@ extension ResolvedTextContainer {
         in env: EnvironmentValues,
         with options: Text.ResolveOptions,
     ) where S: StringProtocol {
-        _openSwiftUIUnimplementedFailure()
+        append(
+            string,
+            in: env,
+            with: options,
+            isUniqueSizeVariant: env.textSizeVariant != .regular
+        )
     }
 
     mutating func append(
@@ -61,7 +69,12 @@ extension ResolvedTextContainer {
         in env: EnvironmentValues,
         with options: Text.ResolveOptions,
     ) {
-        _openSwiftUIUnimplementedFailure()
+        append(
+            attributedString,
+            in: env,
+            with: options,
+            isUniqueSizeVariant: env.textSizeVariant != .regular
+        )
     }
 }
 
@@ -87,6 +100,18 @@ extension Text {
             with options: Text.ResolveOptions,
             isUniqueSizeVariant: Bool
         ) where S: StringProtocol {
+            var string = String(string).caseConvertedIfNeeded(env)
+            let attributes = style.nsAttributes(
+                content: { string },
+                environment: env,
+                includeDefaultAttributes: includeDefaultAttributes,
+                with: options,
+                properties: &properties
+            )
+            append(string, with: attributes, in: env)
+            if attributedString!.isEmptyOrTerminatedByParagraphSeparator {
+                properties.paragraph.cachedStyle = nil
+            }
             _openSwiftUIUnimplementedFailure()
         }
 
@@ -99,39 +124,66 @@ extension Text {
             _openSwiftUIUnimplementedFailure()
         }
 
-//        package mutating func append(
-//            _ image: Image.Resolved,
-//            in environment: EnvironmentValues,
-//            with options: Text.ResolveOptions
-//        ) {
-//            _openSwiftUIUnimplementedFailure()
-//        }
-//
-//        package mutating func append(
-//            _ namedImage: Image.NamedResolved,
-//            in environment: EnvironmentValues,
-//            with options: Text.ResolveOptions
-//        ) {
-//            _openSwiftUIUnimplementedFailure()
-//        }
-//
-//        package mutating func append<R>(
-//            resolvable: R,
-//            in environment: EnvironmentValues,
-//            with options: Text.ResolveOptions,
-//            transition: ContentTransition?
-//        ) where R: ResolvableStringAttribute {
-//            _openSwiftUIUnimplementedFailure()
-//        }
-//
-//        package func nsAttributes(
-//            content: (() -> String)?,
-//            in environment: EnvironmentValues,
-//            with options: Text.ResolveOptions,
-//            properties: inout Text.ResolvedProperties
-//        ) -> [NSAttributedString.Key: Any] {
-//            _openSwiftUIUnimplementedFailure()
-//        }
+        package mutating func append(
+            _ image: Image.Resolved,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions
+        ) {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package mutating func append(
+            _ namedImage: Image.NamedResolved,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions
+        ) {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package mutating func append<R>(
+            resolvable: R,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions,
+            transition: ContentTransition?
+        ) where R: ResolvableStringAttribute {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package func nsAttributes(
+            content: (() -> String)?,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions,
+            properties: inout Text.ResolvedProperties
+        ) -> [NSAttributedString.Key: Any] {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        private mutating func append(
+            _ string: String,
+            with attributes: [NSAttributedString.Key: Any],
+            in environment: EnvironmentValues
+        ) {
+            var string = string.caseConvertedIfNeeded(environment)
+            if environment.shouldRedactContent {
+                string = String.init(repeating: "􀮷", count: string.count)
+            }
+            if environment.sensitiveContent {
+                properties.addSensitive()
+            }
+            if let attributedString {
+                attributedString.append(
+                    NSAttributedString(
+                        string: string,
+                        attributes: attributes
+                    )
+                )
+            } else {
+                attributedString = NSMutableAttributedString(
+                    string: string,
+                    attributes: attributes
+                )
+            }
+        }
     }
 
     // MARK: - Text.Style [WIP]
@@ -367,7 +419,9 @@ extension Text {
         }
 
         package struct Paragraph {
-            // package var compositionLanguage: NSCompositionLanguage
+            package var compositionLanguage: NSCompositionLanguage
+
+            var cachedStyle: NSParagraphStyle?
         }
 
         package var paragraph: Text.ResolvedProperties.Paragraph
@@ -381,7 +435,7 @@ extension Text {
         }
 
         package mutating func addSensitive() {
-            _openSwiftUIUnimplementedFailure()
+            features.insert(.sensitive)
         }
 
         package mutating func addCustomStyle(_ style: _ShapeStyle_Pack.Style) -> Color.Resolved {
@@ -397,7 +451,9 @@ extension Text {
         var string: String = ""
         var hasResolvableAttributes: Bool = false
 
-        init() {}
+        init() {
+            _openSwiftUIEmptyStub()
+        }
 
         mutating func append<S>(
             _ string: S,
@@ -423,6 +479,44 @@ extension Text {
                 in: env,
                 with: options,
                 isUniqueSizeVariant: isUniqueSizeVariant
+            )
+        }
+
+        mutating func append(
+            _ image: Image.Resolved,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions
+        ) {
+            string.append("￼") // object replacement character (U+FFFC)
+        }
+
+        mutating func append(
+            _ namedImage: Image.NamedResolved,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions
+        ) {
+            string.append("￼") // object replacement character (U+FFFC)
+        }
+
+        mutating func append<R>(
+            resolvable: R,
+            in environment: EnvironmentValues,
+            with options: Text.ResolveOptions,
+            transition: ContentTransition?
+        ) where R: ResolvableStringAttribute {
+            let context = ResolvableStringResolutionContext(
+                referenceDate: nil,
+                environment: environment,
+                maximumWidth: nil
+            )
+            guard let attributedString = resolvable.resolve(in: context) else {
+                Log.internalWarning("Unable to resolve custom attribute \(resolvable)")
+                return
+            }
+            append(
+                String(attributedString.characters),
+                in: environment,
+                with: options
             )
         }
     }
