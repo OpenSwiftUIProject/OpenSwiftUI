@@ -5,12 +5,8 @@
 //  Audited for 6.5.4
 //  Status: WIP
 
+package import Foundation
 package import UIFoundation_Private
-
-#if !canImport(Darwin)
-class NSParagraphStyle {}
-class NSMutableParagraphStyle {}
-#endif
 
 package func makeParagraphStyle(environment: EnvironmentValues) -> NSMutableParagraphStyle {
     let paragraphStyle = NSMutableParagraphStyle()
