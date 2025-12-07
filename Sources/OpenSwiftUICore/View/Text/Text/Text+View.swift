@@ -955,7 +955,7 @@ struct DynamicTextView: PrimitiveView, UnaryView {
     }
 }
 
-// MARK: - StyledTextLayoutEngine [WIP]
+// MARK: - StyledTextLayoutEngine
 
 struct StyledTextLayoutEngine: LayoutEngine {
     var text: ResolvedStyledText
@@ -977,6 +977,21 @@ struct StyledTextLayoutEngine: LayoutEngine {
             }
             return text.sizeThatFits(proposedSize)
         }
+    }
+
+    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat {
+        if axis == .horizontal, proposal.width == .zero {
+            return .zero
+        }
+        return sizeThatFits(proposal)[axis]
+    }
+
+    func explicitAlignment(_ k: AlignmentKey, at viewSize: ViewSize) -> CGFloat? {
+        text.explicitAlignment(k, at: viewSize.value)
+    }
+
+    var debugContentDescription: String? {
+        text.storage?.string
     }
 }
 
