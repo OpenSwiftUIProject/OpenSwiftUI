@@ -729,7 +729,7 @@ struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
     }
 }
 
-// MARK: - ResolvedTextHelper [WIP] SizeFittingTextResolver
+// MARK: - ResolvedTextHelper [WIP]
 
 struct ResolvedTextHelper {
     enum NextUpdate {
@@ -738,8 +738,8 @@ struct ResolvedTextHelper {
         case none
     }
 
-    var _time: Attribute<Time>
-    var _referenceDate: WeakAttribute<Date?>
+    @Attribute var time: Time
+    @WeakAttribute var referenceDate: Date??
     let includeDefaultAttributes: Bool
     let allowsKeyColors: Bool
     let archiveOptions: ArchivedViewInput.Value
@@ -750,12 +750,44 @@ struct ResolvedTextHelper {
     var lastText: Text?
     var nextUpdate: ResolvedTextHelper.NextUpdate
     var sizeVariant: TextSizeVariant
-}
 
-//extension ResolvedTextHelper: SizeFittingTextResolver {
-//    typealias Input = (text: Text?, env: EnvironmentValues, renderer: TextRendererBoxBase?)
-//    typealias Engine = StyledTextLayoutEngine
-//}
+    init(
+        time: Attribute<Time>,
+        referenceDate: WeakAttribute<Date?>,
+        includeDefaultAttributes: Bool,
+        allowsKeyColors: Bool,
+        archiveOptions: ArchivedViewInput.Value,
+        features: Text.ResolvedProperties.Features,
+        attachmentsAsAuxiliaryMetadata: Bool,
+        idiom: AnyInterfaceIdiom,
+        lastText: Text?,
+        nextUpdate: ResolvedTextHelper.NextUpdate,
+        sizeVariant: TextSizeVariant
+    ) {
+        self._time = time
+        self._referenceDate = referenceDate
+        self.includeDefaultAttributes = includeDefaultAttributes
+        self.allowsKeyColors = allowsKeyColors
+        self.archiveOptions = archiveOptions
+        self.features = features
+        self.attachmentsAsAuxiliaryMetadata = attachmentsAsAuxiliaryMetadata
+        self.idiom = idiom
+        self.tracker = .init()
+        self.lastText = lastText
+        self.nextUpdate = nextUpdate
+        self.sizeVariant = sizeVariant
+    }
+
+    func resolve(
+        _ text: Text?,
+        with environment: EnvironmentValues,
+        sizeFitting: Bool
+    ) -> ResolvedStyledText? {
+        // TODO
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
 
 struct TextChildQuery<A> where A: TextAccessibilityProvider {
     var _resolvedText: Attribute<ResolvedStyledText>
@@ -809,7 +841,6 @@ struct DynamicTextView {
         _openSwiftUIUnimplementedFailure()
     }
 }
-
 
 struct StyledTextLayoutEngine: LayoutEngine {
     var text: ResolvedStyledText

@@ -168,6 +168,11 @@ protocol TextSizeFittingLogic {
     func onInvalidation(of variant: TextSizeVariant)
 }
 
+//extension ResolvedTextHelper: SizeFittingTextResolver {
+//    typealias Input = (text: Text?, env: EnvironmentValues, renderer: TextRendererBoxBase?)
+//    typealias Engine = StyledTextLayoutEngine
+//}
+
 class SizeFittingTextCache {
 
 }
