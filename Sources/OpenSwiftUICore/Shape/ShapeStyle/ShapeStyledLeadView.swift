@@ -59,8 +59,11 @@ extension ShapeStyledLeafView {
 }
 
 extension ShapeStyledLeafView where ShapeUpdateData == () {
-    package mutating func mustUpdate(data: ShapeUpdateData, position: Attribute<ViewOrigin>) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+    package mutating func mustUpdate(
+        data: ShapeUpdateData,
+        position: Attribute<ViewOrigin>
+    ) -> Bool {
+        false
     }
 
     @inlinable
@@ -68,10 +71,15 @@ extension ShapeStyledLeafView where ShapeUpdateData == () {
         view: _GraphValue<Self>,
         inputs: _ViewInputs,
         styles: Attribute<ShapeStyle.Pack>,
-        interpolatorGroup: ShapeStyle.InterpolatorGroup? = nil,
-        data: ShapeUpdateData
+        interpolatorGroup: ShapeStyle.InterpolatorGroup? = nil
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        makeLeafView(
+            view: view,
+            inputs: inputs,
+            styles: styles,
+            interpolatorGroup: interpolatorGroup,
+            data: ()
+        )
     }
 }
 

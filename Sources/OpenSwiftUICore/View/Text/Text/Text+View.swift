@@ -74,7 +74,7 @@ package struct AccessibilityStyledTextContentView<Provider>: View where Provider
     }
 }
 
-// MARK: - StyledTextContentView [Blocked by Shape and TextRendererBoxBase]
+// MARK: - StyledTextContentView [WIP]
 
 package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafView {
     package var text: ResolvedStyledText
@@ -96,11 +96,9 @@ package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafV
     }
 
     package func shape(in size: CGSize) -> FramedShape {
-        let frame = if let renderer {
-            // TODO
-            CGRect.zero
-        } else {
-            CGRect(origin: .zero, size: size)
+        var frame = CGRect(origin: .zero, size: size)
+        if let renderer {
+            frame = frame.outset(by: renderer.displayPadding)
         }
         let shape: ShapeStyle.RenderedShape.Shape = .text(self)
         return (shape, frame)
@@ -110,8 +108,55 @@ package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafV
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        // TODO
-        .init()
+        var newInputs = inputs
+        if inputs.preferences.requiresViewResponders {
+            newInputs.preferences.requiresViewResponders = false
+        }
+        let shapeStyles = inputs.resolvedShapeStyles(
+            role: .stroke,
+            mode: nil
+        )
+        var outputs: _ViewOutputs
+        if inputs.preferences.requiresDisplayList {
+            if inputs.archivedView.isArchived {
+                newInputs.environment = Attribute(
+                    ArchivedTransitionEnvironment(
+                        view: view.value,
+                        environment: inputs.environment
+                    )
+                )
+                // TODO: ContentTransition
+                _openSwiftUIUnimplementedWarning()
+                // FIXME
+                outputs = .init()
+            } else {
+                let group = _ShapeStyle_InterpolatorGroup()
+                if inputs.needsGeometry {
+                    newInputs.position = inputs.animatedPosition()
+                }
+                outputs = makeLeafView(
+                    view: view,
+                    inputs: newInputs,
+                    styles: shapeStyles,
+                    interpolatorGroup: group
+                )
+                // TODO: outputs.applyInterpolatorGroup
+            }
+        } else {
+            outputs = makeLeafView(
+                view: view,
+                inputs: newInputs,
+                styles: shapeStyles,
+                interpolatorGroup: nil
+            )
+        }
+        if inputs.requestsLayoutComputer {
+            outputs.layoutComputer = Attribute(
+                StyledTextLayoutComputer(textView: view.value)
+            )
+        }
+        // TODO: Text.Layout.Key
+        return outputs
     }
 
     package typealias Body = Never
@@ -452,6 +497,16 @@ struct ResolvedTextHelper {
 //    typealias Input = (text: Text?, env: EnvironmentValues, renderer: TextRendererBoxBase?)
 //    typealias Engine = StyledTextLayoutEngine
 //}
+
+private struct StyledTextLayoutComputer: StatefulRule, AsyncAttribute {
+    @Attribute var textView: StyledTextContentView
+
+    typealias Value = LayoutComputer
+
+    func updateValue() {
+        // TODO
+    }
+}
 
 // TextChildQuery
 
