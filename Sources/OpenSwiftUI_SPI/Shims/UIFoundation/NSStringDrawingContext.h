@@ -11,7 +11,10 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface NSStringDrawingContext : NSObject
+@property (NS_NONATOMIC_IOSONLY) CGFloat minimumScaleFactor;
+@end
 
+@interface NSStringDrawingContext (OpenSwiftUI_SPI)
 @property (nonatomic, assign) CGFloat baselineOffset;
 @property (nonatomic, assign) CGFloat firstBaselineOffset;
 @property (nonatomic, assign) BOOL wrapsForTruncationMode;
@@ -19,7 +22,6 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (nonatomic, assign) BOOL wantsScaledLineHeight;
 @property (nonatomic, assign) BOOL wantsScaledBaselineOffset;
 @property (nonatomic, assign) BOOL cachesLayout;
-
 @end
 
 void _NSStringDrawingContextSetBaselineOffset(NSStringDrawingContext *context, CGFloat offset);

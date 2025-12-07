@@ -10,11 +10,11 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface NSParagraphStyle : NSObject
+@interface NSParagraphStyle : NSObject <NSCopying, NSMutableCopying, NSSecureCoding>
 // TODO
 @end
 
-@interface NSMutableParagraphStyle : NSObject
+@interface NSMutableParagraphStyle : NSParagraphStyle
 // TODO
 @end
 
