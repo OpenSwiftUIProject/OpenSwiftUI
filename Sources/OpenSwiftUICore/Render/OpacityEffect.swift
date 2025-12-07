@@ -32,6 +32,12 @@ public struct _OpacityEffect: RendererEffect, Equatable {
         .opacity(Float(opacity))
     }
 
+    package static var isScrapeable: Bool { true }
+
+    package var scrapeableContent: ScrapeableContent.Content? {
+        .opacity(opacity)
+    }
+
     nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,

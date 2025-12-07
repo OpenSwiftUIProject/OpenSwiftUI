@@ -28,25 +28,15 @@ package protocol _RendererEffect: MultiViewModifier, PrimitiveViewModifier {
 // MARK: - _RendererEffect + Default Implementation
 
 extension _RendererEffect {
-    package static var isolatesChildPosition: Bool {
-        false
-    }
+    package static var isolatesChildPosition: Bool { false }
 
-    package static var disabledForFlattenedContent: Bool {
-        false
-    }
+    package static var disabledForFlattenedContent: Bool { false }
 
-    package static var preservesEmptyContent: Bool {
-        false
-    }
+    package static var preservesEmptyContent: Bool { false }
 
-    package static var isScrapeable: Bool {
-        false
-    }
+    package static var isScrapeable: Bool { false }
 
-    package var scrapeableContent: ScrapeableContent.Content? {
-        nil
-    }
+    package var scrapeableContent: ScrapeableContent.Content? { nil }
 
     package static func _makeRendererEffect(
         effect: _GraphValue<Self>,
