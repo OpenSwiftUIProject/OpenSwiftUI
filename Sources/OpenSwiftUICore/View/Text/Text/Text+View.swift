@@ -777,24 +777,35 @@ struct CodableResolvedStyledText: ProtobufMessage {
     }
 }
 
-// MARK: - DynamicTextViewFactory [WIP]
+// MARK: - DynamicTextViewFactory
 
-struct DynamicTextViewFactory {
+struct DynamicTextViewFactory: DisplayList.ViewFactory {
     var text: ResolvedStyledText
     var size: CGSize
     var identity: DisplayList.Identity
+
+    func makeView() -> AnyView {
+        AnyView(DynamicTextView(text: text, size: size))
+    }
+
+    var viewType: any Any.Type {
+        DynamicTextView.self
+    }
 }
 
-// MARK: - StyledTextLayoutComputer [WIP]
+// MARK: - StyledTextLayoutComputer
 
 private struct StyledTextLayoutComputer: StatefulRule, AsyncAttribute {
     @Attribute var textView: StyledTextContentView
 
     typealias Value = LayoutComputer
 
-    func updateValue() {
-        // TODO
-        _openSwiftUIUnimplementedFailure()
+    mutating func updateValue() {
+        let engine = StyledTextLayoutEngine(
+            text: textView.text,
+            renderer: textView.renderer
+        )
+        update(to: engine)
     }
 }
 
@@ -930,7 +941,9 @@ struct ResolvedOptionalTextFilter {
     }
 }
 
-struct DynamicTextView {
+// MARK: - DynamicTextView [WIP]
+
+struct DynamicTextView: PrimitiveView, UnaryView {
     var text: ResolvedStyledText
     var size: CGSize
 
@@ -942,17 +955,28 @@ struct DynamicTextView {
     }
 }
 
+// MARK: - StyledTextLayoutEngine [WIP]
+
 struct StyledTextLayoutEngine: LayoutEngine {
     var text: ResolvedStyledText
     var renderer: TextRendererBoxBase?
 
     func spacing() -> Spacing {
-//        text
-        .init()
+        text.spacing()
     }
 
     func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
-        .zero
+        if let renderer {
+            return renderer.sizeThatFits(
+                proposal: .init(proposedSize),
+                text: .init(text: text)
+            )
+        } else {
+            guard proposedSize != .zero else {
+                return .zero
+            }
+            return text.sizeThatFits(proposedSize)
+        }
     }
 }
 

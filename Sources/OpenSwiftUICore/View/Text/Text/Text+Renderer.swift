@@ -15,6 +15,8 @@ public import OpenCoreGraphicsShims
 @available(OpenSwiftUI_v6_0, *)
 public struct TextProxy {
 
+    var text: ResolvedStyledText
+
     /// Returns the space needed by the text view, for a proposed size.
     ///
     /// - Parameter proposal: the proposed size of the text view.
