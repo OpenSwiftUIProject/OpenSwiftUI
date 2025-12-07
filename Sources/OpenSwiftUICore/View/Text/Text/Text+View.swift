@@ -6,8 +6,8 @@
 //  Status: WIP
 //  ID: 641995D812913A47B866B20B88782376 (SwiftUICore)
 
-import Foundation
-import OpenAttributeGraphShims
+package import Foundation
+package import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
 import UIFoundation_Private
 
@@ -34,8 +34,12 @@ extension Text: UnaryView, PrimitiveView {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        .init()
+        // FIXME
+        return .init()
     }
+
+    // TODO
+    private struct MakeRepresentableContext {}
 }
 
 // MARK: - AccessibilityStyledTextContentView
@@ -173,7 +177,6 @@ package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafV
         }
     }
 }
-
 
 // MARK: - TextLayoutProperties
 
@@ -347,33 +350,239 @@ extension TextLayoutProperties: ProtobufMessage {
     }
 }
 
-// MARK: - ResolvedTextFilter [WIP]
-
-struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
-    @Attribute var text: Text
-    @Attribute var environment: EnvironmentValues
-    var helper: ResolvedTextHelper
-
-    typealias Value = ResolvedStyledText
-
-    func updateValue() {
-        ResolvedStyledText()
-    }
-}
-// FIXME:
+// MARK: - ResolvedStyledText [WIP]
 
 @available(OpenSwiftUI_v6_0, *)
 @usableFromInline
 package class ResolvedStyledText: CustomStringConvertible {
-    var layoutProperties: TextLayoutProperties = .init()
+    final package var layoutProperties: TextLayoutProperties
+
+    final package var layoutMargins: EdgeInsets
+
+    final package var scaleFactorOverride: CGFloat? {
+        didSet {
+            // TODO
+            _openSwiftUIUnimplementedWarning()
+        }
+    }
+
+    package func resetCache() {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package let storage: NSAttributedString?
+
+    final package let stylePadding: EdgeInsets
+
+    package var drawingMargins: EdgeInsets {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package let isCollapsible: Bool
+
+    final package let features: Text.ResolvedProperties.Features
+
+    final package let styles: [_ShapeStyle_Pack.Style]
+
+    final package let transitions: [Text.ResolvedProperties.Transition]
+
+    final package var isDynamic: Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package var isEmpty: Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package var needsStyledRendering: Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package var needsRBDisplayList: Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package var maxFontMetrics: NSAttributedString.EncodedFontMetrics {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package init(
+        storage: NSAttributedString?,
+        layoutProperties: TextLayoutProperties,
+        layoutMargins: EdgeInsets?,
+        stylePadding: EdgeInsets,
+        archiveOptions: ArchivedViewInput.Value,
+        isCollapsible: Bool,
+        features: Text.ResolvedProperties.Features,
+        suffix: ResolvedTextSuffix,
+        attachments: Text.ResolvedProperties.CustomAttachments,
+        styles: [_ShapeStyle_Pack.Style],
+        transitions: [Text.ResolvedProperties.Transition],
+        scaleFactorOverride: CGFloat?
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func lineHeightScalingAdjustment(
+        lineHeightMultiple: CGFloat,
+        maximumLineHeight: CGFloat,
+        minimumLineHeight: CGFloat
+    ) -> CGFloat {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package func draw(
+        in drawingArea: CGRect,
+        with measuredSize: CGSize,
+        applyingMarginOffsets: Bool = true,
+        context: TextDrawingContext = .shared,
+        renderer: TextRendererBoxBase? = nil
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package var majorAxis: Axis {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func drawingScale(size: CGSize) -> CGFloat {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func spacing() -> Spacing {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func size(in request: CGSize) -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func frameSize(in request: CGSize) -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func size(
+        in request: CGSize,
+        context: TextDrawingContext
+    ) -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func explicitAlignment(
+        _ k: AlignmentKey,
+        at size: CGSize
+    ) -> CGFloat? {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func linkURL(
+        at point: CGPoint,
+        in size: CGSize
+    ) -> URL? {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func draw(
+        in drawingArea: CGRect,
+        with measuredSize: CGSize,
+        applyingMarginOffsets: Bool,
+        containsResolvable: Bool,
+        context: TextDrawingContext,
+        renderer: TextRendererBoxBase? = nil
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func layoutValue(
+        in drawingArea: CGRect,
+        with measuredSize: CGSize,
+        applyingMarginOffsets: Bool = true
+    ) -> Text.Layout? {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package func resolvedContent(in context: ResolvableStringResolutionContext) -> NSAttributedString? {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package func resolvingContent(in context: ResolvableStringResolutionContext) -> ResolvedStyledText {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package func nextUpdate(
+        after time: Time,
+        equivalentDate date: Date,
+        reduceFrequency: Bool = false
+    ) -> Time {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+//    final package var updatesAsynchronously: Bool {
+//        _openSwiftUIUnimplementedFailure()
+//    }
 
     @usableFromInline
-    package var description: String {
+    final package var description: String {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    final package var accessibilityText: Text {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+//    final package var cgStyleHandler: RBCGStyleHandler? {
+//        _openSwiftUIUnimplementedFailure()
+//    }
+
+    final package func makeRBDisplayList(
+        for size: CGSize,
+        renderer: TextRendererBoxBase?,
+        deviceScale: CGFloat
+    ) -> any RBDisplayListContents {
         _openSwiftUIUnimplementedFailure()
     }
 }
 
 extension ResolvedStyledText {
+    package func textSizeCacheMetrics(in size: CGSize) -> (UInt?, CGSize) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func linkURLMetrics(
+        in size: CGSize,
+        layoutMargins: EdgeInsets
+    ) -> CGFloat {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+@available(*, unavailable)
+extension ResolvedStyledText: Sendable {}
+
+extension ResolvedStyledText {
+    package func firstBaseline(in size: CGSize) -> CGFloat {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func lastBaseline(in size: CGSize) -> CGFloat {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func frame(in request: CGSize) -> CGRect {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func frameOffset() -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+extension ResolvedStyledText {
+    // FIXME
     package class StringDrawing {}
 }
 
@@ -409,6 +618,8 @@ final public class TextDrawingContext {
 @_spi(ForOpenSwiftUIOnly)
 @available(*, unavailable)
 extension TextDrawingContext: Sendable {}
+
+// MARK: - ResolvedStyledText + Extension [WIP]
 
 //extension ResolvedStyledText {
 //    package static func styledText(
@@ -470,6 +681,54 @@ struct CodableResolvedStyledText: ProtobufMessage {
     }
 }
 
+// MARK: - DynamicTextViewFactory [WIP]
+
+struct DynamicTextViewFactory {
+    var text: ResolvedStyledText
+    var size: CGSize
+    var identity: DisplayList.Identity
+}
+
+// MARK: - StyledTextLayoutComputer [WIP]
+
+private struct StyledTextLayoutComputer: StatefulRule, AsyncAttribute {
+    @Attribute var textView: StyledTextContentView
+
+    typealias Value = LayoutComputer
+
+    func updateValue() {
+        // TODO
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - TextLayoutQuery [WIP]
+
+struct TextLayoutQuery {
+    var _resolvedText: Attribute<ResolvedStyledText>
+    var _position: Attribute<CGPoint>
+    var _size: Attribute<CGSize>
+    var _transform: Attribute<ViewTransform>
+
+    var value: [Text.LayoutKey.AnchoredLayout] {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - ResolvedTextFilter [WIP]
+
+struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
+    @Attribute var text: Text
+    @Attribute var environment: EnvironmentValues
+    var helper: ResolvedTextHelper
+
+    typealias Value = ResolvedStyledText
+
+    func updateValue() {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 // MARK: - ResolvedTextHelper [WIP] SizeFittingTextResolver
 
 struct ResolvedTextHelper {
@@ -498,23 +757,59 @@ struct ResolvedTextHelper {
 //    typealias Engine = StyledTextLayoutEngine
 //}
 
-private struct StyledTextLayoutComputer: StatefulRule, AsyncAttribute {
-    @Attribute var textView: StyledTextContentView
+struct TextChildQuery<A> where A: TextAccessibilityProvider {
+    var _resolvedText: Attribute<ResolvedStyledText>
+    var _unresolvedText: Attribute<Text>
+    var _renderer: WeakAttribute<TextRendererBoxBase>
+    var _environment: Attribute<EnvironmentValues>
+    var _position: Attribute<CGPoint>
+    var _size: Attribute<ViewSize>
+    var _transform: Attribute<ViewTransform>
+    let parentID: ScrapeableID
 
-    typealias Value = LayoutComputer
+    static func scrapeContent(from attribute: AnyAttribute) -> ScrapeableContent.Item? {
+        _openSwiftUIUnimplementedFailure()
+    }
 
-    func updateValue() {
-        // TODO
+    var unresolvedText: Text {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var renderer: Optional<TextRendererBoxBase> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var environment: EnvironmentValues {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    var value: some View {
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
-// TextChildQuery
+struct ResolvedOptionalTextFilter {
+    var _text: Attribute<Optional<Text>>
+    var _environment: Attribute<EnvironmentValues>
+    var helper: ResolvedTextHelper
 
-// ResolvedOptionalTextFilter
+    func updateValue() {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
 
-// DynamicTextView
+struct DynamicTextView {
+    var text: ResolvedStyledText
+    var size: CGSize
 
-// StyledTextLayoutEngine TODO
+    static func _makeView(
+        view: _GraphValue<DynamicTextView>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 
 struct StyledTextLayoutEngine: LayoutEngine {
     var text: ResolvedStyledText
