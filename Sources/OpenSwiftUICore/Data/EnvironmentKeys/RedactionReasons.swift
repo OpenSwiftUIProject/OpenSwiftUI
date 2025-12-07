@@ -6,6 +6,8 @@
 //  Status: Blocked by Image
 //  ID: 18671928047E57F039DC339288B6FAFB (SwiftUICore)
 
+import OpenAttributeGraphShims
+
 // MARK: - RedactionReasons
 
 /// The reasons to apply a redaction to data displayed on screen.
@@ -138,6 +140,24 @@ extension EnvironmentValues {
     public var redactionReasons: RedactionReasons {
         get { self[RedactionReasonsKey.self] }
         set { self[RedactionReasonsKey.self] = newValue }
+    }
+}
+
+extension CachedEnvironment.ID {
+    static let redactionReasons: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    @inline(__always)
+    var redactionReasons: Attribute<RedactionReasons> {
+        mapEnvironment(id: .redactionReasons) { $0.redactionReasons }
+    }
+}
+
+extension _ViewInputs {
+    @inline(__always)
+    var redactionReasons: Attribute<RedactionReasons> {
+        base.redactionReasons
     }
 }
 
