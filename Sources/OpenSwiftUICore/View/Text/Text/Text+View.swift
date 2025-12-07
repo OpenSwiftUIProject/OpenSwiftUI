@@ -885,7 +885,9 @@ struct ResolvedTextHelper {
     }
 }
 
-struct TextChildQuery<P>: Rule, AsyncAttribute, ScrapeableAttribute where P: TextAccessibilityProvider {
+// MARK: - TextChildQuery
+
+private struct TextChildQuery<P>: Rule, AsyncAttribute, ScrapeableAttribute where P: TextAccessibilityProvider {
     @Attribute var resolvedText: ResolvedStyledText
     @Attribute var unresolvedText: Text
     @WeakAttribute var renderer: TextRendererBoxBase?
@@ -895,14 +897,26 @@ struct TextChildQuery<P>: Rule, AsyncAttribute, ScrapeableAttribute where P: Tex
     @Attribute var transform: ViewTransform
     let parentID: ScrapeableID
 
-    static func scrapeContent(from attribute: AnyAttribute) -> ScrapeableContent.Item? {
-        _openSwiftUIUnimplementedFailure()
+    static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
+        let query = ident.info.body.assumingMemoryBound(to: TextChildQuery.self)[]
+        return ScrapeableContent.Item(
+            .text(query.unresolvedText, query.resolvedText, query.environment),
+            ids: .none,
+            query.parentID,
+            position: query.$position,
+            size: query.$size,
+            transform: query.$transform
+        )
     }
 
-    // TextAccessibilityProvider.Body
     var value: some View {
-        EmptyView()
-        // _openSwiftUIUnimplementedFailure()
+        let accessibilityView = AccessibilityStyledTextContentView<P>(
+            text: resolvedText,
+            unresolvedText: unresolvedText,
+            renderer: renderer,
+            needsDrawingGroup: renderer != nil ? environment.textRendererAddsDrawingGroup : false
+        )
+        return accessibilityView.body
     }
 }
 

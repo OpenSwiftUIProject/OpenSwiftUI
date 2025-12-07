@@ -425,6 +425,8 @@ extension Text.Layout {
 
 // TODO
 
+// MARK: - TextRendererInput
+
 struct TextRendererInput: ViewInput {
     static let defaultValue: WeakAttribute<TextRendererBoxBase> = .init()
 }
@@ -434,5 +436,19 @@ extension _ViewInputs {
     var textRenderer: WeakAttribute<TextRendererBoxBase> {
         get { self[TextRendererInput.self] }
         set { self[TextRendererInput.self] = newValue }
+    }
+}
+
+// MARK: - TextRendererAddsDrawingGroupKey
+
+private struct TextRendererAddsDrawingGroupKey: EnvironmentKey {
+    static let defaultValue: Bool = false
+}
+
+extension EnvironmentValues {
+    @inline(__always)
+    var textRendererAddsDrawingGroup: Bool {
+        get { self[TextRendererAddsDrawingGroupKey.self] }
+        set { self[TextRendererAddsDrawingGroupKey.self] = newValue }
     }
 }
