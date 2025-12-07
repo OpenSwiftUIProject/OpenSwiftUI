@@ -15,7 +15,7 @@ import UIFoundation_Private
 
 @available(OpenSwiftUI_v1_0, *)
 extension Text: UnaryView, PrimitiveView {
-    public nonisolated static func _makeView(
+    nonisolated public static func _makeView(
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
@@ -30,13 +30,14 @@ extension Text: UnaryView, PrimitiveView {
         }
     }
 
-    private static func makeCommonAttributes(
+    nonisolated private static func makeCommonAttributes(
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        // TODO: TextAllowsSelection
+        var newInputs = inputs
+        let allowsSelection = false // TODO: TextAllowsSelection
+        let options = inputs.base.options
         let textRenderer = inputs.textRenderer
-
         var features: ResolvedProperties.Features = inputs.archivedView.isArchived ? [] : .useTextSuffix
         if textRenderer.attribute != nil {
             features.formUnion([.customRenderer, .produceTextLayout])
@@ -74,9 +75,20 @@ extension Text: UnaryView, PrimitiveView {
                 )
             )
         }
-        // FIXME
-        var outputs: _ViewOutputs = .init()
-
+        newInputs.base.options.formUnion(.doNotScrape)
+        var outputs: _ViewOutputs
+        if allowsSelection {
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            outputs = makeTextChildQuery(
+                newInputs.textAccessibilityProvider,
+                styledText: resolvedText,
+                view: view.value,
+                render: textRenderer,
+                inputs: newInputs,
+                isScrapeable: inputs.isScrapeable
+            )
+        }
         if let textAlwaysOnProvider = inputs.textAlwaysOnProvider {
             textAlwaysOnProvider.makeAlwaysOn(
                 inputs: inputs,
@@ -86,6 +98,35 @@ extension Text: UnaryView, PrimitiveView {
         }
         // FIXME
         return outputs
+    }
+
+    nonisolated private static func makeTextChildQuery<P>(
+        _ provider: P.Type,
+        styledText: Attribute<ResolvedStyledText>,
+        view: Attribute<Text>,
+        render: WeakAttribute<TextRendererBoxBase>,
+        inputs: _ViewInputs,
+        isScrapeable: Bool
+    ) -> _ViewOutputs where P: TextAccessibilityProvider {
+        let query = Attribute(
+            TextChildQuery<P>(
+                resolvedText: styledText,
+                unresolvedText: view,
+                renderer: render,
+                environment: inputs.environment,
+                position: inputs.position,
+                size: inputs.size,
+                transform: inputs.transform,
+                parentID: inputs.scrapeableParentID
+            )
+        )
+        if isScrapeable {
+            query.flags = .scrapeable
+        }
+        return TextChildQuery<P>.Value.makeDebuggableView(
+            view: .init(query),
+            inputs: inputs
+        )
     }
 
     // TODO
@@ -844,34 +885,24 @@ struct ResolvedTextHelper {
     }
 }
 
-struct TextChildQuery<A> where A: TextAccessibilityProvider {
-    var _resolvedText: Attribute<ResolvedStyledText>
-    var _unresolvedText: Attribute<Text>
-    var _renderer: WeakAttribute<TextRendererBoxBase>
-    var _environment: Attribute<EnvironmentValues>
-    var _position: Attribute<CGPoint>
-    var _size: Attribute<ViewSize>
-    var _transform: Attribute<ViewTransform>
+struct TextChildQuery<P>: Rule, AsyncAttribute, ScrapeableAttribute where P: TextAccessibilityProvider {
+    @Attribute var resolvedText: ResolvedStyledText
+    @Attribute var unresolvedText: Text
+    @WeakAttribute var renderer: TextRendererBoxBase?
+    @Attribute var environment: EnvironmentValues
+    @Attribute var position: CGPoint
+    @Attribute var size: ViewSize
+    @Attribute var transform: ViewTransform
     let parentID: ScrapeableID
 
     static func scrapeContent(from attribute: AnyAttribute) -> ScrapeableContent.Item? {
         _openSwiftUIUnimplementedFailure()
     }
 
-    var unresolvedText: Text {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    var renderer: Optional<TextRendererBoxBase> {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    var environment: EnvironmentValues {
-        _openSwiftUIUnimplementedFailure()
-    }
-
+    // TextAccessibilityProvider.Body
     var value: some View {
-        _openSwiftUIUnimplementedFailure()
+        EmptyView()
+        // _openSwiftUIUnimplementedFailure()
     }
 }
 
