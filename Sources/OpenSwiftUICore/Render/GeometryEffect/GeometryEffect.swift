@@ -136,24 +136,23 @@ extension GeometryEffectProvider {
         newInputs.containerPosition = zeroPoint
         newInputs.size = size
         var outputs = body(_Graph(), newInputs)
-        guard inputs.preferences.requiresDisplayList else {
-            return outputs
-        }
-        let identity = DisplayList.Identity()
-        inputs.pushIdentity(identity)
-        let displayList = Attribute(
-            GeometryEffectDisplayList<Self>(
-                identity: .init(),
-                effect: animatableEffect,
-                position: inputs.animatedPosition(),
-                size: inputs.animatedCGSize(), // Verify: Still get a new size here
-                layoutDirection: inputs.layoutDirection,
-                containerPosition: inputs.containerPosition,
-                content: .init(outputs.preferences.displayList),
-                options: .init()
+        if inputs.preferences.requiresDisplayList {
+            let identity = DisplayList.Identity()
+            inputs.pushIdentity(identity)
+            let displayList = Attribute(
+                GeometryEffectDisplayList<Self>(
+                    identity: .init(),
+                    effect: animatableEffect,
+                    position: inputs.animatedPosition(),
+                    size: inputs.animatedCGSize(), // Verify: Still get a new size here
+                    layoutDirection: inputs.layoutDirection,
+                    containerPosition: inputs.containerPosition,
+                    content: .init(outputs.preferences.displayList),
+                    options: .init()
+                )
             )
-        )
-        outputs.preferences.displayList = displayList
+            outputs.displayList = displayList
+        }
         return outputs
     }
 }
