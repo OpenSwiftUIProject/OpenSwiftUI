@@ -388,7 +388,7 @@ extension Text {
             package let rawValue: UInt16
 
             package init(rawValue: UInt16) {
-                _openSwiftUIUnimplementedFailure()
+                self.rawValue = rawValue
             }
 
             package static let keyColor: Text.ResolvedProperties.Features = .init(rawValue: 1 << 0)

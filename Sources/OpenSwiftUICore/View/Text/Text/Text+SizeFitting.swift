@@ -185,6 +185,20 @@ struct SizeFittingTextCacheValue<Engine> where Engine: LayoutEngine {
 
 // TODO
 
+// MARK: - _ViewInputs + VariantThatFitsFlag
+
+struct VariantThatFitsFlag: ViewInputBoolFlag {}
+
+extension _ViewInputs {
+    @inline(__always)
+    var variantThatFits: Bool {
+        get { self[VariantThatFitsFlag.self] }
+        set { self[VariantThatFitsFlag.self] = newValue }
+    }
+}
+
+// MARK: - EnvironmentValues + textSizeVariant
+
 extension EnvironmentValues {
     private struct TextSizeVariantKey: EnvironmentKey {
         static let defaultValue: TextSizeVariant = .regular

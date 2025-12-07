@@ -34,8 +34,58 @@ extension Text: UnaryView, PrimitiveView {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
+        // TODO: TextAllowsSelection
+        let textRenderer = inputs.textRenderer
+
+        var features: ResolvedProperties.Features = inputs.archivedView.isArchived ? [] : .useTextSuffix
+        if textRenderer.attribute != nil {
+            features.formUnion([.customRenderer, .produceTextLayout])
+        } else {
+            if inputs.preferences.contains(Text.LayoutKey.self) {
+                features.formUnion(.produceTextLayout)
+            }
+        }
+        if inputs.prefersTextLayoutManager {
+            features.formUnion(.useTextLayoutManager)
+        }
+        let resolvedText: Attribute<ResolvedStyledText>
+        if inputs.variantThatFits {
+            // TODO
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            let helper = ResolvedTextHelper(
+                time: inputs.time,
+                referenceDate: inputs.referenceDate,
+                includeDefaultAttributes: true,
+                allowsKeyColors: true,
+                archiveOptions: inputs.archivedView,
+                features: features,
+                attachmentsAsAuxiliaryMetadata: inputs.hasWidgetMetadata,
+                idiom: inputs.base.interfaceIdiom,
+                lastText: nil,
+                nextUpdate: .time(.zero),
+                sizeVariant: .regular
+            )
+            resolvedText = Attribute(
+                ResolvedTextFilter(
+                    text: view.value,
+                    environment: inputs.environment,
+                    helper: helper
+                )
+            )
+        }
         // FIXME
-        return .init()
+        var outputs: _ViewOutputs = .init()
+
+        if let textAlwaysOnProvider = inputs.textAlwaysOnProvider {
+            textAlwaysOnProvider.makeAlwaysOn(
+                inputs: inputs,
+                schedule: resolvedText.schedule,
+                outputs: &outputs
+            )
+        }
+        // FIXME
+        return outputs
     }
 
     // TODO
@@ -404,6 +454,11 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package var maxFontMetrics: NSAttributedString.EncodedFontMetrics {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    var schedule: (any TimelineSchedule)? {
+        _openSwiftUIUnimplementedWarning()
+        return nil
     }
 
     package init(

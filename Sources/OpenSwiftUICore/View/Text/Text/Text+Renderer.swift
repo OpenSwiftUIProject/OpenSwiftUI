@@ -6,6 +6,7 @@
 //  Status: Empty
 //  ID: 7F70C8A76EE0356881289646072938C0 (SwiftUICore)
 
+import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
 
 // TODO
@@ -419,5 +420,19 @@ extension Text.Layout {
         public static var disablesSubpixelQuantization: Text.Layout.DrawingOptions {
             .init(rawValue: 1 << 0)
         }
+    }
+}
+
+// TODO
+
+struct TextRendererInput: ViewInput {
+    static let defaultValue: WeakAttribute<TextRendererBoxBase> = .init()
+}
+
+extension _ViewInputs {
+    @inline(__always)
+    var textRenderer: WeakAttribute<TextRendererBoxBase> {
+        get { self[TextRendererInput.self] }
+        set { self[TextRendererInput.self] = newValue }
     }
 }

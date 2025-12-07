@@ -176,9 +176,17 @@ package struct ReferenceDateInput: ViewInput {
     }
 }
 
+extension _ViewInputs {
+    @inline(__always)
+    var referenceDate: WeakAttribute<Date?> {
+        get { self[ReferenceDateInput.self] }
+        set { self[ReferenceDateInput.self] = newValue }
+    }
+}
+
 extension _GraphInputs {
     @inline(__always)
-    package var referenceDate: WeakAttribute<Date?> {
+    var referenceDate: WeakAttribute<Date?> {
         get { self[ReferenceDateInput.self] }
         set { self[ReferenceDateInput.self] = newValue }
     }
