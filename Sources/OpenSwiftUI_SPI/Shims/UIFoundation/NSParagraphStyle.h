@@ -8,15 +8,15 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-// Modified based on macOS 15.5 SDK
+// Modified based on iOS 18.5 SDK
 
-/*
-        NSParagraphStyle.h
-        Copyright (c) 1994-2024, Apple Inc.  All rights reserved.
-
-    NSParagraphStyle and NSMutableParagraphStyle hold paragraph style information
-    NSTextTab holds information about a single tab stop
- */
+//  NSParagraphStyle.h
+//  UIKit
+//
+//  Copyright (c) 2011-2024, Apple Inc. All rights reserved.
+//
+// NSParagraphStyle and NSMutableParagraphStyle hold paragraph style information
+// NSTextTab holds information about a single tab stop
 
 #import <Foundation/Foundation.h>
 #import "NSText.h"
@@ -64,8 +64,8 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0),
 
 + (NSCharacterSet *)columnTerminatorsForLocale:(nullable NSLocale *)aLocale API_AVAILABLE(macos(10.11), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Returns the column terminators for locale. Passing nil returns an instance corresponding to +[NSLocale systemLocale]. For matching user's formatting preferences, pass +[NSLocale currentLocale]. Can be used as the value for NSTabColumnTerminatorsAttributeName to make a decimal tab stop.
 
-@property (readonly) CGFloat location; // Location of the tab stop inside the line fragment rect coordinate system
-@property (readonly) NSDictionary<NSTextTabOptionKey, id> *options; // Optional configuration attributes
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat location; // Location of the tab stop inside the line fragment rect coordinate system
+@property (readonly, NS_NONATOMIC_IOSONLY) NSDictionary<NSTextTabOptionKey, id> *options; // Optional configuration attributes
 @end
 
 
@@ -73,43 +73,43 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0),
 OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0))
 @interface NSParagraphStyle : NSObject <NSCopying, NSMutableCopying, NSSecureCoding>
 
-@property (class, readonly, copy) NSParagraphStyle *defaultParagraphStyle; // This class property returns a shared and cached NSParagraphStyle instance with the default style settings, with same value as the result of [[NSParagraphStyle alloc] init].
+@property (class, readonly, copy, NS_NONATOMIC_IOSONLY) NSParagraphStyle *defaultParagraphStyle; // This class property returns a shared and cached NSParagraphStyle instance with the default style settings, with same value as the result of [[NSParagraphStyle alloc] init].
 
 + (NSWritingDirection)defaultWritingDirectionForLanguage:(nullable NSString *)languageName;  // languageName is in ISO lang region format
 
-@property (readonly) CGFloat lineSpacing; // "Leading": distance between the bottom of one line fragment and top of next (applied between lines in the same container). This value is included in the line fragment heights in layout manager.
-@property (readonly) CGFloat paragraphSpacing; // Distance between the bottom of this paragraph and top of next (or the beginning of its paragraphSpacingBefore, if any).
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat lineSpacing; // "Leading": distance between the bottom of one line fragment and top of next (applied between lines in the same container). This value is included in the line fragment heights in layout manager.
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat paragraphSpacing; // Distance between the bottom of this paragraph and top of next (or the beginning of its paragraphSpacingBefore, if any).
 
 // The following values are relative to the appropriate margin (depending on the paragraph direction)
 
-@property (readonly) CGFloat headIndent; // Distance from margin to front edge of paragraph
-@property (readonly) CGFloat tailIndent; // Distance from margin to back edge of paragraph; if negative or 0, from other margin
-@property (readonly) CGFloat firstLineHeadIndent; // Distance from margin to edge appropriate for text direction
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat headIndent; // Distance from margin to front edge of paragraph
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat tailIndent; // Distance from margin to back edge of paragraph; if negative or 0, from other margin
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat firstLineHeadIndent; // Distance from margin to edge appropriate for text direction
 
-@property (readonly) CGFloat minimumLineHeight; // Line height is the distance from bottom of descenders to top of ascenders; basically the line fragment height. Does not include lineSpacing (which is added after this computation).
-@property (readonly) CGFloat maximumLineHeight; // 0 implies no maximum.
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat minimumLineHeight; // Line height is the distance from bottom of descenders to top of ascenders; basically the line fragment height. Does not include lineSpacing (which is added after this computation).
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat maximumLineHeight; // 0 implies no maximum.
 
-@property (readonly) NSLineBreakMode lineBreakMode;
+@property (readonly, NS_NONATOMIC_IOSONLY) NSLineBreakMode lineBreakMode;
 
-@property (readonly) NSWritingDirection baseWritingDirection;
+@property (readonly, NS_NONATOMIC_IOSONLY) NSWritingDirection baseWritingDirection;
 
-@property (readonly) CGFloat lineHeightMultiple; // Natural line height is multiplied by this factor (if positive) before being constrained by minimum and maximum line height.
-@property (readonly) CGFloat paragraphSpacingBefore; // Distance between the bottom of the previous paragraph (or the end of its paragraphSpacing, if any) and the top of this paragraph.
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat lineHeightMultiple; // Natural line height is multiplied by this factor (if positive) before being constrained by minimum and maximum line height.
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat paragraphSpacingBefore; // Distance between the bottom of the previous paragraph (or the end of its paragraphSpacing, if any) and the top of this paragraph.
 
 // Specifies the threshold for hyphenation.  Valid values lie between 0.0 and 1.0 inclusive.  Hyphenation will be attempted when the ratio of the text width as broken without hyphenation to the width of the line fragment is less than the hyphenation factor.  When this takes on its default value of 0.0, the layout manager's hyphenation factor is used instead.  When both are 0.0, hyphenation is disabled.
-@property (readonly) float hyphenationFactor;
+@property (readonly, NS_NONATOMIC_IOSONLY) float hyphenationFactor;
 
 // A property controlling the hyphenation behavior for the paragraph associated with the paragraph style. The exact hyphenation logic is dynamically determined by the layout context such as language, platform, etc. When YES, it affects the return value from -hyphenationFactor when the property is set to 0.0.
-@property (readonly) BOOL usesDefaultHyphenation API_AVAILABLE(macos(12.0), ios(15.0), tvos(15.0), watchos(8.0), visionos(1.0));
+@property (readonly, NS_NONATOMIC_IOSONLY) BOOL usesDefaultHyphenation API_AVAILABLE(macos(12.0), ios(15.0), tvos(15.0), watchos(8.0), visionos(1.0));
 
-@property (readonly,copy) NSArray<NSTextTab *> *tabStops API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // An array of NSTextTabs. Contents should be ordered by location. The default value is an array of 12 left-aligned tabs at 28pt interval
-@property (readonly) CGFloat defaultTabInterval API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // The default tab interval used for locations beyond the last element in tabStops
+@property (readonly,copy, NS_NONATOMIC_IOSONLY) NSArray<NSTextTab *> *tabStops API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // An array of NSTextTabs. Contents should be ordered by location. The default value is an array of 12 left-aligned tabs at 28pt interval
+@property (readonly, NS_NONATOMIC_IOSONLY) CGFloat defaultTabInterval API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // The default tab interval used for locations beyond the last element in tabStops
 
-@property (readonly, copy) NSArray<NSTextList *> *textLists API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));     // Array to specify the text lists containing the paragraph, nested from outermost to innermost.
+@property (readonly, copy, NS_NONATOMIC_IOSONLY) NSArray<NSTextList *> *textLists API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));     // Array to specify the text lists containing the paragraph, nested from outermost to innermost.
 
-@property (readonly) BOOL allowsDefaultTighteningForTruncation API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Tightens inter-character spacing in attempt to fit lines wider than the available space if the line break mode is one of the truncation modes before starting to truncate. NO by default. The maximum amount of tightening performed is determined by the system based on contexts such as font, line width, etc.
+@property (readonly, NS_NONATOMIC_IOSONLY) BOOL allowsDefaultTighteningForTruncation API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Tightens inter-character spacing in attempt to fit lines wider than the available space if the line break mode is one of the truncation modes before starting to truncate. NO by default. The maximum amount of tightening performed is determined by the system based on contexts such as font, line width, etc.
 
-@property (readonly) NSLineBreakStrategy lineBreakStrategy API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Specifies the line break strategies that may be used for laying out the paragraph.  The default value is NSLineBreakStrategyNone.
+@property (readonly, NS_NONATOMIC_IOSONLY) NSLineBreakStrategy lineBreakStrategy API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Specifies the line break strategies that may be used for laying out the paragraph.  The default value is NSLineBreakStrategyNone.
 
 @end
 
@@ -117,23 +117,23 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0),
 OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0))
 @interface NSMutableParagraphStyle : NSParagraphStyle
 
-@property CGFloat lineSpacing;
-@property CGFloat paragraphSpacing;
-@property CGFloat firstLineHeadIndent;
-@property CGFloat headIndent;
-@property CGFloat tailIndent;
-@property NSLineBreakMode lineBreakMode;
-@property CGFloat minimumLineHeight;
-@property CGFloat maximumLineHeight;
-@property NSWritingDirection baseWritingDirection;
-@property CGFloat lineHeightMultiple;
-@property CGFloat paragraphSpacingBefore;
-@property float hyphenationFactor;
-@property (readwrite) BOOL usesDefaultHyphenation API_AVAILABLE(macos(12.0), ios(15.0), tvos(15.0), watchos(8.0), visionos(1.0));
-@property (null_resettable, copy) NSArray<NSTextTab *> *tabStops API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
-@property CGFloat defaultTabInterval API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
-@property BOOL allowsDefaultTighteningForTruncation API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
-@property NSLineBreakStrategy lineBreakStrategy API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
+@property (NS_NONATOMIC_IOSONLY) CGFloat lineSpacing;
+@property (NS_NONATOMIC_IOSONLY) CGFloat paragraphSpacing;
+@property (NS_NONATOMIC_IOSONLY) CGFloat firstLineHeadIndent;
+@property (NS_NONATOMIC_IOSONLY) CGFloat headIndent;
+@property (NS_NONATOMIC_IOSONLY) CGFloat tailIndent;
+@property (NS_NONATOMIC_IOSONLY) NSLineBreakMode lineBreakMode;
+@property (NS_NONATOMIC_IOSONLY) CGFloat minimumLineHeight;
+@property (NS_NONATOMIC_IOSONLY) CGFloat maximumLineHeight;
+@property (NS_NONATOMIC_IOSONLY) NSWritingDirection baseWritingDirection;
+@property (NS_NONATOMIC_IOSONLY) CGFloat lineHeightMultiple;
+@property (NS_NONATOMIC_IOSONLY) CGFloat paragraphSpacingBefore;
+@property (NS_NONATOMIC_IOSONLY) float hyphenationFactor;
+@property (readwrite, NS_NONATOMIC_IOSONLY) BOOL usesDefaultHyphenation API_AVAILABLE(macos(12.0), ios(15.0), tvos(15.0), watchos(8.0), visionos(1.0));
+@property (null_resettable, copy, NS_NONATOMIC_IOSONLY) NSArray<NSTextTab *> *tabStops API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
+@property (NS_NONATOMIC_IOSONLY) CGFloat defaultTabInterval API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
+@property (NS_NONATOMIC_IOSONLY) BOOL allowsDefaultTighteningForTruncation API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
+@property (NS_NONATOMIC_IOSONLY) NSLineBreakStrategy lineBreakStrategy API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
 @property (NS_NONATOMIC_IOSONLY, copy) NSArray<NSTextList *> *textLists API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
 
 - (void)addTabStop:(NSTextTab *)anObject API_AVAILABLE(macos(10.0), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));

@@ -8,12 +8,14 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-// Modified based on macOS 15.5 SDK
+// Modified based on iOS 18.5 SDK
 
-/*
-        NSStringDrawing.h
-        Copyright (c) 1994-2024, Apple Inc.  All rights reserved.
-*/
+//
+//  NSStringDrawing.h
+//  UIKit
+//
+//  Copyright (c) 2011-2024, Apple Inc. All rights reserved.
+//
 
 #import <Foundation/Foundation.h>
 @class NSAttributedString;
@@ -55,8 +57,10 @@ typedef NS_OPTIONS(NSInteger, NSStringDrawingOptions) {
     NSStringDrawingUsesFontLeading = 1 << 1, // Uses the font leading for calculating line heights
     NSStringDrawingUsesDeviceMetrics = 1 << 3, // Uses image glyph bounds instead of typographic bounds
     NSStringDrawingTruncatesLastVisibleLine API_AVAILABLE(macos(10.5), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0)) = 1 << 5, // Truncates and adds the ellipsis character to the last visible line if the text doesn't fit into the bounds specified. Ignored if NSStringDrawingUsesLineFragmentOrigin is not also set.
+    #if OPENSWIFTUI_TARGET_OS_OSX
     NSStringDrawingDisableScreenFontSubstitution API_DEPRECATED("", macos(10.0,10.11)) = (1 << 2),
     NSStringDrawingOneShot API_DEPRECATED("", macos(10.0,10.11)) = (1 << 4),
+    #endif
 }
 NS_SWIFT_NAME(NSString.DrawingOptions)
 API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0));
