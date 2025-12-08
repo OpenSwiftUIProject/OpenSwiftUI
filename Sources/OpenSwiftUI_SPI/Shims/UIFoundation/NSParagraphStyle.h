@@ -28,6 +28,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 #if !__NSPARAGRAPH_STYLE_SHARED_SECTION__
 #define __NSPARAGRAPH_STYLE_SHARED_SECTION__ 1
 
+#if OPENSWIFTUI_TARGET_OS_OSX
 typedef NS_ENUM(NSUInteger, NSLineBreakMode) {
     NSLineBreakByWordWrapping = 0,         // Wrap at word boundaries, default
     NSLineBreakByCharWrapping,        // Wrap at character boundaries
@@ -36,6 +37,16 @@ typedef NS_ENUM(NSUInteger, NSLineBreakMode) {
     NSLineBreakByTruncatingTail,    // Truncate at tail of line: "abcd..."
     NSLineBreakByTruncatingMiddle    // Truncate middle of line:  "ab...yz"
 } API_AVAILABLE(macos(10.0), ios(6.0), watchos(2.0), tvos(9.0), visionos(1.0));
+#else
+typedef NS_ENUM(NSInteger, NSLineBreakMode) {
+    NSLineBreakByWordWrapping = 0,         // Wrap at word boundaries, default
+    NSLineBreakByCharWrapping,        // Wrap at character boundaries
+    NSLineBreakByClipping,        // Simply clip
+    NSLineBreakByTruncatingHead,    // Truncate at head of line: "...wxyz"
+    NSLineBreakByTruncatingTail,    // Truncate at tail of line: "abcd..."
+    NSLineBreakByTruncatingMiddle    // Truncate middle of line:  "ab...yz"
+} API_AVAILABLE(macos(10.0), ios(6.0), watchos(2.0), tvos(9.0), visionos(1.0));
+#endif
 
 // Line break strategy describes a collection of options that can affect where line breaks are placed in a paragraph.
 // This is independent from line break mode, which describes what happens when text is too long to fit within its container.
