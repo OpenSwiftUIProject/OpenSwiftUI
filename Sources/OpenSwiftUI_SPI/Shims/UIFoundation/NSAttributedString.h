@@ -2,8 +2,7 @@
 //  NSAttributedString.h
 //  OpenSwiftUI_SPI
 
-#ifndef OpenSwiftUI_SPI_NSAttributedString_h
-#define OpenSwiftUI_SPI_NSAttributedString_h
+#pragma once
 
 #include "OpenSwiftUIBase.h"
 
@@ -26,5 +25,20 @@ typedef OPENSWIFTUI_OPTIONS(NSInteger, NSUnderlineStyle) {
     NSUnderlineStyleByWord API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0))            = 0x8000
 } API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0));
 
+#if OPENSWIFTUI_TARGET_OS_DARWIN
 
-#endif /* OpenSwiftUI_SPI_NSAttributedString_h */
+#import <Foundation/Foundation.h>
+
+OPENSWIFTUI_ASSUME_NONNULL_BEGIN
+
+@interface NSAttributedString (OpenSwiftUI_SPI)
+- (NSAttributedString *)_ui_attributedSubstringFromRange_openswiftui_safe_wrapper:(NSRange)range scaledByScaleFactor:(CGFloat)factor OPENSWIFTUI_SWIFT_NAME(_ui_attributedSubstring(from:scaledBy:));
+@end
+
+@interface NSMutableAttributedString (OpenSwiftUI_SPI)
+@property(readonly, assign, nonatomic) BOOL isEmptyOrTerminatedByParagraphSeparator_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(isEmptyOrTerminatedByParagraphSeparator);
+@end
+
+OPENSWIFTUI_ASSUME_NONNULL_END
+
+#endif

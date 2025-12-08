@@ -104,10 +104,18 @@ private struct PreferTextLayoutManagerInputModifier: ViewInputsModifier {
         modifier: _GraphValue<Self>,
         inputs: inout _ViewInputs
     ) {
-        inputs[PreferTextLayoutManagerInput.self] = true
+        inputs.prefersTextLayoutManager = true
     }
 }
 
 package struct PreferTextLayoutManagerInput: ViewInput {
     package static var defaultValue: Bool { false }
+}
+
+extension _ViewInputs {
+    @inline(__always)
+    var prefersTextLayoutManager: Bool {
+        get { self[PreferTextLayoutManagerInput.self] }
+        set { self[PreferTextLayoutManagerInput.self] = newValue }
+    }
 }

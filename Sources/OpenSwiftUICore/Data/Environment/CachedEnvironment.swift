@@ -63,7 +63,8 @@ package struct CachedEnvironment {
         role: ShapeRole,
         mode: Attribute<_ShapeStyle_ResolverMode>?
     ) -> Attribute<_ShapeStyle_Pack> {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return ViewGraph.current.intern(.defaultValue, id: .defaultValue)
     }
 }
 
