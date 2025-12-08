@@ -1,5 +1,5 @@
 //
-//  NSStringDrawingContext.h
+//  NSStringDrawing_Private.h
 //  OpenSwiftUI_SPI
 
 #pragma once
@@ -7,12 +7,9 @@
 #import "OpenSwiftUIBase.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
+#import "NSStringDrawing.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
-
-@interface NSStringDrawingContext : NSObject
-@property (NS_NONATOMIC_IOSONLY) CGFloat minimumScaleFactor;
-@end
 
 @interface NSStringDrawingContext (OpenSwiftUI_SPI)
 @property (nonatomic, assign) CGFloat baselineOffset;

@@ -1,8 +1,8 @@
 //
-//  NSStringDrawingContext.m
+//  NSStringDrawing_Private.m
 //  OpenSwiftUI_SPI
 
-#import "NSStringDrawingContext.h"
+#import "NSStringDrawing_Private.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
