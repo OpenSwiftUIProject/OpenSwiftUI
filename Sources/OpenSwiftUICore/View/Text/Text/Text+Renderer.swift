@@ -6,8 +6,12 @@
 //  Status: Empty
 //  ID: 7F70C8A76EE0356881289646072938C0 (SwiftUICore)
 
+#if canImport(CoreText)
+import CoreText
+#endif
 import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
+import UIFoundation_Private
 
 // TODO
 
@@ -207,6 +211,23 @@ extension Text {
         /// A single line in a text layout: a collection of runs of
         /// placed glyphs.
         public struct Line: RandomAccessCollection, Equatable {
+            private enum Line {
+                #if canImport(CoreText)
+                case ctLine(CTLine, AnyTextLayoutRenderer?)
+                #endif
+                case nsLine(NSTextLineFragment)
+            }
+
+            private var _line: Text.Layout.Line.Line
+
+            @inline(__always)
+            var attributedString: NSAttributedString? {
+                guard case let .nsLine(nSTextLineFragment) = _line else {
+                    return nil
+                }
+                return nSTextLineFragment.attributedString
+            }
+
             /// The origin of the line.
             public var origin: CGPoint
 
@@ -247,6 +268,17 @@ extension Text {
             @available(OpenSwiftUI_v6_0, *)
             public var paragraphLayoutDirection: LayoutDirection {
                 _openSwiftUIUnimplementedFailure()
+            }
+
+            public static func == (lhs: Text.Layout.Line, rhs: Text.Layout.Line) -> Bool {
+                guard lhs.origin == rhs.origin else { return false }
+                return switch (lhs._line, rhs._line) {
+                #if canImport(CoreText)
+                case let (.ctLine(lhsLine, _), .ctLine(rhsLine, _)): lhsLine === rhsLine
+                #endif
+                case let (.nsLine(lhsLine), .nsLine(rhsLine)): lhsLine === rhsLine
+                default: false
+                }
             }
         }
 
@@ -366,6 +398,8 @@ extension Text.Layout.Run: Sendable {}
 extension Text.Layout.RunSlice: Sendable {}
 
 // TODO: AnyTextLayoutRenderer
+
+class AnyTextLayoutRenderer {}
 
 // MARK: - Text.LayoutKey
 

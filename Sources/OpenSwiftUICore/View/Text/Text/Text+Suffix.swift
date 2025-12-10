@@ -6,6 +6,7 @@
 //  Status: Blocked by ResolvedStyledText
 //  ID: 3A0E49913D84545BECD562BC22E4DF1C (SwiftUICore)
 
+import Foundation
 import OpenAttributeGraphShims
 
 // MARK: - Text.Suffix
@@ -73,6 +74,10 @@ package enum ResolvedTextSuffix: Equatable {
     case none
     case truncated(Text.Layout.Line, [ShapeStyle.Pack.Style])
     case alwaysVisible(Text.Layout.Line, [ShapeStyle.Pack.Style])
+
+    var accessibilityLine: NSAttributedString? {
+        line?.attributedString
+    }
 
     package var line: Text.Layout.Line? {
         switch self {
