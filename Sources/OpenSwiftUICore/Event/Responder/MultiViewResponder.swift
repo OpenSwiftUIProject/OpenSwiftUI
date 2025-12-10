@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Status: Blocked by children.setter
-//  ID: 4A74C6B0E69BD6BC864CC77E33CF2D28 (SwiftUICore?)
+//  ID: 4A74C6B0E69BD6BC864CC77E33CF2D28 (SwiftUICore)
 
 public import Foundation
 

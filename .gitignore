@@ -22,3 +22,5 @@ Example/ReferenceImages/**/*.png
 !.claude/commands/
 .docs
 gh-pages
+.swift_pd_guess
+.claude/commands/guess_filename.md
