@@ -5,6 +5,8 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+// MARK: - SensoryFeedback
+
 /// Represents a type of haptic and/or audio feedback that can be played.
 ///
 /// This feedback can be passed to `View.sensoryFeedback` to play it.
@@ -194,4 +196,12 @@ public struct SensoryFeedback: Equatable, Sendable {
         /// Indicates a collision between soft or flexible UI objects.
         public static let soft: SensoryFeedback.Flexibility = .init(storage: .soft)
     }
+}
+
+// MARK: - PlatformSensoryFeedback
+
+protocol PlatformSensoryFeedback {
+    func setUp()
+    func tearDown()
+    func generate()
 }
