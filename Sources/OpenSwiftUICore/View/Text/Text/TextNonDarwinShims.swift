@@ -13,4 +13,14 @@ extension NSMutableAttributedString {
         false
     }
 }
+
+package class NSTextLineFragment: NSObject {
+    package init(attributedString: NSAttributedString, range: NSRange) {
+        self.attributedString = attributedString
+        self.range = range
+    }
+
+    private(set) package var attributedString: NSAttributedString
+    private var range: NSRange
+}
 #endif
