@@ -1,10 +1,10 @@
 //
-//  CodableProxy.swift
+//  CodableHelpers.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: A66FCB65C49D586C0CA23AF611BF2C2B (SwiftUICore?)
+//  ID: A66FCB65C49D586C0CA23AF611BF2C2B (SwiftUICore)
 
 package import Foundation
 
