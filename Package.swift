@@ -469,6 +469,7 @@ extension [SwiftSetting] {
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_1:\(ignoreAvailability ? minimumVersion : "iOS 17.1, macOS 14.1, tvOS 17.1, watchOS 10.1, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_2:\(ignoreAvailability ? minimumVersion : "iOS 17.2, macOS 14.2, tvOS 17.2, watchOS 10.2, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_4:\(ignoreAvailability ? minimumVersion : "iOS 17.4, macOS 14.4, tvOS 17.4, watchOS 10.4, visionOS 1.1")"),
+            .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_5:\(ignoreAvailability ? minimumVersion : "iOS 17.5, macOS 14.5, tvOS 17.5, watchOS 10.5, visionOS 1.2")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v6_0:\(ignoreAvailability ? minimumVersion : "iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v7_0:\(ignoreAvailability ? minimumVersion : "iOS 19.0, macOS 16.0, tvOS 19.0, watchOS 12.0, visionOS 3.0")"),
             .enableExperimentalFeature("AvailabilityMacro=_distantFuture:iOS 99.0, macOS 99.0, tvOS 99.0, watchOS 99.0, visionOS 99.0"),
