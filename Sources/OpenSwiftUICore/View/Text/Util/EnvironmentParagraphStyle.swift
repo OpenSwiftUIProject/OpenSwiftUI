@@ -1,10 +1,10 @@
 //
-//  TruncationMode.swift
+//  EnvironmentParagraphStyle.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 52803FDE2123C3846E0286DE7934BA01 (SwiftUICore?)
+//  ID: 52803FDE2123C3846E0286DE7934BA01 (SwiftUICore)
 
 public import Foundation
 

@@ -1,10 +1,10 @@
 //
-//  UnaryLayoutComputer.swift
+//  UnaryLayoutView.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 1C3B77B617AD058A6802F719E38F5D79 (SwiftUICore?)
+//  ID: 1C3B77B617AD058A6802F719E38F5D79 (SwiftUICore)
 
 import Foundation
 package import OpenAttributeGraphShims
