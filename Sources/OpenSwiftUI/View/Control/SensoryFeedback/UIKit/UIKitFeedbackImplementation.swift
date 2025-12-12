@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: C9541C03AF81FECFD19A57A1BB81CE81 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
@@ -17,6 +17,62 @@ import UIKit
 
 protocol LocationBasedSensoryFeedback: PlatformSensoryFeedback {
     func generate(location: CGPoint)
+}
+
+// MARK: - FeedbackRequestContextWriter
+
+private struct FeedbackRequestContextWriter<Base>: MultiViewModifier, PrimitiveViewModifier where Base: SensoryFeedbackGeneratorModifier {
+    var base: Base
+
+    nonisolated static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        let base = modifier[offset: { .of(&$0.base) }].value
+        let child = {
+            guard inputs.needsGeometry else {
+                return base
+            }
+            let location = if inputs.base.interfaceIdiom.accepts(.pad) {
+                Attribute(
+                    FeedbackLocation(
+                        position: inputs.position,
+                        size: inputs.size,
+                        transform: inputs.transform
+                    )
+                )
+            } else {
+                ViewGraph.current.$zeroPoint
+            }
+            let feedbackCache = inputs.base.feedbackCache
+            let modifier = Attribute(
+                ChildModifier(
+                    base: base,
+                    location: location,
+                    feedbackCache: feedbackCache
+                )
+            )
+            return modifier
+        }()
+        return Base._makeView(
+            modifier: _GraphValue(child),
+            inputs: inputs,
+            body: body
+        )
+    }
+
+    struct ChildModifier: Rule {
+        @Attribute var base: Base
+        @Attribute var location: CGPoint
+        @Attribute var feedbackCache: AnyUIKitSensoryFeedbackCache?
+
+        var value: Base {
+            var base = base
+            base.feedbackRequestContext = .init(location: WeakAttribute($location), cache: feedbackCache)
+            return base
+        }
+    }
 }
 
 // MARK: - NotificationFeedbackImplementation

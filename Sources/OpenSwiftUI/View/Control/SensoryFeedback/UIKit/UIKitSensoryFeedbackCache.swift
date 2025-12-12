@@ -8,6 +8,7 @@
 
 #if os(iOS) || os(visionOS)
 
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 import UIKit
 
@@ -127,6 +128,16 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
 
 private struct FeedbackCacheKey: EnvironmentKey {
     static var defaultValue: WeakBox<AnyUIKitSensoryFeedbackCache> { .init() }
+}
+
+extension CachedEnvironment.ID {
+    static let feedbackCache: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    var feedbackCache: Attribute<AnyUIKitSensoryFeedbackCache?> {
+        mapEnvironment(id: .feedbackCache) { $0[FeedbackCacheKey.self].base }
+    }
 }
 
 #endif
