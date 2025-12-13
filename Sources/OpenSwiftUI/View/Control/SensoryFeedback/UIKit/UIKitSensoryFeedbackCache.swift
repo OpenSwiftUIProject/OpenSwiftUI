@@ -59,9 +59,9 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
             } createIfNeeded: {
                 UINotificationFeedbackGenerator()
             }
-        case .levelChange, .start, .stop:
-            nil
-        case .increase, .decrease, .selection:
+        // SwiftUI implementation Bug: introduced since iOS 17 & iOS 26.2 is still not fixed
+        // FB21332474
+        case /*.increase, .decrease,*/ .selection:
             getGenerator(type) {
                 SelectionFeedbackImplementation(
                     generator: $0 
@@ -104,6 +104,7 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
                 case .soft: UIImpactFeedbackGenerator(style: .soft)
                 }
             }
+        default: nil
         }
     }
 
