@@ -46,10 +46,11 @@ package struct DynamicContainer {
         fileprivate(set) var seed: UInt32 = .zero
 
         func viewIndex(id: ID) -> Int? {
-            guard let value = indexMap[id.uniqueId] else {
+            guard let index = indexMap[id.uniqueId] else {
                 return nil
             }
-            return value + Int(id.viewIndex)
+            let item = items[index]
+            return Int(item.precedingViewCount + id.viewIndex)
         }
 
         func item(for subgraph: Subgraph) -> ItemInfo? {
