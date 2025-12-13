@@ -4,6 +4,8 @@
 
 package protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
 
+class RBDisplayListInterpolator {}
+
 public enum RBDisplayList {}
 
 package enum RBColorSpace {}

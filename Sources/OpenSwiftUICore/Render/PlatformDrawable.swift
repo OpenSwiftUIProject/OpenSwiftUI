@@ -34,11 +34,22 @@ public protocol PlatformDrawable: AnyObject {
     func drawForTesting(in: RBDisplayList) -> ()
 }
 
-// MARK: - PlatformDrawableContent
+// MARK: - PlatformDrawableContent [WIP]
 
 @_spi(DisplayList_ViewSystem)
 @available(OpenSwiftUI_v6_0, *)
 public struct PlatformDrawableContent: @unchecked Sendable {
+    enum Storage {
+        case graphicsCallback((inout GraphicsContext, CGSize) -> ())
+        case platformCallback((CGSize) -> ())
+        case displayList(DisplayList, CGPoint, Time)
+        case rbDisplayList(RBDisplayListContents, CGPoint)
+        case rbInterpolator(RBDisplayListInterpolator, Float, CGPoint)
+        case empty
+    }
+
+    private var storage: Storage = .empty
+
     public struct State {
         package var mode: DisplayList.GraphicsRenderer.PlatformViewMode
 
@@ -58,7 +69,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
     }
 
     public init() {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIEmptyStub()
     }
 
     public func draw(
