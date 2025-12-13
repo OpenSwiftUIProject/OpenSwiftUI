@@ -226,3 +226,23 @@ private struct FeedbackGenerator<T>: SensoryFeedbackGeneratorModifier where T: E
             }
     }
 }
+
+#if !canImport(Darwin)
+// MARK: - View + platformSensoryFeedback
+
+extension View {
+    nonisolated func platformSensoryFeedback<Base>(
+        _ base: Base
+    ) -> some View where Base: SensoryFeedbackGeneratorModifier {
+        modifier(base)
+    }
+}
+
+// MARK: - FeedbackRequestContext
+
+struct FeedbackRequestContext {
+    func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
+        nil
+    }
+}
+#endif
