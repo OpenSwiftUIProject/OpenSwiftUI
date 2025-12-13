@@ -124,7 +124,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             didChangeColorScheme(from: oldValue)
         }
     }
-    
+
+    // TODO
+
+    let feedbackCache: UIKitSensoryFeedbackCache<Content> = .init()
+
     // TODO
     
     // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
@@ -177,7 +181,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             base.setupNotifications()
         }
         // RepresentableContextValues.current =
-
+        feedbackCache.host = self
         // TODO
         HostingViewRegistry.shared.add(self)
         Update.end()
@@ -512,6 +516,8 @@ extension _UIHostingView: ViewRendererHost {
         if let displayGamut = DisplayGamut(rawValue: traitCollection.displayGamut.rawValue) {
             environment.displayGamut = displayGamut
         }
+        // TODO
+        environment.feedbackCache = feedbackCache
         viewGraph.setEnvironment(environment)
     }
     
