@@ -1,11 +1,11 @@
 //
-//  ViewListView.swift
+//  ViewListContent.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (SwiftUI?)
-//  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (SwiftUICore?)
+//  ID: 52A2FFECFBCF37BFFEED558E33EBD1E3 (SwiftUI)
+//  ID: 9B09D1820E97ECBB666F7560EA2A2D2C (SwiftUICore)
 
 package import OpenAttributeGraphShims
 

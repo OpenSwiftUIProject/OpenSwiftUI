@@ -1,10 +1,10 @@
 //
-//  Text+Text.swift
+//  Text+Concatenation.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 3AC20F2C4A28F04412970732648A1058 (SwiftUICore?)
+//  ID: 3AC20F2C4A28F04412970732648A1058 (SwiftUICore)
 
 // MARK: - Text + Text
 

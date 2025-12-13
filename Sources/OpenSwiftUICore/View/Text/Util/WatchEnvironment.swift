@@ -1,10 +1,10 @@
 //
-//  WatchDisplayVariant.swift
+//  WatchEnvironment.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 1DA60AC25654F83E54CB649774D3C2D4 (SwiftUICore?)
+//  ID: 1DA60AC25654F83E54CB649774D3C2D4 (SwiftUICore)
 
 @available(iOS, unavailable)
 @available(macOS, unavailable)
