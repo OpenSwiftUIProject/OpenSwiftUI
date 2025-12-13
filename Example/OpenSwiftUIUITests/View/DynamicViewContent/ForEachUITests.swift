@@ -65,4 +65,52 @@ struct ForEachUITests {
             // openSwiftUIAssertAnimationSnapshot(of: ContentView())
         }
     }
+
+    @Test(
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/669",
+            id: 669
+        )
+    )
+    func dynamicContainerIndex() {
+        struct ContentView1: View {
+            var body: some View {
+                VStack {
+                    Color.red
+                    Color.green
+                    ForEach(0 ..< 1) { index in
+                        Color.red.frame(width: 20, height: 20)
+                        Spacer()
+                        Color.blue.frame(width: 20, height: 20)
+                    }
+                }
+            }
+        }
+        struct ContentView2: View {
+            var body: some View {
+                VStack {
+                    Color.red
+                    Color.green
+                    ForEach(0 ..< 1) { index in
+                        Spacer()
+                        Color.blue
+                    }
+                }
+            }
+        }
+        struct ContentView3: View {
+            var body: some View {
+                VStack {
+                    Color.red.frame(width: 10, height: 10)
+                    Color.green.frame(width: 20, height: 20)
+                    ForEach(0 ..< 1) { index in
+                        Color.blue.frame(width: 40, height: 40)
+                    }
+                }
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView1(), named: "1")
+        openSwiftUIAssertSnapshot(of: ContentView2(), named: "2")
+        openSwiftUIAssertSnapshot(of: ContentView3(), named: "3")
+    }
 }
