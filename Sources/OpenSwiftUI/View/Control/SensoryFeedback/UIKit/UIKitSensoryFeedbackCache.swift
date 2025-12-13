@@ -136,7 +136,14 @@ extension CachedEnvironment.ID {
 
 extension _GraphInputs {
     var feedbackCache: Attribute<AnyUIKitSensoryFeedbackCache?> {
-        mapEnvironment(id: .feedbackCache) { $0[FeedbackCacheKey.self].base }
+        mapEnvironment(id: .feedbackCache) { $0.feedbackCache }
+    }
+}
+
+extension EnvironmentValues {
+    var feedbackCache: AnyUIKitSensoryFeedbackCache? {
+        get { self[FeedbackCacheKey.self].base }
+        set { self[FeedbackCacheKey.self] = WeakBox(newValue) }
     }
 }
 
