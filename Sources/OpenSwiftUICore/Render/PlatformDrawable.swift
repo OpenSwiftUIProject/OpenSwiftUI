@@ -9,6 +9,7 @@ public import CoreGraphics
 public import QuartzCore
 import OpenAttributeGraphShims
 import OpenRenderBoxShims
+import CoreAnimation_Private
 
 // MARK: - PlatformDrawable
 
@@ -82,43 +83,42 @@ public struct PlatformDrawableContent: @unchecked Sendable {
 @available(*, unavailable)
 extension PlatformDrawableContent.State: Sendable {}
 
+// MARK: - PlatformDrawableOptions [Blocked by RBLayer]
+
 @_spi(DisplayList_ViewSystem)
 @available(OpenSwiftUI_v6_0, *)
 public struct PlatformDrawableOptions: Equatable, Sendable {
     var base: RasterizationOptions
 
-    @_spi(DisplayList_ViewSystem)
     public var isAccelerated: Bool {
-        _openSwiftUIUnimplementedFailure()
+        base.isAccelerated
     }
 
-    @_spi(DisplayList_ViewSystem)
     public var isOpaque: Bool {
-        _openSwiftUIUnimplementedFailure()
+        base.isOpaque
     }
 
-    @_spi(DisplayList_ViewSystem)
     public var rendersAsynchronously: Bool {
-        _openSwiftUIUnimplementedFailure()
+        base.rendersAsynchronously
     }
 
-    @_spi(DisplayList_ViewSystem)
     public var rendersFirstFrameAsynchronously: Bool {
-        _openSwiftUIUnimplementedFailure()
+        base.rendersFirstFrameAsynchronously
     }
 
-    @_spi(DisplayList_ViewSystem)
     public var caLayerContentsFormat: CALayerContentsFormat {
-        _openSwiftUIUnimplementedFailure()
+        var format = CALayerContentsFormat.automatic
+        if base.flags.contains(.rgbaContext) {
+            format = .RGBA8Uint
+        }
+        if base.flags.contains(.alphaOnly) {
+            format = .A8
+        }
+        return format
     }
 
-    @_spi(DisplayList_ViewSystem)
     public func update(rbLayer: AnyObject) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    @_spi(DisplayList_ViewSystem)
-    public static func == (a: PlatformDrawableOptions, b: PlatformDrawableOptions) -> Bool {
+        // TODO: RBLayer
         _openSwiftUIUnimplementedFailure()
     }
 }
