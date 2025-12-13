@@ -42,7 +42,7 @@ extension View {
     ) -> some View where T: Equatable {
         platformSensoryFeedback(
             FeedbackGenerator(
-                feedbackRequestContext: .init(location: .init()),
+                feedbackRequestContext: .init(),
                 feedback: feedback,
                 trigger: trigger,
                 condition: nil,
@@ -86,7 +86,7 @@ extension View {
     ) -> some View where T: Equatable {
         platformSensoryFeedback(
             FeedbackGenerator(
-                feedbackRequestContext: .init(location: .init()),
+                feedbackRequestContext: .init(),
                 feedback: feedback,
                 trigger: trigger,
                 condition: condition,
@@ -133,7 +133,7 @@ extension View {
     ) -> some View where T: Equatable {
         platformSensoryFeedback(
             CustomFeedbackGenerator(
-                feedbackRequestContext: .init(location: .init()),
+                feedbackRequestContext: .init(),
                 trigger: trigger,
                 feedback: feedback
             )

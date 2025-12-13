@@ -227,7 +227,7 @@ private struct FeedbackLocation: Rule {
 // MARK: - FeedbackRequestContext
 
 struct FeedbackRequestContext {
-    var location: WeakAttribute<CGPoint>
+    var location: WeakAttribute<CGPoint> = .init()
     weak var cache: AnyUIKitSensoryFeedbackCache?
 
     func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
