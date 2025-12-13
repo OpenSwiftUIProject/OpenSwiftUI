@@ -19,6 +19,16 @@ protocol LocationBasedSensoryFeedback: PlatformSensoryFeedback {
     func generate(location: CGPoint)
 }
 
+// MARK: - View + platformSensoryFeedback
+
+extension View {
+    nonisolated func platformSensoryFeedback<Base>(
+        _ base: Base
+    ) -> some View where Base: SensoryFeedbackGeneratorModifier {
+        modifier(FeedbackRequestContextWriter(base: base))
+    }
+}
+
 // MARK: - FeedbackRequestContextWriter
 
 private struct FeedbackRequestContextWriter<Base>: MultiViewModifier, PrimitiveViewModifier where Base: SensoryFeedbackGeneratorModifier {
@@ -220,7 +230,7 @@ struct FeedbackRequestContext {
     var location: WeakAttribute<CGPoint>
     weak var cache: AnyUIKitSensoryFeedbackCache?
 
-    func implementation(type: SensoryFeedback.FeedbackType) -> PlatformSensoryFeedback? {
+    func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
         guard let cache,
               let feeback = cache.implementation(type: type),
               let location = location.attribute else {
