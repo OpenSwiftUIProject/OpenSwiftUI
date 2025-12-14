@@ -528,8 +528,3 @@ extension GraphicsImage: ProtobufMessage {
     }
 }
 package struct ResolvedShadowStyle {}
-
-package struct RasterizationOptions {}
-package protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
-public struct PlatformDrawableOptions {}
-public protocol PlatformDrawable : AnyObject {}
