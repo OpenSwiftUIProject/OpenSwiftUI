@@ -56,15 +56,22 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         package var _renderer: DisplayList.GraphicsRenderer?
 
         package init() {
-            _openSwiftUIUnimplementedFailure()
+            mode = .unsupported
+            _renderer = nil
         }
 
         package init(platformViewMode: DisplayList.GraphicsRenderer.PlatformViewMode) {
-            _openSwiftUIUnimplementedFailure()
+            mode = platformViewMode
+            _renderer = nil
         }
 
         package mutating func renderer() -> DisplayList.GraphicsRenderer {
-            _openSwiftUIUnimplementedFailure()
+            guard let _renderer else {
+                let render = DisplayList.GraphicsRenderer(platformViewMode: mode)
+                _renderer = render
+                return render
+            }
+            return _renderer
         }
     }
 
