@@ -5,11 +5,13 @@
 //  Audited for 6.5.4
 //  Status: WIP
 
-public import CoreGraphics
-public import QuartzCore
 import OpenAttributeGraphShims
 import OpenRenderBoxShims
+public import OpenCoreGraphicsShims
+#if canImport(QuarzCore)
+public import QuartzCore
 import CoreAnimation_Private
+#endif
 
 // MARK: - PlatformDrawable
 
@@ -22,12 +24,14 @@ public protocol PlatformDrawable: AnyObject {
 
     func update(content: PlatformDrawableContent?, required: Bool) -> Bool
 
+    #if canImport(QuarzCore)
     func makeAsyncUpdate(
         content: PlatformDrawableContent,
         required: Bool,
         layer: CALayer,
         bounds: CGRect
     ) -> (() -> Void)?
+    #endif
 
     func setContentsScale(_ scale: CGFloat)
 
@@ -79,6 +83,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         _openSwiftUIEmptyStub()
     }
 
+    #if canImport(CoreGraphics)
     public func draw(
         in ctx: CGContext,
         size: CGSize,
@@ -87,6 +92,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
     ) {
         _openSwiftUIUnimplementedFailure()
     }
+    #endif
 
     public func draw(
         in list: RBDisplayList,
@@ -124,6 +130,7 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
         base.rendersFirstFrameAsynchronously
     }
 
+    #if canImport(QuarzCore)
     public var caLayerContentsFormat: CALayerContentsFormat {
         var format = CALayerContentsFormat.automatic
         if base.flags.contains(.rgbaContext) {
@@ -134,6 +141,7 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
         }
         return format
     }
+    #endif
 
     public func update(rbLayer: AnyObject) {
         // TODO: RBLayer
