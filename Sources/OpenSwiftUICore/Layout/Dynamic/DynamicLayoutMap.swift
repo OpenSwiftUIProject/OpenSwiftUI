@@ -65,7 +65,7 @@ package struct DynamicLayoutMap {
             return
         }
         while endIndex != map.count {
-            let indexUniqueId = map[index].id.uniqueId
+            let indexUniqueId = map[endIndex].id.uniqueId
             guard indexUniqueId == uniqueId else {
                 break
             }
