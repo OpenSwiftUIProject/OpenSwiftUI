@@ -14,6 +14,23 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+/// Parses a path string and appends the path elements to a mutable path.
+///
+/// The string format uses space-separated numbers followed by command characters:
+/// - `m` - move to (x y)
+/// - `l` - line to (x y)
+/// - `c` - cubic curve (cp1x cp1y cp2x cp2y x y)
+/// - `q` - quad curve (cpx cpy x y)
+/// - `t` - smooth quad curve (x y), reflects previous control point
+/// - `v` - smooth cubic curve (cp2x cp2y x y), uses current point as cp1
+/// - `y` - shorthand cubic (cp1x cp1y x y), cp2 equals endpoint
+/// - `h` - close subpath
+/// - `re` - rectangle (x y width height)
+///
+/// - Parameters:
+///   - path: The mutable path to append elements to.
+///   - utf8CString: The path string to parse.
+/// - Returns: `YES` if parsing succeeded, `NO` if the string is malformed.
 BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString);
 
 /// Creates a string description of a path with optional coordinate rounding.
