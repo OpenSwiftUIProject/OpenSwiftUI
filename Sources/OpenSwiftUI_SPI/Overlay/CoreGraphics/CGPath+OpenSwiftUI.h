@@ -43,6 +43,23 @@ BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString);
 ///   (m for move, l for line, h for close).
 NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step);
 
+/// Creates a rounded rectangle path with the specified corner radii.
+///
+/// The corner radii are automatically clamped to fit within the rectangle:
+/// - Negative values are treated as 0
+/// - Values exceeding half the width or height are reduced accordingly
+///
+/// - Parameters:
+///   - rect: The rectangle to create the path from.
+///   - cornerWidth: The horizontal radius of the rounded corners.
+///   - cornerHeight: The vertical radius of the rounded corners.
+///   - useRB: If `YES`, uses RenderBox for path creation (when available).
+///     If `NO`, uses CoreGraphics directly.
+/// - Returns: A new path representing the rounded rectangle. Returns a plain
+///   rectangle path if either corner dimension is 0 or if the rect is empty.
+CF_RETURNS_RETAINED
+CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, BOOL useRB);
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif

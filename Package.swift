@@ -392,6 +392,14 @@ extension Target {
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
         self.swiftSettings = swiftSettings
+
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        self.cxxSettings = cxxSettings
     }
 
     func addCoreUISettings() {

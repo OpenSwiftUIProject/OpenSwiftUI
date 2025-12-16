@@ -10,6 +10,12 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <xlocale.h>
 
+#if OPENRENDERBOX_RENDERBOX
+@import RenderBox;
+#else
+@import OpenRenderBox;
+#endif
+
 // NOTE: Not audited yet. Use with caution.
 BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
     if (path == NULL || utf8CString == NULL) {
@@ -242,6 +248,57 @@ NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step) {
     return (__bridge_transfer NSString *)(info.description);
 }
 
-//_CGPathCreateRoundedRect
+CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, BOOL useRB) {
+    // Clamp corner dimensions to be non-negative
+    if (cornerWidth < 0.0) {
+        cornerWidth = 0.0;
+    }
+    if (cornerHeight < 0.0) {
+        cornerHeight = 0.0;
+    }
+
+    // If either corner dimension is 0, or rect is empty, return a plain rectangle
+    if (cornerWidth == 0.0 || cornerHeight == 0.0 || CGRectIsEmpty(rect)) {
+        return CGPathCreateWithRect(rect, NULL);
+    }
+
+    if (useRB) {
+        #if OPENRENDERBOX_RENDERBOX
+        // RBPath rbPath = RBPathMakeRoundedRect(NULL, rect, cornerWidth, cornerHeight, YES);
+        // CGPathRef cgPath = RBPathCopyCGPath(rbPath);
+        // RBPathRelease(rbPath);
+        // return cgPath;
+        #else
+        // ORBPath rbPath = ORBPathMakeRoundedRect(NULL, rect, cornerWidth, cornerHeight, YES);
+        // CGPathRef cgPath = ORBPathCopyCGPath(rbPath);
+        // ORBPathRelease(rbPath);
+        // return cgPath;
+        #endif
+    }
+
+    // Use CoreGraphics path creation
+    CGFloat width = CGRectGetWidth(rect);
+    CGFloat height = CGRectGetHeight(rect);
+
+    // Clamp cornerWidth to at most half the width
+    if (cornerWidth * 2.0 > width) {
+        cornerWidth = nextafter(width * 0.5, 0.0);
+    }
+
+    // Clamp cornerHeight to at most half the height
+    if (cornerHeight * 2.0 > height) {
+        cornerHeight = nextafter(height * 0.5, 0.0);
+    }
+
+    // Final validation
+    if (cornerWidth < 0.0 || cornerWidth * 2.0 > width) {
+        return CGPathCreateWithRect(rect, NULL);
+    }
+    if (cornerHeight < 0.0 || cornerHeight * 2.0 > height) {
+        return CGPathCreateWithRect(rect, NULL);
+    }
+
+    return CGPathCreateWithRoundedRect(rect, cornerWidth, cornerHeight, NULL);
+}
 
 #endif
