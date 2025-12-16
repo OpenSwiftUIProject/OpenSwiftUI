@@ -12,11 +12,6 @@ package import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 public import OpenCoreGraphicsShims
 
-#if canImport(CoreGraphics)
-@_silgen_name("__CGPathParseString")
-private func __CGPathParseString(_ path: CGMutablePath, _ utf8CString: UnsafePointer<CChar>) -> Bool
-#endif
-
 // MARK: - Path
 
 /// The outline of a 2D shape.
@@ -280,7 +275,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         guard let str = nsString.utf8String else {
             return nil
         }
-        guard __CGPathParseString(mutablePath, str) else {
+        guard _CGPathParseString(mutablePath, str) else {
             return nil
         }
         storage = .path(PathBox(mutablePath))
