@@ -432,7 +432,9 @@ extension GraphHost {
         var host = self
         while !host.inTransaction {
             guard let parent = host.parentHost else {
-                Update.enqueueAction(body)
+                Update.enqueueAction {
+                    self.asyncTransaction { body() }
+                }
                 return
             }
             host = parent
