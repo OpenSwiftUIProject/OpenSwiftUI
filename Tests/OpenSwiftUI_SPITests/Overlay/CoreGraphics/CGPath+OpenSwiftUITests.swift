@@ -14,38 +14,41 @@ struct CGPath_OpenSwiftUITests {
 
     struct ParseString {
         @Test(arguments: [
-            // Basic commands: move, line, close
-            ("100 0 m 200 100 l h", " 100 0 m 200 100 l h"),
-            // Multiple lines
-            ("0 0 m 100 0 l 100 100 l 0 100 l h", " 0 0 m 100 0 l 100 100 l 0 100 l h"),
-            // Quad curve
-            ("0 0 m 50 0 100 100 q", " 0 0 m 50 0 100 100 q"),
-            // Cubic curve
-            ("0 0 m 25 0 75 100 100 100 c", " 0 0 m 25 0 75 100 100 100 c"),
-            // Rectangle
-            ("10 20 30 40 re", " 10 20 m 40 20 l 40 60 l 10 60 l h"),
+            // m - move to
+            ("100 0 m 200 100 l h", true, " 100 0 m 200 100 l h"),
+            // l - line to (multiple)
+            ("0 0 m 100 0 l 100 100 l 0 100 l h", true, " 0 0 m 100 0 l 100 100 l 0 100 l h"),
+            // q - quad curve
+            ("0 0 m 50 0 100 100 q", true, " 0 0 m 50 0 100 100 q"),
+            // c - cubic curve
+            ("0 0 m 25 0 75 100 100 100 c", true, " 0 0 m 25 0 75 100 100 100 c"),
+            // v - smooth cubic (cp1 = last point)
+            ("0 0 m 50 50 100 100 v", true, " 0 0 m 0 0 50 50 100 100 c"),
+            // y - shorthand cubic (cp2 = endpoint)
+            ("0 0 m 25 0 100 100 y", true, " 0 0 m 25 0 100 100 100 100 c"),
+            // re - rectangle
+            ("10 20 30 40 re", true, " 10 20 m 40 20 l 40 60 l 10 60 l h"),
             // Negative numbers
-            ("-10 -20 m 30 40 l", " -10 -20 m 30 40 l"),
+            ("-10 -20 m 30 40 l", true, " -10 -20 m 30 40 l"),
             // Decimal numbers
-            ("0.5 1.5 m 2.5 3.5 l", " 0.5 1.5 m 2.5 3.5 l"),
+            ("0.5 1.5 m 2.5 3.5 l", true, " 0.5 1.5 m 2.5 3.5 l"),
+            // Whitespace variants (tab, newline)
+            ("0\t0\nm\n100\t100\tl", true, " 0 0 m 100 100 l"),
+            // Invalid: unknown command
+            ("0 0 z", false, ""),
+            // Invalid: wrong number of parameters
+            ("0 m", false, ""),
+            // Invalid: too many numbers
+            ("1 2 3 4 5 6 7 m", false, ""),
         ])
-        func parseString(input: String, expected: String) {
+        func parseString(input: String, expectedResult: Bool, expectedString: String) {
             let path = CGMutablePath()
             let result = _CGPathParseString(path, input)
-            #expect(result == true)
-            let description = _CGPathCopyDescription(path, 0)
-            #expect(description == expected)
-        }
-
-        @Test
-        func parseStringWithInvalidInput() {
-            let path = CGMutablePath()
-            // Unknown command
-            #expect(_CGPathParseString(path, "0 0 z") == false)
-            // Wrong number of parameters for move
-            #expect(_CGPathParseString(path, "0 m") == false)
-            // Too many numbers without command
-            #expect(_CGPathParseString(path, "1 2 3 4 5 6 7 m") == false)
+            #expect(result == expectedResult)
+            if expectedResult {
+                let description = _CGPathCopyDescription(path, 0)
+                #expect(description == expectedString)
+            }
         }
     }
 

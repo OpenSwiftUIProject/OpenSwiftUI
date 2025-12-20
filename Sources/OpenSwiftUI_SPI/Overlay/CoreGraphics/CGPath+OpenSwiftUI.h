@@ -17,15 +17,21 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 /// Parses a path string and appends the path elements to a mutable path.
 ///
 /// The string format uses space-separated numbers followed by command characters:
-/// - `m` - move to (x y)
-/// - `l` - line to (x y)
-/// - `c` - cubic curve (cp1x cp1y cp2x cp2y x y)
-/// - `q` - quad curve (cpx cpy x y)
-/// - `t` - smooth quad curve (x y), reflects previous control point
-/// - `v` - smooth cubic curve (cp2x cp2y x y), uses current point as cp1
-/// - `y` - shorthand cubic (cp1x cp1y x y), cp2 equals endpoint
-/// - `h` - close subpath
-/// - `re` - rectangle (x y width height)
+///
+/// | Command | Parameters | Description |
+/// |---------|------------|-------------|
+/// | `m` | x y | Move to point |
+/// | `l` | x y | Line to point |
+/// | `c` | cp1x cp1y cp2x cp2y x y | Cubic Bézier curve |
+/// | `q` | cpx cpy x y | Quadratic Bézier curve |
+/// | `t` | x y | Smooth quadratic curve (reflects previous control point) |
+/// | `v` | cp2x cp2y x y | Smooth cubic curve (uses last point as cp1) |
+/// | `y` | cp1x cp1y x y | Shorthand cubic (cp2 equals endpoint) |
+/// | `h` | (none) | Close subpath |
+/// | `re` | x y width height | Rectangle |
+///
+/// Whitespace characters (space, tab, newline, carriage return) are skipped.
+/// Numbers can be integers, decimals, or special values like `Inf`.
 ///
 /// - Parameters:
 ///   - path: The mutable path to append elements to.

@@ -16,168 +16,122 @@
 @import OpenRenderBox;
 #endif
 
-// NOTE: Not audited yet. Use with caution.
 BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
-    if (path == NULL || utf8CString == NULL) {
-        return NO;
-    }
-
-    CGFloat numbers[6];
+    double numbers[6];
     int numCount = 0;
     CGFloat currentX = 0.0, currentY = 0.0;
     CGFloat lastControlX = 0.0, lastControlY = 0.0;
-
     const char *ptr = utf8CString;
-
-    while (YES) {
-        // Skip whitespace (characters <= 0x1f or space 0x20)
-        while (*ptr != '\0' && (*ptr <= 0x1f || *ptr == ' ')) {
-            ptr++;
+    do {
+        while (*ptr <= 0x1f) {
+            switch (*ptr) {
+            case 0: return true;
+            case 9: case 10: case 12: case 13: ptr++; break;
+            default: return false;
+            }
         }
-
-        if (*ptr == '\0') {
-            // End of string - success if all numbers consumed
-            return numCount == 0;
-        }
-
-        char c = *ptr;
-
-        // Check if character can start a number
-        // Valid: digits 0-9 (0x30-0x39), '-', '+', '.', 'e', 'E', 'p', 'x', "inf"
+        unsigned char c = (unsigned char)*ptr;
         BOOL isNumberStart = NO;
-        if ((c >= '0' && c <= '9') || c == '-' || c == '+' || c == '.') {
-            isNumberStart = YES;
-        } else if (c == 'e' || c == 'E' || c == 'p' || c == 'x') {
-            isNumberStart = YES;
-        } else if (c == 'i') {
-            // Check for "inf"
-            if (ptr[1] == 'n' && ptr[2] == 'f') {
-                isNumberStart = YES;
-            }
-        }
-
-        if (isNumberStart) {
-            if (numCount >= 6) {
-                return NO;
-            }
-            char *endPtr;
-            numbers[numCount++] = strtod_l(ptr, &endPtr, NULL);
-            ptr = endPtr;
-            continue;
-        }
-
-        // Process command character
         switch (c) {
+            case ' ': break;
+            case '+': case '-': case '.': case '0' ... '9':
+            case 'E': case 'P': case 'X': case 'e': case 'p': case 'x':
+                isNumberStart = YES;
+                break;
+            case 'I':
+                if (ptr[1] == 'n' && ptr[2] == 'f') { isNumberStart = YES; }
+                break;
             case 'm':
                 if (numCount != 2) return NO;
                 CGPathMoveToPoint(path, NULL, numbers[0], numbers[1]);
-                lastControlX = currentX = numbers[0];
-                lastControlY = currentY = numbers[1];
+                currentX = lastControlX = numbers[0];
+                currentY = lastControlY = numbers[1];
                 numCount = 0;
                 break;
-
             case 'l':
                 if (numCount != 2) return NO;
                 CGPathAddLineToPoint(path, NULL, numbers[0], numbers[1]);
-                lastControlX = currentX = numbers[0];
-                lastControlY = currentY = numbers[1];
+                currentX = lastControlX = numbers[0];
+                currentY = lastControlY = numbers[1];
                 numCount = 0;
                 break;
-
             case 'c':
                 if (numCount != 6) return NO;
-                CGPathAddCurveToPoint(path, NULL,
-                                      numbers[0], numbers[1],
-                                      numbers[2], numbers[3],
-                                      numbers[4], numbers[5]);
-                lastControlX = numbers[2];
-                lastControlY = numbers[3];
-                currentX = numbers[4];
-                currentY = numbers[5];
-                numCount = 0;
-                break;
-
-            case 'q':
-                if (numCount != 4) return NO;
-                CGPathAddQuadCurveToPoint(path, NULL,
-                                          numbers[0], numbers[1],
-                                          numbers[2], numbers[3]);
-                lastControlX = numbers[0];
-                lastControlY = numbers[1];
+                CGPathAddCurveToPoint(path, NULL, numbers[0], numbers[1],
+                                      numbers[2], numbers[3], numbers[4], numbers[5]);
                 currentX = numbers[2];
                 currentY = numbers[3];
+                lastControlX = numbers[4];
+                lastControlY = numbers[5];
                 numCount = 0;
                 break;
-
+            case 'q':
+                if (numCount != 4) return NO;
+                CGPathAddQuadCurveToPoint(path, NULL, numbers[0], numbers[1],
+                                          numbers[2], numbers[3]);
+                currentX = numbers[0];
+                currentY = numbers[1];
+                lastControlX = numbers[2];
+                lastControlY = numbers[3];
+                numCount = 0;
+                break;
             case 't':
-                // Smooth quad curve: reflect last control point
                 if (numCount != 2) return NO;
                 {
                     CGFloat reflectedX = currentX - 2.0 * lastControlX;
                     CGFloat reflectedY = currentY - 2.0 * lastControlY;
-                    CGPathAddQuadCurveToPoint(path, NULL,
-                                              reflectedX, reflectedY,
+                    CGPathAddQuadCurveToPoint(path, NULL, reflectedX, reflectedY,
                                               numbers[0], numbers[1]);
-                    lastControlX = reflectedX;
-                    lastControlY = reflectedY;
-                    currentX = numbers[0];
-                    currentY = numbers[1];
+                    currentX = reflectedX;
+                    currentY = reflectedY;
+                    lastControlX = numbers[0];
+                    lastControlY = numbers[1];
                 }
                 numCount = 0;
                 break;
-
             case 'v':
-                // Smooth cubic curve: use current point as cp1
                 if (numCount != 4) return NO;
-                CGPathAddCurveToPoint(path, NULL,
-                                      currentX, currentY,
-                                      numbers[0], numbers[1],
-                                      numbers[2], numbers[3]);
-                lastControlX = numbers[0];
-                lastControlY = numbers[1];
-                currentX = numbers[2];
-                currentY = numbers[3];
+                CGPathAddCurveToPoint(path, NULL, lastControlX, lastControlY,
+                                      numbers[0], numbers[1], numbers[2], numbers[3]);
+                lastControlX = numbers[2];
+                lastControlY = numbers[3];
                 numCount = 0;
                 break;
-
             case 'y':
-                // Shorthand cubic: cp2 = endpoint
                 if (numCount != 4) return NO;
-                CGPathAddCurveToPoint(path, NULL,
-                                      numbers[0], numbers[1],
-                                      numbers[2], numbers[3],
-                                      numbers[2], numbers[3]);
-                currentX = numbers[2];
-                currentY = numbers[3];
+                CGPathAddCurveToPoint(path, NULL, numbers[0], numbers[1],
+                                      numbers[2], numbers[3], numbers[2], numbers[3]);
+                lastControlX = numbers[2];
+                lastControlY = numbers[3];
                 numCount = 0;
                 break;
-
             case 'h':
                 if (numCount != 0) return NO;
                 CGPathCloseSubpath(path);
+                lastControlX = 0.0;
                 lastControlY = 0.0;
                 numCount = 0;
                 break;
-
             case 'r':
-                // Check for "re" (rectangle)
-                if (ptr[1] == 'e') {
-                    if (numCount != 4) return NO;
-                    CGPathAddRect(path, NULL, CGRectMake(numbers[0], numbers[1],
-                                                         numbers[2], numbers[3]));
-                    currentX = numbers[0];
-                    currentY = numbers[1];
-                    numCount = 0;
-                    ptr++; // Skip 'e'
-                    break;
-                }
-                return NO;
-
+                if (ptr[1] != 'e') return NO;
+                if (numCount != 4) return NO;
+                CGPathAddRect(path, NULL, CGRectMake(numbers[0], numbers[1],
+                                                     numbers[2], numbers[3]));
+                ptr++;
+                numCount = 0;
+                break;
             default:
-                return NO;
+                return false;
         }
-        ptr++;
-    }
+        if (isNumberStart) {
+            if (numCount == 6) return false;
+            char *endPtr;
+            numbers[numCount++] = strtod_l(ptr, &endPtr, NULL);
+            ptr = endPtr;
+        } else {
+            ptr++;
+        }
+    } while (1);
 }
 
 typedef struct PathInfo {
