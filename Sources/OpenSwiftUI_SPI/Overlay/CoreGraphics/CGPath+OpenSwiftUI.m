@@ -43,64 +43,74 @@ BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
                 break;
             case 'm':
                 if (numCount != 2) return NO;
-                CGPathMoveToPoint(path, NULL, numbers[0], numbers[1]);
+                CGPathMoveToPoint(path, NULL,
+                                  numbers[0], numbers[1]);
                 currentX = lastControlX = numbers[0];
                 currentY = lastControlY = numbers[1];
                 numCount = 0;
                 break;
             case 'l':
                 if (numCount != 2) return NO;
-                CGPathAddLineToPoint(path, NULL, numbers[0], numbers[1]);
+                CGPathAddLineToPoint(path, NULL,
+                                     numbers[0], numbers[1]);
                 currentX = lastControlX = numbers[0];
                 currentY = lastControlY = numbers[1];
                 numCount = 0;
                 break;
             case 'c':
                 if (numCount != 6) return NO;
-                CGPathAddCurveToPoint(path, NULL, numbers[0], numbers[1],
-                                      numbers[2], numbers[3], numbers[4], numbers[5]);
-                currentX = numbers[2];
-                currentY = numbers[3];
-                lastControlX = numbers[4];
-                lastControlY = numbers[5];
+                CGPathAddCurveToPoint(path, NULL,
+                                      numbers[0], numbers[1],
+                                      numbers[2], numbers[3],
+                                      numbers[4], numbers[5]);
+                lastControlX = numbers[2];
+                lastControlY = numbers[3];
+                currentX = numbers[4];
+                currentY = numbers[5];
                 numCount = 0;
                 break;
             case 'q':
                 if (numCount != 4) return NO;
-                CGPathAddQuadCurveToPoint(path, NULL, numbers[0], numbers[1],
+                CGPathAddQuadCurveToPoint(path, NULL,
+                                          numbers[0], numbers[1],
                                           numbers[2], numbers[3]);
-                currentX = numbers[0];
-                currentY = numbers[1];
-                lastControlX = numbers[2];
-                lastControlY = numbers[3];
+                lastControlX = numbers[0];
+                lastControlY = numbers[1];
+                currentX = numbers[2];
+                currentY = numbers[3];
                 numCount = 0;
                 break;
             case 't':
                 if (numCount != 2) return NO;
-                {
-                    CGFloat reflectedX = currentX - 2.0 * lastControlX;
-                    CGFloat reflectedY = currentY - 2.0 * lastControlY;
-                    CGPathAddQuadCurveToPoint(path, NULL, reflectedX, reflectedY,
-                                              numbers[0], numbers[1]);
-                    currentX = reflectedX;
-                    currentY = reflectedY;
-                    lastControlX = numbers[0];
-                    lastControlY = numbers[1];
-                }
+                CGFloat reflectedX = currentX * 2.0 - lastControlX;
+                CGFloat reflectedY = currentY * 2.0 - lastControlY;
+                CGPathAddQuadCurveToPoint(path, NULL,
+                                            reflectedX, reflectedY,
+                                            numbers[0], numbers[1]);
+                lastControlX = reflectedX;
+                lastControlY = reflectedY;
+                currentX = numbers[0];
+                currentY = numbers[1];
                 numCount = 0;
                 break;
             case 'v':
                 if (numCount != 4) return NO;
-                CGPathAddCurveToPoint(path, NULL, lastControlX, lastControlY,
-                                      numbers[0], numbers[1], numbers[2], numbers[3]);
-                lastControlX = numbers[2];
-                lastControlY = numbers[3];
+                CGPathAddCurveToPoint(path, NULL,
+                                      currentX, currentY,
+                                      numbers[0], numbers[1],
+                                      numbers[2], numbers[3]);
+                lastControlX = numbers[0];
+                lastControlY = numbers[1];
+                currentX = numbers[2];
+                currentY = numbers[3];
                 numCount = 0;
                 break;
             case 'y':
                 if (numCount != 4) return NO;
-                CGPathAddCurveToPoint(path, NULL, numbers[0], numbers[1],
-                                      numbers[2], numbers[3], numbers[2], numbers[3]);
+                CGPathAddCurveToPoint(path, NULL,
+                                      numbers[0], numbers[1],
+                                      numbers[2], numbers[3],
+                                      numbers[2], numbers[3]);
                 lastControlX = numbers[2];
                 lastControlY = numbers[3];
                 numCount = 0;
@@ -115,8 +125,9 @@ BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
             case 'r':
                 if (ptr[1] != 'e') return NO;
                 if (numCount != 4) return NO;
-                CGPathAddRect(path, NULL, CGRectMake(numbers[0], numbers[1],
-                                                     numbers[2], numbers[3]));
+                CGPathAddRect(path, NULL,
+                              CGRectMake(numbers[0], numbers[1],
+                                         numbers[2], numbers[3]));
                 ptr++;
                 numCount = 0;
                 break;

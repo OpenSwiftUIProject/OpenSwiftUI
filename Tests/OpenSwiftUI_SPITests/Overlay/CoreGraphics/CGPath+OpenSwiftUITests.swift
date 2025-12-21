@@ -22,7 +22,7 @@ struct CGPath_OpenSwiftUITests {
             ("0 0 m 50 0 100 100 q", true, " 0 0 m 50 0 100 100 q"),
             // c - cubic curve
             ("0 0 m 25 0 75 100 100 100 c", true, " 0 0 m 25 0 75 100 100 100 c"),
-            // v - smooth cubic (cp1 = last point)
+            // v - smooth cubic (cp1 = current point)
             ("0 0 m 50 50 100 100 v", true, " 0 0 m 0 0 50 50 100 100 c"),
             // y - shorthand cubic (cp2 = endpoint)
             ("0 0 m 25 0 100 100 y", true, " 0 0 m 25 0 100 100 100 100 c"),
@@ -56,6 +56,7 @@ struct CGPath_OpenSwiftUITests {
 
     struct CopyDescription {
         @Test(arguments: [
+            (0.0, " 100 0 m 189.5 189.5 l 0 189.5 l h"),
             (1.0, " 100 0 m 190 190 l 0 190 l h"),
             (2.0, " 100 0 m 190 190 l 0 190 l h"),
             (3.0, " 99 0 m 189 189 l 0 189 l h"),
