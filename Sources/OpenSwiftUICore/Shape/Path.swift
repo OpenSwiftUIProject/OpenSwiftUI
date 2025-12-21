@@ -68,6 +68,21 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 //
 //        }()
 
+        #if canImport(CoreGraphics)
+        package var cgPath: CGPath {
+            switch kind {
+            case .cgPath:
+                return data.cgPath.takeRetainedValue()
+            case .rbPath:
+                // TODO: Implement ORBPathCopyCGPath in OpenRenderBox
+                fatalError("rbPath to CGPath not yet implemented")
+            case .buffer:
+                // TODO: Use bufferCallbacks with RBPathCopyCGPath
+                fatalError("buffer to CGPath not yet implemented")
+            }
+        }
+        #endif
+
         @usableFromInline
         package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
             // TODO
@@ -222,6 +237,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             storage = .empty
             return
         }
+        // TODO: addRoundedRect
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -300,7 +316,22 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     #if canImport(CoreGraphics)
     /// An immutable path representing the elements in the path.
     public var cgPath: CGPath {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            CGPath(rect: .null, transform: nil)
+        case .rect(let rect):
+            CGPath(rect: rect, transform: nil)
+        case .ellipse(let rect):
+            CGPath(ellipseIn: rect, transform: nil)
+        case .roundedRect(let fixedRoundedRect):
+            fixedRoundedRect.cgPath
+        case .stroked:
+            fatalError("obsolete")
+        case .trimmed:
+            fatalError("obsolete")
+        case .path(let pathBox):
+            pathBox.cgPath
+        }
     }
     #endif
 
@@ -476,3 +507,70 @@ package struct TrimmedPath: Equatable {
 
 @available(*, unavailable)
 extension TrimmedPath: Sendable {}
+
+// MARK: - RenderBox
+
+private let temporaryPathCallbacks: UnsafePointer<ORBPath.Callbacks> = {
+    let pointer = UnsafeMutablePointer<ORBPath.Callbacks>.allocate(capacity: 1)
+    var callbacks = ORBPath.Callbacks()
+    callbacks.retain = { _ in
+        _openSwiftUIUnreachableCode()
+    }
+    callbacks.release = { _ in
+        _openSwiftUIUnreachableCode()
+    }
+    callbacks.apply = { object, info, callback in
+        let storage = unsafeBitCast(object, to: ORBPath.Storage.self)
+        return storage.apply(info: info, callback: callback)
+    }
+    callbacks.isEqual = { lhs, rhs in
+        let lhs = unsafeBitCast(lhs, to: ORBPath.Storage.self)
+        let rhs = unsafeBitCast(rhs, to: ORBPath.Storage.self)
+        return lhs.isEqual(to: rhs)
+    }
+    callbacks.isEmpty = { object in
+        let storage = unsafeBitCast(object, to: ORBPath.Storage.self)
+        return storage.isEmpty
+    }
+    callbacks.isSingleElement = { object in
+        let storage = unsafeBitCast(object, to: ORBPath.Storage.self)
+        return storage.isSingleElement
+    }
+    callbacks.boundingRect = { object in
+        let storage = unsafeBitCast(object, to: ORBPath.Storage.self)
+        return storage.boundingRect
+    }
+    callbacks.cgPath = { object in
+        let storage = unsafeBitCast(object, to: ORBPath.Storage.self)
+        let cgPath = storage.cgPath
+        return .passUnretained(cgPath)
+    }
+    pointer.initialize(to: callbacks)
+    return UnsafePointer(pointer)
+}()
+
+extension ORBPath {
+    static func withTemporaryPath<R>(
+        do body: (ORBPath) -> R,
+        builder: (UnsafeMutableRawPointer) -> ()
+    ) -> R {
+        return withUnsafeTemporaryAllocation(
+            of: UInt8.self,
+            capacity: 128
+        ) { bufferPointer in
+            let pointer = UnsafeMutableRawBufferPointer(
+                mutating: UnsafeRawBufferPointer(bufferPointer)
+            ).baseAddress!
+            let storage: ORBPath.Storage = unsafeBitCast(pointer, to: ORBPath.Storage.self)
+            storage.initialize(capacity: 128, source: nil)
+            builder(pointer)
+            let path = ORBPath(
+                storage: storage,
+                callbacks: temporaryPathCallbacks
+            )
+            let result = body(path)
+            storage.destroy()
+            return result
+        }
+    }
+}
