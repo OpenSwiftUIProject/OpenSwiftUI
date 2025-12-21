@@ -9,17 +9,32 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 #include <CoreGraphics/CoreGraphics.h>
-
-typedef union PathData {
-    CGPathRef cgPath;
-    void * obPath; // FIXME
-} PathData;
-
-#else
-typedef union PathData {
-    void *cgPath;
-    void *obPath; // FIXME
-} PathData;
 #endif
+
+#if OPENSWIFTUI_RENDERBOX
+#include <RenderBox/RenderBox.h>
+#else
+#include <OpenRenderBox/OpenRenderBox.h>
+#endif
+
+OPENSWIFTUI_ASSUME_NONNULL_BEGIN
+
+OPENSWIFTUI_IMPLICIT_BRIDGING_ENABLED
+
+typedef union PathData {
+    #if OPENSWIFTUI_TARGET_OS_DARWIN
+    CGPathRef cgPath;
+    #endif
+    #if OPENSWIFTUI_RENDERBOX
+    RBPath rbPath;
+    #else
+    ORBPath rbPath;
+    #endif
+    uint8_t buffer[0x70];
+} PathData;
+
+OPENSWIFTUI_ASSUME_NONNULL_END
+
+OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED
 
 #endif /* PathData_h */

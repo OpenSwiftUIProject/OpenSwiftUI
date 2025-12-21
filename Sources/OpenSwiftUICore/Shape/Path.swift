@@ -2,7 +2,7 @@
 //  Path.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: 31FD92B70C320DDD253E93C7417D779A (SwiftUI)
 //  ID: 3591905F51357E95FA93E39751507471 (SwiftUICore)
@@ -12,61 +12,66 @@ package import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 public import OpenCoreGraphicsShims
 
-// MARK: - Path
+// MARK: - Path [WIP]
 
 /// The outline of a 2D shape.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
+    // MARK: - Path.PathBox [WIP]
+
     @usableFromInline
     final package class PathBox: Equatable {
-
         private enum Kind: UInt8 {
             case cgPath
-            case obPath
+            case rbPath
             case buffer
         }
 
         private var kind: Kind
-
-        #if canImport(CoreGraphics)
         private var data: PathData
 
+        #if canImport(CoreGraphics)
         @inline(__always)
         init(_ path: CGPath) {
             kind = .cgPath
-            //data = PathData(path)
-            _openSwiftUIUnimplementedFailure()
+            data = PathData(cgPath: .passUnretained(path))
         }
         #endif
 
         package init(takingPath path: ORBPath) {
-            kind = .obPath
-            //data = PathData(path)
-            _openSwiftUIUnimplementedFailure()
+            kind = .rbPath
+            data = PathData(rbPath: path)
         }
 
-        #if canImport(CoreGraphics)
         private func prepareBuffer() {
-            let obPath: ORBPath
+            let path: ORBPath
             switch kind {
+            #if canImport(CoreGraphics)
             case .cgPath:
-                // data.cgPath
-                // let rbPath = ORBPathMakeWithCGPath
-                _openSwiftUIUnimplementedFailure()
-            case .obPath:
-                obPath = data.obPath.assumingMemoryBound(to: ORBPath.self).pointee
+                path = RBPath(cgPath: data.cgPath.takeUnretainedValue())
+            #endif
+            case .rbPath:
+                path = data.rbPath
             case .buffer:
                 return
             }
-            // ORBPath.Storage.init
-            // storage.appendPath
-            obPath.release()
+            let storage: ORBPath.Storage = unsafeBitCast(data, to: ORBPath.Storage.self)
+            storage.initialize(capacity: 96, source: nil)
+            storage.append(path: path)
+            kind = .buffer
+            data = PathData(rbPath: path)
+            path.release()
         }
-        #endif
+
+//        private static let bufferCallbacks: UnsafePointer<RBPathCallbacks> = {
+//
+//        }()
 
         @usableFromInline
         package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
-            _openSwiftUIUnimplementedFailure()
+            // TODO
+            false
         }
     }
 
@@ -98,9 +103,8 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     public init() {
         storage = .empty
     }
-    
-    #if canImport(CoreGraphics)
 
+    #if canImport(CoreGraphics)
     /// Creates a path from an immutable shape path.
     ///
     /// - Parameter path: The immutable CoreGraphics path to initialize
@@ -113,7 +117,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         }
         storage = .path(PathBox(path))
     }
-    
+
     /// Creates a path from a copy of a mutable shape path.
     ///
     /// - Parameter path: The CoreGraphics path to initialize the new
@@ -125,10 +129,9 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             return
         }
         storage = .path(PathBox(path.mutableCopy()!))
-        _openSwiftUIUnimplementedFailure()
     }
     #endif
-    
+
     /// Creates a path containing a rectangle.
     ///
     /// This is a convenience function that creates a path of a
@@ -149,7 +152,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         }
         storage = .rect(rect)
     }
-    
+
     /// Creates a path containing a rounded rectangle.
     ///
     /// This is a convenience function that creates a path of a rounded
@@ -252,7 +255,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         }
         storage = rect.isInfinite ? .rect(rect) : .ellipse(rect)
     }
-    
+
     /// Creates an empty path, then executes a closure to add its
     /// initial elements.
     ///
@@ -263,7 +266,6 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         storage = .empty
         callback(&self)
     }
-    
 
     /// Initializes from the result of a previous call to
     /// `Path.stringRepresentation`. Fails if the `string` does not
@@ -279,8 +281,8 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             return nil
         }
         storage = .path(PathBox(mutablePath))
-        _openSwiftUIUnimplementedFailure()
         #else
+        _openSwiftUIPlatformUnimplementedWarning()
         return nil
         #endif
     }
@@ -288,7 +290,11 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// A description of the path that may be used to recreate the path
     /// via `init?(_:)`.
     public var description: String {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        _CGPathCopyDescription(cgPath, 0.0)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     #if canImport(CoreGraphics)
@@ -298,7 +304,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     }
     #endif
 
-    package func retainORBPath() -> ORBPath {
+    package func retainRBPath() -> ORBPath {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -319,7 +325,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     public var boundingRect: CGRect {
         _openSwiftUIUnimplementedFailure()
     }
-    
+
     /// Returns true if the path contains a specified point.
     ///
     /// If `eoFill` is true, this method uses the even-odd rule to define which
@@ -383,11 +389,33 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     }
 
     package func rect() -> CGRect? {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case let .rect(rect):
+            rect
+        default:
+            nil
+        }
     }
 
     package func roundedRect() -> FixedRoundedRect? {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case let .rect(rect):
+            FixedRoundedRect(rect)
+        case let .ellipse(rect):
+            if rect.width == rect.height {
+                FixedRoundedRect(
+                    rect,
+                    cornerRadius: rect.width / 2,
+                    style: .circular
+                )
+            } else {
+                nil
+            }
+        case let .roundedRect(fixedRoundedRect):
+            fixedRoundedRect
+        default:
+            nil
+        }
     }
 }
 
