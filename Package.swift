@@ -161,7 +161,7 @@ let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
 let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
 let attributeGraphCondition = envBoolValue("ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
-let renderBoxCondition = envBoolValue("OPENRENDERBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
+let renderBoxCondition = envBoolValue("RENDERBOX", default: true)
 
 // For #39
 let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
@@ -390,15 +390,15 @@ extension Target {
         // "could not determine executable path for bundle 'RenderBox.framework'"
         dependencies.append(.product(name: "RenderBox", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        swiftSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.swiftSettings = swiftSettings
 
         var cSettings = cSettings ?? []
-        cSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        cSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.cSettings = cSettings
 
         var cxxSettings = cxxSettings ?? []
-        cxxSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        cxxSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.cxxSettings = cxxSettings
     }
 

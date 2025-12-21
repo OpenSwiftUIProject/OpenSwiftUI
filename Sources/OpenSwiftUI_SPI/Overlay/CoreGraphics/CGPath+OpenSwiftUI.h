@@ -14,6 +14,14 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+/// Defines the shape of a rounded rectangle's corners.
+typedef OPENSWIFTUI_ENUM(uint8_t, PathRoundedCornerStyle) {
+    /// Quarter-circle rounded rect corners.
+    PathRoundedCornerStyleCircular = 0,
+    /// Continuous curvature rounded rect corners.
+    PathRoundedCornerStyleContinuous = 1,
+};
+
 /// Parses a path string and appends the path elements to a mutable path.
 ///
 /// The string format uses space-separated numbers followed by command characters:
@@ -59,12 +67,13 @@ NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step);
 ///   - rect: The rectangle to create the path from.
 ///   - cornerWidth: The horizontal radius of the rounded corners.
 ///   - cornerHeight: The vertical radius of the rounded corners.
-///   - useRB: If `YES`, uses RenderBox for path creation (when available).
-///     If `NO`, uses CoreGraphics directly.
+///   - style: The corner style to use. ``CGPathRoundedCornerStyleCircular``
+///     uses quarter-circle corners. ``CGPathRoundedCornerStyleContinuous``
+///     uses continuous curvature corners.
 /// - Returns: A new path representing the rounded rectangle. Returns a plain
 ///   rectangle path if either corner dimension is 0 or if the rect is empty.
-CF_RETURNS_RETAINED
-CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, BOOL useRB);
+OPENSWIFTUI_RETURNS_RETAINED
+CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, PathRoundedCornerStyle style);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

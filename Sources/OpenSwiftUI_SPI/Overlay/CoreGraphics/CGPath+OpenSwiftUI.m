@@ -10,10 +10,10 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <xlocale.h>
 
-#if OPENRENDERBOX_RENDERBOX
-@import RenderBox;
+#if OPENSWIFTUI_RENDERBOX
+#include <RenderBox/RenderBox.h>
 #else
-@import OpenRenderBox;
+#include <OpenRenderBox/OpenRenderBox.h>
 #endif
 
 BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
@@ -213,7 +213,7 @@ NSString * _CGPathCopyDescription(CGPathRef path, CGFloat step) {
     return (__bridge_transfer NSString *)(info.description);
 }
 
-CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, BOOL useRB) {
+CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cornerHeight, PathRoundedCornerStyle style) {
     // Clamp corner dimensions to be non-negative
     if (cornerWidth < 0.0) {
         cornerWidth = 0.0;
@@ -227,21 +227,21 @@ CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cor
         return CGPathCreateWithRect(rect, NULL);
     }
 
-    if (useRB) {
-        #if OPENRENDERBOX_RENDERBOX
-        // RBPath rbPath = RBPathMakeRoundedRect(NULL, rect, cornerWidth, cornerHeight, YES);
-        // CGPathRef cgPath = RBPathCopyCGPath(rbPath);
-        // RBPathRelease(rbPath);
-        // return cgPath;
+    if (style == PathRoundedCornerStyleContinuous) {
+        #if OPENSWIFTUI_RENDERBOX
+        RBPath rbPath = RBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, RBPathRoundedCornerStyleContinuous, NULL);
+        CGPathRef cgPath = RBPathCopyCGPath(rbPath);
+        RBPathRelease(rbPath);
+        return cgPath;
         #else
-        // ORBPath rbPath = ORBPathMakeRoundedRect(NULL, rect, cornerWidth, cornerHeight, YES);
-        // CGPathRef cgPath = ORBPathCopyCGPath(rbPath);
-        // ORBPathRelease(rbPath);
-        // return cgPath;
+        ORBPath rbPath = ORBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, ORBPathRoundedCornerStyleContinuous, NULL);
+        CGPathRef cgPath = ORBPathCopyCGPath(rbPath);
+        ORBPathRelease(rbPath);
+        return cgPath;
         #endif
     }
 
-    // Use CoreGraphics path creation
+    // Use CoreGraphics path creation (circular style)
     CGFloat width = CGRectGetWidth(rect);
     CGFloat height = CGRectGetHeight(rect);
 

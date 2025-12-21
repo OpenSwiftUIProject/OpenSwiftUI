@@ -97,33 +97,28 @@ struct CGPath_OpenSwiftUITests {
         @Test
         func zeroCornerWidth() {
             let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, 0, 10, false)
-            // Should return a plain rectangle
+            let path = _CGPathCreateRoundedRect(rect, 0, 10, .circular)
             #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 100 0 l 100 50 l 0 50 l h")
         }
 
         @Test
         func zeroCornerHeight() {
             let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, 10, 0, false)
-            // Should return a plain rectangle
+            let path = _CGPathCreateRoundedRect(rect, 10, 0, .circular)
             #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 100 0 l 100 50 l 0 50 l h")
         }
 
         @Test
         func negativeCornerValues() {
             let rect = CGRect(x: 0, y: 0, width: 100, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, -5, -5, false)
-            // Negative values are clamped to 0, so should return a plain rectangle
+            let path = _CGPathCreateRoundedRect(rect, -5, -5, .circular)
             #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 100 0 l 100 50 l 0 50 l h")
         }
 
         @Test
         func emptyRect() {
-            // A rect with zero width or height is considered empty by CGRectIsEmpty
             let rect = CGRect(x: 0, y: 0, width: 0, height: 50)
-            let path = _CGPathCreateRoundedRect(rect, 10, 10, false)
-            // Empty rect returns a plain rectangle path
+            let path = _CGPathCreateRoundedRect(rect, 10, 10, .circular)
             #expect(_CGPathCopyDescription(path, 0) == " 0 0 m 0 0 l 0 50 l 0 50 l h")
         }
     }
