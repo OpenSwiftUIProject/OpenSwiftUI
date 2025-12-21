@@ -426,19 +426,21 @@ extension GraphHost {
     package final func emptyTransaction(_ transaction: Transaction = .init()) {
         asyncTransaction(transaction, mutation: EmptyGraphMutation())
     }
-    
+
+    // Audited for 6.5.4
     package final func continueTransaction(_ body: @escaping () -> Void) {
         Update.assertIsLocked()
         var host = self
         while !host.inTransaction {
             guard let parent = host.parentHost else {
-                Update.enqueueAction {
-                    self.asyncTransaction { body() }
+                Update.enqueueAction(reason: nil) {
+                    host.asyncTransaction { body() }
                 }
                 return
             }
             host = parent
         }
+        // TODO: CustomEventTrace
         host.continuations.append(body)
     }
     
