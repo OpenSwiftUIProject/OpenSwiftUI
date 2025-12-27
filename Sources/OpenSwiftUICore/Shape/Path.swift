@@ -49,19 +49,20 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             switch kind {
             #if canImport(CoreGraphics)
             case .cgPath:
-                path = RBPath(cgPath: data.cgPath.takeUnretainedValue())
+                path = RBPath(cgPath: data.cgPath.takeRetainedValue())
             #endif
             case .rbPath:
                 path = data.rbPath
             case .buffer:
                 return
             }
-            let storage: ORBPath.Storage = unsafeBitCast(data, to: ORBPath.Storage.self)
-            storage.initialize(capacity: 96, source: nil)
-            storage.append(path: path)
-            kind = .buffer
-            data = PathData(rbPath: path)
-            path.release()
+            withUnsafeMutablePointer(to: &data) { pointer in
+                let storage = unsafeBitCast(pointer, to: ORBPath.Storage.self)
+                storage.initialize(capacity: 96, source: nil)
+                storage.append(path: path)
+                kind = .buffer
+                path.release()
+            }
         }
 
 //        private static let bufferCallbacks: UnsafePointer<RBPathCallbacks> = {
@@ -543,7 +544,7 @@ private let temporaryPathCallbacks: UnsafePointer<ORBPath.Callbacks> = {
     callbacks.cgPath = { object in
         let storage = unsafeBitCast(object, to: ORBPath.Storage.self)
         let cgPath = storage.cgPath
-        return .passUnretained(cgPath)
+        return cgPath.map { .passUnretained($0) }
     }
     pointer.initialize(to: callbacks)
     return UnsafePointer(pointer)
