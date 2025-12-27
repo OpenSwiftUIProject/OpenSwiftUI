@@ -161,7 +161,7 @@ let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
 let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
 let attributeGraphCondition = envBoolValue("ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
-let renderBoxCondition = envBoolValue("RENDERBOX", default: true)
+let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
 // For #39
 let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
