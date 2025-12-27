@@ -18,7 +18,8 @@ public import OpenCoreGraphicsShims
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
-    // MARK: - Path.PathBox [WIP]
+
+    // MARK: - Path.PathBox
 
     @usableFromInline
     final package class PathBox: Equatable {
@@ -49,7 +50,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             switch kind {
             #if canImport(CoreGraphics)
             case .cgPath:
-                path = RBPath(cgPath: data.cgPath.takeRetainedValue())
+                path = ORBPath(cgPath: data.cgPath.takeRetainedValue())
             #endif
             case .rbPath:
                 path = data.rbPath
@@ -139,7 +140,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             case .rbPath:
                 rbPath = data.rbPath
             case .buffer:
-                let storage = unsafeBitCast(self, to: RBPath.Storage.self)
+                let storage = unsafeBitCast(self, to: ORBPath.Storage.self)
                 rbPath = ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
             }
             return rbPath.cgPath
@@ -147,16 +148,23 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         #endif
 
         @inline(__always)
-        fileprivate var rbPath: RBPath {
+        fileprivate var rbPath: ORBPath {
             switch kind {
             case .cgPath:
-                return RBPath(cgPath: data.cgPath.takeUnretainedValue())
+                return ORBPath(cgPath: data.cgPath.takeUnretainedValue())
             case .rbPath:
                 return data.rbPath
             case .buffer:
-                let storage = unsafeBitCast(self, to: RBPath.Storage.self)
+                let storage = unsafeBitCast(self, to: ORBPath.Storage.self)
                 return ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
             }
+        }
+
+        @inline(__always)
+        fileprivate func retainRBPath() -> ORBPath {
+            let rbPath = rbPath
+            rbPath.retain()
+            return rbPath
         }
 
         @usableFromInline
@@ -409,7 +417,26 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     #endif
 
     package func retainRBPath() -> ORBPath {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            ORBPath.empty
+        case let .rect(rect):
+            ORBPath(rect: rect, transform: nil)
+        case let .ellipse(rect):
+            ORBPath(ellipseIn: rect, transform: nil)
+        case let .roundedRect(fixedRoundedRect):
+            ORBPath(
+                roundedRect: fixedRoundedRect.rect,
+                cornerWidth: fixedRoundedRect.cornerSize.width,
+                cornerHeight: fixedRoundedRect.cornerSize.height,
+                style: fixedRoundedRect.style == .circular ? .circular : .continuous,
+                transform: nil
+            )
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(pathBox):
+            pathBox.retainRBPath()
+        }
     }
 
     package mutating func withMutableBuffer(do body: (UnsafeMutableRawPointer) -> Void) {
@@ -580,6 +607,191 @@ package struct TrimmedPath: Equatable {
 
 @available(*, unavailable)
 extension TrimmedPath: Sendable {}
+
+// MARK: - Path + Extension [WIP]
+
+@available(OpenSwiftUI_v1_0, *)
+extension Path {
+    public mutating func move(to end: CGPoint) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addLine(to end: CGPoint) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addQuadCurve(
+        to end: CGPoint,
+        control: CGPoint
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addCurve(
+        to end: CGPoint,
+        control1: CGPoint,
+        control2: CGPoint
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func closeSubpath() {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addRect(
+        _ rect: CGRect,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addRoundedRect(
+        in rect: CGRect,
+        cornerSize: CGSize,
+        style: RoundedCornerStyle = .continuous,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
+    public mutating func addRoundedRect(
+        in rect: CGRect,
+        cornerRadii: RectangleCornerRadii,
+        style: RoundedCornerStyle = .continuous,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addEllipse(
+        in rect: CGRect,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addRects(
+        _ rects: [CGRect],
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addLines(_ lines: [CGPoint]) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addRelativeArc(
+        center: CGPoint,
+        radius: CGFloat,
+        startAngle: Angle,
+        delta: Angle,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addArc(
+        center: CGPoint,
+        radius: CGFloat,
+        startAngle: Angle,
+        endAngle: Angle,
+        clockwise: Bool,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addArc(
+        tangent1End: CGPoint,
+        tangent2End: CGPoint,
+        radius: CGFloat,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public mutating func addPath(
+        _ path: Path,
+        transform: CGAffineTransform = .identity
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public var currentPoint: CGPoint? {
+        get { _openSwiftUIUnimplementedFailure() }
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func normalized(eoFill: Bool = true) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func intersection(
+        _ other: Path,
+        eoFill: Bool = false
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func union(
+        _ other: Path,
+        eoFill: Bool = false
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func subtracting(
+        _ other: Path,
+        eoFill: Bool = false
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func symmetricDifference(
+        _ other: Path,
+        eoFill: Bool = false
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func lineIntersection(
+        _ other: Path,
+        eoFill: Bool = false
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func lineSubtraction(
+        _ other: Path,
+        eoFill: Bool = false
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package mutating func formTrivialUnion(_ path: Path) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public func applying(_ transform: CGAffineTransform) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    public func offsetBy(
+        dx: CGFloat,
+        dy: CGFloat
+    ) -> Path {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
 
 // MARK: - RenderBox
 
