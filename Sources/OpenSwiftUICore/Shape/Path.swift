@@ -65,29 +65,103 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             }
         }
 
-//        private static let bufferCallbacks: UnsafePointer<RBPathCallbacks> = {
-//
-//        }()
+        private static let bufferCallbacks: UnsafePointer<ORBPath.Callbacks> = {
+            let pointer = UnsafeMutablePointer<ORBPath.Callbacks>.allocate(capacity: 1)
+            var callbacks = ORBPath.empty.callbacks.pointee
+            callbacks.retain = { object in
+                UnsafeRawPointer(
+                    Unmanaged<PathBox>.fromOpaque(object)
+                    .retain()
+                    .toOpaque()
+                )
+            }
+            callbacks.release = { object in
+                Unmanaged<PathBox>.fromOpaque(object)
+                    .release()
+            }
+            callbacks.apply = { object, info, callback in
+                let box = object.assumingMemoryBound(to: PathBox.self).pointee
+                let storage = withUnsafeMutablePointer(to: &box.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                return storage.apply(info: info, callback: callback)
+            }
+            callbacks.isEqual = { lhs, rhs in
+                let lhsBox = lhs.assumingMemoryBound(to: PathBox.self).pointee
+                let rhsBox = rhs.assumingMemoryBound(to: PathBox.self).pointee
+                let lhsStorage = withUnsafeMutablePointer(to: &lhsBox.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                let rhsStorage = withUnsafeMutablePointer(to: &rhsBox.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                return lhsStorage.isEqual(to: rhsStorage)
+            }
+            callbacks.isEmpty = { object in
+                let box = object.assumingMemoryBound(to: PathBox.self).pointee
+                let storage = withUnsafeMutablePointer(to: &box.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                return storage.isEmpty
+            }
+            callbacks.isSingleElement = { object in
+                let box = object.assumingMemoryBound(to: PathBox.self).pointee
+                let storage = withUnsafeMutablePointer(to: &box.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                return storage.isEmpty
+            }
+            callbacks.bezierOrder = { object in
+                let box = object.assumingMemoryBound(to: PathBox.self).pointee
+                let storage = withUnsafeMutablePointer(to: &box.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                return storage.bezierOrder
+            }
+            callbacks.boundingRect = { object in
+                let box = object.assumingMemoryBound(to: PathBox.self).pointee
+                let storage = withUnsafeMutablePointer(to: &box.data) {
+                    unsafeBitCast($0, to: ORBPath.Storage.self)
+                }
+                return storage.boundingRect
+            }
+            pointer.initialize(to: callbacks)
+            return UnsafePointer(pointer)
+        }()
 
         #if canImport(CoreGraphics)
-        package var cgPath: CGPath {
+        @inline(__always)
+        fileprivate var cgPath: CGPath {
+            let rbPath: ORBPath
             switch kind {
             case .cgPath:
-                return data.cgPath.takeRetainedValue()
+                return data.cgPath.takeUnretainedValue()
             case .rbPath:
-                // TODO: Implement ORBPathCopyCGPath in OpenRenderBox
-                fatalError("rbPath to CGPath not yet implemented")
+                rbPath = data.rbPath
             case .buffer:
-                // TODO: Use bufferCallbacks with RBPathCopyCGPath
-                fatalError("buffer to CGPath not yet implemented")
+                let storage = unsafeBitCast(self, to: RBPath.Storage.self)
+                rbPath = ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
             }
+            return rbPath.cgPath
         }
         #endif
 
+        @inline(__always)
+        fileprivate var rbPath: RBPath {
+            switch kind {
+            case .cgPath:
+                return RBPath(cgPath: data.cgPath.takeUnretainedValue())
+            case .rbPath:
+                return data.rbPath
+            case .buffer:
+                let storage = unsafeBitCast(self, to: RBPath.Storage.self)
+                return ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
+            }
+        }
+
         @usableFromInline
         package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
-            // TODO
-            false
+            return lhs.rbPath.isEqual(to: rhs.rbPath)
         }
     }
 
@@ -320,17 +394,15 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         switch storage {
         case .empty:
             CGPath(rect: .null, transform: nil)
-        case .rect(let rect):
+        case let .rect(rect):
             CGPath(rect: rect, transform: nil)
-        case .ellipse(let rect):
+        case let .ellipse(rect):
             CGPath(ellipseIn: rect, transform: nil)
-        case .roundedRect(let fixedRoundedRect):
+        case let .roundedRect(fixedRoundedRect):
             fixedRoundedRect.cgPath
-        case .stroked:
-            fatalError("obsolete")
-        case .trimmed:
-            fatalError("obsolete")
-        case .path(let pathBox):
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(pathBox):
             pathBox.cgPath
         }
     }
@@ -513,7 +585,7 @@ extension TrimmedPath: Sendable {}
 
 private let temporaryPathCallbacks: UnsafePointer<ORBPath.Callbacks> = {
     let pointer = UnsafeMutablePointer<ORBPath.Callbacks>.allocate(capacity: 1)
-    var callbacks = ORBPath.Callbacks()
+    var callbacks = ORBPath.empty.callbacks.pointee
     callbacks.retain = { _ in
         _openSwiftUIUnreachableCode()
     }
