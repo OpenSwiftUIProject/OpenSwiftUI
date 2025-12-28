@@ -64,21 +64,22 @@ public struct _DynamicPropertyBuffer {
             guard !taggedFields.isEmpty else {
                 return
             }
-            let box = EnumBox(
-                cases: taggedFields.map { taggedField in
-                    (
-                        taggedField.tag,
-                        _DynamicPropertyBuffer(
-                            fields: DynamicPropertyCache.Fields(layout: .product(taggedField.fields)),
-                            container: container,
-                            inputs: &inputs,
-                            baseOffset: 0
-                        )
+            let cases = taggedFields.map { taggedField in
+                (
+                    taggedField.tag,
+                    _DynamicPropertyBuffer(
+                        fields: DynamicPropertyCache.Fields(layout: .product(taggedField.fields)),
+                        container: container,
+                        inputs: &inputs,
+                        baseOffset: 0
                     )
-                },
-                active: nil
-            )
+                )
+            }
             func project<Enum>(type _: Enum.Type) {
+                let box = EnumBox(
+                    cases: cases,
+                    active: nil
+                )
                 let index = contents.append(box, vtable: EnumVTable<Enum>.self)
                 contents[index].flags.fieldOffset = Int32(baseOffset)
             }
