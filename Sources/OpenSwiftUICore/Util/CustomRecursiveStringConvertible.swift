@@ -92,7 +92,7 @@ package func recursiveDescriptionName(_ type: any Any.Type) -> String {
     return name
 }
 
-// MARK: - String.tupleOfDoubles
+// MARK: - String + Extension
 
 extension String {
     package func tupleOfDoubles() -> [(label: String, value: Double)]? {
@@ -129,6 +129,24 @@ extension String {
         }
         guard labels.count == doubles.count else { return nil }
         return zip(labels, doubles).map { (label: $0, value: $1) }
+    }
+
+    fileprivate func escapeXML() -> String {
+        var result = ""
+        result.reserveCapacity(count)
+        for char in self {
+            switch char {
+            case "\"": result.append("&quot;")
+            case "&": result.append("&amp;")
+            case "'": result.append("&apos;")
+            case "<": result.append("&lt;")
+            case ">": result.append("&gt;")
+            case "\n": result.append("\\n")
+            case "\r": result.append("\\r")
+            default: result.append(char)
+            }
+        }
+        return result
     }
 }
 

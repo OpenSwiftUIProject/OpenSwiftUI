@@ -2,8 +2,12 @@
 //  CustomRecursiveStringConvertibleTests.swift
 //  OpenSwiftUICoreTests
 
+@testable
+#if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
+@_private(sourceFile: "CustomRecursiveStringConvertible.swift")
+#endif
+import OpenSwiftUICore
 import Testing
-@testable import OpenSwiftUICore
 
 struct CustomRecursiveStringConvertibleTests {
     // MARK: - recursiveDescriptionName Tests
@@ -72,7 +76,26 @@ struct CustomRecursiveStringConvertibleTests {
         let result = input.tupleOfDoubles()
         #expect(result == nil)
     }
-    
+
+    // MARK: - String.escapeXML Tests
+
+    #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
+    @Test(arguments: [
+        ("hello", "hello"),
+        (#""quote""#, "&quot;quote&quot;"),
+        ("a & b", "a &amp; b"),
+        ("it's", "it&apos;s"),
+        ("<tag>", "&lt;tag&gt;"),
+        ("line1\nline2", #"line1\nline2"#),
+        ("line1\rline2", #"line1\rline2"#),
+        (#"<"'&>"#, "&lt;&quot;&apos;&amp;&gt;"),
+        ("", ""),
+    ] as [(String, String)])
+    func escapeXMLTests(input: String, expected: String) {
+        #expect(input.escapeXML() == expected)
+    }
+    #endif
+
     @Test
     func tupleOfDoublesEmptyParens() {
         // Empty parens should return empty array (not nil)
