@@ -75,13 +75,11 @@ public struct _DynamicPropertyBuffer {
                     )
                 )
             }
-            
             func project<Enum>(type _: Enum.Type) {
                 let box = EnumBox(
                     cases: cases,
                     active: nil
                 )
-                
                 let index = contents.append(box, vtable: EnumVTable<Enum>.self)
                 contents[index].flags.fieldOffset = Int32(baseOffset)
             }
