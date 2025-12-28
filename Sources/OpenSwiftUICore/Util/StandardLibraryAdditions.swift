@@ -610,7 +610,7 @@ extension RandomAccessCollection {
             if predicate(self[mid]) {
                 result = mid
                 formIndex(after: &result)
-                remaining &+= -(half + 1)
+                remaining &+= -(half &+ 1)
             } else {
                 remaining = half
             }
