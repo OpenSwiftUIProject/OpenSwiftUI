@@ -2,13 +2,13 @@
 //  CustomRecursiveStringConvertible.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Status: Complete
 //  Audited for 6.5.4
 //  ID: 2DFA09903A864CB0F038E089ECDB7AF8 (SwiftUICore)
 
 import Foundation
 
-// MARK: - CustomRecursiveStringConvertible [WIP]
+// MARK: - CustomRecursiveStringConvertible
 
 package protocol CustomRecursiveStringConvertible {
     var descriptionName: String { get }
@@ -57,11 +57,47 @@ extension CustomRecursiveStringConvertible {
         indent: Int,
         rounded: Bool
     ) -> String {
-        _openSwiftUIUnimplementedFailure()
+        let indentString = repeatElement("    ", count: indent).joined()
+        var attributes = descriptionAttributes
+        if rounded {
+            attributes = attributes.roundedAttributes()
+        }
+        attributes.append(contentsOf: indent == 0 ? topLevelAttributes : [])
+        let sortedAttributes = attributes.sorted(by: \.name)
+        let attributeString = sortedAttributes.isEmpty ? "" : " " + sortedAttributes
+            .map {
+                let escapedName = $0.name
+                    .components(separatedBy: .whitespacesAndNewlines)
+                    .joined(separator: "_")
+                    .escapeXML()
+                let escapedValue = $0.value.escapeXML()
+                return #"\#(escapedName)="\#(escapedValue)""#
+            }
+            .joined(separator: " ")
+        let escapedName = descriptionName
+            .components(separatedBy: .whitespacesAndNewlines)
+            .joined(separator: "_")
+            .escapeXML()
+        let mark = "\(indentString)<\(escapedName)\(attributeString)"
+        if descriptionChildren.isEmpty {
+            return "\(mark) />\n"
+        } else {
+            var result = "\(mark)>\n"
+            for child in descriptionChildren {
+                guard !child.hideFromDescription else { continue }
+                result.append(child._recursiveDescription(indent: indent &+ 1, rounded: rounded))
+            }
+            result.append("\(indentString)")
+            result.append("</\(escapedName)>\n")
+            return result
+        }
     }
 
     package var topLevelAttributes: [(name: String, value: String)] {
-        _openSwiftUIUnimplementedFailure()
+        guard _TestApp.isIntending(to: .includeStatusBar),
+              let isHidden = CoreGlue2.shared.isStatusBarHidden()
+        else { return [] }
+        return [(name: "statusBar", value: isHidden ? "hidden" : "visible")]
     }
 }
 

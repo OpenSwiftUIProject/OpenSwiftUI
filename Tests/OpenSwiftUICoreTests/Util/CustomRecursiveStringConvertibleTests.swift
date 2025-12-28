@@ -10,6 +10,107 @@ import OpenSwiftUICore
 import Testing
 
 struct CustomRecursiveStringConvertibleTests {
+
+    // MARK: - recursiveDescription Tests
+
+    struct TestView: CustomRecursiveStringConvertible {
+        var name: String = "View"
+        var attributes: [(name: String, value: String)] = []
+        var children: [any CustomRecursiveStringConvertible] = []
+        var hidden: Bool = false
+
+        var descriptionName: String { name }
+        var descriptionAttributes: [(name: String, value: String)] { attributes }
+        var descriptionChildren: [any CustomRecursiveStringConvertible] { children }
+        var hideFromDescription: Bool { hidden }
+    }
+
+    @Test(
+        arguments: [
+            // recursiveDescriptionBasic
+            (
+                TestView(),
+                "<View />\n"
+            ),
+            (
+                TestView(
+                    name: "SimpleView",
+                    attributes: [(name: "title", value: "Hello")]
+                ),
+                #"<SimpleView title="Hello" />"# + "\n"
+            ),
+            // recursiveDescriptionSortsAttributes
+            (
+                TestView(
+                    name: "View",
+                    attributes: [
+                        (name: "zIndex", value: "1"),
+                        (name: "alpha", value: "0.5"),
+                        (name: "beta", value: "test"),
+                    ]
+                ),
+                #"<View alpha="0.5" beta="test" zIndex="1" />"# + "\n"
+            ),
+            // recursiveDescriptionEscapesXML
+            (
+                TestView(
+                    name: "My View",
+                    attributes: [(name: "text", value: #"<Hello & "World">"#)]
+                ),
+                #"<My_View text="&lt;Hello &amp; &quot;World&quot;&gt;" />"# + "\n"
+            ),
+            // recursiveDescriptionWithChildren
+            (
+                TestView(
+                    name: "Parent",
+                    children: [
+                        TestView(name: "Child"),
+                        TestView(name: "Child"),
+                    ]
+                ),
+                "<Parent>\n    <Child />\n    <Child />\n</Parent>\n"
+            ),
+            // recursiveDescriptionHidesChildren
+            (
+                TestView(
+                    name: "Parent",
+                    children: [
+                        TestView(name: "Hidden", hidden: true),
+                        TestView(name: "Visible"),
+                    ]
+                ),
+                "<Parent>\n    <Visible />\n</Parent>\n"
+            ),
+        ] as [(TestView, String)]
+    )
+    func recursiveDescriptionTests(view: TestView, expected: String) {
+        #expect(view.recursiveDescription == expected)
+    }
+
+    @Test(arguments: [
+        // Simple double rounding
+        (TestView(name: "View", attributes: [(name: "value", value: "1.23456789")]), #"<View value="1.234375" />"# + "\n"),
+        // Tuple of doubles rounding
+        (TestView(name: "View", attributes: [(name: "pos", value: "(x: 10.123456, y: 20.987654)")]), #"<View pos="(x: 10.125, y: 20.98828125)" />"# + "\n"),
+        // Color detection (red)
+        (TestView(name: "View", attributes: [(name: "color", value: "(1.0, 0.0, 0.0, 1.0)")]), #"<View color="red" />"# + "\n"),
+        // Integer values become doubles
+        (TestView(name: "View", attributes: [(name: "count", value: "42")]), #"<View count="42.0" />"# + "\n"),
+        // Non-numeric values unchanged
+        (TestView(name: "View", attributes: [(name: "title", value: "Hello")]), #"<View title="Hello" />"# + "\n"),
+    ] as [(TestView, String)])
+    func roundedRecursiveDescriptionTests(view: TestView, expected: String) {
+        #expect(view.roundedRecursiveDescription == expected)
+    }
+
+    // MARK: - topLevelAttributes Tests
+
+    @Test
+    func topLevelAttributesWithoutIntent() {
+        _TestApp.setIntents([])
+        #expect(TestView().topLevelAttributes.isEmpty)
+    }
+
     // MARK: - recursiveDescriptionName Tests
 
     private struct PrivateType {}
@@ -77,6 +178,14 @@ struct CustomRecursiveStringConvertibleTests {
         #expect(result == nil)
     }
 
+    @Test
+    func tupleOfDoublesEmptyParens() {
+        // Empty parens should return empty array (not nil)
+        let result = "()".tupleOfDoubles()
+        #expect(result != nil)
+        #expect(result?.isEmpty == true)
+    }
+
     // MARK: - String.escapeXML Tests
 
     #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
@@ -95,51 +204,6 @@ struct CustomRecursiveStringConvertibleTests {
         #expect(input.escapeXML() == expected)
     }
     #endif
-
-    @Test
-    func tupleOfDoublesEmptyParens() {
-        // Empty parens should return empty array (not nil)
-        let result = "()".tupleOfDoubles()
-        #expect(result != nil)
-        #expect(result?.isEmpty == true)
-    }
-
-    // MARK: - Color.Resolved.name Tests
-
-    @Test(arguments: [
-        // Basic colors
-        (Float(0), Float(0), Float(0), Float(0), "clear"),
-        (Float(0), Float(0), Float(0), Float(1), "black"),
-        (Float(1), Float(1), Float(1), Float(1), "white"),
-        (Float(8.0 / 256.0), Float(8.0 / 256.0), Float(8.0 / 256.0), Float(1), "gray"),
-        (Float(1), Float(0), Float(0), Float(1), "red"),
-        (Float(0), Float(1), Float(0), Float(1), "green"),
-        (Float(0), Float(0), Float(1), Float(1), "blue"),
-        (Float(1), Float(1), Float(0), Float(1), "yellow"),
-        (Float(0), Float(1), Float(1), Float(1), "teal"),
-        // System colors
-        (Float(1), Float(11.0 / 256.0), Float(11.0 / 256.0), Float(1), "system-red"),
-        (Float(1), Float(15.0 / 256.0), Float(11.0 / 256.0), Float(1), "system-red-dark"),
-        // Extended colors
-        (Float(55.0 / 256.0), Float(0), Float(55.0 / 256.0), Float(1), "purple"),
-        (Float(1), Float(55.0 / 256.0), Float(0), Float(1), "orange"),
-        (Float(55.0 / 256.0), Float(55.0 / 256.0), Float(1), Float(1), "indigo"),
-        (Float(1), Float(0), Float(55.0 / 256.0), Float(1), "pink"),
-        (Float(12.0 / 256.0), Float(12.0 / 256.0), Float(14.0 / 256.0), Float(64.0 / 256.0), "brown"),
-        (Float(12.0 / 256.0), Float(12.0 / 256.0), Float(14.0 / 256.0), Float(76.0 / 256.0), "placeholder-text"),
-        // Quantization: slight variations round to named color
-        (Float(0.999), Float(0.001), Float(0.001), Float(0.999), "red"),
-    ] as [(Float, Float, Float, Float, String)])
-    func colorResolvedName(r: Float, g: Float, b: Float, a: Float, expected: String) {
-        let color = Color.Resolved(linearRed: r, linearGreen: g, linearBlue: b, opacity: a)
-        #expect(color.name == expected)
-    }
-
-    @Test
-    func colorResolvedNameUnknown() {
-        let color = Color.Resolved(linearRed: 0.5, linearGreen: 0.3, linearBlue: 0.7, opacity: 1)
-        #expect(color.name == nil)
-    }
 
     // MARK: - Sequence.roundedAttributes Tests
 
@@ -198,7 +262,6 @@ struct CustomRecursiveStringConvertibleTests {
 
     @Test
     func roundedAttributesNonNumeric() {
-        // Non-numeric values should be returned unchanged
         let attrs: [(name: String, value: String)] = [
             (name: "title", value: "Hello World"),
             (name: "isEnabled", value: "true"),
@@ -209,5 +272,42 @@ struct CustomRecursiveStringConvertibleTests {
         #expect(result[0].value == "Hello World")
         #expect(result[1].name == "isEnabled")
         #expect(result[1].value == "true")
+    }
+
+    // MARK: - Color.Resolved.name Tests
+
+    @Test(arguments: [
+        // Basic colors
+        (Float(0), Float(0), Float(0), Float(0), "clear"),
+        (Float(0), Float(0), Float(0), Float(1), "black"),
+        (Float(1), Float(1), Float(1), Float(1), "white"),
+        (Float(8.0 / 256.0), Float(8.0 / 256.0), Float(8.0 / 256.0), Float(1), "gray"),
+        (Float(1), Float(0), Float(0), Float(1), "red"),
+        (Float(0), Float(1), Float(0), Float(1), "green"),
+        (Float(0), Float(0), Float(1), Float(1), "blue"),
+        (Float(1), Float(1), Float(0), Float(1), "yellow"),
+        (Float(0), Float(1), Float(1), Float(1), "teal"),
+        // System colors
+        (Float(1), Float(11.0 / 256.0), Float(11.0 / 256.0), Float(1), "system-red"),
+        (Float(1), Float(15.0 / 256.0), Float(11.0 / 256.0), Float(1), "system-red-dark"),
+        // Extended colors
+        (Float(55.0 / 256.0), Float(0), Float(55.0 / 256.0), Float(1), "purple"),
+        (Float(1), Float(55.0 / 256.0), Float(0), Float(1), "orange"),
+        (Float(55.0 / 256.0), Float(55.0 / 256.0), Float(1), Float(1), "indigo"),
+        (Float(1), Float(0), Float(55.0 / 256.0), Float(1), "pink"),
+        (Float(12.0 / 256.0), Float(12.0 / 256.0), Float(14.0 / 256.0), Float(64.0 / 256.0), "brown"),
+        (Float(12.0 / 256.0), Float(12.0 / 256.0), Float(14.0 / 256.0), Float(76.0 / 256.0), "placeholder-text"),
+        // Quantization: slight variations round to named color
+        (Float(0.999), Float(0.001), Float(0.001), Float(0.999), "red"),
+    ] as [(Float, Float, Float, Float, String)])
+    func colorResolvedName(r: Float, g: Float, b: Float, a: Float, expected: String) {
+        let color = Color.Resolved(linearRed: r, linearGreen: g, linearBlue: b, opacity: a)
+        #expect(color.name == expected)
+    }
+
+    @Test
+    func colorResolvedNameUnknown() {
+        let color = Color.Resolved(linearRed: 0.5, linearGreen: 0.3, linearBlue: 0.7, opacity: 1)
+        #expect(color.name == nil)
     }
 }
