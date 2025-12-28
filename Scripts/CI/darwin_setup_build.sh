@@ -8,8 +8,10 @@ filepath() {
 REPO_ROOT="$(dirname $(dirname $(dirname $(filepath $0))))"
 cd $REPO_ROOT
 
-Scripts/CI/opencoregraphics_setup.sh
+# The order of these scripts matters.
+# The more foundational frameworks should be set up last.
 Scripts/CI/openattributegraph_setup.sh
 Scripts/CI/openrenderbox_setup.sh
+Scripts/CI/opencoregraphics_setup.sh
 Scripts/CI/openobservation_setup.sh
 Scripts/CI/framework_setup.sh

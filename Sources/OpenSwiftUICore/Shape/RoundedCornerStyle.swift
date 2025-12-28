@@ -1,17 +1,21 @@
 //
-//  RoundedCorner.swift
+//  RoundedCornerStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 
 public import Foundation
 package import OpenCoreGraphicsShims
+import OpenSwiftUI_SPI
+package import OpenRenderBoxShims
 
 // MARK: - RoundedCornerStyle
 
 /// Defines the shape of a rounded rectangle's corners.
+@available(OpenSwiftUI_v1_0, *)
 public enum RoundedCornerStyle: Sendable {
+
     /// Quarter-circle rounded rect corners.
     case circular
 
@@ -19,8 +23,9 @@ public enum RoundedCornerStyle: Sendable {
     case continuous
 }
 
-// MARK: - FixedRoundedRect [WIP]
+// MARK: - FixedRoundedRect
 
+@available(OpenSwiftUI_v1_0, *)
 @usableFromInline
 package struct FixedRoundedRect: Equatable {
     package var rect: CGRect
@@ -62,25 +67,54 @@ package struct FixedRoundedRect: Equatable {
     package var clampedCornerSize: CGSize {
         let minRadius = min(abs(rect.width) / 2, abs(rect.height) / 2)
         return CGSize(width: min(minRadius, cornerSize.width), height: min(minRadius, cornerSize.height))
-
     }
 
     package var clampedCornerRadius: CGFloat {
         min(min(rect.width, rect.height) / 2, cornerSize.width)
     }
 
-    // TODO: RenderBox
-    // package func withTemporaryPath<R>(_ body: (ORBPath) -> R) -> R
-
-    package func contains(_ point: CGPoint) -> Bool {
-        // TODO: ORBPath
-        _openSwiftUIUnimplementedFailure()
+    #if canImport(Darwin)
+    package func withTemporaryPath<R>(_ body: (ORBPath) -> R) -> R {
+        ORBPath.withTemporaryPath(do: body) { pointer in
+            let storage = unsafeBitCast(pointer, to: ORBPath.Storage.self)
+            var points: [CGFloat] = [
+                rect.x,
+                rect.y,
+                rect.width,
+                rect.height,
+                cornerSize.width,
+                cornerSize.height
+            ]
+            storage.append(
+                element: style == .continuous ? .fixedRoundedRectContinuous : .fixedRoundedRectCircular,
+                points: &points,
+                userInfo: nil
+            )
+        }
     }
 
+    package func contains(_ point: CGPoint) -> Bool {
+        withTemporaryPath { path in
+            path.contains(point: point, eoFill: false)
+        }
+    }
+    #endif
+
     package func applying(_ m: CGAffineTransform) -> FixedRoundedRect {
-        FixedRoundedRect(
-            rect.applying(m),
-            cornerSize: cornerSize.isFinite ? cornerSize.applying(m) : cornerSize, // FIXME
+        let newRect = rect.applying(m)
+        let newCornerSize: CGSize
+        if cornerSize.isFinite {
+            let appliedSize = cornerSize.applying(m)
+            newCornerSize = CGSize(
+                width: copysign(appliedSize.width, cornerSize.width),
+                height: copysign(appliedSize.height, cornerSize.height)
+            )
+        } else {
+            newCornerSize = cornerSize
+        }
+        return FixedRoundedRect(
+            newRect,
+            cornerSize: newCornerSize,
             style: style
         )
     }
@@ -142,9 +176,19 @@ package struct FixedRoundedRect: Equatable {
         )
     }
 
-    #if canImport(CoreGraphics)
+    #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
     package var cgPath: CGPath {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        let clamped = clampedCornerSize
+        return _CGPathCreateRoundedRect(
+            rect,
+            clamped.width,
+            clamped.height,
+            needsContinuousCorners ? .continuous : .circular
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
     #endif
 
@@ -156,6 +200,8 @@ package struct FixedRoundedRect: Equatable {
 
 @available(*, unavailable)
 extension FixedRoundedRect: Sendable {}
+
+// MARK: - FixedRoundedRect + Protobuf
 
 extension FixedRoundedRect: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
@@ -178,6 +224,8 @@ extension FixedRoundedRect: ProtobufMessage {
     }
 }
 
+// MARK: - RoundedCornerStyle + Protobuf
+
 extension RoundedCornerStyle: ProtobufEnum {
     package var protobufValue: UInt {
         switch self {
@@ -199,6 +247,7 @@ extension RoundedCornerStyle: ProtobufEnum {
 
 /// Describes the corner radius values of a rounded rectangle with
 /// uneven corners.
+@available(OpenSwiftUI_v4_0, *)
 @frozen
 public struct RectangleCornerRadii: Equatable, Animatable {
     @usableFromInline

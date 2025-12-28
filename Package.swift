@@ -161,7 +161,7 @@ let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
 let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
 let attributeGraphCondition = envBoolValue("ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
-let renderBoxCondition = envBoolValue("OPENRENDERBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
+let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
 // For #39
 let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
@@ -191,6 +191,13 @@ let bridgeFramework = envStringValue("OPENSWIFTUI_BRIDGE_FRAMEWORK", default: "S
 
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
 let supportMultiProducts: Bool = envBoolValue("SUPPORT_MULTI_PRODUCTS", default: true)
+
+/// CGFloat and CGRect def in CFCGTypes.h will conflict with Foundation's CGSize/CGRect def on Linux.
+/// macOS: true -> no issue
+/// macOS: false -> use Swift implementation with OpenCoreGraphics Swift CGPath
+/// Linux: true + No CGPathRef support in ORBPath -> confilict with Foundation def
+/// Linux: false -> use Swift implementation with OpenCoreGraphics Swift CGPath
+let cfCGTypes = envBoolValue("CF_CGTYPES", default: buildForDarwinPlatform)
 
 // MARK: - Shared Settings
 
@@ -373,6 +380,15 @@ if enableRuntimeConcurrencyCheck {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK"))
 }
 
+if cfCGTypes {
+    sharedCSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedCSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+    sharedCxxSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+    sharedSwiftSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+}
+
 // MARK: - Extension
 
 extension Target {
@@ -390,15 +406,15 @@ extension Target {
         // "could not determine executable path for bundle 'RenderBox.framework'"
         dependencies.append(.product(name: "RenderBox", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        swiftSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.swiftSettings = swiftSettings
 
         var cSettings = cSettings ?? []
-        cSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        cSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.cSettings = cSettings
 
         var cxxSettings = cxxSettings ?? []
-        cxxSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        cxxSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.cxxSettings = cxxSettings
     }
 
