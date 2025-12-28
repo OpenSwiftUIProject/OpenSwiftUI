@@ -10,8 +10,8 @@ package struct _ShapeStyle_Pack: Equatable {
     package struct Style: Equatable, Sendable {
         package var fill: _ShapeStyle_Pack.Fill
         package var opacity: Float
-        package var _blend: GraphicsBlendMode?
-        
+        private var _blend: GraphicsBlendMode?
+
         package var blend: GraphicsBlendMode {
             _blend ?? .normal
         }
@@ -122,7 +122,11 @@ package struct _ShapeStyle_Pack: Equatable {
             }
         }
     }
-    
+
+    private func indices(of name: ShapeStyle.Name) -> Range<Int> {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     package subscript(name: _ShapeStyle_Name) -> _ShapeStyle_Pack.Slice {
         Slice(pack: self, name: name)
     }
@@ -148,8 +152,20 @@ package struct _ShapeStyle_Pack: Equatable {
         }
     }
     
-    package mutating func modify(name: _ShapeStyle_Name, levels: Range<Int>, _ modifier: (inout _ShapeStyle_Pack.Style) -> Void) {
-        _openSwiftUIUnimplementedFailure()
+    package mutating func modify(
+        name: ShapeStyle.Name,
+        levels: Range<Int>,
+        _ modifier: (inout ShapeStyle.Pack.Style) -> Void
+    ) {
+        let indices = indices(of: name)
+        guard !indices.isEmpty else { return }
+        var modifiedStyles = styles
+        for index in indices {
+            if levels.contains(modifiedStyles[index].key.level) {
+                modifier(&modifiedStyles[index].style)
+            }
+        }
+        styles = modifiedStyles
     }
     
     package mutating func adjustLevelIndices(of name: _ShapeStyle_Name, by offset: Int) {
@@ -200,9 +216,17 @@ extension _ShapeStyle_Pack.Style {
     }
     
     package mutating func applyBlend(_ blend: GraphicsBlendMode) {
-        _openSwiftUIUnimplementedFailure()
+        let shouldApply = !_SemanticFeature_v6.isEnabled
+        if shouldApply || _blend == nil {
+            _blend = blend
+        }
+        for index in effects.indices {
+            if shouldApply || effects[index]._blend == nil {
+                effects[index]._blend = blend
+            }
+        }
     }
-    
+
     package var color: Color.Resolved? {
         _openSwiftUIUnimplementedFailure()
     }
@@ -213,7 +237,7 @@ extension _ShapeStyle_Pack.Style {
 // MARK: - _ShapeStyle_Shape + _ShapeStyle_Pack
 
 extension _ShapeStyle_Shape {
-    package var stylePack: _ShapeStyle_Pack {
+    package var stylePack: ShapeStyle.Pack {
         get {
             switch result {
                 case let .pack(pack): pack
@@ -221,9 +245,16 @@ extension _ShapeStyle_Shape {
             }
         }
         _modify {
-            var pack = stylePack
-            yield &pack
-            result = .pack(pack)
+            var styles: ShapeStyle.Pack
+            switch result {
+            case let .pack(pack):
+                styles = pack
+                result = .none
+            default:
+                styles = .defaultValue
+            }
+            yield &styles
+            result = .pack(styles)
         }
     }
 }
