@@ -40,6 +40,11 @@ public enum CGBlendMode: Int32, @unchecked Sendable {
 }
 #endif
 
+package enum PathDrawingStyle {
+    case fill(FillStyle)
+    case stroke(StrokeStyle)
+}
+
 /// An immediate mode drawing destination, and its current state.
 ///
 /// Use a context to execute 2D drawing primitives. For example, you can draw
