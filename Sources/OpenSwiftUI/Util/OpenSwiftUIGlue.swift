@@ -104,15 +104,15 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
         #endif
     }
 
-    override public func configureEmptyEnvironment(_ environment: inout EnvironmentValues) {
-        environment.configureForPlatform(traitCollection: nil)
-    }
-
     override public final func configureDefaultEnvironment(_: inout EnvironmentValues) {
         #if os(iOS) || os(visionOS)
         #else
         // TODO
         #endif
+    }
+
+    override public func configureEmptyEnvironment(_ environment: inout EnvironmentValues) {
+        environment.configureForPlatform(traitCollection: nil)
     }
 
     override public final func makeRootView(base: AnyView, rootFocusScope: Namespace.ID) -> AnyView {

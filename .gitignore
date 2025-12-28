@@ -24,3 +24,4 @@ Example/ReferenceImages/**/*.png
 gh-pages
 .swift_pd_guess
 .claude/commands/guess_filename.md
+/.augments
