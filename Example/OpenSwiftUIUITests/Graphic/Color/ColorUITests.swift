@@ -75,7 +75,7 @@ struct ColorUITests {
                     }
             }
         }
-        withKnownIssue("#340", isIntermittent: true) {
+        withKnownIssue("#690", isIntermittent: true) {
             openSwiftUIAssertAnimationSnapshot(of: ContentView())
         }
     }

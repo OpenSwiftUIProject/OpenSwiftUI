@@ -47,7 +47,7 @@ struct AnimationCompletionUITests {
         }
         // When run seperately, precision: 1.0 works fine
         // but in the full suite, it will hit the same issue of #340
-        withKnownIssue("#340", isIntermittent: true) {
+        withKnownIssue("#690", isIntermittent: true) {
             openSwiftUIAssertAnimationSnapshot(
                 of: ContentView()
             )
