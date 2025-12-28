@@ -60,5 +60,42 @@ struct CustomRecursiveStringConvertibleTests {
         #expect(result != nil)
         #expect(result?.isEmpty == true)
     }
+
+    // MARK: - Color.Resolved.name Tests
+
+    @Test(arguments: [
+        // Basic colors
+        (Float(0), Float(0), Float(0), Float(0), "clear"),
+        (Float(0), Float(0), Float(0), Float(1), "black"),
+        (Float(1), Float(1), Float(1), Float(1), "white"),
+        (Float(8.0 / 256.0), Float(8.0 / 256.0), Float(8.0 / 256.0), Float(1), "gray"),
+        (Float(1), Float(0), Float(0), Float(1), "red"),
+        (Float(0), Float(1), Float(0), Float(1), "green"),
+        (Float(0), Float(0), Float(1), Float(1), "blue"),
+        (Float(1), Float(1), Float(0), Float(1), "yellow"),
+        (Float(0), Float(1), Float(1), Float(1), "teal"),
+        // System colors
+        (Float(1), Float(11.0 / 256.0), Float(11.0 / 256.0), Float(1), "system-red"),
+        (Float(1), Float(15.0 / 256.0), Float(11.0 / 256.0), Float(1), "system-red-dark"),
+        // Extended colors
+        (Float(55.0 / 256.0), Float(0), Float(55.0 / 256.0), Float(1), "purple"),
+        (Float(1), Float(55.0 / 256.0), Float(0), Float(1), "orange"),
+        (Float(55.0 / 256.0), Float(55.0 / 256.0), Float(1), Float(1), "indigo"),
+        (Float(1), Float(0), Float(55.0 / 256.0), Float(1), "pink"),
+        (Float(12.0 / 256.0), Float(12.0 / 256.0), Float(14.0 / 256.0), Float(64.0 / 256.0), "brown"),
+        (Float(12.0 / 256.0), Float(12.0 / 256.0), Float(14.0 / 256.0), Float(76.0 / 256.0), "placeholder-text"),
+        // Quantization: slight variations round to named color
+        (Float(0.999), Float(0.001), Float(0.001), Float(0.999), "red"),
+    ] as [(Float, Float, Float, Float, String)])
+    func colorResolvedName(r: Float, g: Float, b: Float, a: Float, expected: String) {
+        let color = Color.Resolved(linearRed: r, linearGreen: g, linearBlue: b, opacity: a)
+        #expect(color.name == expected)
+    }
+
+    @Test
+    func colorResolvedNameUnknown() {
+        let color = Color.Resolved(linearRed: 0.5, linearGreen: 0.3, linearBlue: 0.7, opacity: 1)
+        #expect(color.name == nil)
+    }
 }
 

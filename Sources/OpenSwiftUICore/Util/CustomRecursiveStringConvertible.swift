@@ -127,10 +127,58 @@ extension Sequence where Element == (name: String, value: String) {
 
 extension Color.Resolved {
     package var name: String? {
-        _openSwiftUIUnimplementedFailure()
+        @inline(__always)
+        func quantize(_ value: Float) -> Float {
+            round(value * 256.0) / 256.0
+        }
+        return colorNameForColorComponents(
+            quantize(linearRed),
+            quantize(linearGreen),
+            quantize(linearBlue),
+            quantize(opacity)
+        )
     }
 }
 
 private func colorNameForColorComponents(_ r: Float, _ g: Float, _ b: Float, _ a: Float) -> String? {
-    nil
+    if r == 0 && g == 0 && b == 0 {
+        if a == 0 {
+            return "clear"
+        } else if a == 1 {
+            return "black"
+        }
+    }
+    if r == 1 && g == 1 && b == 1 && a == 1 {
+        return "white"
+    } else if r == 8.0 / 256.0 && g == 8.0 / 256.0 && b == 8.0 / 256.0 && a == 1 {
+        return "gray"
+    } else if r == 1 && g == 0 && b == 0 && a == 1 {
+        return "red"
+    } else if r == 1 && g == 11.0 / 256.0 && b == 11.0 / 256.0 && a == 1 {
+        return "system-red"
+    } else if r == 1 && g == 15.0 / 256.0 && b == 11.0 / 256.0 && a == 1 {
+        return "system-red-dark"
+    } else if r == 0 && g == 1 && b == 0 && a == 1 {
+        return "green"
+    } else if r == 0 && g == 0 && b == 1 && a == 1 {
+        return "blue"
+    } else if r == 1 && g == 1 && b == 0 && a == 1 {
+        return "yellow"
+    } else if r == 55.0 / 256.0 && g == 0 && b == 55.0 / 256.0 && a == 1 {
+        return "purple"
+    } else if r == 1 && g == 55.0 / 256.0 && b == 0 && a == 1 {
+        return "orange"
+    } else if r == 0 && g == 1 && b == 1 && a == 1 {
+        return "teal"
+    } else if r == 55.0 / 256.0 && g == 55.0 / 256.0 && b == 1 && a == 1 {
+        return "indigo"
+    } else if r == 1 && g == 0 && b == 55.0 / 256.0 && a == 1 {
+        return "pink"
+    } else if r == 12.0 / 256.0 && g == 12.0 / 256.0 && b == 14.0 / 256.0 && a == 64.0 / 256.0 {
+        return "brown"
+    } else if r == 12.0 / 256.0 && g == 12.0 / 256.0 && b == 14.0 / 256.0 && a == 76.0 / 256.0 {
+        return "placeholder-text"
+    } else {
+        return nil
+    }
 }
