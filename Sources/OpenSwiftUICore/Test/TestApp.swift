@@ -47,7 +47,7 @@ public struct _TestApp {
 
     package static let defaultEnvironment: EnvironmentValues = {
         var environment = EnvironmentValues()
-        CoreGlue2.shared.configureDefaultEnvironment(&environment)
+        CoreGlue2.shared.configureEmptyEnvironment(&environment)
         // TODO: Font: "HelveticaNeue"
         environment.displayScale = 2.0
         environment.setTestSystemColorDefinition()
