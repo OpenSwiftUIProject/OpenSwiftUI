@@ -236,6 +236,7 @@ struct DynamicLayoutViewAdaptor: DynamicContainerAdaptor {
                 )
                 elementInputs.size = childGeometry.size()
                 elementInputs.position = childGeometry.origin()
+                elementInputs.requestsLayoutComputer = true
             }
             let outputs: _ViewOutputs
             if let transition {
