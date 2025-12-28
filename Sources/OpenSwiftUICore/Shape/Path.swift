@@ -24,7 +24,9 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     @usableFromInline
     final package class PathBox: Equatable {
         private enum Kind: UInt8 {
+            #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
             case cgPath
+            #endif
             case rbPath
             case buffer
         }
@@ -32,7 +34,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         private var kind: Kind
         private var data: PathData
 
-        #if canImport(CoreGraphics)
+        #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
         @inline(__always)
         init(_ path: CGPath) {
             kind = .cgPath
@@ -48,7 +50,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         private func prepareBuffer() {
             let path: ORBPath
             switch kind {
-            #if canImport(CoreGraphics)
+            #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
             case .cgPath:
                 path = ORBPath(cgPath: data.cgPath.takeRetainedValue())
             #endif
@@ -130,7 +132,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             return UnsafePointer(pointer)
         }()
 
-        #if canImport(CoreGraphics)
+        #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
         @inline(__always)
         fileprivate var cgPath: CGPath {
             let rbPath: ORBPath
@@ -202,7 +204,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         storage = .empty
     }
 
-    #if canImport(CoreGraphics)
+    #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
     /// Creates a path from an immutable shape path.
     ///
     /// - Parameter path: The immutable CoreGraphics path to initialize
@@ -396,9 +398,10 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         #endif
     }
 
-    #if canImport(CoreGraphics)
+    #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
     /// An immutable path representing the elements in the path.
     public var cgPath: CGPath {
+        #if canImport(Darwin)
         switch storage {
         case .empty:
             CGPath(rect: .null, transform: nil)
@@ -413,6 +416,9 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         case let .path(pathBox):
             pathBox.cgPath
         }
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
     #endif
 

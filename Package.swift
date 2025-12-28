@@ -192,6 +192,13 @@ let bridgeFramework = envStringValue("OPENSWIFTUI_BRIDGE_FRAMEWORK", default: "S
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
 let supportMultiProducts: Bool = envBoolValue("SUPPORT_MULTI_PRODUCTS", default: true)
 
+/// CGFloat and CGRect def in CFCGTypes.h will conflict with Foundation's CGSize/CGRect def on Linux.
+/// macOS: true -> no issue
+/// macOS: false -> use Swift implementation with OpenCoreGraphics Swift CGPath
+/// Linux: true + No CGPathRef support in ORBPath -> confilict with Foundation def
+/// Linux: false -> use Swift implementation with OpenCoreGraphics Swift CGPath
+let cfCGTypes = envBoolValue("CF_CGTYPES", default: buildForDarwinPlatform)
+
 // MARK: - Shared Settings
 
 var sharedCSettings: [CSetting] = [
@@ -371,6 +378,15 @@ if enablePrivateImports {
 
 if enableRuntimeConcurrencyCheck {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK"))
+}
+
+if cfCGTypes {
+    sharedCSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedCSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+    sharedCxxSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+    sharedSwiftSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
 }
 
 // MARK: - Extension

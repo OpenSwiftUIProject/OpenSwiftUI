@@ -2,6 +2,8 @@
 //  PathData.h
 //  OpenSwiftUI_SPI
 
+#if OPENSWIFTUI_CF_CGTYPES
+
 #ifndef PathData_h
 #define PathData_h
 
@@ -38,3 +40,5 @@ OPENSWIFTUI_ASSUME_NONNULL_END
 OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED
 
 #endif /* PathData_h */
+
+#endif /* OPENSWIFTUI_CF_CGTYPES */

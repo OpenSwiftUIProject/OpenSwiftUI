@@ -176,8 +176,9 @@ package struct FixedRoundedRect: Equatable {
         )
     }
 
-    #if canImport(CoreGraphics)
+    #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
     package var cgPath: CGPath {
+        #if canImport(Darwin)
         let clamped = clampedCornerSize
         return _CGPathCreateRoundedRect(
             rect,
@@ -185,6 +186,9 @@ package struct FixedRoundedRect: Equatable {
             clamped.height,
             needsContinuousCorners ? .continuous : .circular
         )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
     #endif
 
