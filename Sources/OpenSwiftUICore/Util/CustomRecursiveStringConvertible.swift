@@ -75,11 +75,24 @@ extension BridgeStringConvertible {
     package var bridgeDescriptionChildren: [any CustomRecursiveStringConvertible] { [] }
 }
 
-// MARK: - CustomRecursiveStringConvertible Helpers [WIP]
+// MARK: - recursiveDescriptionName
 
 package func recursiveDescriptionName(_ type: any Any.Type) -> String {
-    _openSwiftUIUnimplementedFailure()
+    var name = "\(type)"
+    if name.first == "(" {
+        var substring = name.dropFirst()
+        if let spaceIndex = substring.firstIndex(of: " ") {
+            substring.removeSubrange(spaceIndex...)
+        }
+        name = String(substring)
+    }
+    if let angleIndex = name.firstIndex(of: "<") {
+        name = String(name[..<angleIndex])
+    }
+    return name
 }
+
+// MARK: - String.tupleOfDoubles
 
 extension String {
     package func tupleOfDoubles() -> [(label: String, value: Double)]? {
@@ -119,11 +132,15 @@ extension String {
     }
 }
 
+// MARK: - Sequence.roundedAttributes
+
 extension Sequence where Element == (name: String, value: String) {
     package func roundedAttributes() -> [(name: String, value: String)] {
         preconditionFailure("TODO")
     }
 }
+
+// MARK: - Color.Resolved.name
 
 extension Color.Resolved {
     package var name: String? {

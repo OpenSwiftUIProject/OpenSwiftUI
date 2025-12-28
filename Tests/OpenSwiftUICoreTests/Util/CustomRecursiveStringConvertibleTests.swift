@@ -6,6 +6,26 @@ import Testing
 @testable import OpenSwiftUICore
 
 struct CustomRecursiveStringConvertibleTests {
+    // MARK: - recursiveDescriptionName Tests
+
+    private struct PrivateType {}
+    struct SimpleType {}
+    struct GenericType<T> {}
+
+    @Test(arguments: [
+        (PrivateType.self, "PrivateType"),
+        (SimpleType.self, "SimpleType"),
+        (GenericType<Int>.self, "GenericType"),
+        (Int.self, "Int"),
+        (String.self, "String"),
+        (Array<Int>.self, "Array"),
+        (Dictionary<String, Int>.self, "Dictionary"),
+        ((Int, String).self, "Int,"),
+    ] as [(Any.Type, String)])
+    func recursiveDescriptionNameTests(type: Any.Type, expected: String) {
+        #expect(recursiveDescriptionName(type) == expected)
+    }
+
     // MARK: - String.tupleOfDoubles Tests
     
     @Test(arguments: [
