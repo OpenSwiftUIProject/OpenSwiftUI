@@ -2,13 +2,14 @@
 //  StrokeStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 public import Foundation
 public import OpenCoreGraphicsShims
 
 /// The characteristics of a stroke that traces a path.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct StrokeStyle: Equatable {
     /// The width of the stroked path.
@@ -51,6 +52,7 @@ public struct StrokeStyle: Equatable {
     }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension StrokeStyle: Animatable {
     public var animatableData: AnimatablePair<CGFloat, AnimatablePair<CGFloat, CGFloat>> {
         get {

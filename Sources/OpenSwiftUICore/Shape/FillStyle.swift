@@ -2,10 +2,11 @@
 //  FillStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A style for rasterizing vector shapes.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct FillStyle: Equatable {
 
