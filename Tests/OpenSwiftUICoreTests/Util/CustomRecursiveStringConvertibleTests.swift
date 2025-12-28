@@ -117,5 +117,74 @@ struct CustomRecursiveStringConvertibleTests {
         let color = Color.Resolved(linearRed: 0.5, linearGreen: 0.3, linearBlue: 0.7, opacity: 1)
         #expect(color.name == nil)
     }
-}
 
+    // MARK: - Sequence.roundedAttributes Tests
+
+    @Test
+    func roundedAttributesSimpleDouble() {
+        let attrs: [(name: String, value: String)] = [
+            (name: "width", value: "100.123456789"),
+            (name: "height", value: "200.0"),
+        ]
+        let result = attrs.roundedAttributes()
+        #expect(result.count == 2)
+        // 100.123456789 * 256 = 25631.60493... → rounds to 25632 → 25632/256 = 100.125
+        #expect(result[0].name == "width")
+        #expect(result[0].value == "100.125")
+        #expect(result[1].name == "height")
+        #expect(result[1].value == "200.0")
+    }
+
+    @Test
+    func roundedAttributesTupleOfDoubles() {
+        let attrs: [(name: String, value: String)] = [
+            (name: "position", value: "(x: 10.123456, y: 20.987654)"),
+        ]
+        let result = attrs.roundedAttributes()
+        #expect(result.count == 1)
+        #expect(result[0].name == "position")
+        // 10.123456 * 256 = 2591.60 → 2592 → 10.125
+        // 20.987654 * 256 = 5372.84 → 5373 → 20.98828125
+        #expect(result[0].value == "(x: 10.125, y: 20.98828125)")
+    }
+
+    @Test
+    func roundedAttributesColorDetection() {
+        // Color with RGBA values that match "red"
+        let attrs: [(name: String, value: String)] = [
+            (name: "foregroundColor", value: "(1.0, 0.0, 0.0, 1.0)"),
+        ]
+        let result = attrs.roundedAttributes()
+        #expect(result.count == 1)
+        #expect(result[0].name == "foregroundColor")
+        #expect(result[0].value == "red")
+    }
+
+    @Test
+    func roundedAttributesColorNotMatched() {
+        // Color values that don't match any known color
+        let attrs: [(name: String, value: String)] = [
+            (name: "someColor", value: "(0.5, 0.3, 0.7, 1.0)"),
+        ]
+        let result = attrs.roundedAttributes()
+        #expect(result.count == 1)
+        #expect(result[0].name == "someColor")
+        // Should fall back to tuple format with rounded values
+        #expect(result[0].value == "(0.5, 0.30078125, 0.69921875, 1.0)")
+    }
+
+    @Test
+    func roundedAttributesNonNumeric() {
+        // Non-numeric values should be returned unchanged
+        let attrs: [(name: String, value: String)] = [
+            (name: "title", value: "Hello World"),
+            (name: "isEnabled", value: "true"),
+        ]
+        let result = attrs.roundedAttributes()
+        #expect(result.count == 2)
+        #expect(result[0].name == "title")
+        #expect(result[0].value == "Hello World")
+        #expect(result[1].name == "isEnabled")
+        #expect(result[1].value == "true")
+    }
+}

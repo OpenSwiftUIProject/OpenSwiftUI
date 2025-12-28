@@ -132,11 +132,36 @@ extension String {
     }
 }
 
-// MARK: - Sequence.roundedAttributes
+// MARK: - Sequence.roundedAttributes [?]
 
 extension Sequence where Element == (name: String, value: String) {
     package func roundedAttributes() -> [(name: String, value: String)] {
-        preconditionFailure("TODO")
+        map { (name, value) in
+            if let doubleValue = Double(value) {
+                let rounded = round(doubleValue * 256.0) / 256.0
+                return (name: name, value: rounded.description)
+            } else if let tupleValues = value.tupleOfDoubles() {
+                let roundedTuple = tupleValues.map { (label: $0.label, value: round($0.value * 256.0) / 256.0) }
+                if roundedTuple.count == 4,
+                   name.range(of: "color", options: .caseInsensitive) != nil
+                {
+                    let floats = roundedTuple.map { Float($0.value) }
+                    if let colorName = colorNameForColorComponents(floats[0], floats[1], floats[2], floats[3]) {
+                        return (name: name, value: colorName)
+                    }
+                }
+                let parts: [String] = roundedTuple.map { item in
+                    if item.label.isEmpty {
+                        return "\(item.value)"
+                    } else {
+                        return "\(item.label): \(item.value)"
+                    }
+                }
+                return (name: name, value: "(" + parts.joined(separator: ", ") + ")")
+            } else {
+                return (name, value)
+            }
+        }
     }
 }
 
