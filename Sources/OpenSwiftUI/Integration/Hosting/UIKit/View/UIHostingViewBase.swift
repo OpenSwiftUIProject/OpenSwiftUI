@@ -255,29 +255,26 @@ package class UIHostingViewBase {
             return
         }
         cancelAsyncRendering()
-        guard updatesAtFullFidelity else {
-            guard pendingPreferencesUpdate else {
+        if updatesAtFullFidelity {
+            view.setNeedsLayout()
+            CoreTesting.needsRender = true
+        } else {
+            guard !pendingPreferencesUpdate else {
                 return
             }
             pendingPreferencesUpdate = true
-            DispatchQueue.main.async { [self] in
-                guard uiView != nil else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else {
                     return
                 }
                 pendingPreferencesUpdate = false
-                guard let host else {
-                    return
-                }
-                guard canAdvanceTimeAutomatically else {
+                guard let host, canAdvanceTimeAutomatically else {
                     return
                 }
                 let interval = renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
                 host.render(interval: interval, updateDisplayList: false, targetTimestamp: nil)
             }
-            return
         }
-        view.setNeedsLayout()
-        CoreTesting.needsRender = true
     }
 
     package func requestUpdate(after delay: Double) {
@@ -410,8 +407,8 @@ package class UIHostingViewBase {
         }
         updateTimer?.invalidate()
         nextTimerTime = updateTime
-        updateTimer = withDelay(delay) { [self] in
-            guard uiView != nil else {
+        updateTimer = withDelay(delay) { [weak self] in
+            guard let self else {
                 return
             }
             updateTimer = nil
