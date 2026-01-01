@@ -440,8 +440,8 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                         if removedCount == 0 {
                             target = index
                         } else {
-                            let i = index - info.removedCount
-                            target = i >= 0 ? i : info.items.count - (info.unusedCount + info.removedCount)
+                            let i = index &- info.removedCount
+                            target = i >= 0 ? i : info.items.count &- (info.unusedCount + info.removedCount)
                         }
                     }
                     info.items[target].subgraph.index = UInt32(index)
