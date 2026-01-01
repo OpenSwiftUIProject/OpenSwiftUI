@@ -24,6 +24,7 @@ private struct TestMeasurer: ViewGraphGeometryMeasurer {
 struct ViewGraphGeometryObserversTests {
     fileprivate typealias Observers = ViewGraphGeometryObservers<TestMeasurer>
 
+    #if canImport(Darwin)
     @MainActor
     @Test
     func observeCallback() async throws {
@@ -37,6 +38,7 @@ struct ViewGraphGeometryObserversTests {
             _ = observers.needsUpdate(graph: emptyViewGraph)
         }
     }
+    #endif
 
     @Test
     func addObserverExclusiveRemovesExisting() {
