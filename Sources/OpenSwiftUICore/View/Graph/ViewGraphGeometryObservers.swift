@@ -51,7 +51,8 @@ package struct ViewGraphGeometryObservers<Measurer> where Measurer: ViewGraphGeo
             return false
         }
         var result = false
-        for proposal in store.keys {
+        let keys = store.keys
+        for proposal in keys {
             let size = Measurer.measure(given: proposal, in: graph)
             let changed = store[proposal]!.storage.transition(to: size)
             result = result || changed
@@ -67,7 +68,8 @@ package struct ViewGraphGeometryObservers<Measurer> where Measurer: ViewGraphGeo
     /// - Returns: A dictionary mapping proposals to their new sizes that need notification.
     package mutating func notifySizes() -> [Proposal: Size] {
         var result: [Proposal: Size] = [:]
-        for proposal in store.keys {
+        let keys = store.keys
+        for proposal in keys {
             if let size = store[proposal]!.sizeToNotifyIfNeeded() {
                 result[proposal] = size
             }
