@@ -384,7 +384,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             }
             precondition(info.indexMap.count == inusedCount, "DynamicLayoutItem identifiers must be unique.")
             if hasDepth {
-                let capacity = abs(removedCount != 0 ? validCount + inusedCount : validCount)
+                let capacity = max(removedCount != 0 ? validCount + inusedCount : validCount, 0)
                 var displayMap: [UInt32] = []
                 displayMap.reserveCapacity(capacity)
                 for index in 0 ..< validCount {
