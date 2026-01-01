@@ -378,9 +378,9 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                     info.indexMap[item.uniqueId] = index
                     item.precedingViewCount = precedingCount
                     allUnary = allUnary && item.viewCount == 1
-                    info.allUnary = allUnary
                     precedingCount &+= item.viewCount
                 }
+                info.allUnary = allUnary
             }
             precondition(info.indexMap.count == inusedCount, "DynamicLayoutItem identifiers must be unique.")
             if hasDepth {
