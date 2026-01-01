@@ -81,7 +81,7 @@ package final class ViewGraph: GraphHost {
     @WeakAttribute var rootLayoutComputer: LayoutComputer?
     @WeakAttribute var rootDisplayList: (DisplayList, DisplayList.Version)?
     
-    // package var sizeThatFitsObservers: ViewGraphGeometryObservers<SizeThatFitsMeasurer> = .init()
+    package var sizeThatFitsObservers: ViewGraphGeometryObservers<SizeThatFitsMeasurer> = .init()
     
     package var accessibilityEnabled: Bool = false
     
@@ -458,16 +458,41 @@ extension ViewGraph {
     }
 }
 
-//package struct SizeThatFitsMeasurer: ViewGraphGeometryMeasurer {
-//    package static func measure(given proposal: _ProposedSize, in graph: ViewGraph) -> CGSize
-//    package static let invalidValue: CGSize
-//    package typealias Proposal = _ProposedSize
-//    package typealias Size = CGSize
-//}
+package struct SizeThatFitsMeasurer: ViewGraphGeometryMeasurer {
+    package typealias Proposal = _ProposedSize
 
-//package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
+    package typealias Size = CGSize
+
+    package static func measure(
+        given proposal: _ProposedSize,
+        in graph: ViewGraph
+    ) -> CGSize {
+        ViewGraph.sizeThatFits(
+            proposal,
+            layoutComputer: graph.layoutComputer,
+            insets: graph.rootViewInsets
+        )
+    }
+
+    package static func measure(
+        proposal: _ProposedSize,
+        layoutComputer: LayoutComputer,
+        insets: EdgeInsets
+    ) -> CGSize {
+        ViewGraph.sizeThatFits(
+            proposal,
+            layoutComputer: layoutComputer,
+            insets: insets
+        )
+    }
+
+    package static let invalidValue: CGSize = CGSize.invalidValue
+}
+
+package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
+
 extension ViewGraph {
-    private var layoutComputer: LayoutComputer? {
+    fileprivate var layoutComputer: LayoutComputer? {
         precondition(
             requestedOutputs.contains(.layout),
             "Cannot fetch layout computer without layout output"
@@ -476,7 +501,7 @@ extension ViewGraph {
         return rootLayoutComputer
     }
 
-    private var rootViewInsets: EdgeInsets {
+    fileprivate var rootViewInsets: EdgeInsets {
         guard !safeAreaInsets.elements.isEmpty else {
             return .zero
         }
