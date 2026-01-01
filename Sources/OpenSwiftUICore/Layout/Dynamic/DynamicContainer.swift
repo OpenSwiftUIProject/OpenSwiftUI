@@ -359,9 +359,9 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         if needsUpdate {
             let totalCount = info.items.count
             let unusedCount = info.unusedCount
-            let inusedCount = totalCount - unusedCount
+            let inusedCount = totalCount &- unusedCount
             let removedCount = info.removedCount
-            let validCount = inusedCount - removedCount
+            let validCount = inusedCount &- removedCount
             if validCount < inusedCount {
                 var slice = info.items[validCount..<inusedCount]
                 slice.sort { $0.removalOrder < $1.removalOrder }
