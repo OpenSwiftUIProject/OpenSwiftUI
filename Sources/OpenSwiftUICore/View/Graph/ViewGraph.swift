@@ -384,11 +384,27 @@ extension ViewGraph {
         beginNextUpdate(at: time)
         updateOutputs(async: false)
     }
-    
+
+    // Audited for 6.5.4
     package func updateOutputsAsync(at time: Time) -> (list: DisplayList, version: DisplayList.Version)? {
         beginNextUpdate(at: time)
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        guard _rootDisplayList.allowsAsyncUpdate(),
+              hostPreferenceValues.allowsAsyncUpdate(),
+              sizeThatFitsObservers.isEmpty || _rootLayoutComputer.allowsAsyncUpdate()
+        else {
+            return nil
+        }
+        for feature in features {
+            guard feature.allowsAsyncUpdate(graph: self) != false else {
+                return nil
+            }
+        }
+        var result: (DisplayList, DisplayList.Version)?
+        graph.withMainThreadHandler(Update.syncMain) {
+            updateOutputs(async: true)
+            result = displayList()
+        }
+        return result
     }
     
     package func displayList() -> (DisplayList, DisplayList.Version) {
