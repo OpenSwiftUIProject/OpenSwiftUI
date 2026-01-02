@@ -81,6 +81,16 @@ struct ViewGraphFeatureBuffer: Collection {
         func update(graph: ViewGraph) {
             vtable.update(elt: base, graph: graph)
         }
+
+        var needsUpdate: Bool {
+            get { base.flags.needsUpdate }
+            nonmutating set { base.flags.needsUpdate = newValue }
+        }
+
+        var skipsAsyncUpdate: Bool {
+            get { base.flags.skipsAsyncUpdate }
+            nonmutating set { base.flags.skipsAsyncUpdate = newValue }
+        }
     }
 
     var startIndex: UnsafeHeterogeneousBuffer.Index { contents.startIndex }
@@ -148,6 +158,30 @@ struct ViewGraphFeatureBuffer: Collection {
 
         override class func update(elt: UnsafeHeterogeneousBuffer.Element, graph: ViewGraph) {
             elt.body(as: Feature.self).pointee.update(graph: graph)
+        }
+    }
+}
+
+extension UInt32 {
+    fileprivate var needsUpdate: Bool {
+        get { self & 0x1 != 0 }
+        set {
+            if newValue {
+                self = self | 0x1
+            } else {
+                self = self & ~0x1
+            }
+        }
+    }
+
+    fileprivate var skipsAsyncUpdate: Bool {
+        get { self & 0x2 != 0 }
+        set {
+            if newValue {
+                self = self | 0x2
+            } else {
+                self = self & ~0x2
+            }
         }
     }
 }

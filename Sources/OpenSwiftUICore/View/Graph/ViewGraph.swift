@@ -375,6 +375,8 @@ extension ViewGraph {
     }
 }
 
+// MARK: - ViewGraph + Update [6.5.4]
+
 extension ViewGraph {
     package var updateRequiredMainThread: Bool {
         graph.mainUpdates != mainUpdates
@@ -385,7 +387,6 @@ extension ViewGraph {
         updateOutputs(async: false)
     }
 
-    // Audited for 6.5.4
     package func updateOutputsAsync(at time: Time) -> (list: DisplayList, version: DisplayList.Version)? {
         beginNextUpdate(at: time)
         guard _rootDisplayList.allowsAsyncUpdate(),
@@ -395,7 +396,12 @@ extension ViewGraph {
             return nil
         }
         for feature in features {
-            guard feature.allowsAsyncUpdate(graph: self) != false else {
+            guard let allowsAsyncUpdate = feature.allowsAsyncUpdate(graph: self) else {
+                feature.skipsAsyncUpdate = true
+                continue
+            }
+            feature.skipsAsyncUpdate = false
+            guard allowsAsyncUpdate else {
                 return nil
             }
         }
@@ -416,68 +422,59 @@ extension ViewGraph {
         data.updateSeed &+= 1
         mainUpdates = graph.mainUpdates
     }
-    
-    // FIXME
-    private func updateOutputs(async: Bool) {
-        instantiateIfNeeded()
-        data.transactionSeed &+= 1
 
-        // let oldCachedSizeThatFits = cachedSizeThatFits
-        
+    private func updateOutputs(async: Bool) {
         var preferencesChanged = false
-        var observedSizeThatFitsChanged = false
-        var updatedOutputs: Outputs = []
-        
-        var counter1 = 0
+        var featuresChanged = false
+        var sizeThatFitsChanged = false
+        var counter = 0
         repeat {
-            counter1 &+= 1
-            inTransaction = true
-            var counter2 = 0
-            repeat {
-                let conts = continuations
-                continuations = []
-                for continuation in conts {
-                    continuation()
+            counter &+= 1
+            instantiateIfNeeded()
+            startTransactionUpdate()
+            finishTransactionUpdate(in: globalSubgraph)
+            if updatePreferences() {
+                preferencesChanged = true
+            }
+            if sizeThatFitsObservers.needsUpdate(graph: self) {
+                sizeThatFitsChanged = true
+            }
+            for feature in features {
+                guard !async || !feature.skipsAsyncUpdate else {
+                    continue
                 }
-                counter2 &+= 1
-                data.globalSubgraph.update(flags: .transactional)
-            } while (continuations.count != 0 && counter2 != 8)
-            inTransaction = false
-            preferencesChanged = preferencesChanged || updatePreferences()
-            observedSizeThatFitsChanged = observedSizeThatFitsChanged || updateObservedSizeThatFits()
-            updatedOutputs.formUnion(updateRequestedOutputs())
-        } while (needsTransaction && counter1 != 8)
-//        guard preferencesChanged || observedSizeThatFitsChanged || !updatedOutputs.isEmpty || needsFocusUpdate else {
-//            return
-//        }
-//        if Thread.isMainThread {
-//            if preferencesChanged {
-//                delegate?.preferencesDidChange()
-//            }
-//            if observedSizeThatFitsChanged {
-//                sizeThatFitsObserver?.callback(oldCachedSizeThatFits, self.cachedSizeThatFits)
-//            }
-//            if !requestedOutputs.isEmpty {
-////                delegate?.outputsDidChange(outputs: updatedOutputs)
-//            }
-//            if needsFocusUpdate {
-//                needsFocusUpdate = false
-////                delegate?.focusDidChange()
-//            }
-//        } else {
-//            _openSwiftUIUnimplementedFailure()
-//        }
-//        mainUpdates &-= 1
-    }
-    
-    private func updateObservedSizeThatFits() -> Bool {
-        // TODO
-        return false
-    }
-    
-    private func updateRequestedOutputs() -> Outputs {
-        // TODO
-        return []
+                if feature.needsUpdate {
+                    featuresChanged = true
+                } else if feature.needsUpdate(graph: self) {
+                    feature.needsUpdate = true
+                    featuresChanged = true
+                }
+            }
+        } while (needsTransaction && counter != 8)
+        guard preferencesChanged || featuresChanged || sizeThatFitsChanged else {
+            return
+        }
+        Update.syncMain {
+            if preferencesChanged {
+                delegate?.preferencesDidChange()
+                preferenceBridge?.updateHostValues(data.$hostPreferenceKeys)
+            }
+            if featuresChanged {
+                for feature in features {
+                    guard !async || !feature.skipsAsyncUpdate else {
+                        continue
+                    }
+                    if feature.needsUpdate {
+                        feature.update(graph: self)
+                        feature.needsUpdate = false
+                    }
+                }
+            }
+            if sizeThatFitsChanged {
+                sizeThatFitsObservers.notify()
+            }
+        }
+        mainUpdates &-= 1
     }
 }
 
