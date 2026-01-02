@@ -133,7 +133,8 @@ package enum Update {
         defer { unlock() }
         return try body()
     }
-    
+
+    // 6.5.4
     package static func syncMain(_ body: () -> Void) {
         #if os(WASI)
         // FIXME: See #76
@@ -143,9 +144,25 @@ package enum Update {
             body()
         } else {
             withoutActuallyEscaping(body) { escapableBody in
-                let context = AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier)
-                MovableLock.syncMain(lock: _lock) {
-                    context.update(body: escapableBody)
+                struct Context {
+                    let body: () -> Void
+                    let subgraph: Subgraph?
+                    let context: AnyRuleContext
+                }
+                withUnsafePointer(
+                    to: Context(
+                        body: escapableBody,
+                        subgraph: Subgraph.current,
+                        context: AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier)
+                    )
+                ) { context in
+                    _lock.syncMain(.init(context)) { pointer in
+                        let pointer = pointer.assumingMemoryBound(to: Context.self).self
+                        let current = Subgraph.current
+                        defer { Subgraph.current = current }
+                        Subgraph.current = pointer.pointee.subgraph
+                        pointer.pointee.context.update(body: pointer.pointee.body)
+                    }
                 }
             }
         }
@@ -205,10 +222,4 @@ package enum Update {
         }
         return body()
     }
-}
-
-// FIXME: migrate to use @_extern(c, "xx") in Swift 6
-extension MovableLock {
-    @_silgen_name("_MovableLockSyncMain")
-    static func syncMain(lock: MovableLock, body: @escaping () -> Void)
 }
