@@ -90,8 +90,8 @@ package final class ViewGraph: GraphHost {
     
     private var mainUpdates: Int = 0
     
-    // MARK: - ViewGraph + NextUpdate
-    
+    // MARK: - ViewGraph + NextUpdate [6.5.4]
+
     package struct NextUpdate {
         package private(set) var time: Time = .infinity
 
@@ -100,6 +100,8 @@ package final class ViewGraph: GraphHost {
         package var interval: Double {
             _interval.isFinite ? _interval : .zero
         }
+
+        private var _defaultIntervalWasRequested: Bool = false
 
         package private(set) var reasons: Set<UInt32> = []
 
@@ -113,17 +115,22 @@ package final class ViewGraph: GraphHost {
             }
             let interval = velocity < 320 ? 1 / 80.0 : 1 / 120.0
             let highFrameRateReason: UInt32 = _HighFrameRateReasonMake(0)
-            _interval = min(interval, _interval)
+            var newInterval = min(interval, _interval)
+            if _defaultIntervalWasRequested && newInterval > 1 / 60.0 {
+                newInterval = .infinity
+            }
+            _interval = newInterval
             reasons.insert(highFrameRateReason)
         }
         
         package mutating func interval(_ interval: Double, reason: UInt32? = nil) {
             if interval == .zero {
-                if _interval > 1 / 60 {
-                    _interval = .infinity
-                }
+                _defaultIntervalWasRequested = true
             } else {
                 _interval = min(interval, _interval)
+            }
+            if _defaultIntervalWasRequested && _interval > 1 / 60 {
+                _interval = .infinity
             }
             if let reason {
                 reasons.insert(reason)
