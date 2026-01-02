@@ -77,6 +77,22 @@ package struct ViewGraphGeometryObservers<Measurer> where Measurer: ViewGraphGeo
         return result
     }
 
+    // [?]
+    mutating func notify() {
+        let keys = store.keys
+        for proposal in keys {
+            guard var observer = store[proposal] else { continue }
+            guard case let .pending(oldSize, pending: newSize) = observer.storage else {
+                continue
+            }
+            if oldSize != newSize {
+                observer.callback(oldSize, newSize)
+            }
+            observer.storage = .value(newSize)
+            store[proposal] = observer
+        }
+    }
+
     /// Adds an observer for a specific layout proposal.
     ///
     /// - Parameters:
@@ -202,7 +218,7 @@ package struct ViewGraphGeometryObservers<Measurer> where Measurer: ViewGraphGeo
                     return true
                 case let .pending(value, _):
                     guard size != value else {
-                        self = .value(size)
+                        self = .value(size) // ?
                         return false
                     }
                     self = .pending(value, pending: size)

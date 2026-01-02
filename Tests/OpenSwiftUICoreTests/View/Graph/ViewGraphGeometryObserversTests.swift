@@ -10,12 +10,14 @@ private struct TestMeasurer: ViewGraphGeometryMeasurer {
     typealias Proposal = CGSize
     typealias Size = CGFloat
 
+    static var mockValue: CGFloat?
+
     static func measure(given proposal: CGSize, in graph: ViewGraph) -> CGFloat {
-        max(proposal.width, proposal.height)
+        mockValue ?? max(proposal.width, proposal.height)
     }
 
     static func measure(proposal: CGSize, layoutComputer: LayoutComputer, insets: EdgeInsets) -> CGFloat {
-        max(proposal.width, proposal.height)
+        mockValue ?? max(proposal.width, proposal.height)
     }
 
     static var invalidValue: CGFloat = .nan
@@ -28,14 +30,19 @@ struct ViewGraphGeometryObserversTests {
     @MainActor
     @Test
     func observeCallback() async throws {
-        // TODO: when the callback got called.
-        await confirmation(expectedCount: 0) { confirm in
+        await confirmation(expectedCount: 1) { confirm in
             var observers = Observers()
-            observers.addObserver(for: CGSize(width: 10, height: 20)) { _, _ in
+            observers.addObserver(for: CGSize(width: 10, height: 20)) { oldSize, newSize in
                 confirm()
+                #expect(oldSize.isApproximatelyEqual(to: 20.0))
+                #expect(newSize.isApproximatelyEqual(to: 30.0))
             }
             let emptyViewGraph = ViewGraph(rootViewType: EmptyView.self)
             _ = observers.needsUpdate(graph: emptyViewGraph)
+            TestMeasurer.mockValue = 30.0
+            defer { TestMeasurer.mockValue = nil }
+            _ = observers.needsUpdate(graph: emptyViewGraph)
+            observers.notify()
         }
     }
     #endif
