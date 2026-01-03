@@ -424,7 +424,7 @@ extension UIUserInterfaceSizeClass {
     }
 }
 
-// MARK: - CABasicAnimation Conversions
+// MARK: - Animation Conversions
 
 extension Animation {
     package var caBasicAnimation: CABasicAnimation? {
@@ -458,6 +458,47 @@ extension Animation {
         default:
             return nil
         }
+    }
+
+    package static func uiViewAnimation(curve: Int, duration: Double) -> Animation? {
+        switch curve {
+        case 0: .easeInOut(duration: duration)
+        case 1: .easeIn(duration: duration)
+        case 2: .easeOut(duration: duration)
+        case 3: .linear(duration: duration)
+        case 4: .timingCurve(0.66, 0, 0.33, 1.0, duration: duration)
+        case 5: .coreAnimationDefault(duration: duration)
+        case 6: .easeInOut(duration: duration)
+        case 7: .interpolatingSpring(mass: 3.0, stiffness: 1000.0, damping: 500.0, initialVelocity: 0.0)
+        default: nil
+        }
+    }
+}
+
+// MARK: - Transaction + UIView Animation
+
+extension Transaction {
+    package static func currentUIViewTransaction(canDisableAnimations: Bool) -> Transaction? {
+        if canDisableAnimations, !UIView.areAnimationsEnabled {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            return transaction
+        }
+        guard UIView._isInAnimationBlockWithAnimationsEnabled else {
+            return nil
+        }
+        let duration = UIView._currentAnimationDuration
+        let curve = UIView._currentAnimationCurve
+        guard let animation = Animation.uiViewAnimation(curve: curve, duration: duration) else {
+            return nil
+        }
+        var transaction = Transaction(animation: animation)
+        if let item = _CATransactionCompletionItem() {
+            transaction.addAnimationListener {
+                item.invalidate()
+            }
+        }
+        return transaction
     }
 }
 

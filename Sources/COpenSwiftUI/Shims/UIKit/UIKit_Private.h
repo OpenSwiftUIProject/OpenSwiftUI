@@ -34,6 +34,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (BOOL)_shouldAnimatePropertyWithKey_openswiftui_safe_wrapper:(NSString *)key OPENSWIFTUI_SWIFT_NAME(_shouldAnimateProperty(withKey:));
 - (void)_setFocusInteractionEnabled_openswiftui_safe_wrapper:(BOOL)enabled OPENSWIFTUI_SWIFT_NAME(_setFocusInteractionEnabled(_:));
 @property(nonatomic, readonly, nullable) UIViewController *_viewControllerForAncestor_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_viewControllerForAncestor);
+
+@property(class, nonatomic, readonly) BOOL _isInAnimationBlockWithAnimationsEnabled_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_isInAnimationBlockWithAnimationsEnabled);
+@property(class, nonatomic, readonly) NSTimeInterval _currentAnimationDuration_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationDuration);
+@property(class, nonatomic, readonly) NSInteger _currentAnimationCurve_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationCurve);
 @end
 
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES

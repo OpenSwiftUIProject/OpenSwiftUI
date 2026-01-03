@@ -53,6 +53,21 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIViewController *, @"_viewControllerForAncestor", nil);
     return func(self, selector);
 }
+
++ (BOOL)_isInAnimationBlockWithAnimationsEnabled_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_isInAnimationBlockWithAnimationsEnabled", NO);
+    return func(self, selector);
+}
+
++ (NSTimeInterval)_currentAnimationDuration_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSTimeInterval, @"_currentAnimationDuration", 0.0);
+    return func(self, selector);
+}
+
++ (NSInteger)_currentAnimationCurve_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSInteger, @"_currentAnimationCurve", 0);
+    return func(self, selector);
+}
 @end
 
 @implementation UIViewController (OpenSwiftUI_SPI)
