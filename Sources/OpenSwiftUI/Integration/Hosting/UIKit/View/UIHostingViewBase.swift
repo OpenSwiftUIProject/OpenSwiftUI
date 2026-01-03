@@ -473,7 +473,7 @@ package class UIHostingViewBase {
     // MARK: - UIView related
 
     package func frameDidChange(oldValue: CGRect) {
-        guard let uiView, let host, uiView.bounds.size != .zero else {
+        guard let uiView, let host, uiView.bounds.size != oldValue.size else {
             return
         }
         var props: ViewRendererHostProperties = [.size, .containerSize]
