@@ -271,6 +271,18 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         base.tintColorDidChange()
     }
 
+    open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        updateBackgroundColor()
+        if shouldDisableUIKitAnimations,
+           Semantics.TraitCollectionAnimations.isEnabled,
+           var transaction = Transaction.currentUIViewTransaction(canDisableAnimations: true) {
+            if let viewController, let alwaysOnBridge = viewController.alwaysOnBridge {
+                alwaysOnBridge.configureTransaction(&transaction)
+            }
+            viewGraph.emptyTransaction(transaction)
+        }
+    }
+
     open override func safeAreaInsetsDidChange() {
         _safeAreaInsetsDidChange()
     }
