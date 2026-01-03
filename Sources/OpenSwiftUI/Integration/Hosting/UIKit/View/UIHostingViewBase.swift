@@ -472,6 +472,14 @@ package class UIHostingViewBase {
 
     // MARK: - UIView related
 
+    @inline(__always)
+    func clipsToBoundsDidChange(oldValue: Bool) {
+        guard let uiView, let host, uiView.clipsToBounds != oldValue else {
+            return
+        }
+        host.invalidateProperties(.transform, mayDeferUpdate: false)
+    }
+
     package func frameDidChange(oldValue: CGRect) {
         guard let uiView, let host, uiView.bounds.size != oldValue.size else {
             return

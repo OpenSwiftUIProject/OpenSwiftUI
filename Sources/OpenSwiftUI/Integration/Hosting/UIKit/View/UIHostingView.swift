@@ -261,6 +261,12 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
 
+    open override var clipsToBounds: Bool {
+        didSet {
+            base.clipsToBoundsDidChange(oldValue: oldValue)
+        }
+    }
+
     // TODO
     
     func setRootView(_ view: Content, transaction: Transaction) {
