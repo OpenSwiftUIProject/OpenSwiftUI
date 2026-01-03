@@ -17,6 +17,8 @@ import UIKit
 import AppKit
 #endif
 
+import OpenSwiftUI
+
 #if os(iOS) || os(visionOS)
 class ViewController: UINavigationController {
     override func viewDidAppear(_ animated: Bool) {
@@ -35,6 +37,10 @@ final class EntryViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.pushHostingVC()
         }
+
+        #if OPENSWIFTUI || DEBUG
+        // debugUIKitUpdateCycle()
+        #endif
     }
 
     @objc

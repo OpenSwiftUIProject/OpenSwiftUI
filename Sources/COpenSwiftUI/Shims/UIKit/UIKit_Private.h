@@ -91,12 +91,75 @@ bool UIViewIgnoresTouchEvents(UIView *view);
 OPENSWIFTUI_EXPORT
 float UIAnimationDragCoefficient(void);
 
+UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
+
 // MARK: - UIUpdate related private API from UIKitCore
 
 OPENSWIFTUI_EXPORT
-bool _UIUpdateAdaptiveRateNeeded();
+bool _UIUpdateAdaptiveRateNeeded(void);
 
-UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
+OPENSWIFTUI_EXPORT
+bool _UIUpdateCycleEnabled(void);
+
+typedef struct _UIUpdateTiming {
+    uint64_t unknown1;
+    uint64_t unknown2;
+    uint64_t unknown3;
+} _UIUpdateTiming;
+
+typedef void (^_UIUpdateSequenceCallback)(void * _Nullable context, CGFloat time, const _UIUpdateTiming * _Nonnull timing);
+
+typedef struct _UIUpdateSequenceItem _UIUpdateSequenceItem;
+
+typedef struct _UIUpdateSequence {
+    _UIUpdateSequenceItem * _Nullable first;
+} _UIUpdateSequence;
+
+typedef struct _UIUpdateSequenceItem {
+    const _UIUpdateSequenceItem * _Nullable next;
+    const _UIUpdateSequence * _Nullable sequence;
+    const char * name;
+    uint32_t flags;
+    void * _Nullable context;
+    void * _Nullable callback; // Actual type should be _UIUpdateSequenceCallback*
+} _UIUpdateSequenceItem;
+
+// MARK: - UIUpdateSequence Items
+//
+// UIUpdateActionPhase defines specific phases of the UI update process.
+// See: https://developer.apple.com/documentation/uikit/uiupdateactionphase
+//
+// Each UI update consists of several phases that run in a consistent order.
+// There are two phase groups: standard and low-latency.
+//
+// Standard phase group (runs for each UI update):
+//   1. beforeEventDispatch / afterEventDispatch       -> HIDEventsItem
+//   2. beforeCADisplayLinkDispatch / afterCADisplayLinkDispatch -> CADisplayLinksItem
+//   3. beforeCATransactionCommit / afterCATransactionCommit -> CATransactionCommitItem
+//
+// Low-latency phase group (optional, runs after standard phases):
+//   1. beforeLowLatencyEventDispatch / afterLowLatencyEventDispatch -> LowLatencyHIDEventsItem
+//   2. beforeLowLatencyCATransactionCommit / afterLowLatencyCATransactionCommit -> LowLatencyCATransactionCommitItem
+
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceScheduledItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceHIDEventsItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceCADisplayLinksItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceAnimationsItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceCATransactionCommitItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceLowLatencyHIDEventsItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceLowLatencyCATransactionCommitItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceDoneItem;
+
+OPENSWIFTUI_EXPORT
+void * _Nonnull _UIUpdateSequenceInsertItem(const _UIUpdateSequenceItem * _Nullable next,
+                                           const _UIUpdateSequence * _Nullable sequence,
+                                           const char * name,
+                                           uint32_t flags,
+                                           void * _Nullable context,
+                                           _UIUpdateSequenceCallback _Nullable callback);
+
+OPENSWIFTUI_EXPORT
+void _UIUpdateSequenceRemoveItem(_UIUpdateSequenceItem *item);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
