@@ -91,12 +91,52 @@ bool UIViewIgnoresTouchEvents(UIView *view);
 OPENSWIFTUI_EXPORT
 float UIAnimationDragCoefficient(void);
 
+UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
+
 // MARK: - UIUpdate related private API from UIKitCore
 
 OPENSWIFTUI_EXPORT
-bool _UIUpdateAdaptiveRateNeeded();
+bool _UIUpdateAdaptiveRateNeeded(void);
 
-UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
+OPENSWIFTUI_EXPORT
+bool _UIUpdateCycleEnabled(void);
+
+typedef struct _UIUpdateTiming {
+    uint64_t unknown1;
+    uint64_t unknown2;
+    uint64_t unknown3;
+} _UIUpdateTiming;
+
+typedef void (^_UIUpdateSequenceCallback)(void * _Nullable context, CGFloat time, const _UIUpdateTiming * _Nonnull timing);
+
+typedef struct _UIUpdateSequenceItem _UIUpdateSequenceItem;
+
+typedef struct _UIUpdateSequence {
+    _UIUpdateSequenceItem * _Nullable first;
+} _UIUpdateSequence;
+
+typedef struct _UIUpdateSequenceItem {
+    _UIUpdateSequenceItem * _Nullable next;
+    _UIUpdateSequence * _Nullable sequence;
+    const char * name;
+    uint32_t flags;
+    void * _Nullable context;
+    _UIUpdateSequenceCallback _Nullable callback;
+} _UIUpdateSequenceItem;
+
+OPENSWIFTUI_EXPORT
+_UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceCATransactionCommitItem;
+
+OPENSWIFTUI_EXPORT
+void * _Nonnull _UIUpdateSequenceInsertItem(_UIUpdateSequenceItem * _Nullable next,
+                                           _UIUpdateSequence * _Nullable sequence,
+                                           const char * name,
+                                           uint32_t flags,
+                                           void * _Nullable context,
+                                           _UIUpdateSequenceCallback _Nullable callback);
+
+OPENSWIFTUI_EXPORT
+void _UIUpdateSequenceRemoveItem(_UIUpdateSequenceItem *item);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

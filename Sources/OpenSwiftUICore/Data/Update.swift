@@ -105,7 +105,7 @@ package enum Update {
 
     @inlinable
     @inline(__always)
-    static func perform<T>(_ body: () throws -> T) rethrows -> T {
+    package static func perform<T>(_ body: () throws -> T) rethrows -> T {
         begin()
         defer { end() }
         return try body()
