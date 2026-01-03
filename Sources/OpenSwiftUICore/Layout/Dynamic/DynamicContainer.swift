@@ -369,7 +369,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             }
             info.indexMap.removeAll(keepingCapacity: true)
             info.allUnary = true
-            Swift.assert(inusedCount > 0)
+            Swift.assert(inusedCount >= 0)
             if totalCount != unusedCount {
                 var precedingCount: Int32 = 0
                 var allUnary = true
