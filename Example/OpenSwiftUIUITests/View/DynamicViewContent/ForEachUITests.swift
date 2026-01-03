@@ -137,4 +137,34 @@ struct ForEachUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test(
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/655",
+            id: 655
+        )
+    )
+    func transitionAnimation() {
+        struct ContentView: AnimationTestView {
+            nonisolated static var model: AnimationTestModel {
+                AnimationTestModel(duration: 2.0, count: 4)
+            }
+            @State private var items = [6]
+
+            var body: some View {
+                VStack(spacing: 10) {
+                    ForEach(items, id: \.self) { item in
+                        Color.blue.opacity(Double(item) / 6.0)
+                            .frame(height: 50)
+                            .transition(.slide)
+                    }
+                }
+                .animation(.easeInOut(duration: Self.model.duration), value: items)
+                .onAppear {
+                    items.removeAll { $0 == 6 }
+                }
+            }
+        }
+        openSwiftUIAssertAnimationSnapshot(of: ContentView())
+    }
 }
