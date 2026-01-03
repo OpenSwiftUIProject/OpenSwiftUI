@@ -2,16 +2,17 @@
 //  UnsafeHeterogeneousBuffer.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 568350FE259575B5E1AAA52AD722AAAC (SwiftUICore)
 
 package struct UnsafeHeterogeneousBuffer: Collection {
-    var buf: UnsafeMutableRawPointer!
-    var available: Int32
-    var _count: Int32
+    private var buf: UnsafeMutableRawPointer!
+    private var available: Int32
+    private var _count: Int32
 
     package typealias VTable = _UnsafeHeterogeneousBuffer_VTable
+
     package typealias Element = _UnsafeHeterogeneousBuffer_Element
 
     package struct Index: Equatable, Comparable {
@@ -34,11 +35,13 @@ package struct UnsafeHeterogeneousBuffer: Collection {
     }
 
     package var count: Int { Int(_count) }
+
     package var isEmpty: Bool { _count == 0 }
 
     package var startIndex: Index {
         Index(index: 0, offset: 0)
     }
+
     package var endIndex: Index {
         Index(index: _count, offset: 0)
     }
@@ -113,7 +116,13 @@ package struct UnsafeHeterogeneousBuffer: Collection {
     }
 
     package func formIndex(after index: inout Index) {
-        index = self.index(after: index)
+        let item = self[index].item.pointee
+        index.index &+= 1
+        if index.index == _count {
+            index.offset = 0
+        } else {
+            index.offset &+= item.size
+        }
     }
 
     package func index(after index: Index) -> Index {
@@ -137,14 +146,13 @@ package struct UnsafeHeterogeneousBuffer: Collection {
 
     @discardableResult
     package mutating func append<T>(_ value: T, vtable: VTable.Type) -> Index {
+        defer { _count += 1 }
         let bytes = (MemoryLayout<T>.size + MemoryLayout<UnsafeHeterogeneousBuffer.Item>.size + 0xf) & ~0xf
         let pointer = allocate(bytes)
         let element = _UnsafeHeterogeneousBuffer_Element(item: pointer.assumingMemoryBound(to: Item.self))
         element.item.initialize(to: Item(vtable: vtable, size: Int32(bytes), flags: 0))
         element.body(as: T.self).initialize(to: value)
-        let index = Index(index: _count, offset: Int32(pointer - buf))
-        _count += 1
-        return index
+        return Index(index: _count, offset: Int32(pointer - buf))
     }
 }
 

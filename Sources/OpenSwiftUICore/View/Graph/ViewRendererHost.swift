@@ -337,14 +337,26 @@ extension ViewRendererHost {
         }
         if asynchronously {
             // TODO: CustomEventTrace
-            if let renderedTime = renderer.renderAsync(
+            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
+            let renderedTime = renderer.swiftUI_renderAsync(
                 to: list,
                 time: time,
                 nextTime: nextTime,
                 targetTimestamp: targetTimestamp,
                 version: version,
                 maxVersion: maxVersion
-            ) {
+            )
+            #else
+            let renderedTime = renderer.renderAsync(
+                to: list,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            )
+            #endif
+            if let renderedTime {
                 return renderedTime
             } else {
                 var renderedTime = nextTime

@@ -39,6 +39,11 @@ package struct ViewGraphGeometryObservers<Measurer> where Measurer: ViewGraphGeo
         store = [:]
     }
 
+    @inline(__always)
+    var isEmpty: Bool {
+        store.isEmpty
+    }
+
     /// Checks if any observer needs an update based on the current view graph state.
     ///
     /// This method measures sizes for all registered proposals and transitions

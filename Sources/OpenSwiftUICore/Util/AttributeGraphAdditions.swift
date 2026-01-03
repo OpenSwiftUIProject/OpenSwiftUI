@@ -171,17 +171,21 @@ extension Attribute {
     }
 
     package func allowsAsyncUpdate() -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        !valueState.contains([.dirty, .mainThread])
     }
 }
 
 extension WeakAttribute {
     package var uncheckedIdentifier: Attribute<Value> {
-        get { _openSwiftUIUnimplementedFailure() }
+        #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
+        _openSwiftUIUnimplementedFailure()
+        #else
+        Attribute(identifier: AnyWeakAttribute(self)._details.identifier)
+        #endif
     }
 
     package func allowsAsyncUpdate() -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        attribute.map { $0.allowsAsyncUpdate() } ?? false
     }
 }
 

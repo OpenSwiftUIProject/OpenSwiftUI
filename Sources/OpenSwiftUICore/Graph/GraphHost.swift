@@ -496,17 +496,17 @@ extension GraphHost {
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
-        var count = 0
+        var counter = 0
         repeat {
-            let currentContinuations = continuations
+            let oldContinuations = continuations
             continuations = []
-            for currentContinuation in currentContinuations {
-                currentContinuation()
+            for continuation in oldContinuations {
+                continuation()
             }
-            count &+= 1
+            counter &+= 1
             subgraph.update(flags: .transactional)
             postUpdate(!continuations.isEmpty)
-        } while count != 8 && !continuations.isEmpty
+        } while counter != 8 && !continuations.isEmpty
         inTransaction = false
     }
 }
