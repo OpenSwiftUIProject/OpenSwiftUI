@@ -7,7 +7,9 @@ public import UIKit
 @preconcurrency
 open class UIHostingController<Content>: UIViewController where Content : View {
     var host: _UIHostingView<Content>
-    
+
+    var alwaysOnBridge: AlwaysOnBridge<Content>?
+
     override open dynamic var keyCommands: [UIKeyCommand]? {
         // TODO
         nil
@@ -91,7 +93,11 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     }
     
     func sizingOptionsDidChange(from oldSizingOptions: UIHostingControllerSizingOptions) {
-        // TODO
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func _viewSafeAreaDidChange() {
+        _openSwiftUIUnimplementedWarning()
     }
 }
 
