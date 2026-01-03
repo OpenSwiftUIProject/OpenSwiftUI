@@ -113,4 +113,28 @@ struct ForEachUITests {
         openSwiftUIAssertSnapshot(of: ContentView2(), named: "2")
         openSwiftUIAssertSnapshot(of: ContentView3(), named: "3")
     }
+
+    @Test(
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/701",
+            id: 701
+        )
+    )
+    func emptyDynamicContainer() {
+        struct ContentView: View {
+            @State private var items = [6]
+            var body: some View {
+                VStack(spacing: 10) {
+                    ForEach(items, id: \.self) { item in
+                        Color.blue.opacity(Double(item) / 6.0)
+                            .frame(height: 50)
+                    }
+                }
+                .onAppear {
+                    items.removeAll { $0 == 6 }
+                }
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView())
+    }
 }
