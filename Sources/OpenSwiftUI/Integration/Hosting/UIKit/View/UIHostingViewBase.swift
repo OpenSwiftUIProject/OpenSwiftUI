@@ -915,28 +915,23 @@ final package class DisplayLink: NSObject {
         if nextThread != currentThread, let oldLink = self.link {
             if nextThread == .async {
                 Self.asyncPending = true
-                if Self.asyncRunloop == nil {
-                    let threadName = "org.OpenSwiftUIProject.OpenSwiftUI.AsyncRenderer"
-                    while true {
-                        if Self.asyncThread == nil { // FIXME:
-                            let thread = Thread(
-                                target: DisplayLink.self,
-                                selector: #selector(DisplayLink.asyncThread(with:)),
-                                object: nil
-                            )
-                            thread.qualityOfService = .userInteractive
-                            thread.name = threadName
-                            guard _NSThreadStart(thread) else {
-                                cancelAsyncRendering()
-                                break
-                            }
-                            Self.asyncThread = thread
-                        }
-                        Update.wait()
-                        guard Self.asyncRunloop == nil else {
+                while Self.asyncRunloop == nil {
+                    if Self.asyncThread == nil {
+                        let thread = Thread(
+                            target: DisplayLink.self,
+                            selector: #selector(DisplayLink.asyncThread(with:)),
+                            object: nil
+                        )
+                        thread.qualityOfService = .userInteractive
+                        thread.name = "org.OpenSwiftUIProject.OpenSwiftUI.AsyncRenderer"
+                        guard _NSThreadStart(thread) else {
+                            cancelAsyncRendering()
                             break
                         }
+                        Self.asyncThread = thread
                     }
+                    Update.wait()
+                    Self.asyncPending = true
                 }
             }
             if nextThread != currentThread {
