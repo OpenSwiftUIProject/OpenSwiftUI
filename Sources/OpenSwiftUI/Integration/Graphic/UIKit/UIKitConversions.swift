@@ -122,8 +122,8 @@ extension UIColor: ColorProvider {
                     value = kitColor as! UIColor
                 } else {
                     value = UIColor { trait in
-                        // TODO: trait
-                        let resolved = Color.Resolved.clear
+                        let env = trait.resolvedEnvironment(base: trait.environment)
+                        let resolved = color.resolve(in: env)
                         return resolved.kitColor as! UIColor
                     }
                 }
