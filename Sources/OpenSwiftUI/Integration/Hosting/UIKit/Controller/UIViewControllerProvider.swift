@@ -6,15 +6,17 @@
 //  Status: Complete
 
 #if os(iOS) || os(visionOS)
+public import UIKit
+import COpenSwiftUI
 
-import UIKit
+// MARK: - UIViewControllerProvider
 
-protocol UIViewControllerProvider: AnyObject {
+package protocol UIViewControllerProvider: AnyObject {
     var uiViewController: UIViewController? { get }
 }
 
 extension UIViewControllerProvider {
-    var containingViewController: UIViewController? {
+    package var containingViewController: UIViewController? {
         if let uiViewController {
             return uiViewController
         } else if let view = self as? UIView {
@@ -24,5 +26,4 @@ extension UIViewControllerProvider {
         }
     }
 }
-
 #endif
