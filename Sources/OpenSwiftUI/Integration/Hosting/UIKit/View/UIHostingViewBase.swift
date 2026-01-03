@@ -236,8 +236,24 @@ package class UIHostingViewBase {
         _openSwiftUIUnimplementedFailure()
     }
 
+    @inline(__always)
+    func updateSize() {
+        guard let uiView else { return }
+        viewGraph.setProposedSize(uiView.bounds.size)
+    }
+
     package func updateContainerSize() {
-        _openSwiftUIUnimplementedFailure()
+        guard let uiView else { return }
+        let safeAreaInsets = uiView.safeAreaInsets
+        let insets = EdgeInsets(
+            top: safeAreaInsets.top,
+            leading: safeAreaInsets.left,
+            bottom: safeAreaInsets.bottom,
+            trailing: safeAreaInsets.right
+        )
+        let size = uiView.bounds.size.inset(by: insets)
+        viewGraph.setContainerSize(.fixed(size))
+        _openSwiftUIUnimplementedWarning()
     }
 
     package var updatesAtFullFidelity: Bool {

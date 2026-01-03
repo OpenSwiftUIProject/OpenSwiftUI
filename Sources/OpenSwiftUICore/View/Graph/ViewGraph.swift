@@ -750,7 +750,7 @@ extension Graph {
 
 // MARK: - RootTransformProvider
 
-protocol RootTransformProvider {
+package protocol RootTransformProvider {
     func rootTransform() -> ViewTransform
 }
 

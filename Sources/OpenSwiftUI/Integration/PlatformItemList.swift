@@ -6,7 +6,7 @@
 //  ID: CE84B1BFBEAEAB6361605407E54625A3 (SwiftUI)
 
 // FIXME
-struct PlatformItemList {
+package struct PlatformItemList {
     var itesms: [Item]
 
     // FIXME

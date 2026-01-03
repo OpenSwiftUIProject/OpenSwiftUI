@@ -99,6 +99,10 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     func _viewSafeAreaDidChange() {
         _openSwiftUIUnimplementedWarning()
     }
+
+    func didRender() {
+        _openSwiftUIUnimplementedWarning()
+    }
 }
 
 @available(macOS, unavailable)
