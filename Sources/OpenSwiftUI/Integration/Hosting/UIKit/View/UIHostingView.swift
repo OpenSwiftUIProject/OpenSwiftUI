@@ -48,20 +48,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
 
     // final package let eventBindingManager: EventBindingManager
-    
-    package var currentTimestamp: Time = .zero
-
-    package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
-
-    package var renderingPhase: ViewRenderingPhase {
-        get { base.renderingPhase }
-        set { base.renderingPhase = newValue }
-    }
-
-    package var externalUpdateCount: Int {
-        get { base.externalUpdateCount }
-        set { base.externalUpdateCount = newValue }
-    }
 
     var allowUIKitAnimations: Int32 = .zero
 

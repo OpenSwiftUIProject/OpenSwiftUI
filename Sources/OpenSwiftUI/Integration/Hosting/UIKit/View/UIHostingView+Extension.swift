@@ -242,6 +242,26 @@ extension _UIHostingView: ViewRendererHost {
 
     // MARK: - ViewRendererHost conformance
 
+    package var currentTimestamp: Time {
+        get { base.currentTimestamp }
+        set { base.currentTimestamp = newValue }
+    }
+
+    package var propertiesNeedingUpdate: ViewRendererHostProperties {
+        get { base.propertiesNeedingUpdate }
+        set { base.propertiesNeedingUpdate = newValue }
+    }
+
+    package var renderingPhase: ViewRenderingPhase {
+        get { base.renderingPhase }
+        set { base.renderingPhase = newValue }
+    }
+
+    package var externalUpdateCount: Int {
+        get { base.externalUpdateCount }
+        set { base.externalUpdateCount = newValue }
+    }
+
     package func updateRootView() {
         let rootView = makeRootView()
         viewGraph.setRootView(rootView)
