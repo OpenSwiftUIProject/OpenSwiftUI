@@ -226,6 +226,7 @@ struct DynamicLayoutViewAdaptor: DynamicContainerAdaptor {
         var containerID = DynamicContainerID(uniqueId: uniqueId, viewIndex: 0)
         let outputs = item.elements.makeAllElements(inputs: inputs) { elementInputs, body in
             var elementInputs = elementInputs
+            containerInputs(&elementInputs)
             if elementInputs.needsGeometry {
                 let childGeometry = Attribute(
                     DynamicLayoutViewChildGeometry(
