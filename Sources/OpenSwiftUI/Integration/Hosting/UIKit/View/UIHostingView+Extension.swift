@@ -10,6 +10,7 @@ public import UIKit
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
+import COpenSwiftUI
 
 // MARK: - _UIHostingView + UIViewControllerProvider
 
@@ -196,7 +197,21 @@ extension _UIHostingView: ViewRendererHost {
     @available(OpenSwiftUI_v6_0, *)
     public func beginTransaction() {
         onMainThread { [weak self] in
-            // TODO: UIKitUpdateCycle
+            guard UIKitUpdateCycle.defaultUseSetNeedsLayout else {
+                let updateAction = {
+                    Update.ensure {
+                        _ = self?.updateGraph {
+                            $0.flushTransactions()
+                        }
+                    }
+                }
+                if _UIUpdateCycleEnabled() {
+                    UIKitUpdateCycle.addPreCommitObserver(updateAction)
+                }
+                RunLoop.addObserver(updateAction)
+                return
+            }
+            self?.base.requestImmediateUpdate()
         }
     }
 
