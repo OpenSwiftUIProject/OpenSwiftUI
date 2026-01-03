@@ -529,6 +529,8 @@ extension GraphHost {
     }
 }
 
+// MARK: GraphHost + preference [6.5.4]
+
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
     package final func addPreference<K>(_ key: K.Type) where K: HostPreferenceKey {
@@ -561,7 +563,7 @@ extension GraphHost {
     package final func updatePreferences() -> Bool {
         let seed = hostPreferenceValues.value?.seed ?? .empty
         let lastSeed = lastHostPreferencesSeed
-        let didUpdate = !seed.isInvalid || lastSeed.isInvalid || (seed.value != lastSeed.value)
+        let didUpdate = !seed.isInvalid && !lastSeed.isInvalid && (seed.value != lastSeed.value)
         lastHostPreferencesSeed = seed
         return didUpdate
     }

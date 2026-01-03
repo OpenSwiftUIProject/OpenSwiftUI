@@ -458,7 +458,7 @@ package class UIHostingViewBase {
             if let renderedTime {
                 if renderedTime.seconds.isFinite {
                     let delay = max(renderedTime - currentTimestamp, 1e-6)
-                    requestUpdate(after: delay)
+                    host.requestUpdate(after: delay)
                 }
                 if viewGraph.updateRequiredMainThread {
                     displayLink?.cancelAsyncRendering()
