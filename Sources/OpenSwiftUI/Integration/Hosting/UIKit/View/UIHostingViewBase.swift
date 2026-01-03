@@ -480,6 +480,12 @@ package class UIHostingViewBase {
         host.invalidateProperties(.transform, mayDeferUpdate: false)
     }
 
+    @inline(__always)
+    func tintColorDidChange() {
+        guard let host else { return }
+        host.invalidateProperties(.environment)
+    }
+
     package func frameDidChange(oldValue: CGRect) {
         guard let uiView, let host, uiView.bounds.size != oldValue.size else {
             return

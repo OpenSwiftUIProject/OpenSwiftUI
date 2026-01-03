@@ -91,7 +91,11 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     }
     
     func sizingOptionsDidChange(from oldSizingOptions: UIHostingControllerSizingOptions) {
-        // TODO
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func _viewSafeAreaDidChange() {
+        _openSwiftUIUnimplementedWarning()
     }
 }
 

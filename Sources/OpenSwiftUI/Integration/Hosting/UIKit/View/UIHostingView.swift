@@ -267,6 +267,22 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
 
+    open override func tintColorDidChange() {
+        base.tintColorDidChange()
+    }
+
+    open override func safeAreaInsetsDidChange() {
+        _safeAreaInsetsDidChange()
+    }
+
+    func _safeAreaInsetsDidChange() {
+        guard safeAreaRegions != [] || !isLinkedOnOrAfter(.v7) else {
+            return
+        }
+        viewController?._viewSafeAreaDidChange()
+        invalidateProperties([.safeArea, .containerSize], mayDeferUpdate: false)
+    }
+
     // TODO
     
     func setRootView(_ view: Content, transaction: Transaction) {
