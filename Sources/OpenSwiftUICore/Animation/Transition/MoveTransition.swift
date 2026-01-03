@@ -53,11 +53,11 @@ public struct MoveTransition: Transition {
     }
 
     public func _makeContentTransition(transition: inout _Transition_ContentTransition) {
-        guard case let .effects(style, size) = transition.operation else {
+        guard case let .effects(_, size) = transition.operation else {
             transition.result = .bool(true)
             return
         }
-        let effectiveSize  = edge.translationOffset(for: size)
+        let effectiveSize = edge.translationOffset(for: size)
         let effect = ContentTransition.Effect(.translation(effectiveSize))
         transition.result = .effects([effect])
     }
