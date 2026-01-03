@@ -611,10 +611,10 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             let zIndex = infoItem.zIndex
             hasDepth = hasDepth || (zIndex != 0)
             if zIndex != info.items[target].zIndex {
-                info.items[target].zIndex = zIndex
+                info.items[index].zIndex = zIndex // Weird. No-op actually.
                 changed = true
             }
-            if phase != info.items[target].phase {
+            if phase != info.items[index].phase {
                 changed = true
             }
         }
