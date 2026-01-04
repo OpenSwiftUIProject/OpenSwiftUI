@@ -32,7 +32,7 @@ typedef union PathData {
     #else
     ORBPath rbPath;
     #endif
-    uint8_t buffer[0x70];
+    uint8_t buffer[0x60];
 } PathData;
 
 OPENSWIFTUI_ASSUME_NONNULL_END
