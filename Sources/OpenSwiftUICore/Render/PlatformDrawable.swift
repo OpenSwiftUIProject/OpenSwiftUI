@@ -8,7 +8,7 @@
 import OpenAttributeGraphShims
 import OpenRenderBoxShims
 public import OpenCoreGraphicsShims
-#if canImport(QuarzCore)
+#if canImport(QuartzCore)
 public import QuartzCore
 import CoreAnimation_Private
 #endif
@@ -24,7 +24,7 @@ public protocol PlatformDrawable: AnyObject {
 
     func update(content: PlatformDrawableContent?, required: Bool) -> Bool
 
-    #if canImport(QuarzCore)
+    #if canImport(QuartzCore)
     func makeAsyncUpdate(
         content: PlatformDrawableContent,
         required: Bool,
@@ -35,7 +35,7 @@ public protocol PlatformDrawable: AnyObject {
 
     func setContentsScale(_ scale: CGFloat)
 
-    func drawForTesting(in: RBDisplayList) -> ()
+    func drawForTesting(in: ORBDisplayList) -> ()
 }
 
 // MARK: - PlatformDrawableContent [WIP]
@@ -95,7 +95,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
     #endif
 
     public func draw(
-        in list: RBDisplayList,
+        in list: ORBDisplayList,
         size: CGSize,
         state: inout PlatformDrawableContent.State
     ) {
@@ -130,7 +130,7 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
         base.rendersFirstFrameAsynchronously
     }
 
-    #if canImport(QuarzCore)
+    #if canImport(QuartzCore)
     public var caLayerContentsFormat: CALayerContentsFormat {
         var format = CALayerContentsFormat.automatic
         if base.flags.contains(.rgbaContext) {

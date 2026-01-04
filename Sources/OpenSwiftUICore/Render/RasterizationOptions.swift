@@ -5,6 +5,8 @@
 //  Audited for 6.5.4
 //  Status: WIP
 
+package import OpenRenderBoxShims
+
 // MARK: - ColorRenderingMode
 
 /// The set of possible working color spaces for color-compositing operations.
@@ -134,11 +136,11 @@ package struct RasterizationOptions: Equatable {
         set { flags.setValue(newValue, for: .allowsPackedDrawable) }
     }
 
-     package var resolvedColorMode: RBColorMode {
+    package var resolvedColorMode: ORBColor.Mode {
          _openSwiftUIUnimplementedFailure()
      }
 
-     package var colorSpace: RBColorSpace {
+    package var colorSpace: ORBColor.Space {
          _openSwiftUIUnimplementedFailure()
      }
 
