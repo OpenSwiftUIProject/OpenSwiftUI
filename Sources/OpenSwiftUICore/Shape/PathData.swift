@@ -10,20 +10,18 @@ package import OpenRenderBoxShims
 // MARK: - PathData
 
 /// A union-like structure matching the C PathData union layout.
-/// Size: 0x70 (112) bytes to match the buffer size.
+/// Size: 0x60 (96) bytes to match the buffer size.
 ///
 /// C definition:
 ///
 ///     typedef union PathData {
 ///         CGPathRef cgPath;    // 8 bytes (pointer)
 ///         ORBPath rbPath;      // 16 bytes (2 pointers)
-///         uint8_t buffer[0x70]; // 112 bytes
+///         uint8_t buffer[0x60]; // 96 bytes
 ///     } PathData;
 package struct PathData {
-    // 112 bytes of raw storage (0x70)
+    // 96 bytes of raw storage (0x60)
     package typealias Buffer = (
-        UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
-        UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
         UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
         UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
         UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8, UInt8,
@@ -51,8 +49,6 @@ package struct PathData {
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
         0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0,
-        0, 0, 0, 0, 0, 0, 0, 0
     )
 
     package init() {}
