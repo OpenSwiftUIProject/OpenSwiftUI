@@ -6,7 +6,7 @@
 //  Status: WIP
 
 import OpenAttributeGraphShims
-import OpenRenderBoxShims
+@_spiOnly public import OpenRenderBoxShims
 public import OpenCoreGraphicsShims
 #if canImport(QuartzCore)
 public import QuartzCore
