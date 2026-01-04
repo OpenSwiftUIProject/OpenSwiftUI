@@ -124,8 +124,8 @@ extension ViewSize {
     /// - Parameter insets: The edge insets to apply.
     /// - Returns: A new view size that has been inset by the specified amounts.
     package func inset(by insets: EdgeInsets) -> ViewSize {
-        let newWidth = max(value.width - (insets.leading + insets.trailing), 0)
-        let newHeight = max(value.height - (insets.top + insets.bottom), 0)
+        let newWidth = max(0, value.width - insets.horizontal)
+        let newHeight = max(0, value.height - insets.vertical)
         return ViewSize(
             value: CGSize(width: newWidth, height: newHeight),
             proposal: CGSize(
