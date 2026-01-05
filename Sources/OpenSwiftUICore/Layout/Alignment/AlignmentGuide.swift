@@ -1255,7 +1255,7 @@ public struct AlignmentKey: Hashable, Comparable {
                 return index
             }
         }
-        bits = (axis == .horizontal ? 0 : 1) + (index + 1) * 2
+        bits = ((index << 1) | (axis == .horizontal ? 0 : 1)) &+ 2
     }
 
     package init() { bits = .zero }
