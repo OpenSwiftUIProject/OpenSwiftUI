@@ -130,7 +130,7 @@ struct StackLayout {
                 if let uniformSpacing = header.uniformSpacing {
                     distanceToPrevious = uniformSpacing
                 } else {
-                    let previousSpacing = proxies[index-1].spacing
+                    let previousSpacing = proxies[index&-1].spacing
                     let spacing = subview.spacing
                     distanceToPrevious = previousSpacing.distance(to: spacing, along: header.majorAxis)
                 }
