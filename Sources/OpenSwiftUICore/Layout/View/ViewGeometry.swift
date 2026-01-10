@@ -98,7 +98,7 @@ extension ViewGeometry {
     package static let invalidValue = ViewGeometry(origin: .invalidValue, dimensions: .invalidValue)
 
     /// Indicates whether this view geometry is in an invalid state.
-    package var isInvalid: Bool { origin.x.isNaN }
+    package var isInvalid: Bool { !origin.x.isFinite }
 
     /// A view geometry with zero origin and zero dimensions.
     ///
