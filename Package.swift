@@ -226,6 +226,7 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v5),
 
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
+    .unsafeFlags(["-Xfrontend", "-experimental-spi-only-imports"]),
 ]
 
 // Modified from: https://github.com/swiftlang/swift/blob/main/SwiftCompilerSources/Package.swift

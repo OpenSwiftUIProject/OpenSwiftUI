@@ -1,17 +1,17 @@
 //
-//  UIViewPlatformViewDefinition.swift
+//  UIKitDisplayList.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: WIP
-//  ID: A34643117F00277B93DEBAB70EC06971 (SwiftUI?)
+//  ID: A34643117F00277B93DEBAB70EC06971 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
 import COpenSwiftUI
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
-import CoreAnimation_Private
+import QuartzCore_Private
 import OpenSwiftUI_SPI
 
 // MARK: - UIViewPlatformViewDefinition [TODO] [6.0.87]
@@ -81,6 +81,8 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
 
 // MARK: - _UIGraphicsView
 
+typealias PlatformGraphicsView = _UIGraphicsView
+
 class _UIGraphicsView: UIView {
     override init(frame: CGRect) {
         super.init(frame: frame)
@@ -100,6 +102,8 @@ class _UIGraphicsView: UIView {
 }
 
 // MARK: - _UIInheritedView
+
+typealias PlatformInheritedView = _UIInheritedView
 
 final class _UIInheritedView: _UIGraphicsView {
     override init(frame: CGRect) {

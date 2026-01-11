@@ -12,7 +12,7 @@ import CoreGraphics
 import Foundation
 #endif
 import OpenSwiftUI_SPI
-import CoreAnimation_Private
+import QuartzCore_Private
 
 // MARK: - ColorMatrix
 

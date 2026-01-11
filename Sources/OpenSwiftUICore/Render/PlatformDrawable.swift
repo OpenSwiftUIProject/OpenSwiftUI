@@ -3,14 +3,14 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by PlatformDrawableContent
 
 import OpenAttributeGraphShims
-import OpenRenderBoxShims
+@_spiOnly public import OpenRenderBoxShims
 public import OpenCoreGraphicsShims
-#if canImport(QuarzCore)
-public import QuartzCore
-import CoreAnimation_Private
+public import OpenQuartzCoreShims
+#if canImport(QuartzCore)
+import QuartzCore_Private
 #endif
 
 // MARK: - PlatformDrawable
@@ -24,18 +24,16 @@ public protocol PlatformDrawable: AnyObject {
 
     func update(content: PlatformDrawableContent?, required: Bool) -> Bool
 
-    #if canImport(QuarzCore)
     func makeAsyncUpdate(
         content: PlatformDrawableContent,
         required: Bool,
         layer: CALayer,
         bounds: CGRect
     ) -> (() -> Void)?
-    #endif
 
     func setContentsScale(_ scale: CGFloat)
 
-    func drawForTesting(in: RBDisplayList) -> ()
+    func drawForTesting(in: ORBDisplayList) -> ()
 }
 
 // MARK: - PlatformDrawableContent [WIP]
@@ -47,26 +45,26 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         case graphicsCallback((inout GraphicsContext, CGSize) -> ())
         case platformCallback((CGSize) -> ())
         case displayList(DisplayList, CGPoint, Time)
-        case rbDisplayList(RBDisplayListContents, CGPoint)
+        case rbDisplayList(any RBDisplayListContents, CGPoint)
         case rbInterpolator(RBDisplayListInterpolator, Float, CGPoint)
         case empty
     }
 
-    private var storage: Storage = .empty
+    var storage: Storage = .empty
+
+    // MARK: - PlatformDrawableContent.State
 
     public struct State {
-        package var mode: DisplayList.GraphicsRenderer.PlatformViewMode
+        package var mode: DisplayList.GraphicsRenderer.PlatformViewMode = .unsupported
 
         package var _renderer: DisplayList.GraphicsRenderer?
 
         package init() {
-            mode = .unsupported
-            _renderer = nil
+            _openSwiftUIEmptyStub()
         }
 
         package init(platformViewMode: DisplayList.GraphicsRenderer.PlatformViewMode) {
             mode = platformViewMode
-            _renderer = nil
         }
 
         package mutating func renderer() -> DisplayList.GraphicsRenderer {
@@ -95,7 +93,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
     #endif
 
     public func draw(
-        in list: RBDisplayList,
+        in list: ORBDisplayList,
         size: CGSize,
         state: inout PlatformDrawableContent.State
     ) {
@@ -107,7 +105,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
 @available(*, unavailable)
 extension PlatformDrawableContent.State: Sendable {}
 
-// MARK: - PlatformDrawableOptions [Blocked by RBLayer]
+// MARK: - PlatformDrawableOptions
 
 @_spi(DisplayList_ViewSystem)
 @available(OpenSwiftUI_v6_0, *)
@@ -130,7 +128,7 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
         base.rendersFirstFrameAsynchronously
     }
 
-    #if canImport(QuarzCore)
+    #if canImport(QuartzCore)
     public var caLayerContentsFormat: CALayerContentsFormat {
         var format = CALayerContentsFormat.automatic
         if base.flags.contains(.rgbaContext) {
@@ -144,7 +142,15 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
     #endif
 
     public func update(rbLayer: AnyObject) {
-        // TODO: RBLayer
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        let layer = rbLayer as! ORBLayer
+        layer.colorMode = base.resolvedColorMode
+        layer.rendersAsynchronously = rendersAsynchronously
+        layer.maxDrawableCount = Int(base.maxDrawableCount)
+        layer.allowsDisplayCompositing = base.prefersDisplayCompositing
+        layer.allowsPackedDrawable = base.allowsPackedDrawable
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 }

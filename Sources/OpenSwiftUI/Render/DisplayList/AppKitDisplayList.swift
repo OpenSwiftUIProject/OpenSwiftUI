@@ -1,17 +1,18 @@
 //
-//  NSViewPlatformViewDefinition.swift
+//  AppKitDisplayList.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.0.87
 //  Status: WIP
-//  ID: 33EEAA67E0460DA84AE814EA027152BA (SwiftUI?)
+//  ID: 33EEAA67E0460DA84AE814EA027152BA (SwiftUI)
 
 #if os(macOS)
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import AppKit
 import OpenSwiftUISymbolDualTestsSupport
 import COpenSwiftUI
-import CoreAnimation_Private
+import QuartzCore_Private
+import OpenSwiftUI_SPI
 
 // MARK: - NSViewPlatformViewDefinition [TODO]
 
@@ -81,6 +82,40 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
 
     override class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) {
         _openSwiftUIUnimplementedWarning()
+    }
+}
+
+// MARK: - _NSGraphicsView
+
+typealias PlatformGraphicsView = _NSGraphicsView
+
+class _NSGraphicsView: NSView {
+    var recursiveIgnoreHitTest: Bool = false
+
+    var customAcceptsFirstMouse: Bool?
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+}
+
+// MARK: - _NSInheritedView
+
+typealias PlatformInheritedView = _NSInheritedView
+
+class _NSInheritedView: _NSGraphicsView {
+    var hitTestsAsOpaque: Bool = false
+
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
     }
 }
 
