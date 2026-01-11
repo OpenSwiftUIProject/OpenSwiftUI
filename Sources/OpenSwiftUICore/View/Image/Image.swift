@@ -113,7 +113,7 @@ package struct ImageResolutionContext {
 
 //    package var symbolRenderingMode: SymbolRenderingMode?
 
-//    package var allowedDynamicRange: Image.DynamicRange?
+    package var allowedDynamicRange: Image.DynamicRange?
 
     package var options: ImageResolutionContext.Options
 
