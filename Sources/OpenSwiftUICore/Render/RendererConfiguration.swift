@@ -70,7 +70,9 @@ public struct _RendererConfiguration {
         /// the view, will currently be clamped to the range [2, 3].
         public var maxDrawableCount: Int = 3
 
-        public init() {}
+        public init() {
+            _openSwiftUIEmptyStub()
+        }
     }
 }
 

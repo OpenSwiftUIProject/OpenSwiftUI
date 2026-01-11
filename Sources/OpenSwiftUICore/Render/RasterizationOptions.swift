@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 package import OpenRenderBoxShims
 
@@ -53,7 +53,7 @@ extension ColorRenderingMode: ProtobufEnum {
     }
 }
 
-// MARK: - RasterizationOptions [WIP]
+// MARK: - RasterizationOptions
 
 package struct RasterizationOptions: Equatable {
     package struct Flags: OptionSet {
@@ -137,11 +137,23 @@ package struct RasterizationOptions: Equatable {
     }
 
     package var resolvedColorMode: ORBColor.Mode {
-         _openSwiftUIUnimplementedFailure()
-     }
+        if let mode = rbColorMode {
+            return ORBColor.Mode(rawValue: mode)
+        } else {
+            let alphaOnly = alphaOnly
+            switch colorMode {
+            case .nonLinear:
+                return alphaOnly ? ORBColor.Mode(rawValue: 9) : ORBColor.Mode(rawValue: 0)
+            case .linear:
+                return alphaOnly ? ORBColor.Mode(rawValue: 10) : ORBColor.Mode(rawValue: 1)
+            case .extendedLinear:
+                return alphaOnly ? ORBColor.Mode(rawValue: 10) : ORBColor.Mode(rawValue: 2)
+            }
+        }
+    }
 
-    package var colorSpace: ORBColor.Space {
-         _openSwiftUIUnimplementedFailure()
+    package var colorSpace: ORBColor.ColorSpace {
+        resolvedColorMode.workingColorSpace
      }
 
     package var alphaOnly: Bool {
@@ -179,5 +191,3 @@ extension RasterizationOptions: ProtobufMessage {
         self = options
     }
 }
-
-// TODO: DrawingGroupEffect
