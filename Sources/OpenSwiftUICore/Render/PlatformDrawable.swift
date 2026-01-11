@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by PlatformDrawableContent
 
 import OpenAttributeGraphShims
 @_spiOnly public import OpenRenderBoxShims
@@ -50,21 +50,21 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         case empty
     }
 
-    private var storage: Storage = .empty
+    var storage: Storage = .empty
+
+    // MARK: - PlatformDrawableContent.State
 
     public struct State {
-        package var mode: DisplayList.GraphicsRenderer.PlatformViewMode
+        package var mode: DisplayList.GraphicsRenderer.PlatformViewMode = .unsupported
 
         package var _renderer: DisplayList.GraphicsRenderer?
 
         package init() {
-            mode = .unsupported
-            _renderer = nil
+            _openSwiftUIEmptyStub()
         }
 
         package init(platformViewMode: DisplayList.GraphicsRenderer.PlatformViewMode) {
             mode = platformViewMode
-            _renderer = nil
         }
 
         package mutating func renderer() -> DisplayList.GraphicsRenderer {
@@ -105,7 +105,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
 @available(*, unavailable)
 extension PlatformDrawableContent.State: Sendable {}
 
-// MARK: - PlatformDrawableOptions [Blocked by RBLayer]
+// MARK: - PlatformDrawableOptions
 
 @_spi(DisplayList_ViewSystem)
 @available(OpenSwiftUI_v6_0, *)
