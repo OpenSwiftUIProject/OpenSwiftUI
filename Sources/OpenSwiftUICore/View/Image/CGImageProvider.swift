@@ -85,6 +85,10 @@ private struct CGImageProvider: ImageProvider {
 
 extension CGImage {
     package var size: CGSize {
+        #if canImport(CoreGraphics)
         CGSize(width: CGFloat(width), height: CGFloat(height))
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
