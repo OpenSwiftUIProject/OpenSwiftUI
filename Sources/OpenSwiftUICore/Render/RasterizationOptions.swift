@@ -136,6 +136,7 @@ package struct RasterizationOptions: Equatable {
         set { flags.setValue(newValue, for: .allowsPackedDrawable) }
     }
 
+    #if !OPENSWIFTUI_ANY_ATTRIBUTE_FIX
     package var resolvedColorMode: ORBColor.Mode {
         if let mode = rbColorMode {
             return ORBColor.Mode(rawValue: mode)
@@ -151,9 +152,14 @@ package struct RasterizationOptions: Equatable {
             }
         }
     }
+    #endif
 
     package var colorSpace: ORBColor.ColorSpace {
+        #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
+        .default
+        #else
         resolvedColorMode.workingColorSpace
+        #endif
      }
 
     package var alphaOnly: Bool {
