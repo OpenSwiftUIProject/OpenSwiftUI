@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Blocked by RBDrawingView
 //  ID: 65A81BD07F0108B0485D2E15DE104A75 (SwiftUI)
 
 #if canImport(Darwin)
@@ -22,44 +22,98 @@ import AppKit
 // MARK: - CGDrawingView
 
 final class CGDrawingView: PlatformGraphicsView, PlatformDrawable {
-    var options: PlatformDrawableOptions
-    
+    var options: PlatformDrawableOptions {
+        didSet {
+            guard oldValue != options else {
+                return
+            }
+            updateOptions()
+        }
+    }
+
+    private func updateOptions() {
+        #if os(iOS) || os(visionOS)
+        isOpaque = options.isOpaque
+        layer.contentsFormat = options.caLayerContentsFormat
+        #elseif os(macOS)
+        layer!.isOpaque = options.isOpaque
+        layer!.contentsFormat = options.caLayerContentsFormat
+        #endif
+    }
+
     init(options: PlatformDrawableOptions) {
         self.options = options
         super.init(frame: .zero)
-        isOpaque = options.isOpaque
-        layer.contentsFormat = options.caLayerContentsFormat
+        #if os(macOS)
+        wantsLayer = true
+        layer = CGDrawingLayer()
+        #endif
+        updateOptions()
     }
 
     required init?(coder: NSCoder) {
         _openSwiftUIUnreachableCode()
     }
-    
+
+    #if os(iOS) || os(visionOS)
     override class var layerClass: AnyClass {
         CGDrawingLayer.self
     }
-    
+    #endif
+
+    #if os(macOS)
+    override func draw(_ dirtyRect: NSRect) {
+        guard let context = NSGraphicsContext.current,
+              !context.isDrawingToScreen
+        else { return }
+        let layer = layer as! CGDrawingLayer
+        layer.content
+            .draw(
+                in: context.cgContext,
+                size: bounds.size,
+                contentsScale: layer.contentsScale,
+                state: &layer.state
+            )
+    }
+    #endif
+
     static var allowsContentsMultiplyColor: Bool {
         true
     }
     
-    func update(content: PlatformDrawableContent?, required: Bool) -> Bool {
+    func update(
+        content: PlatformDrawableContent?,
+        required: Bool
+    ) -> Bool {
         let layer = layer as! CGDrawingLayer
         if let content {
             layer.content = content
         }
-        layer.setNeedsDisplay()
+        #if os(iOS) || os(visionOS)
+        setNeedsDisplay()
+        #elseif os(macOS)
+        needsDisplay = true
+        #endif
         return true
     }
 
-    func makeAsyncUpdate(content: PlatformDrawableContent, required: Bool, layer: CALayer, bounds: CGRect) -> (() -> Void)? {
-        return nil
+    func makeAsyncUpdate(
+        content: PlatformDrawableContent,
+        required: Bool,
+        layer: CALayer,
+        bounds: CGRect
+    ) -> (() -> Void)? {
+        nil
     }
 
     func setContentsScale(_ scale: CGFloat) {
+        #if os(iOS) || os(visionOS)
         layer.contentsScale = scale
+        #elseif os(macOS)
+        layer!.contentsScale = scale
+        #endif
     }
-    
+
     func drawForTesting(in displayList: ORBDisplayList) {
         var state = PlatformDrawableContent.State()
         let layer = layer as! CGDrawingLayer
@@ -95,6 +149,16 @@ final class RBDrawingView: RenderBoxView, PlatformDrawable {
         }
     }
 
+    private func updateOptions() {
+        isOpaque = options.isOpaque
+        #if os(iOS) || os(visionOS)
+        options.update(rbLayer: layer)
+        #elseif os(macOS)
+        options.update(rbLayer: layer!)
+        #endif
+        rendersFirstFrameAsynchronously = options.rendersFirstFrameAsynchronously
+    }
+
     private struct State {
         var content: PlatformDrawableContent = .init()
         var renderer: PlatformDrawableContent.State = .init()
@@ -110,37 +174,65 @@ final class RBDrawingView: RenderBoxView, PlatformDrawable {
     }
     
     required init?(coder: NSCoder) {
-        fatalError()
-    }
-    
-    private func updateOptions() {
-        isOpaque = options.isOpaque
-        options.update(rbLayer: layer)
-        rendersFirstFrameAsynchronously = options.rendersFirstFrameAsynchronously
+        _openSwiftUIUnreachableCode()
     }
     
     static var allowsContentsMultiplyColor: Bool {
-        _openSwiftUIUnimplementedFailure()
+        false
     }
 
-    func update(content: PlatformDrawableContent?, required: Bool) -> Bool {
-        _openSwiftUIUnimplementedFailure()
-
+    func update(
+        content: PlatformDrawableContent?,
+        required: Bool
+    ) -> Bool {
+        guard required || !options.rendersAsynchronously || (layer as! ORBLayer).isDrawableAvailable else {
+            return false
+        }
+        if let content {
+            state.content = content
+        }
+        #if os(iOS) || os(visionOS)
+        layer.setNeedsDisplay()
+        #elseif os(macOS)
+        needsDisplay = true
+        #endif
+        return true
     }
 
-    func makeAsyncUpdate(content: PlatformDrawableContent, required: Bool, layer: CALayer, bounds: CGRect) -> (() -> Void)? {
-        _openSwiftUIUnimplementedFailure()
-
+    func makeAsyncUpdate(
+        content: PlatformDrawableContent,
+        required: Bool,
+        layer: CALayer,
+        bounds: CGRect
+    ) -> (() -> Void)? {
+        let layer = layer as! ORBLayer
+        guard required || !options.rendersAsynchronously || !layer.isDrawableAvailable else {
+            return nil
+        }
+        return {
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     func setContentsScale(_ scale: CGFloat) {
-        _openSwiftUIUnimplementedFailure()
-
+        #if os(iOS) || os(visionOS)
+        layer.contentsScale = scale
+        #elseif os(macOS)
+        layer!.contentsScale = scale
+        #endif
     }
 
-    func drawForTesting(in: ORBDisplayList) {
-        _openSwiftUIUnimplementedFailure()
+    func drawForTesting(in displayList: ORBDisplayList) {
+        var s = PlatformDrawableContent.State()
+        state.content.draw(in: displayList, size: bounds.size, state: &s)
+    }
 
+    override func draw(inDisplayList displayList: ORBDisplayList) {
+        draw(in: displayList, size: bounds.size)
+    }
+
+    private func draw(in displayList: ORBDisplayList, size: CGSize) {
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
