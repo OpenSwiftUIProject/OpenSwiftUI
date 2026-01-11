@@ -11,7 +11,7 @@ import COpenSwiftUI
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
-import CoreAnimation_Private
+import QuartzCore_Private
 import OpenSwiftUI_SPI
 
 // MARK: - UIViewPlatformViewDefinition [TODO] [6.0.87]

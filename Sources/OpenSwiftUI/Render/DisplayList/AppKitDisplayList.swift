@@ -11,7 +11,7 @@
 import AppKit
 import OpenSwiftUISymbolDualTestsSupport
 import COpenSwiftUI
-import CoreAnimation_Private
+import QuartzCore_Private
 import OpenSwiftUI_SPI
 
 // MARK: - NSViewPlatformViewDefinition [TODO]

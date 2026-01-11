@@ -8,8 +8,8 @@ module OpenSwiftUI_SPI {
     }
 }
 
-module CoreAnimation_Private {
-    umbrella "Shims/CoreAnimation"
+module QuartzCore_Private {
+    umbrella "Shims/QuartzCore"
     export *
 }
 

@@ -8,9 +8,9 @@
 import OpenAttributeGraphShims
 @_spiOnly public import OpenRenderBoxShims
 public import OpenCoreGraphicsShims
+public import OpenQuartzCoreShims
 #if canImport(QuartzCore)
-public import QuartzCore
-import CoreAnimation_Private
+import QuartzCore_Private
 #endif
 
 // MARK: - PlatformDrawable
@@ -24,14 +24,12 @@ public protocol PlatformDrawable: AnyObject {
 
     func update(content: PlatformDrawableContent?, required: Bool) -> Bool
 
-    #if canImport(QuartzCore)
     func makeAsyncUpdate(
         content: PlatformDrawableContent,
         required: Bool,
         layer: CALayer,
         bounds: CGRect
     ) -> (() -> Void)?
-    #endif
 
     func setContentsScale(_ scale: CGFloat)
 
@@ -47,7 +45,7 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         case graphicsCallback((inout GraphicsContext, CGSize) -> ())
         case platformCallback((CGSize) -> ())
         case displayList(DisplayList, CGPoint, Time)
-        case rbDisplayList(RBDisplayListContents, CGPoint)
+        case rbDisplayList(any RBDisplayListContents, CGPoint)
         case rbInterpolator(RBDisplayListInterpolator, Float, CGPoint)
         case empty
     }
@@ -144,7 +142,15 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
     #endif
 
     public func update(rbLayer: AnyObject) {
-        // TODO: RBLayer
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        let layer = rbLayer as! ORBLayer
+        layer.colorMode = base.resolvedColorMode
+        layer.rendersAsynchronously = rendersAsynchronously
+        layer.maxDrawableCount = Int(base.maxDrawableCount)
+        layer.allowsDisplayCompositing = base.prefersDisplayCompositing
+        layer.allowsPackedDrawable = base.allowsPackedDrawable
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 }

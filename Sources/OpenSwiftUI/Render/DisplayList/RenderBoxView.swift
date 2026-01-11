@@ -9,7 +9,7 @@
 #if canImport(Darwin)
 import Foundation
 import QuartzCore
-import CoreAnimation_Private
+import QuartzCore_Private
 import OpenRenderBoxShims
 
 // MARK: - RenderBoxView

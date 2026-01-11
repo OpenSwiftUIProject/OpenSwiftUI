@@ -13,13 +13,6 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface CALayer (OpenSwiftUI_SPI)
-@property (nonatomic, assign, readonly) BOOL hasBeenCommitted_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted);
-@property (nonatomic, assign) BOOL allowsGroupBlending_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsGroupBlending);
-
-@property (nonatomic, assign) uint64_t openSwiftUI_viewTestProperties;
-@end
-
 struct CAColorMatrix {
     float m11, m12, m13, m14, m15;
     float m21, m22, m23, m24, m25;
@@ -45,9 +38,6 @@ typedef struct CAColorMatrix CAColorMatrix;
 
 - (void)setHighFrameRateReasons_openswiftui_safe_wrapper:(const uint32_t *)reasons count:(NSInteger)count OPENSWIFTUI_SWIFT_NAME(setHighFrameRateReasons(_:count:));
 @end
-
-CA_EXTERN CALayerContentsFormat const kCAContentsFormatAutomatic OPENSWIFTUI_SWIFT_NAME(automatic);
-CA_EXTERN CALayerContentsFormat const kCAContentsFormatA8 OPENSWIFTUI_SWIFT_NAME(A8);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
