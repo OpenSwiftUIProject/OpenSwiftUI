@@ -7,6 +7,7 @@
 //  ID: 0CB954C9DC99A8A907C58D7882F9389E (SwiftUI)
 
 #if canImport(Darwin)
+import COpenSwiftUI
 import Foundation
 import QuartzCore
 import QuartzCore_Private
@@ -18,30 +19,44 @@ import OpenRenderBoxShims
 class RenderBoxView: PlatformGraphicsView {
     var rendersFirstFrameAsynchronously: Bool
 
+    #if os(iOS) || os(visionOS)
     override class var layerClass: AnyClass {
         RenderBoxLayer.self
+    }
+    #endif
+
+    private func rbInit() {
+        #if os(iOS) || os(visionOS)
+        let layer = layer
+        layer.delegate = self
+        layer.isOpaque = isOpaque
+        #elseif os(macOS)
+        wantsLayer = true
+        layer = RenderBoxLayer()
+        layerContentsRedrawPolicy = .duringViewResize
+        let layer = layer!
+        layer.delegate = self
+        layer.isOpaque = isOpaque
+        #endif
     }
 
     override init(frame: CGRect) {
         rendersFirstFrameAsynchronously = false
         super.init(frame: frame)
-        let layer = layer
-        layer.delegate = self
-        layer.isOpaque = isOpaque
+        rbInit()
     }
     
     required init?(coder: NSCoder) {
         rendersFirstFrameAsynchronously = false
         super.init(coder: coder)
-        let layer = layer
-        layer.delegate = self
-        layer.isOpaque = isOpaque
+        rbInit()
     }
 
     deinit {
         (layer as! RenderBoxLayer).waitUntilAsyncRenderingCompleted()
     }
 
+    #if os(iOS) || os(visionOS)
     override var isOpaque: Bool {
         get { super.isOpaque }
         set {
@@ -59,16 +74,38 @@ class RenderBoxView: PlatformGraphicsView {
     override func setNeedsDisplay() {
         layer.setNeedsDisplay()
     }
+    #elseif os(macOS)
+    override func viewDidMoveToWindow() {
+        guard let window else { return }
+        layer?.contentsScale = window.backingScaleFactor
+        needsDisplay = true
+    }
+    #endif
+
+    func draw(inDisplayList displayList: ORBDisplayList) {
+        _openSwiftUIEmptyStub()
+    }
 }
 
-extension RenderBoxView: RBLayerDelegate {
-    func rbLayer(_ layer: RBLayer, draw inDisplayList: RBDisplayList) {
+extension RenderBoxView: ORBLayerDelegate {
+    func rbLayer(_ layer: ORBLayer, draw inDisplayList: ORBDisplayList) {
+        draw(inDisplayList: inDisplayList)
     }
+
+    #if os(macOS)
+    func rbLayerDefaultDevice(_ layer: ORBLayer) -> ORBDevice? {
+        let id = _NSWindowGetCGDisplayID(window)
+        guard id != 0 else {
+            return nil
+        }
+        return ORBDevice.sharedDevice(forDisplay: id)
+    }
+    #endif
 }
 
 // MARK: - RenderBoxLayer
 
-private class RenderBoxLayer: RBLayer {
+private class RenderBoxLayer: ORBLayer {
     override var needsSynchronousUpdate: Bool {
         get {
             guard super.needsSynchronousUpdate else {
