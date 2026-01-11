@@ -74,7 +74,7 @@ public struct Image: Equatable, Sendable {
     }
 
     package func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {
-        provider.resolve(in: context)
+        provider.resolveNamedImage(in: context)
     }
 
     public static func == (lhs: Image, rhs: Image) -> Bool {
