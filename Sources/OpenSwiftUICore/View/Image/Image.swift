@@ -111,7 +111,7 @@ package struct ImageResolutionContext {
 
     package var transaction: OptionalAttribute<Transaction>
 
-//    package var symbolRenderingMode: SymbolRenderingMode?
+    package var symbolRenderingMode: SymbolRenderingMode?
 
     package var allowedDynamicRange: Image.DynamicRange?
 
