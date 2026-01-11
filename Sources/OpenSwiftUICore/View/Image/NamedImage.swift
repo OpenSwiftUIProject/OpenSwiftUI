@@ -9,15 +9,19 @@
 public import OpenCoreGraphicsShims
 
 extension Image {
-    #if canImport(CoreGraphics)
     // FIXME
-    public init(decorative: CGImage, scale: CGFloat, orientation: Image.Orientation) {
-        _openSwiftUIUnimplementedFailure()
-    }
-    #endif
+    package struct Resolved {
+        package init(
+            image: GraphicsImage,
+            decorative: Bool,
+            label: AccessibilityImageLabel? = nil,
+            basePlatformItemImage: AnyObject? = nil,
+            // backgroundShape: SymbolVariants.Shape? = nil,
+            backgroundCornerRadius: CGFloat? = nil
+        ) {
 
-    // FIXME
-    package enum Resolved {}
+        }
+    }
 
     package enum NamedResolved {}
 }
