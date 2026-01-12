@@ -165,11 +165,18 @@ package struct ResolvedVectorGlyph: Equatable {
     package var animatorVersion: UInt32
     package var allowsContentTransitions: Bool
     package var preservesVectorRepresentation: Bool
+
+    package var flipsRightToLeft: Bool {
+        animator.flipsRightToLeft
+    }
 }
 
 extension GraphicsImage {
     package var bitmapOrientation: Image.Orientation {
-        _openSwiftUIUnimplementedFailure()
+        guard case let .vectorGlyph(vectorGlyph) = contents else {
+            return orientation
+        }
+        return vectorGlyph.flipsRightToLeft ? orientation.mirrored : orientation
     }
 
     package func render(at targetSize: CGSize, prefersMask: Bool = false) -> CGImage? {
@@ -182,6 +189,10 @@ extension GraphicsImage {
 package class ORBSymbolAnimator: Hashable {
     var styleMask: UInt32 {
         .zero
+    }
+
+    var flipsRightToLeft: Bool {
+        false
     }
 
     package func hash(into hasher: inout Hasher) {

@@ -79,6 +79,30 @@ extension Image {
             default: return nil
             }
         }
+
+        @inline(__always)
+        var mirrored: Orientation {
+            switch self {
+            case .up: .upMirrored
+            case .upMirrored: .up
+            case .down: .downMirrored
+            case .downMirrored: .down
+            case .left: .leftMirrored
+            case .leftMirrored: .left
+            case .right: .rightMirrored
+            case .rightMirrored: .right
+            }
+        }
+
+        @inline(__always)
+        var isHorizontal: Bool {
+            switch self {
+            case .up, .upMirrored, .down, .downMirrored:
+                return false
+            case .left, .leftMirrored, .right, .rightMirrored:
+                return true
+            }
+        }
     }
 }
 
@@ -88,11 +112,10 @@ extension Image.Orientation: ProtobufEnum {}
 
 extension CGSize {
     package func apply(_ orientation: Image.Orientation) -> CGSize {
-        switch orientation {
-        case .up, .upMirrored, .down, .downMirrored:
-            return self
-        case .left, .leftMirrored, .right, .rightMirrored:
+        if orientation.isHorizontal {
             return CGSize(width: height, height: width)
+        } else {
+            return self
         }
     }
 
