@@ -18,6 +18,11 @@ module CoreFoundation_Private {
     export *
 }
 
+module CoreGraphics_Private {
+    umbrella "Shims/CoreGraphics"
+    export *
+}
+
 module CoreText_Private {
     umbrella "Shims/CoreText"
     export *
