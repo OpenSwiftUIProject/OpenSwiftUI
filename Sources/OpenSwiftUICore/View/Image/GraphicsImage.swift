@@ -11,6 +11,8 @@ package import OpenCoreGraphicsShims
 import CoreGraphics_Private
 #endif
 
+// MARK: - GraphicsImage [WIP]
+
 package struct GraphicsImage: Equatable, Sendable {
     package enum Contents: Equatable, @unchecked Sendable {
         case cgImage(CGImage)
@@ -77,8 +79,18 @@ package struct GraphicsImage: Equatable, Sendable {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package var styleResolverMode: _ShapeStyle_ResolverMode {
-        _openSwiftUIUnimplementedFailure()
+    package var styleResolverMode: ShapeStyle.ResolverMode {
+        switch contents {
+        case .cgImage:
+            return .init()
+        case let .vectorGlyph(resolvedVectorGlyph):
+            return .init(
+                rbSymbolStyleMask: resolvedVectorGlyph.animator.styleMask,
+                location: resolvedVectorGlyph.location
+            )
+        default:
+            return .init(foregroundLevels: isTemplate ? 1 : 0)
+        }
     }
 
     package var headroom: Image.Headroom {
@@ -126,7 +138,14 @@ extension GraphicsImage.Contents {
 
 // TODO: ResolvedVectorGlyph
 
-package struct ResolvedVectorGlyph {}
+package struct ResolvedVectorGlyph {
+    package let animator: ORBSymbolAnimator
+    package let layoutDirection: LayoutDirection
+    package let location: Image.Location
+    package var animatorVersion: UInt32
+    package var allowsContentTransitions: Bool
+    package var preservesVectorRepresentation: Bool
+}
 
 extension GraphicsImage {
     package var bitmapOrientation: Image.Orientation {
@@ -135,5 +154,13 @@ extension GraphicsImage {
 
     package func render(at targetSize: CGSize, prefersMask: Bool = false) -> CGImage? {
         _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// FIXME
+
+package class ORBSymbolAnimator {
+    var styleMask: UInt32 {
+        .zero
     }
 }
