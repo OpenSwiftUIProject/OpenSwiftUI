@@ -109,7 +109,7 @@ extension Image {
     package struct NamedResolved {
         package var name: String
 
-        // package var location: Image.Location
+        package var location: Image.Location
 
         package var value: Float?
 

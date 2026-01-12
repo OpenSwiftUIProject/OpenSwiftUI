@@ -14,3 +14,28 @@ package enum NamedImage {
         case uuid(UUID)
     }
 }
+
+extension Image {
+    // TODO
+    package enum Location: Equatable, Hashable {
+        case bundle(Bundle)
+        case system
+        case privateSystem
+
+        package var supportsNonVectorImages: Bool {
+            guard case .bundle = self else {
+                return false
+            }
+            return true
+        }
+
+        // package var catalog: CUICatalog?
+
+        package var bundle: Bundle? {
+            guard case .bundle(let bundle) = self else {
+                return nil
+            }
+            return nil
+        }
+    }
+}
