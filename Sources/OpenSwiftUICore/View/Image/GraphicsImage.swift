@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Empty
+//  Status: Complete with WIP implementation
 //  ID: B4F00EDEBAA4ECDCB2CAB650A00E4160 (SwiftUICore)
 
 package import OpenCoreGraphicsShims
@@ -11,7 +11,7 @@ package import OpenCoreGraphicsShims
 import CoreGraphics_Private
 #endif
 
-// MARK: - GraphicsImage [WIP]
+// MARK: - GraphicsImage
 
 package struct GraphicsImage: Equatable, Sendable {
     package enum Contents: Equatable, @unchecked Sendable {
@@ -76,7 +76,16 @@ package struct GraphicsImage: Equatable, Sendable {
     }
 
     package func slicesAndTiles(at extent: CGSize? = nil) -> Image.ResizingInfo? {
-        _openSwiftUIUnimplementedFailure()
+        guard size != extent, let resizingInfo else {
+            return nil
+        }
+        guard !resizingInfo.capInsets.isEmpty || resizingInfo.mode == .tile else {
+            return nil
+        }
+        if case .color = contents {
+            return nil
+        }
+        return resizingInfo
     }
 
     package var styleResolverMode: ShapeStyle.ResolverMode {
@@ -116,6 +125,8 @@ package struct GraphicsImage: Equatable, Sendable {
     }
 }
 
+// MARK: - GraphicsImage + ProtobufMessage [WIP]
+
 extension GraphicsImage: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
         _openSwiftUIUnimplementedFailure()
@@ -125,6 +136,8 @@ extension GraphicsImage: ProtobufMessage {
         _openSwiftUIUnimplementedFailure()
     }
 }
+
+// MARK: - GraphicsImage.Contents + Equatable
 
 extension GraphicsImage.Contents {
     package static func == (lhs: GraphicsImage.Contents, rhs: GraphicsImage.Contents) -> Bool {
