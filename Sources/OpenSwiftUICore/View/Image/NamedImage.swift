@@ -10,7 +10,7 @@ package import Foundation
 
 // TODO
 package enum NamedImage {
-    package enum Key {
+    package enum Key: Equatable {
         case uuid(UUID)
     }
 }

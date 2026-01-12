@@ -114,10 +114,6 @@ package struct GraphicsImage: Equatable, Sendable {
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
     }
-
-    package static func == (a: GraphicsImage, b: GraphicsImage) -> Bool {
-        _openSwiftUIUnimplementedFailure()
-    }
 }
 
 extension GraphicsImage: ProtobufMessage {
@@ -132,13 +128,24 @@ extension GraphicsImage: ProtobufMessage {
 
 extension GraphicsImage.Contents {
     package static func == (lhs: GraphicsImage.Contents, rhs: GraphicsImage.Contents) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        switch (lhs, rhs) {
+        case let (.cgImage(a), .cgImage(b)): a === b
+        case let (.ioSurface(a), .ioSurface(b)): a === b
+        case let (.vectorGlyph(a), .vectorGlyph(b)): a == b
+        case let (.vectorLayer(a), .vectorLayer(b)): a == b
+        case let (.color(a), .color(b)): a == b
+        /* OpenSwiftUI Addition Begin */
+        // named is omitted on SwiftUI's implementation
+        case let (.named(a), .named(b)): a == b
+        /* OpenSwiftUI Addition End */
+        default: false
+        }
     }
 }
 
 // TODO: ResolvedVectorGlyph
 
-package struct ResolvedVectorGlyph {
+package struct ResolvedVectorGlyph: Equatable {
     package let animator: ORBSymbolAnimator
     package let layoutDirection: LayoutDirection
     package let location: Image.Location
@@ -159,8 +166,16 @@ extension GraphicsImage {
 
 // FIXME
 
-package class ORBSymbolAnimator {
+package class ORBSymbolAnimator: Hashable {
     var styleMask: UInt32 {
         .zero
+    }
+
+    package func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(self))
+    }
+
+    package static func == (lhs: ORBSymbolAnimator, rhs: ORBSymbolAnimator) -> Bool {
+        lhs === rhs
     }
 }
