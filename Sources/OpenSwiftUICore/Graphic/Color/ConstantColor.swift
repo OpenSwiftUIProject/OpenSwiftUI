@@ -44,7 +44,9 @@ extension Color {
         }
         
         package func multiplyingOpacity(by opacity: Float) -> Color.Resolved {
-            Color.Resolved(linearRed: linearRed, linearGreen: linearGreen, linearBlue: linearBlue, opacity: opacity * self.opacity)
+            var resolved = self
+            resolved.opacity = opacity * self.opacity
+            return resolved
         }
         
         package func over(_ s: Color.Resolved) -> Color.Resolved {
