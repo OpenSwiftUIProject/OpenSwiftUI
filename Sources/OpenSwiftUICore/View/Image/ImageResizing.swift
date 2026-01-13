@@ -3,7 +3,9 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image.Resolved
+//  Status: Complete
+
+// MARK: - Image + Resizable
 
 @available(OpenSwiftUI_v1_0, *)
 extension Image {
@@ -59,8 +61,7 @@ extension Image {
 
         package func resolve(in context: ImageResolutionContext) -> Image.Resolved {
             var resolved = base.resolve(in: context)
-            // TODO: Image.Resolved
-            _openSwiftUIUnimplementedFailure()
+            resolved.image.resizingInfo = ResizingInfo(capInsets: capInsets, mode: resizingMode)
             return resolved
         }
 

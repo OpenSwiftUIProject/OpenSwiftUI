@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image.Resolved
+//  Status: Complete
 //  ID: B65D626E77C8D6CB107EB45FECFC60F0 (SwiftUICore?)
 
 // MARK: - Image.Interpolation
@@ -37,7 +37,7 @@ extension Image {
     }
 }
 
-// MARK: - InterpolatedProvider & AntialiasedProvider [WIP]
+// MARK: - InterpolatedProvider & AntialiasedProvider
 
 private struct InterpolatedProvider: ImageProvider {
     var base: Image
@@ -46,7 +46,7 @@ private struct InterpolatedProvider: ImageProvider {
 
     func resolve(in context: ImageResolutionContext) -> Image.Resolved {
         var resolved = base.resolve(in: context)
-        // TODO
+        resolved.image.interpolation = interpolation
         return resolved
     }
 
@@ -62,7 +62,7 @@ private struct AntialiasedProvider: ImageProvider {
 
     func resolve(in context: ImageResolutionContext) -> Image.Resolved {
         var resolved = base.resolve(in: context)
-        // TODO
+        resolved.image.isAntialiased = isAntialiased
         return resolved
     }
 
