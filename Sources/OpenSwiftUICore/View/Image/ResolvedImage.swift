@@ -39,12 +39,14 @@ extension Image {
         // TODO: CUINamedVectorGlyph
     }
 
-    // MARK: - Image.Resolved [WIP]
+    // MARK: - Image.Resolved
 
     package struct Resolved: Equatable {
         package var image: GraphicsImage {
             didSet {
-                _openSwiftUIUnimplementedWarning()
+                var newMode = image.styleResolverMode
+                newMode.options.setValue(styleResolverMode.options.contains(.background), for: .background)
+                styleResolverMode = newMode
             }
         }
 
@@ -62,7 +64,7 @@ extension Image {
 
         package var backgroundCornerRadius: Float?
 
-        package var styleResolverMode: _ShapeStyle_ResolverMode
+        package var styleResolverMode: ShapeStyle.ResolverMode
 
         package init(
             image: GraphicsImage,
@@ -72,35 +74,53 @@ extension Image {
             backgroundShape: SymbolVariants.Shape? = nil,
             backgroundCornerRadius: CGFloat? = nil
         ) {
-            _openSwiftUIUnimplementedFailure()
+            self.image = image
+            self.label = label
+            self.basePlatformItemImage = basePlatformItemImage
+            self.decorative = decorative
+            self.backgroundShape = backgroundShape
+            self.backgroundCornerRadius = backgroundCornerRadius.map { Float($0) }
+            self.styleResolverMode = image.styleResolverMode
         }
 
         package var size: CGSize {
-            _openSwiftUIUnimplementedFailure()
+            image.size
         }
 
         package var baselineOffset: CGFloat {
-            _openSwiftUIUnimplementedFailure()
+            guard let layoutMetrics else {
+                return .zero
+            }
+            return layoutMetrics.baselineOffset
         }
 
         package var capHeight: CGFloat {
-            _openSwiftUIUnimplementedFailure()
+            guard let layoutMetrics else {
+                return size.height
+            }
+            return layoutMetrics.capHeight
         }
 
         package var contentSize: CGSize {
-            _openSwiftUIUnimplementedFailure()
+            guard let layoutMetrics else {
+                return size
+            }
+            return layoutMetrics.contentSize
         }
 
         package var alignmentOrigin: CGPoint {
-            _openSwiftUIUnimplementedFailure()
+            guard let layoutMetrics else {
+                return .zero
+            }
+            return layoutMetrics.alignmentOrigin
         }
 
         package func foregroundColor(_ color: () -> Color.Resolved) -> Image.Resolved {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package static func == (a: Image.Resolved, b: Image.Resolved) -> Bool {
-            _openSwiftUIUnimplementedFailure()
+            var resolved = self
+            if image.maskColor == nil {
+                resolved.image.maskColor = color()
+            }
+            return resolved
         }
     }
 
@@ -120,6 +140,8 @@ extension Image {
         package var environment: EnvironmentValues
     }
 }
+
+// MARK: - Image.Resolved + View
 
 extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafViewLayout {
     package struct UpdateData {}
@@ -175,16 +197,18 @@ extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafVie
 
 extension EnvironmentValues {
     package func imageIsTemplate(renderingMode: Image.TemplateRenderingMode? = nil) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        (renderingMode ?? defaultRenderingMode) == .template
     }
 }
 
+// MARK: - Image.Resolved + ImageProvider
+
 extension Image.Resolved: ImageProvider {
     package func resolve(in context: ImageResolutionContext) -> Image.Resolved {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     package func resolveNamedImage(in _: ImageResolutionContext) -> Image.NamedResolved? {
-        _openSwiftUIUnimplementedFailure()
+        nil
     }
 }
