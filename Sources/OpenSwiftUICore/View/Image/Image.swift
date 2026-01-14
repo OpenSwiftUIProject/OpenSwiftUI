@@ -174,8 +174,97 @@ extension Image: View, UnaryView, PrimitiveView {
         package static let defaultValue: Stack<any ImageStyleProtocol.Type> = .empty
     }
 
-    nonisolated public static func _makeView(view: _GraphValue<Image>, inputs: _ViewInputs) -> _ViewOutputs {
+    nonisolated public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        var newInputs = inputs
+        guard let style = newInputs.popLast(Style.self) else {
+            let flags = inputs.archivedView.flags
+            var options: ImageResolutionContext.Options = []
+            if flags.contains(.isArchived) {
+                options.formUnion([.isArchived, .preservesVectors])
+                if flags.contains(.assetCatalogRefences) {
+                    options.formUnion(.useCatalogReferences)
+                }
+            }
+            if inputs.base.animationsDisabled {
+                options.formUnion(.animationsDisabled)
+            }
+            if newInputs.usingGraphicsRenderer, !flags.contains(.isArchived) {
+                options.formUnion(.preservesVectors)
+            }
+            var outputs = _ViewOutputs()
+            makeImageViewChild(
+                newInputs.imageAccessibilityProvider,
+                image: view.value,
+                options: options,
+                inputs: inputs,
+                outputs: &outputs
+            )
+            if let representation = inputs.requestedNamedImageRepresentation,
+               representation.shouldMakeRepresentation(inputs: inputs) {
+                let context = Attribute(
+                    MakeRepresentableContext(
+                        image: view.value,
+                        environment: inputs.environment
+                    )
+                )
+                representation.makeRepresentation(
+                    inputs: inputs,
+                    context: context,
+                    outputs: &outputs
+                )
+            }
+            return outputs
+        }
+        return style._makeImageView(view: view, inputs: newInputs)
+    }
+
+    nonisolated private static func makeImageViewChild<P>(
+        _ type: P.Type,
+        image: Attribute<Image>,
+        options: ImageResolutionContext.Options,
+        inputs: _ViewInputs,
+        outputs: inout _ViewOutputs
+    ) where P: ImageAccessibilityProvider {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    private struct MakeRepresentableContext: Rule, AsyncAttribute {
+        @Attribute var image: Image
+        @Attribute var environment: EnvironmentValues
+
+        var value: PlatformNamedImageRepresentableContext {
+            PlatformNamedImageRepresentableContext(
+                image: image,
+                environment: environment
+            )
+        }
+    }
+
+    private struct ImageViewChild<P>: StatefulRule, AsyncAttribute, ScrapeableAttribute where P: ImageAccessibilityProvider {
+        @Attribute var view: Image
+        @Attribute var environment: EnvironmentValues
+        @Attribute var transaction: Transaction
+        @Attribute var position: CGPoint
+        @Attribute var size: ViewSize
+        @Attribute var transform: ViewTransform
+        let options: ImageResolutionContext.Options
+        let parentID: ScrapeableID
+        let tracker: PropertyList.Tracker
+        var symbolAnimator: ORBSymbolAnimator?
+        var symbolEffects: _SymbolEffect.Phase
+
+        typealias Value = P.Body
+
+        mutating func updateValue() {
+            _openSwiftUIUnimplementedFailure()
+        }
+        
+        static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 }
 
