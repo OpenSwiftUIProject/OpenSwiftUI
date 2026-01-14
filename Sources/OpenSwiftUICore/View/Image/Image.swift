@@ -228,7 +228,25 @@ extension Image: View, UnaryView, PrimitiveView {
         inputs: _ViewInputs,
         outputs: inout _ViewOutputs
     ) where P: ImageAccessibilityProvider {
-        _openSwiftUIUnimplementedFailure()
+        let child = Attribute(
+            ImageViewChild<P>(
+                view: image,
+                environment: inputs.environment,
+                transaction: inputs.transaction,
+                position: inputs.position,
+                size: inputs.size,
+                transform: inputs.transform,
+                options: options,
+                parentID: inputs.scrapeableParentID,
+                symbolAnimator: nil,
+                symbolEffects: .init()
+            )
+        )
+        child.flags = [
+            .transactional,
+            inputs.isScrapeable ? .scrapeable : []
+        ]
+        outputs = P.Body.makeDebuggableView(view: .init(child), inputs: inputs)
     }
 
     private struct MakeRepresentableContext: Rule, AsyncAttribute {
@@ -256,6 +274,31 @@ extension Image: View, UnaryView, PrimitiveView {
         var symbolAnimator: ORBSymbolAnimator?
         var symbolEffects: _SymbolEffect.Phase
 
+        init(
+            view: Attribute<Image>,
+            environment: Attribute<EnvironmentValues>,
+            transaction: Attribute<Transaction>,
+            position: Attribute<CGPoint>,
+            size: Attribute<ViewSize>,
+            transform: Attribute<ViewTransform>,
+            options: ImageResolutionContext.Options,
+            parentID: ScrapeableID,
+            symbolAnimator: ORBSymbolAnimator?,
+            symbolEffects: _SymbolEffect.Phase
+        ) {
+            self._view = view
+            self._environment = environment
+            self._transaction = transaction
+            self._position = position
+            self._size = size
+            self._transform = transform
+            self.options = options
+            self.parentID = parentID
+            self.tracker = .init()
+            self.symbolAnimator = symbolAnimator
+            self.symbolEffects = symbolEffects
+        }
+
         typealias Value = P.Body
 
         mutating func updateValue() {
@@ -263,7 +306,15 @@ extension Image: View, UnaryView, PrimitiveView {
         }
         
         static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
-            _openSwiftUIUnimplementedFailure()
+            let child = ident.info.body.assumingMemoryBound(to: ImageViewChild.self)[]
+            return ScrapeableContent.Item(
+                .image(child.view, child.environment),
+                ids: .none,
+                child.parentID,
+                position: child.$position,
+                size: child.$size,
+                transform: child.$transform
+            )
         }
     }
 }
