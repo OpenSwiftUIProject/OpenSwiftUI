@@ -14,7 +14,39 @@ package struct UsingGraphicsRenderer: ViewInput {
     package static let defaultValue: Bool = false
 }
 
-// MARK: - ConditionalGraphicsView [WIP]
+extension _GraphInputs {
+    @inline(__always)
+    var usingGraphicsRenderer: Bool {
+        get { self[UsingGraphicsRenderer.self] }
+        set { self[UsingGraphicsRenderer.self] = newValue }
+    }
+}
+
+extension _ViewInputs {
+    @inline(__always)
+    var usingGraphicsRenderer: Bool {
+        get { self[UsingGraphicsRenderer.self] }
+        set { self[UsingGraphicsRenderer.self] = newValue }
+    }
+}
+
+extension _ViewListInputs {
+    @inline(__always)
+    var usingGraphicsRenderer: Bool {
+        get { self[UsingGraphicsRenderer.self] }
+        set { self[UsingGraphicsRenderer.self] = newValue }
+    }
+}
+
+extension _ViewListCountInputs {
+    @inline(__always)
+    var usingGraphicsRenderer: Bool {
+        get { self[UsingGraphicsRenderer.self] }
+        set { self[UsingGraphicsRenderer.self] = newValue }
+    }
+}
+
+// MARK: - ConditionalGraphicsView
 
 @_spi(Private)
 @available(OpenSwiftUI_v6_0, *)
@@ -60,8 +92,7 @@ extension ConditionalGraphicsView {
     nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs
     ) -> Int? {
-        let usingGraphicsRenderer = inputs[UsingGraphicsRenderer.self]
-        if usingGraphicsRenderer {
+        if inputs.usingGraphicsRenderer {
             return GraphicsBody._viewListCount(inputs: inputs)
         } else {
             return Body._viewListCount(inputs: inputs)
@@ -77,8 +108,7 @@ extension ConditionalGraphicsView {
             Metadata(Self.self).isValueType,
             "views must be value types (either a struct or an enum); \(Self.self) is a class."
         )
-        let usingGraphicsRenderer = inputs[UsingGraphicsRenderer.self]
-        if usingGraphicsRenderer {
+        if inputs.usingGraphicsRenderer {
             let accessor = GraphicsViewBodyAccessor<Self>()
             let (body, buffer) = accessor.makeBody(container: view, inputs: &inputs, fields: fields)
             return (.second(body), buffer)
