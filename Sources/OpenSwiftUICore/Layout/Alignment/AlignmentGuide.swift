@@ -1235,13 +1235,16 @@ public struct AlignmentKey: Hashable, Comparable {
     private let bits: UInt
 
     package var id: any AlignmentID.Type {
-        Self.typeCache.types[index]
+        let cache = Self.typeCache
+        return cache.types[index]
     }
 
     package var axis: Axis { bits & 1 == 0 ? .horizontal : .vertical }
 
     @inline(__always)
-    var index: Int { Int(bits / 2 - 1) }
+    var index: Int {
+        Int(bitPattern: (bits - 2) >> 1)
+    }
 
     package init(id: any AlignmentID.Type, axis: Axis) {
         let index = Self.$typeCache.access { cache in
@@ -1255,7 +1258,7 @@ public struct AlignmentKey: Hashable, Comparable {
                 return index
             }
         }
-        bits = (axis == .horizontal ? 0 : 1) + (index + 1) * 2
+        bits = (index << 1 &+ 2) | (axis == .horizontal ? 0 : 1)
     }
 
     package init() { bits = .zero }
