@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: BEFE9363F68E039B4AB6422B8AA4535A (SwiftUICore)
 
+package import OpenAttributeGraphShims
+
 // MARK: - ForegroundStyleKey
 
 private struct ForegroundStyleKey: EnvironmentKey {
@@ -37,6 +39,16 @@ extension EnvironmentValues {
     
     package var _effectiveForegroundStyle: AnyShapeStyle {
         currentForegroundStyle ?? .init(.foreground)
+    }
+}
+
+extension CachedEnvironment.ID {
+    package static let foregroundStyle: CachedEnvironment.ID = .init()
+}
+
+extension _ViewInputs {
+    package var foregroundStyle: Attribute<AnyShapeStyle?> {
+        mapEnvironment(id: .foregroundStyle) { $0.foregroundStyle }
     }
 }
 

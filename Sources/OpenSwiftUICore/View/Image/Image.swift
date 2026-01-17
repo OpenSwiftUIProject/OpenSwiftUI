@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image + View
+//  Status: Complete
 //  ID: BE2D783904D422377BBEBAC3C942583C (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -162,7 +162,7 @@ package protocol ImageProvider: Equatable {
     func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved?
 }
 
-// MARK: - Image + View [WIP]
+// MARK: - Image + View
 
 package protocol ImageStyleProtocol {
     static func _makeImageView(view: _GraphValue<Image>, inputs: _ViewInputs) -> _ViewOutputs
@@ -174,8 +174,179 @@ extension Image: View, UnaryView, PrimitiveView {
         package static let defaultValue: Stack<any ImageStyleProtocol.Type> = .empty
     }
 
-    nonisolated public static func _makeView(view: _GraphValue<Image>, inputs: _ViewInputs) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+    nonisolated public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        var newInputs = inputs
+        guard let style = newInputs.popLast(Style.self) else {
+            let flags = inputs.archivedView.flags
+            var options: ImageResolutionContext.Options = []
+            if flags.contains(.isArchived) {
+                options.formUnion([.isArchived, .preservesVectors])
+                if flags.contains(.assetCatalogRefences) {
+                    options.formUnion(.useCatalogReferences)
+                }
+            }
+            if inputs.base.animationsDisabled {
+                options.formUnion(.animationsDisabled)
+            }
+            if newInputs.usingGraphicsRenderer, !flags.contains(.isArchived) {
+                options.formUnion(.preservesVectors)
+            }
+            var outputs = _ViewOutputs()
+            makeImageViewChild(
+                newInputs.imageAccessibilityProvider,
+                image: view.value,
+                options: options,
+                inputs: inputs,
+                outputs: &outputs
+            )
+            if let representation = inputs.requestedNamedImageRepresentation,
+               representation.shouldMakeRepresentation(inputs: inputs) {
+                let context = Attribute(
+                    MakeRepresentableContext(
+                        image: view.value,
+                        environment: inputs.environment
+                    )
+                )
+                representation.makeRepresentation(
+                    inputs: inputs,
+                    context: context,
+                    outputs: &outputs
+                )
+            }
+            return outputs
+        }
+        return style._makeImageView(view: view, inputs: newInputs)
+    }
+
+    nonisolated private static func makeImageViewChild<P>(
+        _ type: P.Type,
+        image: Attribute<Image>,
+        options: ImageResolutionContext.Options,
+        inputs: _ViewInputs,
+        outputs: inout _ViewOutputs
+    ) where P: ImageAccessibilityProvider {
+        let child = Attribute(
+            ImageViewChild<P>(
+                view: image,
+                environment: inputs.environment,
+                transaction: inputs.transaction,
+                position: inputs.position,
+                size: inputs.size,
+                transform: inputs.transform,
+                options: options,
+                parentID: inputs.scrapeableParentID,
+                symbolAnimator: nil,
+                symbolEffects: .init()
+            )
+        )
+        child.flags = [
+            .transactional,
+            inputs.isScrapeable ? .scrapeable : []
+        ]
+        outputs = P.Body.makeDebuggableView(view: .init(child), inputs: inputs)
+    }
+
+    private struct MakeRepresentableContext: Rule, AsyncAttribute {
+        @Attribute var image: Image
+        @Attribute var environment: EnvironmentValues
+
+        var value: PlatformNamedImageRepresentableContext {
+            PlatformNamedImageRepresentableContext(
+                image: image,
+                environment: environment
+            )
+        }
+    }
+
+    private struct ImageViewChild<P>: StatefulRule, AsyncAttribute, ScrapeableAttribute where P: ImageAccessibilityProvider {
+        @Attribute var view: Image
+        @Attribute var environment: EnvironmentValues
+        @Attribute var transaction: Transaction
+        @Attribute var position: CGPoint
+        @Attribute var size: ViewSize
+        @Attribute var transform: ViewTransform
+        let options: ImageResolutionContext.Options
+        let parentID: ScrapeableID
+        let tracker: PropertyList.Tracker
+        var symbolAnimator: ORBSymbolAnimator?
+        var symbolEffects: _SymbolEffect.Phase
+
+        init(
+            view: Attribute<Image>,
+            environment: Attribute<EnvironmentValues>,
+            transaction: Attribute<Transaction>,
+            position: Attribute<CGPoint>,
+            size: Attribute<ViewSize>,
+            transform: Attribute<ViewTransform>,
+            options: ImageResolutionContext.Options,
+            parentID: ScrapeableID,
+            symbolAnimator: ORBSymbolAnimator?,
+            symbolEffects: _SymbolEffect.Phase
+        ) {
+            self._view = view
+            self._environment = environment
+            self._transaction = transaction
+            self._position = position
+            self._size = size
+            self._transform = transform
+            self.options = options
+            self.parentID = parentID
+            self.tracker = .init()
+            self.symbolAnimator = symbolAnimator
+            self.symbolEffects = symbolEffects
+        }
+
+        typealias Value = P.Body
+
+        mutating func updateValue() {
+            let (view, viewChanged) = $view.changedValue()
+            let changed: Bool
+            if viewChanged {
+                changed = true
+            } else {
+                let (environment, environmentChanged) = $environment.changedValue()
+                if environmentChanged, tracker.hasDifferentUsedValues(environment.plist) {
+                    changed = true
+                } else {
+                    changed = !hasValue
+                }
+            }
+            guard changed else { return }
+            tracker.reset()
+            tracker.initializeValues(from: environment.plist)
+            let newEnvironment = EnvironmentValues(environment.plist, tracker: tracker)
+            var resolutionContext = ImageResolutionContext(
+                environment: newEnvironment,
+                textStyle: nil,
+                transaction: .init($transaction)
+            )
+            resolutionContext.symbolAnimator = symbolAnimator
+            resolutionContext.options.formUnion(options)
+            var resolved = view.resolve(in: resolutionContext)
+            symbolAnimator = resolved.image.updateSymbolEffects(
+                &symbolEffects,
+                environment: newEnvironment,
+                transaction: $transaction,
+                animationsDisabled: options.contains(.animationsDisabled)
+            )
+
+            value = P.makeView(image: view, resolved: resolved)
+        }
+        
+        static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
+            let child = ident.info.body.assumingMemoryBound(to: ImageViewChild.self)[]
+            return ScrapeableContent.Item(
+                .image(child.view, child.environment),
+                ids: .none,
+                child.parentID,
+                position: child.$position,
+                size: child.$size,
+                transform: child.$transform
+            )
+        }
     }
 }
 
