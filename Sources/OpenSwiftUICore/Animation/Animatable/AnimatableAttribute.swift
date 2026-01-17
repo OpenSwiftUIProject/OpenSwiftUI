@@ -474,7 +474,7 @@ final package class AnimatorState<V> where V: VectorArithmetic {
     package func removeListeners() {
         listeners.forEach { $0.animationWasRemoved() }
         listeners = []
-        listeners.forEach { $0.animationWasRemoved() }
+        logicalListeners.forEach { $0.animationWasRemoved() }
         logicalListeners = []
     }
 
