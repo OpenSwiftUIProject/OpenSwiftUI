@@ -102,8 +102,8 @@ extension _ProposedSize {
     /// - Returns: A new proposed size with insets applied.
     package func inset(by insets: EdgeInsets) -> _ProposedSize {
         _ProposedSize(
-            width: width.map { max($0 - insets.leading - insets.trailing, .zero) },
-            height: height.map { max($0 - insets.top - insets.bottom, .zero) }
+            width: width.map { max(0, $0 - insets.horizontal) },
+            height: height.map { max(0, $0 - insets.vertical) }
         )
     }
     
