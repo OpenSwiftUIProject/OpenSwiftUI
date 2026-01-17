@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image.Resolved
+//  Status: Complete
 //  ID: BB7900A03A030BC988C08113497314C3 (SwiftUICore?)
 
 public import OpenCoreGraphicsShims
@@ -75,7 +75,23 @@ private struct CGImageProvider: ImageProvider {
     var decorative: Bool
 
     func resolve(in context: ImageResolutionContext) -> Image.Resolved {
-        _openSwiftUIUnimplementedFailure()
+        var graphicsImage = GraphicsImage(
+            contents: .cgImage(image),
+            scale: scale,
+            unrotatedPixelSize: image.size,
+            orientation: orientation,
+            isTemplate: context.environment.imageIsTemplate()
+        )
+        graphicsImage.allowedDynamicRange = context.effectiveAllowedDynamicRange(for: graphicsImage)
+        if context.environment.shouldRedactContent {
+            let color = Color.foreground.resolve(in: context.environment)
+            graphicsImage.contents = .color(color.multiplyingOpacity(by: 0.16))
+        }
+        return Image.Resolved(
+            image: graphicsImage,
+            decorative: decorative,
+            label: AccessibilityImageLabel(label)
+        )
     }
 
     func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {

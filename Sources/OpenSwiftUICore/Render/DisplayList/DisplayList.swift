@@ -510,21 +510,4 @@ extension GraphicsContext {
 
 package protocol _DisplayList_AnyEffectAnimation {}
 
-package struct GraphicsImage: Equatable {
-    package init() {}
-}
-
-extension GraphicsImage: ProtobufMessage {
-    package func encode(to encoder: inout ProtobufEncoder) throws {
-        // GraphicsImage is currently empty, no fields to encode
-    }
-    
-    package init(from decoder: inout ProtobufDecoder) throws {
-        // GraphicsImage is currently empty, skip all fields
-        while let field = try decoder.nextField() {
-            try decoder.skipField(field)
-        }
-        self = GraphicsImage()
-    }
-}
 package struct ResolvedShadowStyle {}

@@ -3,10 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by ImageResolutionContext and View
+//  Status: Blocked by Image + View
 //  ID: BE2D783904D422377BBEBAC3C942583C (SwiftUICore)
 
 package import OpenAttributeGraphShims
+package import OpenCoreGraphicsShims
 
 // MARK: - Image
 
@@ -82,7 +83,7 @@ public struct Image: Equatable, Sendable {
     }
 }
 
-// MARK: - ImageResolutionContext [WIP]
+// MARK: - ImageResolutionContext
 
 package struct ImageResolutionContext {
     package struct Options: OptionSet {
@@ -105,7 +106,7 @@ package struct ImageResolutionContext {
 
     package var environment: EnvironmentValues
 
-//    package var symbolAnimator: RBSymbolAnimator?
+    package var symbolAnimator: ORBSymbolAnimator?
 
     package var textStyle: Text.Style?
 
@@ -115,19 +116,42 @@ package struct ImageResolutionContext {
 
     package var allowedDynamicRange: Image.DynamicRange?
 
-    package var options: ImageResolutionContext.Options
+    package var options: ImageResolutionContext.Options = .inferSymbolRenderingMode
 
     package init(
         environment: EnvironmentValues,
         textStyle: Text.Style? = nil,
         transaction: OptionalAttribute<Transaction> = .init()
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.environment = environment
+        self.textStyle = textStyle
+        self.transaction = transaction
     }
 
-//    package var effectiveAllowedDynamicRange: Image.DynamicRange? {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+    package func effectiveAllowedDynamicRange(for image: GraphicsImage) -> Image.DynamicRange? {
+        #if canImport(CoreGraphics)
+        guard allowedDynamicRange != .none else {
+            return .none
+        }
+        guard case let .cgImage(cgImage) = image.contents,
+                let colorSpace = cgImage.colorSpace,
+                CGColorSpaceUsesITUR_2100TF(colorSpace)
+        else {
+            return .none
+        }
+        let allowedDynamicRange = allowedDynamicRange ?? environment.allowedDynamicRange
+        let maxAllowedDynamicRange = environment.maxAllowedDynamicRange
+        guard let allowedDynamicRange else {
+            return maxAllowedDynamicRange
+        }
+        guard let maxAllowedDynamicRange else {
+            return allowedDynamicRange
+        }
+        return .init(storage: min(allowedDynamicRange.storage, maxAllowedDynamicRange.storage))
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
 }
 
 // MARK: - ImageProvider
