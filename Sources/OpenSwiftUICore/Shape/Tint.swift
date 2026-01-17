@@ -6,6 +6,8 @@
 //  Status: WIP
 //  ID: EB037BD7690CB8A700384AACA7B075E4 (SwiftUICore)
 
+package import OpenAttributeGraphShims
+
 // MARK: - View + tint ShapeStyle
 
 @available(OpenSwiftUI_v4_0, *)
@@ -171,6 +173,16 @@ extension EnvironmentValues {
 
     package var resolvedTintColor: Color.Resolved {
         (tintColor ?? .accent).resolve(in: self)
+    }
+}
+
+extension CachedEnvironment.ID {
+    package static let tintColor: CachedEnvironment.ID = .init()
+}
+
+extension _ViewInputs {
+    package var tintColor: Attribute<Color?> {
+        mapEnvironment(id: .tintColor) { $0.tintColor }
     }
 }
 

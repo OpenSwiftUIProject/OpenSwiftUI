@@ -141,10 +141,15 @@ extension Image {
     }
 }
 
-// MARK: - Image.Resolved + View
+// MARK: - Image.Resolved + View [WIP]
 
 extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafViewLayout {
-    package struct UpdateData {}
+    package struct UpdateData {
+        @Attribute var time: Time
+        @Attribute var position: ViewOrigin
+        @Attribute var size: ViewSize
+        @Attribute var pixelLength: CGFloat
+    }
 
     package mutating func mustUpdate(data: Image.Resolved.UpdateData, position: Attribute<ViewOrigin>) -> Bool {
         _openSwiftUIUnimplementedFailure()
@@ -174,16 +179,165 @@ extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafVie
         _openSwiftUIUnimplementedFailure()
     }
 
-    nonisolated package static func _makeView(view: _GraphValue<Image.Resolved>, inputs: _ViewInputs) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+    nonisolated package static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        var newInputs = inputs
+        let imageLayoutAsText: Bool
+        if inputs.requestsLayoutComputer, Semantics.ImagesLayoutAsText.isEnabled {
+            imageLayoutAsText = true
+            newInputs.requestsLayoutComputer = false
+        } else {
+            imageLayoutAsText = false
+        }
+        var outputs: _ViewOutputs
+        if inputs.preferences.requiresDisplayList {
+            let pixelLength = inputs.pixelLength
+            if inputs.archivedView.isArchived {
+                // TODO: ContentTransitionEffect
+                _openSwiftUIUnimplementedFailure()
+            } else {
+                let group = _ShapeStyle_InterpolatorGroup()
+                newInputs.containerPosition = inputs.animatedPosition()
+                let shapeStyles = inputs.resolvedShapeStyles(
+                    role: .stroke,
+                    mode: view.value.styleResolverMode
+                )
+                let data = UpdateData(
+                    time: inputs.time,
+                    position: inputs.position,
+                    size: inputs.size,
+                    pixelLength: pixelLength
+                )
+                outputs = makeLeafView(
+                    view: view,
+                    inputs: newInputs,
+                    styles: shapeStyles,
+                    interpolatorGroup: group,
+                    data: data
+                )
+                // TODO: InterpolatableContent for Image.Resolved
+//                outputs.applyInterpolatorGroup(
+//                    group,
+//                    content:view.value,
+//                    inputs: inputs,
+//                    animatesSize: true,
+//                    defersRender: false
+//                )
+            }
+        } else {
+            outputs = .init()
+        }
+        if imageLayoutAsText {
+            outputs.layoutComputer = Attribute(
+                ResolvedImageLayoutComputer(image: view.value)
+            )
+        } else {
+            makeLeafLayout(&outputs, view: view, inputs: newInputs)
+        }
+        if let representation = inputs.requestedImageRepresentation,
+           representation.shouldMakeRepresentation(inputs: inputs) {
+            let context = Attribute(
+                MakeRepresentableContext(
+                    image: view.value,
+                    tintColor: inputs.tintColor,
+                    foregroundStlye: inputs.foregroundStyle
+                )
+            )
+            representation.makeRepresentation(
+                inputs: inputs,
+                context: context,
+                outputs: &outputs
+            )
+        }
+        return outputs
     }
 
-    @available(OpenSwiftUI_v1_0, *)
-    package typealias Body = Never
+    private struct MakeRepresentableContext: Rule, AsyncAttribute {
+        @Attribute var image: Image.Resolved
+        @Attribute var tintColor: Color?
+        @Attribute var foregroundStlye: AnyShapeStyle?
 
-    @available(OpenSwiftUI_v1_0, *)
-    package typealias ShapeUpdateData = Image.Resolved.UpdateData
+        var value: PlatformImageRepresentableContext {
+            PlatformImageRepresentableContext(
+                image: image,
+                tintColor: tintColor,
+                foregroundStyle: foregroundStlye
+            )
+        }
+    }
 }
+
+// MARK: - ResolvedImageLayoutComputer
+
+private struct ResolvedImageLayoutComputer: StatefulRule, AsyncAttribute {
+    @Attribute var image: Image.Resolved
+
+    typealias Value = LayoutComputer
+
+    mutating func updateValue() {
+        let engine = ResolvedImageLayoutEngine(image: image)
+        update(to: engine)
+    }
+}
+
+// MARK: - ResolvedImageLayoutEngine
+
+private struct ResolvedImageLayoutEngine: LayoutEngine {
+    var image: Image.Resolved
+
+    func spacing() -> Spacing {
+        guard image.image.resizingInfo == nil,
+              let layoutMetrics = image.layoutMetrics,
+              image.backgroundShape == nil else {
+            return .init()
+        }
+        let baselineOffset = layoutMetrics.baselineOffset
+        let alignmentOriginY = layoutMetrics.alignmentOrigin.y
+        let sum = baselineOffset + alignmentOriginY
+        return Spacing(minima: [
+            .init(category: .textToText, edge: .top): .distance(0),
+            .init(category: .textToText, edge: .bottom): .distance(0),
+            .init(category: .edgeAboveText, edge: .top): .distance(baselineOffset),
+            .init(category: .edgeBelowText, edge: .bottom): .distance(baselineOffset + 1.0),
+            .init(category: .textBaseline, edge: .bottom): .distance(-sum),
+            .init(category: .textBaseline, edge: .top): .distance(-(layoutMetrics.contentSize.height - sum)),
+        ])
+    }
+
+    func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+        image.sizeThatFits(in: proposedSize)
+    }
+
+    func lengthThatFits(_ proposal: _ProposedSize, in axis: Axis) -> CGFloat {
+        image.sizeThatFits(in: proposal)[axis]
+    }
+
+    func explicitAlignment(
+        _ k: AlignmentKey,
+        at viewSize: ViewSize
+    ) -> CGFloat? {
+        guard image.image.resizingInfo == nil,
+              let layoutMetrics = image.layoutMetrics else {
+            return nil
+        }
+        let baselineOffset = layoutMetrics.baselineOffset
+        let alignmentOriginY = layoutMetrics.alignmentOrigin.y
+        let baseline = viewSize.height - baselineOffset - alignmentOriginY
+        if VerticalAlignment.lastTextBaseline.key == k {
+            return baseline
+        } else if VerticalAlignment.firstTextBaseline.key == k {
+            return baseline
+        } else if VerticalAlignment._firstTextLineCenter.key == k {
+            return baseline - layoutMetrics.capHeight / 2
+        } else {
+            return nil
+        }
+    }
+}
+
+// MARK: - Image.Resolved + InterpolatableContent [TODO]
 
 //extension Image.Resolved: InterpolatableContent {
 //    package static var defaultTransition: ContentTransition {
