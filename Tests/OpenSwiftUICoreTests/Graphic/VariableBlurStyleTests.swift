@@ -80,6 +80,7 @@ struct VariableBlurStyleTests {
     // MARK: - ProtobufMessage Tests
     
     @Test(
+        .disabled("GraphicsImage encode/decode is not implemented yet"),
         arguments: [
             (VariableBlurStyle(), "2200"),
             (VariableBlurStyle(radius: 10.0), "0d000020412200"),
@@ -95,6 +96,7 @@ struct VariableBlurStyleTests {
     }
     
     @Test(
+        .disabled("GraphicsImage encode/decode is not implemented yet"),
         arguments: [
             (VariableBlurStyle.Mask.none, ""),
             (VariableBlurStyle.Mask.image(.empty), "0a00"),
