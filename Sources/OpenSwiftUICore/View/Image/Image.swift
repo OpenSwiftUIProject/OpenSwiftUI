@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image + View
+//  Status: Complete
 //  ID: BE2D783904D422377BBEBAC3C942583C (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -162,7 +162,7 @@ package protocol ImageProvider: Equatable {
     func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved?
 }
 
-// MARK: - Image + View [WIP]
+// MARK: - Image + View
 
 package protocol ImageStyleProtocol {
     static func _makeImageView(view: _GraphValue<Image>, inputs: _ViewInputs) -> _ViewOutputs
@@ -302,7 +302,42 @@ extension Image: View, UnaryView, PrimitiveView {
         typealias Value = P.Body
 
         mutating func updateValue() {
-            _openSwiftUIUnimplementedFailure()
+            let (view, viewChanged) = $view.changedValue()
+            let changed: Bool
+            if viewChanged {
+                changed = true
+            } else {
+                let (environment, environmentChanged) = $environment.changedValue()
+                if environmentChanged, tracker.hasDifferentUsedValues(environment.plist) {
+                    changed = true
+                } else {
+                    changed = !hasValue
+                }
+            }
+            guard changed else { return }
+
+            tracker.reset()
+            tracker.initializeValues(from: environment.plist)
+            let newEnvironment = EnvironmentValues(environment.plist, tracker: tracker)
+
+            var resolutionContext = ImageResolutionContext(
+                environment: newEnvironment,
+                textStyle: nil,
+                transaction: .init($transaction)
+            )
+            resolutionContext.symbolAnimator = symbolAnimator
+            resolutionContext.options.formUnion(options)
+
+            var resolved = view.resolve(in: .init(environment: environment))
+
+            symbolAnimator = resolved.image.updateSymbolEffects(
+                &symbolEffects,
+                environment: newEnvironment,
+                transaction: $transaction,
+                animationsDisabled: options.contains(.animationsDisabled)
+            )
+
+            value = P.makeView(image: view, resolved: resolved)
         }
         
         static func scrapeContent(from ident: AnyAttribute) -> ScrapeableContent.Item? {
