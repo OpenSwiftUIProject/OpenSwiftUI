@@ -315,11 +315,9 @@ extension Image: View, UnaryView, PrimitiveView {
                 }
             }
             guard changed else { return }
-
             tracker.reset()
             tracker.initializeValues(from: environment.plist)
             let newEnvironment = EnvironmentValues(environment.plist, tracker: tracker)
-
             var resolutionContext = ImageResolutionContext(
                 environment: newEnvironment,
                 textStyle: nil,
@@ -327,9 +325,7 @@ extension Image: View, UnaryView, PrimitiveView {
             )
             resolutionContext.symbolAnimator = symbolAnimator
             resolutionContext.options.formUnion(options)
-
-            var resolved = view.resolve(in: .init(environment: environment))
-
+            var resolved = view.resolve(in: resolutionContext)
             symbolAnimator = resolved.image.updateSymbolEffects(
                 &symbolEffects,
                 environment: newEnvironment,
