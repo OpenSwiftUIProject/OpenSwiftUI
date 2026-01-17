@@ -35,7 +35,7 @@ extension Image {
             guard case .bundle(let bundle) = self else {
                 return nil
             }
-            return nil
+            return bundle
         }
     }
 }
