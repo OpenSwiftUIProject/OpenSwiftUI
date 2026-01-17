@@ -141,7 +141,7 @@ extension Image {
     }
 }
 
-// MARK: - Image.Resolved + View [WIP]
+// MARK: - Image.Resolved + View [_makeView WIP]
 
 extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafViewLayout {
     package struct UpdateData {
@@ -151,32 +151,68 @@ extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafVie
         @Attribute var pixelLength: CGFloat
     }
 
-    package mutating func mustUpdate(data: Image.Resolved.UpdateData, position: Attribute<ViewOrigin>) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+    package mutating func mustUpdate(
+        data: Image.Resolved.UpdateData,
+        position: Attribute<ViewOrigin>
+    ) -> Bool {
+        guard case let .vectorGlyph(resolvedVectorGlyph) = image.contents else {
+            return false
+        }
+        // TODO: ResolvedVectorGlyph
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 
     package func frame(in size: CGSize) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
+        guard image.resizingInfo == nil else {
+            return CGRect(origin: .zero, size: size)
+        }
+        return CGRect(
+            origin: layoutMetrics?.alignmentOrigin ?? .zero,
+            size: self.size
+        )
     }
 
     package func shape(in size: CGSize) -> Image.Resolved.FramedShape {
-        _openSwiftUIUnimplementedFailure()
+        (.image(image), frame(in: size))
     }
 
     package static var hasBackground: Bool {
-        _openSwiftUIUnimplementedFailure()
+        true
     }
 
     package func backgroundShape(in size: CGSize) -> Image.Resolved.FramedShape {
-        _openSwiftUIUnimplementedFailure()
+        guard let backgroundShape, let layoutMetrics else {
+            return (.empty, .zero)
+        }
+        let backgroundSize = layoutMetrics.backgroundSize
+        let contentSize = layoutMetrics.contentSize
+        let size = CGSize(
+            width: backgroundSize.width * (size.width / contentSize.width),
+            height: backgroundSize.height * (size.height / contentSize.height)
+        )
+        let rect = CGRect(origin: .zero, size: size)
+        let path = backgroundShape.path(in: rect, cornerRadius: backgroundCornerRadius)
+        return (.path(path, .init()), rect)
     }
 
-    package func isClear(styles: _ShapeStyle_Pack) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+    package func isClear(styles: ShapeStyle.Pack) -> Bool {
+        switch image.contents {
+        case let .vectorGlyph(resolvedVectorGlyph):
+            return resolvedVectorGlyph.isClear(styles: styles) && styles.isClear(name: .background)
+        default:
+            return image.isTemplate && styles.isClear(name: .foreground) && styles.isClear(name: .background)
+        }
     }
 
     package func sizeThatFits(in proposedSize: _ProposedSize) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        guard let resizingInfo = image.resizingInfo else {
+            return contentSize
+        }
+        let capInsets = resizingInfo.capInsets
+        let width = proposedSize.width.map { max($0, capInsets.horizontal) }
+        let height = proposedSize.height.map { max($0, capInsets.vertical) }
+        return CGSize(width: width ?? size.width, height: height ?? size.height)
     }
 
     nonisolated package static func _makeView(

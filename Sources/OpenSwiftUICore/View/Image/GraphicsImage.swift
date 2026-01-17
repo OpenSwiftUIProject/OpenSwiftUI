@@ -169,6 +169,11 @@ package struct ResolvedVectorGlyph: Equatable {
     package var flipsRightToLeft: Bool {
         animator.flipsRightToLeft
     }
+
+    package func isClear(styles: ShapeStyle.Pack) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
 }
 
 extension GraphicsImage {
