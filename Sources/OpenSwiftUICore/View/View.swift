@@ -86,7 +86,7 @@ public protocol View {
     @ViewBuilder
     @MainActor
     @preconcurrency
-    var body: Self.Body { get }
+    var body: Body { get }
 }
 
 // MARK: - PrimitiveView
