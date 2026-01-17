@@ -88,6 +88,7 @@ extension ForegroundStyle {
         if shape.activeRecursiveStyles.contains(.foreground) {
             LegacyContentStyle.sharedPrimary._apply(to: &shape)
         } else {
+            shape.activeRecursiveStyles.formUnion(.foreground)
             shape.effectiveForegroundStyle._apply(to: &shape)
             shape.activeRecursiveStyles.subtract(.foreground)
         }
