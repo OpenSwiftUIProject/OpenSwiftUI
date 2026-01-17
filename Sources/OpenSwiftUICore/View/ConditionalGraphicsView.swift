@@ -68,7 +68,7 @@ extension ConditionalGraphicsView {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var newInputs = inputs
         let (body, buffer) = makeBody(view: view, inputs: &newInputs.base, fields: fields)
-        let outputs = body.makeView(inputs: inputs)
+        let outputs = body.makeView(inputs: newInputs)
         if let buffer {
             buffer.traceMountedProperties(to: view, fields: fields)
         }
@@ -82,7 +82,7 @@ extension ConditionalGraphicsView {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var newInputs = inputs
         let (body, buffer) = makeBody(view: view, inputs: &newInputs.base, fields: fields)
-        let outputs = body.makeViewList(inputs: inputs)
+        let outputs = body.makeViewList(inputs: newInputs)
         if let buffer {
             buffer.traceMountedProperties(to: view, fields: fields)
         }
