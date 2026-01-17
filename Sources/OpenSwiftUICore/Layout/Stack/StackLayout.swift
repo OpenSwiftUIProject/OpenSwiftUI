@@ -675,7 +675,7 @@ extension StackLayout {
             for index in childrenPtr.indices.reversed() {
                 let fittingOrder = fittingOrderPtr[index]
                 guard priorityPtr[fittingOrder] != firstPriority else {
-                    continue
+                    break
                 }
                 guard majorAxisRangeCachePtr[fittingOrder].min == nil else {
                     continue
