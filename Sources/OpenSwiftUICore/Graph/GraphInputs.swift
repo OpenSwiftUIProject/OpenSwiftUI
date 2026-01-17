@@ -122,7 +122,7 @@ public struct _GraphInputs {
 
         @inlinable
         package mutating func merge(_ other: _GraphInputs.Phase) {
-            resetSeed = resetSeed + other.resetSeed
+            resetSeed = resetSeed &+ other.resetSeed
             isBeingRemoved = isBeingRemoved || other.isBeingRemoved
         }
 
