@@ -1,27 +1,46 @@
 //
 //  ContentTransition.swift
 //  OpenSwiftUICore
-
-// TODO
+//
+//  Audited for 6.5.4
+//  Status: WIP
 
 public import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
 
+// MARK: - ContentTransition [WIP]
+
+/// A kind of transition that applies to the content within a single view,
+/// rather than to the insertion or removal of a view.
+///
+/// Set the behavior of content transitions within a view with the
+/// ``View/contentTransition(_:)`` modifier, passing in one of the defined
+/// transitions, such as ``opacity`` or ``interpolate`` as the parameter.
+///
+/// > Tip: Content transitions only take effect within transactions that apply
+/// an ``Animation`` to the views inside the ``View/contentTransition(_:)``
+/// modifier.
+///
+/// Content transitions only take effect within the context of an
+/// ``Animation`` block.
 @available(OpenSwiftUI_v4_0, *)
 public struct ContentTransition: Equatable, Sendable {
+
+    // MARK: - ContentTransition.Storage
+
     package enum Storage: Equatable, @unchecked Sendable {
         case named(ContentTransition.NamedTransition)
 //        case custom(ContentTransition.CustomTransition)
-//        case symbolReplace(_SymbolEffect.ReplaceConfiguration)
+        case symbolReplace(_SymbolEffect.ReplaceConfiguration)
     }
+
+    // MARK: - ContentTransition.Style
 
     @_spi(Private)
     public struct Style: Hashable, Sendable/*, Codable*/ {
         package enum Storage: Hashable, Sendable {
             case `default`
-
             case sessionWidget
-
             case animatedWidget
         }
 
@@ -44,8 +63,11 @@ public struct ContentTransition: Equatable, Sendable {
     package var isReplaceable: Bool
 
     package init(storage: ContentTransition.Storage) {
-        _openSwiftUIUnimplementedFailure()
+        self.storage = storage
+        self.isReplaceable = false
     }
+
+    // MARK: - ContentTransition.NamedTransition
 
     package struct NamedTransition: Hashable, Sendable {
         package enum Name: Hashable {
@@ -55,7 +77,7 @@ public struct ContentTransition: Equatable, Sendable {
             case diff
             case fadeIfDifferent
             case text(different: Bool)
-            // case numericText(ContentTransition.NumericTextConfiguration)
+            case numericText(ContentTransition.NumericTextConfiguration)
         }
 
         package var name: ContentTransition.NamedTransition.Name
@@ -73,7 +95,78 @@ public struct ContentTransition: Equatable, Sendable {
         }
     }
 
-    // TODO: NumericTextConfiguration
+    // MARK: - ContentTransition.NumericTextConfiguration [WIP]
+
+    @_spi(Private)
+    @available(OpenSwiftUI_v5_0, *)
+    public struct NumericTextConfiguration: Hashable, Sendable {
+        package enum Direction: Hashable {
+            case fixed(downwards: Bool)
+            case automatic(value: Float)
+        }
+
+        package struct Options: OptionSet, Hashable {
+            package let rawValue: UInt8
+
+            package init(rawValue: UInt8) {
+                self.rawValue = rawValue
+            }
+
+            package static let reversed: ContentTransition.NumericTextConfiguration.Options = .init(rawValue: 1 << 0)
+
+            package static let relativeBlur: ContentTransition.NumericTextConfiguration.Options = .init(rawValue: 1 << 1)
+        }
+
+        package var direction: ContentTransition.NumericTextConfiguration.Direction
+        package var axis: Axis?
+        package var options: ContentTransition.NumericTextConfiguration.Options
+        private var _delay: UInt8 = 18
+        private var _scale: UInt8 = 51
+        private var _blur: UInt8 = 32
+        private var _offset: UInt8 = 19
+
+        @_spi(Private)
+        package init(
+            direction: ContentTransition.NumericTextConfiguration.Direction = .fixed(downwards: false),
+            axis: Axis? = nil,
+            options: ContentTransition.NumericTextConfiguration.Options = .relativeBlur
+        ) {
+            self.direction = direction
+            self.axis = axis
+            self.options = options
+        }
+
+        @_spi(Private)
+        package var delay: Float {
+            get { _openSwiftUIUnimplementedFailure() }
+            set { _openSwiftUIUnimplementedFailure() }
+        }
+
+        package var maxDurationMultiple: Float {
+            _openSwiftUIUnimplementedFailure()
+        }
+
+        package var scale: Float {
+            get { _openSwiftUIUnimplementedFailure() }
+            set { _openSwiftUIUnimplementedFailure() }
+        }
+
+        package var blur: Float {
+            get { _openSwiftUIUnimplementedFailure() }
+            set { _openSwiftUIUnimplementedFailure() }
+        }
+
+        package var relativeBlur: Float {
+            get { _openSwiftUIUnimplementedFailure() }
+            set { _openSwiftUIUnimplementedFailure() }
+        }
+
+        package var offset: Float {
+            get { _openSwiftUIUnimplementedFailure() }
+            set { _openSwiftUIUnimplementedFailure() }
+        }
+    }
+
 
     @_spi(Private)
     public struct EffectType: Equatable, Sendable {
@@ -223,8 +316,193 @@ public struct ContentTransition: Equatable, Sendable {
         }
     }
 
-    // TODO
-    package struct State {}
+    @_spi(Private)
+    public static let `default`: ContentTransition = .init(storage: .named(.init())) // FIXME
+
+    /// The identity content transition, which indicates that content changes
+    /// shouldn't animate.
+    ///
+    /// You can pass this value to a ``View/contentTransition(_:)``
+    /// modifier to selectively disable animations that would otherwise
+    /// be applied by a ``withAnimation(_:_:)`` block.
+    public static let identity: ContentTransition = .init(storage: .named(.init())) // FIXME
+
+    /// A content transition that indicates content fades from transparent
+    /// to opaque on insertion, and from opaque to transparent on removal.
+    public static let opacity: ContentTransition = .init(storage: .named(.init())) // FIXME
+
+    /// A content transition that indicates the views attempt to interpolate
+    /// their contents during transitions, where appropriate.
+    ///
+    /// Text views can interpolate transitions when the text views have
+    /// identical strings. Matching glyph pairs can animate changes to their
+    /// color, position, size, and any variable properties. Interpolation can
+    /// apply within a ``Font/Design`` case, but not between cases, or between
+    /// entirely different fonts. For example, you can interpolate a change
+    /// between ``Font/Weight/thin`` and ``Font/Weight/black`` variations of a
+    /// font, since these are both cases of ``Font/Weight``. However, you can't
+    /// interpolate between the default design of a font and its Italic version,
+    /// because these are different fonts. Any changes that can't show an
+    /// interpolated animation use an opacity animation instead.
+    ///
+    /// Symbol images created with the ``Image/init(systemName:)`` initializer
+    /// work the same way as text: changes within the same symbol attempt to
+    /// interpolate the symbol's paths. When interpolation is unavailable, the
+    /// system uses an opacity transition instead.
+    public static let interpolate: ContentTransition = .init(storage: .named(.init())) // FIXME
+
+    // MARK: - ContentTransition.Options
+
+    @_spi(Private)
+    @frozen
+    public struct Options: OptionSet {
+        public let rawValue: UInt32
+
+        @inlinable
+        public init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        public static let addsDrawingGroup: ContentTransition.Options = .init(rawValue: 1 << 0)
+
+        public static let animatesDifferentContent: ContentTransition.Options = .init(rawValue: 1 << 1)
+
+        package static let formsGroup: ContentTransition.Options = .init(rawValue: 1 << 2)
+
+        package static let implicitGroup: ContentTransition.Options = .init(rawValue: 1 << 3)
+
+        package static let inherited: ContentTransition.Options = .addsDrawingGroup
+    }
+
+    // MARK: - ContentTransition.State
+
+    package struct State: Equatable, EnvironmentKey {
+        package static let defaultValue: ContentTransition.State = .init()
+
+        package var transition: ContentTransition
+        package var style: ContentTransition.Style
+        package var animation: Animation?
+        package var options: ContentTransition.Options
+
+        package init(
+            transition: ContentTransition = .default,
+            style: ContentTransition.Style = .default,
+            animation: Animation? = nil,
+            options: ContentTransition.Options = .init()
+        ) {
+            self.transition = transition
+            self.style = style
+            self.animation = animation
+            self.options = options
+        }
+
+        package var rasterizationOptions: RasterizationOptions {
+            var rasterizationOptions = RasterizationOptions()
+            rasterizationOptions.flags.subtract(.requiresLayer)
+            rasterizationOptions.flags.formUnion(options.contains(.addsDrawingGroup) ? .isAccelerated : [])
+            return rasterizationOptions
+        }
+
+        package mutating func applyDynamicTextAnimation(
+            in transaction: Transaction
+        ) {
+            guard animation == nil,
+                  !transaction.disablesAnimations,
+                  style != .default
+            else { return }
+            animation = .default
+        }
+    }
+
+    package mutating func applyEnvironmentValues(
+        style: ContentTransition.Style,
+        layoutDirection: LayoutDirection
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - EnvironmentValues + ContentTransition
+
+@available(OpenSwiftUI_v4_0, *)
+extension EnvironmentValues {
+    package var contentTransitionState: ContentTransition.State {
+        get { self[ContentTransition.State.self] }
+        set { self[ContentTransition.State.self] = newValue }
+    }
+
+    /// The current method of animating the contents of views.
+    public var contentTransition: ContentTransition {
+        get { contentTransitionState.transition }
+        set { contentTransitionState.transition = newValue }
+    }
+
+    @_spi(Private)
+    public var contentTransitionStyle: ContentTransition.Style {
+        get { contentTransitionState.style }
+        set { contentTransitionState.style = newValue }
+    }
+
+    @_spi(Private)
+    public var contentTransitionAnimation: Animation? {
+        get { contentTransitionState.animation }
+        set { contentTransitionState.animation = newValue }
+    }
+
+    /// A Boolean value that controls whether views that render content
+    /// transitions use GPU-accelerated rendering.
+    ///
+    /// Setting this value to `true` causes SwiftUI to wrap content transitions
+    /// with a ``View/drawingGroup(opaque:colorMode:)`` modifier.
+    public var contentTransitionAddsDrawingGroup: Bool {
+        get { contentTransitionState.options.contains(.addsDrawingGroup) }
+        set { contentTransitionState.options.setValue(newValue, for: .addsDrawingGroup) }
+    }
+
+    package var contentTransitionGroupEffect: ContentTransitionEffect {
+        ContentTransitionEffect(state: contentTransitionState)
+    }
+}
+
+// MARK: - _ContentTransitionGroup [WIP]
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+@frozen
+public struct _ContentTransitionGroup: MultiViewModifier, PrimitiveViewModifier {
+    init() {
+        _openSwiftUIEmptyStub()
+    }
+
+    nonisolated public static func _makeView(
+        modifier: _GraphValue<_ContentTransitionGroup>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - ContentTransitionEffect [WIP]
+
+package struct ContentTransitionEffect: _RendererEffect {
+    package var state: ContentTransition.State
+
+    package init(state: ContentTransition.State) {
+        self.state = state
+    }
+
+    package func effectValue(size: CGSize) -> DisplayList.Effect {
+        .contentTransition(state)
+    }
+
+    nonisolated package static func _makeView(
+        modifier: _GraphValue<ContentTransitionEffect>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 
 // FIXME: ORB
@@ -270,4 +548,10 @@ package enum ORBTransitionEffectType: UInt32, Equatable {
     case matchMove = 5
     case translationScale = 15
     case relativeBlur = 16
+}
+
+// MARK: - DisablesContentTransitionsKey
+
+package struct DisablesContentTransitionsKey: EnvironmentKey {
+    package static var defaultValue: Bool { false }
 }

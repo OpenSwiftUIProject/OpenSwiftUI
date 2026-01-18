@@ -91,8 +91,6 @@ bool UIViewIgnoresTouchEvents(UIView *view);
 OPENSWIFTUI_EXPORT
 float UIAnimationDragCoefficient(void);
 
-UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
-
 // MARK: - UIUpdate related private API from UIKitCore
 
 OPENSWIFTUI_EXPORT

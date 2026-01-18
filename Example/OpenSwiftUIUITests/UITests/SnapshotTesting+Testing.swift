@@ -115,6 +115,34 @@ func openSwiftUIAssertSnapshot<V: View, Format>(
     )
 }
 
+// FIXME: Should remove controller in name
+func openSwiftUIControllerAssertSnapshot<V: PlatformViewController, Format>(
+    of value: @autoclosure () -> V,
+    as snapshotting: Snapshotting<PlatformViewController, Format>,
+    named name: String? = nil,
+    record recording: Bool? = shouldRecord,
+    timeout: TimeInterval = 5,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    testName: String = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) {
+    openSwiftUIAssertSnapshot(
+        of: value(),
+        as: snapshotting,
+        named: name,
+        record: recording,
+        timeout: timeout,
+        fileID: fileID,
+        file: filePath,
+        testName: testName,
+        line: line,
+        column: column
+    )
+}
+
+// FIXME: Should be internal, private due to conflict infer
 private func openSwiftUIAssertSnapshot<Value, Format>(
     of value: @autoclosure () -> Value,
     as snapshotting: Snapshotting<Value, Format>,
