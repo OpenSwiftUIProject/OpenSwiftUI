@@ -104,7 +104,7 @@ public struct _ShapeStyle_Shape {
     }
     
     package var effectiveForegroundStyle: AnyShapeStyle {
-        environment._effectiveForegroundStyle
+        foregroundStyle ?? environment._effectiveForegroundStyle
     }
 }
 
