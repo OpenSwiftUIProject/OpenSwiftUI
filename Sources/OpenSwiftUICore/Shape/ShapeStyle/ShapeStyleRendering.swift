@@ -80,7 +80,48 @@ package struct _ShapeStyle_RenderedShape {
         styles: Attribute<ShapeStyle.Pack>,
         layers: inout ShapeStyle.RenderedLayers
     ) {
-        _openSwiftUIUnimplementedFailure()
+        switch shape {
+        case let .text(contentView):
+            // Text rendering
+            _ = contentView
+            _openSwiftUIUnimplementedWarning()
+            break
+        case let .image(graphicsImage):
+            if graphicsImage.isTemplate {
+                if case let .vectorGlyph(glygh) = graphicsImage.contents {
+                    renderVectorGlyph(
+                        glygh,
+                        size: graphicsImage.size,
+                        orientation: graphicsImage.orientation,
+                        name: name,
+                        styles: styles.value,
+                        layers: &layers
+                    )
+                } else {
+                    let style = styles.value[name, 0]
+                    layers.beginLayer(
+                        id: .styled(name, 0),
+                        style: style,
+                        shape: &self
+                    )
+                    render(style: style)
+                    layers.endLayer(shape: &self)
+                }
+            } else {
+                renderUnstyledImage(graphicsImage, layers: &layers)
+            }
+        case .path, .alphaMask:
+            let style = styles.value[name, 0]
+            layers.beginLayer(
+                id: .styled(name, 0),
+                style: style,
+                shape: &self
+            )
+            render(style: style)
+            layers.endLayer(shape: &self)
+        case .empty:
+            break
+        }
     }
 
     package mutating func commitItem() -> DisplayList.Item {
@@ -89,6 +130,37 @@ package struct _ShapeStyle_RenderedShape {
 
     package mutating func background(_ other: inout ShapeStyle.RenderedShape) {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    private func render(style: ShapeStyle.Pack.Style) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func renderVectorGlyph(
+        _ glyph: ResolvedVectorGlyph,
+        size: CGSize,
+        orientation: Image.Orientation,
+        name: ShapeStyle.Name,
+        styles: ShapeStyle.Pack,
+        layers: inout ShapeStyle.RenderedLayers
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private mutating func renderUnstyledImage(
+        _ graphicsImage: GraphicsImage,
+        layers: inout ShapeStyle.RenderedLayers
+    ) {
+        layers.beginLayer(
+            id: .unstyled,
+            style: nil,
+            shape: &self
+        )
+        item.value = .content(DisplayList.Content(
+            .image(graphicsImage),
+            seed: contentSeed
+        ))
+        layers.endLayer(shape: &self)
     }
 }
 
