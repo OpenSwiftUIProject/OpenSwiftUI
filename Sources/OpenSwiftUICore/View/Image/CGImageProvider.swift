@@ -84,8 +84,7 @@ private struct CGImageProvider: ImageProvider {
         )
         graphicsImage.allowedDynamicRange = context.effectiveAllowedDynamicRange(for: graphicsImage)
         if context.environment.shouldRedactContent {
-            let color = Color.foreground.resolve(in: context.environment)
-            graphicsImage.contents = .color(color.multiplyingOpacity(by: 0.16))
+            graphicsImage.redact(in: context.environment)
         }
         return Image.Resolved(
             image: graphicsImage,

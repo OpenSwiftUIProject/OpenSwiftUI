@@ -3,10 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image
+//  Status: Complete
 //  ID: 18671928047E57F039DC339288B6FAFB (SwiftUICore)
 
 import OpenAttributeGraphShims
+import OpenCoreGraphicsShims
 
 // MARK: - RedactionReasons
 
@@ -161,16 +162,38 @@ extension _ViewInputs {
     }
 }
 
-// MARK: - Image + redacted [TODO]
+// MARK: - Image + redacted
 
 extension GraphicsImage {
     package mutating func redact(in environment: EnvironmentValues) {
-        _openSwiftUIUnimplementedFailure()
+        let color = Color.foreground.resolve(in: environment)
+        contents = .color(color.multiplyingOpacity(by: 0.16))
     }
 }
 
 extension Image {
-    package static let redacted: Image = {
-        _openSwiftUIUnimplementedFailure()
-    }()
+    package static let redacted: Image = Image(RedactedImageProvider())
+
+    private struct RedactedImageProvider: ImageProvider {
+        func resolve(in context: ImageResolutionContext) -> Image.Resolved {
+            let color = Color.foreground.resolve(in: context.environment)
+            let image = GraphicsImage(
+                contents: .color(color.multiplyingOpacity(by: 0.16)),
+                scale: 1.0,
+                unrotatedPixelSize: CGSize(width: 1, height: 1),
+                orientation: .up,
+                isTemplate: false,
+                resizingInfo: .resizable
+            )
+            return Image.Resolved(
+                image: image,
+                decorative: true,
+                label: nil
+            )
+        }
+
+        func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {
+            nil
+        }
+    }
 }
