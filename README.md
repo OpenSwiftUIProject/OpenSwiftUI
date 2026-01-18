@@ -114,7 +114,7 @@ for various platforms:
 
 ### Current supported feature
 
-- Color rendering
+- Color/Image rendering (Path/Text is not supported yet)
 - Layout system
 - Animation system
 - onAppear/onDisappear modifier
