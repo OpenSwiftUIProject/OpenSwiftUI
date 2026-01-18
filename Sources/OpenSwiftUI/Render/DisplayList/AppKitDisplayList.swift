@@ -60,8 +60,22 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         }
     }
     
+    // Audited for 6.5.4
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
-        _openSwiftUIUnimplementedFailure()
+        let cls: NSView.Type
+        if kind == .shape {
+            cls = _NSShapeHitTestingView.self
+        } else if kind == .platformLayer {
+            cls = _NSPlatformLayerView.self
+        } else {
+            cls = kind.isContainer ? _NSInheritedView.self : _NSGraphicsView.self
+        }
+        let view = cls.init()
+        let layer = type.init()
+        _SetLayerViewDelegate(layer, view)
+        view.layer = layer
+        initView(view, kind: kind)
+        return view
     }
 
     override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
@@ -142,4 +156,49 @@ private class _NSProjectionView: _NSInheritedView {
         layer?.transform = .init(projectionTransform)
     }
 }
+
+// MARK: - _NSShapeHitTestingView [WIP]
+
+@objc
+private class _NSShapeHitTestingView: _NSGraphicsView {
+    var path: Path
+
+    override init(frame frameRect: NSRect) {
+        path = .init()
+        super.init(frame: frameRect)
+    }
+
+    required init?(coder: NSCoder) {
+        path = .init()
+        super.init(coder: coder)
+    }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        // path.contains(, eoFill: false)
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
+
+// MARK: - _NSPlatformLayerView
+
+@objc
+private class _NSPlatformLayerView: _NSGraphicsView {
+    override init(frame frameRect: NSRect) {
+        super.init(frame: frameRect)
+    }
+
+    required init?(coder: NSCoder) {
+        super.init(coder: coder)
+    }
+
+    override func _updateLayerShadowFromView() {
+        _openSwiftUIEmptyStub()
+    }
+
+    override func _updateLayerShadowColorFromView() {
+        _openSwiftUIEmptyStub()
+    }
+}
+
 #endif

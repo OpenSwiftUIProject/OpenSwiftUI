@@ -110,8 +110,4 @@
 }
 @end
 
-UIView * _UIKitCreateCustomView(Class class, CALayer *layer) {
-    return [[class alloc] _initWithLayer:layer];
-}
-
 #endif /* __has_include(<UIKit/UIKit.h>) */
