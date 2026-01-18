@@ -10,9 +10,10 @@ import OpenSwiftUI
 #else
 import SwiftUI
 #endif
+import Foundation
 
 struct ContentView: View {
     var body: some View {
-        RepeatAnimationExample()
+        AsyncImageExample()
     }
 }
