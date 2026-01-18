@@ -530,6 +530,21 @@ extension DisplayList {
         init() {
 //            _openSwiftUIUnimplementedFailure()
         }
+
+        func reset() {
+            _openSwiftUIEmptyStub()
+        }
+
+        func rewriteDisplayList(
+            _ list: inout DisplayList,
+            time: Attribute<Time>,
+            contentOrigin: CGPoint,
+            contentOffset: CGSize,
+            version: DisplayList.Version
+        ) -> Bool {
+            _openSwiftUIEmptyStub()
+            return false
+        }
     }
 }
 

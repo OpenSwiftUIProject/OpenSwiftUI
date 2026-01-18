@@ -3,10 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Blocked by InterpolatedDisplayList
 //  ID: 7377A3587909D054D379011E12826F37 (SwiftUICore)
 
 package import OpenAttributeGraphShims
+import OpenCoreGraphicsShims
 
 // MARK: - InterpolatableContent
 
@@ -93,7 +94,7 @@ extension _ViewOutputs {
     }
 }
 
-// MARK: - InterpolatedDisplayList
+// MARK: - InterpolatedDisplayList [WIP]
 
 private struct InterpolatedDisplayList<Content>: StatefulRule, AsyncAttribute where Content: InterpolatableContent {
     let group: DisplayList.InterpolatorGroup
@@ -160,7 +161,32 @@ private struct InterpolatedDisplayList<Content>: StatefulRule, AsyncAttribute wh
 
     typealias Value = DisplayList
 
-    func updateValue() {
-        
+    mutating func updateValue() {
+        if resetSeed != phase.resetSeed {
+            resetSeed = phase.resetSeed
+            lastContent = nil
+            contentVersion = .init()
+            group.reset()
+        }
+        let (content, contentChanged) = $content.changedValue()
+        let size = size
+        let environment = environment
+        let state = environment.contentTransitionState
+        let version = DisplayList.Version(forUpdate: ())
+        if let lastContent,
+           (contentChanged && lastContent.requiresTransition(to: content))
+           || (lastContent.appliesTransitionsForSizeChanges && lastSize != size),
+           !transaction.disablesContentTransitions {
+            contentVersion = version
+            _ = state
+            _openSwiftUIUnimplementedWarning()
+        }
+        // FIXME
+        let result: [DisplayList.Item] = list?.items.map {
+            var item = $0
+            item.frame.origin = .init(position - containerPosition)
+            return item
+        } ?? []
+        value = DisplayList(result)
     }
 }
