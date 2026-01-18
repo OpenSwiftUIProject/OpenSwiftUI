@@ -1016,10 +1016,3 @@ extension EnvironmentValues {
         set { self[LowerLineLimitKey.self] = newValue }
     }
 }
-
-extension EnvironmentValues {
-    var contentTransitionStyle: ContentTransition.Style {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
-    }
-}

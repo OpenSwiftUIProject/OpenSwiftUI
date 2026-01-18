@@ -301,9 +301,6 @@ struct DynamicLayoutScrollable {}
 
 // TODO: - ViewListContentTransition
 
-// FIXME
-struct ContentTransitionEffect {}
-
 private struct ViewListContentTransition<T>: StatefulRule, AsyncAttribute where T: Transition {
     var helper: TransitionHelper<T>
     @Attribute var size: ViewSize

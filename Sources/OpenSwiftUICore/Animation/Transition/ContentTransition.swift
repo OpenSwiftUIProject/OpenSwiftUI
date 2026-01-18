@@ -422,6 +422,89 @@ public struct ContentTransition: Equatable, Sendable {
     }
 }
 
+// MARK: - EnvironmentValues + ContentTransition
+
+@available(OpenSwiftUI_v4_0, *)
+extension EnvironmentValues {
+    package var contentTransitionState: ContentTransition.State {
+        get { self[ContentTransition.State.self] }
+        set { self[ContentTransition.State.self] = newValue }
+    }
+
+    /// The current method of animating the contents of views.
+    public var contentTransition: ContentTransition {
+        get { contentTransitionState.transition }
+        set { contentTransitionState.transition = newValue }
+    }
+
+    @_spi(Private)
+    public var contentTransitionStyle: ContentTransition.Style {
+        get { contentTransitionState.style }
+        set { contentTransitionState.style = newValue }
+    }
+
+    @_spi(Private)
+    public var contentTransitionAnimation: Animation? {
+        get { contentTransitionState.animation }
+        set { contentTransitionState.animation = newValue }
+    }
+
+    /// A Boolean value that controls whether views that render content
+    /// transitions use GPU-accelerated rendering.
+    ///
+    /// Setting this value to `true` causes SwiftUI to wrap content transitions
+    /// with a ``View/drawingGroup(opaque:colorMode:)`` modifier.
+    public var contentTransitionAddsDrawingGroup: Bool {
+        get { contentTransitionState.options.contains(.addsDrawingGroup) }
+        set { contentTransitionState.options.setValue(newValue, for: .addsDrawingGroup) }
+    }
+
+    package var contentTransitionGroupEffect: ContentTransitionEffect {
+        ContentTransitionEffect(state: contentTransitionState)
+    }
+}
+
+// MARK: - _ContentTransitionGroup [WIP]
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+@frozen
+public struct _ContentTransitionGroup: MultiViewModifier, PrimitiveViewModifier {
+    init() {
+        _openSwiftUIEmptyStub()
+    }
+
+    nonisolated public static func _makeView(
+        modifier: _GraphValue<_ContentTransitionGroup>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - ContentTransitionEffect [WIP]
+
+package struct ContentTransitionEffect: _RendererEffect {
+    package var state: ContentTransition.State
+
+    package init(state: ContentTransition.State) {
+        self.state = state
+    }
+
+    package func effectValue(size: CGSize) -> DisplayList.Effect {
+        .contentTransition(state)
+    }
+
+    nonisolated package static func _makeView(
+        modifier: _GraphValue<ContentTransitionEffect>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 // FIXME: ORB
 
 package enum ORBTransitionMethod: Int {
