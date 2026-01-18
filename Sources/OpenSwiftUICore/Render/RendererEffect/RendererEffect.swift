@@ -179,13 +179,13 @@ private struct RendererEffectDisplayList<Effect>: Rule, AsyncAttribute, Scrapeab
         }
         let version = DisplayList.Version(forUpdate: ())
         let proxy = GeometryProxy(
-            owner: .current!,
+            owner: attribute.identifier,
             size: $size,
             environment: $environment,
             transform: $transform,
             position: $position,
             safeAreaInsets: $safeAreaInsets,
-            seed: .init(bitPattern: numericCast(version.value))
+            seed: UInt32(truncatingIfNeeded: version.value)
         )
 
         let e: DisplayList.Effect

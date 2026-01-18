@@ -4,7 +4,7 @@
 //
 //  Audited for 6.5.4
 //  Status: WIP
-//  ID: E1641985C375D8826E6966D4F238A1B8
+//  ID: E1641985C375D8826E6966D4F238A1B8 (SwiftUICore)
 
 package import Foundation
 package import OpenAttributeGraphShims
@@ -122,7 +122,7 @@ package struct ShapeStyledResponderData<V>: ContentResponder where V: ShapeStyle
 
 // TODO: ShapeStyledResponderFilter
 
-// MARK: - ShapeStyledDisplayList [WIP]
+// MARK: - ShapeStyledDisplayList
 
 struct ShapeStyledDisplayList<V>: StatefulRule, AsyncAttribute where V: ShapeStyledLeafView {
     let group: ShapeStyle.InterpolatorGroup?
@@ -174,16 +174,79 @@ struct ShapeStyledDisplayList<V>: StatefulRule, AsyncAttribute where V: ShapeSty
 
     typealias Value = DisplayList
 
-    func updateValue() {
-        // FIXME
-        let view = view as! StyledTextContentView
-        var item = DisplayList.Item(
-            .content(.init(.text(view, CGSize(width: 50, height: 50)), seed: .init())),
-            frame: .zero,
-            identity: identity,
-            version: .init()
+    mutating func updateValue() {
+        var (view, viewChanged) = $view.changedValue()
+
+        let shouldUpdateSeed: Bool
+        let version: DisplayList.Version
+        let mustUpdate = view.mustUpdate(data: data, position: $position)
+
+        if mustUpdate || viewChanged || contentSeed.value == 0 {
+            shouldUpdateSeed = true
+            version = .init(forUpdate: ())
+        } else {
+            let excluding = [$position.identifier, $containerPosition.identifier, $view.identifier]
+            shouldUpdateSeed = Graph.anyInputsChanged(excluding: excluding)
+            version = .init(forUpdate: ())
+        }
+        if shouldUpdateSeed {
+            contentSeed = .init(version)
+        }
+
+        let proxy = GeometryProxy(
+            owner: attribute.identifier,
+            size: $animatedSize,
+            environment: $environment,
+            transform: $transform,
+            position: $position,
+            safeAreaInsets: $safeAreaInsets,
+            seed: UInt32(truncatingIfNeeded: version.value)
         )
-        item.canonicalize(options: options)
-        value = DisplayList(item)
+        let position = position
+        let containerPosition = containerPosition
+        let resultSize = V.animatesSize ? animatedSize.value : size
+        let framedShape = proxy.asCurrent {
+            view.shape(in: resultSize)
+        }
+        let offset = position - containerPosition
+        var layers = ShapeStyle.RenderedLayers(group: group)
+        if V.hasBackground {
+            let backgroundFramedShape = proxy.asCurrent {
+                view.backgroundShape(in: resultSize)
+            }
+            switch backgroundFramedShape.shape {
+            case .empty: break
+            default:
+                var renderedShape = ShapeStyle.RenderedShape(
+                    backgroundFramedShape.shape,
+                    frame: backgroundFramedShape.frame.offset(by: offset),
+                    identity: identity,
+                    version: version,
+                    contentSeed: contentSeed,
+                    options: options,
+                    environment: $environment
+                )
+                renderedShape.renderItem(
+                    name: .background,
+                    styles: $styles,
+                    layers: &layers
+                )
+            }
+        }
+        var renderedShape = ShapeStyle.RenderedShape(
+            framedShape.shape,
+            frame: framedShape.frame.offset(by: offset),
+            identity: identity,
+            version: version,
+            contentSeed: contentSeed,
+            options: options,
+            environment: $environment
+        )
+        renderedShape.renderItem(
+            name: .foreground,
+            styles: $styles,
+            layers: &layers
+        )
+        value = layers.commit(shape: &renderedShape, options: options)
     }
 }
