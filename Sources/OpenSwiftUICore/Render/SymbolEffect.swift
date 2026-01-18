@@ -8,6 +8,11 @@ import OpenAttributeGraphShims
 
 package struct _SymbolEffect: Equatable {
 
+    package struct ReplaceConfiguration: Equatable {
+        package init() {
+            // TODO
+        }
+    }
 }
 
 extension _SymbolEffect {

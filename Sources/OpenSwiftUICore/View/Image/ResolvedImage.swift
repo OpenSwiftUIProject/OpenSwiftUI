@@ -141,7 +141,7 @@ extension Image {
     }
 }
 
-// MARK: - Image.Resolved + View [_makeView WIP]
+// MARK: - Image.Resolved + View [mustUpdate & _makeView WIP]
 
 extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafViewLayout {
     package struct UpdateData {
@@ -253,14 +253,13 @@ extension Image.Resolved: UnaryView, PrimitiveView, ShapeStyledLeafView, LeafVie
                     interpolatorGroup: group,
                     data: data
                 )
-                // TODO: InterpolatableContent for Image.Resolved
-//                outputs.applyInterpolatorGroup(
-//                    group,
-//                    content:view.value,
-//                    inputs: inputs,
-//                    animatesSize: true,
-//                    defersRender: false
-//                )
+                outputs.applyInterpolatorGroup(
+                    group,
+                    content:view.value,
+                    inputs: inputs,
+                    animatesSize: true,
+                    defersRender: false
+                )
             }
         } else {
             outputs = .init()
@@ -373,17 +372,20 @@ private struct ResolvedImageLayoutEngine: LayoutEngine {
     }
 }
 
-// MARK: - Image.Resolved + InterpolatableContent [TODO]
+// MARK: - Image.Resolved + InterpolatableContent [WIP]
 
-//extension Image.Resolved: InterpolatableContent {
-//    package static var defaultTransition: ContentTransition {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    package func modifyTransition(state: inout ContentTransition.State, to other: Image.Resolved) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
+extension Image.Resolved: InterpolatableContent {
+    package static var defaultTransition: ContentTransition {
+        isLinkedOnOrAfter(.v4) ? .interpolate : .identity
+    }
+
+    package func modifyTransition(
+        state: inout ContentTransition.State,
+        to other: Image.Resolved
+    ) {
+        _openSwiftUIUnimplementedWarning()
+    }
+}
 
 extension EnvironmentValues {
     package func imageIsTemplate(renderingMode: Image.TemplateRenderingMode? = nil) -> Bool {
