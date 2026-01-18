@@ -163,15 +163,14 @@ package struct _ShapeStyle_RenderedShape {
     }
 
     private mutating func addEffect(_ effect: DisplayList.Effect) {
-        _openSwiftUIUnimplementedWarning()
-//        let displayList = DisplayList(item)
-//        item = .init(
-//            .effect(effect, displayList),
-//            frame: frame,
-//            identity: item.identity,
-//            version: item.version
-//        )
-//        item.canonicalize(options: options)
+        let effectItem = DisplayList.Item(
+            item.value,
+            frame: CGRect(origin: .zero, size: item.size),
+            identity: .none,
+            version: item.version
+        )
+        item.value = .effect(effect, DisplayList(effectItem))
+        item.canonicalize(options: options)
     }
 
     private func render(style: ShapeStyle.Pack.Style) {
@@ -251,9 +250,11 @@ package struct _ShapeStyle_RenderedLayers {
             return
         }
         // FIXME
-        _ = group.addLayer(id: id, style: style)
-        // TODO: interpolatorData update
-        // interpolatorData =
+        guard case let .interpolatorData(group: group, serial: serial) = group.addLayer(id: id, style: style) else {
+            _openSwiftUIUnimplementedWarning()
+            return
+        }
+//        shape.interpolatorData = (group, serial)
         _openSwiftUIUnimplementedWarning()
     }
 
@@ -320,7 +321,7 @@ final package class _ShapeStyle_InterpolatorGroup: DisplayList.InterpolatorGroup
         style: ShapeStyle.Pack.Style?
     ) -> AddLayerResult {
         _openSwiftUIUnimplementedWarning()
-        return .none
+        return .interpolatorData(group: .init(), serial: 0)
     }
 }
 
