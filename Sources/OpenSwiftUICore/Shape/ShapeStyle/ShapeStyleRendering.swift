@@ -45,6 +45,8 @@ package struct _ShapeStyle_RenderedShape {
 
     private struct LayerNeeds: OptionSet {
         let rawValue: UInt8
+
+        static let drawingGroup: LayerNeeds = .init(rawValue: 1 << 0)
     }
 
     private var layerNeedes: LayerNeeds
@@ -125,11 +127,51 @@ package struct _ShapeStyle_RenderedShape {
     }
 
     package mutating func commitItem() -> DisplayList.Item {
-        _openSwiftUIUnimplementedFailure()
+        defer {
+            blendMode = .normal
+            opacity = 1.0
+            layerNeedes = []
+            item.value = .empty
+        }
+        guard opacity != .zero, !frame.isEmpty else {
+            item.value = .empty
+            if let data = interpolatorData {
+                addEffect(.interpolatorLayer(data.group, serial: data.serial))
+                interpolatorData = nil
+            }
+            return item
+        }
+        item.canonicalize(options: options)
+        if let data = interpolatorData {
+            addEffect(.interpolatorLayer(data.group, serial: data.serial))
+            interpolatorData = nil
+        }
+        if layerNeedes.contains(.drawingGroup) {
+            item.addDrawingGroup(contentSeed: contentSeed)
+        }
+        if blendMode != .blendMode(.normal) {
+            addEffect(.blendMode(blendMode))
+        }
+        if opacity != 1.0 {
+            addEffect(.opacity(opacity))
+        }
+        return item
     }
 
     package mutating func background(_ other: inout ShapeStyle.RenderedShape) {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    private mutating func addEffect(_ effect: DisplayList.Effect) {
+        _openSwiftUIUnimplementedWarning()
+//        let displayList = DisplayList(item)
+//        item = .init(
+//            .effect(effect, displayList),
+//            frame: frame,
+//            identity: item.identity,
+//            version: item.version
+//        )
+//        item.canonicalize(options: options)
     }
 
     private func render(style: ShapeStyle.Pack.Style) {
@@ -170,7 +212,7 @@ package struct _ShapeStyle_RenderedLayers {
     private enum Layers {
         case empty
         case item(DisplayList.Item)
-        case itesm([DisplayList.Item])
+        case items([DisplayList.Item])
     }
 
     private var layers: Layers = .empty
@@ -179,23 +221,63 @@ package struct _ShapeStyle_RenderedLayers {
         self.group = group
     }
 
-    func commit(
+    mutating func commit(
         shape: inout ShapeStyle.RenderedShape,
         options: DisplayList.Options
     ) -> DisplayList {
-        _openSwiftUIUnimplementedFailure()
+        if let group {
+            _openSwiftUIUnimplementedWarning()
+        }
+        switch layers {
+        case .empty:
+            return .init()
+        case let .item(item):
+            let displayList = DisplayList(item)
+            layers = .empty
+            return displayList
+        case let .items(items):
+            let displayList = DisplayList(items)
+            _openSwiftUIUnimplementedFailure()
+            layers = .empty
+        }
     }
 
-    func beginLayer(
+    mutating func beginLayer(
         id: ShapeStyle.LayerID,
         style: ShapeStyle.Pack.Style?,
         shape: inout ShapeStyle.RenderedShape
     ) {
-        _openSwiftUIUnimplementedFailure()
+        guard let group else {
+            return
+        }
+        // FIXME
+        _ = group.addLayer(id: id, style: style)
+        // TODO: interpolatorData update
+        // interpolatorData =
+        _openSwiftUIUnimplementedWarning()
     }
 
-    func endLayer(shape: inout ShapeStyle.RenderedShape) {
-        _openSwiftUIUnimplementedFailure()
+    mutating func endLayer(shape: inout ShapeStyle.RenderedShape) {
+        let newItem = shape.commitItem()
+        switch layers {
+        case .empty:
+            layers = .item(newItem)
+        case let .item(item):
+            var oldItem = item
+            let offset = CGSize(shape.frame.origin)
+            oldItem.frame.origin -= offset
+            layers = .items([
+                oldItem,
+                newItem,
+            ])
+        case let .items(items):
+            var items = items
+            // TODO
+            let offset = CGSize(shape.frame.origin)
+            items[0].frame.origin -= offset
+            items.append(newItem)
+            layers = .items(items)
+        }
     }
 }
 
@@ -228,9 +310,18 @@ final package class _ShapeStyle_InterpolatorGroup: DisplayList.InterpolatorGroup
 
     var cursor: Int32 = .zero
 
-//    init() {
-//        _openSwiftUIEmptyStub()
-//    }
+    fileprivate enum AddLayerResult {
+        case interpolatorData(group: DisplayList.InterpolatorGroup, serial: UInt32)
+        case none // FIXME
+    }
+
+    fileprivate func addLayer(
+        id: ShapeStyle.LayerID,
+        style: ShapeStyle.Pack.Style?
+    ) -> AddLayerResult {
+        _openSwiftUIUnimplementedWarning()
+        return .none
+    }
 }
 
 extension DisplayList {

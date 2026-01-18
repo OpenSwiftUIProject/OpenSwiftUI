@@ -492,7 +492,45 @@ extension DisplayList.Item {
 
 extension DisplayList {
     // FIXME
-    package class InterpolatorGroup {}
+    package class InterpolatorGroup {
+        private struct Contents {
+            var list: DisplayList
+            var origin: CGPoint
+            var rbList: ORBDisplayListContents
+            var nextTime: Time
+            var numericValue: Float?
+        }
+
+        private struct Removed {
+            var contents: Contents
+            var interpolator: ORBDisplayListInterpolator?
+            var transition: ORBTransition?
+            var animation: ORBAnimation
+            var listener: AnimationListener?
+            var begin: Time
+            var duration: Double
+            var phase: Phase
+        }
+
+        private enum Phase {
+            case pending
+            case first
+            case second
+            case running
+        }
+
+//        private var contents: Contents
+//        private var removed: [Removed]
+//        var time: Time
+//        var renderer: DisplayList.GraphicsRenderer?
+//        var contentSeed: DisplayList.Seed
+//        var supportsVFD: Bool
+//        var needsUpdate: Bool
+
+        init() {
+//            _openSwiftUIUnimplementedFailure()
+        }
+    }
 }
 
 package struct AccessibilityNodeAttachment {}
@@ -511,3 +549,14 @@ extension GraphicsContext {
 package protocol _DisplayList_AnyEffectAnimation {}
 
 package struct ResolvedShadowStyle {}
+
+extension DisplayList.Item {
+    func addDrawingGroup(contentSeed: DisplayList.Seed) {
+        _openSwiftUIUnimplementedWarning()
+    }
+}
+
+package class ORBDisplayListContents {}
+package class ORBDisplayListInterpolator {}
+package struct ORBTransition {}
+package class ORBAnimation {}
