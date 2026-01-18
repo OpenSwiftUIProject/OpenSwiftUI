@@ -316,8 +316,8 @@ public struct ContentTransition: Equatable, Sendable {
         }
     }
 
-    // TODO
-    package struct State {}
+    @_spi(Private)
+    public static let `default`: ContentTransition = .init(storage: .named(.init())) // FIXME
 
     /// The identity content transition, which indicates that content changes
     /// shouldn't animate.
@@ -351,6 +351,75 @@ public struct ContentTransition: Equatable, Sendable {
     /// system uses an opacity transition instead.
     public static let interpolate: ContentTransition = .init(storage: .named(.init())) // FIXME
 
+    // MARK: - ContentTransition.Options
+
+    @_spi(Private)
+    @frozen
+    public struct Options: OptionSet {
+        public let rawValue: UInt32
+
+        @inlinable
+        public init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        public static let addsDrawingGroup: ContentTransition.Options = .init(rawValue: 1 << 0)
+
+        public static let animatesDifferentContent: ContentTransition.Options = .init(rawValue: 1 << 1)
+
+        package static let formsGroup: ContentTransition.Options = .init(rawValue: 1 << 2)
+
+        package static let implicitGroup: ContentTransition.Options = .init(rawValue: 1 << 3)
+
+        package static let inherited: ContentTransition.Options = .addsDrawingGroup
+    }
+
+    // MARK: - ContentTransition.State
+
+    package struct State: Equatable, EnvironmentKey {
+        package static let defaultValue: ContentTransition.State = .init()
+
+        package var transition: ContentTransition
+        package var style: ContentTransition.Style
+        package var animation: Animation?
+        package var options: ContentTransition.Options
+
+        package init(
+            transition: ContentTransition = .default,
+            style: ContentTransition.Style = .default,
+            animation: Animation? = nil,
+            options: ContentTransition.Options = .init()
+        ) {
+            self.transition = transition
+            self.style = style
+            self.animation = animation
+            self.options = options
+        }
+
+        package var rasterizationOptions: RasterizationOptions {
+            var rasterizationOptions = RasterizationOptions()
+            rasterizationOptions.flags.subtract(.requiresLayer)
+            rasterizationOptions.flags.formUnion(options.contains(.addsDrawingGroup) ? .isAccelerated : [])
+            return rasterizationOptions
+        }
+
+        package mutating func applyDynamicTextAnimation(
+            in transaction: Transaction
+        ) {
+            guard animation == nil,
+                  !transaction.disablesAnimations,
+                  style != .default
+            else { return }
+            animation = .default
+        }
+    }
+
+    package mutating func applyEnvironmentValues(
+        style: ContentTransition.Style,
+        layoutDirection: LayoutDirection
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 
 // FIXME: ORB
@@ -396,4 +465,10 @@ package enum ORBTransitionEffectType: UInt32, Equatable {
     case matchMove = 5
     case translationScale = 15
     case relativeBlur = 16
+}
+
+// MARK: - DisablesContentTransitionsKey
+
+package struct DisablesContentTransitionsKey: EnvironmentKey {
+    package static var defaultValue: Bool { false }
 }
