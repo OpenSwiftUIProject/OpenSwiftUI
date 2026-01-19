@@ -167,7 +167,6 @@ public struct ContentTransition: Equatable, Sendable {
         }
     }
 
-
     @_spi(Private)
     public struct EffectType: Equatable, Sendable {
         package enum Arg: Equatable, Sendable {
