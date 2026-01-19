@@ -36,7 +36,7 @@ public struct _ScaleEffect: GeometryEffect, Equatable {
         }
         let position = anchor.in(size)
         let negatePosition = -anchor.in(size)
-        let transform = CGAffineTransform(translationX: -negatePosition.x, y: -negatePosition.y)
+        let transform = CGAffineTransform(translationX: negatePosition.x, y: negatePosition.y)
             .concatenating(.init(scaleX: effectScale.width, y: effectScale.height))
             .concatenating(.init(translationX: position.x, y: position.y))
         return ProjectionTransform(transform)
