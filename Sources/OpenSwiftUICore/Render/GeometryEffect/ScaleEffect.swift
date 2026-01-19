@@ -28,10 +28,10 @@ public struct _ScaleEffect: GeometryEffect, Equatable {
 
     public func effectValue(size: CGSize) -> ProjectionTransform {
         var effectScale = scale
-        if size.width == 0 {
+        if scale.width == 0 {
             effectScale.width = leastNonzeroScaleFactor
         }
-        if size.height == 0 {
+        if scale.height == 0 {
             effectScale.height = leastNonzeroScaleFactor
         }
         let position = anchor.in(size)

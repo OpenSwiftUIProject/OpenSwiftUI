@@ -51,5 +51,18 @@ struct ScaleEffectUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test
+    func scaleToZero() {
+        struct ContentView: View {
+            var body: some View {
+                Color.blue
+                    .frame(width: 80, height: 60)
+                    .scaleEffect(0)
+                    .background { Color.red }
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView())
+    }
 }
 
