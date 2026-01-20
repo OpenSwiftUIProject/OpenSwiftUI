@@ -2,6 +2,9 @@
 //  TestingHostApp.swift
 //  TestingHost
 
+// FIXME: OpenSwiftUI does not set up key window correctly
+// -> use HostingExample as OpenSwiftUIUITests's host temporary to add drawHierarchyInKeyWindow support
+
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
@@ -16,6 +19,7 @@ import UIKit
 
 @main
 struct TestingHostApp: App {
+    // FIXME: OpenSwiftUI does not support ApplicationDelegateAdaptor yet
     #if !OPENSWIFTUI
     #if canImport(AppKit)
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate

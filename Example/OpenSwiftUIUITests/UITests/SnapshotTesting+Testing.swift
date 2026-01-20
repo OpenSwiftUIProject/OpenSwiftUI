@@ -38,6 +38,7 @@ let defaultSize = CGSize(width: 200, height: 200)
 
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () -> V,
+    drawHierarchyInKeyWindow: Bool = false,
     perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
     named name: String? = nil,
@@ -51,7 +52,7 @@ func openSwiftUIAssertSnapshot<V: View>(
 ) {
     openSwiftUIAssertSnapshot(
         of: PlatformHostingController(rootView: value()),
-        as: .image(perceptualPrecision: perceptualPrecision, size: size),
+        as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
         timeout: timeout,
