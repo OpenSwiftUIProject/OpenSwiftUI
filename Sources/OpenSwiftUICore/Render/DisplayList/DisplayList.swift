@@ -550,17 +550,6 @@ extension DisplayList {
 
 package struct AccessibilityNodeAttachment {}
 
-extension GraphicsContext {
-    @frozen
-    public struct ClipOptions: OptionSet {
-        public let rawValue: UInt32
-
-        public init(rawValue: UInt32) {
-            self.rawValue = rawValue
-        }
-    }
-}
-
 package protocol _DisplayList_AnyEffectAnimation {}
 
 package struct ResolvedShadowStyle {}

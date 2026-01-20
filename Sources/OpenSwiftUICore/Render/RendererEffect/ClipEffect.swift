@@ -1,10 +1,20 @@
-public import Foundation
+//
+//  ClipEffect.swift
+//  OpenSwiftUICore
+//
+//  Audited for 6.5.4
+//  Status: Blocked by HoverEffectContent and VisualEffect
+
+public import OpenCoreGraphicsShims
 
 // MARK: - ClipEffect
 
+/// An effect to mask a view by a clip shape.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
-public struct _ClipEffect<ClipShape> where ClipShape: Shape {
+public struct _ClipEffect<ClipShape>: RendererEffect where ClipShape: Shape {
     public var shape: ClipShape
+
     public var style: FillStyle
     
     @inlinable
@@ -17,16 +27,18 @@ public struct _ClipEffect<ClipShape> where ClipShape: Shape {
         get { shape.animatableData }
         set { shape.animatableData = newValue }
     }
-    
-    public typealias AnimatableData = ClipShape.AnimatableData
-    public typealias Body = Swift.Never
-}
 
-// FIXME
-extension _ClipEffect: PrimitiveViewModifier {}
+    package func effectValue(size: CGSize) -> DisplayList.Effect {
+        .clip(
+            shape.effectivePath(in: CGRect(origin: .zero, size: size)),
+            style,
+        )
+    }
+}
 
 // MARK: - View Extension
 
+@available(OpenSwiftUI_v1_0, *)
 extension View {
 
     /// Sets a clipping shape for this view.
@@ -128,3 +140,7 @@ extension View {
         )
     }
 }
+
+// TODO: HoverEffectContent + clipShape
+
+// TODO: VisualEffect + clipShape

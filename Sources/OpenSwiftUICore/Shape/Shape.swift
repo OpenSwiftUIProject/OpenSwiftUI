@@ -105,7 +105,8 @@ extension Shape {
 
     package func effectivePath(in rect: CGRect) -> Path {
         // _threadGeometryProxyData
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return Path(rect)
     }
 }
 
