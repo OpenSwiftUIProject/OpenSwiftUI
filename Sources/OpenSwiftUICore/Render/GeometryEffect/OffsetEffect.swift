@@ -2,11 +2,14 @@
 //  OffsetEffect.swift
 //  OpenSwiftUICore
 //
-//  Status: Complete
+//  Audited for 6.5.4
+//  Status: Blocked by appearanceAnimation
 //  ID: 72FB21917F353796516DFC9915156779 (SwiftUICore)
 
 public import OpenCoreGraphicsShims
 import OpenAttributeGraphShims
+
+// MARK: - _OffsetEffect
 
 /// Allows you to redefine origin of the child within its coordinate
 /// space
@@ -21,12 +24,11 @@ public struct _OffsetEffect: GeometryEffect, Equatable {
     }
 
     public func effectValue(size: CGSize) -> ProjectionTransform {
-        ProjectionTransform(
-            CGAffineTransform(
-                translationX: offset.width,
-                y: offset.height
-            )
+        let transform = CGAffineTransform(
+            translationX: offset.width,
+            y: offset.height
         )
+        return ProjectionTransform(transform)
     }
 
     public var animatableData: CGSize.AnimatableData {
@@ -51,8 +53,33 @@ public struct _OffsetEffect: GeometryEffect, Equatable {
     }
 }
 
+// MARK: - OffsetPosition
+
+private struct OffsetPosition: Rule, AsyncAttribute {
+    @Attribute var effect: _OffsetEffect
+    @Attribute var position: CGPoint
+    @Attribute var layoutDirection: LayoutDirection
+
+    var value: CGPoint {
+        position.resolved(in: layoutDirection) + effect.offset
+    }
+}
+
+extension CGPoint {
+    @inline(__always)
+    fileprivate func resolved(in layoutDirection: LayoutDirection) -> CGPoint {
+        switch layoutDirection {
+        case .leftToRight: CGPoint(x: x, y: y)
+        case .rightToLeft: CGPoint(x: -x, y: y)
+        }
+    }
+}
+
+// MARK: - View + offset
+
 @available(OpenSwiftUI_v1_0, *)
 extension View {
+
     /// Offset this view by the horizontal and vertical amount specified in the
     /// offset parameter.
     ///
@@ -105,24 +132,102 @@ extension View {
     nonisolated public func offset(x: CGFloat = 0, y: CGFloat = 0) -> some View {
         offset(CGSize(width: x, height: y))
     }
-}
 
-private struct OffsetPosition: Rule, AsyncAttribute {
-    @Attribute var effect: _OffsetEffect
-    @Attribute var position: CGPoint
-    @Attribute var layoutDirection: LayoutDirection
-
-    var value: CGPoint {
-        position.resolved(in: layoutDirection) + effect.offset
+    // TODO: appearanceAnimation
+    @_spi(Private)
+    @available(OpenSwiftUI_v2_0, *)
+    nonisolated public func repeatingOffset(
+        from: CGSize,
+        to: CGSize,
+        animation: Animation = Animation.default
+    ) -> some View {
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
-extension CGPoint {
-    @inline(__always)
-    fileprivate func resolved(in layoutDirection: LayoutDirection) -> CGPoint {
-        switch layoutDirection {
-        case .leftToRight: CGPoint(x: x, y: y)
-        case .rightToLeft: CGPoint(x: -x, y: y)
+
+// MARK: - AnyTransition + offset
+
+@available(OpenSwiftUI_v1_0, *)
+extension AnyTransition {
+
+    public static func offset(_ offset: CGSize) -> AnyTransition {
+        .init(OffsetTransition(offset))
+    }
+
+    public static func offset(x: CGFloat = 0, y: CGFloat = 0) -> AnyTransition {
+        offset(CGSize(width: x, height: y))
+    }
+}
+
+// MARK: - Transition + offset
+
+@available(OpenSwiftUI_v5_0, *)
+extension Transition where Self == OffsetTransition {
+
+    /// Returns a transition that offset the view by the specified amount.
+    @_alwaysEmitIntoClient
+    @MainActor
+    @preconcurrency
+    public static func offset(_ offset: CGSize) -> Self {
+        Self(offset)
+    }
+
+    /// Returns a transition that offset the view by the specified x and y
+    /// values.
+    @_alwaysEmitIntoClient
+    @MainActor
+    @preconcurrency
+    public static func offset(x: CGFloat = 0, y: CGFloat = 0) -> Self {
+        offset(CGSize(width: x, height: y))
+    }
+}
+
+// MARK: - OffsetTransition
+
+/// Returns a transition that offset the view by the specified amount.
+@available(OpenSwiftUI_v5_0, *)
+public struct OffsetTransition: Transition {
+    /// The amount to offset the view by.
+    public var offset: CGSize
+
+    /// Creates a transition that offset the view by the specified amount.
+    public init(_ offset: CGSize) {
+        self.offset = offset
+    }
+
+    public func body(content: Content, phase: TransitionPhase) -> some View {
+        content.offset(phase.isIdentity ? .zero : offset)
+    }
+
+    public func _makeContentTransition(transition: inout _Transition_ContentTransition) {
+        guard case .effects = transition.operation else {
+            transition.result = .bool(true)
+            return
         }
+        let effect = ContentTransition.Effect(.translation(offset))
+        transition.result = .effects([effect])
+    }
+}
+
+@available(*, unavailable)
+extension OffsetTransition: Sendable {}
+
+// MARK: - _OffsetEffect + ProtobufMessage
+
+extension _OffsetEffect: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        try encoder.messageField(1, offset, defaultValue: .zero)
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var offset: CGSize = .zero
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: offset = try decoder.messageField(field)
+            default: try decoder.skipField(field)
+            }
+        }
+        self.init(offset: offset)
     }
 }

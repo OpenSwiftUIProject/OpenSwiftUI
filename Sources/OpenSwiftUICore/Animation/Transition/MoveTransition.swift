@@ -95,7 +95,7 @@ extension MoveTransition: Sendable {}
 
 extension Edge {
     @inline(__always)
-    fileprivate func translationOffset(for size: CGSize) -> CGSize {
+    func translationOffset(for size: CGSize) -> CGSize {
         switch self {
         case .top:
             return CGSize(width: 0, height: -size.height)
