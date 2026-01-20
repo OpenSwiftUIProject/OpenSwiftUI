@@ -121,6 +121,7 @@ package enum PathDrawingStyle {
 /// resolution and color scheme --- to resolve types like ``Image`` and
 /// ``Color`` that appear in the context. You can also access values stored
 /// in the environment for your own purposes.
+@available(OpenSwiftUI_v3_0, *)
 @frozen
 public struct GraphicsContext {
     @usableFromInline
@@ -484,7 +485,32 @@ public struct GraphicsContext {
             self.init(rawValue: CGBlendMode.plusLighter.rawValue)
         }
     }
-    
+
+    // MARK: - GraphicsContext.ClipOptions
+
+    /// Options that affect the use of clip shapes.
+    ///
+    /// Use these options to affect how OpenSwiftUI interprets a clip shape
+    /// when you call ``clip(to:style:options:)`` to add a path to the array of
+    /// clip shapes, or when you call ``clipToLayer(opacity:options:content:)``
+    /// to add a clipping layer.
+    @frozen
+    public struct ClipOptions: OptionSet {
+        public let rawValue: UInt32
+
+        @inlinable
+        public init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        /// An option to invert the shape or layer alpha as the clip mask.
+        ///
+        /// When you use this option, OpenSwiftUI uses `1 - alpha` instead of
+        /// `alpha` for the given clip shape.
+        @inlinable
+        public static var inverse: ClipOptions { Self(rawValue: 1 << 0) }
+    }
+
     // FIXME
     package enum ResolvedShading: Sendable {
         case backdrop(Color.Resolved)
