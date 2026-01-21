@@ -24,7 +24,7 @@ typealias PlatformApplication = NSObject
 typealias PlatformApplicationDelegate = AnyObject
 #endif
 
-class AppDelegate: DelegateBaseClass {
+class AppDelegate: DelegateBaseClass, PlatformApplicationDelegate {
     #if os(iOS) || os(visionOS)
     var fallbackDelegate: UIApplicationDelegate?
     
@@ -42,5 +42,21 @@ class AppDelegate: DelegateBaseClass {
         let canSelfRespond = AppDelegate.instancesRespond(to: aSelector)
         return canDelegateRespond || canSelfRespond
     }
+
+    func application(_ application: UIApplication, didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+        // TODO
+        return true
+    }
+
+//    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+//        let items: [SceneList.Item]? = Update.ensure {
+//            guard let appGraph = AppGraph.shared else {
+//                return nil
+//            }
+//            return appGraph.rootSceneList ?? []
+//        }
+//
+//    }
+
     #endif
 }
