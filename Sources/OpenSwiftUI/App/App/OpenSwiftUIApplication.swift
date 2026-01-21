@@ -2,41 +2,31 @@
 //  OpenSwiftUIApplication.swift
 //  OpenSwiftUI
 //
-//  Audited for 3.5.2
-//  Status: WIP
-//  ID: ACC2C5639A7D76F611E170E831FCA491
+//  Audited for 6.5.4
+//  Status: Blocked by OpenSwiftUIApplication
+//  ID: ACC2C5639A7D76F611E170E831FCA491 (SwiftUI?)
 
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 
 #if os(iOS) || os(visionOS) || os(tvOS)
 import UIKit
-private final class OpenSwiftUIApplication: UIApplication {
-    @objc override init() {
-        super.init()
-    }
-}
 #elseif os(watchOS)
 import WatchKit
 #elseif os(macOS)
 import AppKit
-private final class OpenSwiftUIApplication: NSApplication {
-    @objc override init() {
-        super.init()
-    }
-    
-    required init?(coder: NSCoder) {
-        preconditionFailure("init(coder:) has not been implemented")
-    }
-}
 #else
 import Foundation
 #endif
 
+// MARK: - runApp
+
 func runApp(_ app: some App) -> Never {
-//    let graph = AppGraph(app: app)
-//    graph.startProfilingIfNecessary()
-//    graph.instantiate()
-//    AppGraph.shared = graph
+    Update.dispatchImmediately(reason: nil) {
+        let graph = AppGraph(app: app)
+        graph.startProfilingIfNecessary()
+        graph.instantiate()
+        AppGraph.shared = graph
+    }
     KitRendererCommon(AppDelegate.self)
 }
 
@@ -64,31 +54,32 @@ func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escapin
     KitRendererCommon(TestingAppDelegate.self)
 }
 
+// MARK: - KitRendererCommon
 
 private func KitRendererCommon(_ delegateType: AnyObject.Type) -> Never {
     let closure = { (argv: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) in
         let argc = CommandLine.argc
-        #if canImport(Darwin)
-        #if os(iOS) || os(visionOS) || os(tvOS) || os(macOS)
+        #if os(iOS) || os(visionOS)
         let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
-        #endif
         let delegateClassName = NSStringFromClass(delegateType)
-        #endif
-
-        #if os(iOS) || os(visionOS) || os(tvOS)
         let code = UIApplicationMain(argc, argv, principalClassName, delegateClassName)
-        #elseif os(watchOS)
-        let code = WKApplicationMain(argc, argv, delegateClassName)
         #elseif os(macOS)
-        // FIXME
+        let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
+        let delegateClassName = NSStringFromClass(delegateType)
         let code = NSApplicationMain(argc, argv)
+        #elseif os(watchOS)
+        let delegateClassName = NSStringFromClass(delegateType)
+        let code = WKApplicationMain(argc, argv, delegateClassName)
         #else
-        let code: Int32 = 1
+        _openSwiftUIPlatformUnimplementedWarning()
+        let code = 1
         #endif
         return exit(code)
     }
     return closure(CommandLine.unsafeArgv)
 }
+
+// MARK: - App Utils
 
 #if canImport(Darwin)
 func currentAppName() -> String {
@@ -102,7 +93,7 @@ func currentAppName() -> String {
 }
 
 extension Bundle {
-    func localizedValue(for key: String) -> String? {
+    fileprivate func localizedValue(for key: String) -> String? {
         if let localizedInfoDictionary,
            let value = localizedInfoDictionary[key] as? String {
             return value
@@ -115,3 +106,11 @@ extension Bundle {
     }
 }
 #endif
+
+// MARK: - OpenSwiftUIApplication [WIP]
+
+private final class OpenSwiftUIApplication: PlatformApplication {
+    @objc override init() {
+        super.init()
+    }
+}
