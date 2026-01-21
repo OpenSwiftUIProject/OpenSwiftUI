@@ -212,7 +212,10 @@ package enum Update {
         } while !Update.actions.isEmpty
     }
     
-    package static func dispatchImmediately<T>(_ body: () -> T) -> T {
+    package static func dispatchImmediately<T>(
+        reason: CustomEventTrace.ActionEventType.Reason?,
+        _ body: () -> T
+    ) -> T {
         begin()
         let oldDispatchDepth = dispatchDepth
         dispatchDepth = depth
@@ -221,5 +224,12 @@ package enum Update {
             end()
         }
         return body()
+    }
+}
+
+// FIXME
+package enum CustomEventTrace {
+    package enum ActionEventType {
+        package enum Reason {}
     }
 }
