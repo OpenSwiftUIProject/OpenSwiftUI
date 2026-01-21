@@ -234,6 +234,8 @@ extension _ShapeStyle_Pack.Style {
 
 // TODO: _ShapeStyle_Pack + Animatable
 
+extension ShapeStyle.Pack: Animatable {}
+
 // MARK: - _ShapeStyle_Shape + _ShapeStyle_Pack
 
 extension _ShapeStyle_Shape {

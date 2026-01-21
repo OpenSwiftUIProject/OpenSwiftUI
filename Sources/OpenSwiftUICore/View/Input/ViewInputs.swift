@@ -303,12 +303,12 @@ extension View {
     }
 }
 
-// MARK: Resolve Shape Style [6.4.41]
+// MARK: Resolve Shape Style [6.5.4]
 
 extension _ViewInputs {
     package func resolvedShapeStyles(
         role: ShapeRole,
-        mode: Attribute<_ShapeStyle_ResolverMode>? = nil
+        mode: Attribute<ShapeStyle.ResolverMode>? = nil
     ) -> Attribute<_ShapeStyle_Pack> {
         base.cachedEnvironment.wrappedValue.resolvedShapeStyles(
             for: self,
