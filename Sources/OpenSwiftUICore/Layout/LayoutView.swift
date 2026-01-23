@@ -146,13 +146,14 @@ extension Layout {
                     inputs.position = childGeometry.origin()
                     inputs.size = childGeometry.size()
                 }
-                let ouputs = makeElement(inputs)
+                var ouputs = makeElement(inputs)
                 if inputs.needsGeometry {
                     childAttributes.append(LayoutProxyAttributes(
                         layoutComputer: .init(ouputs.layoutComputer),
                         traitsList: .init()
                     ))
                 }
+                ouputs.preferences.debugProperties = inputs.base.changedDebugProperties
                 index &+= 1
                 return ouputs
             } ?? .init()
