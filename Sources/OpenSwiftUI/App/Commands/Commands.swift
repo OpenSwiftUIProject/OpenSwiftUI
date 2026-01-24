@@ -245,6 +245,15 @@ struct CommandsDescriptor: TupleDescriptor {
         _commandsProtocolDescriptor()
     }
 }
+
+// MARK: - TypeConformance + CommandsDescriptor
+
+extension TypeConformance where P == CommandsDescriptor {
+    func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: CommandsTypeVisitor {
+        visitor.pointee.visit(type: unsafeBitCast(self, to: (any Commands.Type).self))
+    }
+}
+
 // MARK: - CommandsModifier [WIP]
 
 struct CommandsModifier<Content>: PrimitiveSceneModifier where Content: Commands {

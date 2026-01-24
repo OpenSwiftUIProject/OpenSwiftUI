@@ -102,7 +102,7 @@ extension Group: Sendable {}
 @available(OpenSwiftUI_v1_0, *)
 extension Group {
 
-    
+    /// Creates a group with the provided content. You don't use this directly.
     @available(OpenSwiftUI_v1_0, *)
     @_alwaysEmitIntoClient
     public static func _make(content: Content) -> Group<Content> {
