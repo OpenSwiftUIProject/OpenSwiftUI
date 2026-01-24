@@ -76,7 +76,7 @@ package struct MultiPreferenceCombinerVisitor: PreferenceKeyVisitor {
     package let outputs: [PreferencesOutputs]
     package var result: PreferencesOutputs
 
-    init(outputs: [PreferencesOutputs], result: PreferencesOutputs) {
+    package init(outputs: [PreferencesOutputs], result: PreferencesOutputs) {
         self.outputs = outputs
         self.result = result
     }
