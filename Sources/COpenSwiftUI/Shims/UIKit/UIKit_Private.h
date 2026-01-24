@@ -43,6 +43,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property(class, nonatomic, readonly) NSInteger _currentAnimationCurve_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationCurve);
 @end
 
+@interface UIResponder (OpenSwiftUI_SPI)
+- (void)_performMainMenuShortcutKeyCommand:(UIKeyCommand *)keyCommand; // FIXME
+@end
+
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
 @protocol _UIBacklightEnvironmentObserver <NSObject>
 - (void)_timelinesForDateInterval:(NSDateInterval *)dateInterval;

@@ -9,6 +9,16 @@
 #if os(macOS)
 import AppKit
 
+class AppDelegate: NSResponder, NSApplicationDelegate {
+    init(appGraph: AppGraph) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    required init?(coder: NSCoder) {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 // MARK: - App Utils
 
 func currentAppName() -> String {

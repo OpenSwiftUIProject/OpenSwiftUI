@@ -99,7 +99,7 @@ extension Bundle {
 
 // MARK: - OpenSwiftUIApplication
 
-private final class OpenSwiftUIApplication: PlatformApplication {
+private final class OpenSwiftUIApplication: UIApplication {
     @objc override init() {
         super.init()
     }
