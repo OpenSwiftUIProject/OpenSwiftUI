@@ -6,7 +6,7 @@ import SnapshotTesting
 import Testing
 import Foundation
 
-#if canImport(AppKit)
+#if os(macOS)
 import AppKit
 typealias PlatformHostingController = NSHostingController
 typealias PlatformHostingView = NSHostingView
@@ -19,7 +19,7 @@ extension Color {
         self.init(nsColor: platformColor)
     }
 }
-#else
+#elseif os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformHostingController = UIHostingController
 typealias PlatformHostingView = _UIHostingView
@@ -35,6 +35,20 @@ extension Color {
 #endif
 
 let defaultSize = CGSize(width: 200, height: 200)
+
+#if os(macOS)
+extension Snapshotting where Value == NSViewController, Format == NSImage {
+    /// drawHierarchyInKeyWindow is iOS only parameter, here for compatibility
+    static func image(
+        drawHierarchyInKeyWindow: Bool,
+        precision: Float = 1,
+        perceptualPrecision: Float = 1,
+        size: CGSize? = nil,
+    ) -> Snapshotting {
+        .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size)
+    }
+}
+#endif
 
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () -> V,
