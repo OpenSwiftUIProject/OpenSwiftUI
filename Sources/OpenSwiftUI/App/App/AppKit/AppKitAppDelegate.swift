@@ -10,12 +10,47 @@
 import AppKit
 
 class AppDelegate: NSResponder, NSApplicationDelegate {
+    var graph: AppGraph
+//    var windowsController: AppWindowsController
+    private var sceneListVersion: DisplayList.Version = .init()
+    private var commandsListVersion: DisplayList.Version = .init()
+    private var appDelegate: NSApplicationDelegate? = nil
+//    private var menuBarExtrasController: AppMenuBarExtrasController = .init()
+//    private var dialogController: AppModalDialogsController = .init()
+//    private var badgeSeed: VersionSeedTracker<BadgePreferenceKey> = .init(.invalid)
+    var isFinishedLaunching: Bool = false
+    var shouldPresentInitialWindowOnLauncher: Bool = true
+
     init(appGraph: AppGraph) {
-        _openSwiftUIUnimplementedFailure()
+        graph = appGraph
+        // windowsController
+        // SceneNavigationStrategy_Mac.shared
+        let delegate: NSApplicationDelegate?
+        if let box = AppGraph.delegateBox,
+           let appDelegate = box.delegate as? NSApplicationDelegate {
+            delegate = appDelegate
+        } else {
+            delegate = nil
+        }
+        appDelegate = delegate
+        NSMenu._setAlwaysCallDelegateBeforeSidebandUpdaters(true)
+        NSMenu._setAlwaysInstallWindowTabItems(true)
+        NSDocumentController._setUsingModernDocuments(true)
+        super.init()
     }
 
     required init?(coder: NSCoder) {
-        _openSwiftUIUnimplementedFailure()
+        preconditionFailure("Decoding not supported")
+    }
+
+    override func responds(to aSelector: Selector!) -> Bool {
+        let canDelegateRespond = appDelegate?.responds(to: aSelector) ?? false
+        let canSelfRespond = AppDelegate.instancesRespond(to: aSelector)
+        return canDelegateRespond || canSelfRespond
+    }
+
+    override func forwardingTarget(for aSelector: Selector!) -> Any? {
+        appDelegate
     }
 }
 

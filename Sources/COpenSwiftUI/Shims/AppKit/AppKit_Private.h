@@ -43,6 +43,15 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 - (nullable NSAppearance *)appearanceByApplyingTintColor:(NSColor *)tintColor;
 @end
 
+@interface NSMenu (OpenSwiftUI_SPI)
++ (void)_setAlwaysCallDelegateBeforeSidebandUpdaters_openswiftui_safe_wrapper:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setAlwaysCallDelegateBeforeSidebandUpdaters(_:));
++ (void)_setAlwaysInstallWindowTabItems_openswiftui_safe_wrapper:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setAlwaysInstallWindowTabItems(_:));
+@end
+
+@interface NSDocumentController (OpenSwiftUI_SPI)
++ (void)_setUsingModernDocuments_openswiftui_safe_wrapper:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setUsingModernDocuments(_:));
+@end
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* __has_include(<AppKit/AppKit.h>) */

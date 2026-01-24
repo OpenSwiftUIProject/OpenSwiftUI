@@ -34,5 +34,23 @@
 }
 @end
 
-#endif /* __has_include(<AppKit/AppKit.h>) */
+@implementation NSMenu (OpenSwiftUI_SPI)
++ (void)_setAlwaysCallDelegateBeforeSidebandUpdaters_openswiftui_safe_wrapper:(BOOL)value {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_setAlwaysCallDelegateBeforeSidebandUpdaters:", , BOOL);
+    func(self, selector, value);
+}
 
++ (void)_setAlwaysInstallWindowTabItems_openswiftui_safe_wrapper:(BOOL)value {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_setAlwaysInstallWindowTabItems:", , BOOL);
+    func(self, selector, value);
+}
+@end
+
+@implementation NSDocumentController (OpenSwiftUI_SPI)
++ (void)_setUsingModernDocuments_openswiftui_safe_wrapper:(BOOL)value {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_setUsingModernDocuments:", , BOOL);
+    func(self, selector, value);
+}
+@end
+
+#endif /* __has_include(<AppKit/AppKit.h>) */
