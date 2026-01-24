@@ -34,11 +34,11 @@ extension CommandsBuilder {
     @available(OpenSwiftUI_v5_5, *)
     @_alwaysEmitIntoClient
     public static func buildLimitedAvailability(_ content: any Commands) -> some Commands {
-//        if #unavailable(iOS 17.5, macOS 14.5) {
+        if #unavailable(iOS 17.5, macOS 14.5) {
             return EmptyCommands()
-//        } else {
-//            return LimitedAvailabilityCommandContent(erasing: content)
-//        }
+        } else {
+            return LimitedAvailabilityCommandContent(erasing: content)
+        }
     }
 
     @available(iOS, deprecated: 16.0, obsoleted: 17.5, message: "this code may crash on earlier versions of the OS; specify '#available(iOS 17.5, *)' or newer instead")
