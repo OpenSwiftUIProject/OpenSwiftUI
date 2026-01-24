@@ -16,8 +16,11 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface NSApplication (OpenSwiftUI_SPI)
+
+- (void)markAppLaunchComplete_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(markAppLaunchComplete());
+
 - (void)startedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(startedTest(_:));
-- (void)finishedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(finishedTest(_:));
+- (void)finishedTest_openswiftui_safe_wrapper:(nullable NSString *)name extraResults:(nullable id)extraResults OPENSWIFTUI_SWIFT_NAME(finishedTest(_:extraResults:));
 - (void)failedTest_openswiftui_safe_wrapper:(nullable NSString *)name withFailure:(nullable NSError*)failure OPENSWIFTUI_SWIFT_NAME(failedTest(_:withFailure:));
 @end
 

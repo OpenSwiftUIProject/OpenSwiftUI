@@ -108,22 +108,14 @@ private final class OpenSwiftUIApplication: PlatformApplication {
         guard let graph = AppGraph.shared else {
             return nil
         }
-        return Update.ensure {
-            graph.preferenceValue(ExtendedLaunchTestNameKey.self)
-        }
+        return graph.extendedLaunchTestName()
     }
 
     override func _supportsPrintCommand() -> Bool {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
-
-
-// FIXME
-private struct ExtendedLaunchTestNameKey: HostPreferenceKey {
-    typealias Value = String?
-
-    static func reduce(value: inout String?, nextValue: () -> String?) {
+        guard let graph = AppGraph.shared else {
+            return false
+        }
+        return graph.supports(.printing)
     }
 }
 #endif

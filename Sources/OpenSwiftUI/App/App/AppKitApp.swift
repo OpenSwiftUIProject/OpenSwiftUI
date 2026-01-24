@@ -75,5 +75,9 @@ private final class OpenSwiftUIApplication: PlatformApplication {
     @objc override init() {
         super.init()
     }
+
+    required init?(coder: NSCoder) {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 #endif
