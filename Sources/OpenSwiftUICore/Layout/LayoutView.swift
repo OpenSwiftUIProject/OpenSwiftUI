@@ -162,7 +162,7 @@ extension Layout {
                 }
             }
             if inputs.requestsLayoutComputer {
-                outputs.layoutComputer = layoutComputer ?? .init(identifier: .nil)
+                outputs.layoutComputer = layoutComputer ?? .init(identifier: AnyAttribute.nil)
             }
             return outputs
         }
