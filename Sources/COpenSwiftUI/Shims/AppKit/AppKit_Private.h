@@ -17,6 +17,9 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface NSApplication (OpenSwiftUI_SPI)
 
+- (BOOL)_shouldLoadMainNibNamed:(nullable NSString *)name;
+- (BOOL)_shouldLoadMainStoryboardNamed:(nullable NSString *)name;
+
 - (void)markAppLaunchComplete_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(markAppLaunchComplete());
 
 - (void)startedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(startedTest(_:));

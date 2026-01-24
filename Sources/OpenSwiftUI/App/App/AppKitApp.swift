@@ -4,80 +4,65 @@
 //
 //  Audited for 6.5.4
 //  Status: WIP
-//  ID:  (SwiftUI?)
+//  ID: CD9513E1DBF2FF41775224EE6D5A7974 (SwiftUI)
 
 #if os(macOS)
-@_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+@_spi(Private)
+import OpenSwiftUICore
 import AppKit
 
 // MARK: - runApp
 
 func runApp(_ app: some App) -> Never {
-    Update.dispatchImmediately(reason: nil) {
+    let delegate = Update.dispatchImmediately(reason: nil) {
         let graph = AppGraph(app: app)
-        graph.startProfilingIfNecessary()
         graph.instantiate()
         AppGraph.shared = graph
+        return AppDelegate(appGraph: graph)
     }
-    KitRendererCommon(AppDelegate.self)
+    runApp(delegate)
 }
 
-// MARK: - runTestingApp [6.4.41] [iOS]
+// MARK: - runTestingApp [WIP]
 
-func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escaping (any TestHost, any TestHost) -> ()) -> Never where V1: View, V2: View {
+func runTestingApp<V1, V2>(
+    rootView: V1,
+    comparisonView: V2,
+    didLaunch: @escaping (any TestHost, any TestHost) -> ()
+) -> Never where V1: View, V2: View {
+    CoreTesting.isRunning = true
+    // AppKitApplication.shared
     // FIXME
-    KitRendererCommon(TestingAppDelegate.self)
+    // let delegate = TestingAppDelegate(rootView: rootView, comparisonView: comparisonView, didLaunch: didLaunch)
+    let delegate = TestingAppDelegate()
+    runApp(delegate)
 }
 
-// MARK: - KitRendererCommon
-
-private func KitRendererCommon(_ delegateType: AnyObject.Type) -> Never {
-    let closure = { (argv: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) in
-        let argc = CommandLine.argc
-        // FIXME
-        let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
-        let delegateClassName = NSStringFromClass(delegateType)
-        let code = NSApplicationMain(argc, argv)
-        return exit(code)
-    }
-    return closure(CommandLine.unsafeArgv)
+func runApp(_ delegate: NSResponder & NSApplicationDelegate) -> Never {
+    AppKitApplication.shared.delegate = delegate
+    AppKitApplication.shared.nextResponder = delegate
+    let code = NSApplicationMain(CommandLine.argc, CommandLine.unsafeArgv)
+    exit(code)
 }
 
-// MARK: - App Utils
+// MARK: - AppKitApplication
 
-func currentAppName() -> String {
-    if let name = Bundle.main.localizedValue(for: "CFBundleDisplayName") {
-        return name
-    } else if let name = Bundle.main.localizedValue(for: "CFBundleName") {
-        return name
-    } else {
-        return ProcessInfo.processInfo.processName
-    }
-}
-
-extension Bundle {
-    fileprivate func localizedValue(for key: String) -> String? {
-        if let localizedInfoDictionary,
-           let value = localizedInfoDictionary[key] as? String {
-            return value
-        } else if let infoDictionary,
-                  let value = infoDictionary[key] as? String {
-            return value
-        } else {
-            return nil
-        }
-    }
-}
-
-// MARK: - OpenSwiftUIApplication [WIP]
-
-private final class OpenSwiftUIApplication: PlatformApplication {
-    @objc override init() {
+private final class AppKitApplication: PlatformApplication {
+    override init() {
         super.init()
     }
 
     required init?(coder: NSCoder) {
-        _openSwiftUIUnimplementedFailure()
+        super.init(coder: coder)
+    }
+
+    override func _shouldLoadMainNibNamed(_ name: String?) -> Bool {
+        false
+    }
+
+    override func _shouldLoadMainStoryboardNamed(_ name: String?) -> Bool {
+        false
     }
 }
 #endif

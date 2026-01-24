@@ -1,10 +1,10 @@
 //
-//  AppDelegate.swift
+//  UIKitAppDelegate.swift
 //  OpenSwiftUI
 //
 //  Audited for 3.5.2
 //  Status: WIP
-//  ID: 4475FD12FD59DEBA453321BD91F6EA04
+//  ID: 4475FD12FD59DEBA453321BD91F6EA04 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
 import UIKit
@@ -57,6 +57,13 @@ class AppDelegate: DelegateBaseClass, PlatformApplicationDelegate {
 //        }
 //
 //    }
+    #elseif os(macOS)
+    init(appGraph: AppGraph) {
+        _openSwiftUIUnimplementedFailure()
+    }
 
+    required init?(coder: NSCoder) {
+        _openSwiftUIUnimplementedFailure()
+    }
     #endif
 }

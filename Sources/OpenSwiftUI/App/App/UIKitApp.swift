@@ -3,8 +3,8 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by OpenSwiftUIApplication
-//  ID: ACC2C5639A7D76F611E170E831FCA491 (SwiftUI?)
+//  Status: Complete
+//  ID: ACC2C5639A7D76F611E170E831FCA491 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
 @_spi(ForOpenSwiftUIOnly)
