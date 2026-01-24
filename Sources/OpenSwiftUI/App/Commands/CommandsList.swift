@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by resolveOperations
+//  Status: Complete
 
 // MARK: - CommandsList
 
@@ -19,8 +19,17 @@ struct CommandsList: Hashable {
         return version
     }
 
-    func resolveOperations(into resolvedCommands: inout _ResolvedCommands) {
-        _openSwiftUIUnimplementedFailure()
+    func resolveOperations(into resolved: inout _ResolvedCommands) {
+        for item in items {
+            switch item.value {
+            case let .operation(operation):
+                if let resolver = operation.resolver {
+                    resolver(operation, &resolved)
+                }
+            case let .flag(flag):
+                resolved.flags.insert(flag)
+            }
+        }
     }
 
     func hash(into hasher: inout Hasher) {

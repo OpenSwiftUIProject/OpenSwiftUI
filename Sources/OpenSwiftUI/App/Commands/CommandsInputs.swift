@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-package import OpenAttributeGraphShims
+import OpenAttributeGraphShims
 package import OpenSwiftUICore
 
 // MARK: - _CommandsInputs
@@ -28,6 +28,14 @@ extension _CommandsInputs: Sendable {}
 @available(watchOS, unavailable)
 public struct _CommandsOutputs {
     package var preferences: PreferencesOutputs
+
+    package init() {
+        preferences = .init()
+    }
+
+    package init(preferences: PreferencesOutputs) {
+        self.preferences = preferences
+    }
 }
 
 @available(*, unavailable)

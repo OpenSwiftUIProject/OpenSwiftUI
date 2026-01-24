@@ -135,10 +135,13 @@ extension EmptyCommands: Sendable {}
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
 public struct _ResolvedCommands {
-//    var topLevelCommands: [CommandGroupPlacementBox] = []
-//    var storage: [CommandGroupPlacementBox: CommandAccumulator]
-//    var flags: Set<CommandFlag>
-    //func mainMenuItems(env: EnvironmentValues) -> [MainMenuItem]
+    var topLevelCommands: [CommandGroupPlacementBox] = []
+    var storage: [CommandGroupPlacementBox: CommandAccumulator]
+    var flags: Set<CommandFlag>
+
+    func mainMenuItems(env: EnvironmentValues) -> [MainMenuItem] {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 
 @available(*, unavailable)
