@@ -93,6 +93,7 @@ public protocol View {
 
 package protocol PrimitiveView: View {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension PrimitiveView {
     public var body: Never {
         bodyError()

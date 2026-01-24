@@ -19,7 +19,7 @@ package struct PreferencesOutputs {
         debugProperties = []
     }
     
-    subscript(anyKey key: any PreferenceKey.Type) -> AnyAttribute? {
+    package subscript(anyKey key: any PreferenceKey.Type) -> AnyAttribute? {
         get {
             for preference in preferences {
                 guard preference.key == key else {
@@ -47,7 +47,7 @@ package struct PreferencesOutputs {
         }
     }
 
-    subscript<K>(key: K.Type) -> Attribute<K.Value>? where K: PreferenceKey {
+    package subscript<K>(key: K.Type) -> Attribute<K.Value>? where K: PreferenceKey {
         get {
             let value = self[anyKey: key]
             return value.map { Attribute(identifier: $0) }
