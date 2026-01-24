@@ -11,7 +11,7 @@ import OpenSwiftUICore
 
 // MARK: - CommandFlag
 
-struct CommandFlag {
+struct CommandFlag: Hashable {
     let id: Int
 
     init() {
