@@ -16,7 +16,7 @@ package final class PreferenceBridge {
     var requestedPreferences = PreferenceKeys()
     var bridgedViewInputs = PropertyList()
     @WeakAttribute private var hostPreferenceKeys: PreferenceKeys?
-    @WeakAttribute private var hostPreferencesCombiner: PreferenceList?
+    @WeakAttribute private var hostPreferencesCombiner: PreferenceValues?
     private var bridgedPreferences: [BridgedPreference] = []
 
     struct BridgedPreference {
@@ -157,7 +157,7 @@ package final class PreferenceBridge {
         viewGraph.graphInvalidation(from: keys.identifier)
     }
     
-    package func addHostValues(_ values: WeakAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+    package func addHostValues(_ values: WeakAttribute<PreferenceValues>, for keys: Attribute<PreferenceKeys>) {
         guard let viewGraph,
               let combiner = $hostPreferencesCombiner
         else { return }
@@ -170,7 +170,7 @@ package final class PreferenceBridge {
         viewGraph.graphInvalidation(from: keys.identifier)
     }
     
-    package func addHostValues(_ values: OptionalAttribute<PreferenceList>, for keys: Attribute<PreferenceKeys>) {
+    package func addHostValues(_ values: OptionalAttribute<PreferenceValues>, for keys: Attribute<PreferenceKeys>) {
         guard let attribute = values.attribute else {
             return
         }

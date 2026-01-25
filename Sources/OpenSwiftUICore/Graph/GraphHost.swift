@@ -120,7 +120,7 @@ open class GraphHost: CustomReflectable {
     package final var rootSubgraph: Subgraph { data.rootSubgraph }
     private var constants: [ConstantKey: AnyAttribute] = [:]
     private(set) package final var isInstantiated: Bool = false
-    package final var hostPreferenceValues: WeakAttribute<PreferenceList> = WeakAttribute()
+    package final var hostPreferenceValues: WeakAttribute<PreferenceValues> = WeakAttribute()
     package final var lastHostPreferencesSeed: VersionSeed = .invalid
     private final var pendingTransactions: [AsyncTransaction] = []
     package final var inTransaction: Bool = false
@@ -545,9 +545,9 @@ extension GraphHost {
         }
     }
     
-    package final func preferenceValues() -> PreferenceList {
+    package final func preferenceValues() -> PreferenceValues {
         instantiateIfNeeded()
-        return hostPreferenceValues.value ?? PreferenceList()
+        return hostPreferenceValues.value ?? PreferenceValues()
     }
     
     package final func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {

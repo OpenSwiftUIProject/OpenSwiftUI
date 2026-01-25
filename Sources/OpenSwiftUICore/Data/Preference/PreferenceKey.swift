@@ -4,6 +4,7 @@
 //
 //  Audited for 6.0.87
 //  Status: Complete
+//  ID: 3D8838A231BB2CC7FC00E7880D8B2FC4 (SwiftUICore)
 
 // MARK: - PreferenceKey
 
@@ -141,11 +142,13 @@ package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollect
 // MARK: - HostPreferencesKey
 
 package struct HostPreferencesKey: PreferenceKey {
-    package static var defaultValue: PreferenceList {
-        PreferenceList()
+    package typealias Value = PreferenceValues
+
+    package static var defaultValue: Value {
+        .init()
     }
     
-    package static func reduce(value: inout PreferenceList, nextValue: () -> PreferenceList) {
+    package static func reduce(value: inout Value, nextValue: () -> Value) {
         value.combine(with: nextValue())
     }
     

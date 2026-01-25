@@ -126,10 +126,10 @@ package struct PreferencesAggregator<K>: Rule, AsyncAttribute where K: Preferenc
 
 package struct HostPreferencesCombiner: Rule, AsyncAttribute {
     @Attribute var keys: PreferenceKeys
-    @OptionalAttribute var values: PreferenceList?
+    @OptionalAttribute var values: PreferenceValues?
     var children: [Child]
 
-    package init(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceList>?) {
+    package init(keys: Attribute<PreferenceKeys>, values: Attribute<PreferenceValues>?) {
         _keys = keys
         _values = OptionalAttribute(values)
         children = []
@@ -137,10 +137,10 @@ package struct HostPreferencesCombiner: Rule, AsyncAttribute {
     
     struct Child {
         @WeakAttribute var keys: PreferenceKeys?
-        @WeakAttribute var values: PreferenceList?
+        @WeakAttribute var values: PreferenceValues?
     }
 
-    package mutating func addChild(keys: Attribute<PreferenceKeys>, values: WeakAttribute<PreferenceList>) {
+    package mutating func addChild(keys: Attribute<PreferenceKeys>, values: WeakAttribute<PreferenceValues>) {
         let child = Child(keys: WeakAttribute(keys), values: values)
         if let index = children.firstIndex(where: { $0.$keys == keys }) {
             children[index] = child
@@ -159,7 +159,7 @@ package struct HostPreferencesCombiner: Rule, AsyncAttribute {
 
     private struct CombineValues: PreferenceKeyVisitor {
         var children: [Child]
-        var values: PreferenceList
+        var values: PreferenceValues
 
         mutating func visit<Key: PreferenceKey>(key: Key.Type) {
             guard !values.contains(key) else {
@@ -192,13 +192,13 @@ package struct HostPreferencesCombiner: Rule, AsyncAttribute {
                 initialValue = false
             }
             if !initialValue {
-                values[key] = PreferenceList.Value(value: value, seed: seed)
+                values[key] = PreferenceValues.Value(value: value, seed: seed)
             }
         }
     }
 
-    package var value: PreferenceList {
-        let values = values ?? PreferenceList()
+    package var value: PreferenceValues {
+        let values = values ?? PreferenceValues()
         guard !children.isEmpty else {
             return values
         }
