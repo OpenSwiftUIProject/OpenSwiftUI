@@ -95,17 +95,17 @@ extension PreferencesOutputs {
         }
         if K._isReadableByHost,
            inputs.contains(HostPreferencesKey.self) {
-            self[HostPreferencesKey.self] = Attribute(
-                HostPreferencesWriter<K>(
-                    keyValue: attribute ?? value(),
-                    keys: inputs.hostKeys,
-                    childValues: .init(self[HostPreferencesKey.self]),
-                    keyRequested: false,
-                    wasEmpty: false,
-                    delta: 0,
-                    nodeId: HostPreferencesKey.makeNodeId()
-                )
-            )
+//            self[HostPreferencesKey.self] = Attribute(
+//                HostPreferencesWriter<K>(
+//                    keyValue: attribute ?? value(),
+//                    keys: inputs.hostKeys,
+//                    childValues: .init(self[HostPreferencesKey.self]),
+//                    keyRequested: false,
+//                    wasEmpty: false,
+//                    delta: 0,
+//                    nodeId: HostPreferencesKey.makeNodeId()
+//                )
+//            )
         }
     }
 }
@@ -114,26 +114,54 @@ extension PreferencesOutputs {
 
 // TODO: - Gesture + truePreference
 
-// MARK: - HostPreferencesWriter [WIP]
+// MARK: - HostPreferencesWriter
 
-private struct HostPreferencesWriter<Key>: StatefulRule, AsyncAttribute, CustomStringConvertible where Key: PreferenceKey {
-
-    @Attribute var keyValue: Key.Value
+private struct HostPreferencesWriter<K>: StatefulRule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
+    @Attribute var keyValue: K.Value
     @Attribute var keys: PreferenceKeys
-    @OptionalAttribute var childValues: PreferenceList?
+    @OptionalAttribute var childValues: PreferenceValues?
     var keyRequested: Bool
     var wasEmpty: Bool
     var delta: UInt32
     let nodeId: UInt32
 
-    // FIXME
-    typealias Value = PreferenceList
+    typealias Value = PreferenceValues
 
-    func updateValue() {
-
+    mutating func updateValue() {
+        var result: PreferenceValues
+        let valuesChanged: Bool
+        if let childValues = $childValues {
+            (result, valuesChanged) = childValues.changedValue()
+            wasEmpty = false
+        } else {
+            (result, valuesChanged) = (.init(), !wasEmpty)
+            wasEmpty = true
+        }
+        var requiresUpdate = valuesChanged
+        let (keys, keysChanged) = $keys.changedValue()
+        if keysChanged {
+            let contains = keys.contains(K.self)
+            if keyRequested != contains {
+                keyRequested = contains
+                requiresUpdate = true
+            }
+        }
+        if keyRequested {
+            let (keyValue, keyValueChanged) = $keyValue.changedValue()
+            if keyValueChanged {
+                delta &+= 1
+                requiresUpdate = true
+            }
+            if keyValueChanged || requiresUpdate {
+                result[K.self] = .init(value: keyValue, seed: .init(nodeId: nodeId, viewSeed: delta))
+            }
+        }
+        if requiresUpdate || !hasValue {
+            value = result
+        }
     }
 
     var description: String {
-        "TODO"
+        "Preference: \(K.readableName)"
     }
 }
