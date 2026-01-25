@@ -355,8 +355,6 @@ struct PreferenceValuesTests {
 
         values1.combine(with: values2)
         #expect(values1.description == "2589144168: [A = 1, B = 2, C = 3, D = 4]")
-        // Actual
-//        #expect(values1.description == "1517686625: [A = 1, B = 2, C = 3, D = 4, A = 10]")
     }
 
     // MARK: - Filter and Description Tests

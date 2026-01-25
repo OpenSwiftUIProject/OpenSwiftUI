@@ -414,8 +414,9 @@ package struct PreferenceValues {
         guard !entries.isEmpty else {
             return 0
         }
+        let keyID = ObjectIdentifier(key)
         return entries.partitionPoint { entry in
-            entry.key == key
+            ObjectIdentifier(entry.key) >= keyID
         }
     }
 
