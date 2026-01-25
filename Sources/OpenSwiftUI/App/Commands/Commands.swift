@@ -262,7 +262,7 @@ struct CommandsDescriptor: TupleDescriptor {
 
 extension TypeConformance where P == CommandsDescriptor {
     func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: CommandsTypeVisitor {
-        visitor.pointee.visit(type: unsafeBitCast(self, to: (any Commands.Type).self))
+        visitor.pointee.visit(type: unsafeExistentialMetatype((any Commands.Type).self))
     }
 }
 

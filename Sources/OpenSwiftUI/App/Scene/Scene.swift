@@ -197,7 +197,7 @@ struct SceneDescriptor: TupleDescriptor {
 
 extension TypeConformance where P == SceneDescriptor {
     func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: SceneTypeVisitor {
-        visitor.pointee.visit(type: unsafeBitCast(self, to: (any Scene.Type).self))
+        visitor.pointee.visit(type: unsafeExistentialMetatype((any Scene.Type).self))
     }
 }
 

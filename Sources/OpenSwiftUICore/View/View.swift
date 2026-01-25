@@ -196,6 +196,6 @@ package struct ViewDescriptor: TupleDescriptor, ConditionalProtocolDescriptor {
 
 extension TypeConformance where P == ViewDescriptor {
     package func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: ViewTypeVisitor {
-        visitor.pointee.visit(type: unsafeBitCast(self, to: (any View.Type).self))
+        visitor.pointee.visit(type: unsafeExistentialMetatype((any View.Type).self))
     }
 }
