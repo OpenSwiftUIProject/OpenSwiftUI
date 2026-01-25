@@ -62,7 +62,12 @@ public struct PlaceholderContentView<Value>: View {
     }
 
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        #if OPENSWIFTUI_SUPPORT_2025_API
+        // TODO: inputs.cachedViewListCount(type: Self.self)
+        return nil
+        #else
         providerViewListCount(inputs: inputs)
+        #endif
     }
 
     public typealias Body = Never
@@ -218,6 +223,7 @@ extension ViewModifierContentProvider {
         }
     }
 
+    #if !OPENSWIFTUI_SUPPORT_2025_API
     nonisolated fileprivate static func providerViewListCount(
         inputs: _ViewListCountInputs
     ) -> Int? {
@@ -231,6 +237,7 @@ extension ViewModifierContentProvider {
         inputs.customModifierTypes.append(ObjectIdentifier(Self.self))
         return input(inputs)
     }
+    #endif
 }
 
 extension _GraphInputs {

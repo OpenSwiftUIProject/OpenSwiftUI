@@ -211,7 +211,7 @@ public struct ObservedObject<ObjectType>: DynamicProperty where ObjectType: Obse
 
 @available(OpenSwiftUI_v1_0, *)
 extension ObservedObject {
-    #if OPENSWIFTUI_RELEASE_2025 // Audited for 7.0.67
+    #if OPENSWIFTUI_SUPPORT_2025_API // Audited for 7.0.67
     nonisolated static func makeBoxAndSignal<V>(
         in buffer: inout _DynamicPropertyBuffer,
         container: _GraphValue<V>,
