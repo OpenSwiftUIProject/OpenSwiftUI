@@ -245,7 +245,6 @@ struct SafeAreaPaddingModifier: ViewModifier {
     @Environment(\.defaultPadding)
     private var defaultPadding: EdgeInsets
 
-
     @usableFromInline
     init(edges: Edge.Set, insets: EdgeInsets?) {
         self.edges = edges
@@ -552,11 +551,7 @@ private struct InsetViewLayout {
 
         var primaryGeometry = ViewGeometry(
             placement: primaryPlacement,
-            dimensions: ViewDimensions(
-                guideComputer: primaryComputer,
-                size: primarySize,
-                proposal: primaryProposal
-            )
+            dimensions: primaryDimensions
         )
         var secondaryGeometry = ViewGeometry(
             placement: secondaryPlacement,
@@ -572,6 +567,10 @@ private struct InsetViewLayout {
             layoutDirection,
             parentSize: parentSize.value
         )
+
+        primaryGeometry.origin += CGSize(parentPosition)
+        secondaryGeometry.origin += CGSize(parentPosition)
+
         return (primaryGeometry, secondaryGeometry)
     }
 
