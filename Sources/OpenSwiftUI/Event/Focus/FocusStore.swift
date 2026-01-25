@@ -1,10 +1,16 @@
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
-struct FocusStore {
-    var seed: VersionSeed
-    var focusedResponders: ContiguousArray<ResponderNode>
-    var plists: [ObjectIdentifier : PropertyList]
+package struct FocusStore {
+    package var seed: VersionSeed
+    package var focusedResponders: [WeakBox<ResponderNode>]
+    package var plists: [ObjectIdentifier: PropertyList]
+
+    package init() {
+        self.seed = .empty
+        self.focusedResponders = []
+        self.plists = [:]
+    }
 }
 
 // MARK: - FocusStore.Key
