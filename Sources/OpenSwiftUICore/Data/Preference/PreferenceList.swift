@@ -7,7 +7,7 @@
 //  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD (SwiftUI)
 //  ID: 7B694C05291EA7AF22785AB458D1BC2F (SwiftUICore)
 
-#if OPENSWIFTUI_PREFERENCELIST || true
+#if OPENSWIFTUI_PREFERENCELIST
 
 // MARK: - PreferenceList [6.0.87]
 
@@ -345,7 +345,47 @@ package struct PreferenceValues {
     }
 
     package mutating func combine(with other: PreferenceValues) {
-        _openSwiftUIUnimplementedFailure()
+        guard !other.entries.isEmpty else {
+            return
+        }
+        guard !entries.isEmpty else {
+            entries = other.entries
+            return
+        }
+
+        var newEntries: [Entry] = []
+        newEntries.reserveCapacity(entries.count + other.entries.count)
+
+        var i = 0
+        var j = 0
+
+        while i < entries.count && j < other.entries.count {
+            let selfEntry = entries[i]
+            let otherEntry = other.entries[j]
+
+            let selfKeyID = ObjectIdentifier(selfEntry.key)
+            let otherKeyID = ObjectIdentifier(otherEntry.key)
+
+            if selfKeyID == otherKeyID {
+                // Keys match - merge using reduce
+                // TODO
+                newEntries.append(selfEntry)
+                i += 1
+                j += 1
+            } else if selfKeyID < otherKeyID {
+                newEntries.append(selfEntry)
+                i += 1
+            } else {
+                newEntries.append(otherEntry)
+                j += 1
+            }
+        }
+
+        // Append remaining entries
+        newEntries.append(contentsOf: entries[i...])
+        newEntries.append(contentsOf: other.entries[j...])
+
+        entries = newEntries
     }
 
     package mutating func filterRemoved() {
