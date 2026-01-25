@@ -10,12 +10,14 @@ package import OpenAttributeGraphShims
 
 // MARK: - _PreferenceWritingModifier
 
+/// A modifier that returns a value for a named preference key.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 @MainActor
 @preconcurrency
 public struct _PreferenceWritingModifier<Key>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Key: PreferenceKey {
 
+    /// The value to return for `Key`
     public var value: Key.Value
 
     @inlinable
@@ -78,7 +80,7 @@ extension View {
     }
 }
 
-// MARK: - PreferencesOutputs + Writer
+// MARK: - PreferencesOutputs + makePreferenceWriter
 
 extension PreferencesOutputs {
     package mutating func makePreferenceWriter<K>(
@@ -95,17 +97,17 @@ extension PreferencesOutputs {
         }
         if K._isReadableByHost,
            inputs.contains(HostPreferencesKey.self) {
-//            self[HostPreferencesKey.self] = Attribute(
-//                HostPreferencesWriter<K>(
-//                    keyValue: attribute ?? value(),
-//                    keys: inputs.hostKeys,
-//                    childValues: .init(self[HostPreferencesKey.self]),
-//                    keyRequested: false,
-//                    wasEmpty: false,
-//                    delta: 0,
-//                    nodeId: HostPreferencesKey.makeNodeId()
-//                )
-//            )
+            self[HostPreferencesKey.self] = Attribute(
+                HostPreferencesWriter<K>(
+                    keyValue: attribute ?? value(),
+                    keys: inputs.hostKeys,
+                    childValues: .init(self[HostPreferencesKey.self]),
+                    keyRequested: false,
+                    wasEmpty: false,
+                    delta: 0,
+                    nodeId: HostPreferencesKey.makeNodeId()
+                )
+            )
         }
     }
 }
