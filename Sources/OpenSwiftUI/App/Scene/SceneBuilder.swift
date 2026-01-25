@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 /// A result builder for composing a collection of scenes into a single
 /// composite scene.
@@ -27,11 +27,11 @@ public enum SceneBuilder {
         content
     }
 
-//    @_disfavoredOverload
-//    @_alwaysEmitIntoClient
-//    public static func buildBlock<each Content>(_ content: repeat each Content) -> _TupleScene<repeat each Content> where repeat each Content: View {
-//        _TupleScene(repeat each content)
-//    }
+    @_disfavoredOverload
+    @_alwaysEmitIntoClient
+    public static func buildBlock<each Content>(_ content: repeat each Content) -> some Scene where repeat each Content: Scene {
+        _TupleScene((repeat each content))
+    }
 }
 
 @available(*, unavailable)
