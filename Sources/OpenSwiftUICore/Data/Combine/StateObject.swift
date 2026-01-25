@@ -338,7 +338,7 @@ public struct StateObject<ObjectType>: DynamicProperty where ObjectType: Observa
         inputs: inout _GraphInputs
     ) {
         var buf = _DynamicPropertyBuffer()
-        #if OPENSWIFTUI_RELEASE_2025
+        #if OPENSWIFTUI_SUPPORT_2025_API
         let attribute = ObservedObject<ObjectType>.makeBoxAndSignal(in: &buf, container: container, fieldOffset: 0)
         buffer.append(Box(links: buf, object: nil), fieldOffset: fieldOffset)
         addTreeValue(

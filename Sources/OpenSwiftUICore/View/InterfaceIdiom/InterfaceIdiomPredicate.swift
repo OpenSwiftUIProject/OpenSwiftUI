@@ -5,7 +5,7 @@
 //  Audited for 6.0.87
 //  Status: Complete
 
-#if OPENSWIFTUI_RELEASE_2024
+#if OPENSWIFTUI_SUPPORT_2024_API
 package struct InterfaceIdiomPredicate<Idiom>: ViewInputPredicate where Idiom: InterfaceIdiom {
     package init() {}
     

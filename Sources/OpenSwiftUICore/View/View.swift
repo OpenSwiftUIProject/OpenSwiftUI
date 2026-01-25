@@ -45,6 +45,9 @@ import OpenSwiftUI_SPI
 /// You can also collect groups of default modifiers into new,
 /// custom view modifiers for easy reuse.
 @available(OpenSwiftUI_v1_0, *)
+#if OPENSWIFTUI_SUPPORT_2025_API && compiler(>=6.2)
+@_typeEraser(DebugReplaceableView)
+#endif
 @_typeEraser(AnyView)
 @preconcurrency
 @MainActor
