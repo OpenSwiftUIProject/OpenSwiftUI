@@ -11,6 +11,10 @@ import COpenSwiftUI
 @_spi(Private)
 public import OpenSwiftUICore
 
+#if canImport(CoreTransferable)
+import CoreTransferable
+#endif
+
 // MARK: - Commands
 
 /// Conforming types represent a group of related commands that can be exposed
@@ -54,6 +58,11 @@ public protocol Commands {
     @CommandsBuilder
     var body: Body { get }
 
+    /// Creates the outputs that the graph should represent for a given command
+    /// hierarchy.
+    ///
+    /// - Note: clients should not implement this directly. Instead, OpenSwiftUI
+    ///         provides a default implementation of this method.
     @available(OpenSwiftUI_v3_0, *)
     nonisolated static func _makeCommands(
         content: _GraphValue<Self>,
@@ -75,7 +84,7 @@ extension Commands {
     ) -> _CommandsOutputs {
         let fields = DynamicPropertyCache.fields(of: Self.self)
         var inputs = inputs
-        let (body, buffer) = makeBody(view: content, inputs: &inputs.base, fields: fields)
+        let (body, buffer) = makeBody(commands: content, inputs: &inputs.base, fields: fields)
         defer {
             buffer?.traceMountedProperties(to: content, fields: fields)
         }
@@ -84,7 +93,7 @@ extension Commands {
     }
 
     nonisolated private static func makeBody(
-        view: _GraphValue<Self>,
+        commands: _GraphValue<Self>,
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
@@ -93,7 +102,7 @@ extension Commands {
             "commands must be value types: \(Self.self)"
         )
         let accessor = CommandsBodyAccessor<Self>()
-        return accessor.makeBody(container: view, inputs: &inputs, fields: fields)
+        return accessor.makeBody(container: commands, inputs: &inputs, fields: fields)
     }
 
     public func _resolve(
@@ -105,9 +114,10 @@ extension Commands {
 
 // MARK: - PrimitiveCommands
 
-extension Never: Commands {
-    public typealias Body = Never
-}
+@available(OpenSwiftUI_v2_0, *)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+extension Never: Commands {}
 
 protocol PrimitiveCommands: Commands where Body == Never {}
 
@@ -238,6 +248,8 @@ protocol CommandsTypeVisitor {
     mutating func visit<Content>(type: Content.Type) where Content: Commands
 }
 
+// MARK: - CommandsDescriptor
+
 struct CommandsDescriptor: TupleDescriptor {
     static var typeCache: [ObjectIdentifier: TupleTypeDescription<CommandsDescriptor>] = [:]
 
@@ -250,7 +262,7 @@ struct CommandsDescriptor: TupleDescriptor {
 
 extension TypeConformance where P == CommandsDescriptor {
     func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: CommandsTypeVisitor {
-        visitor.pointee.visit(type: unsafeBitCast(self, to: (any Commands.Type).self))
+        visitor.pointee.visit(type: unsafeExistentialMetatype((any Commands.Type).self))
     }
 }
 
@@ -303,7 +315,9 @@ private struct CommandsBodyAccessor<Content>: BodyAccessor where Content: Comman
 
     typealias Body = Content.Body
 
-    init() {}
+    init() {
+        _openSwiftUIEmptyStub()
+    }
 
     func updateBody(of container: Content, changed: Bool) {
         guard changed else {

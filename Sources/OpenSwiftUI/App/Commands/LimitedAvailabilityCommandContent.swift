@@ -23,7 +23,7 @@ struct LimitedAvailabilityCommandContent: PrimitiveCommands, Commands {
     let storage: LimitedAvailabilityCommandContentStorageBase
 
     @usableFromInline
-    init<A>(erasing content: A) where A: Commands {
+    init<C>(erasing content: C) where C: Commands {
         storage = LimitedAvailabilityCommandContentStorage(content)
     }
 
@@ -35,15 +35,17 @@ struct LimitedAvailabilityCommandContent: PrimitiveCommands, Commands {
         content: _GraphValue<LimitedAvailabilityCommandContent>,
         inputs: _CommandsInputs
     ) -> _CommandsOutputs {
-        var outputs = _CommandsOutputs(preferences: inputs.preferences.makeIndirectOutputs())
-        let indirectOutputs = IndirectOutputs(
-            content: content.value,
-            parentGraph: Subgraph.current!,
-            inputs: inputs,
-            outputs: outputs,
-            childSubgraph: nil
+        let outputs = _CommandsOutputs(preferences: inputs.preferences.makeIndirectOutputs())
+        let indirectOutputs = Attribute(
+            IndirectOutputs(
+                content: content.value,
+                parentGraph: Subgraph.current!,
+                inputs: inputs,
+                outputs: outputs,
+                childSubgraph: nil
+            )
         )
-        _ = Attribute(indirectOutputs)
+        outputs.preferences.setIndirectDependency(indirectOutputs.identifier)
         return outputs
     }
 
@@ -64,7 +66,7 @@ struct LimitedAvailabilityCommandContent: PrimitiveCommands, Commands {
             parentGraph.addChild(child)
             child.apply {
                 var inputs = inputs
-                inputs.copyCaches()
+                inputs.base.copyCaches()
                 let childOutputs = content.storage.makeCommands(
                     content: .init($content),
                     inputs: inputs

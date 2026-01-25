@@ -1,6 +1,6 @@
 //
 //  ProtocolDescriptor_h
-//  OpenSwiftUI_SPI
+//  COpenSwiftUI
 //
 //  Audit for 6.5.4
 //  Status: Complete
@@ -10,6 +10,8 @@
 #include "OpenSwiftUIBase.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
+
+const void *_sceneProtocolDescriptor(void);
 
 const void *_commandsProtocolDescriptor(void);
 
