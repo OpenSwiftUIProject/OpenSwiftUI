@@ -391,7 +391,7 @@ struct PreferenceValuesTests {
     }
 
     @Test(arguments: [
-        (UInt32(1), UInt32(2), UInt32(3), "372598479: [PrefInt = 1, PrefDouble = 1.0, PrefInt = 2]"),
+        (UInt32(1), UInt32(2), UInt32(3), "398988569: [PrefInt = 2, PrefDouble = 1.0]"),
     ])
     func subscriptWithSeed(intSeed: UInt32, doubleSeed: UInt32, intSeed2: UInt32, expectedDescription: String) {
         var values = PreferenceValues()

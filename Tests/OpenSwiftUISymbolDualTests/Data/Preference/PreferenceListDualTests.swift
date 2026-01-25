@@ -193,7 +193,7 @@ struct PreferenceValuesDualTests {
         (nil as Int?, UInt32(0), nil as Int?, UInt32(0), 0, "empty: []"),
         (10, UInt32(1), nil as Int?, UInt32(0), 10, "1: [PrefInt = 10]"),
         (nil as Int?, UInt32(0), 20, UInt32(1), 20, "1: [PrefInt = 20]"),
-        (10, UInt32(1), 20, UInt32(2), 10, "547159728: [PrefInt = 30]"),
+        (10, UInt32(1), 20, UInt32(2), 30, "547159728: [PrefInt = 30]"),
     ])
     func combine(
         values1Value: Int?,
@@ -270,7 +270,7 @@ struct PreferenceValuesDualTests {
     }
 
     @Test(arguments: [
-        (UInt32(1), UInt32(2), UInt32(3), "3634229150: [PrefIntKey = 2, PrefDoubleKey = 1.0]"),
+        (UInt32(1), UInt32(2), UInt32(3), "398988569: [PrefInt = 2, PrefDouble = 1.0]"),
     ])
     func subscriptWithSeed(intSeed: UInt32, doubleSeed: UInt32, intSeed2: UInt32, expectedDescription: String) {
         var values = PreferenceValues(swiftUI: ())
