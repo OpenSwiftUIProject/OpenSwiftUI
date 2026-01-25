@@ -112,13 +112,26 @@ public struct _ViewListCountInputs {
     package var customInputs: PropertyList
     package var options: _ViewListInputs.Options
     package var baseOptions: _GraphInputs.Options
+    #if OPENSWIFTUI_SUPPORT_2025_API
+    package var customViewCache: CustomViewCountCache?
+    package var debugReplaceableViewInfo: DebugReplaceableViewInfo
+    #else
     package var customModifierTypes: [ObjectIdentifier]
+    #endif
 
     package init(_ inputs: _ViewListInputs) {
         customInputs = inputs.base.customInputs
         options = inputs.options
         baseOptions = inputs.base.options
+        #if OPENSWIFTUI_SUPPORT_2025_API
+        customViewCache = nil
+        debugReplaceableViewInfo = DebugReplaceableViewInfo(
+            countAsZero: false,
+            countedAsZero: nil
+        )
+        #else
         customModifierTypes = []
+        #endif
     }
 
     package subscript<T>(input: T.Type) -> T.Value where T: GraphInput {
