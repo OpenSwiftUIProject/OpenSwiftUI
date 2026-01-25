@@ -9,6 +9,26 @@ import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
+// MARK: - Group + Scene
+
+@available(OpenSwiftUI_v2_0, *)
+extension Group: PrimitiveScene, Scene where Content: Scene {
+    @inlinable
+    nonisolated public init(@SceneBuilder content: () -> Content) {
+        self = Self._make(content: content())
+    }
+
+    nonisolated public static func _makeScene(
+        scene: _GraphValue<Self>, 
+        inputs: _SceneInputs
+    ) -> _SceneOutputs {
+        Content._makeScene(
+            scene: scene[offset: { .of(&$0.content) }],
+            inputs: inputs
+        )
+    }
+}
+
 // MARK: - _TupleScene
 
 /// An empty scene.
