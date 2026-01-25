@@ -10,6 +10,7 @@ package import OpenSwiftUICore
 
 // MARK: - _CommandsInputs
 
+/// Inputs used for creating attributes of a Commands hierarchy.
 @available(OpenSwiftUI_v2_0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -27,6 +28,7 @@ extension _CommandsInputs: Sendable {}
 
 // MARK: - _CommandsOutputs
 
+/// Outputs used for storing preference values from a Commands hierarchy.
 @available(OpenSwiftUI_v2_0, *)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
