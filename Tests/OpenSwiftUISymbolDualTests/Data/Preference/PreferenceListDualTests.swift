@@ -27,6 +27,11 @@ private struct CKey: PreferenceKey {
     static var _includesRemovedValues: Bool { true }
 }
 
+private struct DKey: PreferenceKey {
+    static let defaultValue = 0
+    static func reduce(value _: inout Int, nextValue _: () -> Int) {}
+}
+
 private struct PrefIntKey: PreferenceKey {
     static var defaultValue: Int { 0 }
 
@@ -209,6 +214,26 @@ struct PreferenceValuesDualTests {
         values1.swiftUI_combine(with: values2)
         #expect(values1[swiftUI: PrefIntKey.self].value == expectedIntValue)
         #expect(values1.swiftUI_description == expectedDescription)
+    }
+
+    @Test
+    func combineComplex() {
+        // values1: A=1, B=2, C=3
+        // values2: C=30, D=4, A=10
+        // After combine: A, B, C, D with values based on combine behavior
+        var values1 = PreferenceValues(swiftUI: ())
+        var values2 = PreferenceValues(swiftUI: ())
+
+        values1[swiftUI: AKey.self] = .init(value: 1, seed: .init(value: 1))
+        values1[swiftUI: BKey.self] = .init(value: 2, seed: .init(value: 2))
+        values1[swiftUI: CKey.self] = .init(value: 3, seed: .init(value: 3))
+
+        values2[swiftUI: CKey.self] = .init(value: 30, seed: .init(value: 4))
+        values2[swiftUI: DKey.self] = .init(value: 4, seed: .init(value: 5))
+        values2[swiftUI: AKey.self] = .init(value: 10, seed: .init(value: 6))
+
+        values1.swiftUI_combine(with: values2)
+        #expect(values1.swiftUI_description == "2589144168: [A = 1, B = 2, C = 3, D = 4]")
     }
 
     // MARK: - Filter and Description Tests

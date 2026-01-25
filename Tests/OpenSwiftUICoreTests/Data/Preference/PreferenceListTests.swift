@@ -24,6 +24,11 @@ private struct CKey: PreferenceKey {
     static var _includesRemovedValues: Bool { true }
 }
 
+private struct DKey: PreferenceKey {
+    static let defaultValue = 0
+    static func reduce(value _: inout Int, nextValue _: () -> Int) {}
+}
+
 private struct PrefIntKey: PreferenceKey {
     static var defaultValue: Int { 0 }
 
@@ -308,7 +313,7 @@ struct PreferenceValuesTests {
         (nil as Int?, UInt32(0), nil as Int?, UInt32(0), 0, "empty: []"),
         (10, UInt32(1), nil as Int?, UInt32(0), 10, "1: [PrefInt = 10]"),
         (nil as Int?, UInt32(0), 20, UInt32(1), 20, "1: [PrefInt = 20]"),
-        (10, UInt32(1), 20, UInt32(2), 10, "547159728: [PrefInt = 30]"),
+        (10, UInt32(1), 20, UInt32(2), 30, "547159728: [PrefInt = 30]"),
     ])
     func combine(
         values1Value: Int?,
@@ -330,6 +335,28 @@ struct PreferenceValuesTests {
         // known issue 10, "1: [PrefInt = 10]")
         #expect(values1[PrefIntKey.self].value == expectedIntValue)
         #expect(values1.description == expectedDescription)
+    }
+
+    @Test
+    func combineComplex() {
+        // values1: A=1, B=2, C=3
+        // values2: C=30, D=4, A=10
+        // After combine: A, B, C, D with values based on combine behavior
+        var values1 = PreferenceValues()
+        var values2 = PreferenceValues()
+
+        values1[AKey.self] = .init(value: 1, seed: .init(value: 1))
+        values1[BKey.self] = .init(value: 2, seed: .init(value: 2))
+        values1[CKey.self] = .init(value: 3, seed: .init(value: 3))
+
+        values2[CKey.self] = .init(value: 30, seed: .init(value: 4))
+        values2[DKey.self] = .init(value: 4, seed: .init(value: 5))
+        values2[AKey.self] = .init(value: 10, seed: .init(value: 6))
+
+        values1.combine(with: values2)
+        #expect(values1.description == "2589144168: [A = 1, B = 2, C = 3, D = 4]")
+        // Actual
+//        #expect(values1.description == "1517686625: [A = 1, B = 2, C = 3, D = 4, A = 10]")
     }
 
     // MARK: - Filter and Description Tests
