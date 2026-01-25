@@ -114,24 +114,22 @@ private struct PreferenceTransform<K>: Rule, AsyncAttribute, CustomStringConvert
 private struct HostPreferencesTransform<K>: StatefulRule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
     @Attribute var transform: (inout K.Value) -> Void
     @Attribute var keys: PreferenceKeys
-    // FIXME:  [6.4.41]
-    // @OptionalAttribute var childValues: PreferenceValues?
-    @OptionalAttribute var childValues: PreferenceList?
+    @OptionalAttribute var childValues: PreferenceValues?
     var keyRequested: Bool
     var wasEmpty: Bool
     var delta: UInt32
     let nodeId: UInt32
 
-    typealias Value = PreferenceList
+    typealias Value = PreferenceValues
 
     mutating func updateValue() {
-        var values: PreferenceList
+        var values: PreferenceValues
         let valuesChanged: Bool
         if let childValues = $childValues {
             (values, valuesChanged) = childValues.changedValue()
             wasEmpty = false
         } else {
-            (values, valuesChanged) = (PreferenceList(), !wasEmpty)
+            (values, valuesChanged) = (.init(), !wasEmpty)
             wasEmpty = true
         }
         var requiresUpdate = valuesChanged
@@ -150,7 +148,7 @@ private struct HostPreferencesTransform<K>: StatefulRule, AsyncAttribute, Custom
             }
             if anyInputsChanged || requiresUpdate {
                 $transform.syncMainIfReferences { transform in
-                    let transformValue = PreferenceList.Value(value: transform, seed: VersionSeed(nodeId: nodeId, viewSeed: delta))
+                    let transformValue = PreferenceValues.Value(value: transform, seed: VersionSeed(nodeId: nodeId, viewSeed: delta))
                     values.modifyValue(for: K.self, transform: transformValue)
                 }
             }

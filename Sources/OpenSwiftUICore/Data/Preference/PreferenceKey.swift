@@ -141,11 +141,13 @@ package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollect
 // MARK: - HostPreferencesKey
 
 package struct HostPreferencesKey: PreferenceKey {
-    package static var defaultValue: PreferenceList {
-        PreferenceList()
+    package typealias Value = PreferenceValues
+
+    package static var defaultValue: Value {
+        .init()
     }
     
-    package static func reduce(value: inout PreferenceList, nextValue: () -> PreferenceList) {
+    package static func reduce(value: inout Value, nextValue: () -> Value) {
         value.combine(with: nextValue())
     }
     
