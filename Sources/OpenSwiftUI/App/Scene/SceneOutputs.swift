@@ -11,6 +11,14 @@
 @available(OpenSwiftUI_v2_0, *)
 public struct _SceneOutputs {
     package var preferences: PreferencesOutputs
+
+    package init() {
+        preferences = .init()
+    }
+
+    package init(preferences: PreferencesOutputs) {
+        self.preferences = preferences
+    }
 }
 
 @available(*, unavailable)

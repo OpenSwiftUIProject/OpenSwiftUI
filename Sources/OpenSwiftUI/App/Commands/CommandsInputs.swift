@@ -17,10 +17,6 @@ package import OpenSwiftUICore
 public struct _CommandsInputs {
     package var base: _GraphInputs
     package var preferences: PreferencesInputs
-
-    package mutating func copyCaches() {
-        base.copyCaches()
-    }
 }
 
 @available(*, unavailable)

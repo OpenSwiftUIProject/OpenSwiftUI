@@ -100,7 +100,7 @@ extension _ConditionalContent: PrimitiveCommands, Commands where TrueContent: Co
 
         func makeChildInputs() -> _CommandsInputs {
             var inputs = inputs
-            inputs.copyCaches()
+            inputs.base.copyCaches()
             return inputs
         }
 
