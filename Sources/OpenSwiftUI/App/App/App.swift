@@ -2,7 +2,7 @@
 //  App.swift
 //  OpenSwiftUI
 //
-//  Audited for 3.5.2
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A type that represents the structure and behavior of an app.
@@ -66,7 +66,26 @@
 ///         }
 ///     }
 ///
+/// A type conforming to this protocol inherits `@preconcurrency @MainActor`
+/// isolation from the protocol if the conformance is included in the type's
+/// base declaration:
+///
+///     struct MyCustomType: Transition {
+///         // `@preconcurrency @MainActor` isolation by default
+///     }
+///
+/// Isolation to the main actor is the default, but it's not required. Declare
+/// the conformance in an extension to opt out of main actor isolation:
+///
+///     extension MyCustomType: Transition {
+///         // `nonisolated` by default
+///     }
+///
+@available(OpenSwiftUI_v2_0, *)
+@MainActor
+@preconcurrency
 public protocol App {
+
     /// The type of scene representing the content of the app.
     ///
     /// When you create a custom app, Swift infers this type from your
@@ -93,9 +112,7 @@ public protocol App {
     /// Swift infers the app's ``OpenSwiftUI/App/Body-swift.associatedtype``
     /// associated type based on the scene provided by the `body` property.
     @SceneBuilder
-    @MainActor
-    @preconcurrency
-    var body: Self.Body { get }
+    var body: Body { get }
 
     /// Creates an instance of the app using the body that you define for its
     /// content.
@@ -103,12 +120,11 @@ public protocol App {
     /// Swift synthesizes a default initializer for structures that don't
     /// provide one. You typically rely on the default initializer for
     /// your app.
-    @MainActor
-    @preconcurrency
     init()
 }
 
 extension App {
+
     /// Initializes and runs the app.
     ///
     /// If you precede your ``OpenSwiftUI/App`` conformer's declaration with the
@@ -117,10 +133,34 @@ extension App {
     /// the app. OpenSwiftUI provides a
     /// default implementation of the method that manages the launch process in
     /// a platform-appropriate way.
-    @MainActor
-    @preconcurrency
     public static func main() {
         let app = Self()
         runApp(app)
     }
 }
+
+#if os(iOS) || os(visionOS)
+import UIKit
+typealias DelegateBaseClass = UIResponder
+typealias PlatformApplication = UIApplication
+typealias PlatformApplicationDelegate = UIApplicationDelegate
+#elseif os(macOS)
+import AppKit
+typealias DelegateBaseClass = NSResponder
+typealias PlatformApplication = NSApplication
+typealias PlatformApplicationDelegate = NSApplicationDelegate
+#else
+import Foundation
+// FIXME: Temporarily use NSObject as a placeholder
+typealias DelegateBaseClass = NSObject
+typealias PlatformApplication = NSObject
+typealias PlatformApplicationDelegate = AnyObject
+
+func runApp(_ app: some App) -> Never {
+    _openSwiftUIPlatformUnimplementedFailure()
+}
+
+func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escaping (any TestHost, any TestHost) -> ()) -> Never where V1: View, V2: View {
+    _openSwiftUIPlatformUnimplementedFailure()
+}
+#endif

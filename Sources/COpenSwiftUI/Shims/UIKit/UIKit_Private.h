@@ -20,6 +20,9 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIApplication (OpenSwiftUI_SPI)
+- (nullable NSString *)_extendLaunchTest;
+- (BOOL)_supportsPrintCommand;
+
 // Test API
 - (void)startedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(startedTest(_:));
 - (void)finishedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(finishedTest(_:));
@@ -38,6 +41,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property(class, nonatomic, readonly) BOOL _isInAnimationBlockWithAnimationsEnabled_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_isInAnimationBlockWithAnimationsEnabled);
 @property(class, nonatomic, readonly) NSTimeInterval _currentAnimationDuration_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationDuration);
 @property(class, nonatomic, readonly) NSInteger _currentAnimationCurve_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationCurve);
+@end
+
+@interface UIResponder (OpenSwiftUI_SPI)
+- (void)_performMainMenuShortcutKeyCommand:(UIKeyCommand *)keyCommand; // FIXME
 @end
 
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES

@@ -14,7 +14,7 @@ struct AppKitPrivateTests {
         let app = NSApplication.shared
         let name = "ATest"
         app.startedTest(name)
-        app.finishedTest(name)
+        app.finishedTest(name, extraResults: nil)
         app.failedTest(name, withFailure: nil)
     }
 }
