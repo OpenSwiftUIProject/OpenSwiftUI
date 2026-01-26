@@ -9,6 +9,8 @@
 #if os(iOS) || os(visionOS)
 import UIKit
 
+// MARK: - AppDelegate [TODO]
+
 class AppDelegate: UIResponder, UIApplicationDelegate {
     private var fallbackDelegate: UIApplicationDelegate?
     var mainMenuController: UIKitMainMenuController?
@@ -113,4 +115,30 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     // TODO
 }
+
+// MARK: - AppSceneDelegate [TODO]
+
+class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
+    private lazy var appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
+    var window: UIWindow?
+    private var sceneItemID: SceneID?
+    private var lastVersion: DisplayList.Version = .init()
+    private var sceneBridge: SceneBridge?
+    private var scenePhase: ScenePhase = .background
+    private var sceneDelegateBox: AnyFallbackDelegateBox?
+    private var sceneStorageValues: SceneStorageValues?
+    private var presentationDataType: Any.Type?
+    private var rawPresentationDataValue: Data?
+    private var presentationDataValue: AnyHashable?
+    private lazy var isDocumentViewControllerRootEnabled: Bool = Semantics.DocumentViewControllerRoot.isEnabled
+
+    override init() {
+        super.init()
+    }
+}
+
+// TODO
+class SceneBridge {}
+class SceneStorageValues {}
+
 #endif
