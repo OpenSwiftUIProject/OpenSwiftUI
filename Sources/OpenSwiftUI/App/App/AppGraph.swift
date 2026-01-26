@@ -30,22 +30,22 @@ package final class AppGraph: GraphHost {
     private var observers: Set<HashableWeakBox<AnyObject>> = .init()
 
     @Attribute
-    private var rootScenePhase: ScenePhase
+    var rootScenePhase: ScenePhase
 
     @OptionalAttribute
-    private var rootSceneList: SceneList?
+    var rootSceneList: SceneList?
 
     @Attribute
-    private var primarySceneSummaries: [SceneList.Item.Summary]
+    var primarySceneSummaries: [SceneList.Item.Summary]
 
     @Attribute
-    private var focusedValues: FocusedValues
+    var focusedValues: FocusedValues
 
     @Attribute
-    private var focusStore: FocusStore
+    var focusStore: FocusStore
 
     @Attribute
-    private var sceneKeyboardShortcuts: [SceneID: KeyboardShortcut]
+    var sceneKeyboardShortcuts: [SceneID: KeyboardShortcut]
 
     private struct LaunchProfileOptions: OptionSet {
         let rawValue: Int32

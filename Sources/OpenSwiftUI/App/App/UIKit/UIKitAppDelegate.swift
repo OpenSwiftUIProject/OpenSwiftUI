@@ -43,13 +43,22 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         configurationForConnecting connectingSceneSession: UISceneSession,
         options: UIScene.ConnectionOptions
     ) -> UISceneConfiguration {
-//        let items: [SceneList.Item]? = Update.ensure {
-//            guard let appGraph = AppGraph.shared else {
-//                return nil
-//            }
-//            return appGraph.rootSceneList ?? []
-//        }
-        _openSwiftUIUnimplementedFailure()
+        let items: [SceneList.Item]? = Update.ensure {
+            guard let appGraph = AppGraph.shared else {
+                return nil
+            }
+            return appGraph.rootSceneList?.items ?? []
+        }
+        switch connectingSceneSession.role {
+        case .windowApplication:
+            let config = UISceneConfiguration(name: nil, sessionRole: connectingSceneSession.role)
+            config.delegateClass = AppSceneDelegate.self
+            return config
+        default:
+            _ = items
+            // TODO: Handle different roles (carPlay, externalDisplay, etc.)
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     override func responds(to aSelector: Selector!) -> Bool {
