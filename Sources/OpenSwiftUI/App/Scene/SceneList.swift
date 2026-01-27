@@ -6,6 +6,7 @@
 //  Status: WIP
 
 import Foundation
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
@@ -43,7 +44,11 @@ extension SceneList {
         var defaultSize: CGSize?
         // var restorationBehavior: SceneRestorationBehavior.Role
         // var windowManagerRole: WindowManagerRole
-        // var connectionOptionPayloadStorage: ConnectionOptionPayloadStorage
+        #if os(iOS) || os(visionOS)
+        var connectionOptionPayloadStorage: ConnectionOptionPayloadStorage
+        #elseif os(macOS)
+        // TODO: macOS specific properties
+        #endif
 
         // MARK: - SceneList.Item.Summary
 
@@ -107,5 +112,27 @@ extension SceneList {
         static func reduce(value: inout SceneList, nextValue: () -> SceneList) {
             value.items.append(contentsOf: nextValue().items)
         }
+    }
+}
+
+extension PreferencesInputs {
+    @inline(__always)
+    var requiresSceneList: Bool {
+        get { contains(SceneList.Key.self) }
+        set {
+            if newValue {
+                add(SceneList.Key.self)
+            } else {
+                remove(SceneList.Key.self)
+            }
+        }
+    }
+}
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var sceneList: Attribute<SceneList>? {
+        get { self[SceneList.Key.self] }
+        set { self[SceneList.Key.self] = newValue }
     }
 }
