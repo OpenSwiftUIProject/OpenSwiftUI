@@ -141,8 +141,24 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
         identifier: String,
         sceneBridge: SceneBridge
     ) -> PassthroughSubject<Any, Never> {
-        // TODO
-        .init()
+        let publishers = sceneBridge.sceneBridgePublishers[AnyHashable(ObjectIdentifier(type))]
+        guard let publishers,
+              let subject = publishers[AnyHashable(identifier)] else {
+            let subject = PassthroughSubject<Any, Never>()
+            let newPublishers: [AnyHashable: PassthroughSubject<Any, Never>]
+            if var publishers {
+                publishers[AnyHashable(identifier)] = subject
+                newPublishers = publishers
+            } else {
+                newPublishers = [AnyHashable(identifier): subject]
+            }
+            sceneBridge.sceneBridgePublishers[AnyHashable(ObjectIdentifier(type))] = newPublishers
+            DispatchQueue.main.async {
+                sceneBridge.flushEnqueuedEvents(for: identifier, type: type)
+            }
+            return subject
+        }
+        return subject
     }
 
     init() {
