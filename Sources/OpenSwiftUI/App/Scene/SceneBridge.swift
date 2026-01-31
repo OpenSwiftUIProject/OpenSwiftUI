@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete-Generated
+//  Status: Complete
 //  ID: A9714FE7FB47B9EE521B92A735A59E38 (SwiftUI)
 
 #if canImport(Darwin)
@@ -73,11 +73,6 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
         }
         if handlers.isEmpty {
             sceneBridge.userActivityTrackingInfo = nil
-            _ = sceneBridge.publishEvent(
-                event: sceneBridge.userActivityTrackingInfo as Any,
-                type: UserActivityTrackingInfo?.self,
-                identifier: "UserActivityTrackingInfo"
-            )
             #if os(iOS) || os(visionOS)
             if let rootViewController = sceneBridge.rootViewController {
                 rootViewController.userActivity = nil
@@ -95,11 +90,6 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
             #endif
         } else if !failedIDs.isEmpty {
             sceneBridge.userActivityTrackingInfo = self
-            _ = sceneBridge.publishEvent(
-                event: sceneBridge.userActivityTrackingInfo as Any,
-                type: UserActivityTrackingInfo?.self,
-                identifier: "UserActivityTrackingInfo"
-            )
         }
         userActivity.needsSave = false
         if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
@@ -111,7 +101,7 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     }
 }
 
-// MARK: - SceneBridge [Generated]
+// MARK: - SceneBridge
 
 final class SceneBridge: CustomStringConvertible {
     private var sceneBridgePublishers: [AnyHashable: [AnyHashable: PassthroughSubject<Any, Never>]] = [:]
@@ -129,7 +119,15 @@ final class SceneBridge: CustomStringConvertible {
     fileprivate var initialUserActivity: NSUserActivity?
     private weak var viewGraph: ViewGraph?
     private var sceneActivationConditions: (preferring: Set<String>, allowing: Set<String>)?
-    fileprivate var userActivityTrackingInfo: UserActivityTrackingInfo?
+    fileprivate var userActivityTrackingInfo: UserActivityTrackingInfo? {
+        didSet {
+            _ = publishEvent(
+                event: userActivityTrackingInfo as Any,
+                type: UserActivityTrackingInfo?.self,
+                identifier: "UserActivityTrackingInfo"
+            )
+        }
+    }
     private var userActivityPreferenceSeed: VersionSeed?
     private var activationConditionsPreferenceSeed: VersionSeed?
     var initialSceneSizeState: InitialSceneSizeState = .none
@@ -223,69 +221,93 @@ final class SceneBridge: CustomStringConvertible {
         }
     }
 
-    // To be audited
     func userActivityPreferencesDidChange(_ preferences: PreferenceValues) {
         let preferenceValue = preferences[UserActivityPreferenceKey.self]
-        guard userActivityPreferenceSeed == nil || !userActivityPreferenceSeed!.matches(preferenceValue.seed) else {
+        if let userActivityPreferenceSeed,
+           preferenceValue.seed.matches(userActivityPreferenceSeed) {
             if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("UserActivity Preferences hasn't changed, skipping update for advertised NSUserActivities. ")
+                Log.log(
+                    "UserActivity Preferences hasn't changed, skipping update for advertised NSUserActivities. " +
+                    "Seed is \(preferenceValue.seed)"
+                )
             }
-            return
-        }
-        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-            Log.log("userActivityPreferencesDidChange: updating")
-        }
-        userActivityPreferenceSeed = preferenceValue.seed
-        guard let value = preferenceValue.value else {
-            userActivityTrackingInfo = nil
-            _ = publishEvent(
-                event: userActivityTrackingInfo as Any,
-                type: UserActivityTrackingInfo?.self,
-                identifier: "UserActivityTrackingInfo"
-            )
-            if let vc = rootViewController {
-                vc.userActivity = nil
-            } else {
-                initialUserActivity = nil
-            }
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("userActivityPreferencesDidChange: cleared activity")
-            }
-            return
-        }
-        let trackingInfo = userActivityTrackingInfo ?? UserActivityTrackingInfo(self, activityType: value.activityType)
-        if let existingActivity = trackingInfo.userActivity,
-           existingActivity.activityType == value.activityType {
-            existingActivity.needsSave = true
         } else {
-            let activity = NSUserActivity(activityType: value.activityType)
-            activity.becomeCurrent()
-            let oldActivity = trackingInfo.userActivity
-            trackingInfo.userActivity = activity
-            if oldActivity !== activity {
-                activity.delegate = trackingInfo
-            }
             if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("userActivityPreferencesDidChange: created activity \(value.activityType)")
+                Log.log(
+                    "UserActivityPreferences changed: " +
+                    "\(preferenceValue)"
+                )
             }
-            userActivityTrackingInfo = trackingInfo
-            _ = publishEvent(
-                event: userActivityTrackingInfo as Any,
-                type: UserActivityTrackingInfo?.self,
-                identifier: "UserActivityTrackingInfo"
+            userActivityPreferenceSeed = preferenceValue.seed
+            guard let value = preferenceValue.value, !value.handlers.isEmpty else {
+                userActivityTrackingInfo = nil
+                #if os(iOS) || os(visionOS)
+                if let rootViewController {
+                    rootViewController.userActivity = nil
+                } else {
+                    initialUserActivity = nil
+                }
+                #elseif os(macOS)
+                if let window {
+                    window.userActivity = nil
+                } else {
+                    initialUserActivity = nil
+                }
+                #endif
+                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                    Log.log("Cleared AdvertiseUserActivity tracking info since UserActivity preferences are empty")
+                }
+                return
+            }
+            let trackingInfo = userActivityTrackingInfo ?? UserActivityTrackingInfo(
+                self,
+                activityType: value.activityType
             )
-            if let vc = rootViewController {
-                vc.userActivity = activity
+            if let existingActivity = trackingInfo.userActivity,
+               existingActivity.activityType == value.activityType {
+                trackingInfo.userActivity?.needsSave = true
             } else {
-                initialUserActivity = activity
+                let activity = NSUserActivity(activityType: value.activityType)
+                activity.becomeCurrent()
+                let oldActivity = trackingInfo.userActivity
+                trackingInfo.userActivity = activity
+                if activity !== oldActivity {
+                    activity.delegate = trackingInfo
+                }
+                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                    Log.log(
+                        "Initializing advertised user activity: " +
+                        "\(String(describing: trackingInfo.userActivity))"
+                    )
+                }
+                userActivityTrackingInfo = trackingInfo
+                #if os(iOS) || os(visionOS)
+                if let rootViewController {
+                    rootViewController.userActivity = trackingInfo.userActivity
+                } else {
+                    initialUserActivity = trackingInfo.userActivity
+                }
+                #elseif os(macOS)
+                if let window {
+                    window.userActivity = trackingInfo.userActivity
+                } else {
+                    initialUserActivity = trackingInfo.userActivity
+                }
+                #endif
+                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                    Log.log(
+                        "View Advertising UserActivity, set rootViewController activity to " +
+                        "\(String(describing: trackingInfo.userActivity))"
+                    )
+                }
             }
+            trackingInfo.handlers = value.handlers
             if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("userActivityPreferencesDidChange: set activity on VC")
+                Log.log(
+                    "Set up AdvertiseUserActivity tracking info from " +
+                    "value in UserActivityPreferenceKey: \(trackingInfo.description)"
+                )
             }
-        }
-        trackingInfo.handlers = value.handlers
-        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-            Log.log("userActivityPreferencesDidChange: updated handlers")
         }
     }
 
