@@ -308,26 +308,24 @@ public struct StateObject<ObjectType>: DynamicProperty where ObjectType: Observa
             if object == nil {
                 switch property.storage {
                 case let .initially(thunk):
-                    if !Thread.isMainThread {
-                        Log.runtimeIssues(
-                            "Updating StateObject<%s> from background\nthreads will cause undefined behavior; make sure to update it from the main thread.",
-                            ["\(ObjectType.self)"]
-                        )
+                    MainActor.assumeIsolatedIfLinkedOnOrAfter(
+                        .v7,
+                        context: "Objects stored in @StateObject properties must be isolated to the main actor."
+                    ) {
+                        self.object = ObservedObject(wrappedValue: thunk())
                     }
-                    var value: UncheckedSendable<ObservedObject<ObjectType>?> = UncheckedSendable(nil)
-                    value.value = ObservedObject(wrappedValue: thunk())
-                    self.object = value.value
                 case let .object(object):
                     self.object = object
                 }
                 changed = true
             }
-            var object = object!
-            defer { property.storage = .object(object) }
+            let object = object!
             // NOTE: This should be withUnsafeMutablePointer IMO. Currently align with SwiftUI implementation.
-            return withUnsafePointer(to: object) { pointer in
+            let updated = withUnsafePointer(to: object) { pointer in
                 links.update(container: UnsafeMutableRawPointer(mutating: pointer), phase: phase) || changed
             }
+            property.storage = .object(object)
+            return updated
         }
     }
 
