@@ -36,7 +36,7 @@ extension SceneList {
         var id: SceneID
         var version: DisplayList.Version
         var environment: EnvironmentValues
-        var options: SceneList.Item.Options
+        var options: SceneList.Item.Options = []
         var accessibilityProperties: AccessibilityProperties?
         var activationConditions: Set<String>?
         // var resizability: WindowResizability.Role
@@ -45,7 +45,7 @@ extension SceneList {
         // var restorationBehavior: SceneRestorationBehavior.Role
         // var windowManagerRole: WindowManagerRole
         #if os(iOS) || os(visionOS)
-        var connectionOptionPayloadStorage: ConnectionOptionPayloadStorage
+        var connectionOptionPayloadStorage: ConnectionOptionPayloadStorage = .init()
         #elseif os(macOS)
         // TODO: macOS specific properties
         #endif

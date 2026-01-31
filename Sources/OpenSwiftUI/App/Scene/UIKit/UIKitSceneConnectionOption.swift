@@ -63,8 +63,8 @@ class ConnectionOptionActionBox<Definition>: AnyConnectionOptionActionBox where 
 // MARK: - ConnectionOptionPayloadStorage
 
 struct ConnectionOptionPayloadStorage {
-    var types: [any UISceneConnectionOptionDefinition.Type]
-    var actions: [ObjectIdentifier: [AnyConnectionOptionActionBox]]
+    var types: [any UISceneConnectionOptionDefinition.Type] = []
+    var actions: [ObjectIdentifier: [AnyConnectionOptionActionBox]] = [:]
 
     mutating func merge(_ other: ConnectionOptionPayloadStorage) {
         var typeSet = Set(types.map(ObjectIdentifier.init))

@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete-Generated
 //  ID: A9714FE7FB47B9EE521B92A735A59E38 (SwiftUI)
 
 #if canImport(Darwin)
@@ -17,11 +17,12 @@ import OpenCombine
 #else
 import Combine
 #endif
+@_spi(Private)
 import OpenSwiftUICore
 
 // MARK: - UserActivityTrackingInfo
 
-var _defaultSwiftUIActivityEnvironmentLoggingEnabled = false
+var _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled = false
 
 class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     var userActivity: NSUserActivity?
@@ -40,7 +41,7 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     }
 
     func userActivityWillSave(_ userActivity: NSUserActivity) {
-        if _defaultSwiftUIActivityEnvironmentLoggingEnabled {
+        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
             Log.log("userActivityWillSave called for \(description)")
         }
         if Thread.isMainThread {
@@ -55,14 +56,14 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     func updateUserActivity(_ userActivity: NSUserActivity) {
         guard let currentActivity = self.userActivity,
               currentActivity == userActivity else {
-            if _defaultSwiftUIActivityEnvironmentLoggingEnabled {
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
                 Log.log("Mismatched UserActivity in tracking info, skipping update.")
             }
             return
         }
         guard let sceneBridge else { return }
         let failedIDs = handlers.compactMap { identity, handler in
-            if _defaultSwiftUIActivityEnvironmentLoggingEnabled {
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
                 Log.log("Invoking handler for \(identity)")
             }
             return handler(userActivity) ? nil : identity
@@ -101,7 +102,7 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
             )
         }
         userActivity.needsSave = false
-        if _defaultSwiftUIActivityEnvironmentLoggingEnabled {
+        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
             Log.log(
                 "updated user activity \(String(describing: userActivity.title)) "
                 + "with userInfo \(String(describing: userActivity.userInfo))"
@@ -110,7 +111,296 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     }
 }
 
-class SceneBridge {}
+// MARK: - SceneBridge [Generated]
+
+final class SceneBridge: CustomStringConvertible {
+    private var sceneBridgePublishers: [AnyHashable: [AnyHashable: PassthroughSubject<Any, Never>]] = [:]
+    var isAnimatingSceneResize: Bool = false
+    #if os(iOS) || os(visionOS)
+    weak var windowScene: UIWindowScene?
+    weak var rootViewController: UIViewController?
+    private var sceneDefinitionOptionsSeedTracker: VersionSeedTracker<ConnectionOptionPayloadStoragePreferenceKey> = .init()
+    var sceneDefinitionOptions: ConnectionOptionPayloadStorage = .init()
+    private var titleSeedTracker: VersionSeedTracker<NavigationTitleKey> = .init()
+    private var colorSchemeSeed: VersionSeedTracker<PreferredColorSchemeKey> = .init()
+    #elseif os(macOS)
+    weak var window: NSWindow?
+    #endif
+    fileprivate var initialUserActivity: NSUserActivity?
+    private weak var viewGraph: ViewGraph?
+    private var sceneActivationConditions: (preferring: Set<String>, allowing: Set<String>)?
+    fileprivate var userActivityTrackingInfo: UserActivityTrackingInfo?
+    private var userActivityPreferenceSeed: VersionSeed?
+    private var activationConditionsPreferenceSeed: VersionSeed?
+    var initialSceneSizeState: InitialSceneSizeState = .none
+    private var enqueuedEvents: [String: [Any]] = [:]
+
+    private static var _devNullSceneBridge: SceneBridge?
+
+    init() {
+        _openSwiftUIEmptyStub()
+    }
+
+    var description: String {
+        #if os(iOS) || os(visionOS)
+        "SceneBridge: rootViewController = \(String(describing: rootViewController))"
+        #elseif os(macOS)
+        "SceneBridge: window = \(String(describing: window))"
+        #endif
+    }
+
+    // MARK: - Event Publishing
+
+    fileprivate func publishEvent(event: Any, type: Any.Type, identifier: String) -> Bool {
+        guard Self._devNullSceneBridge == nil || Self._devNullSceneBridge !== self,
+              let publishers = sceneBridgePublishers[AnyHashable(ObjectIdentifier(type))],
+              let subject = publishers[AnyHashable(identifier)]
+        else {
+            enqueueUnpublishedEvent(event, for: identifier)
+            return false
+        }
+        subject.send(event)
+        return true
+    }
+
+    fileprivate func flushEnqueuedEvents(for identifier: String, type: Any.Type) {
+        guard !enqueuedEvents.isEmpty,
+              let events = enqueuedEvents[identifier],
+              !events.isEmpty else {
+            return
+        }
+        enqueuedEvents.removeValue(forKey: identifier)
+        for event in events {
+            _ = publishEvent(event: event, type: type, identifier: identifier)
+        }
+    }
+
+    private func enqueueUnpublishedEvent(_ event: Any, for identifier: String) {
+        var events = enqueuedEvents[identifier] ?? []
+        events.append(event)
+        enqueuedEvents[identifier] = events
+    }
+
+    // MARK: - Preference Changes
+
+    struct UserActivityPreferenceKey: HostPreferenceKey {
+        typealias Value = (activityType: String, handlers: [ViewIdentity: (NSUserActivity) -> Bool])?
+
+        static var defaultValue: Value { nil }
+
+        static func reduce(value: inout Value, nextValue: () -> Value) {
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log(
+                    "Reducing UserActivityPreference " +
+                    "\(String(describing: value)) " +
+                    "with \(String(describing: nextValue()))"
+                )
+            }
+            defer {
+                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                    Log.log(
+                        "Reduced UserActivityPreference to " +
+                        "\(String(describing: value))"
+                    )
+                }
+            }
+            guard let current = value else {
+                value = nextValue()
+                return
+            }
+            guard let next = nextValue() else {
+                return
+            }
+            guard current.activityType == next.activityType else {
+                return
+            }
+            value = (
+                activityType: current.activityType,
+                handlers: current.handlers.merging(next.handlers) {
+                    old, _ in old // [Q]
+                }
+            )
+        }
+    }
+
+    // To be audited
+    func userActivityPreferencesDidChange(_ preferences: PreferenceValues) {
+        let preferenceValue = preferences[UserActivityPreferenceKey.self]
+        guard userActivityPreferenceSeed == nil || !userActivityPreferenceSeed!.matches(preferenceValue.seed) else {
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log("UserActivity Preferences hasn't changed, skipping update for advertised NSUserActivities. ")
+            }
+            return
+        }
+        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+            Log.log("userActivityPreferencesDidChange: updating")
+        }
+        userActivityPreferenceSeed = preferenceValue.seed
+        guard let value = preferenceValue.value else {
+            userActivityTrackingInfo = nil
+            _ = publishEvent(
+                event: userActivityTrackingInfo as Any,
+                type: UserActivityTrackingInfo?.self,
+                identifier: "UserActivityTrackingInfo"
+            )
+            if let vc = rootViewController {
+                vc.userActivity = nil
+            } else {
+                initialUserActivity = nil
+            }
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log("userActivityPreferencesDidChange: cleared activity")
+            }
+            return
+        }
+        let trackingInfo = userActivityTrackingInfo ?? UserActivityTrackingInfo(self, activityType: value.activityType)
+        if let existingActivity = trackingInfo.userActivity,
+           existingActivity.activityType == value.activityType {
+            existingActivity.needsSave = true
+        } else {
+            let activity = NSUserActivity(activityType: value.activityType)
+            activity.becomeCurrent()
+            let oldActivity = trackingInfo.userActivity
+            trackingInfo.userActivity = activity
+            if oldActivity !== activity {
+                activity.delegate = trackingInfo
+            }
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log("userActivityPreferencesDidChange: created activity \(value.activityType)")
+            }
+            userActivityTrackingInfo = trackingInfo
+            _ = publishEvent(
+                event: userActivityTrackingInfo as Any,
+                type: UserActivityTrackingInfo?.self,
+                identifier: "UserActivityTrackingInfo"
+            )
+            if let vc = rootViewController {
+                vc.userActivity = activity
+            } else {
+                initialUserActivity = activity
+            }
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log("userActivityPreferencesDidChange: set activity on VC")
+            }
+        }
+        trackingInfo.handlers = value.handlers
+        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+            Log.log("userActivityPreferencesDidChange: updated handlers")
+        }
+    }
+
+    struct ActivationConditionsPreferenceKey: HostPreferenceKey {
+        typealias Value = (preferring: Set<String>, allowing: Set<String>)?
+
+        static var defaultValue: Value { nil }
+
+        static func reduce(value: inout Value, nextValue: () -> Value) {
+            guard let current = value else {
+                value = nextValue()
+                return
+            }
+            guard let next = nextValue() else {
+                return
+            }
+            value = Value((
+                preferring: current.preferring.union(next.preferring),
+                allowing: current.allowing.union(next.allowing)
+            ))
+        }
+    }
+
+    // To be audited
+    func activationConditionsPreferencesDidChange(_ preferences: PreferenceValues) {
+        let preferenceValue = preferences[ActivationConditionsPreferenceKey.self]
+        guard activationConditionsPreferenceSeed == nil || !activationConditionsPreferenceSeed!.matches(preferenceValue.seed) else {
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log("activationConditionsPreferencesDidChange: no change")
+            }
+            return
+        }
+        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+            Log.log("activationConditionsPreferencesDidChange: updating")
+        }
+        activationConditionsPreferenceSeed = preferenceValue.seed
+        setActivationConditions(preferenceValue.value)
+        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+            Log.log("activationConditionsPreferencesDidChange: done")
+        }
+    }
+
+    // To be audited
+    private func setActivationConditions(_ conditions: (preferring: Set<String>, allowing: Set<String>)?) {
+        guard conditions != nil || sceneActivationConditions != nil else {
+            return
+        }
+        guard let scene = windowScene else { return }
+        let existingConditions = scene.activationConditions
+        guard let conditions else {
+            scene.activationConditions = existingConditions
+            return
+        }
+        let preferringChanged = sceneActivationConditions?.preferring != conditions.preferring
+        if preferringChanged {
+            existingConditions.prefersToActivateForTargetContentIdentifierPredicate = Self.buildActivationConditions(conditions.preferring)
+        }
+        let allowingChanged = sceneActivationConditions?.allowing != conditions.allowing
+        if allowingChanged {
+            existingConditions.canActivateForTargetContentIdentifierPredicate = Self.buildActivationConditions(conditions.allowing)
+        }
+        if preferringChanged || allowingChanged {
+            let newConditions = UISceneActivationConditions()
+            newConditions.prefersToActivateForTargetContentIdentifierPredicate = existingConditions.prefersToActivateForTargetContentIdentifierPredicate
+            newConditions.canActivateForTargetContentIdentifierPredicate = existingConditions.canActivateForTargetContentIdentifierPredicate
+            scene.activationConditions = newConditions
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log("Updated scene activation conditions")
+            }
+        }
+        sceneActivationConditions = conditions
+    }
+
+    #if os(iOS) || os(visionOS)
+    // To be audited
+    private static func buildActivationConditions(_ identifiers: Set<String>?) -> NSPredicate {
+        guard let identifiers, !identifiers.isEmpty else {
+            return NSPredicate(value: false)
+        }
+        guard !identifiers.contains("*") else {
+            return NSPredicate(value: true)
+        }
+        let predicates = identifiers.compactMap { identifier -> NSPredicate? in
+            guard !identifier.isEmpty else { return nil }
+            return NSPredicate(format: "self contains[cd] %@", identifier)
+        }
+        guard !predicates.isEmpty else {
+            return NSPredicate(value: false)
+        }
+        guard predicates.count > 1 else {
+            return predicates[0]
+        }
+        return NSCompoundPredicate(orPredicateWithSubpredicates: predicates)
+    }
+    #endif
+
+    // MARK: - Window Size Restrictions
+
+    func updateWindowSizeRestrictions(min: CGSize?, max: CGSize?) {
+        #if os(iOS) || os(visionOS)
+        if let minSize = min, let scene = windowScene {
+            scene.sizeRestrictions?.minimumSize = minSize
+        }
+        if let maxSize = max, let scene = windowScene {
+            scene.sizeRestrictions?.maximumSize = maxSize
+        }
+        #elseif os(macOS)
+        if let minSize = min {
+            window?.minSize = minSize
+        }
+        if let maxSize = max {
+            window?.maxSize = maxSize
+        }
+        #endif
+    }
+}
 
 #endif
-

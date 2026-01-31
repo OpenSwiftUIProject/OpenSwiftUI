@@ -336,8 +336,7 @@ struct WindowSceneList<Attributes>: PrimitiveScene where Attributes: WindowScene
                 value: configuration.sceneListValue(),
                 id: sceneID,
                 version: .init(forUpdate: ()),
-                environment: environment,
-                options: []
+                environment: environment
             )
             value = SceneList(items: [item])
         }
