@@ -8,14 +8,14 @@
 
 import OpenAttributeGraphShims
 #if OPENSWIFTUI_OPENCOMBINE
-import OpenCombine
+package import OpenCombine
 #else
-import Combine
+package import Combine
 #endif
 
 // MARK: - SubscriptionLifetime
 
-class SubscriptionLifetime<Upstream>: Cancellable where Upstream: Publisher {
+package class SubscriptionLifetime<Upstream>: Cancellable where Upstream: Publisher {
 
     // MARK: - Connection
 
@@ -82,7 +82,7 @@ class SubscriptionLifetime<Upstream>: Cancellable where Upstream: Publisher {
 
     var state: StateType = .uninitialized
 
-    init() {
+    package init() {
         _openSwiftUIEmptyStub()
     }
 
@@ -128,7 +128,7 @@ class SubscriptionLifetime<Upstream>: Cancellable where Upstream: Publisher {
         return true
     }
 
-    func cancel() {
+    package func cancel() {
         guard case let .subscribed(_, subscriber, subscription, _) = state else {
             return
         }
@@ -136,7 +136,7 @@ class SubscriptionLifetime<Upstream>: Cancellable where Upstream: Publisher {
         subscription.cancel()
     }
 
-    func subscribe<S>(
+    package func subscribe<S>(
         subscriber: S,
         to upstream: Upstream
     ) where S: Cancellable, S: Subscriber, Upstream.Failure == S.Failure, Upstream.Output == S.Input {
