@@ -11,13 +11,21 @@ import OpenSwiftUICore
 
 // MARK: - _SceneModifier
 
+/// A modifier that can be applied to a scene or other scene modifier,
+/// producing a different version of the original value.
 @available(OpenSwiftUI_v2_0, *)
 public protocol _SceneModifier {
+
+    /// The type of scene representing the body of `Self`.
     associatedtype Body: Scene
 
+    /// Returns the current body of `self`. `content` is a proxy for
+    /// the scene that will have the modifier represented by `Self`
+    /// applied to it.
     @SceneBuilder
     func body(content: SceneContent) -> Body
 
+    /// The content scene type passed to `body()`.
     typealias SceneContent = _SceneModifier_Content<Self>
 
     static func _makeScene(
@@ -78,6 +86,8 @@ extension EmptyModifier: _SceneModifier {
 
 @available(OpenSwiftUI_v2_0, *)
 extension Scene {
+    /// Returns a new scene representing `self` with `modifier` applied
+    /// to it.
     @inlinable
     @MainActor
     @preconcurrency
@@ -145,6 +155,8 @@ extension ModifiedContent: _SceneModifier where Content: _SceneModifier, Modifie
 
 @available(OpenSwiftUI_v2_0, *)
 extension _SceneModifier {
+    /// Returns a new modifier that is the result of concatenating
+    /// `self` with `modifier`.
     @inlinable
     internal func concat<T>(_ modifier: T) -> ModifiedContent<Self, T> {
         return .init(content: self, modifier: modifier)
