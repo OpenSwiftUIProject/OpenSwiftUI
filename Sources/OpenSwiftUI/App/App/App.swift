@@ -4,6 +4,7 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
+//  ID: 20E520D074F8AF54E6253E3E22B86490 (SwiftUI)
 
 /// A type that represents the structure and behavior of an app.
 ///
@@ -164,3 +165,5 @@ func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escapin
     _openSwiftUIPlatformUnimplementedFailure()
 }
 #endif
+
+/*private*/ var appRootViewWrappers: [(AnyView) -> AnyView] = []

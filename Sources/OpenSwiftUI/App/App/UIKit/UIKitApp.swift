@@ -51,21 +51,9 @@ func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escapin
 private func KitRendererCommon(_ delegateType: AnyObject.Type) -> Never {
     let closure = { (argv: UnsafeMutablePointer<UnsafeMutablePointer<Int8>?>) in
         let argc = CommandLine.argc
-        #if os(iOS) || os(visionOS)
         let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
         let delegateClassName = NSStringFromClass(delegateType)
         let code = UIApplicationMain(argc, argv, principalClassName, delegateClassName)
-        #elseif os(macOS)
-        let principalClassName = NSStringFromClass(OpenSwiftUIApplication.self)
-        let delegateClassName = NSStringFromClass(delegateType)
-        let code = NSApplicationMain(argc, argv)
-        #elseif os(watchOS)
-        let delegateClassName = NSStringFromClass(delegateType)
-        let code = WKApplicationMain(argc, argv, delegateClassName)
-        #else
-        _openSwiftUIPlatformUnimplementedWarning()
-        let code = 1
-        #endif
         return exit(code)
     }
     return closure(CommandLine.unsafeArgv)

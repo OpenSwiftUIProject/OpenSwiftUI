@@ -32,20 +32,20 @@ package final class AppGraph: GraphHost {
     @Attribute
     var rootScenePhase: ScenePhase
 
-//    @OptionalAttribute
-//    var rootSceneList: SceneList??
-//
-//    @Attribute
-//    var primarySceneSummaries: [SceneList.Item.Summary]
-//
-//    @Attribute
-//    var focusedValues: FocusedValues
-//
-//    @Attribute
-//    var focusStore: FocusStore
+    @OptionalAttribute
+    var rootSceneList: SceneList?
 
-//    @Attribute
-//    var sceneKeyboardShortcuts: [SceneID: KeyboardShortcut]
+    @Attribute
+    var primarySceneSummaries: [SceneList.Item.Summary]
+
+    @Attribute
+    var focusedValues: FocusedValues
+
+    @Attribute
+    var focusStore: FocusStore
+
+    @Attribute
+    var sceneKeyboardShortcuts: [SceneID: KeyboardShortcut]
 
     private struct LaunchProfileOptions: OptionSet {
         let rawValue: Int32
@@ -64,13 +64,33 @@ package final class AppGraph: GraphHost {
     private var didCollectLaunchProfile: Bool = false
 
     @OptionalAttribute
-    var rootCommandsList: CommandsList?
+    private var rootCommandsList: CommandsList?
 
-    // TODO
-    init(app: some App) {
+    init<Application>(app: Application) where Application: App {
+        makeRootScene = { inputs in
+            let fields = DynamicPropertyCache.fields(of: Application.self)
+            var inputs = inputs
+            let accessor = AppBodyAccessor<Application>()
+            let (body, _) = accessor.makeBody(
+                container: .init(Attribute(value: app)),
+                inputs: &inputs.base,
+                fields: fields
+            )
+            return Application.Body._makeScene(
+                scene: body,
+                inputs: inputs
+            )
+        }
         let data = GraphHost.Data()
-        _openSwiftUIUnimplementedFailure()
+        let oldSubgraph = Subgraph.current
+        Subgraph.current = data.globalSubgraph
+        _rootScenePhase = Attribute(value: .background)
+        _primarySceneSummaries = Attribute(value: [])
+        _focusedValues = Attribute(value: .init())
+        _focusStore = Attribute(value: .init())
+        _sceneKeyboardShortcuts = Attribute(value: [:])
         super.init(data: data)
+        Subgraph.current = oldSubgraph
     }
 
     // MARK: - Override Methods
