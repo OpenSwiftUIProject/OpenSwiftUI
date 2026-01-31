@@ -119,9 +119,10 @@ package enum Update {
 
     @discardableResult
     package static func enqueueAction(
-        reason: ()?, // FIXME
+        reason: (CustomEventTrace.ActionEventType.Reason)?,
         _ action: @escaping () -> Void
     ) -> UInt32 {
+        // FIXME
         enqueueAction(action)
         return .zero
     }
@@ -230,6 +231,12 @@ package enum Update {
 // FIXME
 package enum CustomEventTrace {
     package enum ActionEventType {
-        package enum Reason {}
+        package enum Reason {
+            case onAppear
+            case onChange
+            case onDisappear
+            case gesture
+            case didReleaseButton
+        }
     }
 }
