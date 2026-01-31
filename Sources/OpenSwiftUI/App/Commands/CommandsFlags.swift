@@ -39,14 +39,13 @@ struct WithCommandFlag<Content>: PrimitiveCommands where Content: Commands {
             content: content[offset: { .of(&$0.content) }],
             inputs: inputs
         )
-        if inputs.preferences.contains(CommandsList.Key.self) {
-            let setFlag = Attribute(
+        if inputs.preferences.requiresCommandsList {
+            outputs.preferences.commandsList = Attribute(
                 SetFlag(
                     container: content.value,
-                    list: .init(outputs.preferences[CommandsList.Key.self]),
+                    list: .init(outputs.preferences.commandsList),
                 )
             )
-            outputs.preferences[CommandsList.Key.self] = setFlag
         }
         return outputs
     }

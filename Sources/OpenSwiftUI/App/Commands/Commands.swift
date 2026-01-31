@@ -3,11 +3,12 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by MainMenuItem and Scene
+//  Status: Complete - Blocked by MainMenuItem
 //  ID: 0E12E75FDDFA412408873260803B3C8B (SwiftUI)
 
 import OpenAttributeGraphShims
 import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
 
@@ -180,7 +181,7 @@ public struct _ResolvedCommands {
 @available(*, unavailable)
 extension _ResolvedCommands: Sendable {}
 
-// MARK: - Scene + commands [WIP]
+// MARK: - Scene + commands
 
 @available(OpenSwiftUI_v2_0, *)
 @available(tvOS, unavailable)
@@ -201,9 +202,7 @@ extension Scene {
     nonisolated public func commands<Content>(
         @CommandsBuilder content: () -> Content
     ) -> some Scene where Content: Commands {
-        // CommandModifier
-        _openSwiftUIUnimplementedWarning()
-        return self
+        modifier(CommandsModifier(content: content()))
     }
 }
 
@@ -266,7 +265,7 @@ extension TypeConformance where P == CommandsDescriptor {
     }
 }
 
-// MARK: - CommandsModifier [WIP]
+// MARK: - CommandsModifier
 
 struct CommandsModifier<Content>: PrimitiveSceneModifier where Content: Commands {
     var content: Content
@@ -276,7 +275,27 @@ struct CommandsModifier<Content>: PrimitiveSceneModifier where Content: Commands
         inputs: _SceneInputs,
         body: @escaping (_Graph, _SceneInputs) -> _SceneOutputs
     ) -> _SceneOutputs {
-        _openSwiftUIUnimplementedFailure()
+        guard inputs.preferences.requiresSceneList else {
+            return body(_Graph(), inputs)
+        }
+        var commandsInputs = _CommandsInputs(
+            base: inputs.base,
+            preferences: .init(hostKeys: inputs.preferences.hostKeys)
+        )
+        commandsInputs.preferences.add(CommandsList.Key.self)
+        var commandsOutputs = Content._makeCommands(
+            content: .init(modifier.value.content),
+            inputs: commandsInputs
+        )
+        var outputs = body(_Graph(), inputs)
+        if let commandsList = outputs.preferences.commandsList {
+            outputs.preferences.makePreferenceTransformer(
+                inputs: commandsInputs.preferences,
+                key: CommandsList.Key.self,
+                transform: Attribute(UpdateList(list: commandsList))
+            )
+        }
+        return outputs
     }
 
     private struct UpdateList: Rule {
