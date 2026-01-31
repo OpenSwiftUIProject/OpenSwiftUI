@@ -309,60 +309,74 @@ final class SceneBridge: CustomStringConvertible {
         }
     }
 
-    // To be audited
     func activationConditionsPreferencesDidChange(_ preferences: PreferenceValues) {
         let preferenceValue = preferences[ActivationConditionsPreferenceKey.self]
-        guard activationConditionsPreferenceSeed == nil || !activationConditionsPreferenceSeed!.matches(preferenceValue.seed) else {
+        if let activationConditionsPreferenceSeed,
+           preferenceValue.seed.matches(activationConditionsPreferenceSeed) {
             if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("activationConditionsPreferencesDidChange: no change")
+                Log.log(
+                    "ActivationConditions Preferences hasn't changed, skipping update for Scene ActivationConditions. " +
+                    "Seed is \(preferenceValue.seed)"
+                )
             }
-            return
-        }
-        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-            Log.log("activationConditionsPreferencesDidChange: updating")
-        }
-        activationConditionsPreferenceSeed = preferenceValue.seed
-        setActivationConditions(preferenceValue.value)
-        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-            Log.log("activationConditionsPreferencesDidChange: done")
+        } else {
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log(
+                    "ActivationConditionPreferences changed: " +
+                    "\(preferenceValue)"
+                )
+            }
+            activationConditionsPreferenceSeed = preferenceValue.seed
+            setActivationConditions(preferenceValue.value)
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log(
+                    "Set Scene ActivationConditions to " +
+                    "\(String(describing: sceneActivationConditions))"
+                )
+            }
         }
     }
 
-    // To be audited
     private func setActivationConditions(_ conditions: (preferring: Set<String>, allowing: Set<String>)?) {
+        #if os(iOS) || os(visionOS)
         guard conditions != nil || sceneActivationConditions != nil else {
             return
         }
-        guard let scene = windowScene else { return }
-        let existingConditions = scene.activationConditions
+        guard let windowScene else { return }
+        let existingConditions = windowScene.activationConditions
         guard let conditions else {
-            scene.activationConditions = existingConditions
+            windowScene.activationConditions = existingConditions
             return
         }
         let preferringChanged = sceneActivationConditions?.preferring != conditions.preferring
         if preferringChanged {
-            existingConditions.prefersToActivateForTargetContentIdentifierPredicate = Self.buildActivationConditions(conditions.preferring)
+            existingConditions.prefersToActivateForTargetContentIdentifierPredicate = buildActivationConditions(conditions.preferring)
         }
         let allowingChanged = sceneActivationConditions?.allowing != conditions.allowing
         if allowingChanged {
-            existingConditions.canActivateForTargetContentIdentifierPredicate = Self.buildActivationConditions(conditions.allowing)
+            existingConditions.canActivateForTargetContentIdentifierPredicate = buildActivationConditions(conditions.allowing)
         }
         if preferringChanged || allowingChanged {
             let newConditions = UISceneActivationConditions()
             newConditions.prefersToActivateForTargetContentIdentifierPredicate = existingConditions.prefersToActivateForTargetContentIdentifierPredicate
             newConditions.canActivateForTargetContentIdentifierPredicate = existingConditions.canActivateForTargetContentIdentifierPredicate
-            scene.activationConditions = newConditions
+            windowScene.activationConditions = newConditions
             if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("Updated scene activation conditions")
+                Log.log(
+                    "Changed Scene ActivationConditions to " +
+                    "\(windowScene.activationConditions.description)"
+                )
             }
+            sceneActivationConditions = conditions
         }
+        #elseif os(macOS)
         sceneActivationConditions = conditions
+        #endif
     }
 
     #if os(iOS) || os(visionOS)
-    // To be audited
-    private static func buildActivationConditions(_ identifiers: Set<String>?) -> NSPredicate {
-        guard let identifiers, !identifiers.isEmpty else {
+    private func buildActivationConditions(_ identifiers: Set<String>?) -> NSPredicate {
+        guard let identifiers else {
             return NSPredicate(value: false)
         }
         guard !identifiers.contains("*") else {
@@ -384,23 +398,15 @@ final class SceneBridge: CustomStringConvertible {
 
     // MARK: - Window Size Restrictions
 
+    #if os(iOS) || os(visionOS)
     func updateWindowSizeRestrictions(min: CGSize?, max: CGSize?) {
-        #if os(iOS) || os(visionOS)
         if let minSize = min, let scene = windowScene {
             scene.sizeRestrictions?.minimumSize = minSize
         }
         if let maxSize = max, let scene = windowScene {
             scene.sizeRestrictions?.maximumSize = maxSize
         }
-        #elseif os(macOS)
-        if let minSize = min {
-            window?.minSize = minSize
-        }
-        if let maxSize = max {
-            window?.maxSize = maxSize
-        }
-        #endif
     }
+    #endif
 }
-
 #endif
