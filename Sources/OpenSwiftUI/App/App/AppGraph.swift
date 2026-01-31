@@ -145,8 +145,10 @@ protocol AppGraphObserver: AnyObject {
 
 // MARK: - AppBodyAccessor
 
-private struct AppBodyAccessor<Container: App>: BodyAccessor {
-    typealias Body = Container.Body
+private struct AppBodyAccessor<Application>: BodyAccessor where Application: App {
+    typealias Container = Application
+
+    typealias Body = Application.Body
 
     func updateBody(of container: Container, changed: Bool) {
         guard changed else {
