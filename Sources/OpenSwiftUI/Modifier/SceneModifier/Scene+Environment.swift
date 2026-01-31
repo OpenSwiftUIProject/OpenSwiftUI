@@ -1,9 +1,17 @@
+//
+//  Scene+Environment.swift
+//  OpenSwiftUI
+//
+//  Audited for 6.5.4
+//  Status: Complete
+
 #if OPENSWIFTUI_OPENCOMBINE
 public import OpenCombine
 #else
 public import Combine
 #endif
 public import OpenObservation
+import OpenSwiftUICore
 
 extension Scene {
 
@@ -36,7 +44,7 @@ extension Scene {
     ///   the scene's subhierarchy.
     @available(OpenSwiftUI_v5_0, *)
     nonisolated public func environmentObject<T>(_ object: T) -> some Scene where T: ObservableObject {
-        _openSwiftUIUnimplementedFailure()
+        environment(T.environmentStore, object)
     }
 }
 
@@ -88,7 +96,7 @@ extension Scene {
     ///
     /// - Returns: A scene that has the specified object in its environment.
     @available(OpenSwiftUI_v5_0, *)
-    nonisolated public func environment<T>(_ object: T?) -> some View where T: AnyObject, T: Observable {
-        _openSwiftUIUnimplementedFailure()
+    nonisolated public func environment<T>(_ object: T?) -> some Scene where T: AnyObject, T: Observable {
+        environment(\EnvironmentValues[EnvironmentObjectKey<T>()], object)
     }
 }
