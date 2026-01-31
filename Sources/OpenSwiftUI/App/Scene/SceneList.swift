@@ -69,7 +69,7 @@ extension SceneList {
             case settings(AnyView)
 //            case menuBarExtra(MenuBarExtraConfiguration)
 //            case customScene(UISceneAdaptorConfiguration)
-//            case singleWindow(SingleWindowConfiguration)
+            case singleWindow(SingleWindowConfiguration)
 //            case documentIntroduction(DocumentIntroductionConfiguration)
 //            case alertDialog(DialogConfiguration)
         }
@@ -136,3 +136,6 @@ extension PreferencesOutputs {
         set { self[SceneList.Key.self] = newValue }
     }
 }
+
+// TODO
+struct SingleWindowConfiguration {}

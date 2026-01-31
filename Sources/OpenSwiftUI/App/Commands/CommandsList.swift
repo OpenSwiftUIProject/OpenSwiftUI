@@ -5,6 +5,8 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+import OpenAttributeGraphShims
+
 // MARK: - CommandsList
 
 struct CommandsList: Hashable {
@@ -66,5 +68,27 @@ extension CommandsList {
         static func reduce(value: inout CommandsList, nextValue: () -> CommandsList) {
             value.items.append(contentsOf: nextValue().items)
         }
+    }
+}
+
+extension PreferencesInputs {
+    @inline(__always)
+    var requiresCommandsList: Bool {
+        get { contains(CommandsList.Key.self) }
+        set {
+            if newValue {
+                add(CommandsList.Key.self)
+            } else {
+                remove(CommandsList.Key.self)
+            }
+        }
+    }
+}
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var commandsList: Attribute<CommandsList>? {
+        get { self[CommandsList.Key.self] }
+        set { self[CommandsList.Key.self] = newValue }
     }
 }

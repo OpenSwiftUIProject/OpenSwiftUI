@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by SceneModifier
+//  Status: Complete
 //  ID: 71E21E30634D2453CAA80C5CA9EF3E2C (SwiftUI?)
 
 #if os(iOS) || os(visionOS)
@@ -23,8 +23,10 @@ import OpenSwiftUICore
 @available(OpenSwiftUI_v3_0, *)
 extension Scene {
     nonisolated public func extendedLaunchTestName(_ name: String?) -> some Scene {
-        // TODO: _PreferenceWritingModifier
-        self
+        preference(
+            key: ExtendedLaunchTestNameKey.self,
+            value: name
+        )
     }
 }
 
