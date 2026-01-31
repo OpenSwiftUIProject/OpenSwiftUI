@@ -329,15 +329,17 @@ private struct BodyCountInput<V>: ViewInput {
 
 // MARK: - ModifierBodyAccessor
 
-private struct ModifierBodyAccessor<Container>: BodyAccessor where Container: ViewModifier {
-    typealias Body = Container.Body
+private struct ModifierBodyAccessor<Modifier>: BodyAccessor where Modifier: ViewModifier {
+    typealias Container = Modifier
+
+    typealias Body = Modifier.Body
 
     func updateBody(of container: Container, changed: Bool) {
         guard changed else {
             return
         }
         setBody {
-            container.body(content: Container.Content())
+            container.body(content: .init())
         }
     }
 }
