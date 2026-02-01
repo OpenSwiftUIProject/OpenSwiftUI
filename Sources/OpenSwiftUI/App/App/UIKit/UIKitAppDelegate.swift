@@ -153,22 +153,28 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
 //    }
 }
 
-// MARK: - RootModifier [TODO]
+// MARK: - RootModifier
 
-struct RootModifier {
+struct RootModifier: ViewModifier {
     weak var sceneBridge: SceneBridge?
-
     weak var sceneDelegateBox: AnyFallbackDelegateBox?
-
     weak var sceneStorageValues: SceneStorageValues?
-
     var presentationDataValue: AnyHashable?
-
     var scenePhase: ScenePhase
-
     var sceneID: SceneID?
+    @Namespace var rootFocusScope
 
-    var _rootFocusScope: Namespace
+    func body(content: Content) -> some View {
+        content
+            .rootEnvironment(
+                sceneBridge: sceneBridge,
+                sceneDelegateBox: sceneDelegateBox,
+                sceneStorageValues: sceneStorageValues,
+                scenePhase: scenePhase,
+                sceneID: sceneID
+            )
+            .presentedSceneValue(presentationDataValue)
+    }
 }
 
 // MARK: - EnvironmentValues + sceneSession
@@ -189,6 +195,24 @@ extension EnvironmentValues {
 }
 
 // MARK: - RootEnvironmentModifier
+
+extension View {
+    func rootEnvironment(
+        sceneBridge: SceneBridge? = nil,
+        sceneDelegateBox: AnyFallbackDelegateBox? = nil,
+        sceneStorageValues: SceneStorageValues? = nil,
+        scenePhase: ScenePhase = .background,
+        sceneID: SceneID? = nil
+    ) -> some View {
+        modifier(RootEnvironmentModifier(
+            sceneBridge: sceneBridge,
+            sceneDelegateBox: sceneDelegateBox,
+            sceneStorageValues: sceneStorageValues,
+            scenePhase: scenePhase,
+            sceneID: sceneID
+        ))
+    }
+}
 
 private struct RootEnvironmentModifier: PrimitiveViewModifier, _GraphInputsModifier {
     weak var sceneBridge: SceneBridge?
