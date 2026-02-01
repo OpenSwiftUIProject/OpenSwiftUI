@@ -95,6 +95,32 @@ package final class AppGraph: GraphHost {
 
     // MARK: - Override Methods
 
+    override package func instantiateOutputs() {
+        data.updateSeed &+= 1
+        let outputs = rootSubgraph.apply {
+            var inputs = _SceneInputs(
+                base: graphInputs,
+                preferences: .init(hostKeys: data.$hostPreferenceKeys)
+            )
+            inputs.base.environment = Attribute(
+                RootEnvironment(
+                    environment: graphInputs.environment,
+                    phase: $rootScenePhase,
+                    sceneKeyboardShorts: $sceneKeyboardShortcuts
+                )
+            )
+            inputs.preferences.add(HostPreferencesKey.self)
+            inputs.preferences.add(SceneList.Key.self)
+            inputs.preferences.add(CommandsList.Key.self)
+            inputs.base.focusedValues = $focusedValues
+            inputs.base.focusStore = $focusStore
+            return makeRootScene(inputs)
+        }
+        $rootSceneList = outputs.preferences.sceneList
+        $rootCommandsList = outputs.preferences.commandsList
+        hostPreferenceValues = WeakAttribute(outputs.preferences.hostPreferenceValues)
+    }
+
     // MARK: - Profile related
 
     func startProfilingIfNecessary() {
@@ -165,5 +191,17 @@ private struct AppBodyAccessor<Application>: BodyAccessor where Application: App
         setBody {
             container.body
         }
+    }
+}
+
+// MARK: - RootEnvironment
+
+private struct RootEnvironment: Rule {
+    @Attribute var environment: EnvironmentValues
+    @Attribute var phase: ScenePhase
+    @Attribute var sceneKeyboardShorts: [SceneID: KeyboardShortcut]
+
+    var value: EnvironmentValues {
+        environment
     }
 }
