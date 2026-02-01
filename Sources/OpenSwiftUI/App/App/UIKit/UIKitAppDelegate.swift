@@ -248,7 +248,7 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 }
 
-// MARK: - AppSceneDelegate + UIHostingViewDelegate [Stubbed]
+// MARK: - AppSceneDelegate + UIHostingViewDelegate
 
 extension AppSceneDelegate: UIHostingViewDelegate {
     func hostingView<V>(_ hostingView: _UIHostingView<V>, didMoveTo window: UIWindow?) where V: View {
@@ -256,7 +256,10 @@ extension AppSceneDelegate: UIHostingViewDelegate {
     }
 
     func hostingView<V>(_ hostingView: _UIHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View {
-        _openSwiftUIUnimplementedWarning()
+        guard let mainMenuController = appDelegate.mainMenuController else {
+            return
+        }
+        mainMenuController.updateEnvironment(&environment)
     }
 
     func hostingView<V>(_ hostingView: _UIHostingView<V>, didUpdate environment: EnvironmentValues) where V: View {
