@@ -7,7 +7,15 @@
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
-import UIKit
+import OpenAttributeGraphShims
+package import OpenSwiftUICore
+public import UIKit
+#if OPENSWIFTUI_OPENCOMBINE
+import OpenCombine
+#else
+import Combine
+#endif
+
 
 // MARK: - AppDelegate [TODO]
 
@@ -145,36 +153,99 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
 //    }
 }
 
-//struct SwiftUI.RootModifier {
-//    weak var sceneBridge: Swift.Optional<SwiftUI.SceneBridge>
-//    weak var sceneDelegateBox: Swift.Optional<SwiftUI.AnyFallbackDelegateBox>
-//    weak var sceneStorageValues: Swift.Optional<SwiftUI.SceneStorageValues>
-//    var presentationDataValue: Swift.Optional<Swift.AnyHashable>
-//    var scenePhase: SwiftUI.ScenePhase
-//    var sceneID: Swift.Optional<SwiftUI.SceneID>
-//    var _rootFocusScope: SwiftUI.Namespace
-//}
-//struct SwiftUI.(SceneSessionKey in _4475FD12FD59DEBA453321BD91F6EA04) {
-//    /* Static Stored Variable */
-//    static SwiftUI.(SceneSessionKey in _4475FD12FD59DEBA453321BD91F6EA04).defaultValue : Swift.Optional<SwiftUI.WeakBox<__C.UISceneSession>>
-//}
-//struct SwiftUI.(RootEnvironmentModifier in _4475FD12FD59DEBA453321BD91F6EA04) {
-//    weak var sceneBridge: Swift.Optional<SwiftUI.SceneBridge>
-//    weak var sceneDelegateBox: Swift.Optional<SwiftUI.AnyFallbackDelegateBox>
-//    weak var sceneStorageValues: Swift.Optional<SwiftUI.SceneStorageValues>
-//    var scenePhase: SwiftUI.ScenePhase
-//    var sceneID: Swift.Optional<SwiftUI.SceneID>
-//}
-//struct SwiftUI.(RootEnvironmentModifier in _4475FD12FD59DEBA453321BD91F6EA04).Child {
-//    var _modifier: AttributeGraph.Attribute<SwiftUI.(RootEnvironmentModifier in _4475FD12FD59DEBA453321BD91F6EA04)>
-//    var _env: AttributeGraph.Attribute<SwiftUI.EnvironmentValues>
-//    var oldModifier: Swift.Optional<SwiftUI.(RootEnvironmentModifier in _4475FD12FD59DEBA453321BD91F6EA04)>
-//
-//    /* Function */
-//    SwiftUI.(RootEnvironmentModifier in _4475FD12FD59DEBA453321BD91F6EA04).Child.updateValue() -> ()
-//}
+// MARK: - RootModifier [TODO]
 
-// TODO
-class SceneStorageValues {}
+struct RootModifier {
+    weak var sceneBridge: SceneBridge?
+
+    weak var sceneDelegateBox: AnyFallbackDelegateBox?
+
+    weak var sceneStorageValues: SceneStorageValues?
+
+    var presentationDataValue: AnyHashable?
+
+    var scenePhase: ScenePhase
+
+    var sceneID: SceneID?
+
+    var _rootFocusScope: Namespace
+}
+
+// MARK: - EnvironmentValues + sceneSession
+
+private struct SceneSessionKey: EnvironmentKey {
+    static let defaultValue: WeakBox<UISceneSession>? = nil
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v2_0, *)
+@available(macOS, unavailable)
+@available(watchOS, unavailable)
+extension EnvironmentValues {
+    public var sceneSession: UISceneSession? {
+        get { self[SceneSessionKey.self]?.base }
+        set { self[SceneSessionKey.self] = newValue.map(WeakBox.init) }
+    }
+}
+
+// MARK: - RootEnvironmentModifier
+
+private struct RootEnvironmentModifier: PrimitiveViewModifier, _GraphInputsModifier {
+    weak var sceneBridge: SceneBridge?
+    weak var sceneDelegateBox: AnyFallbackDelegateBox?
+    weak var sceneStorageValues: SceneStorageValues?
+    var scenePhase: ScenePhase
+    var sceneID: SceneID?
+
+    static func _makeInputs(
+        modifier: _GraphValue<Self>,
+        inputs: inout _GraphInputs
+    ) {
+        inputs.environment = Attribute(
+            Child(
+                modifier: modifier.value,
+                env: inputs.environment
+            )
+        )
+    }
+
+    struct Child: StatefulRule {
+        @Attribute var modifier: RootEnvironmentModifier
+        @Attribute var env: EnvironmentValues
+        var oldModifier: RootEnvironmentModifier?
+
+        typealias Value = EnvironmentValues
+
+        mutating func updateValue() {
+            let (modifier, modifierChanged) = $modifier.changedValue()
+            let (environment, environmentChanged) = $env.changedValue()
+            let shouldUpdate: Bool
+            if environmentChanged {
+                shouldUpdate = true
+            } else if modifierChanged && oldModifier.map({ compareValues($0, modifier) }) != false {
+                shouldUpdate = true
+            } else if !hasValue {
+                shouldUpdate = true
+            } else {
+                shouldUpdate = false
+            }
+            guard shouldUpdate else {
+                return
+            }
+            var result = environment
+            result[keyPath: SceneBridge.environmentStore] = modifier.sceneBridge
+            result.sceneStorageValues = modifier.sceneStorageValues
+            result.scenePhase = modifier.scenePhase
+            result.sceneID = modifier.sceneID
+            if modifier.scenePhase != .active {
+                result.redactionReasons.formUnion(.privacy)
+            }
+            modifier.sceneDelegateBox?.addDelegate(to: &result)
+            AppGraph.delegateBox?.addDelegate(to: &result)
+            value = result
+            oldModifier = modifier
+        }
+    }
+}
 
 #endif
