@@ -171,23 +171,45 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func sceneDidDisconnect(_ scene: UIScene) {
-        _openSwiftUIUnimplementedWarning()
+        if let rootViewController = window?.rootViewController,
+           let sceneItemID {
+            PlatformSceneCache.shared.removeHost(rootViewController, id: sceneItemID)
+        }
+        forwardToFallbackSceneDelegate(selector: #selector(UISceneDelegate.sceneDidDisconnect(_:)), scene: scene)
     }
 
     func sceneDidBecomeActive(_ scene: UIScene) {
-        _openSwiftUIUnimplementedWarning()
+        updateScenePhase(.active, selector: #selector(UISceneDelegate.sceneDidBecomeActive(_:)), scene: scene)
     }
 
     func sceneWillResignActive(_ scene: UIScene) {
-        _openSwiftUIUnimplementedWarning()
+        updateScenePhase(.inactive, selector: #selector(UISceneDelegate.sceneWillResignActive(_:)), scene: scene)
     }
 
     func sceneWillEnterForeground(_ scene: UIScene) {
-        _openSwiftUIUnimplementedWarning()
+        updateScenePhase(.inactive, selector: #selector(UISceneDelegate.sceneWillEnterForeground(_:)), scene: scene)
     }
 
     func sceneDidEnterBackground(_ scene: UIScene) {
-        _openSwiftUIUnimplementedWarning()
+        updateScenePhase(.background, selector: #selector(UISceneDelegate.sceneDidEnterBackground(_:)), scene: scene)
+    }
+
+    private func updateScenePhase(_ phase: ScenePhase, selector: Selector, scene: UIScene) {
+        scenePhase = phase
+        if let rootViewController = window?.rootViewController,
+           let sceneItemID {
+            scenesDidChange(phaseChanged: true)
+            PlatformSceneCache.shared.setPhase(phase, id: sceneItemID, host: rootViewController)
+        }
+        forwardToFallbackSceneDelegate(selector: selector, scene: scene)
+    }
+
+    private func forwardToFallbackSceneDelegate(selector: Selector, scene: UIScene) {
+        guard let fallbackDelegate = sceneDelegateBox?.delegate as? UISceneDelegate,
+              fallbackDelegate.responds(to: selector) else {
+            return
+        }
+        _ = fallbackDelegate.perform(selector, with: scene)
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
@@ -203,10 +225,22 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         _openSwiftUIUnimplementedWarning()
     }
 
-    // MARK: - Scene related [Stubbed]
+    // MARK: - Scene related
 
     func sceneItem() -> SceneList.Item {
-        _openSwiftUIUnimplementedFailure()
+        guard let sceneItemID,
+              let appGraph = AppGraph.shared
+        else {
+            preconditionFailure("Missing scene item!")
+        }
+        let items = appGraph.rootSceneList?.items ?? []
+        for item in items {
+            guard item.id == sceneItemID else {
+                continue
+            }
+            return item
+        }
+        preconditionFailure("Missing scene item!")
     }
 
     // MARK: - ConnectionOption [Stubbed]
@@ -215,7 +249,11 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         sceneDelegateBox?.delegate
     }
 
-    func handleConnectionOptionDefinition<Definition>(payload: Definition.Payload, definition: Definition.Type, scene: Definition.SceneType) async throws where Definition : UISceneConnectionOptionDefinition {
+    func handleConnectionOptionDefinition<Definition>(
+        payload: Definition.Payload,
+        definition: Definition.Type,
+        scene: Definition.SceneType
+    ) async throws where Definition : UISceneConnectionOptionDefinition {
         _openSwiftUIUnimplementedWarning()
     }
 
