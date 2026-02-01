@@ -215,10 +215,6 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         _openSwiftUIUnimplementedFailure()
     }
 
-    func sceneDidChange(phaseChange: Bool) {
-        _openSwiftUIUnimplementedWarning()
-    }
-
     // MARK: - ConnectionOption [Stubbed]
 
     var connectionOptionDefinitionTarget: AnyObject? {
@@ -255,6 +251,18 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func makeRootView(_ view: AnyView) -> ModifiedContent<AnyView, RootModifier> {
         applyAppRootModifier(view).modifier(rootModifier)
+    }
+}
+
+// MARK: - AppSceneDelegate + AppGraphObserver [Stubbed]
+
+extension AppSceneDelegate: AppGraphObserver {
+    func sceneDidChange(phaseChanged: Bool) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func commandsDidChange() {
+        _openSwiftUIEmptyStub()
     }
 }
 
