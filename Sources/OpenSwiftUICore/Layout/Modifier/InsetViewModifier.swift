@@ -541,24 +541,21 @@ private struct InsetViewLayout {
             id: alignmentKeyID,
             axis: secondaryAxis)
         ]
-        var primaryGeometry = ViewGeometry(
-            placement: primaryPlacement,
-            dimensions: primaryDimensions
-        )
-
-        let position = (primaryGeometry.origin[secondaryAxis] + primaryAlignmentValue) - (secondaryAlignmentValue + .zero)
-        
         let secondaryAnchor = UnitPoint(edge: props.edge)
         let secondaryPlacement = _Placement(
             proposedSize: secondaryProposal,
             aligning: secondaryAnchor,
             in: parentSize.value
         )
+        var primaryGeometry = ViewGeometry(
+            placement: primaryPlacement,
+            dimensions: primaryDimensions
+        )
         var secondaryGeometry = ViewGeometry(
             placement: secondaryPlacement,
             dimensions: secondaryDimensions
         )
-        secondaryGeometry.origin[secondaryAxis] = position
+        secondaryGeometry.origin[secondaryAxis] = primaryGeometry.origin[secondaryAxis] + (primaryAlignmentValue - secondaryAlignmentValue)
 
         primaryGeometry.finalizeLayoutDirection(
             layoutDirection,
