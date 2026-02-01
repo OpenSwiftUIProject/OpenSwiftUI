@@ -14,7 +14,8 @@ import Glibc
 import WASILibc
 #endif
 import OpenAttributeGraphShims
-@_spi(ForOpenSwiftUIOnly) package import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+package import OpenSwiftUICore
 
 package final class AppGraph: GraphHost {
     static var shared: AppGraph? = nil {
@@ -169,6 +170,49 @@ extension AppGraph {
         }
     }
 }
+
+// MARK: - AppGreaph + GraphDelegate
+
+extension AppGraph: GraphDelegate {
+    package func updateGraph<T>(body: (GraphHost) -> T) -> T {
+        body(self)
+    }
+
+    package func graphDidChange() {
+        data.updateSeed &+= 1
+        runTransaction()
+        let phaseChanged = $rootScenePhase.changedValue().changed
+        let commandsChanged = $rootCommandsList?.changedValue().changed ?? false
+        // TODO: notifyObservers
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    package func preferencesDidChange() {
+        _openSwiftUIEmptyStub()
+    }
+}
+
+//extension AppGraph {
+//    func addObserver(_ observer: some AppGraphObserver) {
+//        observers.insert(HashableWeakBox(observer))
+//    }
+//
+//    func removeObserver(_ observer: some AppGraphObserver) {
+//        observers.remove(HashableWeakBox(observer))
+//    }
+//
+//    func notifyObservers(phaseChanged: Bool) {
+//        for box in observers {
+//            (box.base as? AppGraphObserver)?.scenesDidChange(phaseChanged: phaseChanged)
+//        }
+//    }
+//
+//    func notifyCommandsChanged() {
+//        for box in observers {
+//            (box.base as? AppGraphObserver)?.commandsDidChange()
+//        }
+//    }
+//}
 
 // MARK: - AppGraphObserver
 
