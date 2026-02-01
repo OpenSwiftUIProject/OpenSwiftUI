@@ -274,7 +274,7 @@ package final class ViewGraph: GraphHost {
         if requestedOutputs.contains(.layout) {
             _rootLayoutComputer = WeakAttribute(outputs.layoutComputer)
         }
-        hostPreferenceValues = WeakAttribute(outputs.preferences[HostPreferencesKey.self])
+        hostPreferenceValues = WeakAttribute(outputs.preferences.hostPreferenceValues)
         makePreferenceOutlets(outputs: outputs)
     }
     

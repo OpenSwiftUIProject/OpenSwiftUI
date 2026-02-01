@@ -59,10 +59,10 @@ package final class PreferenceBridge {
                 let combiner = Attribute(
                     HostPreferencesCombiner(
                         keys: inputs.preferences.hostKeys,
-                        values: outputs[HostPreferencesKey.self]
+                        values: outputs.hostPreferenceValues
                     )
                 )
-                outputs[HostPreferencesKey.self] = combiner
+                outputs.hostPreferenceValues = combiner
                 _hostPreferenceKeys = WeakAttribute(inputs.preferences.hostKeys)
                 _hostPreferencesCombiner = WeakAttribute(combiner)
             } else {
