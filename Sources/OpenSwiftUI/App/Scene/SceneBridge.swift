@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Complete - UserActivityModifier WIP
+//  Status: Complete
 //  ID: A9714FE7FB47B9EE521B92A735A59E38 (SwiftUI)
 
 #if canImport(Darwin)
@@ -20,10 +20,12 @@ import Combine
 @_spi(Private)
 import OpenSwiftUICore
 
-// MARK: - UserActivityTrackingInfo
+// MARK: - Logging
 
 @available(OpenSwiftUI_v2_0, *)
 public var _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled = false
+
+// MARK: - UserActivityTrackingInfo
 
 class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     var userActivity: NSUserActivity?
@@ -488,7 +490,7 @@ private struct SceneBridgeReader<V>: View where V: View {
     }
 }
 
-// MARK: - UserActivityModifier [WIP]
+// MARK: - UserActivityModifier
 
 struct UserActivityModifier: ViewModifier {
     let activityType: String
@@ -512,15 +514,72 @@ struct UserActivityModifier: ViewModifier {
     }
 
     func body(content: Content) -> some View {
-        // TODO:
-        // macOS: ScrapeableAttachmentViewModifier
-        // iOS: IdentifiedPreferenceTransformModifier
-        _openSwiftUIUnimplementedFailure()
+        SceneBridgeReader { bridge in
+            content
+                .advertiseUserActivity(activityType, isActive: isActive, sceneBridge: bridge) { activity in
+                    guard isActive else {
+                        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                            Log.log("Skipping inactive advertiseUserActivity handler")
+                        }
+                        return false
+                    }
+                    update(activity)
+                    return true
+                }
+                .onReceive(
+                    SceneBridge.sceneBridgePublisher(
+                        UserActivityTrackingInfo?.self,
+                        identifier: "UserActivityTrackingInfo",
+                        sceneBridge: bridge
+                    )
+                ) { output in
+                    guard let output = output as? UserActivityTrackingInfo? else {
+                        return
+                    }
+                    info = output
+                }
+                .scrapeableAttachment(scrapeableAttachment)
+        }
     }
 }
 
 @available(OpenSwiftUI_v2_0, *)
 extension View {
+    fileprivate func advertiseUserActivity(
+        _ activityType: String,
+        isActive: Bool,
+        sceneBridge: SceneBridge?,
+        handler: @escaping (NSUserActivity) -> Bool
+    ) -> some View {
+        transformIdentifiedPreference(SceneBridge.UserActivityPreferenceKey.self) { value, identity in
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log(
+                    "TransformIdentifiedPreference closure for UserActivity " +
+                    "called with value \(String(describing: value))"
+                )
+            }
+            guard isActive, let sceneBridge else {
+                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                    Log.log("TransformIdentifiedPreference closure for UserActivity:  inactive, leaving value alone")
+                }
+                return
+            }
+            var handlers: [ViewIdentity: (NSUserActivity) -> Bool]
+            if let value, value.activityType == activityType {
+                handlers = value.handlers
+                handlers[identity] = handler
+            } else {
+                handlers = [identity: handler]
+            }
+            value = .init((activityType: activityType, handlers: handlers))
+            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+                Log.log(
+                    "TransformIdentifiedPreference for UserActivity setting value " +
+                    "to \(String(describing: value))"
+                )
+            }
+        }
+    }
 
     /// Advertises a user activity type.
     ///

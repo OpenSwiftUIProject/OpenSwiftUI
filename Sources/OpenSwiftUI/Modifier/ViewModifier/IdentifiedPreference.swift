@@ -9,6 +9,17 @@
 import OpenAttributeGraphShims
 import OpenSwiftUICore
 
+// MARK: - View + transformIdentityPreference
+
+extension View {
+    func transformIdentifiedPreference<K>(
+        _ key: K.Type = K.self,
+        _ callback: @escaping (inout K.Value, ViewIdentity) -> Void
+    ) -> some View where K: PreferenceKey {
+        modifier(IdentifiedPreferenceTransformModifier<K>(transform: callback))
+    }
+}
+
 // MARK: - IdentifiedPreferenceTransformModifier
 
 struct IdentifiedPreferenceTransformModifier<Key>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Key: PreferenceKey {
