@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: 130BB08D98602D712FD59CAC6992C14A (SwiftUI)
 
+// MARK: - ScenePhase
+
 /// An indication of a scene's operational state.
 ///
 /// The system moves your app's ``Scene`` instances through phases that reflect
@@ -95,6 +97,8 @@ public enum ScenePhase: Comparable {
     /// instance.
     case active
 }
+
+// MARK: - EnvironmentValues + scenePhase
 
 private struct ScenePhaseKey: EnvironmentKey {
     static let defaultValue: ScenePhase = .background
