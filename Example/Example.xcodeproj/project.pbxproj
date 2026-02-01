@@ -318,7 +318,7 @@
 					};
 					279283B82DFF11CE00234D64 = {
 						CreatedOnToolsVersion = 16.3;
-						TestTargetID = 27D49DF72BA604FB00F6E2E2;
+						TestTargetID = 275751E22DEE1441003E467C;
 					};
 					27CD0B482AFC8D37003665EB = {
 						CreatedOnToolsVersion = 15.0;
@@ -1116,7 +1116,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HostingExample.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HostingExample";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestingHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TestingHost";
 			};
 			name = SwiftUIDebug;
 		};
@@ -1138,7 +1138,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HostingExample.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HostingExample";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestingHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TestingHost";
 			};
 			name = SwiftUIRelease;
 		};
@@ -1160,7 +1160,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HostingExample.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HostingExample";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestingHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TestingHost";
 			};
 			name = OpenSwiftUIDebug;
 		};
@@ -1182,7 +1182,7 @@
 				SUPPORTS_MACCATALYST = NO;
 				SWIFT_EMIT_LOC_STRINGS = NO;
 				TARGETED_DEVICE_FAMILY = "1,2,7";
-				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/HostingExample.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/HostingExample";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/TestingHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TestingHost";
 			};
 			name = OpenSwiftUIRelease;
 		};
