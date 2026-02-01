@@ -315,7 +315,8 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         } else if let sceneID = openWindowByIDSceneID(from: userActivity) {
             _openSwiftUIUnimplementedFailure()
         } else {
-            _openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedWarning()
+            matchedItem = items[0]
         }
         // FIXME
         if matchedItem == nil, let first = items.first {
