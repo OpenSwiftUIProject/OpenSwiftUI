@@ -156,12 +156,6 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         return delegate
     }
 
-    // MARK: - hostingView [Stubbed]
-
-    func hostingView<V>(_ view: _UIHostingView<V>, willUpdate: inout EnvironmentValues) {
-        _openSwiftUIUnimplementedWarning()
-    }
-
     // MARK: - Test [Stubbed]
 
     // var pptTestCases: [PPTTestCase.Name] { [] }
@@ -251,6 +245,34 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func makeRootView(_ view: AnyView) -> ModifiedContent<AnyView, RootModifier> {
         applyAppRootModifier(view).modifier(rootModifier)
+    }
+}
+
+// MARK: - AppSceneDelegate + UIHostingViewDelegate [Stubbed]
+
+extension AppSceneDelegate: UIHostingViewDelegate {
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didMoveTo window: UIWindow?) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didUpdate environment: EnvironmentValues) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePlatformItemList itemList: PlatformItemList) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willModifyViewInputs inputs: inout _ViewInputs) where V: View {
+        _openSwiftUIEmptyStub()
     }
 }
 
