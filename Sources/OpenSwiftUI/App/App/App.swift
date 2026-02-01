@@ -6,6 +6,10 @@
 //  Status: Complete
 //  ID: 20E520D074F8AF54E6253E3E22B86490 (SwiftUI)
 
+import OpenSwiftUICore
+
+// MARK: - App
+
 /// A type that represents the structure and behavior of an app.
 ///
 /// Create an app by declaring a structure that conforms to the `App` protocol.
@@ -140,6 +144,25 @@ extension App {
     }
 }
 
+// MARK: - AppRootModifier
+
+private var appRootViewWrappers: [(AnyView) -> AnyView] = []
+
+@_spi(Private)
+public func registerAppRootModifier<M>(_ modifier: M) where M: ViewModifier {
+    appRootViewWrappers.append({ AnyView($0.modifier(modifier)) })
+}
+
+func applyAppRootModifier(_ view: AnyView) -> AnyView {
+    var result = view
+    for modifier in appRootViewWrappers {
+        result = modifier(result)
+    }
+    return result
+}
+
+// MARK: - Platform implementation
+
 #if os(iOS) || os(visionOS)
 import UIKit
 typealias DelegateBaseClass = UIResponder
@@ -165,5 +188,3 @@ func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escapin
     _openSwiftUIPlatformUnimplementedFailure()
 }
 #endif
-
-/*private*/ var appRootViewWrappers: [(AnyView) -> AnyView] = []

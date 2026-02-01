@@ -161,8 +161,7 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     private func makeRootView(_ view: AnyView) -> ModifiedContent<AnyView, RootModifier> {
-        // TODO: for each appRootViewWrappers and then rootModifier
-        view.modifier(rootModifier)
+        applyAppRootModifier(view).modifier(rootModifier)
     }
 }
 
