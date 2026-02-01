@@ -18,7 +18,7 @@ import Combine
 
 // MARK: - AppDelegate [TODO]
 
-class AppDelegate: UIResponder, UIApplicationDelegate {
+final class AppDelegate: UIResponder, UIApplicationDelegate {
     private var fallbackDelegate: UIApplicationDelegate?
     var mainMenuController: UIKitMainMenuController?
 
@@ -123,9 +123,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // TODO
 }
 
-// MARK: - AppSceneDelegate [TODO]
+// MARK: - AppSceneDelegate [Stubbed]
 
-class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
+final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     private lazy var appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
     var window: UIWindow?
     private var sceneItemID: SceneID?
@@ -142,6 +142,99 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     override init() {
         super.init()
     }
+
+    override func responds(to aSelector: Selector!) -> Bool {
+        let boxResponds = (sceneDelegateBox?.delegate as? any UISceneDelegate)?.responds(to: aSelector) ?? false
+        let selfResponds = AppSceneDelegate.instancesRespond(to: aSelector)
+        return boxResponds || selfResponds
+    }
+
+    override func forwardingTarget(for aSelector: Selector!) -> Any? {
+        guard let delegate = (sceneDelegateBox?.delegate as? any UISceneDelegate) else {
+            return nil
+        }
+        return delegate
+    }
+
+    // MARK: - hostingView [Stubbed]
+
+    func hostingView<V>(_ view: _UIHostingView<V>, willUpdate: inout EnvironmentValues) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - Test [Stubbed]
+
+    // var pptTestCases: [PPTTestCase.Name] { [] }
+
+    func runTest(_ name: String, options: [AnyHashable: Any]) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - UISceneDelegate [Stubbed]
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func sceneDidDisconnect(_ scene: UIScene) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func sceneWillResignActive(_ scene: UIScene) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func sceneWillEnterForeground(_ scene: UIScene) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func stateRestorationActivity(for scene: UIScene) -> NSUserActivity? {
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - Scene related [Stubbed]
+
+    func sceneItem() -> SceneList.Item {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func sceneDidChange(phaseChange: Bool) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - ConnectionOption [Stubbed]
+
+    var connectionOptionDefinitionTarget: AnyObject? {
+        sceneDelegateBox?.delegate
+    }
+
+    func handleConnectionOptionDefinition<Definition>(payload: Definition.Payload, definition: Definition.Type, scene: Definition.SceneType) async throws where Definition : UISceneConnectionOptionDefinition {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - Document [Stubbed]
+
+    // func makeDocumentIntroView(documentGroups: [IdentifiedDocumentGroupConfiguration], configuration: DocumentIntroductionConfiguration) -> DocumentGroupsIntroRootView
+    // func makeConfiguredDocumentRootViewController(_ controller: DocumentViewController) -> UIViewController
+
+    // MARK: - Root view and modifier
 
     private var rootModifier: RootModifier {
         guard let sceneBridge else {
