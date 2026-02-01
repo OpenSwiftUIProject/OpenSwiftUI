@@ -7,6 +7,7 @@
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
+import COpenSwiftUI
 import OpenAttributeGraphShims
 package import OpenSwiftUICore
 public import UIKit
@@ -213,16 +214,78 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     }
 
     func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
-        _openSwiftUIUnimplementedWarning()
+        var contexts = URLContexts
+        if let vc = window?.rootViewController as? DocumentBrowserViewController {
+            if let context = contexts.first(
+                where: { vc.presentDocument(at: $0.url, animated: false) }
+            ) {
+                _ = contexts.remove(context)
+            }
+        }
+        if let context = contexts.first,
+            let sceneBridge {
+            let openURLContext = OpenURLContext(
+                url: context.url,
+                options: .init(
+                    uiSceneOpenURLOptions: context.options
+                )
+            )
+            sceneBridge.publishOpenURLContext(openURLContext)
+        }
+
+        if let fallbackDelegate = sceneDelegateBox?.delegate as? UISceneDelegate,
+              fallbackDelegate.responds(to: #selector(UISceneDelegate.scene(_:openURLContexts:))) {
+            fallbackDelegate.scene?(scene, openURLContexts: contexts)
+        }
     }
 
     func stateRestorationActivity(for scene: UIScene) -> NSUserActivity? {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        let activity = NSUserActivity(
+            activityType: "org.OpenSwiftUIProject.OpenSwiftUI.stateRestoration"
+        )
+        var userInfo: [AnyHashable: Any] = [:]
+        if let sceneStorageValues {
+            userInfo.merge(
+                sceneStorageValues.restoredValue(),
+                uniquingKeysWith: { old, _ in old }
+            )
+        }
+        var requiredKeys: Set<String> = []
+        if let presentationDataType {
+            let key = "org.OpenSwiftUIProject.OpenSwiftUI.sceneType"
+            userInfo[key] = makeStableTypeData(presentationDataType)
+            requiredKeys.insert(key)
+        }
+        if let sceneItemID {
+            let key = "org.OpenSwiftUIProject.OpenSwiftUI.sceneID"
+            userInfo[key] = sceneItemID.description
+            requiredKeys.insert(key)
+        }
+        if let rawPresentationDataValue {
+            let key = "org.OpenSwiftUIProject.OpenSwiftUI.sceneValue"
+            userInfo[key] = rawPresentationDataValue
+            requiredKeys.insert(key)
+        }
+        if !requiredKeys.isEmpty {
+            activity.requiredUserInfoKeys = requiredKeys
+        }
+        activity.userInfo = userInfo
+        return activity
     }
 
     func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
-        _openSwiftUIUnimplementedWarning()
+        if userActivity._isUniversalLink,
+           let webpageURL = userActivity.webpageURL {
+            let context = OpenURLContext(url: webpageURL, options: nil)
+            sceneBridge?.publishOpenURLContext(context)
+        } else {
+            sceneBridge?.publishActivity(userActivity)
+            if let sceneDelegate = sceneDelegateBox?.delegate as? UISceneDelegate,
+               let windowSceneDelegate = sceneDelegate as? UIWindowSceneDelegate,
+               windowSceneDelegate.responds(to: #selector(UISceneDelegate.scene(_:continue:))) {
+                windowSceneDelegate.scene?(scene, continue: userActivity)
+            }
+        }
     }
 
     // MARK: - Scene related

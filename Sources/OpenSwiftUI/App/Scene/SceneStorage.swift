@@ -10,7 +10,12 @@ import OpenSwiftUICore
 
 // MARK: - SceneStorageValues [WIP]
 
-class SceneStorageValues {}
+class SceneStorageValues {
+    func restoredValue() -> [AnyHashable: Any] {
+        _openSwiftUIUnimplementedWarning()
+        return [:]
+    }
+}
 
 // MARK: - EnvironmentValues + sceneStorageValues
 
