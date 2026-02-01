@@ -290,7 +290,6 @@ struct WindowSceneList<Attributes>: PrimitiveScene where Attributes: WindowScene
         scene: _GraphValue<Self>,
         inputs: _SceneInputs
     ) -> _SceneOutputs {
-        _openSwiftUIBaseClassAbstractMethod()
         let configuration = scene[offset: { .of(&$0.configuration) }].value
         var outputs = _SceneOutputs()
         outputs.preferences

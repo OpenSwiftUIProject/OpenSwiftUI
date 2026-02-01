@@ -97,11 +97,11 @@ extension PreferencesOutputs {
         }
         if K._isReadableByHost,
            inputs.contains(HostPreferencesKey.self) {
-            self[HostPreferencesKey.self] = Attribute(
+            hostPreferenceValues = Attribute(
                 HostPreferencesWriter<K>(
                     keyValue: attribute ?? value(),
                     keys: inputs.hostKeys,
-                    childValues: .init(self[HostPreferencesKey.self]),
+                    childValues: .init(hostPreferenceValues),
                     keyRequested: false,
                     wasEmpty: false,
                     delta: 0,

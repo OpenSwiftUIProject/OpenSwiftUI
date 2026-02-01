@@ -1,3 +1,4 @@
+import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
@@ -25,5 +26,25 @@ extension FocusStore {
 extension FocusStore {
     struct Entry<Value: Hashable> {
         
+    }
+}
+
+struct FocusStoreInputKey: ViewInput {
+    static var defaultValue: OptionalAttribute<FocusStore> {
+        .init()
+    }
+}
+
+extension _ViewInputs {
+    var focusStore: Attribute<FocusStore>? {
+        get { base.focusStore }
+        set { base.focusStore = newValue }
+    }
+}
+
+extension _GraphInputs {
+    var focusStore: Attribute<FocusStore>? {
+        get { self[FocusStoreInputKey.self].attribute }
+        set { self[FocusStoreInputKey.self] = .init(newValue) }
     }
 }

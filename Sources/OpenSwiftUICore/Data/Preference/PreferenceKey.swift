@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: 3D8838A231BB2CC7FC00E7880D8B2FC4 (SwiftUICore)
 
+package import OpenAttributeGraphShims
+
 // MARK: - PreferenceKey
 
 /// A named value produced by a view.
@@ -157,6 +159,13 @@ package struct HostPreferencesKey: PreferenceKey {
     package static func makeNodeId() -> UInt32 {
         nodeId &+= 1
         return nodeId
+    }
+}
+
+extension PreferencesOutputs {
+    package var hostPreferenceValues: Attribute<PreferenceValues>? {
+        get { self[HostPreferencesKey.self] }
+        set { self[HostPreferencesKey.self] = newValue }
     }
 }
 
