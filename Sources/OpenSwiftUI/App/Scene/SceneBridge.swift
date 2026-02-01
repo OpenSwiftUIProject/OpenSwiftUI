@@ -589,7 +589,7 @@ extension View {
     ///     activity is advertised). The method passes the non-`nil` element to
     ///     the handler as a convenience so the handlers don't all need to
     ///     implement an early exit with
-    ///     `guard element = element else { return }`.
+    ///     `guard let element = element else { return }`.
     ///    - update: A function that modifies the passed-in activity for
     ///    advertisement.
     nonisolated public func userActivity<P>(
