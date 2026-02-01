@@ -130,8 +130,16 @@ package final class AppGraph: GraphHost {
 extension AppGraph {
     func supports(_ flag: CommandFlag) -> Bool {
         Update.ensure {
-            // TODO
-            false
+            let items = rootCommandsList?.items ?? []
+            for item in items {
+                guard case let .flag(f) = item.value,
+                      f == flag
+                else {
+                    continue
+                }
+                return true
+            }
+            return false
         }
     }
 }
