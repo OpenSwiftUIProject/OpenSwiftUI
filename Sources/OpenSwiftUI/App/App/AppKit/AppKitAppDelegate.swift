@@ -52,6 +52,45 @@ class AppDelegate: NSResponder, NSApplicationDelegate {
     override func forwardingTarget(for aSelector: Selector!) -> Any? {
         appDelegate
     }
+
+    func applicationWillFinishLaunching(_ notification: Notification) {
+        Update.begin()
+        defer { Update.end() }
+        // FIXME
+        let items = AppGraph.shared?.rootSceneList?.items ?? []
+        let view = items[0].value.view
+        let hostingVC = NSHostingController(rootView: view)
+        let windowVC = WindowController(hostingVC)
+        windowVC.showWindow(nil)
+    }
+}
+
+// FIXME: frame is zero
+final class WindowController<Content>: NSWindowController where Content: View {
+    init(_ hostingVC: NSHostingController<Content>) {
+        self.hostingVC = hostingVC
+        super.init(window: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    override var windowNibName: NSNib.Name? { "" }
+
+    let hostingVC: NSHostingController<Content>
+
+    override func loadWindow() {
+        window = NSWindow(contentRect: .init(x: 0, y: 0, width: 500, height: 300), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
+        window?.center()
+    }
+
+    override func windowDidLoad() {
+        super.windowDidLoad()
+        contentViewController = hostingVC
+        hostingVC.host.frame = window!.frame
+    }
 }
 
 // MARK: - App Utils

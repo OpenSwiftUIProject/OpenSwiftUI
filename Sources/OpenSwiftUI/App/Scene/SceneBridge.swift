@@ -111,7 +111,15 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
     var isAnimatingSceneResize: Bool = false
     #if os(iOS) || os(visionOS)
     weak var windowScene: UIWindowScene?
-    weak var rootViewController: UIViewController?
+    weak var rootViewController: UIViewController? {
+        didSet {
+            if let initialUserActivity,
+               let rootViewController {
+                rootViewController.userActivity = initialUserActivity
+                initialUserActivity.becomeCurrent()
+            }
+        }
+    }
     private var sceneDefinitionOptionsSeedTracker: VersionSeedTracker<ConnectionOptionPayloadStoragePreferenceKey> = .init()
     var sceneDefinitionOptions: ConnectionOptionPayloadStorage = .init()
     private var titleSeedTracker: VersionSeedTracker<NavigationTitleKey> = .init()
@@ -124,7 +132,7 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
     private var sceneActivationConditions: (preferring: Set<String>, allowing: Set<String>)?
     fileprivate var userActivityTrackingInfo: UserActivityTrackingInfo? {
         didSet {
-            _ = publishEvent(
+            publishEvent(
                 event: userActivityTrackingInfo as Any,
                 type: UserActivityTrackingInfo?.self,
                 identifier: "UserActivityTrackingInfo"
@@ -177,6 +185,7 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
 
     // MARK: - Event Publishing
 
+    @discardableResult
     fileprivate func publishEvent(event: Any, type: Any.Type, identifier: String) -> Bool {
         guard Self._devNullSceneBridge == nil || Self._devNullSceneBridge !== self,
               let publishers = sceneBridgePublishers[AnyHashable(ObjectIdentifier(type))],
@@ -197,7 +206,7 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
         }
         enqueuedEvents.removeValue(forKey: identifier)
         for event in events {
-            _ = publishEvent(event: event, type: type, identifier: identifier)
+            publishEvent(event: event, type: type, identifier: identifier)
         }
     }
 
@@ -899,5 +908,27 @@ struct OpenURLContext {
     #if os(iOS) || os(visionOS)
     var options: OpenURLOptions?
     #endif
+}
+
+extension SceneBridge {
+    @inline(__always)
+    @discardableResult
+    func publishActivity(_ activity: NSUserActivity) -> Bool {
+        publishEvent(
+            event: activity,
+            type: NSUserActivity.self,
+            identifier: activity.activityType
+        )
+    }
+
+    @inline(__always)
+    @discardableResult
+    func publishOpenURLContext(_ context: OpenURLContext) -> Bool {
+        publishEvent(
+            event: context,
+            type: OpenURLContext.self,
+            identifier: "OpenURLContext"
+        )
+    }
 }
 #endif

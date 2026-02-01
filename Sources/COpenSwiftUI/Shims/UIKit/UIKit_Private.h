@@ -30,6 +30,8 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)_launchTestName_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_launchTestName());
 
 - (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
+
+- (void)_saveRestorationUserActivityStateForScene_openswiftui_safe_wrapper:(UIScene *)scene OPENSWIFTUI_SWIFT_NAME(_saveRestorationUserActivityState(forScene:));
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
@@ -91,6 +93,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property (class, nonatomic, readonly) BOOL _alwaysOnSupported;
 @end
 #endif
+
+@interface UISceneConfiguration (OpenSwiftUI_SPI)
+@property (nonatomic, readonly, nullable) id<UISceneDelegate> sceneDelegate;
+@end
 
 OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);

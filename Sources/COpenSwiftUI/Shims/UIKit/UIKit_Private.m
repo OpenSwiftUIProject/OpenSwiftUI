@@ -36,6 +36,11 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(NSString *, @"_launchTestName", nil);
     return func(self, selector);
 }
+
+- (void)_saveRestorationUserActivityStateForScene_openswiftui_safe_wrapper:(UIScene *)scene {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_saveRestorationUserActivityStateForScene:", , UIScene *);
+    func(self, selector, scene);
+}
 @end
 
 @implementation UIView (OpenSwiftUI_SPI)

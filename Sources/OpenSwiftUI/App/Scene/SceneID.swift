@@ -14,16 +14,24 @@ enum SceneID: Hashable {
     case string(String)
     case type(Any.Type, UInt8)
 
+    @inline(__always)
+    var description: String {
+        switch self {
+        case let .string(string):
+            return string
+        case let .type(type, value):
+            return "\(_typeName(type))-\(value)"
+        }
+    }
+
     static func == (lhs: SceneID, rhs: SceneID) -> Bool {
         switch (lhs, rhs) {
         case let (.string(lhsString), .string(rhsString)):
             return lhsString == rhsString
         case let (.type(lhsType, lhsValue), .type(rhsType, rhsValue)):
             return lhsType == rhsType && lhsValue == rhsValue
-        case let (.string(lhsString), .type(rhsType, rhsValue)):
-            return lhsString == "\(_typeName(rhsType))-\(rhsValue)"
-        case let (.type(lhsType, lhsValue), .string(rhsString)):
-            return "\(_typeName(lhsType))-\(lhsValue)" == rhsString
+        default:
+            return lhs.description == rhs.description
         }
     }
 

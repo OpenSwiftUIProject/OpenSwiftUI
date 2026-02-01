@@ -576,12 +576,12 @@ extension _UIHostingView {
 // MARK: - UIHostingViewDelegate
 
 package protocol UIHostingViewDelegate: AnyObject {
-    func hostingView<A>(_ hostingView: _UIHostingView<A>, didMoveTo window: UIWindow?) where A: View
-    func hostingView<A>(_ hostingView: _UIHostingView<A>, willUpdate environment: inout EnvironmentValues) where A: View
-    func hostingView<A>(_ hostingView: _UIHostingView<A>, didUpdate environment: EnvironmentValues) where A: View
-    func hostingView<A>(_ hostingView: _UIHostingView<A>, didChangePreferences preferences: PreferenceValues) where A: View
-    func hostingView<A>(_ hostingView: _UIHostingView<A>, didChangePlatformItemList itemList: PlatformItemList) where A: View
-    func hostingView<A>(_ hostingView: _UIHostingView<A>, willModifyViewInputs inputs: inout _ViewInputs) where A: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didMoveTo window: UIWindow?) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didUpdate environment: EnvironmentValues) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePlatformItemList itemList: PlatformItemList) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willModifyViewInputs inputs: inout _ViewInputs) where V: View
 }
 
 #endif

@@ -7,16 +7,16 @@
 
 // FIXME
 package struct PlatformItemList {
-    var itesms: [Item]
+    var items: [Item]
 
     // FIXME
     struct Item {}
 
     fileprivate struct Key: PreferenceKey {
-        static let defaultValue: PlatformItemList = .init(itesms: [])
+        static let defaultValue: PlatformItemList = .init(items: [])
 
         static func reduce(value: inout PlatformItemList, nextValue: () -> PlatformItemList) {
-            value.itesms.append(contentsOf: nextValue().itesms)
+            value.items.append(contentsOf: nextValue().items)
         }
     }
 }

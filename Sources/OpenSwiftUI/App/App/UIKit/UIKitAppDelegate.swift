@@ -7,7 +7,9 @@
 //  ID: 4475FD12FD59DEBA453321BD91F6EA04 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
+import COpenSwiftUI
 import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
 package import OpenSwiftUICore
 public import UIKit
 #if OPENSWIFTUI_OPENCOMBINE
@@ -15,11 +17,12 @@ import OpenCombine
 #else
 import Combine
 #endif
+import OpenObservation
 
 // MARK: - AppDelegate [TODO]
 
-class AppDelegate: UIResponder, UIApplicationDelegate {
-    private var fallbackDelegate: UIApplicationDelegate?
+final class AppDelegate: UIResponder, UIApplicationDelegate {
+    fileprivate var fallbackDelegate: UIApplicationDelegate?
     var mainMenuController: UIKitMainMenuController?
 
     override init() {
@@ -123,9 +126,9 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
     // TODO
 }
 
-// MARK: - AppSceneDelegate [TODO]
+// MARK: - AppSceneDelegate [Stubbed]
 
-class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
+final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     private lazy var appDelegate: AppDelegate = UIApplication.shared.delegate as! AppDelegate
     var window: UIWindow?
     private var sceneItemID: SceneID?
@@ -142,6 +145,357 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
     override init() {
         super.init()
     }
+
+    override func responds(to aSelector: Selector!) -> Bool {
+        let boxResponds = (sceneDelegateBox?.delegate as? any UISceneDelegate)?.responds(to: aSelector) ?? false
+        let selfResponds = AppSceneDelegate.instancesRespond(to: aSelector)
+        return boxResponds || selfResponds
+    }
+
+    override func forwardingTarget(for aSelector: Selector!) -> Any? {
+        guard let delegate = (sceneDelegateBox?.delegate as? any UISceneDelegate) else {
+            return nil
+        }
+        return delegate
+    }
+
+    // MARK: - Test [Stubbed]
+
+    // var pptTestCases: [PPTTestCase.Name] { [] }
+
+    func runTest(_ name: String, options: [AnyHashable: Any]) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - UISceneDelegate [WIP]
+
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        Update.begin()
+        defer { Update.end() }
+        guard window == nil,
+              let windowScene = scene as? UIWindowScene,
+              let appGraph = AppGraph.shared else {
+            return
+        }
+        if let fallbackAppDelegate = appDelegate.fallbackDelegate,
+           fallbackAppDelegate.responds(to: #selector(UIApplicationDelegate.application(_:configurationForConnecting:options:))),
+           let config = fallbackAppDelegate.application?(UIApplication.shared, configurationForConnecting: session, options: connectionOptions),
+           let delegateClass = config.delegateClass,
+           let sceneDelegate = config.sceneDelegate {
+            // TODO
+            _openSwiftUIUnimplementedWarning()
+            sceneDelegateBox = FallbackDelegateBox<NSObject>(sceneDelegate as? NSObject)
+        }
+        let restorationSceneItemID: SceneID?
+        let restorationData: [AnyHashable: Any]
+        if let activity = session.stateRestorationActivity,
+           let userInfo = activity.userInfo,
+           let sceneIDString = userInfo["org.OpenSwiftUIProject.OpenSwiftUI.sceneID"] as? String {
+            restorationSceneItemID = .string(sceneIDString)
+            restorationData = userInfo
+        } else {
+            restorationSceneItemID = nil
+            restorationData = [:]
+        }
+        sceneStorageValues = SceneStorageValues(restorationData)
+        let bridge = SceneBridge()
+        bridge.windowScene = windowScene
+        sceneBridge = bridge
+        var urlContexts = connectionOptions.urlContexts
+        let newWindow: UIWindow = Update.ensure {
+            makeSceneHostWindow(
+                restorationSceneItemID: restorationSceneItemID,
+                restorationData: restorationData,
+                connectionOptions: connectionOptions,
+                urlContexts: &urlContexts,
+                role: session.role,
+                windowScene: windowScene,
+                delegate: self
+            )
+        }
+        if var userInfo = session.userInfo {
+            if let sceneItemID {
+                userInfo[sceneIDKey] = sceneItemID.description
+            } else {
+                userInfo[sceneIDKey] = nil
+            }
+            session.userInfo = userInfo
+        } else {
+            session.userInfo = nil
+        }
+        if var userInfo = session.userInfo {
+            if let presentationDataType {
+                userInfo[sceneTypeKey] = makeStableTypeData(presentationDataType).description
+            } else {
+                userInfo[sceneTypeKey] = nil
+            }
+            session.userInfo = userInfo
+        } else {
+            session.userInfo = nil
+        }
+        if let rawPresentationDataValue,
+           let presentationDataValue {
+            if var userInfo = session.userInfo {
+                userInfo[sceenValueKey] = rawPresentationDataValue
+            } else {
+                session.userInfo = nil
+            }
+            // TODO: SceneNavigationStrategy_Phone
+            // sceneItemID!.description
+            // TODO: SceneRequestCache
+            _openSwiftUIUnimplementedWarning()
+        }
+        bridge.rootViewController = newWindow.rootViewController
+        window = newWindow
+        newWindow.makeKeyAndVisible()
+        let item = sceneItem()
+        func handleConnectionOptionsCallbacks(_ storage: ConnectionOptionPayloadStorage) {
+            func _do<Definition>(_ type: Definition.Type) where Definition: UISceneConnectionOptionDefinition {
+                // TODO: connectionOptions[type]
+                _openSwiftUIUnimplementedWarning()
+            }
+            for type in storage.types {
+                _do(type)
+            }
+        }
+        handleConnectionOptionsCallbacks(item.connectionOptionPayloadStorage)
+        DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
+            handleConnectionOptionsCallbacks(item.connectionOptionPayloadStorage)
+        }
+        if let firstActivity = connectionOptions.userActivities.first {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                guard let self else { return }
+                self.scene(scene, continue: firstActivity)
+            }
+        }
+        if let context = urlContexts.first {
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) { [weak self] in
+                let options = context.options
+                guard let self, let sceneBridge else { return }
+                let openURLContext = OpenURLContext(
+                    url: context.url,
+                    options: .init(uiSceneOpenURLOptions: options)
+                )
+                sceneBridge.publishOpenURLContext(openURLContext)
+            }
+        }
+        appGraph.addPreference(CommandsKey.self)
+        appGraph.addObserver(self)
+        if let delegate = sceneDelegateBox?.delegate as? UIWindowSceneDelegate {
+            delegate.scene?(scene, willConnectTo: session, options: connectionOptions)
+        }
+        DispatchQueue.main.async { [windowScene] in
+            UIApplication.shared._saveRestorationUserActivityState(forScene: windowScene)
+        }
+        AppSceneDelegate.hasConnectedFirstScene = true
+    }
+
+    private func makeSceneHostWindow(
+        restorationSceneItemID: SceneID?,
+        restorationData: [AnyHashable : Any],
+        connectionOptions: UIScene.ConnectionOptions,
+        urlContexts: inout Set<UIOpenURLContext>,
+        role: UISceneSession.Role,
+        windowScene: UIWindowScene,
+        delegate: any UIHostingViewDelegate
+    ) -> UIWindow {
+        let userActivity = connectionOptions.userActivities.first
+        guard let appGraph = AppGraph.shared else {
+            preconditionFailure("Missing app graph")
+        }
+        let items = appGraph.rootSceneList?.items ?? []
+        var matchedItem: SceneList.Item?
+        if let restorationSceneItemID {
+            for item in items {
+                if item.id == restorationSceneItemID {
+                    matchedItem = item
+                    break
+                }
+            }
+        } else if let sceneID = openWindowByIDSceneID(from: userActivity) {
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            _openSwiftUIUnimplementedFailure()
+        }
+        // FIXME
+        if matchedItem == nil, let first = items.first {
+            matchedItem = first
+        }
+        guard let item = matchedItem else {
+            _openSwiftUIUnimplementedFailure()
+        }
+        self.sceneItemID = item.id
+        let rootView = self.makeRootView(item.value.view)
+        let hostingController = UIHostingController(rootView: rootView)
+        hostingController.host.delegate = self
+        hostingController.host.inheritedEnvironment = item.environment
+        let window = UIWindow(windowScene: windowScene)
+        window.rootViewController = hostingController
+        PlatformSceneCache.shared.addHost(hostingController, id: item.id)
+        return window
+    }
+
+    private func openWindowByIDSceneID(from userActivity: NSUserActivity?) -> SceneID? {
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+
+
+    private static var hasConnectedFirstScene: Bool = false
+
+    func sceneDidDisconnect(_ scene: UIScene) {
+        if let rootViewController = window?.rootViewController,
+           let sceneItemID {
+            PlatformSceneCache.shared.removeHost(rootViewController, id: sceneItemID)
+        }
+        forwardToFallbackSceneDelegate(selector: #selector(UISceneDelegate.sceneDidDisconnect(_:)), scene: scene)
+    }
+
+    func sceneDidBecomeActive(_ scene: UIScene) {
+        updateScenePhase(.active, selector: #selector(UISceneDelegate.sceneDidBecomeActive(_:)), scene: scene)
+    }
+
+    func sceneWillResignActive(_ scene: UIScene) {
+        updateScenePhase(.inactive, selector: #selector(UISceneDelegate.sceneWillResignActive(_:)), scene: scene)
+    }
+
+    func sceneWillEnterForeground(_ scene: UIScene) {
+        updateScenePhase(.inactive, selector: #selector(UISceneDelegate.sceneWillEnterForeground(_:)), scene: scene)
+    }
+
+    func sceneDidEnterBackground(_ scene: UIScene) {
+        updateScenePhase(.background, selector: #selector(UISceneDelegate.sceneDidEnterBackground(_:)), scene: scene)
+    }
+
+    private func updateScenePhase(_ phase: ScenePhase, selector: Selector, scene: UIScene) {
+        scenePhase = phase
+        if let rootViewController = window?.rootViewController,
+           let sceneItemID {
+            scenesDidChange(phaseChanged: true)
+            PlatformSceneCache.shared.setPhase(phase, id: sceneItemID, host: rootViewController)
+        }
+        forwardToFallbackSceneDelegate(selector: selector, scene: scene)
+    }
+
+    private func forwardToFallbackSceneDelegate(selector: Selector, scene: UIScene) {
+        guard let fallbackDelegate = sceneDelegateBox?.delegate as? UISceneDelegate,
+              fallbackDelegate.responds(to: selector) else {
+            return
+        }
+        _ = fallbackDelegate.perform(selector, with: scene)
+    }
+
+    func scene(_ scene: UIScene, openURLContexts URLContexts: Set<UIOpenURLContext>) {
+        var contexts = URLContexts
+        if let vc = window?.rootViewController as? DocumentBrowserViewController {
+            if let context = contexts.first(
+                where: { vc.presentDocument(at: $0.url, animated: false) }
+            ) {
+                _ = contexts.remove(context)
+            }
+        }
+        if let context = contexts.first,
+            let sceneBridge {
+            let openURLContext = OpenURLContext(
+                url: context.url,
+                options: .init(
+                    uiSceneOpenURLOptions: context.options
+                )
+            )
+            sceneBridge.publishOpenURLContext(openURLContext)
+        }
+
+        if let fallbackDelegate = sceneDelegateBox?.delegate as? UISceneDelegate,
+              fallbackDelegate.responds(to: #selector(UISceneDelegate.scene(_:openURLContexts:))) {
+            fallbackDelegate.scene?(scene, openURLContexts: contexts)
+        }
+    }
+
+    func stateRestorationActivity(for scene: UIScene) -> NSUserActivity? {
+        let activity = NSUserActivity(activityType: stateRestorationKey)
+        var userInfo: [AnyHashable: Any] = [:]
+        if let sceneStorageValues {
+            userInfo.merge(
+                sceneStorageValues.restoredValue(),
+                uniquingKeysWith: { old, _ in old }
+            )
+        }
+        var requiredKeys: Set<String> = []
+        if let presentationDataType {
+            let key = sceneTypeKey
+            userInfo[key] = makeStableTypeData(presentationDataType).description
+            requiredKeys.insert(key)
+        }
+        if let sceneItemID {
+            let key = sceneIDKey
+            userInfo[key] = sceneItemID.description
+            requiredKeys.insert(key)
+        }
+        if let rawPresentationDataValue {
+            let key = sceenValueKey
+            userInfo[key] = rawPresentationDataValue
+            requiredKeys.insert(key)
+        }
+        if !requiredKeys.isEmpty {
+            activity.requiredUserInfoKeys = requiredKeys
+        }
+        activity.userInfo = userInfo
+        return activity
+    }
+
+    func scene(_ scene: UIScene, continue userActivity: NSUserActivity) {
+        if userActivity._isUniversalLink,
+           let webpageURL = userActivity.webpageURL {
+            let context = OpenURLContext(url: webpageURL, options: nil)
+            sceneBridge?.publishOpenURLContext(context)
+        } else {
+            sceneBridge?.publishActivity(userActivity)
+            if let sceneDelegate = sceneDelegateBox?.delegate as? UISceneDelegate,
+               let windowSceneDelegate = sceneDelegate as? UIWindowSceneDelegate,
+               windowSceneDelegate.responds(to: #selector(UISceneDelegate.scene(_:continue:))) {
+                windowSceneDelegate.scene?(scene, continue: userActivity)
+            }
+        }
+    }
+
+    // MARK: - Scene related
+
+    func sceneItem() -> SceneList.Item {
+        guard let sceneItemID,
+              let appGraph = AppGraph.shared
+        else {
+            preconditionFailure("Missing scene item!")
+        }
+        let items = appGraph.rootSceneList?.items ?? []
+        for item in items {
+            guard item.id == sceneItemID else {
+                continue
+            }
+            return item
+        }
+        preconditionFailure("Missing scene item!")
+    }
+
+    // MARK: - ConnectionOption [Stubbed]
+
+    var connectionOptionDefinitionTarget: AnyObject? {
+        sceneDelegateBox?.delegate
+    }
+
+    func handleConnectionOptionDefinition<Definition>(
+        payload: Definition.Payload,
+        definition: Definition.Type,
+        scene: Definition.SceneType
+    ) async throws where Definition : UISceneConnectionOptionDefinition {
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    // MARK: - Document [Stubbed]
+
+    // func makeDocumentIntroView(documentGroups: [IdentifiedDocumentGroupConfiguration], configuration: DocumentIntroductionConfiguration) -> DocumentGroupsIntroRootView
+    // func makeConfiguredDocumentRootViewController(_ controller: DocumentViewController) -> UIViewController
+
+    // MARK: - Root view and modifier
 
     private var rootModifier: RootModifier {
         guard let sceneBridge else {
@@ -162,6 +516,66 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
 
     private func makeRootView(_ view: AnyView) -> ModifiedContent<AnyView, RootModifier> {
         applyAppRootModifier(view).modifier(rootModifier)
+    }
+}
+
+private let sceneIDKey = "org.OpenSwiftUIProject.OpenSwiftUI.sceneID"
+private let sceenValueKey = "org.OpenSwiftUIProject.OpenSwiftUI.sceneValue"
+private let sceneTypeKey = "org.OpenSwiftUIProject.OpenSwiftUI.sceneType"
+private let stateRestorationKey = "org.OpenSwiftUIProject.OpenSwiftUI.stateRestoration"
+
+// MARK: - AppSceneDelegate + UIHostingViewDelegate
+
+extension AppSceneDelegate: UIHostingViewDelegate {
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didMoveTo window: UIWindow?) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View {
+        guard let mainMenuController = appDelegate.mainMenuController else {
+            return
+        }
+        mainMenuController.updateEnvironment(&environment)
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didUpdate environment: EnvironmentValues) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePlatformItemList itemList: PlatformItemList) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willModifyViewInputs inputs: inout _ViewInputs) where V: View {
+        _openSwiftUIEmptyStub()
+    }
+}
+
+// MARK: - AppSceneDelegate + AppGraphObserver [WIP]
+
+extension AppSceneDelegate: AppGraphObserver {
+    func scenesDidChange(phaseChanged: Bool) {
+        Update.begin()
+        defer { Update.end() }
+        let item = sceneItem()
+        guard phaseChanged || item.version != lastVersion else {
+            return
+        }
+        let view = item.value.view
+        if let window,
+           let rootVC = window.rootViewController as? UIHostingController<ModifiedContent<AnyView, RootModifier>> {
+            rootVC.rootView = makeRootView(view)
+            rootVC.host.inheritedEnvironment = item.environment
+        }
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    func commandsDidChange() {
+        _openSwiftUIEmptyStub()
     }
 }
 
