@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 //  ID: A9714FE7FB47B9EE521B92A735A59E38 (SwiftUI)
+//  TODO: Add test case and verify [Q]
 
 #if canImport(Darwin)
 #if os(iOS) || os(visionOS)
@@ -25,6 +26,13 @@ import OpenSwiftUICore
 @available(OpenSwiftUI_v2_0, *)
 public var _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled = false
 
+@_transparent
+private func activityEnvironmentLog(_ message: @autoclosure () -> String) {
+    if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
+        Log.log(message())
+    }
+}
+
 // MARK: - UserActivityTrackingInfo
 
 class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
@@ -44,9 +52,7 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     }
 
     func userActivityWillSave(_ userActivity: NSUserActivity) {
-        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-            Log.log("userActivityWillSave called for \(description)")
-        }
+        activityEnvironmentLog("userActivityWillSave called for \(description)")
         if Thread.isMainThread {
             updateUserActivity(userActivity)
         } else {
@@ -59,16 +65,12 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
     func updateUserActivity(_ userActivity: NSUserActivity) {
         guard let currentActivity = self.userActivity,
               currentActivity == userActivity else {
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("Mismatched UserActivity in tracking info, skipping update.")
-            }
+            activityEnvironmentLog("Mismatched UserActivity in tracking info, skipping update.")
             return
         }
         guard let sceneBridge else { return }
         let failedIDs = handlers.compactMap { identity, handler in
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log("Invoking handler for \(identity)")
-            }
+            activityEnvironmentLog("Invoking handler for \(identity)")
             return handler(userActivity) ? nil : identity
         }
         for id in failedIDs {
@@ -95,12 +97,10 @@ class UserActivityTrackingInfo: NSObject, NSUserActivityDelegate {
             sceneBridge.userActivityTrackingInfo = self
         }
         userActivity.needsSave = false
-        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-            Log.log(
-                "updated user activity \(String(describing: userActivity.title)) "
-                + "with userInfo \(String(describing: userActivity.userInfo))"
-            )
-        }
+        activityEnvironmentLog(
+            "updated user activity \(String(describing: userActivity.title)) "
+            + "with userInfo \(String(describing: userActivity.userInfo))"
+        )
     }
 }
 
@@ -215,20 +215,16 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
         static var defaultValue: Value { nil }
 
         static func reduce(value: inout Value, nextValue: () -> Value) {
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "Reducing UserActivityPreference " +
-                    "\(String(describing: value)) " +
-                    "with \(String(describing: nextValue()))"
-                )
-            }
+            activityEnvironmentLog(
+                "Reducing UserActivityPreference " +
+                "\(String(describing: value)) " +
+                "with \(String(describing: nextValue()))"
+            )
             defer {
-                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                    Log.log(
-                        "Reduced UserActivityPreference to " +
-                        "\(String(describing: value))"
-                    )
-                }
+                activityEnvironmentLog(
+                    "Reduced UserActivityPreference to " +
+                    "\(String(describing: value))"
+                )
             }
             guard let current = value else {
                 value = nextValue()
@@ -253,19 +249,15 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
         let preferenceValue = preferences[UserActivityPreferenceKey.self]
         if let userActivityPreferenceSeed,
            preferenceValue.seed.matches(userActivityPreferenceSeed) {
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "UserActivity Preferences hasn't changed, skipping update for advertised NSUserActivities. " +
-                    "Seed is \(preferenceValue.seed)"
-                )
-            }
+            activityEnvironmentLog(
+                "UserActivity Preferences hasn't changed, skipping update for advertised NSUserActivities. " +
+                "Seed is \(preferenceValue.seed)"
+            )
         } else {
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "UserActivityPreferences changed: " +
-                    "\(preferenceValue)"
-                )
-            }
+            activityEnvironmentLog(
+                "UserActivityPreferences changed: " +
+                "\(preferenceValue)"
+            )
             userActivityPreferenceSeed = preferenceValue.seed
             guard let value = preferenceValue.value, !value.handlers.isEmpty else {
                 userActivityTrackingInfo = nil
@@ -282,9 +274,7 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
                     initialUserActivity = nil
                 }
                 #endif
-                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                    Log.log("Cleared AdvertiseUserActivity tracking info since UserActivity preferences are empty")
-                }
+                activityEnvironmentLog("Cleared AdvertiseUserActivity tracking info since UserActivity preferences are empty")
                 return
             }
             let trackingInfo = userActivityTrackingInfo ?? UserActivityTrackingInfo(
@@ -302,12 +292,10 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
                 if activity !== oldActivity {
                     activity.delegate = trackingInfo
                 }
-                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                    Log.log(
-                        "Initializing advertised user activity: " +
-                        "\(String(describing: trackingInfo.userActivity))"
-                    )
-                }
+                activityEnvironmentLog(
+                    "Initializing advertised user activity: " +
+                    "\(String(describing: trackingInfo.userActivity))"
+                )
                 userActivityTrackingInfo = trackingInfo
                 #if os(iOS) || os(visionOS)
                 if let rootViewController {
@@ -322,20 +310,16 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
                     initialUserActivity = trackingInfo.userActivity
                 }
                 #endif
-                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                    Log.log(
-                        "View Advertising UserActivity, set rootViewController activity to " +
-                        "\(String(describing: trackingInfo.userActivity))"
-                    )
-                }
-            }
-            trackingInfo.handlers = value.handlers
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "Set up AdvertiseUserActivity tracking info from " +
-                    "value in UserActivityPreferenceKey: \(trackingInfo.description)"
+                activityEnvironmentLog(
+                    "View Advertising UserActivity, set rootViewController activity to " +
+                    "\(String(describing: trackingInfo.userActivity))"
                 )
             }
+            trackingInfo.handlers = value.handlers
+            activityEnvironmentLog(
+                "Set up AdvertiseUserActivity tracking info from " +
+                "value in UserActivityPreferenceKey: \(trackingInfo.description)"
+            )
         }
     }
 
@@ -363,27 +347,21 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
         let preferenceValue = preferences[ActivationConditionsPreferenceKey.self]
         if let activationConditionsPreferenceSeed,
            preferenceValue.seed.matches(activationConditionsPreferenceSeed) {
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "ActivationConditions Preferences hasn't changed, skipping update for Scene ActivationConditions. " +
-                    "Seed is \(preferenceValue.seed)"
-                )
-            }
+            activityEnvironmentLog(
+                "ActivationConditions Preferences hasn't changed, skipping update for Scene ActivationConditions. " +
+                "Seed is \(preferenceValue.seed)"
+            )
         } else {
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "ActivationConditionPreferences changed: " +
-                    "\(preferenceValue)"
-                )
-            }
+            activityEnvironmentLog(
+                "ActivationConditionPreferences changed: " +
+                "\(preferenceValue)"
+            )
             activationConditionsPreferenceSeed = preferenceValue.seed
             setActivationConditions(preferenceValue.value)
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "Set Scene ActivationConditions to " +
-                    "\(String(describing: sceneActivationConditions))"
-                )
-            }
+            activityEnvironmentLog(
+                "Set Scene ActivationConditions to " +
+                "\(String(describing: sceneActivationConditions))"
+            )
         }
     }
 
@@ -411,12 +389,10 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
             newConditions.prefersToActivateForTargetContentIdentifierPredicate = existingConditions.prefersToActivateForTargetContentIdentifierPredicate
             newConditions.canActivateForTargetContentIdentifierPredicate = existingConditions.canActivateForTargetContentIdentifierPredicate
             windowScene.activationConditions = newConditions
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "Changed Scene ActivationConditions to " +
-                    "\(windowScene.activationConditions.description)"
-                )
-            }
+            activityEnvironmentLog(
+                "Changed Scene ActivationConditions to " +
+                "\(windowScene.activationConditions.description)"
+            )
             sceneActivationConditions = conditions
         }
         #elseif os(macOS)
@@ -518,9 +494,7 @@ struct UserActivityModifier: ViewModifier {
             content
                 .advertiseUserActivity(activityType, isActive: isActive, sceneBridge: bridge) { activity in
                     guard isActive else {
-                        if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                            Log.log("Skipping inactive advertiseUserActivity handler")
-                        }
+                        activityEnvironmentLog("Skipping inactive advertiseUserActivity handler")
                         return false
                     }
                     update(activity)
@@ -552,16 +526,12 @@ extension View {
         handler: @escaping (NSUserActivity) -> Bool
     ) -> some View {
         transformIdentifiedPreference(SceneBridge.UserActivityPreferenceKey.self) { value, identity in
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "TransformIdentifiedPreference closure for UserActivity " +
-                    "called with value \(String(describing: value))"
-                )
-            }
+            activityEnvironmentLog(
+                "TransformIdentifiedPreference closure for UserActivity " +
+                "called with value \(String(describing: value))"
+            )
             guard isActive, let sceneBridge else {
-                if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                    Log.log("TransformIdentifiedPreference closure for UserActivity:  inactive, leaving value alone")
-                }
+                activityEnvironmentLog("TransformIdentifiedPreference closure for UserActivity:  inactive, leaving value alone")
                 return
             }
             var handlers: [ViewIdentity: (NSUserActivity) -> Bool]
@@ -572,12 +542,10 @@ extension View {
                 handlers = [identity: handler]
             }
             value = .init((activityType: activityType, handlers: handlers))
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "TransformIdentifiedPreference for UserActivity setting value " +
-                    "to \(String(describing: value))"
-                )
-            }
+            activityEnvironmentLog(
+                "TransformIdentifiedPreference for UserActivity setting value " +
+                "to \(String(describing: value))"
+            )
         }
     }
 
@@ -676,13 +644,11 @@ extension View {
             )
             return self.onReceive(publisher) { output in
                 guard let activity = output as? NSUserActivity else {
-                    if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                        Log.log(
-                            "onUserActivity skipping event with " +
-                            "identifier \(activityType), published object is not " +
-                            "a NSUserActivity: \(output)"
-                        )
-                    }
+                    activityEnvironmentLog(
+                        "onUserActivity skipping event with " +
+                        "identifier \(activityType), published object is not " +
+                        "a NSUserActivity: \(output)"
+                    )
                     return
                 }
                 action(activity)
@@ -723,12 +689,10 @@ extension View {
             )
             return self.onReceive(publisher) { output in
                 guard let context = output as? OpenURLContext else {
-                    if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                        Log.log(
-                            "onURL skipping event for OpenURLContext, " +
-                            "published object is not a OpenURLContext: \(output)"
-                        )
-                    }
+                    activityEnvironmentLog(
+                        "onURL skipping event for OpenURLContext, " +
+                        "published object is not a OpenURLContext: \(output)"
+                    )
                     return
                 }
                 action(context.url)
@@ -750,12 +714,10 @@ extension View {
             )
             return self.onReceive(publisher) { output in
                 guard let context = output as? OpenURLContext else {
-                    if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                        Log.log(
-                            "onURL skipping event for OpenURLContext, " +
-                            "published object is not a OpenURLContext: \(output)"
-                        )
-                    }
+                    activityEnvironmentLog(
+                        "onURL skipping event for OpenURLContext, " +
+                        "published object is not a OpenURLContext: \(output)"
+                    )
                     return
                 }
                 action(context.url, context.options)
@@ -898,22 +860,18 @@ extension View {
         transformPreference(
             SceneBridge.ActivationConditionsPreferenceKey.self
         ) { value in
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "TransformPreference closure for activation conditions called " +
-                    "\(String(describing: value))"
-                )
-            }
+            activityEnvironmentLog(
+                "TransformPreference closure for activation conditions called " +
+                "\(String(describing: value))"
+            )
             value = .init((
                 preferring: value?.preferring.union(preferring) ?? preferring,
                 allowing: value?.allowing.union(allowing) ?? allowing,
             ))
-            if _defaultOpenSwiftUIActivityEnvironmentLoggingEnabled {
-                Log.log(
-                    "TransformPreference setting value for activation conditions" +
-                    "\(String(describing: value))"
-                )
-            }
+            activityEnvironmentLog(
+                "TransformPreference setting value for activation conditions" +
+                "\(String(describing: value))"
+            )
         }
     }
 }
