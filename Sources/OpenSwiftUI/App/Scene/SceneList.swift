@@ -72,6 +72,19 @@ extension SceneList {
             case singleWindow(SingleWindowConfiguration)
 //            case documentIntroduction(DocumentIntroductionConfiguration)
 //            case alertDialog(DialogConfiguration)
+
+            @inline(__always)
+            var view: AnyView {
+                switch self {
+                case let .windowGroup(config):
+                    return config.mainContent
+                case let .settings(view):
+                    return view
+                case .singleWindow:
+                    // TODO: Implement SingleWindowConfiguration.view
+                    return AnyView(EmptyView())
+                }
+            }
         }
 
         // MARK: - SceneList.Item.Kind

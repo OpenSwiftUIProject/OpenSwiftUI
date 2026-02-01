@@ -173,7 +173,7 @@ extension AppGraph {
 // MARK: - AppGraphObserver
 
 protocol AppGraphObserver: AnyObject {
-    func sceneDidChange(phaseChanged: Bool)
+    func scenesDidChange(phaseChanged: Bool)
     func commandsDidChange()
 }
 

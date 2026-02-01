@@ -279,10 +279,22 @@ extension AppSceneDelegate: UIHostingViewDelegate {
     }
 }
 
-// MARK: - AppSceneDelegate + AppGraphObserver [Stubbed]
+// MARK: - AppSceneDelegate + AppGraphObserver [WIP]
 
 extension AppSceneDelegate: AppGraphObserver {
-    func sceneDidChange(phaseChanged: Bool) {
+    func scenesDidChange(phaseChanged: Bool) {
+        Update.begin()
+        defer { Update.end() }
+        let item = sceneItem()
+        guard phaseChanged || item.version != lastVersion else {
+            return
+        }
+        let view = item.value.view
+        if let window,
+           let rootVC = window.rootViewController as? UIHostingController<ModifiedContent<AnyView, RootModifier>> {
+            rootVC.rootView = makeRootView(view)
+            rootVC.host.inheritedEnvironment = item.environment
+        }
         _openSwiftUIUnimplementedWarning()
     }
 
