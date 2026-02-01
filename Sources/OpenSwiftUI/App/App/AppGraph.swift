@@ -192,15 +192,17 @@ extension AppGraph: GraphDelegate {
     }
 }
 
-//extension AppGraph {
-//    func addObserver(_ observer: some AppGraphObserver) {
-//        observers.insert(HashableWeakBox(observer))
-//    }
-//
-//    func removeObserver(_ observer: some AppGraphObserver) {
-//        observers.remove(HashableWeakBox(observer))
-//    }
-//
+extension AppGraph {
+    func addObserver(_ observer: some AppGraphObserver) {
+        observers = observers.filter { $0.base != nil }
+        observers.insert(HashableWeakBox(observer))
+    }
+
+    func removeObserver(_ observer: some AppGraphObserver) {
+        observers = observers.filter { $0.base != nil }
+        observers.remove(HashableWeakBox(observer))
+    }
+
 //    func notifyObservers(phaseChanged: Bool) {
 //        for box in observers {
 //            (box.base as? AppGraphObserver)?.scenesDidChange(phaseChanged: phaseChanged)
@@ -212,7 +214,7 @@ extension AppGraph: GraphDelegate {
 //            (box.base as? AppGraphObserver)?.commandsDidChange()
 //        }
 //    }
-//}
+}
 
 // MARK: - AppGraphObserver
 

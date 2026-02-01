@@ -11,10 +11,23 @@ import OpenSwiftUICore
 // MARK: - SceneStorageValues [WIP]
 
 class SceneStorageValues {
+    private var encodedValues: [AnyHashable: Any]
+    private var locations: [String: AnyEntry] = [:]
+    var encodedValueCount: Int = 0
+    weak var associatedHost: ViewRendererHost? = nil
+
+    init(_ value: [AnyHashable: Any]) {
+        encodedValues = value
+    }
+
     func restoredValue() -> [AnyHashable: Any] {
         _openSwiftUIUnimplementedWarning()
         return [:]
     }
+
+    private class AnyEntry {}
+
+    private class Entry {}
 }
 
 // MARK: - EnvironmentValues + sceneStorageValues

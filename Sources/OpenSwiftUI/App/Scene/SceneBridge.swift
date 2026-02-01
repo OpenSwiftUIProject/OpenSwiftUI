@@ -111,7 +111,15 @@ final class SceneBridge: ObservableObject, CustomStringConvertible {
     var isAnimatingSceneResize: Bool = false
     #if os(iOS) || os(visionOS)
     weak var windowScene: UIWindowScene?
-    weak var rootViewController: UIViewController?
+    weak var rootViewController: UIViewController? {
+        didSet {
+            if let initialUserActivity,
+               let rootViewController {
+                rootViewController.userActivity = initialUserActivity
+                initialUserActivity.becomeCurrent()
+            }
+        }
+    }
     private var sceneDefinitionOptionsSeedTracker: VersionSeedTracker<ConnectionOptionPayloadStoragePreferenceKey> = .init()
     var sceneDefinitionOptions: ConnectionOptionPayloadStorage = .init()
     private var titleSeedTracker: VersionSeedTracker<NavigationTitleKey> = .init()
