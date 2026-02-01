@@ -16,7 +16,6 @@ import OpenCombine
 import Combine
 #endif
 
-
 // MARK: - AppDelegate [TODO]
 
 class AppDelegate: UIResponder, UIApplicationDelegate {
@@ -144,13 +143,27 @@ class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         super.init()
     }
 
-//    private var rootModifier: RootModifier {
-//
-//    }
-//
-//    private func makeRootView(_ view: AnyView) -> ModifiedContent<AnyView, RootModifier> {
-//        // for each appRootViewWrappers and then rootModifier
-//    }
+    private var rootModifier: RootModifier {
+        guard let sceneBridge else {
+            preconditionFailure("Application configuration error.")
+        }
+        guard let sceneStorageValues else {
+            preconditionFailure("State restoration error.")
+        }
+        return RootModifier(
+            sceneBridge: sceneBridge,
+            sceneDelegateBox: sceneDelegateBox,
+            sceneStorageValues: sceneStorageValues,
+            presentationDataValue: presentationDataValue,
+            scenePhase: scenePhase,
+            sceneID: sceneItemID
+        )
+    }
+
+    private func makeRootView(_ view: AnyView) -> ModifiedContent<AnyView, RootModifier> {
+        // TODO: for each appRootViewWrappers and then rootModifier
+        view.modifier(rootModifier)
+    }
 }
 
 // MARK: - RootModifier
@@ -271,5 +284,4 @@ private struct RootEnvironmentModifier: PrimitiveViewModifier, _GraphInputsModif
         }
     }
 }
-
 #endif
