@@ -7,7 +7,7 @@
 //  ID: 3890C65F12EA82A4BC5FBD33046B67FA (SwiftUICore)
 
 package import OpenAttributeGraphShims
-package import OpenCoreGraphicsShims
+import OpenCoreGraphicsShims
 
 extension ShapeStyle {
     package typealias RenderedShape = _ShapeStyle_RenderedShape
@@ -173,7 +173,39 @@ package struct _ShapeStyle_RenderedShape {
         item.canonicalize(options: options)
     }
 
-    private func render(style: ShapeStyle.Pack.Style) {
+    private mutating func render(style: ShapeStyle.Pack.Style) {
+        blendMode = style.blend
+        opacity = opacity * style.opacity
+        switch style.fill {
+        case let .color(resolved):
+            var resolved  = resolved
+            if style.effects.isEmpty {
+                resolved.opacity =  opacity * resolved.opacity
+                opacity = 1.0
+            }
+            render(color: resolved)
+        default:
+            _openSwiftUIUnimplementedFailure()
+        }
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    private mutating func render(color: Color.Resolved) {
+        defer {
+            if let data = interpolatorData {
+                addEffect(.interpolatorLayer(data.group, serial: data.serial))
+                interpolatorData = nil
+            }
+        }
+        guard !color.isClear else { return }
+        // FIXME
+        item.value = .content(DisplayList.Content(
+            .color(color),
+            seed: contentSeed
+        ))
+    }
+
+    private mutating func render(paint: AnyResolvedPaint) {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -202,6 +234,13 @@ package struct _ShapeStyle_RenderedShape {
             seed: contentSeed
         ))
         layers.endLayer(shape: &self)
+    }
+
+    private mutating func renderUnstyledText(
+        _ text: StyledTextContentView,
+        layers: inout ShapeStyle.RenderedLayers
+    ) {
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
