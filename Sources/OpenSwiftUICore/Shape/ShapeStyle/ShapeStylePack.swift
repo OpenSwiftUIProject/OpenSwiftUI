@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Complete - Blocked by Gradient and Shader
 //  ID: 4DBF651155A4B32ED86C55EAB1B96C61 (SwiftUICore)
 
 package import Foundation
@@ -329,9 +329,476 @@ extension _ShapeStyle_Pack.Style {
     }
 }
 
-// TODO: _ShapeStyle_Pack + Animatable
+// [Animatable support] [Generated]
 
-extension ShapeStyle.Pack: Animatable {}
+// MARK: - _ShapeStyle_Pack + Animatable
+
+extension _ShapeStyle_Pack: Animatable {
+    package struct AnimatableData: VectorArithmetic {
+        package typealias StyleData = _ShapeStyle_Pack.Style.AnimatableData
+
+        package typealias Element = (key: _ShapeStyle_Pack.Key, data: StyleData)
+
+        package var elements: [Element]
+
+        package static func == (lhs: _ShapeStyle_Pack.AnimatableData, rhs: _ShapeStyle_Pack.AnimatableData) -> Bool {
+            guard lhs.elements.count == rhs.elements.count else { return false }
+            for i in lhs.elements.indices {
+                guard lhs.elements[i].key == rhs.elements[i].key else { return false }
+                guard lhs.elements[i].data == rhs.elements[i].data else { return false }
+            }
+            return true
+        }
+
+        package static var zero: _ShapeStyle_Pack.AnimatableData {
+            AnimatableData(elements: [])
+        }
+
+        package static func += (lhs: inout _ShapeStyle_Pack.AnimatableData, rhs: _ShapeStyle_Pack.AnimatableData) {
+            guard !rhs.elements.isEmpty else { return }
+            guard !lhs.elements.isEmpty else {
+                lhs = rhs
+                return
+            }
+            var li = 0
+            var ri = 0
+            while li < lhs.elements.count && ri < rhs.elements.count {
+                let lKey = lhs.elements[li].key
+                let rKey = rhs.elements[ri].key
+                if lKey == rKey {
+                    lhs.elements[li].data += rhs.elements[ri].data
+                    li += 1
+                    ri += 1
+                } else if lKey < rKey {
+                    li += 1
+                } else {
+                    ri += 1
+                }
+            }
+            if li < lhs.elements.count {
+                lhs.elements.removeSubrange(li...)
+            }
+        }
+
+        package static func -= (lhs: inout _ShapeStyle_Pack.AnimatableData, rhs: _ShapeStyle_Pack.AnimatableData) {
+            guard !rhs.elements.isEmpty else { return }
+            guard !lhs.elements.isEmpty else {
+                lhs = rhs
+                return
+            }
+            var li = 0
+            var ri = 0
+            while li < lhs.elements.count && ri < rhs.elements.count {
+                let lKey = lhs.elements[li].key
+                let rKey = rhs.elements[ri].key
+                if lKey == rKey {
+                    lhs.elements[li].data -= rhs.elements[ri].data
+                    li += 1
+                    ri += 1
+                } else if lKey < rKey {
+                    li += 1
+                } else {
+                    ri += 1
+                }
+            }
+            if li < lhs.elements.count {
+                lhs.elements.removeSubrange(li...)
+            }
+        }
+
+        package mutating func scale(by rhs: Double) {
+            for i in elements.indices {
+                elements[i].data.scale(by: rhs)
+            }
+        }
+
+        @_transparent
+        package static func + (lhs: _ShapeStyle_Pack.AnimatableData, rhs: _ShapeStyle_Pack.AnimatableData) -> _ShapeStyle_Pack.AnimatableData {
+            var result = lhs
+            result += rhs
+            return result
+        }
+
+        @_transparent
+        public static func - (lhs: _ShapeStyle_Pack.AnimatableData, rhs: _ShapeStyle_Pack.AnimatableData) -> _ShapeStyle_Pack.AnimatableData {
+            var result = lhs
+            result -= rhs
+            return result
+        }
+
+        package var magnitudeSquared: Double {
+            var result = 0.0
+            for element in elements {
+                result += element.data.magnitudeSquared
+            }
+            return result
+        }
+    }
+
+    package var animatableData: _ShapeStyle_Pack.AnimatableData {
+        get {
+            AnimatableData(elements: styles.map { (key: $0.key, data: $0.style.animatableData) })
+        }
+        set {
+            guard !newValue.elements.isEmpty, !styles.isEmpty else { return }
+            var si = 0
+            var di = 0
+            while si < styles.count && di < newValue.elements.count {
+                let sKey = styles[si].key
+                let dKey = newValue.elements[di].key
+                if sKey == dKey {
+                    styles[si].style.animatableData = newValue.elements[di].data
+                    si += 1
+                    di += 1
+                } else if sKey < dKey {
+                    si += 1
+                } else {
+                    di += 1
+                }
+            }
+        }
+    }
+}
+
+// MARK: - _ShapeStyle_Pack.Style + Animatable
+
+extension _ShapeStyle_Pack.Style: Animatable {
+    package typealias AnimatableData = AnimatablePair<_ShapeStyle_Pack.Fill.AnimatableData, AnimatablePair<Float, AnimatableArray<_ShapeStyle_Pack.Effect.AnimatableData>>>
+
+    package var animatableData: AnimatableData {
+        get {
+            AnimatablePair(
+                fill.animatableData,
+                AnimatablePair(
+                    opacity,
+                    AnimatableArray(effects.map { $0.animatableData })
+                )
+            )
+        }
+        set {
+            fill.animatableData = newValue.first
+            opacity = newValue.second.first
+            let effectsData = newValue.second.second.elements
+            for i in effects.indices where i < effectsData.count {
+                effects[i].animatableData = effectsData[i]
+            }
+        }
+    }
+}
+
+// MARK: - _ShapeStyle_Pack.Fill + Animatable
+
+extension _ShapeStyle_Pack.Fill: Animatable {
+    package enum AnimatableData: VectorArithmetic {
+        case zero
+        case color(Color.Resolved.AnimatableData)
+        case vibrantColor(Color.ResolvedVibrant.AnimatableData)
+        // TODO: Gradient + Shader
+        // case linearGradient(LinearGradient._Paint.AnimatableData)
+        // case radialGradient(RadialGradient._Paint.AnimatableData)
+        // case ellipticalGradient(EllipticalGradient._Paint.AnimatableData)
+        // case angularGradient(AngularGradient._Paint.AnimatableData)
+        // case meshGradient(MeshGradient._Paint.AnimatableData)
+        // case shader(Shader.ResolvedShader.AnimatableData)
+        case colorMatrix(_ColorMatrix)
+
+        package init(_ fill: _ShapeStyle_Pack.Fill) {
+            switch fill {
+            case let .color(resolved):
+                self = .color(resolved.animatableData)
+            case let .paint(anyPaint):
+                var data: AnimatableData = .zero
+                withUnsafeMutablePointer(to: &data) { ptr in
+                    var visitor = PaintInitVisitor(result: ptr)
+                    anyPaint.visit(&visitor)
+                }
+                self = data
+            case let .foregroundMaterial(resolved, _):
+                self = .color(resolved.animatableData)
+            case .backgroundMaterial:
+                self = .zero
+            case let .vibrantColor(vibrant):
+                self = .vibrantColor(vibrant.animatableData)
+            case let .vibrantMatrix(matrix):
+                self = .colorMatrix(matrix)
+            case .multicolor:
+                self = .zero
+            }
+        }
+
+        package func set(fill: inout _ShapeStyle_Pack.Fill) {
+            switch fill {
+            case var .color(resolved):
+                switch self {
+                case let .color(data):
+                    resolved.animatableData = data
+                    fill = .color(resolved)
+                case .zero:
+                    fill = .color(.clear)
+                default: break
+                }
+            case let .paint(anyPaint):
+                _ = anyPaint
+                // TODO: PaintSetVisitor for gradient/shader types
+                break
+            case .foregroundMaterial(var resolved, let materialStyle):
+                switch self {
+                case let .color(data):
+                    resolved.animatableData = data
+                    fill = .foregroundMaterial(resolved, materialStyle)
+                case .zero:
+                    fill = .foregroundMaterial(.clear, materialStyle)
+                default: break
+                }
+            case .backgroundMaterial:
+                break
+            case var .vibrantColor(vibrant):
+                if case let .vibrantColor(data) = self {
+                    vibrant.animatableData = data
+                    fill = .vibrantColor(vibrant)
+                }
+            case .vibrantMatrix:
+                if case let .colorMatrix(matrix) = self {
+                    fill = .vibrantMatrix(matrix)
+                }
+            case .multicolor:
+                break
+            }
+        }
+
+        package static func += (lhs: inout _ShapeStyle_Pack.Fill.AnimatableData, rhs: _ShapeStyle_Pack.Fill.AnimatableData) {
+            switch rhs {
+            case .zero: return
+            case let .color(rhsData):
+                guard case var .color(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData += rhsData
+                lhs = .color(lhsData)
+            case let .vibrantColor(rhsData):
+                guard case var .vibrantColor(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData += rhsData
+                lhs = .vibrantColor(lhsData)
+            case let .colorMatrix(rhsData):
+                guard case var .colorMatrix(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData.add(rhsData)
+                lhs = .colorMatrix(lhsData)
+            }
+        }
+
+        package static func -= (lhs: inout _ShapeStyle_Pack.Fill.AnimatableData, rhs: _ShapeStyle_Pack.Fill.AnimatableData) {
+            switch rhs {
+            case .zero: return
+            case let .color(rhsData):
+                guard case var .color(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData -= rhsData
+                lhs = .color(lhsData)
+            case let .vibrantColor(rhsData):
+                guard case var .vibrantColor(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData -= rhsData
+                lhs = .vibrantColor(lhsData)
+            case let .colorMatrix(rhsData):
+                guard case var .colorMatrix(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData.subtract(rhsData)
+                lhs = .colorMatrix(lhsData)
+            }
+        }
+
+        @_transparent
+        package static func + (lhs: _ShapeStyle_Pack.Fill.AnimatableData, rhs: _ShapeStyle_Pack.Fill.AnimatableData) -> _ShapeStyle_Pack.Fill.AnimatableData {
+            var result = lhs
+            result += rhs
+            return result
+        }
+
+        @_transparent
+        public static func - (lhs: _ShapeStyle_Pack.Fill.AnimatableData, rhs: _ShapeStyle_Pack.Fill.AnimatableData) -> _ShapeStyle_Pack.Fill.AnimatableData {
+            var result = lhs
+            result -= rhs
+            return result
+        }
+
+        package mutating func scale(by rhs: Double) {
+            guard rhs != 1.0 else { return }
+            switch self {
+            case .zero: break
+            case var .color(data):
+                data.scale(by: rhs)
+                self = .color(data)
+            case var .vibrantColor(data):
+                data.scale(by: rhs)
+                self = .vibrantColor(data)
+            case var .colorMatrix(data):
+                data.scale(by: rhs)
+                self = .colorMatrix(data)
+            }
+        }
+
+        package var magnitudeSquared: Double {
+            switch self {
+            case .zero: return 0.0
+            case let .color(data): return data.magnitudeSquared
+            case let .vibrantColor(data): return data.magnitudeSquared
+            case let .colorMatrix(data): return data.magnitudeSquared
+            }
+        }
+
+        package static func == (a: _ShapeStyle_Pack.Fill.AnimatableData, b: _ShapeStyle_Pack.Fill.AnimatableData) -> Bool {
+            switch (a, b) {
+            case (.zero, .zero): return true
+            case let (.color(lhs), .color(rhs)): return lhs == rhs
+            case let (.vibrantColor(lhs), .vibrantColor(rhs)): return lhs == rhs
+            case let (.colorMatrix(lhs), .colorMatrix(rhs)): return lhs == rhs
+            default: return false
+            }
+        }
+
+        private struct PaintSetVisitor<Paint>: ResolvedPaintVisitor where Paint: ResolvedPaint {
+            var data: Paint.AnimatableData
+
+            var result: _ShapeStyle_Pack.Fill
+
+            mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
+                guard var typedPaint = paint as? Paint else { return }
+                typedPaint.animatableData = data
+                result = .paint(_AnyResolvedPaint(typedPaint))
+            }
+        }
+
+        private struct PaintInitVisitor: ResolvedPaintVisitor {
+            var result: UnsafeMutablePointer<_ShapeStyle_Pack.Fill.AnimatableData>
+
+            func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
+                if let color = paint as? Color.Resolved {
+                    result.pointee = .color(color.animatableData)
+                }
+                // TODO: Handle gradient and shader paint types
+            }
+        }
+    }
+
+    package var animatableData: _ShapeStyle_Pack.Fill.AnimatableData {
+        get { AnimatableData(self) }
+        set { newValue.set(fill: &self) }
+    }
+}
+
+// MARK: - _ShapeStyle_Pack.Effect + Animatable
+
+extension _ShapeStyle_Pack.Effect: Animatable {
+    package typealias AnimatableData = AnimatablePair<Float, _ShapeStyle_Pack.Effect.Kind.AnimatableData>
+
+    package var animatableData: AnimatableData {
+        get { AnimatablePair(opacity, kind.animatableData) }
+        set {
+            opacity = newValue.first
+            kind.animatableData = newValue.second
+        }
+    }
+}
+
+// MARK: - _ShapeStyle_Pack.Effect.Kind + Animatable
+
+extension _ShapeStyle_Pack.Effect.Kind: Animatable {
+    package enum AnimatableData: VectorArithmetic {
+        case zero
+        case shadow(ResolvedShadowStyle.AnimatableData)
+
+        package init(_ fill: _ShapeStyle_Pack.Effect.Kind) {
+            switch fill {
+            case .none:
+                self = .zero
+            case let .shadow(resolved):
+                self = .shadow(resolved.animatableData)
+            }
+        }
+
+        package func set(effect: inout _ShapeStyle_Pack.Effect.Kind) {
+            guard case let .shadow(data) = self, case var .shadow(resolved) = effect else {
+                effect = .none
+                return
+            }
+            resolved.animatableData = data
+            effect = .shadow(resolved)
+        }
+
+        package static func += (lhs: inout _ShapeStyle_Pack.Effect.Kind.AnimatableData, rhs: _ShapeStyle_Pack.Effect.Kind.AnimatableData) {
+            guard case let .shadow(rhsData) = rhs else { return }
+            guard case var .shadow(lhsData) = lhs else {
+                lhs = rhs
+                return
+            }
+            lhsData += rhsData
+            lhs = .shadow(lhsData)
+        }
+
+        package static func -= (lhs: inout _ShapeStyle_Pack.Effect.Kind.AnimatableData, rhs: _ShapeStyle_Pack.Effect.Kind.AnimatableData) {
+            guard case let .shadow(rhsData) = rhs else { return }
+            guard case var .shadow(lhsData) = lhs else {
+                lhs = rhs
+                return
+            }
+            lhsData -= rhsData
+            lhs = .shadow(lhsData)
+        }
+
+        @_transparent
+        package static func +(lhs: _ShapeStyle_Pack.Effect.Kind.AnimatableData, rhs: _ShapeStyle_Pack.Effect.Kind.AnimatableData) -> _ShapeStyle_Pack.Effect.Kind.AnimatableData {
+            var result = lhs
+            result += rhs
+            return result
+        }
+
+        @_transparent
+        public static func -(lhs: _ShapeStyle_Pack.Effect.Kind.AnimatableData, rhs: _ShapeStyle_Pack.Effect.Kind.AnimatableData) -> _ShapeStyle_Pack.Effect.Kind.AnimatableData {
+            var result = lhs
+            result -= rhs
+            return result
+        }
+
+        package mutating func scale(by rhs: Double) {
+            guard rhs != 1.0, case var .shadow(data) = self else { return }
+            data.scale(by: rhs)
+            self = .shadow(data)
+        }
+
+        package var magnitudeSquared: Double {
+            switch self {
+            case .zero: return 0.0
+            case let .shadow(data): return data.magnitudeSquared
+            }
+        }
+
+        package static func == (a: _ShapeStyle_Pack.Effect.Kind.AnimatableData, b: _ShapeStyle_Pack.Effect.Kind.AnimatableData) -> Bool {
+            switch (a, b) {
+            case (.zero, .zero): return true
+            case let (.shadow(lhs), .shadow(rhs)): return lhs == rhs
+            default: return false
+            }
+        }
+    }
+
+    package var animatableData: _ShapeStyle_Pack.Effect.Kind.AnimatableData {
+        get { AnimatableData(self) }
+        set { newValue.set(effect: &self) }
+    }
+}
 
 // MARK: - _ShapeStyle_Shape + _ShapeStyle_Pack
 
