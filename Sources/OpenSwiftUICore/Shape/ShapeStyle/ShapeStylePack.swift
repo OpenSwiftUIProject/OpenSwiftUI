@@ -2,15 +2,17 @@
 //  ShapeStylePack.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by other ShapeStyle and Animatable
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 4DBF651155A4B32ED86C55EAB1B96C61 (SwiftUICore)
+
+package import Foundation
 
 package struct _ShapeStyle_Pack: Equatable {
     package struct Style: Equatable, Sendable {
         package var fill: _ShapeStyle_Pack.Fill
         package var opacity: Float
-        private var _blend: GraphicsBlendMode?
+        package private(set) var _blend: GraphicsBlendMode?
 
         package var blend: GraphicsBlendMode {
             _blend ?? .normal
@@ -30,25 +32,18 @@ package struct _ShapeStyle_Pack: Equatable {
     
     package enum Fill: Equatable, Sendable {
         case color(Color.Resolved)
-
         case paint(AnyResolvedPaint)
-
         case foregroundMaterial(Color.Resolved, ContentStyle.MaterialStyle)
-
         case backgroundMaterial(Material.ResolvedMaterial)
-
         case vibrantColor(Color.ResolvedVibrant)
-
         case vibrantMatrix(_ColorMatrix)
-
-        // case multicolor(ResolvedMulticolorStyle)
+        case multicolor(ResolvedMulticolorStyle)
     }
     
     package struct Effect: Equatable, Sendable {
         package enum Kind: Equatable, Sendable {
             case none
-            // case shadow(ResolvedShadowStyle)
-            // package static func == (a: _ShapeStyle_Pack.Effect.Kind, b: _ShapeStyle_Pack.Effect.Kind) -> Bool
+            case shadow(ResolvedShadowStyle)
         }
 
         package var kind: _ShapeStyle_Pack.Effect.Kind
@@ -86,8 +81,8 @@ package struct _ShapeStyle_Pack: Equatable {
         }
     }
     
-    var styles: [(key: Key, style: Style)]
-    
+    private var styles: [(key: Key, style: Style)]
+
     package init() {
         styles = []
     }
@@ -124,7 +119,18 @@ package struct _ShapeStyle_Pack: Equatable {
     }
 
     private func indices(of name: ShapeStyle.Name) -> Range<Int> {
-        _openSwiftUIUnimplementedFailure()
+        let count = styles.count
+        guard count != 0 else { return 0 ..< 0 }
+        var start = 0
+        while start < count && styles[start].key.name != name {
+            start += 1
+        }
+        guard start < count else { return count ..< count }
+        var end = start
+        while end < count && styles[end].key.name == name {
+            end += 1
+        }
+        return start ..< end
     }
 
     package subscript(name: _ShapeStyle_Name) -> _ShapeStyle_Pack.Slice {
@@ -136,19 +142,26 @@ package struct _ShapeStyle_Pack: Equatable {
         var baseLevel: UInt8
         
         init(pack: _ShapeStyle_Pack, name: _ShapeStyle_Name) {
-            _openSwiftUIUnimplementedFailure()
+            let range = pack.indices(of: name)
+            self.styles = pack.styles[range]
+            if range.isEmpty {
+                self.baseLevel = 0
+            } else {
+                self.baseLevel = pack.styles[range.lowerBound].key._level
+            }
         }
         
         package var startIndex: Int {
-            styles.startIndex
+            Int(baseLevel)
         }
         
         package var endIndex: Int {
-            _openSwiftUIUnimplementedFailure()
+            Int(baseLevel) + styles.count
         }
         
         package subscript(level: Int) -> _ShapeStyle_Pack.Style {
-            _openSwiftUIUnimplementedFailure()
+            let offset = level - Int(baseLevel)
+            return styles[styles.startIndex + offset].style
         }
     }
     
@@ -169,50 +182,131 @@ package struct _ShapeStyle_Pack: Equatable {
     }
     
     package mutating func adjustLevelIndices(of name: _ShapeStyle_Name, by offset: Int) {
-        _openSwiftUIUnimplementedFailure()
+        guard !styles.isEmpty else { return }
+        var i = 0
+        while i < styles.count {
+            let currentName = styles[i].key.name
+            guard currentName >= name else {
+                i += 1
+                continue
+            }
+            guard currentName <= name else {
+                break
+            }
+            let newLevel = styles[i].key.level + offset
+            if newLevel >= 0 {
+                styles[i].key.level = newLevel
+                i += 1
+            } else {
+                styles.remove(at: i)
+            }
+        }
     }
     
     package mutating func createOpacities(count: Int, name: _ShapeStyle_Name, environment: EnvironmentValues) {
-        _openSwiftUIUnimplementedFailure()
+        let range = indices(of: name)
+        guard range.count == 1, count >= 2 else { return }
+        let baseIndex = range.lowerBound
+        let baseStyle = styles[baseIndex]
+        let opacityFunc = environment.systemColorDefinition.base.opacity
+        for i in 1 ..< count {
+            let factor = opacityFunc(i, environment)
+            var newStyle = baseStyle.style
+            newStyle.opacity *= factor
+            for j in newStyle.effects.indices {
+                newStyle.effects[j].opacity *= factor
+            }
+            styles.insert(
+                (key: Key(name, i), style: newStyle),
+                at: baseIndex + i
+            )
+        }
     }
     
     package func isClear(name: _ShapeStyle_Name) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        for element in styles {
+            guard element.key.name == name else { continue }
+            guard element.style.isClear else { return false }
+        }
+        return true
     }
     
     package subscript(colorName: String) -> Color.Resolved? {
-        _openSwiftUIUnimplementedFailure()
+        let style = self[.multicolor, 0]
+        guard case let .multicolor(resolved) = style.fill else {
+            return nil
+        }
+        return resolved.resolve(name: colorName)
     }
 }
 
 extension _ShapeStyle_Pack.Slice {
     package var allColors: Bool {
-        _openSwiftUIUnimplementedFailure()
+        for element in styles {
+            let style = element.style
+            switch style.fill {
+            case .color:
+                guard style.blend == .normal else { return false }
+                guard style.effects.isEmpty else { return false }
+            case .multicolor:
+                continue
+            default:
+                return false
+            }
+        }
+        return true
     }
 }
 
 extension _ShapeStyle_Pack.Style {
     package var isClear: Bool {
-        if opacity == 0 {
-            return true
-        } else {
-            switch fill {
-                // TODO
-                default: return false
+        guard opacity != 0 else { return true }
+        switch fill {
+        case let .color(resolved):
+            guard resolved.opacity == 0 else { return false }
+        case let .paint(paint):
+            guard paint.isClear else { return false }
+        case let .foregroundMaterial(resolved, _):
+            guard resolved.opacity == 0 else { return false }
+        default:
+            return false
+        }
+        for effect in effects {
+            switch effect.kind {
+            case .none:
+                continue
+            case .shadow:
+                guard effect.opacity == 0 else { return false }
+                continue
             }
         }
+        return true
     }
     
     package var ignoresBackdrop: Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard opacity == 1.0 else { return false }
+        guard blend == .normal else { return false }
+        switch fill {
+        case let .color(resolved):
+            return resolved.opacity == 1.0
+        case let .paint(paint):
+            return paint.isOpaque
+        default:
+            return false
+        }
     }
     
     package mutating func applyOpacity(_ opacity: Float) {
-        _openSwiftUIUnimplementedFailure()
+        self.opacity *= opacity
+        for i in effects.indices {
+            effects[i].opacity *= opacity
+        }
     }
     
     package func applyingOpacity(_ opacity: Float) -> _ShapeStyle_Pack.Style {
-        _openSwiftUIUnimplementedFailure()
+        var copy = self
+        copy.applyOpacity(opacity)
+        return copy
     }
     
     package mutating func applyBlend(_ blend: GraphicsBlendMode) {
@@ -228,7 +322,10 @@ extension _ShapeStyle_Pack.Style {
     }
 
     package var color: Color.Resolved? {
-        _openSwiftUIUnimplementedFailure()
+        guard case let .color(resolved) = fill else { return nil }
+        guard blend == .normal else { return nil }
+        guard effects.isEmpty else { return nil }
+        return resolved
     }
 }
 
