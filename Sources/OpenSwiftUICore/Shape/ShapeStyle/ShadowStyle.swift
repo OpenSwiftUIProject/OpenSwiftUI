@@ -9,6 +9,7 @@ public import Foundation
 
 // MARK: - ShadowStyle
 
+/// A style to use when rendering shadows.
 @available(OpenSwiftUI_v4_0, *)
 public struct ShadowStyle: Equatable, Sendable {
     package struct Kind: OptionSet {
@@ -64,6 +65,20 @@ public struct ShadowStyle: Equatable, Sendable {
     @_spi(Private)
     public static let inner: ShadowStyle = .inner(radius: 0)
 
+    /// Creates a custom drop shadow style.
+    ///
+    /// Drop shadows draw behind the source content by blurring,
+    /// tinting and offsetting its per-pixel alpha values.
+    ///
+    /// - Parameters:
+    ///   - color: The shadow's color.
+    ///   - radius: The shadow's size.
+    ///   - x: A horizontal offset you use to position the shadow
+    ///     relative to this view.
+    ///   - y: A vertical offset you use to position the shadow
+    ///     relative to this view.
+    ///
+    /// - Returns: A new shadow style.
     public static func drop(
         color: Color = .init(.sRGBLinear, white: 0, opacity: 0.33),
         radius: CGFloat,
@@ -76,6 +91,20 @@ public struct ShadowStyle: Equatable, Sendable {
         )
     }
 
+    /// Creates a custom inner shadow style.
+    ///
+    /// Inner shadows draw on top of the source content by blurring,
+    /// tinting, inverting and offsetting its per-pixel alpha values.
+    ///
+    /// - Parameters:
+    ///   - color: The shadow's color.
+    ///   - radius: The shadow's size.
+    ///   - x: A horizontal offset you use to position the shadow
+    ///     relative to this view.
+    ///   - y: A vertical offset you use to position the shadow
+    ///     relative to this view.
+    ///
+    /// - Returns: A new shadow style.
     public static func inner(
         color: Color = .init(.sRGBLinear, white: 0, opacity: 0.55),
         radius: CGFloat,
@@ -151,6 +180,17 @@ extension ShadowStyle {
 
 @available(OpenSwiftUI_v4_0, *)
 extension ShapeStyle {
+
+    /// Applies the specified shadow effect to the shape style.
+    ///
+    /// For example, you can create a rectangle that adds a drop shadow to
+    /// the ``ShapeStyle/red`` shape style.
+    ///
+    ///     Rectangle().fill(.red.shadow(.drop(radius: 2, y: 3)))
+    ///
+    /// - Parameter style: The shadow style to apply.
+    ///
+    /// - Returns: A new shape style that uses the specified shadow style.
     @inlinable
     public func shadow(_ style: ShadowStyle) -> some ShapeStyle {
         return _ShadowShapeStyle(style: self, shadowStyle: style)
@@ -159,6 +199,23 @@ extension ShapeStyle {
 
 @available(OpenSwiftUI_v4_0, *)
 extension ShapeStyle where Self == AnyShapeStyle {
+
+    /// Returns a shape style that applies the specified shadow style to the
+    /// current style.
+    ///
+    /// In most contexts the current style is the foreground, but not always.
+    /// For example, when setting the value of the background style, that
+    /// becomes the current implicit style.
+    ///
+    /// The following example creates a circle filled with the current
+    /// foreground style that uses an inner shadow:
+    ///
+    ///     Circle().fill(.shadow(.inner(radius: 1, y: 1)))
+    ///
+    /// - Parameter style: The shadow style to apply.
+    ///
+    /// - Returns: A new shape style based on the current style that uses the
+    ///   specified shadow style.
     @_alwaysEmitIntoClient
     public static func shadow(_ style: ShadowStyle) -> some ShapeStyle {
         return _ShadowShapeStyle(
