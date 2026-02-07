@@ -6,6 +6,7 @@
 //  Status: Complete
 
 public import Foundation
+package import OpenCoreGraphicsShims
 
 // MARK: - Shape
 
