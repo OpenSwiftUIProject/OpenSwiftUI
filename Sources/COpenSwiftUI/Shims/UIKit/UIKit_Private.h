@@ -77,6 +77,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 #endif
 
+@interface UIWindow (OpenSwiftUI_SPI)
+@property (nonatomic, readonly, nullable) UIWindowScene *_windowHostingScene_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_windowHostingScene);
+@end
+
 @interface UIWindowScene (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) UIUserInterfaceStyle _systemUserInterfaceStyle_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_systemUserInterfaceStyle);
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
