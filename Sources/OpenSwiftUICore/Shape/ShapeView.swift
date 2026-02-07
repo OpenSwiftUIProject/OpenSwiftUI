@@ -186,7 +186,6 @@ public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, 
 
     package func shape(in size: CGSize) -> FramedShape {
         let path = shape.effectivePath(in: CGRect(origin: .zero, size: size))
-        // TODO
         return FramedShape(
             shape: .path(path, fillStyle),
             frame: CGRect(origin: .zero, size: size)

@@ -2,8 +2,8 @@
 //  Shape.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by GeometryProxy
+//  Audited for 6.5.4
+//  Status: Complete
 
 public import Foundation
 
@@ -17,7 +17,9 @@ public import Foundation
 /// You can define shapes in relation to an implicit frame of reference, such as
 /// the natural size of the view that contains it. Alternatively, you can define
 /// shapes in terms of absolute coordinates.
+@available(OpenSwiftUI_v1_0, *)
 public protocol Shape: Sendable, Animatable, View, _RemoveGlobalActorIsolation {
+
     /// Describes this shape as a path within a rectangular frame of reference.
     ///
     /// - Parameter rect: The frame of reference for describing this shape.
@@ -32,6 +34,7 @@ public protocol Shape: Sendable, Animatable, View, _RemoveGlobalActorIsolation {
     /// default implementation with a value of ``ShapeRole/fill``. If you
     /// create a composite shape, you can provide an override of this property
     /// to return another value, if appropriate.
+    @available(OpenSwiftUI_v3_0, *)
     nonisolated static var role: ShapeRole { get }
 
     /// Returns the behavior this shape should use for different layout
@@ -47,6 +50,7 @@ public protocol Shape: Sendable, Animatable, View, _RemoveGlobalActorIsolation {
     /// To mirror a path when deploying to earlier releases, either use
     /// `View.flipsForRightToLeftLayoutDirection` for a filled or stroked
     /// shape or conditionally mirror the points in the path of the shape.
+    @available(OpenSwiftUI_v5_0, *)
     nonisolated var layoutDirectionBehavior: LayoutDirectionBehavior { get }
 
     /// Returns the size of the view that will render the shape, given
@@ -64,9 +68,11 @@ public protocol Shape: Sendable, Animatable, View, _RemoveGlobalActorIsolation {
     ///   - proposal: A size proposal for the container.
     ///
     /// - Returns: A size that indicates how much space the shape needs.
+    @available(OpenSwiftUI_v4_0, *)
     nonisolated func sizeThatFits(_ proposal: ProposedViewSize) -> CGSize
 }
 
+@available(OpenSwiftUI_v4_0, *)
 extension Shape {
     /// Returns the original proposal, with nil components replaced by
     /// a small positive value.
@@ -75,10 +81,10 @@ extension Shape {
     }
 }
 
-
 // MARK: - ShapeRole
 
 /// Ways of styling a shape.
+@available(OpenSwiftUI_v3_0, *)
 public enum ShapeRole: Sendable {
     /// Indicates to the shape's style that OpenSwiftUI fills the shape.
     case fill
@@ -92,80 +98,30 @@ public enum ShapeRole: Sendable {
     case separator
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Shape {
-    public static var role: ShapeRole {
-        .fill
-    }
+    public static var role: ShapeRole { .fill }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension Shape {
     public var layoutDirectionBehavior: LayoutDirectionBehavior {
         isDeployedOnOrAfter(.v5) ? .mirrors(in: .rightToLeft) : .fixed
     }
 
     package func effectivePath(in rect: CGRect) -> Path {
-        // _threadGeometryProxyData
-        _openSwiftUIUnimplementedWarning()
         let p = path(in: rect)
-        return p
-    }
-}
-
-/// An absolute shape that has been stroked.
-@frozen
-public struct _StrokedShape<S>: Shape where S: Shape {
-    /// The source shape.
-    public var shape: S
-
-    /// The stroke style.
-    public var style: StrokeStyle
-
-    @inlinable
-    public init(shape: S, style: StrokeStyle) {
-        self.shape = shape
-        self.style = style
-    }
-
-    nonisolated public func path(in rect: CGRect) -> Path {
-        shape.path(in: rect).strokedPath(style)
-    }
-
-    nonisolated public static var role: ShapeRole {
-        .stroke
-    }
-
-    nonisolated public var layoutDirectionBehavior: LayoutDirectionBehavior {
-        shape.layoutDirectionBehavior
-    }
-
-    public var animatableData: AnimatablePair<S.AnimatableData, StrokeStyle.AnimatableData> {
-        get {
-            AnimatablePair(shape.animatableData, style.animatableData)
+        let behavior = layoutDirectionBehavior
+        guard behavior != .fixed,
+              let proxy = GeometryProxy.current
+        else {
+            return p
         }
-        set {
-            shape.animatableData = newValue.first
-            style.animatableData = newValue.second
+        let direction = proxy.environment.layoutDirection
+        guard behavior.shouldFlip(in: direction) else {
+            return p
         }
-    }
-
-    nonisolated public func sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
-        shape.sizeThatFits(proposal)
-    }
-}
-
-extension Shape {
-    /// Returns a new shape that is a stroked copy of `self`, using the
-    /// contents of `style` to define the stroke characteristics.
-    @inlinable
-    nonisolated public func stroke(style: StrokeStyle) -> some Shape {
-        return _StrokedShape(shape: self, style: style)
-    }
-
-    /// Returns a new shape that is a stroked copy of `self` with
-    /// line-width defined by `lineWidth` and all other properties of
-    /// `StrokeStyle` having their default values.
-    @inlinable
-    nonisolated public func stroke(lineWidth: CGFloat = 1) -> some Shape {
-        return stroke(style: StrokeStyle(lineWidth: lineWidth))
+        let transform = CGAffineTransform(a: -1, b: 0, c: 0, d: 1, tx: rect.width, ty: 0)
+        return p.applying(transform)
     }
 }
