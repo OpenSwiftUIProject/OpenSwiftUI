@@ -1,5 +1,5 @@
 //
-//  Rotation3DEffect+TestSub.c
+//  Rotation3DEffectTestsSub.c
 //  OpenSwiftUISymbolDualTestsSupport
 
 #include "OpenSwiftUIBase.h"

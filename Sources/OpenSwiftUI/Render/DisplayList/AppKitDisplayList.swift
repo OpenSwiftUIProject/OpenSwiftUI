@@ -82,6 +82,11 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         Self.initView(view as! NSView, kind: kind)
     }
 
+    override static func setPath(_ path: Path, shapeView: AnyObject) {
+        let view = unsafeBitCast(shapeView, to: _NSShapeHitTestingView.self)
+        view.path = path
+    }
+
     override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
         guard let view = projectionView as? _NSProjectionView else {
             return

@@ -47,6 +47,11 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         return view
     }
 
+    override static func setPath(_ path: Path, shapeView: AnyObject) {
+        let view = unsafeBitCast(shapeView, to: _UIShapeHitTestingView.self)
+        view.path = path
+    }
+
     private static func initView(_ view: UIView, kind: PlatformViewDefinition.ViewKind) {
         if kind != .platformView && kind != .platformGroup {
             view.autoresizesSubviews = false

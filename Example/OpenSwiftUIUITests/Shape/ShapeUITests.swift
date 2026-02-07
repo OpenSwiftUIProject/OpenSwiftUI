@@ -17,4 +17,14 @@ struct ShapeUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test
+    func circle() {
+        struct ContentView: View {
+            var body: some View {
+                Circle()
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView())
+    }
 }

@@ -198,11 +198,41 @@ package struct _ShapeStyle_RenderedShape {
             }
         }
         guard !color.isClear else { return }
-        // FIXME
-        item.value = .content(DisplayList.Content(
-            .color(color),
-            seed: contentSeed
-        ))
+        switch shape {
+        case let .path(path, fillStyle):
+            if let rect = path.rect() {
+                item.value = .content(DisplayList.Content(
+                    .color(color),
+                    seed: contentSeed
+                ))
+                item.frame.origin.x += rect.origin.x
+                item.frame.origin.y += rect.origin.y
+                item.frame.size = rect.size
+            } else {
+                item.value = .content(DisplayList.Content(
+                    .shape(path, _AnyResolvedPaint(color), fillStyle),
+                    seed: contentSeed
+                ))
+            }
+        case .text:
+            item.value = .content(DisplayList.Content(
+                .color(.clear),
+                seed: contentSeed
+            ))
+        case let .image(graphicsImage):
+            // TODO: Blocked by ImagePaint
+            _ = graphicsImage
+            _openSwiftUIUnimplementedFailure()
+        case let .alphaMask(maskItem):
+            let offset = item.frame.origin
+            item.frame = maskItem.frame.offsetBy(dx: offset.x, dy: offset.y)
+            item.value = maskItem.value
+            if color != .white {
+                addEffect(.filter(.colorMultiply(color)))
+            }
+        case .empty:
+            break
+        }
     }
 
     private mutating func render(paint: AnyResolvedPaint) {
