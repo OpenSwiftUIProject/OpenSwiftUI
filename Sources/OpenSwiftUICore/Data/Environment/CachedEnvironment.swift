@@ -2,20 +2,20 @@
 //  CachedEnvironment.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.4.41
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: C424ABD9FC88B2DFD0B7B2319F2E7987 (SwiftUI)
 //  ID: B62A4B04AF9F1325924A089D63071424 (SwiftUICore)
 
 package import Foundation
 package import OpenAttributeGraphShims
 
-// MARK: - CachedEnvironment [6.4.41] [WIP]
+// MARK: - CachedEnvironment
 
 package struct CachedEnvironment {
     package private(set) var environment: Attribute<EnvironmentValues>
 
-    package struct ID: Hashable { // FIXME
+    package struct ID: Equatable {
         package var base: UniqueID
 
         package init() {
@@ -56,8 +56,6 @@ package struct CachedEnvironment {
         }
         return item.value.unsafeCast(to: T.self)
     }
-
-    // func resolvedForegroundStyle() {}
 
     mutating func resolvedShapeStyles(
         for inputs: _ViewInputs,
@@ -130,7 +128,7 @@ extension CachedEnvironment {
     }
 }
 
-// MARK: - ResolvedShapeStyles [6.5.4]
+// MARK: - ResolvedShapeStyles
 
 private struct ResolvedShapeStyles: Hashable {
     let environment: Attribute<EnvironmentValues>
@@ -157,7 +155,7 @@ private struct ResolvedShapeStyles: Hashable {
     }
 }
 
-// MARK: - CachedEnvironment.AnimatedFrame [6.4.41]
+// MARK: - CachedEnvironment.AnimatedFrame
 
 extension CachedEnvironment.AnimatedFrame {
     package init(
