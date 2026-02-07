@@ -552,8 +552,6 @@ package struct AccessibilityNodeAttachment {}
 
 package protocol _DisplayList_AnyEffectAnimation {}
 
-package struct ResolvedShadowStyle {}
-
 extension DisplayList.Item {
     func addDrawingGroup(contentSeed: DisplayList.Seed) {
         _openSwiftUIUnimplementedWarning()
