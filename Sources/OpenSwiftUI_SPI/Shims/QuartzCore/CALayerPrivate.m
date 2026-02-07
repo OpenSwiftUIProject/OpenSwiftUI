@@ -10,6 +10,11 @@
 #import <objc/runtime.h>
 
 @implementation CALayer (OpenSwiftUI_SPI)
+@dynamic contentsSwizzle;
+@dynamic contentsMultiplyColor;
+@dynamic contentsScaling;
+@dynamic wantsExtendedDynamicRangeContent;
+@dynamic contentsMaximumDesiredEDR;
 
 - (BOOL)allowsDisplayCompositing_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsDisplayCompositing", NO);
@@ -45,5 +50,9 @@
     [self setValue:[NSNumber numberWithUnsignedLongLong:properties] forKey:@"_viewTestProperties"];
 }
 @end
+
+void _CALayerSetSplatsContentsAlpha(CALayer * _Nonnull layer, BOOL splatAlpha) {
+    layer.contentsSwizzle = splatAlpha ? kCALayerContentsSwizzleAAAA : kCALayerContentsSwizzleRGBA;
+}
 
 #endif /* <QuartzCore/CALayer.h> */

@@ -47,7 +47,7 @@ package struct GraphicsImage: Equatable, Sendable {
 
     package var size: CGSize {
         guard scale != .zero else { return .zero }
-        return unrotatedPixelSize.apply(orientation) * (1.0 / scale)
+        return pixelSize * (1.0 / scale)
     }
 
     package var pixelSize: CGSize {
