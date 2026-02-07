@@ -2,19 +2,20 @@
 //  CachedEnvironment.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: C424ABD9FC88B2DFD0B7B2319F2E7987 (SwiftUI)
 //  ID: B62A4B04AF9F1325924A089D63071424 (SwiftUICore)
 
 package import Foundation
 package import OpenAttributeGraphShims
 
-// MARK: - CachedEnvironment [6.4.41] [WIP]
+// MARK: - CachedEnvironment
 
 package struct CachedEnvironment {
     package private(set) var environment: Attribute<EnvironmentValues>
 
-    package struct ID: Hashable { // FIXME
+    package struct ID: Equatable {
         package var base: UniqueID
 
         package init() {
@@ -56,15 +57,31 @@ package struct CachedEnvironment {
         return item.value.unsafeCast(to: T.self)
     }
 
-    // func resolvedForegroundStyle() {}
-
-    func resolvedShapeStyles(
+    mutating func resolvedShapeStyles(
         for inputs: _ViewInputs,
         role: ShapeRole,
-        mode: Attribute<_ShapeStyle_ResolverMode>?
-    ) -> Attribute<_ShapeStyle_Pack> {
-        _openSwiftUIUnimplementedWarning()
-        return ViewGraph.current.intern(.defaultValue, id: .defaultValue)
+        mode: Attribute<ShapeStyle.ResolverMode>?
+    ) -> Attribute<ShapeStyle.Pack> {
+        guard inputs.preferences.requiresDisplayList else {
+            return ViewGraph.current.intern(.defaultValue, id: .defaultValue)
+        }
+        let resolved = ResolvedShapeStyles(
+            environment: environment,
+            time: inputs.time,
+            transaction: inputs.transaction,
+            viewPhase: inputs.viewPhase,
+            mode: .init(mode),
+            role: role,
+            animationsDisabled: inputs.base.animationsDisabled
+        )
+        guard let styles = resolvedShapeStyles[resolved] else {
+            let styles = resolved.makeStyles()
+            if mode == nil {
+                resolvedShapeStyles[resolved] = styles
+            }
+            return styles
+        }
+        return styles
     }
 }
 
@@ -111,7 +128,7 @@ extension CachedEnvironment {
     }
 }
 
-// MARK: - ResolvedShapeStyles [6.4.41] [WIP]
+// MARK: - ResolvedShapeStyles
 
 private struct ResolvedShapeStyles: Hashable {
     let environment: Attribute<EnvironmentValues>
@@ -121,9 +138,24 @@ private struct ResolvedShapeStyles: Hashable {
     let mode: OptionalAttribute<_ShapeStyle_ResolverMode>
     let role: ShapeRole
     let animationsDisabled: Bool
+
+    func makeStyles() -> Attribute<ShapeStyle.Pack> {
+        let styles = Attribute(
+            ShapeStyleResolver<AnyShapeStyle>(
+                style: .init(),
+                mode: mode,
+                environment: environment,
+                role: role,
+                animationsDisabled: animationsDisabled,
+                helper: .init(phase: viewPhase, time: time, transaction: transaction)
+            )
+        )
+        styles.flags = .transactional
+        return styles
+    }
 }
 
-// MARK: - CachedEnvironment.AnimatedFrame [6.4.41]
+// MARK: - CachedEnvironment.AnimatedFrame
 
 extension CachedEnvironment.AnimatedFrame {
     package init(

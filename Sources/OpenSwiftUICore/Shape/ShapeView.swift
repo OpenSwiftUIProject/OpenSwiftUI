@@ -2,10 +2,11 @@
 //  ShapeView.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Blocked by _ShapeView.makeView
 
 public import Foundation
+package import OpenAttributeGraphShims
 
 // MARK: - Shape + Extension (disfavoredOverload)
 
@@ -122,7 +123,7 @@ extension ShapeStyle where Self: View, Body == _ShapeView<Rectangle, Self> {
 ///         .fill(.red)
 ///
 @frozen
-public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, PrimitiveView/*, LeafViewLayout*/ where Content: Shape, Style: ShapeStyle {
+public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, PrimitiveView, LeafViewLayout where Content: Shape, Style: ShapeStyle {
     public var shape: Content
 
     public var style: Style
@@ -140,13 +141,56 @@ public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, 
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        let preferences = inputs.preferences
+        guard !preferences.keys.isEmpty else {
+            return .init()
+        }
+        guard preferences.requiresDisplayList ||
+                preferences.requiresViewResponders
+        else {
+            return .init()
+        }
+        let styles: Attribute<ShapeStyle.Pack>
+        if Style.self == ForegroundStyle.self {
+            styles = inputs.resolvedShapeStyles(
+                role: Content.role,
+                mode: nil
+            )
+        } else {
+            styles = Attribute(ShapeStyleResolver(
+                style: .init(view.value[offset: { .of(&$0.style) }]),
+                mode: .init(),
+                environment: inputs.environment,
+                role: Content.role,
+                animationsDisabled: inputs.base.animationsDisabled,
+                helper: .init(phase: inputs.viewPhase, time: inputs.time, transaction: inputs.transaction)
+            ))
+            styles.flags = .transactional
+        }
+        if MemoryLayout<Content.AnimatableData>.size == 0 {
+            var outputs = makeLeafView(
+                view: view,
+                inputs: inputs,
+                styles: styles,
+                interpolatorGroup: nil,
+                data: ()
+            )
+            if isLinkedOnOrAfter(.v4) {
+                makeLeafLayout(&outputs, view: view, inputs: inputs)
+            }
+            return outputs
+        } else {
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     package func shape(in size: CGSize) -> FramedShape {
         let path = shape.effectivePath(in: CGRect(origin: .zero, size: size))
-        // FIXME
-        return FramedShape(shape: .path(path, fillStyle), frame: CGRect(origin: .zero, size: size))
+        // TODO
+        return FramedShape(
+            shape: .path(path, fillStyle),
+            frame: CGRect(origin: .zero, size: size)
+        )
     }
 
     package func sizeThatFits(in proposedSize: _ProposedSize) -> CGSize {
@@ -281,6 +325,8 @@ extension InsettableShape {
 
 extension _ShapeView: ShapeView {}
 
+// TODO: AnimatedShape
+
 // MARK: - FillShapeView
 
 /// A shape provider that fills its shape.
@@ -351,7 +397,7 @@ extension FillShapeView: Sendable {}
 /// You don't create this type directly; it's the return type of
 /// `Shape.stroke`.
 @frozen
-public struct StrokeShapeView<Content, Style, Background> : ShapeView, PrimitiveView, UnaryView where Content: Shape, Style: ShapeStyle, Background: View {
+public struct StrokeShapeView<Content, Style, Background>: ShapeView, PrimitiveView, UnaryView where Content: Shape, Style: ShapeStyle, Background: View {
     @usableFromInline
     typealias ViewType = ModifiedContent<_ShapeView<_StrokedShape<Content>, Style>, _BackgroundModifier<Background>>
 

@@ -196,6 +196,52 @@ extension CUICatalog {
     }
 }
 
+// MARK: - Color.Resolved + name [6.5.4]
+
+extension Color.Resolved {
+    package static func named(
+        _ name: String,
+        bundle: Bundle?,
+        environment: EnvironmentValues
+    ) -> Color.Resolved? {
+        guard let type = SystemColorType.namedTypes[name] else {
+            guard let bundle else { return nil }
+            let namedColor = Color.NamedColor(name: name, bundle: bundle)
+            guard let cgColor = namedColor.resolveCGColor(in: environment) else { return nil }
+            return Color.Resolved(failableCGColor: cgColor)
+        }
+        return environment.systemColorDefinition.base.value(
+            for: type,
+            environment: environment
+        )
+    }
+}
+
+// MARK: - SystemColorType + name [6.5.4]
+
+extension SystemColorType {
+    package static let namedTypes: [String: SystemColorType] = [
+        "systemRedColor": .red,
+        "systemOrangeColor": .orange,
+        "systemYellowColor": .yellow,
+        "systemGreenColor": .green,
+        "systemTealColor": .teal,
+        "systemMintColor": .mint,
+        "systemCyanColor": .cyan,
+        "systemBlueColor": .blue,
+        "systemIndigoColor": .indigo,
+        "systemPurpleColor": .purple,
+        "systemPinkColor": .pink,
+        "systemBrownColor": .brown,
+        "systemGrayColor": .gray,
+        "labelColor": .primary,
+        "secondaryLabelColor": .secondary,
+        "tertiaryLabelColor": .tertiary,
+        "quaternaryLabelColor": .quaternary,
+        "quinaryLabelColor": .quinary,
+    ]
+}
+
 #endif
 
 #if canImport(Darwin) && canImport(DeveloperToolsSupport)
