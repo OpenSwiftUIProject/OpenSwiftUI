@@ -7,7 +7,7 @@
 //  ID: 3890C65F12EA82A4BC5FBD33046B67FA (SwiftUICore)
 
 package import OpenAttributeGraphShims
-import OpenCoreGraphicsShims
+package import OpenCoreGraphicsShims
 
 extension ShapeStyle {
     package typealias RenderedShape = _ShapeStyle_RenderedShape
