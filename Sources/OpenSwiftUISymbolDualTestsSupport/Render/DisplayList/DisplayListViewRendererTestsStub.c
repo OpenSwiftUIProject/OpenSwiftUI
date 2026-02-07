@@ -1,5 +1,5 @@
 //
-//  DisplayListViewRenderer+TestStub.c
+//  DisplayListViewRendererTestsStub.c
 //  OpenSwiftUISymbolDualTestsSupport
 
 #include "OpenSwiftUIBase.h"

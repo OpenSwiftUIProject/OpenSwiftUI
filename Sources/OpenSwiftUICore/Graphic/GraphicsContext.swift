@@ -5,6 +5,7 @@
 //  Audited for 6.0.87
 //  Status: WIP
 
+package import OpenRenderBoxShims
 #if canImport(Darwin)
 public import CoreGraphics
 #else
@@ -515,14 +516,24 @@ public struct GraphicsContext {
     package enum ResolvedShading: Sendable {
         case backdrop(Color.Resolved)
         case color(Color.Resolved)
+        case sRGBColor(ORBColor)
         case style(_ShapeStyle_Pack.Style)
         case levels([GraphicsContext.ResolvedShading])
     }
 }
 
 extension GraphicsContext {
+    #if canImport(Darwin) && _OPENSWIFTUI_SWIFTUI_RENDER
+    @_silgen_name("OpenSwiftUITestStub_GraphicsContextDrawPathWithShadingAndStyle")
+    private func swiftUI_draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle)
+    #endif
+
     package func draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin) && _OPENSWIFTUI_SWIFTUI_RENDER
+        swiftUI_draw(path, with: shading, style: style)
+        #else
+        _openSwiftUIUnimplementedWarning()
+        #endif
     }
 
     // FIXME
