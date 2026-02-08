@@ -34,18 +34,24 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
+          set -o pipefail
           swift test \
             --filter OpenSwiftUICompatibilityTests \
-            --build-path .build-compatibility-test-debug
+            --build-path .build-compatibility-test-debug \
+            2>&1 | xcbeautify --renderer github-actions
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
+          set -o pipefail
           swift test \
             --filter OpenSwiftUICompatibilityTests \
-            --build-path .build-compatibility-test-debug
+            --build-path .build-compatibility-test-debug \
+            2>&1 | xcbeautify --renderer github-actions
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
   compatibility_tests_ios:
@@ -80,25 +86,31 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
+          set -o pipefail
           xcodebuild test \
-          -scheme OpenSwiftUI \
-          -configuration Debug \
-          -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-          -only-testing:OpenSwiftUICompatibilityTests \
-          -skipMacroValidation \
-          -skipPackagePluginValidation
+            -scheme OpenSwiftUI \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -only-testing:OpenSwiftUICompatibilityTests \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            | xcbeautify --renderer github-actions
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + iOS
         run: |
+          set -o pipefail
           xcodebuild test \
-          -scheme OpenSwiftUI \
-          -configuration Debug \
-          -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-          -only-testing:OpenSwiftUICompatibilityTests \
-          -skipMacroValidation \
-          -skipPackagePluginValidation
+            -scheme OpenSwiftUI \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -only-testing:OpenSwiftUICompatibilityTests \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            | xcbeautify --renderer github-actions
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1

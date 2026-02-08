@@ -35,26 +35,32 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Build and run tests in debug mode with coverage
         run: |
+          set -o pipefail
           swift test \
             -c debug \
             --filter OpenSwiftUITests \
             --filter OpenSwiftUICoreTests \
             --enable-code-coverage \
-            --build-path .build-test-debug
+            --build-path .build-test-debug \
+            2>&1 | xcbeautify --renderer github-actions
           xcrun llvm-cov show \
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest/Contents/MacOS/OpenSwiftUIPackageTests \
             > coverage.txt
       - name: Build and run tests in release mode
         run: |
+          set -o pipefail
           swift test \
             -c release \
             --filter OpenSwiftUITests \
             --filter OpenSwiftUICoreTests \
             --enable-code-coverage \
-            --build-path .build-test-release
+            --build-path .build-test-release \
+            2>&1 | xcbeautify --renderer github-actions
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
