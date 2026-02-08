@@ -13,6 +13,8 @@ struct ShapeUITests {
         struct ContentView: View {
             var body: some View {
                 Rectangle()
+                    .fill(Color.red)
+                    .frame(width: 100, height: 100, alignment: .center)
             }
         }
         openSwiftUIAssertSnapshot(of: ContentView())
@@ -23,8 +25,24 @@ struct ShapeUITests {
         struct ContentView: View {
             var body: some View {
                 Circle()
+                    .fill(Color.red)
+                    .frame(width: 100, height: 100, alignment: .center)
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView())
+        // FIXME
+        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.8)
+    }
+
+    @Test
+    func shadow() {
+        struct ContentView: View {
+            var body: some View {
+                Circle()
+                    .fill(Color.red.shadow(.drop(color: .blue,radius: 5, x: 10, y: 10)))
+                    .frame(width: 100, height: 100, alignment: .center)
+            }
+        }
+        // FIXME
+        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.8)
     }
 }
