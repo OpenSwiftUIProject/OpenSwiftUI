@@ -187,6 +187,13 @@ package struct _ShapeStyle_RenderedShape {
         default:
             _openSwiftUIUnimplementedFailure()
         }
+        // FIXME
+        for effect in style.effects {
+            guard case let .shadow(shadow) = effect.kind else {
+                continue
+            }
+            addEffect(.filter(.shadow(shadow)))
+        }
         _openSwiftUIUnimplementedWarning()
     }
 
