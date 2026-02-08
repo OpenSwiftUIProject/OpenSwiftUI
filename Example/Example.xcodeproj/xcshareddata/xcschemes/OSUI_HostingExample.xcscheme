@@ -54,12 +54,7 @@
          <EnvironmentVariable
             key = "SWIFTUI_PRINT_TREE"
             value = "1"
-            isEnabled = "YES">
-         </EnvironmentVariable>
-         <EnvironmentVariable
-            key = "OPENSWIFTUI_PRINT_TREE"
-            value = "1"
-            isEnabled = "YES">
+            isEnabled = "NO">
          </EnvironmentVariable>
       </EnvironmentVariables>
    </LaunchAction>
