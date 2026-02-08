@@ -59,10 +59,13 @@ class AppDelegate: NSResponder, NSApplicationDelegate {
         // FIXME
         let items = AppGraph.shared?.rootSceneList?.items ?? []
         let view = items[0].value.view
-        let hostingVC = NSHostingController(rootView: view)
+        let hostingVC = NSHostingController(rootView: view.frame(width: 500, height: 300))
         let windowVC = WindowController(hostingVC)
         windowVC.showWindow(nil)
+        self.windowVC = windowVC
     }
+    
+    var windowVC: NSWindowController?
 }
 
 // FIXME: frame is zero
@@ -82,14 +85,8 @@ final class WindowController<Content>: NSWindowController where Content: View {
     let hostingVC: NSHostingController<Content>
 
     override func loadWindow() {
-        window = NSWindow(contentRect: .init(x: 0, y: 0, width: 500, height: 300), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
+        window = NSWindow(contentViewController: hostingVC)
         window?.center()
-    }
-
-    override func windowDidLoad() {
-        super.windowDidLoad()
-        contentViewController = hostingVC
-        hostingVC.host.frame = window!.frame
     }
 }
 
