@@ -66,13 +66,6 @@
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
-		27240CFE2E8FFBC900E9DABD /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				kdebug_interpose.c,
-			);
-			target = 27CD0B482AFC8D37003665EB /* Example */;
-		};
 		275751CC2DEE136C003E467C /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
@@ -93,6 +86,13 @@
 			};
 			target = 27D49DF72BA604FB00F6E2E2 /* HostingExample */;
 		};
+		275C29E52F389AE8008676C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				interpose.c,
+			);
+			target = 275751E22DEE1441003E467C /* TestingHost */;
+		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -102,7 +102,7 @@
 		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
 		279FEC572DF450D200320390 /* ReferenceImages */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReferenceImages; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
-		27FFF0422E08850C0060A4DA /* SharedExample */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (27240CFE2E8FFBC900E9DABD /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SharedExample; sourceTree = "<group>"; };
+		27FFF0422E08850C0060A4DA /* SharedExample */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (275C29E52F389AE8008676C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SharedExample; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
