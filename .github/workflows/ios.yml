@@ -40,19 +40,25 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Build test target in debug mode
         run: |
+          set -o pipefail
           xcodebuild build \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
-            -skipPackagePluginValidation
+            -skipPackagePluginValidation \
+            | xcbeautify --renderer github-actions
       - name: Run test target in debug mode
         run: |
+          set -o pipefail
           xcodebuild test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
-            -skipPackagePluginValidation
+            -skipPackagePluginValidation \
+            | xcbeautify --renderer github-actions
