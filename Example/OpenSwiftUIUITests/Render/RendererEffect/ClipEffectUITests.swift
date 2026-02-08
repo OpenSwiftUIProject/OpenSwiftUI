@@ -8,7 +8,7 @@ import SnapshotTesting
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct ClipEffectUITests {
-    @Test(.disabled("Shape is not implemented correctly"))
+    @Test
     func clipShapeCircle() {
         struct ContentView: View {
             var body: some View {
@@ -20,7 +20,7 @@ struct ClipEffectUITests {
         openSwiftUIAssertSnapshot(of: ContentView())
     }
 
-    @Test(.disabled("Shape is not implemented correctly"))
+    @Test
     func clipShapeRoundedRectangle() {
         struct ContentView: View {
             var body: some View {
@@ -32,7 +32,7 @@ struct ClipEffectUITests {
         openSwiftUIAssertSnapshot(of: ContentView())
     }
 
-    @Test(.disabled("Shape is not implemented correctly"))
+    @Test
     func clipShapeCapsule() {
         struct ContentView: View {
             var body: some View {
@@ -59,7 +59,7 @@ struct ClipEffectUITests {
         openSwiftUIAssertSnapshot(of: ContentView())
     }
 
-    @Test(.disabled("Shape is not implemented correctly"))
+    @Test
     func clipShapeEllipse() {
         struct ContentView: View {
             var body: some View {
