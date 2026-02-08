@@ -95,6 +95,13 @@
 @end
 #endif
 
+@implementation UIWindow (OpenSwiftUI_SPI)
+- (UIWindowScene *) _windowHostingScene_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(UIWindowScene *, @"_windowHostingScene", nil);
+    return func(self, selector);
+}
+@end
+
 @implementation UIWindowScene (OpenSwiftUI_SPI)
 - (UIUserInterfaceStyle) _systemUserInterfaceStyle_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIUserInterfaceStyle, @"_systemUserInterfaceStyle", UIUserInterfaceStyleUnspecified);

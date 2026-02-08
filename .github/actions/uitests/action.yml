@@ -25,8 +25,7 @@ runs:
       run: |
         cd Example
         xcodebuild test \
-          -scheme OpenSwiftUIUITests \
-          -configuration SwiftUIDebug \
+          -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation || true
@@ -38,8 +37,7 @@ runs:
       run: |
         cd Example
         xcodebuild test \
-          -scheme OpenSwiftUIUITests \
-          -configuration OpenSwiftUIDebug \
+          -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation 2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log

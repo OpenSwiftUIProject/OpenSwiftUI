@@ -115,11 +115,9 @@ package class UIHostingViewBase {
     @inline(__always)
     package var sceneActivationState: UIScene.ActivationState? {
         get {
-            let selector = Selector(("_windowHostingScene"))
             guard let uiView,
                   let window = uiView.window,
-                  window.responds(to: selector),
-                  (window.perform(selector).takeUnretainedValue() as? UIWindowScene) != nil
+                  window._windowHostingScene != nil
             else {
                 return nil
             }
