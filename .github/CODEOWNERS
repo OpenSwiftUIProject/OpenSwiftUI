@@ -1,0 +1,18 @@
+# Default owner for everything in the repo
+* @Kyle-Ye
+
+# AppKit / macOS related code
+**/AppKit/ @Kyle-Ye @Mx-Iris
+**/*AppKit* @Kyle-Ye @Mx-Iris
+**/macOS/ @Kyle-Ye @Mx-Iris
+**/macos/ @Kyle-Ye @Mx-Iris
+**/*macOS* @Kyle-Ye @Mx-Iris
+**/*macos* @Kyle-Ye @Mx-Iris
+
+# UIKit / iOS related code
+**/UIKit/ @Kyle-Ye
+**/*UIKit* @Kyle-Ye
+**/iOS/ @Kyle-Ye
+**/ios/ @Kyle-Ye
+**/*iOS* @Kyle-Ye
+**/*ios* @Kyle-Ye
