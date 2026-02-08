@@ -1,14 +1,15 @@
 //
-//  ShapeStyle_Shape.swift
+//  ShapeStyleShape.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by Color / ColorProvider / Color.Resolved
+//  Audited for 6.5.4
+//  Status: Complete
 
 package import Foundation
 
 // MARK: - _ShapeStyle_Shape
 
+@available(OpenSwiftUI_v3_0, *)
 public struct _ShapeStyle_Shape {
     package enum Operation {
         case prepareText(level: Int)
