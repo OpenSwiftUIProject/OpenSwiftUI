@@ -13,19 +13,19 @@ public import AppKit
 import OpenSwiftUI_SPI
 import COpenSwiftUI
 
-/// An AppKit view that hosts a SwiftUI view hierarchy.
+/// An AppKit view that hosts a OpenSwiftUI view hierarchy.
 ///
-/// You use `NSHostingView` objects to integrate SwiftUI views into your
+/// You use `NSHostingView` objects to integrate OpenSwiftUI views into your
 /// AppKit view hierarchies. A hosting view is an
 /// [NSView](https://developer.apple.com/documentation/AppKit/NSView) object that manages a single
-/// SwiftUI view, which may itself contain other SwiftUI views. Because it is an
+/// OpenSwiftUI view, which may itself contain other OpenSwiftUI views. Because it is an
 /// [NSView](https://developer.apple.com/documentation/AppKit/NSView) object, you can integrate it
 /// into your existing AppKit view hierarchies to implement portions of your UI.
 /// For example, you can use a hosting view to implement a custom control.
 ///
-/// A hosting view acts as a bridge between your SwiftUI views and your AppKit
+/// A hosting view acts as a bridge between your OpenSwiftUI views and your AppKit
 /// interface. During layout, the hosting view reports the content size
-/// preferences of your SwiftUI views back to the AppKit layout system so that
+/// preferences of your OpenSwiftUI views back to the AppKit layout system so that
 /// it can size the view appropriately. The hosting view also coordinates event
 /// delivery.
 @available(iOS, unavailable)
@@ -34,22 +34,22 @@ import COpenSwiftUI
 @available(visionOS, unavailable)
 open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Content: View {
     /// The options for how the hosting view creates and updates constraints
-    /// based on the size of its SwiftUI content.
+    /// based on the size of its OpenSwiftUI content.
     ///
     /// NSHostingView can create minimum, maximum, and ideal (content size)
-    /// constraints that are derived from its SwiftUI view content. These
+    /// constraints that are derived from its OpenSwiftUI view content. These
     /// constraints are only created when Auto Layout constraints are otherwise
     /// being used in the containing window.
     ///
     /// If the NSHostingView is set as the `contentView` of an `NSWindow`, it
     /// will also update the window's `contentMinSize` and `contentMaxSize`
-    /// based on the minimum and maximum size of its SwiftUI content.
+    /// based on the minimum and maximum size of its OpenSwiftUI content.
     ///
     /// `sizingOptions` defaults to `.standardBounds` (which includes
     /// `minSize`, `intrinsicContentSize`, and `maxSize`), but can be set to an
     /// explicit value to control this behavior. For instance, setting a value
     /// of `.minSize` will only create the constraints necessary to maintain the
-    /// minimum size of the SwiftUI content, or setting a value of `[]` will
+    /// minimum size of the OpenSwiftUI content, or setting a value of `[]` will
     /// create no constraints at all.
     ///
     /// If a use case can make assumptions about the size of the `NSHostingView`
@@ -57,7 +57,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     /// a fixed frame, setting this to a value with fewer options can improve
     /// performance as it reduces the amount of layout measurements that need to
     /// be performed. If an `NSHostingView` has a `frame` that is smaller or
-    /// larger than that required to display its SwiftUI content, the content
+    /// larger than that required to display its OpenSwiftUI content, the content
     /// will be centered within that frame.
     public var sizingOptions: NSHostingSizingOptions = .standardBounds {
         didSet {
@@ -210,9 +210,9 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         sizingOptions.contains(.intrinsicContentSize) ? 3 : 0
     }
 
-    /// Creates a hosting view object that wraps the specified SwiftUI view.
+    /// Creates a hosting view object that wraps the specified OpenSwiftUI view.
     ///
-    /// - Parameter rootView: The root view of the SwiftUI view hierarchy that
+    /// - Parameter rootView: The root view of the OpenSwiftUI view hierarchy that
     ///   you want to manage using this hosting view.
     public required init(rootView: Content) {
         self._rootView = rootView
@@ -454,7 +454,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         }
     }
 
-    /// The root view of the SwiftUI view hierarchy managed by this view
+    /// The root view of the OpenSwiftUI view hierarchy managed by this view
     /// controller.
     public var rootView: Content {
         get { _rootView }
