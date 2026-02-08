@@ -31,6 +31,7 @@ extension Color {
         context: BackgroundContext,
         scheme: ColorScheme
     ) -> Color.Resolved {
+        #if os(iOS) || os(visionOS)
         switch scheme {
         case .light:
             let combined = info.groupCount + context.rawValue
@@ -52,6 +53,16 @@ extension Color {
                 return Color.Resolved(red: 58 / 255, green: 58 / 255, blue: 60 / 255)
             }
         }
+        #elseif os(macOS)
+        switch scheme {
+        case .light:
+            return .white
+        case .dark:
+            return Color.Resolved(red: 30 / 255, green: 30 / 255, blue: 30 / 255)
+        }
+        #else
+        return Color.Resolved.gray_75
+        #endif
     }
 }
 
