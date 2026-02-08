@@ -54,6 +54,7 @@ open class NSHostingController<Content>: NSViewController where Content: View {
 
     func _commonInit() {
         host.viewController = self
+        self.view = host
     }
 
     /// Creates a hosting controller object from the contents of the specified
@@ -68,11 +69,9 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     public required init?(coder: NSCoder) {
         preconditionFailure("init(coder:) must be implemented in a subclass and call super.init(coder:, rootView:)")
     }
-
-    open override func loadView() {
-        view = host
-    }
-
+    
+    /// The root view of the SwiftUI view hierarchy managed by this view
+    /// controller.
     public var rootView: Content {
         get { host.rootView }
         set { host.rootView = newValue }
@@ -127,6 +126,55 @@ open class NSHostingController<Content>: NSViewController where Content: View {
         set { host.safeAreaRegions = newValue }
     }
 
+    /// The options for which aspects of the window will be managed by this
+    /// controller's hosting view.
+    ///
+    /// `NSHostingController` will populate certain aspects of its associated
+    /// window, depending on which options are specified.
+    ///
+    /// For example, a hosting controller can manage its window's toolbar by
+    /// including the `.toolbars` option:
+    ///
+    ///     struct RootView: View {
+    ///         var body: some View {
+    ///             ContentView()
+    ///                 .toolbar {
+    ///                     MyToolbarContent()
+    ///                 }
+    ///         }
+    ///     }
+    ///
+    ///     let controller = NSHostingController(rootView: RootView())
+    ///     controller.sceneBridgingOptions = [.toolbars]
+    ///
+    /// When this hosting controller is set as the `contentViewController` for a
+    /// window, the default value for this property will be `.all`, which
+    /// includes the options for `.toolbars` and `.title`. Otherwise, the
+    /// default value is `[]`.
+    public var sceneBridgingOptions: NSHostingSceneBridgingOptions {
+        get { host.sceneBridgingOptions }
+        set { host.sceneBridgingOptions = newValue }
+    }
+
+    open override var preferredContentSize: NSSize {
+        get {
+            if sizingOptions.contains(.preferredContentSize) {
+                return host.idealSize()
+            } else {
+                return super.preferredContentSize
+            }
+        }
+        set {
+            super.preferredContentSize = newValue
+        }
+    }
+
+    open override var identifier: NSUserInterfaceItemIdentifier? {
+        didSet {
+            host.identifier = identifier
+        }
+    }
+
     /// Calculates and returns the most appropriate size for the current view.
     ///
     /// - Parameter size: The proposed new size for the view.
@@ -140,6 +188,10 @@ open class NSHostingController<Content>: NSViewController where Content: View {
         return result
     }
     
+    public func _render(seconds: Double) {
+        host.render(interval: seconds, targetTimestamp: nil)
+    }
+
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         host.forEachIdentifiedView(body: body)
     }
