@@ -29,8 +29,7 @@ struct ShapeUITests {
                     .frame(width: 100, height: 100, alignment: .center)
             }
         }
-        // FIXME
-        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.8)
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 
     @Test
@@ -42,7 +41,6 @@ struct ShapeUITests {
                     .frame(width: 100, height: 100, alignment: .center)
             }
         }
-        // FIXME
-        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.8)
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 }
