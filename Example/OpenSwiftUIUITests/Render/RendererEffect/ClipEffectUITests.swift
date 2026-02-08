@@ -19,7 +19,7 @@ struct ClipEffectUITests {
                     .clipShape(Circle())
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.9)
+        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
     }
 
     @Test
@@ -31,7 +31,7 @@ struct ClipEffectUITests {
                     .clipShape(RoundedRectangle(cornerRadius: 15))
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.9)
+        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
     }
 
     @Test
@@ -43,7 +43,7 @@ struct ClipEffectUITests {
                     .clipShape(Capsule())
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.9)
+        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
     }
 
     @Test
@@ -70,7 +70,7 @@ struct ClipEffectUITests {
                     .clipShape(Ellipse())
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), perceptualPrecision: 0.99)
+        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
     }
 }
 

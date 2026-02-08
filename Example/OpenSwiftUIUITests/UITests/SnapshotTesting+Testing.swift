@@ -53,6 +53,7 @@ extension Snapshotting where Value == NSViewController, Format == NSImage {
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () -> V,
     drawHierarchyInKeyWindow: Bool = false,
+    precision: Float = 1,
     perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
     named name: String? = nil,
@@ -66,7 +67,7 @@ func openSwiftUIAssertSnapshot<V: View>(
 ) {
     openSwiftUIAssertSnapshot(
         of: PlatformHostingController(rootView: value()),
-        as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, perceptualPrecision: perceptualPrecision, size: size),
+        as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, precision: precision, perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
         timeout: timeout,
