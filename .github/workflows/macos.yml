@@ -46,7 +46,7 @@ jobs:
             --filter OpenSwiftUICoreTests \
             --enable-code-coverage \
             --build-path .build-test-debug \
-            | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions
           xcrun llvm-cov show \
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest/Contents/MacOS/OpenSwiftUIPackageTests \
@@ -60,7 +60,7 @@ jobs:
             --filter OpenSwiftUICoreTests \
             --enable-code-coverage \
             --build-path .build-test-release \
-            | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
