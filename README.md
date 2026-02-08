@@ -88,13 +88,14 @@ for various platforms:
 
 ### Platform Support
 
-| **Platform** | **CI Status** | **Support Status** | Build | Test | Deploy |
-|-|:-|-|-|-|-|
-| **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ |
-| **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅ |
-| **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ |
-| **Windows** | None | Not supported yet | ❌ | ❌ | ❌ |
-
+| **Platform** | **CI Status** | **Support Status** | Build | Test | Deploy | Owner |
+|-|:-|-|-|-|-|-|
+| **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ | [@Kyle-Ye](https://github.com/Kyle-Ye), [@Mx-Iris](https://github.com/Mx-Iris) |
+| **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **visionOS** | None | ⭐️ *[^4] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **Android** | None | Not supported yet | ❌ | ❌ | ❌ | |
+| **Windows** | None | Not supported yet | ❌ | ❌ | ❌ | |
 
 [^1]: AppKit intergration is partly implemented. Render is support via SwiftUI's render implementation. Other UI framework backend is not intergrated yet.
 
@@ -104,6 +105,8 @@ for various platforms:
 
 [^4]: Build is supported. Test is not supported yet dut to upstream issue.
 
+[^5]: Only Simulator is supported. Real device support is not available yet due to the link issue of AttributeGraph.
+
 > [!NOTE]
 > The cross-platform OpenAttributeGraph is not fully implemented.
 >
@@ -112,6 +115,9 @@ for various platforms:
 > So most of the core feature is only available on Apple platform built with
 > AttributeGraph varient.
 
+> [!NOTE]
+> To request platform ownership, please first contribute to the target platform and then contact the project owner.
+
 ### Current supported feature
 
 - Color/Image/Path rendering (Text is not supported yet)
@@ -119,6 +125,10 @@ for various platforms:
 - Animation system
 - onAppear/onDisappear modifier
 - Basic geometry effect
+
+## Architecture
+
+![OpenSwiftUI Architecture](Screenshots/Architecture/arch.png)
 
 ## Products
 
