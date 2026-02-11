@@ -35,6 +35,7 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 @interface NSView ()
 @property (getter=isOpaque) BOOL opaque;
 @property (nonatomic) BOOL ignoreHitTest;
+- (nullable NSResponder *)_nextResponderForEvent:(nullable NSEvent *)event;
 - (void)_updateLayerGeometryFromView;
 - (void)_updateLayerShadowFromView;
 - (void)_updateLayerShadowColorFromView;

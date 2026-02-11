@@ -7,7 +7,9 @@
 //  ID: 33EEAA67E0460DA84AE814EA027152BA (SwiftUI)
 
 #if os(macOS)
-@_spi(DisplayList_ViewSystem) import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly)
+@_spi(DisplayList_ViewSystem)
+import OpenSwiftUICore
 import AppKit
 import OpenSwiftUISymbolDualTestsSupport
 import COpenSwiftUI
@@ -30,7 +32,7 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         case .mask:
             view = _NSInheritedView()
             let maskView = _NSInheritedView()
-            view.maskView = maskView
+            view.mask = maskView
             initView(maskView, kind: .inherited)
         default:
             view = kind.isContainer ? _NSInheritedView() : _NSGraphicsView()
@@ -94,7 +96,7 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
 
     override class func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
         guard !ResponderBasedHitTesting.enabled else { return }
-        if Semantics.UnifiedHitTesting.isEnabled {
+        if UnifiedHitTestingFeature.isEnabled {
             if let customizing = view as? RecursiveIgnoreHitTestCustomizing {
                 customizing.recursiveIgnoreHitTest = state
             }
@@ -124,7 +126,7 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
             view.setFlipped(true)
             view.autoresizesSubviews = false
             view.clipsToBounds = false
-            if !Semantics.UnifiedHitTesting.isEnabled {
+            if !UnifiedHitTestingFeature.isEnabled {
                 view.ignoreHitTest = true
             }
         }
@@ -159,6 +161,36 @@ class _NSGraphicsView: NSView, RecursiveIgnoreHitTestCustomizing, AcceptsFirstMo
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard !ResponderBasedHitTesting.enabled else {
+            return super.hitTest(point)
+        }
+        if UnifiedHitTestingFeature.isEnabled {
+            guard !recursiveIgnoreHitTest,
+                  alphaValue >= ViewResponder.minOpacityForHitTest else {
+                return nil
+            }
+            return super.hitTest(point)
+        } else {
+            guard !ignoreHitTest, frame.contains(point) else {
+                return nil
+            }
+            return self
+        }
+    }
+
+    override func _nextResponder(for event: NSEvent?) -> NSResponder? {
+        nextResponder
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        guard !ResponderBasedHitTesting.enabled,
+              let value = effectiveAcceptsFirstMouse else {
+            return super.acceptsFirstMouse(for: event)
+        }
+        return value
+    }
 }
 
 // MARK: - _NSInheritedView
@@ -175,11 +207,30 @@ class _NSInheritedView: _NSGraphicsView, HitTestsAsOpaqueCustomizing {
     required init?(coder: NSCoder) {
         super.init(coder: coder)
     }
+
+    override func hitTest(_ point: NSPoint) -> NSView? {
+        guard !ResponderBasedHitTesting.enabled,
+              UnifiedHitTestingFeature.isEnabled else {
+            return super.hitTest(point)
+        }
+        guard !isHiddenOrHasHiddenAncestor, !recursiveIgnoreHitTest else {
+            return nil
+        }
+        for subview in subviews.reversed() {
+            let convertedPoint = convert(point, from: superview)
+            if let result = subview.hitTest(convertedPoint) {
+                return result
+            }
+        }
+        guard hitTestsAsOpaque, frame.contains(point) else {
+            return nil
+        }
+        return self
+    }
 }
 
-// MARK: - _NSProjectionView [6.5.4]
+// MARK: - _NSProjectionView
 
-@objc
 private class _NSProjectionView: _NSInheritedView {
     var projectionTransform: ProjectionTransform
 
@@ -197,11 +248,11 @@ private class _NSProjectionView: _NSInheritedView {
 
     override func _updateLayerGeometryFromView() {
         super._updateLayerGeometryFromView()
-        layer?.transform = .init(projectionTransform)
+        layer?.transform = CATransform3D(projectionTransform)
     }
 }
 
-// MARK: - _NSShapeHitTestingView [WIP]
+// MARK: - _NSShapeHitTestingView
 
 @objc
 private class _NSShapeHitTestingView: _NSGraphicsView {
@@ -218,15 +269,22 @@ private class _NSShapeHitTestingView: _NSGraphicsView {
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
-        // path.contains(, eoFill: false)
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        guard !ResponderBasedHitTesting.enabled else {
+            return super.hitTest(point)
+        }
+        if UnifiedHitTestingFeature.isEnabled, super.hitTest(point) == nil {
+            return nil
+        }
+        let point = convert(point, from: superview)
+        guard path.contains(point, eoFill: false) else {
+            return nil
+        }
+        return self
     }
 }
 
 // MARK: - _NSPlatformLayerView
 
-@objc
 private class _NSPlatformLayerView: _NSGraphicsView {
     override init(frame frameRect: NSRect) {
         super.init(frame: frameRect)
