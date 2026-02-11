@@ -19,6 +19,8 @@ open class PlatformViewDefinition: @unchecked Sendable {
     public struct System: Hashable, Sendable {
         public static let uiView = PlatformViewDefinition.System(base: .uiView)
         public static let nsView = PlatformViewDefinition.System(base: .nsView)
+        static let caLayer = PlatformViewDefinition.System(base: .caLayer)
+
         var base: ViewSystem
     }
     

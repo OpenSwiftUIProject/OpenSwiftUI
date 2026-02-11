@@ -21,6 +21,7 @@ typedef NSString *CALayerContentsScaling NS_TYPED_ENUM;
 @property (nonatomic, assign) BOOL allowsDisplayCompositing_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsDisplayCompositing);
 @property (nonatomic, assign, readonly) BOOL hasBeenCommitted_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted);
 @property (nonatomic, assign) BOOL allowsGroupBlending_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsGroupBlending);
+@property (nonatomic, assign) BOOL allowsHitTesting_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsHitTesting);
 
 @property (nonatomic, assign) uint64_t openSwiftUI_viewTestProperties;
 
