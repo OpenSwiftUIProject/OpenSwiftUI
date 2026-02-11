@@ -36,9 +36,10 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
 
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
         let cls: UIView.Type
-        if kind == .shape {
+        switch kind {
+        case .shape:
             cls = _UIShapeHitTestingView.self
-        } else {
+        default:
             cls = kind.isContainer ? _UIInheritedView.self : _UIGraphicsView.self
         }
         let layer = type.init()
