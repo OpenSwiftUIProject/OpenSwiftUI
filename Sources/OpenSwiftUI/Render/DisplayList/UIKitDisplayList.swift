@@ -18,7 +18,7 @@ import OpenSwiftUI_SPI
 // MARK: - UIViewPlatformViewDefinition
 
 final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
-    override final class var system: PlatformViewDefinition.System { .uiView }
+    override static var system: PlatformViewDefinition.System { .uiView }
 
     override static func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject {
         let view: UIView
@@ -48,11 +48,11 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         return view
     }
 
-    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
+    override static func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
         Self.initView(view as! UIView, kind: kind)
     }
 
-    override class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
+    override static func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
         let view: UIView & PlatformDrawable
         if options.isAccelerated && ORBDevice.isSupported() {
             view = RBDrawingView(options: options)
@@ -69,17 +69,17 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         view.path = path
     }
 
-    override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
+    override static func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
         let layer = CoreViewLayer(system: .uiView, view: projectionView)
         layer.transform = CATransform3D(transform)
     }
 
-    override class func getRBLayer(drawingView: AnyObject) -> AnyObject? {
+    override static func getRBLayer(drawingView: AnyObject) -> AnyObject? {
         guard let rbView = drawingView as? RBDrawingView else { return nil }
         return rbView.layer
     }
 
-    override class func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
+    override static func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
         let view = unsafeBitCast(view, to: UIView.self)
         view.isUserInteractionEnabled = !state
     }

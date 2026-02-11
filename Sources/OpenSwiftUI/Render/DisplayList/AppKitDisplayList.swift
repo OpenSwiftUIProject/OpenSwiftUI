@@ -20,7 +20,7 @@ import OpenSwiftUI_SPI
 // MARK: - NSViewPlatformViewDefinition
 
 final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
-    override final class var system: PlatformViewDefinition.System { .nsView }
+    override static var system: PlatformViewDefinition.System { .nsView }
 
     override static func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject {
         let view: NSView
@@ -59,11 +59,11 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         return view
     }
 
-    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
+    override static func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
         Self.initView(view as! NSView, kind: kind)
     }
 
-    override class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
+    override static func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
         let view: NSView & PlatformDrawable
         if options.isAccelerated && ORBDevice.isSupported() {
             view = RBDrawingView(options: options)
@@ -81,7 +81,7 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         view.path = path
     }
 
-    override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
+    override static func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
         guard let view = projectionView as? _NSProjectionView else {
             return
         }
@@ -89,12 +89,12 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         view.layer?.transform = CATransform3D(transform)
     }
 
-    override class func getRBLayer(drawingView: AnyObject) -> AnyObject? {
+    override static func getRBLayer(drawingView: AnyObject) -> AnyObject? {
         guard let rbView = drawingView as? RBDrawingView else { return nil }
         return rbView.layer
     }
 
-    override class func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
+    override static func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
         guard !ResponderBasedHitTesting.enabled else { return }
         if UnifiedHitTestingFeature.isEnabled {
             if let customizing = view as? RecursiveIgnoreHitTestCustomizing {
@@ -106,14 +106,14 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         }
     }
 
-    override class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) {
+    override static func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) {
         guard !ResponderBasedHitTesting.enabled else { return }
         if let customizing = view as? AcceptsFirstMouseCustomizing {
             customizing.customAcceptsFirstMouse = value
         }
     }
 
-    override class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) {
+    override static func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) {
         guard !ResponderBasedHitTesting.enabled else { return }
         if let customizing = view as? HitTestsAsOpaqueCustomizing {
             customizing.hitTestsAsOpaque = value
