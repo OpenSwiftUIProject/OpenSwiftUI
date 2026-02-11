@@ -26,7 +26,7 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         case .mask:
             view = _UIGraphicsView()
             view.mask = _UIInheritedView()
-            initView(view.mask!, kind: kind)
+            initView(view.mask!, kind: .inherited)
         default:
             view = kind.isContainer ? _UIInheritedView() : _UIGraphicsView()
         }
@@ -95,13 +95,12 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         view.layer.anchorPoint = .zero
         switch kind {
         case .color, .image, .shape:
-            view.layer.allowsEdgeAntialiasing = true
-            break
-        case .geometry, .projection, .affine3D, .mask, .platformEffect:
+            let layer = view.layer
+            layer.allowsEdgeAntialiasing = true
+        case .inherited, .geometry, .projection, .affine3D, .mask, .platformEffect:
             let layer = view.layer
             layer.allowsGroupOpacity = false
             layer.allowsGroupBlending = false
-            break
         default:
             break
         }

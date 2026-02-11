@@ -41,6 +41,16 @@
     func(self, selector, allows);
 }
 
+- (BOOL)allowsHitTesting_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsHitTesting", YES);
+    return func(self, selector);
+}
+
+- (void)setAllowsHitTesting_openswiftui_safe_wrapper:(BOOL)allows {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setAllowsHitTesting:", , BOOL);
+    func(self, selector, allows);
+}
+
 - (uint64_t)openSwiftUI_viewTestProperties {
     NSNumber *properties = [self valueForKey:@"_viewTestProperties"];
     return properties.integerValue;
