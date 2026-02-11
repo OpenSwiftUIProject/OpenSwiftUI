@@ -14,6 +14,7 @@ import Foundation
 #endif
 
 @_spi(DisplayList_ViewSystem)
+@available(OpenSwiftUI_v6_0, *)
 open class PlatformViewDefinition: @unchecked Sendable {
     public struct System: Hashable, Sendable {
         public static let uiView = PlatformViewDefinition.System(base: .uiView)

@@ -25,7 +25,7 @@ package struct HitTestBindingModifier: ViewModifier, MultiViewModifier, Primitiv
 extension ViewResponder {
     package static var hitTestKey: UInt32 { _openSwiftUIUnimplementedFailure() }
 
-    package static let minOpacityForHitTest: Double = 0.0
+    package static let minOpacityForHitTest: Double = 0.001
 
     package func hitTest(
         globalPoint: PlatformPoint,
