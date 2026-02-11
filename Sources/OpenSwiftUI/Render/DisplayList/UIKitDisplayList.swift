@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: A34643117F00277B93DEBAB70EC06971 (SwiftUI)
 
 #if os(iOS) || os(visionOS)
@@ -12,9 +12,10 @@ import COpenSwiftUI
 import UIKit
 import OpenSwiftUISymbolDualTestsSupport
 import QuartzCore_Private
+import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 
-// MARK: - UIViewPlatformViewDefinition [TODO] [6.0.87]
+// MARK: - UIViewPlatformViewDefinition
 
 final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {
     override final class var system: PlatformViewDefinition.System { .uiView }
@@ -33,7 +34,6 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         return view
     }
 
-    // Audited for 6.5.4
     override static func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject {
         let cls: UIView.Type
         if kind == .shape {
@@ -47,10 +47,42 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         return view
     }
 
+    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
+        Self.initView(view as! UIView, kind: kind)
+    }
+
+    override class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
+        let view: UIView & PlatformDrawable
+        if options.isAccelerated && ORBDevice.isSupported() {
+            view = RBDrawingView(options: options)
+        } else {
+            view = CGDrawingView(options: options)
+        }
+        view.contentMode = .topLeft
+        initView(view, kind: .drawing)
+        return view
+    }
+
     override static func setPath(_ path: Path, shapeView: AnyObject) {
         let view = unsafeBitCast(shapeView, to: _UIShapeHitTestingView.self)
         view.path = path
     }
+
+    override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
+        let layer = CoreViewLayer(system: .uiView, view: projectionView)
+        layer.transform = CATransform3D(transform)
+    }
+
+    override class func getRBLayer(drawingView: AnyObject) -> AnyObject? {
+        guard let rbView = drawingView as? RBDrawingView else { return nil }
+        return rbView.layer
+    }
+
+    override class func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
+        let view = unsafeBitCast(view, to: UIView.self)
+        view.isUserInteractionEnabled = !state
+    }
+
 
     private static func initView(_ view: UIView, kind: PlatformViewDefinition.ViewKind) {
         if kind != .platformView && kind != .platformGroup {
@@ -72,15 +104,6 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
         default:
             break
         }
-    }
-
-    override class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) {
-        Self.initView(view as! UIView, kind: kind)
-    }
-
-    override class func setProjectionTransform(_ transform: ProjectionTransform, projectionView: AnyObject) {
-        let layer = CoreViewLayer(system: .uiView, view: projectionView)
-        layer.transform = .init(transform)
     }
 }
 
