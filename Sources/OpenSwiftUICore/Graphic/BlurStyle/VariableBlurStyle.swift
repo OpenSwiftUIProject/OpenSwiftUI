@@ -2,7 +2,7 @@
 //  VariableBlurStyle.swift
 //  OpenSwiftUICore
 //
-//  Audited for iOS 6.5.4
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import Foundation
