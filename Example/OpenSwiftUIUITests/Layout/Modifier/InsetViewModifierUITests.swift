@@ -8,10 +8,7 @@ import Testing
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct InsetViewModifierUITests {
     
-    @Test(
-        .bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511"),
-        .disabled("Extra spacing value is taken into account. Disable the test case before we fix it.")
-    )
+    @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511"))
     func safeAreaPaddingWithEdgeInsets() {
         struct ContentView: View {
             var body: some View {

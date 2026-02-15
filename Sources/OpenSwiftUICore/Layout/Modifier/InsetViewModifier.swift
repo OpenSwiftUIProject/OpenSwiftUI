@@ -253,20 +253,20 @@ struct SafeAreaPaddingModifier: ViewModifier {
 
     @usableFromInline
     func body(content: SafeAreaPaddingModifier.Content) -> some View {
-        content.safeAreaInset(edge: .top) {
+        content.safeAreaInset(edge: .top, spacing: 0) {
             insetView(edge: .top)
-        }.safeAreaInset(edge: .bottom) {
+        }.safeAreaInset(edge: .bottom, spacing: 0) {
             insetView(edge: .bottom)
-        }.safeAreaInset(edge: .leading) {
+        }.safeAreaInset(edge: .leading, spacing: 0) {
             insetView(edge: .leading)
-        }.safeAreaInset(edge: .trailing) {
+        }.safeAreaInset(edge: .trailing, spacing: 0) {
             insetView(edge: .trailing)
         }
     }
 
     private func insetView(edge: Edge) -> some View {
         let axis = Axis(edge: edge)
-        let inset = (insets ?? defaultPadding)[edge]
+        let inset = edges.contains(edge) ? (insets ?? defaultPadding)[edge] : 0
         return axis == .horizontal
             ? Color.clear.frame(width: inset)
             : Color.clear.frame(height: inset)
