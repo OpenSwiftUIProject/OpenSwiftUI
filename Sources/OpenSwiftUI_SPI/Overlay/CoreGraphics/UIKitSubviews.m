@@ -6,30 +6,25 @@
 //  Audited for 6.5.4
 
 #include "UIKitSubviews.h"
-
+#include "CoreViewFunctions.h"
+#include <QuartzCore/QuartzCore.h>
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-
 #include <UIKit/UIKit.h>
+#else
+#include <AppKit/AppKit.h>
+#endif
 
 // MARK: - UIKit Private API
 
 OPENSWIFTUI_EXPORT CALayer * _Nullable CALayerGetSuperlayer(CALayer *layer);
 
-@interface UIView (UIKitSubviews)
+@interface NSObject ()
 - (void)_invalidateSubviewCache;
-@end
-
-// MARK: - NSObject (OpenSwiftUICore_Additions)
-
-@implementation NSObject (OpenSwiftUICore_Additions)
-- (void)openswiftui_insertRenderedSubview:(id)subview atIndex:(NSInteger)index {
-    [(UIView *)self insertSubview:subview atIndex:index];
-}
 @end
 
 // MARK: - UIKit Add Subview
 
-void _UIKitAddSubview(UIView *child, UIView *parent, NSInteger index) {
+void _UIKitAddSubview(id child, id parent, NSInteger index) {
     CALayer *parentLayer = [parent layer];
     NSArray<CALayer *> *sublayers = [parentLayer sublayers];
     NSUInteger count = sublayers ? [sublayers count] : 0;
@@ -41,17 +36,12 @@ void _UIKitAddSubview(UIView *child, UIView *parent, NSInteger index) {
         [parent openswiftui_insertRenderedSubview:child atIndex:(NSInteger)index];
     } else {
         NSUInteger nextIndex = index + 1;
-        NSUInteger targetIndex;
         if (nextIndex < count && sublayers[nextIndex] == childLayer) {
             childLayer = sublayers[index];
             assert(childLayer);
-            targetIndex = count;
-        } else {
-            targetIndex = index;
+            index = count;
         }
-        [parentLayer insertSublayer:childLayer atIndex:(unsigned)targetIndex];
+        [parentLayer insertSublayer:childLayer atIndex:(unsigned)index];
         [parent _invalidateSubviewCache];
     }
 }
-
-#endif
