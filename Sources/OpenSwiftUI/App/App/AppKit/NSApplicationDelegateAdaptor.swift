@@ -1,4 +1,3 @@
-
 //
 //  NSApplicationDelegateAdaptor.swift
 //  OpenSwiftUI
