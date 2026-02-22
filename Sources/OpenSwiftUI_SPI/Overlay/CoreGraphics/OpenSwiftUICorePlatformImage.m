@@ -1,9 +1,9 @@
 //
-//  OpenSwiftUICorePlatformImage.h
-//  OpenSwiftUICore
+//  OpenSwiftUICorePlatformImage.m
+//  OpenSwiftUI_SPI
 //
-//  Audited for 6.0.87
-//  Status: Blocked by macOS implementation and Mac Catalyst support
+//  Audited for 6.5.4
+//  Status: Complete
 
 #include "OpenSwiftUICorePlatformImage.h"
 
@@ -12,49 +12,70 @@
 #include <Foundation/Foundation.h>
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <UIKit/UIKit.h>
-#else
+#endif
+
+#if OPENSWIFTUI_TARGET_OS_OSX
 #include <AppKit/AppKit.h>
 #endif
 
-Class _Nullable _OpenSwiftUICorePlatformImageClass(void) {
-    static BOOL isValid = true;
+// NOTE:
+// On macOS, UIKit is not imported. For Mac Catalyst support (system == UIKit),
+// we declare the needed UIImage selectors here so they can be called on id.
+#if OPENSWIFTUI_TARGET_OS_OSX
+@interface NSObject (OpenSwiftUICorePlatformImage_UIImage)
+- (instancetype)initWithCGImage:(CGImageRef)cgImage scale:(CGFloat)scale orientation:(NSInteger)orientation; // UIImage
+- (NSInteger)renderingMode; // UIImage
+- (id)imageWithRenderingMode:(NSInteger)renderingMode; // UIImage
+- (CGFloat)baselineOffsetFromBottom; // UIImage
+- (id)imageWithBaselineOffsetFromBottom:(CGFloat)offset; // UIImage
+- (CGImageRef)CGImage; // UIImage
+- (NSInteger)imageOrientation; // UIImage
+@end
+#endif
+
+Class _Nullable _OpenSwiftUICorePlatformImageClass(OpenSwiftUICoreSystem system) {
+    static BOOL isValid;
     static Class imageClass;
     static dispatch_once_t once;
     dispatch_once(&once, ^{
-        #if OPENSWIFTUI_TARGET_OS_OSX
-        Class class = NSClassFromString(@"NSImage");
-        imageClass = class;
-        isValid = class != nil;
-        #else
+        #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
         Class class = NSClassFromString(@"UIImage");
+        #elif OPENSWIFTUI_TARGET_OS_OSX
+        // [Q]: Should we check the system here to lookup UIImage for non AppKit system?
+        Class class = NSClassFromString(@"NSImage");
+        #else
+        Class class = nil;
+        #endif
         imageClass = class;
         isValid = class != nil;
-        #endif
     });
-    if (isValid) {
-        return imageClass;
-    } else {
+    if (!isValid) {
         [NSException raise:@"Invalid image class" format:@""];
     }
+    return imageClass;
 }
 
 NSObject* _OpenSwiftUICorePlatformImageMakeKitImage(OpenSwiftUICoreSystem system, CGImageRef cgImage, CGFloat scale, uint8_t orientation) {
-    Class imageClass = _OpenSwiftUICorePlatformImageClass();
+    Class imageClass = _OpenSwiftUICorePlatformImageClass(system);
     #if OPENSWIFTUI_TARGET_OS_OSX
     if (system == OpenSwiftUICoreSystemAppKit) {
-        CGSize size = CGSizeMake(CGImageGetWidth(cgImage), CGImageGetHeight(cgImage));
+        CGSize size = CGSizeMake(CGImageGetWidth(cgImage) / scale, CGImageGetHeight(cgImage) / scale);
         NSImage *kitImage = [[imageClass alloc] initWithCGImage:cgImage size:size];
         return kitImage;
     } else {
-        // FIXME: How to import macOS SDK's iOS Support <UIKit/UIImage.h> header here
-        // UIImage *kitImage = [[imageClass alloc] initWithCGImage:cgImage scale:scale orientation:orientation];
-        // TODO: Unimplemented
-        return nil;
+        id kitImage = [[imageClass alloc] initWithCGImage:cgImage scale:scale orientation:orientation];
+        if ([kitImage renderingMode] == 2 /* UIImageRenderingModeAlwaysTemplate */) {
+            kitImage = [kitImage imageWithRenderingMode:2 /* UIImageRenderingModeAlwaysTemplate */];
+        }
+        if ([kitImage baselineOffsetFromBottom] > 0.0) {
+            kitImage = [kitImage imageWithBaselineOffsetFromBottom:[kitImage baselineOffsetFromBottom]];
+        }
+        return kitImage;
     }
     #else
     UIImage *kitImage = [[imageClass alloc] initWithCGImage:cgImage scale:scale orientation:orientation];
     if (kitImage.renderingMode == UIImageRenderingModeAlwaysTemplate) {
-        kitImage = [kitImage imageWithRenderingMode:UIImageRenderingModeAlwaysOriginal];
+        kitImage = [kitImage imageWithRenderingMode:UIImageRenderingModeAlwaysTemplate];
     }
     if (kitImage.baselineOffsetFromBottom > 0.0) {
         kitImage = [kitImage imageWithBaselineOffsetFromBottom:kitImage.baselineOffsetFromBottom];
@@ -68,7 +89,6 @@ BOOL _OpenSwiftUICorePlatformImageIsTemplate(OpenSwiftUICoreSystem system, id ki
     if (system == OpenSwiftUICoreSystemAppKit) {
         return NO;
     } else {
-        // FIXME: How to import macOS SDK's iOS Support <UIKit/UIImage.h> header here
         return [kitImage renderingMode] == 2 /* UIImageRenderingModeAlwaysTemplate */;
     }
     #else
@@ -119,10 +139,7 @@ uint8_t _OpenSwiftUICorePlatformImageGetImageOrientation(OpenSwiftUICoreSystem s
     if (system == OpenSwiftUICoreSystemAppKit) {
         return 0;
     } else {
-        // FIXME: How to import macOS SDK's iOS Support <UIKit/UIImage.h> header here
-        // return [(UIImage *)kitImage imageOrientation];
-        // TODO: Unimplemented
-        return 0;
+        return (uint8_t)[kitImage imageOrientation];
     }
     #else
     return [(UIImage *)kitImage imageOrientation];
@@ -134,10 +151,7 @@ CGFloat _OpenSwiftUICorePlatformImageGetBaselineOffsetFromBottom(OpenSwiftUICore
     if (system == OpenSwiftUICoreSystemAppKit) {
         return [(NSImage *)kitImage alignmentRect].origin.y;
     } else {
-        // FIXME: How to import macOS SDK's iOS Support <UIKit/UIImage.h> header here
-        // return [(UIImage *)kitImage baselineOffsetFromBottom];
-        // TODO: Unimplemented
-        return 0.0;
+        return [kitImage baselineOffsetFromBottom];
     }
     #else
     return [(UIImage *)kitImage baselineOffsetFromBottom];

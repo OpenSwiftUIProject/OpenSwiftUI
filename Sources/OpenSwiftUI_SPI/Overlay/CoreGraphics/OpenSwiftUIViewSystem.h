@@ -2,7 +2,7 @@
 //  OpenSwiftUIViewSystem.h
 //  OpenSwiftUI_SPI
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 #ifndef OpenSwiftUIViewSystem_h
@@ -10,7 +10,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-typedef OPENSWIFTUI_ENUM(uint8_t, OpenSwiftUIViewSystem) {
+typedef OPENSWIFTUI_CLOSED_ENUM(uint8_t, OpenSwiftUIViewSystem) {
     OpenSwiftUIViewSystemUIView,
     OpenSwiftUIViewSystemNSView,
     OpenSwiftUIViewSystemCALayer,

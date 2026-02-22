@@ -2,8 +2,8 @@
 //  CorePlatformImage.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 
 #if canImport(Darwin)
 import Foundation

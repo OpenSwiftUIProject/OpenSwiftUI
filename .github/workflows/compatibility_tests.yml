@@ -39,19 +39,19 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
           set -o pipefail
-          swift test \
+          NSUnbufferedIO=YES swift test \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
-            2>&1 | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
           set -o pipefail
-          swift test \
+          NSUnbufferedIO=YES swift test \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
-            2>&1 | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
   compatibility_tests_ios:
@@ -91,26 +91,26 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
           set -o pipefail
-          xcodebuild test \
+          NSUnbufferedIO=YES xcodebuild test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -only-testing:OpenSwiftUICompatibilityTests \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + iOS
         run: |
           set -o pipefail
-          xcodebuild test \
+          NSUnbufferedIO=YES xcodebuild test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -only-testing:OpenSwiftUICompatibilityTests \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
