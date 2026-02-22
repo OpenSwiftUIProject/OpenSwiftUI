@@ -6,6 +6,9 @@
 //  Audited for 6.5.4
 
 #include "OpenSwiftUIUIKitSubviews.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+
 #include "OpenSwiftUICoreViewFunctions.h"
 #include <QuartzCore/QuartzCore.h>
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
@@ -45,3 +48,5 @@ void _OpenSwiftUIUIKitAddSubview(id child, id parent, NSInteger index) {
         [parent _invalidateSubviewCache];
     }
 }
+
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */

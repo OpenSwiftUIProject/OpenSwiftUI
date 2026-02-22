@@ -6,6 +6,9 @@
 //  Audited for 6.5.4
 
 #include "OpenSwiftUIAppKitSubviews.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+
 #include "OpenSwiftUICoreViewFunctions.h"
 #include <QuartzCore/QuartzCore.h>
 
@@ -65,3 +68,5 @@ void _OpenSwiftUIAppKitAddSubview(id child, id parent, NSUInteger index) {
     [parent openswiftui_addRenderedSubview:child positioned:place relativeTo:otherView];
     [nsAnimationContextClass endGrouping];
 }
+
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
