@@ -1,6 +1,9 @@
 //
-//  TestingHostApp.swift
-//  TestingHost
+//  ObservableObjectExampleApp.swift
+//  Example
+//
+//  Created by Kyle on 2/23/26.
+//
 
 #if OPENSWIFTUI
 import OpenSwiftUI
@@ -8,14 +11,13 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
+#if OPENSWIFTUI_OPENCOMBINE
+import OpenCombine
 #else
-import UIKit
+import Combine
 #endif
 
-@main
-struct TestingHostApp: App {
+struct ObservableObjectExampleApp: App {
     #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     #else
@@ -24,13 +26,25 @@ struct TestingHostApp: App {
 
     var body: some Scene {
         WindowGroup {
-            Color.red
+            ContentViewWrapper()
         }
     }
 }
 
+private struct ContentViewWrapper: View {
+    @EnvironmentObject private var appDelegate: AppDelegate
+
+    var body: some View {
+        ContentView()
+            .onAppear {
+                print("appDelegate instance: \(appDelegate)")
+            }
+    }
+}
+
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-class AppDelegate: NSResponder, NSApplicationDelegate {
+import AppKit
+private class AppDelegate: NSResponder, NSApplicationDelegate, ObservableObject {
     var window: NSWindow?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
@@ -38,17 +52,11 @@ class AppDelegate: NSResponder, NSApplicationDelegate {
     }
 }
 #else
-class AppDelegate: UIResponder, UIApplicationDelegate {
+import UIKit
+private class AppDelegate: UIResponder, UIApplicationDelegate, ObservableObject {
     var window: UIWindow?
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
-        #if targetEnvironment(simulator)
-        // Disable hardware keyboards
-        let setHardwareLayout = NSSelectorFromString("setHardwareLayout:")
-        UITextInputMode.activeInputModes
-            .filter { $0.responds(to: setHardwareLayout) }
-            .forEach { $0.perform(setHardwareLayout, with: nil) }
-        #endif
         return true
     }
 }
