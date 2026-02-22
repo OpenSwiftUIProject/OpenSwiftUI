@@ -16,13 +16,10 @@ import UIKit
 
 @main
 struct TestingHostApp: App {
-    // FIXME: OpenSwiftUI does not support ApplicationDelegateAdaptor yet
-    #if !OPENSWIFTUI
     #if canImport(AppKit)
     @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
     #else
     @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    #endif
     #endif
 
     var body: some Scene {

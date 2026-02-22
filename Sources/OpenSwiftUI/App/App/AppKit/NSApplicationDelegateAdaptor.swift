@@ -1,12 +1,13 @@
+
 //
-//  UIApplicationDelegateAdaptor.swift
+//  NSApplicationDelegateAdaptor.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: Complete
 
-#if os(iOS) || os(visionOS)
-public import UIKit
+#if os(macOS)
+public import AppKit
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 #if OPENSWIFTUI_OPENCOMBINE
@@ -16,31 +17,31 @@ public import Combine
 #endif
 public import OpenObservation
 
-/// A property wrapper type that you use to create a UIKit app delegate.
+/// A property wrapper type that you use to create an AppKit app delegate.
 ///
 /// To handle app delegate callbacks in an app that uses the
 /// OpenSwiftUI life cycle, define a type that conforms to the
-/// [UIApplicationDelegate](https://developer.apple.com/documentation/uikit/uiapplicationdelegate)
+/// [NSApplicationDelegate](https://developer.apple.com/documentation/appkit/nsapplicationdelegate)
 /// protocol, and implement the delegate methods that you need. For example,
 /// you can implement the
-/// [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622958-application)
+/// [application(_:didRegisterForRemoteNotificationsWithDeviceToken:)](https://developer.apple.com/documentation/appkit/nsapplicationdelegate/1428766-application)
 /// method to handle remote notification registration:
 ///
-///     class MyAppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+///     class MyAppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
 ///         func application(
-///             _ application: UIApplication,
+///             _ application: NSApplication,
 ///             didRegisterForRemoteNotificationsWithDeviceToken deviceToken: Data
 ///         ) {
 ///             // Record the device token.
 ///         }
 ///     }
 ///
-/// Then use the `UIApplicationDelegateAdaptor` property wrapper inside your
+/// Then use the `NSApplicationDelegateAdaptor` property wrapper inside your
 /// ``App`` declaration to tell OpenSwiftUI about the delegate type:
 ///
 ///     @main
 ///     struct MyApp: App {
-///         @UIApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
+///         @NSApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
 ///
 ///         var body: some Scene { ... }
 ///     }
@@ -66,84 +67,36 @@ public import OpenObservation
 /// > Important: Manage an app's life cycle events without using an app
 /// delegate whenever possible. For example, prefer to handle changes
 /// in ``ScenePhase`` instead of relying on delegate callbacks, like
-/// [application(_:didFinishLaunchingWithOptions:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/1622921-application).
-///
-/// ### Scene delegates
-///
-/// Some iOS apps define a
-/// [UIWindowSceneDelegate](https://developer.apple.com/documentation/uikit/uiwindowscenedelegate)
-/// to handle scene-based events, like app shortcuts:
-///
-///     class MySceneDelegate: NSObject, UIWindowSceneDelegate, ObservableObject {
-///         func windowScene(
-///             _ windowScene: UIWindowScene,
-///             performActionFor shortcutItem: UIApplicationShortcutItem
-///         ) async -> Bool {
-///             // Do something with the shortcut...
-///
-///             return true
-///         }
-///     }
-///
-/// You can provide this kind of delegate to a SwiftUI app by returning the
-/// scene delegate's type from the
-/// [application(_:configurationForConnecting:options:)](https://developer.apple.com/documentation/uikit/uiapplicationdelegate/3197905-application)
-/// method inside your app delegate:
-///
-///     extension MyAppDelegate {
-///         func application(
-///             _ application: UIApplication,
-///             configurationForConnecting connectingSceneSession: UISceneSession,
-///             options: UIScene.ConnectionOptions
-///         ) -> UISceneConfiguration {
-///
-///             let configuration = UISceneConfiguration(
-///                                     name: nil,
-///                                     sessionRole: connectingSceneSession.role)
-///             if connectingSceneSession.role == .windowApplication {
-///                 configuration.delegateClass = MySceneDelegate.self
-///             }
-///             return configuration
-///         }
-///     }
-///
-/// When you configure the
-/// [UISceneConfiguration](https://developer.apple.com/documentation/uikit/uisceneconfiguration)
-/// instance, you only need to indicate the delegate class, and not a scene
-/// class or storyboard. OpenSwiftUI creates and manages the delegate instance,
-/// and sends it any relevant delegate callbacks.
-///
-/// As with the app delegate, if you make your scene delegate an observable
-/// object, OpenSwiftUI automatically puts it in the ``Environment``, from where
-/// you can access it with the ``EnvironmentObject`` property wrapper, and
-/// create bindings to its published properties.
+/// [applicationDidFinishLaunching(_:)](https://developer.apple.com/documentation/appkit/nsapplicationdelegate/1428385-applicationdidfinishlaunching).
 @available(OpenSwiftUI_v2_0, *)
-@available(macOS, unavailable)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
 @available(watchOS, unavailable)
+@available(visionOS, unavailable)
 @MainActor
 @preconcurrency
 @propertyWrapper
-public struct UIApplicationDelegateAdaptor<DelegateType>: DynamicProperty where DelegateType: NSObject, DelegateType: UIApplicationDelegate {
+public struct NSApplicationDelegateAdaptor<DelegateType>: DynamicProperty where DelegateType: NSObject, DelegateType: NSApplicationDelegate {
 
-    /// The underlying app delegate.
+    /// The underlying delegate.
     public var wrappedValue: DelegateType {
         if AppGraph.delegateBox == nil {
             Log.runtimeIssues(
-                "UIApplicationDelegateAdaptor was used outside of an App or Scene; this will not instantiate the delegate."
+                "NSApplicationDelegateAdaptor was used outside of an App or Scene; this will not instantiate the delegate."
             )
         }
         return AppGraph.delegateBox!.delegate! as! DelegateType
     }
 
-    /// Creates a UIKit app delegate adaptor.
+    /// Creates an AppKit app delegate adaptor.
     ///
     /// Call this initializer indirectly by creating a property with the
-    /// ``UIApplicationDelegateAdaptor`` property wrapper from inside your
+    /// ``NSApplicationDelegateAdaptor`` property wrapper from inside your
     /// ``App`` declaration:
     ///
     ///     @main
     ///     struct MyApp: App {
-    ///         @UIApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
+    ///         @NSApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
     ///
     ///         var body: some Scene { ... }
     ///     }
@@ -154,12 +107,12 @@ public struct UIApplicationDelegateAdaptor<DelegateType>: DynamicProperty where 
     /// If you want OpenSwiftUI to put the instantiated delegate in the
     /// ``Environment``, make sure the delegate class also conforms to the
     /// [ObservableObject](https://swiftpackageindex.com/openswiftuiproject/opencombine/main/documentation/opencombine/observableobject)
-    /// protocol. That causes OpenSwiftUI to invoke the ``init(_:)``
+    /// protocol. That causes OpenSwiftUI to invoke the ``init(_:)-1dott``
     /// initializer rather than this one.
     ///
     /// - Parameter delegateType: The type of application delegate that you
     ///   define in your app, which conforms to the
-    ///   [UIApplicationDelegate](https://developer.apple.com/documentation/uikit/uiapplicationdelegate)
+    ///   [NSApplicationDelegate](https://developer.apple.com/documentation/appkit/nsapplicationdelegate)
     ///   protocol.
     public init(_ delegateType: DelegateType.Type = DelegateType.self) {
         let box = FallbackDelegateBox<DelegateType>(nil)
@@ -174,7 +127,7 @@ public struct UIApplicationDelegateAdaptor<DelegateType>: DynamicProperty where 
     ) {
         guard GraphHost.currentHost is AppGraph else {
             Log.externalWarning(
-                "UIApplicationDelegateAdaptor was used outside of an App or Scene; this will not instantiate the delegate."
+                "NSApplicationDelegateAdaptor used outside of App declaration."
             )
             return
         }
@@ -182,18 +135,22 @@ public struct UIApplicationDelegateAdaptor<DelegateType>: DynamicProperty where 
 }
 
 @available(OpenSwiftUI_v2_0, *)
-extension UIApplicationDelegateAdaptor where DelegateType: ObservableObject {
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
+@available(watchOS, unavailable)
+@available(visionOS, unavailable)
+extension NSApplicationDelegateAdaptor where DelegateType: ObservableObject {
 
-    /// Creates a UIKit app delegate adaptor using a delegate that's
+    /// Creates an AppKit app delegate adaptor using a delegate that's
     /// an observable object.
     ///
     /// Call this initializer indirectly by creating a property with the
-    /// ``UIApplicationDelegateAdaptor`` property wrapper from inside your
+    /// ``NSApplicationDelegateAdaptor`` property wrapper from inside your
     /// ``App`` declaration:
     ///
     ///     @main
     ///     struct MyApp: App {
-    ///         @UIApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
+    ///         @NSApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
     ///
     ///         var body: some Scene { ... }
     ///     }
@@ -210,16 +167,15 @@ extension UIApplicationDelegateAdaptor where DelegateType: ObservableObject {
     ///     @EnvironmentObject private var appDelegate: MyAppDelegate
     ///
     /// If your delegate isn't an observable object, OpenSwiftUI invokes the
-    /// ``init(_:)-59sfu`` initializer rather than this one, and doesn't
+    /// ``init(_:)-67u91`` initializer rather than this one, and doesn't
     /// put the delegate instance in the environment.
     ///
     /// - Parameter delegateType: The type of application delegate that you
     ///   define in your app, which conforms to the
-    ///   [UIApplicationDelegate](https://developer.apple.com/documentation/uikit/uiapplicationdelegate)
+    ///   [NSApplicationDelegate](https://developer.apple.com/documentation/appkit/nsapplicationdelegate)
     ///   and
     ///   [ObservableObject](https://swiftpackageindex.com/openswiftuiproject/opencombine/main/documentation/opencombine/observableobject)
     ///   protocols.
-    ///
     public init(_ delegateType: DelegateType.Type = DelegateType.self) {
         let box = ObservableObjectFallbackDelegateBox<DelegateType>()
         AppGraph.delegateBox = box
@@ -233,15 +189,15 @@ extension UIApplicationDelegateAdaptor where DelegateType: ObservableObject {
     /// delegate instance with a dollar sign (`$`). For example, you might
     /// publish a Boolean value in your application delegate:
     ///
-    ///     class MyAppDelegate: NSObject, UIApplicationDelegate, ObservableObject {
+    ///     class MyAppDelegate: NSObject, NSApplicationDelegate, ObservableObject {
     ///         @Published var isEnabled = false
     ///
     ///         // ...
     ///     }
     ///
     /// If you declare the delegate in your ``App`` using the
-    /// ``UIApplicationDelegateAdaptor`` property wrapper, you can get
-    /// the delegate that SwiftUI instantiates from the environment and
+    /// ``NSApplicationDelegateAdaptor`` property wrapper, you can get
+    /// the delegate that OpenSwiftUI instantiates from the environment and
     /// access a binding to its published values from any view in your app:
     ///
     ///     struct MyView: View {
@@ -255,7 +211,7 @@ extension UIApplicationDelegateAdaptor where DelegateType: ObservableObject {
     public var projectedValue: ObservedObject<DelegateType>.Wrapper {
         if AppGraph.delegateBox == nil {
             Log.runtimeIssues(
-                "UIApplicationDelegateAdaptor was used outside of an App or Scene; this will not instantiate the delegate."
+                "NSApplicationDelegateAdaptor was used outside of an App or Scene; this will not instantiate the delegate."
             )
         }
         return ObservedObject<DelegateType>.Wrapper(root: wrappedValue)
@@ -263,19 +219,21 @@ extension UIApplicationDelegateAdaptor where DelegateType: ObservableObject {
 }
 
 @available(OpenSwiftUI_v5_0, *)
-@available(macOS, unavailable)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
 @available(watchOS, unavailable)
-extension UIApplicationDelegateAdaptor where DelegateType: Observable {
+@available(visionOS, unavailable)
+extension NSApplicationDelegateAdaptor where DelegateType: Observable {
 
-    /// Creates a UIKit app delegate adaptor using an observable delegate.
+    /// Creates an AppKit app delegate adaptor using an observable delegate.
     ///
     /// Call this initializer indirectly by creating a property with the
-    /// ``UIApplicationDelegateAdaptor`` property wrapper from inside your
+    /// ``NSApplicationDelegateAdaptor`` property wrapper from inside your
     /// ``App`` declaration:
     ///
     ///     @main
     ///     struct MyApp: App {
-    ///         @UIApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
+    ///         @NSApplicationDelegateAdaptor private var appDelegate: MyAppDelegate
     ///
     ///         var body: some Scene { ... }
     ///     }
@@ -291,13 +249,13 @@ extension UIApplicationDelegateAdaptor where DelegateType: Observable {
     ///
     ///     @Environment(MyAppDelegate.self) private var appDelegate
     ///
-    /// If your delegate isn't observable, SwiftUI invokes the
-    /// ``init(_:)-59sfu`` initializer rather than this one, and doesn't
+    /// If your delegate isn't observable, OpenSwiftUI invokes the
+    /// ``init(_:)-67u91`` initializer rather than this one, and doesn't
     /// put the delegate instance in the environment.
     ///
     /// - Parameter delegateType: The type of application delegate that you
     ///   define in your app, which conforms to the
-    ///   [UIApplicationDelegate](https://developer.apple.com/documentation/uikit/uiapplicationdelegate)
+    ///   [NSApplicationDelegate](https://developer.apple.com/documentation/appkit/nsapplicationdelegate)
     ///   and
     ///   [Observable](https://swiftpackageindex.com/openswiftuiproject/openobservation/main/documentation/openobservation/observable)
     ///   protocols.
@@ -308,7 +266,9 @@ extension UIApplicationDelegateAdaptor where DelegateType: Observable {
 }
 
 @available(OpenSwiftUI_v2_0, *)
-@available(macOS, unavailable)
+@available(iOS, unavailable)
+@available(tvOS, unavailable)
 @available(watchOS, unavailable)
-extension UIApplicationDelegateAdaptor: Sendable {}
+@available(visionOS, unavailable)
+extension NSApplicationDelegateAdaptor: Sendable {}
 #endif
