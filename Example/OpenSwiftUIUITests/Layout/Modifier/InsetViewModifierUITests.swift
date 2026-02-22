@@ -8,7 +8,13 @@ import Testing
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct InsetViewModifierUITests {
     
-    @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511"))
+    @Test(
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511",
+            id: 511,
+            "safeAreaPadding with edge insets should apply padding to the specified edges"
+        )
+    )
     func safeAreaPaddingWithEdgeInsets() {
         struct ContentView: View {
             var body: some View {
