@@ -140,22 +140,3 @@ class ObjectFallbackDelegateBox<Delegate>: AnyFallbackDelegateBox where Delegate
         env[objectType: type(of: typedDelegate)] = typedDelegate
     }
 }
-
-// MARK: - ObservableObjectTypeVisitor
-
-protocol ObservableObjectTypeVisitor {
-    mutating func visit<T>(type: T.Type) where T: ObservableObject
-}
-
-// MARK: - MakeObservableObjectDelegateBox
-
-struct MakeObservableObjectDelegateBox: ObservableObjectTypeVisitor {
-    var value: Any
-    var box: AnyFallbackDelegateBox?
-
-    mutating func visit<T>(type: T.Type) where T: ObservableObject {
-        guard let delegate = value as? T else { return }
-        box = UnsafeObservableObjectFallbackDelegateBox<T>(delegate)
-    }
-}
-
