@@ -28,13 +28,11 @@
 // issues with API availability and maintainability.
 // The remaining API is now declared below so that we can call it directly on id.
 @interface NSObject ()
-// UIKit
-- (id)maskView; // UIView
 // AppKit
-- (void)setNeedsDisplay:(BOOL)needsDisplay; // NSView
+- (id)maskView; // NSView
 + (id)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState; // NSGraphicsContext
-- (void)displayRectIgnoringOpacity:(NSRect)rect inContext:(id)context; // NSView
-- (void)setFrameTransform:(CGAffineTransform)transform; // UIView
+- (void)displayRectIgnoringOpacity:(CGRect)rect inContext:(id)context; // NSView
+- (void)setFrameTransform:(CGAffineTransform)transform;
 @end
 
 @implementation NSObject (OpenSwiftUICore_Additions)
@@ -49,17 +47,6 @@
     #endif
 }
 @end
-
-// MARK: - Private API Forward Declarations
-
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-@interface NSObject (OpenSwiftUICoreViewIntelligenceEffect)
-+ (id)sharedLight;
-+ (id)sharedReactiveLight;
-- (instancetype)initWithLightSource:(id)lightSource;
-- (void)setBackgroundEffects:(NSArray *)effects;
-@end
-#endif
 
 // MARK: - System Resolution
 
@@ -132,12 +119,20 @@ NSArray * OpenSwiftUICoreViewSubviews(OpenSwiftUIViewSystem system, id view) {
 
 id _Nullable OpenSwiftUICoreViewMaskView(OpenSwiftUIViewSystem system, id view) {
     switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            return [(UIView *)view maskView];
+            #else
+            return nil;
+            #endif
+        case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            return [(NSView *)view maskView];
+            #else
+            return nil;
+            #endif
         case OpenSwiftUIViewSystemCALayer:
             return [view mask];
-        case OpenSwiftUIViewSystemUIView:
-            return [view maskView];
-        case OpenSwiftUIViewSystemNSView:
-            return nil;
     }
 }
 
@@ -146,10 +141,14 @@ id _Nullable OpenSwiftUICoreViewMaskView(OpenSwiftUIViewSystem system, id view) 
 void OpenSwiftUICoreViewSetNeedsDisplay(OpenSwiftUIViewSystem system, id view) {
     switch (system) {
         case OpenSwiftUIViewSystemUIView:
-            [view setNeedsDisplay];
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            [(UIView *)view setNeedsDisplay];
+            #endif
             break;
         case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
             [view setNeedsDisplay:YES];
+            #endif
             break;
         case OpenSwiftUIViewSystemCALayer:
             [view setNeedsDisplay];
@@ -217,28 +216,32 @@ void OpenSwiftUICoreViewSetTransform(OpenSwiftUIViewSystem system, id view, CGAf
     }
 }
 
-// WIP
-
 // MARK: - Geometry
 
-void OpenSwiftUICoreViewSetSize(OpenSwiftUIViewSystem system, id view, CGFloat width, CGFloat height) {
-#if OPENSWIFTUI_TARGET_OS_OSX
-    if (system == OpenSwiftUIViewSystemNSView) {
-        [(NSView *)view setFrameSize:NSMakeSize(width, height)];
-    } else if (system == OpenSwiftUIViewSystemCALayer || system == OpenSwiftUIViewSystemUIView) {
-        CGRect bounds = [view bounds];
-        bounds.size.width = width;
-        bounds.size.height = height;
-        [view setBounds:bounds];
+void OpenSwiftUICoreViewSetSize(OpenSwiftUIViewSystem system, id view, CGSize size) {
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            CGRect bounds = [(UIView *)view bounds];
+            bounds.size = size;
+            [(UIView *)view setBounds:bounds];
+            #endif
+            break;
+        }
+        case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
+             [(NSView *)view setFrameSize:size];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemCALayer:
+        {
+            CGRect bounds = [(CALayer *)view bounds];
+            bounds.size = size;
+            [(CALayer *)view setBounds:bounds];
+            break;
+        }
     }
-#else
-    if (system != OpenSwiftUIViewSystemNSView) {
-        CGRect bounds = [view bounds];
-        bounds.size.width = width;
-        bounds.size.height = height;
-        [view setBounds:bounds];
-    }
-#endif
 }
 
 CGRect OpenSwiftUICoreViewGetFrame(OpenSwiftUIViewSystem system, id view) {
@@ -252,197 +255,221 @@ void OpenSwiftUICoreViewSetFrame(OpenSwiftUIViewSystem system, id view, CGRect f
 void OpenSwiftUICoreViewSetGeometry(
     OpenSwiftUIViewSystem system, id view,
     BOOL useViewAPIs, BOOL positionChanged,
-    BOOL boundsOriginChanged, BOOL boundsSizeChanged,
+    BOOL originChanged, BOOL sizeChanged,
     CGPoint position, CGRect bounds
 ) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        if (positionChanged) {
-            [(CALayer *)view setPosition:position];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            if (useViewAPIs) {
+                UIView *uiView = (UIView *)view;
+                assert(!originChanged);
+                if (positionChanged) {
+                    [uiView setCenter:position];
+                }
+                if (sizeChanged) {
+                    bounds.origin = [uiView bounds].origin;
+                    [uiView setBounds:bounds];
+                }
+            } else {
+                CALayer *layer = [(UIView *)view layer];
+                if (positionChanged) {
+                    [layer setPosition:position];
+                }
+                if (originChanged || sizeChanged) {
+                    [layer setBounds:bounds];
+                }
+            }
+            #endif
+            break;
         }
-        if (boundsOriginChanged || boundsSizeChanged) {
-            [(CALayer *)view setBounds:bounds];
+        case OpenSwiftUIViewSystemNSView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            NSView *nsView = (NSView *)view;
+            if (positionChanged && sizeChanged) {
+                [nsView setFrame:CGRectMake(position.x, position.y, bounds.size.width, bounds.size.height)];
+            } else {
+                if (positionChanged) {
+                    [nsView setFrameOrigin:position];
+                }
+                if (sizeChanged) {
+                    [nsView setFrameSize:bounds.size];
+                }
+            }
+            if (originChanged) {
+                [nsView setBoundsOrigin:bounds.origin];
+            }
+            #endif
+            break;
         }
-        return;
-    }
-
-#if OPENSWIFTUI_TARGET_OS_OSX
-    if (system == OpenSwiftUIViewSystemNSView) {
-        if (positionChanged && boundsSizeChanged) {
-            [(NSView *)view setFrame:CGRectMake(position.x, position.y, bounds.size.width, bounds.size.height)];
-        } else {
+        case OpenSwiftUIViewSystemCALayer:
             if (positionChanged) {
-                [(NSView *)view setFrameOrigin:position];
+                [(CALayer *)view setPosition:position];
             }
-            if (boundsSizeChanged) {
-                [(NSView *)view setFrameSize:bounds.size];
+            if (originChanged || sizeChanged) {
+                [(CALayer *)view setBounds:bounds];
             }
-        }
-        if (boundsOriginChanged) {
-            [(NSView *)view setBoundsOrigin:bounds.origin];
-        }
-        return;
+            break;
     }
-#endif
-
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    if (system == OpenSwiftUIViewSystemUIView) {
-        if (useViewAPIs) {
-            if (boundsOriginChanged) {
-                __builtin_trap();
-            }
-            if (positionChanged) {
-                [(UIView *)view setCenter:position];
-            }
-            if (boundsSizeChanged) {
-                CGRect currentBounds = [(UIView *)view bounds];
-                currentBounds.size = bounds.size;
-                [(UIView *)view setBounds:currentBounds];
-            }
-        } else {
-            CALayer *layer = [(UIView *)view layer];
-            if (positionChanged) {
-                [layer setPosition:position];
-            }
-            if (boundsOriginChanged || boundsSizeChanged) {
-                [layer setBounds:bounds];
-            }
-        }
-    }
-#endif
 }
 
 void OpenSwiftUICoreViewSetMaskGeometry(
     OpenSwiftUIViewSystem system, id view,
     CGRect bounds
 ) {
-    id maskObj = nil;
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        maskObj = [(CALayer *)view mask];
-    }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        maskObj = [(UIView *)view maskView];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    else if (system == OpenSwiftUIViewSystemNSView) {
-        maskObj = [(NSView *)view maskView];
-    }
-#endif
-
-    if (maskObj == nil) {
+    id maskView = OpenSwiftUICoreViewMaskView(system, view);
+    if (maskView == nil) {
         return;
     }
-
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        CGRect parentFrame = [view frame];
-        [(CALayer *)maskObj setFrame:parentFrame];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            UIView *uiMaskView = (UIView *)maskView;
+            [uiMaskView setCenter:bounds.origin];
+            [uiMaskView setBounds:bounds];
+            #endif
+            break;
+        }
+        case OpenSwiftUIViewSystemNSView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            NSView *nsMaskView = (NSView *)maskView;
+            [nsMaskView setFrame:bounds];
+            [nsMaskView setBoundsOrigin:bounds.origin];
+            #endif
+            break;
+        }
+        case OpenSwiftUIViewSystemCALayer:
+        {
+            CALayer *maskLayer = (CALayer *)maskView;
+            [maskLayer setFrame:[view frame]];
+            [maskLayer setBounds:bounds];
+            break;
+        }
     }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        [(UIView *)maskObj setCenter:bounds.origin];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    else if (system == OpenSwiftUIViewSystemNSView) {
-        [(NSView *)maskObj setFrame:CGRectMake(bounds.origin.x, bounds.origin.y, bounds.size.width, bounds.size.height)];
-        [(NSView *)maskObj setBoundsOrigin:bounds.origin];
-    }
-#endif
-
-    [maskObj setBounds:bounds];
 }
 
 // MARK: - Filters and Shadow
 
 void OpenSwiftUICoreViewSetCompositingFilter(OpenSwiftUIViewSystem system, id view, id _Nullable filter) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        [(CALayer *)view setCompositingFilter:filter];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            [[(UIView *)view layer] setCompositingFilter:filter];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            [(NSView *)view setCompositingFilter:filter];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemCALayer:
+            [(CALayer *)view setCompositingFilter:filter];
+            break;
     }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        [[(UIView *)view layer] setCompositingFilter:filter];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    else if (system == OpenSwiftUIViewSystemNSView) {
-        [[(NSView *)view layer] setCompositingFilter:filter];
-    }
-#endif
 }
 
 void OpenSwiftUICoreViewSetFilters(OpenSwiftUIViewSystem system, id view, NSArray * _Nullable filters) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        [(CALayer *)view setFilters:filters];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            [[(UIView *)view layer] setFilters:filters];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            [(NSView *)view setContentFilters:filters];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemCALayer:
+            [(CALayer *)view setFilters:filters];
+            break;
     }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        [[(UIView *)view layer] setFilters:filters];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    else if (system == OpenSwiftUIViewSystemNSView) {
-        [(NSView *)view setContentFilters:filters];
-    }
-#endif
 }
+
+#if OPENSWIFTUI_TARGET_OS_OSX
+static NSShadow * _Nullable makeNSShadow(CGColorRef color, CGFloat radius, CGSize offset) {
+    static Class nsShadowClass = nil;
+    static Class nsColorClass = nil;
+    static dispatch_once_t once;
+    dispatch_once(&once, ^{
+        nsShadowClass = NSClassFromString(@"NSShadow");
+        nsColorClass = NSClassFromString(@"NSColor");
+    });
+    if (nsShadowClass == nil || nsColorClass == nil) {
+        return nil;
+    }
+    NSShadow *shadow = [[nsShadowClass alloc] init];
+    [shadow setShadowColor:[nsColorClass colorWithCGColor:color]];
+    [shadow setShadowBlurRadius:radius];
+    [shadow setShadowOffset:offset];
+    return shadow;
+}
+#endif
 
 void OpenSwiftUICoreViewSetShadow(
     OpenSwiftUIViewSystem system, id view,
     CGColorRef _Nullable color, CGFloat radius,
-    CGFloat offsetWidth, CGFloat offsetHeight
+    CGSize offset
 ) {
-#if OPENSWIFTUI_TARGET_OS_OSX
-    if (system == OpenSwiftUIViewSystemNSView) {
-        if (color != NULL) {
-            static Class nsShadowClass = nil;
-            static Class nsColorClass = nil;
-            static dispatch_once_t once;
-            dispatch_once(&once, ^{
-                nsShadowClass = NSClassFromString(@"NSShadow");
-                nsColorClass = NSClassFromString(@"NSColor");
-            });
-            NSShadow *shadow = nil;
-            if (nsShadowClass != nil && nsColorClass != nil) {
-                shadow = [[nsShadowClass alloc] init];
-                [shadow setShadowColor:[nsColorClass colorWithCGColor:color]];
-                [shadow setShadowBlurRadius:radius];
-                [shadow setShadowOffset:CGSizeMake(offsetWidth, offsetHeight)];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            CALayer *layer = [(UIView *)view layer];
+            if (color != NULL) {
+                [layer setShadowOpacity:1.0f];
+                [layer setShadowColor:color];
+                [layer setShadowRadius:radius];
+                [layer setShadowOffset:offset];
+            } else {
+                [layer setShadowOpacity:0.0f];
             }
-            [(NSView *)view setShadow:shadow];
-        } else {
-            [(NSView *)view setShadow:nil];
+            #endif
+            break;
         }
-        return;
-    }
-#endif
-
-    CALayer *layer;
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        layer = (CALayer *)view;
-    }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        layer = [(UIView *)view layer];
-    }
-#endif
-    else {
-        return;
-    }
-
-    if (color != NULL) {
-        [layer setShadowOpacity:1.0f];
-        [layer setShadowColor:color];
-        [layer setShadowRadius:radius];
-        [layer setShadowOffset:CGSizeMake(offsetWidth, offsetHeight)];
-    } else {
-        [layer setShadowOpacity:0.0f];
+        case OpenSwiftUIViewSystemNSView:
+        {
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            if (color != NULL) {
+                [(NSView *)view setShadow:makeNSShadow(color, radius, offset)];
+            } else {
+                [(NSView *)view setShadow:nil];
+            }
+            #endif
+            break;
+        }
+        case OpenSwiftUIViewSystemCALayer:
+        {
+            CALayer *layer = (CALayer *)view;
+            if (color != NULL) {
+                [layer setShadowOpacity:1.0f];
+                [layer setShadowColor:color];
+                [layer setShadowRadius:radius];
+                [layer setShadowOffset:offset];
+            } else {
+                [layer setShadowOpacity:0.0f];
+            }
+            break;
+        }
     }
 }
 
-// MARK: - Intelligence Light Source
-
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+
+// MARK: - Private API Forward Declarations
+
+@interface NSObject (OpenSwiftUICoreViewIntelligenceEffect)
++ (id)sharedLight;
++ (id)sharedReactiveLight;
+- (instancetype)initWithLightSource:(id)lightSource;
+- (void)setBackgroundEffects:(NSArray *)effects;
+@end
+
+// MARK: - Intelligence Light Source
 
 id _Nullable OpenSwiftUICoreViewMakeIntelligenceLightSourceView(BOOL reactive) {
     Class cls = NSClassFromString(@"UIVisualEffectView");
@@ -470,16 +497,6 @@ void OpenSwiftUICoreViewUpdateIntelligenceLightSourceView(id view, BOOL reactive
     NSArray *effects = @[effect];
     [(id)view setBackgroundEffects:effects];
 }
-
-#else
-
-id _Nullable OpenSwiftUICoreViewMakeIntelligenceLightSourceView(BOOL reactive) {
-    return nil;
-}
-
-void OpenSwiftUICoreViewUpdateIntelligenceLightSourceView(id view, BOOL reactive) {
-}
-
 #endif
 
 #endif /* OPENSWIFTUI_TARGET_OS_DARWIN */

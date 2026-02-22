@@ -58,7 +58,7 @@ void OpenSwiftUICoreViewSetTransform(OpenSwiftUIViewSystem system, id view, CGAf
 
 // MARK: - Geometry
 
-void OpenSwiftUICoreViewSetSize(OpenSwiftUIViewSystem system, id view, CGFloat width, CGFloat height) OPENSWIFTUI_SWIFT_NAME(CoreViewSetSize(system:view:width:height:));
+void OpenSwiftUICoreViewSetSize(OpenSwiftUIViewSystem system, id view, CGSize size) OPENSWIFTUI_SWIFT_NAME(CoreViewSetSize(system:view:size:));
 
 CGRect OpenSwiftUICoreViewGetFrame(OpenSwiftUIViewSystem system, id view) OPENSWIFTUI_SWIFT_NAME(CoreViewGetFrame(system:view:));
 
@@ -85,14 +85,18 @@ void OpenSwiftUICoreViewSetFilters(OpenSwiftUIViewSystem system, id view, NSArra
 void OpenSwiftUICoreViewSetShadow(
     OpenSwiftUIViewSystem system, id view,
     CGColorRef _Nullable color, CGFloat radius,
-    CGFloat offsetWidth, CGFloat offsetHeight
-) OPENSWIFTUI_SWIFT_NAME(CoreViewSetShadow(system:view:color:radius:offsetWidth:offsetHeight:));
+    CGSize offset
+) OPENSWIFTUI_SWIFT_NAME(CoreViewSetShadow(system:view:color:radius:offset:));
+
+#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 
 // MARK: - Intelligence Light Source
 
 id _Nullable OpenSwiftUICoreViewMakeIntelligenceLightSourceView(BOOL reactive) OPENSWIFTUI_SWIFT_NAME(CoreViewMakeIntelligenceLightSourceView(reactive:));
 
 void OpenSwiftUICoreViewUpdateIntelligenceLightSourceView(id view, BOOL reactive) OPENSWIFTUI_SWIFT_NAME(CoreViewUpdateIntelligenceLightSourceView(view:reactive:));
+
+#endif /* OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION */
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 
