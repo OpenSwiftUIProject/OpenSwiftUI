@@ -51,6 +51,7 @@
 // MARK: - System Resolution
 
 OpenSwiftUIViewSystem OpenSwiftUICoreViewResolvedSystem(OpenSwiftUIViewSystem system, id view) {
+    // [Q]: Unused side effect call. Also check whether caller argument should be CoreSystem or ViewSystem.
     if (system == OpenSwiftUIViewSystemNSView) {
         Class nsViewClass = NSClassFromString(@"NSView");
         if (nsViewClass != nil) {

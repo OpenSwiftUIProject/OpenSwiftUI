@@ -33,7 +33,7 @@
 @end
 #endif
 
-Class _Nullable _OpenSwiftUICorePlatformImageClass() {
+Class _Nullable _OpenSwiftUICorePlatformImageClass(OpenSwiftUICoreSystem system) {
     static BOOL isValid;
     static Class imageClass;
     static dispatch_once_t once;
@@ -41,6 +41,7 @@ Class _Nullable _OpenSwiftUICorePlatformImageClass() {
         #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
         Class class = NSClassFromString(@"UIImage");
         #elif OPENSWIFTUI_TARGET_OS_OSX
+        // [Q]: Should we check the system here to lookup UIImage for non AppKit system?
         Class class = NSClassFromString(@"NSImage");
         #else
         Class class = nil;
@@ -55,7 +56,7 @@ Class _Nullable _OpenSwiftUICorePlatformImageClass() {
 }
 
 NSObject* _OpenSwiftUICorePlatformImageMakeKitImage(OpenSwiftUICoreSystem system, CGImageRef cgImage, CGFloat scale, uint8_t orientation) {
-    Class imageClass = _OpenSwiftUICorePlatformImageClass();
+    Class imageClass = _OpenSwiftUICorePlatformImageClass(system);
     #if OPENSWIFTUI_TARGET_OS_OSX
     if (system == OpenSwiftUICoreSystemAppKit) {
         CGSize size = CGSizeMake(CGImageGetWidth(cgImage) / scale, CGImageGetHeight(cgImage) / scale);
