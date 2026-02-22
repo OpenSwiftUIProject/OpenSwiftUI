@@ -265,11 +265,13 @@ struct SafeAreaPaddingModifier: ViewModifier {
     }
 
     private func insetView(edge: Edge) -> some View {
-        let axis = Axis(edge: edge)
         let inset = edges.contains(edge) ? (insets ?? defaultPadding)[edge] : 0
-        return axis == .horizontal
-            ? Color.clear.frame(width: inset)
-            : Color.clear.frame(height: inset)
+        let axis = Axis(edge: edge)
+        return Color.clear.frame(
+            width: axis == .horizontal ? inset : 0,
+            height: axis == .vertical ? inset : 0,
+            alignment: .center
+        )
     }
 }
 
