@@ -33,11 +33,17 @@ struct ObservableObjectExampleApp: App {
 
 private struct ContentViewWrapper: View {
     @EnvironmentObject private var appDelegate: AppDelegate
+    #if canImport(UIKit)
+    @EnvironmentObject private var sceneDelegate: SceneDelegate
+    #endif
 
     var body: some View {
         ContentView()
             .onAppear {
                 print("appDelegate instance: \(appDelegate)")
+                #if canImport(UIKit)
+                print("sceneDelegate instance: \(sceneDelegate)")
+                #endif
             }
     }
 }
@@ -56,8 +62,31 @@ import UIKit
 private class AppDelegate: UIResponder, UIApplicationDelegate, ObservableObject {
     var window: UIWindow?
 
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    func application(
+        _ application: UIApplication,
+        willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(
+                                name: nil,
+                                sessionRole: connectingSceneSession.role)
+        if connectingSceneSession.role == .windowApplication {
+            configuration.delegateClass = SceneDelegate.self
+        }
+        return configuration
+    }
+}
+
+private class SceneDelegate: NSObject, UIWindowSceneDelegate, ObservableObject {
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        print("SceneDelegate will connect to scene: \(scene), session: \(session), options: \(connectionOptions)")
     }
 }
 #endif

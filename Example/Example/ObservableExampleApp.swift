@@ -28,11 +28,17 @@ struct ObservableExampleApp: App {
 
 private struct ContentViewWrapper: View {
     @Environment(AppDelegate.self) private var appDelegate
+    #if canImport(UIKit)
+    @Environment(SceneDelegate.self) private var sceneDelegate
+    #endif
 
     var body: some View {
         ContentView()
             .onAppear {
                 print("appDelegate instance: \(appDelegate)")
+                #if canImport(UIKit)
+                print("sceneDelegate instance: \(sceneDelegate)")
+                #endif
             }
     }
 }
@@ -57,14 +63,43 @@ private class AppDelegate: NSResponder, NSApplicationDelegate {
 // Then Observation's Observable macro will conflict with OpenObservation's Observable macro.
 import class UIKit.UIApplication
 import class UIKit.UIResponder
+import class UIKit.UIScene
+import class UIKit.UISceneConfiguration
+import class UIKit.UISceneSession
 import class UIKit.UIWindow
 import protocol UIKit.UIApplicationDelegate
+import protocol UIKit.UIWindowSceneDelegate
+
 @Observable
 private class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
-    func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil) -> Bool {
+    func application(
+        _ application: UIApplication,
+        willFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey : Any]? = nil
+    ) -> Bool {
         return true
+    }
+
+    func application(
+        _ application: UIApplication,
+        configurationForConnecting connectingSceneSession: UISceneSession,
+        options: UIScene.ConnectionOptions
+    ) -> UISceneConfiguration {
+        let configuration = UISceneConfiguration(
+                                name: nil,
+                                sessionRole: connectingSceneSession.role)
+        if connectingSceneSession.role == .windowApplication {
+            configuration.delegateClass = SceneDelegate.self
+        }
+        return configuration
+    }
+}
+
+@Observable
+private class SceneDelegate: NSObject, UIWindowSceneDelegate {
+    func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
+        print("SceneDelegate will connect to scene: \(scene), session: \(session), options: \(connectionOptions)")
     }
 }
 #endif

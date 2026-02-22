@@ -13,8 +13,8 @@ struct EntryPoint {
             BenchmarkApp.main()
         } else {
             ExampleApp.main()
-//            ObservableExampleApp.main()
 //            ObservableObjectExampleApp.main()
+//            ObservableExampleApp.main()
         }
     }
 }
