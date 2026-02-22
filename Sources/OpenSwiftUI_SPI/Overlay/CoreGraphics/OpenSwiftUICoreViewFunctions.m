@@ -192,7 +192,7 @@ void OpenSwiftUICoreViewSetClipsToBounds(OpenSwiftUIViewSystem system, id view, 
         [view setClipsToBounds:clips];
         return;
     }
-    if (system == OpenSwiftUIViewSystemCALayer) {
+    if (system != OpenSwiftUIViewSystemCALayer) {
         view = [view layer];
     }
     [view setMasksToBounds:clips];
