@@ -1,8 +1,8 @@
 //
-//  ExampleApp.swift
+//  ObservableExampleApp.swift
 //  Example
 //
-//  Created by Kyle on 2023/11/9.
+//  Created by Kyle on 2/23/26.
 //
 
 #if OPENSWIFTUI
@@ -10,8 +10,9 @@ import OpenSwiftUI
 #else
 import SwiftUI
 #endif
+import OpenObservation
 
-struct ExampleApp: App {
+struct ObservableExampleApp: App {
     #if canImport(AppKit) && !targetEnvironment(macCatalyst)
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
     #else
@@ -20,13 +21,36 @@ struct ExampleApp: App {
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentViewWrapper()
         }
     }
 }
 
+private struct ContentViewWrapper: View {
+    @Environment(AppDelegate.self) private var appDelegate
+    #if canImport(UIKit)
+    @Environment(SceneDelegate.self) private var sceneDelegate
+    #endif
+
+    var body: some View {
+        ContentView()
+            .onAppear {
+                print("appDelegate instance: \(appDelegate)")
+                #if canImport(UIKit)
+                print("sceneDelegate instance: \(sceneDelegate)")
+                #endif
+            }
+    }
+}
+
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
+// Avoid AppKit export Foundation and Foundation export Observation issue.
+// Then Observation's Observable macro will conflict with OpenObservation's Observable macro.
+import class AppKit.NSResponder
+import class AppKit.NSWindow
+import protocol AppKit.NSApplicationDelegate
+import struct Foundation.Notification
+@Observable
 private class AppDelegate: NSResponder, NSApplicationDelegate {
     var window: NSWindow?
 
@@ -35,7 +59,18 @@ private class AppDelegate: NSResponder, NSApplicationDelegate {
     }
 }
 #else
-import UIKit
+// Avoid UIKit export Foundation and Foundation export Observation issue.
+// Then Observation's Observable macro will conflict with OpenObservation's Observable macro.
+import class UIKit.UIApplication
+import class UIKit.UIResponder
+import class UIKit.UIScene
+import class UIKit.UISceneConfiguration
+import class UIKit.UISceneSession
+import class UIKit.UIWindow
+import protocol UIKit.UIApplicationDelegate
+import protocol UIKit.UIWindowSceneDelegate
+
+@Observable
 private class AppDelegate: UIResponder, UIApplicationDelegate {
     var window: UIWindow?
 
@@ -61,6 +96,7 @@ private class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
+@Observable
 private class SceneDelegate: NSObject, UIWindowSceneDelegate {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         print("SceneDelegate will connect to scene: \(scene), session: \(session), options: \(connectionOptions)")

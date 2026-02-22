@@ -1,8 +1,8 @@
 //
-//  ExampleApp.swift
+//  ObservableObjectExampleApp.swift
 //  Example
 //
-//  Created by Kyle on 2023/11/9.
+//  Created by Kyle on 2/23/26.
 //
 
 #if OPENSWIFTUI
@@ -11,23 +11,46 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-struct ExampleApp: App {
+#if OPENSWIFTUI_OPENCOMBINE
+import OpenCombine
+#else
+import Combine
+#endif
+
+struct ObservableObjectExampleApp: App {
     #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-    @NSApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     #else
-    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
+    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
     #endif
 
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            ContentViewWrapper()
         }
+    }
+}
+
+private struct ContentViewWrapper: View {
+    @EnvironmentObject private var appDelegate: AppDelegate
+    #if canImport(UIKit)
+    @EnvironmentObject private var sceneDelegate: SceneDelegate
+    #endif
+
+    var body: some View {
+        ContentView()
+            .onAppear {
+                print("appDelegate instance: \(appDelegate)")
+                #if canImport(UIKit)
+                print("sceneDelegate instance: \(sceneDelegate)")
+                #endif
+            }
     }
 }
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
-private class AppDelegate: NSResponder, NSApplicationDelegate {
+private class AppDelegate: NSResponder, NSApplicationDelegate, ObservableObject {
     var window: NSWindow?
 
     func applicationWillFinishLaunching(_ notification: Notification) {
@@ -36,7 +59,7 @@ private class AppDelegate: NSResponder, NSApplicationDelegate {
 }
 #else
 import UIKit
-private class AppDelegate: UIResponder, UIApplicationDelegate {
+private class AppDelegate: UIResponder, UIApplicationDelegate, ObservableObject {
     var window: UIWindow?
 
     func application(
@@ -61,7 +84,7 @@ private class AppDelegate: UIResponder, UIApplicationDelegate {
     }
 }
 
-private class SceneDelegate: NSObject, UIWindowSceneDelegate {
+private class SceneDelegate: NSObject, UIWindowSceneDelegate, ObservableObject {
     func scene(_ scene: UIScene, willConnectTo session: UISceneSession, options connectionOptions: UIScene.ConnectionOptions) {
         print("SceneDelegate will connect to scene: \(scene), session: \(session), options: \(connectionOptions)")
     }

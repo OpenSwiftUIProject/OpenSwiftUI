@@ -180,11 +180,21 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         if let fallbackAppDelegate = appDelegate.fallbackDelegate,
            fallbackAppDelegate.responds(to: #selector(UIApplicationDelegate.application(_:configurationForConnecting:options:))),
            let config = fallbackAppDelegate.application?(UIApplication.shared, configurationForConnecting: session, options: connectionOptions),
-           let delegateClass = config.delegateClass,
-           let sceneDelegate = config.sceneDelegate {
-            // TODO
-            _openSwiftUIUnimplementedWarning()
-            sceneDelegateBox = FallbackDelegateBox<NSObject>(sceneDelegate as? NSObject)
+           let delegateClass = config.delegateClass {
+            let delegateClassType: AnyObject.Type = delegateClass
+            let sceneDelegate = config.sceneDelegate
+            if delegateClassType is Observable.Type {
+                func project<T>(_ type: T.Type) where T: AnyObject {
+                    sceneDelegateBox = ObjectFallbackDelegateBox(sceneDelegate as! T)
+                }
+                _openExistential(delegateClassType, do: project)
+            } else if let conformance = ObservableObjectDescriptor.conformance(of: delegateClass) {
+                var visitor = MakeObservableObjectDelegateBox(value: sceneDelegate as Any)
+                conformance.visitType(visitor: &visitor)
+                sceneDelegateBox = visitor.box
+            } else {
+                sceneDelegateBox = FallbackDelegateBox<NSObject>(sceneDelegate as? NSObject)
+            }
         }
         let restorationSceneItemID: SceneID?
         let restorationData: [AnyHashable: Any]

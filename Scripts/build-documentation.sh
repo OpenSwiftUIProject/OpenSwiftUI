@@ -94,7 +94,8 @@ log_error() {
 # Function to run docc command
 rundocc() {
     if command -v xcrun >/dev/null 2>&1; then
-        DOCC_HTML_DIR="/Users/kyle/tmp/Doc/swift-docc-render/dist" xcrun docc "$@"
+        # To use a custom template, set DOCC_HTML_DIR to the dist path of swift-docc-render
+        xcrun docc "$@"
     else
         docc "$@"
     fi
@@ -358,6 +359,9 @@ if [[ -n "$DOCC_CATALOG" ]]; then
     if [[ -d "$SYMBOL_GRAPH_DIR" ]] && [[ -n "$(ls -A "$SYMBOL_GRAPH_DIR")" ]]; then
         DOCC_ARGS+=(--additional-symbol-graph-dir "$SYMBOL_GRAPH_DIR")
     fi
+
+    # Enabled experimental features:
+    DOCC_ARGS+=(--enable-experimental-overloaded-symbol-presentation)
 
     if [[ "$PREVIEW_MODE" == true ]]; then
         # Check if port is already in use

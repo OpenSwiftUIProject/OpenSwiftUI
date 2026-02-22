@@ -444,6 +444,16 @@ extension Target {
         self.swiftSettings = swiftSettings
     }
 
+    func addOpenCombineCSettings() {
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+        self.cxxSettings = cxxSettings
+    }
+
     func addSwiftLogSettings() {
         dependencies.append(.product(name: "Logging", package: "swift-log"))
         var swiftSettings = swiftSettings ?? []
@@ -879,6 +889,7 @@ if openCombineCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
     )
+    cOpenSwiftUITarget.addOpenCombineCSettings()
     openSwiftUICoreTarget.addOpenCombineSettings()
     openSwiftUITarget.addOpenCombineSettings()
 }

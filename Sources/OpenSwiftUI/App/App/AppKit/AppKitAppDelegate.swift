@@ -59,35 +59,13 @@ class AppDelegate: NSResponder, NSApplicationDelegate {
         // FIXME
         let items = AppGraph.shared?.rootSceneList?.items ?? []
         let view = items[0].value.view
-        let hostingVC = NSHostingController(rootView: view.frame(width: 500, height: 300))
+        let hostingVC = NSHostingController(rootView: view.frame(width: 500, height: 300).rootEnvironment())
         let windowVC = WindowController(hostingVC)
         windowVC.showWindow(nil)
         self.windowVC = windowVC
     }
     
     var windowVC: NSWindowController?
-}
-
-// FIXME: frame is zero
-final class WindowController<Content>: NSWindowController where Content: View {
-    init(_ hostingVC: NSHostingController<Content>) {
-        self.hostingVC = hostingVC
-        super.init(window: nil)
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var windowNibName: NSNib.Name? { "" }
-
-    let hostingVC: NSHostingController<Content>
-
-    override func loadWindow() {
-        window = NSWindow(contentViewController: hostingVC)
-        window?.center()
-    }
 }
 
 // MARK: - App Utils

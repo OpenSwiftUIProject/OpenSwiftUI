@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 public import Foundation
 #if OPENSWIFTUI_OPENCOMBINE
@@ -11,6 +11,7 @@ import OpenCombine
 #else
 import Combine
 #endif
+import OpenObservation
 
 class AnyFallbackDelegateBox {
     var delegate: NSObject? {
@@ -23,9 +24,10 @@ class AnyFallbackDelegateBox {
 }
 
 #if canImport(Darwin)
-public typealias PlatformApplicationDelegateBase = NSObject
+// NSObject on Cocoa platform has a init() method. We use PlatformApplicationDelegateBase to align them.
+typealias PlatformApplicationDelegateBase = NSObject
 #else
-public protocol PlatformApplicationDelegateBase: NSObject {
+protocol PlatformApplicationDelegateBase: NSObject {
     init()
 }
 #endif
@@ -61,4 +63,80 @@ class FallbackDelegateBox<Delegate>: AnyFallbackDelegateBox where Delegate: Plat
     }
 }
 
-// TODO
+// MARK: - ObservableObjectFallbackDelegateBox
+
+class ObservableObjectFallbackDelegateBox<Delegate>: AnyFallbackDelegateBox where Delegate: PlatformApplicationDelegateBase, Delegate: ObservableObject {
+    var typedDelegate: Delegate
+
+    override init() {
+        self.typedDelegate = Delegate()
+        super.init()
+    }
+
+    override var delegate: NSObject? {
+        typedDelegate
+    }
+
+    override func addDelegate(to env: inout EnvironmentValues) {
+        let keyPath = Delegate.environmentStore
+        env[keyPath: keyPath] = typedDelegate
+    }
+}
+
+// MARK: - UnsafeObservableObjectFallbackDelegateBox
+
+class UnsafeObservableObjectFallbackDelegateBox<Delegate>: AnyFallbackDelegateBox where Delegate: ObservableObject {
+    var typedDelegate: Delegate
+
+    init(_ delegate: Delegate) {
+        self.typedDelegate = delegate
+        super.init()
+    }
+
+    override var delegate: NSObject? {
+        typedDelegate as? NSObject
+    }
+
+    override func addDelegate(to env: inout EnvironmentValues) {
+        let keyPath = Delegate.environmentStore
+        env[keyPath: keyPath] = typedDelegate
+    }
+}
+
+// MARK: - ObservableFallbackDelegateBox
+
+class ObservableFallbackDelegateBox<Delegate>: AnyFallbackDelegateBox where Delegate: PlatformApplicationDelegateBase, Delegate: Observable {
+    var typedDelegate: Delegate
+
+    override init() {
+        self.typedDelegate = Delegate()
+        super.init()
+    }
+
+    override var delegate: NSObject? {
+        typedDelegate
+    }
+
+    override func addDelegate(to env: inout EnvironmentValues) {
+        env[objectType: Delegate.self] = typedDelegate
+    }
+}
+
+// MARK: - ObjectFallbackDelegateBox
+
+class ObjectFallbackDelegateBox<Delegate>: AnyFallbackDelegateBox where Delegate: AnyObject {
+    var typedDelegate: Delegate
+
+    init(_ delegate: Delegate) {
+        self.typedDelegate = delegate
+        super.init()
+    }
+
+    override var delegate: NSObject? {
+        typedDelegate as? NSObject
+    }
+
+    override func addDelegate(to env: inout EnvironmentValues) {
+        env[objectType: type(of: typedDelegate)] = typedDelegate
+    }
+}

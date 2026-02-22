@@ -15,4 +15,6 @@ const void *_sceneProtocolDescriptor(void);
 
 const void *_commandsProtocolDescriptor(void);
 
+const void *_observableObjectProtocolDescriptor(void);
+
 OPENSWIFTUI_ASSUME_NONNULL_END

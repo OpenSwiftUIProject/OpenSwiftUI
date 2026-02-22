@@ -16,7 +16,8 @@ WatchKit app’s delegate, define a delegate object and instantiate it in your a
 structure using an appropriate delegate adaptor property wrapper, like
 ``UIApplicationDelegateAdaptor``.
 
-For platform-specific design guidance, see [Platforms](https://developer.apple.com/design/human-interface-guidelines/platforms)
+For platform-specific design guidance, see
+ [Getting started](https://developer.apple.com/design/human-interface-guidelines/getting-started)
 in the Human Interface Guidelines for Apple Platform and
 [Windows Design Documentation](https://learn.microsoft.com/windows/apps/design)
 for Windows.
@@ -25,4 +26,14 @@ for Windows.
 
 ### Creating an app
 
+- [UILaunchScreen](https://developer.apple.com/documentation/bundleresources/information-property-list/uilaunchscreen)
+- [UILaunchScreens](https://developer.apple.com/documentation/bundleresources/information-property-list/uilaunchscreens)
 - ``App``
+
+### Targeting iOS and iPadOS
+
+- ``UIApplicationDelegateAdaptor``
+
+### Targeting macOS
+
+- ``NSApplicationDelegateAdaptor``
