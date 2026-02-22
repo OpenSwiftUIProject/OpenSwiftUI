@@ -648,17 +648,14 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
     func applyNodes(
         from start: inout Int,
         style: ViewList.IteratorStyle,
-        list: Attribute<any ViewList>?,
+        list _: Attribute<any ViewList>?,
         transform: inout ViewList.SublistTransform,
         to body: ViewList.ApplyBody
     ) -> Bool {
         forEachItem(
             from: &start,
             style: style
-        ) {
-            start,
-            style,
-            item in
+        ) { start, style, item in
             let idGenerator = view!.idGenerator
             switch item.views {
             case let .staticList(elements):
