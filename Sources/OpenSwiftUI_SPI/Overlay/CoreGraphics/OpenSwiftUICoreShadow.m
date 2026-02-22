@@ -11,7 +11,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <UIKit/UIKit.h>
-#else
+#elif OPENSWIFTUI_TARGET_OS_OSX
 #include <AppKit/AppKit.h>
 #endif
 
