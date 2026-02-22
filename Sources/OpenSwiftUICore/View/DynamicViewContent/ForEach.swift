@@ -656,75 +656,116 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
             from: &start,
             style: style
         ) { start, style, item in
-            let idGenerator = view!.idGenerator
             switch item.views {
             case let .staticList(elements):
-                let elementsCount = elements.count
-                let count = style.applyGranularity(to: elementsCount)
-                guard start < count else {
-                    start &-= count
-                    return true
-                }
-                var id = ViewList.ID()
-                if idGenerator.isConstant {
-                    let owner = list!.identifier
-                    let explicitID = Pair(item.offset, owner)
-                    id.bind(
-                        explicitID: explicitID,
-                        owner: owner,
-                        isUnary: viewsPerElement == 1,
-                        reuseID: item.reuseID
-                    )
-                } else {
-                    id.bind(
-                        explicitID: item.id,
-                        owner: list!.identifier,
-                        isUnary: viewsPerElement == 1,
-                        reuseID: item.reuseID
-                    )
-                }
-                let sublist = ViewList.Sublist(
-                    start: start,
-                    count: elementsCount,
-                    id: id,
-                    elements: elements,
-                    traits: .init(),
-                    list: nil
-                )
-                let transformItem = Transform(
-                    item: item,
-                    bindID: false,
-                    isUnary: viewsPerElement == 1,
-                    isConstant: idGenerator.isConstant
-                )
-                transform.push(transformItem)
-                let result = body(&start, style, .sublist(sublist), &transform)
-                transform.pop()
-                start = 0
-                return result
-            case let .dynamicList(attribute, listModifier):
-                var viewList = RuleContext(attribute: list!)[attribute]
-                if let listModifier {
-                    listModifier.apply(to: &viewList)
-                }
-                let transformItem = Transform(
-                    item: item,
-                    bindID: true,
-                    isUnary: viewsPerElement == 1,
-                    isConstant: idGenerator.isConstant
-                )
-                transform.push(transformItem)
-                let result = viewList.applyNodes(
-                    from: &start,
+                return applyStaticList(
+                    elements,
+                    start: &start,
                     style: style,
-                    list: attribute,
+                    item: item,
                     transform: &transform,
-                    to: body
+                    body: body
                 )
-                transform.pop()
-                return result
+            case let .dynamicList(attribute, listModifier):
+                return applyDynamicList(
+                    attribute: attribute,
+                    listModifier: listModifier,
+                    start: &start,
+                    style: style,
+                    item: item,
+                    transform: &transform,
+                    body: body
+                )
             }
         }
+    }
+
+    @inline(__always)
+    private func applyStaticList(
+        _ elements: any ViewList.Elements,
+        start: inout Int,
+        style: ViewList.IteratorStyle,
+        item: Item,
+        transform: inout ViewList.SublistTransform,
+        body: ViewList.ApplyBody
+    ) -> Bool {
+        let idGenerator = view!.idGenerator
+        let elementsCount = elements.count
+        let count = style.applyGranularity(to: elementsCount)
+        guard start < count else {
+            start &-= count
+            return true
+        }
+        var id = ViewList.ID()
+        if idGenerator.isConstant {
+            let owner = list!.identifier
+            let explicitID = Pair(item.offset, owner)
+            id.bind(
+                explicitID: explicitID,
+                owner: owner,
+                isUnary: viewsPerElement == 1,
+                reuseID: item.reuseID
+            )
+        } else {
+            id.bind(
+                explicitID: item.id,
+                owner: list!.identifier,
+                isUnary: viewsPerElement == 1,
+                reuseID: item.reuseID
+            )
+        }
+        let sublist = ViewList.Sublist(
+            start: start,
+            count: elementsCount,
+            id: id,
+            elements: elements,
+            traits: .init(),
+            list: nil
+        )
+        let transformItem = Transform(
+            item: item,
+            bindID: false,
+            isUnary: viewsPerElement == 1,
+            isConstant: idGenerator.isConstant
+        )
+        transform.push(transformItem)
+        let result = body(&start, style, .sublist(sublist), &transform)
+        transform.pop()
+        start = 0
+        return result
+    }
+
+    @inline(__always)
+    private func applyDynamicList(
+        attribute: Attribute<any ViewList>,
+        listModifier: _ViewListOutputs.ListModifier?,
+        start: inout Int,
+        style: ViewList.IteratorStyle,
+        item: Item,
+        transform: inout ViewList.SublistTransform,
+        body: ViewList.ApplyBody
+    ) -> Bool {
+        let idGenerator = view!.idGenerator
+        var viewList = RuleContext(attribute: list!)[attribute]
+        if let listModifier {
+            listModifier.apply(to: &viewList)
+        }
+        let transformItem = Transform(
+            item: item,
+            bindID: true,
+            isUnary: viewsPerElement == 1,
+            isConstant: idGenerator.isConstant
+        )
+        transform.push(transformItem)
+        let result = viewList.applyNodes(
+            from: &start,
+            style: style,
+            list: attribute,
+            transform: &transform,
+            to: body
+        )
+        transform.pop()
+        return result
     }
 
     @discardableResult
