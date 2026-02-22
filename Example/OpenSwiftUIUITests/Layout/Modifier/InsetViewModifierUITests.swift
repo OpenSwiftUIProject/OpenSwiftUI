@@ -9,8 +9,11 @@ import Testing
 struct InsetViewModifierUITests {
     
     @Test(
-        .bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511"),
-        .disabled("Extra spacing value is taken into account. Disable the test case before we fix it.")
+        .bug(
+            "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/511",
+            id: 511,
+            "safeAreaPadding with edge insets should apply padding to the specified edges"
+        )
     )
     func safeAreaPaddingWithEdgeInsets() {
         struct ContentView: View {
