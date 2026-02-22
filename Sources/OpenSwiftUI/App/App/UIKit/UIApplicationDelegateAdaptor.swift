@@ -154,7 +154,7 @@ public struct UIApplicationDelegateAdaptor<DelegateType>: DynamicProperty where 
     /// If you want OpenSwiftUI to put the instantiated delegate in the
     /// ``Environment``, make sure the delegate class also conforms to the
     /// [ObservableObject](https://swiftpackageindex.com/openswiftuiproject/opencombine/main/documentation/opencombine/observableobject)
-    /// protocol. That causes OpenSwiftUI to invoke the ``init(_:)``
+    /// protocol. That causes OpenSwiftUI to invoke the ``init(_:)-8bybh``
     /// initializer rather than this one.
     ///
     /// - Parameter delegateType: The type of application delegate that you
@@ -210,7 +210,7 @@ extension UIApplicationDelegateAdaptor where DelegateType: ObservableObject {
     ///     @EnvironmentObject private var appDelegate: MyAppDelegate
     ///
     /// If your delegate isn't an observable object, OpenSwiftUI invokes the
-    /// ``init(_:)-59sfu`` initializer rather than this one, and doesn't
+    /// ``init(_:)-9462f`` initializer rather than this one, and doesn't
     /// put the delegate instance in the environment.
     ///
     /// - Parameter delegateType: The type of application delegate that you
@@ -292,7 +292,7 @@ extension UIApplicationDelegateAdaptor where DelegateType: Observable {
     ///     @Environment(MyAppDelegate.self) private var appDelegate
     ///
     /// If your delegate isn't observable, SwiftUI invokes the
-    /// ``init(_:)-59sfu`` initializer rather than this one, and doesn't
+    /// ``init(_:)-9462f`` initializer rather than this one, and doesn't
     /// put the delegate instance in the environment.
     ///
     /// - Parameter delegateType: The type of application delegate that you
