@@ -45,20 +45,20 @@ jobs:
       - name: Build test target in debug mode
         run: |
           set -o pipefail
-          xcodebuild build \
+          NSUnbufferedIO=YES xcodebuild build \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
       - name: Run test target in debug mode
         run: |
           set -o pipefail
-          xcodebuild test \
+          NSUnbufferedIO=YES xcodebuild test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            | xcbeautify --renderer github-actions
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified

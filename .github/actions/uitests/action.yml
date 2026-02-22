@@ -29,12 +29,12 @@ runs:
       run: |
         cd Example
         set -o pipefail
-        xcodebuild test \
+        NSUnbufferedIO=YES xcodebuild test \
           -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
-          | xcbeautify --renderer github-actions || true
+          2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified || true
 
     - name: Run UI tests with OpenSwiftUI
       id: uitest
@@ -43,11 +43,12 @@ runs:
       run: |
         cd Example
         set -o pipefail
-        xcodebuild test \
+        NSUnbufferedIO=YES xcodebuild test \
           -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
-          -skipPackagePluginValidation 2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions
+          -skipPackagePluginValidation \
+          2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions --preserve-unbeautified
 
     - name: Collect failed snapshots
       if: steps.uitest.outcome == 'failure'
