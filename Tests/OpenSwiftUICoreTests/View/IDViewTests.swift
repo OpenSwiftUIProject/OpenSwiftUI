@@ -3,6 +3,7 @@
 //  OpenSwiftUICoreTests
 
 import Foundation
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 import Testing
 
@@ -16,8 +17,7 @@ struct IDViewTests {
         _ = empty.id(UUID())
     }
 
-    #if canImport(Darwin)
-    @Test
+    @Test(.enabled(if: attributeGraphEnabled))
     func idViewDisplayList() {
         struct ContentView: View {
             var body: some View {
@@ -51,5 +51,4 @@ struct IDViewTests {
         """#)
         #expect(displayList.description.contains(expectRegex))
     }
-    #endif
 }

@@ -17,8 +17,7 @@ struct ZIndexTests {
         #expect(collection.zIndex.isApproximatelyEqual(to: 1.5))
     }
 
-    #if canImport(Darwin)
-    @Test
+    @Test(.enabled(if: attributeGraphEnabled))
     func zIndexDisplayList() {
         struct ContentView: View {
             var body: some View {
@@ -56,5 +55,4 @@ struct ZIndexTests {
         """#)
         #expect(displayList.description.contains(expectRegex))
     }
-    #endif
 }
