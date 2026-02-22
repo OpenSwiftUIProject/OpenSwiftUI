@@ -1,35 +1,52 @@
 //
-//  CoreViewFunctions.m
+//  OpenSwiftUICoreViewFunctions.m
 //  OpenSwiftUI_SPI
 //
 //  Status: Complete
 //  Audited for 6.5.4
 
-#include "CoreViewFunctions.h"
-#include "UIKitSubviews.h"
-#include "AppKitSubviews.h"
+#include "OpenSwiftUICoreViewFunctions.h"
+#include "OpenSwiftUIUIKitSubviews.h"
+#include "OpenSwiftUIAppKitSubviews.h"
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <UIKit/UIKit.h>
-#else
+#endif
+
+#if OPENSWIFTUI_TARGET_OS_OSX
 #include <AppKit/AppKit.h>
 #endif
 
 // MARK: - NSObject (OpenSwiftUICore_Additions)
 
+// NOTE:
+// All API should be implemented by the selector and properly include and cast.
+// But some API will conflict, we currently will use platform macro check to guard the API,
+// but in the future we may want to consider using a different approach to avoid potential
+// issues with API availability and maintainability.
+// The remaining API is now declared below so that we can call it directly on id.
 @interface NSObject ()
-- (void)insertSubview:(id)view atIndex:(NSInteger)index;
-- (void)addSubview:(id)view positioned:(NSInteger)place relativeTo:(nullable id)otherView;
+// UIKit
+- (id)maskView; // UIView
+// AppKit
+- (void)setNeedsDisplay:(BOOL)needsDisplay; // NSView
++ (id)graphicsContextWithCGContext:(CGContextRef)graphicsPort flipped:(BOOL)initialFlippedState; // NSGraphicsContext
+- (void)displayRectIgnoringOpacity:(NSRect)rect inContext:(id)context; // NSView
+- (void)setFrameTransform:(CGAffineTransform)transform; // UIView
 @end
 
 @implementation NSObject (OpenSwiftUICore_Additions)
 - (void)openswiftui_insertRenderedSubview:(id)subview atIndex:(NSInteger)index {
-    [self insertSubview:subview atIndex:index];
+    #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+    [(UIView *)self insertSubview:subview atIndex:index];
+    #endif
 }
 - (void)openswiftui_addRenderedSubview:(id)subview positioned:(NSInteger)place relativeTo:(id _Nullable)otherView {
-    [self addSubview:subview positioned:place relativeTo:otherView];
+    #if OPENSWIFTUI_TARGET_OS_OSX
+    [(NSView *)self addSubview:subview positioned:place relativeTo:otherView];
+    #endif
 }
 @end
 
@@ -44,28 +61,27 @@
 @end
 #endif
 
-#if OPENSWIFTUI_TARGET_OS_OSX
-@interface NSView (OpenSwiftUICoreViewPrivate)
-- (id)maskView;
-- (void)setFrameTransform:(CGAffineTransform)transform;
-@end
-#endif
-
 // MARK: - System Resolution
 
 OpenSwiftUIViewSystem OpenSwiftUICoreViewResolvedSystem(OpenSwiftUIViewSystem system, id view) {
-    #if OPENSWIFTUI_TARGET_OS_OSX
     if (system == OpenSwiftUIViewSystemNSView) {
         Class nsViewClass = NSClassFromString(@"NSView");
         if (nsViewClass != nil) {
             [view isKindOfClass:nsViewClass];
         }
     }
-    #endif
     return system;
 }
 
 // MARK: - Layer Access
+
+CALayer * OpenSwiftUICoreViewLayer(OpenSwiftUIViewSystem system, id view) {
+    if (system == OpenSwiftUIViewSystemCALayer) {
+        return view;
+    } else {
+        return [view layer];
+    }
+}
 
 CALayer * _Nullable OpenSwiftUICoreViewSpeculativeLayer(id view) {
     if ([view isKindOfClass:[CALayer class]]) {
@@ -82,39 +98,25 @@ CALayer * _Nullable OpenSwiftUICoreViewSpeculativeLayer(id view) {
     return nil;
 }
 
-CALayer * OpenSwiftUICoreViewLayer(OpenSwiftUIViewSystem system, id view) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        return view;
-    } else {
-        return [view layer];
-    }
-}
-
 // MARK: - Subview Management
 
 void OpenSwiftUICoreViewAddSubview(OpenSwiftUIViewSystem system, id parent, id child, NSUInteger index) {
     switch (system) {
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
         case OpenSwiftUIViewSystemUIView:
-            _UIKitAddSubview(child, parent, index);
+            _OpenSwiftUIUIKitAddSubview(child, parent, index);
             break;
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
         case OpenSwiftUIViewSystemNSView:
-            _AppKitAddSubview(child, parent, index);
+            _OpenSwiftUIAppKitAddSubview(child, parent, index);
             break;
-#endif
         case OpenSwiftUIViewSystemCALayer:
-            [(CALayer *)parent insertSublayer:(CALayer *)child atIndex:(unsigned int)index];
-            break;
-        default:
+            [parent insertSublayer:child atIndex:(unsigned)index];
             break;
     }
 }
 
 void OpenSwiftUICoreViewRemoveFromSuperview(OpenSwiftUIViewSystem system, id view) {
     if (system == OpenSwiftUIViewSystemCALayer) {
-        [(CALayer *)view removeFromSuperlayer];
+        [view removeFromSuperlayer];
     } else {
         [view removeFromSuperview];
     }
@@ -122,105 +124,100 @@ void OpenSwiftUICoreViewRemoveFromSuperview(OpenSwiftUIViewSystem system, id vie
 
 NSArray * OpenSwiftUICoreViewSubviews(OpenSwiftUIViewSystem system, id view) {
     if (system == OpenSwiftUIViewSystemCALayer) {
-        return [NSArray arrayWithArray:[(CALayer *)view sublayers]];
+        return [NSArray arrayWithArray:[view sublayers]];
     } else {
         return [view subviews];
     }
 }
 
 id _Nullable OpenSwiftUICoreViewMaskView(OpenSwiftUIViewSystem system, id view) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        return [(CALayer *)view mask];
+    switch (system) {
+        case OpenSwiftUIViewSystemCALayer:
+            return [view mask];
+        case OpenSwiftUIViewSystemUIView:
+            return [view maskView];
+        case OpenSwiftUIViewSystemNSView:
+            return nil;
     }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    if (system == OpenSwiftUIViewSystemUIView) {
-        return [(UIView *)view maskView];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    if (system == OpenSwiftUIViewSystemNSView) {
-        return [(NSView *)view maskView];
-    }
-#endif
-    return nil;
 }
 
 // MARK: - Display
 
 void OpenSwiftUICoreViewSetNeedsDisplay(OpenSwiftUIViewSystem system, id view) {
-#if OPENSWIFTUI_TARGET_OS_OSX
-    if (system == OpenSwiftUIViewSystemNSView) {
-        [(NSView *)view setNeedsDisplay:YES];
-    } else if (system == OpenSwiftUIViewSystemCALayer) {
-        [view setNeedsDisplay];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+            [view setNeedsDisplay];
+            break;
+        case OpenSwiftUIViewSystemNSView:
+            [view setNeedsDisplay:YES];
+            break;
+        case OpenSwiftUIViewSystemCALayer:
+            [view setNeedsDisplay];
+            break;
     }
-#else
-    if (system != OpenSwiftUIViewSystemNSView) {
-        [view setNeedsDisplay];
-    }
-#endif
 }
 
 void OpenSwiftUICoreViewDisplayIgnoringOpacity(OpenSwiftUIViewSystem system, id view, CGContextRef context) {
-#if OPENSWIFTUI_TARGET_OS_OSX
-    if (system == OpenSwiftUIViewSystemNSView) {
-        Class cls = NSClassFromString(@"NSGraphicsContext");
-        if (cls != nil) {
-            NSGraphicsContext *gc = [cls graphicsContextWithCGContext:context flipped:YES];
-            NSRect bounds = [(NSView *)view bounds];
-            [(NSView *)view displayRectIgnoringOpacity:bounds inContext:gc];
-        }
+    if (system != OpenSwiftUIViewSystemNSView) {
+        return;
     }
-#endif
+    Class cls = NSClassFromString(@"NSGraphicsContext");
+    if (cls != nil) {
+        id gc = [cls graphicsContextWithCGContext:context flipped:YES];
+        [view displayRectIgnoringOpacity:[view bounds] inContext:gc];
+    }
 }
 
 // MARK: - Appearance
 
 void OpenSwiftUICoreViewSetOpacity(OpenSwiftUIViewSystem system, id view, CGFloat opacity) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        [(CALayer *)view setOpacity:(float)opacity];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            [(UIView *)view setAlpha:opacity];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            [(NSView *)view setAlphaValue:opacity];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemCALayer:
+            [(CALayer *)view setOpacity:(float)opacity];
+            break;
     }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        [(UIView *)view setAlpha:opacity];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    else if (system == OpenSwiftUIViewSystemNSView) {
-        [(NSView *)view setAlphaValue:opacity];
-    }
-#endif
 }
 
 void OpenSwiftUICoreViewSetClipsToBounds(OpenSwiftUIViewSystem system, id view, BOOL clips, BOOL onLayer) {
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    if (system == OpenSwiftUIViewSystemUIView && !onLayer) {
-        [(UIView *)view setClipsToBounds:clips];
+    if (system != OpenSwiftUIViewSystemCALayer && !onLayer) {
+        [view setClipsToBounds:clips];
         return;
     }
-#endif
     if (system == OpenSwiftUIViewSystemCALayer) {
-        [(CALayer *)view setMasksToBounds:clips];
-    } else {
-        [[view layer] setMasksToBounds:clips];
+        view = [view layer];
     }
+    [view setMasksToBounds:clips];
 }
 
 void OpenSwiftUICoreViewSetTransform(OpenSwiftUIViewSystem system, id view, CGAffineTransform transform) {
-    if (system == OpenSwiftUIViewSystemCALayer) {
-        [(CALayer *)view setAffineTransform:transform];
+    switch (system) {
+        case OpenSwiftUIViewSystemUIView:
+            #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
+            [(UIView *)view setTransform:transform];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemNSView:
+            #if OPENSWIFTUI_TARGET_OS_OSX
+            [(NSView *)view setFrameTransform:transform];
+            #endif
+            break;
+        case OpenSwiftUIViewSystemCALayer:
+            [(CALayer *)view setAffineTransform:transform];
+            break;
     }
-#if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
-    else if (system == OpenSwiftUIViewSystemUIView) {
-        [(UIView *)view setTransform:transform];
-    }
-#endif
-#if OPENSWIFTUI_TARGET_OS_OSX
-    else if (system == OpenSwiftUIViewSystemNSView) {
-        [(NSView *)view setFrameTransform:transform];
-    }
-#endif
 }
+
+// WIP
 
 // MARK: - Geometry
 

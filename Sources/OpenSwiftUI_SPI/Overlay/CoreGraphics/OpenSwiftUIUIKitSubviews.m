@@ -1,12 +1,12 @@
 //
-//  UIKitSubviews.m
+//  OpenSwiftUIUIKitSubviews.m
 //  OpenSwiftUI_SPI
 //
 //  Status: Complete
 //  Audited for 6.5.4
 
-#include "UIKitSubviews.h"
-#include "CoreViewFunctions.h"
+#include "OpenSwiftUIUIKitSubviews.h"
+#include "OpenSwiftUICoreViewFunctions.h"
 #include <QuartzCore/QuartzCore.h>
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
 #include <UIKit/UIKit.h>
@@ -24,7 +24,7 @@ OPENSWIFTUI_EXPORT CALayer * _Nullable CALayerGetSuperlayer(CALayer *layer);
 
 // MARK: - UIKit Add Subview
 
-void _UIKitAddSubview(id child, id parent, NSInteger index) {
+void _OpenSwiftUIUIKitAddSubview(id child, id parent, NSInteger index) {
     CALayer *parentLayer = [parent layer];
     NSArray<CALayer *> *sublayers = [parentLayer sublayers];
     NSUInteger count = sublayers ? [sublayers count] : 0;

@@ -1,12 +1,12 @@
 //
-//  CoreViewFunctions.h
+//  OpenSwiftUICoreViewFunctions.h
 //  OpenSwiftUI_SPI
 //
 //  Status: Complete
 //  Audited for 6.5.4
 
-#ifndef CoreViewFunctions_h
-#define CoreViewFunctions_h
+#ifndef OpenSwiftUICoreViewFunctions_h
+#define OpenSwiftUICoreViewFunctions_h
 
 #include "OpenSwiftUIBase.h"
 
@@ -28,9 +28,9 @@ OpenSwiftUIViewSystem OpenSwiftUICoreViewResolvedSystem(OpenSwiftUIViewSystem sy
 
 // MARK: - Layer Access
 
-CALayer * _Nullable OpenSwiftUICoreViewSpeculativeLayer(id view) OPENSWIFTUI_SWIFT_NAME(CoreViewSpeculativeLayer(view:));
-
 CALayer * OpenSwiftUICoreViewLayer(OpenSwiftUIViewSystem system, id view) OPENSWIFTUI_SWIFT_NAME(CoreViewLayer(system:view:));
+
+CALayer * _Nullable OpenSwiftUICoreViewSpeculativeLayer(id view) OPENSWIFTUI_SWIFT_NAME(CoreViewSpeculativeLayer(view:));
 
 // MARK: - Subview Management
 
@@ -98,4 +98,4 @@ OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
 
-#endif /* CoreViewFunctions_h */
+#endif /* OpenSwiftUICoreViewFunctions_h */

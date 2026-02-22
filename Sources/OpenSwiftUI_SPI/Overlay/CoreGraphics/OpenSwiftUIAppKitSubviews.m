@@ -1,12 +1,12 @@
 //
-//  AppKitSubviews.m
+//  OpenSwiftUIAppKitSubviews.m
 //  OpenSwiftUI_SPI
 //
 //  Status: Complete
 //  Audited for 6.5.4
 
-#include "AppKitSubviews.h"
-#include "CoreViewFunctions.h"
+#include "OpenSwiftUIAppKitSubviews.h"
+#include "OpenSwiftUICoreViewFunctions.h"
 #include <QuartzCore/QuartzCore.h>
 
 #if OPENSWIFTUI_TARGET_OS_IOS || OPENSWIFTUI_TARGET_OS_VISION
@@ -31,7 +31,7 @@ void initAnimationContextClass(void *context) {
     nsAnimationContextClass = NSClassFromString(@"NSAnimationContext");
 }
 
-void _AppKitAddSubview(id child, id parent, NSUInteger index) {
+void _OpenSwiftUIAppKitAddSubview(id child, id parent, NSUInteger index) {
     NSArray<id> *subviews = [parent subviews];
     NSUInteger count = [subviews count];
     if (count > index && subviews[index] == child) {

@@ -10,7 +10,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-typedef OPENSWIFTUI_ENUM(uint8_t, OpenSwiftUIViewSystem) {
+typedef OPENSWIFTUI_CLOSED_ENUM(uint8_t, OpenSwiftUIViewSystem) {
     OpenSwiftUIViewSystemUIView,
     OpenSwiftUIViewSystemNSView,
     OpenSwiftUIViewSystemCALayer,
