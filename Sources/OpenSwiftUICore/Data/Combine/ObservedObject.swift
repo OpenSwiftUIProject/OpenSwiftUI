@@ -89,9 +89,9 @@ public struct ObservedObject<ObjectType>: DynamicProperty where ObjectType: Obse
     @frozen
     public struct Wrapper {
 
-        let root: ObjectType
+        package let root: ObjectType
 
-        init(root: ObjectType) {
+        package init(root: ObjectType) {
             self.root = root
         }
 
