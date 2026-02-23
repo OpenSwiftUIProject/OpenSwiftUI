@@ -31,11 +31,11 @@ struct RepeatAnimationUITests {
                     }
             }
         }
-        withKnownIssue("#690", isIntermittent: true) {
-            openSwiftUIAssertAnimationSnapshot(
-                of: ContentView(autoreverses: autoreverses),
-                testName: #function + "\(autoreverses)"
-            )
-        }
+        openSwiftUIAssertAnimationSnapshot(
+            of: ContentView(autoreverses: autoreverses),
+            precision: 0.995,
+            perceptualPrecision: 0.995,
+            testName: #function + "\(autoreverses)"
+        )
     }
 }

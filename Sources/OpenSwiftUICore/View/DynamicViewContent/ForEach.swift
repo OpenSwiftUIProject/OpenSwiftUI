@@ -399,7 +399,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
                         if item.isRemoved {
                             foundActiveItem = false
                         } else {
-                            newEdits = edits
+                            newEdits.removeValue(forKey: id)
                             foundActiveItem = true
                         }
                     } else {

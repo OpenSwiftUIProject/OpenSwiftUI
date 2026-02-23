@@ -66,9 +66,7 @@ struct ForEachUITests {
             }
         }
         withKnownIssue("#632", isIntermittent: true) {
-            // FIXME: Re-enable after #632 is fixed.
-            // openSwiftUIAssertAnimationSnapshot(of: ContentView())
-            Issue.record("AttributeGraph precondition failure in insertAnimation")
+            openSwiftUIAssertAnimationSnapshot(of: ContentView())
         }
     }
 

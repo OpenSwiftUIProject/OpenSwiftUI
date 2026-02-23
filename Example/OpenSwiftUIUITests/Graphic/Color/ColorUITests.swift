@@ -75,9 +75,11 @@ struct ColorUITests {
                     }
             }
         }
-        withKnownIssue("#690", isIntermittent: true) {
-            openSwiftUIAssertAnimationSnapshot(of: ContentView())
-        }
+        openSwiftUIAssertAnimationSnapshot(
+            of: ContentView(),
+            precision: 0.995,
+            perceptualPrecision: 0.995
+        )
     }
 
     // FIXME
