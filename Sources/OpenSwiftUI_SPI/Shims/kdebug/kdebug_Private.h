@@ -153,7 +153,7 @@ __OSX_AVAILABLE(10.10) __IOS_AVAILABLE(8.2);
 *
 * @return
 * 0 if tracing is disabled or `debugid` is being filtered out of trace.
-* It can also return (int64_t)-1 if an error occured. Otherwise,
+* It can also return (int64_t)-1 if an error occurred. Otherwise,
 * it returns the ID to use to refer to the string in future
 * kdebug_trace(2) calls.
 *
