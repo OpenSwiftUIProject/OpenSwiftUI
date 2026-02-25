@@ -160,7 +160,11 @@ let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: build
 let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
 let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
+
+// For OpenAttributeGraphShims
+let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
 let attributeGraphCondition = envBoolValue("ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
+
 let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
 // For #39
@@ -400,6 +404,28 @@ extension Target {
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
+
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+        self.cxxSettings = cxxSettings
+    }
+
+    func addComputeSettings() {
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+        self.swiftSettings = swiftSettings
+
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+        self.cxxSettings = cxxSettings
     }
 
     func addRBSettings() {
@@ -815,7 +841,16 @@ if symbolLocatorCondition {
     }
 }
 
-if attributeGraphCondition {
+if computeCondition {
+    openSwiftUICoreTarget.addComputeSettings()
+    openSwiftUITarget.addComputeSettings()
+
+    openSwiftUISPITestTarget.addComputeSettings()
+    openSwiftUICoreTestTarget.addComputeSettings()
+    openSwiftUITestTarget.addComputeSettings()
+    openSwiftUICompatibilityTestTarget.addComputeSettings()
+    openSwiftUIBridgeTestTarget.addComputeSettings()
+} else if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
 
