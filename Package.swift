@@ -138,6 +138,8 @@ let isXcodeEnv = envStringValue("__CFBundleIdentifier", searchInDomain: false) =
 let development = envBoolValue("DEVELOPMENT", default: false)
 let warningsAsErrorsCondition = envBoolValue("WERROR", default: isXcodeEnv && development)
 
+let swiftCorelibsPath = envStringValue("LIB_SWIFT_PATH") ?? "\(Context.packageDirectory)/Sources/SwiftCorelibs/include"
+
 let releaseVersion = envIntValue("TARGET_RELEASE", default: 2024)
 
 let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
@@ -192,14 +194,14 @@ let cfCGTypes = envBoolValue("CF_CGTYPES", default: buildForDarwinPlatform)
 var sharedCSettings: [CSetting] = [
     .define("NDEBUG", .when(configuration: .release)),
     .unsafeFlags(["-fmodules"]),
-    .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
 var sharedCxxSettings: [CXXSetting] = [
     .unsafeFlags(["-fcxx-modules"]),
-    .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
 var sharedSwiftSettings: [SwiftSetting] = [
