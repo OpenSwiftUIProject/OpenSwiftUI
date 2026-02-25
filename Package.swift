@@ -138,22 +138,6 @@ let isXcodeEnv = envStringValue("__CFBundleIdentifier", searchInDomain: false) =
 let development = envBoolValue("DEVELOPMENT", default: false)
 let warningsAsErrorsCondition = envBoolValue("WERROR", default: isXcodeEnv && development)
 
-let libSwiftPath = {
-    // From Swift toolchain being installed or from Swift SDK.
-    guard let libSwiftPath = envStringValue("LIB_SWIFT_PATH") else {
-        // Fallback when LIB_SWIFT_PATH is not set
-        let swiftBinPath = envStringValue("BIN_SWIFT_PATH") ?? envStringValue("_", searchInDomain: false) ?? "/usr/bin/swift"
-        let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
-        let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
-        return SDKPath.appending("/usr/lib/swift")
-    }
-    return libSwiftPath
-}()
-
-let swiftToolchainPath = envStringValue("SWIFT_TOOLCHAIN_PATH") ?? (development ? "/Volumes/BuildMachine/swift-project" : "")
-let swiftToolchainVersion = envStringValue("SWIFT_TOOLCHAIN_VERSION") ?? (development ? "6.0.2" : "")
-let swiftToolchainSupported = envBoolValue("SWIFT_TOOLCHAIN_SUPPORTED", default: !swiftToolchainVersion.isEmpty)
-
 let releaseVersion = envIntValue("TARGET_RELEASE", default: 2024)
 
 let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
@@ -206,7 +190,6 @@ let cfCGTypes = envBoolValue("CF_CGTYPES", default: buildForDarwinPlatform)
 // MARK: - Shared Settings
 
 var sharedCSettings: [CSetting] = [
-    .unsafeFlags(["-I", libSwiftPath], .when(platforms: .nonDarwinPlatforms)),
     .define("NDEBUG", .when(configuration: .release)),
     .unsafeFlags(["-fmodules"]),
     .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
@@ -214,7 +197,6 @@ var sharedCSettings: [CSetting] = [
 ]
 
 var sharedCxxSettings: [CXXSetting] = [
-    .unsafeFlags(["-I", libSwiftPath], .when(platforms: .nonDarwinPlatforms)),
     .unsafeFlags(["-fcxx-modules"]),
     .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
@@ -233,48 +215,6 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .unsafeFlags(["-Xfrontend", "-experimental-spi-only-imports"]),
 ]
 
-// Modified from: https://github.com/swiftlang/swift/blob/main/SwiftCompilerSources/Package.swift
-//
-// Create a couple of symlinks to an existing Ninja build:
-//
-//     ```shell
-//     cd $OPENSWIFTUI_SWIFT_TOOLCHAIN_PATH
-//     mkdir -p build/Default
-//     ln -s build/<Ninja-Build>/llvm-<os+arch> build/Default/llvm
-//     ln -s build/<Ninja-Build>/swift-<os+arch> build/Default/swift
-//     ```
-//
-// where <$OPENSWIFTUI_SWIFT_TOOLCHAIN_PATH> is the parent directory of the swift repository.
-
-if !swiftToolchainPath.isEmpty {
-    sharedCSettings.append(
-        .unsafeFlags(
-            [
-                "-static",
-                "-DCOMPILED_WITH_SWIFT",
-                "-DPURE_BRIDGING_MODE",
-                "-UIBOutlet", "-UIBAction", "-UIBInspectable",
-                "-I\(swiftToolchainPath)/swift/include",
-                "-I\(swiftToolchainPath)/swift/stdlib/public/SwiftShims",
-                "-I\(swiftToolchainPath)/llvm-project/llvm/include",
-                "-I\(swiftToolchainPath)/llvm-project/clang/include",
-                "-I\(swiftToolchainPath)/build/Default/swift/include",
-                "-I\(swiftToolchainPath)/build/Default/llvm/include",
-                "-I\(swiftToolchainPath)/build/Default/llvm/tools/clang/include",
-                "-DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING", // Required to fix LLVM link issue
-            ]
-        )
-    )
-}
-if !swiftToolchainVersion.isEmpty {
-    sharedCSettings.append(
-        .define("OPENSWIFTUI_SWIFT_TOOLCHAIN_VERSION", to: swiftToolchainVersion)
-    )
-}
-if swiftToolchainSupported {
-    sharedCSettings.append(.define("OPENSWIFTUI_SWIFT_TOOLCHAIN_SUPPORTED"))
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_SWIFT_TOOLCHAIN_SUPPORTED"))
-}
 if releaseVersion >= 2021 {
     for year in 2021 ... releaseVersion {
         sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))

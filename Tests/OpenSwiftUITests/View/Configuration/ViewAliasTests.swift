@@ -11,8 +11,9 @@ import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 
 @MainActor
+@Suite(.disabled(if: attributeGraphVendor == .oag))
 struct ViewAliasTests {
-    @Test(.enabled(if: attributeGraphEnabled))
+    @Test
     func optionalViewAliasDynamicProperty() async throws {
         struct ContentView: View {
             var confirmation: Confirmation?

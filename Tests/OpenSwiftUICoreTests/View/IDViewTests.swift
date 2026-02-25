@@ -17,7 +17,7 @@ struct IDViewTests {
         _ = empty.id(UUID())
     }
 
-    @Test(.enabled(if: attributeGraphEnabled))
+    @Test(.disabled(if: attributeGraphVendor == .oag))
     func idViewDisplayList() {
         struct ContentView: View {
             var body: some View {

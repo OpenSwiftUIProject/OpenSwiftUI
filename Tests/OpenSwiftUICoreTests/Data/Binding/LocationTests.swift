@@ -143,7 +143,7 @@ struct LocationTests {
         } setValue: { newCount, _ in
             value.count = newCount * newCount
         }
-        if attributeGraphEnabled {
+        if attributeGraphVendor != .oag {
             #expect(location2 != location)
             #expect(location == location)
         } else {
