@@ -163,7 +163,7 @@ let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
 
 // For OpenAttributeGraphShims
 let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
-let attributeGraphCondition = envBoolValue("ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
+let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: false)
 
 let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
