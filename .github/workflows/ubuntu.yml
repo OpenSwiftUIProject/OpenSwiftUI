@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-22.04
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
-      OPENSWIFTUI_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 1
       OPENSWIFTUI_SWIFT_CRYPTO: 1
