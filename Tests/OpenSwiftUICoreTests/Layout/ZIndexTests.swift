@@ -17,7 +17,7 @@ struct ZIndexTests {
         #expect(collection.zIndex.isApproximatelyEqual(to: 1.5))
     }
 
-    @Test(.enabled(if: attributeGraphEnabled))
+    @Test(.disabled(if: attributeGraphVendor == .oag))
     func zIndexDisplayList() {
         struct ContentView: View {
             var body: some View {

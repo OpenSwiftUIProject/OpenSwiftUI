@@ -8,7 +8,14 @@
 #include <stdbool.h>
 #include <stdint.h>
 #include <dlfcn.h>
+
+#if __has_include(<AttributeGraph/AttributeGraph.h>)
 #include <AttributeGraph/AttributeGraph.h>
+#elif __has_include(<Compute/Compute.h>)
+#include <Compute/Compute.h>
+#else
+#include <OpenAttributeGraph/OpenAttributeGraph.h>
+#endif
 
 // Forward declare the original
 extern bool kdebug_is_enabled(uint32_t debugid);

@@ -19,8 +19,8 @@ struct ViewDebugTests {
         }
         return json == expectedJSON
     }
-    
-    @Test(.enabled(if: attributeGraphEnabled ,"Only enable the test when AG is enabled"))
+
+    @Test(.enabled(if: attributeGraphVendor == .ag ,"Only enable the test when AG is enabled"))
     func serializeData() throws {
         var rawData = _ViewDebug.Data()
         rawData.data = [.type: CGSize.self]
@@ -33,7 +33,7 @@ struct ViewDebugTests {
         ))
     }
 
-    @Test(.enabled(if: attributeGraphEnabled ,"Only enable the test when AG is enabled"))
+    @Test(.enabled(if: attributeGraphVendor == .ag ,"Only enable the test when AG is enabled"))
     func size() throws {
         var rawData = _ViewDebug.Data()
         rawData.data = [.size: CGSize(width: 20, height: 20)]
