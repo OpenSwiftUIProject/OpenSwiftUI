@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "7bdd42437abc04268a6a22bbf1ac34af8fd5fee8"
+        "revision" : "2682d4b34acd8a1482dd62e66e084f346d6ca310"
       }
     },
     {
@@ -43,7 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "6dce9cec800d431e34de89f08ade642dabacad8a"
+        "revision" : "ba06b06d03c0e25922ebc2fee183f62a39fdd8d4"
       }
     },
     {
