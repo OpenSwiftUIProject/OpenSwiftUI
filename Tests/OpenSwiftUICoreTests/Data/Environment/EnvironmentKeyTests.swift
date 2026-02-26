@@ -2,6 +2,7 @@
 //  EnvironmentKeyTests.swift
 //  OpenSwiftUICoreTests
 
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 import Testing
