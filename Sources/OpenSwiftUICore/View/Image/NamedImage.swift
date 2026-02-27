@@ -6,14 +6,11 @@
 //  Status: WIP
 //  ID: 8E7DCD4CEB1ACDE07B249BFF4CBC75C0 (SwiftUICore)
 
-
-package import Foundation
+public import Foundation
 package import OpenCoreGraphicsShims
 #if OPENSWIFTUI_LINK_COREUI
 package import CoreUI
 #endif
-
-#if OPENSWIFTUI_LINK_COREUI
 
 // MARK: - NamedImage
 
@@ -74,6 +71,7 @@ package enum NamedImage {
             self.idiom = idiom
         }
 
+        #if OPENSWIFTUI_LINK_COREUI
         // TODO: loadVectorInfo
 
         // [TBA]
@@ -152,11 +150,14 @@ package enum NamedImage {
             let ratio = referenceRadius / actualRadius
             return min(range.upperBound, max(range.lowerBound, ratio))
         }
+        #endif
     }
+
 
     // MARK: - VectorInfo
 
     private struct VectorInfo {
+        #if OPENSWIFTUI_LINK_COREUI
         var glyph: CUINamedVectorGlyph
 
         var flipsRightToLeft: Bool
@@ -164,7 +165,9 @@ package enum NamedImage {
         var layoutMetrics: Image.LayoutMetrics
 
         weak var catalog: CUICatalog?
+        #endif
     }
+
 
     // MARK: - NamedImage.BitmapKey [WIP]
 
@@ -321,7 +324,9 @@ package enum NamedImage {
         }
 
         private struct WeakCatalog {
+            #if OPENSWIFTUI_LINK_COREUI
             weak var catalog: CUICatalog?
+            #endif
         }
 
         package var archiveDelegate: AnyArchivedViewDelegate?
@@ -334,6 +339,8 @@ package enum NamedImage {
         }
 
         // MARK: Cache subscripts
+
+        #if OPENSWIFTUI_LINK_COREUI
 
 //        package subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
 //            // TODO: Full CoreUI vector lookup implementation
@@ -350,6 +357,8 @@ package enum NamedImage {
             get { nil }
         }
 
+        #endif
+
         package func decode(_ key: Key) throws -> DecodedInfo {
             switch key {
             case .bitmap:
@@ -365,9 +374,12 @@ package enum NamedImage {
     package static var sharedCache = Cache()
 }
 
-// TODO: WIP
+@available(OpenSwiftUI_v1_0, *)
+extension Image {
+    public static var _mainNamedBundle: Bundle? { nil }
+}
 
-// MARK: - Image.Location
+// MARK: - Image.Location [WIP]
 
 extension Image {
     package enum Location: Equatable, Hashable {
@@ -560,8 +572,6 @@ extension Image.Location: ProtobufMessage {
     }
 }
 
-#endif
-
 // MARK: - Image.HashableScale [WIP]
 
 extension Image {
@@ -679,7 +689,6 @@ extension Image {
     }
 }
 
-
 // MARK: - Image.ResolvedUUID [WIP]
 
 @_spi(Private)
@@ -702,3 +711,17 @@ extension Image {
 @_spi(Private)
 @available(*, unavailable)
 extension Image.ResolvedUUID: Sendable {}
+
+#if canImport(Darwin) && canImport(DeveloperToolsSupport)
+
+public import DeveloperToolsSupport
+
+// MARK: - Image + ImageResource [TODO]
+
+extension Image {
+    /// Initialize a `Image` with a image resource.
+    public init(_ resource: ImageResource) {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+#endif
