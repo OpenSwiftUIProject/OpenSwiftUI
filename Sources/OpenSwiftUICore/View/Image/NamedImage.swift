@@ -3,15 +3,17 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: WIP
 //  ID: 8E7DCD4CEB1ACDE07B249BFF4CBC75C0 (SwiftUICore)
+
 
 package import Foundation
 package import OpenCoreGraphicsShims
-
 #if OPENSWIFTUI_LINK_COREUI
 package import CoreUI
 #endif
+
+#if OPENSWIFTUI_LINK_COREUI
 
 // MARK: - NamedImage
 
@@ -71,8 +73,6 @@ package enum NamedImage {
             self.location = location
             self.idiom = idiom
         }
-
-        #if OPENSWIFTUI_LINK_COREUI
 
         // TODO: loadVectorInfo
 
@@ -152,20 +152,19 @@ package enum NamedImage {
             let ratio = referenceRadius / actualRadius
             return min(range.upperBound, max(range.lowerBound, ratio))
         }
-        #endif
     }
 
-    #if OPENSWIFTUI_LINK_COREUI
     // MARK: - VectorInfo
 
-    package struct VectorInfo {
-        package var glyph: CUINamedVectorGlyph
+    private struct VectorInfo {
+        var glyph: CUINamedVectorGlyph
 
-        package var flipsRightToLeft: Bool
+        var flipsRightToLeft: Bool
 
-        package var layoutMetrics: Image.LayoutMetrics
+        var layoutMetrics: Image.LayoutMetrics
+
+        weak var catalog: CUICatalog?
     }
-    #endif
 
     // MARK: - NamedImage.BitmapKey [WIP]
 
@@ -311,33 +310,36 @@ package enum NamedImage {
 
     }
 
-    // MARK: - NamedImage.Cache [TODO]
+    // MARK: - NamedImage.Cache
 
     package struct Cache {
         private struct ImageCacheData {
+            private var vectors: [NamedImage.VectorKey: NamedImage.VectorInfo] = [:]
             var bitmaps: [NamedImage.BitmapKey: NamedImage.BitmapInfo] = [:]
             var uuids: [UUID: NamedImage.DecodedInfo] = [:]
-            #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
             var catalogs: [URL: WeakCatalog] = [:]
-            #endif
         }
 
-        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
-        struct WeakCatalog {
+        private struct WeakCatalog {
             weak var catalog: CUICatalog?
         }
-        #endif
+
+        package var archiveDelegate: AnyArchivedViewDelegate?
 
         @AtomicBox
-        private var _data: ImageCacheData
+        private var data: ImageCacheData = .init()
 
-        package init() {
-            self.__data = AtomicBox(wrappedValue: ImageCacheData())
+        package init(archiveDelegate: AnyArchivedViewDelegate? = nil) {
+            self.archiveDelegate = archiveDelegate
         }
 
         // MARK: Cache subscripts
 
-        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+//        package subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
+//            // TODO: Full CoreUI vector lookup implementation
+//            get { nil }
+//        }
+
         package subscript(key: BitmapKey, location: Image.Location) -> BitmapInfo? {
             // TODO: Full CoreUI bitmap lookup implementation
             get { nil }
@@ -347,7 +349,6 @@ package enum NamedImage {
             // TODO: Full CoreUI catalog lookup implementation
             get { nil }
         }
-        #endif
 
         package func decode(_ key: Key) throws -> DecodedInfo {
             switch key {
@@ -361,11 +362,7 @@ package enum NamedImage {
 
     // MARK: - NamedImage.sharedCache
 
-    private static let _sharedCache = Cache()
-
-    package static var sharedCache: Cache {
-        _sharedCache
-    }
+    package static var sharedCache = Cache()
 }
 
 // TODO: WIP
@@ -385,7 +382,6 @@ extension Image {
             return true
         }
 
-        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
         package var catalog: CUICatalog? {
             switch self {
             case .bundle(let bundle):
@@ -396,7 +392,6 @@ extension Image {
                 return nil
             }
         }
-        #endif
 
         package var bundle: Bundle? {
             guard case .bundle(let bundle) = self else {
@@ -564,3 +559,146 @@ extension Image.Location: ProtobufMessage {
         }
     }
 }
+
+#endif
+
+// MARK: - Image.HashableScale [WIP]
+
+extension Image {
+    /// A hashable representation of `Image.Scale` for use as a cache key.
+    package enum HashableScale: Hashable {
+        case small
+        case medium
+        case large
+        case ccSmall
+        case ccMedium
+        case ccLarge
+
+        package init(_ scale: Image.Scale) {
+            switch scale {
+            case .small: self = .small
+            case .medium: self = .medium
+            case .large: self = .large
+            case ._controlCenter_small: self = .ccSmall
+            case ._controlCenter_medium: self = .ccMedium
+            case ._controlCenter_large: self = .ccLarge
+            default: self = .medium
+            }
+        }
+
+        // MARK: - Helpers for symbol sizing
+
+        /// Returns the allowed range for symbol size scaling.
+        ///
+        /// - For standard scales (small, medium, large): returns 1.0...1.0 (no scaling)
+        /// - For control center scales: reads from NSUserDefaults
+        ///   "CCImageScale_MinimumScale" and "CCImageScale_MaximumScale"
+        package var allowedScaleRange: ClosedRange<CGFloat> {
+            switch self {
+            case .small, .medium, .large:
+                return 1.0 ... 1.0
+            case .ccSmall, .ccMedium, .ccLarge:
+                #if canImport(Darwin)
+                let defaults = UserDefaults.standard
+                let lower = (defaults.value(forKey: "CCImageScale_MinimumScale") as? CGFloat) ?? 0.0
+                let upper = (defaults.value(forKey: "CCImageScale_MaximumScale") as? CGFloat) ?? .greatestFiniteMagnitude
+                precondition(lower <= upper, "xx")
+                return lower ... upper
+                #else
+                return 0.0 ... .greatestFiniteMagnitude
+                #endif
+            }
+        }
+
+        // Weight interpolation constants per scale category:
+        //   (lightValue, nominalValue, heavyValue)
+        // where lightValue is at weight -0.8 (ultraLight),
+        //       nominalValue is at weight 0 (regular),
+        //       heavyValue is at weight 0.62 (black).
+        //
+        // These represent the circle.fill diameter as a percentage of point size.
+        private static let smallConstants:  (light: Double, nominal: Double, heavy: Double) = (74.46, 78.86, 83.98)
+        private static let mediumConstants: (light: Double, nominal: Double, heavy: Double) = (94.63, 99.61, 106.64)
+        private static let largeConstants:  (light: Double, nominal: Double, heavy: Double) = (121.66, 127.2, 135.89)
+
+        /// Computes the diameter of a circle.fill symbol for the given point size and weight.
+        ///
+        /// The result is `interpolatedPercentage * 0.01 * pointSize`, where the
+        /// percentage is interpolated based on font weight between three known
+        /// values (ultraLight, regular, black).
+        package func circleDotFillSize(pointSize: CGFloat, weight: Font.Weight) -> CGFloat {
+            let w = weight.value
+            let constants: (light: Double, nominal: Double, heavy: Double)
+
+            // Discriminator bitmask: medium/ccMedium = 0x52, small/ccSmall = 0x9
+            switch self {
+            case .medium, .ccMedium:
+                constants = Self.mediumConstants
+            case .small, .ccSmall:
+                constants = Self.smallConstants
+            default: // large, ccLarge
+                constants = Self.largeConstants
+            }
+
+            let percentage: CGFloat
+            if w == 0.0 {
+                percentage = constants.nominal
+            } else if w < 0.0 {
+                // Interpolate from light (at -0.8) to nominal (at 0)
+                percentage = constants.light + (w + 0.8) / 0.8 * (constants.nominal - constants.light)
+            } else {
+                // Interpolate from nominal (at 0) to heavy (at 0.62)
+                percentage = constants.nominal + w / 0.62 * (constants.heavy - constants.nominal)
+            }
+
+            return percentage * 0.01 * pointSize
+        }
+
+        /// Computes the maximum allowed radius from a given diameter.
+        ///
+        /// The base radius is `diameter / 2`. For control center scales,
+        /// this is multiplied by a scale factor read from NSUserDefaults
+        /// "CCImageScale_CircleScale" (default 1.2).
+        package func maxRadius(diameter: CGFloat) -> CGFloat {
+            var radius = diameter * 0.5
+
+            switch self {
+            case .small, .medium, .large:
+                break
+            case .ccSmall, .ccMedium, .ccLarge:
+                #if canImport(Darwin)
+                let scale = (UserDefaults.standard.value(forKey: "CCImageScale_CircleScale") as? CGFloat) ?? 1.2
+                #else
+                let scale: CGFloat = 1.2
+                #endif
+                radius *= scale
+            }
+
+            return radius
+        }
+    }
+}
+
+
+// MARK: - Image.ResolvedUUID [WIP]
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+extension Image {
+
+    public struct ResolvedUUID {
+        package var cgImage: CGImage
+        package var scale: CGFloat
+        package var orientation: Image.Orientation
+
+        package init(cgImage: CGImage, scale: CGFloat, orientation: Image.Orientation) {
+            self.cgImage = cgImage
+            self.scale = scale
+            self.orientation = orientation
+        }
+    }
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension Image.ResolvedUUID: Sendable {}
