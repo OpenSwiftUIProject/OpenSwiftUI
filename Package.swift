@@ -145,7 +145,7 @@ let releaseVersion = envIntValue("TARGET_RELEASE", default: 2024)
 let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
 let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
-let useLocalDeps = envBoolValue("USE_LOCAL_DEPS", default: true)
+let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
 
 // For OpenAttributeGraphShims
 let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)

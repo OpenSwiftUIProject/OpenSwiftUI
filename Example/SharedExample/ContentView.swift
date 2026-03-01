@@ -13,6 +13,6 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        Image(systemName: "gear")
+        FlowerView()
     }
 }
