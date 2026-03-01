@@ -1,0 +1,26 @@
+//
+//  FoundationProtobufMessageTestsStub.c
+//  OpenSwiftUISymbolDualTestsSupport
+
+#include "OpenSwiftUIBase.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+#import <SymbolLocator.h>
+
+// URL
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_URLEncode, SwiftUICore, $s10Foundation3URLV7SwiftUIE6encode2toyAD15ProtobufEncoderVz_tKF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_URLDecode, SwiftUICore, $s10Foundation3URLV7SwiftUIE4fromAcD15ProtobufDecoderVz_tKcfC);
+
+// UUID
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UUIDEncode, SwiftUICore, $s10Foundation4UUIDV7SwiftUIE6encode2toyAD15ProtobufEncoderVz_tKF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_UUIDDecode, SwiftUICore, $s10Foundation4UUIDV7SwiftUIE4fromAcD15ProtobufDecoderVz_tKcfC);
+
+// Data
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_DataEncode, SwiftUICore, $s10Foundation4DataV7SwiftUIE6encode2toyAD15ProtobufEncoderVz_tKF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_DataDecode, SwiftUICore, $s10Foundation4DataV7SwiftUIE4fromAcD15ProtobufDecoderVz_tKcfC);
+
+// Locale
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_LocaleEncode, SwiftUICore, $s10Foundation6LocaleV7SwiftUIE6encode2toyAD15ProtobufEncoderVz_tKF);
+DEFINE_SL_STUB_SLF(OpenSwiftUITestStub_LocaleDecode, SwiftUICore, $s10Foundation6LocaleV7SwiftUIE4fromAcD15ProtobufDecoderVz_tKcfC);
+
+#endif
