@@ -1554,16 +1554,15 @@ extension Image {
 @available(*, unavailable)
 extension Image.ResolvedUUID: Sendable {}
 
-// MARK: - NamedImage.Key + ProtobufMessage
+// MARK: - NamedImage.Key + ProtobufMessage [TBA]
 
 extension NamedImage.Key: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
         switch self {
         case .bitmap(let bitmapKey):
             try encoder.messageField(1, bitmapKey)
-        case .uuid:
-            // TODO: UUID protobuf encoding
-            break
+        case .uuid(let uuid):
+            try encoder.messageField(2, uuid)
         }
     }
 
@@ -1573,6 +1572,8 @@ extension NamedImage.Key: ProtobufMessage {
             switch field.tag {
             case 1:
                 result = .bitmap(try decoder.messageField(field))
+            case 2:
+                result = .uuid(try decoder.messageField(field))
             default:
                 try decoder.skipField(field)
             }
@@ -1584,27 +1585,27 @@ extension NamedImage.Key: ProtobufMessage {
     }
 }
 
-// MARK: - NamedImage.BitmapKey + ProtobufMessage
+// MARK: - NamedImage.BitmapKey + ProtobufMessage [TBA]
 
 extension NamedImage.BitmapKey: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
         try encoder.messageField(1, catalogKey)
         try encoder.stringField(2, name)
-        encoder.cgFloatField(3, scale)
+        encoder.cgFloatField(3, scale, defaultValue: 1.0)
         try encoder.messageField(4, location)
-        encoder.intField(5, layoutDirection == .rightToLeft ? 1 : 0)
-        // locale encoding omitted - Locale does not yet conform to ProtobufMessage
-        encoder.intField(7, gamut.rawValue)
-        encoder.intField(8, idiom)
-        encoder.intField(9, subtype)
-        encoder.intField(10, Int(horizontalSizeClass))
-        encoder.intField(11, Int(verticalSizeClass))
+        encoder.uintField(5, layoutDirection == .rightToLeft ? 1 : 0)
+        encoder.uintField(6, UInt(gamut.rawValue))
+        encoder.intField(7, idiom)
+        encoder.intField(8, subtype)
+        encoder.uintField(9, UInt(horizontalSizeClass))
+        encoder.uintField(10, UInt(verticalSizeClass))
+        try encoder.messageField(11, locale)
     }
 
     package init(from decoder: inout ProtobufDecoder) throws {
         var catalogKey = CatalogKey(colorScheme: .light, contrast: .standard)
         var name = ""
-        var scale: CGFloat = 0
+        var scale: CGFloat = 1.0
         var location: Image.Location = .system
         var layoutDirection: LayoutDirection = .leftToRight
         var gamut: DisplayGamut = .sRGB
@@ -1612,6 +1613,7 @@ extension NamedImage.BitmapKey: ProtobufMessage {
         var subtype: Int = 0
         var horizontalSizeClass: Int8 = 0
         var verticalSizeClass: Int8 = 0
+        var locale: Locale = .current
 
         while let field = try decoder.nextField() {
             switch field.tag {
@@ -1620,15 +1622,16 @@ extension NamedImage.BitmapKey: ProtobufMessage {
             case 3: scale = try decoder.cgFloatField(field)
             case 4: location = try decoder.messageField(field)
             case 5:
-                let value: Int = try decoder.intField(field)
-                layoutDirection = value == 1 ? .rightToLeft : .leftToRight
-            case 7:
-                let value: Int = try decoder.intField(field)
-                gamut = DisplayGamut(rawValue: value) ?? .sRGB
-            case 8: idiom = try decoder.intField(field)
-            case 9: subtype = try decoder.intField(field)
-            case 10: horizontalSizeClass = Int8(try decoder.intField(field) as Int)
-            case 11: verticalSizeClass = Int8(try decoder.intField(field) as Int)
+                let value: UInt = try decoder.uintField(field)
+                layoutDirection = value != 0 ? .rightToLeft : .leftToRight
+            case 6:
+                let value: UInt = try decoder.uintField(field)
+                gamut = DisplayGamut(rawValue: Int(value)) ?? .sRGB
+            case 7: idiom = try decoder.intField(field)
+            case 8: subtype = try decoder.intField(field)
+            case 9: horizontalSizeClass = Int8(try decoder.uintField(field))
+            case 10: verticalSizeClass = Int8(try decoder.uintField(field))
+            case 11: locale = try decoder.messageField(field)
             default: try decoder.skipField(field)
             }
         }
@@ -1638,7 +1641,7 @@ extension NamedImage.BitmapKey: ProtobufMessage {
             scale: scale,
             location: location,
             layoutDirection: layoutDirection,
-            locale: .autoupdatingCurrent,
+            locale: locale,
             gamut: gamut,
             idiom: idiom,
             subtype: subtype,
@@ -1648,9 +1651,9 @@ extension NamedImage.BitmapKey: ProtobufMessage {
     }
 }
 
-// MARK: - CUI Helpers
-
 #if OPENSWIFTUI_LINK_COREUI
+
+// MARK: - CUI Helpers
 
 extension Font.Weight {
     /// Maps Font.Weight to CUI's `_CUIThemeVectorGlyphWeight` values.
