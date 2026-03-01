@@ -483,7 +483,6 @@ package enum NamedImage {
     package enum Errors: Error, Equatable, Hashable {
         case missingCatalogImage
         case missingUUIDImage
-
     }
 
     // MARK: - NamedImage.Cache
@@ -514,61 +513,61 @@ package enum NamedImage {
         // MARK: Cache subscripts
 
         #if OPENSWIFTUI_LINK_COREUI
-
         // Looks up cached VectorInfo for key; if not found or catalog changed,
         // calls loadVectorInfo and caches the result.
         private subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
-            get {
-                let cached = data.vectors[key]
-                if let cached {
-                    if let cachedCatalog = cached.catalog, cachedCatalog == catalog {
-                        return cached
-                    }
+            let cached = data.vectors[key]
+            if let cached {
+                if let cachedCatalog = cached.catalog, cachedCatalog == catalog {
+                    return cached
                 }
-                guard let info = key.loadVectorInfo(from: catalog, idiom: key.idiom) else {
-                    return nil
-                }
-                data.vectors[key] = info
-                return info
             }
+            guard let info = key.loadVectorInfo(from: catalog, idiom: key.idiom) else {
+                return nil
+            }
+            data.vectors[key] = info
+            return info
         }
+        #endif
 
         // Looks up cached BitmapInfo for key; if not found,
         // calls loadBitmapInfo and caches the result.
         package subscript(key: BitmapKey, location: Image.Location) -> BitmapInfo? {
-            get {
-                if let cached = data.bitmaps[key] {
-                    return cached
-                }
-                guard let info = key.loadBitmapInfo(location: location, idiom: key.idiom, subtype: key.subtype) else {
-                    return nil
-                }
-                data.bitmaps[key] = info
-                return info
+            #if OPENSWIFTUI_LINK_COREUI
+            if let cached = data.bitmaps[key] {
+                return cached
             }
+            guard let info = key.loadBitmapInfo(location: location, idiom: key.idiom, subtype: key.subtype) else {
+                return nil
+            }
+            data.bitmaps[key] = info
+            return info
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            return nil
+            #endif
         }
 
+        #if OPENSWIFTUI_LINK_COREUI
         // Resolves a CUICatalog for the given bundle.
         // First tries defaultUICatalog; falls back to Assets.car with weak caching.
         package subscript(bundle: Bundle) -> (CUICatalog, retain: Bool)? {
-            get {
-                if let catalog = CUICatalog.defaultUICatalog(for: bundle) {
-                    return (catalog, retain: false)
-                }
-                guard let url = bundle.url(forResource: "Assets", withExtension: "car") else {
-                    return nil
-                }
-                if let weakCatalog = data.catalogs[url], let catalog = weakCatalog.catalog {
-                    return (catalog, retain: true)
-                }
-                // Clean up stale entries where weak ref is nil
-                data.catalogs = data.catalogs.filter { $0.value.catalog != nil }
-                guard let catalog = try? CUICatalog(url: url) else {
-                    return nil
-                }
-                data.catalogs[url] = WeakCatalog(catalog: catalog)
+            if let catalog = CUICatalog.defaultUICatalog(for: bundle) {
+                return (catalog, retain: false)
+            }
+            guard let url = bundle.url(forResource: "Assets", withExtension: "car") else {
+                return nil
+            }
+            if let weakCatalog = data.catalogs[url], let catalog = weakCatalog.catalog {
                 return (catalog, retain: true)
             }
+            // Clean up stale entries where weak ref is nil
+            data.catalogs = data.catalogs.filter { $0.value.catalog != nil }
+            guard let catalog = try? CUICatalog(url: url) else {
+                return nil
+            }
+            data.catalogs[url] = WeakCatalog(catalog: catalog)
+            return (catalog, retain: true)
         }
 
         #endif
@@ -576,17 +575,15 @@ package enum NamedImage {
         package func decode(_ key: Key) throws -> DecodedInfo {
             switch key {
             case .bitmap(let bitmapKey):
-                #if OPENSWIFTUI_LINK_COREUI
-                if let info = self[bitmapKey, bitmapKey.location] {
-                    return DecodedInfo(
-                        contents: info.contents,
-                        scale: info.scale,
-                        unrotatedPixelSize: info.unrotatedPixelSize,
-                        orientation: info.orientation
-                    )
+                guard let info = self[bitmapKey, bitmapKey.location] else {
+                    throw Errors.missingCatalogImage
                 }
-                #endif
-                throw Errors.missingCatalogImage
+                return DecodedInfo(
+                    contents: info.contents,
+                    scale: info.scale,
+                    unrotatedPixelSize: info.unrotatedPixelSize,
+                    orientation: info.orientation
+                )
             case .uuid(let uuid):
                 if let cached = data.uuids[uuid] {
                     return cached
