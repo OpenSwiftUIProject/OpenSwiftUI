@@ -327,6 +327,18 @@ public struct SymbolVariants: Hashable, Sendable {
         shape = other.shape ?? shape
     }
 
+    /// Normalizes symbol variants for name lookup by handling background semantics.
+    ///
+    /// When the `.background` variant is set, the fill flag is toggled,
+    /// the background flag is cleared, and the shape is removed.
+    package func _normalizedForNameLookup() -> SymbolVariants {
+        guard flags.contains(.background) else { return self }
+        var newFlags = flags
+        newFlags.formSymmetricDifference(.fill)
+        newFlags.remove(.background)
+        return SymbolVariants(flags: newFlags, shape: nil)
+    }
+
     /// Returns a Boolean value that indicates whether the current variant
     /// contains the specified variant.
     ///

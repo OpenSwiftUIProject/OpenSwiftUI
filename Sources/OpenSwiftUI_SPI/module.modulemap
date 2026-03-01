@@ -48,6 +48,11 @@ module kdebug_Private {
     export *
 }
 
+module GraphicsServices_Private {
+    umbrella "Shims/GraphicsServices"
+    export *
+}
+
 module MobileGestaltPrivate {
     umbrella "Shims/MobileGestalt"
     export *

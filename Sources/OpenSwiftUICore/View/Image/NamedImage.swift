@@ -652,68 +652,120 @@ extension Image {
 
         package func fillVariant(_ variants: SymbolVariants, name: String) -> String? {
             guard variants.contains(.fill) else { return nil }
-            let fillName = name + ".fill"
-            guard let catalog else { return nil }
-            return catalog.imageExists(withName: fillName) ? fillName : nil
+            switch self {
+            #if OPENSWIFTUI_LINK_COREUI
+            case .system:
+                return Self.systemAssetManager.fillMapping[name]
+            case .privateSystem:
+                return Self.privateSystemAssetManager.fillMapping[name]
+            #else
+            case .system, .privateSystem:
+                return nil
+            #endif
+            case .bundle:
+                return name + ".fill"
+            }
         }
 
         package func mayContainSymbol(_ name: String) -> Bool {
-            guard let catalog else { return false }
-            return catalog.containsLookup(forName: name)
+            switch self {
+            #if OPENSWIFTUI_LINK_COREUI
+            case .system:
+                return Self.systemAssetManager.symbols.contains(name)
+            case .privateSystem:
+                return Self.privateSystemAssetManager.symbols.contains(name)
+            #else
+            case .system, .privateSystem:
+                return false
+            #endif
+            case .bundle:
+                return true
+            }
+        }
+
+        private func aliasedName(_ name: String) -> String {
+            switch self {
+            #if OPENSWIFTUI_LINK_COREUI
+            case .system:
+                return Self.systemAssetManager.nameAliases[name] ?? name
+            case .privateSystem:
+                return Self.privateSystemAssetManager.nameAliases[name] ?? name
+            #else
+            case .system, .privateSystem:
+                return name
+            #endif
+            case .bundle:
+                return name
+            }
         }
 
         package func findShapeAndFillVariantName<T>(_ variants: SymbolVariants, base: String, body: (String) -> T?) -> T? {
             if let shapeName = variants.shapeVariantName(name: base) {
-                if let fillName = fillVariant(variants, name: shapeName) {
+                let aliasedShape = aliasedName(shapeName)
+                if let fillName = fillVariant(variants, name: aliasedShape) {
                     if let result = body(fillName) { return result }
                 }
-                if let result = body(shapeName) { return result }
+                if let result = body(aliasedShape) { return result }
             }
-            if let fillName = fillVariant(variants, name: base) {
+            let aliasedBase = aliasedName(base)
+            if let fillName = fillVariant(variants, name: aliasedBase) {
                 if let result = body(fillName) { return result }
             }
-            return nil
+            return body(aliasedBase)
         }
 
         package func findName<T>(_ variants: SymbolVariants, base: String, body: (String) -> T?) -> T? {
-            if let result = findShapeAndFillVariantName(variants, base: base, body: body) {
-                return result
+            let normalizedVariants = variants._normalizedForNameLookup()
+            if normalizedVariants.contains(.slash) {
+                let slashName = base + ".slash"
+                if let result = findShapeAndFillVariantName(normalizedVariants, base: slashName, body: body) {
+                    return result
+                }
+                return findShapeAndFillVariantName(normalizedVariants, base: base, body: body)
+            } else {
+                return findShapeAndFillVariantName(normalizedVariants, base: base, body: body)
             }
-            return body(base)
         }
 
-        package static let systemAssetManager = SystemAssetManager(location: .system)
+        #if OPENSWIFTUI_LINK_COREUI
+        package static let systemAssetManager = SystemAssetManager(internalUse: false)
 
-        package static let privateSystemAssetManager = SystemAssetManager(location: .privateSystem)
+        package static let privateSystemAssetManager = SystemAssetManager(internalUse: true)
 
         package struct SystemAssetManager {
-            var location: Image.Location
-        }
+            let catalog: CUICatalog
+            let fillMapping: [String: String]
+            let nameAliases: [String: String]
+            let symbols: [String]
 
-        package static func == (a: Image.Location, b: Image.Location) -> Bool {
-            switch (a, b) {
-            case let (.bundle(lhs), .bundle(rhs)):
-                return lhs == rhs
-            case (.system, .system):
-                return true
-            case (.privateSystem, .privateSystem):
-                return true
-            default:
-                return false
+            package init(internalUse: Bool) {
+                let bundlePath: String
+                if internalUse {
+                    // TODO: Load from SFSymbols private framework
+                    // fillMapping = SFSymbols.private_nofill_to_fill
+                    // nameAliases = SFSymbols.private_name_aliases
+                    // symbols = SFSymbols.private_symbol_order
+                    fillMapping = [:]
+                    nameAliases = [:]
+                    symbols = []
+                    bundlePath = "/System/Library/CoreServices/CoreGlyphsPrivate.bundle"
+                } else {
+                    // TODO: Load from SFSymbols framework
+                    // fillMapping = SFSymbols.nofill_to_fill
+                    // nameAliases = SFSymbols.name_aliases
+                    // symbols = SFSymbols.symbol_order
+                    fillMapping = [:]
+                    nameAliases = [:]
+                    symbols = []
+                    bundlePath = "/System/Library/CoreServices/CoreGlyphs.bundle"
+                }
+
+                let fullPath = _SimulatorSystemRootDirectory() + bundlePath
+                let bundle = Bundle(path: fullPath)!
+                catalog = try! CUICatalog(name: "Assets", from: bundle, error: ())
             }
         }
-
-        package func hash(into hasher: inout Hasher) {
-            switch self {
-            case .bundle(let bundle):
-                hasher.combine(0)
-                hasher.combine(bundle.bundleURL)
-            case .system:
-                hasher.combine(1)
-            case .privateSystem:
-                hasher.combine(2)
-            }
-        }
+        #endif
     }
 }
 
