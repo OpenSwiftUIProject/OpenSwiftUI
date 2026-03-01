@@ -650,6 +650,46 @@ extension Image {
             return bundle
         }
 
+        package func fillVariant(_ variants: SymbolVariants, name: String) -> String? {
+            guard variants.contains(.fill) else { return nil }
+            let fillName = name + ".fill"
+            guard let catalog else { return nil }
+            return catalog.imageExists(withName: fillName) ? fillName : nil
+        }
+
+        package func mayContainSymbol(_ name: String) -> Bool {
+            guard let catalog else { return false }
+            return catalog.containsLookup(forName: name)
+        }
+
+        package func findShapeAndFillVariantName<T>(_ variants: SymbolVariants, base: String, body: (String) -> T?) -> T? {
+            if let shapeName = variants.shapeVariantName(name: base) {
+                if let fillName = fillVariant(variants, name: shapeName) {
+                    if let result = body(fillName) { return result }
+                }
+                if let result = body(shapeName) { return result }
+            }
+            if let fillName = fillVariant(variants, name: base) {
+                if let result = body(fillName) { return result }
+            }
+            return nil
+        }
+
+        package func findName<T>(_ variants: SymbolVariants, base: String, body: (String) -> T?) -> T? {
+            if let result = findShapeAndFillVariantName(variants, base: base, body: body) {
+                return result
+            }
+            return body(base)
+        }
+
+        package static let systemAssetManager = SystemAssetManager(location: .system)
+
+        package static let privateSystemAssetManager = SystemAssetManager(location: .privateSystem)
+
+        package struct SystemAssetManager {
+            var location: Image.Location
+        }
+
         package static func == (a: Image.Location, b: Image.Location) -> Bool {
             switch (a, b) {
             case let (.bundle(lhs), .bundle(rhs)):
