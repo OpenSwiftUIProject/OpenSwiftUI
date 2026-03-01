@@ -68,7 +68,6 @@ extension Image {
                 contentSize = CGSize(width: alignmentRect.width, height: capHeight)
                 alignmentOrigin = CGPoint(x: 0, y: -baselineOffset)
             }
-
             self.init(
                 baselineOffset: baselineOffset,
                 capHeight: capHeight,

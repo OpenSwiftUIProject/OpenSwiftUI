@@ -83,13 +83,14 @@ package enum NamedImage {
             ) { appearanceName -> CUINamedVectorGlyph? in
                 let cuiIdiom = CUIDeviceIdiom(rawValue: idiom)!
                 let cuiLayoutDir = self.layoutDirection.cuiLayoutDirection
+                let glyphSz = self.imageScale.glyphSize
                 let glyphWt = self.weight.glyphWeight
                 guard var result = catalog.namedVectorGlyph(
                     withName: self.name,
                     scaleFactor: self.scale,
                     deviceIdiom: cuiIdiom,
                     layoutDirection: cuiLayoutDir,
-                    glyphSize: glyphWt,
+                    glyphSize: glyphSz,
                     glyphWeight: glyphWt,
                     glyphPointSize: self.pointSize,
                     appearanceName: appearanceName,
@@ -838,6 +839,15 @@ extension Image {
 
         // MARK: - Helpers for symbol sizing
 
+        /// Maps image scale to CUI glyph size: small→1, medium→2, large→3.
+        fileprivate var glyphSize: Int {
+            switch self {
+            case .small, .ccSmall: return 1
+            case .medium, .ccMedium: return 2
+            case .large, .ccLarge: return 3
+            }
+        }
+
         /// Returns the allowed range for symbol size scaling.
         ///
         /// - For standard scales (small, medium, large): returns 1.0...1.0 (no scaling)
@@ -957,7 +967,7 @@ extension Image.ResolvedUUID: Sendable {}
 #if OPENSWIFTUI_LINK_COREUI
 
 extension Font.Weight {
-    /// Maps Font.Weight to CUI's _CUIThemeVectorGlyphWeight integer values.
+    /// Maps Font.Weight to CUI's `_CUIThemeVectorGlyphWeight` values.
     ///
     /// Matches each known weight value (within 0.001 tolerance):
     /// - ultraLight (-0.8) → 1
@@ -970,38 +980,37 @@ extension Font.Weight {
     /// - heavy (0.56) → 8
     /// - black (0.62) → 9
     /// - unknown → 4 (regular)
-    fileprivate var glyphWeight: Int {
+    fileprivate var glyphWeight: _CUIThemeVectorGlyphWeight {
         let v = value
         let tolerance = 0.001
-        if abs(v - (-0.8)) < tolerance { return 1 }
-        if abs(v - (-0.6)) < tolerance { return 2 }
-        if abs(v - (-0.4)) < tolerance { return 3 }
-        if abs(v - 0.0) < tolerance { return 4 }
-        if abs(v - 0.23) < tolerance { return 5 }
-        if abs(v - 0.3) < tolerance { return 6 }
-        if abs(v - 0.4) < tolerance { return 7 }
-        if abs(v - 0.56) < tolerance { return 8 }
-        if abs(v - 0.62) < tolerance { return 9 }
-        return 4
+        if abs(v - (-0.8)) < tolerance { return .ultraLight }
+        if abs(v - (-0.6)) < tolerance { return .thin }
+        if abs(v - (-0.4)) < tolerance { return .light }
+        if abs(v - 0.0) < tolerance { return .regular }
+        if abs(v - 0.23) < tolerance { return .medium }
+        if abs(v - 0.3) < tolerance { return .semibold }
+        if abs(v - 0.4) < tolerance { return .bold }
+        if abs(v - 0.56) < tolerance { return .heavy }
+        if abs(v - 0.62) < tolerance { return .black }
+        return .regular
     }
 
     /// Maps Font.Weight to CUI's continuous weight CGFloat value.
     ///
-    /// Looks up the integer glyphWeight, then returns the corresponding
+    /// Looks up the `_CUIThemeVectorGlyphWeight`, then returns the corresponding
     /// `_CUIVectorGlyphContinuousWeight*` constant from CoreUI.
     fileprivate var glyphContinuousWeight: CGFloat {
-        let w = glyphWeight
-        switch w {
-        case 1: return _CUIVectorGlyphContinuousWeightUltralight
-        case 2: return _CUIVectorGlyphContinuousWeightThin
-        case 3: return _CUIVectorGlyphContinuousWeightLight
-        case 4: return _CUIVectorGlyphContinuousWeightRegular
-        case 5: return _CUIVectorGlyphContinuousWeightMedium
-        case 6: return _CUIVectorGlyphContinuousWeightSemibold
-        case 7: return _CUIVectorGlyphContinuousWeightBold
-        case 8: return _CUIVectorGlyphContinuousWeightHeavy
-        case 9: return _CUIVectorGlyphContinuousWeightBlack
-        default: return _CUIVectorGlyphContinuousWeightRegular
+        switch glyphWeight {
+        case .ultraLight: return _CUIVectorGlyphContinuousWeightUltralight
+        case .thin: return _CUIVectorGlyphContinuousWeightThin
+        case .light: return _CUIVectorGlyphContinuousWeightLight
+        case .regular: return _CUIVectorGlyphContinuousWeightRegular
+        case .medium: return _CUIVectorGlyphContinuousWeightMedium
+        case .semibold: return _CUIVectorGlyphContinuousWeightSemibold
+        case .bold: return _CUIVectorGlyphContinuousWeightBold
+        case .heavy: return _CUIVectorGlyphContinuousWeightHeavy
+        case .black: return _CUIVectorGlyphContinuousWeightBlack
+        @unknown default: return _CUIVectorGlyphContinuousWeightRegular
         }
     }
 }
