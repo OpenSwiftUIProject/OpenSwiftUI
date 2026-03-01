@@ -731,22 +731,14 @@ extension Image {
             package init(internalUse: Bool) {
                 let bundlePath: String
                 if internalUse {
-                    // TODO: Load from SFSymbols private framework
-                    // fillMapping = SFSymbols.private_nofill_to_fill
-                    // nameAliases = SFSymbols.private_name_aliases
-                    // symbols = SFSymbols.private_symbol_order
-                    fillMapping = [:]
-                    nameAliases = [:]
-                    symbols = []
+                    fillMapping = SFSymbols.private_nofill_to_fill
+                    nameAliases = SFSymbols.private_name_aliases
+                    symbols = SFSymbols.private_symbol_order
                     bundlePath = "/System/Library/CoreServices/CoreGlyphsPrivate.bundle"
                 } else {
-                    // TODO: Load from SFSymbols framework
-                    // fillMapping = SFSymbols.nofill_to_fill
-                    // nameAliases = SFSymbols.name_aliases
-                    // symbols = SFSymbols.symbol_order
-                    fillMapping = [:]
-                    nameAliases = [:]
-                    symbols = []
+                    fillMapping = SFSymbols.nofill_to_fill
+                    nameAliases = SFSymbols.name_aliases
+                    symbols = SFSymbols.symbol_order
                     bundlePath = "/System/Library/CoreServices/CoreGlyphs.bundle"
                 }
                 #if OPENSWIFTUI_LINK_COREUI
