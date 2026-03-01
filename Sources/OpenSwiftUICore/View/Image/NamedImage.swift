@@ -1362,17 +1362,14 @@ extension Image.Location: ProtobufMessage {
     }
 }
 
-// MARK: - Image.HashableScale [WIP]
+// MARK: - Image.HashableScale
 
 extension Image {
     /// A hashable representation of `Image.Scale` for use as a cache key.
     package enum HashableScale: Hashable {
-        case small
-        case medium
-        case large
-        case ccSmall
-        case ccMedium
-        case ccLarge
+        case small, medium, large
+        case ccSmall, ccMedium, ccLarge
+        case wtMedium
 
         package init(_ scale: Image.Scale) {
             switch scale {
@@ -1382,27 +1379,26 @@ extension Image {
             case ._controlCenter_small: self = .ccSmall
             case ._controlCenter_medium: self = .ccMedium
             case ._controlCenter_large: self = .ccLarge
-            default: self = .medium
+            case ._watch_toolbar_medium: self = .wtMedium
             }
         }
-
-        // MARK: - Helpers for symbol sizing
 
         /// Maps image scale to CUI glyph size: small→1, medium→2, large→3.
         fileprivate var glyphSize: Int {
             switch self {
             case .small, .ccSmall: return 1
-            case .medium, .ccMedium: return 2
+            case .medium, .ccMedium, .wtMedium: return 2
             case .large, .ccLarge: return 3
             }
         }
 
         /// Returns the allowed range for symbol size scaling.
         ///
-        /// - For standard scales (small, medium, large): returns 1.0...1.0 (no scaling)
-        /// - For control center scales: reads from NSUserDefaults
-        ///   "CCImageScale_MinimumScale" and "CCImageScale_MaximumScale"
-        package var allowedScaleRange: ClosedRange<CGFloat> {
+        /// - For standard scales (small, medium, large): returns `1.0...1.0` (no scaling)
+        /// - For control center scales: reads from `NSUserDefaults`
+        ///   `CCImageScale_MinimumScale` and `CCImageScale_MaximumScale`
+        /// - For watch toolbar medium: returns `0.75...1.0`
+        fileprivate var allowedScaleRange: ClosedRange<CGFloat> {
             switch self {
             case .small, .medium, .large:
                 return 1.0 ... 1.0
@@ -1411,42 +1407,43 @@ extension Image {
                 let defaults = UserDefaults.standard
                 let lower = (defaults.value(forKey: "CCImageScale_MinimumScale") as? CGFloat) ?? 0.0
                 let upper = (defaults.value(forKey: "CCImageScale_MaximumScale") as? CGFloat) ?? .greatestFiniteMagnitude
-                precondition(lower <= upper, "xx")
                 return lower ... upper
                 #else
                 return 0.0 ... .greatestFiniteMagnitude
                 #endif
+            case .wtMedium:
+                return 0.75 ... 1.0
             }
         }
 
-        // Weight interpolation constants per scale category:
-        //   (lightValue, nominalValue, heavyValue)
-        // where lightValue is at weight -0.8 (ultraLight),
-        //       nominalValue is at weight 0 (regular),
-        //       heavyValue is at weight 0.62 (black).
-        //
-        // These represent the circle.fill diameter as a percentage of point size.
-        private static let smallConstants:  (light: Double, nominal: Double, heavy: Double) = (74.46, 78.86, 83.98)
-        private static let mediumConstants: (light: Double, nominal: Double, heavy: Double) = (94.63, 99.61, 106.64)
-        private static let largeConstants:  (light: Double, nominal: Double, heavy: Double) = (121.66, 127.2, 135.89)
-
-        /// Computes the diameter of a circle.fill symbol for the given point size and weight.
+        /// Computes the diameter of a `circle.fill` symbol for the given point size and weight.
         ///
         /// The result is `interpolatedPercentage * 0.01 * pointSize`, where the
         /// percentage is interpolated based on font weight between three known
         /// values (ultraLight, regular, black).
-        package func circleDotFillSize(pointSize: CGFloat, weight: Font.Weight) -> CGFloat {
+        ///
+        /// Weight interpolation constants per scale category
+        /// `(lightValue, nominalValue, heavyValue)`:
+        /// - `lightValue` is at weight -0.8 (ultraLight)
+        /// - `nominalValue` is at weight 0 (regular)
+        /// - `heavyValue` is at weight 0.62 (black)
+        ///
+        /// These represent the `circle.fill` diameter as a percentage of point size.
+        fileprivate func circleDotFillSize(pointSize: CGFloat, weight: Font.Weight) -> CGFloat {
+            let smallConstants:  (light: Double, nominal: Double, heavy: Double) = (74.46, 78.86, 83.98)
+            let mediumConstants: (light: Double, nominal: Double, heavy: Double) = (94.63, 99.61, 106.64)
+            let largeConstants:  (light: Double, nominal: Double, heavy: Double) = (121.66, 127.2, 135.89)
+
             let w = weight.value
             let constants: (light: Double, nominal: Double, heavy: Double)
 
-            // Discriminator bitmask: medium/ccMedium = 0x52, small/ccSmall = 0x9
             switch self {
-            case .medium, .ccMedium:
-                constants = Self.mediumConstants
+            case .medium, .ccMedium, .wtMedium:
+                constants = mediumConstants
             case .small, .ccSmall:
-                constants = Self.smallConstants
+                constants = smallConstants
             default: // large, ccLarge
-                constants = Self.largeConstants
+                constants = largeConstants
             }
 
             let percentage: CGFloat
@@ -1465,10 +1462,11 @@ extension Image {
 
         /// Computes the maximum allowed radius from a given diameter.
         ///
-        /// The base radius is `diameter / 2`. For control center scales,
-        /// this is multiplied by a scale factor read from NSUserDefaults
-        /// "CCImageScale_CircleScale" (default 1.2).
-        package func maxRadius(diameter: CGFloat) -> CGFloat {
+        /// The base radius is `diameter / 2`.
+        /// - For control center scales, this is multiplied by a scale factor
+        ///   read from `NSUserDefaults` `CCImageScale_CircleScale` (default 1.2).
+        /// - For watch toolbar medium, this is multiplied by 1.1.
+        fileprivate func maxRadius(diameter: CGFloat) -> CGFloat {
             var radius = diameter * 0.5
 
             switch self {
@@ -1481,8 +1479,9 @@ extension Image {
                 let scale: CGFloat = 1.2
                 #endif
                 radius *= scale
+            case .wtMedium:
+                radius *= 1.1
             }
-
             return radius
         }
     }
