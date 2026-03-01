@@ -13,6 +13,7 @@ import CoreGraphics_Private
 #endif
 #if OPENSWIFTUI_LINK_COREUI
 package import CoreUI
+import GraphicsServices_Private
 #endif
 
 // MARK: - NamedImage
@@ -617,7 +618,7 @@ extension Image {
     public static var _mainNamedBundle: Bundle? { nil }
 }
 
-// MARK: - Image.Location [WIP]
+// MARK: - Image.Location
 
 extension Image {
     package enum Location: Equatable, Hashable {
@@ -632,16 +633,18 @@ extension Image {
             return true
         }
 
+        #if OPENSWIFTUI_LINK_COREUI
         package var catalog: CUICatalog? {
             switch self {
+            case .system:
+                return Self.systemAssetManager.catalog
+            case .privateSystem:
+                return Self.privateSystemAssetManager.catalog
             case .bundle(let bundle):
                 return NamedImage.sharedCache[bundle]?.0
-            case .system:
-                return nil
-            case .privateSystem:
-                return nil
             }
         }
+        #endif
 
         package var bundle: Bundle? {
             guard case .bundle(let bundle) = self else {
@@ -653,15 +656,10 @@ extension Image {
         package func fillVariant(_ variants: SymbolVariants, name: String) -> String? {
             guard variants.contains(.fill) else { return nil }
             switch self {
-            #if OPENSWIFTUI_LINK_COREUI
             case .system:
                 return Self.systemAssetManager.fillMapping[name]
             case .privateSystem:
                 return Self.privateSystemAssetManager.fillMapping[name]
-            #else
-            case .system, .privateSystem:
-                return nil
-            #endif
             case .bundle:
                 return name + ".fill"
             }
@@ -669,15 +667,10 @@ extension Image {
 
         package func mayContainSymbol(_ name: String) -> Bool {
             switch self {
-            #if OPENSWIFTUI_LINK_COREUI
             case .system:
                 return Self.systemAssetManager.symbols.contains(name)
             case .privateSystem:
                 return Self.privateSystemAssetManager.symbols.contains(name)
-            #else
-            case .system, .privateSystem:
-                return false
-            #endif
             case .bundle:
                 return true
             }
@@ -685,15 +678,10 @@ extension Image {
 
         private func aliasedName(_ name: String) -> String {
             switch self {
-            #if OPENSWIFTUI_LINK_COREUI
             case .system:
                 return Self.systemAssetManager.nameAliases[name] ?? name
             case .privateSystem:
                 return Self.privateSystemAssetManager.nameAliases[name] ?? name
-            #else
-            case .system, .privateSystem:
-                return name
-            #endif
             case .bundle:
                 return name
             }
@@ -727,13 +715,14 @@ extension Image {
             }
         }
 
-        #if OPENSWIFTUI_LINK_COREUI
         package static let systemAssetManager = SystemAssetManager(internalUse: false)
 
         package static let privateSystemAssetManager = SystemAssetManager(internalUse: true)
 
         package struct SystemAssetManager {
+            #if OPENSWIFTUI_LINK_COREUI
             let catalog: CUICatalog
+            #endif
             let fillMapping: [String: String]
             let nameAliases: [String: String]
             let symbols: [String]
@@ -759,13 +748,13 @@ extension Image {
                     symbols = []
                     bundlePath = "/System/Library/CoreServices/CoreGlyphs.bundle"
                 }
-
+                #if OPENSWIFTUI_LINK_COREUI
                 let fullPath = _SimulatorSystemRootDirectory() + bundlePath
                 let bundle = Bundle(path: fullPath)!
                 catalog = try! CUICatalog(name: "Assets", from: bundle, error: ())
+                #endif
             }
         }
-        #endif
     }
 }
 
