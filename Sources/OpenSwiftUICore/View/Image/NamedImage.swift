@@ -19,7 +19,7 @@ package import CoreUI
 
 package enum NamedImage {
 
-    // MARK: - NamedImage.VectorKey [WIP]
+    // MARK: - NamedImage.VectorKey
 
     package struct VectorKey: Hashable {
         package var catalogKey: CatalogKey
@@ -136,7 +136,6 @@ package enum NamedImage {
             )
         }
 
-        // [TBA]
         /// Computes a scale factor for symbol images based on the glyph's
         /// actual path radius relative to a reference circle.fill size.
         ///
@@ -149,10 +148,10 @@ package enum NamedImage {
         private func symbolSizeScale(for glyph: CUINamedVectorGlyph) -> CGFloat {
             let range = imageScale.allowedScaleRange
             guard range.lowerBound < range.upperBound else {
-                return 1.0
+                return range.lowerBound
             }
 
-            guard let layers = glyph.monochromeLayers as? [CUIVectorGlyphLayer] else {
+            guard let layers = glyph.monochromeLayers else {
                 return 1.0
             }
 
@@ -173,6 +172,7 @@ package enum NamedImage {
 
                 guard let path = layer.shape else { continue }
 
+                // TODO: RBPathApplyLines
                 // Iterate path points, computing max squared distance from center.
                 // The original uses RBPathApplyLines to flatten curves; here we
                 // process all element endpoints which is equivalent for line-based
