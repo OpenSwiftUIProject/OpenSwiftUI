@@ -1297,42 +1297,68 @@ extension Image {
     }
 }
 
-// MARK: - Image.Location + ProtobufMessage
+// MARK: - Image.Location + ProtobufMessage [WIP]
 
 extension Image.Location: ProtobufMessage {
-    package func encode(to encoder: inout ProtobufEncoder) throws {
-        switch self {
-        case .bundle(let bundle):
-            encoder.intField(1, 2)
-            try encoder.stringField(2, bundle.bundlePath)
-        case .system:
-            encoder.intField(1, 0)
-        case .privateSystem:
-            encoder.intField(1, 1)
+    fileprivate struct BundlePath: Hashable, ProtobufMessage {
+        var value: String
+
+        init(value: String) {
+            self.value = value
+        }
+
+        enum Error: Swift.Error {
+            case invalidPathData
+        }
+
+        func encode(to encoder: inout ProtobufEncoder) throws {
+            // FIXME
+            try encoder.encodeAttachedValue(key: self) {
+                Data(value.utf8)
+            }
+        }
+
+        init(from decoder: inout ProtobufDecoder) throws {
+            _openSwiftUIUnimplementedFailure()
         }
     }
 
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        switch self {
+        case .bundle(let bundle):
+            try encoder.messageField(1, BundlePath(value: bundle.bundlePath))
+        case .system:
+            encoder.emptyField(2)
+        case .privateSystem:
+            encoder.emptyField(3)
+        }
+    }
+
+    private enum Error: Swift.Error {
+        case invalidBundle(String)
+    }
+
     package init(from decoder: inout ProtobufDecoder) throws {
-        var discriminator: Int = 0
-        var path: String?
+        var result: Image.Location = .system
         while let field = try decoder.nextField() {
             switch field.tag {
-            case 1: discriminator = try decoder.intField(field)
-            case 2: path = try decoder.stringField(field)
-            default: try decoder.skipField(field)
+            case 1:
+                let bundlePath: BundlePath = try decoder.messageField(field)
+                guard let bundle = Bundle(path: bundlePath.value) else {
+                    throw Error.invalidBundle(bundlePath.value)
+                }
+                result = .bundle(bundle)
+            case 2:
+                try decoder.messageField(field) { (_: inout ProtobufDecoder) in }
+                result = .system
+            case 3:
+                try decoder.messageField(field) { (_: inout ProtobufDecoder) in }
+                result = .privateSystem
+            default:
+                try decoder.skipField(field)
             }
         }
-        switch discriminator {
-        case 0: self = .system
-        case 1: self = .privateSystem
-        case 2:
-            if let path, let bundle = Bundle(path: path) {
-                self = .bundle(bundle)
-            } else {
-                self = .system
-            }
-        default: self = .system
-        }
+        self = result
     }
 }
 
