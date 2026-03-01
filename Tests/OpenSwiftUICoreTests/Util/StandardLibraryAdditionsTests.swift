@@ -618,3 +618,89 @@ struct BidirectionalCollectionInsertionSortTests {
         #expect(array == [.value(4), .invalid, .value(5), .value(2), .value(1)])
     }
 }
+
+// MARK: - IndirectOptionalTests
+
+struct IndirectOptionalTests {
+    @Test
+    func initWithValue() {
+        let opt = IndirectOptional<Int>(42)
+        #expect(opt.wrappedValue == 42)
+    }
+
+    @Test
+    func initWithNilLiteral() {
+        let opt: IndirectOptional<Int> = nil
+        #expect(opt.wrappedValue == nil)
+    }
+
+    @Test
+    func initWithWrappedValue() {
+        let opt = IndirectOptional<String>(wrappedValue: "hello")
+        #expect(opt.wrappedValue == "hello")
+
+        let nilOpt = IndirectOptional<String>(wrappedValue: nil)
+        #expect(nilOpt.wrappedValue == nil)
+    }
+
+    @Test
+    func wrappedValueGetter() {
+        let some: IndirectOptional<Int> = .some(10)
+        let none: IndirectOptional<Int> = .none
+
+        #expect(some.wrappedValue == 10)
+        #expect(none.wrappedValue == nil)
+    }
+
+    @Test
+    func wrappedValueSetter() {
+        var opt: IndirectOptional<Int> = .none
+
+        opt.wrappedValue = 42
+        #expect(opt.wrappedValue == 42)
+
+        opt.wrappedValue = 99
+        #expect(opt.wrappedValue == 99)
+
+        opt.wrappedValue = nil
+        #expect(opt.wrappedValue == nil)
+    }
+
+    @Test
+    func wrappedValueSetterFromSomeToNone() {
+        var opt: IndirectOptional<String> = .some("initial")
+        #expect(opt.wrappedValue == "initial")
+
+        opt.wrappedValue = nil
+        #expect(opt.wrappedValue == nil)
+    }
+
+    @Test
+    func wrappedValueSetterFromNoneToSome() {
+        var opt: IndirectOptional<String> = .none
+        #expect(opt.wrappedValue == nil)
+
+        opt.wrappedValue = "assigned"
+        #expect(opt.wrappedValue == "assigned")
+    }
+
+    @Test
+    func equatable() {
+        let a: IndirectOptional<Int> = .some(5)
+        let b: IndirectOptional<Int> = .some(5)
+        let c: IndirectOptional<Int> = .some(10)
+        let d: IndirectOptional<Int> = .none
+
+        #expect(a == b)
+        #expect(a != c)
+        #expect(a != d)
+        #expect(d == IndirectOptional<Int>.none)
+    }
+
+    @Test
+    func hashable() {
+        let a: IndirectOptional<Int> = .some(5)
+        let b: IndirectOptional<Int> = .some(5)
+        #expect(a.hashValue == b.hashValue)
+    }
+}
