@@ -620,6 +620,7 @@ extension Image {
 
 // MARK: - Image.Location
 
+@available(OpenSwiftUI_v1_0, *)
 extension Image {
     package enum Location: Equatable, Hashable {
         case bundle(Bundle)
@@ -756,98 +757,337 @@ extension Image {
             }
         }
     }
-}
 
-// MARK: - NamedImage.Key + ProtobufMessage
+    // MARK: - Image named initializers
 
-extension NamedImage.Key: ProtobufMessage {
-    package func encode(to encoder: inout ProtobufEncoder) throws {
-        switch self {
-        case .bitmap(let bitmapKey):
-            try encoder.messageField(1, bitmapKey)
-        case .uuid:
-            // TODO: UUID protobuf encoding
-            break
-        }
-    }
-
-    package init(from decoder: inout ProtobufDecoder) throws {
-        var result: NamedImage.Key?
-        while let field = try decoder.nextField() {
-            switch field.tag {
-            case 1:
-                result = .bitmap(try decoder.messageField(field))
-            default:
-                try decoder.skipField(field)
-            }
-        }
-        guard let result else {
-            throw ProtobufDecoder.DecodingError.failed
-        }
-        self = result
-    }
-}
-
-// MARK: - NamedImage.BitmapKey + ProtobufMessage
-
-extension NamedImage.BitmapKey: ProtobufMessage {
-    package func encode(to encoder: inout ProtobufEncoder) throws {
-        try encoder.messageField(1, catalogKey)
-        try encoder.stringField(2, name)
-        encoder.cgFloatField(3, scale)
-        try encoder.messageField(4, location)
-        encoder.intField(5, layoutDirection == .rightToLeft ? 1 : 0)
-        // locale encoding omitted - Locale does not yet conform to ProtobufMessage
-        encoder.intField(7, gamut.rawValue)
-        encoder.intField(8, idiom)
-        encoder.intField(9, subtype)
-        encoder.intField(10, Int(horizontalSizeClass))
-        encoder.intField(11, Int(verticalSizeClass))
-    }
-
-    package init(from decoder: inout ProtobufDecoder) throws {
-        var catalogKey = CatalogKey(colorScheme: .light, contrast: .standard)
-        var name = ""
-        var scale: CGFloat = 0
-        var location: Image.Location = .system
-        var layoutDirection: LayoutDirection = .leftToRight
-        var gamut: DisplayGamut = .sRGB
-        var idiom: Int = 0
-        var subtype: Int = 0
-        var horizontalSizeClass: Int8 = 0
-        var verticalSizeClass: Int8 = 0
-
-        while let field = try decoder.nextField() {
-            switch field.tag {
-            case 1: catalogKey = try decoder.messageField(field)
-            case 2: name = try decoder.stringField(field)
-            case 3: scale = try decoder.cgFloatField(field)
-            case 4: location = try decoder.messageField(field)
-            case 5:
-                let value: Int = try decoder.intField(field)
-                layoutDirection = value == 1 ? .rightToLeft : .leftToRight
-            case 7:
-                let value: Int = try decoder.intField(field)
-                gamut = DisplayGamut(rawValue: value) ?? .sRGB
-            case 8: idiom = try decoder.intField(field)
-            case 9: subtype = try decoder.intField(field)
-            case 10: horizontalSizeClass = Int8(try decoder.intField(field) as Int)
-            case 11: verticalSizeClass = Int8(try decoder.intField(field) as Int)
-            default: try decoder.skipField(field)
-            }
-        }
+    /// Creates a labeled image that you can use as content for controls.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the image resource to lookup, as well as the
+    ///     localization key with which to label the image.
+    ///   - bundle: The bundle to search for the image resource and localization
+    ///     content. If `nil`, OpenSwiftUI uses the main `Bundle`. Defaults to `nil`.
+    public init(_ name: String, bundle: Bundle? = nil) {
         self.init(
-            catalogKey: catalogKey,
-            name: name,
-            scale: scale,
-            location: location,
-            layoutDirection: layoutDirection,
-            locale: .autoupdatingCurrent,
-            gamut: gamut,
-            idiom: idiom,
-            subtype: subtype,
-            horizontalSizeClass: horizontalSizeClass,
-            verticalSizeClass: verticalSizeClass
+            NamedImageProvider(
+                name: name,
+                location: .bundle(bundle ?? Bundle.main),
+                label: AccessibilityImageLabel(Text(LocalizedStringKey(name), bundle: bundle)),
+                decorative: false
+            )
+        )
+    }
+
+    /// Creates a labeled image that you can use as content for controls, with
+    /// the specified label.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the image resource to lookup
+    ///   - bundle: The bundle to search for the image resource. If `nil`,
+    ///     OpenSwiftUI uses the main `Bundle`. Defaults to `nil`.
+    ///   - label: The label associated with the image. OpenSwiftUI uses the label
+    ///     for accessibility.
+    public init(_ name: String, bundle: Bundle? = nil, label: Text) {
+        self.init(
+            NamedImageProvider(
+                name: name,
+                location: .bundle(bundle ?? Bundle.main),
+                label: AccessibilityImageLabel(label),
+                decorative: false
+            )
+        )
+    }
+
+    /// Creates an unlabeled, decorative image.
+    ///
+    /// OpenSwiftUI ignores this image for accessibility purposes.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the image resource to lookup
+    ///   - bundle: The bundle to search for the image resource. If `nil`,
+    ///     OpenSwiftUI uses the main `Bundle`. Defaults to `nil`.
+    public init(decorative name: String, bundle: Bundle? = nil) {
+        self.init(
+            NamedImageProvider(
+                name: name,
+                location: .bundle(bundle ?? Bundle.main),
+                label: nil,
+                decorative: true
+            )
+        )
+    }
+
+    /// Creates a system symbol image.
+    ///
+    /// This initializer creates an image using a system-provided symbol. Use
+    /// [SF Symbols](https://developer.apple.com/design/resources/#sf-symbols)
+    /// to find symbols and their corresponding names.
+    ///
+    /// To create a custom symbol image from your app's asset catalog, use
+    /// ``Image/init(_:bundle:)`` instead.
+    ///
+    /// - Parameters:
+    ///   - systemName: The name of the system symbol image.
+    ///     Use the SF Symbols app to look up the names of system symbol images.
+    @available(macOS, introduced: 11.0)
+    public init(systemName: String) {
+        self.init(
+            NamedImageProvider(
+                name: systemName,
+                location: .system,
+                label: .systemSymbol(systemName),
+                decorative: false
+            )
+        )
+    }
+
+    /// SPI for internal clients to access internal system symbols.
+    @available(OpenSwiftUI_v1_0, *)
+    public init(_internalSystemName systemName: String) {
+        self.init(
+            NamedImageProvider(
+                name: systemName,
+                location: .privateSystem,
+                label: .systemSymbol(systemName),
+                decorative: false,
+                backupLocation: .system
+            )
+        )
+    }
+
+    // MARK: - Image.NamedImageProvider
+
+    package struct NamedImageProvider: ImageProvider {
+        package var name: String
+
+        package var value: Float?
+
+        package var location: Image.Location
+
+        package var backupLocation: Image.Location?
+
+        package var label: AccessibilityImageLabel?
+
+        package var decorative: Bool
+
+        package init(
+            name: String,
+            value: Float? = nil,
+            location: Image.Location,
+            label: AccessibilityImageLabel?,
+            decorative: Bool,
+            backupLocation: Image.Location? = nil
+        ) {
+            self.name = name
+            self.value = value
+            self.location = location
+            self.label = label
+            self.decorative = decorative
+            self.backupLocation = backupLocation
+        }
+
+        package func resolve(in context: ImageResolutionContext) -> Image.Resolved {
+            // TODO: Full CoreUI-based resolution
+            // The real implementation:
+            // 1. Tries vector resolution first (via vectorInfo)
+            // 2. Falls back to bitmap resolution (via bitmapInfo)
+            // 3. Returns resolveError if both fail
+            resolveError(in: context.environment)
+        }
+
+        package func resolveError(in environment: EnvironmentValues) -> Image.Resolved {
+            Image.Resolved(
+                image: GraphicsImage(
+                    contents: nil,
+                    scale: environment.displayScale,
+                    unrotatedPixelSize: .zero,
+                    orientation: .up,
+                    isTemplate: false
+                ),
+                decorative: decorative,
+                label: label
+            )
+        }
+
+        package func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {
+            let environment = context.environment
+            let isTemplate = environment.imageIsTemplate()
+            return Image.NamedResolved(
+                name: name,
+                location: location,
+                value: value,
+                symbolRenderingMode: context.symbolRenderingMode?.storage,
+                isTemplate: isTemplate,
+                environment: environment
+            )
+        }
+    }
+}
+
+// MARK: - Image named initializers with variableValue
+
+@available(OpenSwiftUI_v4_0, *)
+extension Image {
+
+    /// Creates a system symbol image with a variable value.
+    ///
+    /// This initializer creates an image using a system-provided symbol. The
+    /// rendered symbol may alter its appearance to represent the value
+    /// provided in `variableValue`. Use
+    /// [SF Symbols](https://developer.apple.com/design/resources/#sf-symbols)
+    /// (version 4.0 or later) to find system symbols that support variable
+    /// values and their corresponding names.
+    ///
+    /// The following example shows the effect of creating the `"chart.bar.fill"`
+    /// symbol with different values.
+    ///
+    ///     HStack{
+    ///         Image(systemName: "chart.bar.fill", variableValue: 0.3)
+    ///         Image(systemName: "chart.bar.fill", variableValue: 0.6)
+    ///         Image(systemName: "chart.bar.fill", variableValue: 1.0)
+    ///     }
+    ///     .font(.system(.largeTitle))
+    ///
+    /// ![Three instances of the bar chart symbol, arranged horizontally.
+    /// The first fills one bar, the second fills two bars, and the last
+    /// symbol fills all three bars.](Image-3)
+    ///
+    /// To create a custom symbol image from your app's asset
+    /// catalog, use ``Image/init(_:variableValue:bundle:)`` instead.
+    ///
+    /// - Parameters:
+    ///   - systemName: The name of the system symbol image.
+    ///     Use the SF Symbols app to look up the names of system
+    ///     symbol images.
+    ///   - variableValue: An optional value between `0.0` and `1.0` that
+    ///     the rendered image can use to customize its appearance, if
+    ///     specified. If the symbol doesn't support variable values, this
+    ///     parameter has no effect. Use the SF Symbols app to look up which
+    ///     symbols support variable values.
+    public init(systemName: String, variableValue: Double?) {
+        self.init(
+            NamedImageProvider(
+                name: systemName,
+                value: variableValue.map { Float($0) },
+                location: .system,
+                label: .systemSymbol(systemName),
+                decorative: false
+            )
+        )
+    }
+
+    /// SPI for internal clients to access internal system symbols.
+    public init(_internalSystemName systemName: String, variableValue: Double?) {
+        self.init(
+            NamedImageProvider(
+                name: systemName,
+                value: variableValue.map { Float($0) },
+                location: .privateSystem,
+                label: .systemSymbol(systemName),
+                decorative: false,
+                backupLocation: .system
+            )
+        )
+    }
+
+    /// Creates a labeled image that you can use as content for controls,
+    /// with a variable value.
+    ///
+    /// This initializer creates an image using a using a symbol in the
+    /// specified bundle. The rendered symbol may alter its appearance to
+    /// represent the value provided in `variableValue`.
+    ///
+    /// > Note: See WWDC22 session [10158: Adopt variable color in SF
+    /// Symbols](https://developer.apple.com/wwdc22/10158/) for details
+    /// on how to create symbols that support variable values.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the image resource to lookup, as well as
+    ///     the localization key with which to label the image.
+    ///   - variableValue: An optional value between `0.0` and `1.0` that
+    ///     the rendered image can use to customize its appearance, if
+    ///     specified. If the symbol doesn't support variable values, this
+    ///     parameter has no effect.
+    ///   - bundle: The bundle to search for the image resource and
+    ///     localization content. If `nil`, OpenSwiftUI uses the main
+    ///     `Bundle`. Defaults to `nil`.
+    ///
+    public init(_ name: String, variableValue: Double?, bundle: Bundle? = nil) {
+        self.init(
+            NamedImageProvider(
+                name: name,
+                value: variableValue.map { Float($0) },
+                location: .bundle(bundle ?? Bundle.main),
+                label: AccessibilityImageLabel(Text(LocalizedStringKey(name), bundle: bundle)),
+                decorative: false
+            )
+        )
+    }
+
+    /// Creates a labeled image that you can use as content for controls, with
+    /// the specified label and variable value.
+    ///
+    /// This initializer creates an image using a using a symbol in the
+    /// specified bundle. The rendered symbol may alter its appearance to
+    /// represent the value provided in `variableValue`.
+    ///
+    /// > Note: See WWDC22 session [10158: Adopt variable color in SF
+    /// Symbols](https://developer.apple.com/wwdc22/10158/) for details on
+    /// how to create symbols that support variable values.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the image resource to lookup.
+    ///   - variableValue: An optional value between `0.0` and `1.0` that
+    ///     the rendered image can use to customize its appearance, if
+    ///     specified. If the symbol doesn't support variable values, this
+    ///     parameter has no effect.
+    ///   - bundle: The bundle to search for the image resource. If
+    ///     `nil`, OpenSwiftUI uses the main `Bundle`. Defaults to `nil`.
+    ///   - label: The label associated with the image. OpenSwiftUI uses
+    ///     the label for accessibility.
+    ///
+    public init(_ name: String, variableValue: Double?, bundle: Bundle? = nil, label: Text) {
+        self.init(
+            NamedImageProvider(
+                name: name,
+                value: variableValue.map { Float($0) },
+                location: .bundle(bundle ?? Bundle.main),
+                label: AccessibilityImageLabel(label),
+                decorative: false
+            )
+        )
+    }
+
+    /// Creates an unlabeled, decorative image, with a variable value.
+    ///
+    /// This initializer creates an image using a using a symbol in the
+    /// specified bundle. The rendered symbol may alter its appearance to
+    /// represent the value provided in `variableValue`.
+    ///
+    /// > Note: See WWDC22 session [10158: Adopt variable color in SF
+    /// Symbols](https://developer.apple.com/wwdc22/10158/) for details on
+    /// how to create symbols that support variable values.
+    ///
+    /// OpenSwiftUI ignores this image for accessibility purposes.
+    ///
+    /// - Parameters:
+    ///   - name: The name of the image resource to lookup.
+    ///   - variableValue: An optional value between `0.0` and `1.0` that
+    ///     the rendered image can use to customize its appearance, if
+    ///     specified. If the symbol doesn't support variable values, this
+    ///     parameter has no effect.
+    ///   - bundle: The bundle to search for the image resource. If
+    ///     `nil`, OpenSwiftUI uses the main `Bundle`. Defaults to `nil`.
+    ///
+    public init(decorative name: String, variableValue: Double?, bundle: Bundle? = nil) {
+        self.init(
+            NamedImageProvider(
+                name: name,
+                value: variableValue.map { Float($0) },
+                location: .bundle(bundle ?? Bundle.main),
+                label: nil,
+                decorative: true
+            )
         )
     }
 }
@@ -1039,6 +1279,100 @@ extension Image {
 @_spi(Private)
 @available(*, unavailable)
 extension Image.ResolvedUUID: Sendable {}
+
+// MARK: - NamedImage.Key + ProtobufMessage
+
+extension NamedImage.Key: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        switch self {
+        case .bitmap(let bitmapKey):
+            try encoder.messageField(1, bitmapKey)
+        case .uuid:
+            // TODO: UUID protobuf encoding
+            break
+        }
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var result: NamedImage.Key?
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                result = .bitmap(try decoder.messageField(field))
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        guard let result else {
+            throw ProtobufDecoder.DecodingError.failed
+        }
+        self = result
+    }
+}
+
+// MARK: - NamedImage.BitmapKey + ProtobufMessage
+
+extension NamedImage.BitmapKey: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        try encoder.messageField(1, catalogKey)
+        try encoder.stringField(2, name)
+        encoder.cgFloatField(3, scale)
+        try encoder.messageField(4, location)
+        encoder.intField(5, layoutDirection == .rightToLeft ? 1 : 0)
+        // locale encoding omitted - Locale does not yet conform to ProtobufMessage
+        encoder.intField(7, gamut.rawValue)
+        encoder.intField(8, idiom)
+        encoder.intField(9, subtype)
+        encoder.intField(10, Int(horizontalSizeClass))
+        encoder.intField(11, Int(verticalSizeClass))
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        var catalogKey = CatalogKey(colorScheme: .light, contrast: .standard)
+        var name = ""
+        var scale: CGFloat = 0
+        var location: Image.Location = .system
+        var layoutDirection: LayoutDirection = .leftToRight
+        var gamut: DisplayGamut = .sRGB
+        var idiom: Int = 0
+        var subtype: Int = 0
+        var horizontalSizeClass: Int8 = 0
+        var verticalSizeClass: Int8 = 0
+
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1: catalogKey = try decoder.messageField(field)
+            case 2: name = try decoder.stringField(field)
+            case 3: scale = try decoder.cgFloatField(field)
+            case 4: location = try decoder.messageField(field)
+            case 5:
+                let value: Int = try decoder.intField(field)
+                layoutDirection = value == 1 ? .rightToLeft : .leftToRight
+            case 7:
+                let value: Int = try decoder.intField(field)
+                gamut = DisplayGamut(rawValue: value) ?? .sRGB
+            case 8: idiom = try decoder.intField(field)
+            case 9: subtype = try decoder.intField(field)
+            case 10: horizontalSizeClass = Int8(try decoder.intField(field) as Int)
+            case 11: verticalSizeClass = Int8(try decoder.intField(field) as Int)
+            default: try decoder.skipField(field)
+            }
+        }
+        self.init(
+            catalogKey: catalogKey,
+            name: name,
+            scale: scale,
+            location: location,
+            layoutDirection: layoutDirection,
+            locale: .autoupdatingCurrent,
+            gamut: gamut,
+            idiom: idiom,
+            subtype: subtype,
+            horizontalSizeClass: horizontalSizeClass,
+            verticalSizeClass: verticalSizeClass
+        )
+    }
+}
 
 // MARK: - CUI Helpers
 
