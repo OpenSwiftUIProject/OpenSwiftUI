@@ -232,7 +232,7 @@ package enum NamedImage {
     }
 
 
-    // MARK: - NamedImage.BitmapKey [WIP]
+    // MARK: - NamedImage.BitmapKey [TBA]
 
     package struct BitmapKey: Hashable {
         package var catalogKey: CatalogKey
@@ -486,7 +486,7 @@ package enum NamedImage {
         case missingUUIDImage
     }
 
-    // MARK: - NamedImage.Cache
+    // MARK: - NamedImage.Cache [TBA]
 
     package struct Cache {
         private struct ImageCacheData {
@@ -516,7 +516,7 @@ package enum NamedImage {
         #if OPENSWIFTUI_LINK_COREUI
         // Looks up cached VectorInfo for key; if not found or catalog changed,
         // calls loadVectorInfo and caches the result.
-        private subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
+        fileprivate subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
             let cached = data.vectors[key]
             if let cached {
                 if let cachedCatalog = cached.catalog, cachedCatalog == catalog {
@@ -618,10 +618,10 @@ extension Image {
     public static var _mainNamedBundle: Bundle? { nil }
 }
 
-// MARK: - Image.Location
-
 @available(OpenSwiftUI_v1_0, *)
 extension Image {
+    // MARK: - Image.Location [TBA]
+
     package enum Location: Equatable, Hashable {
         case bundle(Bundle)
         case system
@@ -887,19 +887,42 @@ extension Image {
         }
 
         package func resolve(in context: ImageResolutionContext) -> Image.Resolved {
-            // TODO: Full CoreUI-based resolution
-            // The real implementation:
-            // 1. Tries vector resolution first (via vectorInfo)
-            // 2. Falls back to bitmap resolution (via bitmapInfo)
-            // 3. Returns resolveError if both fail
-            resolveError(in: context.environment)
+            #if OPENSWIFTUI_LINK_COREUI
+            guard let catalog = location.catalog else {
+                return resolveError(in: context.environment)
+            }
+            if let info = vectorInfo(in: context, from: catalog, at: location) {
+                return resolveVector(info: info, value: value, in: context, at: location, catalog: catalog)
+            }
+            if let backupLocation,
+                let backupCatalog = backupLocation.catalog,
+                let info = vectorInfo(in: context, from: backupCatalog, at: backupLocation) {
+                return resolveVector(info: info, value: value, in: context, at: backupLocation, catalog: backupCatalog)
+            }
+            if location.supportsNonVectorImages {
+                let key = NamedImage.BitmapKey(
+                    name: name,
+                    location: location,
+                    in: context.environment
+                )
+                if let info = NamedImage.sharedCache[key, key.location] {
+                    return resolveBitmap(key: key, info: info, in: context)
+                }
+            }
+            #endif
+            return resolveError(in: context.environment)
         }
 
         package func resolveError(in environment: EnvironmentValues) -> Image.Resolved {
-            Image.Resolved(
+            if let bundle = location.bundle {
+                Log.externalWarning("No image named '\(name)' found in asset catalog for \(bundle.bundlePath)")
+            } else {
+                Log.externalWarning("No symbol named '\(name)' found in system symbol set")
+            }
+            return Image.Resolved(
                 image: GraphicsImage(
                     contents: nil,
-                    scale: environment.displayScale,
+                    scale: 1.0,
                     unrotatedPixelSize: .zero,
                     orientation: .up,
                     isTemplate: false
@@ -909,14 +932,196 @@ extension Image {
             )
         }
 
-        package func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {
+        #if OPENSWIFTUI_LINK_COREUI
+        private func vectorInfo(
+            in context: ImageResolutionContext,
+            from catalog: CUICatalog,
+            at location: Image.Location
+        ) -> NamedImage.VectorInfo? {
             let environment = context.environment
-            let isTemplate = environment.imageIsTemplate()
+            let variants = environment.symbolVariants
+            let result: NamedImage.VectorInfo? = location.findName(variants, base: name) { candidateName in
+                vectorInfo(
+                    name: name,
+                    in: context,
+                    from: catalog,
+                    at: location
+                )
+            }
+            guard let result else {
+                return nil
+            }
+            guard !environment.shouldRedactSymbolImages else {
+                return vectorInfo(
+                    name: "circle.fill",
+                    in: context,
+                    from: Image.Location.systemAssetManager.catalog,
+                    at: location
+                )
+            }
+            return result
+        }
+
+        private func vectorInfo(
+            name: String,
+            in context: ImageResolutionContext,
+            from catalog: CUICatalog,
+            at location: Image.Location
+        ) -> NamedImage.VectorInfo? {
+            guard location.mayContainSymbol(name) else {
+                return nil
+            }
+            let environment = context.environment
+            let key = NamedImage.VectorKey(
+                name: name,
+                location: location,
+                in: environment,
+                textStyle: context.textStyle,
+                idiom: environment.cuiAssetIdiom
+            )
+            return NamedImage.sharedCache[key, catalog]
+        }
+
+        // TODO: ResolvedVectorGlyph
+        // [TBA]
+        private func resolveVector(
+            info: NamedImage.VectorInfo,
+            value: Float?,
+            in context: ImageResolutionContext,
+            at location: Image.Location,
+            catalog: CUICatalog
+        ) -> Image.Resolved {
+            let environment = context.environment
+            let glyph = info.glyph
+            let flipsRightToLeft = info.flipsRightToLeft
+            var layoutMetrics = info.layoutMetrics
+
+            // Create or reuse symbol animator
+            let animator: ORBSymbolAnimator = context.symbolAnimator ?? ORBSymbolAnimator()
+            let resolvedVectorGlyph = ResolvedVectorGlyph(
+                glyph: info.glyph,
+                value: value,
+                flipsRightToLeft: info.flipsRightToLeft,
+                in: context,
+                at: location,
+                catalog: catalog
+            )
+
+            let scale = glyph.scale
+            let alignmentRect = glyph.alignmentRect
+            let pixelWidth = scale * alignmentRect.width
+            let pixelHeight = scale * alignmentRect.height
+
+            var graphicsImage = GraphicsImage(
+                contents: .vectorGlyph(resolvedVectorGlyph),
+                scale: scale,
+                unrotatedPixelSize: CGSize(width: pixelWidth, height: pixelHeight),
+                orientation: .up,
+                isTemplate: false
+            )
+
+            // Handle symbol background variant
+            let variants = environment.symbolVariants
+            var backgroundShape: SymbolVariants.Shape?
+            var backgroundCornerRadius: CGFloat?
+            if variants.contains(.background) {
+                let shape = variants.shape ?? .circle
+                backgroundShape = shape
+                let growsToFit = environment.symbolsGrowToFitBackground
+                layoutMetrics.adjustForBackground(
+                    glyph: glyph,
+                    shape: shape,
+                    size: &graphicsImage.unrotatedPixelSize,
+                    growsToFitBackground: growsToFit
+                )
+                backgroundCornerRadius = environment.symbolBackgroundCornerRadius
+            }
+
+            // Handle symbol redaction
+            if environment.shouldRedactSymbolImages {
+                let color = Color.foreground.resolve(in: environment)
+                graphicsImage.contents = GraphicsImage.Contents.color(color.multiplyingOpacity(by: 0.16))
+            }
+
+            graphicsImage.allowedDynamicRange = context.effectiveAllowedDynamicRange(for: graphicsImage)
+
+            var resolved = Image.Resolved(
+                image: graphicsImage,
+                decorative: decorative,
+                label: label,
+                backgroundShape: backgroundShape,
+                backgroundCornerRadius: backgroundCornerRadius
+            )
+            resolved.layoutMetrics = layoutMetrics
+            return resolved
+        }
+        #endif
+
+        private func bitmapInfo(
+            in environment: EnvironmentValues,
+            from location: Image.Location
+        ) -> NamedImage.BitmapInfo? {
+            let key = NamedImage.BitmapKey(
+                name: name,
+                location: location,
+                in: environment
+            )
+            return NamedImage.sharedCache[key, location]
+        }
+
+        private func resolveBitmap(
+            key: NamedImage.BitmapKey,
+            info: NamedImage.BitmapInfo,
+            in context: ImageResolutionContext
+        ) -> Image.Resolved {
+            let environment = context.environment
+            let isTemplate = environment.imageIsTemplate(renderingMode: info.renderingMode)
+
+            let contents: GraphicsImage.Contents
+            if context.options.contains(.useCatalogReferences) {
+                contents = .named(.bitmap(key))
+            } else {
+                contents = info.contents
+            }
+
+            var graphicsImage = GraphicsImage(
+                contents: contents,
+                scale: info.scale,
+                unrotatedPixelSize: info.unrotatedPixelSize,
+                orientation: info.orientation,
+                isTemplate: isTemplate,
+                resizingInfo: info.resizingInfo
+            )
+            graphicsImage.allowedDynamicRange = context.effectiveAllowedDynamicRange(for: graphicsImage)
+            if environment.shouldRedactContent {
+                graphicsImage.redact(in: environment)
+            }
+            return Image.Resolved(
+                image: graphicsImage,
+                decorative: decorative,
+                label: label
+            )
+        }
+
+        package func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {
+            let resolved = resolve(in: context)
+            guard resolved.image.contents != nil else {
+                return nil
+            }
+            let environment = context.environment
+            let symbolRenderingMode = context.symbolRenderingMode ?? environment.symbolRenderingMode
+            let info = bitmapInfo(in: environment, from: location)
+            let isTemplate: Bool
+            if let info {
+                isTemplate = environment.imageIsTemplate(renderingMode: info.renderingMode)
+            } else {
+                isTemplate = false
+            }
             return Image.NamedResolved(
                 name: name,
                 location: location,
                 value: value,
-                symbolRenderingMode: context.symbolRenderingMode?.storage,
+                symbolRenderingMode: symbolRenderingMode?.storage,
                 isTemplate: isTemplate,
                 environment: environment
             )

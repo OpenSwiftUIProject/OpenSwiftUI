@@ -40,6 +40,34 @@ extension Image {
         }
 
         #if OPENSWIFTUI_LINK_COREUI
+        package mutating func adjustForBackground(
+            glyph: CUINamedVectorGlyph,
+            shape: SymbolVariants.Shape,
+            size: inout CGSize,
+            growsToFitBackground: Bool
+        ) {
+//            let options = CUIVectorGlyphGraphicVariantOptions()
+//            switch shape {
+//            case .circle:
+//                options.shape = 1
+//            default:
+//                break
+//            }
+//            options.imageScaling = growsToFitBackground ? 1 : 3
+//            guard let variant = glyph.graphicVariant(with: options) else {
+//                return
+//            }
+//            let interiorAlignment = variant.interiorAlignmentRect
+//            size = CGSize(width: interiorAlignment.width, height: interiorAlignment.height)
+//            baselineOffset = variant.baselineOffset
+//            capHeight = variant.capHeight
+//            let contentBounds = variant.contentBounds
+//            contentSize = contentBounds.size
+//            let alignmentRect = variant.alignmentRect
+//            alignmentOrigin = alignmentRect.origin
+//            backgroundSize = CGSize(width: alignmentRect.width, height: alignmentRect.height)
+        }
+
         package init(glyph: CUINamedVectorGlyph, flipsRightToLeft: Bool) {
             let baselineOffset = glyph.baselineOffset
             let capHeight = glyph.capHeight

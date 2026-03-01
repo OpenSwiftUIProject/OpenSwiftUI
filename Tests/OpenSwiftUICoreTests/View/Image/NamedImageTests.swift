@@ -410,4 +410,75 @@ struct NamedImageProviderTests {
         )
         #expect(provider.value == 0.5)
     }
+
+    @Test
+    func resolveErrorScale() {
+        let provider = Image.NamedImageProvider(
+            name: "nonexistent",
+            location: .system,
+            label: nil,
+            decorative: true
+        )
+        let environment = EnvironmentValues()
+        let resolved = provider.resolveError(in: environment)
+        #expect(resolved.image.scale == 0)
+        #expect(resolved.image.contents == nil)
+        #expect(resolved.decorative == true)
+    }
+
+    @Test
+    func resolveNamedImageReturnsNilForMissingImage() {
+        let provider = Image.NamedImageProvider(
+            name: "nonexistent_image_xyz",
+            location: .bundle(.main),
+            label: nil,
+            decorative: false
+        )
+        let context = ImageResolutionContext(environment: EnvironmentValues())
+        let result = provider.resolveNamedImage(in: context)
+        #expect(result == nil)
+    }
+
+    @Test
+    func equalityFieldOrder() {
+        let provider1 = Image.NamedImageProvider(
+            name: "star",
+            value: 0.5,
+            location: .system,
+            label: nil,
+            decorative: false,
+            backupLocation: nil
+        )
+        let provider2 = Image.NamedImageProvider(
+            name: "star",
+            value: 0.5,
+            location: .system,
+            label: nil,
+            decorative: false,
+            backupLocation: nil
+        )
+        #expect(provider1 == provider2)
+
+        // Different backupLocation should cause inequality
+        let provider3 = Image.NamedImageProvider(
+            name: "star",
+            value: 0.5,
+            location: .system,
+            label: nil,
+            decorative: false,
+            backupLocation: .privateSystem
+        )
+        #expect(provider1 != provider3)
+
+        // Different value should cause inequality
+        let provider4 = Image.NamedImageProvider(
+            name: "star",
+            value: 0.75,
+            location: .system,
+            label: nil,
+            decorative: false,
+            backupLocation: nil
+        )
+        #expect(provider1 != provider4)
+    }
 }

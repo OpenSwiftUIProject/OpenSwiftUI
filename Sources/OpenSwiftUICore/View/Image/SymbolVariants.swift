@@ -473,6 +473,24 @@ private struct SymbolsGrowToFitBackgroundKey: EnvironmentKey {
 
 @available(OpenSwiftUI_v3_0, *)
 extension EnvironmentValues {
+
+    /// The symbol variant to use in this environment.
+    ///
+    /// You set this environment value indirectly by using the
+    /// ``View/symbolVariant(_:)`` view modifier. However, you access the
+    /// environment variable directly using the ``View/environment(_:_:)``
+    /// modifier. Do this when you want to use the ``SymbolVariants/none``
+    /// variant to ignore the value that's already in the environment:
+    ///
+    ///     HStack {
+    ///         Image(systemName: "heart")
+    ///         Image(systemName: "heart")
+    ///             .environment(\.symbolVariants, .none)
+    ///     }
+    ///     .symbolVariant(.fill)
+    ///
+    /// ![A screenshot of two heart symbols. The first is filled while the
+    /// second is outlined.](SymbolVariants-none-1)
     public var symbolVariants: SymbolVariants {
         get { self[SymbolVariantsKey.self] }
         set { self[SymbolVariantsKey.self] = newValue }
