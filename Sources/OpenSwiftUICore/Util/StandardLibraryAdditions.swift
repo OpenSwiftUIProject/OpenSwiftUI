@@ -458,9 +458,17 @@ package enum IndirectOptional<Wrapped>: ExpressibleByNilLiteral {
     }
 
     package var wrappedValue: Wrapped? {
-        switch self {
-        case .none: nil
-        case let .some(wrapped): wrapped
+        get {
+            switch self {
+            case .none: nil
+            case .some(let wrapped): wrapped
+            }
+        }
+        set {
+            switch newValue {
+            case .none: self = .none
+            case .some(let wrapped): self = .some(wrapped)
+            }
         }
     }
 }
