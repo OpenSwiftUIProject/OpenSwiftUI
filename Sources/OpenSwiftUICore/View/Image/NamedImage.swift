@@ -1487,16 +1487,60 @@ extension Image {
     }
 }
 
-// MARK: - Image.ResolvedUUID [WIP]
+// MARK: - UUIDImageProvider
+
+private struct UUIDImageProvider: ImageProvider {
+    var uuid: UUID
+    var size: CGSize
+    var label: Text?
+
+    func resolve(in context: ImageResolutionContext) -> Image.Resolved {
+        let environment = context.environment
+        let isTemplate = environment.imageIsTemplate()
+
+        let contents: GraphicsImage.Contents
+        if context.options.contains(.isArchived) {
+            contents = .named(.uuid(uuid))
+        } else {
+            contents = .color(.init(linearRed: 1, linearGreen: 0, linearBlue: 1, opacity: 1))
+        }
+
+        var graphicsImage = GraphicsImage(
+            contents: contents,
+            scale: 1.0,
+            unrotatedPixelSize: size,
+            orientation: .up,
+            isTemplate: isTemplate
+        )
+        graphicsImage.allowedDynamicRange = context.effectiveAllowedDynamicRange(for: graphicsImage)
+        if environment.shouldRedactContent {
+            graphicsImage.redact(in: environment)
+        }
+        return Image.Resolved(
+            image: graphicsImage,
+            decorative: label == nil,
+            label: AccessibilityImageLabel(label)
+        )
+    }
+
+    func resolveNamedImage(in context: ImageResolutionContext) -> Image.NamedResolved? {
+        nil
+    }
+}
+
+// MARK: - Image.ResolvedUUID
 
 @_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
 extension Image {
+    public init(uuid: UUID, size: CGSize, label: Text?) {
+        self.init(UUIDImageProvider(uuid: uuid, size: size, label: label))
+    }
 
     public struct ResolvedUUID {
-        package var cgImage: CGImage
-        package var scale: CGFloat
-        package var orientation: Image.Orientation
+        var cgImage: CGImage
+        var scale: CGFloat
+        var orientation: Image.Orientation
 
         package init(cgImage: CGImage, scale: CGFloat, orientation: Image.Orientation) {
             self.cgImage = cgImage
