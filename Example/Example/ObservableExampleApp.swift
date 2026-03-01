@@ -6,11 +6,12 @@
 //
 
 #if OPENSWIFTUI
+import OpenObservation
 import OpenSwiftUI
 #else
+import OpenObservation
 import SwiftUI
 #endif
-import OpenObservation
 
 struct ObservableExampleApp: App {
     #if canImport(AppKit) && !targetEnvironment(macCatalyst)
