@@ -8,6 +8,9 @@
 
 public import Foundation
 package import OpenCoreGraphicsShims
+#if canImport(CoreGraphics)
+import CoreGraphics_Private
+#endif
 #if OPENSWIFTUI_LINK_COREUI
 package import CoreUI
 #endif
@@ -72,7 +75,65 @@ package enum NamedImage {
         }
 
         #if OPENSWIFTUI_LINK_COREUI
-        // TODO: loadVectorInfo
+        fileprivate func loadVectorInfo(from catalog: CUICatalog, idiom: Int) -> VectorInfo? {
+            let matchType: CatalogAssetMatchType = .cuiIdiom(idiom)
+            let glyph: CUINamedVectorGlyph? = catalog.findAsset(
+                key: catalogKey,
+                matchTypes: CollectionOfOne(matchType)
+            ) { appearanceName -> CUINamedVectorGlyph? in
+                let cuiIdiom = CUIDeviceIdiom(rawValue: idiom)!
+                let cuiLayoutDir = self.layoutDirection.cuiLayoutDirection
+                let glyphWt = self.weight.glyphWeight
+                guard var result = catalog.namedVectorGlyph(
+                    withName: self.name,
+                    scaleFactor: self.scale,
+                    deviceIdiom: cuiIdiom,
+                    layoutDirection: cuiLayoutDir,
+                    glyphSize: glyphWt,
+                    glyphWeight: glyphWt,
+                    glyphPointSize: self.pointSize,
+                    appearanceName: appearanceName,
+                    locale: self.locale
+                ) else { return nil }
+
+                let sizeScale = self.symbolSizeScale(for: result)
+                if sizeScale != 1.0 {
+                    let continuousWt = self.weight.glyphContinuousWeight
+                    if let rescaled = catalog.namedVectorGlyph(
+                        withName: self.name,
+                        scaleFactor: self.scale,
+                        deviceIdiom: cuiIdiom,
+                        layoutDirection: cuiLayoutDir,
+                        glyphContinuousSize: sizeScale,
+                        glyphContinuousWeight: continuousWt,
+                        glyphPointSize: self.pointSize,
+                        appearanceName: appearanceName,
+                        locale: self.locale
+                    ) {
+                        result = rescaled
+                    }
+                }
+
+                return result
+            }
+
+            guard let glyph else { return nil }
+            let flipsRightToLeft: Bool
+            if glyph.isFlippable, glyph.layoutDirection != .unspecified {
+                let expectedDirection: CUILayoutDirection = layoutDirection == .leftToRight ? .LTR : .RTL
+                flipsRightToLeft = glyph.layoutDirection != expectedDirection
+            } else {
+                flipsRightToLeft = false
+            }
+
+            let metrics = Image.LayoutMetrics(glyph: glyph, flipsRightToLeft: flipsRightToLeft)
+            return VectorInfo(
+                glyph: glyph,
+                flipsRightToLeft: flipsRightToLeft,
+                layoutMetrics: metrics,
+                catalog: catalog
+            )
+        }
 
         // [TBA]
         /// Computes a scale factor for symbol images based on the glyph's
@@ -156,7 +217,7 @@ package enum NamedImage {
 
     // MARK: - VectorInfo
 
-    private struct VectorInfo {
+    fileprivate struct VectorInfo {
         #if OPENSWIFTUI_LINK_COREUI
         var glyph: CUINamedVectorGlyph
 
@@ -251,7 +312,118 @@ package enum NamedImage {
             }
         }
 
-        // TODO: loadBitmapInfo
+        #if OPENSWIFTUI_LINK_COREUI
+        func loadBitmapInfo(location: Image.Location, idiom: Int, subtype: Int) -> BitmapInfo? {
+            // Resolve catalog from location
+            guard case .bundle(let bundle) = location,
+                  let (catalog, _) = NamedImage.sharedCache[bundle] else {
+                // TODO: .system / .privateSystem asset manager support
+                return nil
+            }
+
+            // Build match types based on idiom
+            let matchTypes = CatalogAssetMatchType.defaultValue(idiom: idiom)
+
+            let selfCUIDirection: CUILayoutDirection = layoutDirection == .leftToRight ? .LTR : .RTL
+
+            // Find asset via appearance-matching lookup
+            let namedImage: CUINamedImage? = catalog.findAsset(
+                key: catalogKey,
+                matchTypes: matchTypes
+            ) { appearanceName -> CUINamedImage? in
+                catalog.image(
+                    withName: self.name,
+                    scaleFactor: self.scale,
+                    deviceIdiom: CUIDeviceIdiom(rawValue: idiom)!,
+                    deviceSubtype: CUISubtype(rawValue: UInt(subtype)) ?? .normal,
+                    displayGamut: CUIDisplayGamut(rawValue: UInt(self.gamut.rawValue)) ?? .SRGB,
+                    layoutDirection: selfCUIDirection,
+                    sizeClassHorizontal: CUIUserInterfaceSizeClass(rawValue: Int(self.horizontalSizeClass)) ?? .any,
+                    sizeClassVertical: CUIUserInterfaceSizeClass(rawValue: Int(self.verticalSizeClass)) ?? .any,
+                    appearanceName: appearanceName,
+                    locale: self.locale.identifier
+                )
+            }
+
+            guard let namedImage else { return nil }
+
+            // Extract image contents
+            let contents: GraphicsImage.Contents
+            let unrotatedPixelSize: CGSize
+
+            // TODO: Vector image path (Semantics v3 + preservedVectorRepresentation + VectorImageLayer)
+            // When linked on or after v3, if namedImage.preservedVectorRepresentation is true,
+            // attempt to get a CUINamedVectorImage from the catalog and wrap it in a
+            // VectorImageLayer. Falls through to CGImage path on failure.
+
+            // CGImage path
+            guard let cgImage = namedImage.image else { return nil }
+
+            // Prevent weakly-cached catalog from being deallocated while CGImage exists
+            if let (cat, retain) = NamedImage.sharedCache[bundle], retain {
+                CGImageSetProperty(
+                    cgImage,
+                    "com.apple.SwiftUI.ObjectToRetain" as CFString,
+                    Unmanaged.passUnretained(cat).toOpaque()
+                )
+            }
+
+            contents = .cgImage(cgImage)
+            unrotatedPixelSize = CGSize(
+                width: CGFloat(cgImage.width),
+                height: CGFloat(cgImage.height)
+            )
+
+            // Template rendering mode
+            let renderingMode: Image.TemplateRenderingMode?
+            switch namedImage.templateRenderingMode {
+            case .original:
+                renderingMode = .original
+            case .template:
+                renderingMode = .template
+            default:
+                renderingMode = nil
+            }
+
+            // Orientation from EXIF value
+            var orientation = Image.Orientation(exifValue: Int(namedImage.exifOrientation) & 0xF) ?? .up
+
+            // RTL flipping: if image is flippable and its direction doesn't match
+            // the requested direction, flip by XOR-ing the orientation raw value
+            let cuiDirection = namedImage.layoutDirection
+            if namedImage.isFlippable, cuiDirection != .unspecified, cuiDirection != selfCUIDirection {
+                orientation = Image.Orientation(rawValue: orientation.rawValue ^ 1)!
+            }
+
+            // Scale
+            let imageScale = namedImage.scale
+
+            // Resizing info from 9-slice data
+            let resizingInfo: Image.ResizingInfo?
+            if namedImage.hasSliceInformation {
+                let insets = namedImage.edgeInsets
+                let edgeInsets = EdgeInsets(
+                    top: insets.top,
+                    leading: insets.left,
+                    bottom: insets.bottom,
+                    trailing: insets.right
+                )
+                let mode: Image.ResizingMode = namedImage.resizingMode == .tiles ? .tile : .stretch
+                resizingInfo = Image.ResizingInfo(capInsets: edgeInsets, mode: mode)
+            } else {
+                resizingInfo = nil
+            }
+
+            return BitmapInfo(
+                contents: contents,
+                scale: imageScale,
+                orientation: orientation,
+                unrotatedPixelSize: unrotatedPixelSize,
+                renderingMode: renderingMode,
+                resizingInfo: resizingInfo
+            )
+        }
+        #endif
     }
 
     // MARK: - NamedImage.BitmapInfo
@@ -317,7 +489,7 @@ package enum NamedImage {
 
     package struct Cache {
         private struct ImageCacheData {
-            private var vectors: [NamedImage.VectorKey: NamedImage.VectorInfo] = [:]
+            var vectors: [NamedImage.VectorKey: NamedImage.VectorInfo] = [:]
             var bitmaps: [NamedImage.BitmapKey: NamedImage.BitmapInfo] = [:]
             var uuids: [UUID: NamedImage.DecodedInfo] = [:]
             var catalogs: [URL: WeakCatalog] = [:]
@@ -342,29 +514,97 @@ package enum NamedImage {
 
         #if OPENSWIFTUI_LINK_COREUI
 
-//        package subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
-//            // TODO: Full CoreUI vector lookup implementation
-//            get { nil }
-//        }
-
-        package subscript(key: BitmapKey, location: Image.Location) -> BitmapInfo? {
-            // TODO: Full CoreUI bitmap lookup implementation
-            get { nil }
+        // Looks up cached VectorInfo for key; if not found or catalog changed,
+        // calls loadVectorInfo and caches the result.
+        private subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
+            get {
+                let cached = data.vectors[key]
+                if let cached {
+                    if let cachedCatalog = cached.catalog, cachedCatalog == catalog {
+                        return cached
+                    }
+                }
+                guard let info = key.loadVectorInfo(from: catalog, idiom: key.idiom) else {
+                    return nil
+                }
+                data.vectors[key] = info
+                return info
+            }
         }
 
+        // Looks up cached BitmapInfo for key; if not found,
+        // calls loadBitmapInfo and caches the result.
+        package subscript(key: BitmapKey, location: Image.Location) -> BitmapInfo? {
+            get {
+                if let cached = data.bitmaps[key] {
+                    return cached
+                }
+                guard let info = key.loadBitmapInfo(location: location, idiom: key.idiom, subtype: key.subtype) else {
+                    return nil
+                }
+                data.bitmaps[key] = info
+                return info
+            }
+        }
+
+        // Resolves a CUICatalog for the given bundle.
+        // First tries defaultUICatalog; falls back to Assets.car with weak caching.
         package subscript(bundle: Bundle) -> (CUICatalog, retain: Bool)? {
-            // TODO: Full CoreUI catalog lookup implementation
-            get { nil }
+            get {
+                if let catalog = CUICatalog.defaultUICatalog(for: bundle) {
+                    return (catalog, retain: false)
+                }
+                guard let url = bundle.url(forResource: "Assets", withExtension: "car") else {
+                    return nil
+                }
+                if let weakCatalog = data.catalogs[url], let catalog = weakCatalog.catalog {
+                    return (catalog, retain: true)
+                }
+                // Clean up stale entries where weak ref is nil
+                data.catalogs = data.catalogs.filter { $0.value.catalog != nil }
+                guard let catalog = try? CUICatalog(url: url) else {
+                    return nil
+                }
+                data.catalogs[url] = WeakCatalog(catalog: catalog)
+                return (catalog, retain: true)
+            }
         }
 
         #endif
 
         package func decode(_ key: Key) throws -> DecodedInfo {
             switch key {
-            case .bitmap:
+            case .bitmap(let bitmapKey):
+                #if OPENSWIFTUI_LINK_COREUI
+                if let info = self[bitmapKey, bitmapKey.location] {
+                    return DecodedInfo(
+                        contents: info.contents,
+                        scale: info.scale,
+                        unrotatedPixelSize: info.unrotatedPixelSize,
+                        orientation: info.orientation
+                    )
+                }
+                #endif
                 throw Errors.missingCatalogImage
-            case .uuid:
-                throw Errors.missingUUIDImage
+            case .uuid(let uuid):
+                if let cached = data.uuids[uuid] {
+                    return cached
+                }
+                guard let delegate = archiveDelegate else {
+                    throw Errors.missingUUIDImage
+                }
+                let resolved = try delegate.resolveImage(uuid: uuid)
+                let cgImage = resolved.cgImage
+                let width = CGFloat(cgImage.width)
+                let height = CGFloat(cgImage.height)
+                let decoded = DecodedInfo(
+                    contents: .cgImage(cgImage),
+                    scale: resolved.scale,
+                    unrotatedPixelSize: CGSize(width: width, height: height),
+                    orientation: resolved.orientation
+                )
+                data.uuids[uuid] = decoded
+                return decoded
             }
         }
     }
@@ -711,6 +951,72 @@ extension Image {
 @_spi(Private)
 @available(*, unavailable)
 extension Image.ResolvedUUID: Sendable {}
+
+// MARK: - CUI Helpers
+
+#if OPENSWIFTUI_LINK_COREUI
+
+extension Font.Weight {
+    /// Maps Font.Weight to CUI's _CUIThemeVectorGlyphWeight integer values.
+    ///
+    /// Matches each known weight value (within 0.001 tolerance):
+    /// - ultraLight (-0.8) → 1
+    /// - thin (-0.6) → 2
+    /// - light (-0.4) → 3
+    /// - regular (0.0) → 4
+    /// - medium (0.23) → 5
+    /// - semibold (0.3) → 6
+    /// - bold (0.4) → 7
+    /// - heavy (0.56) → 8
+    /// - black (0.62) → 9
+    /// - unknown → 4 (regular)
+    fileprivate var glyphWeight: Int {
+        let v = value
+        let tolerance = 0.001
+        if abs(v - (-0.8)) < tolerance { return 1 }
+        if abs(v - (-0.6)) < tolerance { return 2 }
+        if abs(v - (-0.4)) < tolerance { return 3 }
+        if abs(v - 0.0) < tolerance { return 4 }
+        if abs(v - 0.23) < tolerance { return 5 }
+        if abs(v - 0.3) < tolerance { return 6 }
+        if abs(v - 0.4) < tolerance { return 7 }
+        if abs(v - 0.56) < tolerance { return 8 }
+        if abs(v - 0.62) < tolerance { return 9 }
+        return 4
+    }
+
+    /// Maps Font.Weight to CUI's continuous weight CGFloat value.
+    ///
+    /// Looks up the integer glyphWeight, then returns the corresponding
+    /// `_CUIVectorGlyphContinuousWeight*` constant from CoreUI.
+    fileprivate var glyphContinuousWeight: CGFloat {
+        let w = glyphWeight
+        switch w {
+        case 1: return _CUIVectorGlyphContinuousWeightUltralight
+        case 2: return _CUIVectorGlyphContinuousWeightThin
+        case 3: return _CUIVectorGlyphContinuousWeightLight
+        case 4: return _CUIVectorGlyphContinuousWeightRegular
+        case 5: return _CUIVectorGlyphContinuousWeightMedium
+        case 6: return _CUIVectorGlyphContinuousWeightSemibold
+        case 7: return _CUIVectorGlyphContinuousWeightBold
+        case 8: return _CUIVectorGlyphContinuousWeightHeavy
+        case 9: return _CUIVectorGlyphContinuousWeightBlack
+        default: return _CUIVectorGlyphContinuousWeightRegular
+        }
+    }
+}
+
+extension LayoutDirection {
+    /// Converts SwiftUI LayoutDirection to CUI's layout direction.
+    fileprivate var cuiLayoutDirection: CUILayoutDirection {
+        switch self {
+        case .leftToRight: return .LTR
+        case .rightToLeft: return .RTL
+        }
+    }
+}
+
+#endif
 
 #if canImport(Darwin) && canImport(DeveloperToolsSupport)
 
