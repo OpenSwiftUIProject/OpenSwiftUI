@@ -41,6 +41,9 @@ package func CTFontIsSystemUIFont(_ font: CTFont) -> Bool
 @_silgen_name("CTFontGetWeight")
 package func CTFontGetWeight(_ font: CTFont) -> CGFloat
 
+@_silgen_name("CTFontGetAccessibilityBoldWeightOfWeight")
+package func CTFontGetAccessibilityBoldWeightOfWeight(_ weight: CGFloat) -> CGFloat
+
 // MARK: - TraitKey
 
 @_silgen_name("kCTFontUIFontDesignTrait")

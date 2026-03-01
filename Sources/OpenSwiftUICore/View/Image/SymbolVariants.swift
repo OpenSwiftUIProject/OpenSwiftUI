@@ -327,6 +327,18 @@ public struct SymbolVariants: Hashable, Sendable {
         shape = other.shape ?? shape
     }
 
+    /// Normalizes symbol variants for name lookup by handling background semantics.
+    ///
+    /// When the `.background` variant is set, the fill flag is toggled,
+    /// the background flag is cleared, and the shape is removed.
+    package func _normalizedForNameLookup() -> SymbolVariants {
+        guard flags.contains(.background) else { return self }
+        var newFlags = flags
+        newFlags.formSymmetricDifference(.fill)
+        newFlags.remove(.background)
+        return SymbolVariants(flags: newFlags, shape: nil)
+    }
+
     /// Returns a Boolean value that indicates whether the current variant
     /// contains the specified variant.
     ///
@@ -461,6 +473,24 @@ private struct SymbolsGrowToFitBackgroundKey: EnvironmentKey {
 
 @available(OpenSwiftUI_v3_0, *)
 extension EnvironmentValues {
+
+    /// The symbol variant to use in this environment.
+    ///
+    /// You set this environment value indirectly by using the
+    /// ``View/symbolVariant(_:)`` view modifier. However, you access the
+    /// environment variable directly using the ``View/environment(_:_:)``
+    /// modifier. Do this when you want to use the ``SymbolVariants/none``
+    /// variant to ignore the value that's already in the environment:
+    ///
+    ///     HStack {
+    ///         Image(systemName: "heart")
+    ///         Image(systemName: "heart")
+    ///             .environment(\.symbolVariants, .none)
+    ///     }
+    ///     .symbolVariant(.fill)
+    ///
+    /// ![A screenshot of two heart symbols. The first is filled while the
+    /// second is outlined.](SymbolVariants-none-1)
     public var symbolVariants: SymbolVariants {
         get { self[SymbolVariantsKey.self] }
         set { self[SymbolVariantsKey.self] = newValue }

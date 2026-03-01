@@ -90,7 +90,7 @@ extension Color {
                         return nil
                     }
                     let gamut = key.displayGamut.cuiDisplayGamut
-                    let idiom = CUIDeviceIdiom(rawValue: environment.cuiAssetIdiom) ?? .universal
+                    let idiom = CUIDeviceIdiom(rawValue: environment.cuiAssetIdiom)!
                     let color = catalog.findAsset(
                         key: key.catalogKey,
                         matchTypes: environment.cuiAssetMatchTypes,

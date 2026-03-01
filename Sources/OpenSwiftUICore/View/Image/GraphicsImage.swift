@@ -11,6 +11,10 @@ package import OpenCoreGraphicsShims
 import CoreGraphics_Private
 #endif
 
+#if OPENSWIFTUI_LINK_COREUI
+package import CoreUI
+#endif
+
 // MARK: - GraphicsImage
 
 package struct GraphicsImage: Equatable, Sendable {
@@ -165,6 +169,20 @@ package struct ResolvedVectorGlyph: Equatable {
     package var animatorVersion: UInt32
     package var allowsContentTransitions: Bool
     package var preservesVectorRepresentation: Bool
+    #if OPENSWIFTUI_LINK_COREUI
+    package let catalog: CUICatalog
+    #endif
+
+    package init(
+        glyph: CUINamedVectorGlyph,
+        value: Float?,
+        flipsRightToLeft: Bool,
+        in context: ImageResolutionContext,
+        at location: Image.Location,
+        catalog: CUICatalog
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
 
     package var flipsRightToLeft: Bool {
         animator.flipsRightToLeft

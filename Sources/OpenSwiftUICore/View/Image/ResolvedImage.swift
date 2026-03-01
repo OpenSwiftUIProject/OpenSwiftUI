@@ -8,9 +8,12 @@
 
 package import OpenAttributeGraphShims
 package import OpenCoreGraphicsShims
+#if OPENSWIFTUI_LINK_COREUI
+package import CoreUI
+#endif
 
 extension Image {
-    // MARK: - Image.LayoutMetrics [WIP]
+    // MARK: - Image.LayoutMetrics
 
     package struct LayoutMetrics: Equatable {
         package var baselineOffset: CGFloat
@@ -36,7 +39,71 @@ extension Image {
             self.backgroundSize = .zero
         }
 
-        // TODO: CUINamedVectorGlyph
+        #if OPENSWIFTUI_LINK_COREUI
+        package mutating func adjustForBackground(
+            glyph: CUINamedVectorGlyph,
+            shape: SymbolVariants.Shape,
+            size: inout CGSize,
+            growsToFitBackground: Bool
+        ) {
+//            let options = CUIVectorGlyphGraphicVariantOptions()
+//            switch shape {
+//            case .circle:
+//                options.shape = 1
+//            default:
+//                break
+//            }
+//            options.imageScaling = growsToFitBackground ? 1 : 3
+//            guard let variant = glyph.graphicVariant(with: options) else {
+//                return
+//            }
+//            let interiorAlignment = variant.interiorAlignmentRect
+//            size = CGSize(width: interiorAlignment.width, height: interiorAlignment.height)
+//            baselineOffset = variant.baselineOffset
+//            capHeight = variant.capHeight
+//            let contentBounds = variant.contentBounds
+//            contentSize = contentBounds.size
+//            let alignmentRect = variant.alignmentRect
+//            alignmentOrigin = alignmentRect.origin
+//            backgroundSize = CGSize(width: alignmentRect.width, height: alignmentRect.height)
+        }
+
+        package init(glyph: CUINamedVectorGlyph, flipsRightToLeft: Bool) {
+            let baselineOffset = glyph.baselineOffset
+            let capHeight = glyph.capHeight
+
+            let contentSize: CGSize
+            let alignmentOrigin: CGPoint
+
+            if Semantics.SymbolImageLayoutUsingContentBounds.isEnabled {
+                let alignmentRect = glyph.alignmentRect
+                let contentBounds = glyph.contentBounds
+                contentSize = contentBounds.size
+                let originY = alignmentRect.origin.y
+                let originX: CGFloat
+                if flipsRightToLeft {
+                    originX = contentSize.width - alignmentRect.maxX
+                } else {
+                    originX = alignmentRect.origin.x
+                }
+                alignmentOrigin = CGPoint(x: originX, y: originY)
+            } else if Semantics.ImagesLayoutAsText.isEnabled {
+                let alignmentRect = glyph.alignmentRect
+                contentSize = alignmentRect.size
+                alignmentOrigin = .zero
+            } else {
+                let alignmentRect = glyph.alignmentRect
+                contentSize = CGSize(width: alignmentRect.width, height: capHeight)
+                alignmentOrigin = CGPoint(x: 0, y: -baselineOffset)
+            }
+            self.init(
+                baselineOffset: baselineOffset,
+                capHeight: capHeight,
+                contentSize: contentSize,
+                alignmentOrigin: alignmentOrigin
+            )
+        }
+        #endif
     }
 
     // MARK: - Image.Resolved

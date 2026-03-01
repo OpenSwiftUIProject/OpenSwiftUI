@@ -14,6 +14,9 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 OPENSWIFTUI_EXPORT
 bool CGImageGetHeadroom(CGImageRef cg_nullable image, float cg_nullable *headroom);
 
+OPENSWIFTUI_EXPORT
+void CGImageSetProperty(CGImageRef image, CFStringRef key, const void * cg_nullable value);
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* CoreGraphics.h */

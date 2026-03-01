@@ -59,21 +59,13 @@ extension Image {
         /// A scale that produces large images.
         case large
 
-        @_spi(ForOpenSwiftUIOnly)
-        @available(OpenSwiftUI_v6_0, *)
-        case _fittingCircleRadius(_fixedPointFraction: UInt16)
-
-        @_spi(Private)
-        @available(OpenSwiftUI_v6_0, *)
-        @available(*, deprecated, renamed: "_controlCenter_large")
-        @_alwaysEmitIntoClient
-        public static func fittingCircleRadius(pointSizeMultiple: CGFloat) -> Image.Scale {
-            ._controlCenter_large
-        }
-
         @_spi(Private)
         @available(OpenSwiftUI_v6_0, *)
         case _controlCenter_small, _controlCenter_medium, _controlCenter_large
+
+        @_spi(Private)
+        @available(OpenSwiftUI_v6_0, *)
+        case _watch_toolbar_medium
     }
 }
 

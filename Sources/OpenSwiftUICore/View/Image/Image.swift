@@ -128,6 +128,8 @@ package struct ImageResolutionContext {
         self.transaction = transaction
     }
 
+    // TODO: willUpdateVectorGlyph
+
     package func effectiveAllowedDynamicRange(for image: GraphicsImage) -> Image.DynamicRange? {
         #if canImport(CoreGraphics)
         guard allowedDynamicRange != .none else {
