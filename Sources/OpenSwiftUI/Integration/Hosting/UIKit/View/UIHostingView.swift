@@ -284,9 +284,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         if shouldDisableUIKitAnimations,
            Semantics.TraitCollectionAnimations.isEnabled,
            var transaction = Transaction.currentUIViewTransaction(canDisableAnimations: true) {
+            #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
             if let viewController, let alwaysOnBridge = viewController.alwaysOnBridge {
                 alwaysOnBridge.configureTransaction(&transaction)
             }
+            #endif
             viewGraph.emptyTransaction(transaction)
         }
     }
@@ -567,7 +569,9 @@ extension _UIHostingView {
             let box: WeakBox<UIView> = WeakBox(host)
             let boxAttr = Attribute(value: box)
             // inputs[UIKitHostContainerFocusItemInput.self] = boxAttr
+            #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
             inputs.textAlwaysOnProvider = OpenSwiftUITextAlwaysOnProvider.self
+            #endif
             // navigationBridge?.updateViewInputs(&inputs)
         }
     }

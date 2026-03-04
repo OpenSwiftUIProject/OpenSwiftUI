@@ -8,7 +8,9 @@ public import UIKit
 open class UIHostingController<Content>: UIViewController where Content : View {
     var host: _UIHostingView<Content>
 
+    #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
     var alwaysOnBridge: AlwaysOnBridge<Content>?
+    #endif
 
     override open dynamic var keyCommands: [UIKeyCommand]? {
         // TODO
