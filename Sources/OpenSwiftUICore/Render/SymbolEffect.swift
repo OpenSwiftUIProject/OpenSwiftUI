@@ -5,6 +5,7 @@
 //  Status: Empty
 
 import OpenAttributeGraphShims
+package import OpenRenderBoxShims
 
 package struct _SymbolEffect: Equatable {
 

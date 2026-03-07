@@ -8,6 +8,7 @@
 
 public import Foundation
 package import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
 #if canImport(CoreGraphics)
 import CoreGraphics_Private
 #endif
