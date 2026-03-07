@@ -12,6 +12,8 @@ package import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 public import OpenCoreGraphicsShims
 
+package typealias ORBPath = OpenRenderBoxShims.ORBPath
+
 // MARK: - Path [WIP]
 
 /// The outline of a 2D shape.

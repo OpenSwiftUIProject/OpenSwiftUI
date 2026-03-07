@@ -24,3 +24,10 @@ Example/ReferenceImages/**/*.png
 gh-pages
 .swift_pd_guess
 /.augments
+
+# Tuist
+Derived/
+Tuist/.build/
+*.xcodeproj
+*.xcworkspace
+*.xcframework
