@@ -132,7 +132,6 @@ package struct ImageResolutionContext {
         self.transaction = transaction
     }
 
-    #if OPENSWIFTUI_LINK_COREUI
     // TODO: Full implementation of willUpdateVectorGlyph
     // This is a complex method that handles animator state transitions
     // when an existing symbolAnimator is being reused for a new glyph.
@@ -143,7 +142,6 @@ package struct ImageResolutionContext {
         _openSwiftUIUnimplementedWarning()
         return false
     }
-    #endif
 
     package var effectiveSymbolRenderingMode: SymbolRenderingMode? {
         if let mode = symbolRenderingMode {

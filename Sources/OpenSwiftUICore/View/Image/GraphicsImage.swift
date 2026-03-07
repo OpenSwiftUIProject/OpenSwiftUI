@@ -218,9 +218,11 @@ package struct ResolvedVectorGlyph: Equatable {
         animator.flipsRightToLeft
     }
 
+    #if OPENSWIFTUI_LINK_COREUI
     package var glyph: CUINamedVectorGlyph? {
         animator.glyph
     }
+    #endif
 
     package var value: Float? {
         let v = animator.variableValue
@@ -233,6 +235,7 @@ package struct ResolvedVectorGlyph: Equatable {
     }
 
     package var resolvedRenderingMode: SymbolRenderingMode.Storage? {
+        #if OPENSWIFTUI_LINK_COREUI && OPENSWIFTUI_RENDERBOX
         let rbMode = animator.renderingMode
         guard rbMode == 0 else {
             return SymbolRenderingMode(rbRenderingMode: rbMode)?.storage
@@ -245,6 +248,9 @@ package struct ResolvedVectorGlyph: Equatable {
         case 3: return .hierarchical
         default: return nil
         }
+        #else
+        _openSwiftUIUnimplementedFailure()
+        #endif
     }
 
     package var alignmentRect: CGRect {
