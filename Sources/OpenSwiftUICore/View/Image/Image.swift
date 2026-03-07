@@ -8,6 +8,10 @@
 
 package import OpenAttributeGraphShims
 package import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
+#if OPENSWIFTUI_LINK_COREUI
+package import CoreUI
+#endif
 
 // MARK: - Image
 
@@ -83,7 +87,7 @@ public struct Image: Equatable, Sendable {
     }
 }
 
-// MARK: - ImageResolutionContext
+// MARK: - ImageResolutionContext [WIP] [willUpdateVectorGlyph]
 
 package struct ImageResolutionContext {
     package struct Options: OptionSet {
@@ -128,7 +132,34 @@ package struct ImageResolutionContext {
         self.transaction = transaction
     }
 
-    // TODO: willUpdateVectorGlyph
+    #if OPENSWIFTUI_LINK_COREUI
+    // TODO: Full implementation of willUpdateVectorGlyph
+    // This is a complex method that handles animator state transitions
+    // when an existing symbolAnimator is being reused for a new glyph.
+    package func willUpdateVectorGlyph(
+        to glyph: CUINamedVectorGlyph,
+        variableValue: CGFloat
+    ) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
+    #endif
+
+    package var effectiveSymbolRenderingMode: SymbolRenderingMode? {
+        if let mode = symbolRenderingMode {
+            return mode
+        }
+        if let envMode = environment.symbolRenderingMode {
+            return envMode
+        }
+        if ForegroundStyle().isMultiLevel(in: environment) {
+            return .palette
+        }
+        guard options.contains(.inferSymbolRenderingMode) else {
+            return nil
+        }
+        return SymbolRenderingMode.preferredIfEnabled ?? .monochrome
+    }
 
     package func effectiveAllowedDynamicRange(for image: GraphicsImage) -> Image.DynamicRange? {
         #if canImport(CoreGraphics)
