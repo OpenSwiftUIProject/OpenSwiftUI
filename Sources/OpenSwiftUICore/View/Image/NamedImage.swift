@@ -366,7 +366,7 @@ package enum NamedImage {
             if let (cat, retain) = NamedImage.sharedCache[bundle], retain {
                 CGImageSetProperty(
                     cgImage,
-                    "com.apple.SwiftUI.ObjectToRetain" as CFString,
+                    "org.OpenSwiftUIProject.OpenSwiftUI.ObjectToRetain" as CFString,
                     Unmanaged.passUnretained(cat).toOpaque()
                 )
             }
