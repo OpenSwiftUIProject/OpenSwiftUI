@@ -6,9 +6,10 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
-package import OpenCoreGraphicsShims
 package import Foundation
 package import OpenAttributeGraphShims
+package import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
 
 // MARK: - _DisplayList_Identity
 
@@ -561,4 +562,3 @@ extension DisplayList.Item {
 package class ORBDisplayListContents {}
 package class ORBDisplayListInterpolator {}
 package struct ORBTransition {}
-package class ORBAnimation {}

@@ -1,6 +1,6 @@
 //
 //  RenderBoxShims.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 
 package protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
 

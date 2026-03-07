@@ -98,6 +98,37 @@ public struct SymbolRenderingMode: Sendable {
     }()
 }
 
+// MARK: - SymbolRenderingMode + RB Rendering Mode
+
+extension SymbolRenderingMode {
+    package var rbRenderingMode: UInt32 {
+        switch storage {
+        case .monochrome: 1
+        case .multicolor: 2
+        case .hierarchical: 3
+        case .palette: 4
+        case .preferred: 0
+        case .hierarchicalUnlessSlashed: 128
+        case .hierarchicalSlashBadge: 129
+        case .paletteSlashBadge: 130
+        }
+    }
+
+    package init?(rbRenderingMode mode: UInt32) {
+        switch mode {
+        case 0: self = .preferred
+        case 1: self = .monochrome
+        case 2: self = .multicolor
+        case 3: self = .hierarchical
+        case 4: self = .palette
+        case 128: self = .hierarchicalUnlessSlashed
+        case 129: self = .hierarchicalSlashBadge
+        case 130: self = .paletteSlashBadge
+        default: return nil
+        }
+    }
+}
+
 @_spi(Private)
 @available(OpenSwiftUI_v6_0, *)
 extension SymbolRenderingMode {

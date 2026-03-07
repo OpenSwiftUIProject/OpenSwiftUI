@@ -467,7 +467,7 @@ extension Font {
         }
 
         package func modify(traits: inout Font.ResolvedTraits) {
-            _openSwiftUIUnimplementedFailure()
+            traits.weight = weight.value
         }
     }
 
@@ -479,7 +479,7 @@ extension Font {
         }
 
         package func modify(traits: inout Font.ResolvedTraits) {
-            _openSwiftUIUnimplementedFailure()
+            traits.width = width
         }
     }
 

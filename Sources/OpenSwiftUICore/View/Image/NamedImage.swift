@@ -8,6 +8,7 @@
 
 public import Foundation
 package import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
 #if canImport(CoreGraphics)
 import CoreGraphics_Private
 #endif
@@ -594,8 +595,13 @@ package enum NamedImage {
                 }
                 let resolved = try delegate.resolveImage(uuid: uuid)
                 let cgImage = resolved.cgImage
+                #if canImport(CoreGraphics)
                 let width = CGFloat(cgImage.width)
                 let height = CGFloat(cgImage.height)
+                #else
+                let width = CGFloat.zero
+                let height = CGFloat.zero
+                #endif
                 let decoded = DecodedInfo(
                     contents: .cgImage(cgImage),
                     scale: resolved.scale,
@@ -721,14 +727,13 @@ extension Image {
         package static let privateSystemAssetManager = SystemAssetManager(internalUse: true)
 
         package struct SystemAssetManager {
-            #if OPENSWIFTUI_LINK_COREUI
             let catalog: CUICatalog
-            #endif
             let fillMapping: [String: String]
             let nameAliases: [String: String]
             let symbols: [String]
 
             package init(internalUse: Bool) {
+                #if canImport(Darwin)
                 let bundlePath: String
                 if internalUse {
                     fillMapping = SFSymbols.private_nofill_to_fill
@@ -745,6 +750,11 @@ extension Image {
                 let fullPath = _SimulatorSystemRootDirectory() + bundlePath
                 let bundle = Bundle(path: fullPath)!
                 catalog = try! CUICatalog(name: "Assets", from: bundle, error: ())
+                #else
+                _openSwiftUIPlatformUnimplementedFailure()
+                #endif
+                #else
+                _openSwiftUIPlatformUnimplementedFailure()
                 #endif
             }
         }
