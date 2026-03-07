@@ -3,10 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete with WIP implementation
+//  Status: Complete
 //  ID: B4F00EDEBAA4ECDCB2CAB650A00E4160 (SwiftUICore)
 
 package import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
 #if canImport(CoreGraphics)
 import CoreGraphics_Private
 #endif
@@ -160,7 +161,7 @@ extension GraphicsImage.Contents {
     }
 }
 
-// TODO: ResolvedVectorGlyph
+// MARK: - ResolvedVectorGlyph
 
 package struct ResolvedVectorGlyph: Equatable {
     package let animator: ORBSymbolAnimator
@@ -169,9 +170,7 @@ package struct ResolvedVectorGlyph: Equatable {
     package var animatorVersion: UInt32
     package var allowsContentTransitions: Bool
     package var preservesVectorRepresentation: Bool
-    #if OPENSWIFTUI_LINK_COREUI
     package let catalog: CUICatalog
-    #endif
 
     package init(
         glyph: CUINamedVectorGlyph,
@@ -181,18 +180,101 @@ package struct ResolvedVectorGlyph: Equatable {
         at location: Image.Location,
         catalog: CUICatalog
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let variableValue: CGFloat
+        let animator: ORBSymbolAnimator
+        let allowsContentTransitions: Bool
+        if let existingAnimator = context.symbolAnimator {
+            variableValue = value.map { CGFloat($0) } ?? .infinity
+            animator = existingAnimator
+            allowsContentTransitions = context.willUpdateVectorGlyph(
+                to: glyph,
+                variableValue: variableValue
+            )
+        } else {
+            animator = ORBSymbolAnimator()
+            animator.anchorPoint = .zero
+            allowsContentTransitions = false
+            variableValue = value.map { CGFloat($0) } ?? .infinity
+        }
+        animator.glyph = glyph
+        animator.variableValue = variableValue
+        animator.flipsRightToLeft = flipsRightToLeft
+        animator.renderingMode = context.effectiveSymbolRenderingMode?.rbRenderingMode ?? 255
+        let direction = context.environment.layoutDirection
+        let version = animator.version
+        let options = context.options
+        self.animator = animator
+        self.layoutDirection = direction
+        self.location = location
+        self.animatorVersion = version
+        self.allowsContentTransitions = allowsContentTransitions
+        self.preservesVectorRepresentation = options.contains(.preservesVectors)
+        self.catalog = catalog
     }
+
+    // MARK: - Computed properties
 
     package var flipsRightToLeft: Bool {
         animator.flipsRightToLeft
     }
 
+    package var glyph: CUINamedVectorGlyph? {
+        animator.glyph
+    }
+
+    package var value: Float? {
+        let v = animator.variableValue
+        guard v.isFinite else { return nil }
+        return Float(v)
+    }
+
+    package var renderingMode: SymbolRenderingMode.Storage? {
+        SymbolRenderingMode(rbRenderingMode: animator.renderingMode)?.storage
+    }
+
+    package var resolvedRenderingMode: SymbolRenderingMode.Storage? {
+        let rbMode = animator.renderingMode
+        guard rbMode == 0 else {
+            return SymbolRenderingMode(rbRenderingMode: rbMode)?.storage
+        }
+        guard let glyph = animator.glyph else {
+            return .preferred
+        }
+        switch glyph.preferredRenderingMode {
+        case 2: return .multicolor
+        case 3: return .hierarchical
+        default: return nil
+        }
+    }
+
+    package var alignmentRect: CGRect {
+        animator.alignmentRect
+    }
+
+    package var styleResolverMode: ShapeStyle.ResolverMode {
+        .init(rbSymbolStyleMask: animator.styleMask, location: location)
+    }
+
+    // MARK: - Methods
+
     package func isClear(styles: ShapeStyle.Pack) -> Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        guard animator.styleMask & 0x1200 == 0 else {
+            return false
+        }
+        return styles.isClear(name: .foreground)
+    }
+
+    // MARK: - ResolvedVectorGlyph + Equatable
+
+    package static func == (lhs: ResolvedVectorGlyph, rhs: ResolvedVectorGlyph) -> Bool {
+        lhs.animator === rhs.animator
+            && lhs.animatorVersion == rhs.animatorVersion
+            && lhs.layoutDirection == rhs.layoutDirection
+            && lhs.location == rhs.location
     }
 }
+
+// MARK: - GraphicsImage + Extension [WIP]
 
 extension GraphicsImage {
     package var bitmapOrientation: Image.Orientation {
@@ -204,25 +286,5 @@ extension GraphicsImage {
 
     package func render(at targetSize: CGSize, prefersMask: Bool = false) -> CGImage? {
         _openSwiftUIUnimplementedFailure()
-    }
-}
-
-// FIXME
-
-package class ORBSymbolAnimator: Hashable {
-    var styleMask: UInt32 {
-        .zero
-    }
-
-    var flipsRightToLeft: Bool {
-        false
-    }
-
-    package func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(self))
-    }
-
-    package static func == (lhs: ORBSymbolAnimator, rhs: ORBSymbolAnimator) -> Bool {
-        lhs === rhs
     }
 }
