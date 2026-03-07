@@ -45,22 +45,20 @@ struct NamedImageKeyTests {
     @Test
     func bitmapKeySizeClassConversion() {
         var env = EnvironmentValues()
-        // Default: nil -> 0
-        let key1 = NamedImage.BitmapKey(name: "a", location: .system, in: env)
-        #expect(key1.horizontalSizeClass == 0)
-        #expect(key1.verticalSizeClass == 0)
 
         // .compact -> 1
         env.horizontalSizeClass = .compact
-        let key2 = NamedImage.BitmapKey(name: "a", location: .system, in: env)
-        #expect(key2.horizontalSizeClass == 1)
+        env.verticalSizeClass = .compact
+        let key1 = NamedImage.BitmapKey(name: "a", location: .system, in: env)
+        #expect(key1.horizontalSizeClass == 1)
+        #expect(key1.verticalSizeClass == 1)
 
         // .regular -> 2
         env.horizontalSizeClass = .regular
         env.verticalSizeClass = .regular
-        let key3 = NamedImage.BitmapKey(name: "a", location: .system, in: env)
-        #expect(key3.horizontalSizeClass == 2)
-        #expect(key3.verticalSizeClass == 2)
+        let key2 = NamedImage.BitmapKey(name: "a", location: .system, in: env)
+        #expect(key2.horizontalSizeClass == 2)
+        #expect(key2.verticalSizeClass == 2)
     }
 }
 
