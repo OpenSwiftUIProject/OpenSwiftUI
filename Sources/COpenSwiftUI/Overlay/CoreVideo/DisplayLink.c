@@ -227,7 +227,7 @@ DisplayLinkRef DisplayLinkCreate(CGDirectDisplayID displayID, DisplayLinkCallbac
         dispatch_queue_attr_t attr = dispatch_queue_attr_make_with_qos_class(
             DISPATCH_QUEUE_SERIAL, QOS_CLASS_USER_INTERACTIVE, 0
         );
-        link_queue = dispatch_queue_create("com.apple.SwiftUI.DisplayLink", attr);
+        link_queue = dispatch_queue_create("org.OpenSwiftUIProject.OpenSwiftUI.DisplayLink", attr);
     }
     
     manager = link_list;
