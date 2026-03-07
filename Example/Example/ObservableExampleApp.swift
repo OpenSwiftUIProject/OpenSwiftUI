@@ -9,7 +9,7 @@
 import OpenObservation
 import OpenSwiftUI
 #else
-import OpenObservation
+import Observation
 import SwiftUI
 #endif
 
