@@ -971,8 +971,6 @@ extension Image {
             return NamedImage.sharedCache[key, catalog]
         }
 
-        // TODO: ResolvedVectorGlyph
-        // [TBA]
         private func resolveVector(
             info: NamedImage.VectorInfo,
             value: Float?,
@@ -981,60 +979,51 @@ extension Image {
             catalog: CUICatalog
         ) -> Image.Resolved {
             #if OPENSWIFTUI_LINK_COREUI
-            let environment = context.environment
+            var context = context
             let glyph = info.glyph
-            let flipsRightToLeft = info.flipsRightToLeft
-            var layoutMetrics = info.layoutMetrics
-
-            // Create or reuse symbol animator
-            let animator: ORBSymbolAnimator = context.symbolAnimator ?? ORBSymbolAnimator()
             let resolvedVectorGlyph = ResolvedVectorGlyph(
-                glyph: info.glyph,
+                glyph: glyph,
                 value: value,
                 flipsRightToLeft: info.flipsRightToLeft,
                 in: context,
                 at: location,
                 catalog: catalog
             )
+            var layoutMetrics = info.layoutMetrics
+            var size = glyph.alignmentRect.size
 
-            let scale = glyph.scale
-            let alignmentRect = glyph.alignmentRect
-            let pixelWidth = scale * alignmentRect.width
-            let pixelHeight = scale * alignmentRect.height
-
-            var graphicsImage = GraphicsImage(
-                contents: .vectorGlyph(resolvedVectorGlyph),
-                scale: scale,
-                unrotatedPixelSize: CGSize(width: pixelWidth, height: pixelHeight),
-                orientation: .up,
-                isTemplate: false
-            )
-
-            // Handle symbol background variant
+            let environment = context.environment
             let variants = environment.symbolVariants
-            var backgroundShape: SymbolVariants.Shape?
-            var backgroundCornerRadius: CGFloat?
+
+            let backgroundShape: SymbolVariants.Shape?
+            let backgroundCornerRadius: CGFloat?
             if variants.contains(.background) {
-                let shape = variants.shape ?? .circle
+                let shape = variants.shape ?? .square
                 backgroundShape = shape
-                let growsToFit = environment.symbolsGrowToFitBackground
                 layoutMetrics.adjustForBackground(
                     glyph: glyph,
                     shape: shape,
-                    size: &graphicsImage.unrotatedPixelSize,
-                    growsToFitBackground: growsToFit
+                    size: &size,
+                    growsToFitBackground: environment.symbolsGrowToFitBackground
                 )
                 backgroundCornerRadius = environment.symbolBackgroundCornerRadius
+            } else {
+                backgroundShape = nil
+                backgroundCornerRadius = nil
             }
 
-            // Handle symbol redaction
-            if environment.shouldRedactSymbolImages {
-                let color = Color.foreground.resolve(in: environment)
-                graphicsImage.contents = GraphicsImage.Contents.color(color.multiplyingOpacity(by: 0.16))
-            }
-
+            let scale = glyph.scale
+            var graphicsImage = GraphicsImage(
+                contents: .vectorGlyph(resolvedVectorGlyph),
+                scale: scale,
+                unrotatedPixelSize: size * scale,
+                orientation: .up,
+                isTemplate: true
+            )
             graphicsImage.allowedDynamicRange = context.effectiveAllowedDynamicRange(for: graphicsImage)
-
+            if environment.shouldRedactSymbolImages {
+                graphicsImage.redact(in: environment)
+            }
             var resolved = Image.Resolved(
                 image: graphicsImage,
                 decorative: decorative,
