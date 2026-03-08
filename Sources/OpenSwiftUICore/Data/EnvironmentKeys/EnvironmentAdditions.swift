@@ -157,6 +157,20 @@ extension UserInterfaceSizeClass {
 }
 #endif
 
+extension UserInterfaceSizeClass? {
+    package var rawValue: Int8 {
+        #if OPENSWIFTUI_LINK_COREUI
+        Int8((self?.cUISizeClass ?? .any).rawValue)
+        #else
+        switch self {
+        case .none: 0
+        case .compact: 1
+        case .regular: 2
+        }
+        #endif
+    }
+}
+
 // MARK: - DisplayGamut
 
 #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
