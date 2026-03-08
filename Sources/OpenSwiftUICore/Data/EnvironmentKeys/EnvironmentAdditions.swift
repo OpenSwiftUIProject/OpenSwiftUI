@@ -69,6 +69,33 @@ extension Image {
     }
 }
 
+#if OPENSWIFTUI_LINK_COREUI
+// MARK: - Image.TemplateRenderingMode + CUIRenderMode
+
+package import CoreUI
+
+extension Image.TemplateRenderingMode {
+    package init?(_ renderMode: CUIRenderMode) {
+        switch renderMode {
+        case .original:
+            self = .original
+        case .template:
+            self = .template
+        case .default:
+            return nil
+        }
+    }
+
+    package var cuiRenderMode: CUIRenderMode {
+        switch self {
+        case .template: .template
+        case .original: .original
+        }
+    }
+}
+#endif
+
+
 // MARK: - UserInterfaceSizeClass
 
 /// A set of values that indicate the visual size available to the view.

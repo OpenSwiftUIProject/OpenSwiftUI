@@ -324,90 +324,84 @@ package enum NamedImage {
         func loadBitmapInfo(location: Image.Location, idiom: Int, subtype: Int) -> BitmapInfo? {
             #if OPENSWIFTUI_LINK_COREUI
             // Resolve catalog from location
-            guard case .bundle(let bundle) = location,
-                  let (catalog, _) = NamedImage.sharedCache[bundle] else {
-                // TODO: .system / .privateSystem asset manager support
-                return nil
+            let catalog: CUICatalog
+            switch location {
+            case .bundle(let bundle):
+                guard let (cat, _) = NamedImage.sharedCache[bundle] else {
+                    return nil
+                }
+                catalog = cat
+            case .system:
+                catalog = Image.Location.systemAssetManager.catalog
+            case .privateSystem:
+                catalog = Image.Location.privateSystemAssetManager.catalog
             }
-
-            // Build match types based on idiom
-            let matchTypes = CatalogAssetMatchType.defaultValue(idiom: idiom)
-
             let selfCUIDirection: CUILayoutDirection = layoutDirection == .leftToRight ? .LTR : .RTL
-
-            // Find asset via appearance-matching lookup
+            let matchTypes = CatalogAssetMatchType.defaultValue(idiom: idiom)
             let namedImage: CUINamedImage? = catalog.findAsset(
                 key: catalogKey,
                 matchTypes: matchTypes
             ) { appearanceName -> CUINamedImage? in
                 catalog.image(
-                    withName: self.name,
-                    scaleFactor: self.scale,
+                    withName: name,
+                    scaleFactor: scale,
                     deviceIdiom: CUIDeviceIdiom(rawValue: idiom)!,
-                    deviceSubtype: CUISubtype(rawValue: UInt(subtype)) ?? .normal,
-                    displayGamut: CUIDisplayGamut(rawValue: UInt(self.gamut.rawValue)) ?? .SRGB,
+                    deviceSubtype: CUISubtype(rawValue: UInt(subtype))!,
+                    displayGamut: CUIDisplayGamut(rawValue: UInt(gamut.rawValue))!,
                     layoutDirection: selfCUIDirection,
-                    sizeClassHorizontal: CUIUserInterfaceSizeClass(rawValue: Int(self.horizontalSizeClass)) ?? .any,
-                    sizeClassVertical: CUIUserInterfaceSizeClass(rawValue: Int(self.verticalSizeClass)) ?? .any,
+                    sizeClassHorizontal: CUIUserInterfaceSizeClass(rawValue: Int(self.horizontalSizeClass))!,
+                    sizeClassVertical: CUIUserInterfaceSizeClass(rawValue: Int(self.verticalSizeClass))!,
                     appearanceName: appearanceName,
                     locale: locale
                 )
             }
-
             guard let namedImage else { return nil }
-
-            // Extract image contents
             let contents: GraphicsImage.Contents
             let unrotatedPixelSize: CGSize
-
-            // TODO: Vector image path (Semantics v3 + preservedVectorRepresentation + VectorImageLayer)
-            // When linked on or after v3, if namedImage.preservedVectorRepresentation is true,
-            // attempt to get a CUINamedVectorImage from the catalog and wrap it in a
-            // VectorImageLayer. Falls through to CGImage path on failure.
-
-            // CGImage path
-            guard let cgImage = namedImage.image else { return nil }
-
-            // Prevent weakly-cached catalog from being deallocated while CGImage exists
-            if let (cat, retain) = NamedImage.sharedCache[bundle], retain {
-                CGImageSetProperty(
-                    cgImage,
-                    "org.OpenSwiftUIProject.OpenSwiftUI.ObjectToRetain" as CFString,
-                    Unmanaged.passUnretained(cat).toOpaque()
+            if isLinkedOnOrAfter(.v3),
+               namedImage.preservedVectorRepresentation,
+               let namedVectorImage = catalog.namedVectorImage(
+                   withName: name,
+                   scaleFactor: scale,
+                   displayGamut: CUIDisplayGamut(rawValue: UInt(gamut.rawValue))!,
+                   layoutDirection: selfCUIDirection,
+                   appearanceName: namedImage.appearance,
+                   locale: locale,
+               ),
+               namedVectorImage.appearance == namedImage.appearance,
+               let vectorImageLayer = VectorImageLayer(
+                   image: namedVectorImage,
+                   location: location,
+                   size: namedImage.size,
+               )
+            {
+                contents = .vectorLayer(vectorImageLayer)
+                unrotatedPixelSize = namedImage.size * namedImage.scale
+            } else {
+                guard let cgImage = namedImage.image else { return nil }
+                // Prevent weakly-cached catalog from being deallocated while CGImage exists
+                // Only applies to .bundle locations (system catalogs aren't weakly cached)
+                if case .bundle(let bundle) = location,
+                   let (cat, retain) = NamedImage.sharedCache[bundle], retain {
+                    CGImageSetProperty(
+                        cgImage,
+                        "org.OpenSwiftUIProject.OpenSwiftUI.ObjectToRetain" as CFString,
+                        Unmanaged.passUnretained(cat).toOpaque()
+                    )
+                }
+                contents = .cgImage(cgImage)
+                unrotatedPixelSize = CGSize(
+                    width: CGFloat(cgImage.width),
+                    height: CGFloat(cgImage.height)
                 )
             }
-
-            contents = .cgImage(cgImage)
-            unrotatedPixelSize = CGSize(
-                width: CGFloat(cgImage.width),
-                height: CGFloat(cgImage.height)
-            )
-
-            // Template rendering mode
-            let renderingMode: Image.TemplateRenderingMode?
-            switch namedImage.templateRenderingMode {
-            case .original:
-                renderingMode = .original
-            case .template:
-                renderingMode = .template
-            default:
-                renderingMode = nil
-            }
-
-            // Orientation from EXIF value
+            let renderingMode = Image.TemplateRenderingMode(namedImage.templateRenderingMode)
             var orientation = Image.Orientation(exifValue: Int(namedImage.exifOrientation) & 0xF) ?? .up
-
-            // RTL flipping: if image is flippable and its direction doesn't match
-            // the requested direction, flip by XOR-ing the orientation raw value
             let cuiDirection = namedImage.layoutDirection
             if namedImage.isFlippable, cuiDirection != .unspecified, cuiDirection != selfCUIDirection {
-                orientation = Image.Orientation(rawValue: orientation.rawValue ^ 1)!
+                orientation = orientation.mirrored
             }
-
-            // Scale
             let imageScale = namedImage.scale
-
-            // Resizing info from 9-slice data
             let resizingInfo: Image.ResizingInfo?
             if namedImage.hasSliceInformation {
                 let insets = namedImage.edgeInsets
@@ -422,7 +416,6 @@ package enum NamedImage {
             } else {
                 resizingInfo = nil
             }
-
             return BitmapInfo(
                 contents: contents,
                 scale: imageScale,
