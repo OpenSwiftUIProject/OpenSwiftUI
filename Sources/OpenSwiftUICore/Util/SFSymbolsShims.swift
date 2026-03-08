@@ -2,31 +2,20 @@
 //  SFSymbolsShims.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
-
-// MARK: - SFSymbols Framework Access
-//
-// Currently uses dlopen/dlsym for dynamic symbol resolution at
-// runtime. This avoids a hard link dependency on the private SFSymbols
-// framework.
-//
-// TODO: Migrate to add SFSymbols in DarwinPrivateFrameworks package and link it with a new
-// OPENSWIFTUI_LINK_SFSYMBOLS build flag (following the CoreUI pattern).
-// When that migration happens:
-//   1. Add `import SFSymbols` under `#if OPENSWIFTUI_LINK_SFSYMBOLS`.
-//   2. Replace the dlopen-based implementations with direct calls.
-//   3. Call sites using `SFSymbols.symbol_order` etc. remain unchanged
-//      because Swift resolves `SFSymbols.x` identically whether `SFSymbols`
-//      is a local enum or a qualified module name.
+//  Status: Complete
 
 #if canImport(Darwin)
+
+#if OPENSWIFTUI_LINK_SFSYMBOLS
+import SFSymbols
+#else
 import Foundation
 
 /// Shim for the private SFSymbols framework.
 ///
 /// Property names intentionally use snake_case to match the framework's
 /// original API surface, ensuring a seamless migration to direct linking
-/// (Option C) with no source-breaking changes at call sites.
+/// with no source-breaking changes at call sites.
 package enum SFSymbols {
     // MARK: - Module-level Properties
 
@@ -74,4 +63,6 @@ package enum SFSymbols {
         return unsafeBitCast(sym, to: type)
     }
 }
+#endif
+
 #endif
