@@ -1,9 +1,6 @@
 //
 //  AsyncImageExample.swift
-//  Example
-//
-//  Created by Kyle on 1/18/26.
-//
+//  Shared
 
 #if OPENSWIFTUI
 import OpenSwiftUI
