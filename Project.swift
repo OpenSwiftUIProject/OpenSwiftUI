@@ -3,7 +3,7 @@ import ProjectDescription
 // MARK: - Constants
 
 let releaseVersion = 2024
-let destinations: Destinations = [.iPhone, .iPad, .mac, .macCatalyst, .appleTv, .appleWatch, .appleVision]
+let destinations: Destinations = [.iPhone, .iPad, .mac, /*.macCatalyst, .appleTv, .appleWatch, .appleVision*/]
 
 // MARK: - Shared Settings
 
@@ -130,7 +130,7 @@ let project = Project(
             name: "OpenSwiftUIMacros",
             destinations: [.mac],
             product: .macro,
-            bundleId: "org.openswiftui.OpenSwiftUIMacros",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUIMacros",
             sources: "Sources/OpenSwiftUIMacros/**",
             dependencies: [
                 .external(name: "SwiftSyntaxMacros"),
@@ -147,7 +147,7 @@ let project = Project(
             name: "OpenSwiftUI_SPI",
             destinations: destinations,
             product: .staticFramework,
-            bundleId: "org.openswiftui.OpenSwiftUI-SPI",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUI-SPI",
             sources: "Sources/OpenSwiftUI_SPI/**",
             headers: .headers(public: "Sources/OpenSwiftUI_SPI/**/*.h"),
             dependencies: [
@@ -170,7 +170,7 @@ let project = Project(
             name: "COpenSwiftUI",
             destinations: destinations,
             product: .staticFramework,
-            bundleId: "org.openswiftui.COpenSwiftUI",
+            bundleId: "org.OpenSwiftUIProject.COpenSwiftUI",
             sources: "Sources/COpenSwiftUI/**",
             headers: .headers(public: "Sources/COpenSwiftUI/**/*.h"),
             dependencies: [],
@@ -185,7 +185,7 @@ let project = Project(
             name: "OpenSwiftUICore",
             destinations: destinations,
             product: .staticFramework,
-            bundleId: "org.openswiftui.OpenSwiftUICore",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUICore",
             sources: "Sources/OpenSwiftUICore/**",
             dependencies: [
                 .target(name: "OpenSwiftUI_SPI"),
@@ -208,7 +208,7 @@ let project = Project(
             name: "OpenSwiftUI",
             destinations: destinations,
             product: .framework,
-            bundleId: "org.openswiftui.OpenSwiftUI",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUI",
             sources: "Sources/OpenSwiftUI/**",
             dependencies: [
                 .target(name: "OpenSwiftUICore"),
@@ -232,7 +232,7 @@ let project = Project(
             name: "OpenSwiftUIExtension",
             destinations: destinations,
             product: .staticFramework,
-            bundleId: "org.openswiftui.OpenSwiftUIExtension",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUIExtension",
             sources: "Sources/OpenSwiftUIExtension/**",
             dependencies: [
                 .target(name: "OpenSwiftUI"),
@@ -245,7 +245,7 @@ let project = Project(
             name: "OpenSwiftUIBridge",
             destinations: destinations,
             product: .staticFramework,
-            bundleId: "org.openswiftui.OpenSwiftUIBridge",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUIBridge",
             sources: [
                 "Sources/OpenSwiftUIBridge/Bridgeable.swift",
                 "Sources/OpenSwiftUIBridge/SwiftUI/**",
@@ -261,7 +261,7 @@ let project = Project(
             name: "OpenSwiftUISymbolDualTestsSupport",
             destinations: destinations,
             product: .staticFramework,
-            bundleId: "org.openswiftui.OpenSwiftUISymbolDualTestsSupport",
+            bundleId: "org.OpenSwiftUIProject.OpenSwiftUISymbolDualTestsSupport",
             sources: "Sources/OpenSwiftUISymbolDualTestsSupport/**",
             dependencies: [
                 .external(name: "SymbolLocator"),
