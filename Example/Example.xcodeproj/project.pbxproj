@@ -91,13 +91,6 @@
 			};
 			target = 27D49DF72BA604FB00F6E2E2 /* HostingExample */;
 		};
-		275C29E52F389AE8008676C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				interpose.c,
-			);
-			target = 275751E22DEE1441003E467C /* TestingHost */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -107,7 +100,7 @@
 		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
 		279FEC572DF450D200320390 /* ReferenceImages */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReferenceImages; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
-		27FFF0422E08850C0060A4DA /* SharedExample */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (275C29E52F389AE8008676C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SharedExample; sourceTree = "<group>"; };
+		27FFF0422E08850C0060A4DA /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -177,7 +170,7 @@
 				27E6C4D02D2842530010502F /* OpenRenderBox */,
 				271D81642BB1E8E300A6D543 /* OpenAttributeGraph */,
 				27CD0B612AFC8E0E003665EB /* OpenSwiftUI */,
-				27FFF0422E08850C0060A4DA /* SharedExample */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 				275751AF2DEE136A003E467C /* Example */,
 				275751C12DEE136C003E467C /* HostingExample */,
 				275751E42DEE1441003E467C /* TestingHost */,
@@ -229,6 +222,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751E42DEE1441003E467C /* TestingHost */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 			);
 			name = TestingHost;
 			packageProductDependencies = (
@@ -277,7 +271,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751AF2DEE136A003E467C /* Example */,
-				27FFF0422E08850C0060A4DA /* SharedExample */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 			);
 			name = Example;
 			packageProductDependencies = (
@@ -302,7 +296,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751C12DEE136C003E467C /* HostingExample */,
-				27FFF0422E08850C0060A4DA /* SharedExample */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 			);
 			name = HostingExample;
 			packageProductDependencies = (
@@ -506,7 +500,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -910,7 +903,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1036,7 +1028,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1244,7 +1235,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
