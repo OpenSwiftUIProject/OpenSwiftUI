@@ -8,6 +8,16 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
+struct NamedImageExample: View {
+    var body: some View {
+        VStack {
+            NamedImageDecorativeExample()
+            NamedImageRenderingModeOriginalExample()
+            NamedImageRenderingModeTemplateExample()
+        }
+    }
+}
+
 struct NamedImageDecorativeExample: View {
     var body: some View {
         Image(decorative: "logo")
