@@ -191,7 +191,7 @@ extension Image {
         }
     }
 
-    // MARK: - Image.NamedResolved [TODO]
+    // MARK: - Image.NamedResolved
 
     package struct NamedResolved {
         package var name: String
