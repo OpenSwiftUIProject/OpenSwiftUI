@@ -62,4 +62,20 @@ struct NamedImageUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test("Test symbol image with variable value")
+    func symbolImageWithVariableValue() {
+        struct ContentView: View {
+            let name: String = "speaker.wave.3"
+            var body: some View {
+                VStack {
+                    Image(systemName: name, variableValue: 0)
+                    Image(systemName: name, variableValue: 0.33)
+                    Image(systemName: name, variableValue: 0.67)
+                    Image(systemName: name, variableValue: 1)
+                }
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView())
+    }
 }
