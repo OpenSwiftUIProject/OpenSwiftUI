@@ -90,18 +90,15 @@ package struct _ShapeStyle_RenderedShape {
             break
         case let .image(graphicsImage):
             if graphicsImage.isTemplate {
-                if case let .vectorGlyph(glygh) = graphicsImage.contents {
-//                    renderVectorGlyph(
-//                        glygh,
-//                        size: graphicsImage.size,
-//                        orientation: graphicsImage.orientation,
-//                        name: name,
-//                        styles: styles.value,
-//                        layers: &layers
-//                    )
-                    // TODO: add vector + color support
-                    _openSwiftUIUnimplementedWarning()
-                    renderUnstyledImage(graphicsImage, layers: &layers)
+                if case let .vectorGlyph(glyph) = graphicsImage.contents {
+                    renderVectorGlyph(
+                        glyph,
+                        size: graphicsImage.size,
+                        orientation: graphicsImage.orientation,
+                        name: name,
+                        styles: styles.value,
+                        layers: &layers
+                    )
                 } else {
                     let style = styles.value[name, 0]
                     layers.beginLayer(
@@ -252,7 +249,7 @@ package struct _ShapeStyle_RenderedShape {
         _openSwiftUIUnimplementedFailure()
     }
 
-    private func renderVectorGlyph(
+    private mutating func renderVectorGlyph(
         _ glyph: ResolvedVectorGlyph,
         size: CGSize,
         orientation: Image.Orientation,
@@ -260,7 +257,17 @@ package struct _ShapeStyle_RenderedShape {
         styles: ShapeStyle.Pack,
         layers: inout ShapeStyle.RenderedLayers
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // TODO: RBSymbolAnimator/RBSymbolUpdate
+        // We use a plain implementation for now
+        _openSwiftUIUnimplementedWarning()
+        let style = styles[name, 0]
+        layers.beginLayer(
+            id: .styled(name, 0),
+            style: style,
+            shape: &self
+        )
+        render(style: style)
+        layers.endLayer(shape: &self)
     }
 
     private mutating func renderUnstyledImage(
