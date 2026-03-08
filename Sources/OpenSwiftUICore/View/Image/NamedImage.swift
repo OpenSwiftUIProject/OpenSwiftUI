@@ -16,6 +16,9 @@ import CoreGraphics_Private
 package import CoreUI
 import GraphicsServices_Private
 #endif
+#if OPENSWIFTUI_LINK_SFSYMBOLS
+import SFSymbols
+#endif
 
 // MARK: - NamedImage
 

@@ -5,6 +5,9 @@
 #if canImport(Darwin)
 import OpenSwiftUICore
 import Testing
+#if OPENSWIFTUI_LINK_SFSYMBOLS
+import SFSymbols
+#endif
 
 struct SFSymbolsShimsTests {
     @Test
