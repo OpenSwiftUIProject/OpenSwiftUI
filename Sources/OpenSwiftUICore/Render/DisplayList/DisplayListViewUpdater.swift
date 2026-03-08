@@ -31,7 +31,7 @@ extension DisplayList {
             _openSwiftUIUnimplementedFailure()
         }
         
-        func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
+        package func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
             // TODO
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
@@ -42,24 +42,24 @@ extension DisplayList {
             return .zero
         }
         
-        func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
+        package func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
             nil
         }
         
-        func destroy(rootView: AnyObject) {
+        package func destroy(rootView: AnyObject) {
         }
         
-        var viewCacheIsEmpty: Bool {
+        package var viewCacheIsEmpty: Bool {
             // TODO
             false
         }
 
-        var platform: Platform {
+        package var platform: Platform {
             // TODO
             _openSwiftUIUnimplementedFailure()
         }
 
-        var exportedObject: AnyObject? {
+        package var exportedObject: AnyObject? {
             // TODO
             nil
         }
