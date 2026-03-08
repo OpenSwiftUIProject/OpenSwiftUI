@@ -41,14 +41,6 @@ jobs:
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest \
             > coverage.txt
         id: debug-test
-      - name: Building and running tests in release mode
-        run: |
-          swift test \
-            -c release \
-            --filter OpenSwiftUITests \
-            --filter OpenSwiftUICoreTests \
-            --build-path .build-test-release
-        id: release-test
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}

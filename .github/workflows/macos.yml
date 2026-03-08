@@ -51,16 +51,6 @@ jobs:
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest/Contents/MacOS/OpenSwiftUIPackageTests \
             > coverage.txt
-      - name: Build and run tests in release mode
-        run: |
-          set -o pipefail
-          NSUnbufferedIO=YES swift test \
-            -c release \
-            --filter OpenSwiftUITests \
-            --filter OpenSwiftUICoreTests \
-            --enable-code-coverage \
-            --build-path .build-test-release \
-            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
       - uses: codecov/codecov-action@v3
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
