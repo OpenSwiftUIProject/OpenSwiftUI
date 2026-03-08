@@ -95,13 +95,13 @@ package struct GraphicsImage: Equatable, Sendable {
 
     package var styleResolverMode: ShapeStyle.ResolverMode {
         switch contents {
-        case .cgImage:
-            return .init()
         case let .vectorGlyph(resolvedVectorGlyph):
             return .init(
                 rbSymbolStyleMask: resolvedVectorGlyph.animator.styleMask,
                 location: resolvedVectorGlyph.location
             )
+        case .none:
+            return .init()
         default:
             return .init(foregroundLevels: isTemplate ? 1 : 0)
         }
