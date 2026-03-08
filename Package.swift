@@ -157,6 +157,7 @@ let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatfo
 let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
 
 let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
+let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform && !isSPIBuild)
 let linkBacklightServices = envBoolValue("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
 // This should be disabled for UI test target due to link issue of Testing.
 // Only enable for non-UI test targets.
@@ -245,6 +246,10 @@ sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" :
 sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
 if linkCoreUI {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_COREUI"))
+}
+
+if linkSFSymbols {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_SFSYMBOLS"))
 }
 
 sharedCSettings.append(
@@ -391,6 +396,10 @@ extension Target {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'CoreUI.framework'"
         dependencies.append(.product(name: "CoreUI", package: "DarwinPrivateFrameworks"))
+    }
+
+    func addSFSymbolsSettings() {
+        dependencies.append(.product(name: "SFSymbols", package: "DarwinPrivateFrameworks"))
     }
 
     func addBacklightServicesSettings() {
@@ -832,6 +841,10 @@ if linkCoreUI {
     openSwiftUISPITarget.addCoreUISettings()
 }
 
+if linkSFSymbols {
+    openSwiftUICoreTarget.addSFSymbolsSettings()
+}
+
 if linkBacklightServices {
     openSwiftUITarget.addBacklightServicesSettings()
     openSwiftUISPITarget.addBacklightServicesSettings()
@@ -844,7 +857,7 @@ if useLocalDeps {
         .package(path: "../OpenRenderBox"),
         .package(path: "../OpenObservation"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkBacklightServices {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkSFSymbols || linkBacklightServices {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
     package.dependencies += dependencies
@@ -856,7 +869,7 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkSFSymbols {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
