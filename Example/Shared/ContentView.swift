@@ -1,9 +1,6 @@
 //
 //  ContentView.swift
 //  Shared
-//
-//  Created by Kyle on 2023/11/9.
-//
 
 #if OPENSWIFTUI
 import OpenSwiftUI
@@ -13,6 +10,6 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        NamedImageExample()
+        SunsetSceneExample()
     }
 }

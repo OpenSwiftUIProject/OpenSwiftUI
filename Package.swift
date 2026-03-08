@@ -416,6 +416,7 @@ extension Target {
 
     func addOpenCombineSettings() {
         dependencies.append(.product(name: "OpenCombine", package: "OpenCombine"))
+        dependencies.append(.product(name: "OpenCombineFoundation", package: "OpenCombine"))
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
         self.swiftSettings = swiftSettings

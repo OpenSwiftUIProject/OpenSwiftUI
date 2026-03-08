@@ -39,36 +39,33 @@ extension Image {
             self.backgroundSize = .zero
         }
 
-        #if OPENSWIFTUI_LINK_COREUI
         package mutating func adjustForBackground(
             glyph: CUINamedVectorGlyph,
             shape: SymbolVariants.Shape,
             size: inout CGSize,
             growsToFitBackground: Bool
         ) {
-//            let options = CUIVectorGlyphGraphicVariantOptions()
-//            switch shape {
-//            case .circle:
-//                options.shape = 1
-//            default:
-//                break
-//            }
-//            options.imageScaling = growsToFitBackground ? 1 : 3
-//            guard let variant = glyph.graphicVariant(with: options) else {
-//                return
-//            }
-//            let interiorAlignment = variant.interiorAlignmentRect
-//            size = CGSize(width: interiorAlignment.width, height: interiorAlignment.height)
-//            baselineOffset = variant.baselineOffset
-//            capHeight = variant.capHeight
-//            let contentBounds = variant.contentBounds
-//            contentSize = contentBounds.size
-//            let alignmentRect = variant.alignmentRect
-//            alignmentOrigin = alignmentRect.origin
-//            backgroundSize = CGSize(width: alignmentRect.width, height: alignmentRect.height)
+            #if OPENSWIFTUI_LINK_COREUI
+            let options = CUIVectorGlyphGraphicVariantOptions()
+            options.shape = shape == .circle ? 1 : 0
+            options.imageScaling = growsToFitBackground ? 1 : 3
+            guard let variant = glyph.graphicVariant(with: options) else {
+                return
+            }
+            let interiorAlignment = variant.interiorAlignmentRect
+            size = interiorAlignment.size
+            baselineOffset = variant.baselineOffset
+            capHeight = variant.capHeight
+            contentSize = variant.contentBounds.size
+            alignmentOrigin = CGPoint(x: interiorAlignment.origin.x, y: interiorAlignment.origin.y)
+            backgroundSize = variant.alignmentRect.size
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
 
         package init(glyph: CUINamedVectorGlyph, flipsRightToLeft: Bool) {
+            #if OPENSWIFTUI_LINK_COREUI
             let baselineOffset = glyph.baselineOffset
             let capHeight = glyph.capHeight
 
@@ -102,8 +99,10 @@ extension Image {
                 contentSize: contentSize,
                 alignmentOrigin: alignmentOrigin
             )
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
-        #endif
     }
 
     // MARK: - Image.Resolved
