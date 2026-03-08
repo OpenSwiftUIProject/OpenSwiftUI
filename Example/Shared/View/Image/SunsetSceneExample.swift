@@ -336,8 +336,6 @@ private struct BirdIcon: View {
 // MARK: - Swift Logo (Colorful + Rotating)
 
 private struct SwiftLogoView: View {
-    @State private var rotation: Double = 0
-
     var body: some View {
         VStack {
             ZStack {
@@ -369,16 +367,9 @@ private struct SwiftLogoView: View {
                 }
                 .shadow(color: .orange.opacity(0.5), radius: 8)
                 .shadow(color: .red.opacity(0.3), radius: 16)
-                .rotationEffect(.degrees(rotation))
-                .onAppear {
-                    withAnimation(.linear(duration: 8).repeatForever(autoreverses: false)) {
-                        rotation = 360
-                    }
-                }
 
                 // Sparkle accents around logo
                 SparkleRing()
-                    .rotationEffect(.degrees(-rotation * 0.5))
             }
             .padding(.top, 80)
 
