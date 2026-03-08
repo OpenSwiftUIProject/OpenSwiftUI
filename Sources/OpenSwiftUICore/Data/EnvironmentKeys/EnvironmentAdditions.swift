@@ -69,6 +69,32 @@ extension Image {
     }
 }
 
+#if OPENSWIFTUI_LINK_COREUI
+// MARK: - Image.TemplateRenderingMode + CUIRenderMode
+
+package import CoreUI
+
+extension Image.TemplateRenderingMode {
+    package init?(_ renderMode: CUIRenderMode) {
+        switch renderMode {
+        case .original:
+            self = .original
+        case .template:
+            self = .template
+        case .default:
+            return nil
+        }
+    }
+
+    package var cuiRenderMode: CUIRenderMode {
+        switch self {
+        case .template: .template
+        case .original: .original
+        }
+    }
+}
+#endif
+
 // MARK: - UserInterfaceSizeClass
 
 /// A set of values that indicate the visual size available to the view.
@@ -108,11 +134,47 @@ public enum UserInterfaceSizeClass: Sendable {
     case regular
 }
 
+#if OPENSWIFTUI_LINK_COREUI
+// MARK: - UserInterfaceSizeClass + CUIUserInterfaceSizeClass
+
+package import CoreUI
+
+extension UserInterfaceSizeClass {
+    package init?(_ sizeClass: CUIUserInterfaceSizeClass) {
+        switch sizeClass {
+        case .any: return nil
+        case .compact: self = .compact
+        case .regular: self = .regular
+        }
+    }
+
+    package var cUISizeClass: CUIUserInterfaceSizeClass {
+        switch self {
+        case .compact: .compact
+        case .regular: .regular
+        }
+    }
+}
+#endif
+
+extension UserInterfaceSizeClass? {
+    package var rawValue: Int8 {
+        #if OPENSWIFTUI_LINK_COREUI
+        Int8((self?.cUISizeClass ?? .any).rawValue)
+        #else
+        switch self {
+        case .none: 0
+        case .compact: 1
+        case .regular: 2
+        }
+        #endif
+    }
+}
+
 // MARK: - DisplayGamut
 
 #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 import CoreUI_Private
-import CoreUI
 #endif
 
 @_spi(Private)

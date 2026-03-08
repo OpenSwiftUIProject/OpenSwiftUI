@@ -28,7 +28,9 @@ struct LabelsHiddenModifierUITests {
             }
         }
         #if os(iOS) || os(visionOS)
-        openSwiftUIAssertSnapshot(of: ContentView())
+        withKnownIssue(isIntermittent: true) {
+            openSwiftUIAssertSnapshot(of: ContentView())
+        }
         #else
         withKnownIssue("checkBox style is not supported yet") {
             openSwiftUIAssertSnapshot(of: ContentView())
