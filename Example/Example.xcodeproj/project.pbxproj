@@ -26,6 +26,8 @@
 		27AF22BB2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27AF22BC2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27AF22BD2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		27BB94442F5D5FE800B2AA0A /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 27BB94432F5D5FE800B2AA0A /* Equatable */; };
+		27BB94462F5D5FEE00B2AA0A /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 27BB94452F5D5FEE00B2AA0A /* Equatable */; };
 		27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */; };
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
 		27E28F0B2F5D5531007F8CF5 /* SFSymbols.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E28F0A2F5D5531007F8CF5 /* SFSymbols.xcframework */; };
@@ -110,6 +112,7 @@
 			files = (
 				279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */,
 				27AF22B82E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
+				27BB94442F5D5FE800B2AA0A /* Equatable in Frameworks */,
 				27E28F112F5D5547007F8CF5 /* SFSymbols.xcframework in Frameworks */,
 				27AF22B42E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BC2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -123,6 +126,7 @@
 			files = (
 				2792849F2DFF137400234D64 /* SnapshotTesting in Frameworks */,
 				27AF22B92E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
+				27BB94462F5D5FEE00B2AA0A /* Equatable in Frameworks */,
 				27E28F142F5D5556007F8CF5 /* SFSymbols.xcframework in Frameworks */,
 				27AF22B52E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BD2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -227,6 +231,7 @@
 			name = TestingHost;
 			packageProductDependencies = (
 				279FED0C2DF4567B00320390 /* OpenSwiftUI */,
+				27BB94432F5D5FE800B2AA0A /* Equatable */,
 			);
 			productName = TestingHost;
 			productReference = 275751E32DEE1441003E467C /* TestingHost.app */;
@@ -252,6 +257,7 @@
 			name = OpenSwiftUIUITests;
 			packageProductDependencies = (
 				2792849E2DFF137400234D64 /* SnapshotTesting */,
+				27BB94452F5D5FEE00B2AA0A /* Equatable */,
 			);
 			productName = OpenSwiftUIUITests;
 			productReference = 279283B92DFF11CE00234D64 /* OpenSwiftUIUITests.xctest */;
@@ -1392,6 +1398,16 @@
 		279FED0C2DF4567B00320390 /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenSwiftUI;
+		};
+		27BB94432F5D5FE800B2AA0A /* Equatable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 278EF52B2E2272F2009C32EB /* XCRemoteSwiftPackageReference "equatable" */;
+			productName = Equatable;
+		};
+		27BB94452F5D5FEE00B2AA0A /* Equatable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 278EF52B2E2272F2009C32EB /* XCRemoteSwiftPackageReference "equatable" */;
+			productName = Equatable;
 		};
 		27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
