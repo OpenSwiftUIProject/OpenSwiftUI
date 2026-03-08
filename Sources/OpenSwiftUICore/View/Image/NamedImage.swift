@@ -79,8 +79,8 @@ package enum NamedImage {
             self.idiom = idiom
         }
 
-        #if OPENSWIFTUI_LINK_COREUI
         fileprivate func loadVectorInfo(from catalog: CUICatalog, idiom: Int) -> VectorInfo? {
+            #if OPENSWIFTUI_LINK_COREUI
             let matchType: CatalogAssetMatchType = .cuiIdiom(idiom)
             let glyph: CUINamedVectorGlyph? = catalog.findAsset(
                 key: catalogKey,
@@ -139,6 +139,9 @@ package enum NamedImage {
                 layoutMetrics: metrics,
                 catalog: catalog
             )
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
 
         /// Computes a scale factor for symbol images based on the glyph's
@@ -151,6 +154,7 @@ package enum NamedImage {
         /// 4. Computes a reference circle.fill diameter for the current weight/pointSize
         /// 5. Returns the ratio clamped to the allowed range
         private func symbolSizeScale(for glyph: CUINamedVectorGlyph) -> CGFloat {
+            #if OPENSWIFTUI_LINK_COREUI
             let range = imageScale.allowedScaleRange
             guard range.lowerBound < range.upperBound else {
                 return range.lowerBound
@@ -216,15 +220,15 @@ package enum NamedImage {
 
             let ratio = referenceRadius / actualRadius
             return min(range.upperBound, max(range.lowerBound, ratio))
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
-        #endif
     }
-
 
     // MARK: - VectorInfo
 
     fileprivate struct VectorInfo {
-        #if OPENSWIFTUI_LINK_COREUI
         var glyph: CUINamedVectorGlyph
 
         var flipsRightToLeft: Bool
@@ -232,7 +236,6 @@ package enum NamedImage {
         var layoutMetrics: Image.LayoutMetrics
 
         weak var catalog: CUICatalog?
-        #endif
     }
 
 
@@ -318,8 +321,8 @@ package enum NamedImage {
             }
         }
 
-        #if OPENSWIFTUI_LINK_COREUI
         func loadBitmapInfo(location: Image.Location, idiom: Int, subtype: Int) -> BitmapInfo? {
+            #if OPENSWIFTUI_LINK_COREUI
             // Resolve catalog from location
             guard case .bundle(let bundle) = location,
                   let (catalog, _) = NamedImage.sharedCache[bundle] else {
@@ -428,8 +431,11 @@ package enum NamedImage {
                 renderingMode: renderingMode,
                 resizingInfo: resizingInfo
             )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            return nil
+            #endif
         }
-        #endif
     }
 
     // MARK: - NamedImage.BitmapInfo
@@ -517,10 +523,10 @@ package enum NamedImage {
 
         // MARK: Cache subscripts
 
-        #if OPENSWIFTUI_LINK_COREUI
         // Looks up cached VectorInfo for key; if not found or catalog changed,
         // calls loadVectorInfo and caches the result.
         fileprivate subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
+            #if OPENSWIFTUI_LINK_COREUI
             let cached = data.vectors[key]
             if let cached {
                 if let cachedCatalog = cached.catalog, cachedCatalog == catalog {
@@ -532,8 +538,11 @@ package enum NamedImage {
             }
             data.vectors[key] = info
             return info
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            return nil
+            #endif
         }
-        #endif
 
         // Looks up cached BitmapInfo for key; if not found,
         // calls loadBitmapInfo and caches the result.
@@ -553,10 +562,10 @@ package enum NamedImage {
             #endif
         }
 
-        #if OPENSWIFTUI_LINK_COREUI
         // Resolves a CUICatalog for the given bundle.
         // First tries defaultUICatalog; falls back to Assets.car with weak caching.
         package subscript(bundle: Bundle) -> (CUICatalog, retain: Bool)? {
+            #if OPENSWIFTUI_LINK_COREUI
             if let catalog = CUICatalog.defaultUICatalog(for: bundle) {
                 return (catalog, retain: false)
             }
@@ -573,9 +582,11 @@ package enum NamedImage {
             }
             data.catalogs[url] = WeakCatalog(catalog: catalog)
             return (catalog, retain: true)
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            return nil
+            #endif
         }
-
-        #endif
 
         package func decode(_ key: Key) throws -> DecodedInfo {
             switch key {
