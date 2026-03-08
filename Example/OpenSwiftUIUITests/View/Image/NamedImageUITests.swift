@@ -13,4 +13,14 @@ struct NamedImageUITests {
     func decorativeLogo() {
         openSwiftUIAssertSnapshot(of: NamedImageDecorativeExample())
     }
+
+    @Test
+    func renderingModeOriginal() {
+        openSwiftUIAssertSnapshot(of: NamedImageRenderingModeOriginalExample())
+    }
+
+    @Test
+    func renderingModeTemplate() {
+        openSwiftUIAssertSnapshot(of: NamedImageRenderingModeTemplateExample())
+    }
 }
