@@ -471,7 +471,7 @@ package enum NamedImage {
         case missingUUIDImage
     }
 
-    // MARK: - NamedImage.Cache [TBA]
+    // MARK: - NamedImage.Cache
 
     package struct Cache {
         private struct ImageCacheData {
@@ -922,7 +922,6 @@ extension Image {
             )
         }
 
-        #if OPENSWIFTUI_LINK_COREUI
         private func vectorInfo(
             in context: ImageResolutionContext,
             from catalog: CUICatalog,
@@ -981,6 +980,7 @@ extension Image {
             at location: Image.Location,
             catalog: CUICatalog
         ) -> Image.Resolved {
+            #if OPENSWIFTUI_LINK_COREUI
             let environment = context.environment
             let glyph = info.glyph
             let flipsRightToLeft = info.flipsRightToLeft
@@ -1044,8 +1044,10 @@ extension Image {
             )
             resolved.layoutMetrics = layoutMetrics
             return resolved
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
-        #endif
 
         private func bitmapInfo(
             in environment: EnvironmentValues,
