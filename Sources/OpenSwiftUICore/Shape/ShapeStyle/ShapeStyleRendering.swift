@@ -91,14 +91,17 @@ package struct _ShapeStyle_RenderedShape {
         case let .image(graphicsImage):
             if graphicsImage.isTemplate {
                 if case let .vectorGlyph(glygh) = graphicsImage.contents {
-                    renderVectorGlyph(
-                        glygh,
-                        size: graphicsImage.size,
-                        orientation: graphicsImage.orientation,
-                        name: name,
-                        styles: styles.value,
-                        layers: &layers
-                    )
+//                    renderVectorGlyph(
+//                        glygh,
+//                        size: graphicsImage.size,
+//                        orientation: graphicsImage.orientation,
+//                        name: name,
+//                        styles: styles.value,
+//                        layers: &layers
+//                    )
+                    // TODO: add vector + color support
+                    _openSwiftUIUnimplementedWarning()
+                    renderUnstyledImage(graphicsImage, layers: &layers)
                 } else {
                     let style = styles.value[name, 0]
                     layers.beginLayer(

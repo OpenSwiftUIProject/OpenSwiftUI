@@ -78,4 +78,27 @@ struct NamedImageUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test(
+        "Test symbol image with different rendering mode",
+        .disabled("renderVectorGlyph is not supported yet")
+    )
+    func symbolImageRenderingMode() {
+        struct ContentView: View {
+            let name: String = "gear"
+            var body: some View {
+                VStack(spacing: .zero) {
+                    Image(systemName: name)
+                        .foregroundStyle(.red)
+                    Image(systemName: name)
+                        .symbolRenderingMode(.multicolor)
+                        .foregroundStyle(.red, .blue)
+                    Image(systemName: name)
+                        .symbolRenderingMode(.palette)
+                        .foregroundStyle(.red, .blue)
+                }.symbolVariant(.circle)
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView())
+    }
 }
