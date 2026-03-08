@@ -350,7 +350,7 @@ package enum NamedImage {
                     sizeClassHorizontal: CUIUserInterfaceSizeClass(rawValue: Int(self.horizontalSizeClass)) ?? .any,
                     sizeClassVertical: CUIUserInterfaceSizeClass(rawValue: Int(self.verticalSizeClass)) ?? .any,
                     appearanceName: appearanceName,
-                    locale: self.locale.identifier
+                    locale: locale
                 )
             }
 
