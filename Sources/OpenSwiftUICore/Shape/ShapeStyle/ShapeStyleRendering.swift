@@ -227,9 +227,12 @@ package struct _ShapeStyle_RenderedShape {
                 seed: contentSeed
             ))
         case let .image(graphicsImage):
-            // TODO: Blocked by ImagePaint
-            _ = graphicsImage
-            _openSwiftUIUnimplementedFailure()
+            var image = graphicsImage
+            image.maskColor = color
+            item.value = .content(DisplayList.Content(
+                .image(image),
+                seed: contentSeed
+            ))
         case let .alphaMask(maskItem):
             let offset = item.frame.origin
             item.frame = maskItem.frame.offsetBy(dx: offset.x, dy: offset.y)
