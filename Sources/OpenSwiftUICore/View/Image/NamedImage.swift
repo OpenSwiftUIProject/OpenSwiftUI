@@ -278,8 +278,14 @@ package enum NamedImage {
             self.gamut = env.displayGamut
             self.idiom = env.cuiAssetIdiom
             self.subtype = env.cuiAssetSubtype
+            #if OPENSWIFTUI_LINK_COREUI
             self.horizontalSizeClass = Int8((env.horizontalSizeClass?.cUISizeClass ?? .any).rawValue)
             self.verticalSizeClass = Int8((env.verticalSizeClass?.cUISizeClass ?? .any).rawValue)
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            self.horizontalSizeClass = 0
+            self.verticalSizeClass = 0
+            #endif
         }
 
         package init(
