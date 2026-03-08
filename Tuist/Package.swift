@@ -20,6 +20,7 @@ let packageSettings = PackageSettings(
         "SymbolLocator": .staticFramework,
         "AttributeGraph": .staticFramework,
         "CoreUI": .staticFramework,
+        "SFSymbols": .staticFramework,
         "BacklightServices": .staticFramework,
     ],
     targetSettings: [

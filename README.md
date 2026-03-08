@@ -65,6 +65,32 @@ The current suggested toolchain to build the project is Swift 6.1.2 / Xcode 16.4
 ./Scripts/openswiftui_swiftinterface
 ```
 
+### [Beta] Build with Tuist (XCFramework)
+
+[Tuist](https://tuist.dev) can be used to generate an Xcode project and produce XCFrameworks via `xcodebuild`.
+
+```bash
+# Install Tuist
+curl -Ls https://install.tuist.io | bash
+
+# Install dependencies and generate Xcode project
+tuist install
+tuist generate
+```
+
+Then build with Xcode or produce an XCFramework:
+
+```bash
+# Build for a specific platform
+xcodebuild build -scheme OpenSwiftUI -destination 'generic/platform=iOS'
+
+# Create XCFramework
+xcodebuild -create-xcframework \
+  -framework build/Release-iphoneos/OpenSwiftUI.framework \
+  -framework build/Release-iphonesimulator/OpenSwiftUI.framework \
+  -output build/OpenSwiftUI.xcframework
+```
+
 > [!NOTE]
 > This project's configuration is heavily based on many environment variables.
 >

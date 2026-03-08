@@ -71,6 +71,7 @@ let swiftActiveCompilationConditions: [String] = {
         "OPENSWIFTUI_CF_CGTYPES",
         "OPENRENDERBOX_CF_CGTYPES",
         "OPENSWIFTUI_LINK_COREUI",
+        "OPENSWIFTUI_LINK_SFSYMBOLS",
         "_OPENSWIFTUI_SWIFTUI_RENDER",
         "OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS",
     ]
@@ -84,6 +85,7 @@ let sharedCDefines: [String] = [
     "OPENSWIFTUI_CF_CGTYPES=1",
     "OPENRENDERBOX_CF_CGTYPES=1",
     "OPENSWIFTUI_LINK_COREUI=1",
+    "OPENSWIFTUI_LINK_SFSYMBOLS=1",
     "OPENSWIFTUI_LINK_BACKLIGHTSERVICES=0",
     "_OPENSWIFTUI_SWIFTUI_RENDER=1",
     "OPENSWIFTUI_INTERNAL_XR_SDK=0",
@@ -193,6 +195,7 @@ let project = Project(
                 .external(name: "OpenAttributeGraphShims"),
                 .external(name: "OpenRenderBoxShims"),
                 .external(name: "OpenObservation"),
+                .external(name: "SFSymbols"),
             ],
             settings: .settings(base: sharedSettings().merging([
                 "SWIFT_ACTIVE_COMPILATION_CONDITIONS": .array(renderBoxSwiftConditions + ["$(inherited)"]),
