@@ -239,7 +239,7 @@ package enum NamedImage {
     }
 
 
-    // MARK: - NamedImage.BitmapKey [TBA]
+    // MARK: - NamedImage.BitmapKey
 
     package struct BitmapKey: Hashable {
         package var catalogKey: CatalogKey
@@ -278,8 +278,8 @@ package enum NamedImage {
             self.gamut = env.displayGamut
             self.idiom = env.cuiAssetIdiom
             self.subtype = env.cuiAssetSubtype
-            self.horizontalSizeClass = Self.convertSizeClass(env.horizontalSizeClass)
-            self.verticalSizeClass = Self.convertSizeClass(env.verticalSizeClass)
+            self.horizontalSizeClass = Int8((env.horizontalSizeClass?.cUISizeClass ?? .any).rawValue)
+            self.verticalSizeClass = Int8((env.verticalSizeClass?.cUISizeClass ?? .any).rawValue)
         }
 
         package init(
@@ -306,19 +306,6 @@ package enum NamedImage {
             self.subtype = subtype
             self.horizontalSizeClass = horizontalSizeClass
             self.verticalSizeClass = verticalSizeClass
-        }
-
-        // [TBA]
-        // Converts UserInterfaceSizeClass? to Int8:
-        // nil -> 0, .compact -> 1, .regular -> 2
-        private static func convertSizeClass(_ sizeClass: UserInterfaceSizeClass?) -> Int8 {
-            guard let sizeClass else {
-                return 0
-            }
-            switch sizeClass {
-            case .compact: return 1
-            case .regular: return 2
-            }
         }
 
         func loadBitmapInfo(location: Image.Location, idiom: Int, subtype: Int) -> BitmapInfo? {
@@ -349,8 +336,8 @@ package enum NamedImage {
                     deviceSubtype: CUISubtype(rawValue: UInt(subtype))!,
                     displayGamut: CUIDisplayGamut(rawValue: UInt(gamut.rawValue))!,
                     layoutDirection: selfCUIDirection,
-                    sizeClassHorizontal: CUIUserInterfaceSizeClass(rawValue: Int(self.horizontalSizeClass))!,
-                    sizeClassVertical: CUIUserInterfaceSizeClass(rawValue: Int(self.verticalSizeClass))!,
+                    sizeClassHorizontal: CUIUserInterfaceSizeClass(rawValue: Int(horizontalSizeClass))!,
+                    sizeClassVertical: CUIUserInterfaceSizeClass(rawValue: Int(verticalSizeClass))!,
                     appearanceName: appearanceName,
                     locale: locale
                 )

@@ -95,7 +95,6 @@ extension Image.TemplateRenderingMode {
 }
 #endif
 
-
 // MARK: - UserInterfaceSizeClass
 
 /// A set of values that indicate the visual size available to the view.
@@ -135,11 +134,33 @@ public enum UserInterfaceSizeClass: Sendable {
     case regular
 }
 
+#if OPENSWIFTUI_LINK_COREUI
+// MARK: - UserInterfaceSizeClass + CUIUserInterfaceSizeClass
+
+package import CoreUI
+
+extension UserInterfaceSizeClass {
+    package init?(_ sizeClass: CUIUserInterfaceSizeClass) {
+        switch sizeClass {
+        case .any: return nil
+        case .compact: self = .compact
+        case .regular: self = .regular
+        }
+    }
+
+    package var cUISizeClass: CUIUserInterfaceSizeClass {
+        switch self {
+        case .compact: .compact
+        case .regular: .regular
+        }
+    }
+}
+#endif
+
 // MARK: - DisplayGamut
 
 #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 import CoreUI_Private
-import CoreUI
 #endif
 
 @_spi(Private)
