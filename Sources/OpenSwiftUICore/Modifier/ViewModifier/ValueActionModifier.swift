@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 4B528D9D60F208F316B29B7D53AC1FB9 (SwiftUICore)
 
-import OpenAttributeGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - View + onChange
 
@@ -118,7 +118,7 @@ public struct _ValueActionModifier<Value>: ViewModifier, PrimitiveViewModifier, 
         (self.value, self.action) = (value, action)
     }
 
-    func sendAction(old: Self?) {
+    package func sendAction(old: Self?) {
         let action = (old ?? self).action
         action(value)
     }
@@ -162,7 +162,7 @@ extension _ValueActionModifier: Sendable {}
 
 // MARK: - ValueActionModifierProtocol
 
-protocol ValueActionModifierProtocol {
+package protocol ValueActionModifierProtocol {
     associatedtype Value: Equatable
 
     var value: Value { get }
@@ -172,14 +172,14 @@ protocol ValueActionModifierProtocol {
 
 // MARK: - ValueActionDispatcher
 
-struct ValueActionDispatcher<Modifier>: StatefulRule, AsyncAttribute where Modifier: ValueActionModifierProtocol {
+package struct ValueActionDispatcher<Modifier>: StatefulRule, AsyncAttribute where Modifier: ValueActionModifierProtocol {
     @Attribute var modifier: Modifier
     @Attribute var phase: _GraphInputs.Phase
     var oldValue: Modifier?
     var lastResetSeed: UInt32 = .zero
     var cycleDetector: UpdateCycleDetector = .init()
 
-    init(
+    package init(
         modifier: Attribute<Modifier>,
         phase: Attribute<_GraphInputs.Phase>
     ) {
@@ -187,9 +187,9 @@ struct ValueActionDispatcher<Modifier>: StatefulRule, AsyncAttribute where Modif
         self._phase = phase
     }
 
-    typealias Value = Void
+    package typealias Value = Void
 
-    mutating func updateValue() {
+    package mutating func updateValue() {
         if lastResetSeed != phase.resetSeed {
             lastResetSeed = phase.resetSeed
             oldValue = nil
@@ -207,7 +207,7 @@ struct ValueActionDispatcher<Modifier>: StatefulRule, AsyncAttribute where Modif
             return
         }
         let oldValue = oldValue
-        Update.enqueueAction { // FIXME: Update.enqueueAction(reason:)
+        Update.enqueueAction(reason: .onChange) {
             newValue.sendAction(old: oldValue)
         }
     }
@@ -340,21 +340,21 @@ extension View {
 
 // MARK: - ValueActionModifier2
 
-struct _ValueActionModifier2<Value>: ViewModifier, PrimitiveViewModifier, ValueActionModifierProtocol where Value: Equatable {
-    var value: Value
+package struct _ValueActionModifier2<Value>: ViewModifier, PrimitiveViewModifier, ValueActionModifierProtocol where Value: Equatable {
+    package var value: Value
 
     var action: (Value, Value) -> ()
 
-    init(value: Value, action: @escaping (Value, Value) -> Void) {
+    package init(value: Value, action: @escaping (Value, Value) -> Void) {
         self.value = value
         self.action = action
     }
 
-    func sendAction(old: Self?) {
+    package func sendAction(old: Self?) {
         action((old ?? self).value, value)
     }
 
-    nonisolated static func _makeView(
+    nonisolated package static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
@@ -367,7 +367,7 @@ struct _ValueActionModifier2<Value>: ViewModifier, PrimitiveViewModifier, ValueA
         return body(_Graph(), inputs)
     }
 
-    nonisolated static func _makeViewList(
+    nonisolated package static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
@@ -467,7 +467,7 @@ private struct ValueActionDispatcher3<Value>: StatefulRule, AsyncAttribute where
             return
         }
         let transaction = Graph.withoutUpdate { self.transaction }
-        Update.enqueueAction { // FIXME: Update.enqueueAction(reason:)
+        Update.enqueueAction(reason: .onChange) {
             modifier.action(oldValue, newValue, transaction)
         }
     }

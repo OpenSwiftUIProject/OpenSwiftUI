@@ -1700,9 +1700,10 @@ public struct LayoutSubview: Equatable {
 
     package func place(at position: CGPoint, anchor: UnitPoint = .topLeading, dimensions: ViewDimensions) {
         let origin = CGRect(position: position, size: dimensions.size.value, anchor: anchor).origin
-        guard !origin.isNaN else {
-            preconditionFailure("view origin is invalid: \(position), \(anchor), \(dimensions.size.value)")
-        }
+        precondition(
+            !origin.isNaN,
+            "view origin is invalid: \(position), \(anchor), \(dimensions.size.value)"
+        )
         place(in: ViewGeometry(origin: origin, dimensions: dimensions))
     }
 

@@ -1,11 +1,8 @@
 //
 //  HostPreferencesKeyTests.swift
-//
-//
-//  Created by Kyle on 2024/2/4.
-//
+//  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
+import OpenSwiftUICore
 import Testing
 
 struct HostPreferencesKeyTests {
@@ -75,7 +72,7 @@ struct HostPreferencesKeyTests {
         value[EnumKey.self] = .init(value: enumValues[0], seed: .init(value: 2))
         value[DoubleKey.self] = .init(value: doubleValues[0], seed: .init(value: 3))
         #expect(value.description == """
-        372598479: [DoubleKey = \(doubleValues[0]), EnumKey = \(enumValues[0]), IntKey = \(intValues[0])]
+        406812593: [Int = \(intValues[0]), Double = \(doubleValues[0]), Enum = \(enumValues[0])]
         """)
         HostPreferencesKey.reduce(value: &value) {
             var nextValue = HostPreferencesKey.defaultValue
@@ -83,12 +80,12 @@ struct HostPreferencesKeyTests {
             nextValue[EnumKey.self] = .init(value: enumValues[1], seed: .init(value: 5))
             nextValue[DoubleKey2.self] = .init(value: doubleValues[2], seed: .init(value: 6))
             #expect(nextValue.description == """
-            3126765658: [DoubleKey2 = \(doubleValues[2]), EnumKey = \(enumValues[1]), IntKey2 = \(intValues[2])]
+            3094492369: [Enum = \(enumValues[1]), IntKey2 = \(intValues[2]), DoubleKey2 = \(doubleValues[2])]
             """)
             return nextValue
         }
         #expect(value.description == """
-        1584719037: [IntKey2 = \(intValues[2]), DoubleKey2 = \(doubleValues[2]), IntKey = \(intValues[0]), EnumKey = \(expectedEnumValues[0]), DoubleKey = \(doubleValues[0])]
+        2778966965: [Int = \(intValues[0]), Double = \(doubleValues[0]), Enum = \(expectedEnumValues[0]), IntKey2 = \(intValues[2]), DoubleKey2 = \(doubleValues[2])]
         """)
         HostPreferencesKey.reduce(value: &value) {
             var nextValue = HostPreferencesKey.defaultValue
@@ -96,18 +93,18 @@ struct HostPreferencesKeyTests {
             nextValue[EnumKey.self] = .init(value: enumValues[2], seed: .init(value: 8))
             nextValue[IntKey.self] = .init(value: intValues[1], seed: .init(value: 9))
             #expect(nextValue.description == """
-            1190677337: [IntKey = \(intValues[1]), EnumKey = \(enumValues[2]), DoubleKey = \(doubleValues[1])]
+            944542463: [Int = \(intValues[1]), Double = \(doubleValues[1]), Enum = \(enumValues[2])]
             """)
             nextValue[DoubleKey2.self] = .init(value: doubleValues[3], seed: .init(value: 7))
             nextValue[EnumKey.self] = .init(value: enumValues[3], seed: .init(value: 8))
             nextValue[IntKey2.self] = .init(value: intValues[3], seed: .init(value: 9))
             #expect(nextValue.description == """
-            1148928659: [IntKey2 = \(intValues[3]), EnumKey = \(enumValues[3]), DoubleKey = \(doubleValues[1]), IntKey = \(intValues[1]), DoubleKey2 = \(doubleValues[3])]
+            2312584443: [Int = \(intValues[1]), Double = \(doubleValues[1]), Enum = \(enumValues[3]), IntKey2 = \(intValues[3]), DoubleKey2 = \(doubleValues[3])]
             """)
             return nextValue
         }
         #expect(value.description == """
-        2384310348: [DoubleKey = \(expectedDoubleValues[0]), EnumKey = \(expectedEnumValues[1]), IntKey = \(expectedIntValues[0]), DoubleKey2 = \(expectedDoubleValues[1]), IntKey2 = \(expectedIntValues[1])]
+        576425678: [Int = \(expectedIntValues[0]), Double = \(expectedDoubleValues[0]), Enum = \(expectedEnumValues[1]), IntKey2 = \(expectedIntValues[1]), DoubleKey2 = \(expectedDoubleValues[1])]
         """)
     }
 }

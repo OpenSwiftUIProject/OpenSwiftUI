@@ -120,6 +120,16 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time
+        
+        @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderAsync")
+        package func swiftUI_renderAsync(
+            to list: DisplayList,
+            time: Time,
+            nextTime: Time,
+            targetTimestamp: Time?,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version
+        ) -> Time?
         #endif
 
         package func render(
@@ -138,7 +148,14 @@ extension DisplayList {
             return time + maxInterval
         }
         
-        package func renderAsync(to list: DisplayList, time: Time, nextTime: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
+        package func renderAsync(
+            to list: DisplayList,
+            time: Time,
+            nextTime: Time,
+            targetTimestamp: Time?,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version
+        ) -> Time? {
             guard !configChanged, let renderer else {
                 return nil
             }

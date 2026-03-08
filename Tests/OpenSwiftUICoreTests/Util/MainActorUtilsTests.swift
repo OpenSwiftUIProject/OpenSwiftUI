@@ -15,13 +15,13 @@ struct MainActorUtilsTests {
     @MainActor
     func mainActorOperation() {
         Semantics.v6.test {
-            MainActor.assumeIsolatedIfLinkedOnOrAfterV6 {
+            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v6) {
                 let a = A()
                 a.foo()
             }
         }
         Semantics.v5.test {
-            MainActor.assumeIsolatedIfLinkedOnOrAfterV6 {
+            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v6) {
                 let a = A()
                 a.foo()
             }
@@ -33,7 +33,7 @@ struct MainActorUtilsTests {
         // TODO: swift-testing does not exist yet
         // Expect crash (Need to fork and crash to avoid affect other Semantics.force check on main actor)
 //        Semantics.v6.test {
-//            MainActor.assumeIsolatedIfLinkedOnOrAfterV6 {
+//            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v6) {
 //                let a = A()
 //                a.foo()
 //            }

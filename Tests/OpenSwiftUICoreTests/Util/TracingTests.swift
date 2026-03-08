@@ -6,12 +6,11 @@
 import OpenAttributeGraphShims
 import Testing
 
-@Suite(.disabled(if: !attributeGraphEnabled, "Not implemented in OAG yet"))
+@Suite(.disabled(if: attributeGraphVendor == .oag, "Not implemented in OAG yet"))
 struct TracingTests {
     struct Demo {}
     
     @Test(
-        .disabled(if: !attributeGraphEnabled, "OAGTypeDescription is not implemented yet"),
         arguments: [
             (type: Int.self, nominalName: "Int"),
             (type: String.self, nominalName: "String"),
@@ -23,7 +22,6 @@ struct TracingTests {
     }
     
     @Test(
-        .enabled(if: swiftToolchainSupported),
         arguments: [
             (type: Int.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),
             (type: String.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),

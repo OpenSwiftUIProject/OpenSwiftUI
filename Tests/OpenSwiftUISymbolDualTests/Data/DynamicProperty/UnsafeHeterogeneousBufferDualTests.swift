@@ -3,8 +3,10 @@
 //  OpenSwiftUISymbolDualTests
 
 #if canImport(SwiftUI, _underlyingVersion: 6.5.4)
+#if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
+@_private(sourceFile: "UnsafeHeterogeneousBuffer.swift")
+#endif
 @_spi(ForOpenSwiftUIOnly)
-@testable
 import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 import Testing
@@ -60,9 +62,11 @@ struct UnsafeHeterogeneousBufferDualTests {
             let index = buffer.swiftUI_append(UInt32(1), vtable: VTable<Int32>.self)
             #expect(buffer.swiftUI_isEmpty == false)
             #expect(index == buffer.index(atOffset: 0))
+            #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
             #expect(index.index == 0)
             #expect(index.offset == 0)
             #expect(buffer.available == 32)
+            #endif
             #expect(buffer.count == 1)
             let element = buffer[swiftUI: index]
             #expect(element.body(as: UInt32.self).pointee == 1)
@@ -72,9 +76,11 @@ struct UnsafeHeterogeneousBufferDualTests {
             let index = buffer.swiftUI_append(Int(-1), vtable: VTable<Int>.self)
             #expect(buffer.swiftUI_isEmpty == false)
             #expect(index == buffer.index(atOffset: 1))
+            #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
             #expect(index.index == 1)
             #expect(index.offset == 32)
             #expect(buffer.available == 0)
+            #endif
             #expect(buffer.count == 2)
             let element = buffer[swiftUI: index]
             #expect(element.body(as: Int.self).pointee == -1)
@@ -84,9 +90,11 @@ struct UnsafeHeterogeneousBufferDualTests {
             let index = buffer.swiftUI_append(Double.infinity, vtable: VTable<Double>.self)
             #expect(buffer.swiftUI_isEmpty == false)
             #expect(index == buffer.index(atOffset: 2))
+            #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
             #expect(index.index == 2)
             #expect(index.offset == 64)
             #expect(buffer.available == 32)
+            #endif
             #expect(buffer.count == 3)
             let element = buffer[swiftUI: index]
             #expect(element.body(as: Double.self).pointee == Double.infinity)

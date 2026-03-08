@@ -2,7 +2,7 @@
 //  UIKitConversions.swift
 //  OpenSwiftUI
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: 6DC24D5146AF4B80347A1025025F68EE (SwiftUI)
 
@@ -14,15 +14,13 @@ import COpenSwiftUI
 
 // MARK: - UIColor Conversions
 
-@available(iOS, introduced: 13.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
+@available(OpenSwiftUI_v1_0, *)
+@available(*, deprecated, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
 @available(macOS, unavailable)
-@available(tvOS, introduced: 13.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
-@available(watchOS, introduced: 6.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
-@available(visionOS, introduced: 1.0, deprecated: 100000.0, message: "Use Color(uiColor:) when converting a UIColor, or create a standard Color directly")
 extension Color {
     /// Creates a color from a UIKit color.
     ///
-    /// Use this method to create a SwiftUI color from a
+    /// Use this method to create a OpenSwiftUI color from a
     /// [UIColor](https://developer.apple.com/documentation/UIKit/UIColor) instance.
     /// The new color preserves the adaptability of the original.
     /// For example, you can create a rectangle using
@@ -60,11 +58,12 @@ extension Color {
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 @available(macOS, unavailable)
 extension Color {
     /// Creates a color from a UIKit color.
     ///
-    /// Use this method to create a SwiftUI color from a
+    /// Use this method to create a OpenSwiftUI color from a
     /// [UIColor](https://developer.apple.com/documentation/UIKit/UIColor) instance.
     /// The new color preserves the adaptability of the original.
     /// For example, you can create a rectangle using
@@ -122,8 +121,8 @@ extension UIColor: ColorProvider {
                     value = kitColor as! UIColor
                 } else {
                     value = UIColor { trait in
-                        // TODO: trait
-                        let resolved = Color.Resolved.clear
+                        let env = trait.resolvedEnvironment(base: trait.environment)
+                        let resolved = color.resolve(in: env)
                         return resolved.kitColor as! UIColor
                     }
                 }
@@ -155,7 +154,9 @@ extension UIColor: ColorProvider {
 // MARK: - UIUserInterfaceStyle Conversions
 
 extension ColorScheme {
+
     /// Creates a color scheme from its user interface style equivalent.
+    @available(OpenSwiftUI_v2_0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     public init?(_ uiUserInterfaceStyle: UIUserInterfaceStyle) {
@@ -169,7 +170,9 @@ extension ColorScheme {
 }
 
 extension UIUserInterfaceStyle {
+
     /// Creates a user interface style from its ColorScheme equivalent.
+    @available(OpenSwiftUI_v2_0, *)
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     public init(_ colorScheme: ColorScheme?) {
@@ -181,14 +184,72 @@ extension UIUserInterfaceStyle {
     }
 }
 
-// MARK: - UIAccessibilityContrast Conversions [TODO]
+// MARK: - UIAccessibilityContrast Conversions
 
-// ColorSchemeContrast
-// UIAccessibilityContrast
+extension ColorSchemeContrast {
 
-// MARK: - UIContentSizeCategory Conversions [WIP]
+    /// Creates a contrast from its accessibility contrast equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init?(_ uiAccessibilityContrast: UIAccessibilityContrast) {
+        switch uiAccessibilityContrast {
+        case .normal: self = .standard
+        case .high: self = .increased
+        default: return nil
+        }
+    }
+}
 
+extension UIAccessibilityContrast {
+
+    /// Create a contrast from its ColorSchemeContrast equivalent.
+    /// 
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init(_ colorSchemeContrast: ColorSchemeContrast?) {
+        switch colorSchemeContrast {
+            case .standard: self = .normal
+            case .increased: self = .high
+            case nil: self = .unspecified
+            @unknown default: _openSwiftUIUnreachableCode()
+        }
+    }
+}
+
+// MARK: - UIContentSizeCategory Conversions
+
+extension ContentSizeCategory {
+
+    /// Create a size category from its UIContentSizeCategory equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init?(_ uiSizeCategory: UIContentSizeCategory) {
+        switch uiSizeCategory {
+        case .extraSmall: self = .extraSmall
+        case .small: self = .small
+        case .medium: self = .medium
+        case .large: self = .large
+        case .extraLarge: self = .extraLarge
+        case .extraExtraLarge: self = .extraExtraLarge
+        case .extraExtraExtraLarge: self = .extraExtraExtraLarge
+        case .accessibilityMedium: self = .accessibilityMedium
+        case .accessibilityLarge: self = .accessibilityLarge
+        case .accessibilityExtraLarge: self = .accessibilityExtraLarge
+        case .accessibilityExtraExtraLarge: self = .accessibilityExtraExtraLarge
+        case .accessibilityExtraExtraExtraLarge: self = .accessibilityExtraExtraExtraLarge
+        default: return nil
+        }
+    }
+}
+
+@available(OpenSwiftUI_v3_0, *)
+@available(macOS, unavailable)
+@available(watchOS, unavailable)
 extension DynamicTypeSize {
+
     /// Create a Dynamic Type size from its `UIContentSizeCategory` equivalent.
     public init?(_ uiSizeCategory: UIContentSizeCategory) {
         switch uiSizeCategory {
@@ -209,8 +270,62 @@ extension DynamicTypeSize {
     }
 }
 
+extension UIContentSizeCategory {
+
+    /// Create a size category from its `ContentSizeCategory` equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init(_ sizeCategory: ContentSizeCategory?) {
+        switch sizeCategory {
+        case .extraSmall: self = .extraSmall
+        case .small: self = .small
+        case .medium: self = .medium
+        case .large: self = .large
+        case .extraLarge: self = .extraLarge
+        case .extraExtraLarge: self = .extraExtraLarge
+        case .extraExtraExtraLarge: self = .extraExtraExtraLarge
+        case .accessibilityMedium: self = .accessibilityMedium
+        case .accessibilityLarge: self = .accessibilityLarge
+        case .accessibilityExtraLarge: self = .accessibilityExtraLarge
+        case .accessibilityExtraExtraLarge: self = .accessibilityExtraExtraLarge
+        case .accessibilityExtraExtraExtraLarge: self = .accessibilityExtraExtraExtraLarge
+        case nil: self = .unspecified
+        @unknown default: _openSwiftUIUnreachableCode()
+        }
+    }
+
+    @available(OpenSwiftUI_v3_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init(_ dynamicTypeSize: DynamicTypeSize?) {
+        switch dynamicTypeSize {
+        case .xSmall: self = .extraSmall
+        case .small: self = .small
+        case .medium: self = .medium
+        case .large: self = .large
+        case .xLarge: self = .extraLarge
+        case .xxLarge: self = .extraExtraLarge
+        case .xxxLarge: self = .extraExtraExtraLarge
+        case .accessibility1: self = .accessibilityMedium
+        case .accessibility2: self = .accessibilityLarge
+        case .accessibility3: self = .accessibilityExtraLarge
+        case .accessibility4: self = .accessibilityExtraExtraLarge
+        case .accessibility5: self = .accessibilityExtraExtraExtraLarge
+        case nil: self = .unspecified
+        @unknown default: _openSwiftUIUnreachableCode()
+        }
+    }
+}
+
+// MARK: UITraitEnvironmentLayoutDirection Conversions
+
 extension LayoutDirection {
+
     /// Create a direction from its UITraitEnvironmentLayoutDirection equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
     public init?(_ uiLayoutDirection: UITraitEnvironmentLayoutDirection) {
         switch uiLayoutDirection {
         case .unspecified:
@@ -226,7 +341,11 @@ extension LayoutDirection {
 }
 
 extension UITraitEnvironmentLayoutDirection {
-    /// Creates a trait environment layout direction from the specified OpenSwiftUI layout direction.
+
+    /// Create a direction from its LayoutDirection equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
     public init(_ layoutDirection: LayoutDirection) {
         switch layoutDirection {
         case .leftToRight: self = .leftToRight
@@ -234,6 +353,156 @@ extension UITraitEnvironmentLayoutDirection {
         }
     }
 }
+
+// MARK: - UILegibilityWeight Conversions
+
+extension LegibilityWeight {
+
+    /// Creates a legibility weight from its UILegibilityWeight equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init?(_ uiLegibilityWeight: UILegibilityWeight) {
+        switch uiLegibilityWeight {
+        case .regular: self = .regular
+        case .bold: self = .bold
+        case .unspecified: return nil
+        @unknown default: return nil
+        }
+    }
+}
+
+extension UILegibilityWeight {
+
+    /// Creates a legibility weight from its LegibilityWeight equivalent.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(watchOS, unavailable)
+    public init(_ legibilityWeight: LegibilityWeight?) {
+        switch legibilityWeight {
+        case .regular: self = .regular
+        case .bold: self = .bold
+        case nil: self = .unspecified
+        @unknown default: _openSwiftUIUnreachableCode()
+        }
+    }
+}
+
+// MARK: - UIUserInterfaceSizeClass Conversions
+
+extension UserInterfaceSizeClass {
+
+    /// Creates a OpenSwiftUI size class from the specified UIKit size class.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public init?(_ uiUserInterfaceSizeClass: UIUserInterfaceSizeClass) {
+        switch uiUserInterfaceSizeClass {
+        case .compact: self = .compact
+        case .regular: self = .regular
+        case .unspecified: return nil
+        @unknown default: return nil
+        }
+    }
+}
+
+extension UIUserInterfaceSizeClass {
+
+    /// Creates a UIKit size class from the specified OpenSwiftUI size class.
+    @available(OpenSwiftUI_v2_0, *)
+    @available(macOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(watchOS, unavailable)
+    public init(_ sizeClass: UserInterfaceSizeClass?) {
+        switch sizeClass {
+        case .compact: self = .compact
+        case .regular: self = .regular
+        case nil: self = .unspecified
+        @unknown default: _openSwiftUIUnreachableCode()
+        }
+    }
+}
+
+// MARK: - Animation Conversions
+
+extension Animation {
+    package var caBasicAnimation: CABasicAnimation? {
+        switch function {
+        case .linear, .circularEaseIn, .circularEaseOut, .circularEaseInOut, .bezier:
+            guard let bezierForm = function.bezierForm else {
+                return nil
+            }
+            let animation = CABasicAnimation()
+            animation.timeOffset = 0
+            animation.speed = 1
+            let timingFunction = CAMediaTimingFunction(
+                controlPoints: Float(bezierForm.cp1.x),
+                Float(bezierForm.cp1.y),
+                Float(bezierForm.cp2.x),
+                Float(bezierForm.cp2.y)
+            )
+            animation.timingFunction = timingFunction
+            animation.duration = bezierForm.duration
+            return animation
+        case let .spring(duration, mass, stiffness, damping, initialVelocity):
+            let animation = CASpringAnimation()
+            animation.timeOffset = 0
+            animation.speed = 1
+            animation.duration = duration
+            animation.mass = mass
+            animation.stiffness = stiffness
+            animation.damping = damping
+            animation.initialVelocity = initialVelocity
+            return animation
+        default:
+            return nil
+        }
+    }
+
+    package static func uiViewAnimation(curve: Int, duration: Double) -> Animation? {
+        switch curve {
+        case 0: .easeInOut(duration: duration)
+        case 1: .easeIn(duration: duration)
+        case 2: .easeOut(duration: duration)
+        case 3: .linear(duration: duration)
+        case 4: .timingCurve(0.66, 0, 0.33, 1.0, duration: duration)
+        case 5: .coreAnimationDefault(duration: duration)
+        case 6: .easeInOut(duration: duration)
+        case 7: .interpolatingSpring(mass: 3.0, stiffness: 1000.0, damping: 500.0, initialVelocity: 0.0)
+        default: nil
+        }
+    }
+}
+
+// MARK: - Transaction + UIView Animation
+
+extension Transaction {
+    package static func currentUIViewTransaction(canDisableAnimations: Bool) -> Transaction? {
+        if canDisableAnimations, !UIView.areAnimationsEnabled {
+            var transaction = Transaction()
+            transaction.disablesAnimations = true
+            return transaction
+        }
+        guard UIView._isInAnimationBlockWithAnimationsEnabled else {
+            return nil
+        }
+        let duration = UIView._currentAnimationDuration
+        let curve = UIView._currentAnimationCurve
+        guard let animation = Animation.uiViewAnimation(curve: curve, duration: duration) else {
+            return nil
+        }
+        var transaction = Transaction(animation: animation)
+        if let item = _CATransactionCompletionItem() {
+            transaction.addAnimationListener {
+                item.invalidate()
+            }
+        }
+        return transaction
+    }
+}
+
+// WIP
 
 // MARK: - UIUserInterfaceIdiom Conversions
 

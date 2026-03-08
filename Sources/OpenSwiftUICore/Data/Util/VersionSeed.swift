@@ -15,8 +15,8 @@ package struct VersionSeed: CustomStringConvertible {
     @inlinable
     package var isInvalid: Bool { value == VersionSeed.invalid.value }
     
-    @inline(__always)
-    var isEmpty: Bool { value == VersionSeed.empty.value }
+    @inlinable
+    package var isEmpty: Bool { value == VersionSeed.empty.value }
     
     var value: UInt32
     

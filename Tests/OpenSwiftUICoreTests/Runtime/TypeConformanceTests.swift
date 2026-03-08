@@ -17,7 +17,7 @@ struct TestProtocolDescriptor: ProtocolDescriptor {
     }
 }
 
-@Suite(.enabled(if: swiftToolchainSupported))
+@Suite
 struct TypeConformanceTests {
     struct P1: TestProtocol {}
     struct P2 {}

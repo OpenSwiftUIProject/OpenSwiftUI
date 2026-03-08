@@ -60,18 +60,18 @@ package struct DynamicLayoutMap {
         let index = map.partitionPoint { (id, value) in
             DynamicContainerID(uniqueId: uniqueId, viewIndex: 0) <= id
         }
-        var endIndex = index
         guard index != map.count else {
             return
         }
-        while endIndex != map.count {
-            let indexUniqueId = map[index].id.uniqueId
-            guard indexUniqueId == uniqueId else {
+        var currentIndex = index
+        repeat {
+            let currentUniqueId = map[currentIndex].id.uniqueId
+            guard currentUniqueId == uniqueId else {
                 break
             }
-            endIndex &+= 1
-        }
-        map.removeSubrange(index ..< endIndex)
+            currentIndex &+= 1
+        } while currentIndex != map.count
+        map.removeSubrange(index ..< currentIndex)
         sortedSeed = .zero
     }
 

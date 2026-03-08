@@ -138,21 +138,7 @@ let isXcodeEnv = envStringValue("__CFBundleIdentifier", searchInDomain: false) =
 let development = envBoolValue("DEVELOPMENT", default: false)
 let warningsAsErrorsCondition = envBoolValue("WERROR", default: isXcodeEnv && development)
 
-let libSwiftPath = {
-    // From Swift toolchain being installed or from Swift SDK.
-    guard let libSwiftPath = envStringValue("LIB_SWIFT_PATH") else {
-        // Fallback when LIB_SWIFT_PATH is not set
-        let swiftBinPath = envStringValue("BIN_SWIFT_PATH") ?? envStringValue("_", searchInDomain: false) ?? "/usr/bin/swift"
-        let swiftBinURL = URL(fileURLWithPath: swiftBinPath)
-        let SDKPath = swiftBinURL.deletingLastPathComponent().deletingLastPathComponent().deletingLastPathComponent().path
-        return SDKPath.appending("/usr/lib/swift")
-    }
-    return libSwiftPath
-}()
-
-let swiftToolchainPath = envStringValue("SWIFT_TOOLCHAIN_PATH") ?? (development ? "/Volumes/BuildMachine/swift-project" : "")
-let swiftToolchainVersion = envStringValue("SWIFT_TOOLCHAIN_VERSION") ?? (development ? "6.0.2" : "")
-let swiftToolchainSupported = envBoolValue("SWIFT_TOOLCHAIN_SUPPORTED", default: !swiftToolchainVersion.isEmpty)
+let swiftCorelibsPath = envStringValue("LIB_SWIFT_PATH") ?? "\(Context.packageDirectory)/Sources/SwiftCorelibs/include"
 
 let releaseVersion = envIntValue("TARGET_RELEASE", default: 2024)
 
@@ -160,8 +146,12 @@ let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: build
 let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
 let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
-let attributeGraphCondition = envBoolValue("ATTRIBUTEGRAPH", default: buildForDarwinPlatform && !isSPIBuild)
-let renderBoxCondition = envBoolValue("OPENRENDERBOX_RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
+
+// For OpenAttributeGraphShims
+let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
+let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: false)
+
+let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
 // For #39
 let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
@@ -193,21 +183,26 @@ let bridgeFramework = envStringValue("OPENSWIFTUI_BRIDGE_FRAMEWORK", default: "S
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
 let supportMultiProducts: Bool = envBoolValue("SUPPORT_MULTI_PRODUCTS", default: true)
 
+/// CGFloat and CGRect def in CFCGTypes.h will conflict with Foundation's CGSize/CGRect def on Linux.
+/// macOS: true -> no issue
+/// macOS: false -> use Swift implementation with OpenCoreGraphics Swift CGPath
+/// Linux: true + No CGPathRef support in ORBPath -> confilict with Foundation def
+/// Linux: false -> use Swift implementation with OpenCoreGraphics Swift CGPath
+let cfCGTypes = envBoolValue("CF_CGTYPES", default: buildForDarwinPlatform)
+
 // MARK: - Shared Settings
 
 var sharedCSettings: [CSetting] = [
-    .unsafeFlags(["-I", libSwiftPath], .when(platforms: .nonDarwinPlatforms)),
     .define("NDEBUG", .when(configuration: .release)),
     .unsafeFlags(["-fmodules"]),
-    .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
 var sharedCxxSettings: [CXXSetting] = [
-    .unsafeFlags(["-I", libSwiftPath], .when(platforms: .nonDarwinPlatforms)),
     .unsafeFlags(["-fcxx-modules"]),
-    .define("__COREFOUNDATION_FORSWIFTFOUNDATIONONLY__", to: "1", .when(platforms: .nonDarwinPlatforms)),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
 var sharedSwiftSettings: [SwiftSetting] = [
@@ -220,50 +215,9 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .swiftLanguageMode(.v5),
 
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
+    .unsafeFlags(["-Xfrontend", "-experimental-spi-only-imports"]),
 ]
 
-// Modified from: https://github.com/swiftlang/swift/blob/main/SwiftCompilerSources/Package.swift
-//
-// Create a couple of symlinks to an existing Ninja build:
-//
-//     ```shell
-//     cd $OPENSWIFTUI_SWIFT_TOOLCHAIN_PATH
-//     mkdir -p build/Default
-//     ln -s build/<Ninja-Build>/llvm-<os+arch> build/Default/llvm
-//     ln -s build/<Ninja-Build>/swift-<os+arch> build/Default/swift
-//     ```
-//
-// where <$OPENSWIFTUI_SWIFT_TOOLCHAIN_PATH> is the parent directory of the swift repository.
-
-if !swiftToolchainPath.isEmpty {
-    sharedCSettings.append(
-        .unsafeFlags(
-            [
-                "-static",
-                "-DCOMPILED_WITH_SWIFT",
-                "-DPURE_BRIDGING_MODE",
-                "-UIBOutlet", "-UIBAction", "-UIBInspectable",
-                "-I\(swiftToolchainPath)/swift/include",
-                "-I\(swiftToolchainPath)/swift/stdlib/public/SwiftShims",
-                "-I\(swiftToolchainPath)/llvm-project/llvm/include",
-                "-I\(swiftToolchainPath)/llvm-project/clang/include",
-                "-I\(swiftToolchainPath)/build/Default/swift/include",
-                "-I\(swiftToolchainPath)/build/Default/llvm/include",
-                "-I\(swiftToolchainPath)/build/Default/llvm/tools/clang/include",
-                "-DLLVM_DISABLE_ABI_BREAKING_CHECKS_ENFORCING", // Required to fix LLVM link issue
-            ]
-        )
-    )
-}
-if !swiftToolchainVersion.isEmpty {
-    sharedCSettings.append(
-        .define("OPENSWIFTUI_SWIFT_TOOLCHAIN_VERSION", to: swiftToolchainVersion)
-    )
-}
-if swiftToolchainSupported {
-    sharedCSettings.append(.define("OPENSWIFTUI_SWIFT_TOOLCHAIN_SUPPORTED"))
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_SWIFT_TOOLCHAIN_SUPPORTED"))
-}
 if releaseVersion >= 2021 {
     for year in 2021 ... releaseVersion {
         sharedSwiftSettings.append(.define("OPENSWIFTUI_SUPPORT_\(year)_API"))
@@ -374,6 +328,15 @@ if enableRuntimeConcurrencyCheck {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_ENABLE_RUNTIME_CONCURRENCY_CHECK"))
 }
 
+if cfCGTypes {
+    sharedCSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_CF_CGTYPES"))
+    sharedCSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+    sharedCxxSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+    sharedSwiftSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
+}
+
 // MARK: - Extension
 
 extension Target {
@@ -384,6 +347,28 @@ extension Target {
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
         self.swiftSettings = swiftSettings
+
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+        self.cxxSettings = cxxSettings
+    }
+
+    func addComputeSettings() {
+        var swiftSettings = swiftSettings ?? []
+        swiftSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+        self.swiftSettings = swiftSettings
+
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+        self.cxxSettings = cxxSettings
     }
 
     func addRBSettings() {
@@ -391,8 +376,16 @@ extension Target {
         // "could not determine executable path for bundle 'RenderBox.framework'"
         dependencies.append(.product(name: "RenderBox", package: "DarwinPrivateFrameworks"))
         var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENRENDERBOX_RENDERBOX"))
+        swiftSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
         self.swiftSettings = swiftSettings
+
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
+        self.cxxSettings = cxxSettings
     }
 
     func addCoreUISettings() {
@@ -418,6 +411,16 @@ extension Target {
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
         self.swiftSettings = swiftSettings
+    }
+
+    func addOpenCombineCSettings() {
+        var cSettings = cSettings ?? []
+        cSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+        self.cSettings = cSettings
+
+        var cxxSettings = cxxSettings ?? []
+        cxxSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
+        self.cxxSettings = cxxSettings
     }
 
     func addSwiftLogSettings() {
@@ -457,6 +460,7 @@ extension [SwiftSetting] {
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_0:\(ignoreAvailability ? minimumVersion : "iOS 13.0, macOS 10.15, tvOS 13.0, watchOS 6.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v1_4:\(ignoreAvailability ? minimumVersion : "iOS 13.4, macOS 10.15.4, tvOS 13.4, watchOS 6.2")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v2_0:\(ignoreAvailability ? minimumVersion : "iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0")"),
+            .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_macOS_v2_0:\(ignoreAvailability ? minimumVersion : "macOS 11.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v2_1:\(ignoreAvailability ? minimumVersion : "iOS 14.2, macOS 11.0, tvOS 14.1, watchOS 7.1")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v2_3:\(ignoreAvailability ? minimumVersion : "iOS 14.5, macOS 11.3, tvOS 14.5, watchOS 7.4")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v3_0:\(ignoreAvailability ? minimumVersion : "iOS 15.0, macOS 12.0, tvOS 15.0, watchOS 8.0")"),
@@ -469,6 +473,7 @@ extension [SwiftSetting] {
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_1:\(ignoreAvailability ? minimumVersion : "iOS 17.1, macOS 14.1, tvOS 17.1, watchOS 10.1, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_2:\(ignoreAvailability ? minimumVersion : "iOS 17.2, macOS 14.2, tvOS 17.2, watchOS 10.2, visionOS 1.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_4:\(ignoreAvailability ? minimumVersion : "iOS 17.4, macOS 14.4, tvOS 17.4, watchOS 10.4, visionOS 1.1")"),
+            .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v5_5:\(ignoreAvailability ? minimumVersion : "iOS 17.5, macOS 14.5, tvOS 17.5, watchOS 10.5, visionOS 1.2")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v6_0:\(ignoreAvailability ? minimumVersion : "iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0")"),
             .enableExperimentalFeature("AvailabilityMacro=OpenSwiftUI_v7_0:\(ignoreAvailability ? minimumVersion : "iOS 19.0, macOS 16.0, tvOS 19.0, watchOS 12.0, visionOS 3.0")"),
             .enableExperimentalFeature("AvailabilityMacro=_distantFuture:iOS 99.0, macOS 99.0, tvOS 99.0, watchOS 99.0, visionOS 99.0"),
@@ -797,7 +802,16 @@ if symbolLocatorCondition {
     }
 }
 
-if attributeGraphCondition {
+if computeCondition {
+    openSwiftUICoreTarget.addComputeSettings()
+    openSwiftUITarget.addComputeSettings()
+
+    openSwiftUISPITestTarget.addComputeSettings()
+    openSwiftUICoreTestTarget.addComputeSettings()
+    openSwiftUITestTarget.addComputeSettings()
+    openSwiftUICompatibilityTestTarget.addComputeSettings()
+    openSwiftUIBridgeTestTarget.addComputeSettings()
+} else if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
 
@@ -878,6 +892,7 @@ if openCombineCondition {
     package.dependencies.append(
         .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
     )
+    cOpenSwiftUITarget.addOpenCombineCSettings()
     openSwiftUICoreTarget.addOpenCombineSettings()
     openSwiftUITarget.addOpenCombineSettings()
 }

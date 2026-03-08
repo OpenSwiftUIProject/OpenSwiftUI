@@ -22,9 +22,9 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         UIHostingViewDebugLayer.self
     }
     
-    private var _rootView: Content
+    var _rootView: Content
 
-    private let _base: UIHostingViewBase
+    let _base: UIHostingViewBase
 
     var base: UIHostingViewBase {
         let base = _base
@@ -48,10 +48,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
 
     // final package let eventBindingManager: EventBindingManager
-    
-    package var currentTimestamp: Time = .zero
-
-    package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
 
     var allowUIKitAnimations: Int32 = .zero
 
@@ -124,11 +120,29 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             didChangeColorScheme(from: oldValue)
         }
     }
-    
+
     // TODO
-    
+
+    let feedbackCache: UIKitSensoryFeedbackCache<Content> = .init()
+
+    // TODO
+
+    weak var delegate: UIHostingViewDelegate?
+
     // var currentAccessibilityFocusStore: AccessibilityFocusStore = .init()
-    
+
+    var appliesContainerBackgroundFallbackColor: Bool = false {
+        didSet {
+            updateBackgroundColor()
+        }
+    }
+
+    var containerBackgroundFallbackColor: UIColor? {
+        didSet {
+            updateBackgroundColor()
+        }
+    }
+
     package var accessibilityEnabled: Bool {
         get {
             viewGraph.accessibilityEnabled
@@ -143,8 +157,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             // AccessibilityFocus.changed(from: nil, to: nil, within: self)
         }
     }
-
-    // private weak var delegate: UIHostingViewDelegate?
 
     required public init(rootView: Content) {
         _rootView = rootView
@@ -177,7 +189,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             base.setupNotifications()
         }
         // RepresentableContextValues.current =
-
+        feedbackCache.host = self
         // TODO
         HostingViewRegistry.shared.add(self)
         Update.end()
@@ -254,6 +266,69 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             let oldValue = super.bounds
             super.bounds = newValue
             base.frameDidChange(oldValue: oldValue)
+        }
+    }
+
+    open override var clipsToBounds: Bool {
+        didSet {
+            base.clipsToBoundsDidChange(oldValue: oldValue)
+        }
+    }
+
+    open override func tintColorDidChange() {
+        base.tintColorDidChange()
+    }
+
+    open override func traitCollectionDidChange(_ previousTraitCollection: UITraitCollection?) {
+        updateBackgroundColor()
+        if shouldDisableUIKitAnimations,
+           Semantics.TraitCollectionAnimations.isEnabled,
+           var transaction = Transaction.currentUIViewTransaction(canDisableAnimations: true) {
+            if let viewController, let alwaysOnBridge = viewController.alwaysOnBridge {
+                alwaysOnBridge.configureTransaction(&transaction)
+            }
+            viewGraph.emptyTransaction(transaction)
+        }
+    }
+
+    open override func safeAreaInsetsDidChange() {
+        _safeAreaInsetsDidChange()
+    }
+
+    func _safeAreaInsetsDidChange() {
+        guard safeAreaRegions != [] || !isLinkedOnOrAfter(.v7) else {
+            return
+        }
+        viewController?._viewSafeAreaDidChange()
+        invalidateProperties([.safeArea, .containerSize], mayDeferUpdate: false)
+    }
+
+    open override var backgroundColor: UIColor? {
+        get { super.backgroundColor }
+        set {
+            disabledBackgroundColor = true
+            super.backgroundColor = newValue
+        }
+    }
+
+    package func updateBackgroundColor() {
+        func setBackground(_ color: UIColor?) {
+            guard !disabledBackgroundColor else {
+                return
+            }
+            super.backgroundColor = color
+        }
+        if appliesContainerBackgroundFallbackColor, let containerBackgroundFallbackColor {
+            backgroundColor = containerBackgroundFallbackColor
+            return
+        }
+        guard viewController != nil else {
+            return
+        }
+        if wantsTransparentBackground {
+            super.backgroundColor = nil
+        } else {
+            setBackground(.systemBackground)
         }
     }
 
@@ -438,23 +513,6 @@ extension _UIHostingView {
         invalidateProperties([.safeArea, .containerSize])
     }
     
-    func updateBackgroundColor() {
-        func setBackground(_ color: UIColor?) {
-            guard !disabledBackgroundColor else {
-                return
-            }
-            super.backgroundColor = color
-        }
-        guard viewController != nil else {
-            return
-        }
-        if wantsTransparentBackground {
-            super.backgroundColor = nil
-        } else {
-            setBackground(.systemBackground)
-        }
-    }
-    
     func didChangeColorScheme(from oldColorScheme: ColorScheme?) {
         // TODO
     }
@@ -480,244 +538,9 @@ extension _UIHostingView {
         // TODO
         return false
     }
-}
 
-extension _UIHostingView: ViewRendererHost {
-    package func `as`<T>(_ type: T.Type) -> T? {
-        guard let value = base.as(type) else {
-            // FocusHost
-            if UIViewControllerProvider.self == type {
-                return unsafeBitCast(self as any UIViewControllerProvider, to: T.self)
-            } else { // TODO
-                return nil
-            }
-        }
-        return value
-    }
-
-    package var renderingPhase: ViewRenderingPhase {
-        get { base.renderingPhase }
-        set { base.renderingPhase = newValue }
-    }
-    
-    package var externalUpdateCount: Int {
-        get { base.externalUpdateCount }
-        set { base.externalUpdateCount = newValue }
-    }
-    
-    package func updateEnvironment() {
-        // FIXME
-        var environment = EnvironmentValues()
-        environment.displayScale = traitCollection.displayScale
-        if let displayGamut = DisplayGamut(rawValue: traitCollection.displayGamut.rawValue) {
-            environment.displayGamut = displayGamut
-        }
-        viewGraph.setEnvironment(environment)
-    }
-    
-    package func updateSize() {
-        viewGraph.setProposedSize(bounds.size)
-    }
-    
-    package func updateSafeArea() {
-        let changed = viewGraph.setSafeAreaInsets(hostSafeAreaElements)
-        if changed {
-            invalidateIntrinsicContentSize()
-        }
-    }
-
-    package func updateContainerSize() {
-        // _openSwiftUIUnimplementedFailure()
-    }
-    
-    package func updateRootView() {
-        let rootView = makeRootView()
-        viewGraph.setRootView(rootView)
-    }
-
-    package func outputsDidChange(outputs: ViewGraph.Outputs) {
-        _openSwiftUIUnimplementedWarning()
-    }
-    
     package func focusDidChange() {
         _openSwiftUIUnimplementedWarning()
-    }
-
-    package func requestUpdate(after delay: Double) {
-        base.requestUpdate(after: delay)
-    }
-
-    public func preferencesDidChange() {
-        _openSwiftUIUnimplementedWarning()
-    }
-}
-
-@_spi(Private)
-extension _UIHostingView: HostingViewProtocol {
-    public func convertAnchor<Value>(_ anchor: Anchor<Value>) -> Value {
-        anchor.convert(to: viewGraph.transform)
-    }
-}
-
-// MARK: - _UIHostingView + TestHost [6.4.41]
-
-extension _UIHostingView: TestHost {
-    package func setTestSize(_ size: CGSize) {
-        let newSize: CGSize
-        if size == CGSize.deviceSize {
-            let screenSize = UIDevice.current.screenSize
-            let idiom = UIDevice.current.userInterfaceIdiom
-            if idiom == .pad, screenSize.width < screenSize.height {
-                newSize = CGSize(width: screenSize.height, height: screenSize.width)
-            } else {
-                if idiom == .phone, screenSize.height < screenSize.width {
-                    newSize = CGSize(width: screenSize.height, height: screenSize.width)
-                } else {
-                    newSize = screenSize
-                }
-            }
-        } else {
-            newSize = size
-        }
-        if bounds.size != newSize {
-            allowFrameChanges = true
-            bounds.size = newSize
-            allowFrameChanges = false
-        }
-    }
-
-    package func setTestSafeAreaInsets(_ insets: EdgeInsets) {
-        explicitSafeAreaInsets = insets
-
-    }
-
-    package var testSize: CGSize { bounds.size }
-
-    package var viewCacheIsEmpty: Bool {
-        Update.locked {
-            renderer.viewCacheIsEmpty
-        }
-    }
-
-    package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
-        let tree = preferenceValue(_IdentifiedViewsKey.self)
-        tree.forEach { proxy in
-            var proxy = proxy
-            proxy.adjustment = { [weak self] rect in
-                guard let self else { return }
-                rect = convert(rect, from: nil)
-            }
-            body(proxy)
-        }
-    }
-
-    package func forEachDescendantHost(body: (any TestHost) -> Void) {
-        forEachDescendantHost { (view: UIView) in
-            if let testHost = view as? any TestHost {
-                body(testHost)
-            }
-        }
-    }
-
-    package func renderForTest(interval: Double) {
-        _renderForTest(interval: interval)
-    }
-
-    package var attributeCountInfo: AttributeCountTestInfo {
-        preferenceValue(AttributeCountInfoKey.self)
-    }
-
-    public func _renderForTest(interval: Double) {
-        func shouldContinue() -> Bool {
-            if propertiesNeedingUpdate == [], !CoreTesting.needsRender {
-                false
-            } else {
-                times >= 0
-            }
-        }
-        advanceTimeForTest(interval: interval)
-        _base.canAdvanceTimeAutomatically = false
-        var times = 16
-        repeat {
-            times -= 1
-            CoreTesting.needsRender = false
-            updateGraph { host in
-                host.flushTransactions()
-            }
-            RunLoop.flushObservers()
-            render(targetTimestamp: nil)
-            CATransaction.flush()
-        } while shouldContinue()
-        CoreTesting.needsRender = false
-        _base.canAdvanceTimeAutomatically = true
-    }
-}
-
-extension UIDevice {
-    package var screenSize: CGSize {
-        #if !os(visionOS) || OPENSWIFTUI_INTERNAL_XR_SDK
-        let screenBounds = UIScreen.main.bounds
-        let screenWidth = screenBounds.width
-        let screenHeight = screenBounds.height
-        let orientation = UIDevice.current.orientation
-        let finalWidth: CGFloat
-        let finalHeight: CGFloat
-        switch orientation {
-        case .landscapeLeft, .landscapeRight:
-            // In landscape, swap dimensions to ensure width > height
-            finalWidth = max(screenWidth, screenHeight)
-            finalHeight = min(screenWidth, screenHeight)
-        case .portrait, .portraitUpsideDown:
-            // In portrait, keep original dimensions (height > width)
-            finalWidth = screenWidth
-            finalHeight = screenHeight
-        default:
-            // For other orientations, keep original dimensions
-            finalWidth = screenWidth
-            finalHeight = screenHeight
-        }
-        return CGSize(width: finalWidth, height: finalHeight)
-        #else
-        return .zero
-        #endif
-    }
-}
-
-extension UIView {
-    func forEachDescendantHost(body: (UIView) -> Void) {
-        body(self)
-        for view in subviews {
-            view.forEachDescendantHost(body: body)
-        }
-    }
-}
-
-// MARK: - _UIHostingView + UIHostingViewBaseDelegate [6.5.4]
-
-extension _UIHostingView: UIHostingViewBaseDelegate {
-    package var shouldDisableUIKitAnimations: Bool {
-        guard allowUIKitAnimations == 0,
-              !base.allowUIKitAnimationsForNextUpdate,
-              !isInSizeTransition,
-              !isResizingSheet,
-              !isRotatingWindow,
-              !isTabSidebarMorphing
-        else {
-            return false
-        }
-        return true
-    }
-
-    package func sceneActivationStateDidChange() {
-        _openSwiftUIUnimplementedWarning()
-    }
-}
-
-// MARK: - _UIHostingView + UIViewControllerProvider [6.5.4]
-
-extension _UIHostingView: UIViewControllerProvider {
-    var uiViewController: UIViewController? {
-        viewController
     }
 }
 
@@ -748,6 +571,17 @@ extension _UIHostingView {
             // navigationBridge?.updateViewInputs(&inputs)
         }
     }
+}
+
+// MARK: - UIHostingViewDelegate
+
+package protocol UIHostingViewDelegate: AnyObject {
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didMoveTo window: UIWindow?) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willUpdate environment: inout EnvironmentValues) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didUpdate environment: EnvironmentValues) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePreferences preferences: PreferenceValues) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, didChangePlatformItemList itemList: PlatformItemList) where V: View
+    func hostingView<V>(_ hostingView: _UIHostingView<V>, willModifyViewInputs inputs: inout _ViewInputs) where V: View
 }
 
 #endif

@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Image resolving
+//  Status: Complete
 //  ID: 6A2330B0C22A93F083499CFD6C3BD5B1 (SwiftUICore)
 
 public import Foundation
@@ -16,13 +16,14 @@ private struct VariableBlurEffect: EnvironmentalModifier, Equatable {
     var isOpaque: Bool
 
     typealias ResolvedModifier = VariableBlurStyle
-    
+
     func resolve(in environment: EnvironmentValues) -> VariableBlurStyle {
-        // TODO: Image resolving
+        let context = ImageResolutionContext(environment: environment)
+        let resolved = mask.resolve(in: context)
         return VariableBlurStyle(
             radius: radius,
             isOpaque: isOpaque,
-            mask: .none
+            mask: .image(resolved.image)
         )
     }
 }

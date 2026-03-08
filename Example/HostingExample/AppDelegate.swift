@@ -63,30 +63,4 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     }
 }
 
-final class WindowController: NSWindowController {
-    init() {
-        super.init(window: nil)
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    override var windowNibName: NSNib.Name? { "" }
-
-    lazy var viewController = ViewController()
-
-    override func loadWindow() {
-        window = NSWindow(contentRect: .init(x: 0, y: 0, width: 500, height: 300), styleMask: [.titled, .closable, .miniaturizable], backing: .buffered, defer: false)
-        window?.center()
-    }
-
-    override func windowDidLoad() {
-        super.windowDidLoad()
-
-        contentViewController = viewController
-    }
-}
-
 #endif

@@ -8,7 +8,7 @@ import Testing
 
 // MARK: - MetadataAdditionsTests
 
-@Suite(.enabled(if: swiftToolchainSupported))
+@Suite
 struct MetadataAdditionsTests {
     class T1 {}
 

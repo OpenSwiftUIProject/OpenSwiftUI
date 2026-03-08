@@ -9,10 +9,10 @@
 
 public import AppKit
 
-/// An AppKit view controller that hosts SwiftUI view hierarchy.
+/// An AppKit view controller that hosts OpenSwiftUI view hierarchy.
 ///
-/// Create an `NSHostingController` object when you want to integrate SwiftUI
-/// views into an AppKit view hierarchy. At creation time, specify the SwiftUI
+/// Create an `NSHostingController` object when you want to integrate OpenSwiftUI
+/// views into an AppKit view hierarchy. At creation time, specify the OpenSwiftUI
 /// view you want to use as the root view for this view controller; you can
 /// change that view later using the ``NSHostingController/rootView`` property.
 /// Use the hosting controller like you would any other view controller, by
@@ -26,10 +26,10 @@ public import AppKit
 open class NSHostingController<Content>: NSViewController where Content: View {
     var host: NSHostingView<Content>
 
-    /// Creates a hosting controller object that wraps the specified SwiftUI
+    /// Creates a hosting controller object that wraps the specified OpenSwiftUI
     /// view.
     ///
-    /// - Parameter rootView: The root view of the SwiftUI view hierarchy that
+    /// - Parameter rootView: The root view of the OpenSwiftUI view hierarchy that
     ///   you want to manage using the hosting view controller.
     public init(rootView: Content) {
         // TODO
@@ -39,11 +39,11 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     }
 
     /// Creates a hosting controller object from an archive and the specified
-    /// SwiftUI view.
+    /// OpenSwiftUI view.
     ///
     /// - Parameters:
     ///   - coder: The decoder to use during initialization.
-    ///   - rootView: The root view of the SwiftUI view hierarchy that you want
+    ///   - rootView: The root view of the OpenSwiftUI view hierarchy that you want
     ///     to manage using this view controller.
     public init?(coder: NSCoder, rootView: Content) {
         // TODO
@@ -54,6 +54,7 @@ open class NSHostingController<Content>: NSViewController where Content: View {
 
     func _commonInit() {
         host.viewController = self
+        self.view = host
     }
 
     /// Creates a hosting controller object from the contents of the specified
@@ -68,11 +69,9 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     public required init?(coder: NSCoder) {
         preconditionFailure("init(coder:) must be implemented in a subclass and call super.init(coder:, rootView:)")
     }
-
-    open override func loadView() {
-        view = host
-    }
-
+    
+    /// The root view of the OpenSwiftUI view hierarchy managed by this view
+    /// controller.
     public var rootView: Content {
         get { host.rootView }
         set { host.rootView = newValue }
@@ -88,23 +87,23 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     }
 
     /// The options for how the hosting controller's view creates and updates
-    /// constraints based on the size of its SwiftUI content.
+    /// constraints based on the size of its OpenSwiftUI content.
     ///
     /// NSHostingController can create minimum, maximum, and ideal (content
-    /// size) constraints that are derived from its SwiftUI view content. These
+    /// size) constraints that are derived from its OpenSwiftUI view content. These
     /// constraints are only created when Auto Layout constraints are otherwise
     /// being used in the containing window.
     ///
     /// If the NSHostingController is set as the `contentViewController` of an
     /// `NSWindow`, it will also update the window's `contentMinSize` and
-    /// `contentMaxSize` based on the minimum and maximum size of its SwiftUI
+    /// `contentMaxSize` based on the minimum and maximum size of its OpenSwiftUI
     /// content.
     ///
     /// `sizingOptions` defaults to `.standardBounds` (which includes
     /// `minSize`, `intrinsicContentSize`, and `maxSize`), but can be set to an
     /// explicit value to control this behavior. For instance, setting a value
     /// of `.minSize` will only create the constraints necessary to maintain the
-    /// minimum size of the SwiftUI content, or setting a value of `[]` will
+    /// minimum size of the OpenSwiftUI content, or setting a value of `[]` will
     /// create no constraints at all.
     ///
     /// If a use case can make assumptions about the size of the
@@ -113,7 +112,7 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     /// fewer options can improve performance as it reduces the amount of layout
     /// measurements that need to be performed. If an `NSHostingController` has
     /// a `frame` that is smaller or larger than that required to display its
-    /// SwiftUI content, the content will be centered within that frame.
+    /// OpenSwiftUI content, the content will be centered within that frame.
     public var sizingOptions: NSHostingSizingOptions {
         get { host.sizingOptions }
         set { host.sizingOptions = newValue }
@@ -125,6 +124,55 @@ open class NSHostingController<Content>: NSViewController where Content: View {
     public var safeAreaRegions: SafeAreaRegions {
         get { host.safeAreaRegions }
         set { host.safeAreaRegions = newValue }
+    }
+
+    /// The options for which aspects of the window will be managed by this
+    /// controller's hosting view.
+    ///
+    /// `NSHostingController` will populate certain aspects of its associated
+    /// window, depending on which options are specified.
+    ///
+    /// For example, a hosting controller can manage its window's toolbar by
+    /// including the `.toolbars` option:
+    ///
+    ///     struct RootView: View {
+    ///         var body: some View {
+    ///             ContentView()
+    ///                 .toolbar {
+    ///                     MyToolbarContent()
+    ///                 }
+    ///         }
+    ///     }
+    ///
+    ///     let controller = NSHostingController(rootView: RootView())
+    ///     controller.sceneBridgingOptions = [.toolbars]
+    ///
+    /// When this hosting controller is set as the `contentViewController` for a
+    /// window, the default value for this property will be `.all`, which
+    /// includes the options for `.toolbars` and `.title`. Otherwise, the
+    /// default value is `[]`.
+    public var sceneBridgingOptions: NSHostingSceneBridgingOptions {
+        get { host.sceneBridgingOptions }
+        set { host.sceneBridgingOptions = newValue }
+    }
+
+    open override var preferredContentSize: NSSize {
+        get {
+            if sizingOptions.contains(.preferredContentSize) {
+                return host.idealSize()
+            } else {
+                return super.preferredContentSize
+            }
+        }
+        set {
+            super.preferredContentSize = newValue
+        }
+    }
+
+    open override var identifier: NSUserInterfaceItemIdentifier? {
+        didSet {
+            host.identifier = identifier
+        }
     }
 
     /// Calculates and returns the most appropriate size for the current view.
@@ -140,6 +188,10 @@ open class NSHostingController<Content>: NSViewController where Content: View {
         return result
     }
     
+    public func _render(seconds: Double) {
+        host.render(interval: seconds, targetTimestamp: nil)
+    }
+
     public func _forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
         host.forEachIdentifiedView(body: body)
     }

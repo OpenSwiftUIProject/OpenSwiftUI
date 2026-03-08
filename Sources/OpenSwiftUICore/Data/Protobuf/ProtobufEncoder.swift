@@ -382,6 +382,20 @@ extension ProtobufEncoder {
         try encodeMessage(value)
     }
     
+    /// Encodes an attached value with a hashable key and a data-producing closure.
+    ///
+    /// When an `ArchiveWriter` is available, the data is deduplicated using
+    /// a SHA1 hash and stored as an attachment reference. Otherwise, the data
+    /// is encoded inline at field 2.
+    ///
+    /// - Parameters:
+    ///   - key: A hashable key used for attachment deduplication.
+    ///   - data: A closure that produces the data to encode.
+    package mutating func encodeAttachedValue<Key: Hashable>(key: Key, data: () throws -> Data) throws {
+        // TODO: ArchiveWriter support for attachment deduplication
+        try dataField(2, data())
+    }
+
     /// Encodes a string field.
     ///
     /// - Parameters:
@@ -415,7 +429,7 @@ extension ProtobufEncoder {
     /// - Returns: The encoded binary plist data.
     func binaryPlistData<T>(for value: T) throws -> Data where T: Encodable {
         #if os(WASI)
-        preconditionFailure("PropertyListEncoder is not avaiable on WASI")
+        _openSwiftUIPlatformUnimplementedFailure()
         #else
         let encoder = PropertyListEncoder()
         encoder.outputFormat = .binary

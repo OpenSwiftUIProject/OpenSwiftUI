@@ -90,7 +90,7 @@ final package class _AnyResolvedPaint<P>: AnyResolvedPaint where P: ResolvedPain
         return paint == other.paint
     }
     
-    override package func visit<V>(_ visitor: inout V) where V : ResolvedPaintVisitor {
+    override package func visit<V>(_ visitor: inout V) where V: ResolvedPaintVisitor {
         visitor.visitPaint(paint)
     }
     

@@ -120,7 +120,7 @@ open class GraphHost: CustomReflectable {
     package final var rootSubgraph: Subgraph { data.rootSubgraph }
     private var constants: [ConstantKey: AnyAttribute] = [:]
     private(set) package final var isInstantiated: Bool = false
-    package final var hostPreferenceValues: WeakAttribute<PreferenceList> = WeakAttribute()
+    package final var hostPreferenceValues: WeakAttribute<PreferenceValues> = WeakAttribute()
     package final var lastHostPreferencesSeed: VersionSeed = .invalid
     private final var pendingTransactions: [AsyncTransaction] = []
     package final var inTransaction: Bool = false
@@ -426,17 +426,21 @@ extension GraphHost {
     package final func emptyTransaction(_ transaction: Transaction = .init()) {
         asyncTransaction(transaction, mutation: EmptyGraphMutation())
     }
-    
+
+    // Audited for 6.5.4
     package final func continueTransaction(_ body: @escaping () -> Void) {
         Update.assertIsLocked()
         var host = self
         while !host.inTransaction {
             guard let parent = host.parentHost else {
-                Update.enqueueAction(body)
+                Update.enqueueAction(reason: nil) {
+                    host.asyncTransaction { body() }
+                }
                 return
             }
             host = parent
         }
+        // TODO: CustomEventTrace
         host.continuations.append(body)
     }
     
@@ -492,17 +496,17 @@ extension GraphHost {
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
-        var count = 0
+        var counter = 0
         repeat {
-            let currentContinuations = continuations
+            let oldContinuations = continuations
             continuations = []
-            for currentContinuation in currentContinuations {
-                currentContinuation()
+            for continuation in oldContinuations {
+                continuation()
             }
-            count &+= 1
+            counter &+= 1
             subgraph.update(flags: .transactional)
             postUpdate(!continuations.isEmpty)
-        } while count != 8 && !continuations.isEmpty
+        } while counter != 8 && !continuations.isEmpty
         inTransaction = false
     }
 }
@@ -525,6 +529,8 @@ extension GraphHost {
     }
 }
 
+// MARK: GraphHost + preference [6.5.4]
+
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
     package final func addPreference<K>(_ key: K.Type) where K: HostPreferenceKey {
@@ -539,9 +545,9 @@ extension GraphHost {
         }
     }
     
-    package final func preferenceValues() -> PreferenceList {
+    package final func preferenceValues() -> PreferenceValues {
         instantiateIfNeeded()
-        return hostPreferenceValues.value ?? PreferenceList()
+        return hostPreferenceValues.value ?? PreferenceValues()
     }
     
     package final func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {
@@ -557,7 +563,7 @@ extension GraphHost {
     package final func updatePreferences() -> Bool {
         let seed = hostPreferenceValues.value?.seed ?? .empty
         let lastSeed = lastHostPreferencesSeed
-        let didUpdate = !seed.isInvalid || lastSeed.isInvalid || (seed.value != lastSeed.value)
+        let didUpdate = !seed.isInvalid && !lastSeed.isInvalid && (seed.value != lastSeed.value)
         lastHostPreferencesSeed = seed
         return didUpdate
     }

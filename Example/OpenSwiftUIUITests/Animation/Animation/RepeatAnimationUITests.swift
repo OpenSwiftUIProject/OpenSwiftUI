@@ -31,7 +31,7 @@ struct RepeatAnimationUITests {
                     }
             }
         }
-        withKnownIssue("#340", isIntermittent: true) {
+        withKnownIssue("#690", isIntermittent: true) {
             openSwiftUIAssertAnimationSnapshot(
                 of: ContentView(autoreverses: autoreverses),
                 testName: #function + "\(autoreverses)"

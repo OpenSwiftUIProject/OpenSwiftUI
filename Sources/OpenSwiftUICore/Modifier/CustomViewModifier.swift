@@ -62,7 +62,12 @@ public struct PlaceholderContentView<Value>: View {
     }
 
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
+        #if OPENSWIFTUI_SUPPORT_2025_API
+        // TODO: inputs.cachedViewListCount(type: Self.self)
+        return nil
+        #else
         providerViewListCount(inputs: inputs)
+        #endif
     }
 
     public typealias Body = Never
@@ -161,9 +166,10 @@ extension ViewModifier {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        guard Metadata(Self.self).isValueType else {
-            preconditionFailure("view modifiers must be value types: \(Self.self)")
-        }
+        precondition(
+            Metadata(Self.self).isValueType,
+            "view modifiers must be value types: \(Self.self)"
+        )
         let accessor = ModifierBodyAccessor<Self>()
         return accessor.makeBody(container: modifier, inputs: &inputs, fields: fields)
     }
@@ -217,6 +223,7 @@ extension ViewModifierContentProvider {
         }
     }
 
+    #if !OPENSWIFTUI_SUPPORT_2025_API
     nonisolated fileprivate static func providerViewListCount(
         inputs: _ViewListCountInputs
     ) -> Int? {
@@ -230,6 +237,7 @@ extension ViewModifierContentProvider {
         inputs.customModifierTypes.append(ObjectIdentifier(Self.self))
         return input(inputs)
     }
+    #endif
 }
 
 extension _GraphInputs {
@@ -321,15 +329,17 @@ private struct BodyCountInput<V>: ViewInput {
 
 // MARK: - ModifierBodyAccessor
 
-private struct ModifierBodyAccessor<Container>: BodyAccessor where Container: ViewModifier {
-    typealias Body = Container.Body
+private struct ModifierBodyAccessor<Modifier>: BodyAccessor where Modifier: ViewModifier {
+    typealias Container = Modifier
+
+    typealias Body = Modifier.Body
 
     func updateBody(of container: Container, changed: Bool) {
         guard changed else {
             return
         }
         setBody {
-            container.body(content: Container.Content())
+            container.body(content: .init())
         }
     }
 }

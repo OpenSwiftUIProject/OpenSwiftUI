@@ -115,11 +115,9 @@ package class UIHostingViewBase {
     @inline(__always)
     package var sceneActivationState: UIScene.ActivationState? {
         get {
-            let selector = Selector(("_windowHostingScene"))
             guard let uiView,
                   let window = uiView.window,
-                  window.responds(to: selector),
-                  (window.perform(selector).takeUnretainedValue() as? UIWindowScene) != nil
+                  window._windowHostingScene != nil
             else {
                 return nil
             }
@@ -236,8 +234,24 @@ package class UIHostingViewBase {
         _openSwiftUIUnimplementedFailure()
     }
 
+    @inline(__always)
+    func updateSize() {
+        guard let uiView else { return }
+        viewGraph.setProposedSize(uiView.bounds.size)
+    }
+
     package func updateContainerSize() {
-        _openSwiftUIUnimplementedFailure()
+        guard let uiView else { return }
+        let safeAreaInsets = uiView.safeAreaInsets
+        let insets = EdgeInsets(
+            top: safeAreaInsets.top,
+            leading: safeAreaInsets.left,
+            bottom: safeAreaInsets.bottom,
+            trailing: safeAreaInsets.right
+        )
+        let size = uiView.bounds.size.inset(by: insets)
+        viewGraph.setContainerSize(.fixed(size))
+        _openSwiftUIUnimplementedWarning()
     }
 
     package var updatesAtFullFidelity: Bool {
@@ -255,29 +269,26 @@ package class UIHostingViewBase {
             return
         }
         cancelAsyncRendering()
-        guard updatesAtFullFidelity else {
-            guard pendingPreferencesUpdate else {
+        if updatesAtFullFidelity {
+            view.setNeedsLayout()
+            CoreTesting.needsRender = true
+        } else {
+            guard !pendingPreferencesUpdate else {
                 return
             }
             pendingPreferencesUpdate = true
-            DispatchQueue.main.async { [self] in
-                guard uiView != nil else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else {
                     return
                 }
                 pendingPreferencesUpdate = false
-                guard let host else {
-                    return
-                }
-                guard canAdvanceTimeAutomatically else {
+                guard let host, canAdvanceTimeAutomatically else {
                     return
                 }
                 let interval = renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
                 host.render(interval: interval, updateDisplayList: false, targetTimestamp: nil)
             }
-            return
         }
-        view.setNeedsLayout()
-        CoreTesting.needsRender = true
     }
 
     package func requestUpdate(after delay: Double) {
@@ -410,8 +421,8 @@ package class UIHostingViewBase {
         }
         updateTimer?.invalidate()
         nextTimerTime = updateTime
-        updateTimer = withDelay(delay) { [self] in
-            guard uiView != nil else {
+        updateTimer = withDelay(delay) { [weak self] in
+            guard let self else {
                 return
             }
             updateTimer = nil
@@ -445,7 +456,7 @@ package class UIHostingViewBase {
             if let renderedTime {
                 if renderedTime.seconds.isFinite {
                     let delay = max(renderedTime - currentTimestamp, 1e-6)
-                    requestUpdate(after: delay)
+                    host.requestUpdate(after: delay)
                 }
                 if viewGraph.updateRequiredMainThread {
                     displayLink?.cancelAsyncRendering()
@@ -475,8 +486,22 @@ package class UIHostingViewBase {
 
     // MARK: - UIView related
 
+    @inline(__always)
+    func clipsToBoundsDidChange(oldValue: Bool) {
+        guard let uiView, let host, uiView.clipsToBounds != oldValue else {
+            return
+        }
+        host.invalidateProperties(.transform, mayDeferUpdate: false)
+    }
+
+    @inline(__always)
+    func tintColorDidChange() {
+        guard let host else { return }
+        host.invalidateProperties(.environment)
+    }
+
     package func frameDidChange(oldValue: CGRect) {
-        guard let uiView, let host, uiView.bounds.size != .zero else {
+        guard let uiView, let host, uiView.bounds.size != oldValue.size else {
             return
         }
         var props: ViewRendererHostProperties = [.size, .containerSize]
@@ -918,28 +943,23 @@ final package class DisplayLink: NSObject {
         if nextThread != currentThread, let oldLink = self.link {
             if nextThread == .async {
                 Self.asyncPending = true
-                if Self.asyncRunloop == nil {
-                    let threadName = "org.OpenSwiftUIProject.OpenSwiftUI.AsyncRenderer"
-                    while true {
-                        if Self.asyncThread == nil { // FIXME:
-                            let thread = Thread(
-                                target: DisplayLink.self,
-                                selector: #selector(DisplayLink.asyncThread(with:)),
-                                object: nil
-                            )
-                            thread.qualityOfService = .userInteractive
-                            thread.name = threadName
-                            guard _NSThreadStart(thread) else {
-                                cancelAsyncRendering()
-                                break
-                            }
-                            Self.asyncThread = thread
-                        }
-                        Update.wait()
-                        guard Self.asyncRunloop == nil else {
+                while Self.asyncRunloop == nil {
+                    if Self.asyncThread == nil {
+                        let thread = Thread(
+                            target: DisplayLink.self,
+                            selector: #selector(DisplayLink.asyncThread(with:)),
+                            object: nil
+                        )
+                        thread.qualityOfService = .userInteractive
+                        thread.name = "org.OpenSwiftUIProject.OpenSwiftUI.AsyncRenderer"
+                        guard _NSThreadStart(thread) else {
+                            cancelAsyncRendering()
                             break
                         }
+                        Self.asyncThread = thread
                     }
+                    Update.wait()
+                    Self.asyncPending = true
                 }
             }
             if nextThread != currentThread {

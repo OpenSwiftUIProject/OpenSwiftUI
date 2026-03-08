@@ -1,5 +1,5 @@
 //
-//  PlatformViewDefinition.swift
+//  DisplayListViewPlatform.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
@@ -14,10 +14,13 @@ import Foundation
 #endif
 
 @_spi(DisplayList_ViewSystem)
+@available(OpenSwiftUI_v6_0, *)
 open class PlatformViewDefinition: @unchecked Sendable {
     public struct System: Hashable, Sendable {
         public static let uiView = PlatformViewDefinition.System(base: .uiView)
         public static let nsView = PlatformViewDefinition.System(base: .nsView)
+        static let caLayer = PlatformViewDefinition.System(base: .caLayer)
+
         var base: ViewSystem
     }
     
@@ -115,7 +118,8 @@ extension DisplayList.GraphicsRenderer {
             layer.bounds = CGRect(origin: .zero, size: size)
             layer.layoutIfNeeded()
         }
-        preconditionFailure("Blocked by GraphicsContext")
+        // TODO: Blocked by GraphicsContext
+        _openSwiftUIUnimplementedFailure()
         // ctx.drawLayer
     }
     #endif

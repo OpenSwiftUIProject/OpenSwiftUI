@@ -231,7 +231,7 @@ extension View {
 @available(OpenSwiftUI_v1_0, *)
 extension ObservableObject {
     @usableFromInline
-    static var environmentStore: WritableKeyPath<EnvironmentValues, Self?> {
+    package static var environmentStore: WritableKeyPath<EnvironmentValues, Self?> {
         \EnvironmentValues[EnvironmentObjectKey<Self>()]
     }
 

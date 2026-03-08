@@ -94,4 +94,24 @@
 #endif
 #endif
 
+// Marks functions which return a CF type that needs to be released by the caller but whose names are not consistent with CoreFoundation naming rules. The recommended fix to this is to rename the functions, but this macro can be used to let the clang static analyzer know of any exceptions that cannot be fixed.
+// This macro is ONLY to be used in exceptional circumstances, not to annotate functions which conform to the CoreFoundation naming rules.
+#ifndef OPENSWIFTUI_RETURNS_RETAINED
+#if __has_feature(attribute_cf_returns_retained)
+#define OPENSWIFTUI_RETURNS_RETAINED __attribute__((cf_returns_retained))
+#else
+#define OPENSWIFTUI_RETURNS_RETAINED
+#endif
+#endif
+
+// Marks functions which return a CF type that may need to be retained by the caller but whose names are not consistent with CoreFoundation naming rules. The recommended fix to this is to rename the functions, but this macro can be used to let the clang static analyzer know of any exceptions that cannot be fixed.
+// This macro is ONLY to be used in exceptional circumstances, not to annotate functions which conform to the CoreFoundation naming rules.
+#ifndef OPENSWIFTUI_RETURNS_NOT_RETAINED
+#if __has_feature(attribute_cf_returns_not_retained)
+#define OPENSWIFTUI_RETURNS_NOT_RETAINED __attribute__((cf_returns_not_retained))
+#else
+#define OPENSWIFTUI_RETURNS_NOT_RETAINED
+#endif
+#endif
+
 #endif /* OpenSwiftUIBase_h */

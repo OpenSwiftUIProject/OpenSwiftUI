@@ -501,7 +501,7 @@ package struct StyleContextDescriptor: TupleDescriptor {
 
 extension TypeConformance where P == StyleContextDescriptor {
     package func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: StyleContextVisitor {
-        visitor.pointee.visit(unsafeBitCast(self, to: (any StyleContext.Type).self))
+        visitor.pointee.visit(unsafeExistentialMetatype((any StyleContext.Type).self))
     }
 }
 

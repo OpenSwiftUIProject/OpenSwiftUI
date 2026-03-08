@@ -1,0 +1,55 @@
+//
+//  SymbolEffect.swift
+//  OpenSwiftUICore
+//
+//  Status: Empty
+
+import OpenAttributeGraphShims
+package import OpenRenderBoxShims
+
+package struct _SymbolEffect: Equatable {
+
+    package struct ReplaceConfiguration: Equatable {
+        package init() {
+            // TODO
+        }
+    }
+}
+
+extension _SymbolEffect {
+    package struct Identified: Equatable {
+
+    }
+
+    package struct Phase: Equatable {
+        package init() {
+            // TODO
+        }
+    }
+}
+
+extension EnvironmentValues {
+    package var symbolEffects: [_SymbolEffect.Identified] {
+        get { _openSwiftUIUnimplementedFailure() }
+        set { _openSwiftUIUnimplementedFailure() }
+    }
+
+    package mutating func appendSymbolEffect(
+        _ effect: _SymbolEffect,
+        for identifier: Int
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+extension GraphicsImage {
+    mutating func updateSymbolEffects(
+        _ phase: inout _SymbolEffect.Phase,
+        environment: EnvironmentValues,
+        transaction: Attribute<Transaction>,
+        animationsDisabled: Bool
+    ) -> ORBSymbolAnimator? {
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}

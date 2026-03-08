@@ -5,6 +5,7 @@
 //  Audited for 6.0.87
 //  Status: WIP
 
+package import OpenRenderBoxShims
 #if canImport(Darwin)
 public import CoreGraphics
 #else
@@ -39,6 +40,11 @@ public enum CGBlendMode: Int32, @unchecked Sendable {
     case plusLighter = 27
 }
 #endif
+
+package enum PathDrawingStyle {
+    case fill(FillStyle)
+    case stroke(StrokeStyle)
+}
 
 /// An immediate mode drawing destination, and its current state.
 ///
@@ -116,6 +122,7 @@ public enum CGBlendMode: Int32, @unchecked Sendable {
 /// resolution and color scheme --- to resolve types like ``Image`` and
 /// ``Color`` that appear in the context. You can also access values stored
 /// in the environment for your own purposes.
+@available(OpenSwiftUI_v3_0, *)
 @frozen
 public struct GraphicsContext {
     @usableFromInline
@@ -479,19 +486,54 @@ public struct GraphicsContext {
             self.init(rawValue: CGBlendMode.plusLighter.rawValue)
         }
     }
-    
+
+    // MARK: - GraphicsContext.ClipOptions
+
+    /// Options that affect the use of clip shapes.
+    ///
+    /// Use these options to affect how OpenSwiftUI interprets a clip shape
+    /// when you call ``clip(to:style:options:)`` to add a path to the array of
+    /// clip shapes, or when you call ``clipToLayer(opacity:options:content:)``
+    /// to add a clipping layer.
+    @frozen
+    public struct ClipOptions: OptionSet {
+        public let rawValue: UInt32
+
+        @inlinable
+        public init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        /// An option to invert the shape or layer alpha as the clip mask.
+        ///
+        /// When you use this option, OpenSwiftUI uses `1 - alpha` instead of
+        /// `alpha` for the given clip shape.
+        @inlinable
+        public static var inverse: ClipOptions { Self(rawValue: 1 << 0) }
+    }
+
     // FIXME
     package enum ResolvedShading: Sendable {
         case backdrop(Color.Resolved)
         case color(Color.Resolved)
+        case sRGBColor(ORBColor)
         case style(_ShapeStyle_Pack.Style)
         case levels([GraphicsContext.ResolvedShading])
     }
 }
 
 extension GraphicsContext {
+    #if canImport(Darwin) && _OPENSWIFTUI_SWIFTUI_RENDER
+    @_silgen_name("OpenSwiftUITestStub_GraphicsContextDrawPathWithShadingAndStyle")
+    private func swiftUI_draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle)
+    #endif
+
     package func draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin) && _OPENSWIFTUI_SWIFTUI_RENDER
+        swiftUI_draw(path, with: shading, style: style)
+        #else
+        _openSwiftUIUnimplementedWarning()
+        #endif
     }
 
     // FIXME

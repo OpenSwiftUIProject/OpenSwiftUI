@@ -426,7 +426,7 @@ extension Collection {
                 remaining = half
             } else {
                 low = index(after: mid)
-                remaining = remaining - half - 1
+                remaining &-= (half &+ 1)
             }
         }
         return low

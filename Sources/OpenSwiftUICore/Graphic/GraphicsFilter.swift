@@ -9,7 +9,7 @@ package enum GraphicsFilter {
     case blur(BlurStyle)
     case variableBlur(VariableBlurStyle)
     case averageColor
-    // case shadow(ResolvedShadowStyle)
+    case shadow(ResolvedShadowStyle)
     case projection(ProjectionTransform)
     case colorMatrix(_ColorMatrix, premultiplied: Bool)
     case colorMultiply(Color.Resolved)

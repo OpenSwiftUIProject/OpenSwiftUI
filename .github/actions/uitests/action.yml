@@ -20,16 +20,21 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Install xcbeautify
+      shell: bash
+      run: brew install xcbeautify
+
     - name: Record baseline images with SwiftUI
       shell: bash
       run: |
         cd Example
-        xcodebuild test \
-          -scheme OpenSwiftUIUITests \
-          -configuration SwiftUIDebug \
+        set -o pipefail
+        NSUnbufferedIO=YES xcodebuild test \
+          -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
-          -skipPackagePluginValidation || true
+          -skipPackagePluginValidation \
+          2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified || true
 
     - name: Run UI tests with OpenSwiftUI
       id: uitest
@@ -37,12 +42,13 @@ runs:
       shell: bash
       run: |
         cd Example
-        xcodebuild test \
-          -scheme OpenSwiftUIUITests \
-          -configuration OpenSwiftUIDebug \
+        set -o pipefail
+        NSUnbufferedIO=YES xcodebuild test \
+          -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
-          -skipPackagePluginValidation 2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log
+          -skipPackagePluginValidation \
+          2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions --preserve-unbeautified
 
     - name: Collect failed snapshots
       if: steps.uitest.outcome == 'failure'

@@ -278,9 +278,10 @@ private struct StyleModifierType<M>: AnyStyleModifierType where M: StyleModifier
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<M.StyleBody>, _DynamicPropertyBuffer?) where V: StyleableView {
         if Semantics.ViewStylesMustBeValueTypes.isEnabled {
-            guard Metadata(M.Style.self).isValueType else {
-                preconditionFailure("styles must be value types (either a struct or an enum); \(M.Style.self) is a class.")
-            }
+            precondition(
+                Metadata(M.Style.self).isValueType,
+                "styles must be value types (either a struct or an enum); \(M.Style.self) is a class."
+            )
         }
         let styleModifier = modifier.value.unsafeCast(to: M.self)
         let accessor = StyleBodyAccessor<V, M>(
@@ -373,7 +374,9 @@ private struct StyleBodyAccessor<V, M>: BodyAccessor where V: StyleableView, M: 
             return
         }
         setBody {
-            styleModifier.styleBody(configuration: view.configuration as! M.StyleConfiguration)
+            var styleModifier = styleModifier
+            styleModifier.style = container
+            return styleModifier.styleBody(configuration: view.configuration as! M.StyleConfiguration)
         }
     }
 }

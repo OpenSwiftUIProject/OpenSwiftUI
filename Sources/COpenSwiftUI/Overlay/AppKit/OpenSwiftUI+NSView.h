@@ -13,6 +13,7 @@
 #if OPENSWIFTUI_TARGET_OS_OSX
 
 #import <AppKit/AppKit.h>
+#import <QuartzCore/CALayer.h>
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
@@ -23,6 +24,8 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (void)setFlipped:(BOOL)flipped;
 
 @end
+
+void _SetLayerViewDelegate(CALayer *layer, id view);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

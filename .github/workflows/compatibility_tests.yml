@@ -18,7 +18,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
-      OPENSWIFTUI_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
@@ -34,18 +34,24 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
-          swift test \
+          set -o pipefail
+          NSUnbufferedIO=YES swift test \
             --filter OpenSwiftUICompatibilityTests \
-            --build-path .build-compatibility-test-debug
+            --build-path .build-compatibility-test-debug \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
-          swift test \
+          set -o pipefail
+          NSUnbufferedIO=YES swift test \
             --filter OpenSwiftUICompatibilityTests \
-            --build-path .build-compatibility-test-debug
+            --build-path .build-compatibility-test-debug \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
   compatibility_tests_ios:
@@ -63,7 +69,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
-      OPENSWIFTUI_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
@@ -80,25 +86,31 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
-          xcodebuild test \
-          -scheme OpenSwiftUI \
-          -configuration Debug \
-          -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-          -only-testing:OpenSwiftUICompatibilityTests \
-          -skipMacroValidation \
-          -skipPackagePluginValidation
+          set -o pipefail
+          NSUnbufferedIO=YES xcodebuild test \
+            -scheme OpenSwiftUI \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -only-testing:OpenSwiftUICompatibilityTests \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
       - name: Run compatibility tests on SwiftUI + iOS
         run: |
-          xcodebuild test \
-          -scheme OpenSwiftUI \
-          -configuration Debug \
-          -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
-          -only-testing:OpenSwiftUICompatibilityTests \
-          -skipMacroValidation \
-          -skipPackagePluginValidation
+          set -o pipefail
+          NSUnbufferedIO=YES xcodebuild test \
+            -scheme OpenSwiftUI \
+            -configuration Debug \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -only-testing:OpenSwiftUICompatibilityTests \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1

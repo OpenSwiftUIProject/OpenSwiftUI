@@ -8,7 +8,7 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 #else
 import UIKit
@@ -16,12 +16,10 @@ import UIKit
 
 @main
 struct TestingHostApp: App {
-    #if !OPENSWIFTUI
-    #if canImport(AppKit)
-    @NSApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    @NSApplicationDelegateAdaptor private var appDelegate: AppDelegate
     #else
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var appDelegate
-    #endif
+    @UIApplicationDelegateAdaptor private var appDelegate: AppDelegate
     #endif
 
     var body: some Scene {
@@ -31,7 +29,7 @@ struct TestingHostApp: App {
     }
 }
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 class AppDelegate: NSResponder, NSApplicationDelegate {
     var window: NSWindow?
 

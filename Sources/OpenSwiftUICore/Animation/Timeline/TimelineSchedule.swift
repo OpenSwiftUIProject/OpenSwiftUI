@@ -40,7 +40,7 @@ public protocol TimelineSchedule {
     /// of dates in ascending order. A ``TimelineView`` that you create with a
     /// schedule updates its content at the moments in time corresponding to
     /// the dates included in the sequence.
-    associatedtype Entries: Sequence where Self.Entries.Element == Date
+    associatedtype Entries: Sequence where Entries.Element == Date
 
     /// Provides a sequence of dates starting around a given date.
     ///
@@ -79,7 +79,7 @@ public protocol TimelineSchedule {
     ///   - mode: An indication of whether the schedule updates normally,
     ///     or with some other cadence.
     /// - Returns: A sequence of dates in ascending order.
-    func entries(from startDate: Date, mode: Self.Mode) -> Self.Entries
+    func entries(from startDate: Date, mode: Mode) -> Entries
 }
 
 // MARK: - TimelineScheduleMode

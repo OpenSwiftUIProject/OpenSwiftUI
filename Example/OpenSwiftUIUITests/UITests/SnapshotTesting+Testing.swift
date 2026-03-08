@@ -6,7 +6,7 @@ import SnapshotTesting
 import Testing
 import Foundation
 
-#if canImport(AppKit)
+#if os(macOS)
 import AppKit
 typealias PlatformHostingController = NSHostingController
 typealias PlatformHostingView = NSHostingView
@@ -19,7 +19,7 @@ extension Color {
         self.init(nsColor: platformColor)
     }
 }
-#else
+#elseif os(iOS) || os(visionOS)
 import UIKit
 typealias PlatformHostingController = UIHostingController
 typealias PlatformHostingView = _UIHostingView
@@ -36,8 +36,24 @@ extension Color {
 
 let defaultSize = CGSize(width: 200, height: 200)
 
+#if os(macOS)
+extension Snapshotting where Value == NSViewController, Format == NSImage {
+    /// drawHierarchyInKeyWindow is iOS only parameter, here for compatibility
+    static func image(
+        drawHierarchyInKeyWindow: Bool,
+        precision: Float = 1,
+        perceptualPrecision: Float = 1,
+        size: CGSize? = nil,
+    ) -> Snapshotting {
+        .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size)
+    }
+}
+#endif
+
 func openSwiftUIAssertSnapshot<V: View>(
     of value: @autoclosure () -> V,
+    drawHierarchyInKeyWindow: Bool = false,
+    precision: Float = 1,
     perceptualPrecision: Float = 1,
     size: CGSize = defaultSize,
     named name: String? = nil,
@@ -51,7 +67,7 @@ func openSwiftUIAssertSnapshot<V: View>(
 ) {
     openSwiftUIAssertSnapshot(
         of: PlatformHostingController(rootView: value()),
-        as: .image(perceptualPrecision: perceptualPrecision, size: size),
+        as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, precision: precision, perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
         record: recording,
         timeout: timeout,
@@ -115,6 +131,34 @@ func openSwiftUIAssertSnapshot<V: View, Format>(
     )
 }
 
+// FIXME: Should remove controller in name
+func openSwiftUIControllerAssertSnapshot<V: PlatformViewController, Format>(
+    of value: @autoclosure () -> V,
+    as snapshotting: Snapshotting<PlatformViewController, Format>,
+    named name: String? = nil,
+    record recording: Bool? = shouldRecord,
+    timeout: TimeInterval = 5,
+    fileID: StaticString = #fileID,
+    file filePath: StaticString = #filePath,
+    testName: String = #function,
+    line: UInt = #line,
+    column: UInt = #column
+) {
+    openSwiftUIAssertSnapshot(
+        of: value(),
+        as: snapshotting,
+        named: name,
+        record: recording,
+        timeout: timeout,
+        fileID: fileID,
+        file: filePath,
+        testName: testName,
+        line: line,
+        column: column
+    )
+}
+
+// FIXME: Should be internal, private due to conflict infer
 private func openSwiftUIAssertSnapshot<Value, Format>(
     of value: @autoclosure () -> Value,
     as snapshotting: Snapshotting<Value, Format>,

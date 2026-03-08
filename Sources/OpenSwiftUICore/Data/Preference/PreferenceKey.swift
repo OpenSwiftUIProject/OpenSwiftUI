@@ -4,6 +4,9 @@
 //
 //  Audited for 6.0.87
 //  Status: Complete
+//  ID: 3D8838A231BB2CC7FC00E7880D8B2FC4 (SwiftUICore)
+
+package import OpenAttributeGraphShims
 
 // MARK: - PreferenceKey
 
@@ -141,11 +144,13 @@ package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollect
 // MARK: - HostPreferencesKey
 
 package struct HostPreferencesKey: PreferenceKey {
-    package static var defaultValue: PreferenceList {
-        PreferenceList()
+    package typealias Value = PreferenceValues
+
+    package static var defaultValue: Value {
+        .init()
     }
     
-    package static func reduce(value: inout PreferenceList, nextValue: () -> PreferenceList) {
+    package static func reduce(value: inout Value, nextValue: () -> Value) {
         value.combine(with: nextValue())
     }
     
@@ -154,6 +159,13 @@ package struct HostPreferencesKey: PreferenceKey {
     package static func makeNodeId() -> UInt32 {
         nodeId &+= 1
         return nodeId
+    }
+}
+
+extension PreferencesOutputs {
+    package var hostPreferenceValues: Attribute<PreferenceValues>? {
+        get { self[HostPreferencesKey.self] }
+        set { self[HostPreferencesKey.self] = newValue }
     }
 }
 

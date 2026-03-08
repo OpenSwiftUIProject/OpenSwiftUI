@@ -211,7 +211,7 @@ public struct _ViewInputs {
 @available(*, unavailable)
 extension _ViewInputs: Sendable {}
 
-// MARK: - DynamicStackOrientation [6.0.87]
+// MARK: - DynamicStackOrientation [6.5.4]
 
 package struct DynamicStackOrientation: ViewInput {
     package static let defaultValue: OptionalAttribute<Axis?> = .init()
@@ -219,7 +219,7 @@ package struct DynamicStackOrientation: ViewInput {
 
 extension _ViewInputs {
     @inline(__always)
-    var dynamicStackOrientation: OptionalAttribute<Axis?> {
+    package var dynamicStackOrientation: OptionalAttribute<Axis?> {
         get { self[DynamicStackOrientation.self] }
         set { self[DynamicStackOrientation.self] = newValue }
     }
@@ -303,12 +303,12 @@ extension View {
     }
 }
 
-// MARK: Resolve Shape Style [6.4.41]
+// MARK: Resolve Shape Style [6.5.4]
 
 extension _ViewInputs {
     package func resolvedShapeStyles(
         role: ShapeRole,
-        mode: Attribute<_ShapeStyle_ResolverMode>? = nil
+        mode: Attribute<ShapeStyle.ResolverMode>? = nil
     ) -> Attribute<_ShapeStyle_Pack> {
         base.cachedEnvironment.wrappedValue.resolvedShapeStyles(
             for: self,

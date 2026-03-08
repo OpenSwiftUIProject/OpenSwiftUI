@@ -308,8 +308,7 @@ extension CGRect {
         s.size.width -= insets.horizontal
         s.size.height -= insets.vertical
         
-        guard s.size.width >= 0,
-              s.size.height >= 0
+        guard s.width >= 0, s.height >= 0
         else { return .null }
         return s
     }
@@ -326,8 +325,7 @@ extension CGRect {
         s.size.width += insets.horizontal
         s.size.height += insets.vertical
         
-        guard s.size.width >= 0,
-              s.size.height >= 0
+        guard s.width >= 0, s.height >= 0
         else { return .null }
         return s
     }
@@ -340,15 +338,15 @@ extension CGRect {
 extension CGSize {
     package func inset(by insets: EdgeInsets) -> CGSize {
         CGSize(
-            width: max(width - insets.horizontal, 0),
-            height: max(height - insets.vertical, 0)
+            width: max(0, width - insets.horizontal),
+            height: max(0, height - insets.vertical)
         )
     }
     
     package func outset(by insets: EdgeInsets) -> CGSize {
         CGSize(
-            width: max(width + insets.horizontal, 0),
-            height: max(height + insets.vertical, 0)
+            width: max(0, width + insets.horizontal),
+            height: max(0, height + insets.vertical)
         )
     }
 }

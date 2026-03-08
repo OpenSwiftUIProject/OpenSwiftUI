@@ -6,17 +6,17 @@
 //  ID: CE84B1BFBEAEAB6361605407E54625A3 (SwiftUI)
 
 // FIXME
-struct PlatformItemList {
-    var itesms: [Item]
+package struct PlatformItemList {
+    var items: [Item]
 
     // FIXME
     struct Item {}
 
     fileprivate struct Key: PreferenceKey {
-        static let defaultValue: PlatformItemList = .init(itesms: [])
+        static let defaultValue: PlatformItemList = .init(items: [])
 
         static func reduce(value: inout PlatformItemList, nextValue: () -> PlatformItemList) {
-            value.itesms.append(contentsOf: nextValue().itesms)
+            value.items.append(contentsOf: nextValue().items)
         }
     }
 }

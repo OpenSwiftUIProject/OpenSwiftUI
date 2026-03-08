@@ -225,7 +225,7 @@ extension TimelineView: View, PrimitiveView, UnaryView where Content: View {
             schedule: view.value[offset: { .of(&$0.schedule) }],
             phase: inputs.viewPhase,
             time: inputs.time,
-            referenceDate: inputs.base.referenceDate,
+            referenceDate: inputs.referenceDate,
             id: id,
             frameSpecifier: inputs.base.alwaysOnFrameSpecifier,
             fidelity: inputs.base.updateFidelity,

@@ -1,8 +1,8 @@
 //
-//  ShapeStyle_Name.swift
+//  ShapeStyleName.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 package enum _ShapeStyle_Name: UInt8, Equatable, Comparable {

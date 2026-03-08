@@ -28,25 +28,15 @@ package protocol _RendererEffect: MultiViewModifier, PrimitiveViewModifier {
 // MARK: - _RendererEffect + Default Implementation
 
 extension _RendererEffect {
-    package static var isolatesChildPosition: Bool {
-        false
-    }
+    package static var isolatesChildPosition: Bool { false }
 
-    package static var disabledForFlattenedContent: Bool {
-        false
-    }
+    package static var disabledForFlattenedContent: Bool { false }
 
-    package static var preservesEmptyContent: Bool {
-        false
-    }
+    package static var preservesEmptyContent: Bool { false }
 
-    package static var isScrapeable: Bool {
-        false
-    }
+    package static var isScrapeable: Bool { false }
 
-    package var scrapeableContent: ScrapeableContent.Content? {
-        nil
-    }
+    package var scrapeableContent: ScrapeableContent.Content? { nil }
 
     package static func _makeRendererEffect(
         effect: _GraphValue<Self>,
@@ -189,13 +179,13 @@ private struct RendererEffectDisplayList<Effect>: Rule, AsyncAttribute, Scrapeab
         }
         let version = DisplayList.Version(forUpdate: ())
         let proxy = GeometryProxy(
-            owner: .current!,
+            owner: attribute.identifier,
             size: $size,
             environment: $environment,
             transform: $transform,
             position: $position,
             safeAreaInsets: $safeAreaInsets,
-            seed: .init(bitPattern: numericCast(version.value))
+            seed: UInt32(truncatingIfNeeded: version.value)
         )
 
         let e: DisplayList.Effect

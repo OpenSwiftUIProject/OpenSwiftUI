@@ -1,5 +1,5 @@
 {
-  "originHash" : "9022290e4dbc74a236c5d1d0df4fcc218be6c43bb5e3bc10ecc685f8f62b6a5f",
+  "originHash" : "7a3cc2eff6b7d727a9c61473054afa08bc0e6052f28bcf6918a6b499f56cb2cb",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "5eb0f26ea5a5bbd5068f6b3daf3a97dd3682b234"
+        "revision" : "ad86657d9bdd98f7c40c977b34ff0c3de3e2fcee"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "b8ee96828f38cd221c67c252a6488d99fef04468"
+        "revision" : "91dd6f1b3b3bcfc13872b0e7eb145302279ebf04"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "cd89c292c4ed4c25d9468a12d9490cc18304ff37"
+        "revision" : "8d63c405f565fb287042e0b8dc3bf0c4b8b2b56f"
       }
     },
     {
@@ -43,70 +43,16 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "ebed504f2785edfe500ebd0552a1bcf6d37071ba"
-      }
-    },
-    {
-      "identity" : "rainbow",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/onevcat/Rainbow",
-      "state" : {
-        "revision" : "16da5c62dd737258c6df2e8c430f8a3202f655a7",
-        "version" : "4.2.0"
-      }
-    },
-    {
-      "identity" : "shaft",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShaftUI/Shaft",
-      "state" : {
-        "branch" : "main",
-        "revision" : "ea52999447248fcb91096392dc95e2f1afece8ef"
-      }
-    },
-    {
-      "identity" : "splash",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShaftUI/Splash",
-      "state" : {
-        "branch" : "master",
-        "revision" : "ed08785980b61de9b98306434410ce7fc10572ea"
-      }
-    },
-    {
-      "identity" : "swift-cmark",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-cmark.git",
-      "state" : {
-        "branch" : "gfm",
-        "revision" : "924936d0427cb25a61169739a7660230bffa6ea6"
-      }
-    },
-    {
-      "identity" : "swift-collections",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShaftUI/swift-collections",
-      "state" : {
-        "revision" : "52a1f698d5faa632df0e1219b1bbffa07cf65260",
-        "version" : "1.3.0"
-      }
-    },
-    {
-      "identity" : "swift-markdown",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/swiftlang/swift-markdown.git",
-      "state" : {
-        "branch" : "main",
-        "revision" : "b2135f426fca19029430fbf26564e953b2d0f3d3"
+        "revision" : "5ae2d6708298f64ca4fcbe5977fb7627ad243f65"
       }
     },
     {
       "identity" : "swift-numerics",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-numerics.git",
+      "location" : "https://github.com/apple/swift-numerics",
       "state" : {
-        "revision" : "e0ec0f5f3af6f3e4d5e7a19d2af26b481acb6ba8",
-        "version" : "1.0.3"
+        "revision" : "0c0290ff6b24942dadb83a929ffaaa1481df04a2",
+        "version" : "1.1.1"
       }
     },
     {
@@ -119,48 +65,12 @@
       }
     },
     {
-      "identity" : "swiftmath",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShaftUI/SwiftMath",
-      "state" : {
-        "revision" : "29039462bcd88b9469041f2678b892d0dd7a4c6f",
-        "version" : "3.4.0"
-      }
-    },
-    {
-      "identity" : "swiftreload",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShaftUI/SwiftReload.git",
-      "state" : {
-        "revision" : "e0b67c14779b880c475de7c3c5e4778b23cf90fa",
-        "version" : "0.0.1"
-      }
-    },
-    {
-      "identity" : "swiftsdl3",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/ShaftUI/SwiftSDL3",
-      "state" : {
-        "revision" : "64fb16e7b2546cc33aefdad2304f909e08a5e54e",
-        "version" : "0.1.6"
-      }
-    },
-    {
       "identity" : "symbollocator",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
       "state" : {
         "revision" : "546053c03f282df1a8270853da6692e1b078be09",
         "version" : "0.2.1"
-      }
-    },
-    {
-      "identity" : "yams",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/jpsim/Yams.git",
-      "state" : {
-        "revision" : "b4b8042411dc7bbb696300a34a4bf3ba1b7ad19b",
-        "version" : "5.3.1"
       }
     }
   ],

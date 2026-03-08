@@ -114,6 +114,12 @@ struct ProposedSizeTests {
         let partialInset = partialSize.inset(by: insets)
         #expect(partialInset.width == nil)
         #expect(partialInset.height == 180)
+        
+        // Test with nan dimensions
+        let nanSize = _ProposedSize(width: .nan, height: 200)
+        let nanInset = nanSize.inset(by: insets)
+        #expect(nanInset.width == 0)
+        #expect(nanInset.height == 180)
     }
     
     // MARK: - Axis Access Tests

@@ -226,6 +226,7 @@ struct DynamicLayoutViewAdaptor: DynamicContainerAdaptor {
         var containerID = DynamicContainerID(uniqueId: uniqueId, viewIndex: 0)
         let outputs = item.elements.makeAllElements(inputs: inputs) { elementInputs, body in
             var elementInputs = elementInputs
+            containerInputs(&elementInputs)
             if elementInputs.needsGeometry {
                 let childGeometry = Attribute(
                     DynamicLayoutViewChildGeometry(
@@ -236,6 +237,7 @@ struct DynamicLayoutViewAdaptor: DynamicContainerAdaptor {
                 )
                 elementInputs.size = childGeometry.size()
                 elementInputs.position = childGeometry.origin()
+                elementInputs.requestsLayoutComputer = true
             }
             let outputs: _ViewOutputs
             if let transition {
@@ -298,9 +300,6 @@ private struct DynamicLayoutComputer<L>: StatefulRule, AsyncAttribute, CustomStr
 struct DynamicLayoutScrollable {}
 
 // TODO: - ViewListContentTransition
-
-// FIXME
-struct ContentTransitionEffect {}
 
 private struct ViewListContentTransition<T>: StatefulRule, AsyncAttribute where T: Transition {
     var helper: TransitionHelper<T>

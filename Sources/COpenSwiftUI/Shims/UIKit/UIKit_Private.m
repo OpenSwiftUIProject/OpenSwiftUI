@@ -36,6 +36,11 @@
     OPENSWIFTUI_SAFE_WRAPPER_IMP(NSString *, @"_launchTestName", nil);
     return func(self, selector);
 }
+
+- (void)_saveRestorationUserActivityStateForScene_openswiftui_safe_wrapper:(UIScene *)scene {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"_saveRestorationUserActivityStateForScene:", , UIScene *);
+    func(self, selector, scene);
+}
 @end
 
 @implementation UIView (OpenSwiftUI_SPI)
@@ -51,6 +56,21 @@
 
 - (UIViewController *)_viewControllerForAncestor_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIViewController *, @"_viewControllerForAncestor", nil);
+    return func(self, selector);
+}
+
++ (BOOL)_isInAnimationBlockWithAnimationsEnabled_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"_isInAnimationBlockWithAnimationsEnabled", NO);
+    return func(self, selector);
+}
+
++ (NSTimeInterval)_currentAnimationDuration_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSTimeInterval, @"_currentAnimationDuration", 0.0);
+    return func(self, selector);
+}
+
++ (NSInteger)_currentAnimationCurve_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSInteger, @"_currentAnimationCurve", 0);
     return func(self, selector);
 }
 @end
@@ -75,6 +95,13 @@
 @end
 #endif
 
+@implementation UIWindow (OpenSwiftUI_SPI)
+- (UIWindowScene *) _windowHostingScene_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(UIWindowScene *, @"_windowHostingScene", nil);
+    return func(self, selector);
+}
+@end
+
 @implementation UIWindowScene (OpenSwiftUI_SPI)
 - (UIUserInterfaceStyle) _systemUserInterfaceStyle_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(UIUserInterfaceStyle, @"_systemUserInterfaceStyle", UIUserInterfaceStyleUnspecified);
@@ -94,9 +121,5 @@
     return func(self, selector);
 }
 @end
-
-UIView * _UIKitCreateCustomView(Class class, CALayer *layer) {
-    return [[class alloc] _initWithLayer:layer];
-}
 
 #endif /* __has_include(<UIKit/UIKit.h>) */

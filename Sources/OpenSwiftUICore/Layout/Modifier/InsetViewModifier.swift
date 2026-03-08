@@ -245,7 +245,6 @@ struct SafeAreaPaddingModifier: ViewModifier {
     @Environment(\.defaultPadding)
     private var defaultPadding: EdgeInsets
 
-
     @usableFromInline
     init(edges: Edge.Set, insets: EdgeInsets?) {
         self.edges = edges
@@ -254,23 +253,25 @@ struct SafeAreaPaddingModifier: ViewModifier {
 
     @usableFromInline
     func body(content: SafeAreaPaddingModifier.Content) -> some View {
-        content.safeAreaInset(edge: .top) {
+        content.safeAreaInset(edge: .top, spacing: 0) {
             insetView(edge: .top)
-        }.safeAreaInset(edge: .bottom) {
+        }.safeAreaInset(edge: .bottom, spacing: 0) {
             insetView(edge: .bottom)
-        }.safeAreaInset(edge: .leading) {
+        }.safeAreaInset(edge: .leading, spacing: 0) {
             insetView(edge: .leading)
-        }.safeAreaInset(edge: .trailing) {
+        }.safeAreaInset(edge: .trailing, spacing: 0) {
             insetView(edge: .trailing)
         }
     }
 
     private func insetView(edge: Edge) -> some View {
+        let inset = edges.contains(edge) ? (insets ?? defaultPadding)[edge] : 0
         let axis = Axis(edge: edge)
-        let inset = (insets ?? defaultPadding)[edge]
-        return axis == .horizontal
-            ? Color.clear.frame(width: inset)
-            : Color.clear.frame(height: inset)
+        return Color.clear.frame(
+            width: axis == .horizontal ? inset : 0,
+            height: axis == .vertical ? inset : 0,
+            alignment: .center
+        )
     }
 }
 
@@ -542,27 +543,21 @@ private struct InsetViewLayout {
             id: alignmentKeyID,
             axis: secondaryAxis)
         ]
-        let position = (primaryPlacement.anchorPosition[secondaryAxis] + primaryAlignmentValue) - (secondaryAlignmentValue + .zero)
         let secondaryAnchor = UnitPoint(edge: props.edge)
         let secondaryPlacement = _Placement(
             proposedSize: secondaryProposal,
             aligning: secondaryAnchor,
             in: parentSize.value
         )
-
         var primaryGeometry = ViewGeometry(
             placement: primaryPlacement,
-            dimensions: ViewDimensions(
-                guideComputer: primaryComputer,
-                size: primarySize,
-                proposal: primaryProposal
-            )
+            dimensions: primaryDimensions
         )
         var secondaryGeometry = ViewGeometry(
             placement: secondaryPlacement,
             dimensions: secondaryDimensions
         )
-        secondaryGeometry.origin[secondaryAxis] = position
+        secondaryGeometry.origin[secondaryAxis] = primaryGeometry.origin[secondaryAxis] + (primaryAlignmentValue - secondaryAlignmentValue)
 
         primaryGeometry.finalizeLayoutDirection(
             layoutDirection,
@@ -572,6 +567,10 @@ private struct InsetViewLayout {
             layoutDirection,
             parentSize: parentSize.value
         )
+
+        primaryGeometry.origin += CGSize(parentPosition)
+        secondaryGeometry.origin += CGSize(parentPosition)
+
         return (primaryGeometry, secondaryGeometry)
     }
 

@@ -1,5 +1,5 @@
 module OpenSwiftUI_SPI {
-    umbrella "Overlay/CoreGraphics"
+    umbrella "Overlay"
     export *
 
     module Util {
@@ -8,13 +8,18 @@ module OpenSwiftUI_SPI {
     }
 }
 
-module CoreAnimation_Private {
-    umbrella "Shims/CoreAnimation"
+module QuartzCore_Private {
+    umbrella "Shims/QuartzCore"
     export *
 }
 
 module CoreFoundation_Private {
     umbrella "Shims/CoreFoundation"
+    export *
+}
+
+module CoreGraphics_Private {
+    umbrella "Shims/CoreGraphics"
     export *
 }
 
@@ -40,6 +45,11 @@ module dyldPrivate {
 
 module kdebug_Private {
     umbrella "Shims/kdebug"
+    export *
+}
+
+module GraphicsServices_Private {
+    umbrella "Shims/GraphicsServices"
     export *
 }
 

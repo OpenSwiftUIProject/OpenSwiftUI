@@ -60,9 +60,10 @@ package enum Update {
         guard lockAssertionsAreEnabled else {
             return
         }
-        guard isOwner else {
-            preconditionFailure("OpenSwiftUI is active without having taken its own lock - missing Update.ensure()?")
-        }
+        precondition(
+            isOwner,
+            "OpenSwiftUI is active without having taken its own lock - missing Update.ensure()?"
+        )
     }
     
     package static func begin() {
@@ -104,7 +105,7 @@ package enum Update {
 
     @inlinable
     @inline(__always)
-    static func perform<T>(_ body: () throws -> T) rethrows -> T {
+    package static func perform<T>(_ body: () throws -> T) rethrows -> T {
         begin()
         defer { end() }
         return try body()
@@ -118,9 +119,10 @@ package enum Update {
 
     @discardableResult
     package static func enqueueAction(
-        reason: ()?, // FIXME
+        reason: (CustomEventTrace.ActionEventType.Reason)?,
         _ action: @escaping () -> Void
     ) -> UInt32 {
+        // FIXME
         enqueueAction(action)
         return .zero
     }
@@ -132,7 +134,8 @@ package enum Update {
         defer { unlock() }
         return try body()
     }
-    
+
+    // 6.5.4
     package static func syncMain(_ body: () -> Void) {
         #if os(WASI)
         // FIXME: See #76
@@ -142,9 +145,25 @@ package enum Update {
             body()
         } else {
             withoutActuallyEscaping(body) { escapableBody in
-                let context = AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier)
-                MovableLock.syncMain(lock: _lock) {
-                    context.update(body: escapableBody)
+                struct Context {
+                    let body: () -> Void
+                    let subgraph: Subgraph?
+                    let context: AnyRuleContext
+                }
+                withUnsafePointer(
+                    to: Context(
+                        body: escapableBody,
+                        subgraph: Subgraph.current,
+                        context: AnyRuleContext(attribute: AnyOptionalAttribute.current.identifier)
+                    )
+                ) { context in
+                    _lock.syncMain(.init(context)) { pointer in
+                        let pointer = pointer.assumingMemoryBound(to: Context.self).self
+                        let current = Subgraph.current
+                        defer { Subgraph.current = current }
+                        Subgraph.current = pointer.pointee.subgraph
+                        pointer.pointee.context.update(body: pointer.pointee.body)
+                    }
                 }
             }
         }
@@ -184,17 +203,20 @@ package enum Update {
                     }
                     for action in actions {
                         action()
-                        let newDepth = depth
-                        guard newDepth == oldDepth else {
-                            preconditionFailure("Action caused unbalanced updates.")
-                        }
+                        precondition(
+                            depth == oldDepth,
+                            "Action caused unbalanced updates."
+                        )
                     }
                 }
             }
         } while !Update.actions.isEmpty
     }
     
-    package static func dispatchImmediately<T>(_ body: () -> T) -> T {
+    package static func dispatchImmediately<T>(
+        reason: CustomEventTrace.ActionEventType.Reason?,
+        _ body: () -> T
+    ) -> T {
         begin()
         let oldDispatchDepth = dispatchDepth
         dispatchDepth = depth
@@ -206,8 +228,15 @@ package enum Update {
     }
 }
 
-// FIXME: migrate to use @_extern(c, "xx") in Swift 6
-extension MovableLock {
-    @_silgen_name("_MovableLockSyncMain")
-    static func syncMain(lock: MovableLock, body: @escaping () -> Void)
+// FIXME
+package enum CustomEventTrace {
+    package enum ActionEventType {
+        package enum Reason {
+            case onAppear
+            case onChange
+            case onDisappear
+            case gesture
+            case didReleaseButton
+        }
+    }
 }

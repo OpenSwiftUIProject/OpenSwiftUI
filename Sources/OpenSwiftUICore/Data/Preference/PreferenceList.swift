@@ -2,18 +2,22 @@
 //  PreferenceList.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Copmlete
 //  ID: C1C63C2F6F2B9F3EB30DD747F0605FBD (SwiftUI)
 //  ID: 7B694C05291EA7AF22785AB458D1BC2F (SwiftUICore)
 
-// MARK: - PreferenceList
+#if OPENSWIFTUI_PREFERENCELIST
+
+// MARK: - PreferenceList [6.0.87]
 
 package struct PreferenceList: CustomStringConvertible {
     private var first: PreferenceNode?
     
     @inlinable
-    package init() {}
+    package init() {
+        _openSwiftUIEmptyStub()
+    }
     
     package struct Value<T> {
         package var value: T
@@ -225,5 +229,208 @@ private class _PreferenceNode<K>: PreferenceNode where K: PreferenceKey {
     
     override var description: String {
         "\(K.self) = \(value)"
+    }
+}
+
+#endif
+
+// NOTE: PreferenceValues is a replacement for PreferenceList since 6.1.x
+
+// MARK: - PreferenceValues
+
+package struct PreferenceValues {
+    private struct Entry {
+        var key: any PreferenceKey.Type
+        var seed: VersionSeed
+        var value: Any
+
+        subscript<V>() -> Value<V> {
+            get {
+                Value(value: value as! V, seed: seed)
+            }
+            set {
+                seed = newValue.seed
+                value = newValue.value
+            }
+        }
+
+        mutating func reduce(_ other: Entry) {
+            func reduce<K>(key: K.Type) where K: PreferenceKey {
+                var result = value as! K.Value
+                K.reduce(value: &result) {
+                    seed.merge(other.seed)
+                    return other.value as! K.Value
+                }
+                value = result
+            }
+            reduce(key: key)
+        }
+    }
+
+    private var entries: [Entry]
+
+    @inlinable
+    package init() {
+        entries = []
+    }
+
+    package struct Value<T> {
+        package var value: T
+        package var seed: VersionSeed
+
+        package init(value: T, seed: VersionSeed) {
+            self.value = value
+            self.seed = seed
+        }
+    }
+
+    package subscript<K>(key: K.Type) -> Value<K.Value> where K: PreferenceKey {
+        get {
+            guard let value = index(of: key).map({ (index: Int) -> Value<K.Value> in
+                entries[index][]
+            }) else {
+                return Value(value: key.defaultValue, seed: .empty)
+            }
+            return value
+        }
+        set {
+            let index = _index(of: key)
+            setValue(newValue, of: key, at: index)
+        }
+    }
+
+    package func valueIfPresent<K>(for key: K.Type = K.self) -> Value<K.Value>? where K: PreferenceKey {
+        index(of: key).map { (index: Int) -> Value<K.Value> in
+            entries[index][]
+        }
+    }
+
+    package func contains<K>(_ key: K.Type) -> Bool where K: PreferenceKey {
+        index(of: key) != nil
+    }
+
+    package mutating func removeValue<K>(for key: K.Type) where K: PreferenceKey {
+        guard let index = index(of: key) else {
+            return
+        }
+        entries.remove(at: index)
+    }
+
+    package mutating func modifyValue<K>(
+        for key: K.Type,
+        transform: Value<(inout K.Value) -> Void>
+    ) where K: PreferenceKey {
+        let index = _index(of: key)
+        var value: PreferenceValues.Value<K.Value>
+        if index != entries.count, entries[index].key == key {
+            value = entries[index][]
+        } else {
+            value = Value(value: key.defaultValue, seed: .empty)
+        }
+        value.seed.merge(transform.seed)
+        transform.value(&value.value)
+        setValue(value, of: key, at: index)
+    }
+
+    package func mayNotBeEqual(to other: PreferenceValues) -> Bool {
+        guard entries.count == other.entries.count else {
+            return true
+        }
+        let count = entries.count
+        for index in 0 ..< count {
+            let entry = entries[index]
+            let otherEntry = other.entries[index]
+            guard entry.key == otherEntry.key,
+                  entry.seed.matches(otherEntry.seed) else {
+                return true
+            }
+        }
+        return false
+    }
+
+    package var seed: VersionSeed {
+        var seed = VersionSeed.empty
+        for entry in entries {
+            seed.merge(entry.seed)
+        }
+        return seed
+    }
+
+    package mutating func combine(with other: PreferenceValues) {
+        let otherEntriesCount = other.entries.count
+        guard otherEntriesCount != 0 else {
+            return
+        }
+        guard !entries.isEmpty else {
+            entries = other.entries
+            return
+        }
+        var count = entries.count
+        var otherEntryIndex = 0
+        var handledCount = 1
+        repeat {
+            let index = handledCount &- 1
+            let selfKeyID = ObjectIdentifier(entries[index].key)
+            let otherEntry = other.entries[otherEntryIndex]
+            let otherKeyID = ObjectIdentifier(otherEntry.key)
+            if selfKeyID == otherKeyID {
+                entries[index].reduce(otherEntry)
+                otherEntryIndex &+= 1
+            } else if otherKeyID < selfKeyID {
+                entries.insert(otherEntry, at: index)
+                count &+= 1
+                otherEntryIndex &+= 1
+            }
+            if handledCount >= count { break }
+            handledCount &+= 1
+        } while otherEntryIndex < otherEntriesCount
+        if otherEntryIndex < otherEntriesCount {
+            entries.append(contentsOf: other.entries[otherEntryIndex...])
+        }
+    }
+
+    package mutating func filterRemoved() {
+        entries.removeAll { !$0.key._includesRemovedValues }
+        entries.reverse()
+    }
+
+    package var description: String {
+        let entriesDescription = entries.lazy
+            .map { "\($0.key.readableName) = \($0.value)" }
+            .joined(separator: ", ")
+        let seedDescription = seed.description
+        return "\(seedDescription): [\(entriesDescription)]"
+    }
+
+    private func index<K>(of key: K.Type) -> Int? where K: PreferenceKey {
+        let index = _index(of: key)
+        guard index != entries.count, entries[index].key == key else {
+            return nil
+        }
+        return index
+    }
+
+    private func _index(of key: any PreferenceKey.Type) -> Int {
+        guard !entries.isEmpty else {
+            return 0
+        }
+        let keyID = ObjectIdentifier(key)
+        return entries.partitionPoint { entry in
+            ObjectIdentifier(entry.key) >= keyID
+        }
+    }
+
+    private mutating func setValue<T>(_ value: Value<T>, of key: any PreferenceKey.Type, at index: Int) {
+        guard index != entries.count, entries[index].key == key else {
+            if !value.seed.isEmpty {
+                entries.insert(.init(key: key, seed: value.seed, value: value.value), at: index)
+            }
+            return
+        }
+        guard !value.seed.isEmpty else {
+            entries.remove(at: index)
+            return
+        }
+        entries[index][] = value
     }
 }

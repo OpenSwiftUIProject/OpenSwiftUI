@@ -226,11 +226,11 @@ open class CoreGlue2: NSObject {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-    open func configureEmptyEnvironment(_: inout EnvironmentValues) {
+    open func configureDefaultEnvironment(_: inout EnvironmentValues) {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-    open func configureDefaultEnvironment(_: inout EnvironmentValues) {
+    open func configureEmptyEnvironment(_: inout EnvironmentValues) {
         _openSwiftUIBaseClassAbstractMethod()
     }
 

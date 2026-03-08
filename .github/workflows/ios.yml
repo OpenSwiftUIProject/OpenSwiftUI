@@ -22,7 +22,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
-      OPENSWIFTUI_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 0
       OPENSWIFTUI_SWIFT_CRYPTO: 0
@@ -40,19 +40,25 @@ jobs:
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
+      - name: Install xcbeautify
+        run: brew install xcbeautify
       - name: Build test target in debug mode
         run: |
-          xcodebuild build \
+          set -o pipefail
+          NSUnbufferedIO=YES xcodebuild build \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
-            -skipPackagePluginValidation
+            -skipPackagePluginValidation \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
       - name: Run test target in debug mode
         run: |
-          xcodebuild test \
+          set -o pipefail
+          NSUnbufferedIO=YES xcodebuild test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -skipMacroValidation \
-            -skipPackagePluginValidation
+            -skipPackagePluginValidation \
+            2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified

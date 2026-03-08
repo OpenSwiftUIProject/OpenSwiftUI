@@ -20,7 +20,7 @@ class PlatformViewCoordinator: NSObject {
                 update()
                 return
             }
-            Update.dispatchImmediately { // FIXME: reason: nil
+            Update.dispatchImmediately(reason: nil) {
                 update()
             }
         }

@@ -81,7 +81,7 @@ package final class ViewGraph: GraphHost {
     @WeakAttribute var rootLayoutComputer: LayoutComputer?
     @WeakAttribute var rootDisplayList: (DisplayList, DisplayList.Version)?
     
-    // package var sizeThatFitsObservers: ViewGraphGeometryObservers<SizeThatFitsMeasurer> = .init()
+    package var sizeThatFitsObservers: ViewGraphGeometryObservers<SizeThatFitsMeasurer> = .init()
     
     package var accessibilityEnabled: Bool = false
     
@@ -90,8 +90,8 @@ package final class ViewGraph: GraphHost {
     
     private var mainUpdates: Int = 0
     
-    // MARK: - ViewGraph + NextUpdate
-    
+    // MARK: - ViewGraph + NextUpdate [6.5.4]
+
     package struct NextUpdate {
         package private(set) var time: Time = .infinity
 
@@ -100,6 +100,8 @@ package final class ViewGraph: GraphHost {
         package var interval: Double {
             _interval.isFinite ? _interval : .zero
         }
+
+        private var _defaultIntervalWasRequested: Bool = false
 
         package private(set) var reasons: Set<UInt32> = []
 
@@ -113,17 +115,22 @@ package final class ViewGraph: GraphHost {
             }
             let interval = velocity < 320 ? 1 / 80.0 : 1 / 120.0
             let highFrameRateReason: UInt32 = _HighFrameRateReasonMake(0)
-            _interval = min(interval, _interval)
+            var newInterval = min(interval, _interval)
+            if _defaultIntervalWasRequested && newInterval > 1 / 60.0 {
+                newInterval = .infinity
+            }
+            _interval = newInterval
             reasons.insert(highFrameRateReason)
         }
         
         package mutating func interval(_ interval: Double, reason: UInt32? = nil) {
             if interval == .zero {
-                if _interval > 1 / 60 {
-                    _interval = .infinity
-                }
+                _defaultIntervalWasRequested = true
             } else {
                 _interval = min(interval, _interval)
+            }
+            if _defaultIntervalWasRequested && _interval > 1 / 60 {
+                _interval = .infinity
             }
             if let reason {
                 reasons.insert(reason)
@@ -267,7 +274,7 @@ package final class ViewGraph: GraphHost {
         if requestedOutputs.contains(.layout) {
             _rootLayoutComputer = WeakAttribute(outputs.layoutComputer)
         }
-        hostPreferenceValues = WeakAttribute(outputs.preferences[HostPreferencesKey.self])
+        hostPreferenceValues = WeakAttribute(outputs.preferences.hostPreferenceValues)
         makePreferenceOutlets(outputs: outputs)
     }
     
@@ -368,6 +375,8 @@ extension ViewGraph {
     }
 }
 
+// MARK: - ViewGraph + Update [6.5.4]
+
 extension ViewGraph {
     package var updateRequiredMainThread: Bool {
         graph.mainUpdates != mainUpdates
@@ -377,11 +386,31 @@ extension ViewGraph {
         beginNextUpdate(at: time)
         updateOutputs(async: false)
     }
-    
+
     package func updateOutputsAsync(at time: Time) -> (list: DisplayList, version: DisplayList.Version)? {
         beginNextUpdate(at: time)
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        guard _rootDisplayList.allowsAsyncUpdate(),
+              hostPreferenceValues.allowsAsyncUpdate(),
+              sizeThatFitsObservers.isEmpty || _rootLayoutComputer.allowsAsyncUpdate()
+        else {
+            return nil
+        }
+        for feature in features {
+            guard let allowsAsyncUpdate = feature.allowsAsyncUpdate(graph: self) else {
+                feature.skipsAsyncUpdate = true
+                continue
+            }
+            feature.skipsAsyncUpdate = false
+            guard allowsAsyncUpdate else {
+                return nil
+            }
+        }
+        var result: (DisplayList, DisplayList.Version)?
+        graph.withMainThreadHandler(Update.syncMain) {
+            updateOutputs(async: true)
+            result = displayList()
+        }
+        return result
     }
     
     package func displayList() -> (DisplayList, DisplayList.Version) {
@@ -393,89 +422,106 @@ extension ViewGraph {
         data.updateSeed &+= 1
         mainUpdates = graph.mainUpdates
     }
-    
-    // FIXME
-    private func updateOutputs(async: Bool) {
-        instantiateIfNeeded()
-        data.transactionSeed &+= 1
 
-        // let oldCachedSizeThatFits = cachedSizeThatFits
-        
+    private func updateOutputs(async: Bool) {
         var preferencesChanged = false
-        var observedSizeThatFitsChanged = false
-        var updatedOutputs: Outputs = []
-        
-        var counter1 = 0
+        var featuresChanged = false
+        var sizeThatFitsChanged = false
+        var counter = 0
         repeat {
-            counter1 &+= 1
-            inTransaction = true
-            var counter2 = 0
-            repeat {
-                let conts = continuations
-                continuations = []
-                for continuation in conts {
-                    continuation()
+            counter &+= 1
+            instantiateIfNeeded()
+            startTransactionUpdate()
+            finishTransactionUpdate(in: globalSubgraph)
+            if updatePreferences() {
+                preferencesChanged = true
+            }
+            if sizeThatFitsObservers.needsUpdate(graph: self) {
+                sizeThatFitsChanged = true
+            }
+            for feature in features {
+                guard !async || !feature.skipsAsyncUpdate else {
+                    continue
                 }
-                counter2 &+= 1
-                data.globalSubgraph.update(flags: .transactional)
-            } while (continuations.count != 0 && counter2 != 8)
-            inTransaction = false
-            preferencesChanged = preferencesChanged || updatePreferences()
-            observedSizeThatFitsChanged = observedSizeThatFitsChanged || updateObservedSizeThatFits()
-            updatedOutputs.formUnion(updateRequestedOutputs())
-        } while (needsTransaction && counter1 != 8)
-//        guard preferencesChanged || observedSizeThatFitsChanged || !updatedOutputs.isEmpty || needsFocusUpdate else {
-//            return
-//        }
-//        if Thread.isMainThread {
-//            if preferencesChanged {
-//                delegate?.preferencesDidChange()
-//            }
-//            if observedSizeThatFitsChanged {
-//                sizeThatFitsObserver?.callback(oldCachedSizeThatFits, self.cachedSizeThatFits)
-//            }
-//            if !requestedOutputs.isEmpty {
-////                delegate?.outputsDidChange(outputs: updatedOutputs)
-//            }
-//            if needsFocusUpdate {
-//                needsFocusUpdate = false
-////                delegate?.focusDidChange()
-//            }
-//        } else {
-//            _openSwiftUIUnimplementedFailure()
-//        }
-//        mainUpdates &-= 1
-    }
-    
-    private func updateObservedSizeThatFits() -> Bool {
-        // TODO
-        return false
-    }
-    
-    private func updateRequestedOutputs() -> Outputs {
-        // TODO
-        return []
+                if feature.needsUpdate {
+                    featuresChanged = true
+                } else if feature.needsUpdate(graph: self) {
+                    feature.needsUpdate = true
+                    featuresChanged = true
+                }
+            }
+        } while (needsTransaction && counter != 8)
+        guard preferencesChanged || featuresChanged || sizeThatFitsChanged else {
+            return
+        }
+        Update.syncMain {
+            if preferencesChanged {
+                delegate?.preferencesDidChange()
+                preferenceBridge?.updateHostValues(data.$hostPreferenceKeys)
+            }
+            if featuresChanged {
+                for feature in features {
+                    guard !async || !feature.skipsAsyncUpdate else {
+                        continue
+                    }
+                    if feature.needsUpdate {
+                        feature.update(graph: self)
+                        feature.needsUpdate = false
+                    }
+                }
+            }
+            if sizeThatFitsChanged {
+                sizeThatFitsObservers.notify()
+            }
+        }
+        mainUpdates &-= 1
     }
 }
 
-//package struct SizeThatFitsMeasurer: ViewGraphGeometryMeasurer {
-//    package static func measure(given proposal: _ProposedSize, in graph: ViewGraph) -> CGSize
-//    package static let invalidValue: CGSize
-//    package typealias Proposal = _ProposedSize
-//    package typealias Size = CGSize
-//}
+package struct SizeThatFitsMeasurer: ViewGraphGeometryMeasurer {
+    package typealias Proposal = _ProposedSize
 
-//package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
+    package typealias Size = CGSize
+
+    package static func measure(
+        given proposal: _ProposedSize,
+        in graph: ViewGraph
+    ) -> CGSize {
+        ViewGraph.sizeThatFits(
+            proposal,
+            layoutComputer: graph.layoutComputer,
+            insets: graph.rootViewInsets
+        )
+    }
+
+    package static func measure(
+        proposal: _ProposedSize,
+        layoutComputer: LayoutComputer,
+        insets: EdgeInsets
+    ) -> CGSize {
+        ViewGraph.sizeThatFits(
+            proposal,
+            layoutComputer: layoutComputer,
+            insets: insets
+        )
+    }
+
+    package static let invalidValue: CGSize = CGSize.invalidValue
+}
+
+package typealias SizeThatFitsObservers = ViewGraphGeometryObservers<SizeThatFitsMeasurer>
+
 extension ViewGraph {
-    private var layoutComputer: LayoutComputer? {
-        guard requestedOutputs.contains(.layout) else {
-            preconditionFailure("Cannot fetch layout computer without layout output")
-        }
+    fileprivate var layoutComputer: LayoutComputer? {
+        precondition(
+            requestedOutputs.contains(.layout),
+            "Cannot fetch layout computer without layout output"
+        )
         instantiateIfNeeded()
         return rootLayoutComputer
     }
 
-    private var rootViewInsets: EdgeInsets {
+    fileprivate var rootViewInsets: EdgeInsets {
         guard !safeAreaInsets.elements.isEmpty else {
             return .zero
         }
@@ -704,7 +750,7 @@ extension Graph {
 
 // MARK: - RootTransformProvider
 
-protocol RootTransformProvider {
+package protocol RootTransformProvider {
     func rootTransform() -> ViewTransform
 }
 

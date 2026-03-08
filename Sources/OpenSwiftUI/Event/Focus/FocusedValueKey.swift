@@ -107,3 +107,17 @@ struct FocusedValuesInputKey: ViewInput {
         .init()
     }
 }
+
+extension _ViewInputs {
+    var focusedValues: Attribute<FocusedValues>? {
+        get { base.focusedValues }
+        set { base.focusedValues = newValue }
+    }
+}
+
+extension _GraphInputs {
+    var focusedValues: Attribute<FocusedValues>? {
+        get { self[FocusedValuesInputKey.self].attribute }
+        set { self[FocusedValuesInputKey.self] = .init(newValue) }
+    }
+}

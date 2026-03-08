@@ -41,7 +41,7 @@ extension _BenchmarkHost {
         #if os(iOS) || os(visionOS)
         UIApplication.shared.finishedTest(test.name)
         #elseif os(macOS)
-        NSApplication.shared.finishedTest(test.name)
+        NSApplication.shared.finishedTest(test.name, extraResults: nil)
         #else
         #endif
     }

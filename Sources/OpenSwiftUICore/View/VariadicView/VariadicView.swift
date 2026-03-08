@@ -348,9 +348,10 @@ extension _VariadicView.ViewRoot {
         inputs: inout _GraphInputs,
         fields: DynamicPropertyCache.Fields
     ) -> (_GraphValue<Body>, _DynamicPropertyBuffer?) {
-        guard Metadata(Self.self).isValueType else {
-            preconditionFailure("views root must be value types (either a struct or an enum); \(Self.self) is a class.")
-        }
+        precondition(
+            Metadata(Self.self).isValueType,
+            "views root must be value types (either a struct or an enum); \(Self.self) is a class."
+        )
         let accessor = ViewRootBodyAccessor<Self>(list: list, contentSubgraph: .current!)
         return accessor.makeBody(container: root, inputs: &inputs, fields: fields)
     }

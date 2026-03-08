@@ -6,9 +6,10 @@
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
-package import OpenCoreGraphicsShims
 package import Foundation
 package import OpenAttributeGraphShims
+package import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
 
 // MARK: - _DisplayList_Identity
 
@@ -492,45 +493,72 @@ extension DisplayList.Item {
 
 extension DisplayList {
     // FIXME
-    package class InterpolatorGroup {}
+    package class InterpolatorGroup {
+        private struct Contents {
+            var list: DisplayList
+            var origin: CGPoint
+            var rbList: ORBDisplayListContents
+            var nextTime: Time
+            var numericValue: Float?
+        }
+
+        private struct Removed {
+            var contents: Contents
+            var interpolator: ORBDisplayListInterpolator?
+            var transition: ORBTransition?
+            var animation: ORBAnimation
+            var listener: AnimationListener?
+            var begin: Time
+            var duration: Double
+            var phase: Phase
+        }
+
+        private enum Phase {
+            case pending
+            case first
+            case second
+            case running
+        }
+
+//        private var contents: Contents
+//        private var removed: [Removed]
+//        var time: Time
+//        var renderer: DisplayList.GraphicsRenderer?
+//        var contentSeed: DisplayList.Seed
+//        var supportsVFD: Bool
+//        var needsUpdate: Bool
+
+        init() {
+//            _openSwiftUIUnimplementedFailure()
+        }
+
+        func reset() {
+            _openSwiftUIEmptyStub()
+        }
+
+        func rewriteDisplayList(
+            _ list: inout DisplayList,
+            time: Attribute<Time>,
+            contentOrigin: CGPoint,
+            contentOffset: CGSize,
+            version: DisplayList.Version
+        ) -> Bool {
+            _openSwiftUIEmptyStub()
+            return false
+        }
+    }
 }
 
 package struct AccessibilityNodeAttachment {}
 
-extension GraphicsContext {
-    @frozen
-    public struct ClipOptions: OptionSet {
-        public let rawValue: UInt32
-
-        public init(rawValue: UInt32) {
-            self.rawValue = rawValue
-        }
-    }
-}
-
 package protocol _DisplayList_AnyEffectAnimation {}
 
-package struct GraphicsImage: Equatable {
-    package init() {}
-}
-
-extension GraphicsImage: ProtobufMessage {
-    package func encode(to encoder: inout ProtobufEncoder) throws {
-        // GraphicsImage is currently empty, no fields to encode
-    }
-    
-    package init(from decoder: inout ProtobufDecoder) throws {
-        // GraphicsImage is currently empty, skip all fields
-        while let field = try decoder.nextField() {
-            try decoder.skipField(field)
-        }
-        self = GraphicsImage()
+extension DisplayList.Item {
+    func addDrawingGroup(contentSeed: DisplayList.Seed) {
+        _openSwiftUIUnimplementedWarning()
     }
 }
-package struct ResolvedShadowStyle {}
 
-package struct StyledTextContentView: PrimitiveView {}
-package struct RasterizationOptions {}
-package protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
-public struct PlatformDrawableOptions {}
-public protocol PlatformDrawable : AnyObject {}
+package class ORBDisplayListContents {}
+package class ORBDisplayListInterpolator {}
+package struct ORBTransition {}

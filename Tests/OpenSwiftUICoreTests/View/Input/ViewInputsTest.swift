@@ -8,7 +8,7 @@ import OpenSwiftUICore
 import Testing
 
 @MainActor
-@Suite(.enabled(if: attributeGraphEnabled))
+@Suite(.disabled(if: attributeGraphVendor == .oag))
 struct ViewInputsTest {
     @Test
     func debugProperties() {

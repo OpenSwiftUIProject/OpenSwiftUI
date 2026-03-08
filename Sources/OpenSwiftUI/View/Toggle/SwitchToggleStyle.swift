@@ -65,29 +65,31 @@ public struct SwitchToggleStyle: ToggleStyle {
         self.tint = tint
     }
 
+    // TODO: iOS gesture
     public func makeBody(configuration: Configuration) -> some View {
-        #if os(iOS) || os(visionOS)
-        // FIXME
+        let switchView = {
+            #if os(iOS) || os(visionOS)
+            Switch(isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
+            #elseif os(macOS)
+            Switch(isOn: configuration.$isOn, tint: tint, font: font)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
         LabeledContent {
-            Switch(_isOn: configuration.$isOn, tint: tint, thumbTint: placementTint[.switchThumb], font: font)
+            switchView()
                 .fixedSize()
                 .modifier(
                     _EnvironmentKeyWritingModifier(keyPath: \.controlSize, value: controlSize)
-                        .requiring(GroupedFormStyleContext.self)
+                        .requiring(GroupedFormStyleContext.self),
                 )
-                // TODO: TopAlignedFormValueKey
+                // TODO:
+                .layoutValue(key: TopAlignedFormValueKey.self, value: false)
         } label: {
             configuration.label
         }
         .listLabeledContentPrefersHorizontalLayout()
         .accessibilityLabeledContent()
-        #elseif os(macOS)
-        // FIXME
-        Switch(_isOn: configuration.$isOn, tint: tint, font: font, _acceptsFirstMouse: .init(\.acceptsFirstMouse))
-            .fixedSize()
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
     }
 }
 
@@ -106,7 +108,7 @@ import AppKit
 typealias PlatformSwitch = UISwitch
 
 private struct Switch: UIViewRepresentable {
-    var _isOn: Binding<Bool>
+    @Binding var isOn: Bool
     var tint: Color?
     var thumbTint: AnyShapeStyle?
     var font: Font
@@ -122,7 +124,7 @@ private struct Switch: UIViewRepresentable {
     }
 
     func updateUIView(_ uiView: PlatformSwitch, context: Context) {
-        let isOn = _isOn.wrappedValue
+        let isOn = isOn
         let transaction = context.transaction
         Update.enqueueAction(reason: nil) { [transaction] in
             uiView.setOn(isOn, animated: transaction.disablesAnimations)
@@ -149,25 +151,6 @@ private struct Switch: UIViewRepresentable {
     }
 }
 #elseif os(macOS)
-// FIXME
-protocol AcceptsFirstMouseCustomizing {
-    var customAcceptsFirstMouse: Bool? { get }
-}
-
-extension AcceptsFirstMouseCustomizing {
-    var effectiveAcceptsFirstMouse: Bool? {
-        // FIXME: Find via view hierarchy if not set directly
-        customAcceptsFirstMouse
-    }
-}
-
-extension EnvironmentValues {
-    var acceptsFirstMouse: Bool? {
-        // FIXME
-        get { controlSize == .mini }
-    }
-}
-
 private final class PlatformSwitch: NSSwitch, AcceptsFirstMouseCustomizing {
     var customAcceptsFirstMouse: Bool?
 
@@ -181,10 +164,10 @@ private final class PlatformSwitch: NSSwitch, AcceptsFirstMouseCustomizing {
 }
 
 private struct Switch: NSViewRepresentable {
-    var _isOn: Binding<Bool>
+    @Binding var isOn: Bool
     var tint: Color?
     var font: Font
-    var _acceptsFirstMouse: Environment<Bool?>
+    @Environment(\.allowsWindowActivationEvents) var acceptsFirstMouse: Bool?
 
     func makeNSView(context: Context) -> PlatformSwitch {
         let view = PlatformSwitch()
@@ -193,7 +176,7 @@ private struct Switch: NSViewRepresentable {
     }
 
     func updateNSView(_ nsView: PlatformSwitch, context: Context) {
-        let isOn = _isOn.wrappedValue
+        let isOn = isOn
         if context.transaction.disablesAnimations {
             nsView.state = isOn ? .on : .off
         } else {

@@ -114,7 +114,7 @@ package struct ConditionalTypeDescriptor<P> where P: ConditionalProtocolDescript
                     at: base,
                     tag: tag
                 ) { ptr in
-                    descriptor.project(at: ptr, baseIndex: baseIndex &+ 1, body)
+                    descriptor.project(at: ptr, baseIndex: baseIndex + 1, body)
                 }
             }
         case let .either(type, falseDescriptor, trueDescriptor):

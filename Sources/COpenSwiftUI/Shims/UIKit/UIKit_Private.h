@@ -20,6 +20,9 @@
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIApplication (OpenSwiftUI_SPI)
+- (nullable NSString *)_extendLaunchTest;
+- (BOOL)_supportsPrintCommand;
+
 // Test API
 - (void)startedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(startedTest(_:));
 - (void)finishedTest_openswiftui_safe_wrapper:(nullable NSString *)name OPENSWIFTUI_SWIFT_NAME(finishedTest(_:));
@@ -27,6 +30,8 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (nullable NSString *)_launchTestName_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_launchTestName());
 
 - (void)_performBlockAfterCATransactionCommits_openswiftui_safe_wrapper:(void (^)(void))block OPENSWIFTUI_SWIFT_NAME(_performBlockAfterCATransactionCommits(_:));
+
+- (void)_saveRestorationUserActivityStateForScene_openswiftui_safe_wrapper:(UIScene *)scene OPENSWIFTUI_SWIFT_NAME(_saveRestorationUserActivityState(forScene:));
 @end
 
 @interface UIView (OpenSwiftUI_SPI)
@@ -34,6 +39,14 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (BOOL)_shouldAnimatePropertyWithKey_openswiftui_safe_wrapper:(NSString *)key OPENSWIFTUI_SWIFT_NAME(_shouldAnimateProperty(withKey:));
 - (void)_setFocusInteractionEnabled_openswiftui_safe_wrapper:(BOOL)enabled OPENSWIFTUI_SWIFT_NAME(_setFocusInteractionEnabled(_:));
 @property(nonatomic, readonly, nullable) UIViewController *_viewControllerForAncestor_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_viewControllerForAncestor);
+
+@property(class, nonatomic, readonly) BOOL _isInAnimationBlockWithAnimationsEnabled_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_isInAnimationBlockWithAnimationsEnabled);
+@property(class, nonatomic, readonly) NSTimeInterval _currentAnimationDuration_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationDuration);
+@property(class, nonatomic, readonly) NSInteger _currentAnimationCurve_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationCurve);
+@end
+
+@interface UIResponder (OpenSwiftUI_SPI)
+- (void)_performMainMenuShortcutKeyCommand:(UIKeyCommand *)keyCommand; // FIXME
 @end
 
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
@@ -64,6 +77,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 #endif
 
+@interface UIWindow (OpenSwiftUI_SPI)
+@property (nonatomic, readonly, nullable) UIWindowScene *_windowHostingScene_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_windowHostingScene);
+@end
+
 @interface UIWindowScene (OpenSwiftUI_SPI)
 @property (nonatomic, readonly) UIUserInterfaceStyle _systemUserInterfaceStyle_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_systemUserInterfaceStyle);
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
@@ -81,6 +98,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @end
 #endif
 
+@interface UISceneConfiguration (OpenSwiftUI_SPI)
+@property (nonatomic, readonly, nullable) id<UISceneDelegate> sceneDelegate;
+@end
+
 OPENSWIFTUI_EXPORT
 bool UIViewIgnoresTouchEvents(UIView *view);
 
@@ -90,9 +111,70 @@ float UIAnimationDragCoefficient(void);
 // MARK: - UIUpdate related private API from UIKitCore
 
 OPENSWIFTUI_EXPORT
-bool _UIUpdateAdaptiveRateNeeded();
+bool _UIUpdateAdaptiveRateNeeded(void);
 
-UIView * _UIKitCreateCustomView(Class class, CALayer *layer);
+OPENSWIFTUI_EXPORT
+bool _UIUpdateCycleEnabled(void);
+
+typedef struct _UIUpdateTiming {
+    uint64_t unknown1;
+    uint64_t unknown2;
+    uint64_t unknown3;
+} _UIUpdateTiming;
+
+typedef void (^_UIUpdateSequenceCallback)(void * _Nullable context, CGFloat time, const _UIUpdateTiming * _Nonnull timing);
+
+typedef struct _UIUpdateSequenceItem _UIUpdateSequenceItem;
+
+typedef struct _UIUpdateSequence {
+    _UIUpdateSequenceItem * _Nullable first;
+} _UIUpdateSequence;
+
+typedef struct _UIUpdateSequenceItem {
+    const _UIUpdateSequenceItem * _Nullable next;
+    const _UIUpdateSequence * _Nullable sequence;
+    const char * name;
+    uint32_t flags;
+    void * _Nullable context;
+    void * _Nullable callback; // Actual type should be _UIUpdateSequenceCallback*
+} _UIUpdateSequenceItem;
+
+// MARK: - UIUpdateSequence Items
+//
+// UIUpdateActionPhase defines specific phases of the UI update process.
+// See: https://developer.apple.com/documentation/uikit/uiupdateactionphase
+//
+// Each UI update consists of several phases that run in a consistent order.
+// There are two phase groups: standard and low-latency.
+//
+// Standard phase group (runs for each UI update):
+//   1. beforeEventDispatch / afterEventDispatch       -> HIDEventsItem
+//   2. beforeCADisplayLinkDispatch / afterCADisplayLinkDispatch -> CADisplayLinksItem
+//   3. beforeCATransactionCommit / afterCATransactionCommit -> CATransactionCommitItem
+//
+// Low-latency phase group (optional, runs after standard phases):
+//   1. beforeLowLatencyEventDispatch / afterLowLatencyEventDispatch -> LowLatencyHIDEventsItem
+//   2. beforeLowLatencyCATransactionCommit / afterLowLatencyCATransactionCommit -> LowLatencyCATransactionCommitItem
+
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceScheduledItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceHIDEventsItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceCADisplayLinksItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceAnimationsItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceCATransactionCommitItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceLowLatencyHIDEventsItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceLowLatencyCATransactionCommitItem;
+OPENSWIFTUI_EXPORT const _UIUpdateSequenceItem * _Nonnull _UIUpdateSequenceDoneItem;
+
+OPENSWIFTUI_EXPORT
+void * _Nonnull _UIUpdateSequenceInsertItem(const _UIUpdateSequenceItem * _Nullable next,
+                                           const _UIUpdateSequence * _Nullable sequence,
+                                           const char * name,
+                                           uint32_t flags,
+                                           void * _Nullable context,
+                                           _UIUpdateSequenceCallback _Nullable callback);
+
+OPENSWIFTUI_EXPORT
+void _UIUpdateSequenceRemoveItem(_UIUpdateSequenceItem *item);
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

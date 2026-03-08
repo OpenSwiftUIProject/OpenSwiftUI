@@ -1,23 +1,48 @@
 # Status Description
 
+Implementation status uses a two-axis system to track both API coverage and verification level.
+
 Unless specified:
-- when the implementation is audited for 2021 release the documentation is audited for 2023 release.
-- when the implementation is audited for 2024 release the documentation is audited for 2024 release.
+- when the implementation is audited for 6.5.4 release the documentation is audited for Xcode 16.4 SDK.
 
-## Empty
+## Axis 1: API Coverage
 
-Only have an empty namespace used as placeholder type in other implementation.
+How much of the API surface is implemented?
 
-## WIP
+| Status   | Description                                              |
+|----------|----------------------------------------------------------|
+| Empty    | Only namespace/placeholder, no API implementation        |
+| Partial  | Some APIs implemented, some missing                      |
+| Blocked  | Most implementation complete, some blocked by dependencies |
+| Complete | All APIs implemented                                     |
 
-Some interface is implemented while some is not.
+## Axis 2: Verification Level
 
-## Blocked
+How was the implementation created and verified?
 
-Most implementation is complete.
+| Status    | Description                                              |
+|-----------|----------------------------------------------------------|
+| Verified  | Implementation confirmed against reference binary        |
+| Generated | Auto-generated implementation, pending verification      |
+| Stubbed   | Placeholder logic (returns default values or throws)     |
 
-And some is commented/blocked due to other type's incompleteness.
+## Combined Status Format
 
-## Complete
+Status can be expressed as: `[Coverage]` or `[Coverage]-[Verification]`
 
-All implementation is complete.
+- `Complete` implies `Verified`, so the verification suffix is omitted
+- For other coverage levels, append verification when not `Verified`
+
+Examples:
+- `Complete`: All APIs implemented and confirmed against reference
+- `Complete-Generated`: All APIs implemented but pending verification
+- `Partial-Stubbed`: Some APIs exist as placeholders only
+
+## Legacy Status Mapping
+
+| Legacy Status | New Status Equivalent |
+|---------------|----------------------|
+| Empty         | Empty-Stubbed        |
+| WIP           | Partial-*            |
+| Blocked       | Blocked-*            |
+| Complete      | Complete             |

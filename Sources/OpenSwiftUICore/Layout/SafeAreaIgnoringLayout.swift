@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import OpenAttributeGraph
+import OpenAttributeGraphShims
 package import OpenCoreGraphicsShims
 
 @available(OpenSwiftUI_v1_0, *)

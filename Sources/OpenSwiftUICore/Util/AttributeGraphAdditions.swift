@@ -28,6 +28,11 @@ extension Subgraph {
     }
 }
 
+// FIXME
+extension Graph {
+    package typealias TraceFlags = TraceOptions
+}
+
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
@@ -171,17 +176,21 @@ extension Attribute {
     }
 
     package func allowsAsyncUpdate() -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        !valueState.contains([.dirty, .mainThread])
     }
 }
 
 extension WeakAttribute {
     package var uncheckedIdentifier: Attribute<Value> {
-        get { _openSwiftUIUnimplementedFailure() }
+        #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
+        _openSwiftUIUnimplementedFailure()
+        #else
+        Attribute(identifier: AnyWeakAttribute(self)._details.identifier)
+        #endif
     }
 
     package func allowsAsyncUpdate() -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        attribute.map { $0.allowsAsyncUpdate() } ?? false
     }
 }
 
@@ -289,7 +298,7 @@ extension Graph {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package static func startTracing(options: Graph.TraceOptions? = nil) {
+    package static func startTracing(options: Graph.TraceFlags? = nil) {
         Graph.startTracing(nil, options: options ?? ProcessEnvironment.tracingOptions)
     }
 

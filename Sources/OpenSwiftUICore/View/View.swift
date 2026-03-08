@@ -45,6 +45,9 @@ import OpenSwiftUI_SPI
 /// You can also collect groups of default modifiers into new,
 /// custom view modifiers for easy reuse.
 @available(OpenSwiftUI_v1_0, *)
+#if OPENSWIFTUI_SUPPORT_2025_API && compiler(>=6.2)
+@_typeEraser(DebugReplaceableView)
+#endif
 @_typeEraser(AnyView)
 @preconcurrency
 @MainActor
@@ -86,13 +89,14 @@ public protocol View {
     @ViewBuilder
     @MainActor
     @preconcurrency
-    var body: Self.Body { get }
+    var body: Body { get }
 }
 
 // MARK: - PrimitiveView
 
 package protocol PrimitiveView: View {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension PrimitiveView {
     public var body: Never {
         bodyError()
@@ -195,6 +199,6 @@ package struct ViewDescriptor: TupleDescriptor, ConditionalProtocolDescriptor {
 
 extension TypeConformance where P == ViewDescriptor {
     package func visitType<V>(visitor: UnsafeMutablePointer<V>) where V: ViewTypeVisitor {
-        visitor.pointee.visit(type: unsafeBitCast(self, to: (any View.Type).self))
+        visitor.pointee.visit(type: unsafeExistentialMetatype((any View.Type).self))
     }
 }

@@ -117,10 +117,10 @@ extension Transition {
     package var hasContentTransition: Bool {
         var contentTransition = _Transition_ContentTransition(operation: .hasContentTransition, result: .none)
         _makeContentTransition(transition: &contentTransition)
-        return switch contentTransition.result {
-        case let .bool(result): result
-        default: false
+        guard case let .bool(result) = contentTransition.result else {
+            return false
         }
+        return result
     }
 
     package func contentTransitionEffects(
@@ -129,10 +129,10 @@ extension Transition {
     ) -> [ContentTransition.Effect] {
         var contentTransition = _Transition_ContentTransition(operation: .effects(style: style, size: size), result: .none)
         _makeContentTransition(transition: &contentTransition)
-        return switch contentTransition.result {
-        case let .effects(effects): effects
-        default: []
+        guard case let .effects(effects) = contentTransition.result else {
+            return []
         }
+        return effects
     }
 }
 

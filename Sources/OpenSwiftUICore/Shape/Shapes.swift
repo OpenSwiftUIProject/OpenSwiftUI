@@ -266,7 +266,21 @@ extension Shape where Self == Circle {
 /// edge.
 @frozen public struct Circle: Shape {
     nonisolated public func path(in rect: CGRect) -> Path {
-        _openSwiftUIUnimplementedFailure()
+        guard !rect.isNull, !rect.isInfinite else {
+            return rect.isNull ? Path() : Path(rect)
+        }
+        var square = rect
+        let diff = rect.width - rect.height
+        if diff > 0 {
+            square.x += diff / 2
+            square.size.width = square.height
+        } else if diff < 0 {
+            square.y -= diff / 2
+            square.size.height = square.width
+        } else {
+            square = rect
+        }
+        return Path(ellipseIn: square)
     }
 
     /// Creates a new circle shape.

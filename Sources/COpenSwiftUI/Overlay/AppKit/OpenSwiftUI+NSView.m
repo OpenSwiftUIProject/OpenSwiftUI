@@ -9,4 +9,8 @@
 
 #if OPENSWIFTUI_TARGET_OS_OSX
 
+void _SetLayerViewDelegate(CALayer *layer, id view) {
+    layer.delegate = view;
+}
+
 #endif

@@ -12,7 +12,7 @@ package protocol DynamicView {
     static var canTransition: Bool { get }
     static var traitKeysDependOnView: Bool { get }
     associatedtype Metadata
-    associatedtype ID : Hashable
+    associatedtype ID: Hashable
     static func makeID() -> ID
     func childInfo(metadata: Metadata) -> (any Any.Type, ID?)
     func makeChildView(metadata: Metadata, view: Attribute<Self>, inputs: _ViewInputs) -> _ViewOutputs

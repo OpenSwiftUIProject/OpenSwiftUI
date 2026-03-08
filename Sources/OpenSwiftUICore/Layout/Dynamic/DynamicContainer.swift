@@ -46,10 +46,11 @@ package struct DynamicContainer {
         fileprivate(set) var seed: UInt32 = .zero
 
         func viewIndex(id: ID) -> Int? {
-            guard let value = indexMap[id.uniqueId] else {
+            guard let index = indexMap[id.uniqueId] else {
                 return nil
             }
-            return value + Int(id.viewIndex)
+            let item = items[index]
+            return Int(item.precedingViewCount + id.viewIndex)
         }
 
         func item(for subgraph: Subgraph) -> ItemInfo? {
@@ -258,7 +259,7 @@ private struct DynamicPreferenceCombiner<K>: Rule, AsyncAttribute, CustomStringC
             }
             let item = info.items[itemIndex]
             guard let attribute = item.outputs[K.self] else {
-                return value
+                continue
             }
             if initialValue {
                 value = attribute.value
@@ -358,9 +359,9 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         if needsUpdate {
             let totalCount = info.items.count
             let unusedCount = info.unusedCount
-            let inusedCount = totalCount - unusedCount
+            let inusedCount = totalCount &- unusedCount
             let removedCount = info.removedCount
-            let validCount = inusedCount - removedCount
+            let validCount = inusedCount &- removedCount
             if validCount < inusedCount {
                 var slice = info.items[validCount..<inusedCount]
                 slice.sort { $0.removalOrder < $1.removalOrder }
@@ -368,7 +369,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             }
             info.indexMap.removeAll(keepingCapacity: true)
             info.allUnary = true
-            Swift.assert(inusedCount > 0)
+            Swift.assert(inusedCount >= 0)
             if totalCount != unusedCount {
                 var precedingCount: Int32 = 0
                 var allUnary = true
@@ -377,13 +378,13 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                     info.indexMap[item.uniqueId] = index
                     item.precedingViewCount = precedingCount
                     allUnary = allUnary && item.viewCount == 1
-                    info.allUnary = allUnary
                     precedingCount &+= item.viewCount
                 }
+                info.allUnary = allUnary
             }
             precondition(info.indexMap.count == inusedCount, "DynamicLayoutItem identifiers must be unique.")
             if hasDepth {
-                let capacity = abs(removedCount != 0 ? validCount + inusedCount : validCount)
+                let capacity = max(removedCount != 0 ? validCount + inusedCount : validCount, 0)
                 var displayMap: [UInt32] = []
                 displayMap.reserveCapacity(capacity)
                 for index in 0 ..< validCount {
@@ -439,8 +440,8 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                         if removedCount == 0 {
                             target = index
                         } else {
-                            let i = index - info.removedCount
-                            target = i >= 0 ? i : info.items.count - (info.unusedCount + info.removedCount)
+                            let i = index &- info.removedCount
+                            target = i >= 0 ? i : info.items.count &- (info.unusedCount + info.removedCount)
                         }
                     }
                     info.items[target].subgraph.index = UInt32(index)
@@ -610,10 +611,10 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
             let zIndex = infoItem.zIndex
             hasDepth = hasDepth || (zIndex != 0)
             if zIndex != info.items[target].zIndex {
-                info.items[target].zIndex = zIndex
+                info.items[index].zIndex = zIndex // Weird. No-op actually.
                 changed = true
             }
-            if phase != info.items[target].phase {
+            if phase != info.items[index].phase {
                 changed = true
             }
         }
@@ -629,7 +630,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         }
         switch phase {
         case .willAppear:
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         case .identity:
             guard !disableTransitions, info.items[index].needsTransitions else {
                 eraseItem(at: index)
@@ -696,7 +697,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         let phase = info.items[index].phase
         switch phase {
         case .willAppear, nil:
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         case .identity:
             break
         case .didDisappear:

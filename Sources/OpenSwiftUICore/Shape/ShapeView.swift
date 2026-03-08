@@ -2,13 +2,15 @@
 //  ShapeView.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by _ShapeView.makeView
+//  Audited for 6.5.4
+//  Status: Complete
 
 public import Foundation
+package import OpenAttributeGraphShims
 
 // MARK: - Shape + Extension (disfavoredOverload)
 
+@available(OpenSwiftUI_v1_0, *)
 extension Shape {
     /// Fills this shape with a color or gradient.
     ///
@@ -87,12 +89,14 @@ extension Shape {
 
 // MARK: - Shape + View
 
+@available(OpenSwiftUI_v1_0, *)
 extension Shape {
     public var body: _ShapeView<Self, ForegroundStyle> {
         _ShapeView(shape: self, style: ForegroundStyle())
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 extension Shape {
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         makeView(view: view, inputs: inputs)
@@ -105,6 +109,7 @@ extension Shape {
 
 // MARK: - ShapeStyle + View
 
+@available(OpenSwiftUI_v1_0, *)
 extension ShapeStyle where Self: View, Body == _ShapeView<Rectangle, Self> {
     public var body: _ShapeView<Rectangle, Self> {
         _ShapeView(shape: Rectangle(), style: self)
@@ -121,8 +126,11 @@ extension ShapeStyle where Self: View, Body == _ShapeView<Rectangle, Self> {
 ///     Rectangle()
 ///         .fill(.red)
 ///
+@available(OpenSwiftUI_v1_0, *)
 @frozen
-public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, PrimitiveView/*, LeafViewLayout*/ where Content: Shape, Style: ShapeStyle {
+@MainActor
+@preconcurrency
+public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, PrimitiveView, LeafViewLayout where Content: Shape, Style: ShapeStyle {
     public var shape: Content
 
     public var style: Style
@@ -130,20 +138,80 @@ public struct _ShapeView<Content, Style>: View, UnaryView, ShapeStyledLeafView, 
     public var fillStyle: FillStyle
 
     @inlinable
-    public init(shape: Content, style: Style, fillStyle: FillStyle = FillStyle()) {
+    nonisolated public init(shape: Content, style: Style, fillStyle: FillStyle = FillStyle()) {
         self.shape = shape
         self.style = style
         self.fillStyle = fillStyle
     }
 
-    nonisolated public static func _makeView(view: _GraphValue<_ShapeView<Content, Style>>, inputs: _ViewInputs) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+    nonisolated public static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        let preferences = inputs.preferences
+        guard !preferences.keys.isEmpty else {
+            return .init()
+        }
+        guard preferences.requiresDisplayList ||
+                preferences.requiresViewResponders
+        else {
+            return .init()
+        }
+        let styles: Attribute<ShapeStyle.Pack>
+        if Style.self == ForegroundStyle.self {
+            styles = inputs.resolvedShapeStyles(
+                role: Content.role,
+                mode: nil
+            )
+        } else {
+            styles = Attribute(ShapeStyleResolver(
+                style: .init(view.value[offset: { .of(&$0.style) }]),
+                mode: .init(),
+                environment: inputs.environment,
+                role: Content.role,
+                animationsDisabled: inputs.base.animationsDisabled,
+                helper: .init(phase: inputs.viewPhase, time: inputs.time, transaction: inputs.transaction)
+            ))
+            styles.flags = .transactional
+        }
+        if MemoryLayout<Content.AnimatableData>.size == 0 {
+            var outputs = makeLeafView(
+                view: view,
+                inputs: inputs,
+                styles: styles,
+                interpolatorGroup: nil,
+                data: ()
+            )
+            if isLinkedOnOrAfter(.v4) {
+                makeLeafLayout(&outputs, view: view, inputs: inputs)
+            }
+            return outputs
+        } else {
+            let shapeValue = view[offset: { .of(&$0.shape) }]
+            let animatedShape = Content.makeAnimatable(value: shapeValue, inputs: inputs.base)
+            let fillStyleAttr: Attribute<FillStyle> = view.value[offset: { .of(&$0.fillStyle) }]
+            let animatedView = _GraphValue(AnimatedShape<Content>.Init(
+                shape: animatedShape,
+                fillStyle: fillStyleAttr
+            ))
+            var outputs = AnimatedShape<Content>.makeLeafView(
+                view: animatedView,
+                inputs: inputs,
+                styles: styles
+            )
+            if isLinkedOnOrAfter(.v4) {
+                AnimatedShape<Content>.makeLeafLayout(&outputs, view: animatedView, inputs: inputs)
+            }
+            return outputs
+        }
     }
 
     package func shape(in size: CGSize) -> FramedShape {
         let path = shape.effectivePath(in: CGRect(origin: .zero, size: size))
-        // FIXME
-        return FramedShape(shape: .path(path, fillStyle), frame: CGRect(origin: .zero, size: size))
+        return FramedShape(
+            shape: .path(path, fillStyle),
+            frame: CGRect(origin: .zero, size: size)
+        )
     }
 
     package func sizeThatFits(in proposedSize: _ProposedSize) -> CGSize {
@@ -160,6 +228,34 @@ extension ShapeStyle {
     }
 }
 
+// MARK: - AnimatedShape
+
+struct AnimatedShape<Content: Shape>: ShapeStyledLeafView, PrimitiveView, UnaryView, LeafViewLayout {
+    var shape: Content
+    var fillStyle: FillStyle
+
+    func shape(in size: CGSize) -> FramedShape {
+        let path = shape.effectivePath(in: CGRect(origin: .zero, size: size))
+        return FramedShape(
+            shape: .path(path, fillStyle),
+            frame: CGRect(origin: .zero, size: size)
+        )
+    }
+
+    func sizeThatFits(in proposedSize: _ProposedSize) -> CGSize {
+        shape.sizeThatFits(.init(proposedSize))
+    }
+
+    struct Init: Rule, AsyncAttribute {
+        @Attribute var shape: Content
+        @Attribute var fillStyle: FillStyle
+
+        var value: AnimatedShape<Content> {
+            AnimatedShape(shape: shape, fillStyle: fillStyle)
+        }
+    }
+}
+
 // MARK: - ShapeView
 
 /// A view that provides a shape that you can use for drawing operations.
@@ -172,13 +268,15 @@ extension ShapeStyle {
 ///         .fill(.yellow)
 ///         .stroke(.blue, lineWidth: 8)
 ///
+@available(OpenSwiftUI_v5_0, *)
 public protocol ShapeView<Content>: View {
     associatedtype Content: Shape
-    var shape: Self.Content { get }
+    var shape: Content { get }
 }
 
 // MARK: - Shape + Extension
 
+@available(OpenSwiftUI_v5_0, *)
 extension Shape {
     /// Fills this shape with a color or gradient.
     ///
@@ -247,6 +345,7 @@ extension Shape {
 
 // MARK: - InsettableShape + Extension
 
+@available(OpenSwiftUI_v5_0, *)
 extension InsettableShape {
     /// Returns a view that is the result of insetting `self` by
     /// `style.lineWidth / 2`, stroking the resulting shape with
@@ -276,6 +375,7 @@ extension InsettableShape {
     }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension _ShapeView: ShapeView {}
 
 // MARK: - FillShapeView
@@ -283,6 +383,7 @@ extension _ShapeView: ShapeView {}
 /// A shape provider that fills its shape.
 ///
 /// You do not create this type directly, it is the return type of `Shape.fill`.
+@available(OpenSwiftUI_v5_0, *)
 @frozen
 public struct FillShapeView<Content, Style, Background>: ShapeView, PrimitiveView, UnaryView where Content: Shape, Style: ShapeStyle, Background: View {
     @usableFromInline
@@ -347,8 +448,9 @@ extension FillShapeView: Sendable {}
 ///
 /// You don't create this type directly; it's the return type of
 /// `Shape.stroke`.
+@available(OpenSwiftUI_v5_0, *)
 @frozen
-public struct StrokeShapeView<Content, Style, Background> : ShapeView, PrimitiveView, UnaryView where Content: Shape, Style: ShapeStyle, Background: View {
+public struct StrokeShapeView<Content, Style, Background>: ShapeView, PrimitiveView, UnaryView where Content: Shape, Style: ShapeStyle, Background: View {
     @usableFromInline
     typealias ViewType = ModifiedContent<_ShapeView<_StrokedShape<Content>, Style>, _BackgroundModifier<Background>>
 
@@ -418,6 +520,7 @@ extension StrokeShapeView: Sendable {}
 ///
 /// You don't create this type directly; it's the return type of
 /// `Shape.strokeBorder`.
+@available(OpenSwiftUI_v5_0, *)
 @frozen
 public struct StrokeBorderShapeView<Content, Style, Background>: ShapeView, PrimitiveView, UnaryView where Content: InsettableShape, Style: ShapeStyle, Background: View {
     @usableFromInline
@@ -485,6 +588,7 @@ extension StrokeBorderShapeView: Sendable {}
 
 // MARK: - ShapeView + Extension
 
+@available(OpenSwiftUI_v5_0, *)
 extension ShapeView {
     /// Fills this shape with a color or gradient.
     ///
@@ -556,6 +660,7 @@ extension ShapeView {
     }
 }
 
+@available(OpenSwiftUI_v5_0, *)
 extension ShapeView where Content: InsettableShape {
     /// Returns a view that's the result of insetting this view by half of its style's line width.
     ///

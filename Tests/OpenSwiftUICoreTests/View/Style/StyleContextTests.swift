@@ -10,7 +10,7 @@ import OpenSwiftUICore
 import Testing
 
 @MainActor
-@Suite(.enabled(if: swiftToolchainSupported))
+@Suite
 struct TupleStyleContextTests {
     @Test("Test TupleStyleContext accepts single context at index 0")
     func acceptsSingleContextAtIndexZero() {
@@ -143,7 +143,7 @@ struct TupleStyleContextTests {
 }
 
 @MainActor
-@Suite(.enabled(if: swiftToolchainSupported))
+@Suite
 struct StyleContextVisitorTests {
     private struct CollectingVisitor: StyleContextVisitor {
         var visitedTypes: [String] = []
@@ -173,7 +173,7 @@ struct StyleContextVisitorTests {
 }
 
 @MainActor
-@Suite(.enabled(if: swiftToolchainSupported))
+@Suite
 struct ConcreteStyleContextTests {
     @Test("Test WindowRootContext accepts itself")
     func windowRootContextAcceptsItself() {

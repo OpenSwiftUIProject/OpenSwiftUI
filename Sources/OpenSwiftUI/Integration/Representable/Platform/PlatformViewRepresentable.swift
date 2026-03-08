@@ -621,11 +621,11 @@ struct PlatformArchivedDisplayList<Content>: Rule where Content: PlatformViewRep
         }
         
         func makePlatformView() -> AnyObject? {
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         }
 
         func updatePlatformView(_ view: inout AnyObject) {
-            preconditionFailure("")
+            _openSwiftUIUnreachableCode()
         }
     }
 }
@@ -669,21 +669,20 @@ private struct LeafLayoutEnvironment: StatefulRule {
 
     func updateValue() {
         let (env, envChanged) = $environment.changedValue()
-        let shouldReset: Bool
+        let changed: Bool
         if !hasValue {
-            shouldReset = true
+            changed = true
         } else if envChanged, tracker.hasDifferentUsedValues(env.plist) {
-            shouldReset = true
+            changed = true
         } else {
-            shouldReset = false
+            changed = false
         }
-        if shouldReset {
-            tracker.reset()
-            value = EnvironmentValues(
-                environment.plist,
-                tracker: tracker
-            )
-        }
+        guard changed else { return }
+        tracker.reset()
+        value = EnvironmentValues(
+            environment.plist,
+            tracker: tracker
+        )
     }
 }
 

@@ -16,7 +16,7 @@ struct UpdateTests {
                 #expect(!Update.isActive)
                 #expect(!Update.threadIsUpdating)
                 #expect(Update.isOwner)
-                Update.dispatchImmediately {
+                Update.dispatchImmediately(reason: nil) {
                     confirmation()
                     #expect(Update.isActive)
                     #expect(!Update.threadIsUpdating)

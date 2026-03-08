@@ -2,12 +2,13 @@
 //  BlendMode.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 
 // MARK: - BlendMode
 
 /// Modes for compositing a view with overlapping content.
+@available(OpenSwiftUI_v1_0, *)
 public enum BlendMode: Sendable {
     case normal
     case multiply
@@ -32,40 +33,9 @@ public enum BlendMode: Sendable {
     case plusLighter
 }
 
-#if canImport(CoreGraphics)
-package import CoreGraphics
-
-extension BlendMode {
-    package init(_ blendMode: CGBlendMode) {
-        self = switch blendMode {
-            case .normal: .normal
-            case .multiply: .multiply
-            case .screen: .screen
-            case .overlay: .overlay
-            case .darken: .darken
-            case .lighten: .lighten
-            case .colorDodge: .colorDodge
-            case .colorBurn: .colorBurn
-            case .softLight: .softLight
-            case .hardLight: .hardLight
-            case .difference: .difference
-            case .exclusion: .exclusion
-            case .hue: .hue
-            case .saturation: .saturation
-            case .color: .color
-            case .luminosity: .luminosity
-            case .sourceAtop: .sourceAtop
-            case .destinationOver: .destinationOver
-            case .destinationOut: .destinationOut
-            case .plusDarker: .plusDarker
-            case .plusLighter: .plusLighter
-            default: .normal
-        }
-    }
-}
-#endif
-
+@available(OpenSwiftUI_v3_0, *)
 extension ShapeStyle {
+
     /// Returns a new style based on `self` that applies the specified
     /// blend mode when drawing.
     @inlinable
@@ -74,7 +44,9 @@ extension ShapeStyle {
     }
 }
 
+@available(OpenSwiftUI_v4_0, *)
 extension ShapeStyle where Self == AnyShapeStyle {
+
     /// Returns a new style based on the current style that uses
     /// `mode` as its blend mode when drawing.
     ///
@@ -96,42 +68,51 @@ extension ShapeStyle where Self == AnyShapeStyle {
     }
 }
 
+@available(OpenSwiftUI_v3_0, *)
 @frozen
 public struct _BlendModeShapeStyle<Style>: ShapeStyle, PrimitiveShapeStyle where Style: ShapeStyle {
     public var style: Style
+
     public var blendMode: BlendMode
-    @inlinable public init(style: Style, blendMode: BlendMode) {
+
+    @inlinable
+    public init(style: Style, blendMode: BlendMode) {
         self.style = style
         self.blendMode = blendMode
     }
     
     public func _apply(to shape: inout _ShapeStyle_Shape) {
         switch shape.operation {
-            case .fallbackColor, .modifyBackground:
+        case .prepareText:
+            if blendMode == .normal {
                 style._apply(to: &shape)
-            case .prepareText:
-                if blendMode == .normal {
-                    style._apply(to: &shape)
-                } else {
-                    shape.result = .preparedText(.foregroundKeyColor)
-                }
-            default:
-                _openSwiftUIUnimplementedFailure()
-//            case resolveStyle(name: _ShapeStyle_Name, levels: Range<Int>):
-//                
-//                
-//            case .multiLevel:
-//                <#code#>
-//            case .copyStyle(let name):
-//                <#code#>
-//            case .primaryStyle:
-//                <#code#>
+            } else {
+                shape.result = .preparedText(.foregroundKeyColor)
+            }
+        case let .resolveStyle(name: name, levels: levels):
+            style._apply(to: &shape)
+            let blend = GraphicsBlendMode(blendMode)
+            shape.stylePack.modify(
+                name: name,
+                levels: levels
+            ) { style in
+                style.applyBlend(blend)
+            }
+        case .fallbackColor, .modifyBackground, .multiLevel:
+            style._apply(to: &shape)
+        case let .copyStyle(name: name):
+            style.mapCopiedStyle(in: &shape) { style in
+                _BlendModeShapeStyle<AnyShapeStyle>(
+                    style: style,
+                    blendMode: blendMode
+                )
+            }
+        case .primaryStyle:
+            break
         }
     }
     
     public static func _apply(to type: inout _ShapeStyle_ShapeType) {
         Style._apply(to: &type)
     }
-    
-    public typealias Resolved = Never
 }

@@ -458,9 +458,17 @@ package enum IndirectOptional<Wrapped>: ExpressibleByNilLiteral {
     }
 
     package var wrappedValue: Wrapped? {
-        switch self {
-        case .none: nil
-        case let .some(wrapped): wrapped
+        get {
+            switch self {
+            case .none: nil
+            case .some(let wrapped): wrapped
+            }
+        }
+        set {
+            switch newValue {
+            case .none: self = .none
+            case .some(let wrapped): self = .some(wrapped)
+            }
         }
     }
 }
@@ -610,7 +618,7 @@ extension RandomAccessCollection {
             if predicate(self[mid]) {
                 result = mid
                 formIndex(after: &result)
-                remaining &+= -(half + 1)
+                remaining &+= -(half &+ 1)
             } else {
                 remaining = half
             }

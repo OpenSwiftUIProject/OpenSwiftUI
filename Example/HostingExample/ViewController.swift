@@ -35,6 +35,10 @@ final class EntryViewController: UIViewController {
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             self.pushHostingVC()
         }
+
+        #if OPENSWIFTUI || DEBUG
+        // debugUIKitUpdateCycle()
+        #endif
     }
 
     @objc
@@ -45,21 +49,21 @@ final class EntryViewController: UIViewController {
     }
 }
 #elseif os(macOS)
-class ViewController: NSViewController {
-    override func loadView() {
-        view = NSHostingView(rootView: ContentView())
+final class WindowController: NSWindowController {
+    init() {
+        super.init(window: nil)
     }
 
-    override func viewDidLoad() {
-        super.viewDidLoad()
-
-        view.frame = .init(x: 0, y: 0, width: 500, height: 300)
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
     }
 
-    override var representedObject: Any? {
-        didSet {
-            // Update the view, if already loaded.
-        }
+    override var windowNibName: NSNib.Name? { "" }
+
+    override func loadWindow() {
+        window = NSWindow(contentViewController: NSHostingController(rootView: ContentView().frame(width: 500, height: 300)))
+        window?.center()
     }
 }
 #endif

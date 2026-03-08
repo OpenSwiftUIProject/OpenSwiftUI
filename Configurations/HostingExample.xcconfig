@@ -1,1 +1,1 @@
-PRODUCT_BUNDLE_IDENTIFIER = org.OpenSwiftUIProject.OpenSwiftUI.HostingExample
+PRODUCT_BUNDLE_IDENTIFIER = org.OpenSwiftUIProject.$(OPENSWIFTUI_TARGET_BUNDLE_ID).HostingExample

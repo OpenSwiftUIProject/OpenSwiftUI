@@ -2,6 +2,7 @@
 //  EnvironmentKeyTests.swift
 //  OpenSwiftUICoreTests
 
+import OpenAttributeGraphShims
 import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 import Testing
@@ -33,8 +34,7 @@ struct EnvironmentKeyTests {
         #expect(OptionalStringEnvironmentKey._valuesEqual(nil, "test") == false)
     }
 
-    #if OPENSWIFTUI_ATTRIBUTEGRAPH // FIXME: compareValues is not implemented on OAG yet
-    @Test
+    @Test(.disabled(if: attributeGraphVendor == .oag))
     func nonEquatableValuesComparison() {
         let struct1 = CustomStructEnvironmentKey.CustomStruct(value: 100)
         let struct2 = CustomStructEnvironmentKey.CustomStruct(value: 100)
@@ -43,7 +43,6 @@ struct EnvironmentKeyTests {
         #expect(CustomStructEnvironmentKey._valuesEqual(struct1, struct2) == true)
         #expect(CustomStructEnvironmentKey._valuesEqual(struct1, struct3) == false)
     }
-    #endif
 
     // MARK: - DerivedEnvironmentKey Tests
     

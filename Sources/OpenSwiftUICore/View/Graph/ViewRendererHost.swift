@@ -347,14 +347,26 @@ extension ViewRendererHost {
         }
         if asynchronously {
             // TODO: CustomEventTrace
-            if let renderedTime = renderer.renderAsync(
+            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
+            let renderedTime = renderer.swiftUI_renderAsync(
                 to: list,
                 time: time,
                 nextTime: nextTime,
                 targetTimestamp: targetTimestamp,
                 version: version,
                 maxVersion: maxVersion
-            ) {
+            )
+            #else
+            let renderedTime = renderer.renderAsync(
+                to: list,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            )
+            #endif
+            if let renderedTime {
                 return renderedTime
             } else {
                 var renderedTime = nextTime
@@ -369,9 +381,10 @@ extension ViewRendererHost {
     }
 
     package func advanceTimeForTest(interval: Double) {
-        guard interval >= 0 else {
-            preconditionFailure("Test render timestamps must monotonically increase.")
-        }
+        precondition(
+            interval >= 0,
+            "Test render timestamps must monotonically increase."
+        )
         let advancedTime = currentTimestamp + interval
         currentTimestamp = advancedTime == currentTimestamp ? Time(seconds: nextafter(advancedTime.seconds, Double.infinity)) : advancedTime
     }
@@ -442,9 +455,10 @@ extension ViewRendererHost {
         }
         update()
         for host in enclosingHosts {
-            guard host.externalUpdateCount >= 1 else {
-                preconditionFailure("Unbalanced will/did update functions.")
-            }
+            precondition(
+                host.externalUpdateCount >= 1,
+                "Unbalanced will/did update functions."
+            )
             host.externalUpdateCount -= 1
         }
     }

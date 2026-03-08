@@ -5,6 +5,8 @@
 //  Audited for 6.5.4
 //  Status: Blocked by Text.Style
 
+package import Foundation
+
 // MARK: - AccessibilityAnnouncementPriority
 
 @_spi(_)
@@ -81,14 +83,14 @@ package struct AccessibilitySpeechAttributes: Equatable {
     }
 }
 
-// MARK: - Text.Style + AccessibilitySpeechAttributes [WIP]
+// MARK: - Text.Style + AccessibilitySpeechAttributes
 
-//extension Text.Style {
-//    package func resolveAccessibilitySpeechAttributes(
-//        into attributes: inout [NSAttributedString.Key: Any],
-//        environment: EnvironmentValues,
-//        includeDefaultAttributes: Bool = true
-//    ) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
+extension Text.Style {
+    package func resolveAccessibilitySpeechAttributes(
+        into attributes: inout [NSAttributedString.Key: Any],
+        environment: EnvironmentValues,
+        includeDefaultAttributes: Bool = true
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+}

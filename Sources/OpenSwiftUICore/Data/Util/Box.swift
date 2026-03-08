@@ -81,13 +81,13 @@ package struct WeakBox<T> where T: AnyObject {
 
 // MARK: - HashableWeakBox
 
-package struct HashableWeakBox<T>: Hashable where T: AnyObject{
+package struct HashableWeakBox<T>: Hashable where T: AnyObject {
     weak package var base: T?
 
     let basePointer: UnsafeMutableRawPointer
 
     @inlinable
-    init(_ base: T) {
+    package init(_ base: T) {
         self.base = base
         self.basePointer = Unmanaged.passUnretained(base).toOpaque()
     }

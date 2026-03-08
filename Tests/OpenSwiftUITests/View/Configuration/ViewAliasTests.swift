@@ -4,14 +4,15 @@
 
 import Foundation
 import Testing
+import OpenAttributeGraphShims
 @testable import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import OpenSwiftUITestsSupport
 
 @MainActor
+@Suite(.disabled(if: attributeGraphVendor == .oag))
 struct ViewAliasTests {
-    #if canImport(Darwin)
     @Test
     func optionalViewAliasDynamicProperty() async throws {
         struct ContentView: View {
@@ -46,6 +47,7 @@ struct ViewAliasTests {
                     }
             }
         }
+        #if canImport(Darwin)
         try await triggerLayoutWithWindow(expectedCount: 2) { confirmation in
             PlatformHostingController(
                 rootView: ContentView(
@@ -53,8 +55,7 @@ struct ViewAliasTests {
                 )
             )
         }
-
-        // DisplayList expectation
+        #endif
         let graph = ViewGraph(
             rootViewType: ContentView.self,
             requestedOutputs: [.displayList]
@@ -76,5 +77,4 @@ struct ViewAliasTests {
         """#)
         #expect(displayList.description.contains(expectRegex))
     }
-    #endif
 }
