@@ -26,6 +26,8 @@
 		27AF22BB2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27AF22BC2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
 		27AF22BD2E758F3700D534AB /* RenderBox.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D42D2842810010502F /* RenderBox.xcframework */; };
+		27BB94442F5D5FE800B2AA0A /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 27BB94432F5D5FE800B2AA0A /* Equatable */; };
+		27BB94462F5D5FEE00B2AA0A /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 27BB94452F5D5FEE00B2AA0A /* Equatable */; };
 		27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */; };
 		27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */ = {isa = PBXBuildFile; productRef = 27D49E0D2BA60AF600F6E2E2 /* OpenSwiftUI */; };
 		27E28F0B2F5D5531007F8CF5 /* SFSymbols.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E28F0A2F5D5531007F8CF5 /* SFSymbols.xcframework */; };
@@ -91,13 +93,6 @@
 			};
 			target = 27D49DF72BA604FB00F6E2E2 /* HostingExample */;
 		};
-		275C29E52F389AE8008676C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				interpose.c,
-			);
-			target = 275751E22DEE1441003E467C /* TestingHost */;
-		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -107,7 +102,7 @@
 		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
 		279FEC572DF450D200320390 /* ReferenceImages */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReferenceImages; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
-		27FFF0422E08850C0060A4DA /* SharedExample */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (275C29E52F389AE8008676C3 /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = SharedExample; sourceTree = "<group>"; };
+		27FFF0422E08850C0060A4DA /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -117,6 +112,7 @@
 			files = (
 				279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */,
 				27AF22B82E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
+				27BB94442F5D5FE800B2AA0A /* Equatable in Frameworks */,
 				27E28F112F5D5547007F8CF5 /* SFSymbols.xcframework in Frameworks */,
 				27AF22B42E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BC2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -130,6 +126,7 @@
 			files = (
 				2792849F2DFF137400234D64 /* SnapshotTesting in Frameworks */,
 				27AF22B92E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
+				27BB94462F5D5FEE00B2AA0A /* Equatable in Frameworks */,
 				27E28F142F5D5556007F8CF5 /* SFSymbols.xcframework in Frameworks */,
 				27AF22B52E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BD2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -177,7 +174,7 @@
 				27E6C4D02D2842530010502F /* OpenRenderBox */,
 				271D81642BB1E8E300A6D543 /* OpenAttributeGraph */,
 				27CD0B612AFC8E0E003665EB /* OpenSwiftUI */,
-				27FFF0422E08850C0060A4DA /* SharedExample */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 				275751AF2DEE136A003E467C /* Example */,
 				275751C12DEE136C003E467C /* HostingExample */,
 				275751E42DEE1441003E467C /* TestingHost */,
@@ -229,10 +226,12 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751E42DEE1441003E467C /* TestingHost */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 			);
 			name = TestingHost;
 			packageProductDependencies = (
 				279FED0C2DF4567B00320390 /* OpenSwiftUI */,
+				27BB94432F5D5FE800B2AA0A /* Equatable */,
 			);
 			productName = TestingHost;
 			productReference = 275751E32DEE1441003E467C /* TestingHost.app */;
@@ -258,6 +257,7 @@
 			name = OpenSwiftUIUITests;
 			packageProductDependencies = (
 				2792849E2DFF137400234D64 /* SnapshotTesting */,
+				27BB94452F5D5FEE00B2AA0A /* Equatable */,
 			);
 			productName = OpenSwiftUIUITests;
 			productReference = 279283B92DFF11CE00234D64 /* OpenSwiftUIUITests.xctest */;
@@ -277,7 +277,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751AF2DEE136A003E467C /* Example */,
-				27FFF0422E08850C0060A4DA /* SharedExample */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 			);
 			name = Example;
 			packageProductDependencies = (
@@ -302,7 +302,7 @@
 			);
 			fileSystemSynchronizedGroups = (
 				275751C12DEE136C003E467C /* HostingExample */,
-				27FFF0422E08850C0060A4DA /* SharedExample */,
+				27FFF0422E08850C0060A4DA /* Shared */,
 			);
 			name = HostingExample;
 			packageProductDependencies = (
@@ -506,7 +506,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -910,7 +909,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1036,7 +1034,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1244,7 +1241,6 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_ENTITLEMENTS = Example/Example.entitlements;
 				CODE_SIGN_STYLE = Automatic;
-				DEVELOPMENT_ASSET_PATHS = "\"Example/Preview Content\"";
 				DEVELOPMENT_TEAM = "";
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_PREVIEWS = YES;
@@ -1402,6 +1398,16 @@
 		279FED0C2DF4567B00320390 /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = OpenSwiftUI;
+		};
+		27BB94432F5D5FE800B2AA0A /* Equatable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 278EF52B2E2272F2009C32EB /* XCRemoteSwiftPackageReference "equatable" */;
+			productName = Equatable;
+		};
+		27BB94452F5D5FEE00B2AA0A /* Equatable */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 278EF52B2E2272F2009C32EB /* XCRemoteSwiftPackageReference "equatable" */;
+			productName = Equatable;
 		};
 		27CD0B5E2AFC8DA7003665EB /* OpenSwiftUI */ = {
 			isa = XCSwiftPackageProductDependency;

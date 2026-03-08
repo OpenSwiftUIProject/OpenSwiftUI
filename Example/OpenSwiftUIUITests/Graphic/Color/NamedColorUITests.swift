@@ -18,7 +18,6 @@ struct NamedColorUITests {
         #endif
     })
     func namedColor() {
-        let bundle = Bundle.main
         openSwiftUIAssertSnapshot(
             of: Color("custom")
         )
