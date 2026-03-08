@@ -81,30 +81,28 @@ package enum NamedImage {
 
         fileprivate func loadVectorInfo(from catalog: CUICatalog, idiom: Int) -> VectorInfo? {
             #if OPENSWIFTUI_LINK_COREUI
-            let matchType: CatalogAssetMatchType = .cuiIdiom(idiom)
             let glyph: CUINamedVectorGlyph? = catalog.findAsset(
                 key: catalogKey,
-                matchTypes: CollectionOfOne(matchType)
+                matchTypes: CollectionOfOne(.always)
             ) { appearanceName -> CUINamedVectorGlyph? in
                 let cuiIdiom = CUIDeviceIdiom(rawValue: idiom)!
-                let cuiLayoutDir = self.layoutDirection.cuiLayoutDirection
-                let glyphSz = self.imageScale.glyphSize
-                let glyphWt = self.weight.glyphWeight
+                let cuiLayoutDir = layoutDirection.cuiLayoutDirection
+                let glyphSz = imageScale.glyphSize
+                let glyphWt = weight.glyphWeight
                 guard var result = catalog.namedVectorGlyph(
-                    withName: self.name,
-                    scaleFactor: self.scale,
+                    withName: name,
+                    scaleFactor: scale,
                     deviceIdiom: cuiIdiom,
                     layoutDirection: cuiLayoutDir,
                     glyphSize: glyphSz,
                     glyphWeight: glyphWt,
-                    glyphPointSize: self.pointSize,
+                    glyphPointSize: pointSize,
                     appearanceName: appearanceName,
-                    locale: self.locale
+                    locale: locale
                 ) else { return nil }
-
-                let sizeScale = self.symbolSizeScale(for: result)
+                let sizeScale = symbolSizeScale(for: result)
                 if sizeScale != 1.0 {
-                    let continuousWt = self.weight.glyphContinuousWeight
+                    let continuousWt = weight.glyphContinuousWeight
                     if let rescaled = catalog.namedVectorGlyph(
                         withName: self.name,
                         scaleFactor: self.scale,
@@ -112,17 +110,15 @@ package enum NamedImage {
                         layoutDirection: cuiLayoutDir,
                         glyphContinuousSize: sizeScale,
                         glyphContinuousWeight: continuousWt,
-                        glyphPointSize: self.pointSize,
+                        glyphPointSize: pointSize,
                         appearanceName: appearanceName,
-                        locale: self.locale
+                        locale: locale
                     ) {
                         result = rescaled
                     }
                 }
-
                 return result
             }
-
             guard let glyph else { return nil }
             let flipsRightToLeft: Bool
             if glyph.isFlippable, glyph.layoutDirection != .unspecified {
@@ -131,7 +127,6 @@ package enum NamedImage {
             } else {
                 flipsRightToLeft = false
             }
-
             let metrics = Image.LayoutMetrics(glyph: glyph, flipsRightToLeft: flipsRightToLeft)
             return VectorInfo(
                 glyph: glyph,
@@ -507,10 +502,9 @@ package enum NamedImage {
         // calls loadVectorInfo and caches the result.
         fileprivate subscript(key: VectorKey, catalog: CUICatalog) -> VectorInfo? {
             #if OPENSWIFTUI_LINK_COREUI
-            let cached = data.vectors[key]
-            if let cached {
-                if let cachedCatalog = cached.catalog, cachedCatalog == catalog {
-                    return cached
+            if let cachedInfo = data.vectors[key] {
+                if let cachedCatalog = cachedInfo.catalog, cachedCatalog == catalog {
+                    return cachedInfo
                 }
             }
             guard let info = key.loadVectorInfo(from: catalog, idiom: key.idiom) else {
