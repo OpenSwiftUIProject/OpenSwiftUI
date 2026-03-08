@@ -932,7 +932,7 @@ extension Image {
             let variants = environment.symbolVariants
             let result: NamedImage.VectorInfo? = location.findName(variants, base: name) { candidateName in
                 vectorInfo(
-                    name: name,
+                    name: candidateName,
                     in: context,
                     from: catalog,
                     at: location

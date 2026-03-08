@@ -45,4 +45,21 @@ struct NamedImageUITests {
         }
         openSwiftUIAssertSnapshot(of: ContentView())
     }
+
+    @Test("Test different symbol varient")
+    func symbolVarient() {
+        struct ContentView: View {
+            let name = "document"
+            var body: some View {
+                VStack {
+                    Image(systemName: name)
+                    Image(systemName: name)
+                        .symbolVariant(.circle)
+                    Image(systemName: name)
+                        .symbolVariant(.fill)
+                }
+            }
+        }
+        openSwiftUIAssertSnapshot(of: ContentView())
+    }
 }
