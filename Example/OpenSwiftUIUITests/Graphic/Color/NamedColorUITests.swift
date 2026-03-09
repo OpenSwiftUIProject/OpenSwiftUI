@@ -4,22 +4,13 @@
 
 import Testing
 import SnapshotTesting
-
-import Foundation
+@testable import TestingHost
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct NamedColorUITests {
-    @Test(.disabled {
-        #if os(macOS)
-        true
-        #else
-        false
-        #endif
-    })
+    @Test
     func namedColor() {
-        openSwiftUIAssertSnapshot(
-            of: Color("custom")
-        )
+        openSwiftUIAssertSnapshot(of: NamedColorExample())
     }
 }

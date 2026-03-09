@@ -2,10 +2,11 @@
 //  CatalogLookup.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 7D88FB88100BA54A0D48F777CDF70C18 (SwiftUICore)
 
-// MARK: - CatalogKey [6.4.41]
+// MARK: - CatalogKey
 
 package struct CatalogKey: Hashable {
     package var colorScheme: ColorScheme
@@ -43,7 +44,7 @@ extension CatalogKey: ProtobufMessage {
     }
 }
 
-// MARK: - CatalogAssetMatchType [6.4.41]
+// MARK: - CatalogAssetMatchType
 
 package enum CatalogAssetMatchType: Equatable {
     case always
@@ -51,14 +52,15 @@ package enum CatalogAssetMatchType: Equatable {
     case cuiIdiom(Int)
 
     package static func defaultValue(idiom: Int) -> [CatalogAssetMatchType] {
-        guard idiom == 8 else {
-            return [.appearance]
+        if idiom == 8 { /* CUIDeviceIdiomVision */
+            [.cuiIdiom(idiom), .appearance]
+        } else {
+            [.appearance]
         }
-        return [.cuiIdiom(idiom), .appearance]
     }
 }
 
-// MARK: - EnvironmentValues + CoreUI [6.4.41]
+// MARK: - EnvironmentValues + CoreUI
 
 extension EnvironmentValues {
     private struct CUIAsssetIdiomKey: EnvironmentKey {
