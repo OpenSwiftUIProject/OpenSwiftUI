@@ -2,6 +2,7 @@
 //  NamedColor.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: F70ADAD69423F89598F901BDE477D497 (SwiftUICore)
 
@@ -89,16 +90,25 @@ extension Color {
                     guard let catalog = CUICatalog.defaultUICatalog(for: bundle) else {
                         return nil
                     }
+                    let idiom: Int
+                    let matchTypes: [CatalogAssetMatchType]
+                    if isUIKitBased() {
+                        idiom = environment.cuiAssetIdiom
+                        matchTypes = environment.cuiAssetMatchTypes
+                    } else {
+                        idiom = 0
+                        matchTypes = [.appearance]
+                    }
                     let gamut = key.displayGamut.cuiDisplayGamut
-                    let idiom = CUIDeviceIdiom(rawValue: environment.cuiAssetIdiom)!
+                    let deviceIdiom = CUIDeviceIdiom(rawValue: idiom)!
                     let color = catalog.findAsset(
                         key: key.catalogKey,
-                        matchTypes: environment.cuiAssetMatchTypes,
+                        matchTypes: matchTypes,
                     ) { appearanceName -> CUINamedColor? in
                         let color = catalog.color(
                             withName: name,
                             displayGamut: gamut,
-                            deviceIdiom: idiom,
+                            deviceIdiom: deviceIdiom,
                             appearanceName: appearanceName
                         )
                         return color
@@ -152,7 +162,7 @@ extension CUICatalog {
         let colorScheme = key.colorScheme
         let contrast = key.contrast
         for matchType in matchTypes {
-            let isVision = matchType == .cuiIdiom(8)
+            let isVision = isUIKitBased() && matchType == .cuiIdiom(8)
             let appearanceConfigurations: [(ColorScheme?, ColorSchemeContrast)]
             switch (contrast, isVision) {
             case (.standard, false):
@@ -165,14 +175,26 @@ extension CUICatalog {
                 appearanceConfigurations = [(nil, .increased), (nil, .standard)]
             }
             for (scheme, contrast) in appearanceConfigurations {
-                // FIXME: macOS should use NSAppearanceNameSystem and other stuff
-                let appearanceName = switch (scheme, contrast) {
-                case (nil, .standard): "UIAppearanceAny"
-                case (nil, .increased): "UIAppearanceHighContrastAny"
-                case (.light, .standard): "UIAppearanceLight"
-                case (.light, .increased): "UIAppearanceHighContrastLight"
-                case (.dark, .standard): "UIAppearanceDark"
-                case (.dark, .increased): "UIAppearanceHighContrastDark"
+                let useNSAppearance = appearanceNames().contains { $0.hasPrefix("NSAppearance") }
+                let appearanceName: String
+                if useNSAppearance {
+                    appearanceName = switch (scheme, contrast) {
+                    case (nil, .standard): "NSAppearanceNameSystem"
+                    case (nil, .increased): "NSAppearanceNameAccessibilitySystem"
+                    case (.light, .standard): "NSAppearanceNameAqua"
+                    case (.light, .increased): "NSAppearanceNameAccessibilityAqua"
+                    case (.dark, .standard): "NSAppearanceNameDarkAqua"
+                    case (.dark, .increased): "NSAppearanceNameAccessibilityDarkAqua"
+                    }
+                } else {
+                    appearanceName = switch (scheme, contrast) {
+                    case (nil, .standard): "UIAppearanceAny"
+                    case (nil, .increased): "UIAppearanceHighContrastAny"
+                    case (.light, .standard): "UIAppearanceLight"
+                    case (.light, .increased): "UIAppearanceHighContrastLight"
+                    case (.dark, .standard): "UIAppearanceDark"
+                    case (.dark, .increased): "UIAppearanceHighContrastDark"
+                    }
                 }
                 guard let asset = assetLookup(appearanceName) else {
                     continue
@@ -196,7 +218,7 @@ extension CUICatalog {
     }
 }
 
-// MARK: - Color.Resolved + name [6.5.4]
+// MARK: - Color.Resolved + name
 
 extension Color.Resolved {
     package static func named(
@@ -217,7 +239,7 @@ extension Color.Resolved {
     }
 }
 
-// MARK: - SystemColorType + name [6.5.4]
+// MARK: - SystemColorType + name
 
 extension SystemColorType {
     package static let namedTypes: [String: SystemColorType] = [
