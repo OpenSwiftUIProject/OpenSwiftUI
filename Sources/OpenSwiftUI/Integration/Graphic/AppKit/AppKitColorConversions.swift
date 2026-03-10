@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 7137BB7EE57FAC34F81DC437C151F7AB (SwiftUI)
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 
 public import OpenSwiftUICore
 public import AppKit

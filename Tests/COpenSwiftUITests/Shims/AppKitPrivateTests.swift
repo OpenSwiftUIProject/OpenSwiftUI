@@ -2,7 +2,7 @@
 //  AppKitPrivateTests.swift
 //  OpenSwiftUI_SPITests
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 import AppKit
 import COpenSwiftUI
 import Testing

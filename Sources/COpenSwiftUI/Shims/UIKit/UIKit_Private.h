@@ -88,6 +88,15 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 #endif
 @end
 
+@interface UIImage (OpenSwiftUI_SPI)
+@property (nonatomic, readonly) BOOL _hasImageAsset;
+@property (nonatomic, readonly, nullable) IOSurfaceRef ioSurface;
+@property (nonatomic, readonly) NSDirectionalEdgeInsets contentInsets;
++ (nullable UIImage *)imageNamed:(NSString *)name inBundle:(nullable NSBundle *)bundle OPENSWIFTUI_SWIFT_NAME(init(named:in:));
++ (nullable UIImage *)_systemImageNamed:(NSString *)name OPENSWIFTUI_SWIFT_NAME(init(_systemName:));
++ (nullable UIImage *)_systemImageNamed:(NSString *)name variableValue:(double)value withConfiguration:(nullable UIImageConfiguration *)configuration OPENSWIFTUI_SWIFT_NAME(init(_systemName:variableValue:configuration:));
+@end
+
 @interface UITraitCollection (OpenSwiftUI_SPI)
 @property (nonatomic, readonly, nullable) NSObject *_environmentWrapper_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_environmentWrapper);
 @end

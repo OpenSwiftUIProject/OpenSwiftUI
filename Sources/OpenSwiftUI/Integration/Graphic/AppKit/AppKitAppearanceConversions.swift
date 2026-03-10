@@ -5,7 +5,7 @@
 //  Status: WIP
 //  ID: FE0226775232C57AACFCDAD271FF7831 (SwiftUI)
 
-#if canImport(AppKit)
+#if canImport(AppKit) && !targetEnvironment(macCatalyst)
 
 import AppKit
 import COpenSwiftUI

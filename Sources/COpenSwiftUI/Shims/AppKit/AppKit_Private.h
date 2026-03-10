@@ -54,6 +54,10 @@ typedef OPENSWIFTUI_ENUM(NSInteger, NSViewVibrantBlendingStyle) {
 + (void)_setUsingModernDocuments_openswiftui_safe_wrapper:(BOOL)value OPENSWIFTUI_SWIFT_NAME(_setUsingModernDocuments(_:));
 @end
 
+@interface NSImage (OpenSwiftUI_SPI)
+@property (nullable, copy) NSString *_defaultAccessibilityDescription;
+@end
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* __has_include(<AppKit/AppKit.h>) */
