@@ -97,7 +97,7 @@ package struct GraphicsImage: Equatable, Sendable {
         switch contents {
         case let .vectorGlyph(resolvedVectorGlyph):
             return .init(
-                orbSymbolStyleMask: resolvedVectorGlyph.animator.styleMask,
+                rbSymbolStyleMask: resolvedVectorGlyph.animator.styleMask,
                 location: resolvedVectorGlyph.location
             )
         case .none:
@@ -199,7 +199,7 @@ package struct ResolvedVectorGlyph: Equatable {
         animator.glyph = glyph
         animator.variableValue = variableValue
         animator.flipsRightToLeft = flipsRightToLeft
-        animator.renderingMode = context.effectiveSymbolRenderingMode?.orbRenderingMode ?? 255
+        animator.renderingMode = context.effectiveSymbolRenderingMode?.rbRenderingMode ?? 255
         let direction = context.environment.layoutDirection
         let version = animator.version
         let options = context.options
@@ -231,14 +231,14 @@ package struct ResolvedVectorGlyph: Equatable {
     }
 
     package var renderingMode: SymbolRenderingMode.Storage? {
-        SymbolRenderingMode(orbRenderingMode: animator.renderingMode)?.storage
+        SymbolRenderingMode(rbRenderingMode: animator.renderingMode)?.storage
     }
 
     package var resolvedRenderingMode: SymbolRenderingMode.Storage? {
         #if OPENSWIFTUI_LINK_COREUI && OPENSWIFTUI_RENDERBOX
-        let orbMode = animator.renderingMode
-        guard orbMode == 0 else {
-            return SymbolRenderingMode(orbRenderingMode: orbMode)?.storage
+        let rbMode = animator.renderingMode
+        guard rbMode == 0 else {
+            return SymbolRenderingMode(rbRenderingMode: rbMode)?.storage
         }
         guard let glyph = animator.glyph else {
             return .preferred
@@ -258,7 +258,7 @@ package struct ResolvedVectorGlyph: Equatable {
     }
 
     package var styleResolverMode: ShapeStyle.ResolverMode {
-        .init(orbSymbolStyleMask: animator.styleMask, location: location)
+        .init(rbSymbolStyleMask: animator.styleMask, location: location)
     }
 
     // MARK: - Methods

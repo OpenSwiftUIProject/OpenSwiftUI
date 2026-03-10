@@ -497,7 +497,7 @@ extension DisplayList {
         private struct Contents {
             var list: DisplayList
             var origin: CGPoint
-            var orbList: ORBDisplayListContents
+            var rbList: ORBDisplayListContents
             var nextTime: Time
             var numericValue: Float?
         }

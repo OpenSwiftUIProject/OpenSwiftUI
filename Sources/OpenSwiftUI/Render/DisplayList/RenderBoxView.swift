@@ -25,7 +25,7 @@ class OpenRenderBoxView: PlatformGraphicsView {
     }
     #endif
 
-    private func orbInit() {
+    private func rbInit() {
         #if os(iOS) || os(visionOS)
         let layer = layer
         layer.delegate = self
@@ -43,13 +43,13 @@ class OpenRenderBoxView: PlatformGraphicsView {
     override init(frame: CGRect) {
         rendersFirstFrameAsynchronously = false
         super.init(frame: frame)
-        orbInit()
+        rbInit()
     }
     
     required init?(coder: NSCoder) {
         rendersFirstFrameAsynchronously = false
         super.init(coder: coder)
-        orbInit()
+        rbInit()
     }
 
     deinit {

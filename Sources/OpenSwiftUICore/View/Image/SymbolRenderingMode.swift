@@ -101,7 +101,7 @@ public struct SymbolRenderingMode: Sendable {
 // MARK: - SymbolRenderingMode + RB Rendering Mode
 
 extension SymbolRenderingMode {
-    package var orbRenderingMode: UInt32 {
+    package var rbRenderingMode: UInt32 {
         switch storage {
         case .monochrome: 1
         case .multicolor: 2
@@ -114,7 +114,7 @@ extension SymbolRenderingMode {
         }
     }
 
-    package init?(orbRenderingMode mode: UInt32) {
+    package init?(rbRenderingMode mode: UInt32) {
         switch mode {
         case 0: self = .preferred
         case 1: self = .monochrome

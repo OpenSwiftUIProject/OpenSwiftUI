@@ -75,8 +75,8 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     }
 
     override static func getRBLayer(drawingView: AnyObject) -> AnyObject? {
-        guard let orbView = drawingView as? ORBDrawingView else { return nil }
-        return orbView.layer
+        guard let rbView = drawingView as? ORBDrawingView else { return nil }
+        return rbView.layer
     }
 
     override static func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
