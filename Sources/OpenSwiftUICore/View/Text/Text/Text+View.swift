@@ -9,6 +9,7 @@
 package import Foundation
 package import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
+package import OpenRenderBoxShims
 import UIFoundation_Private
 
 // MARK: - Text + View [WIP]
