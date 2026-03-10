@@ -152,9 +152,9 @@ final class ORBDrawingView: OpenRenderBoxView, PlatformDrawable {
     private func updateOptions() {
         isOpaque = options.isOpaque
         #if os(iOS) || os(visionOS)
-        options.update(orbLayer: layer)
+        options.update(rbLayer: layer)
         #elseif os(macOS)
-        options.update(orbLayer: layer!)
+        options.update(rbLayer: layer!)
         #endif
         rendersFirstFrameAsynchronously = options.rendersFirstFrameAsynchronously
     }

@@ -27,7 +27,7 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
             case cgPath
             #endif
-            case orbPath
+            case rbPath
             case buffer
         }
 
@@ -43,8 +43,8 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         #endif
 
         package init(takingPath path: ORBPath) {
-            kind = .orbPath
-            data = PathData(orbPath: path)
+            kind = .rbPath
+            data = PathData(rbPath: path)
         }
 
         private func prepareBuffer() {
@@ -54,8 +54,8 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             case .cgPath:
                 path = ORBPath(cgPath: data.cgPath.takeRetainedValue())
             #endif
-            case .orbPath:
-                path = data.orbPath
+            case .rbPath:
+                path = data.rbPath
             case .buffer:
                 return
             }
@@ -135,27 +135,27 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
         @inline(__always)
         fileprivate var cgPath: CGPath {
-            let orbPath: ORBPath
+            let rbPath: ORBPath
             switch kind {
             case .cgPath:
                 return data.cgPath.takeUnretainedValue()
-            case .orbPath:
-                orbPath = data.orbPath
+            case .rbPath:
+                rbPath = data.rbPath
             case .buffer:
                 let storage = unsafeBitCast(self, to: ORBPath.Storage.self)
-                orbPath = ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
+                rbPath = ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
             }
-            return orbPath.cgPath
+            return rbPath.cgPath
         }
         #endif
 
         @inline(__always)
-        fileprivate var orbPath: ORBPath {
+        fileprivate var rbPath: ORBPath {
             switch kind {
             case .cgPath:
                 return ORBPath(cgPath: data.cgPath.takeUnretainedValue())
-            case .orbPath:
-                return data.orbPath
+            case .rbPath:
+                return data.rbPath
             case .buffer:
                 let storage = unsafeBitCast(self, to: ORBPath.Storage.self)
                 return ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
@@ -164,14 +164,14 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
         @inline(__always)
         fileprivate func retainRBPath() -> ORBPath {
-            let orbPath = orbPath
-            orbPath.retain()
-            return orbPath
+            let rbPath = rbPath
+            rbPath.retain()
+            return rbPath
         }
 
         @usableFromInline
         package static func == (lhs: PathBox, rhs: PathBox) -> Bool {
-            return lhs.orbPath.isEqual(to: rhs.orbPath)
+            return lhs.rbPath.isEqual(to: rhs.rbPath)
         }
     }
 

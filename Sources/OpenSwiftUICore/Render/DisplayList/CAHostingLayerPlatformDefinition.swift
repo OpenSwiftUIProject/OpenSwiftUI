@@ -191,7 +191,7 @@ private final class ORBDrawingLayer: ORBLayer, PlatformDrawable {
 
     private func updateOptions() {
         isOpaque = options.isOpaque
-        options.update(orbLayer: self)
+        options.update(rbLayer: self)
     }
 
     static var allowsContentsMultiplyColor: Bool { false }

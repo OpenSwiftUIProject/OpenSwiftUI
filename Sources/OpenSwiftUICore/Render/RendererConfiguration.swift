@@ -45,7 +45,7 @@ public struct _RendererConfiguration {
 
         /// When non-nil overrides colorMode with a member of the
         /// `RBColorMode` enum, specified as its raw integer value.
-        public var orbColorMode: Int32?
+        public var rbColorMode: Int32?
 
         /// When true the view will build and submit its command buffer
         /// asynchronously.
