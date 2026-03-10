@@ -45,8 +45,8 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         case graphicsCallback((inout GraphicsContext, CGSize) -> ())
         case platformCallback((CGSize) -> ())
         case displayList(DisplayList, CGPoint, Time)
-        case rbDisplayList(any RBDisplayListContents, CGPoint)
-        case rbInterpolator(RBDisplayListInterpolator, Float, CGPoint)
+        case orbDisplayList(any ORBDisplayListContents, CGPoint)
+        case orbInterpolator(ORBDisplayListInterpolator, Float, CGPoint)
         case empty
     }
 
@@ -141,9 +141,9 @@ public struct PlatformDrawableOptions: Equatable, Sendable {
     }
     #endif
 
-    public func update(rbLayer: AnyObject) {
+    public func update(orbLayer: AnyObject) {
         #if canImport(Darwin)
-        let layer = rbLayer as! ORBLayer
+        let layer = orbLayer as! ORBLayer
         layer.colorMode = base.resolvedColorMode
         layer.rendersAsynchronously = rendersAsynchronously
         layer.maxDrawableCount = Int(base.maxDrawableCount)

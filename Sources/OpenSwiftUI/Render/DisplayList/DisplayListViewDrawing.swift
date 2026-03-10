@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: Blocked by RBDrawingView
+//  Status: Blocked by ORBDrawingView
 //  ID: 65A81BD07F0108B0485D2E15DE104A75 (SwiftUI)
 
 #if canImport(Darwin)
@@ -137,9 +137,9 @@ private final class CGDrawingLayer: CALayer {
     }
 }
 
-// MARK: - RBDrawingView [WIP]
+// MARK: - ORBDrawingView [WIP]
 
-final class RBDrawingView: RenderBoxView, PlatformDrawable {
+final class ORBDrawingView: OpenRenderBoxView, PlatformDrawable {
     var options: PlatformDrawableOptions {
         didSet {
             guard oldValue != options else {
@@ -152,9 +152,9 @@ final class RBDrawingView: RenderBoxView, PlatformDrawable {
     private func updateOptions() {
         isOpaque = options.isOpaque
         #if os(iOS) || os(visionOS)
-        options.update(rbLayer: layer)
+        options.update(orbLayer: layer)
         #elseif os(macOS)
-        options.update(rbLayer: layer!)
+        options.update(orbLayer: layer!)
         #endif
         rendersFirstFrameAsynchronously = options.rendersFirstFrameAsynchronously
     }
@@ -165,7 +165,7 @@ final class RBDrawingView: RenderBoxView, PlatformDrawable {
     }
     
     @AtomicBox
-    private var state: RBDrawingView.State = .init()
+    private var state: ORBDrawingView.State = .init()
     
     init(options: PlatformDrawableOptions) {
         self.options = options

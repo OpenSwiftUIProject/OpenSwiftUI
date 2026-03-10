@@ -55,7 +55,7 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     override static func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
         let view: UIView & PlatformDrawable
         if options.isAccelerated && ORBDevice.isSupported() {
-            view = RBDrawingView(options: options)
+            view = ORBDrawingView(options: options)
         } else {
             view = CGDrawingView(options: options)
         }
@@ -75,8 +75,8 @@ final class UIViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     }
 
     override static func getRBLayer(drawingView: AnyObject) -> AnyObject? {
-        guard let rbView = drawingView as? RBDrawingView else { return nil }
-        return rbView.layer
+        guard let orbView = drawingView as? ORBDrawingView else { return nil }
+        return orbView.layer
     }
 
     override static func setIgnoresEvents(_ state: Bool, of view: AnyObject) {

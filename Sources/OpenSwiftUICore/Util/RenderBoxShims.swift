@@ -2,6 +2,6 @@
 //  RenderBoxShims.swift
 //  OpenSwiftUICore
 
-public protocol RBDisplayListContents {} // RenderBox.RBDisplayListContents
+public protocol ORBDisplayListContents {} // RenderBox.RBDisplayListContents
 
-class RBDisplayListInterpolator {}
+package class ORBDisplayListInterpolator {}

@@ -638,7 +638,7 @@ package class ResolvedStyledText: CustomStringConvertible {
         for size: CGSize,
         renderer: TextRendererBoxBase?,
         deviceScale: CGFloat
-    ) -> any RBDisplayListContents {
+    ) -> any ORBDisplayListContents {
         _openSwiftUIUnimplementedFailure()
     }
 }

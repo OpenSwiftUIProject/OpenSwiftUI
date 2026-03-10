@@ -28,9 +28,9 @@ typedef union PathData {
     CGPathRef cgPath;
     #endif
     #if OPENSWIFTUI_RENDERBOX
-    RBPath rbPath;
+    RBPath orbPath;
     #else
-    ORBPath rbPath;
+    ORBPath orbPath;
     #endif
     uint8_t buffer[0x60];
 } PathData;

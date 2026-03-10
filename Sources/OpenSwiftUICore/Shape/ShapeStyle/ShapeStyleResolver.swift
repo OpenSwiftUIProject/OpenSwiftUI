@@ -34,7 +34,7 @@ package struct _ShapeStyle_ResolverMode: Equatable {
         self.options = options
     }
 
-    package init(rbSymbolStyleMask mask: UInt32, location: Image.Location) {
+    package init(orbSymbolStyleMask mask: UInt32, location: Image.Location) {
         let bundle: Bundle?
         var options: Options
         if mask & (1 << 9) != 0 {

@@ -234,9 +234,9 @@ CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cor
         RBPathRelease(rbPath);
         return cgPath;
         #else
-        ORBPath rbPath = ORBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, ORBPathRoundedCornerStyleContinuous, NULL);
-        CGPathRef cgPath = ORBPathCopyCGPath(rbPath);
-        ORBPathRelease(rbPath);
+        ORBPath orbPath = ORBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, ORBPathRoundedCornerStyleContinuous, NULL);
+        CGPathRef cgPath = ORBPathCopyCGPath(orbPath);
+        ORBPathRelease(orbPath);
         return cgPath;
         #endif
     }

@@ -13,26 +13,26 @@ import QuartzCore
 import QuartzCore_Private
 import OpenRenderBoxShims
 
-// MARK: - RenderBoxView
+// MARK: - OpenRenderBoxView
 
 @objc
-class RenderBoxView: PlatformGraphicsView {
+class OpenRenderBoxView: PlatformGraphicsView {
     var rendersFirstFrameAsynchronously: Bool
 
     #if os(iOS) || os(visionOS)
     override class var layerClass: AnyClass {
-        RenderBoxLayer.self
+        OpenRenderBoxLayer.self
     }
     #endif
 
-    private func rbInit() {
+    private func orbInit() {
         #if os(iOS) || os(visionOS)
         let layer = layer
         layer.delegate = self
         layer.isOpaque = isOpaque
         #elseif os(macOS)
         wantsLayer = true
-        layer = RenderBoxLayer()
+        layer = OpenRenderBoxLayer()
         layerContentsRedrawPolicy = .duringViewResize
         let layer = layer!
         layer.delegate = self
@@ -43,17 +43,17 @@ class RenderBoxView: PlatformGraphicsView {
     override init(frame: CGRect) {
         rendersFirstFrameAsynchronously = false
         super.init(frame: frame)
-        rbInit()
+        orbInit()
     }
     
     required init?(coder: NSCoder) {
         rendersFirstFrameAsynchronously = false
         super.init(coder: coder)
-        rbInit()
+        orbInit()
     }
 
     deinit {
-        (layer as! RenderBoxLayer).waitUntilAsyncRenderingCompleted()
+        (layer as! OpenRenderBoxLayer).waitUntilAsyncRenderingCompleted()
     }
 
     #if os(iOS) || os(visionOS)
@@ -87,7 +87,7 @@ class RenderBoxView: PlatformGraphicsView {
     }
 }
 
-extension RenderBoxView: ORBLayerDelegate {
+extension OpenRenderBoxView: ORBLayerDelegate {
     func rbLayer(_ layer: ORBLayer, draw inDisplayList: ORBDisplayList) {
         draw(inDisplayList: inDisplayList)
     }
@@ -103,15 +103,15 @@ extension RenderBoxView: ORBLayerDelegate {
     #endif
 }
 
-// MARK: - RenderBoxLayer
+// MARK: - OpenRenderBoxLayer
 
-private class RenderBoxLayer: ORBLayer {
+private class OpenRenderBoxLayer: ORBLayer {
     override var needsSynchronousUpdate: Bool {
         get {
             guard super.needsSynchronousUpdate else {
                 return false
             }
-            guard let delegate = delegate as? RenderBoxView,
+            guard let delegate = delegate as? OpenRenderBoxView,
                   delegate.rendersFirstFrameAsynchronously
             else {
                 return true

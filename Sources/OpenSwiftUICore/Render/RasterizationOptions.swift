@@ -88,7 +88,7 @@ package struct RasterizationOptions: Equatable {
 
     package var colorMode: ColorRenderingMode
 
-    package var rbColorMode: Int32?
+    package var orbColorMode: Int32?
 
     package var flags: RasterizationOptions.Flags
 
@@ -96,12 +96,12 @@ package struct RasterizationOptions: Equatable {
 
     package init(
         colorMode: ColorRenderingMode = .nonLinear,
-        rbColorMode: Int32? = nil,
+        orbColorMode: Int32? = nil,
         flags: RasterizationOptions.Flags = .defaultFlags,
         maxDrawableCount: Int8 = 3
     ) {
         self.colorMode = colorMode
-        self.rbColorMode = rbColorMode
+        self.orbColorMode = orbColorMode
         self.flags = flags
         self.maxDrawableCount = maxDrawableCount
     }
@@ -138,7 +138,7 @@ package struct RasterizationOptions: Equatable {
 
     #if !OPENSWIFTUI_ANY_ATTRIBUTE_FIX
     package var resolvedColorMode: ORBColor.Mode {
-        if let mode = rbColorMode {
+        if let mode = orbColorMode {
             return ORBColor.Mode(rawValue: mode)
         } else {
             let alphaOnly = alphaOnly
@@ -176,8 +176,8 @@ package struct RasterizationOptions: Equatable {
 extension RasterizationOptions: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) {
         encoder.enumField(1, colorMode, defaultValue: .nonLinear)
-        if let rbColorMode {
-            encoder.intField(2, Int(rbColorMode))
+        if let orbColorMode {
+            encoder.intField(2, Int(orbColorMode))
         }
         encoder.intField(3, Int(flags.rawValue))
         encoder.intField(4, Int(maxDrawableCount))
@@ -188,7 +188,7 @@ extension RasterizationOptions: ProtobufMessage {
         while let field = try decoder.nextField() {
             switch field.tag {
             case 1: options.colorMode = try decoder.enumField(field) ?? .nonLinear
-            case 2: options.rbColorMode = Int32(try decoder.intField(field))
+            case 2: options.orbColorMode = Int32(try decoder.intField(field))
             case 3: options.flags = Flags(rawValue: UInt32(try decoder.intField(field)))
             case 4: options.maxDrawableCount = Int8(try decoder.intField(field))
             default: try decoder.skipField(field)

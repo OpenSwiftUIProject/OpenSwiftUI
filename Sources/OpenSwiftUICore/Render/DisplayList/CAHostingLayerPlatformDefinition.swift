@@ -42,7 +42,7 @@ final class CAHostingLayerPlatformDefinition: PlatformViewDefinition, @unchecked
     override static func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable {
         let layer: CALayer & PlatformDrawable
         if options.isAccelerated && ORBDevice.isSupported() {
-            layer = RBDrawingLayer(options: options)
+            layer = ORBDrawingLayer(options: options)
         } else {
             layer = CGDrawingLayer(options: options)
         }
@@ -160,9 +160,9 @@ private final class CGDrawingLayer: CALayer, PlatformDrawable {
     }
 }
 
-// MARK: - RBDrawingLayer
+// MARK: - ORBDrawingLayer
 
-private final class RBDrawingLayer: ORBLayer, PlatformDrawable {
+private final class ORBDrawingLayer: ORBLayer, PlatformDrawable {
     var options: PlatformDrawableOptions {
         didSet {
             guard oldValue != options else { return }
@@ -176,7 +176,7 @@ private final class RBDrawingLayer: ORBLayer, PlatformDrawable {
     }
 
     @AtomicBox
-    private var state: RBDrawingLayer.State = .init()
+    private var state: ORBDrawingLayer.State = .init()
 
     init(options: PlatformDrawableOptions) {
         self.options = options
@@ -191,7 +191,7 @@ private final class RBDrawingLayer: ORBLayer, PlatformDrawable {
 
     private func updateOptions() {
         isOpaque = options.isOpaque
-        options.update(rbLayer: self)
+        options.update(orbLayer: self)
     }
 
     static var allowsContentsMultiplyColor: Bool { false }
