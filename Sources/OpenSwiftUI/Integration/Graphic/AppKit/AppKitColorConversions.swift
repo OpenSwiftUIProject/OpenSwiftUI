@@ -2,6 +2,7 @@
 //  AppKitColorConversions.swift
 //  OpenSwiftUI
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 7137BB7EE57FAC34F81DC437C151F7AB (SwiftUI)
 
@@ -11,7 +12,7 @@ public import OpenSwiftUICore
 public import AppKit
 import COpenSwiftUI
 
-// MARK: - NSColor Conversions [6.5.4]
+// MARK: - NSColor Conversions
 
 @available(iOS, unavailable)
 @available(macOS, introduced: 10.15, deprecated: 100000.0, message: "Use Color(nsColor:) when converting a NSColor, or create a standard Color directly")

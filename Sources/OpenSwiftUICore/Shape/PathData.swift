@@ -16,7 +16,7 @@ package import OpenRenderBoxShims
 ///
 ///     typedef union PathData {
 ///         CGPathRef cgPath;    // 8 bytes (pointer)
-///         ORBPath rbPath;      // 16 bytes (2 pointers)
+///         ORBPath orbPath;      // 16 bytes (2 pointers)
 ///         uint8_t buffer[0x60]; // 96 bytes
 ///     } PathData;
 package struct PathData {
@@ -74,11 +74,11 @@ package struct PathData {
 
     // MARK: - ORBPath access
 
-    package init(rbPath: ORBPath) {
-        self.rbPath = rbPath
+    package init(orbPath: ORBPath) {
+        self.orbPath = orbPath
     }
 
-    package var rbPath: ORBPath {
+    package var orbPath: ORBPath {
         get {
             withUnsafeBytes(of: storage) { buffer in
                 buffer.load(as: ORBPath.self)

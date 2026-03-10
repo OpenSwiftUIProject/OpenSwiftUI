@@ -42,7 +42,7 @@ package struct VectorImageLayer: Hashable {
         contents.size
     }
 
-    package var displayList: any RBDisplayListContents {
+    package var displayList: any ORBDisplayListContents {
         contents.displayList
     }
 
@@ -72,7 +72,7 @@ open class VectorImageContents {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-    open var displayList: any RBDisplayListContents {
+    open var displayList: any ORBDisplayListContents {
         _openSwiftUIBaseClassAbstractMethod()
     }
 

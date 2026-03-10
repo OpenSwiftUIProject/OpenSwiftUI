@@ -174,7 +174,7 @@ extension DisplayList {
             indirect case platformLayer(any PlatformLayerFactory)
             indirect case text(StyledTextContentView, CGSize)
             indirect case flattened(DisplayList, CGPoint, RasterizationOptions)
-            indirect case drawing(any RBDisplayListContents, CGPoint, RasterizationOptions)
+            indirect case drawing(any ORBDisplayListContents, CGPoint, RasterizationOptions)
             indirect case view(any _DisplayList_ViewFactory)
             case placeholder(id: Identity)
         }
@@ -497,7 +497,7 @@ extension DisplayList {
         private struct Contents {
             var list: DisplayList
             var origin: CGPoint
-            var rbList: ORBDisplayListContents
+            var orbList: ORBDisplayListContents
             var nextTime: Time
             var numericValue: Float?
         }
@@ -559,6 +559,4 @@ extension DisplayList.Item {
     }
 }
 
-package class ORBDisplayListContents {}
-package class ORBDisplayListInterpolator {}
 package struct ORBTransition {}
