@@ -299,6 +299,10 @@ extension UIContentSizeCategory {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     public init(_ dynamicTypeSize: DynamicTypeSize?) {
+        self.init(dynamicTypeSize: dynamicTypeSize)
+    }
+
+    package init(dynamicTypeSize: DynamicTypeSize?) {
         switch dynamicTypeSize {
         case .xSmall: self = .extraSmall
         case .small: self = .small
