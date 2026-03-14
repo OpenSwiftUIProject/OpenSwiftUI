@@ -3,6 +3,7 @@
 //  OpenSwiftUIUITests
 
 import Foundation
+import TestingHost
 
 struct AnimationTestModel: Hashable {
     var intervals: [Double]

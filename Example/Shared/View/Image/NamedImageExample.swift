@@ -49,3 +49,14 @@ struct NamedImageRenderingModeTemplateExample: View {
         .frame(width: 200, height: 100)
     }
 }
+
+struct ImageConversionsExample: View {
+    var body: some View {
+        VStack {
+            Image("logo")
+                .resizable()
+            Image(platformImage: PlatformImage(named: "logo")!)
+                .resizable()
+        }
+    }
+}
