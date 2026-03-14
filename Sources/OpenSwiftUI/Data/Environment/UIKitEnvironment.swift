@@ -29,6 +29,15 @@ extension UITraitCollection {
         return resolvedTraitCollection(with: environment, wrapper: wrapper)
     }
 
+    @inline(__always)
+    package func resolvedImageAssetOnlyTraitCollection(environment: EnvironmentValues) -> UITraitCollection {
+        resolvedTraitCollection(
+            with: environment,
+            wrapper: unsafeBitCast(_environmentWrapper, to: EnvironmentWrapper?.self),
+            forImageAssetsOnly: true
+        )
+    }
+
     private func resolvedTraitCollection(
         with environment: EnvironmentValues,
         wrapper: EnvironmentWrapper?,

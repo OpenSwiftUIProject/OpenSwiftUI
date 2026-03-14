@@ -3,6 +3,7 @@
 //  OpenSwiftUIUITests
 
 import Testing
+import TestingHost
 import SnapshotTesting
 
 @MainActor

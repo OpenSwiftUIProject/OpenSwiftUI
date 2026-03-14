@@ -4,39 +4,14 @@
 
 import SnapshotTesting
 import Testing
+import TestingHost
 import Foundation
-
-#if os(macOS)
-import AppKit
-typealias PlatformHostingController = NSHostingController
-typealias PlatformHostingView = NSHostingView
-typealias PlatformViewController = NSViewController
-typealias PlatformView = NSView
-typealias PlatformImage = NSImage
-typealias PlatformColor = NSColor
-extension Color {
-    init(platformColor: PlatformColor) {
-        self.init(nsColor: platformColor)
-    }
-}
-#elseif os(iOS) || os(visionOS)
-import UIKit
-typealias PlatformHostingController = UIHostingController
-typealias PlatformHostingView = _UIHostingView
-typealias PlatformViewController = UIViewController
-typealias PlatformView = UIView
-typealias PlatformImage = UIImage
-typealias PlatformColor = UIColor
-extension Color {
-    init(platformColor: PlatformColor) {
-        self.init(uiColor: platformColor)
-    }
-}
-#endif
 
 let defaultSize = CGSize(width: 200, height: 200)
 
 #if os(macOS)
+import AppKit
+
 extension Snapshotting where Value == NSViewController, Format == NSImage {
     /// drawHierarchyInKeyWindow is iOS only parameter, here for compatibility
     static func image(

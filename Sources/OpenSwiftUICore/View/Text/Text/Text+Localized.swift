@@ -35,7 +35,9 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
     private var arguments: [LocalizedStringKey.FormatArgument]
 
     public init(_ value: String) {
-        _openSwiftUIUnimplementedFailure()
+        self.key = value
+        self.arguments = []
+        _openSwiftUIUnimplementedWarning()
     }
 
     @_semantics("openswiftui.localized_string_key.init_literal")

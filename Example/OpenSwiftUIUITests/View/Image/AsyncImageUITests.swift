@@ -5,6 +5,7 @@
 import Foundation
 import SnapshotTesting
 import Testing
+import TestingHost
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
