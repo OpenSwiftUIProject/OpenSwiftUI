@@ -94,7 +94,7 @@ extension UITraitCollection {
                     mutableTraits.userInterfaceLevel = userInterfaceLevel
                 }
             }
-            // TypesettingConfigurationKey.write(to: &mutableTraits, value: environment.typesettingConfiguration)
+            TypesettingConfigurationKey.write(to: &mutableTraits, value: environment.typesettingConfiguration)
             let activeAppearance = UIUserInterfaceActiveAppearance(rawValue: environment.appearsActive ? 1 : 0)!
             mutableTraits.activeAppearance = activeAppearance
         }

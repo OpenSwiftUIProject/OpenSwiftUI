@@ -132,7 +132,7 @@ extension GraphicsImage {
             case .privateSystem:
                 return UIImage(_systemName: name)
             @unknown default:
-                _openSwiftUIUnimplementedFailure()
+                _openSwiftUIUnreachableCode()
             }
         }
     }
