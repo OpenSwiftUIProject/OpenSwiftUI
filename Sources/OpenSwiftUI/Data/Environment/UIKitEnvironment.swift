@@ -140,6 +140,9 @@ extension UITraitCollection {
         #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
         result.updateFidelity = _updateFidelity
         #endif
+        if let colorSchemeContrast = ColorSchemeContrast(accessibilityContrast) {
+            result._colorSchemeContrast = colorSchemeContrast
+        }
         _openSwiftUIUnimplementedWarning()
         return result
     }

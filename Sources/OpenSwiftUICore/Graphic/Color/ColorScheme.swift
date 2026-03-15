@@ -169,7 +169,8 @@ extension EnvironmentValues {
     public var colorSchemeContrast: ColorSchemeContrast {
         self[ColorSchemeContrastKey.self]
     }
-    
+
+    /// The contrast associated with the color scheme of this environment.
     public var _colorSchemeContrast: ColorSchemeContrast {
         get { self[ColorSchemeContrastKey.self] }
         set { self[ColorSchemeContrastKey.self] = newValue }
