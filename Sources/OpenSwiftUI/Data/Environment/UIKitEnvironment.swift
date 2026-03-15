@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 005A2BB2D44F4D559B7E508DC5B95FFB (SwiftUI)
 
 #if canImport(UIKit)
@@ -161,7 +161,7 @@ extension UITraitCollection {
            result.backgroundMaterial == nil {
             result.backgroundMaterial = .thick
         }
-        _openSwiftUIUnimplementedWarning()
+        AccessibilityCore.UserSettings.resolve(into: &result)
         return result
     }
 
