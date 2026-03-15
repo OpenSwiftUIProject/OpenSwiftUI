@@ -87,7 +87,7 @@ public struct Image: Equatable, Sendable {
     }
 }
 
-// MARK: - ImageResolutionContext [WIP] [willUpdateVectorGlyph]
+// MARK: - ImageResolutionContext
 
 package struct ImageResolutionContext {
     package struct Options: OptionSet {
@@ -132,15 +132,144 @@ package struct ImageResolutionContext {
         self.transaction = transaction
     }
 
-    // TODO: Full implementation of willUpdateVectorGlyph
-    // This is a complex method that handles animator state transitions
-    // when an existing symbolAnimator is being reused for a new glyph.
+    /// Determines how to animate a vector glyph (SF Symbol) transition when the
+    /// ``symbolAnimator`` is being reused.
+    ///
+    /// This method handles three cases:
+    /// 1. No previous glyph (first-time setup) or different glyph — animate
+    ///    based on the content transition type from the environment.
+    /// 2. Same glyph, different variable value — animate variable value change.
+    /// 3. Same glyph, same value — no animation needed.
+    ///
+    /// Animation types used:
+    /// - ``ORBSymbolAnimation/variableValue``: variable value change
+    /// - ``ORBSymbolAnimation/replace``: symbol replace animation
+    /// - ``ORBSymbolAnimation/interpolate``: interpolate animation
+    ///
+    /// - Parameters:
+    ///   - glyph: The new vector glyph to transition to.
+    ///   - variableValue: The new variable value for the glyph.
+    /// - Returns: `true` if content transitions are allowed (no animator, animations
+    ///   disabled, or no transaction), `false` if animation was handled by the animator.
     package func willUpdateVectorGlyph(
         to glyph: CUINamedVectorGlyph,
         variableValue: CGFloat
     ) -> Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        guard let symbolAnimator,
+              !options.contains(.animationsDisabled),
+              let transactionAttribute = transaction.attribute
+        else { return true }
+        let oldGlyph = symbolAnimator.glyph
+        guard oldGlyph !== glyph else {
+            if symbolAnimator.variableValue != variableValue {
+                let transaction = Graph.withoutUpdate { transactionAttribute.value }
+                guard !transaction.disablesAnimations else { return false }
+                symbolAnimator.addAnimation(
+                    .variableValue,
+                    options: [:],
+                    animationListener: transaction.animationListener,
+                    logicalListener: transaction.animationLogicalListener
+                )
+            }
+            return false
+        }
+        let transaction = Graph.withoutUpdate { transactionAttribute.value }
+        guard !transaction.disablesAnimations else { return false }
+
+        // TBA: FIXME when we implement ContentTransition and ORBAnimation
+        let contentTransitionState = environment.contentTransitionState
+        let contentAnimation = contentTransitionState.animation
+        let transition = contentTransitionState.transition
+        let isReplaceable = transition.isReplaceable
+
+        if let contentAnimation {
+            if case .symbolReplace(let replaceConfig) = transition.storage {
+                if let oldGlyph, oldGlyph.canBeInterpolated(with: glyph) {
+                } else {
+                    var options = replaceConfig.animationOptions
+                    options[.timing] = contentAnimation.rbAnimation
+                    symbolAnimator.addAnimation(
+                        .replace,
+                        options: options,
+                        animationListener: transaction.animationListener,
+                        logicalListener: transaction.animationLogicalListener
+                    )
+                    return false
+                }
+            }
+            // Interpolate animation with content animation timing
+            var options: [ORBSymbolAnimation.OptionKey: Any] = [
+                .timing: contentAnimation.rbAnimation
+            ]
+            let isInterpolate = transition.storage == ContentTransition.interpolate.storage
+            if !isInterpolate || isReplaceable != ContentTransition.interpolate.isReplaceable {
+                options[.interpolateOptions] = true
+            }
+            symbolAnimator.addAnimation(
+                .interpolate,
+                options: options,
+                animationListener: transaction.animationListener,
+                logicalListener: transaction.animationLogicalListener
+            )
+            return false
+        }
+
+        // No content animation: dispatch on storage type
+        switch transition.storage {
+        case .symbolReplace(let replaceConfig):
+            var options = replaceConfig.animationOptions
+            if let contentAnimation = environment.contentTransitionState.animation {
+                options[.timing] = contentAnimation.rbAnimation
+            } else if let transactionAnimation = transaction.animation {
+                options[.timing] = transactionAnimation.rbAnimation
+            }
+            symbolAnimator.addAnimation(
+                .replace,
+                options: options,
+                animationListener: transaction.animationListener,
+                logicalListener: transaction.animationLogicalListener
+            )
+            return false
+
+        case .named(let named):
+            if case .default = named.name {
+                // Resolve .default: >= v4 → .interpolate, else .identity
+                let resolved = isLinkedOnOrAfter(.v4) ? ContentTransition.interpolate : .identity
+                if case .symbolReplace(let replaceConfig) = resolved.storage {
+                    var options = replaceConfig.animationOptions
+                    if let contentAnimation = environment.contentTransitionState.animation {
+                        options[.timing] = contentAnimation.rbAnimation
+                    } else if let transactionAnimation = transaction.animation {
+                        options[.timing] = transactionAnimation.rbAnimation
+                    }
+                    symbolAnimator.addAnimation(
+                        .replace,
+                        options: options,
+                        animationListener: transaction.animationListener,
+                        logicalListener: transaction.animationLogicalListener
+                    )
+                    return false
+                }
+            }
+            // .default (non-replace), .diff, and all other named transitions
+            guard let transactionAnimation = transaction.animation else {
+                return false
+            }
+            var options: [ORBSymbolAnimation.OptionKey: Any] = [
+                .timing: transactionAnimation.rbAnimation
+            ]
+            let isInterpolate = ContentTransition.default.storage == ContentTransition.interpolate.storage
+            if !isInterpolate || isReplaceable != ContentTransition.interpolate.isReplaceable {
+                options[.interpolateOptions] = true
+            }
+            symbolAnimator.addAnimation(
+                .interpolate,
+                options: options,
+                animationListener: transaction.animationListener,
+                logicalListener: transaction.animationLogicalListener
+            )
+            return false
+        }
     }
 
     package var effectiveSymbolRenderingMode: SymbolRenderingMode? {
@@ -419,5 +548,61 @@ final package class ImageProviderBox<Base>: AnyImageProviderBox, @unchecked Send
             return false
         }
         return base == other.base
+    }
+}
+
+// FIXME
+
+extension ORBSymbolAnimator {
+    // TODO: 2975F89CBD28662DFA5DA6D958CBE343
+    @discardableResult
+    fileprivate func addAnimation(
+        _ animation: ORBSymbolAnimation,
+        options: [ORBSymbolAnimation.OptionKey: Any],
+        animationListener: AnimationListener?,
+        logicalListener: AnimationListener?
+    ) -> UInt32 {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+struct ORBSymbolAnimation: RawRepresentable {
+    let rawValue: Int
+
+    /// Variable value change
+    static let variableValue = ORBSymbolAnimation(rawValue: 0x0)
+    /// Symbol replace animation
+    static let replace = ORBSymbolAnimation(rawValue: 0x6)
+    /// Interpolate animation
+    static let interpolate = ORBSymbolAnimation(rawValue: 0x7)
+
+    struct OptionKey: RawRepresentable, Hashable {
+        let rawValue: String
+    }
+}
+
+extension ORBSymbolAnimation.OptionKey {
+    static let timing = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationTiming")
+    static let interpolateOptions = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationInterpolateOptions")
+    static let replaceOptions = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationReplaceOptions")
+    static let byLayer = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationByLayer")
+    static let speed = ORBSymbolAnimation.OptionKey(rawValue: "ORBSymbolAnimationSpeed")
+}
+
+extension Animation {
+    fileprivate var rbAnimation: ORBAnimation {
+        let animation = ORBAnimation()
+        // function.apply(to: animation)
+        return animation
+    }
+}
+
+extension _SymbolEffect.ReplaceConfiguration {
+    fileprivate var animationOptions: [ORBSymbolAnimation.OptionKey: Any] {
+        [
+            .replaceOptions: self,
+//            .byLayer: byLayer,
+//            .speed: speed,
+        ]
     }
 }
