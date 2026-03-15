@@ -14,6 +14,9 @@
 #import <UIKit/UIKit.h>
 #include "Shims/UIKit/UIUserInterfaceVibrancy.h"
 #include "Shims/UIKit/UIBacklightLuminance.h"
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+#import <BacklightServices/BacklightServices.h>
+#endif
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
@@ -24,6 +27,10 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 @property (nonatomic, readonly) NSInteger _userInterfaceRenderingMode_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_userInterfaceRenderingMode);
 @property (nonatomic, readonly) CGFloat _displayCornerRadius_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_displayCornerRadius);
 @property (nonatomic, readonly) _UIUserInterfaceVibrancy _vibrancy_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_vibrancy);
+
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+@property (nonatomic, readonly) BLSUpdateFidelity _updateFidelity_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_updateFidelity);
+#endif
 
 @end
 

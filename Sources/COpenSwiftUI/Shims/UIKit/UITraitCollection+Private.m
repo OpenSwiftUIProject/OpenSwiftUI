@@ -37,6 +37,13 @@
     return func(self, selector);
 }
 
+#if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+- (BLSUpdateFidelity)_updateFidelity_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BLSUpdateFidelity, @"_updateFidelity", BLSUpdateFidelityUnspecified);
+    return func(self, selector);
+}
+#endif
+
 @end
 
 #endif /* __has_include(<UIKit/UIKit.h>) */

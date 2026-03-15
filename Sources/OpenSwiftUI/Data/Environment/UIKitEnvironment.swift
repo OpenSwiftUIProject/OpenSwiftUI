@@ -137,6 +137,9 @@ extension UITraitCollection {
         if backlightLuminance == .reduced {
             result.redactionReasons.insert(.privacy)
         }
+        #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+        result.updateFidelity = _updateFidelity
+        #endif
         _openSwiftUIUnimplementedWarning()
         return result
     }
