@@ -4,7 +4,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if __has_include(<UIKit/UIKit.h>) & !__has_include(<UIKitPrivate/UIBacklightLuminance.h>)
+#if __has_include(<UIKit/UIKit.h>) && !__has_include(<UIKitPrivate/UIBacklightLuminance.h>)
 
 #import <UIKit/UIKit.h>
 
