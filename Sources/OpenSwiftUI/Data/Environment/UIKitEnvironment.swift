@@ -152,6 +152,15 @@ extension UITraitCollection {
         if displayCornerRadius != _UITraitCollectionDisplayCornerRadiusUnspecified {
             result.displayCornerRadius = displayCornerRadius
         }
+        if _userInterfaceRenderingMode == 2 {
+            result.backgroundMaterial = .thick
+            result.vibrantColorStyle = SystemVibrantColorStyle.self
+        }
+        if _vibrancy == .vibrant,
+           _SemanticFeature_v5.isEnabled,
+           result.backgroundMaterial == nil {
+            result.backgroundMaterial = .thick
+        }
         _openSwiftUIUnimplementedWarning()
         return result
     }

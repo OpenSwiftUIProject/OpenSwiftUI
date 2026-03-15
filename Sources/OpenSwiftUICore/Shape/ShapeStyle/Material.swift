@@ -187,7 +187,9 @@ public struct Material: Sendable {
 extension Material: ShapeStyle {
     // FIXME
 
-    static let regular = Material(id: .regular)
+    package static let regular = Material(id: .regular)
+
+    package static let thick = Material(id: .thick)
 }
 
 package struct ForegroundMaterialStyle: ShapeStyle, PrimitiveShapeStyle {
