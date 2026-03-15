@@ -143,6 +143,7 @@ extension UITraitCollection {
         if let colorSchemeContrast = ColorSchemeContrast(accessibilityContrast) {
             result._colorSchemeContrast = colorSchemeContrast
         }
+        result.colorScheme = effectiveColorScheme
         _openSwiftUIUnimplementedWarning()
         return result
     }
@@ -153,6 +154,14 @@ extension UITraitCollection {
             wrapper.phase
         } else {
             .init()
+        }
+    }
+
+    var effectiveColorScheme: ColorScheme {
+        switch userInterfaceStyle {
+        case .light: .light
+        case .dark: .dark
+        default: .light
         }
     }
 }
