@@ -5,12 +5,34 @@
 //  Status: Empty
 //  ID: CE84B1BFBEAEAB6361605407E54625A3 (SwiftUI)
 
+import Foundation
+
 // FIXME
 package struct PlatformItemList {
     var items: [Item]
 
     // FIXME
-    struct Item {}
+    struct Item {
+        var text: NSAttributedString?
+        var secondaryText: NSAttributedString?
+        var platformIdentifier: String?
+        var isExternal: Bool = false
+        var hierarchicalLevel: Int = 0
+        // var imageColorResolver: mageColorResolver?
+        var isEnabled: Bool = false
+        var resolvedImage: Image.Resolved?
+        var namedResolvedImage: Image.NamedResolved?
+        // TODO
+        var label: NSAttributedString?
+        var tooltip: String?
+        var badge: String?
+        // TODO
+    }
+
+    var mergedContentItems: Item {
+        // FIXME
+        .init()
+    }
 
     fileprivate struct Key: PreferenceKey {
         static let defaultValue: PlatformItemList = .init(items: [])

@@ -617,7 +617,14 @@ let openSwiftUITarget = Target.target(
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings,
-    linkerSettings: [.unsafeFlags(["-framework", "CoreServices"], .when(platforms: [.iOS]))] // For CS private API link support
+    linkerSettings: [
+        // -framework CoreServices
+        // For CS private API link support
+        .linkedFramework("CoreServices", .when(platforms: [.iOS])),
+        // -lAccessibility
+        // For Accessibility private API link support
+        .linkedLibrary("Accessibility", .when(platforms: [.iOS])),
+    ]
 )
 
 let openSwiftUITestsSupportTarget = Target.target(
