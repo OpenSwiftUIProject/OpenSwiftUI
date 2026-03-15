@@ -11,7 +11,7 @@ public import Foundation
 package import CoreUI
 #endif
 @_spiOnly public import OpenRenderBoxShims
-import OpenCoreGraphicsShims
+public import OpenCoreGraphicsShims
 
 // MARK: - VectorImageLayer
 

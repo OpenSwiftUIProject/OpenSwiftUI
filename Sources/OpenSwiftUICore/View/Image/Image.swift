@@ -155,6 +155,7 @@ package struct ImageResolutionContext {
         to glyph: CUINamedVectorGlyph,
         variableValue: CGFloat
     ) -> Bool {
+        #if canImport(Darwin)
         guard let symbolAnimator,
               !options.contains(.animationsDisabled),
               let transactionAttribute = transaction.attribute
@@ -270,6 +271,10 @@ package struct ImageResolutionContext {
             )
             return false
         }
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     package var effectiveSymbolRenderingMode: SymbolRenderingMode? {
