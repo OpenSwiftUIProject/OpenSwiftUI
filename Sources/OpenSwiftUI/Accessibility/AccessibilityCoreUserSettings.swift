@@ -3,8 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
-//  ID: 005A2BB2D44F4D559B7E508DC5B95FFB (SwiftUI)
+//  Status: Complete
 
 #if canImport(UIKit)
 import Accessibility
@@ -22,18 +21,50 @@ extension AccessibilityCore {
             environment.accessibilityShowButtonShapes = UIAccessibility.buttonShapesEnabled
             environment.accessibilityDimFlashingLights = _AXSPhotosensitiveMitigationEnabled()
             environment.accessibilityPlayAnimatedImages = AccessibilitySettings.animatedImagesEnabled
-            // TODO: environment[EnabledTechnologiesKey.self] = .enabledTechnologies
-            // TODO: environment[AccessibilityLargeContentViewerKey.self] = UILargeContentViewerInteraction.isEnabled
-            // TODO: environment[AccessibilityQuickActionsKey.self] = false
-            environment.accessibilityPrefersOnOffLabels = _AXSIncreaseButtonLegibility() != 0
+            environment.accessibilityEnabledTechnologies = .enabledTechnologies
+            environment._accessibilityLargeContentViewerEnabled = UILargeContentViewerInteraction.isEnabled
+            environment._accessibilityQuickActionsEnabled = false
+            environment.accessibilityPrefersOnOffLabels = _AXSIncreaseButtonLegibility()
         }
     }
 }
+
+// MARK: - AccessibilityTechnologies + enabledTechnologies
+
+extension AccessibilityTechnologies {
+    package static var enabledTechnologies: AccessibilityTechnologies {
+        let enabled = AccessibilityTechnology.allCases.filter { technology in
+            switch technology {
+            case .voiceOver: UIAccessibility.isVoiceOverRunning
+            case .switchControl: UIAccessibility.isSwitchControlRunning
+            case .fullKeyboardAccess: _AXSFullKeyboardAccessEnabled()
+            case .voiceControl: _AXSCommandAndControlEnabled()
+            case .hoverText: _AXSHoverTextEnabled()
+            case .assistiveAccess: AXAssistiveAccessEnabled()
+            }
+        }
+        return AccessibilityTechnologies(list: enabled)
+    }
+}
+
+// MARK: - Private C functions
 
 @_silgen_name("_AXSPhotosensitiveMitigationEnabled")
 private func _AXSPhotosensitiveMitigationEnabled() -> Bool
 
 @_silgen_name("_AXSIncreaseButtonLegibility")
-private func _AXSIncreaseButtonLegibility() -> Int32
+private func _AXSIncreaseButtonLegibility() -> Bool
+
+@_silgen_name("_AXSFullKeyboardAccessEnabled")
+private func _AXSFullKeyboardAccessEnabled() -> Bool
+
+@_silgen_name("_AXSCommandAndControlEnabled")
+private func _AXSCommandAndControlEnabled() -> Bool
+
+@_silgen_name("_AXSHoverTextEnabled")
+private func _AXSHoverTextEnabled() -> Bool
+
+@_silgen_name("AXAssistiveAccessEnabled")
+private func AXAssistiveAccessEnabled() -> Bool
 
 #endif
