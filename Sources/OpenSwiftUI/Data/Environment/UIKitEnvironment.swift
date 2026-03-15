@@ -8,6 +8,7 @@
 
 #if canImport(UIKit)
 import COpenSwiftUI
+@_spi(ClarityBoard)
 @_spi(Private)
 package import OpenSwiftUICore
 package import UIKit
@@ -72,8 +73,8 @@ extension UITraitCollection {
                 mutableTraits.displayGamut = displayGamut
             }
             if _SemanticFeature_v5.isEnabled, environment.backgroundMaterial != nil {
-                if mutableTraits._vibrancy == ._1 || mutableTraits._vibrancy == ._0 {
-                    mutableTraits._vibrancy = ._1
+                if mutableTraits._vibrancy == .vibrant || mutableTraits._vibrancy == .none {
+                    mutableTraits._vibrancy = .vibrant
                 }
             }
             let accessibilityContrast = UIAccessibilityContrast(environment._colorSchemeContrast)
@@ -114,9 +115,30 @@ extension UITraitCollection {
     }
 
     func resolvedEnvironment(base environment: EnvironmentValues) -> EnvironmentValues {
-        // TODO
+        var result = environment
+        if !result.bridgedEnvironmentKeys.isEmpty {
+            result.bridgedEnvironmentKeys = []
+        }
+        result.inheritedTraitCollection = _traitCollectionByRemovingEnvironmentWrapper
+        if let layoutDirection = LayoutDirection(layoutDirection) {
+            result.layoutDirection = layoutDirection
+        }
+        if let dynamicTypeSize = DynamicTypeSize(uiSizeCategory: preferredContentSizeCategory) {
+            result.dynamicTypeSize = dynamicTypeSize
+        }
+        if let legibilityWeight = LegibilityWeight(legibilityWeight) {
+            result.legibilityWeight = legibilityWeight
+        }
+        if let gamut = DisplayGamut(rawValue: displayGamut.rawValue) {
+            result.displayGamut = gamut
+        }
+        let backlightLuminance = _backlightLuminance
+        result.isLuminanceReduced = backlightLuminance == .reduced
+        if backlightLuminance == .reduced {
+            result.redactionReasons.insert(.privacy)
+        }
         _openSwiftUIUnimplementedWarning()
-        return environment
+        return result
     }
 
     var viewPhase: ViewPhase {
@@ -180,6 +202,13 @@ extension UIMutableTraits {
 
 struct InheritedTraitCollectionKey: EnvironmentKey {
     static var defaultValue: UITraitCollection? { nil }
+}
+
+extension EnvironmentValues {
+    var inheritedTraitCollection: UITraitCollection? {
+        get { self[InheritedTraitCollectionKey.self] }
+        set { self[InheritedTraitCollectionKey.self] = newValue }
+    }
 }
 
 #endif

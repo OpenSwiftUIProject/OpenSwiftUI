@@ -138,13 +138,21 @@ private struct UpdateFidelityKey: EnvironmentKey {
     static var defaultValue: BLSUpdateFidelity = .seconds
 }
 
+extension EnvironmentValues {
+    @inline(__always)
+    var updateFidelity: BLSUpdateFidelity {
+        get { self[UpdateFidelityKey.self] }
+        set { self[UpdateFidelityKey.self] = newValue }
+    }
+}
+
 extension CachedEnvironment.ID {
     static let updateFidelity: CachedEnvironment.ID = .init()
 }
 
 extension _GraphInputs {
     var updateFidelity: Attribute<BLSUpdateFidelity> {
-        mapEnvironment(id: .updateFidelity) { $0[UpdateFidelityKey.self] }
+        mapEnvironment(id: .updateFidelity) { $0.updateFidelity }
     }
 }
 

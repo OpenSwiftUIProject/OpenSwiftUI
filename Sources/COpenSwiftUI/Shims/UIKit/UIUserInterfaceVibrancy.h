@@ -11,8 +11,9 @@
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
 typedef NS_ENUM(NSInteger, _UIUserInterfaceVibrancy) {
-    _UIUserInterfaceVibrancy_0,
-    _UIUserInterfaceVibrancy_1,
+    _UIUserInterfaceVibrancyUnspecified = -1,
+    _UIUserInterfaceVibrancyNone = 0,
+    _UIUserInterfaceVibrancyVibrant = 1,
 };
 
 NS_HEADER_AUDIT_END(nullability, sendability)
