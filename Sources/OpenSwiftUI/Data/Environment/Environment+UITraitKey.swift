@@ -1,10 +1,10 @@
 //
-//  UIKitEnvironmentKey.swift
+//  Environment+UITraitKey.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 859636D0EA4E0B7C4D7D1B41B613A4D5 (SwiftUI?)
+//  ID: 859636D0EA4E0B7C4D7D1B41B613A4D5 (SwiftUI)
 
 #if canImport(UIKit)
 

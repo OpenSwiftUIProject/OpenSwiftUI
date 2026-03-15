@@ -1,10 +1,10 @@
 //
-//  CUIDesignLibraryCacheKey.swift
+//  CoreUIDefaultSystemColorDefinition.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
 //  Status: WIP
-//  ID: EBD1C829A869D5EC3C2FDA55F4467D9A (SwiftUICore?)
+//  ID: EBD1C829A869D5EC3C2FDA55F4467D9A (SwiftUICore)
 
 #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 import OpenSwiftUI_SPI

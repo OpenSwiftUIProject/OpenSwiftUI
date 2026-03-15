@@ -1,9 +1,9 @@
 //
-//  ViewFactory.swift
+//  PlatformViewFactory.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  ID: 7A45621CE16223183E03CAC88E8C5E60 (SwiftUICore?)
+//  ID: 7A45621CE16223183E03CAC88E8C5E60 (SwiftUICore)
 
 package import Foundation
 #if canImport(QuartzCore)

@@ -1,10 +1,10 @@
 //
-//  FinishLaunchTestAction.swift
+//  LaunchTestSupport.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 71E21E30634D2453CAA80C5CA9EF3E2C (SwiftUI?)
+//  ID: 71E21E30634D2453CAA80C5CA9EF3E2C (SwiftUI)
 
 #if os(iOS) || os(visionOS)
 import UIKit

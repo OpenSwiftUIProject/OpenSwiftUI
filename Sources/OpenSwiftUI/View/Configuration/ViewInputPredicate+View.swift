@@ -1,10 +1,10 @@
 //
-//  ViewInputFlagModifier.swift
+//  ViewInputPredicate+View.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 481852E6B9C17510DAAE09E84ECE4A2D (SwiftUI?)
+//  ID: 481852E6B9C17510DAAE09E84ECE4A2D (SwiftUI)
 
 struct ViewInputFlagModifier<Flag>: _GraphInputsModifier, PrimitiveViewModifier where Flag: ViewInputFlag {
     var flag: Flag

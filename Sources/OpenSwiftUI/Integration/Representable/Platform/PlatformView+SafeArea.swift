@@ -1,10 +1,10 @@
 //
-//  SafeAreaHelper.swift
+//  PlatformView+SafeArea.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: WIP (Unimplemented)
-//  ID: 36F4CE8257AE99191765DF6F47D9C4C0 (SwiftUI?)
+//  ID: 36F4CE8257AE99191765DF6F47D9C4C0 (SwiftUI)
 
 #if canImport(Darwin)
 

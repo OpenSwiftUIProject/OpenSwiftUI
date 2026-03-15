@@ -1,10 +1,10 @@
 //
-//  TopAlignedFormValueKey.swift
+//  GroupedFormLabeledContentStyle.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: Partial
-//  ID: 0481B0D26895C528738CA5BBB60A8193 (SwiftUI?)
+//  ID: 0481B0D26895C528738CA5BBB60A8193 (SwiftUI)
 
 import OpenSwiftUICore
 

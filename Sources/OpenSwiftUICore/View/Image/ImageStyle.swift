@@ -1,10 +1,10 @@
 //
-//  ImageInterpolation.swift
+//  ImageStyle.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: B65D626E77C8D6CB107EB45FECFC60F0 (SwiftUICore?)
+//  ID: B65D626E77C8D6CB107EB45FECFC60F0 (SwiftUICore)
 
 // MARK: - Image.Interpolation
 
