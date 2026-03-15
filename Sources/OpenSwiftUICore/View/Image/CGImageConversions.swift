@@ -1,12 +1,13 @@
 //
-//  CGImageProvider.swift
+//  CGImageConversions.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: BB7900A03A030BC988C08113497314C3 (SwiftUICore?)
+//  ID: BB7900A03A030BC988C08113497314C3 (SwiftUICore)
 
 public import OpenCoreGraphicsShims
+package import OpenSwiftUI_SPI
 
 @available(OpenSwiftUI_v1_0, *)
 extension Image {
@@ -106,4 +107,24 @@ extension CGImage {
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
     }
+
+    #if canImport(CoreGraphics)
+    private static let sRGB: CGColorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+
+    package static func context(_ pixelWidth: Int, _ pixelHeight: Int, prefersMask: Bool) -> CGContext? {
+        if prefersMask {
+            _CGBitmapContextCreate(
+                pixelWidth, pixelHeight,
+                nil,
+                CGImageAlphaInfo.alphaOnly.rawValue
+            )
+        } else {
+            _CGBitmapContextCreate(
+                pixelWidth, pixelHeight,
+                CGImage.sRGB,
+                CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedLast.rawValue
+            )
+        }
+    }
+    #endif
 }
