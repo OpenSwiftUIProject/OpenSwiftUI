@@ -10,6 +10,9 @@ public import Foundation
 #if OPENSWIFTUI_LINK_COREUI
 package import CoreUI
 #endif
+#if OPENSWIFTUI_LINK_CORESVG
+package import CoreSVG
+#endif
 @_spiOnly public import OpenRenderBoxShims
 public import OpenCoreGraphicsShims
 
@@ -276,7 +279,11 @@ private class SVGImageContents: DrawableImageContents {
 
 extension CGContext {
     fileprivate func draw(_ document: CGSVGDocument) {
+        #if OPENSWIFTUI_LINK_CORESVG
         CGContextDrawSVGDocument(self, document)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 #endif
