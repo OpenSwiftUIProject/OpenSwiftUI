@@ -1,5 +1,5 @@
 //
-//  Signpost.swift
+//  Signposts.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
