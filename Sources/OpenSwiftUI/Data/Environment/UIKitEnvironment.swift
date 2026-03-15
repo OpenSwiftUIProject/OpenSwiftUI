@@ -144,6 +144,14 @@ extension UITraitCollection {
             result._colorSchemeContrast = colorSchemeContrast
         }
         result.colorScheme = effectiveColorScheme
+        result.displayScale = displayScale
+        result.horizontalSizeClass = UserInterfaceSizeClass(horizontalSizeClass)
+        result.verticalSizeClass = UserInterfaceSizeClass(verticalSizeClass)
+        result.backgroundInfo.layer = userInterfaceLevel.rawValue
+        let displayCornerRadius = displayCornerRadius
+        if displayCornerRadius != _UITraitCollectionDisplayCornerRadiusUnspecified {
+            result.displayCornerRadius = displayCornerRadius
+        }
         _openSwiftUIUnimplementedWarning()
         return result
     }

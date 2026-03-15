@@ -27,8 +27,8 @@
     return func(self, selector);
 }
 
-- (CGFloat)_displayCornerRadius_openswiftui_safe_wrapper {
-    OPENSWIFTUI_SAFE_WRAPPER_IMP(CGFloat, @"_displayCornerRadius", 0.0);
+- (CGFloat)displayCornerRadius_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(CGFloat, @"displayCornerRadius", 0.0);
     return func(self, selector);
 }
 

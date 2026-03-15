@@ -25,7 +25,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 @property (nonatomic, readonly) UITraitCollection *_traitCollectionByRemovingEnvironmentWrapper_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_traitCollectionByRemovingEnvironmentWrapper);
 @property (nonatomic, readonly) _UIBacklightLuminance _backlightLuminance_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_backlightLuminance);
 @property (nonatomic, readonly) NSInteger _userInterfaceRenderingMode_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_userInterfaceRenderingMode);
-@property (nonatomic, readonly) CGFloat _displayCornerRadius_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_displayCornerRadius);
+@property (nonatomic, readonly) CGFloat displayCornerRadius_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(displayCornerRadius);
 @property (nonatomic, readonly) _UIUserInterfaceVibrancy _vibrancy_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_vibrancy);
 
 #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
@@ -33,6 +33,9 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 #endif
 
 @end
+
+OPENSWIFTUI_EXPORT
+const CGFloat _UITraitCollectionDisplayCornerRadiusUnspecified;
 
 NS_HEADER_AUDIT_END(nullability, sendability)
 
