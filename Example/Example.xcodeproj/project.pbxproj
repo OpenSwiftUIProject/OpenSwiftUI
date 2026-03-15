@@ -8,6 +8,10 @@
 
 /* Begin PBXBuildFile section */
 		27186AE32D538A76009E05F9 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
+		273F46082F673F8F00F3379F /* CoreSVG.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273F46072F673F8F00F3379F /* CoreSVG.xcframework */; };
+		273F48CA2F6743CC00F3379F /* CoreSVG.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273F46072F673F8F00F3379F /* CoreSVG.xcframework */; };
+		273F48CD2F6743D300F3379F /* CoreSVG.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273F46072F673F8F00F3379F /* CoreSVG.xcframework */; };
+		273F48D02F6743D900F3379F /* CoreSVG.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 273F46072F673F8F00F3379F /* CoreSVG.xcframework */; };
 		278EF52D2E2272F2009C32EB /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 278EF52C2E2272F2009C32EB /* Equatable */; };
 		278EF52F2E227304009C32EB /* Equatable in Frameworks */ = {isa = PBXBuildFile; productRef = 278EF52E2E227304009C32EB /* Equatable */; };
 		279284972DFF136E00234D64 /* AttributeGraph.xcframework in Frameworks */ = {isa = PBXBuildFile; fileRef = 27E6C4D12D2842740010502F /* AttributeGraph.xcframework */; };
@@ -56,6 +60,7 @@
 
 /* Begin PBXFileReference section */
 		271D81642BB1E8E300A6D543 /* OpenAttributeGraph */ = {isa = PBXFileReference; lastKnownFileType = wrapper; name = OpenAttributeGraph; path = ../../OpenAttributeGraph; sourceTree = "<group>"; };
+		273F46072F673F8F00F3379F /* CoreSVG.xcframework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.xcframework; name = CoreSVG.xcframework; path = ../../DarwinPrivateFrameworks/CoreSVG/2024/CoreSVG.xcframework; sourceTree = "<group>"; };
 		275751E32DEE1441003E467C /* TestingHost.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = TestingHost.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		279080912E8E5E7B0082B5B6 /* Testing.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = Testing.framework; path = Platforms/MacOSX.platform/Developer/Library/Frameworks/Testing.framework; sourceTree = DEVELOPER_DIR; };
 		279283B92DFF11CE00234D64 /* OpenSwiftUIUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = OpenSwiftUIUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -113,6 +118,7 @@
 				279FED0D2DF4567B00320390 /* OpenSwiftUI in Frameworks */,
 				27AF22B82E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27BB94442F5D5FE800B2AA0A /* Equatable in Frameworks */,
+				273F48CD2F6743D300F3379F /* CoreSVG.xcframework in Frameworks */,
 				27E28F112F5D5547007F8CF5 /* SFSymbols.xcframework in Frameworks */,
 				27AF22B42E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BC2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -127,6 +133,7 @@
 				2792849F2DFF137400234D64 /* SnapshotTesting in Frameworks */,
 				27AF22B92E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27BB94462F5D5FEE00B2AA0A /* Equatable in Frameworks */,
+				273F48D02F6743D900F3379F /* CoreSVG.xcframework in Frameworks */,
 				27E28F142F5D5556007F8CF5 /* SFSymbols.xcframework in Frameworks */,
 				27AF22B52E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22BD2E758F3700D534AB /* RenderBox.xcframework in Frameworks */,
@@ -141,6 +148,7 @@
 				27AF22B22E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22B62E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27E28F0B2F5D5531007F8CF5 /* SFSymbols.xcframework in Frameworks */,
+				273F46082F673F8F00F3379F /* CoreSVG.xcframework in Frameworks */,
 				27CD0B5F2AFC8DA7003665EB /* OpenSwiftUI in Frameworks */,
 				278EF52F2E227304009C32EB /* Equatable in Frameworks */,
 				27E6C4D32D2842740010502F /* AttributeGraph.xcframework in Frameworks */,
@@ -155,6 +163,7 @@
 				27AF22B32E758F2900D534AB /* CoreUI.xcframework in Frameworks */,
 				27AF22B72E758F2E00D534AB /* BacklightServices.xcframework in Frameworks */,
 				27E28F0E2F5D553F007F8CF5 /* SFSymbols.xcframework in Frameworks */,
+				273F48CA2F6743CC00F3379F /* CoreSVG.xcframework in Frameworks */,
 				27D49E0E2BA60AF600F6E2E2 /* OpenSwiftUI in Frameworks */,
 				278EF52D2E2272F2009C32EB /* Equatable in Frameworks */,
 				27186AE32D538A76009E05F9 /* AttributeGraph.xcframework in Frameworks */,
@@ -199,6 +208,7 @@
 		27D49E0C2BA60AF600F6E2E2 /* Frameworks */ = {
 			isa = PBXGroup;
 			children = (
+				273F46072F673F8F00F3379F /* CoreSVG.xcframework */,
 				27E28F0A2F5D5531007F8CF5 /* SFSymbols.xcframework */,
 				279080912E8E5E7B0082B5B6 /* Testing.framework */,
 				27AF22B12E758F0F00D534AB /* BacklightServices.xcframework */,

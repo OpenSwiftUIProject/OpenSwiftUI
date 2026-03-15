@@ -157,6 +157,7 @@ let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatfo
 let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
 
 let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
+let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform && !isSPIBuild)
 let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform && !isSPIBuild)
 let linkBacklightServices = envBoolValue("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
 // This should be disabled for UI test target due to link issue of Testing.
@@ -246,6 +247,12 @@ sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" :
 sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
 if linkCoreUI {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_COREUI"))
+}
+
+sharedCSettings.append(.define("OPENSWIFTUI_LINK_CORESVG", to: linkCoreSVG ? "1" : "0"))
+sharedCxxSettings.append(.define("OPENSWIFTUI_LINK_CORESVG", to: linkCoreSVG ? "1" : "0"))
+if linkCoreSVG {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_CORESVG"))
 }
 
 if linkSFSymbols {
@@ -396,6 +403,12 @@ extension Target {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'CoreUI.framework'"
         dependencies.append(.product(name: "CoreUI", package: "DarwinPrivateFrameworks"))
+    }
+
+    func addCoreSVGSettings() {
+        // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
+        // "could not determine executable path for bundle 'CoreSVG.framework'"
+        dependencies.append(.product(name: "CoreSVG", package: "DarwinPrivateFrameworks"))
     }
 
     func addSFSymbolsSettings() {
@@ -849,6 +862,11 @@ if linkCoreUI {
     openSwiftUISPITarget.addCoreUISettings()
 }
 
+if linkCoreSVG {
+    openSwiftUICoreTarget.addCoreSVGSettings()
+    openSwiftUISPITarget.addCoreSVGSettings()
+}
+
 if linkSFSymbols {
     openSwiftUICoreTarget.addSFSymbolsSettings()
 }
@@ -865,7 +883,7 @@ if useLocalDeps {
         .package(path: "../OpenRenderBox"),
         .package(path: "../OpenObservation"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkSFSymbols || linkBacklightServices {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkBacklightServices {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
     package.dependencies += dependencies
@@ -877,7 +895,7 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkSFSymbols {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
