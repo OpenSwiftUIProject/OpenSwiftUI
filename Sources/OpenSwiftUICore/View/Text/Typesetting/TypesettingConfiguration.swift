@@ -21,7 +21,9 @@ package struct TypesettingConfiguration: Equatable {
     }
 }
 
-package struct TypesettingConfigurationKey: EnvironmentKey {
+// MARK: - TypesettingConfigurationKey
+
+package struct TypesettingConfigurationKey: BridgedEnvironmentKey {
     package static let defaultValue: TypesettingConfiguration = .init()
 }
 

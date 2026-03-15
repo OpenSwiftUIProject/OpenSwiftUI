@@ -252,6 +252,10 @@ extension DynamicTypeSize {
 
     /// Create a Dynamic Type size from its `UIContentSizeCategory` equivalent.
     public init?(_ uiSizeCategory: UIContentSizeCategory) {
+        self.init(uiSizeCategory: uiSizeCategory)
+    }
+
+    package init?(uiSizeCategory: UIContentSizeCategory) {
         switch uiSizeCategory {
         case .extraSmall: self = .xSmall
         case .small: self = .small
@@ -299,6 +303,10 @@ extension UIContentSizeCategory {
     @available(macOS, unavailable)
     @available(watchOS, unavailable)
     public init(_ dynamicTypeSize: DynamicTypeSize?) {
+        self.init(dynamicTypeSize: dynamicTypeSize)
+    }
+
+    package init(dynamicTypeSize: DynamicTypeSize?) {
         switch dynamicTypeSize {
         case .xSmall: self = .extraSmall
         case .small: self = .small

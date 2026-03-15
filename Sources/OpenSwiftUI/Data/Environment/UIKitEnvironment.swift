@@ -7,7 +7,9 @@
 //  ID: 005A2BB2D44F4D559B7E508DC5B95FFB (SwiftUI)
 
 #if canImport(UIKit)
-
+import COpenSwiftUI
+@_spi(ClarityBoard)
+@_spi(Private)
 package import OpenSwiftUICore
 package import UIKit
 
@@ -58,8 +60,44 @@ extension UITraitCollection {
             if displayScale != mutableTraits.displayScale {
                 mutableTraits.displayScale = displayScale
             }
-            // TODO
-            _openSwiftUIUnimplementedWarning()
+            let sizeCategory = UIContentSizeCategory(dynamicTypeSize: environment.dynamicTypeSize)
+            if sizeCategory != mutableTraits.preferredContentSizeCategory {
+                mutableTraits.preferredContentSizeCategory = sizeCategory
+            }
+            let userInterfaceStyle = UIUserInterfaceStyle(environment.colorScheme)
+            if userInterfaceStyle != mutableTraits.userInterfaceStyle {
+                mutableTraits.userInterfaceStyle = userInterfaceStyle
+            }
+            let displayGamut = UIDisplayGamut(rawValue: environment.displayGamut.rawValue)!
+            if displayGamut != mutableTraits.displayGamut {
+                mutableTraits.displayGamut = displayGamut
+            }
+            if _SemanticFeature_v5.isEnabled, environment.backgroundMaterial != nil {
+                if mutableTraits._vibrancy == .vibrant || mutableTraits._vibrancy == .none {
+                    mutableTraits._vibrancy = .vibrant
+                }
+            }
+            let accessibilityContrast = UIAccessibilityContrast(environment._colorSchemeContrast)
+            if accessibilityContrast != mutableTraits.accessibilityContrast {
+                mutableTraits.accessibilityContrast = accessibilityContrast
+            }
+            let horizontalSizeClass = UIUserInterfaceSizeClass(environment.horizontalSizeClass)
+            if horizontalSizeClass != mutableTraits.horizontalSizeClass {
+                mutableTraits.horizontalSizeClass = horizontalSizeClass
+            }
+            let verticalSizeClass = UIUserInterfaceSizeClass(environment.verticalSizeClass)
+            if verticalSizeClass != mutableTraits.verticalSizeClass {
+                mutableTraits.verticalSizeClass = verticalSizeClass
+            }
+            if !forImageAssetsOnly {
+                let userInterfaceLevel = UIUserInterfaceLevel(rawValue: environment.backgroundInfo.layer)!
+                if userInterfaceLevel != mutableTraits.userInterfaceLevel {
+                    mutableTraits.userInterfaceLevel = userInterfaceLevel
+                }
+            }
+            TypesettingConfigurationKey.write(to: &mutableTraits, value: environment.typesettingConfiguration)
+            let activeAppearance = UIUserInterfaceActiveAppearance(rawValue: environment.appearsActive ? 1 : 0)!
+            mutableTraits.activeAppearance = activeAppearance
         }
     }
 
@@ -77,9 +115,54 @@ extension UITraitCollection {
     }
 
     func resolvedEnvironment(base environment: EnvironmentValues) -> EnvironmentValues {
-        // TODO
+        var result = environment
+        if !result.bridgedEnvironmentKeys.isEmpty {
+            result.bridgedEnvironmentKeys = []
+        }
+        result.inheritedTraitCollection = _traitCollectionByRemovingEnvironmentWrapper
+        if let layoutDirection = LayoutDirection(layoutDirection) {
+            result.layoutDirection = layoutDirection
+        }
+        if let dynamicTypeSize = DynamicTypeSize(uiSizeCategory: preferredContentSizeCategory) {
+            result.dynamicTypeSize = dynamicTypeSize
+        }
+        if let legibilityWeight = LegibilityWeight(legibilityWeight) {
+            result.legibilityWeight = legibilityWeight
+        }
+        if let gamut = DisplayGamut(rawValue: displayGamut.rawValue) {
+            result.displayGamut = gamut
+        }
+        let backlightLuminance = _backlightLuminance
+        result.isLuminanceReduced = backlightLuminance == .reduced
+        if backlightLuminance == .reduced {
+            result.redactionReasons.insert(.privacy)
+        }
+        #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
+        result.updateFidelity = _updateFidelity
+        #endif
+        if let colorSchemeContrast = ColorSchemeContrast(accessibilityContrast) {
+            result._colorSchemeContrast = colorSchemeContrast
+        }
+        result.colorScheme = effectiveColorScheme
+        result.displayScale = displayScale
+        result.horizontalSizeClass = UserInterfaceSizeClass(horizontalSizeClass)
+        result.verticalSizeClass = UserInterfaceSizeClass(verticalSizeClass)
+        result.backgroundInfo.layer = userInterfaceLevel.rawValue
+        let displayCornerRadius = displayCornerRadius
+        if displayCornerRadius != _UITraitCollectionDisplayCornerRadiusUnspecified {
+            result.displayCornerRadius = displayCornerRadius
+        }
+        if _userInterfaceRenderingMode == 2 {
+            result.backgroundMaterial = .thick
+            result.vibrantColorStyle = SystemVibrantColorStyle.self
+        }
+        if _vibrancy == .vibrant,
+           _SemanticFeature_v5.isEnabled,
+           result.backgroundMaterial == nil {
+            result.backgroundMaterial = .thick
+        }
         _openSwiftUIUnimplementedWarning()
-        return environment
+        return result
     }
 
     var viewPhase: ViewPhase {
@@ -88,6 +171,14 @@ extension UITraitCollection {
             wrapper.phase
         } else {
             .init()
+        }
+    }
+
+    var effectiveColorScheme: ColorScheme {
+        switch userInterfaceStyle {
+        case .light: .light
+        case .dark: .dark
+        default: .light
         }
     }
 }
@@ -132,8 +223,24 @@ extension UITraitCollection {
     ) -> UITraitCollection
 }
 
+extension UIMutableTraits {
+    var _vibrancy: _UIUserInterfaceVibrancy {
+        @_silgen_name("$s5UIKit15UIMutableTraitsPAAE9_vibrancySo24_UIUserInterfaceVibrancyVvg")
+        get
+        @_silgen_name("$s5UIKit15UIMutableTraitsPAAE9_vibrancySo24_UIUserInterfaceVibrancyVvs")
+        set
+    }
+}
+
 struct InheritedTraitCollectionKey: EnvironmentKey {
     static var defaultValue: UITraitCollection? { nil }
+}
+
+extension EnvironmentValues {
+    var inheritedTraitCollection: UITraitCollection? {
+        get { self[InheritedTraitCollectionKey.self] }
+        set { self[InheritedTraitCollectionKey.self] = newValue }
+    }
 }
 
 #endif
