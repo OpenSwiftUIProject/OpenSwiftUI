@@ -10,6 +10,8 @@ package import OpenCoreGraphicsShims
 import OpenSwiftUI_SPI
 package import OpenRenderBoxShims
 
+// ORBPath typealias is defined in Path.swift to resolve Xcode module ambiguity
+
 // MARK: - RoundedCornerStyle
 
 /// Defines the shape of a rounded rectangle's corners.

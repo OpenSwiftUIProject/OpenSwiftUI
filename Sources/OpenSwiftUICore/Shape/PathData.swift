@@ -7,6 +7,8 @@
 package import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
 
+// ORBPath typealias is defined in Path.swift to resolve Xcode module ambiguity
+
 // MARK: - PathData
 
 /// A union-like structure matching the C PathData union layout.

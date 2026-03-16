@@ -1,0 +1,4 @@
+module COpenSwiftUI {
+    umbrella "."
+    export *
+}
