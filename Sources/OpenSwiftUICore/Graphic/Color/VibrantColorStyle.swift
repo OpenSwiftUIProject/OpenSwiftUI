@@ -4,7 +4,7 @@
 //
 //  Audited for 6.0.87
 //  Status: Complete
-//  ID: 9E3352CE4697DF56A738786E16992848 (SwiftUICore)
+//  ID: 8CCD408021CD268DDD1874045F6AD3D9 (SwiftUICore)
 
 package protocol VibrantColorStyle {
     static func apply(_ type: SystemColorType, color: Color, material: Material, to shape: inout _ShapeStyle_Shape)

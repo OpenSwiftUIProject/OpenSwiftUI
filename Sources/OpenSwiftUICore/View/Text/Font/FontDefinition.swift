@@ -4,7 +4,7 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: A1A6E08ED7787270EADAD2AE750791A9 (SwiftUICore)
+//  ID: C17A136ED11B3E0D21D21D182F3B80B2 (SwiftUICore)
 
 #if canImport(CoreText)
 public import CoreText
