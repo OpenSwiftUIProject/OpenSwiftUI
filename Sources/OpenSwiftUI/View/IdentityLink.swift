@@ -1,5 +1,5 @@
 //
-//  ViewIdentity.swift
+//  IdentityLink.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4

@@ -1,5 +1,5 @@
 //
-//  CommandsFlags.swift
+//  CommandFlag.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4

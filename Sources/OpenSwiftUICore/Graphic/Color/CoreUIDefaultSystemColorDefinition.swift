@@ -1,10 +1,10 @@
 //
-//  CUIDesignLibraryCacheKey.swift
+//  CoreUIDefaultSystemColorDefinition.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
 //  Status: WIP
-//  ID: EBD1C829A869D5EC3C2FDA55F4467D9A (SwiftUICore?)
+//  ID: EBD1C829A869D5EC3C2FDA55F4467D9A (SwiftUICore)
 
 #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
 import OpenSwiftUI_SPI
@@ -110,6 +110,62 @@ package struct CUIDesignLibraryCacheKey: Hashable {
         switch props.gamut {
         case .sRGB: .SRGB
         case .displayP3: .P3
+        }
+    }
+}
+
+// MARK: - CoreUIDefaultSystemColorDefinition
+
+struct CoreUIDefaultSystemColorDefinition: SystemColorDefinition {
+    static func value(for type: SystemColorType, environment: EnvironmentValues) -> Color.Resolved {
+        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
+        let name: CUIColorName
+        switch type {
+        case .red: name = .red
+        case .orange: name = .orange
+        case .yellow: name = .yellow
+        case .green: name = .green
+        case .teal: name = .teal
+        case .mint: name = .mint
+        case .cyan: name = .cyan
+        case .blue: name = .blue
+        case .indigo: name = .indigo
+        case .purple: name = .purple
+        case .pink: name = .pink
+        case .brown: name = .brown
+        case .gray: name = .gray
+        case .primary: name = .primary
+        case .secondary: name = .secondary
+        case .tertiary: name = .tertiary
+        case .quaternary: name = .quaternary
+        case .quinary: name = .quinary
+        default: return DefaultSystemColorDefinition_PhoneTV.value(for: type, environment: environment)
+        }
+        let cacheKey = CUIDesignLibraryCacheKey(name: name, in: environment, allowsBlendMode: false)
+        let entry = cacheKey.fetch()
+        return entry.color
+        #else
+        // For non CoreUI supported platform, simply return a plain Color.Resolved color or black for now
+        return switch type {
+        case .red: .red
+        case .green: .green
+        case .blue: .blue
+        case .primary: .black
+        case .secondary: .gray_75
+        case .tertiary: .gray_50
+        case .quaternary: .gray_25
+        default: .black
+        }
+        #endif
+
+    }
+
+    static func opacity(at level: Int, environment: EnvironmentValues) -> Float {
+        switch level {
+        case 0: return 1.0
+        case 1: return 0.5
+        case 2: return 0.25
+        default: return 0.18
         }
     }
 }

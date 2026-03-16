@@ -24,3 +24,4 @@ Example/ReferenceImages/**/*.png
 gh-pages
 .swift_pd_guess
 /.augments
+.alma-snapshots

@@ -4,7 +4,6 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: BEFE9363F68E039B4AB6422B8AA4535A (SwiftUICore)
 
 // MARK: - ShapeStylePair
 

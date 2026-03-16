@@ -1,10 +1,10 @@
 //
-//  Transaction+Scroll.swift
+//  ScrollTransactionAdditions.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 3107437717620AB5FD95CF7D87A21F58 (SwiftUICore?)
+//  ID: 3107437717620AB5FD95CF7D87A21F58 (SwiftUICore)
 
 // MARK: - Transaction + v4
 

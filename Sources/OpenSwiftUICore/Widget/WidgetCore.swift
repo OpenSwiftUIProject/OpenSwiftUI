@@ -1,10 +1,10 @@
 //
-//  HasWidgetMetadata.swift
+//  WidgetCore.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: FD72118870A434CF0E2B5B97BD09B3FE (SwiftUICore?)
+//  ID: FD72118870A434CF0E2B5B97BD09B3FE (SwiftUICore)
 
 extension _ViewInputs {
     package var hasWidgetMetadata: Bool {

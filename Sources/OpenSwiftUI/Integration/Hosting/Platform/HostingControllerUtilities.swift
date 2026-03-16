@@ -1,10 +1,10 @@
 //
-//  HostingControllerBridge.swift
+//  HostingControllerUtilities.swift
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
 //  Status: WIP
-//  ID: 58FE8AA2C5B9F31BD4583124328B217E (SwiftUI?)
+//  ID: 58FE8AA2C5B9F31BD4583124328B217E (SwiftUI)
 
 import OpenAttributeGraphShims
 import OpenSwiftUICore

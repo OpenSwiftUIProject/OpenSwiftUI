@@ -4,7 +4,6 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
-//  ID: 3EFC07053803547BE79DCD198FF8190A (SwiftUICore)
 
 public import Foundation
 
