@@ -43,9 +43,10 @@ grep -E 'odiff ".*" ".*"' "$TEST_LOG" | while IFS= read -r line; do
     fi
 done
 
-reference_count=$(ls -1 "$OUTPUT_DIR/reference" 2>/dev/null | wc -l)
-failed_count=$(ls -1 "$OUTPUT_DIR/failed" 2>/dev/null | wc -l)
+reference_count=$(find "$OUTPUT_DIR/reference" -type f 2>/dev/null | wc -l)
+failed_count=$(find "$OUTPUT_DIR/failed" -type f 2>/dev/null | wc -l)
 
+echo ""
 echo "Collection complete:"
 echo "  Reference images: $reference_count"
 echo "  Failed images: $failed_count"
