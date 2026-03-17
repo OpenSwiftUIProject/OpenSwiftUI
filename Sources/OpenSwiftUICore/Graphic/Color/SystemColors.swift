@@ -255,7 +255,11 @@ struct SystemColorDefinitionType {
 
 private struct SystemColorDefinitionKey: EnvironmentKey {
     static var defaultValue: SystemColorDefinitionType {
+        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
         SystemColorDefinitionType(base: CoreUIDefaultSystemColorDefinition.self)
+        #else
+        SystemColorDefinitionType(base: DefaultSystemColorDefinition_PhoneTV.self)
+        #endif
     }
 }
 

@@ -118,7 +118,6 @@ package struct CUIDesignLibraryCacheKey: Hashable {
 
 struct CoreUIDefaultSystemColorDefinition: SystemColorDefinition {
     static func value(for type: SystemColorType, environment: EnvironmentValues) -> Color.Resolved {
-        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
         let name: CUIColorName
         switch type {
         case .red: name = .red
@@ -144,20 +143,6 @@ struct CoreUIDefaultSystemColorDefinition: SystemColorDefinition {
         let cacheKey = CUIDesignLibraryCacheKey(name: name, in: environment, allowsBlendMode: false)
         let entry = cacheKey.fetch()
         return entry.color
-        #else
-        // For non CoreUI supported platform, simply return a plain Color.Resolved color or black for now
-        return switch type {
-        case .red: .red
-        case .green: .green
-        case .blue: .blue
-        case .primary: .black
-        case .secondary: .gray_75
-        case .tertiary: .gray_50
-        case .quaternary: .gray_25
-        default: .black
-        }
-        #endif
-
     }
 
     static func opacity(at level: Int, environment: EnvironmentValues) -> Float {
