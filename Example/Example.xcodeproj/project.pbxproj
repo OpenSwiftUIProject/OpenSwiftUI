@@ -1373,10 +1373,10 @@
 /* Begin XCRemoteSwiftPackageReference section */
 		275752022DEE147E003E467C /* XCRemoteSwiftPackageReference "swift-snapshot-testing" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/pointfreeco/swift-snapshot-testing";
+			repositoryURL = "https://github.com/OpenSwiftUIProject/swift-snapshot-testing";
 			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 1.18.4;
+				kind = exactVersion;
+				version = "1.18.9-osui";
 			};
 		};
 		278EF52B2E2272F2009C32EB /* XCRemoteSwiftPackageReference "equatable" */ = {
