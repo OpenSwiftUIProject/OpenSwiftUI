@@ -42,19 +42,21 @@ runs:
       shell: bash
       run: |
         cd Example
+        rm -rf /tmp/${{ inputs.platform }}-uitest.xcresult
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
           -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
+          -resultBundlePath /tmp/${{ inputs.platform }}-uitest.xcresult \
           2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions --preserve-unbeautified
 
     - name: Collect failed snapshots
       if: steps.uitest.outcome == 'failure'
       shell: bash
       run: |
-        Scripts/CI/collect_uitest_failures.sh /tmp/${{ inputs.platform }}-uitest.log /tmp/uitest-artifacts
+        Scripts/CI/collect_uitest_failures.sh /tmp/${{ inputs.platform }}-uitest.log /tmp/uitest-artifacts /tmp/${{ inputs.platform }}-uitest.xcresult
 
     - name: Upload test artifacts
       if: steps.uitest.outcome == 'failure'
