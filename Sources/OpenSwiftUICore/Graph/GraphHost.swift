@@ -690,11 +690,26 @@ extension Graph {
     }
 }
 
-// MARK: - Preview
+// MARK: - Preview [6.5.4]
 
 private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
-private let waitingForPreviewThunks = EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
+// NOTE: In SwiftUI, PreviewsInjection.framework's DYLDDynamicProductLoader calls
+// SwiftUI.__previewThunksHaveFinishedLoading() via a library-specific GOT binding after
+// all preview dylibs are dlopen'd. This unblocks graph instantiation for waiting hosts.
+// Since the binding targets SwiftUI specifically (two-level namespace), OpenSwiftUI's
+// version is never called. We disable the blocking to allow graph instantiation in Preview.
+// TODO: Re-enable when OpenSwiftUI implements its own preview thunk registration system.
+private var waitingForPreviewThunks = false // EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
 
 public func __previewThunksHaveFinishedLoading() {
-    _openSwiftUIUnimplementedFailure()
+    guard waitingForPreviewThunks else { return }
+    waitingForPreviewThunks = false
+    let hosts = blockedGraphHosts
+    blockedGraphHosts = []
+    for host in hosts {
+        let graphHost = host.takeUnretainedValue()
+        if let graphDelegate = graphHost.graphDelegate {
+            graphDelegate.graphDidChange()
+        }
+    }
 }
