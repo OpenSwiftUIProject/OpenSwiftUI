@@ -66,10 +66,18 @@ runs:
         path: /tmp/uitest-artifacts/
         retention-days: 7
 
+    - name: Zip xcresult bundle
+      if: steps.uitest.outcome == 'failure'
+      shell: bash
+      run: |
+        cd /tmp
+        zip -r -q ${{ inputs.platform }}-uitest.xcresult.zip ${{ inputs.platform }}-uitest.xcresult
+
     - name: Upload xcresult bundle
       if: steps.uitest.outcome == 'failure'
-      uses: actions/upload-artifact@v4
+      uses: actions/upload-artifact@v7
       with:
-        name: ${{ inputs.artifact-name }}-xcresult
-        path: /tmp/${{ inputs.platform }}-uitest.xcresult
+        name: ${{ inputs.artifact-name }}-xcresult.zip
+        path: /tmp/${{ inputs.platform }}-uitest.xcresult.zip
+        archive: false
         retention-days: 7
