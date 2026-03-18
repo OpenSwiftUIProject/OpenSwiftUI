@@ -71,13 +71,14 @@ runs:
       shell: bash
       run: |
         cd /tmp
-        zip -r -q ${{ inputs.platform }}-uitest.xcresult.zip ${{ inputs.platform }}-uitest.xcresult
+        mv ${{ inputs.platform }}-uitest.xcresult ${{ inputs.artifact-name }}.xcresult
+        zip -r -q ${{ inputs.artifact-name }}.xcresult.zip ${{ inputs.artifact-name }}.xcresult
 
     - name: Upload xcresult bundle
       if: steps.uitest.outcome == 'failure'
       uses: actions/upload-artifact@v7
       with:
-        name: ${{ inputs.artifact-name }}-xcresult.zip
-        path: /tmp/${{ inputs.platform }}-uitest.xcresult.zip
+        name: ${{ inputs.artifact-name }}.xcresult.zip
+        path: /tmp/${{ inputs.artifact-name }}.xcresult.zip
         archive: false
         retention-days: 7
