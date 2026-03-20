@@ -117,7 +117,7 @@ extension FixedWidthInteger {
 
 // MARK: - Duration Conversion [6.5.4]
 
-@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
+@available(OpenSwiftUI_v4_0, *)
 extension Double {
     package init(_ duration: Duration) {
         let (seconds, attoseconds) = duration.components
@@ -125,7 +125,7 @@ extension Double {
     }
 }
 
-@available(macOS 13.0, iOS 16.0, watchOS 9.0, tvOS 16.0, *)
+@available(OpenSwiftUI_v4_0, *)
 package func abs(_ duration: Duration) -> Duration {
     (duration < .zero) ? (.zero - duration) : duration
 }
