@@ -34,7 +34,9 @@ final public class EventBindingManager {
 
     private var eventTimer: Timer?
 
-    package init() {}
+    package init() {
+        _openSwiftUIEmptyStub()
+    }
 
     deinit {
         eventTimer?.invalidate()

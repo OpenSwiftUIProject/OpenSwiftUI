@@ -42,6 +42,11 @@ public struct CAHostingLayerEvent {
     struct Context {
         let referenceInstant: ContinuousClock.Instant
         fileprivate var mouseTracker: MouseTracker
+
+        init(referenceInstant: ContinuousClock.Instant) {
+            self.referenceInstant = referenceInstant
+            self.mouseTracker = MouseTracker()
+        }
     }
 
     // MARK: - Factory Methods
@@ -149,6 +154,12 @@ private struct MouseTracker {
     var current: [CAHostingLayerEvent.MouseButton: Int]
     private var last: Int
     var buttons: Set<CAHostingLayerEvent.MouseButton>
+
+    init() {
+        self.current = [:]
+        self.last = 1000
+        self.buttons = []
+    }
 
     @inline(__always)
     mutating func nextSequence() -> Int {

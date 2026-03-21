@@ -17,51 +17,94 @@
 public class CAHostingLayer<Content>: CALayer where Content: View {
     final package let viewGraph: ViewGraph
 
-    final let renderer: DisplayList.ViewRenderer
+    final let renderer = DisplayList.ViewRenderer(platform: .init(definition: CAHostingLayerPlatformDefinition.self))
 
-    final package let eventBindingManager: EventBindingManager
+    final package let eventBindingManager: EventBindingManager = .init()
 
-    package var propertiesNeedingUpdate: ViewRendererHostProperties
+    package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
 
-    package var renderingPhase: ViewRenderingPhase
+    package var renderingPhase: ViewRenderingPhase = .none
 
-    var isRendering: Bool
+    var isRendering: Bool = false
 
-    package var isHiddenForReuse: Bool
+    package var isHiddenForReuse: Bool = false
 
-    package var currentTimestamp: Time
+    package var currentTimestamp: Time = .init()
 
-    package var externalUpdateCount: Int
+    package var externalUpdateCount: Int = 0
 
-    package var environmentOverride: EnvironmentValues?
+    package var environmentOverride: EnvironmentValues? {
+        didSet {
+            invalidateProperties(.environment)
+        }
+    }
 
-    var safeAreaInsetsOverride: EdgeInsets?
+    var safeAreaInsetsOverride: EdgeInsets? {
+        didSet {
+            invalidateProperties(.safeArea, mayDeferUpdate: false)
+        }
+    }
 
-    var accessibilityVersion: DisplayList.Version
+    var accessibilityVersion: DisplayList.Version = .init()
 
-    private var canAdvanceTimeAutomatically: Bool
+    package var accessibilityEnabled: Bool {
+        get { viewGraph.accessibilityEnabled }
+        set { viewGraph.accessibilityEnabled = newValue }
+    }
 
-    private var allowFrameChanges: Bool
+    private var canAdvanceTimeAutomatically: Bool = true
+
+    private var allowFrameChanges: Bool = true
 
     private var nextTimerTime: Time?
 
     private var updateTimer: Timer?
 
-    private var isUpdating: Bool
+    private var isUpdating: Bool = false
 
-    private var needsDeferredUpdate: Bool
+    private var needsDeferredUpdate: Bool = false
 
-    final package let focusedResponder: ResponderNode?
+    final package let focusedResponder: ResponderNode? = nil
 
-    final public let referenceInstant: ContinuousClock.Instant
+    public init(rootView: Content, environment: EnvironmentValues = .init()) {
+        self.rootView = rootView
+        self.environment = environment
+        self.referenceInstant = .now
+        Update.begin()
+        let modifiedRootView = Self.makeRootView(rootView)
+        self.viewGraph = ViewGraph(rootView: modifiedRootView, environment: environment)
+        super.init()
+        postInit()
+        Update.end()
+    }
 
-    private lazy var eventContext: CAHostingLayerEvent.Context? = nil
+    public override init(layer: Any) {
+        guard let hosting = layer as? CAHostingLayer<Content> else {
+            _openSwiftUIUnreachableCode()
+        }
+        let rootView = hosting.rootView
+        let environment = hosting.environment
+        self.rootView = rootView
+        self.environment = environment
+        self.referenceInstant = .now
+        Update.begin()
+        let modifiedRootView = Self.makeRootView(rootView)
+        self.viewGraph = ViewGraph(rootView: modifiedRootView, environment: environment)
+        super.init(layer: layer)
+        postInit()
+        Update.end()
+    }
 
-    // MARK: - Computed Properties [TBA]
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
 
-    package var accessibilityEnabled: Bool {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
+    private func postInit() {
+        initializeViewGraph()
+        renderer.host = self
+        eventBindingManager.host = self
+        eventBindingManager.delegate = self
     }
 
     @objc override dynamic public var bounds: CGRect {
@@ -83,6 +126,7 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
         }
     }
 
+    // [AI] Forwards to super; didSet invalidates .environment if value changed
     @objc override dynamic public var contentsScale: CGFloat {
         get { super.contentsScale }
         set {
@@ -94,28 +138,17 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
         }
     }
 
-    public var rootView: Content {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
-    }
+    public var rootView: Content
+//    {
+//        get { _openSwiftUIUnimplementedFailure() }
+//        set { _openSwiftUIUnimplementedFailure() }
+//    }
 
-    public var environment: EnvironmentValues {
-        get { _openSwiftUIUnimplementedFailure() }
-        set { _openSwiftUIUnimplementedFailure() }
-    }
-
-    // MARK: - Init [TBA]
-
-    public init(rootView: Content, environment: EnvironmentValues = .init()) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-
-    // MARK: - Methods [TBA]
+    public var environment: EnvironmentValues
+//    {
+//        get { _openSwiftUIUnimplementedFailure() }
+//        set { _openSwiftUIUnimplementedFailure() }
+//    }
 
     @objc override dynamic public func layoutSublayers() {
         _openSwiftUIUnimplementedFailure()
@@ -124,6 +157,10 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
     public func sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
         _openSwiftUIUnimplementedFailure()
     }
+
+    final public let referenceInstant: ContinuousClock.Instant
+
+    private lazy var eventContext = CAHostingLayerEvent.Context(referenceInstant: referenceInstant)
 
     public func send(event: CAHostingLayerEvent) -> Bool {
         _openSwiftUIUnimplementedFailure()
@@ -138,8 +175,6 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
     }
 
     package func requestHoverUpdate(in eventBindingManager: EventBindingManager) {}
-
-    deinit {}
 }
 
 // MARK: - Sendable [TBA]
