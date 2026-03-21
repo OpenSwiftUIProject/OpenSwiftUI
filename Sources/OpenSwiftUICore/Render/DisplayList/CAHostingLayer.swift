@@ -3,13 +3,13 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 5BC40379787EC8BFAE898D075045DC37 (SwiftUICore)
 
 #if canImport(QuartzCore)
 @_spiOnly public import QuartzCore
 
-// MARK: - CAHostingLayer [TBA]
+// MARK: - CAHostingLayer
 
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)
@@ -244,72 +244,102 @@ extension CAHostingLayer: EventGraphHost {}
 
 extension CAHostingLayer: EventBindingManagerDelegate {}
 
-// MARK: - CAHostingLayer + ViewRendererHost [TBA]
+// MARK: - CAHostingLayer + ViewRendererHost
 
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)
 extension CAHostingLayer: ViewRendererHost {
     package func `as`<T>(_ type: T.Type) -> T? {
-        _openSwiftUIUnimplementedFailure()
+        if EventGraphHost.self == T.self {
+            return unsafeBitCast(self as any EventGraphHost, to: T.self)
+        } else if CALayer.self == T.self {
+            return unsafeBitCast(self as CALayer, to: T.self)
+        } else if ViewGraphRenderDelegate.self == T.self {
+            return unsafeBitCast(self as any ViewGraphRenderDelegate, to: T.self)
+        } else if DisplayList.ViewRenderer.self == T.self {
+            return unsafeBitCast(renderer, to: T.self)
+        } else {
+            return nil
+        }
     }
 
-    package func modifyViewInputs(_ inputs: inout _ViewInputs) {}
-
     package func updateRootView() {
-        _openSwiftUIUnimplementedFailure()
+        let modifiedRootView = Self.makeRootView(rootView)
+        viewGraph.setRootView(modifiedRootView)
     }
 
     package func updateEnvironment() {
-        _openSwiftUIUnimplementedFailure()
+        var environment = environment
+        environment.displayScale = contentsScale
+        environmentOverride.map {
+            environment.plist.override(with: $0.plist)
+        }
+        viewGraph.setEnvironment(environment)
     }
 
     package func updateSize() {
-        _openSwiftUIUnimplementedFailure()
+        viewGraph.setProposedSize(bounds.size)
     }
 
     package func updateSafeArea() {
-        _openSwiftUIUnimplementedFailure()
+        let insets = safeAreaInsetsOverride ?? EdgeInsets()
+        viewGraph.setSafeAreaInsets(insets)
     }
 
     package func requestUpdate(after delay: Double) {
-        _openSwiftUIUnimplementedFailure()
+        guard Thread.isMainThread else {
+            DispatchQueue.main.async { [weak self] in
+                guard let self else { return }
+                requestUpdate(after: delay)
+            }
+            return
+        }
+        Update.locked {
+            if delay < 0.25 {
+                if isUpdating {
+                    needsDeferredUpdate = true
+                } else {
+                    setNeedsLayout()
+                }
+            } else {
+                guard (currentTimestamp + delay) < (nextTimerTime ?? .infinity) else { return }
+                updateTimer?.invalidate()
+                nextTimerTime = currentTimestamp + delay
+                let timer = Timer(timeInterval: delay, repeats: false) { [weak self] _ in
+                    guard let self else { return }
+                    updateTimer = nil
+                    nextTimerTime = nil
+                    setNeedsLayout()
+                }
+                RunLoop.main.add(timer, forMode: .common)
+                updateTimer = timer
+            }
+        }
     }
 
-    package func renderDisplayList(
-        _ list: DisplayList,
-        asynchronously: Bool,
-        time: Time,
-        nextTime: Time,
-        targetTimestamp: Time?,
-        version: DisplayList.Version,
-        maxVersion: DisplayList.Version
-    ) -> Time {
-        _openSwiftUIUnimplementedFailure()
+    public func preferencesDidChange() {
+        _openSwiftUIEmptyStub()
     }
 
-    public func preferencesDidChange() {}
-
-    package func updateScrollableContainerSize() {}
-
-    package func updateFocusedItem() {}
-
-    package func updateFocusedValues() {}
-
-    package func updateFocusStore() {}
-
-    package func updateAccessibilityFocus() {}
-
-    package var responderNode: ResponderNode? {
-        _openSwiftUIUnimplementedFailure()
+    package func updateContainerSize() {
+        _openSwiftUIEmptyStub()
     }
 
-    package func updateTransform() {
-        _openSwiftUIUnimplementedFailure()
+    package func updateFocusStore() {
+        _openSwiftUIEmptyStub()
     }
 
-    package func updateContainerSize() {}
+    package func updateFocusedItem() {
+        _openSwiftUIEmptyStub()
+    }
 
-    package func updateAccessibilityEnvironment() {}
+    package func updateFocusedValues() {
+        _openSwiftUIEmptyStub()
+    }
+
+    package func updateAccessibilityEnvironment() {
+        _openSwiftUIEmptyStub()
+    }
 }
 
 // MARK: - CAHostingLayer + ViewGraphRenderDelegate
@@ -411,12 +441,5 @@ extension CAHostingLayer: TestHost {
         frame.size
     }
 }
-
-// MARK: - Other Conformances [TBA]
-
-@_spi(ForOpenSwiftUIOnly)
-extension CAHostingLayer: GraphDelegate {}
-
-extension CAHostingLayer: ViewGraphDelegate {}
 
 #endif
