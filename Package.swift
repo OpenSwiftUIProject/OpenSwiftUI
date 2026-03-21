@@ -521,7 +521,7 @@ let cgtkTarget = Target.systemLibrary(
 let openSwiftUISPITarget = Target.target(
     name: "OpenSwiftUI_SPI",
     dependencies: [
-        .product(name: "OpenRenderBox", package: "OpenRenderBox"),
+        .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
@@ -841,8 +841,10 @@ if computeCondition {
 }
 
 if renderBoxCondition {
+    openSwiftUISPITarget.addRBSettings()
     openSwiftUICoreTarget.addRBSettings()
     openSwiftUITarget.addRBSettings()
+    openSwiftUIBridgeTarget.addRBSettings()
 
     openSwiftUISPITestTarget.addRBSettings()
     openSwiftUICoreTestTarget.addRBSettings()
