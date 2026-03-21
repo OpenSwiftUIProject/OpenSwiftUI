@@ -105,6 +105,7 @@
 		275751C12DEE136C003E467C /* HostingExample */ = {isa = PBXFileSystemSynchronizedRootGroup; exceptions = (275751CC2DEE136C003E467C /* PBXFileSystemSynchronizedBuildFileExceptionSet */, ); explicitFileTypes = {}; explicitFolders = (); path = HostingExample; sourceTree = "<group>"; };
 		275751E42DEE1441003E467C /* TestingHost */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = TestingHost; sourceTree = "<group>"; };
 		275751F62DEE1456003E467C /* OpenSwiftUIUITests */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = OpenSwiftUIUITests; sourceTree = "<group>"; };
+		279749962F6EBE3B00280B23 /* Modules */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Modules; sourceTree = "<group>"; };
 		279FEC572DF450D200320390 /* ReferenceImages */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = ReferenceImages; sourceTree = "<group>"; };
 		27E6C4F62D2842D80010502F /* Configurations */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); name = Configurations; path = ../Configurations; sourceTree = "<group>"; };
 		27FFF0422E08850C0060A4DA /* Shared */ = {isa = PBXFileSystemSynchronizedRootGroup; explicitFileTypes = {}; explicitFolders = (); path = Shared; sourceTree = "<group>"; };
@@ -187,6 +188,7 @@
 				275751AF2DEE136A003E467C /* Example */,
 				275751C12DEE136C003E467C /* HostingExample */,
 				275751E42DEE1441003E467C /* TestingHost */,
+				279749962F6EBE3B00280B23 /* Modules */,
 				275751F62DEE1456003E467C /* OpenSwiftUIUITests */,
 				279FEC572DF450D200320390 /* ReferenceImages */,
 				27CD0B4A2AFC8D37003665EB /* Products */,

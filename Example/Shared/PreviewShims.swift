@@ -33,8 +33,16 @@ extension SwiftUI.View {
 }
 #endif
 
-#Preview {
+#Preview("HostingVC") {
     // FIXME: Not working on macOS yet
     ContentView()
         ._previewVC()
+}
+
+#Preview("CAHostingLayerExample") {
+    // FIXME: Not working on macOS yet
+    CAHostingLayerExample(
+        content: ContentView(),
+        size: UIScreen.main.bounds.size
+    ).makeViewController()
 }

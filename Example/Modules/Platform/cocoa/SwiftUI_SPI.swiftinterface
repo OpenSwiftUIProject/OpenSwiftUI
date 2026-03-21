@@ -1,0 +1,15 @@
+// swift-interface-format-version: 1.0
+// swift-module-flags: -enable-objc-interop -enable-library-evolution -swift-version 5 -module-name SwiftUI_SPI -module-abi-name SwiftUI
+import QuartzCore
+import Swift
+@_exported import SwiftUI
+
+@_hasMissingDesignatedInitializers @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+public class CAHostingLayer<Content> : QuartzCore.CALayer where Content : SwiftUI.View {
+  public init(rootView: Content, environment: SwiftUI.EnvironmentValues = .init())
+  @objc override dynamic public func layoutSublayers()
+  public var rootView: Content {
+    get
+    set
+  }
+}
