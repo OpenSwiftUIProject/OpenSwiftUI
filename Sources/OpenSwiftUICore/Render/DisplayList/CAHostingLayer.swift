@@ -314,7 +314,19 @@ extension CAHostingLayer: ViewRendererHost {
     package func updateAccessibilityEnvironment() {}
 }
 
-// MARK: - TestHost
+// MARK: - CAHostingLayer + ViewGraphRenderDelegate
+
+extension CAHostingLayer: ViewGraphRenderDelegate {
+    package var renderingRootView: AnyObject {
+        self
+    }
+
+    package func updateRenderContext(_ context: inout ViewGraphRenderContext) {
+        context.contentsScale = contentsScale
+    }
+}
+
+// MARK: - CAHostingLayer + TestHost
 
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)
@@ -399,24 +411,6 @@ extension CAHostingLayer: TestHost {
 
     package var testSize: CGSize {
         frame.size
-    }
-}
-
-// MARK: - ViewGraphRenderDelegate [TBA]
-
-extension CAHostingLayer: ViewGraphRenderDelegate {
-    package var renderingRootView: AnyObject {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    // [AI] Stores self.contentsScale into context's first field
-    package func updateRenderContext(_ context: inout ViewGraphRenderContext) {
-        context.contentsScale = contentsScale
-    }
-
-    // [AI] Default extension — just calls body() directly
-    package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
-        body()
     }
 }
 
