@@ -536,6 +536,11 @@ extension GraphicsContext {
         #endif
     }
 
+    package mutating func translateBy(x: CGFloat, y: CGFloat) {
+        guard x != 0 || y != 0 else { return }
+        _openSwiftUIUnimplementedFailure()
+    }
+
     // FIXME
     #if canImport(CoreGraphics)
     static func renderingTo(

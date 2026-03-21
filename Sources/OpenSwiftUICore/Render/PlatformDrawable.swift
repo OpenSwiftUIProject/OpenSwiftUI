@@ -3,7 +3,8 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by PlatformDrawableContent
+//  Status: Blocked by GraphicsContext.Storage + RenderBox
+//  ID: E2A63CF3FB15FAD08FBE4CE6D0C83E51 (SwiftUICore)
 
 import OpenAttributeGraphShims
 @_spiOnly public import OpenRenderBoxShims
@@ -12,6 +13,7 @@ public import OpenQuartzCoreShims
 #if canImport(QuartzCore)
 import QuartzCore_Private
 #endif
+import OpenSwiftUI_SPI
 
 // MARK: - PlatformDrawable
 
@@ -88,7 +90,55 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         contentsScale: CGFloat,
         state: inout PlatformDrawableContent.State
     ) {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .graphicsCallback(let callback):
+            let environment = EnvironmentValues()
+            GraphicsContext.renderingTo(
+                cgContext: ctx,
+                environment: environment,
+                deviceScale: contentsScale
+            ) { graphicsContext in
+                callback(&graphicsContext, size)
+            }
+        case .platformCallback(let callback):
+            #if canImport(Darwin)
+            let cgContext = CoreGraphicsContext(cgContext: ctx)
+            cgContext.push()
+            callback(size)
+            cgContext.pop()
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        case .displayList(let displayList, let offset, let time):
+            let environment = EnvironmentValues()
+            GraphicsContext.renderingTo(
+                cgContext: ctx,
+                environment: environment,
+                deviceScale: contentsScale
+            ) { graphicsContext in
+                graphicsContext
+                    .translateBy(x: -offset.x, y: -offset.y)
+                state.renderer()
+                    .renderDisplayList(displayList, at: time, in: &graphicsContext)
+            }
+        case .rbDisplayList(let contents, let offset):
+            ctx.translateBy(x: -offset.x, y: -offset.y)
+            // TODO: RBDisplayListKey
+            // contents.render(in: ctx, options: [RBDisplayListRenderRasterizationScale: contentsScale])
+        case .rbInterpolator(let interpolator, let fraction, let offset):
+            let environment = EnvironmentValues()
+            GraphicsContext.renderingTo(
+                cgContext: ctx,
+                environment: environment,
+                deviceScale: contentsScale
+            ) { graphicsContext in
+                graphicsContext.translateBy(x: -offset.x, y: -offset.y)
+                // TODO: GraphicsContext
+                // interpolator.draw(inState: graphicsContext.drawingState, by: fraction)
+            }
+        case .empty:
+            break
+        }
     }
     #endif
 
@@ -97,7 +147,17 @@ public struct PlatformDrawableContent: @unchecked Sendable {
         size: CGSize,
         state: inout PlatformDrawableContent.State
     ) {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .rbDisplayList(let contents, let offset):
+            list.translateBy(x: -offset.x, y: -offset.y)
+            list.draw(contents)
+        case .rbInterpolator(let interpolator, let fraction, let offset):
+            list.translateBy(x: -offset.x, y: -offset.y)
+            // TODO: Blocked by RBDisplayListGetState (C function not exposed in OpenRenderBox)
+            // interpolator.draw(inState: RBDisplayListGetState(list), by: fraction)
+        default:
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 }
 
