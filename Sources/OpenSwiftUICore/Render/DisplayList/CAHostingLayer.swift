@@ -183,18 +183,33 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
     private lazy var eventContext = CAHostingLayerEvent.Context(referenceInstant: referenceInstant)
 
     public func send(event: CAHostingLayerEvent) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        let resolved = event._resolve(&eventContext)
+        guard !resolved.isEmpty else { return false }
+        var allDispatchedIDs: [EventID] = []
+        for resolvedEvent in resolved {
+            let id = EventID(
+                type: type(of: resolvedEvent.event),
+                serial: resolvedEvent.sequence
+            )
+            let dispatched = eventBindingManager.send([id: resolvedEvent.event])
+            allDispatchedIDs.append(contentsOf: dispatched)
+        }
+        return !allDispatchedIDs.isEmpty
     }
 
     package func didBind(to newBinding: EventBinding, id: EventID) {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIEmptyStub()
     }
 
-    package func didUpdate(phase: GesturePhase<Void>, in eventBindingManager: EventBindingManager) {
-        _openSwiftUIUnimplementedFailure()
+    package func didUpdate(
+        phase: GesturePhase<Void>,
+        in eventBindingManager: EventBindingManager
+    ) {
+        guard phase.isTerminal else {
+            return
+        }
+        eventBindingManager.reset(resetForwardedEventDispatchers: false)
     }
-
-    package func requestHoverUpdate(in eventBindingManager: EventBindingManager) {}
 }
 
 // MARK: - Sendable [TBA]
