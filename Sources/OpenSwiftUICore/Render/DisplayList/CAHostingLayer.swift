@@ -178,6 +178,25 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
             .rounded(.up, toMultipleOf: environment.pixelLength)
     }
 
+    public func observeSizeThatFitsChanges(
+        proposal: ProposedViewSize,
+        handler: @escaping (CGSize) -> Void
+    ) {
+        viewGraph.sizeThatFitsObservers.addObserver(
+            for: _ProposedSize(proposal)
+        ) { _, newSize in
+            handler(newSize)
+        }
+    }
+
+    public func stopObservingSizeThatFitsChanges(
+        proposal: ProposedViewSize
+    ) {
+        viewGraph.sizeThatFitsObservers.stopObserving(
+            proposal: _ProposedSize(proposal)
+        )
+    }
+
     final public let referenceInstant: ContinuousClock.Instant
 
     private lazy var eventContext = CAHostingLayerEvent.Context(referenceInstant: referenceInstant)
