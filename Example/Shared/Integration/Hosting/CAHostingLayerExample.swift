@@ -30,6 +30,7 @@ struct CAHostingLayerExample<Content: View> {
     #endif
     func makeViewController() -> PlatformViewController {
         let layer = CAHostingLayer(rootView: content)
+        layer.anchorPoint = .zero
         layer.bounds = CGRect(origin: .zero, size: size)
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
         let view = NSView(frame: CGRect(origin: .zero, size: size))
