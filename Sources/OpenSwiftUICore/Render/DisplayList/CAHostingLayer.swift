@@ -231,7 +231,7 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
     }
 }
 
-// MARK: - Sendable [TBA]
+// MARK: - Sendable
 
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)
@@ -314,59 +314,91 @@ extension CAHostingLayer: ViewRendererHost {
     package func updateAccessibilityEnvironment() {}
 }
 
-// MARK: - TestHost [TBA]
+// MARK: - TestHost
 
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)
 extension CAHostingLayer: TestHost {
     package var attributeCountInfo: AttributeCountTestInfo {
-        _openSwiftUIUnimplementedFailure()
+        .init()
     }
 
     package var viewCacheIsEmpty: Bool {
-        _openSwiftUIUnimplementedFailure()
+        Update.locked {
+            renderer.viewCacheIsEmpty
+        }
     }
 
     package func setTestSize(_ size: CGSize) {
-        _openSwiftUIUnimplementedFailure()
+        guard bounds.size != size else { return }
+        allowFrameChanges = true
+        let superBounds = superlayer?.bounds ?? .zero
+        super.frame = size.centeredIn(superBounds)
+        allowFrameChanges = false
     }
 
     package func setTestSafeAreaInsets(_ insets: EdgeInsets) {
-        _openSwiftUIUnimplementedFailure()
+        safeAreaInsetsOverride = insets
     }
 
     package func renderForTest(interval: Double) {
-        _openSwiftUIUnimplementedFailure()
+        _renderForTest(interval: interval)
     }
 
     public func _renderForTest(interval: Double) {
-        _openSwiftUIUnimplementedFailure()
+        advanceTimeForTest(interval: interval)
+        let saved = canAdvanceTimeAutomatically
+        canAdvanceTimeAutomatically = false
+        repeat {
+            RunLoop.flushObservers()
+            render(targetTimestamp: nil)
+            CATransaction.flush()
+        } while !propertiesNeedingUpdate.isEmpty
+        canAdvanceTimeAutomatically = saved
     }
 
     public func _renderAsyncForTest(interval: Double) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        advanceTimeForTest(interval: interval)
+        let saved = canAdvanceTimeAutomatically
+        canAdvanceTimeAutomatically = false
+        var result = true
+        repeat {
+            RunLoop.flushObservers()
+            let didRender = Update.locked {
+                renderAsync(interval: 0, targetTimestamp: nil) != nil
+            }
+            if didRender {
+                CATransaction.flush()
+                if result {
+                    result = !viewGraph.updateRequiredMainThread
+                }
+            } else {
+                result = false
+            }
+        } while !propertiesNeedingUpdate.isEmpty
+        canAdvanceTimeAutomatically = saved
+        return result
     }
 
     final package func forEachDescendantHost(body: (any TestHost) -> Void) {
-        _openSwiftUIUnimplementedFailure()
+        func visit(_ layer: CALayer) {
+            if let host = layer as? TestHost {
+                body(host)
+            }
+            let sublayers = layer.sublayers ?? []
+            for sublayer in sublayers {
+                visit(sublayer)
+            }
+        }
+        visit(self)
     }
 
-    package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {}
+    package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {
+        _openSwiftUIEmptyStub()
+    }
 
     package var testSize: CGSize {
         frame.size
-    }
-
-    package func sendTestEvents(_ events: [EventID: any EventType]) {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package func resetTestEvents() {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package func invalidateProperties(_ props: ViewRendererHostProperties, mayDeferUpdate: Bool) {
-        _openSwiftUIUnimplementedFailure()
     }
 }
 
@@ -377,10 +409,12 @@ extension CAHostingLayer: ViewGraphRenderDelegate {
         _openSwiftUIUnimplementedFailure()
     }
 
+    // [AI] Stores self.contentsScale into context's first field
     package func updateRenderContext(_ context: inout ViewGraphRenderContext) {
-        _openSwiftUIUnimplementedFailure()
+        context.contentsScale = contentsScale
     }
 
+    // [AI] Default extension — just calls body() directly
     package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
         body()
     }
@@ -392,9 +426,5 @@ extension CAHostingLayer: ViewGraphRenderDelegate {
 extension CAHostingLayer: GraphDelegate {}
 
 extension CAHostingLayer: ViewGraphDelegate {}
-
-@_spi(ForUIKitOnly)
-@_spi(ForAppKitOnly)
-extension CAHostingLayer: _BenchmarkHost {}
 
 #endif
