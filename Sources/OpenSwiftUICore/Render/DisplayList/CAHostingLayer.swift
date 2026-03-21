@@ -231,22 +231,20 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
     }
 }
 
-// MARK: - Sendable
-
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)
 @available(*, unavailable)
 extension CAHostingLayer: @unchecked Sendable {}
 
-// MARK: - EventGraphHost [TBA]
+// MARK: - CAHostingLayer + EventGraphHost
 
 extension CAHostingLayer: EventGraphHost {}
 
-// MARK: - EventBindingManagerDelegate [TBA]
+// MARK: - CAHostingLayer + EventBindingManagerDelegate
 
 extension CAHostingLayer: EventBindingManagerDelegate {}
 
-// MARK: - ViewRendererHost [TBA]
+// MARK: - CAHostingLayer + ViewRendererHost [TBA]
 
 @_spi(ForUIKitOnly)
 @_spi(ForAppKitOnly)

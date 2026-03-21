@@ -156,10 +156,14 @@ extension EventBindingManagerDelegate {
     package func didBind(
         to newBinding: EventBinding,
         id: EventID
-    ) {}
+    ) {
+        _openSwiftUIEmptyStub()
+    }
 
     package func didUpdate(
         gestureCategory: GestureCategory,
         in eventBindingManager: EventBindingManager
-    ) {}
+    ) {
+        _openSwiftUIEmptyStub()
+    }
 }
