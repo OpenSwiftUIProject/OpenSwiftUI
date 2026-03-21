@@ -17,17 +17,6 @@ Since OpenSwiftUI cannot use SwiftUI's `#Preview` macro directly (it targets `Sw
 }
 ```
 
-For `CAHostingLayer`-based previews:
-
-```swift
-#Preview("CAHostingLayerExample") {
-    CAHostingLayerExample(
-        content: ContentView(),
-        size: UIScreen.main.bounds.size
-    ).makeViewController()
-}
-```
-
 ### The `waitingForPreviewThunks` Problem
 
 In Xcode Preview mode, SwiftUI gates graph instantiation behind a `waitingForPreviewThunks` flag (checked via `XCODE_RUNNING_FOR_PREVIEWS` env var). After all preview dylibs are loaded, `PreviewsInjection.framework` calls `SwiftUI.__previewThunksHaveFinishedLoading()` to unblock graph hosts.
