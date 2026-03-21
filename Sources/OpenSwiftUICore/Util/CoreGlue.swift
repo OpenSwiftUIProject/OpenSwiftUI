@@ -9,6 +9,7 @@ public import Foundation
 #if canImport(CoreText)
 public import CoreText
 #endif
+@_spiOnly
 public import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
