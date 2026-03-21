@@ -34,7 +34,9 @@ final public class EventBindingManager {
 
     private var eventTimer: Timer?
 
-    package init() {}
+    package init() {
+        _openSwiftUIEmptyStub()
+    }
 
     deinit {
         eventTimer?.invalidate()
@@ -154,10 +156,14 @@ extension EventBindingManagerDelegate {
     package func didBind(
         to newBinding: EventBinding,
         id: EventID
-    ) {}
+    ) {
+        _openSwiftUIEmptyStub()
+    }
 
     package func didUpdate(
         gestureCategory: GestureCategory,
         in eventBindingManager: EventBindingManager
-    ) {}
+    ) {
+        _openSwiftUIEmptyStub()
+    }
 }

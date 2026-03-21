@@ -13,6 +13,12 @@ package protocol ViewGraphRenderDelegate: AnyObject {
     func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time
 }
 
+extension ViewGraphRenderDelegate {
+    package func withMainThreadRender(wasAsync: Bool, _ body: () -> Time) -> Time {
+        body()
+    }
+}
+
 package struct ViewGraphRenderContext {
     package var contentsScale: CGFloat
     package var opaqueBackground: Bool

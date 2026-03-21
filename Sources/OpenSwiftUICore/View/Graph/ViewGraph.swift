@@ -197,7 +197,13 @@ package final class ViewGraph: GraphHost {
         super.init(data: data)
         Subgraph.current = nil
     }
-    
+
+    convenience init<Root: View>(rootView: Root, environment: EnvironmentValues) {
+        self.init(rootViewType: Root.self)
+        setRootView(rootView)
+        setEnvironment(environment)
+    }
+
     deinit {
         // FIXME
         removePreferenceOutlets(isInvalidating: true)

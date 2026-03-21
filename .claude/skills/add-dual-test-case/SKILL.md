@@ -1,3 +1,8 @@
+---
+name: add_dual_test_case
+description: OpenSwiftUI DualTests Rules
+---
+
 # OpenSwiftUI DualTests Rules
 
 This file documents precise rules and templates for writing Tests and DualTests used across the OpenSwiftUI repository. Follow these rules exactly when generating new test cases.

@@ -45,7 +45,11 @@ extension DisplayList {
 
         package var configuration: _RendererConfiguration = .init()
 
-        package weak var host: (any ViewRendererHost)? = nil
+        package weak var host: (any ViewRendererHost)? = nil {
+            didSet {
+                configChanged = true
+            }
+        }
 
         private enum State {
             case none

@@ -19,7 +19,7 @@ __Snapshots__
 Example/ReferenceImages/**/*.png
 
 .claude/*
-!.claude/commands/
+!.claude/skills/
 .docs
 gh-pages
 .swift_pd_guess

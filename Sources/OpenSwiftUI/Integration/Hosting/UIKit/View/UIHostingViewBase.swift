@@ -521,15 +521,15 @@ package class UIHostingViewBase {
         else {
             return
         }
-        Update.lock()
-        cancelAsyncRendering()
-        let interval = if let displayLink, displayLink.willRender {
-            0.0
-        } else {
-            renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
+        Update.locked {
+            cancelAsyncRendering()
+            let interval = if let displayLink, displayLink.willRender {
+                0.0
+            } else {
+                renderInterval(timestamp: .systemUptime) / Double(UIAnimationDragCoefficient())
+            }
+            host.render(interval: interval, targetTimestamp: nil)
         }
-        host.render(interval: interval, targetTimestamp: nil)
-        Update.unlock()
     }
 
     package func didMoveToWindow() {
