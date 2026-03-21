@@ -35,7 +35,7 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
 
     package var environmentOverride: EnvironmentValues? {
         didSet {
-            invalidateProperties(.environment)
+            invalidateProperties(.environment, mayDeferUpdate: true)
         }
     }
 
@@ -107,55 +107,75 @@ public class CAHostingLayer<Content>: CALayer where Content: View {
         eventBindingManager.delegate = self
     }
 
-    @objc override dynamic public var bounds: CGRect {
-        get { super.bounds }
+    override dynamic public var bounds: CGRect {
+        get {
+            super.bounds
+        }
         set {
-            let oldBounds = super.bounds
+            guard allowFrameChanges else {
+                return
+            }
+            let oldValue = super.bounds
             super.bounds = newValue
-            if oldBounds.size != newValue.size {
-                invalidateProperties(.size, mayDeferUpdate: true)
+            if oldValue.size != newValue.size {
+                invalidateProperties(.size, mayDeferUpdate: false)
             }
         }
     }
 
-    @objc override dynamic public var position: CGPoint {
-        get { super.position }
+    override dynamic public var position: CGPoint {
+        get {
+            super.position
+        }
         set {
             guard allowFrameChanges else { return }
             super.position = newValue
         }
     }
 
-    // [AI] Forwards to super; didSet invalidates .environment if value changed
-    @objc override dynamic public var contentsScale: CGFloat {
-        get { super.contentsScale }
-        set {
-            let oldValue = super.contentsScale
-            super.contentsScale = newValue
-            if oldValue != newValue {
+    override dynamic public var contentsScale: CGFloat {
+        didSet {
+            if oldValue != contentsScale {
                 invalidateProperties(.environment, mayDeferUpdate: true)
             }
         }
     }
 
-    public var rootView: Content
-//    {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
+    override dynamic public func layoutSublayers() {
+        super.layoutSublayers()
+        guard canAdvanceTimeAutomatically else { return }
+        Update.locked {
+            let startTime = CACurrentMediaTime()
+            isUpdating = true
+            render(interval: 0, updateDisplayList: true, targetTimestamp: nil)
+            isUpdating = false
+            if needsDeferredUpdate {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0 / 60.0) { [weak self] in
+                    guard let self else { return }
+                    let elapsed = CACurrentMediaTime() - startTime
+                    currentTimestamp.seconds += elapsed
+                    setNeedsLayout()
+                }
+                needsDeferredUpdate = false
+            }
+        }
+    }
 
-    public var environment: EnvironmentValues
-//    {
-//        get { _openSwiftUIUnimplementedFailure() }
-//        set { _openSwiftUIUnimplementedFailure() }
-//    }
+    public var rootView: Content {
+        didSet {
+            invalidateProperties(.rootView, mayDeferUpdate: true)
+        }
+    }
 
-    @objc override dynamic public func layoutSublayers() {
-        _openSwiftUIUnimplementedFailure()
+    public var environment: EnvironmentValues {
+        didSet {
+            invalidateProperties(.environment, mayDeferUpdate: true)
+        }
     }
 
     public func sizeThatFits(_ proposal: ProposedViewSize) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        sizeThatFits(_ProposedSize(proposal))
+            .rounded(.up, toMultipleOf: environment.pixelLength)
     }
 
     final public let referenceInstant: ContinuousClock.Instant
