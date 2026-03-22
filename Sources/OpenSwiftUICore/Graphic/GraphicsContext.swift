@@ -5,10 +5,10 @@
 //  Audited for 6.0.87
 //  Status: WIP
 
+public import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
-#if canImport(Darwin)
-public import CoreGraphics
-#else
+
+#if !canImport(CoreGraphics)
 public enum CGBlendMode: Int32, @unchecked Sendable {
     case normal = 0
     case multiply = 1

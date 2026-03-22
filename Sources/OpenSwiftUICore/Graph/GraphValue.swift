@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+@_spiOnly
 public import OpenAttributeGraphShims
 
 /// A transient reference to a value in the view hierarchy's dataflow

@@ -348,6 +348,22 @@ if cfCGTypes {
     sharedSwiftSettings.append(.define("OPENRENDERBOX_CF_CGTYPES"))
 }
 
+if computeCondition {
+    sharedCSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+} else if attributeGraphCondition {
+    sharedCSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
+}
+
+if renderBoxCondition {
+    sharedCSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
+}
+
 // MARK: - Extension
 
 extension Target {
@@ -355,48 +371,12 @@ extension Target {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'AttributeGraph.framework'"
         dependencies.append(.product(name: "AttributeGraph", package: "DarwinPrivateFrameworks"))
-        var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
-        self.swiftSettings = swiftSettings
-
-        var cSettings = cSettings ?? []
-        cSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
-        self.cSettings = cSettings
-
-        var cxxSettings = cxxSettings ?? []
-        cxxSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
-        self.cxxSettings = cxxSettings
-    }
-
-    func addComputeSettings() {
-        var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENSWIFTUI_COMPUTE"))
-        self.swiftSettings = swiftSettings
-
-        var cSettings = cSettings ?? []
-        cSettings.append(.define("OPENSWIFTUI_COMPUTE"))
-        self.cSettings = cSettings
-
-        var cxxSettings = cxxSettings ?? []
-        cxxSettings.append(.define("OPENSWIFTUI_COMPUTE"))
-        self.cxxSettings = cxxSettings
     }
 
     func addRBSettings() {
         // FIXME: Weird SwiftPM behavior for test Target. Otherwize we'll get the following error message
         // "could not determine executable path for bundle 'RenderBox.framework'"
         dependencies.append(.product(name: "RenderBox", package: "DarwinPrivateFrameworks"))
-        var swiftSettings = swiftSettings ?? []
-        swiftSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
-        self.swiftSettings = swiftSettings
-
-        var cSettings = cSettings ?? []
-        cSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
-        self.cSettings = cSettings
-
-        var cxxSettings = cxxSettings ?? []
-        cxxSettings.append(.define("OPENSWIFTUI_RENDERBOX"))
-        self.cxxSettings = cxxSettings
     }
 
     func addCoreUISettings() {
@@ -521,7 +501,7 @@ let cgtkTarget = Target.systemLibrary(
 let openSwiftUISPITarget = Target.target(
     name: "OpenSwiftUI_SPI",
     dependencies: [
-        .product(name: "OpenRenderBox", package: "OpenRenderBox"),
+        .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
@@ -820,16 +800,7 @@ if symbolLocatorCondition {
     }
 }
 
-if computeCondition {
-    openSwiftUICoreTarget.addComputeSettings()
-    openSwiftUITarget.addComputeSettings()
-
-    openSwiftUISPITestTarget.addComputeSettings()
-    openSwiftUICoreTestTarget.addComputeSettings()
-    openSwiftUITestTarget.addComputeSettings()
-    openSwiftUICompatibilityTestTarget.addComputeSettings()
-    openSwiftUIBridgeTestTarget.addComputeSettings()
-} else if attributeGraphCondition {
+if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
     openSwiftUITarget.addAGSettings()
 

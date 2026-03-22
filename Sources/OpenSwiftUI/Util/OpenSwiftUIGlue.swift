@@ -8,6 +8,7 @@
 public import Foundation
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
+@_spiOnly
 public import OpenAttributeGraphShims
 import COpenSwiftUI
 
