@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="Example/Shared/Assets/Assets.xcassets/framework.imageset/logo_dark.png" />
+    <img alt="OpenSwiftUI" src="Example/Shared/Assets/Assets.xcassets/framework.imageset/logo_light.png" width="256" />
+  </picture>
+</p>
+
 # OpenSwiftUI
 
 [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenSwiftUIProject%2FOpenSwiftUI%2Fbadge%3Ftype%3Dswift-versions)](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI) [![](https://img.shields.io/endpoint?url=https%3A%2F%2Fswiftpackageindex.com%2Fapi%2Fpackages%2FOpenSwiftUIProject%2FOpenSwiftUI%2Fbadge%3Ftype%3Dplatforms)](https://swiftpackageindex.com/OpenSwiftUIProject/OpenSwiftUI) [![codecov](https://codecov.io/gh/OpenSwiftUIProject/OpenSwiftUI/graph/badge.svg?token=S63P3YUCAJ)](https://codecov.io/gh/OpenSwiftUIProject/OpenSwiftUI)
