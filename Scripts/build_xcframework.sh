@@ -1,10 +1,10 @@
-#!/bin/zsh
+#!/bin/bash
 
 # Script modified from https://docs.emergetools.com/docs/analyzing-a-spm-framework-ios
 
 set -e
 
-SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}" )" >/dev/null 2>&1 && pwd -P)"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
 # xcodebuild uses the current directory to find the SPM workspace
@@ -24,20 +24,21 @@ fi
 # --sdk and --archs are paired: --sdk <sdk> --archs <arch1,arch2>
 # If --archs is omitted for an SDK, all default architectures are built.
 SDKS=()
+SDK_ARCHS=()  # parallel array: archs for each SDK ("" = default)
 DEBUG_MODE=false
 PACKAGE_NAME=""
-declare -A SDK_ARCHS  # sdk -> "arch1,arch2" or empty for default
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
         --sdk)
             SDKS+=("$2")
+            SDK_ARCHS+=("")
             shift 2
             ;;
         --archs)
             # Apply to the last --sdk
             if [ ${#SDKS[@]} -gt 0 ]; then
-                SDK_ARCHS["${SDKS[-1]}"]="$2"
+                SDK_ARCHS[$((${#SDK_ARCHS[@]}-1))]="$2"
             fi
             shift 2
             ;;
@@ -58,6 +59,7 @@ done
 # Note: iphoneos SDK support is blocked by an AG issue. See #835
 if [ ${#SDKS[@]} -eq 0 ]; then
     SDKS=("macosx" "iphonesimulator")
+    SDK_ARCHS=("" "")
 fi
 
 if [ -z "$PACKAGE_NAME" ]; then
@@ -66,12 +68,18 @@ if [ -z "$PACKAGE_NAME" ]; then
     echo "Using: $PACKAGE_NAME"
 fi
 
+# Helper: get archs for a given SDK by index
+get_sdk_archs() {
+    local idx="$1"
+    echo "${SDK_ARCHS[$idx]}"
+}
+
 echo "SDKs: ${SDKS[*]}"
-for sdk in "${SDKS[@]}"; do
-    if [ -n "${SDK_ARCHS[$sdk]:-}" ]; then
-        echo "  $sdk: ARCHS=${SDK_ARCHS[$sdk]}"
+for i in "${!SDKS[@]}"; do
+    if [ -n "${SDK_ARCHS[$i]}" ]; then
+        echo "  ${SDKS[$i]}: ARCHS=${SDK_ARCHS[$i]}"
     else
-        echo "  $sdk: (default archs)"
+        echo "  ${SDKS[$i]}: (default archs)"
     fi
 done
 echo "Debug mode: $DEBUG_MODE"
@@ -92,15 +100,16 @@ build_framework() {
     local sdk="$1"
     local destination="$2"
     local scheme="$3"
+    local archs="$4"  # comma-separated or empty for default
 
     local XCODEBUILD_ARCHIVE_PATH="$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive"
 
     rm -rf "$XCODEBUILD_ARCHIVE_PATH"
 
     local archs_arg=""
-    if [ -n "${SDK_ARCHS[$sdk]:-}" ]; then
+    if [ -n "$archs" ]; then
         # Replace commas with spaces for ARCHS setting
-        archs_arg="ARCHS=${SDK_ARCHS[$sdk]//,/ }"
+        archs_arg="ARCHS=${archs//,/ }"
     fi
 
     OPENSWIFTUI_LIBRARY_TYPE=dynamic \
@@ -167,8 +176,8 @@ build_framework() {
     done
 }
 
-for sdk in "${SDKS[@]}"; do
-    build_framework "$sdk" "$(sdk_destination "$sdk")" "$PACKAGE_NAME"
+for i in "${!SDKS[@]}"; do
+    build_framework "${SDKS[$i]}" "$(sdk_destination "${SDKS[$i]}")" "$PACKAGE_NAME" "${SDK_ARCHS[$i]}"
 done
 
 echo "Builds completed successfully."
