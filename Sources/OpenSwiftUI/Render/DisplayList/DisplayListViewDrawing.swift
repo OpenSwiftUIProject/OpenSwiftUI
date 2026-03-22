@@ -80,7 +80,7 @@ final class CGDrawingView: PlatformGraphicsView, PlatformDrawable {
     static var allowsContentsMultiplyColor: Bool {
         true
     }
-    
+
     func update(
         content: PlatformDrawableContent?,
         required: Bool
@@ -90,7 +90,7 @@ final class CGDrawingView: PlatformGraphicsView, PlatformDrawable {
             layer.content = content
         }
         #if os(iOS) || os(visionOS)
-        setNeedsDisplay()
+        layer.setNeedsDisplay()
         #elseif os(macOS)
         needsDisplay = true
         #endif
