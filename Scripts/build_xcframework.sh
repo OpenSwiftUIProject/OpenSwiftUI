@@ -268,7 +268,14 @@ for dep in "${DEP_MODULES[@]}"; do
         fi
 
         # Create Info.plist with CFBundleExecutable
-        cat > "$stub_fw/Info.plist" << PLIST
+        # macOS frameworks need Info.plist inside Versions/A/Resources/
+        plist_dir="$stub_fw"
+        if [ "$sdk" = "macosx" ]; then
+            mkdir -p "$stub_fw/Versions/A/Resources"
+            plist_dir="$stub_fw/Versions/A/Resources"
+            ln -sfn Versions/Current/Resources "$stub_fw/Resources"
+        fi
+        cat > "$plist_dir/Info.plist" << PLIST
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
