@@ -17,7 +17,7 @@ extension OpenSwiftUI.View {
         OpenSwiftUI.NSHostingController(rootView: self)
     }
 }
-#else
+#elseif canImport(UIKit)
 public import UIKit
 extension OpenSwiftUI.View {
     public func _previewVC() -> UIViewController {
