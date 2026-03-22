@@ -575,12 +575,12 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     package func size(in request: CGSize) -> CGSize {
         _openSwiftUIUnimplementedWarning()
-        return self.storage?.size() ?? .zero
+        return CGSize(width: 50, height: 50)
     }
 
     package func frameSize(in request: CGSize) -> CGSize {
         _openSwiftUIUnimplementedWarning()
-        return self.storage?.size() ?? .zero
+        return CGSize(width: 50, height: 50)
     }
 
     package func _deleteMethod1() {
@@ -621,10 +621,14 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext,
         renderer: TextRendererBoxBase? = nil
     ) {
+        #if canImport(Darwin)
         var r = drawingArea
         r.y = r.height
         self.storage?.draw(with: r, context: context.ctx)
         _openSwiftUIUnimplementedWarning()
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     package func layoutValue(
