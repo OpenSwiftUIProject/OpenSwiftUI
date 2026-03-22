@@ -112,7 +112,7 @@ extension Text {
             if attributedString!.isEmptyOrTerminatedByParagraphSeparator {
                 properties.paragraph.cachedStyle = nil
             }
-            _openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedWarning()
         }
 
         package mutating func append(
@@ -189,15 +189,15 @@ extension Text {
     // MARK: - Text.Style [WIP]
 
     package struct Style {
-        internal var baseFont: TextStyleFont
-        internal var fontModifiers: [AnyFontModifier]
-        internal var color: TextStyleColor
+        internal var baseFont: TextStyleFont = .default
+        internal var fontModifiers: [AnyFontModifier] = []
+        internal var color: TextStyleColor = .default
         internal var backgroundColor: Color?
         internal var baselineOffset: CGFloat?
         internal var kerning: CGFloat?
         internal var tracking: CGFloat?
-        internal var strikethrough: LineStyle
-        internal var underline: LineStyle
+        internal var strikethrough: LineStyle = .default
+        internal var underline: LineStyle = .default
         internal var encapsulation: Text.Encapsulation?
         internal var speech: AccessibilitySpeechAttributes?
         package var accessibility: AccessibilityTextAttributes?
@@ -206,15 +206,16 @@ extension Text {
 //        internal var transition: TextTransitionModifier?
 //        internal var scale: Text.Scale?
 //        internal var superscript: Text.Superscript?
-        internal var typesettingConfiguration: TypesettingConfiguration
+        internal var typesettingConfiguration: TypesettingConfiguration = .init()
 //        internal var customAttributes: [TextAttributeModifierBase]
         #if canImport(Darwin)
 //        internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
         #endif
-        package var clearedFontModifiers: Set<ObjectIdentifier>
+        package var clearedFontModifiers: Set<ObjectIdentifier> = []
 
         init() {
-            _openSwiftUIUnimplementedFailure()
+            // FIXME
+            _openSwiftUIUnimplementedWarning()
         }
 
         // MARK: - Text.Style.LineStyle
@@ -351,33 +352,34 @@ extension Text {
         }
     }
 
+    // FIXME
     package struct ResolvedProperties {
-        package var insets: EdgeInsets
+        package var insets: EdgeInsets = .zero
 
-        package var features: Text.ResolvedProperties.Features
+        package var features: Text.ResolvedProperties.Features = []
 
-        package var styles: [_ShapeStyle_Pack.Style]
+        package var styles: [_ShapeStyle_Pack.Style] = []
 
-        package var transitions: [Text.ResolvedProperties.Transition]
+        package var transitions: [Text.ResolvedProperties.Transition] = []
 
-        // package var suffix: ResolvedTextSuffix
+        package var suffix: ResolvedTextSuffix = .none
 
         package struct CustomAttachments {
             package var characterIndices: [Int]
 
             package init(characterIndices: [Int] = []) {
-                _openSwiftUIUnimplementedFailure()
+                self.characterIndices = characterIndices
             }
 
             package var isEmpty: Bool {
-                _openSwiftUIUnimplementedFailure()
+                characterIndices.isEmpty
             }
         }
 
-        package var customAttachments: Text.ResolvedProperties.CustomAttachments
+        package var customAttachments: Text.ResolvedProperties.CustomAttachments = .init()
 
         package init() {
-            _openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnimplementedWarning()
         }
 
         package mutating func registerCustomAttachment(at offset: Int) {
@@ -424,7 +426,7 @@ extension Text {
             var cachedStyle: NSParagraphStyle?
         }
 
-        package var paragraph: Text.ResolvedProperties.Paragraph
+        package var paragraph: Text.ResolvedProperties.Paragraph = .init(compositionLanguage: .none)
 
         package mutating func addColor(_ c: Color.Resolved) {
             _openSwiftUIUnimplementedFailure()

@@ -84,10 +84,16 @@ package struct _ShapeStyle_RenderedShape {
     ) {
         switch shape {
         case let .text(contentView):
-            // Text rendering
-            _ = contentView
-            _openSwiftUIUnimplementedWarning()
-            break
+            if contentView.text.needsStyledRendering {
+                renderKeyedText(
+                    contentView,
+                    style: styles.value[name, 0],
+                    name: name,
+                    layers: &layers
+                )
+            } else {
+                renderUnstyledText(contentView, layers: &layers)
+            }
         case let .image(graphicsImage):
             if graphicsImage.isTemplate {
                 if case let .vectorGlyph(glyph) = graphicsImage.contents {
@@ -286,11 +292,37 @@ package struct _ShapeStyle_RenderedShape {
         layers.endLayer(shape: &self)
     }
 
+    private mutating func renderKeyedText(
+        _ text: StyledTextContentView,
+        style: ShapeStyle.Pack.Style,
+        name: ShapeStyle.Name,
+        layers: inout ShapeStyle.RenderedLayers
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     private mutating func renderUnstyledText(
         _ text: StyledTextContentView,
         layers: inout ShapeStyle.RenderedLayers
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let resolved = text.text
+        let renderer = text.renderer
+        layers.beginLayer(
+            id: .unstyled,
+            style: nil,
+            shape: &self
+        )
+        item.frame = resolved.frame(in: frame.size, renderer: renderer)
+            .offset(by: CGSize(frame.origin))
+        if resolved.needsRBDisplayList {
+            _openSwiftUIUnimplementedFailure()
+        } else {
+            item.value = .content(DisplayList.Content(
+                .text(text, frame.size),
+                seed: contentSeed
+            ))
+        }
+        layers.endLayer(shape: &self)
     }
 }
 

@@ -42,12 +42,16 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
 
     @_semantics("openswiftui.localized_string_key.init_literal")
     public init(stringLiteral value: String) {
-        _openSwiftUIUnimplementedFailure()
+        self.key = value
+        self.arguments = []
+        _openSwiftUIUnimplementedWarning()
     }
 
     @_semantics("openswiftui.localized_string_key.init_interpolation")
     public init(stringInterpolation: LocalizedStringKey.StringInterpolation) {
-        _openSwiftUIUnimplementedFailure()
+        self.key = ""
+        self.arguments = []
+        _openSwiftUIUnimplementedWarning()
     }
 
     package func resolve(
@@ -55,7 +59,8 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         table: String?,
         bundle: Bundle?
     ) -> String {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return key
     }
 
     @usableFromInline

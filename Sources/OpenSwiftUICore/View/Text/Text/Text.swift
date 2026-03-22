@@ -214,7 +214,16 @@ public struct Text: Equatable, Sendable {
         in environment: EnvironmentValues,
         with options: Text.ResolveOptions
     ) where T: ResolvedTextContainer {
-        _openSwiftUIUnimplementedFailure()
+        let style = result.style
+        if modifiers.isEmpty {
+            storage.resolve(into: &result, in: environment, with: options)
+        } else {
+            for modifier in modifiers {
+                modifier.modify(style: &result.style, environment: environment)
+            }
+            result.style = style
+            storage.resolve(into: &result, in: environment, with: options)
+        }
     }
 
     package func resolvesToEmpty(
