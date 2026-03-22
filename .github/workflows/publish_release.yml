@@ -74,13 +74,7 @@ jobs:
           allowUpdates: true
           artifacts: "build/*.xcframework.zip"
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Output Summary (manual trigger)
-        if: ${{ !startsWith(github.ref, 'refs/tags/') }}
-        run: |
-          echo "### Manual Build Summary" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "Artifacts available in build/*.xcframework.zip" >> $GITHUB_STEP_SUMMARY
-      - name: Upload Artifacts (manual trigger)
+      - name: Upload Artifacts
         if: ${{ !startsWith(github.ref, 'refs/tags/') }}
         uses: actions/upload-artifact@v4
         with:
