@@ -11,16 +11,16 @@ import OpenSwiftUICore
 // Helper method before we add fully preview thunk and preview macro support for OpenSwiftUI
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-import AppKit
+public import AppKit
 extension OpenSwiftUI.View {
-    public func _previewVC() -> some NSViewController {
+    public func _previewVC() -> NSViewController {
         OpenSwiftUI.NSHostingController(rootView: self)
     }
 }
 #else
-import UIKit
+public import UIKit
 extension OpenSwiftUI.View {
-    public func _previewVC() -> some UIViewController {
+    public func _previewVC() -> UIViewController {
         OpenSwiftUI.UIHostingController(rootView: self)
     }
 }
