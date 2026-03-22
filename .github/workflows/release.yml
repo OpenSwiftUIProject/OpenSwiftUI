@@ -1,0 +1,35 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '[0-9]*.[0-9]*.[0-9]*'
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    name: Build and Release XCFrameworks
+    runs-on: macos-15
+    env:
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build XCFrameworks
+        id: build
+        uses: ./.github/actions/build-xcframework
+        with:
+          tag-name: ${{ github.ref_name }}
+      - name: Create Release
+        uses: ncipollo/release-action@v1
+        with:
+          body: |
+            ```swift
+            ${{ steps.build.outputs.body }}
+            ```
+          allowUpdates: true
+          artifacts: "build/*.xcframework.zip"
+          token: ${{ secrets.GITHUB_TOKEN }}
