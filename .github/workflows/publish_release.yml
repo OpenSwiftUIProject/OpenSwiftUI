@@ -24,7 +24,8 @@ jobs:
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
       - name: Build XCFrameworks
-        run: bash Scripts/build_xcframework.sh OpenSwiftUI
+        run: Scripts/build_xcframework.sh OpenSwiftUI
+        shell: bash
       - name: Zip and Compute Checksums
         id: checksums
         run: |

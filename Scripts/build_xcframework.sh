@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/zsh
 
 # Script modified from https://docs.emergetools.com/docs/analyzing-a-spm-framework-ios
 
