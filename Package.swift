@@ -526,7 +526,11 @@ let openSwiftUISPITarget = Target.target(
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
     cxxSettings: sharedCxxSettings,
-    linkerSettings: [.unsafeFlags(["-lMobileGestalt"], .when(platforms: .darwinPlatforms))] // For MGCopyAnswer API support
+    linkerSettings: [
+        // -lMobileGestalt
+        // For MGCopyAnswer API support
+        .linkedLibrary("MobileGestalt", .when(platforms: .darwinPlatforms)),
+    ]
 )
 
 let openSwiftUISPITestTarget = Target.testTarget(
