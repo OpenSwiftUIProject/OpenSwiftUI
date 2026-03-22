@@ -469,7 +469,8 @@ package class ResolvedStyledText: CustomStringConvertible {
     final package let archiveOptions: ArchivedViewInput.Value
 
     package var drawingMargins: EdgeInsets {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return .zero
     }
 
     final package let isCollapsible: Bool
@@ -496,7 +497,8 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final package var needsRBDisplayList: Bool {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 
     final package var maxFontMetrics: NSAttributedString.EncodedFontMetrics {
@@ -572,11 +574,13 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     package func size(in request: CGSize) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return self.storage?.size() ?? .zero
     }
 
     package func frameSize(in request: CGSize) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return self.storage?.size() ?? .zero
     }
 
     package func _deleteMethod1() {
@@ -617,9 +621,8 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext,
         renderer: TextRendererBoxBase? = nil
     ) {
-        // FIXME
         var r = drawingArea
-        r.y = r.height / 2
+        r.y = r.height
         self.storage?.draw(with: r, context: context.ctx)
         _openSwiftUIUnimplementedWarning()
     }
@@ -690,25 +693,60 @@ extension ResolvedStyledText {
 @available(*, unavailable)
 extension ResolvedStyledText: Sendable {}
 
+// MARK: - ResolvedStyledText + layout extension
+
 extension ResolvedStyledText {
     package func firstBaseline(in size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        explicitAlignment(
+            VerticalAlignment.firstTextBaseline.key,
+            at: size
+        ) ?? .zero
     }
 
     package func lastBaseline(in size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        explicitAlignment(
+            VerticalAlignment.lastTextBaseline.key,
+            at: size
+        ) ?? .zero
     }
 
-    package func frame(in request: CGSize) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    func frame(in request: CGSize, renderer: TextRendererBoxBase?) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
+    package func frame(in request: CGSize, renderer: TextRendererBoxBase?) -> CGRect {
+        let textSize: CGSize
+        if let renderer {
+            textSize = renderer.sizeThatFits(
+                proposal: ProposedViewSize(
+                    width: request.width,
+                    height: request.height
+                ),
+                text: .init(text: self)
+            )
+        } else {
+            textSize = frameSize(in: request)
+        }
+        let padding = layoutProperties.bodyHeadOutdent
+        let isVertical = layoutProperties.writingMode != .horizontalTopToBottom
+        let topInset: CGFloat = isVertical ? 0 : -padding
+        let adjustedWidth = textSize.width + padding
+        let insets = layoutMargins - drawingMargins
+        let rect = CGRect(
+            x: topInset,
+            y: 0,
+            width: adjustedWidth,
+            height: textSize.height
+        )
+        return rect.inset(by: insets)
     }
 
     package func frameOffset() -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        let dm = drawingMargins
+        let lm = layoutMargins
+        var width = lm.leading - dm.leading
+        let isHorizontal = layoutProperties.writingMode == .horizontalTopToBottom
+        if isHorizontal {
+            width -= layoutProperties.bodyHeadOutdent
+        }
+        let height = -(dm.top - lm.top)
+        return CGSize(width: width, height: height)
     }
 }
 
