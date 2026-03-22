@@ -9,23 +9,29 @@
 #include <stdint.h>
 #include <dlfcn.h>
 #include <os/log.h>
-
-#if __has_include(<AttributeGraph/AttributeGraph.h>)
-#include <AttributeGraph/AttributeGraph.h>
-#elif __has_include(<Compute/Compute.h>)
-#include <Compute/Compute.h>
-#else
-#include <OpenAttributeGraph/OpenAttributeGraph.h>
-#endif
+#include <CoreFoundation/CoreFoundation.h>
 
 // MARK: - Type Description Shim
 
+// swift_getTypeName returns the module-qualified name (e.g. "OpenSwiftUI.CGDrawingView")
+// unlike AGTypeDescription which only returns the short name (e.g. "CGDrawingView").
+struct _interpose_type_name_pair {
+    const char *data;
+    uintptr_t length;
+};
+extern __attribute__((swiftcall))
+struct _interpose_type_name_pair swift_getTypeName(const void *type, bool qualified);
+
 static inline CFStringRef _interpose_type_description(const void *type) {
-#if __has_include(<AttributeGraph/AttributeGraph.h>) || __has_include(<Compute/Compute.h>)
-    return AGTypeDescription((AGTypeID)type);
-#else
-    return OAGTypeDescription((OAGTypeID)type);
-#endif
+    struct _interpose_type_name_pair name = swift_getTypeName(type, true);
+    if (name.data == NULL || name.length == 0) {
+        return NULL;
+    }
+    CFStringRef result = CFStringCreateWithBytes(
+        kCFAllocatorDefault, (const UInt8 *)name.data, (CFIndex)name.length,
+        kCFStringEncodingUTF8, false);
+    CFAutorelease(result);
+    return result;
 }
 
 // MARK: - Protocol Description Shim
