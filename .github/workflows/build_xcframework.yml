@@ -16,7 +16,7 @@ jobs:
       - name: Build XCFrameworks
         uses: ./.github/actions/build-xcframework
       - name: Zip XCFrameworks
-        run: cd build && zip -r xcframeworks.zip *.xcframework
+        run: cd build && zip -ry xcframeworks.zip *.xcframework
       - name: Upload XCFrameworks
         uses: actions/upload-artifact@v7
         with:

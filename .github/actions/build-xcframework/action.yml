@@ -51,7 +51,7 @@ runs:
         echo '```swift' >> $GITHUB_STEP_SUMMARY
         for fw in "${FRAMEWORKS[@]}"; do
           if [ -n "$TAG_NAME" ]; then
-            zip -r "$fw.xcframework.zip" "$fw.xcframework"
+            zip -ry "$fw.xcframework.zip" "$fw.xcframework"
             CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
             ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "$TAG_NAME" "$fw" "$CHECKSUM")
           else
