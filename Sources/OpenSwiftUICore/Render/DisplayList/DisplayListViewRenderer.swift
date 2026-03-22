@@ -2,31 +2,49 @@
 //  DisplayListViewRenderer.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by ViewUpdater and ViewRasterizer
+//  Audited for 6.5.4
+//  Status: Blocked by ViewRasterizer
 //  ID: 21FFA3C7D88AC65BB559906758271BFC (SwiftUICore)
 
 package import Foundation
 
 protocol ViewRendererBase: AnyObject {
     var platform: DisplayList.ViewUpdater.Platform { get }
+
     var exportedObject: AnyObject? { get }
-    func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time
-    func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time?
+
+    func render(
+        rootView: AnyObject,
+        from list: DisplayList,
+        time: Time,
+        version: DisplayList.Version,
+        maxVersion: DisplayList.Version,
+        environment: DisplayList.ViewRenderer.Environment
+    ) -> Time
+
+    func renderAsync(
+        to list: DisplayList,
+        time: Time,
+        targetTimestamp: Time?,
+        version: DisplayList.Version,
+        maxVersion: DisplayList.Version
+    ) -> Time?
+
     func destroy(rootView: AnyObject)
+
     var viewCacheIsEmpty: Bool { get }
 }
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 extension DisplayList {
     final public class ViewRenderer {
         package struct Environment: Equatable {
             package var contentsScale: CGFloat
-            
             #if os(macOS)
             package var opaqueBackground: Bool = false
             #endif
-            
+
             package static let invalid = Environment(contentsScale: .zero)
 
             package init(contentsScale: CGFloat) {
@@ -59,7 +77,7 @@ extension DisplayList {
 
         private var state: State = .none
 
-        private var renderer: (any ViewRendererBase)? = nil
+        private var renderer: (any ViewRendererBase)?
 
         private var configChanged: Bool = true
 
@@ -72,11 +90,11 @@ extension DisplayList {
                 return renderer!
             }
             configChanged = false
-            let renderStateMatchCheck = switch configuration.renderer {
+            let isValid = switch configuration.renderer {
             case .default: state == .updating
             case .rasterized: state == .rasterizing
             }
-            if !renderStateMatchCheck {
+            if !isValid {
                 if let renderer {
                     renderer.destroy(rootView: rootView)
                 }
@@ -95,12 +113,16 @@ extension DisplayList {
             } else {
                 switch configuration.renderer {
                 case .default:
-                    let updater = ViewUpdater()
-                    // TODO: ViewUpdater
+                    let updater = ViewUpdater(platform: platform, host: host)
                     renderer = updater
                     state = .updating
                 case let .rasterized(options):
-                    let rasterizer = ViewRasterizer(platform: platform, host: host, rootView: rootView, options: options)
+                    let rasterizer = ViewRasterizer(
+                        platform: platform,
+                        host: host,
+                        rootView: rootView,
+                        options: options
+                    )
                     renderer = rasterizer
                     state = .rasterizing
                 }
