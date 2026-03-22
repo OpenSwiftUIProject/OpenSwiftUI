@@ -6,6 +6,9 @@ on:
       - '[0-9]*.[0-9]*.[0-9]*'
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build_xcframework:
     name: Build XCFramework
@@ -28,6 +31,8 @@ jobs:
         shell: bash
       - name: Zip and Compute Checksums
         id: checksums
+        env:
+          TAG_NAME: ${{ github.ref_name }}
         run: |
           cd build
           FRAMEWORKS=(
@@ -39,7 +44,6 @@ jobs:
             OpenQuartzCoreShims
             OpenRenderBoxShims
           )
-          ARTIFACTS=""
           BODY=""
           echo "### XCFramework Checksums" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
@@ -47,25 +51,21 @@ jobs:
           for fw in "${FRAMEWORKS[@]}"; do
             zip -r "$fw.xcframework.zip" "$fw.xcframework"
             CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
-            echo "${fw}_checksum=$CHECKSUM" >> $GITHUB_OUTPUT
-            echo ".binaryTarget(" >> $GITHUB_STEP_SUMMARY
-            echo "    name: \"$fw\"," >> $GITHUB_STEP_SUMMARY
-            echo "    url: \"https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/\${TAG}/$fw.xcframework.zip\"," >> $GITHUB_STEP_SUMMARY
-            echo "    checksum: \"$CHECKSUM\"" >> $GITHUB_STEP_SUMMARY
-            echo ")," >> $GITHUB_STEP_SUMMARY
-            if [ -n "$ARTIFACTS" ]; then
-              ARTIFACTS="$ARTIFACTS,"
-              BODY="$BODY\n"
+            ENTRY=".binaryTarget(
+    name: \"$fw\",
+    url: \"https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/${TAG_NAME}/$fw.xcframework.zip\",
+    checksum: \"$CHECKSUM\"
+),"
+            echo "$ENTRY" >> $GITHUB_STEP_SUMMARY
+            if [ -n "$BODY" ]; then
+              BODY="$BODY
+"
             fi
-            ARTIFACTS="$ARTIFACTS\nbuild/$fw.xcframework.zip"
-            BODY="$BODY.binaryTarget(\n    name: \"$fw\",\n    url: \"https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/\${{ github.ref_name }}/$fw.xcframework.zip\",\n    checksum: \"$CHECKSUM\"\n),"
+            BODY="$BODY$ENTRY"
           done
           echo '```' >> $GITHUB_STEP_SUMMARY
-          echo "artifacts<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$ARTIFACTS" >> $GITHUB_OUTPUT
-          echo "EOF" >> $GITHUB_OUTPUT
           echo "body<<EOF" >> $GITHUB_OUTPUT
-          echo -e "$BODY" >> $GITHUB_OUTPUT
+          echo "$BODY" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT
       - name: Create Release
         if: startsWith(github.ref, 'refs/tags/')
