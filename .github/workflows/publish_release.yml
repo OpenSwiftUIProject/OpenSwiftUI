@@ -51,17 +51,13 @@ jobs:
           for fw in "${FRAMEWORKS[@]}"; do
             zip -r "$fw.xcframework.zip" "$fw.xcframework"
             CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
-            ENTRY=".binaryTarget(
-    name: \"$fw\",
-    url: \"https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/${TAG_NAME}/$fw.xcframework.zip\",
-    checksum: \"$CHECKSUM\"
-),"
+            ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "$TAG_NAME" "$fw" "$CHECKSUM")
             echo "$ENTRY" >> $GITHUB_STEP_SUMMARY
             if [ -n "$BODY" ]; then
-              BODY="$BODY
-"
+              BODY=$(printf '%s\n%s' "$BODY" "$ENTRY")
+            else
+              BODY="$ENTRY"
             fi
-            BODY="$BODY$ENTRY"
           done
           echo '```' >> $GITHUB_STEP_SUMMARY
           echo "body<<EOF" >> $GITHUB_OUTPUT
