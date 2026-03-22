@@ -487,7 +487,8 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final package var needsStyledRendering: Bool {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 
     final package var needsRBDisplayList: Bool {
@@ -670,6 +671,10 @@ extension ResolvedStyledText {
     }
 
     package func frame(in request: CGSize) -> CGRect {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    func frame(in request: CGSize, renderer: TextRendererBoxBase?) -> CGRect {
         _openSwiftUIUnimplementedFailure()
     }
 
