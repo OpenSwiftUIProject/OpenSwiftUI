@@ -306,6 +306,3 @@ done
 
 # Clean up temp directories
 rm -rf "$PROJECT_BUILD_DIR/dep-modules" "$PROJECT_BUILD_DIR/dep-stubs"
-
-cd "$PROJECT_BUILD_DIR"
-zip -r "$PACKAGE_NAME.xcframework.zip" "$PACKAGE_NAME.xcframework" "${DEP_MODULES[@]/%/.xcframework}"
