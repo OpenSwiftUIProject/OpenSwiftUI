@@ -530,7 +530,10 @@ let openSwiftUISPITarget = Target.target(
         // -lMobileGestalt
         // For MGCopyAnswer API support
         .linkedLibrary("MobileGestalt", .when(platforms: .darwinPlatforms)),
-    ]
+    ] + (swiftUIRenderCondition ? [
+        // For Interpose.c or we can choose to use dlsm approach to load them dynamically
+        .linkedFramework("SwiftUI", .when(platforms: .darwinPlatforms))
+    ] : [])
 )
 
 let openSwiftUISPITestTarget = Target.testTarget(
