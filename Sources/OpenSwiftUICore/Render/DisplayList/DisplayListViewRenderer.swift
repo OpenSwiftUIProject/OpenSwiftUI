@@ -135,9 +135,9 @@ extension DisplayList {
             return renderer.exportedObject
         }
 
-        #if canImport(Darwin) && _OPENSWIFTUI_SWIFTUI_RENDER
+        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
-        package func swiftUI_render(
+        private func swiftUI_render(
             rootView: AnyObject,
             from list: DisplayList,
             time: Time,
@@ -146,16 +146,6 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time
-        
-        @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderAsync")
-        package func swiftUI_renderAsync(
-            to list: DisplayList,
-            time: Time,
-            nextTime: Time,
-            targetTimestamp: Time?,
-            version: DisplayList.Version,
-            maxVersion: DisplayList.Version
-        ) -> Time?
         #endif
 
         package func render(
@@ -167,13 +157,43 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
+            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+            swiftUI_render(
+                rootView: rootView,
+                from: list,
+                time: time,
+                nextTime: nextTime,
+                version: version,
+                maxVersion: maxVersion,
+                environment: environment
+            )
+            #else
             let renderer = updateRenderer(rootView: rootView)
-            let result = renderer.render(rootView: rootView, from: list, time: time, version: version, maxVersion: maxVersion, environment: environment)
-            let interval = min(nextTime, result) - time
-            let maxInterval = max(interval, configuration.minFrameInterval)
-            return time + maxInterval
+            let nextUpdate = renderer.render(
+                rootView: rootView,
+                from: list,
+                time: time,
+                version: version,
+                maxVersion: maxVersion,
+                environment: environment
+            )
+            let interval = max(min(nextTime, nextUpdate) - time, configuration.minFrameInterval)
+            return time + interval
+            #endif
         }
-        
+
+        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+        @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderAsync")
+        private func swiftUI_renderAsync(
+            to list: DisplayList,
+            time: Time,
+            nextTime: Time,
+            targetTimestamp: Time?,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version
+        ) -> Time?
+        #endif
+
         package func renderAsync(
             to list: DisplayList,
             time: Time,
@@ -182,17 +202,26 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
+            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+            swiftUI_renderAsync(
+                to: list,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            )
+            #else
             guard !configChanged, let renderer else {
                 return nil
             }
-            let result = renderer.renderAsync(to: list, time: time, targetTimestamp: targetTimestamp, version: version, maxVersion: maxVersion)
-            if let result {
-                let interval = min(nextTime, result) - time
-                let maxInterval = max(interval, configuration.minFrameInterval)
-                return time + maxInterval
-            } else {
-                return nil
+            let nextUpdate = renderer.renderAsync(to: list, time: time, targetTimestamp: targetTimestamp, version: version, maxVersion: maxVersion)
+            guard let nextUpdate else {
+                return nextUpdate
             }
+            let interval = max(min(nextTime, result) - time, configuration.minFrameInterval)
+            return time + interval
+            #endif
         }
         
         package var viewCacheIsEmpty: Bool {
