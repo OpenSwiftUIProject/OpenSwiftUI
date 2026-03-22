@@ -1,13 +1,13 @@
 //
-//  interpose.c
-//  Shared
-//
-//  Created by Kyle on 2025/10/3.
-//
+//  Interpose.c
+//  OpenSwiftUI_SPI
+
+#include "OpenSwiftUIBase.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN && _OPENSWIFTUI_SWIFTUI_RENDER
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <dlfcn.h>
 #include <os/log.h>
 #include <CoreFoundation/CoreFoundation.h>
 
@@ -77,10 +77,10 @@ static inline CFStringRef _interpose_protocol_description(const void *protocol) 
     return result;
 }
 
-// Forward declare the original
+// MARK: - kdebug_is_enabled
+
 extern bool kdebug_is_enabled(uint32_t debugid);
 
-// Our replacement
 static bool my_kdebug_is_enabled(uint32_t debugid) {
     return true;
 }
@@ -166,7 +166,8 @@ static const void *my_swift_conformsToProtocol2(const void *type, const void *pr
     return result;
 }
 
-// Interpose using Mach-O section
+// MARK: - Interpose Registration
+
 typedef struct interpose_s {
     const void *replacement;
     const void *original;
@@ -178,6 +179,8 @@ __attribute__((used)) static const interpose_t interposers[]
     { (const void *)my_kdebug_is_enabled, (const void *)kdebug_is_enabled },
     // Interpose swift_dynamicCast to handle casts to SwiftUI's internal Color.Resolved type to fix SwiftUI.ShapeLayerHelper visit check for Shape.fill API
     { (const void *)my_swift_dynamicCast, (const void *)swift_dynamicCast },
-    // Interpose swift_conformsToProtocol2 to redirect SwiftUI.PlatformDrawable conformance checks to OpenSwiftUI.PlatformDrawable
+    // Interpose swift_conformsToProtocol2 to redirect SwiftUI.PlatformDrawable conformance checks to OpenSwiftUI.PlatformDrawable for Text's CGDrawingView
     { (const void *)my_swift_conformsToProtocol2, (const void *)swift_conformsToProtocol2 },
 };
+
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN && _OPENSWIFTUI_SWIFTUI_RENDER */
