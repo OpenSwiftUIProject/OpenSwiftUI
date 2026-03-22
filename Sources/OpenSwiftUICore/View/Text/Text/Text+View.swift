@@ -466,6 +466,8 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package let stylePadding: EdgeInsets
 
+    final package let archiveOptions: ArchivedViewInput.Value
+
     package var drawingMargins: EdgeInsets {
         _openSwiftUIUnimplementedFailure()
     }
@@ -477,6 +479,8 @@ package class ResolvedStyledText: CustomStringConvertible {
     final package let styles: [_ShapeStyle_Pack.Style]
 
     final package let transitions: [Text.ResolvedProperties.Transition]
+
+    final private var _computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics?
 
     final package var isDynamic: Bool {
         _openSwiftUIUnimplementedFailure()
@@ -499,7 +503,7 @@ package class ResolvedStyledText: CustomStringConvertible {
         _openSwiftUIUnimplementedFailure()
     }
 
-    var schedule: (any TimelineSchedule)? {
+    final var schedule: (any TimelineSchedule)? {
         _openSwiftUIUnimplementedWarning()
         return nil
     }
@@ -518,7 +522,17 @@ package class ResolvedStyledText: CustomStringConvertible {
         transitions: [Text.ResolvedProperties.Transition],
         scaleFactorOverride: CGFloat?
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // FIXME
+        _openSwiftUIUnimplementedWarning()
+        self.storage = storage
+        self.layoutProperties = layoutProperties
+        self.layoutMargins = layoutMargins ?? .zero
+        self.stylePadding = stylePadding
+        self.archiveOptions = .isArchived
+        self.isCollapsible = isCollapsible
+        self.features = features
+        self.styles = styles
+        self.transitions = transitions
     }
 
     package func lineHeightScalingAdjustment(
@@ -548,11 +562,13 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     package func spacing() -> Spacing {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return .init()
     }
 
     package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return CGSize(width: 50, height: 50)
     }
 
     package func size(in request: CGSize) -> CGSize {
@@ -560,6 +576,14 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     package func frameSize(in request: CGSize) -> CGSize {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func _deleteMethod1() {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package func _deleteMethod2() {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -574,7 +598,8 @@ package class ResolvedStyledText: CustomStringConvertible {
         _ k: AlignmentKey,
         at size: CGSize
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return nil
     }
 
     package func linkURL(
@@ -592,7 +617,11 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext,
         renderer: TextRendererBoxBase? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // FIXME
+        var r = drawingArea
+        r.y = r.height / 2
+        self.storage?.draw(with: r, context: context.ctx)
+        _openSwiftUIUnimplementedWarning()
     }
 
     package func layoutValue(
@@ -619,9 +648,9 @@ package class ResolvedStyledText: CustomStringConvertible {
         _openSwiftUIUnimplementedFailure()
     }
 
-//    final package var updatesAsynchronously: Bool {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+    final package var updatesAsynchronously: Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
 
     @usableFromInline
     final package var description: String {
@@ -685,7 +714,7 @@ extension ResolvedStyledText {
 
 extension ResolvedStyledText {
     // FIXME
-    package class StringDrawing {}
+    package class StringDrawing: ResolvedStyledText {}
 }
 
 // MARK: - TextDrawingContext
@@ -830,7 +859,7 @@ struct TextLayoutQuery {
 
 // MARK: - ResolvedTextFilter [WIP]
 
-struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
+private struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
     @Attribute var text: Text
     @Attribute var environment: EnvironmentValues
     var helper: ResolvedTextHelper
@@ -838,7 +867,9 @@ struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
     typealias Value = ResolvedStyledText
 
     func updateValue() {
-        _openSwiftUIUnimplementedFailure()
+        // FIXME
+        _openSwiftUIUnimplementedWarning()
+        value = helper.resolve(text, with: environment, sizeFitting: false)!
     }
 }
 
@@ -896,9 +927,22 @@ struct ResolvedTextHelper {
         with environment: EnvironmentValues,
         sizeFitting: Bool
     ) -> ResolvedStyledText? {
-        // TODO
+        // FIXME
         _openSwiftUIUnimplementedWarning()
-        return nil
+        return ResolvedStyledText(
+            storage: text?.resolveAttributedString(in: environment),
+            layoutProperties: .init(),
+            layoutMargins: nil,
+            stylePadding: .zero,
+            archiveOptions: .init(),
+            isCollapsible: false,
+            features: [],
+            suffix: .none,
+            attachments: .init(),
+            styles: [],
+            transitions: [],
+            scaleFactorOverride: nil
+        )
     }
 }
 

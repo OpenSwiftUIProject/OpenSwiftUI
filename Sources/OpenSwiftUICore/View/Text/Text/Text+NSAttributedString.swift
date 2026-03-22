@@ -56,7 +56,17 @@ extension Text {
         options: Text.ResolveOptions = [.includeSupportForRepeatedResolution],
         idiom: AnyInterfaceIdiom? = nil
     ) -> NSAttributedString? {
-        _openSwiftUIUnimplementedFailure()
+        // FIXME
+        _openSwiftUIUnimplementedWarning()
+        var container = Text.Resolved()
+        container.includeDefaultAttributes = includeDefaultAttributes
+        container.idiom = idiom
+        // container.properties = options
+        resolve(into: &container, in: environment, with: options)
+        if let attributedString = container.attributedString {
+            // attributedString.resolveUpdateSchedule(recalculate: true )
+        }
+        return container.attributedString
     }
 
     package func resolveAttributedStringAndProperties(
@@ -112,6 +122,7 @@ extension Text.Style {
         with options: Text.ResolveOptions,
         properties: inout Text.ResolvedProperties
     ) -> [NSAttributedString.Key: Any] {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
+        return [:]
     }
 }
