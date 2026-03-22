@@ -21,7 +21,11 @@ clone_checkout_openobservation() {
     git stash --quiet || true
     git reset --hard --quiet origin/main
   fi
-  git checkout --quiet $revision
+  if [ -n "$revision" ]; then
+    git checkout --quiet "$revision"
+  else
+    echo "No pinned revision for OpenObservation, using default branch."
+  fi
 }
 
 clone_checkout_openobservation
