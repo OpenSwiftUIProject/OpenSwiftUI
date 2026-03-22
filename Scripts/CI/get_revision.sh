@@ -23,7 +23,7 @@ PACKAGE_RESOLVED_PATH="Package.resolved"
 
 # Check if the Package.resolved file exists
 if [[ ! -f "$PACKAGE_RESOLVED_PATH" ]]; then
-  echo "Error: $PACKAGE_RESOLVED_PATH file not found!"
+  echo "Error: $PACKAGE_RESOLVED_PATH file not found!" >&2
   exit 1
 fi
 
@@ -36,7 +36,7 @@ REVISION=$(jq -r --arg name "$DEPENDENCY_NAME" '
 
 # Check if a revision was found
 if [[ -z "$REVISION" ]]; then
-  echo "No revision found for dependency: $DEPENDENCY_NAME"
+  echo "No revision found for dependency: $DEPENDENCY_NAME" >&2
   exit 1
 else
   echo "$REVISION"

@@ -21,7 +21,11 @@ clone_checkout_dpf() {
     git stash --quiet || true
     git reset --hard --quiet origin/main
   fi
-  git checkout --quiet $revision
+  if [ -n "$revision" ]; then
+    git checkout --quiet "$revision"
+  else
+    echo "No pinned revision for DarwinPrivateFrameworks, using default branch."
+  fi
 }
 
 update_dpf() {
