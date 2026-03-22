@@ -8,12 +8,14 @@
 // MARK: - Never + View
 
 #if canImport(CoreTransferable)
-import CoreTransferable
+public import CoreTransferable
 #endif
 
 @available(OpenSwiftUI_v1_0, *)
 extension Never: View {
     #if !canImport(CoreTransferable)
+    public typealias Body = Never
+
     public var body: Never { self }
     #endif
 

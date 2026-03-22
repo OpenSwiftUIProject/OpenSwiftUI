@@ -5,7 +5,8 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-public import UIFoundation_Private // FIXME
+#if canImport(UIFoundation_Private) && !OPENSWIFTUI_XCFRAMEWORK_BUILD
+public import UIFoundation_Private
 
 @available(OpenSwiftUI_v3_0, *)
 extension Text.LineStyle {
@@ -40,3 +41,4 @@ extension NSUnderlineStyle {
         self = lineStyle.nsUnderlineStyle
     }
 }
+#endif
