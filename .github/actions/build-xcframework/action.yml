@@ -1,5 +1,5 @@
 name: 'Build XCFrameworks'
-description: 'Build OpenSwiftUI xcframeworks, zip each one, and compute checksums'
+description: 'Build OpenSwiftUI xcframeworks and generate binaryTarget entries'
 
 inputs:
   xcode-version:
@@ -29,7 +29,7 @@ runs:
     - name: Build XCFrameworks
       run: Scripts/build_xcframework.sh OpenSwiftUI
       shell: bash
-    - name: Zip and Compute Checksums
+    - name: Compute Checksums and Generate Summary
       id: checksums
       shell: bash
       env:
@@ -46,13 +46,17 @@ runs:
           OpenRenderBoxShims
         )
         BODY=""
-        echo "### XCFramework Checksums" >> $GITHUB_STEP_SUMMARY
+        echo "### XCFramework Binary Targets" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
         echo '```swift' >> $GITHUB_STEP_SUMMARY
         for fw in "${FRAMEWORKS[@]}"; do
-          zip -r "$fw.xcframework.zip" "$fw.xcframework"
-          CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
-          ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "${TAG_NAME:-<TAG>}" "$fw" "$CHECKSUM")
+          if [ -n "$TAG_NAME" ]; then
+            zip -ry "$fw.xcframework.zip" "$fw.xcframework"
+            CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
+            ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "$TAG_NAME" "$fw" "$CHECKSUM")
+          else
+            ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    path: "%s.xcframework"\n),' "$fw" "$fw")
+          fi
           echo "$ENTRY" >> $GITHUB_STEP_SUMMARY
           if [ -n "$BODY" ]; then
             BODY=$(printf '%s\n%s' "$BODY" "$ENTRY")
