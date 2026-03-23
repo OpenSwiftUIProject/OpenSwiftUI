@@ -109,6 +109,29 @@ extension DisplayList.ViewUpdater.Platform {
         CoreViewLayer(system: viewSystem, view: view)
     }
     #endif
+
+    func updateDrawingView(
+        _ drawingView: inout AnyObject,
+        options: RasterizationOptions,
+        contentsScale: CGFloat
+    ) -> any PlatformDrawable {
+        var drawable = (drawingView as? PlatformDrawable) ?? definition.makeDrawingView(options: .init(base: options))
+        let oldOption = drawable.options.base
+        if options != oldOption {
+            if oldOption.flags.symmetricDifference(options.flags).contains(.isAccelerated) {
+                drawable = definition.makeDrawingView(options: .init(base: options))
+            } else {
+                drawable.options.base = options
+            }
+        }
+        drawable.setContentsScale(contentsScale)
+        drawingView = drawable
+        return drawable
+    }
+
+    // TODO:
+    // private func updateDrawingView
+    // private func updateDrawingViewAsync
 }
 
 extension DisplayList.GraphicsRenderer {

@@ -3,9 +3,10 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by ViewRasterizer
+//  Status: Complete
 //  ID: 21FFA3C7D88AC65BB559906758271BFC (SwiftUICore)
 
+import OpenSwiftUI_SPI
 package import Foundation
 
 protocol ViewRendererBase: AnyObject {
@@ -50,7 +51,7 @@ extension DisplayList {
             package init(contentsScale: CGFloat) {
                 self.contentsScale = contentsScale
             }
-            
+
             #if os(macOS)
             package init(contentsScale: CGFloat, opaqueBackground: Bool) {
                 self.contentsScale = contentsScale
@@ -58,7 +59,7 @@ extension DisplayList {
             }
             #endif
         }
-        
+
         let platform: DisplayList.ViewUpdater.Platform
 
         package var configuration: _RendererConfiguration = .init()
@@ -84,7 +85,7 @@ extension DisplayList {
         package init(platform: DisplayList.ViewUpdater.Platform) {
             self.platform = platform
         }
-        
+
         private func updateRenderer(rootView: AnyObject) -> any ViewRendererBase {
             guard configChanged else {
                 return renderer!
@@ -129,7 +130,7 @@ extension DisplayList {
             }
             return renderer!
         }
-        
+
         package func exportedObject(rootView: AnyObject) -> AnyObject? {
             let renderer = updateRenderer(rootView: rootView)
             return renderer.exportedObject
@@ -223,7 +224,7 @@ extension DisplayList {
             return time + interval
             #endif
         }
-        
+
         package var viewCacheIsEmpty: Bool {
             renderer?.viewCacheIsEmpty ?? true
         }
@@ -237,42 +238,158 @@ private var printTree: Bool?
 extension DisplayList {
     private final class ViewRasterizer: ViewRendererBase {
         let platform: DisplayList.ViewUpdater.Platform
-        weak var host: ViewRendererHost?
-        var drawingView: AnyObject?
+        weak var host: (any ViewRendererHost)? = nil
+        var drawingView: AnyObject? = nil
         var options: _RendererConfiguration.RasterizationOptions
         let renderer: DisplayList.GraphicsRenderer
-        var seed: DisplayList.Seed
-        var lastContentsScale: CGFloat
+        var seed: DisplayList.Seed = .init()
+        var lastContentsScale: CGFloat = .zero
 
-        init(platform: DisplayList.ViewUpdater.Platform, host: ViewRendererHost?, rootView: AnyObject, options: _RendererConfiguration.RasterizationOptions) {
-            _openSwiftUIBaseClassAbstractMethod()
+        init(
+            platform: DisplayList.ViewUpdater.Platform,
+            host: (any ViewRendererHost)?,
+            rootView: AnyObject,
+            options: _RendererConfiguration.RasterizationOptions
+        ) {
+            self.platform = platform
+            self.host = host
+            self.options = options
+            self.renderer = DisplayList.GraphicsRenderer(platformViewMode: options.drawsPlatformViews ? .rendered(update: true) : .unsupported)
+            self.drawingView = platform.definition.makeDrawingView(options: .init(base: .init(options)))
+            #if canImport(Darwin)
+            CoreViewAddSubview(
+                system: platform.viewSystem,
+                parent: rootView,
+                child: drawingView!,
+                index: 0
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
 
         var exportedObject: AnyObject? {
-            platform.definition.getRBLayer(drawingView: drawingView!)
+            let drawingView = drawingView!
+            let rbLayer = platform.definition
+                .getRBLayer(drawingView: drawingView)
+            return rbLayer
         }
 
-        func render(rootView: AnyObject, from list: DisplayList, time: Time, version: DisplayList.Version, maxVersion: DisplayList.Version, environment: DisplayList.ViewRenderer.Environment) -> Time {
-            // _openSwiftUIUnimplementedFailure()
-            if printTree == nil {
-                printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
+        func render(
+            rootView: AnyObject,
+            from list: DisplayList,
+            time: Time,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version,
+            environment: DisplayList.ViewRenderer.Environment
+        ) -> Time {
+            let contentsScale = environment.contentsScale
+            if contentsScale != lastContentsScale {
+                lastContentsScale = contentsScale
+                seed = .init()
             }
-            if let printTree, printTree {
-                print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at \(time):\n\(list.description)")
+            #if canImport(Darwin)
+            let drawingViewFrame = drawingView!.frame
+            if let rootViewBounds = rootView.bounds, drawingViewFrame != rootViewBounds {
+                CoreViewSetFrame(
+                    system: platform.viewSystem,
+                    view: drawingView!,
+                    frame: rootView.bounds!
+                )
+                seed = .init()
             }
-            return .zero
+            #endif
+            let newSeed = DisplayList.Seed(version)
+            if newSeed == seed, renderer.nextTime >= time {
+                return renderer.nextTime
+            }
+            let drawable = platform.updateDrawingView(
+                &drawingView!,
+                options: .init(options),
+                contentsScale: lastContentsScale
+            )
+            let content = drawingContent(list: list, time: time)
+            var result = time
+            let updated = drawable.update(content: content, required: false)
+            if updated {
+                result = .infinity
+            }
+            if let host, let observer = host.as(ViewGraphRenderObserver.self) {
+                observer.didRender()
+            }
+            return result
         }
 
-        func renderAsync(to list: DisplayList, time: Time, targetTimestamp: Time?, version: DisplayList.Version, maxVersion: DisplayList.Version) -> Time? {
-            _openSwiftUIUnimplementedFailure()
+        private func drawingContent(list: DisplayList, time: Time) -> PlatformDrawableContent {
+            var content = PlatformDrawableContent()
+            content.storage = .graphicsCallback { [weak host, renderer] ctx, size in
+                if printTree == nil {
+                    printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
+                }
+                if let printTree, printTree {
+                    print("View \(Unmanaged.passUnretained(self).toOpaque()) at \(time):\n\(list.description)")
+                }
+                renderer.renderDisplayList(list, at: time, in: &ctx)
+                let duration = renderer.nextTime - time
+                let delay = max(duration, 1e-6)
+                if delay != .infinity {
+                    DispatchQueue.main.async { [weak host] in
+                        host?.requestUpdate(after: delay)
+                    }
+                }
+            }
+            return content
+        }
+
+        func renderAsync(
+            to list: DisplayList,
+            time: Time,
+            targetTimestamp: Time?,
+            version: DisplayList.Version,
+            maxVersion: DisplayList.Version
+        ) -> Time? {
+            nil
         }
 
         func destroy(rootView: AnyObject) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(Darwin)
+            CoreViewRemoveFromSuperview(
+                system: platform.viewSystem,
+                view: drawingView!
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
 
         var viewCacheIsEmpty: Bool {
-            _openSwiftUIUnimplementedFailure()
+            true
         }
+    }
+}
+
+// MARK: - RasterizationOptions + _RendererConfiguration.RasterizationOptions
+
+@available(OpenSwiftUI_v6_0, *)
+extension RasterizationOptions {
+    /// Convert from the public `_RendererConfiguration.RasterizationOptions`
+    /// to the internal `RasterizationOptions`.
+    package init(_ options: _RendererConfiguration.RasterizationOptions) {
+        var flags: RasterizationOptions.Flags = .defaultFlags
+        if options.isOpaque {
+            flags.insert(.isOpaque)
+        }
+        if options.rendersAsynchronously {
+            flags.insert(.rendersAsynchronously)
+        }
+        if options.prefersDisplayCompositing {
+            flags.insert(.prefersDisplayCompositing)
+        }
+        self.init(
+            colorMode: options.colorMode,
+            rbColorMode: options.rbColorMode,
+            flags: flags,
+            maxDrawableCount: Int8(clamping: options.maxDrawableCount)
+        )
     }
 }
