@@ -367,29 +367,3 @@ extension DisplayList {
         }
     }
 }
-
-// MARK: - RasterizationOptions + _RendererConfiguration.RasterizationOptions
-
-@available(OpenSwiftUI_v6_0, *)
-extension RasterizationOptions {
-    /// Convert from the public `_RendererConfiguration.RasterizationOptions`
-    /// to the internal `RasterizationOptions`.
-    package init(_ options: _RendererConfiguration.RasterizationOptions) {
-        var flags: RasterizationOptions.Flags = .defaultFlags
-        if options.isOpaque {
-            flags.insert(.isOpaque)
-        }
-        if options.rendersAsynchronously {
-            flags.insert(.rendersAsynchronously)
-        }
-        if options.prefersDisplayCompositing {
-            flags.insert(.prefersDisplayCompositing)
-        }
-        self.init(
-            colorMode: options.colorMode,
-            rbColorMode: options.rbColorMode,
-            flags: flags,
-            maxDrawableCount: Int8(clamping: options.maxDrawableCount)
-        )
-    }
-}
