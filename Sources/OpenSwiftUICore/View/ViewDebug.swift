@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
-//  Status: Blocked by TreeElement
+//  Status: WIP
 //  ID: 5A14269649C60F846422EA0FA4C5E535 (SwiftUI)
 //  ID: 43DA1754B0518AF1D72B90677BF266DB (SwiftUICore)
 
@@ -84,6 +84,8 @@ extension _ViewDebug {
         if !isInitialized {
             if let debugValue = EnvironmentHelper.int32(for: "OPENSWIFTUI_VIEW_DEBUG") {
                 properties = Properties(rawValue: UInt32(bitPattern: debugValue))
+            } else if let debugValue = EnvironmentHelper.int32(for: "SWIFTUI_VIEW_DEBUG") {
+                properties = Properties(rawValue: UInt32(bitPattern: debugValue))
             }
             isInitialized = true
         }
@@ -105,7 +107,7 @@ extension _ViewDebug {
             return
         }
         if debugProperiets.contains(.transform) {
-            Subgraph.addTreeValue(inputs.pointee.transform, forKey: "transfrom", flags: 0)
+            Subgraph.addTreeValue(inputs.pointee.transform, forKey: "transform", flags: 0)
         }
         if debugProperiets.contains(.position) {
             Subgraph.addTreeValue(inputs.pointee.position, forKey: "position", flags: 0)
@@ -202,22 +204,87 @@ extension View {
 
 // MARK: - ViewDebug + Debug Data
 
-// FIXME
-extension Subgraph {
-    func treeRoot() -> Int? { nil }
-}
+#if canImport(Darwin)
+@_silgen_name("AGGraphGetValue")
+#else
+@_silgen_name("OAGGraphGetValue")
+#endif
+private func _graphGetValue<Value>(_ attribute: AnyAttribute, options: OAGValueOptions = [], type: Value.Type = Value.self) -> OAGValue
 
 extension _ViewDebug {
     package static func makeDebugData(subgraph: Subgraph) -> [_ViewDebug.Data] {
         var result: [_ViewDebug.Data] = []
-        if let rootElement = subgraph.treeRoot() {
+        let rootElement = subgraph.treeRoot()
+        if rootElement != 0 {
             appendDebugData(from: rootElement, to: &result)
         }
         return result
     }
-    
-    private static func appendDebugData(from element: Int/*AGTreeElement*/ , to result: inout [_ViewDebug.Data]) {
-        _openSwiftUIUnimplementedFailure()
+
+    private static func appendDebugData(from element: OAGTreeElement, to result: inout [_ViewDebug.Data]) {
+        // viewList elements (flags bit 0): recurse children only, no own data
+        if element.flags & 1 != 0 {
+            element.forEachChild { child in
+                appendDebugData(from: child, to: &result)
+            }
+            return
+        }
+
+        // Invalid elements: recurse children only
+        let attribute = element.value
+        guard attribute != .nil, let typePointer = element.type else {
+            element.forEachChild { child in
+                appendDebugData(from: child, to: &result)
+            }
+            return
+        }
+
+        var debugData = _ViewDebug.Data()
+
+        // .type property
+        let anyType = unsafeBitCast(typePointer, to: Any.Type.self)
+        if properties.contains(.type) {
+            debugData.data[.type] = anyType
+        }
+
+        // TODO: Phase 2 — .value property (requires VWT-based dynamic type boxing)
+
+        // Process tree values
+        element.forEachValue { treeValue in
+            guard let keyPtr = treeValue.key else { return }
+            let attr = treeValue.attribute
+            guard attr != .nil, attr.hasValue else { return }
+
+            if properties.contains(.environment) && strcmp(keyPtr, "environment") == 0 {
+                let val = _graphGetValue(attr, type: EnvironmentValues.self)
+                debugData.data[.environment] = val.value.assumingMemoryBound(to: EnvironmentValues.self).pointee
+            } else if properties.contains(.position) && strcmp(keyPtr, "position") == 0 {
+                let val = _graphGetValue(attr, type: CGPoint.self)
+                debugData.data[.position] = val.value.assumingMemoryBound(to: CGPoint.self).pointee
+            } else if properties.contains(.size) && strcmp(keyPtr, "size") == 0 {
+                let val = _graphGetValue(attr, type: CGSize.self)
+                debugData.data[.size] = val.value.assumingMemoryBound(to: CGSize.self).pointee
+            } else if properties.contains(.phase) && strcmp(keyPtr, "phase") == 0 {
+                let val = _graphGetValue(attr, type: _GraphInputs.Phase.self)
+                debugData.data[.phase] = val.value.assumingMemoryBound(to: _GraphInputs.Phase.self).pointee
+            } else if properties.contains(.transform) && strcmp(keyPtr, "transform") == 0 {
+                let val = _graphGetValue(attr, type: ViewTransform.self)
+                debugData.data[.transform] = val.value.assumingMemoryBound(to: ViewTransform.self).pointee
+            } else if properties.contains(.layoutComputer) && strcmp(keyPtr, "layoutComputer") == 0 {
+                let val = _graphGetValue(attr, type: LayoutComputer.self)
+                debugData.data[.layoutComputer] = val.value.assumingMemoryBound(to: LayoutComputer.self).pointee
+            }
+            else if properties.contains(.displayList) && strcmp(keyPtr, "displayList") == 0 {
+                CoreGlue.shared.updateData(&debugData, value: treeValue)
+            }
+        }
+
+        // Recurse children
+        element.forEachChild { child in
+            appendDebugData(from: child, to: &debugData.childData)
+        }
+
+        result.append(debugData)
     }
 }
 

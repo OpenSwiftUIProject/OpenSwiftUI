@@ -97,9 +97,9 @@ open class CoreGlue: NSObject {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-//    open func updateData(_ data: inout _ViewDebug.Data, value: TreeValue) {
-//        _openSwiftUIBaseClassAbstractMethod()
-//    }
+    open func updateData(_ data: inout _ViewDebug.Data, value: OAGTreeValue) {
+        // Base class does nothing; subclass overrides to handle displayList
+    }
 
     open func makeForEachView<D, ID, C>(view: _GraphValue<ForEach<D, ID, C>>, inputs: _ViewInputs) -> _ViewOutputs? where D: RandomAccessCollection, ID: Hashable, C: View {
         _openSwiftUIBaseClassAbstractMethod()

@@ -569,7 +569,9 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         didSet {}
     }
 
-    public final func _viewDebugData() -> [_ViewDebug.Data] { [] }
+    public final func _viewDebugData() -> [_ViewDebug.Data] {
+        viewGraph.viewDebugData()
+    }
 
     private func checkForReentrantLayout() -> Bool {
         if isPerformingLayout {

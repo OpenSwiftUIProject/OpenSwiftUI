@@ -66,7 +66,15 @@ final public class OpenSwiftUIGlue: CoreGlue {
         L.makeLayoutView(root: root, inputs: inputs, body: body)
     }
 
-    // TODO
+    override final public func updateData(_ data: inout _ViewDebug.Data, value: OAGTreeValue) {
+        // TODO: Implement displayList extraction when DisplayList attribute graph integration is complete
+        // In real SwiftUI, this reads the DisplayList value from the attribute graph:
+        //   let attribute = value.attribute
+        //   guard attribute != .nil else { return }
+        //   let oagValue = _graphGetValue(attribute, type: DisplayList.self)
+        //   let displayList = oagValue.value.assumingMemoryBound(to: DisplayList.self).pointee
+        //   data.data[.displayList] = displayList
+    }
 }
 
 @_spi(ForOpenSwiftUIOnly)

@@ -380,10 +380,8 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         base._layoutSizeThatFits(size)
     }
 
-    // FIXME
     final public func _viewDebugData() -> [_ViewDebug.Data] {
-        // TODO
-        []
+        viewGraph.viewDebugData()
     }
     
     @_spi(Private)
