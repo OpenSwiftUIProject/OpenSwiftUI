@@ -63,7 +63,7 @@
          </EnvironmentVariable>
          <EnvironmentVariable
             key = "OPENSWIFTUI_VIEW_DEBUG"
-            value = "15"
+            value = "4294967295"
             isEnabled = "YES">
          </EnvironmentVariable>
       </EnvironmentVariables>
