@@ -248,36 +248,11 @@ extension _ViewDebug {
         }
 
         // TODO: Phase 2 — .value property (requires VWT-based dynamic type boxing)
-
-        // Process tree values
-        element.forEachValue { treeValue in
-            guard let keyPtr = treeValue.key else { return }
-            let attr = treeValue.attribute
-            guard attr != .nil, attr.hasValue else { return }
-
-            if properties.contains(.environment) && strcmp(keyPtr, "environment") == 0 {
-                let val = _graphGetValue(attr, type: EnvironmentValues.self)
-                debugData.data[.environment] = val.value.assumingMemoryBound(to: EnvironmentValues.self).pointee
-            } else if properties.contains(.position) && strcmp(keyPtr, "position") == 0 {
-                let val = _graphGetValue(attr, type: CGPoint.self)
-                debugData.data[.position] = val.value.assumingMemoryBound(to: CGPoint.self).pointee
-            } else if properties.contains(.size) && strcmp(keyPtr, "size") == 0 {
-                let val = _graphGetValue(attr, type: ViewSize.self)
-                debugData.data[.size] = val.value.assumingMemoryBound(to: ViewSize.self).pointee.value
-            } else if properties.contains(.phase) && strcmp(keyPtr, "phase") == 0 {
-                let val = _graphGetValue(attr, type: _GraphInputs.Phase.self)
-                debugData.data[.phase] = val.value.assumingMemoryBound(to: _GraphInputs.Phase.self).pointee
-            } else if properties.contains(.transform) && strcmp(keyPtr, "transform") == 0 {
-                let val = _graphGetValue(attr, type: ViewTransform.self)
-                debugData.data[.transform] = val.value.assumingMemoryBound(to: ViewTransform.self).pointee
-            } else if properties.contains(.layoutComputer) && strcmp(keyPtr, "layoutComputer") == 0 {
-                let val = _graphGetValue(attr, type: LayoutComputer.self)
-                debugData.data[.layoutComputer] = val.value.assumingMemoryBound(to: LayoutComputer.self).pointee
-            }
-            else if properties.contains(.displayList) && strcmp(keyPtr, "displayList") == 0 {
-                CoreGlue.shared.updateData(&debugData, value: treeValue)
-            }
-        }
+        // TODO: Phase 2 — Read attribute values from graph (environment, position, size, etc.)
+        // Currently skipped because tree value attributes may reference invalidated
+        // attribute IDs, causing AGGraphHasValue/AGGraphGetValue to precondition-fail.
+        // The .type property (set above from element metadata) is sufficient for
+        // Xcode's Debug View Hierarchy to display the view tree.
 
         // Recurse children
         element.forEachChild { child in
