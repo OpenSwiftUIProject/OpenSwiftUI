@@ -262,8 +262,8 @@ extension _ViewDebug {
                 let val = _graphGetValue(attr, type: CGPoint.self)
                 debugData.data[.position] = val.value.assumingMemoryBound(to: CGPoint.self).pointee
             } else if properties.contains(.size) && strcmp(keyPtr, "size") == 0 {
-                let val = _graphGetValue(attr, type: CGSize.self)
-                debugData.data[.size] = val.value.assumingMemoryBound(to: CGSize.self).pointee
+                let val = _graphGetValue(attr, type: ViewSize.self)
+                debugData.data[.size] = val.value.assumingMemoryBound(to: ViewSize.self).pointee.value
             } else if properties.contains(.phase) && strcmp(keyPtr, "phase") == 0 {
                 let val = _graphGetValue(attr, type: _GraphInputs.Phase.self)
                 debugData.data[.phase] = val.value.assumingMemoryBound(to: _GraphInputs.Phase.self).pointee
