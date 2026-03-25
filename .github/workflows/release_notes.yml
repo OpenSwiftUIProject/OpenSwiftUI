@@ -1,0 +1,126 @@
+name: Release Notes
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag-name:
+        description: 'Tag name (e.g. 0.17.1)'
+        required: true
+  workflow_call:
+    inputs:
+      tag-name:
+        description: 'Tag name for the release'
+        required: true
+        type: string
+    secrets:
+      CLAUDE_CODE_OAUTH_TOKEN:
+        required: false
+
+permissions:
+  contents: write
+
+jobs:
+  release-notes:
+    name: Generate Release Notes
+    runs-on: ubuntu-latest
+    env:
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Generate changelog from GitHub
+        env:
+          TAG_NAME: ${{ inputs.tag-name }}
+        run: |
+          gh api repos/${{ github.repository }}/releases/generate-notes \
+            -f tag_name="${TAG_NAME}" \
+            --jq '.body' > /tmp/changelog.md
+          echo "Generated changelog:"
+          cat /tmp/changelog.md
+
+      - name: Generate highlights with Claude Code
+        env:
+          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          TAG_NAME: ${{ inputs.tag-name }}
+        run: |
+          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
+            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN not set, using placeholder highlights"
+            printf '## Highlights\n\n_To be written._\n' > /tmp/highlights.md
+            exit 0
+          fi
+
+          {
+            cat <<'STATIC_EOF'
+          You are generating the Highlights section for an OpenSwiftUI release.
+          OpenSwiftUI is an open source reimplementation of Apple's SwiftUI framework.
+
+          Below is the auto-generated changelog:
+
+          STATIC_EOF
+            cat /tmp/changelog.md
+            cat <<'STATIC_EOF'
+
+          Write ONLY a ## Highlights section with concise bullet points of key user-facing changes.
+          Rules:
+          - Skip [NFC], [CI], refactoring, docs, and internal-only changes
+          - Each bullet starts with a verb: Add, Fix, Improve, Update
+          - Keep 1-5 bullets, be concise
+          - Output ONLY the ## Highlights header followed by bullet points, nothing else
+
+          Examples from past releases:
+
+          ## Highlights
+
+          - Add Xcode Preview support
+          - Add initial Text support
+          - Add OpenSwiftUI xcframework release support
+
+          ## Highlights
+
+          - Add NS/UIApplicationDelegateAdapter support
+          - Add Compute backend support as an alternative to AttributeGraph
+          - Add NamedImage support for bundle image and system image
+          STATIC_EOF
+          } > /tmp/prompt.txt
+
+          npx -y @anthropic-ai/claude-code@latest \
+            --model claude-opus-4-6 \
+            -p "$(cat /tmp/prompt.txt)" \
+            --output-format text > /tmp/highlights.md
+
+          echo "Generated highlights:"
+          cat /tmp/highlights.md
+
+      - name: Create release
+        env:
+          TAG_NAME: ${{ inputs.tag-name }}
+        run: |
+          {
+            cat /tmp/highlights.md
+            echo ""
+            cat /tmp/changelog.md
+            cat <<INTEGRATION_EOF
+
+          ## Binary Integration
+
+          \`\`\`swift
+          .package(url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI-spm.git", from: "${TAG_NAME}")
+          \`\`\`
+
+          See [INTEGRATION.md](https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main/INTEGRATION.md#binary-integration-recommended) for more details.
+          INTEGRATION_EOF
+          } > /tmp/release_notes.md
+
+          echo "=== Full release notes ==="
+          cat /tmp/release_notes.md
+          echo "=========================="
+
+          if gh release view "${TAG_NAME}" > /dev/null 2>&1; then
+            gh release edit "${TAG_NAME}" --notes-file /tmp/release_notes.md
+          else
+            gh release create "${TAG_NAME}" \
+              --title "${TAG_NAME}" \
+              --notes-file /tmp/release_notes.md
+          fi

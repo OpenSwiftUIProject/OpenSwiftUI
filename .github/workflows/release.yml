@@ -9,8 +9,15 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build and Release XCFrameworks
+  release-notes:
+    uses: ./.github/workflows/release_notes.yml
+    with:
+      tag-name: ${{ github.ref_name }}
+    secrets: inherit
+
+  build-xcframeworks:
+    name: Build and Upload XCFrameworks
+    needs: release-notes
     runs-on: macos-15
     outputs:
       checksum_OpenSwiftUI: ${{ steps.build.outputs.checksum_OpenSwiftUI }}
@@ -33,20 +40,12 @@ jobs:
           tag-name: ${{ github.ref_name }}
           signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
           signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          body: |
-            ```swift
-            ${{ steps.build.outputs.body }}
-            ```
-          allowUpdates: true
-          artifacts: "build/*.xcframework.zip"
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload assets to release
+        run: gh release upload "${{ github.ref_name }}" build/*.xcframework.zip --clobber
 
   update-binary-repo:
     name: Update OpenSwiftUI-spm
-    needs: release
+    needs: build-xcframeworks
     runs-on: ubuntu-latest
     if: ${{ secrets.BINARY_REPO_PAT != '' }}
     steps:
@@ -59,13 +58,13 @@ jobs:
       - name: Generate Package.swift from template
         env:
           VERSION: ${{ github.ref_name }}
-          CHECKSUM_OpenSwiftUI: ${{ needs.release.outputs.checksum_OpenSwiftUI }}
-          CHECKSUM_OpenSwiftUICore: ${{ needs.release.outputs.checksum_OpenSwiftUICore }}
-          CHECKSUM_OpenAttributeGraphShims: ${{ needs.release.outputs.checksum_OpenAttributeGraphShims }}
-          CHECKSUM_OpenCoreGraphicsShims: ${{ needs.release.outputs.checksum_OpenCoreGraphicsShims }}
-          CHECKSUM_OpenObservation: ${{ needs.release.outputs.checksum_OpenObservation }}
-          CHECKSUM_OpenQuartzCoreShims: ${{ needs.release.outputs.checksum_OpenQuartzCoreShims }}
-          CHECKSUM_OpenRenderBoxShims: ${{ needs.release.outputs.checksum_OpenRenderBoxShims }}
+          CHECKSUM_OpenSwiftUI: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUI }}
+          CHECKSUM_OpenSwiftUICore: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUICore }}
+          CHECKSUM_OpenAttributeGraphShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenAttributeGraphShims }}
+          CHECKSUM_OpenCoreGraphicsShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenCoreGraphicsShims }}
+          CHECKSUM_OpenObservation: ${{ needs.build-xcframeworks.outputs.checksum_OpenObservation }}
+          CHECKSUM_OpenQuartzCoreShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenQuartzCoreShims }}
+          CHECKSUM_OpenRenderBoxShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenRenderBoxShims }}
         run: |
           cd OpenSwiftUI-spm
           sed \
