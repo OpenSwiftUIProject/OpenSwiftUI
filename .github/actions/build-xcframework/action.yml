@@ -23,6 +23,27 @@ outputs:
   body:
     description: 'Release body with .binaryTarget entries'
     value: ${{ steps.checksums.outputs.body }}
+  checksum_OpenSwiftUI:
+    description: 'Checksum for OpenSwiftUI.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenSwiftUI }}
+  checksum_OpenSwiftUICore:
+    description: 'Checksum for OpenSwiftUICore.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenSwiftUICore }}
+  checksum_OpenAttributeGraphShims:
+    description: 'Checksum for OpenAttributeGraphShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenAttributeGraphShims }}
+  checksum_OpenCoreGraphicsShims:
+    description: 'Checksum for OpenCoreGraphicsShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenCoreGraphicsShims }}
+  checksum_OpenObservation:
+    description: 'Checksum for OpenObservation.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenObservation }}
+  checksum_OpenQuartzCoreShims:
+    description: 'Checksum for OpenQuartzCoreShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenQuartzCoreShims }}
+  checksum_OpenRenderBoxShims:
+    description: 'Checksum for OpenRenderBoxShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenRenderBoxShims }}
 
 runs:
   using: 'composite'
@@ -75,6 +96,7 @@ runs:
           if [ -n "$TAG_NAME" ]; then
             zip -ry "$fw.xcframework.zip" "$fw.xcframework"
             CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
+            echo "checksum_${fw}=${CHECKSUM}" >> $GITHUB_OUTPUT
             ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "$TAG_NAME" "$fw" "$CHECKSUM")
           else
             ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    path: "%s.xcframework"\n),' "$fw" "$fw")
