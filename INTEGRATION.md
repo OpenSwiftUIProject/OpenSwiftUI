@@ -15,9 +15,46 @@ This guide walks you through the steps to integrate OpenSwiftUI into your projec
 >
 > These private frameworks are ONLY for research and educational purposes.
 
-## Integration Steps for Swift Package Manager (SPM)
+## Binary Integration (Recommended)
 
-### Step 1: Add OpenSwiftUI Package Dependency
+The easiest way to use OpenSwiftUI is via the precompiled binary package [OpenSwiftUI-spm](https://github.com/OpenSwiftUIProject/OpenSwiftUI-spm). No need to compile from source or configure private frameworks.
+
+### Via Xcode
+
+1. In Xcode, select **File > Add Package Dependencies...**
+2. Enter the repository URL: `https://github.com/OpenSwiftUIProject/OpenSwiftUI-spm`
+3. Select the version you want to use
+4. Add `OpenSwiftUI` to your target
+
+### Via Package.swift
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI-spm", from: "0.17.1"),
+]
+```
+
+Then add `OpenSwiftUI` to your target's dependencies:
+
+```swift
+.target(
+    name: "YourTarget",
+    dependencies: [
+        .product(name: "OpenSwiftUI", package: "OpenSwiftUI-spm"),
+    ]
+),
+```
+
+> [!NOTE]
+> Binary integration does not support source-level debugging. If you need to debug OpenSwiftUI internals, use the source integration below.
+
+---
+
+## Source Integration (Advanced)
+
+Use source integration if you need to debug OpenSwiftUI internals or contribute to the project.
+
+### SPM Integration
 
 #### Using Branch or Revision (Recommended)
 
@@ -45,7 +82,7 @@ dependencies: [
 
 You can find the revision hash by checking the commit you want to use on GitHub.
 
-## Integration Steps for Xcode Project
+### Xcode Project Integration
 
 ### Step 1: Add OpenSwiftUI Package Dependency
 
@@ -130,8 +167,7 @@ OpenSwiftUI has **full debug support** for development and troubleshooting. You 
 
 ### Xcode Previews
 
-> [!NOTE]
-> Xcode Preview support is currently under development and will be available in a future release.
+See [Docs/Preview.md](Docs/Preview.md) for Xcode Preview support details.
 
 ## Platform-Specific Notes
 
