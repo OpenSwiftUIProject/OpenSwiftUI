@@ -9,8 +9,15 @@ permissions:
   contents: write
 
 jobs:
-  release:
-    name: Build and Release XCFrameworks
+  release-notes:
+    uses: ./.github/workflows/release_notes.yml
+    with:
+      tag-name: ${{ github.ref_name }}
+    secrets: inherit
+
+  build-xcframeworks:
+    name: Build and Upload XCFrameworks
+    needs: release-notes
     runs-on: macos-15
     outputs:
       checksum_OpenSwiftUI: ${{ steps.build.outputs.checksum_OpenSwiftUI }}
@@ -33,41 +40,35 @@ jobs:
           tag-name: ${{ github.ref_name }}
           signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
           signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
-      - name: Create Release
-        uses: ncipollo/release-action@v1
-        with:
-          body: |
-            ```swift
-            ${{ steps.build.outputs.body }}
-            ```
-          allowUpdates: true
-          artifacts: "build/*.xcframework.zip"
-          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Upload assets to release
+        run: gh release upload "${{ github.ref_name }}" build/*.xcframework.zip --clobber
 
   update-binary-repo:
     name: Update OpenSwiftUI-spm
-    needs: release
+    needs: build-xcframeworks
     runs-on: ubuntu-latest
-    if: ${{ secrets.BINARY_REPO_PAT != '' }}
+    env:
+      BINARY_REPO_PAT: ${{ secrets.BINARY_REPO_PAT }}
     steps:
-      - name: Clone binary repo
+      - name: Update binary repo
+        env:
+          VERSION: ${{ github.ref_name }}
+          CHECKSUM_OpenSwiftUI: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUI }}
+          CHECKSUM_OpenSwiftUICore: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUICore }}
+          CHECKSUM_OpenAttributeGraphShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenAttributeGraphShims }}
+          CHECKSUM_OpenCoreGraphicsShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenCoreGraphicsShims }}
+          CHECKSUM_OpenObservation: ${{ needs.build-xcframeworks.outputs.checksum_OpenObservation }}
+          CHECKSUM_OpenQuartzCoreShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenQuartzCoreShims }}
+          CHECKSUM_OpenRenderBoxShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenRenderBoxShims }}
         run: |
-          git clone https://x-access-token:${{ secrets.BINARY_REPO_PAT }}@github.com/OpenSwiftUIProject/OpenSwiftUI-spm.git
+          if [ -z "$BINARY_REPO_PAT" ]; then
+            echo "::notice::BINARY_REPO_PAT not set, skipping binary repo update"
+            exit 0
+          fi
+          git clone https://x-access-token:${BINARY_REPO_PAT}@github.com/OpenSwiftUIProject/OpenSwiftUI-spm.git
           cd OpenSwiftUI-spm
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-      - name: Generate Package.swift from template
-        env:
-          VERSION: ${{ github.ref_name }}
-          CHECKSUM_OpenSwiftUI: ${{ needs.release.outputs.checksum_OpenSwiftUI }}
-          CHECKSUM_OpenSwiftUICore: ${{ needs.release.outputs.checksum_OpenSwiftUICore }}
-          CHECKSUM_OpenAttributeGraphShims: ${{ needs.release.outputs.checksum_OpenAttributeGraphShims }}
-          CHECKSUM_OpenCoreGraphicsShims: ${{ needs.release.outputs.checksum_OpenCoreGraphicsShims }}
-          CHECKSUM_OpenObservation: ${{ needs.release.outputs.checksum_OpenObservation }}
-          CHECKSUM_OpenQuartzCoreShims: ${{ needs.release.outputs.checksum_OpenQuartzCoreShims }}
-          CHECKSUM_OpenRenderBoxShims: ${{ needs.release.outputs.checksum_OpenRenderBoxShims }}
-        run: |
-          cd OpenSwiftUI-spm
           sed \
             -e "s|{{VERSION}}|${VERSION}|g" \
             -e "s|{{CHECKSUM_OpenSwiftUI}}|${CHECKSUM_OpenSwiftUI}|g" \
@@ -80,11 +81,6 @@ jobs:
             Package.swift.template > Package.swift
           echo "Generated Package.swift:"
           head -50 Package.swift
-      - name: Commit, push, and tag
-        env:
-          VERSION: ${{ github.ref_name }}
-        run: |
-          cd OpenSwiftUI-spm
           git add Package.swift
           git diff --cached --quiet && echo "No changes" && exit 0
           git commit -m "Update to ${VERSION} with code-signed XCFrameworks"
