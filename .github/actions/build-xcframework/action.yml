@@ -49,7 +49,7 @@ runs:
   using: 'composite'
   steps:
     - name: Setup Xcode
-      uses: ./.github/actions/setup-xcode
+      uses: OpenSwiftUIProject/setup-xcode@v2
       with:
         xcode-version: ${{ inputs.xcode-version }}
     - name: Set up build environment
