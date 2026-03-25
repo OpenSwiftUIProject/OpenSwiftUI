@@ -34,7 +34,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
-        uses: ./.github/actions/setup-xcode
+        uses: OpenSwiftUIProject/setup-xcode@v2
         with:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Set up build environment
@@ -73,7 +73,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Setup Xcode
-        uses: ./.github/actions/setup-xcode
+        uses: OpenSwiftUIProject/setup-xcode@v2
         with:
           xcode-version: ${{ matrix.xcode-version }}
       - name: Set up build environment
