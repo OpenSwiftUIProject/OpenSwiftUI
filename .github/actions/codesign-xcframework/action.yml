@@ -1,0 +1,104 @@
+name: 'Code Sign XCFramework'
+description: 'Import a signing certificate and code sign xcframeworks'
+
+inputs:
+  signing-certificate-base64:
+    description: 'Base64-encoded .p12 signing certificate'
+    required: true
+  signing-certificate-password:
+    description: 'Password for the .p12 signing certificate'
+    required: true
+  signing-identity:
+    description: 'Common Name of the signing certificate'
+    required: false
+    default: 'OpenSwiftUI'
+  xcframework-paths:
+    description: 'Space-separated paths to xcframeworks to sign'
+    required: true
+
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up signing keychain
+      shell: bash
+      env:
+        CERTIFICATE_BASE64: ${{ inputs.signing-certificate-base64 }}
+        CERTIFICATE_PASSWORD: ${{ inputs.signing-certificate-password }}
+        SIGNING_IDENTITY: ${{ inputs.signing-identity }}
+      run: |
+        KEYCHAIN_PASSWORD="ci_signing_temp"
+        KEYCHAIN_NAME="ci_signing.keychain-db"
+        KEYCHAIN_PATH="$HOME/Library/Keychains/$KEYCHAIN_NAME"
+
+        # Save original keychain search list
+        ORIGINAL_KEYCHAINS=$(security list-keychains -d user | sed 's/^ *"//;s/" *$//' | tr '\n' ' ')
+
+        # Clean up any existing CI keychain
+        security delete-keychain "$KEYCHAIN_PATH" 2>/dev/null || true
+        rm -f "$KEYCHAIN_PATH" 2>/dev/null || true
+
+        # Create and unlock keychain
+        security create-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+        security unlock-keychain -p "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH"
+
+        # NOTE: Do NOT call security set-keychain-settings here.
+        # It corrupts keychain state in non-interactive CI sessions.
+
+        # Add to search list (prepend CI keychain, keep existing)
+        security list-keychains -d user -s "$KEYCHAIN_PATH" $ORIGINAL_KEYCHAINS
+
+        # Decode and import certificate
+        # Use -A to allow all applications access without prompting.
+        # Per-app ACL entries (-T) cause "User interaction is not allowed" prompts.
+        echo "$CERTIFICATE_BASE64" | base64 -d > /tmp/signing.p12
+        security import /tmp/signing.p12 -k "$KEYCHAIN_PATH" -P "$CERTIFICATE_PASSWORD" -A
+        rm -f /tmp/signing.p12
+
+        # Set partition list to allow codesign access without prompting
+        security set-key-partition-list -S apple-tool:,apple:,codesign: -s -k "$KEYCHAIN_PASSWORD" "$KEYCHAIN_PATH" 2>/dev/null || true
+
+        # Try to trust certificate for code signing (works on self-hosted runners)
+        security find-certificate -c "$SIGNING_IDENTITY" -p "$KEYCHAIN_PATH" > /tmp/signing-cert.pem
+        sudo security add-trusted-cert -d -r trustRoot -p codeSign /tmp/signing-cert.pem 2>/dev/null || true
+        rm -f /tmp/signing-cert.pem
+
+        # Debug: inspect keychain contents
+        echo "=== Certificates in keychain ==="
+        security find-certificate -a -c "$SIGNING_IDENTITY" -Z "$KEYCHAIN_PATH" 2>&1 | head -5 || true
+        echo "=== All identities (no policy filter) ==="
+        security find-identity "$KEYCHAIN_PATH" || true
+        echo "=== All identities (codesigning policy) ==="
+        security find-identity -p codesigning "$KEYCHAIN_PATH" || true
+        echo "=== Valid codesigning identities ==="
+        security find-identity -v -p codesigning "$KEYCHAIN_PATH" || true
+
+    - name: Code sign xcframeworks
+      shell: bash
+      env:
+        SIGNING_IDENTITY: ${{ inputs.signing-identity }}
+        XCFRAMEWORK_PATHS: ${{ inputs.xcframework-paths }}
+      run: |
+        KEYCHAIN_PATH="$HOME/Library/Keychains/ci_signing.keychain-db"
+        # Try: trusted codesigning → all codesigning → any identity (no policy)
+        # Note: || true is needed because grep returns 1 on no match, which kills -e -o pipefail
+        SIGNING_HASH=$(security find-identity -v -p codesigning "$KEYCHAIN_PATH" 2>/dev/null | grep "$SIGNING_IDENTITY" | head -1 | awk '{print $2}' || true)
+        if [ -z "$SIGNING_HASH" ]; then
+            SIGNING_HASH=$(security find-identity -p codesigning "$KEYCHAIN_PATH" 2>/dev/null | grep "$SIGNING_IDENTITY" | head -1 | awk '{print $2}' || true)
+        fi
+        if [ -z "$SIGNING_HASH" ]; then
+            SIGNING_HASH=$(security find-identity "$KEYCHAIN_PATH" 2>/dev/null | grep "$SIGNING_IDENTITY" | head -1 | awk '{print $2}' || true)
+        fi
+        if [ -z "$SIGNING_HASH" ]; then
+            echo "::error::Signing identity '$SIGNING_IDENTITY' not found"
+            exit 1
+        fi
+        echo "Signing identity: $SIGNING_HASH ($SIGNING_IDENTITY)"
+        for fw_path in $XCFRAMEWORK_PATHS; do
+            if [ -d "$fw_path" ]; then
+                echo "Signing $fw_path..."
+                codesign --force --timestamp -v --sign "$SIGNING_HASH" --keychain "$KEYCHAIN_PATH" "$fw_path"
+            else
+                echo "::warning::$fw_path not found, skipping"
+            fi
+        done
+        echo "Code signing completed."

@@ -23,6 +23,8 @@ jobs:
         uses: ./.github/actions/build-xcframework
         with:
           tag-name: ${{ github.ref_name }}
+          signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
+          signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
       - name: Create Release
         uses: ncipollo/release-action@v1
         with:
