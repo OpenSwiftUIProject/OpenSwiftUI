@@ -10,6 +10,14 @@ inputs:
     description: 'Tag name for release URLs (empty for manual builds)'
     required: false
     default: ''
+  signing-certificate-base64:
+    description: 'Base64-encoded .p12 signing certificate'
+    required: false
+    default: ''
+  signing-certificate-password:
+    description: 'Password for the .p12 signing certificate'
+    required: false
+    default: ''
 
 outputs:
   body:
@@ -29,6 +37,20 @@ runs:
     - name: Build XCFrameworks
       run: Scripts/build_xcframework.sh OpenSwiftUI
       shell: bash
+    - name: Code sign XCFrameworks
+      if: ${{ inputs.signing-certificate-base64 != '' }}
+      uses: ./.github/actions/codesign-xcframework
+      with:
+        signing-certificate-base64: ${{ inputs.signing-certificate-base64 }}
+        signing-certificate-password: ${{ inputs.signing-certificate-password }}
+        xcframework-paths: >-
+          build/OpenSwiftUI.xcframework
+          build/OpenSwiftUICore.xcframework
+          build/OpenAttributeGraphShims.xcframework
+          build/OpenCoreGraphicsShims.xcframework
+          build/OpenObservation.xcframework
+          build/OpenQuartzCoreShims.xcframework
+          build/OpenRenderBoxShims.xcframework
     - name: Compute Checksums and Generate Summary
       id: checksums
       shell: bash
