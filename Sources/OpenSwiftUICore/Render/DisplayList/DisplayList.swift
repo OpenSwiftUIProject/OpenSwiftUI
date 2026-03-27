@@ -218,9 +218,10 @@ extension DisplayList {
         case rotation3D(_Rotation3DEffect.Data)
     }
     
-//    package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
-//    package typealias AnyEffectAnimator = _DisplayList_AnyEffectAnimator
-    
+    package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
+
+    package typealias AnyEffectAnimator = _DisplayList_AnyEffectAnimator
+
     package struct ArchiveIDs {
         package var uuid: UUID
         package var stableIDs: StableIdentityMap
@@ -552,6 +553,8 @@ extension DisplayList {
 package struct AccessibilityNodeAttachment {}
 
 package protocol _DisplayList_AnyEffectAnimation {}
+
+package protocol _DisplayList_AnyEffectAnimator: AnyObject {}
 
 extension DisplayList.Item {
     func addDrawingGroup(contentSeed: DisplayList.Seed) {

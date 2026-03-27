@@ -99,3 +99,12 @@ extension DisplayList.ViewUpdater {
         var isInvalid: Bool
     }
 }
+
+// MARK: - DisplayList.ViewUpdater.Model
+
+extension DisplayList.ViewUpdater {
+    struct Model {
+        struct State {
+        }
+    }
+}
