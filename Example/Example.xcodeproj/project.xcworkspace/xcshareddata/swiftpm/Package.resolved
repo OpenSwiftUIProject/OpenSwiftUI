@@ -1,5 +1,5 @@
 {
-  "originHash" : "f0af95bb2c5004a0c959c13b9912f962e247bb17fa1e7b4a9a3fb11002b4f7ec",
+  "originHash" : "7358597264a8ef6ecc2ea0f5266559d149bea46b2d140673e568c55a857b359b",
   "pins" : [
     {
       "identity" : "equatable",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "8d63c405f565fb287042e0b8dc3bf0c4b8b2b56f"
+        "revision" : "a36ba82bf9bca6489a8d0a2dda910608d5f049cf"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
       "state" : {
         "branch" : "main",
-        "revision" : "814dbe008056db6007bfc3d27fe585837f30e9ed"
+        "revision" : "1642d3c7788a037da718fc12674ba79017878372"
       }
     },
     {

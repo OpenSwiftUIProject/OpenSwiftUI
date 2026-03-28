@@ -316,18 +316,10 @@ extension AnyTextStorage: @unchecked Sendable {}
 extension AnyTextStorage: CustomDebugStringConvertible {
     @usableFromInline
     package var debugDescription: String {
-        var description = "<\(Self.self): \(self)>"
-        var resolved = Text.Resolved()
-        #if os(iOS) || os(visionOS)
-        resolved.idiom = .init(.phone)
-        #elseif os(macOS)
-        resolved.idiom = isCatalyst() ? .init(.pad) : .init(.mac)
-        #endif
-        resolve(into: &resolved, in: .init(), with: [])
-        if let attributedString = resolved.attributedString {
-            description.append(#": "\#(attributedString.string)""#)
-        }
-        return description
+        // Simple description that avoids calling Text.Resolved() which depends on
+        // Text.Style.init — an incomplete internal type that would crash.
+        // Mirror-based reflection still provides detailed field inspection.
+        return "<\(type(of: self))>"
     }
 }
 

@@ -243,16 +243,54 @@ extension _ViewDebug {
 
         // .type property
         let anyType = unsafeBitCast(typePointer, to: Any.Type.self)
-        if properties.contains(.type) {
-            debugData.data[.type] = anyType
+        debugData.data[.type] = anyType
+
+        // .value property — uses _openExistential to resolve the runtime type
+        // and call _graphGetValue with the correct generic type parameter,
+        // matching real SwiftUI's `project<A>(type:)` pattern.
+        if properties.contains(.value) {
+            func project<A>(type: A.Type) {
+                let oagValue = _graphGetValue(attribute, type: A.self)
+                debugData.data[.value] = oagValue.value
+                    .assumingMemoryBound(to: A.self).pointee
+            }
+            _openExistential(anyType, do: project)
         }
 
-        // TODO: Phase 2 — .value property (requires VWT-based dynamic type boxing)
-        // TODO: Phase 2 — Read attribute values from graph (environment, position, size, etc.)
-        // Currently skipped because tree value attributes may reference invalidated
-        // attribute IDs, causing AGGraphHasValue/AGGraphGetValue to precondition-fail.
-        // The .type property (set above from element metadata) is sufficient for
-        // Xcode's Debug View Hierarchy to display the view tree.
+        // Process tree values (strcmp for C string comparison to avoid allocation)
+        element.forEachValue { treeValue in
+            guard let keyPtr = treeValue.key else { return }
+            let attr = treeValue.attribute
+
+            if properties.contains(.position) && strcmp(keyPtr, "position") == 0 {
+                let oagValue = _graphGetValue(attr, type: CGPoint.self)
+                debugData.data[.position] = oagValue.value
+                    .assumingMemoryBound(to: CGPoint.self).pointee
+            } else if properties.contains(.size) && strcmp(keyPtr, "size") == 0 {
+                // Attribute stores ViewSize; read first sizeof(CGSize) bytes as CGSize
+                let oagValue = _graphGetValue(attr, type: ViewSize.self)
+                debugData.data[.size] = oagValue.value
+                    .assumingMemoryBound(to: CGSize.self).pointee
+            } else if properties.contains(.transform) && strcmp(keyPtr, "transform") == 0 {
+                let oagValue = _graphGetValue(attr, type: ViewTransform.self)
+                debugData.data[.transform] = oagValue.value
+                    .assumingMemoryBound(to: ViewTransform.self).pointee
+            } else if properties.contains(.phase) && strcmp(keyPtr, "phase") == 0 {
+                let oagValue = _graphGetValue(attr, type: _GraphInputs.Phase.self)
+                debugData.data[.phase] = oagValue.value
+                    .assumingMemoryBound(to: _GraphInputs.Phase.self).pointee
+            } else if properties.contains(.environment) && strcmp(keyPtr, "environment") == 0 {
+                let oagValue = _graphGetValue(attr, type: EnvironmentValues.self)
+                debugData.data[.environment] = oagValue.value
+                    .assumingMemoryBound(to: EnvironmentValues.self).pointee
+            } else if properties.contains(.layoutComputer) && strcmp(keyPtr, "layoutComputer") == 0 {
+                let oagValue = _graphGetValue(attr, type: LayoutComputer.self)
+                debugData.data[.layoutComputer] = oagValue.value
+                    .assumingMemoryBound(to: LayoutComputer.self).pointee
+            } else if properties.contains(.displayList) && strcmp(keyPtr, "displayList") == 0 {
+                CoreGlue.shared.updateData(&debugData, value: treeValue)
+            }
+        }
 
         // Recurse children
         element.forEachChild { child in
@@ -296,6 +334,10 @@ extension _ViewDebug.Data: Encodable {
             let attribute: SerializedAttribute? = switch key {
                 case .type: SerializedAttribute(type: value as? Any.Type ?? type(of: value))
                 case .value: serializedAttribute(for: value, label: nil, reflectionDepth: 6)
+                // Complex internal types — use depth 0 to serialize type info only,
+                // avoiding deep reflection into incomplete implementations.
+                case .environment, .layoutComputer:
+                    serializedAttribute(for: value, label: nil, reflectionDepth: 0)
                 default: serializedAttribute(for: value, label: nil, reflectionDepth: 4)
             }
             guard let attribute else { return nil }
