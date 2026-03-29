@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: TBA init
 //  ID: A9949015C771FF99F7528BB7239FD006 (SwiftUICore)
 
 import Foundation
@@ -13,7 +13,7 @@ import QuartzCore_Private
 
 extension DisplayList.ViewUpdater {
 
-    // MARK: - ViewCache [WIP]
+    // MARK: - ViewCache
 
     struct ViewCache {
 
@@ -92,20 +92,19 @@ extension DisplayList.ViewUpdater {
             self.currentList = DisplayList()
         }
 
-        // TBA
         mutating func clearAsyncValues() {
-            for (layerID, values) in asyncValues {
+            for (layerID, asyncValueArray) in asyncValues {
                 // Recover CALayer from ObjectIdentifier — the layer must still be alive
                 // since ViewCache holds strong refs to views containing these layers.
                 let layer = unsafeBitCast(layerID, to: CALayer.self)
-                for animationKey in values.animations {
-                    layer.removeAnimation(forKey: animationKey)
+                for animation in asyncValueArray.animations {
+                    layer.removeAnimation(forKey: animation)
                 }
-                for modifier in values.modifiers.values {
+                for modifier in asyncValueArray.modifiers.values {
                     layer.remove(modifier)
                 }
             }
-            asyncValues.removeAll()
+            asyncValues = [:]
             asyncModifierGroup = nil
         }
 
