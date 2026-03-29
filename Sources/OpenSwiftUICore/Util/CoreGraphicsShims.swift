@@ -3,6 +3,7 @@
 //  OpenSwiftUICore
 
 #if !canImport(CoreGraphics)
+public import Foundation
 
 // MARK: - CAPresentationModifierGroup
 

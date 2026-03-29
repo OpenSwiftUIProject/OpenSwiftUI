@@ -220,7 +220,7 @@ extension DisplayList {
             guard let nextUpdate else {
                 return nextUpdate
             }
-            let interval = max(min(nextTime, result) - time, configuration.minFrameInterval)
+            let interval = max(min(nextTime, nextUpdate) - time, configuration.minFrameInterval)
             return time + interval
             #endif
         }

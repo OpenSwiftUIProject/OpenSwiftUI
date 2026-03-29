@@ -82,6 +82,7 @@ extension DisplayList.ViewUpdater {
         }
 
         mutating func clearAsyncValues() {
+            #if canImport(QuartzCore)
             for (layerID, asyncValueArray) in asyncValues {
                 // Recover CALayer from ObjectIdentifier — the layer must still be alive
                 // since ViewCache holds strong refs to views containing these layers.
@@ -93,6 +94,7 @@ extension DisplayList.ViewUpdater {
                     layer.remove(modifier)
                 }
             }
+            #endif
             asyncValues = [:]
             asyncModifierGroup = nil
         }
@@ -221,6 +223,7 @@ extension DisplayList.ViewUpdater {
                     if case .shader = filter {
                         item.addDrawingGroup(contentSeed: .init(item.version))
                     }
+                    return .infinity
                 case let .animation(animation):
                     return prepareAnimation(
                         animation,
