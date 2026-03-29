@@ -123,59 +123,32 @@ extension DisplayList.ViewUpdater {
             cacheSeed &+= 1
         }
 
-        // TBA
         mutating func commitAsyncValues(targetTimestamp: Time?) {
             #if canImport(QuartzCore)
             guard !pendingAsyncValues.isEmpty || !pendingAsyncUpdates.isEmpty else {
                 return
             }
-
             // Activate background CA context if not on main thread
             if !Thread.isMainThread {
                 CATransaction.activateBackground(true)
             }
-
             // Suppress implicit animations during commit
             let savedDisableActions = CATransaction.disableActions()
             if !savedDisableActions {
                 CATransaction.setDisableActions(true)
             }
-
             // Track which modifier groups need flushing
             var modifiedGroups: Set<ObjectIdentifier> = []
-
             // Apply each pending async value to its layer
-            for (layerID, values) in pendingAsyncValues {
+            for (layerID, pendingAsyncValueArray) in pendingAsyncValues {
                 let layer = unsafeBitCast(layerID, to: CALayer.self)
-
-                // Ensure asyncValues entry exists for this layer
-                if asyncValues[layerID] == nil {
-                    asyncValues[layerID] = AsyncValues(
-                        animations: [],
-                        modifiers: [:]
-                    )
-                }
-
-                for pending in values {
-                    if !pending.usesPresentationModifier {
-                        // CABasicAnimation path
-                        let animation = CABasicAnimation(keyPath: pending.keyPath)
-                        animation.beginTime = -1
-                        animation.duration = 1
-                        animation.fillMode = .forwards
-                        animation.toValue = pending.value
-                        animation.isRemovedOnCompletion = false
-                        layer.add(animation, forKey: pending.keyPath)
-                        asyncValues[layerID]!.animations.insert(pending.keyPath)
-                    } else {
-                        // CAPresentationModifier path
-                        if let existing = asyncValues[layerID]!.modifiers[pending.keyPath] {
+                var asyncValueArray = asyncValues[layerID, default: .init(animations: [], modifiers: [:])]
+                for pending in pendingAsyncValueArray {
+                    if pending.usesPresentationModifier {
+                        if let existing = asyncValueArray.modifiers[pending.keyPath] {
                             existing.value = pending.value
-                            if let group = existing.group {
-                                modifiedGroups.insert(ObjectIdentifier(group))
-                            }
+                            modifiedGroups.insert(ObjectIdentifier(existing.group!))
                         } else {
-                            // Reuse existing group if it has capacity, otherwise create new
                             let group: CAPresentationModifierGroup
                             if let existingGroup = asyncModifierGroup,
                                existingGroup.count < existingGroup.capacity {
@@ -192,35 +165,41 @@ extension DisplayList.ViewUpdater {
                                 group: group
                             )
                             layer.add(modifier)
-                            asyncValues[layerID]!.modifiers[pending.keyPath] = modifier
-                            if let group = modifier.group {
-                                modifiedGroups.insert(ObjectIdentifier(group))
-                            }
+                            asyncValueArray.modifiers[pending.keyPath] = modifier
+                            modifiedGroups.insert(ObjectIdentifier(group))
                         }
+                    } else {
+                        let animation = CABasicAnimation(keyPath: pending.keyPath)
+                        animation.beginTime = -1
+                        animation.duration = 1
+                        animation.fillMode = .forwards
+                        animation.toValue = pending.value
+                        animation.isRemovedOnCompletion = false
+                        layer.add(animation, forKey: pending.keyPath)
+                        asyncValueArray.animations.insert(pending.keyPath)
                     }
                 }
+                asyncValues[layerID] = asyncValueArray
             }
-
             // Restore disableActions
             if !savedDisableActions {
                 CATransaction.setDisableActions(false)
             }
-
             // Flush modified presentation modifier groups
             for groupID in modifiedGroups {
                 let group = unsafeBitCast(groupID, to: CAPresentationModifierGroup.self)
                 group.flushWithTransaction()
             }
-            #endif
-
             // Execute all completion closures
             for update in pendingAsyncUpdates {
                 update()
             }
-
             // Reset state
             pendingAsyncValues = [:]
             pendingAsyncUpdates = []
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
 
         mutating func prepare(
