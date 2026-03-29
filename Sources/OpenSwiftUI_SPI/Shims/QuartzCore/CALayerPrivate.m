@@ -51,14 +51,6 @@
     func(self, selector, allows);
 }
 
-- (uint64_t)openSwiftUI_viewTestProperties {
-    NSNumber *properties = [self valueForKey:@"_viewTestProperties"];
-    return properties.integerValue;
-}
-
-- (void)setOpenSwiftUI_viewTestProperties:(uint64_t)properties {
-    [self setValue:[NSNumber numberWithUnsignedLongLong:properties] forKey:@"_viewTestProperties"];
-}
 @end
 
 void _CALayerSetSplatsContentsAlpha(CALayer * _Nonnull layer, BOOL splatAlpha) {

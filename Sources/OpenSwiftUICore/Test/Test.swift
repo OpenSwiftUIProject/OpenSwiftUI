@@ -163,6 +163,7 @@ package struct PlatformViewTestProperties: OptionSet {
 }
 
 #if canImport(QuartzCore)
+import OpenSwiftUI_SPI
 package import QuartzCore
 
 extension CALayer {

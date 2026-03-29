@@ -166,3 +166,15 @@ extension DisplayList.ViewUpdater {
         }
     }
 }
+
+#if canImport(QuartzCore)
+import OpenSwiftUI_SPI
+package import QuartzCore
+
+extension CALayer {
+    package var displayListID: DisplayList.Identity {
+        get { DisplayList.Identity(value: .init(openSwiftUI_displayListID)) }
+        set { openSwiftUI_displayListID = .init(newValue.value) }
+    }
+}
+#endif
