@@ -7,6 +7,7 @@
 //  ID: A9949015C771FF99F7528BB7239FD006 (SwiftUICore)
 
 import Foundation
+import OpenSwiftUI_SPI
 import OpenQuartzCoreShims
 import QuartzCore_Private
 
@@ -76,8 +77,7 @@ extension DisplayList.ViewUpdater {
 
         var currentList: DisplayList
 
-        // MARK: - Init
-
+        // TBA
         init(platform: Platform) {
             self.platform = platform
             self.map = [:]
@@ -92,16 +92,135 @@ extension DisplayList.ViewUpdater {
             self.currentList = DisplayList()
         }
 
+        // TBA
         mutating func clearAsyncValues() {
-            _openSwiftUIUnimplementedFailure()
+            for (layerID, values) in asyncValues {
+                // Recover CALayer from ObjectIdentifier — the layer must still be alive
+                // since ViewCache holds strong refs to views containing these layers.
+                let layer = unsafeBitCast(layerID, to: CALayer.self)
+                for animationKey in values.animations {
+                    layer.removeAnimation(forKey: animationKey)
+                }
+                for modifier in values.modifiers.values {
+                    layer.remove(modifier)
+                }
+            }
+            asyncValues.removeAll()
+            asyncModifierGroup = nil
         }
 
+        // TBA
         mutating func reclaim(time: Time) {
-            _openSwiftUIUnimplementedFailure()
+            for key in removed {
+                if let info = map.removeValue(forKey: key) {
+                    let pointer = unsafeBitCast(info.view, to: OpaquePointer.self)
+                    reverseMap.removeValue(forKey: pointer)
+                    // TODO: _CoreViewRemoveFromSuperview for managed view kinds
+                }
+            }
+            removed.removeAll()
+            animators = animators.filter { $0.value.deadline >= time }
+            cacheSeed &+= 1
         }
 
+        // TBA
         mutating func commitAsyncValues(targetTimestamp: Time?) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(QuartzCore)
+            guard !pendingAsyncValues.isEmpty || !pendingAsyncUpdates.isEmpty else {
+                return
+            }
+
+            // Activate background CA context if not on main thread
+            if !Thread.isMainThread {
+                CATransaction.activateBackground(true)
+            }
+
+            // Suppress implicit animations during commit
+            let savedDisableActions = CATransaction.disableActions()
+            if !savedDisableActions {
+                CATransaction.setDisableActions(true)
+            }
+
+            // Track which modifier groups need flushing
+            var modifiedGroups: Set<ObjectIdentifier> = []
+
+            // Apply each pending async value to its layer
+            for (layerID, values) in pendingAsyncValues {
+                let layer = unsafeBitCast(layerID, to: CALayer.self)
+
+                // Ensure asyncValues entry exists for this layer
+                if asyncValues[layerID] == nil {
+                    asyncValues[layerID] = AsyncValues(
+                        animations: [],
+                        modifiers: [:]
+                    )
+                }
+
+                for pending in values {
+                    if !pending.usesPresentationModifier {
+                        // CABasicAnimation path
+                        let animation = CABasicAnimation(keyPath: pending.keyPath)
+                        animation.beginTime = -1
+                        animation.duration = 1
+                        animation.fillMode = .forwards
+                        animation.toValue = pending.value
+                        animation.isRemovedOnCompletion = false
+                        layer.add(animation, forKey: pending.keyPath)
+                        asyncValues[layerID]!.animations.insert(pending.keyPath)
+                    } else {
+                        // CAPresentationModifier path
+                        if let existing = asyncValues[layerID]!.modifiers[pending.keyPath] {
+                            existing.value = pending.value
+                            if let group = existing.group {
+                                modifiedGroups.insert(ObjectIdentifier(group))
+                            }
+                        } else {
+                            // Reuse existing group if it has capacity, otherwise create new
+                            let group: CAPresentationModifierGroup
+                            if let existingGroup = asyncModifierGroup,
+                               existingGroup.count < existingGroup.capacity {
+                                group = existingGroup
+                            } else {
+                                group = CAPresentationModifierGroup(capacity: 100)
+                                group.updatesAsynchronously = false
+                                asyncModifierGroup = group
+                            }
+                            let modifier = CAPresentationModifier(
+                                keyPath: pending.keyPath,
+                                initialValue: pending.value,
+                                additive: false,
+                                group: group
+                            )
+                            layer.add(modifier)
+                            asyncValues[layerID]!.modifiers[pending.keyPath] = modifier
+                            if let group = modifier.group {
+                                modifiedGroups.insert(ObjectIdentifier(group))
+                            }
+                        }
+                    }
+                }
+            }
+
+            // Restore disableActions
+            if !savedDisableActions {
+                CATransaction.setDisableActions(false)
+            }
+
+            // Flush modified presentation modifier groups
+            for groupID in modifiedGroups {
+                let group = unsafeBitCast(groupID, to: CAPresentationModifierGroup.self)
+                group.flushWithTransaction()
+            }
+            #endif
+
+            // Execute all completion closures
+            for update in pendingAsyncUpdates {
+                update()
+            }
+
+            // Reset state
+            pendingAsyncValues = [:]
+            pendingAsyncUpdates = []
         }
 
         mutating func prepare(
@@ -111,33 +230,139 @@ extension DisplayList.ViewUpdater {
             _openSwiftUIUnimplementedFailure()
         }
 
-        struct Result {}
-
         mutating func update(
             item: DisplayList.Item,
             state: UnsafePointer<Model.State>,
             tag: Tag,
             in parentID: ViewInfo.ID,
-            makeView: (DisplayList.Index, DisplayList.Item, UnsafePointer<Model.State>) -> DisplayList.ViewUpdater.ViewInfo,
+            makeView: (DisplayList.Index, DisplayList.Item, UnsafePointer<Model.State>) -> ViewInfo,
             updateView: (inout ViewInfo, DisplayList.Index, DisplayList.Item, UnsafePointer<Model.State>) -> Void
         ) -> Result {
-            _openSwiftUIUnimplementedFailure()
+            let key = Key(id: index.id, tag: tag)
+            let version = item.version
+            if let existingInfo = map[key] {
+                var info = existingInfo
+                guard info.cacheSeed != cacheSeed else {
+                    let description = currentList.description
+                    Log.internalError(
+                        "repeated view: %u, %u, %u, %u, %s, %s",
+                        key.id.identity.value,
+                        key.id.serial,
+                        key.id.archiveIdentity.value,
+                        key.id.archiveSerial,
+                        String(describing: info.state.kind),
+                        description
+                    )
+                    preconditionFailure("repeated view: #\(key.id.identity.value), \(key.id.serial), \(key.id.archiveIdentity.value), \(key.id.archiveSerial), \(info.state.kind), \(description)")
+                }
+                defer { map[key] = info }
+                // Update isRemoved
+                if info.isRemoved {
+                    info.isRemoved = false
+                    removed.remove(key)
+                }
+                // Update cacheSeed
+                info.cacheSeed = cacheSeed
+                // Update nextUpdate
+                let newSeed = DisplayList.Seed(version)
+                var isInserted = info.seeds.item != newSeed || state.pointee.globals.pointee.time >= info.nextUpdate
+                info.nextUpdate = .infinity
+                // Update parentID
+                let oldParentID = info.parentID
+                if oldParentID != parentID {
+                    info.parentID = parentID
+                    info.seeds.invalidate()
+                }
+                // Update view
+                let oldView = info.view
+                updateView(&info, index, item, state)
+                if !info.isInvalid {
+                    info.seeds.item = DisplayList.Seed(version)
+                }
+                if info.view !== oldView {
+                    reverseMap.removeValue(forKey: unsafeBitCast(oldView, to: OpaquePointer.self))
+                    #if canImport(Darwin)
+                    CoreViewRemoveFromSuperview(system: platform.viewSystem, view: oldView)
+                    #endif
+                    reverseMap[unsafeBitCast(info.view, to: OpaquePointer.self)] = key
+                    #if canImport(QuartzCore)
+                    if index.archiveIdentity == .none, item.identity != .none {
+                        info.layer.displayListID = item.identity
+                    }
+                    #endif
+                    isInserted = true
+                }
+                return Result(
+                    view: info.view,
+                    container: info.container,
+                    id: info.id,
+                    key: key,
+                    isInserted: isInserted,
+                    isValid: !info.isInvalid,
+                    nextUpdate: info.nextUpdate
+                )
+            } else {
+                var info = makeView(index, item, state)
+                info.parentID = parentID
+                info.cacheSeed = cacheSeed
+                info.seeds.item = DisplayList.Seed(version)
+                map[key] = info
+                // If this view was previously cached under a different key,
+                // remove the stale map entry for that old key.
+                let viewPointer = unsafeBitCast(info.view, to: OpaquePointer.self)
+                if let oldKey = reverseMap[viewPointer] {
+                    map.removeValue(forKey: oldKey)
+                }
+                reverseMap[viewPointer] = key
+                #if canImport(QuartzCore)
+                if index.archiveIdentity == .none, item.identity != .none {
+                    info.layer.displayListID = item.identity
+                }
+                #endif
+                return Result(
+                    view: info.view,
+                    container: info.container,
+                    id: info.id,
+                    key: key,
+                    isInserted: true,
+                    isValid: !info.isInvalid,
+                    nextUpdate: info.nextUpdate
+                )
+            }
+        }
+
+        struct Result {
+            var view: AnyObject
+            var container: AnyObject
+            var id: ViewInfo.ID
+            var key: Key
+            var isInserted: Bool
+            var isValid: Bool
+            var nextUpdate: Time
         }
 
         mutating func setNextUpdate(
             _ time: Time,
             in result: inout Result
         ) {
-            _openSwiftUIUnimplementedFailure()
+            guard time < result.nextUpdate else { return }
+            result.nextUpdate = time
+            map[result.key]!.nextUpdate = time
         }
 
-        struct AsyncResult {}
+        struct AsyncResult {
+            var unknown: AnyObject // FIXME
+            var key: Key
+            var nextUpdate: Time
+        }
 
         mutating func setNextUpdate(
             _ time: Time,
             in result: inout AsyncResult
         ) {
-            _openSwiftUIUnimplementedFailure()
+            guard time < result.nextUpdate else { return }
+            result.nextUpdate = time
+            map[result.key]!.nextUpdate = time
         }
 
         mutating func setAsyncValue(

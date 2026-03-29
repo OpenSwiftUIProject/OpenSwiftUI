@@ -482,7 +482,22 @@ extension DisplayList.Item {
         // TODO eg. .opacity(1.0) -> .identity
     }
 
-    // package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool
+    // TBA
+    package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool {
+        guard identity == other.identity else { return false }
+        switch (value, other.value) {
+        case (.empty, .empty):
+            return true
+        case (.content, .content):
+            return true
+        case (.effect, .effect):
+            return true
+        case (.states, .states):
+            return true
+        default:
+            return false
+        }
+    }
 
     package var features: DisplayList.Features {
         // TODO
@@ -552,9 +567,19 @@ extension DisplayList {
 
 package struct AccessibilityNodeAttachment {}
 
-package protocol _DisplayList_AnyEffectAnimation {}
+package protocol _DisplayList_AnyEffectAnimation: ProtobufMessage {
+    // FIXME: CodableEffectAnimation
+    static var leafProtobufTag: CodableAnimation.Tag? { get }
+    func makeAnimator() -> any _DisplayList_AnyEffectAnimator
+}
 
-package protocol _DisplayList_AnyEffectAnimator: AnyObject {}
+package protocol _DisplayList_AnyEffectAnimator {
+    func evaluate(
+        _ animation: any DisplayList.AnyEffectAnimation,
+        at time: Time,
+        size: CGSize
+    ) -> (DisplayList.Effect, finished: Bool)
+}
 
 extension DisplayList.Item {
     func addDrawingGroup(contentSeed: DisplayList.Seed) {
