@@ -132,6 +132,26 @@ extension DisplayList.ViewUpdater.Platform {
     // TODO:
     // private func updateDrawingView
     // private func updateDrawingViewAsync
+
+    func forEachChild(
+        of viewInfo: DisplayList.ViewUpdater.ViewInfo,
+        do body: (AnyObject) -> Void
+    ) {
+        #if canImport(Darwin)
+        let kind = viewInfo.state.kind
+        if kind.isContainer {
+            for subview in CoreViewSubviews(system: viewSystem, view: viewInfo.container) {
+                body(subview as AnyObject)
+            }
+        }
+        if kind == .mask,
+           let maskView = CoreViewMaskView(system: viewSystem, view: viewInfo.view) {
+            for subview in CoreViewSubviews(system: viewSystem, view: maskView) {
+                body(subview as AnyObject)
+            }
+        }
+        #endif
+    }
 }
 
 extension DisplayList.GraphicsRenderer {

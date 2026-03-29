@@ -108,18 +108,30 @@ extension DisplayList.ViewUpdater {
             asyncModifierGroup = nil
         }
 
-        // TBA
         mutating func reclaim(time: Time) {
-            for key in removed {
-                if let info = map.removeValue(forKey: key) {
-                    let pointer = unsafeBitCast(info.view, to: OpaquePointer.self)
-                    reverseMap.removeValue(forKey: pointer)
-                    // TODO: _CoreViewRemoveFromSuperview for managed view kinds
-                }
+            removed.forEach { key in
+                guard let info = map[key], info.isRemoved else { return }
+                removeRecursively(info as AnyObject)
             }
             removed.removeAll()
             animators = animators.filter { $0.value.deadline >= time }
             cacheSeed &+= 1
+        }
+
+        /// Removes a managed subview from the cache and recursively
+        /// cleans up its container children from the view hierarchy.
+        private mutating func removeRecursively(_ object: AnyObject) {
+            let info = object as! ViewInfo
+            platform.forEachChild(of: info) { view in
+                let pointer = unsafeBitCast(view, to: OpaquePointer.self)
+                if let key = reverseMap.removeValue(forKey: pointer),
+                   let newInfo = map.removeValue(forKey: key) {
+                    removeRecursively(newInfo as AnyObject)
+                }
+                #if canImport(Darwin)
+                CoreViewRemoveFromSuperview(system: platform.viewSystem, view: view)
+                #endif
+            }
         }
 
         mutating func commitAsyncValues(targetTimestamp: Time?) {
