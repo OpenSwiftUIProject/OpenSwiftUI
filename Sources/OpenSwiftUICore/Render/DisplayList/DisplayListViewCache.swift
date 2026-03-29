@@ -146,7 +146,14 @@ extension DisplayList.ViewUpdater {
             in layer: CALayer,
             usingPresentationModifier: Bool
         ) {
-            _openSwiftUIUnimplementedFailure()
+            let layerID = ObjectIdentifier(layer)
+            pendingAsyncValues[layerID, default: []].append(
+                PendingAsyncValue(
+                    keyPath: key,
+                    value: value,
+                    usesPresentationModifier: usingPresentationModifier
+                )
+            )
         }
 
         private mutating func prepareAnimation(
