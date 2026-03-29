@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: TBA init
+//  Status: Complete
 //  ID: A9949015C771FF99F7528BB7239FD006 (SwiftUICore)
 
 import Foundation
@@ -33,11 +33,11 @@ extension DisplayList.ViewUpdater {
 
         let platform: Platform
 
-        var map: [Key: ViewInfo]
+        var map: [Key: ViewInfo] = [:]
 
-        var reverseMap: [OpaquePointer: Key]
+        var reverseMap: [OpaquePointer: Key] = [:]
 
-        var removed: Set<Key>
+        var removed: Set<Key> = []
 
         private struct AnimatorInfo {
             enum State {
@@ -50,14 +50,14 @@ extension DisplayList.ViewUpdater {
             var deadline: Time
         }
 
-        private var animators: [Key: AnimatorInfo]
+        private var animators: [Key: AnimatorInfo] = [:]
 
         private struct AsyncValues {
             var animations: Set<String>
             var modifiers: [String: CAPresentationModifier]
         }
 
-        private var asyncValues: [ObjectIdentifier: AsyncValues]
+        private var asyncValues: [ObjectIdentifier: AsyncValues] = [:]
 
         private struct PendingAsyncValue {
             var keyPath: String
@@ -65,31 +65,20 @@ extension DisplayList.ViewUpdater {
             var usesPresentationModifier: Bool
         }
 
-        private var pendingAsyncValues: [ObjectIdentifier: [PendingAsyncValue]]
+        private var pendingAsyncValues: [ObjectIdentifier: [PendingAsyncValue]] = [:]
 
         var asyncModifierGroup: CAPresentationModifierGroup?
 
-        var pendingAsyncUpdates: [() -> Void]
+        var pendingAsyncUpdates: [() -> Void] = []
 
-        var index: DisplayList.Index
+        var index: DisplayList.Index = .init()
 
-        var cacheSeed: UInt32
+        var cacheSeed: UInt32 = .zero
 
-        var currentList: DisplayList
+        var currentList: DisplayList = .init()
 
-        // TBA
         init(platform: Platform) {
             self.platform = platform
-            self.map = [:]
-            self.reverseMap = [:]
-            self.removed = []
-            self.animators = [:]
-            self.asyncValues = [:]
-            self.pendingAsyncValues = [:]
-            self.pendingAsyncUpdates = []
-            self.index = DisplayList.Index()
-            self.cacheSeed = 0
-            self.currentList = DisplayList()
         }
 
         mutating func clearAsyncValues() {
