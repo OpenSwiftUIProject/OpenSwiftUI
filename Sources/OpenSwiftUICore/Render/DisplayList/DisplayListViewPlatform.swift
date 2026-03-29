@@ -2,16 +2,14 @@
 //  DisplayListViewPlatform.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by PlatformDrawable and GraphicsContext
+//  Audited for 6.5.4
+//  Status: Blocked by GraphicsContext and Platform
 //  ID: 8BBC66CBE42B8A65F8A2F3799C81A349 (SwiftUICore)
 
+public import OpenQuartzCoreShims
 import OpenSwiftUI_SPI
-#if canImport(QuartzCore)
-public import QuartzCore
-#else
-import Foundation
-#endif
+
+// MARK: - PlatformViewDefinition
 
 @_spi(DisplayList_ViewSystem)
 @available(OpenSwiftUI_v6_0, *)
@@ -71,6 +69,8 @@ open class PlatformViewDefinition: @unchecked Sendable {
     open class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
 }
 
+// MARK: - DisplayList.ViewUpdater.Platform Definition
+
 extension DisplayList.ViewUpdater {
     package struct Platform {
         let rawValue: UInt
@@ -89,6 +89,8 @@ extension DisplayList.ViewUpdater {
     }
 }
 
+// MARK: - DisplayList.ViewUpdater.Platform API [WIP]
+
 extension DisplayList.ViewUpdater.Platform {
     package init(definition: PlatformViewDefinition.Type) {
         self.init(rawValue: UInt(bitPattern: ObjectIdentifier(definition)) | UInt(definition.system.base.rawValue))
@@ -104,11 +106,13 @@ extension DisplayList.ViewUpdater.Platform {
         return unsafeBitCast(UInt8(rawValue & 3), to: ViewSystem.self)
     }
 
-    #if canImport(QuartzCore)
     package func viewLayer(_ view: AnyObject) -> CALayer {
+        #if canImport(QuartzCore)
         CoreViewLayer(system: viewSystem, view: view)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
-    #endif
 
     func updateDrawingView(
         _ drawingView: inout AnyObject,
@@ -154,16 +158,26 @@ extension DisplayList.ViewUpdater.Platform {
     }
 }
 
+// MARK: - DisplayList.GraphicsRenderer + Platform [WIP]
+
 extension DisplayList.GraphicsRenderer {
-    #if canImport(Darwin)
-    final package func drawPlatformLayer(_ layer: CALayer, in ctx: GraphicsContext, size: CGSize, update: Bool) {
+    package func drawPlatformLayer(
+        _ layer: CALayer,
+        in ctx: GraphicsContext,
+        size: CGSize,
+        update: Bool
+    ) {
+        #if canImport(Darwin)
         if update {
             layer.bounds = CGRect(origin: .zero, size: size)
             layer.layoutIfNeeded()
         }
-        // TODO: Blocked by GraphicsContext
-        _openSwiftUIUnimplementedFailure()
-        // ctx.drawLayer
+        try? ctx.drawLayer(flags: []) { _ in
+            // TODO: Blocked by GraphicsContext
+            _openSwiftUIUnimplementedFailure()
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
-    #endif
 }

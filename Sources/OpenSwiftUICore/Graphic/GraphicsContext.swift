@@ -536,13 +536,28 @@ extension GraphicsContext {
         #endif
     }
 
+    // FIXME
+    struct ORBLayerFlags: OptionSet {
+        let rawValue: UInt32
+
+        init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+    }
+
+    func drawLayer(
+        flags: ORBLayerFlags,
+        content: (inout GraphicsContext) throws -> Void
+    ) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     package mutating func translateBy(x: CGFloat, y: CGFloat) {
         guard x != 0 || y != 0 else { return }
         _openSwiftUIUnimplementedFailure()
     }
 
     // FIXME
-    #if canImport(CoreGraphics)
     static func renderingTo(
         cgContext: CGContext,
         environment: EnvironmentValues,
@@ -551,5 +566,4 @@ extension GraphicsContext {
     ) {
         _openSwiftUIUnimplementedFailure()
     }
-    #endif
 }
