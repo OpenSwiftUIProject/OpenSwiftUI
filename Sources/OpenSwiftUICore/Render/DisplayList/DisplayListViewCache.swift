@@ -42,7 +42,7 @@ extension DisplayList.ViewUpdater {
         private struct AnimatorInfo {
             enum State {
                 case idle
-                case active(DisplayList.AnyEffectAnimator)
+                case active(any DisplayList.AnyEffectAnimator)
                 case finished(DisplayList.Effect, DisplayList.Version)
             }
 
@@ -227,7 +227,34 @@ extension DisplayList.ViewUpdater {
             item: inout DisplayList.Item,
             parentState: UnsafePointer<Model.State>
         ) -> Time {
-            _openSwiftUIUnimplementedFailure()
+            switch item.value {
+            case let .content(content):
+                if case let .shape(_, paint, _) = content.value, !paint.isCALayerCompatible {
+                    item.addDrawingGroup(contentSeed: .init(item.version))
+                }
+                return .infinity
+            case let .effect(effect, displayList):
+                switch effect {
+                case let .archive(archiveIDs):
+                    index.updateArchive(entering: archiveIDs != nil)
+                    return .infinity
+                case let .filter(filter):
+                    if case .shader = filter {
+                        item.addDrawingGroup(contentSeed: .init(item.version))
+                    }
+                case let .animation(animation):
+                    return prepareAnimation(
+                        animation,
+                        displayList: displayList,
+                        item: &item,
+                        parentState: parentState,
+                    )
+                default:
+                    return .infinity
+                }
+            default:
+                return .infinity
+            }
         }
 
         mutating func update(
@@ -387,7 +414,45 @@ extension DisplayList.ViewUpdater {
             item: inout DisplayList.Item,
             parentState: UnsafePointer<Model.State>
         ) -> Time {
-            _openSwiftUIUnimplementedFailure()
+            let key = Key(id: index.id, tag: .item)
+            let time = parentState.pointee.globals.pointee.time
+            var animatorInfo = animators[key, default: .init(state: .idle, deadline: .zero)]
+            if case .idle = animatorInfo.state {
+                // If idle, initialize by creating an animator from the animation
+                animatorInfo.state = .active(animation.makeAnimator())
+            }
+            switch animatorInfo.state {
+            case let .active(animator):
+                // Reset to idle before evaluation
+                animatorInfo.state = .idle
+                // Evaluate the animation effect
+                let (effect, finished) = animator.evaluate(
+                    animation,
+                    at: time,
+                    size: item.size,
+                )
+                // Swap item value with the animation effect
+                item.value = .effect(effect, displayList)
+                let maxVersion = parentState.pointee.globals.pointee.maxVersion
+                item.version = maxVersion
+                if finished {
+                    animatorInfo.state = .finished(effect, maxVersion)
+                } else {
+                    animatorInfo.state = .active(animator)
+                }
+                animatorInfo.deadline = time
+                animators[key] = animatorInfo
+                return finished ? .infinity : time
+            case let .finished(effect, version):
+                // Re-apply the stored final effect
+                item.value = .effect(effect, displayList)
+                item.version = version
+                animatorInfo.deadline = time
+                animators[key] = animatorInfo
+                return .infinity
+            case .idle:
+                _openSwiftUIUnreachableCode()
+            }
         }
     }
 }
