@@ -1,8 +1,8 @@
 //
-//  CoreGraphicsShims.swift
+//  QuartzCoreShims.swift
 //  OpenSwiftUICore
 
-#if !canImport(CoreGraphics)
+#if !canImport(QuartzCore)
 public import Foundation
 
 // MARK: - CAPresentationModifierGroup
