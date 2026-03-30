@@ -312,17 +312,6 @@ extension ViewRendererHost {
             let rootView = delegate.renderingRootView
             // TODO: CustomEventTrace
             return delegate.withMainThreadRender(wasAsync: false) {
-                #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
-                renderer.swiftUI_render(
-                    rootView: self,
-                    from: list,
-                    time: time,
-                    nextTime: nextTime,
-                    version: version,
-                    maxVersion: maxVersion,
-                    environment: environment
-                )
-                #else
                 renderer.render(
                     rootView: self,
                     from: list,
@@ -332,21 +321,10 @@ extension ViewRendererHost {
                     maxVersion: maxVersion,
                     environment: environment
                 )
-                #endif
             }
         }
         if asynchronously {
             // TODO: CustomEventTrace
-            #if canImport(SwiftUI, _underlyingVersion: 6.0.87) && _OPENSWIFTUI_SWIFTUI_RENDER
-            let renderedTime = renderer.swiftUI_renderAsync(
-                to: list,
-                time: time,
-                nextTime: nextTime,
-                targetTimestamp: targetTimestamp,
-                version: version,
-                maxVersion: maxVersion
-            )
-            #else
             let renderedTime = renderer.renderAsync(
                 to: list,
                 time: time,
@@ -355,7 +333,6 @@ extension ViewRendererHost {
                 version: version,
                 maxVersion: maxVersion
             )
-            #endif
             if let renderedTime {
                 return renderedTime
             } else {
@@ -571,4 +548,41 @@ extension ViewRendererHost {
     package func archiveJSON(name: String? = nil) {
         viewGraph.graph.archiveJSON(name: name)
     }
+}
+
+// MARK: - EmptyViewRendererHost [6.5.4]
+
+final package class EmptyViewRendererHost: ViewRendererHost {
+    package let viewGraph: ViewGraph
+
+    package var propertiesNeedingUpdate: ViewRendererHostProperties = []
+
+    package var renderingPhase: ViewRenderingPhase = .none
+
+    package var externalUpdateCount: Int = .zero
+
+    package var currentTimestamp: Time = .zero
+
+    package init(environment: EnvironmentValues = EnvironmentValues()) {
+        Update.begin()
+        viewGraph = ViewGraph(rootViewType: EmptyView.self, requestedOutputs: [])
+        viewGraph.setEnvironment(environment)
+        viewGraph.setRootView(EmptyView())
+        initializeViewGraph()
+        Update.end()
+    }
+
+    package func requestUpdate(after delay: Double) {}
+
+    package func updateRootView() {}
+
+    package func updateEnvironment() {}
+
+    package func updateSize() {}
+
+    package func updateSafeArea() {}
+
+    package func updateContainerSize() {}
+
+    package func forEachIdentifiedView(body: (_IdentifiedViewProxy) -> Void) {}
 }

@@ -39,6 +39,16 @@ typedef struct CAColorMatrix CAColorMatrix;
 - (void)setHighFrameRateReasons_openswiftui_safe_wrapper:(const uint32_t *)reasons count:(NSInteger)count OPENSWIFTUI_SWIFT_NAME(setHighFrameRateReasons(_:count:));
 @end
 
+// MARK: - CATransaction (Private)
+
+@interface CATransaction (OpenSwiftUI_Private)
+
+/// Activate a background Core Animation context for off-main-thread rendering.
+/// Must be called before any CA operations on a background thread.
++ (void)activateBackground:(BOOL)activate;
+
+@end
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* CoreAnimation.h */

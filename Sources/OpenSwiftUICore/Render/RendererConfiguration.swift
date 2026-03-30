@@ -5,7 +5,10 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+// MARK: - _RendererConfiguration
+
 /// Renderer configuration for a hosting view.
+@available(OpenSwiftUI_v2_0, *)
 public struct _RendererConfiguration {
 
     /// The available renderer kind and their configuration.
@@ -36,6 +39,8 @@ public struct _RendererConfiguration {
     public static func rasterized(_ options: _RendererConfiguration.RasterizationOptions = .init()) -> _RendererConfiguration {
         _RendererConfiguration(renderer: .rasterized(options))
     }
+
+    // MARK: - _RendererConfiguration.RasterizationOptions
 
     /// Options for the `rasterized` renderer.
     public struct RasterizationOptions {
@@ -84,3 +89,32 @@ extension _RendererConfiguration.Renderer: Sendable {}
 
 @available(*, unavailable)
 extension _RendererConfiguration.RasterizationOptions: Sendable {}
+
+// MARK: - RasterizationOptions + _RendererConfiguration.RasterizationOptions
+
+extension RasterizationOptions {
+
+    /// Convert from the public `_RendererConfiguration.RasterizationOptions`
+    /// to the internal `RasterizationOptions`.
+    package init(_ options: _RendererConfiguration.RasterizationOptions) {
+        var flags: RasterizationOptions.Flags = .defaultFlags
+        flags.formUnion(.isAccelerated)
+        if options.isOpaque {
+            flags.formUnion(.isOpaque)
+        } else {
+            flags.subtract([.isOpaque, .rendersAsynchronously, .prefersDisplayCompositing])
+        }
+        if options.rendersAsynchronously {
+            flags.formUnion(.rendersAsynchronously)
+        }
+        if options.prefersDisplayCompositing {
+            flags.formUnion(.prefersDisplayCompositing)
+        }
+        self.init(
+            colorMode: options.colorMode,
+            rbColorMode: options.rbColorMode,
+            flags: flags,
+            maxDrawableCount: Int8(truncatingIfNeeded: options.maxDrawableCount)
+        )
+    }
+}

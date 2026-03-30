@@ -24,7 +24,7 @@ package enum GraphicsFilter {
     case vibrantColorMatrix(_ColorMatrix)
     case luminanceCurve(GraphicsFilter.LuminanceCurve)
     case colorCurves(GraphicsFilter.ColorCurves)
-    // case shader(GraphicsFilter.ShaderFilter)
+    case shader(GraphicsFilter.ShaderFilter)
     
     package struct ColorMonochrome: Equatable {
         package var color: Color.Resolved
@@ -73,7 +73,7 @@ package enum GraphicsFilter {
         }
     }
 
-//    package struct ShaderFilter {
+    package struct ShaderFilter {
 //        package var shader: Shader.ResolvedShader
 //        package var size: CGSize
 //        
@@ -81,7 +81,7 @@ package enum GraphicsFilter {
 //            self.shader = shader
 //            self.size = size
 //        }
-//    }
+    }
 }
 
 package enum GraphicsBlendMode: Equatable {

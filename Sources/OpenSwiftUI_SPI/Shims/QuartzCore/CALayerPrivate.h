@@ -23,8 +23,6 @@ typedef NSString *CALayerContentsScaling NS_TYPED_ENUM;
 @property (nonatomic, assign) BOOL allowsGroupBlending_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsGroupBlending);
 @property (nonatomic, assign) BOOL allowsHitTesting_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsHitTesting);
 
-@property (nonatomic, assign) uint64_t openSwiftUI_viewTestProperties;
-
 /// Private property to control contents alpha channel swizzling.
 /// When set to kCALayerContentsSwizzleAAAA, the alpha channel is replicated to all channels.
 /// When set to kCALayerContentsSwizzleRGBA, normal RGBA behavior is used.
