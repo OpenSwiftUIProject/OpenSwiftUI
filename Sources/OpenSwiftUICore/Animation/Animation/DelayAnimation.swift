@@ -47,15 +47,15 @@ extension Animation {
     }
 }
 
-struct DelayAnimation: CustomAnimationModifier {
-    var delay: TimeInterval
+package struct DelayAnimation: CustomAnimationModifier {
+    package var delay: TimeInterval
 
     @inline(__always)
     private func delayedTime(_ time: TimeInterval) -> TimeInterval {
         max(0, time - delay)
     }
 
-    func animate<V, B>(
+    package func animate<V, B>(
         base: B,
         value: V,
         time: TimeInterval,
@@ -68,7 +68,7 @@ struct DelayAnimation: CustomAnimationModifier {
         )
     }
 
-    func shouldMerge<V, B>(base: B, previous: DelayAnimation, previousBase: B, value: V, time: TimeInterval, context: inout AnimationContext<V>) -> Bool where V : VectorArithmetic, B : CustomAnimation {
+    package func shouldMerge<V, B>(base: B, previous: DelayAnimation, previousBase: B, value: V, time: TimeInterval, context: inout AnimationContext<V>) -> Bool where V : VectorArithmetic, B : CustomAnimation {
         self == previous && base.shouldMerge(
             previous: Animation(previousBase),
             value: value,
@@ -77,7 +77,7 @@ struct DelayAnimation: CustomAnimationModifier {
         )
     }
 
-    func function(base: Animation.Function) -> Animation.Function {
+    package func function(base: Animation.Function) -> Animation.Function {
         base
     }
 }

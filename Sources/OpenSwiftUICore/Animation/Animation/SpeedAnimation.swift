@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import Foundation
+package import Foundation
 
 // MARK: - View + speed Animation
 
@@ -83,15 +83,15 @@ extension Animation {
 
 // MARK: - SpeedAnimation
 
-struct SpeedAnimation: CustomAnimationModifier {
-    var speed: Double
+package struct SpeedAnimation: CustomAnimationModifier {
+    package var speed: Double
 
     @inline(__always)
     private func speededTime(_ time: TimeInterval) -> TimeInterval {
         time * speed
     }
 
-    func animate<V, B>(
+    package func animate<V, B>(
         base: B,
         value: V,
         time: TimeInterval,
@@ -104,7 +104,7 @@ struct SpeedAnimation: CustomAnimationModifier {
         )
     }
 
-    func shouldMerge<V, B>(
+    package func shouldMerge<V, B>(
         base: B,
         previous: SpeedAnimation,
         previousBase: B,
@@ -120,7 +120,7 @@ struct SpeedAnimation: CustomAnimationModifier {
         )
     }
 
-    func function(base: Animation.Function) -> Animation.Function {
+    package func function(base: Animation.Function) -> Animation.Function {
         .speed(speed, base)
     }
 }

@@ -18,6 +18,10 @@ package struct CodableEffectAnimation: ProtobufMessage {
 
     var base: any _DisplayList_AnyEffectAnimation
 
+    init(base: any _DisplayList_AnyEffectAnimation) {
+        self.base = base
+    }
+
     package func encode(to encoder: inout ProtobufEncoder) throws {
         try base.encodeAnimation(to: &encoder)
     }

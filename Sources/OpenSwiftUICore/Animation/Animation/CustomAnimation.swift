@@ -206,3 +206,66 @@ extension CustomAnimation {
         false
     }
 }
+
+// MARK: - EncodableAnimation
+
+package protocol EncodableAnimation: ProtobufEncodableMessage {
+    static var leafProtobufTag: CodableAnimation.Tag? { get }
+}
+
+extension EncodableAnimation {
+    package func encodeAnimation(to encoder: inout ProtobufEncoder) throws {
+        if let leafTag = Self.leafProtobufTag {
+            try encoder.messageField(leafTag.rawValue, self)
+        } else {
+            try encode(to: &encoder)
+        }
+    }
+}
+
+extension BezierAnimation: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? {
+        .init(rawValue: 1)
+    }
+}
+
+extension SpringAnimation: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? {
+        .init(rawValue: 2)
+    }
+}
+
+extension FluidSpringAnimation: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? {
+        .init(rawValue: 3)
+    }
+}
+
+extension DelayAnimation: ProtobufEncodableMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.doubleField(4, delay)
+    }
+}
+
+extension RepeatAnimation: ProtobufEncodableMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+       encoder.messageField(5) { encoder in
+           if let repeatCount {
+               encoder.intField(1, repeatCount, defaultValue: .min)
+           }
+           encoder.boolField(2, autoreverses)
+       }
+   }
+}
+
+extension SpeedAnimation: ProtobufEncodableMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        encoder.doubleField(6, speed)
+    }
+}
+
+extension DefaultAnimation: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? {
+        .init(rawValue: 7)
+    }
+}
