@@ -568,13 +568,12 @@ extension DisplayList {
 package struct AccessibilityNodeAttachment {}
 
 package protocol _DisplayList_AnyEffectAnimation: ProtobufMessage {
-    // FIXME: CodableEffectAnimation
-    static var leafProtobufTag: CodableAnimation.Tag? { get }
+    static var leafProtobufTag: CodableEffectAnimation.Tag? { get }
     func makeAnimator() -> any _DisplayList_AnyEffectAnimator
 }
 
 package protocol _DisplayList_AnyEffectAnimator {
-    func evaluate(
+    mutating func evaluate(
         _ animation: any DisplayList.AnyEffectAnimation,
         at time: Time,
         size: CGSize
