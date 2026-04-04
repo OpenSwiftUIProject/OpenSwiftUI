@@ -454,11 +454,26 @@ extension ProtobufEncodableMessage {
     }
 }
 
-extension ProtobufDecodableMessage where Self: Equatable {
+extension ProtobufDecodableMessage {
     package func testPBDecoding(hexString: String) throws {
         let decodedValue = try hexString.decodePBHexString(Self.self)
-        #expect(decodedValue == self)
+        if let selfEquatable = self as? any Equatable,
+           let decodedEquatable = decodedValue as? any Equatable {
+            #expect(_pbIsEqual(selfEquatable, decodedEquatable))
+        } else if let decodedEncodable = decodedValue as? any ProtobufEncodableMessage {
+            let reEncoded = try ProtobufEncoder.encoding { encoder in
+                try decodedEncodable.encode(to: &encoder)
+            }
+            #expect(reEncoded.hexString == hexString)
+        }
     }
+}
+
+private func _pbIsEqual(_ lhs: any Equatable, _ rhs: any Equatable) -> Bool {
+    func open<T: Equatable>(_ lhs: T) -> Bool {
+        lhs == (rhs as? T)
+    }
+    return open(lhs)
 }
 #endif
 #endif

@@ -400,20 +400,17 @@ extension DisplayList.ViewUpdater {
             let time = parentState.pointee.globals.pointee.time
             var animatorInfo = animators[key, default: .init(state: .idle, deadline: .zero)]
             if case .idle = animatorInfo.state {
-                // If idle, initialize by creating an animator from the animation
                 animatorInfo.state = .active(animation.makeAnimator())
             }
             switch animatorInfo.state {
             case let .active(animator):
-                // Reset to idle before evaluation
+                var animator = animator
                 animatorInfo.state = .idle
-                // Evaluate the animation effect
                 let (effect, finished) = animator.evaluate(
                     animation,
                     at: time,
                     size: item.size,
                 )
-                // Swap item value with the animation effect
                 item.value = .effect(effect, displayList)
                 let maxVersion = parentState.pointee.globals.pointee.maxVersion
                 item.version = maxVersion
@@ -426,7 +423,6 @@ extension DisplayList.ViewUpdater {
                 animators[key] = animatorInfo
                 return finished ? .infinity : time
             case let .finished(effect, version):
-                // Re-apply the stored final effect
                 item.value = .effect(effect, displayList)
                 item.version = version
                 animatorInfo.deadline = time

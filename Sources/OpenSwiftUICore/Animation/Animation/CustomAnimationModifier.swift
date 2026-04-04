@@ -124,6 +124,8 @@ package struct CustomAnimationModifiedContent<Base, Modifier>: InternalCustomAni
 }
 
 extension CustomAnimationModifiedContent: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? { nil }
+
     package func encode(to encoder: inout ProtobufEncoder) throws {
         let encodableAnimation: any EncodableAnimation
         if let encodableBase = base as? EncodableAnimation {
@@ -206,6 +208,8 @@ package struct InternalCustomAnimationModifiedContent<Base, Modifier>: InternalC
 }
 
 extension InternalCustomAnimationModifiedContent: EncodableAnimation {
+    package static var leafProtobufTag: CodableAnimation.Tag? { nil }
+
     package func encode(to encoder: inout ProtobufEncoder) throws {
         try _base.encode(to: &encoder)
     }
