@@ -48,7 +48,7 @@ extension EffectAnimation {
     func encode(to encoder: inout ProtobufEncoder) throws {
         try encoder.messageField(1, from)
         try encoder.messageField(2, to)
-        let codableAnimation = CodableAnimation(base: animation.codableValue)
+        let codableAnimation = CodableAnimation(base: animation)
         try encoder.messageField(3, codableAnimation)
     }
 
@@ -64,7 +64,7 @@ extension EffectAnimation {
                 toValue = try decoder.messageField(field)
             case 3:
                 let codable: CodableAnimation = try decoder.messageField(field)
-                animationValue = Animation(codable.base)
+                animationValue = codable.base
             default:
                 try decoder.skipField(field)
             }

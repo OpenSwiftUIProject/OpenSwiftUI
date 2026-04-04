@@ -3,11 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complte
+//  Status: Complete
 
 // MARK: - CodableAnimation
 
-package final class CodableAnimation: ProtobufMessage {
+package struct CodableAnimation: ProtobufMessage {
     package struct Tag: ProtobufTag {
         package let rawValue: UInt
 
@@ -16,59 +16,55 @@ package final class CodableAnimation: ProtobufMessage {
         }
     }
 
-    var base: any CustomAnimation
+    var base: Animation
 
-    init(base: any CustomAnimation) {
+    init(base: Animation) {
         self.base = base
     }
 
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        let animation = base as? any EncodableAnimation ?? DefaultAnimation()
+        let animation = base.codableValue as? any EncodableAnimation ?? DefaultAnimation()
         try animation.encodeAnimation(to: &encoder)
     }
 
     package init(from decoder: inout ProtobufDecoder) throws {
-        var base: (any CustomAnimation)?
+        var animation: Animation?
         while let field = try decoder.nextField() {
             switch field.tag {
             case 1:
-                base = try decoder.messageField(field) as BezierAnimation
+                animation = Animation(try decoder.messageField(field) as BezierAnimation)
             case 2:
-                base = try decoder.messageField(field) as SpringAnimation
+                animation = Animation(try decoder.messageField(field) as SpringAnimation)
             case 3:
-                base = try decoder.messageField(field) as FluidSpringAnimation
+                animation = Animation(try decoder.messageField(field) as FluidSpringAnimation)
             case 4:
-                guard let existing = base else { continue }
+                guard let existing = animation else { continue }
                 let delay = try decoder.doubleField(field)
-                base = Animation(existing)
-                    .modifier(DelayAnimation(delay: delay))
-                    .codableValue
+                animation = existing.modifier(DelayAnimation(delay: delay))
             case 5:
                 let (repeatCount, autoreverses) = try decoder.messageField(field) { decoder in
                     try Animation.decodeRepeatMessage(from: &decoder)
                 }
-                guard let existing = base else { continue }
-                base = Animation(existing)
-                    .modifier(RepeatAnimation(repeatCount: repeatCount, autoreverses: autoreverses))
-                    .codableValue
+                guard let existing = animation else { continue }
+                animation = existing.modifier(
+                    RepeatAnimation(repeatCount: repeatCount, autoreverses: autoreverses)
+                )
             case 6:
-                guard let existing = base else { continue }
+                guard let existing = animation else { continue }
                 let speed = try decoder.doubleField(field)
-                base = Animation(existing)
-                    .modifier(SpeedAnimation(speed: speed))
-                    .codableValue
+                animation = existing.modifier(SpeedAnimation(speed: speed))
             case 7:
-                base = try decoder.messageField(field) { _ in
-                    DefaultAnimation()
+                animation = try decoder.messageField(field) { _ in
+                    Animation(DefaultAnimation())
                 }
             default:
                 try decoder.skipField(field)
             }
         }
-        guard let base else {
+        guard let animation else {
             throw ProtobufDecoder.DecodingError.failed
         }
-        self.base = base
+        self.base = animation
     }
 }
 
