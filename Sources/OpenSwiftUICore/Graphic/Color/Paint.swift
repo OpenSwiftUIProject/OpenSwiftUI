@@ -7,6 +7,52 @@
 
 package import Foundation
 
+protocol Paint: ShapeStyle {
+    associatedtype ResolvedPaintType: ResolvedPaint
+
+    func resolvePaint(in env: EnvironmentValues) -> ResolvedPaintType
+    func fallbackColor(in env: EnvironmentValues) -> Color?
+}
+
+extension Paint {
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        switch shape.operation {
+        case .prepareText:
+            shape.result = .none
+        case .resolveStyle(let name, let levels):
+            guard !levels.isEmpty else { return }
+            let resolvedPaint = resolvePaint(in: shape.environment)
+            let anyPaint: AnyResolvedPaint
+            if let bounds = shape.bounds {
+                anyPaint = _AnyResolvedPaint(
+                    AnchoredResolvedPaint(resolvedPaint, bounds: bounds)
+                )
+            } else {
+                anyPaint = _AnyResolvedPaint(resolvedPaint)
+            }
+            var style = ShapeStyle.Pack.Style(.paint(anyPaint))
+            style.applyOpacity(shape.opacity(at: levels.lowerBound))
+            shape.stylePack[name, levels.lowerBound] = style
+        case .fallbackColor:
+            if let color = fallbackColor(in: shape.environment) {
+                shape.result = .color(color)
+            }
+        default:
+            break
+        }
+    }
+}
+
+extension Paint {
+    nonisolated public static func _makeView<S>(
+        view: _GraphValue<_ShapeView<S, Self>>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs where S: Shape {
+        legacyMakeShapeView(view: view, inputs: inputs)
+    }
+}
+
+
 // MARK: - ResolvedPaint
 
 package protocol ResolvedPaint: Equatable, Animatable, ProtobufEncodableMessage {
@@ -55,6 +101,7 @@ package class AnyResolvedPaint: Equatable {
 
 final package class _AnyResolvedPaint<P>: AnyResolvedPaint where P: ResolvedPaint {
     package let paint: P
+    
     package init(_ paint: P) {
         self.paint = paint
     }
