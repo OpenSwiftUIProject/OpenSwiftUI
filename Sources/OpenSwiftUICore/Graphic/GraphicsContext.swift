@@ -512,13 +512,40 @@ public struct GraphicsContext {
         public static var inverse: ClipOptions { Self(rawValue: 1 << 0) }
     }
 
+    package enum GradientGeometry {
+        case axial(CGPoint, CGPoint)
+        case radial(CGPoint, CGFloat, CGFloat)
+        case radial2(CGPoint, CGFloat, CGPoint, CGFloat)
+        case elliptical(CGRect, CGFloat, CGFloat)
+        case conic(CGPoint, Angle)
+        case angular(CGPoint, Angle, Angle)
+    }
+
     // FIXME
     package enum ResolvedShading: Sendable {
         case backdrop(Color.Resolved)
         case color(Color.Resolved)
         case sRGBColor(ORBColor)
+        // case shader(Shader.ResolvedShader, CGRect)
+        case gradient(ResolvedGradient, GradientGeometry, GradientOptions)
+        // case meshGradient(MeshGradient._Paint, CGRect)
+        // case tiledImage(GraphicsImage, origin: CGPoint, sourceRect: CGRect, scale: CGFloat)
         case style(_ShapeStyle_Pack.Style)
         case levels([GraphicsContext.ResolvedShading])
+    }
+
+    package struct GradientOptions: OptionSet {
+        package let rawValue: UInt32
+
+        package init(rawValue: UInt32) {
+            self.rawValue = rawValue
+        }
+
+        package static let `repeat`: GradientOptions = .init(rawValue: 1 << 0)
+        
+        package static let mirror: GradientOptions = .init(rawValue: 1 << 1)
+     
+        package static let linearColor: GradientOptions = .init(rawValue: 1 << 2)
     }
 }
 

@@ -190,6 +190,8 @@ package struct _ShapeStyle_RenderedShape {
                 opacity = 1.0
             }
             render(color: resolved)
+        case let .paint(paint):
+            render(paint: paint)
         default:
             _openSwiftUIUnimplementedFailure()
         }
@@ -252,7 +254,18 @@ package struct _ShapeStyle_RenderedShape {
     }
 
     private mutating func render(paint: AnyResolvedPaint) {
-        _openSwiftUIUnimplementedFailure()
+        switch shape {
+        case let .path(path, fillStyle):
+            item.value = .content(DisplayList.Content(
+                .shape(path, paint, fillStyle),
+                seed: contentSeed
+            ))
+        case .text, .image, .alphaMask:
+            render(color: .white)
+            _openSwiftUIUnimplementedFailure()
+        case .empty:
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     private mutating func renderVectorGlyph(
