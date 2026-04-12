@@ -14,11 +14,11 @@ public struct _ShapeStyle_Shape {
     package enum Operation {
         case prepareText(level: Int)
         case resolveStyle(name: _ShapeStyle_Name, levels: Range<Int>)
-        case multiLevel
         case fallbackColor(level: Int)
         case copyStyle(name: _ShapeStyle_Name)
-        case primaryStyle
         case modifyBackground(level: Int)
+        case multiLevel
+        case primaryStyle
     }
     
     package enum Result {
