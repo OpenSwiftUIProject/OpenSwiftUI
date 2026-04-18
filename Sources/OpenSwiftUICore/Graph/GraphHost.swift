@@ -562,8 +562,7 @@ extension GraphHost {
     
     package final func updatePreferences() -> Bool {
         let seed = hostPreferenceValues.value?.seed ?? .empty
-        let lastSeed = lastHostPreferencesSeed
-        let didUpdate = !seed.isInvalid && !lastSeed.isInvalid && (seed.value != lastSeed.value)
+        let didUpdate = !seed.matches(lastHostPreferencesSeed)
         lastHostPreferencesSeed = seed
         return didUpdate
     }
