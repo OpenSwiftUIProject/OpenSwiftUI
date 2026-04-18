@@ -847,8 +847,8 @@ final package class DisplayLink: NSObject {
 
     package func setNextUpdate(delay: Double, interval: Double, reasons: Set<UInt32>) {
         let newNextUpdate: Time
-        if delay >= 0.01 {
-            newNextUpdate = (currentUpdate ?? .systemUptime) + interval
+        if delay >= 0.001 {
+            newNextUpdate = (currentUpdate ?? .systemUptime) + delay
         } else {
             newNextUpdate = .zero
         }
