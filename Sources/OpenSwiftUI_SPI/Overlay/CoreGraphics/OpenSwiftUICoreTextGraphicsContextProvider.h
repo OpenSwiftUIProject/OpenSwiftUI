@@ -12,7 +12,12 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-@import UIFoundation_Private;
+// Use direct #import instead of @import UIFoundation_Private for Xcode/Tuist
+// compatibility. The UIFoundation_Private module's umbrella headers conflict
+// with system modules under Xcode's module compilation. Swift targets access
+// these modules via -Xcc -fmodule-map-file= instead.
+#import "NSTextGraphicsContextProvider.h"
+#import "NSTextGraphicsContext.h"
 
 void InitializeCoreTextGraphicsContextProvider(void);
 

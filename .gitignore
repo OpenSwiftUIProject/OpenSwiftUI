@@ -26,3 +26,10 @@ gh-pages
 .swift_pd_guess
 /.augments
 .alma-snapshots
+
+# Tuist
+Derived/
+Tuist/.build/
+*.xcodeproj
+*.xcworkspace
+*.xcframework

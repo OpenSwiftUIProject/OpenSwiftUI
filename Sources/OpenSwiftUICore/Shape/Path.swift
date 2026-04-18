@@ -12,6 +12,9 @@ package import OpenRenderBoxShims
 import OpenSwiftUI_SPI
 public import OpenCoreGraphicsShims
 
+// Resolve Xcode module ambiguity for ORBPath when building with Tuist
+package typealias ORBPath = OpenRenderBoxShims.ORBPath
+
 // MARK: - Path [WIP]
 
 /// The outline of a 2D shape.

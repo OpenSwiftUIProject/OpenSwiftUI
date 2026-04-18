@@ -1,0 +1,78 @@
+{
+  "originHash" : "168d19ee7e12d29868c6855e8032d98f120da0461c8c5c0943ff780935e5d24f",
+  "pins" : [
+    {
+      "identity" : "darwinprivateframeworks",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
+      "state" : {
+        "branch" : "main",
+        "revision" : "f096c34890cc5e9ce0e099e4b2a108a88a8c015c"
+      }
+    },
+    {
+      "identity" : "openattributegraph",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
+      "state" : {
+        "branch" : "main",
+        "revision" : "03c96a02a2427b6520bb7937e86221c171076562"
+      }
+    },
+    {
+      "identity" : "opencoregraphics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
+      "state" : {
+        "branch" : "main",
+        "revision" : "a36ba82bf9bca6489a8d0a2dda910608d5f049cf"
+      }
+    },
+    {
+      "identity" : "openobservation",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "state" : {
+        "branch" : "main",
+        "revision" : "1642d3c7788a037da718fc12674ba79017878372"
+      }
+    },
+    {
+      "identity" : "openrenderbox",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
+      "state" : {
+        "branch" : "main",
+        "revision" : "7a963a0a50b309b0a063fe7b5c171619bb93868d"
+      }
+    },
+    {
+      "identity" : "swift-numerics",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-numerics",
+      "state" : {
+        "revision" : "0c0290ff6b24942dadb83a929ffaaa1481df04a2",
+        "version" : "1.1.1"
+      }
+    },
+    {
+      "identity" : "swift-syntax",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/swiftlang/swift-syntax",
+      "state" : {
+        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
+        "version" : "601.0.1"
+      }
+    },
+    {
+      "identity" : "symbollocator",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
+      "state" : {
+        "revision" : "546053c03f282df1a8270853da6692e1b078be09",
+        "version" : "0.2.1"
+      }
+    }
+  ],
+  "version" : 3
+}

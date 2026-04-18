@@ -2,10 +2,10 @@
 //  OpenSwiftUIMacrosPlugin.swift
 //  OpenSwiftUIMacros
 
-import SwiftCompilerPlugin
-import SwiftSyntax
-import SwiftSyntaxBuilder
-import SwiftSyntaxMacros
+package import SwiftCompilerPlugin
+package import SwiftSyntax
+package import SwiftSyntaxBuilder
+package import SwiftSyntaxMacros
 
 @main
 struct OpenSwiftUIMacrosPlugin: CompilerPlugin {

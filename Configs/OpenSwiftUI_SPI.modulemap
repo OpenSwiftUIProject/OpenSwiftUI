@@ -1,0 +1,76 @@
+// OpenSwiftUI_SPI.modulemap
+// Tuist/Xcode-specific modulemap for OpenSwiftUI_SPI.
+//
+// This is a copy of Sources/OpenSwiftUI_SPI/module.modulemap with paths
+// relative to this file's location (Configs/). It exists separately because
+// Clang auto-discovers module.modulemap files in header search path directories.
+// Placing the SPI root on -I paths causes these private sub-modules to conflict
+// with system module resolution (Foundation, AppKit, etc.).
+//
+// SPM uses Sources/OpenSwiftUI_SPI/module.modulemap directly.
+// Tuist/Xcode uses this file via MODULEMAP_FILE and -fmodule-map-file=.
+
+module OpenSwiftUI_SPI {
+    umbrella "../Sources/OpenSwiftUI_SPI/Overlay"
+    export *
+
+    module Util {
+        umbrella "../Sources/OpenSwiftUI_SPI/Util"
+        export *
+    }
+}
+
+module QuartzCore_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/QuartzCore"
+    export *
+}
+
+module CoreFoundation_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/CoreFoundation"
+    export *
+}
+
+module CoreGraphics_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/CoreGraphics"
+    export *
+}
+
+module CoreText_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/CoreText"
+    export *
+}
+
+module CoreUI_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/CoreUI"
+    export *
+}
+
+module OpenSwiftUICSymbols {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/CSymbols"
+    export *
+}
+
+module dyldPrivate {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/dyld"
+    export *
+}
+
+module kdebug_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/kdebug"
+    export *
+}
+
+module GraphicsServices_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/GraphicsServices"
+    export *
+}
+
+module MobileGestaltPrivate {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/MobileGestalt"
+    export *
+}
+
+module UIFoundation_Private {
+    umbrella "../Sources/OpenSwiftUI_SPI/Shims/UIFoundation"
+    export *
+}

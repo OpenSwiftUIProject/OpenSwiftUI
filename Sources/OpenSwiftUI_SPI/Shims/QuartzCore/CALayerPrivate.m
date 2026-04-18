@@ -3,6 +3,7 @@
 //  OpenSwiftUI_SPI
 
 #import "CoreAnimation_Private.h"
+#import "CALayerPrivate.h"
 
 #if __has_include(<QuartzCore/CALayer.h>)
 

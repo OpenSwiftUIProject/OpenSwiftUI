@@ -9,7 +9,8 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN && OPENSWIFTUI_LINK_COREUI
 
-@import MobileGestaltPrivate;
+// Use direct #import instead of @import for Xcode/Tuist compatibility.
+#import "MobileGestalt.h"
 
 CUIDisplayGamut _CUIDefaultDisplayGamut() {
     static CUIDisplayGamut defaultGamut;
