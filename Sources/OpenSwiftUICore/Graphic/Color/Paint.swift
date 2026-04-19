@@ -7,6 +7,52 @@
 
 package import Foundation
 
+protocol Paint: ShapeStyle {
+    associatedtype ResolvedPaintType: ResolvedPaint
+
+    func resolvePaint(in env: EnvironmentValues) -> ResolvedPaintType
+    func fallbackColor(in env: EnvironmentValues) -> Color?
+}
+
+extension Paint {
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        switch shape.operation {
+        case .prepareText:
+            shape.result = .none
+        case .resolveStyle(let name, let levels):
+            guard !levels.isEmpty else { return }
+            let resolvedPaint = resolvePaint(in: shape.environment)
+            let anyPaint: AnyResolvedPaint
+            if let bounds = shape.bounds {
+                anyPaint = _AnyResolvedPaint(
+                    AnchoredResolvedPaint(resolvedPaint, bounds: bounds)
+                )
+            } else {
+                anyPaint = _AnyResolvedPaint(resolvedPaint)
+            }
+            var style = ShapeStyle.Pack.Style(.paint(anyPaint))
+            style.applyOpacity(shape.opacity(at: levels.lowerBound))
+            shape.stylePack[name, levels.lowerBound] = style
+        case .fallbackColor:
+            if let color = fallbackColor(in: shape.environment) {
+                shape.result = .color(color)
+            }
+        default:
+            break
+        }
+    }
+}
+
+extension Paint {
+    nonisolated public static func _makeView<S>(
+        view: _GraphValue<_ShapeView<S, Self>>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs where S: Shape {
+        legacyMakeShapeView(view: view, inputs: inputs)
+    }
+}
+
+
 // MARK: - ResolvedPaint
 
 package protocol ResolvedPaint: Equatable, Animatable, ProtobufEncodableMessage {
@@ -102,6 +148,50 @@ final package class _AnyResolvedPaint<P>: AnyResolvedPaint where P: ResolvedPain
 // FIXME
 extension AnyResolvedPaint: @unchecked Sendable {}
 extension _AnyResolvedPaint: @unchecked Sendable {}
+
+// MARK: - AnchoredResolvedPaint
+
+package struct AnchoredResolvedPaint<P>: ResolvedPaint where P: ResolvedPaint {
+    var paint: P
+    var bounds: CGRect
+
+    package init(_ paint: P, bounds: CGRect) {
+        self.paint = paint
+        self.bounds = bounds
+    }
+
+    package func draw(path: Path, style: PathDrawingStyle, in context: GraphicsContext, bounds: CGRect?) {
+        let resolvedBounds: CGRect
+        if let bounds {
+            resolvedBounds = self.bounds.offsetBy(dx: bounds.origin.x, dy: bounds.origin.y)
+        } else {
+            resolvedBounds = self.bounds
+        }
+        paint.draw(path: path, style: style, in: context, bounds: resolvedBounds)
+    }
+
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        try paint.encodePaint(to: &encoder)
+        try encoder.messageField(CodableResolvedPaint.Tag.anchorRect, bounds)
+    }
+
+    package var animatableData: AnimatablePair<P.AnimatableData, AnimatablePair<AnimatablePair<CGFloat, CGFloat>, AnimatablePair<CGFloat, CGFloat>>> {
+        get { AnimatablePair(paint.animatableData, bounds.animatableData) }
+        set {
+            paint.animatableData = newValue.first
+            bounds.animatableData = newValue.second
+        }
+    }
+
+    package var isCALayerCompatible: Bool { paint.isCALayerCompatible }    
+
+    package var isClear: Bool { paint.isClear }
+
+    package var isOpaque: Bool { paint.isOpaque }
+
+    package static var leafProtobufTag: CodableResolvedPaint.Tag? { nil }
+}
+
 
 // MARK: - ResolvedPaintVisitor
 
