@@ -451,7 +451,20 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
     /// A Boolean value indicating whether the path contains zero elements.
     public var isEmpty: Bool {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            true
+        case let .rect(rect):
+            rect.isNull
+        case let .ellipse(rect):
+            rect.isNull
+        case let .roundedRect(fixedRoundedRect):
+            fixedRoundedRect.rect.isNull
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(pathBox):
+            pathBox.rbPath.isEmpty
+        }
     }
 
     /// A rectangle containing all path segments.
