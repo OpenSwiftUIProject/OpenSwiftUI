@@ -136,7 +136,10 @@ extension ViewModifier {
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        Subgraph.beginTreeElement(value: modifier.value, flags: 0)
+        let shouldRecord = Subgraph.shouldRecordTree
+        if shouldRecord {
+            Subgraph.beginTreeElement(value: modifier.value, flags: 0)
+        }
         var inputs = inputs
         let prev = inputs.changedDebugProperties
         inputs.changedDebugProperties = []
@@ -146,24 +149,30 @@ extension ViewModifier {
             body: body
         )
         inputs.changedDebugProperties = prev
-        if Subgraph.shouldRecordTree {
+        if shouldRecord {
             withUnsafePointer(to: inputs) { pointer in
                 _ViewDebug.reallyWrap(&outputs, value: modifier, inputs: pointer)
             }
+            Subgraph.endTreeElement(value: modifier.value)
         }
-        Subgraph.endTreeElement(value: modifier.value)
         return outputs
     }
-    
+
     @inline(__always)
     nonisolated package static func makeDebuggableViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
     ) -> _ViewListOutputs {
-        Subgraph.beginTreeElement(value: modifier.value, flags: 1)
-        defer { Subgraph.endTreeElement(value: modifier.value) }
-        return _makeViewList(modifier: modifier, inputs: inputs, body: body)
+        let shouldRecord = Subgraph.shouldRecordTree
+        if shouldRecord {
+            Subgraph.beginTreeElement(value: modifier.value, flags: 1)
+        }
+        let result = _makeViewList(modifier: modifier, inputs: inputs, body: body)
+        if shouldRecord {
+            Subgraph.endTreeElement(value: modifier.value)
+        }
+        return result
     }
 }
 
@@ -173,7 +182,10 @@ extension View {
         view: _GraphValue<Self>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        Subgraph.beginTreeElement(value: view.value, flags: 0)
+        let shouldRecord = Subgraph.shouldRecordTree
+        if shouldRecord {
+            Subgraph.beginTreeElement(value: view.value, flags: 0)
+        }
         var inputs = inputs
         let prev = inputs.changedDebugProperties
         inputs.changedDebugProperties = []
@@ -182,23 +194,29 @@ extension View {
             inputs: inputs
         )
         inputs.changedDebugProperties = prev
-        if Subgraph.shouldRecordTree {
+        if shouldRecord {
             withUnsafePointer(to: inputs) { pointer in
                 _ViewDebug.reallyWrap(&outputs, value: view, inputs: pointer)
             }
+            Subgraph.endTreeElement(value: view.value)
         }
-        Subgraph.endTreeElement(value: view.value)
         return outputs
     }
-    
+
     @inline(__always)
     nonisolated package static func makeDebuggableViewList(
         view: _GraphValue<Self>,
         inputs: _ViewListInputs
     ) -> _ViewListOutputs {
-        Subgraph.beginTreeElement(value: view.value, flags: 1)
-        defer { Subgraph.endTreeElement(value: view.value) }
-        return _makeViewList(view: view, inputs: inputs)
+        let shouldRecord = Subgraph.shouldRecordTree
+        if shouldRecord {
+            Subgraph.beginTreeElement(value: view.value, flags: 1)
+        }
+        let result = _makeViewList(view: view, inputs: inputs)
+        if shouldRecord {
+            Subgraph.endTreeElement(value: view.value)
+        }
+        return result
     }
 }
 
@@ -257,32 +275,31 @@ extension _ViewDebug {
             _openExistential(anyType, do: project)
         }
 
-        // Process tree values (strcmp for C string comparison to avoid allocation)
+        // Process tree values in the same order as real SwiftUI
         element.forEachValue { treeValue in
             guard let keyPtr = treeValue.key else { return }
             let attr = treeValue.attribute
 
-            if properties.contains(.position) && strcmp(keyPtr, "position") == 0 {
+            if properties.contains(.environment) && strcmp(keyPtr, "environment") == 0 {
+                let oagValue = _graphGetValue(attr, type: EnvironmentValues.self)
+                debugData.data[.environment] = oagValue.value
+                    .assumingMemoryBound(to: EnvironmentValues.self).pointee
+            } else if properties.contains(.position) && strcmp(keyPtr, "position") == 0 {
                 let oagValue = _graphGetValue(attr, type: CGPoint.self)
                 debugData.data[.position] = oagValue.value
                     .assumingMemoryBound(to: CGPoint.self).pointee
             } else if properties.contains(.size) && strcmp(keyPtr, "size") == 0 {
-                // Attribute stores ViewSize; read first sizeof(CGSize) bytes as CGSize
                 let oagValue = _graphGetValue(attr, type: ViewSize.self)
                 debugData.data[.size] = oagValue.value
                     .assumingMemoryBound(to: CGSize.self).pointee
-            } else if properties.contains(.transform) && strcmp(keyPtr, "transform") == 0 {
-                let oagValue = _graphGetValue(attr, type: ViewTransform.self)
-                debugData.data[.transform] = oagValue.value
-                    .assumingMemoryBound(to: ViewTransform.self).pointee
             } else if properties.contains(.phase) && strcmp(keyPtr, "phase") == 0 {
                 let oagValue = _graphGetValue(attr, type: _GraphInputs.Phase.self)
                 debugData.data[.phase] = oagValue.value
                     .assumingMemoryBound(to: _GraphInputs.Phase.self).pointee
-            } else if properties.contains(.environment) && strcmp(keyPtr, "environment") == 0 {
-                let oagValue = _graphGetValue(attr, type: EnvironmentValues.self)
-                debugData.data[.environment] = oagValue.value
-                    .assumingMemoryBound(to: EnvironmentValues.self).pointee
+            } else if properties.contains(.transform) && strcmp(keyPtr, "transform") == 0 {
+                let oagValue = _graphGetValue(attr, type: ViewTransform.self)
+                debugData.data[.transform] = oagValue.value
+                    .assumingMemoryBound(to: ViewTransform.self).pointee
             } else if properties.contains(.layoutComputer) && strcmp(keyPtr, "layoutComputer") == 0 {
                 let oagValue = _graphGetValue(attr, type: LayoutComputer.self)
                 debugData.data[.layoutComputer] = oagValue.value
@@ -305,13 +322,7 @@ extension _ViewDebug {
     public static func serializedData(_ viewDebugData: [_ViewDebug.Data]) -> Foundation.Data? {
         let encoder = JSONEncoder()
         encoder.nonConformingFloatEncodingStrategy = .convertToString(positiveInfinity: "inf", negativeInfinity: "-inf", nan: "nan")
-        do {
-            let data = try encoder.encode(viewDebugData)
-            return data
-        } catch {
-            let dic = ["error": error.localizedDescription]
-            return try? encoder.encode(dic)
-        }
+        return try? encoder.encode(viewDebugData)
     }
 }
 
@@ -334,10 +345,6 @@ extension _ViewDebug.Data: Encodable {
             let attribute: SerializedAttribute? = switch key {
                 case .type: SerializedAttribute(type: value as? Any.Type ?? type(of: value))
                 case .value: serializedAttribute(for: value, label: nil, reflectionDepth: 6)
-                // Complex internal types — use depth 0 to serialize type info only,
-                // avoiding deep reflection into incomplete implementations.
-                case .environment, .layoutComputer:
-                    serializedAttribute(for: value, label: nil, reflectionDepth: 0)
                 default: serializedAttribute(for: value, label: nil, reflectionDepth: 4)
             }
             guard let attribute else { return nil }
@@ -349,20 +356,26 @@ extension _ViewDebug.Data: Encodable {
         guard let unwrappedValue = unwrapped(value) else {
             return nil
         }
-        if unwrappedValue is Encodable || unwrappedValue is CustomViewDebugValueConvertible || depth == 0 {
+        if unwrappedValue is Encodable {
             return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
-        } else if let mirror = effectiveMirror(for: unwrappedValue) {
-            guard !mirror.children.isEmpty else {
-                return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
-            }
-            let depth = depth - 1
-            let subattributes = mirror.children.compactMap { child in
-                serializedAttribute(for: child.value, label: child.label, reflectionDepth: depth)
-            }
-            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: subattributes)
-        } else {
+        }
+        if unwrappedValue is CustomViewDebugValueConvertible {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: true, label: label, subattributes: nil)
+        }
+        if depth == 0 {
             return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: nil)
         }
+        guard let mirror = effectiveMirror(for: unwrappedValue) else {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: nil)
+        }
+        if mirror.children.isEmpty {
+            return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: nil)
+        }
+        let nextDepth = depth - 1
+        let subattributes = mirror.children.compactMap { child in
+            serializedAttribute(for: child.value, label: child.label, reflectionDepth: nextDepth)
+        }
+        return SerializedAttribute(value: unwrappedValue, serializeValue: false, label: label, subattributes: subattributes.isEmpty ? nil : subattributes)
     }
 
     private func unwrapped(_ value: Any) -> Any? {
@@ -497,6 +510,36 @@ package protocol CustomViewDebugReflectable {
 
 package protocol CustomViewDebugValueConvertible {
     var viewDebugValue: Any { get }
+}
+
+extension HorizontalAlignment: CustomViewDebugValueConvertible {
+    package var viewDebugValue: Any {
+        _typeName(key.id, qualified: false)
+    }
+}
+
+extension VerticalAlignment: CustomViewDebugValueConvertible {
+    package var viewDebugValue: Any {
+        _typeName(key.id, qualified: false)
+    }
+}
+
+@_spi(ForOpenSwiftUIOnly)
+extension ViewTransform: Encodable {
+    enum CodingKeys: CodingKey {
+        case items
+        case positionAdjustment
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        var itemsArray: [ViewTransform.Item] = []
+        forEach(inverted: true) { item, _ in
+            itemsArray.append(item)
+        }
+        try container.encode(itemsArray, forKey: .items)
+        try container.encode(positionAdjustment, forKey: .positionAdjustment)
+    }
 }
 
 @_spi(ForOpenSwiftUIOnly)

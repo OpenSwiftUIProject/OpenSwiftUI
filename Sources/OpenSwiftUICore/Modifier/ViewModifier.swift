@@ -532,5 +532,7 @@ extension ViewModifier {
 // MARK: - ModifiedContent + CustomViewDebugReflectable
 
 extension ModifiedContent: CustomViewDebugReflectable {
-    package var customViewDebugMirror: Mirror? { nil }
+    package var customViewDebugMirror: Mirror? {
+        Mirror(self, children: [(label: "content", value: content as Any), (label: "modifier", value: modifier as Any)])
+    }
 }
