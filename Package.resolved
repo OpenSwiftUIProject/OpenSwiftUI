@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "b466b79931d3ef1f38022bd14a5e6523cb5fdf39"
+        "revision" : "4d5ce9dff2edeaf9a57822388b4d2bf09b2b8a01"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "5d84ebd4588f1b7fa7665610a7aaad13ed4e29c6"
+        "revision" : "77dc490786d5192ab926e1e5063c0dd0bf1dd4d8"
       }
     },
     {
@@ -43,7 +43,16 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "d34d8ce70e66daefc8e38619705a3b50c84b8cea"
+        "revision" : "7a963a0a50b309b0a063fe7b5c171619bb93868d"
+      }
+    },
+    {
+      "identity" : "swift-collections",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/apple/swift-collections",
+      "state" : {
+        "revision" : "6675bc0ff86e61436e615df6fc5174e043e57924",
+        "version" : "1.4.1"
       }
     },
     {
