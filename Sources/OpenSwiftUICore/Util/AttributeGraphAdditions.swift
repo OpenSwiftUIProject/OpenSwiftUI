@@ -106,6 +106,7 @@ extension AnyAttribute.Flags {
         .init(rawValue: 1 << 0)
     }
 
+    #if !OPENSWIFTUI_DANCEUIGRAPH
     package static var removable: Subgraph.Flags {
         .init(rawValue: 1 << 1)
     }
@@ -113,6 +114,7 @@ extension AnyAttribute.Flags {
     package static var invalidatable: Subgraph.Flags {
         .init(rawValue: 1 << 2)
     }
+    #endif
 
     package static var scrapeable: Subgraph.Flags {
         .init(rawValue: 1 << 3)

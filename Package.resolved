@@ -1,5 +1,5 @@
 {
-  "originHash" : "1eafd0990c16b48f2316f804dea1ff16d84cc351874dd3f142e4a0760be0e3d4",
+  "originHash" : "b03bdf25c5bef5ea9cf20585206be5013c0b53257e9ebab75c9f19d480cd17ed",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "2d5c01554177244972dffac610fcc3582498e1f7"
+        "revision" : "5d84ebd4588f1b7fa7665610a7aaad13ed4e29c6"
       }
     },
     {

@@ -149,6 +149,7 @@ let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
 
 // For OpenAttributeGraphShims
 let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
+let danceUIGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_DANCEUIGRAPH", default: false)
 let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: false)
 
 let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
@@ -352,6 +353,10 @@ if computeCondition {
     sharedCSettings.append(.define("OPENSWIFTUI_COMPUTE"))
     sharedCxxSettings.append(.define("OPENSWIFTUI_COMPUTE"))
     sharedSwiftSettings.append(.define("OPENSWIFTUI_COMPUTE"))
+} else if danceUIGraphCondition {
+    sharedCSettings.append(.define("OPENSWIFTUI_DANCEUIGRAPH"))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_DANCEUIGRAPH"))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_DANCEUIGRAPH"))
 } else if attributeGraphCondition {
     sharedCSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
     sharedCxxSettings.append(.define("OPENSWIFTUI_ATTRIBUTEGRAPH"))
