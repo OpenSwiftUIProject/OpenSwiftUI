@@ -219,6 +219,10 @@ package enum Log {
 
     // Added in 6.4.41
     package static let timelineScheduleSequences: Logger = Logger(subsystem: subsystem, category: "TimelineSchedule Sequences")
+
+    #if DEBUG
+    fileprivate static let development: Logger = Logger(subsystem: subsystem, category: "Development")
+    #endif
 }
 
 @available(*, unavailable)
@@ -235,7 +239,7 @@ package func precondition(_ condition: @autoclosure () -> Bool, _ message: @auto
 package func preconditionFailure(_ message: @autoclosure () -> String, file: StaticString, line: UInt) -> Never {
     #if DEBUG && OPENSWIFTUI_DEVELOPMENT
     if message() == "TODO" {
-        print("💣 Hit unimplemented part of OpenSwiftUI at \(file):\(line).\nConsider adding a plain implementation to avoid crash.")
+        Log.development.warning("Hit unimplemented part of OpenSwiftUI at \(file):\(line).\nConsider adding a plain implementation to avoid crash.")
     }
     #endif
     Swift.fatalError(message(), file: file, line: line)
@@ -284,16 +288,20 @@ package func _openSwiftUIPlatformUnimplementedFailure(_ function: String = #func
 
 @_transparent
 package func _openSwiftUIUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
-    print("\(file):\(line): Warning: \(function) is unimplemented")
-    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    #if DEBUG
+    Log.development.warning("\(file):\(line): Warning: \(function) is unimplemented")
+    #if OPENSWIFTUI_DEVELOPMENT
     _openSwiftUIUnimplementedFailure(function, file: file, line: line)
+    #endif
     #endif
 }
 
 @_transparent
 package func _openSwiftUIPlatformUnimplementedWarning(_ function: String = #function, file: StaticString = #fileID, line: UInt = #line) {
-    print("\(file):\(line): Warning: \(function) is unimplemented on this platform")
-    #if DEBUG && OPENSWIFTUI_DEVELOPMENT
+    #if DEBUG
+    Log.development.warning("\(file):\(line): Warning: \(function) is unimplemented on this platform")
+    #if OPENSWIFTUI_DEVELOPMENT
     _openSwiftUIPlatformUnimplementedFailure(function, file: file, line: line)
+    #endif
     #endif
 }
