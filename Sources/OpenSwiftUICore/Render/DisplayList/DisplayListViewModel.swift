@@ -137,8 +137,28 @@ extension DisplayList.ViewUpdater {
                 return rect.applying(transform.inverted())
             }
 
-            fileprivate func adjust(for transform: CGAffineTransform) {
-                // TODO
+            fileprivate mutating func adjust(for transform: CGAffineTransform) {
+                guard shadow != nil || !filters.isEmpty else {
+                    return
+                }
+                let transformedWidth = CGSize(width: 1.0, height: 1.0).applying(transform).width
+                guard abs(transformedWidth - 1.0) > 0.001 else {
+                    return
+                }
+                let scale = 1.0 / transformedWidth
+                if let shadow {
+                    var value = shadow.value
+                    value.radius *= scale
+                    value.offset *= scale
+                    self.shadow = Indirect(value)
+                }
+                for (index, filter) in filters.enumerated() {
+                    guard case var .blur(blurStyle) = filter else {
+                        continue
+                    }
+                    blurStyle.radius *= scale
+                    filters[index] = .blur(blurStyle)
+                }
             }
 
             fileprivate mutating func addClip(_ path: Path, style: FillStyle) {
