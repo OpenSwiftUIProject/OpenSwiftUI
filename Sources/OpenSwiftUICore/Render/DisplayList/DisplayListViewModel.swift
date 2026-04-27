@@ -51,7 +51,7 @@ extension DisplayList.ViewUpdater {
                     // OpenSwiftUI Addition:
                     // SwiftUI 6.5.1 Buggy implementation: guard rect.width == rect.height
                     // SwiftUI 7.2.5 Fixed: guard abs(rect.width - rect.height) < 0.001
-                    guard abs(rect.width - rect.height) < 0.001 else {
+                    guard rect.width.approximates(rect.height, epsilon: 0.001) else {
                         return nil
                     }
                     let radius = rect.width * 0.5
@@ -213,7 +213,7 @@ extension DisplayList.ViewUpdater {
     }
 }
 
-// MARK: - Path + intersectRoundedRects [WIP]
+// MARK: - Path + intersectRoundedRects
 
 @available(OpenSwiftUI_v1_0, *)
 extension Path {
@@ -226,56 +226,40 @@ extension Path {
             return true
         }
         if lhs.cornerSize == rhs.cornerSize && lhs.style == rhs.style {
-            if lhs.rect.minX.approximates(rhs.rect.minX, epsilon: 0.001),
+            if lhs.rect.x.approximates(rhs.rect.x, epsilon: 0.001),
                lhs.rect.width.approximates(rhs.rect.width, epsilon: 0.001) {
-                let minY = max(lhs.rect.minY, rhs.rect.minY)
-                let maxY = min(lhs.rect.maxY, rhs.rect.maxY)
-                guard minY < maxY else {
-                    self = Path()
-                    return true
-                }
-                self = Path(
-                    roundedRect: CGRect(
-                        x: lhs.rect.minX,
-                        y: minY,
-                        width: lhs.rect.width,
-                        height: maxY - minY
-                    ),
+                let y = max(lhs.rect.y, rhs.rect.y)
+                let height = min(lhs.rect.y + lhs.rect.height, rhs.rect.y + rhs.rect.height) - y
+                let storage: Path.Storage = height > 0 ? .roundedRect(FixedRoundedRect(
+                    CGRect(x: lhs.rect.x, y: y, width: lhs.rect.width, height: height),
                     cornerSize: lhs.cornerSize,
                     style: lhs.style
-                )
+                )) : .empty
+                self = Path(storage: storage)
                 return true
             }
-            if lhs.rect.minY.approximates(rhs.rect.minY, epsilon: 0.001),
+            if lhs.rect.y.approximates(rhs.rect.y, epsilon: 0.001),
                lhs.rect.height.approximates(rhs.rect.height, epsilon: 0.001) {
-                let minX = max(lhs.rect.minX, rhs.rect.minX)
-                let maxX = min(lhs.rect.maxX, rhs.rect.maxX)
-                guard minX < maxX else {
-                    self = Path()
-                    return true
-                }
-                self = Path(
-                    roundedRect: CGRect(
-                        x: minX,
-                        y: lhs.rect.minY,
-                        width: maxX - minX,
-                        height: lhs.rect.height
-                    ),
+                let x = max(lhs.rect.x, rhs.rect.x)
+                let width = min(lhs.rect.x + lhs.rect.width, rhs.rect.x + rhs.rect.width) - x
+                let storage: Path.Storage = width > 0 ? .roundedRect(FixedRoundedRect(
+                    CGRect(x: x, y: lhs.rect.y, width: width, height: lhs.rect.height),
                     cornerSize: lhs.cornerSize,
                     style: lhs.style
-                )
+                )) : .empty
+                self = Path(storage: storage)
                 return true
             }
         }
         if lhs.contains(rhs) {
             self = Path(storage: .roundedRect(rhs))
             return true
-        }
-        if rhs.contains(lhs) {
+        } else if rhs.contains(lhs) {
             self = Path(storage: .roundedRect(lhs))
             return true
+        } else {
+            return false
         }
-        return false
     }
 }
 
