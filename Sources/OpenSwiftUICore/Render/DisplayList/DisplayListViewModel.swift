@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Blocked by MergedViewRequirements
 //  ID: CA3A65C294B7CEBAC4D3EE28C528C257 (SwiftUICore)
 
 import OpenCoreGraphicsShims
@@ -162,8 +162,137 @@ extension DisplayList.ViewUpdater {
             }
 
             fileprivate mutating func addClip(_ path: Path, style: FillStyle) {
-                // TODO
+                guard transform.isRectilinear else {
+                    appendClip(path, transform: transform, style: style)
+                    return
+                }
+                switch path.storage {
+                case .empty:
+                    clips = [Clip(path: path, transform: nil, style: style)]
+                case let .rect(rect):
+                    appendClip(
+                        Path(rect.applying(transform)),
+                        transform: nil,
+                        style: style
+                    )
+                case let .ellipse(rect):
+                    appendClip(
+                        Path(ellipseIn: rect.applying(transform)),
+                        transform: nil,
+                        style: style
+                    )
+                case let .roundedRect(roundedRect):
+                    appendClip(
+                        Path(storage: .roundedRect(roundedRect.applying(transform))),
+                        transform: nil,
+                        style: style
+                    )
+                default:
+                    appendClip(
+                        path,
+                        transform: transform,
+                        style: style
+                    )
+                }
+            }
+
+            @inline(__always)
+            private mutating func appendClip(_ path: Path, transform: CGAffineTransform?, style: FillStyle) {
+                if transform == nil {
+                    for (index, clip) in clips.enumerated() where clip.transform == nil {
+                        var existingPath = clip.path
+                        if existingPath.intersectRoundedRects(path) {
+                            clips[index].path = existingPath
+                            return
+                        }
+                    }
+                }
+                clips.append(Clip(path: path, transform: transform, style: style))
             }
         }
+    }
+}
+
+// MARK: - Path + intersectRoundedRects [WIP]
+
+@available(OpenSwiftUI_v1_0, *)
+extension Path {
+    fileprivate mutating func intersectRoundedRects(_ other: Path) -> Bool {
+        guard let lhs = roundedRect(), let rhs = other.roundedRect() else {
+            return false
+        }
+        guard lhs.cornerSize != .zero || rhs.cornerSize != .zero else {
+            self = Path(lhs.rect.intersection(rhs.rect))
+            return true
+        }
+        if lhs.cornerSize == rhs.cornerSize && lhs.style == rhs.style {
+            if lhs.rect.minX.approximates(rhs.rect.minX, epsilon: 0.001),
+               lhs.rect.width.approximates(rhs.rect.width, epsilon: 0.001) {
+                let minY = max(lhs.rect.minY, rhs.rect.minY)
+                let maxY = min(lhs.rect.maxY, rhs.rect.maxY)
+                guard minY < maxY else {
+                    self = Path()
+                    return true
+                }
+                self = Path(
+                    roundedRect: CGRect(
+                        x: lhs.rect.minX,
+                        y: minY,
+                        width: lhs.rect.width,
+                        height: maxY - minY
+                    ),
+                    cornerSize: lhs.cornerSize,
+                    style: lhs.style
+                )
+                return true
+            }
+            if lhs.rect.minY.approximates(rhs.rect.minY, epsilon: 0.001),
+               lhs.rect.height.approximates(rhs.rect.height, epsilon: 0.001) {
+                let minX = max(lhs.rect.minX, rhs.rect.minX)
+                let maxX = min(lhs.rect.maxX, rhs.rect.maxX)
+                guard minX < maxX else {
+                    self = Path()
+                    return true
+                }
+                self = Path(
+                    roundedRect: CGRect(
+                        x: minX,
+                        y: lhs.rect.minY,
+                        width: maxX - minX,
+                        height: lhs.rect.height
+                    ),
+                    cornerSize: lhs.cornerSize,
+                    style: lhs.style
+                )
+                return true
+            }
+        }
+        if lhs.contains(rhs) {
+            self = Path(storage: .roundedRect(rhs))
+            return true
+        }
+        if rhs.contains(lhs) {
+            self = Path(storage: .roundedRect(lhs))
+            return true
+        }
+        return false
+    }
+}
+
+// MARK: - DisplayList.Item helper [WIP]
+
+extension DisplayList.Item {
+    fileprivate func rewriteVibrancyFilterAsBackdrop(
+        matrix: _ColorMatrix,
+        list: DisplayList
+    ) {
+        _openSwiftUIUnimplementedWarning()
+    }
+    
+    fileprivate func discardContainingClips(
+        state: inout DisplayList.ViewUpdater.Model.State
+    ) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
     }
 }
