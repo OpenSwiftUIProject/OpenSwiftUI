@@ -8,8 +8,18 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <dispatch/dispatch.h>
 #include <os/log.h>
 #include <CoreFoundation/CoreFoundation.h>
+
+static os_log_t interpose_log(void) {
+    static dispatch_once_t onceToken;
+    static os_log_t log = NULL;
+    dispatch_once(&onceToken, ^{
+        log = os_log_create("org.OpenSwiftUIProject.OpenSwiftUI", "Interpose");
+    });
+    return log;
+}
 
 // MARK: - Type Description Shim
 
@@ -71,7 +81,6 @@ static inline CFStringRef _interpose_protocol_description(const void *protocol) 
             return result;
         }
     }
-
     CFStringRef result = CFStringCreateWithCString(kCFAllocatorDefault, name, kCFStringEncodingUTF8);
     CFAutorelease(result);
     return result;
@@ -113,7 +122,7 @@ static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, con
          CFStringHasPrefix(targetDescription, CFSTR("SwiftUICore."))) &&
         (CFStringHasPrefix(srcDescription, CFSTR("OpenSwiftUI.")) ||
          CFStringHasPrefix(srcDescription, CFSTR("OpenSwiftUICore.")))) {
-        os_log_info(OS_LOG_DEFAULT, "[OpenSwiftUI] swift_dynamicCast failed for target: %{public}@ src: %{public}@", targetDescription, srcDescription);
+        os_log_info(interpose_log(), "swift_dynamicCast failed for target: %{public}@ src: %{public}@", targetDescription, srcDescription);
     }
     // If dynamicCast check failed and the target is SwiftUI's Color.Resolved
     // retry with OpenSwiftUI's Color.Resolved
@@ -121,7 +130,7 @@ static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, con
         result = swift_dynamicCast(dest, src, srcType, _OpenSwiftUI_ColorResolvedNTD(), flags);
         if (result) {
             CFStringRef description = _interpose_type_description(srcType);
-            os_log_info(OS_LOG_DEFAULT, "[OpenSwiftUI] swift_dynamicCast succeeded for %{public}@", description);
+            os_log_info(interpose_log(), "swift_dynamicCast succeeded for %{public}@", description);
         }
     }
     return result;
@@ -152,7 +161,7 @@ static const void *my_swift_conformsToProtocol2(const void *type, const void *pr
          CFStringHasPrefix(protocolDescription, CFSTR("SwiftUICore."))) &&
         (CFStringHasPrefix(typeDescription, CFSTR("OpenSwiftUI.")) ||
          CFStringHasPrefix(typeDescription, CFSTR("OpenSwiftUICore.")))) {
-        os_log_info(OS_LOG_DEFAULT, "[OpenSwiftUI] swift_conformsToProtocol2 failed for protocol: %{public}@ type: %{public}@", protocolDescription, typeDescription);
+        os_log_info(interpose_log(), "swift_conformsToProtocol2 failed for protocol: %{public}@ type: %{public}@", protocolDescription, typeDescription);
     }
     // If conformance check failed and the protocol is SwiftUI's PlatformDrawable,
     // retry with OpenSwiftUI's PlatformDrawable
@@ -160,7 +169,7 @@ static const void *my_swift_conformsToProtocol2(const void *type, const void *pr
         result = swift_conformsToProtocol2(type, _OpenSwiftUI_PlatformDrawablePD());
         if (result != NULL) {
             CFStringRef description = _interpose_type_description(type);
-            os_log_info(OS_LOG_DEFAULT, "[OpenSwiftUI] swift_conformsToProtocol2 succeeded via OpenSwiftUI fallback for %{public}@", description);
+            os_log_info(interpose_log(), "swift_conformsToProtocol2 succeeded via OpenSwiftUI fallback for %{public}@", description);
         }
     }
     return result;
