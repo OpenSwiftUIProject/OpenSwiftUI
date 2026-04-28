@@ -38,6 +38,14 @@ extension DisplayList {
             self.wasValid = false
         }
         
+        var platform: Platform {
+            viewCache.platform
+        }
+
+        var exportedObject: AnyObject? {
+            nil
+        }
+        
         func render(
             rootView: AnyObject,
             from list: DisplayList,
@@ -147,6 +155,7 @@ extension DisplayList {
         }
         
         func destroy(rootView: AnyObject) {
+            // FIXME: Container
             isValid = false
             wasValid = false
             lastList = DisplayList()
@@ -160,15 +169,6 @@ extension DisplayList {
         
         var viewCacheIsEmpty: Bool {
             viewCache.map.isEmpty
-        }
-
-        var platform: Platform {
-            viewCache.platform
-        }
-
-        var exportedObject: AnyObject? {
-            // TODO
-            nil
         }
     }
 }
