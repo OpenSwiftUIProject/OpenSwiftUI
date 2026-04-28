@@ -99,6 +99,12 @@ extension DisplayList.ViewUpdater {
             asyncModifierGroup = nil
         }
 
+        @inline(__always)
+        mutating func clearPendingAsyncValues() {
+            pendingAsyncValues = [:]
+            pendingAsyncUpdates = []
+        }
+
         mutating func reclaim(time: Time) {
             removed.forEach { key in
                 guard let info = map[key], info.isRemoved else { return }
@@ -197,8 +203,7 @@ extension DisplayList.ViewUpdater {
                 update()
             }
             // Reset state
-            pendingAsyncValues = [:]
-            pendingAsyncUpdates = []
+            clearPendingAsyncValues()
             #else
             _openSwiftUIPlatformUnimplementedWarning()
             #endif

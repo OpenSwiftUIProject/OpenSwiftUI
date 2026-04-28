@@ -2,7 +2,7 @@
 //  DisplayListViewUpdater.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: B86250B2E056EB47628ECF46032DFA4C (SwiftUICore)
 
@@ -82,95 +82,68 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
-            // Phase 1: Version hash early return
-            let newAsyncSeed = DisplayList.Seed(version)
-            if newAsyncSeed == asyncSeed, lastTime >= time {
+            if isValid, DisplayList.Seed(version) == asyncSeed, nextUpdate >= time {
                 return nextUpdate
             }
-
-            // Phase 2: Debug print
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
             }
             if let printTree, printTree {
                 print("Async view at \(time):\n\(list.description)")
             }
-
-            // Phase 3: Save state and call updateAsync
-            wasValid = isValid
-            let oldList = viewCache.currentList
-
-            guard let resultTime = updateAsync(oldList: oldList, newList: list) else {
-                // Cancelled: rollback
-                isValid = wasValid
-                return nil
+            let newGlobals = Model.State.Globals(
+                updater: self,
+                time: time,
+                maxVersion: maxVersion,
+                environment: lastEnv
+            )
+            let oldGlobals = Model.State.Globals(
+                updater: self,
+                time: lastTime,
+                maxVersion: maxVersion,
+                environment: lastEnv
+            )
+            return withUnsafePointer(to: newGlobals) { newGlobalsPtr in
+                withUnsafePointer(to: oldGlobals) { oldGlobalsPtr in
+                    let oldParentState = Model.State(globals: oldGlobalsPtr)
+                    let newParentState = Model.State(globals: newGlobalsPtr)
+                    viewCache.index = .init()
+                    wasValid = isValid
+                    isValid = true
+                    let oldList = lastList
+                    let resultTime = withUnsafePointer(to: oldParentState) { oldParentStatePtr in
+                        withUnsafePointer(to: newParentState) { newParentStatePtr in
+                            updateAsync(
+                                oldList: oldList,
+                                oldParentState: oldParentStatePtr,
+                                newList: list,
+                                newParentState: newParentStatePtr
+                            )
+                        }
+                    }
+                    guard let resultTime else {
+                        viewCache.clearPendingAsyncValues()
+                        isValid = wasValid
+                        return nil
+                    }
+                    viewCache.commitAsyncValues(targetTimestamp: targetTimestamp)
+                    lastList = list
+                    lastTime = time
+                    asyncSeed = seed
+                    nextUpdate = resultTime
+                    return resultTime
+                }
             }
-
-            // Phase 4: Commit
-            viewCache.commitAsyncValues(targetTimestamp: targetTimestamp)
-            viewCache.currentList = list
-            asyncSeed = newAsyncSeed
-            lastTime = time
-            nextUpdate = resultTime
-            isValid = true
-
-            return resultTime
         }
-
-        private func updateAsync(oldList: DisplayList, newList: DisplayList) -> Time? {
-            let oldItems = oldList.items
-            let newItems = newList.items
-            guard oldItems.count == newItems.count else {
-                return nil
-            }
-
-            var nextTime: Time = .infinity
-
-            for i in 0 ..< oldItems.count {
-                let oldItem = oldItems[i]
-                let newItem = newItems[i]
-
-                guard oldItem.matchesTopLevelStructure(of: newItem) else {
-                    return nil
-                }
-
-                switch (oldItem.value, newItem.value) {
-                case let (.effect(_, oldChild), .effect(_, newChild)):
-                    guard let childTime = updateAsync(oldList: oldChild, newList: newChild) else {
-                        return nil
-                    }
-                    nextTime = min(nextTime, childTime)
-                case let (.states(oldStates), .states(newStates)):
-                    guard oldStates.count == newStates.count else {
-                        return nil
-                    }
-                    for j in 0 ..< oldStates.count {
-                        let (oldHash, oldChild) = oldStates[j]
-                        let (newHash, newChild) = newStates[j]
-                        guard oldHash == newHash else {
-                            return nil
-                        }
-                        guard let stateTime = updateAsync(
-                            oldList: oldChild,
-                            newList: newChild
-                        ) else {
-                            return nil
-                        }
-                        nextTime = min(nextTime, stateTime)
-                    }
-                case (.content, .content):
-                    // TODO: updateItemViewAsync — leaf platform view property update
-                    if oldItem.version != newItem.version {
-                        // Content changed but structure same — would update platform view here
-                    }
-                case (.empty, .empty):
-                    break
-                default:
-                    break
-                }
-            }
-
-            return nextTime
+        
+        private func updateAsync(
+            oldList: DisplayList,
+            oldParentState: UnsafePointer<Model.State>,
+            newList: DisplayList,
+            newParentState: UnsafePointer<Model.State>
+        ) -> Time? {
+            // FIXME
+            return nil
         }
         
         func destroy(rootView: AnyObject) {
