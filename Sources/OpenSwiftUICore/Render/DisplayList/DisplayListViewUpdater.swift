@@ -219,14 +219,13 @@ extension DisplayList {
     }
 }
 
-// MARK: - DisplayList.ViewUpdater.Container [TODO]
+// MARK: - DisplayList.ViewUpdater.Container
 
 extension DisplayList.ViewUpdater {
-    // FIXME
     private struct Container {
         var rootView: AnyObject
         var platform: Platform
-        var id: ViewInfo.ID
+        var id: ViewInfo.ID // FIXME
         var nextTime: Time
         var count: Int
 
@@ -239,8 +238,24 @@ extension DisplayList.ViewUpdater {
         }
 
         mutating func removeRemaining(viewCache: inout ViewCache) {
-            // FIXME
-            _openSwiftUIUnimplementedWarning()
+            let subviews = platform.subviews(rootView)
+            guard count < subviews.count else {
+                return
+            }
+            for index in (count..<subviews.count).reversed() {
+                let view = subviews[index]
+                let pointer = unsafeBitCast(view, to: OpaquePointer.self)
+                guard let key = viewCache.reverseMap[pointer] else {
+                    continue
+                }
+                var info = viewCache.map[key]!
+                if !info.isRemoved {
+                    info.isRemoved = true
+                    viewCache.map[key] = info
+                    viewCache.removed.insert(key)
+                }
+                platform.removeFromSuperview(view)
+            }
         }
     }
 }

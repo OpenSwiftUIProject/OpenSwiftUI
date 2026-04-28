@@ -130,6 +130,15 @@ extension DisplayList.ViewUpdater.Platform {
     }
     
     @inline(__always)
+    package func removeFromSuperview(_ view: AnyObject) {
+        #if canImport(QuartzCore)
+        CoreViewRemoveFromSuperview(system: viewSystem, view: view)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
+
+    @inline(__always)
     package func maskView(_ view: AnyObject) -> AnyObject? {
         #if canImport(QuartzCore)
         CoreViewMaskView(system: viewSystem, view: view) as AnyObject?
