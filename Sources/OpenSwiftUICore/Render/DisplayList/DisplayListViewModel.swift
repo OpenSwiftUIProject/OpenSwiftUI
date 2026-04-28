@@ -320,4 +320,88 @@ extension DisplayList.Item {
 //        value = .effect(.mask(list), DisplayList(filterItem))
 //    }
     #endif
+    
+    fileprivate func discardContainingClips(
+        state: inout DisplayList.ViewUpdater.Model.State
+    ) -> Bool {
+        guard !state.clips.isEmpty else {
+            return true
+        }
+        guard !state.clips[0].isEmpty else {
+            return false
+        }
+        guard case let .content(content) = value,
+              state.transform.isRectilinear else {
+            return true
+        }
+        let inverseTransform = state.transform.inverted()
+        var effectOutset: CGFloat?
+        var index = 0
+        while index < state.clips.endIndex {
+            guard let clipRect = state.clips[index].clipRect() else {
+                index &+= 1
+                continue
+            }
+            var localClipRect = clipRect.applying(inverseTransform)
+            let sectionRect: CGRect
+            switch content.value {
+            case .backdrop, .color, .chameleonColor, .image, .text, .flattened, .drawing:
+                sectionRect = frame
+            case let .shape(path, _, _):
+                sectionRect = path.boundingRect.offsetBy(dx: frame.origin.x, dy: frame.origin.y)
+            case .shadow, .platformView, .platformLayer, .view, .placeholder:
+                return true
+            }
+            guard localClipRect.hasIntersection(sectionRect) else {
+                return false
+            }
+            let resolvedEffectOutset = effectOutset ?? state.clipDiscardEffectOutset
+            effectOutset = resolvedEffectOutset
+            if resolvedEffectOutset != 0 {
+                guard let insetClipRect = localClipRect.insetBy(dx: resolvedEffectOutset, dy: resolvedEffectOutset) else {
+                    index &+= 1
+                    continue
+                }
+                localClipRect = insetClipRect
+            }
+            guard localClipRect.contains(rect: sectionRect) else {
+                index &+= 1
+                continue
+            }
+            state.clips.remove(at: index)
+        }
+        return true
+    }
+}
+
+// MARK: - DisplayList.ViewUpdater.Model.State helper
+
+extension DisplayList.ViewUpdater.Model.State {
+    @inline(__always)
+    fileprivate var clipDiscardEffectOutset: CGFloat {
+        var outset: CGFloat = 0
+        if let shadow {
+            outset += shadow.value.clipDiscardOutset
+        }
+        for filter in filters {
+            switch filter {
+            case let .blur(blurStyle):
+                if !blurStyle.isOpaque {
+                    outset += blurStyle.radius * 2.8
+                }
+            default:
+                break
+            }
+        }
+        return outset
+    }
+}
+
+// MARK: - ResolvedShadowStyle helper
+
+extension ResolvedShadowStyle {
+    @inline(__always)
+    fileprivate var clipDiscardOutset: CGFloat {
+        radius * 2.8 + max(abs(offset.width), abs(offset.height))
+    }
 }
