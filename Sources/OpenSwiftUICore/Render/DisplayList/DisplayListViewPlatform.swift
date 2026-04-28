@@ -79,11 +79,17 @@ extension DisplayList.ViewUpdater {
             var position: CGPoint
             var size: CGSize
             let kind: PlatformViewDefinition.ViewKind
-            var flags: ViewFlags
-            var platformState: Platform.PlatformState
+            var flags: ViewFlags = []
+            var platformState: Platform.PlatformState = .init()
+            
+            mutating func reset() {
+                position = .infinity
+                size = .infinity
+                flags = []
+            }
         }
 
-        struct ViewFlags {
+        struct ViewFlags: OptionSet {
             let rawValue: UInt8
         }
     }

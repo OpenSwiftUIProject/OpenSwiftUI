@@ -6,13 +6,16 @@
 //  Status: WIP
 //  ID: B86250B2E056EB47628ECF46032DFA4C (SwiftUICore)
 
+import Foundation
+import OpenSwiftUI_SPI
+import OpenQuartzCoreShims
+import QuartzCore_Private
+
+// MARK: - DisplayList.ViewUpdater [WIP]
+
 private var printTree: Bool?
 
-import Foundation
-import OpenQuartzCoreShims
-
 extension DisplayList {
-    // FIXME
     final package class ViewUpdater: ViewRendererBase {
         weak var host: (any ViewRendererHost)?
         var viewCache: DisplayList.ViewUpdater.ViewCache
@@ -54,33 +57,76 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
-            viewCache.clearAsyncValues()
+            if environment != lastEnv {
+                lastEnv = environment
+                isValid = false
+                viewCache.invalidateAll()
+                seed = .init()
+            }
+            if isValid, DisplayList.Seed(version) == seed, nextUpdate >= time {
+                return nextUpdate
+            }
+            #if canImport(QuartzCore)
+            if lastTime == .zero {
+                let layer = platform.viewLayer(rootView)
+                layer.allowsGroupOpacity = false
+                layer.allowsGroupBlending = false
+            }
+            #endif
+            let newSeed = DisplayList.Seed(version)
+            seed = newSeed
+            asyncSeed = newSeed
+            wasValid = isValid
+            isValid = true
+            lastList = list
+            lastTime = time
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
             }
             if let printTree, printTree {
                 print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at \(time):\n\(list.description)")
             }
-
-            let newSeed = DisplayList.Seed(version)
-            let seedChanged = newSeed != seed
-            let envChanged = environment != lastEnv
-
-            wasValid = isValid
-
-            if seedChanged || envChanged || !isValid {
-                // TODO: Walk display list items and create/update platform views
+            let globals = Model.State.Globals(
+                updater: self,
+                time: time,
+                maxVersion: maxVersion,
+                environment: lastEnv
+            )
+            return withUnsafePointer(to: globals) { globalsPtr in
+                let parentState = Model.State(globals: globalsPtr)
+                viewCache.index = .init()
                 viewCache.currentList = list
-                seed = newSeed
-                lastEnv = environment
-                isValid = true
+                viewCache.clearAsyncValues()
+                #if canImport(QuartzCore)
+                let layer = platform.viewLayer(rootView)
+                let needsLayoutOnGeometryChange = layer.needsLayoutOnGeometryChange
+                layer.needsLayoutOnGeometryChange = false
+                #endif
+                var container = Container(rootView: rootView, platform: viewCache.platform)
+                withUnsafePointer(to: parentState) { parentStatePtr in
+                    update(
+                        container: &container,
+                        from: list,
+                        parentState: parentStatePtr
+                    )
+                }
+                container.removeRemaining(viewCache: &viewCache)
+                viewCache.reclaim(time: time)
+                viewCache.currentList = DisplayList()
+                if !isValid {
+                    container.nextTime = time
+                }
+                if let host, let observer = host.as(ViewGraphRenderObserver.self) {
+                    observer.didRender()
+                }
+                let nextTime = container.nextTime
+                nextUpdate = nextTime
+
+                #if canImport(QuartzCore)
+                layer.needsLayoutOnGeometryChange = needsLayoutOnGeometryChange
+                #endif
+                return nextTime
             }
-
-            lastList = list
-            lastTime = time
-            nextUpdate = .infinity
-
-            return nextUpdate
         }
         
         func renderAsync(
@@ -144,16 +190,6 @@ extension DisplayList {
             }
         }
         
-        private func updateAsync(
-            oldList: DisplayList,
-            oldParentState: UnsafePointer<Model.State>,
-            newList: DisplayList,
-            newParentState: UnsafePointer<Model.State>
-        ) -> Time? {
-            // FIXME
-            return nil
-        }
-        
         func destroy(rootView: AnyObject) {
             // FIXME: Container
             isValid = false
@@ -170,22 +206,64 @@ extension DisplayList {
         var viewCacheIsEmpty: Bool {
             viewCache.map.isEmpty
         }
+        
+        private func update(
+            container: inout Container,
+            from list: DisplayList,
+            parentState: UnsafePointer<Model.State>
+        ) {
+            _openSwiftUIUnimplementedWarning()
+        }
+        
+        private func updateAsync(
+            oldList: DisplayList,
+            oldParentState: UnsafePointer<Model.State>,
+            newList: DisplayList,
+            newParentState: UnsafePointer<Model.State>
+        ) -> Time? {
+            _openSwiftUIUnimplementedWarning()
+            return nil
+        }
     }
 }
+
+// MARK: - DisplayList.ViewUpdater.Container [TODO]
+
+extension DisplayList.ViewUpdater {
+    // FIXME
+    private struct Container {
+        var rootView: AnyObject
+        var platform: Platform
+        var nextTime: Time
+
+        init(rootView: AnyObject, platform: Platform) {
+            self.rootView = rootView
+            self.platform = platform
+            self.nextTime = .infinity
+        }
+
+        mutating func removeRemaining(viewCache: inout ViewCache) {
+            // FIXME
+            _openSwiftUIUnimplementedWarning()
+        }
+    }
+}
+
+// MARK: - DisplayList.ViewUpdater.ViewInfo [TODO]
 
 extension DisplayList.ViewUpdater {
     struct ViewInfo {
         struct Seeds {
-            var item: DisplayList.Seed
-            var content: DisplayList.Seed
-            var opacity: DisplayList.Seed
-            var blend: DisplayList.Seed
-            var transform: DisplayList.Seed
-            var clips: DisplayList.Seed
-            var filters: DisplayList.Seed
-            var shadow: DisplayList.Seed
-            var properties: DisplayList.Seed
-            var platformSeeds: DisplayList.ViewUpdater.PlatformViewInfo.Seeds
+            var item: DisplayList.Seed = .init()
+            var content: DisplayList.Seed = .init()
+            var opacity: DisplayList.Seed = .init()
+            var blend: DisplayList.Seed = .init()
+            var transform: DisplayList.Seed = .init()
+            var clips: DisplayList.Seed = .init()
+            var filters: DisplayList.Seed = .init()
+            var shadow: DisplayList.Seed = .init()
+            var properties: DisplayList.Seed = .init()
+            var platformSeeds: DisplayList.ViewUpdater.PlatformViewInfo.Seeds = .init()
 
             mutating func invalidate() {
                 item.invalidate()
@@ -197,6 +275,19 @@ extension DisplayList.ViewUpdater {
                 filters.invalidate()
                 shadow.invalidate()
                 properties.invalidate()
+            }
+            
+            mutating func reset() {
+                item = .init()
+                content = .init()
+                opacity = .init()
+                blend = .init()
+                transform = .init()
+                clips = .init()
+                filters = .init()
+                shadow = .init()
+                properties = .init()
+                platformSeeds = .init()
             }
         }
 
@@ -228,12 +319,7 @@ extension DisplayList.ViewUpdater {
             self.state = state
             self.id = ID(value: 0)
             self.parentID = ID(value: 0)
-            self.seeds = Seeds(
-                item: .init(), content: .init(), opacity: .init(),
-                blend: .init(), transform: .init(), clips: .init(),
-                filters: .init(), shadow: .init(), properties: .init(),
-                platformSeeds: .init()
-            )
+            self.seeds = .init()
             self.cacheSeed = 0
             self.isRemoved = false
             self.isInvalid = false
@@ -247,8 +333,11 @@ extension DisplayList.ViewUpdater {
             _openSwiftUIUnimplementedFailure()
         }
 
-        func reset() {
-            _openSwiftUIUnimplementedFailure()
+        mutating func reset(platform: Platform) {
+            layer = platform.viewLayer(view)
+            seeds.reset()
+            state.reset()
+            nextUpdate = .infinity
         }
     }
 }

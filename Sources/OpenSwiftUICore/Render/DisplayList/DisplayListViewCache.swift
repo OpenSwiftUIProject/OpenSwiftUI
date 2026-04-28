@@ -105,6 +105,14 @@ extension DisplayList.ViewUpdater {
             pendingAsyncUpdates = []
         }
 
+        mutating func invalidateAll() {
+            map = map.mapValues { info in
+                var info = info
+                info.seeds.invalidate()
+                return info
+            }
+        }
+
         mutating func reclaim(time: Time) {
             removed.forEach { key in
                 guard let info = map[key], info.isRemoved else { return }

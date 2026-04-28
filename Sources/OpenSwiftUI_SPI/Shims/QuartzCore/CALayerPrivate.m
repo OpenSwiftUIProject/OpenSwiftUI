@@ -41,6 +41,16 @@
     func(self, selector, allows);
 }
 
+- (BOOL)needsLayoutOnGeometryChange_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"needsLayoutOnGeometryChange", NO);
+    return func(self, selector);
+}
+
+- (void)setNeedsLayoutOnGeometryChange_openswiftui_safe_wrapper:(BOOL)needsLayout {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setNeedsLayoutOnGeometryChange:", , BOOL);
+    func(self, selector, needsLayout);
+}
+
 - (BOOL)allowsHitTesting_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsHitTesting", YES);
     return func(self, selector);
