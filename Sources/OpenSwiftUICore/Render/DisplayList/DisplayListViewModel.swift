@@ -263,20 +263,61 @@ extension Path {
     }
 }
 
-// MARK: - DisplayList.Item helper [WIP]
+// MARK: - DisplayList.Item helper
 
 extension DisplayList.Item {
-    fileprivate func rewriteVibrancyFilterAsBackdrop(
+    fileprivate mutating func rewriteVibrancyFilterAsBackdrop(
         matrix: _ColorMatrix,
         list: DisplayList
     ) {
-        _openSwiftUIUnimplementedWarning()
+        let backdropItem = DisplayList.Item(
+            .content(
+                DisplayList.Content(
+                    .backdrop(BackdropEffect(color: .clear)),
+                    seed: .init()
+                )
+            ),
+            frame: CGRect(origin: .zero, size: size),
+            identity: .none,
+            version: version
+        )
+        let filterItem = DisplayList.Item(
+            .effect(
+                .filter(.colorMatrix(matrix, premultiplied: false)),
+                DisplayList(backdropItem)
+            ),
+            frame: CGRect(origin: .zero, size: size),
+            identity: .none,
+            version: version
+        )
+        value = .effect(.mask(list), DisplayList(filterItem))
     }
     
-    fileprivate func discardContainingClips(
-        state: inout DisplayList.ViewUpdater.Model.State
-    ) -> Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
-    }
+    #if OPENSWIFTUI_SUPPORT_2025_API
+    // 7.2.5
+//    fileprivate mutating func rewriteVibrancyFilterAsBackdrop(
+//        _ matrix: GraphicsFilter.VibrantColorMatrix,
+//        list: DisplayList
+//    ) {
+//        guard matrix.options == [], matrix.maxColorComponent == .inf else {
+//            return
+//        }
+//        let backdropItem = DisplayList.Item(
+//            .content(DisplayList.Content(.backdrop(BackdropEffect(color: .clear)), seed: .init())),
+//            frame: CGRect(origin: .zero, size: size),
+//            identity: .none,
+//            version: version
+//        )
+//        let filterItem = DisplayList.Item(
+//            .effect(
+//                .filter(.colorMatrix(matrix, premultiplied: false)),
+//                DisplayList(backdropItem)
+//            ),
+//            frame: CGRect(origin: .zero, size: size),
+//            identity: .none,
+//            version: version
+//        )
+//        value = .effect(.mask(list), DisplayList(filterItem))
+//    }
+    #endif
 }
