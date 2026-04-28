@@ -119,6 +119,24 @@ extension DisplayList.ViewUpdater.Platform {
         _openSwiftUIPlatformUnimplementedFailure()
         #endif
     }
+    
+    @inline(__always)
+    package func subviews(_ view: AnyObject) -> [AnyObject] {
+        #if canImport(QuartzCore)
+        CoreViewSubviews(system: viewSystem, view: view) as [AnyObject]
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
+    
+    @inline(__always)
+    package func maskView(_ view: AnyObject) -> AnyObject? {
+        #if canImport(QuartzCore)
+        CoreViewMaskView(system: viewSystem, view: view) as AnyObject?
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
 
     func updateDrawingView(
         _ drawingView: inout AnyObject,
@@ -150,13 +168,13 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(Darwin)
         let kind = viewInfo.state.kind
         if kind.isContainer {
-            for subview in CoreViewSubviews(system: viewSystem, view: viewInfo.container) {
-                body(subview as AnyObject)
+            for subview in subviews(viewInfo.container) {
+                body(subview)
             }
         }
         if kind == .mask,
-           let maskView = CoreViewMaskView(system: viewSystem, view: viewInfo.view) {
-            for subview in CoreViewSubviews(system: viewSystem, view: maskView) {
+           let maskView = maskView(viewInfo.view) {
+            for subview in subviews(maskView) {
                 body(subview as AnyObject)
             }
         }
