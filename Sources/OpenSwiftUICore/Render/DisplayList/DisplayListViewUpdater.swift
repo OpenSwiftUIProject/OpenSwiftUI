@@ -121,7 +121,6 @@ extension DisplayList {
                 }
                 let nextTime = container.nextTime
                 nextUpdate = nextTime
-
                 #if canImport(QuartzCore)
                 layer.needsLayoutOnGeometryChange = needsLayoutOnGeometryChange
                 #endif
@@ -191,16 +190,9 @@ extension DisplayList {
         }
         
         func destroy(rootView: AnyObject) {
-            // FIXME: Container
-            isValid = false
-            wasValid = false
-            lastList = DisplayList()
-            lastEnv = .invalid
-            seed = DisplayList.Seed()
-            asyncSeed = DisplayList.Seed()
-            nextUpdate = .infinity
-            viewCache.currentList = DisplayList()
-            viewCache.pendingAsyncUpdates.removeAll()
+            var container = Container(rootView: rootView, platform: viewCache.platform)
+            container.removeRemaining(viewCache: &viewCache)
+            viewCache.reclaim(time: .infinity)
         }
         
         var viewCacheIsEmpty: Bool {
@@ -234,12 +226,16 @@ extension DisplayList.ViewUpdater {
     private struct Container {
         var rootView: AnyObject
         var platform: Platform
+        var id: ViewInfo.ID
         var nextTime: Time
+        var count: Int
 
         init(rootView: AnyObject, platform: Platform) {
             self.rootView = rootView
             self.platform = platform
+            self.id = .init(value: 0)
             self.nextTime = .infinity
+            self.count = 0
         }
 
         mutating func removeRemaining(viewCache: inout ViewCache) {
