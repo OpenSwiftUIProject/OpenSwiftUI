@@ -76,8 +76,8 @@ extension DisplayList.ViewUpdater {
         let rawValue: UInt
 
         struct State {
-            var position: CGPoint
-            var size: CGSize
+            var position: CGPoint = .infinity
+            var size: CGSize = .infinity
             let kind: PlatformViewDefinition.ViewKind
             var flags: ViewFlags = []
             var platformState: Platform.PlatformState = .init()

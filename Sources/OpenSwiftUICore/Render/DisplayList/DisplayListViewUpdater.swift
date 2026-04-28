@@ -260,21 +260,45 @@ extension DisplayList.ViewUpdater {
     }
 }
 
-// MARK: - DisplayList.ViewUpdater.ViewInfo [TODO]
+// MARK: - DisplayList.ViewUpdater.ViewInfo
 
 extension DisplayList.ViewUpdater {
     struct ViewInfo {
         struct Seeds {
-            var item: DisplayList.Seed = .init()
-            var content: DisplayList.Seed = .init()
-            var opacity: DisplayList.Seed = .init()
-            var blend: DisplayList.Seed = .init()
-            var transform: DisplayList.Seed = .init()
-            var clips: DisplayList.Seed = .init()
-            var filters: DisplayList.Seed = .init()
-            var shadow: DisplayList.Seed = .init()
-            var properties: DisplayList.Seed = .init()
-            var platformSeeds: DisplayList.ViewUpdater.PlatformViewInfo.Seeds = .init()
+            var item: DisplayList.Seed
+            var content: DisplayList.Seed
+            var opacity: DisplayList.Seed
+            var blend: DisplayList.Seed
+            var transform: DisplayList.Seed
+            var clips: DisplayList.Seed
+            var filters: DisplayList.Seed
+            var shadow: DisplayList.Seed
+            var properties: DisplayList.Seed
+            var platformSeeds: DisplayList.ViewUpdater.PlatformViewInfo.Seeds
+
+            init(_ seed: DisplayList.Seed = .init()) {
+                item = seed
+                content = seed
+                opacity = seed
+                blend = seed
+                transform = seed
+                clips = seed
+                filters = seed
+                shadow = seed
+                properties = .init()
+                platformSeeds = .init()
+            }
+
+            @inline(__always)
+            init(kind: PlatformViewDefinition.ViewKind) {
+                let seed: DisplayList.Seed = switch kind {
+                case .platformView, .platformGroup:
+                    .undefined
+                default:
+                    .init()
+                }
+                self.init(seed)
+            }
 
             mutating func invalidate() {
                 item.invalidate()
@@ -288,17 +312,9 @@ extension DisplayList.ViewUpdater {
                 properties.invalidate()
             }
             
+            @inline(__always)
             mutating func reset() {
-                item = .init()
-                content = .init()
-                opacity = .init()
-                blend = .init()
-                transform = .init()
-                clips = .init()
-                filters = .init()
-                shadow = .init()
-                properties = .init()
-                platformSeeds = .init()
+                self = .init()
             }
         }
 
@@ -328,9 +344,9 @@ extension DisplayList.ViewUpdater {
             self.layer = layer
             self.container = container
             self.state = state
-            self.id = ID(value: 0)
-            self.parentID = ID(value: 0)
-            self.seeds = .init()
+            self.id = ID(value: UniqueID().value)
+            self.parentID = ID(value: -1)
+            self.seeds = Seeds(kind: state.kind)
             self.cacheSeed = 0
             self.isRemoved = false
             self.isInvalid = false
@@ -341,7 +357,10 @@ extension DisplayList.ViewUpdater {
             platform: Platform,
             kind: PlatformViewDefinition.ViewKind
         ) {
-            _openSwiftUIUnimplementedFailure()
+            let view = platform.definition.makeView(kind: kind)
+            let layer = platform.viewLayer(view)
+            let state = Platform.State(kind: kind)
+            self.init(view: view, layer: layer, container: view, state: state)
         }
 
         mutating func reset(platform: Platform) {
