@@ -161,6 +161,21 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
                 return ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
             }
         }
+        
+        @inline(__always)
+        fileprivate var boundingRect: CGRect {
+            switch kind {
+            case .cgPath:
+                return data.cgPath.takeUnretainedValue().boundingBoxOfPath
+            case .rbPath:
+                _openSwiftUIUnimplementedWarning()
+                // return data.rbPath.boundingBox // FIXME: RB API
+                return .zero
+            case .buffer:
+                let storage = unsafeBitCast(self, to: ORBPath.Storage.self)
+                return storage.boundingRect
+            }
+        }
 
         @inline(__always)
         fileprivate func retainRBPath() -> ORBPath {
@@ -473,7 +488,20 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// in the path but not including control points for Bézier
     /// curves.
     public var boundingRect: CGRect {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            .null
+        case let .rect(rect):
+            rect
+        case let .ellipse(rect):
+            rect
+        case let .roundedRect(fixedRoundedRect):
+            fixedRoundedRect.rect
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(pathBox):
+            pathBox.boundingRect
+        }
     }
 
     /// Returns true if the path contains a specified point.
