@@ -73,7 +73,10 @@ runs:
       id: xcframeworks
       shell: bash
       run: |
-        mapfile -t paths < <(find build -maxdepth 1 -type d -name '*.xcframework' | sort)
+        paths=()
+        while IFS= read -r path; do
+          paths+=("$path")
+        done < <(find build -maxdepth 1 -type d -name '*.xcframework' | sort)
         if [ ${#paths[@]} -eq 0 ]; then
           echo "::error::No XCFrameworks were produced"
           exit 1
@@ -93,7 +96,10 @@ runs:
         TAG_NAME: ${{ inputs.tag-name }}
       run: |
         cd build
-        mapfile -t FRAMEWORKS < <(find . -maxdepth 1 -type d -name '*.xcframework' -exec basename {} .xcframework \; | sort)
+        FRAMEWORKS=()
+        while IFS= read -r framework; do
+          FRAMEWORKS+=("$framework")
+        done < <(find . -maxdepth 1 -type d -name '*.xcframework' -exec basename {} .xcframework \; | sort)
         if [ ${#FRAMEWORKS[@]} -eq 0 ]; then
           echo "::error::No XCFrameworks were produced"
           exit 1
