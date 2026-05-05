@@ -5,7 +5,7 @@ on:
 
 jobs:
   build_xcframework:
-    name: Build XCFramework
+    name: Build XCFrameworks
     runs-on: macos-15
     env:
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
@@ -13,25 +13,15 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build XCFramework
+      - name: Build XCFrameworks
         uses: ./.github/actions/build-xcframework
         with:
           signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
           signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
       - name: Zip XCFrameworks
-        run: |
-          cd build
-          shopt -s nullglob
-          frameworks=(*.xcframework)
-          if [ ${#frameworks[@]} -eq 0 ]; then
-            echo "::error::No XCFrameworks were produced"
-            exit 1
-          fi
-          for framework in "${frameworks[@]}"; do
-            zip -ry "$framework.zip" "$framework"
-          done
+        run: cd build && zip -ry xcframeworks.zip *.xcframework
       - name: Upload XCFrameworks
         uses: actions/upload-artifact@v7
         with:
-          name: xcframeworks
-          path: build/*.xcframework.zip
+          path: build/xcframeworks.zip
+          archive: false

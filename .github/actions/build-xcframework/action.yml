@@ -1,5 +1,5 @@
-name: 'Build XCFramework'
-description: 'Build OpenSwiftUI XCFrameworks and generate binaryTarget entries'
+name: 'Build XCFrameworks'
+description: 'Build OpenSwiftUI xcframeworks and generate binaryTarget entries'
 
 inputs:
   xcode-version:
@@ -66,29 +66,23 @@ runs:
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
-    - name: Build XCFramework
+    - name: Build XCFrameworks
       run: Scripts/build_xcframework.sh OpenSwiftUI
       shell: bash
-    - name: Collect XCFramework Paths
-      id: xcframeworks
-      shell: bash
-      run: |
-        paths=()
-        while IFS= read -r path; do
-          paths+=("$path")
-        done < <(find build -maxdepth 1 -type d -name '*.xcframework' | sort)
-        if [ ${#paths[@]} -eq 0 ]; then
-          echo "::error::No XCFrameworks were produced"
-          exit 1
-        fi
-        echo "paths=${paths[*]}" >> "$GITHUB_OUTPUT"
-    - name: Code sign XCFramework
+    - name: Code sign XCFrameworks
       if: ${{ inputs.signing-certificate-base64 != '' }}
       uses: ./.github/actions/codesign-xcframework
       with:
         signing-certificate-base64: ${{ inputs.signing-certificate-base64 }}
         signing-certificate-password: ${{ inputs.signing-certificate-password }}
-        xcframework-paths: ${{ steps.xcframeworks.outputs.paths }}
+        xcframework-paths: >-
+          build/OpenSwiftUI.xcframework
+          build/OpenSwiftUICore.xcframework
+          build/OpenAttributeGraphShims.xcframework
+          build/OpenCoreGraphicsShims.xcframework
+          build/OpenObservation.xcframework
+          build/OpenQuartzCoreShims.xcframework
+          build/OpenRenderBoxShims.xcframework
     - name: Compute Checksums and Generate Summary
       id: checksums
       shell: bash
@@ -96,14 +90,15 @@ runs:
         TAG_NAME: ${{ inputs.tag-name }}
       run: |
         cd build
-        FRAMEWORKS=()
-        while IFS= read -r framework; do
-          FRAMEWORKS+=("$framework")
-        done < <(find . -maxdepth 1 -type d -name '*.xcframework' -exec basename {} .xcframework \; | sort)
-        if [ ${#FRAMEWORKS[@]} -eq 0 ]; then
-          echo "::error::No XCFrameworks were produced"
-          exit 1
-        fi
+        FRAMEWORKS=(
+          OpenSwiftUI
+          OpenSwiftUICore
+          OpenAttributeGraphShims
+          OpenCoreGraphicsShims
+          OpenObservation
+          OpenQuartzCoreShims
+          OpenRenderBoxShims
+        )
         BODY=""
         echo "### XCFramework Binary Targets" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY
