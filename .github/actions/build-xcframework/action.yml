@@ -34,8 +34,17 @@ runs:
       uses: OpenSwiftUIProject/setup-xcode@v2
       with:
         xcode-version: ${{ inputs.xcode-version }}
-    - name: Install Tuist
+    - name: Set up mise
       uses: jdx/mise-action@v2
+      with:
+        install: false
+        cache: false
+    - name: Install Tuist
+      run: |
+        mise trust mise.toml
+        mise install
+        tuist version
+      shell: bash
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
