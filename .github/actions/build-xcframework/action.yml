@@ -1,5 +1,5 @@
 name: 'Build XCFramework'
-description: 'Build OpenSwiftUI.xcframework and generate its binaryTarget entry'
+description: 'Build OpenSwiftUI XCFrameworks and generate binaryTarget entries'
 
 inputs:
   xcode-version:
@@ -26,6 +26,24 @@ outputs:
   checksum_OpenSwiftUI:
     description: 'Checksum for OpenSwiftUI.xcframework.zip'
     value: ${{ steps.checksums.outputs.checksum_OpenSwiftUI }}
+  checksum_OpenSwiftUICore:
+    description: 'Checksum for OpenSwiftUICore.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenSwiftUICore }}
+  checksum_OpenAttributeGraphShims:
+    description: 'Checksum for OpenAttributeGraphShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenAttributeGraphShims }}
+  checksum_OpenCoreGraphicsShims:
+    description: 'Checksum for OpenCoreGraphicsShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenCoreGraphicsShims }}
+  checksum_OpenObservation:
+    description: 'Checksum for OpenObservation.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenObservation }}
+  checksum_OpenQuartzCoreShims:
+    description: 'Checksum for OpenQuartzCoreShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenQuartzCoreShims }}
+  checksum_OpenRenderBoxShims:
+    description: 'Checksum for OpenRenderBoxShims.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenRenderBoxShims }}
 
 runs:
   using: 'composite'
@@ -51,13 +69,23 @@ runs:
     - name: Build XCFramework
       run: Scripts/build_xcframework.sh OpenSwiftUI
       shell: bash
+    - name: Collect XCFramework Paths
+      id: xcframeworks
+      shell: bash
+      run: |
+        mapfile -t paths < <(find build -maxdepth 1 -type d -name '*.xcframework' | sort)
+        if [ ${#paths[@]} -eq 0 ]; then
+          echo "::error::No XCFrameworks were produced"
+          exit 1
+        fi
+        echo "paths=${paths[*]}" >> "$GITHUB_OUTPUT"
     - name: Code sign XCFramework
       if: ${{ inputs.signing-certificate-base64 != '' }}
       uses: ./.github/actions/codesign-xcframework
       with:
         signing-certificate-base64: ${{ inputs.signing-certificate-base64 }}
         signing-certificate-password: ${{ inputs.signing-certificate-password }}
-        xcframework-paths: build/OpenSwiftUI.xcframework
+        xcframework-paths: ${{ steps.xcframeworks.outputs.paths }}
     - name: Compute Checksums and Generate Summary
       id: checksums
       shell: bash
@@ -65,7 +93,11 @@ runs:
         TAG_NAME: ${{ inputs.tag-name }}
       run: |
         cd build
-        FRAMEWORKS=(OpenSwiftUI)
+        mapfile -t FRAMEWORKS < <(find . -maxdepth 1 -type d -name '*.xcframework' -exec basename {} .xcframework \; | sort)
+        if [ ${#FRAMEWORKS[@]} -eq 0 ]; then
+          echo "::error::No XCFrameworks were produced"
+          exit 1
+        fi
         BODY=""
         echo "### XCFramework Binary Targets" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY

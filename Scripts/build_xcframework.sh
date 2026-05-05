@@ -18,8 +18,19 @@ XCODEWORKSPACE="$PROJECT_ROOT/Workspace.xcworkspace"
 SDKS=()
 SDK_ARCHS=()
 DEBUG_MODE=false
-PACKAGE_NAME="OpenSwiftUI"
 RUN_TUIST_INSTALL=true
+EXPLICIT_FRAMEWORK_NAMES=false
+FRAMEWORK_NAMES=()
+
+DEFAULT_FRAMEWORK_NAMES=(
+    "OpenAttributeGraphShims"
+    "OpenCoreGraphicsShims"
+    "OpenQuartzCoreShims"
+    "OpenObservation"
+    "OpenRenderBoxShims"
+    "OpenSwiftUICore"
+    "OpenSwiftUI"
+)
 
 while [[ $# -gt 0 ]]; do
     case "$1" in
@@ -42,12 +53,27 @@ while [[ $# -gt 0 ]]; do
             RUN_TUIST_INSTALL=false
             shift
             ;;
+        --framework)
+            EXPLICIT_FRAMEWORK_NAMES=true
+            FRAMEWORK_NAMES+=("$2")
+            shift 2
+            ;;
         *)
-            PACKAGE_NAME="$1"
+            FRAMEWORK_NAMES+=("$1")
             shift
             ;;
     esac
 done
+
+# By default, build the full binary distribution set. Keep
+# `Scripts/build_xcframework.sh OpenSwiftUI` compatible with the historical CI
+# invocation while switching it to the multi-xcframework distribution.
+if [ ${#FRAMEWORK_NAMES[@]} -eq 0 ] ||
+   ([ "$EXPLICIT_FRAMEWORK_NAMES" = false ] &&
+    [ ${#FRAMEWORK_NAMES[@]} -eq 1 ] &&
+    [ "${FRAMEWORK_NAMES[0]}" = "OpenSwiftUI" ]); then
+    FRAMEWORK_NAMES=("${DEFAULT_FRAMEWORK_NAMES[@]}")
+fi
 
 # Default: macosx and iphonesimulator.
 # Note: iphoneos SDK support is blocked by an AG issue. See #835.
@@ -61,7 +87,7 @@ if [ "${OPENSWIFTUI_SKIP_TUIST_INSTALL:-0}" = "1" ]; then
 fi
 
 if ! command -v tuist >/dev/null 2>&1; then
-    echo "Error: tuist is required to generate $PACKAGE_NAME.xcodeproj."
+    echo "Error: tuist is required to generate $XCODEPROJ."
     exit 1
 fi
 
@@ -85,6 +111,116 @@ if [ ! -d "$XCODEWORKSPACE" ]; then
     exit 1
 fi
 
+remove_generated_macro_references() {
+    local project_path="$1"
+    local target_name="$2"
+    local macro_name="$3"
+
+    if [ ! -f "$project_path/project.pbxproj" ]; then
+        return
+    fi
+
+    ruby - "$project_path/project.pbxproj" "$target_name" "$macro_name" <<'RUBY'
+path, target_name, macro_name = ARGV
+text = File.read(path)
+object_pattern = /^		([A-Za-z0-9]+) \/\* [^*]+ \*\/ = \{\n.*?^		\};\n/m
+
+dependency_names = {}
+text.scan(object_pattern) do |capture|
+  id = Array(capture).first
+  block = Regexp.last_match(0)
+  next unless block.include?("isa = PBXTargetDependency;")
+
+  dependency_names[id] =
+    block[/^			name = ([^;]+);$/, 1] ||
+    block[/^			target = [A-Za-z0-9]+ \/\* ([^*]+) \*\//, 1]
+end
+
+macro_phase_ids = []
+text.scan(object_pattern) do |capture|
+  id = Array(capture).first
+  block = Regexp.last_match(0)
+  next unless block.include?("isa = PBXShellScriptBuildPhase;")
+  next unless block.include?(macro_name)
+
+  macro_phase_ids << id
+end
+
+macro_target_ids = []
+text.scan(object_pattern) do |capture|
+  id = Array(capture).first
+  block = Regexp.last_match(0)
+  next unless block.include?("isa = PBXNativeTarget;")
+  next unless block.match?(/^			name = #{Regexp.escape(macro_name)};$/)
+
+  macro_target_ids << id
+end
+
+target_dependency_ids = []
+text.scan(object_pattern) do |_capture|
+  block = Regexp.last_match(0)
+  next unless block.include?("isa = PBXNativeTarget;")
+  next unless block.match?(/^			name = #{Regexp.escape(target_name)};$/)
+
+  dependencies = block[/^			dependencies = \(\n(.*?)^			\);$/m, 1]
+  target_dependency_ids = dependencies.to_s.scan(/^\s+([A-Za-z0-9]+) \/\* PBXTargetDependency \*\/,/).flatten
+  break
+end
+
+dependency_ids_to_remove = target_dependency_ids.select { |id| dependency_names[id] == macro_name }
+
+# Tuist can leave a standalone macro PBXTargetDependency in derived projects even
+# when the framework target does not list it in `dependencies`. Xcode's automatic
+# scheme discovery can still pull that target into archive builds, so prune it
+# when it is unambiguous.
+if dependency_ids_to_remove.empty?
+  matching_ids = dependency_names.select { |_id, name| name == macro_name }.keys
+  dependency_ids_to_remove = matching_ids if matching_ids.one?
+end
+
+changed = false
+
+dependency_ids_to_remove.each do |id|
+  text.gsub!(/^			#{Regexp.escape(id)} \/\* PBXTargetDependency \*\/,\n/, "")
+  removed = text.gsub!(/^		#{Regexp.escape(id)} \/\* PBXTargetDependency \*\/ = \{\n.*?^		\};\n/m, "")
+  changed ||= !!removed
+end
+
+macro_phase_ids.each do |id|
+  text.gsub!(/^				#{Regexp.escape(id)} \/\* [^*]+ \*\/,\n/, "")
+  removed = text.gsub!(/^		#{Regexp.escape(id)} \/\* [^*]+ \*\/ = \{\n.*?^		\};\n/m, "")
+  changed ||= !!removed
+end
+
+macro_target_ids.each do |id|
+  removed = text.gsub!(/^				#{Regexp.escape(id)} \/\* #{Regexp.escape(macro_name)} \*\/,\n/, "")
+  changed ||= !!removed
+end
+
+plugin_path = '$BUILD_DIR/Debug$EFFECTIVE_PLATFORM_NAME/' + macro_name + '#' + macro_name
+plugin_path_pattern = Regexp.escape(plugin_path)
+removed_flags = text.gsub!(
+  /^(\t+)"-load-plugin-executable",\n\1"#{plugin_path_pattern}",\n/,
+  ""
+)
+changed ||= !!removed_flags
+
+exit unless changed
+
+File.write(path, text)
+puts "Removed #{macro_name} archive references from #{File.dirname(path)}"
+RUBY
+}
+
+# The xcframework archive path sets OPENSWIFTUI_XCFRAMEWORK_BUILD, which expands
+# macro usages inline where needed. Avoid forcing generated macro tool targets to
+# archive for simulator SDKs, where Xcode can try to build them for the target
+# platform instead of the host platform.
+remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
+remove_generated_macro_references "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
+remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenSwiftUIMacros"
+remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenObservationMacros"
+
 echo "SDKs: ${SDKS[*]}"
 for i in "${!SDKS[@]}"; do
     if [ -n "${SDK_ARCHS[$i]}" ]; then
@@ -94,17 +230,7 @@ for i in "${!SDKS[@]}"; do
     fi
 done
 echo "Debug mode: $DEBUG_MODE"
-
-# Dependency modules referenced by public swiftinterfaces. They are copied into
-# the one distributable framework instead of emitted as separate stub frameworks.
-DEP_MODULES=(
-    "OpenSwiftUICore"
-    "OpenAttributeGraphShims"
-    "OpenCoreGraphicsShims"
-    "OpenObservation"
-    "OpenQuartzCoreShims"
-    "OpenRenderBoxShims"
-)
+echo "Frameworks: ${FRAMEWORK_NAMES[*]}"
 
 sdk_destination() {
     case "$1" in
@@ -112,13 +238,6 @@ sdk_destination() {
         iphoneos) echo "generic/platform=iOS" ;;
         macosx) echo "generic/platform=macOS" ;;
         *) echo "generic/platform=$1" ;;
-    esac
-}
-
-build_products_suffix() {
-    case "$1" in
-        macosx) echo "Release" ;;
-        *) echo "Release-$1" ;;
     esac
 }
 
@@ -146,56 +265,36 @@ strip_release_metadata() {
     fi
 }
 
-canonical_path() {
-    local path="$1"
-    if [ -e "$path" ]; then
-        (cd "$(dirname "$path")" && printf "%s/%s\n" "$(pwd -P)" "$(basename "$path")")
-    else
-        echo "$path"
-    fi
-}
+project_args_for_scheme() {
+    local scheme="$1"
 
-find_swiftmodule() {
-    local build_products_path="$1"
-    local archive_path="$2"
-    local module_name="$3"
-
-    local candidates=(
-        "$build_products_path/$module_name.swiftmodule"
-        "$build_products_path/$module_name.framework/Modules/$module_name.swiftmodule"
-        "$build_products_path/$module_name.framework/Versions/A/Modules/$module_name.swiftmodule"
-        "$archive_path/Products/Library/Frameworks/$module_name.framework/Modules/$module_name.swiftmodule"
-        "$archive_path/Products/Library/Frameworks/$module_name.framework/Versions/A/Modules/$module_name.swiftmodule"
-    )
-
-    for candidate in "${candidates[@]}"; do
-        if [ -d "$candidate" ]; then
-            echo "$candidate"
-            return
-        fi
-    done
-}
-
-copy_swiftmodule() {
-    local build_products_path="$1"
-    local archive_path="$2"
-    local module_name="$3"
-    local modules_path="$4"
-
-    local swiftmodule
-    swiftmodule="$(find_swiftmodule "$build_products_path" "$archive_path" "$module_name")"
-    if [ -z "$swiftmodule" ]; then
-        echo "Warning: No swiftmodule found for $module_name."
-        return
-    fi
-
-    local destination="$modules_path/$module_name.swiftmodule"
-    if [ "$(canonical_path "$swiftmodule")" = "$(canonical_path "$destination")" ]; then
-        return
-    fi
-
-    rm -rf "$destination"
-    cp -R "$swiftmodule" "$destination"
+    case "$scheme" in
+        COpenSwiftUI|OpenSwiftUI|OpenSwiftUICore|OpenSwiftUI_SPI|OpenSwiftUISymbolDualTestsSupport)
+            echo "-workspace" "$XCODEWORKSPACE"
+            ;;
+        _AttributeGraphDeviceSwiftShims)
+            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj"
+            ;;
+        OpenAttributeGraphShims)
+            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenAttributeGraph/OpenAttributeGraph.xcodeproj"
+            ;;
+        OpenCoreGraphics|OpenCoreGraphicsShims|OpenQuartzCore|OpenQuartzCoreShims)
+            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenCoreGraphics/OpenCoreGraphics.xcodeproj"
+            ;;
+        OpenObservation|OpenObservationCxx)
+            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj"
+            ;;
+        OpenRenderBoxShims)
+            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenRenderBox/OpenRenderBox.xcodeproj"
+            ;;
+        SymbolLocator)
+            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/SymbolLocator/SymbolLocator.xcodeproj"
+            ;;
+        *)
+            echo "Error: No Xcode project mapping for $scheme." >&2
+            exit 1
+            ;;
+    esac
 }
 
 build_framework() {
@@ -205,13 +304,14 @@ build_framework() {
     local archs="$4"
 
     local archive_path="$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive"
-    local build_products_path="$DERIVED_DATA_PATH/Build/Intermediates.noindex/ArchiveIntermediates/$scheme/BuildProductsPath/$(build_products_suffix "$sdk")"
+    local project_args
+    read -r -a project_args <<<"$(project_args_for_scheme "$scheme")"
 
     rm -rf "$archive_path"
 
     local xcodebuild_args=(
         archive
-        -workspace "$XCODEWORKSPACE"
+        "${project_args[@]}"
         -scheme "$scheme"
         -configuration Release
         -archivePath "$archive_path"
@@ -250,45 +350,61 @@ build_framework() {
         ln -s Versions/Current/Modules "$framework/Modules"
     fi
 
-    copy_swiftmodule "$build_products_path" "$archive_path" "$scheme" "$modules_path"
-    for dep in "${DEP_MODULES[@]}"; do
-        copy_swiftmodule "$build_products_path" "$archive_path" "$dep" "$modules_path"
-    done
     strip_release_metadata "$modules_path"
+}
+
+create_xcframework() {
+    local scheme="$1"
+
+    rm -rf "$PROJECT_BUILD_DIR/$scheme.xcframework"
+
+    local create_args=()
+    for sdk in "${SDKS[@]}"; do
+        create_args+=(-framework "$(framework_path "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive" "$scheme")")
+    done
+
+    xcodebuild -create-xcframework "${create_args[@]}" -output "$PROJECT_BUILD_DIR/$scheme.xcframework"
+}
+
+copy_debug_symbols() {
+    local scheme="$1"
+
+    if [ "$DEBUG_MODE" = false ]; then
+        return
+    fi
+
+    local sdk
+    for sdk in "${SDKS[@]}"; do
+        local local_dsym_dir=""
+        case "$sdk" in
+            iphonesimulator) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/ios-*simulator 2>/dev/null | head -1) ;;
+            iphoneos) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/ios-arm64 2>/dev/null | head -1) ;;
+            macosx) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/macos-* 2>/dev/null | head -1) ;;
+        esac
+
+        if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive/dSYMs" ]; then
+            cp -R "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive/dSYMs" "$local_dsym_dir/"
+        fi
+    done
 }
 
 rm -rf "$DERIVED_DATA_PATH"
 mkdir -p "$PROJECT_BUILD_DIR"
 
-for i in "${!SDKS[@]}"; do
-    build_framework "${SDKS[$i]}" "$(sdk_destination "${SDKS[$i]}")" "$PACKAGE_NAME" "${SDK_ARCHS[$i]}"
-done
-
-echo "Archives completed successfully."
-
-rm -rf "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"
-create_args=()
-for sdk in "${SDKS[@]}"; do
-    create_args+=(-framework "$(framework_path "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive" "$PACKAGE_NAME")")
-done
-xcodebuild -create-xcframework "${create_args[@]}" -output "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"
-
-if [ "$DEBUG_MODE" = true ]; then
-    # Copy dSYMs into each XCFramework slice only for debug artifacts.
-    for sdk in "${SDKS[@]}"; do
-        local_dsym_dir=""
-        case "$sdk" in
-            iphonesimulator) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/ios-*simulator 2>/dev/null | head -1) ;;
-            iphoneos) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/ios-arm64 2>/dev/null | head -1) ;;
-            macosx) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/macos-* 2>/dev/null | head -1) ;;
-        esac
-
-        if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive/dSYMs" ]; then
-            cp -R "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive/dSYMs" "$local_dsym_dir/"
-        fi
+for scheme in "${FRAMEWORK_NAMES[@]}"; do
+    echo "Building $scheme..."
+    for i in "${!SDKS[@]}"; do
+        build_framework "${SDKS[$i]}" "$(sdk_destination "${SDKS[$i]}")" "$scheme" "${SDK_ARCHS[$i]}"
     done
+    create_xcframework "$scheme"
+    copy_debug_symbols "$scheme"
+    echo "Created $PROJECT_BUILD_DIR/$scheme.xcframework"
+done
+
+if [ "$DEBUG_MODE" = false ]; then
+    echo "Skipping dSYMs. Pass --debug to include them in the XCFrameworks."
 else
-    echo "Skipping dSYMs. Pass --debug to include them in the XCFramework."
+    echo "Copied dSYMs into the XCFrameworks."
 fi
 
-echo "Created $PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"
+echo "Created ${#FRAMEWORK_NAMES[@]} XCFrameworks in $PROJECT_BUILD_DIR."

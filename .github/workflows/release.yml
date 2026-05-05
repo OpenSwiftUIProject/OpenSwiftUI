@@ -21,6 +21,12 @@ jobs:
     runs-on: macos-15
     outputs:
       checksum_OpenSwiftUI: ${{ steps.build.outputs.checksum_OpenSwiftUI }}
+      checksum_OpenSwiftUICore: ${{ steps.build.outputs.checksum_OpenSwiftUICore }}
+      checksum_OpenAttributeGraphShims: ${{ steps.build.outputs.checksum_OpenAttributeGraphShims }}
+      checksum_OpenCoreGraphicsShims: ${{ steps.build.outputs.checksum_OpenCoreGraphicsShims }}
+      checksum_OpenObservation: ${{ steps.build.outputs.checksum_OpenObservation }}
+      checksum_OpenQuartzCoreShims: ${{ steps.build.outputs.checksum_OpenQuartzCoreShims }}
+      checksum_OpenRenderBoxShims: ${{ steps.build.outputs.checksum_OpenRenderBoxShims }}
     env:
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
@@ -48,6 +54,12 @@ jobs:
         env:
           VERSION: ${{ github.ref_name }}
           CHECKSUM_OpenSwiftUI: ${{ needs.build-xcframework.outputs.checksum_OpenSwiftUI }}
+          CHECKSUM_OpenSwiftUICore: ${{ needs.build-xcframework.outputs.checksum_OpenSwiftUICore }}
+          CHECKSUM_OpenAttributeGraphShims: ${{ needs.build-xcframework.outputs.checksum_OpenAttributeGraphShims }}
+          CHECKSUM_OpenCoreGraphicsShims: ${{ needs.build-xcframework.outputs.checksum_OpenCoreGraphicsShims }}
+          CHECKSUM_OpenObservation: ${{ needs.build-xcframework.outputs.checksum_OpenObservation }}
+          CHECKSUM_OpenQuartzCoreShims: ${{ needs.build-xcframework.outputs.checksum_OpenQuartzCoreShims }}
+          CHECKSUM_OpenRenderBoxShims: ${{ needs.build-xcframework.outputs.checksum_OpenRenderBoxShims }}
         run: |
           if [ -z "$BINARY_REPO_PAT" ]; then
             echo "::notice::BINARY_REPO_PAT not set, skipping binary repo update"
@@ -60,6 +72,12 @@ jobs:
           sed \
             -e "s|{{VERSION}}|${VERSION}|g" \
             -e "s|{{CHECKSUM_OpenSwiftUI}}|${CHECKSUM_OpenSwiftUI}|g" \
+            -e "s|{{CHECKSUM_OpenSwiftUICore}}|${CHECKSUM_OpenSwiftUICore}|g" \
+            -e "s|{{CHECKSUM_OpenAttributeGraphShims}}|${CHECKSUM_OpenAttributeGraphShims}|g" \
+            -e "s|{{CHECKSUM_OpenCoreGraphicsShims}}|${CHECKSUM_OpenCoreGraphicsShims}|g" \
+            -e "s|{{CHECKSUM_OpenObservation}}|${CHECKSUM_OpenObservation}|g" \
+            -e "s|{{CHECKSUM_OpenQuartzCoreShims}}|${CHECKSUM_OpenQuartzCoreShims}|g" \
+            -e "s|{{CHECKSUM_OpenRenderBoxShims}}|${CHECKSUM_OpenRenderBoxShims}|g" \
             Package.swift.template > Package.swift
           echo "Generated Package.swift:"
           head -50 Package.swift

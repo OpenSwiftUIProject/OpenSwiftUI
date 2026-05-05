@@ -18,10 +18,20 @@ jobs:
         with:
           signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
           signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
-      - name: Zip XCFramework
-        run: cd build && zip -ry OpenSwiftUI.xcframework.zip OpenSwiftUI.xcframework
-      - name: Upload XCFramework
+      - name: Zip XCFrameworks
+        run: |
+          cd build
+          shopt -s nullglob
+          frameworks=(*.xcframework)
+          if [ ${#frameworks[@]} -eq 0 ]; then
+            echo "::error::No XCFrameworks were produced"
+            exit 1
+          fi
+          for framework in "${frameworks[@]}"; do
+            zip -ry "$framework.zip" "$framework"
+          done
+      - name: Upload XCFrameworks
         uses: actions/upload-artifact@v7
         with:
-          path: build/OpenSwiftUI.xcframework.zip
+          path: build/*.xcframework.zip
           archive: false
