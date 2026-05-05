@@ -137,9 +137,10 @@ framework_modules_path() {
     fi
 }
 
-strip_private_interfaces() {
+strip_release_metadata() {
     local modules_path="$1"
     if [ "$DEBUG_MODE" = false ]; then
+        find "$modules_path" -name "*.abi.json" -delete
         find "$modules_path" -name "*.package.swiftinterface" -delete
         find "$modules_path" -name "*.private.swiftinterface" -delete
     fi
@@ -253,7 +254,7 @@ build_framework() {
     for dep in "${DEP_MODULES[@]}"; do
         copy_swiftmodule "$build_products_path" "$archive_path" "$dep" "$modules_path"
     done
-    strip_private_interfaces "$modules_path"
+    strip_release_metadata "$modules_path"
 }
 
 rm -rf "$DERIVED_DATA_PATH"
@@ -272,18 +273,22 @@ for sdk in "${SDKS[@]}"; do
 done
 xcodebuild -create-xcframework "${create_args[@]}" -output "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"
 
-# Copy dSYMs into each XCFramework slice for consumers that want local symbols.
-for sdk in "${SDKS[@]}"; do
-    local_dsym_dir=""
-    case "$sdk" in
-        iphonesimulator) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/ios-*simulator 2>/dev/null | head -1) ;;
-        iphoneos) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/ios-arm64 2>/dev/null | head -1) ;;
-        macosx) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/macos-* 2>/dev/null | head -1) ;;
-    esac
+if [ "$DEBUG_MODE" = true ]; then
+    # Copy dSYMs into each XCFramework slice only for debug artifacts.
+    for sdk in "${SDKS[@]}"; do
+        local_dsym_dir=""
+        case "$sdk" in
+            iphonesimulator) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/ios-*simulator 2>/dev/null | head -1) ;;
+            iphoneos) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/ios-arm64 2>/dev/null | head -1) ;;
+            macosx) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"/macos-* 2>/dev/null | head -1) ;;
+        esac
 
-    if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive/dSYMs" ]; then
-        cp -R "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive/dSYMs" "$local_dsym_dir/"
-    fi
-done
+        if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive/dSYMs" ]; then
+            cp -R "$PROJECT_BUILD_DIR/$PACKAGE_NAME-$sdk.xcarchive/dSYMs" "$local_dsym_dir/"
+        fi
+    done
+else
+    echo "Skipping dSYMs. Pass --debug to include them in the XCFramework."
+fi
 
 echo "Created $PROJECT_BUILD_DIR/$PACKAGE_NAME.xcframework"
