@@ -265,6 +265,18 @@ strip_release_metadata() {
     fi
 }
 
+first_existing_project() {
+    local candidate
+    for candidate in "$@"; do
+        if [ -d "$candidate" ]; then
+            echo "$candidate"
+            return
+        fi
+    done
+
+    echo "$1"
+}
+
 project_args_for_scheme() {
     local scheme="$1"
 
@@ -273,19 +285,19 @@ project_args_for_scheme() {
             echo "-workspace" "$XCODEWORKSPACE"
             ;;
         _AttributeGraphDeviceSwiftShims)
-            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj"
+            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj")"
             ;;
         OpenAttributeGraphShims)
-            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenAttributeGraph/OpenAttributeGraph.xcodeproj"
+            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenAttributeGraph/OpenAttributeGraph.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenAttributeGraph/OpenAttributeGraph.xcodeproj")"
             ;;
         OpenCoreGraphics|OpenCoreGraphicsShims|OpenQuartzCore|OpenQuartzCoreShims)
-            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenCoreGraphics/OpenCoreGraphics.xcodeproj"
+            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenCoreGraphics/OpenCoreGraphics.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenCoreGraphics/OpenCoreGraphics.xcodeproj")"
             ;;
         OpenObservation|OpenObservationCxx)
-            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj"
+            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj")"
             ;;
         OpenRenderBoxShims)
-            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/OpenRenderBox/OpenRenderBox.xcodeproj"
+            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenRenderBox/OpenRenderBox.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenRenderBox/OpenRenderBox.xcodeproj")"
             ;;
         SymbolLocator)
             echo "-project" "$PROJECT_ROOT/.build/tuist-derived/SymbolLocator/SymbolLocator.xcodeproj"
