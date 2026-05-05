@@ -33,5 +33,5 @@ jobs:
       - name: Upload XCFrameworks
         uses: actions/upload-artifact@v7
         with:
+          name: xcframeworks
           path: build/*.xcframework.zip
-          archive: false
