@@ -639,6 +639,8 @@ let openSwiftUITarget = Target.target(
     cxxSettings: sharedCxxSettings,
     swiftSettings: sharedSwiftSettings,
     linkerSettings: [
+        // Force Objective-C categories from static COpenSwiftUI into the final framework.
+        .unsafeFlags(["-Xlinker", "-ObjC"], .when(platforms: .darwinPlatforms)),
         // -framework CoreServices
         // For CS private API link support
         .linkedFramework("CoreServices", .when(platforms: [.iOS])),
