@@ -19,6 +19,7 @@ public struct PackageContextEnvironmentProvider: EnvironmentProvider {
 
     public func value(forKey key: String) -> String? {
         #if TUIST
+        // FIXME: upstream issue tuist#10616
         ProcessInfo.processInfo.environment[key]
         #else
         Context.environment[key]
@@ -149,6 +150,7 @@ let development = envBoolValue("DEVELOPMENT", default: false)
 let warningsAsErrorsCondition = envBoolValue("WERROR", default: isXcodeEnv && development)
 
 #if TUIST
+// FIXME: upstream issue tuist#10616
 let packageDirectory = FileManager.default.currentDirectoryPath
 #else
 let packageDirectory = Context.packageDirectory
