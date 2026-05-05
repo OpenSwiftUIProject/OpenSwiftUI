@@ -15,25 +15,19 @@ jobs:
       tag-name: ${{ github.ref_name }}
     secrets: inherit
 
-  build-xcframeworks:
-    name: Build and Upload XCFrameworks
+  build-xcframework:
+    name: Build and Upload XCFramework
     needs: release-notes
     runs-on: macos-15
     outputs:
       checksum_OpenSwiftUI: ${{ steps.build.outputs.checksum_OpenSwiftUI }}
-      checksum_OpenSwiftUICore: ${{ steps.build.outputs.checksum_OpenSwiftUICore }}
-      checksum_OpenAttributeGraphShims: ${{ steps.build.outputs.checksum_OpenAttributeGraphShims }}
-      checksum_OpenCoreGraphicsShims: ${{ steps.build.outputs.checksum_OpenCoreGraphicsShims }}
-      checksum_OpenObservation: ${{ steps.build.outputs.checksum_OpenObservation }}
-      checksum_OpenQuartzCoreShims: ${{ steps.build.outputs.checksum_OpenQuartzCoreShims }}
-      checksum_OpenRenderBoxShims: ${{ steps.build.outputs.checksum_OpenRenderBoxShims }}
     env:
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
-      - name: Build XCFrameworks
+      - name: Build XCFramework
         id: build
         uses: ./.github/actions/build-xcframework
         with:
@@ -45,7 +39,7 @@ jobs:
 
   update-binary-repo:
     name: Update OpenSwiftUI-spm
-    needs: build-xcframeworks
+    needs: build-xcframework
     runs-on: ubuntu-latest
     env:
       BINARY_REPO_PAT: ${{ secrets.BINARY_REPO_PAT }}
@@ -53,13 +47,7 @@ jobs:
       - name: Update binary repo
         env:
           VERSION: ${{ github.ref_name }}
-          CHECKSUM_OpenSwiftUI: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUI }}
-          CHECKSUM_OpenSwiftUICore: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUICore }}
-          CHECKSUM_OpenAttributeGraphShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenAttributeGraphShims }}
-          CHECKSUM_OpenCoreGraphicsShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenCoreGraphicsShims }}
-          CHECKSUM_OpenObservation: ${{ needs.build-xcframeworks.outputs.checksum_OpenObservation }}
-          CHECKSUM_OpenQuartzCoreShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenQuartzCoreShims }}
-          CHECKSUM_OpenRenderBoxShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenRenderBoxShims }}
+          CHECKSUM_OpenSwiftUI: ${{ needs.build-xcframework.outputs.checksum_OpenSwiftUI }}
         run: |
           if [ -z "$BINARY_REPO_PAT" ]; then
             echo "::notice::BINARY_REPO_PAT not set, skipping binary repo update"
@@ -72,12 +60,6 @@ jobs:
           sed \
             -e "s|{{VERSION}}|${VERSION}|g" \
             -e "s|{{CHECKSUM_OpenSwiftUI}}|${CHECKSUM_OpenSwiftUI}|g" \
-            -e "s|{{CHECKSUM_OpenSwiftUICore}}|${CHECKSUM_OpenSwiftUICore}|g" \
-            -e "s|{{CHECKSUM_OpenAttributeGraphShims}}|${CHECKSUM_OpenAttributeGraphShims}|g" \
-            -e "s|{{CHECKSUM_OpenCoreGraphicsShims}}|${CHECKSUM_OpenCoreGraphicsShims}|g" \
-            -e "s|{{CHECKSUM_OpenObservation}}|${CHECKSUM_OpenObservation}|g" \
-            -e "s|{{CHECKSUM_OpenQuartzCoreShims}}|${CHECKSUM_OpenQuartzCoreShims}|g" \
-            -e "s|{{CHECKSUM_OpenRenderBoxShims}}|${CHECKSUM_OpenRenderBoxShims}|g" \
             Package.swift.template > Package.swift
           echo "Generated Package.swift:"
           head -50 Package.swift

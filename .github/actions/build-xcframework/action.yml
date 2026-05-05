@@ -1,5 +1,5 @@
-name: 'Build XCFrameworks'
-description: 'Build OpenSwiftUI xcframeworks and generate binaryTarget entries'
+name: 'Build XCFramework'
+description: 'Build OpenSwiftUI.xcframework and generate its binaryTarget entry'
 
 inputs:
   xcode-version:
@@ -26,24 +26,6 @@ outputs:
   checksum_OpenSwiftUI:
     description: 'Checksum for OpenSwiftUI.xcframework.zip'
     value: ${{ steps.checksums.outputs.checksum_OpenSwiftUI }}
-  checksum_OpenSwiftUICore:
-    description: 'Checksum for OpenSwiftUICore.xcframework.zip'
-    value: ${{ steps.checksums.outputs.checksum_OpenSwiftUICore }}
-  checksum_OpenAttributeGraphShims:
-    description: 'Checksum for OpenAttributeGraphShims.xcframework.zip'
-    value: ${{ steps.checksums.outputs.checksum_OpenAttributeGraphShims }}
-  checksum_OpenCoreGraphicsShims:
-    description: 'Checksum for OpenCoreGraphicsShims.xcframework.zip'
-    value: ${{ steps.checksums.outputs.checksum_OpenCoreGraphicsShims }}
-  checksum_OpenObservation:
-    description: 'Checksum for OpenObservation.xcframework.zip'
-    value: ${{ steps.checksums.outputs.checksum_OpenObservation }}
-  checksum_OpenQuartzCoreShims:
-    description: 'Checksum for OpenQuartzCoreShims.xcframework.zip'
-    value: ${{ steps.checksums.outputs.checksum_OpenQuartzCoreShims }}
-  checksum_OpenRenderBoxShims:
-    description: 'Checksum for OpenRenderBoxShims.xcframework.zip'
-    value: ${{ steps.checksums.outputs.checksum_OpenRenderBoxShims }}
 
 runs:
   using: 'composite'
@@ -52,26 +34,21 @@ runs:
       uses: OpenSwiftUIProject/setup-xcode@v2
       with:
         xcode-version: ${{ inputs.xcode-version }}
+    - name: Install Tuist
+      uses: jdx/mise-action@v2
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
-    - name: Build XCFrameworks
+    - name: Build XCFramework
       run: Scripts/build_xcframework.sh OpenSwiftUI
       shell: bash
-    - name: Code sign XCFrameworks
+    - name: Code sign XCFramework
       if: ${{ inputs.signing-certificate-base64 != '' }}
       uses: ./.github/actions/codesign-xcframework
       with:
         signing-certificate-base64: ${{ inputs.signing-certificate-base64 }}
         signing-certificate-password: ${{ inputs.signing-certificate-password }}
-        xcframework-paths: >-
-          build/OpenSwiftUI.xcframework
-          build/OpenSwiftUICore.xcframework
-          build/OpenAttributeGraphShims.xcframework
-          build/OpenCoreGraphicsShims.xcframework
-          build/OpenObservation.xcframework
-          build/OpenQuartzCoreShims.xcframework
-          build/OpenRenderBoxShims.xcframework
+        xcframework-paths: build/OpenSwiftUI.xcframework
     - name: Compute Checksums and Generate Summary
       id: checksums
       shell: bash
@@ -79,15 +56,7 @@ runs:
         TAG_NAME: ${{ inputs.tag-name }}
       run: |
         cd build
-        FRAMEWORKS=(
-          OpenSwiftUI
-          OpenSwiftUICore
-          OpenAttributeGraphShims
-          OpenCoreGraphicsShims
-          OpenObservation
-          OpenQuartzCoreShims
-          OpenRenderBoxShims
-        )
+        FRAMEWORKS=(OpenSwiftUI)
         BODY=""
         echo "### XCFramework Binary Targets" >> $GITHUB_STEP_SUMMARY
         echo "" >> $GITHUB_STEP_SUMMARY

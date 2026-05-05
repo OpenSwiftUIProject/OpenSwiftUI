@@ -18,7 +18,11 @@ public struct PackageContextEnvironmentProvider: EnvironmentProvider {
     public init() {}
 
     public func value(forKey key: String) -> String? {
+        #if TUIST
+        ProcessInfo.processInfo.environment[key]
+        #else
         Context.environment[key]
+        #endif
     }
 }
 
@@ -120,6 +124,12 @@ EnvManager.shared.register(domain: "OpenSwiftUI")
 
 // MARK: - Env and config
 
+#if TUIST
+let isTuistEvaluation = true
+#else
+let isTuistEvaluation = false
+#endif
+
 #if os(macOS)
 // NOTE: #if os(macOS) check is not accurate if we are cross compiling for Linux platform. So we add an env key to specify it.
 let buildForDarwinPlatform = envBoolValue("BUILD_FOR_DARWIN_PLATFORM", default: true)
@@ -138,19 +148,25 @@ let isXcodeEnv = envStringValue("__CFBundleIdentifier", searchInDomain: false) =
 let development = envBoolValue("DEVELOPMENT", default: false)
 let warningsAsErrorsCondition = envBoolValue("WERROR", default: isXcodeEnv && development)
 
-let swiftCorelibsPath = envStringValue("LIB_SWIFT_PATH") ?? "\(Context.packageDirectory)/Sources/SwiftCorelibs/include"
+#if TUIST
+let packageDirectory = FileManager.default.currentDirectoryPath
+#else
+let packageDirectory = Context.packageDirectory
+#endif
+
+let swiftCorelibsPath = envStringValue("LIB_SWIFT_PATH") ?? "\(packageDirectory)/Sources/SwiftCorelibs/include"
 
 let releaseVersion = envIntValue("TARGET_RELEASE", default: 2024)
 
 let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: buildForDarwinPlatform)
 let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
-let useLocalDeps = envBoolValue("USE_LOCAL_DEPS")
+let useLocalDeps = envBoolValue("USE_LOCAL_DEPS", default: isTuistEvaluation)
 
 // For OpenAttributeGraphShims
 let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
 let danceUIGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_DANCEUIGRAPH", default: false)
-let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: false)
+let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: isTuistEvaluation)
 
 let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
@@ -183,7 +199,7 @@ let enableRuntimeConcurrencyCheck = envBoolValue("ENABLE_RUNTIME_CONCURRENCY_CHE
 let bridgeFramework = envStringValue("OPENSWIFTUI_BRIDGE_FRAMEWORK", default: "SwiftUI")
 
 // Workaround iOS CI build issue (We need to disable this on iOS CI)
-let supportMultiProducts: Bool = envBoolValue("SUPPORT_MULTI_PRODUCTS", default: true)
+let supportMultiProducts: Bool = envBoolValue("SUPPORT_MULTI_PRODUCTS", default: !isTuistEvaluation)
 
 /// CGFloat and CGRect def in CFCGTypes.h will conflict with Foundation's CGSize/CGRect def on Linux.
 /// macOS: true -> no issue
@@ -731,8 +747,9 @@ let openSwiftUISymbolDualTestsTarget = Target.testTarget(
 
 // MARK: - Products
 
-let libraryType: Product.Library.LibraryType?
-switch envStringValue("LIBRARY_TYPE") {
+let configuredLibraryType = envStringValue("LIBRARY_TYPE") ?? (isTuistEvaluation ? "dynamic" : nil)
+let libraryType: PackageDescription.Product.Library.LibraryType?
+switch configuredLibraryType {
 case "dynamic":
     libraryType = .dynamic
 case "static":
@@ -741,7 +758,7 @@ default:
     libraryType = nil
 }
 
-var products: [Product] = [
+var products: [PackageDescription.Product] = [
     .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"])
 ]
 if supportMultiProducts {
@@ -908,3 +925,27 @@ if swiftCryptoCondition {
     openSwiftUICoreTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
 }
+
+#if TUIST
+import struct ProjectDescription.PackageSettings
+import enum ProjectDescription.Product
+
+let packageSettings = PackageSettings(
+    productTypes: [
+        "OpenSwiftUI": ProjectDescription.Product.framework,
+        "OpenSwiftUICore": ProjectDescription.Product.staticFramework,
+        "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
+        "COpenSwiftUI": ProjectDescription.Product.staticFramework,
+        "OpenSwiftUIMacros": ProjectDescription.Product.macro,
+        "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
+        "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
+        "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,
+        "OpenCoreGraphicsShims": ProjectDescription.Product.staticFramework,
+        "OpenObservation": ProjectDescription.Product.staticFramework,
+        "OpenQuartzCoreShims": ProjectDescription.Product.staticFramework,
+        "OpenRenderBoxShims": ProjectDescription.Product.staticFramework,
+        "SymbolLocator": ProjectDescription.Product.staticFramework,
+    ],
+    baseProductType: ProjectDescription.Product.staticFramework
+)
+#endif

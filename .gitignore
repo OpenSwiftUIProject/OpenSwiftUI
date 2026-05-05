@@ -1,6 +1,9 @@
 .DS_Store
 /.build
 /build
+/Derived
+/OpenSwiftUI.xcodeproj
+/Workspace.xcworkspace
 /Packages
 xcuserdata/
 DerivedData/
