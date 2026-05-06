@@ -256,16 +256,7 @@ extension DisplayList {
             self.options = options
             self.renderer = DisplayList.GraphicsRenderer(platformViewMode: options.drawsPlatformViews ? .rendered(update: true) : .unsupported)
             self.drawingView = platform.definition.makeDrawingView(options: .init(base: .init(options)))
-            #if canImport(Darwin)
-            CoreViewAddSubview(
-                system: platform.viewSystem,
-                parent: rootView,
-                child: drawingView!,
-                index: 0
-            )
-            #else
-            _openSwiftUIPlatformUnimplementedWarning()
-            #endif
+            platform.addSubview(drawingView!, to: rootView, at: 0)
         }
 
         var exportedObject: AnyObject? {
@@ -288,17 +279,10 @@ extension DisplayList {
                 lastContentsScale = contentsScale
                 seed = .init()
             }
-            #if canImport(Darwin)
-            let drawingViewFrame = drawingView!.frame
-            if let rootViewBounds = rootView.bounds, drawingViewFrame != rootViewBounds {
-                CoreViewSetFrame(
-                    system: platform.viewSystem,
-                    view: drawingView!,
-                    frame: rootView.bounds!
-                )
+            if platform.frame(of: drawingView!) != platform.bounds(of: rootView) {
+                platform.setFrame(platform.bounds(of: rootView)!, of: drawingView!)
                 seed = .init()
             }
-            #endif
             let newSeed = DisplayList.Seed(version)
             if newSeed == seed, renderer.nextTime >= time {
                 return renderer.nextTime
@@ -352,14 +336,7 @@ extension DisplayList {
         }
 
         func destroy(rootView: AnyObject) {
-            #if canImport(Darwin)
-            CoreViewRemoveFromSuperview(
-                system: platform.viewSystem,
-                view: drawingView!
-            )
-            #else
-            _openSwiftUIPlatformUnimplementedWarning()
-            #endif
+            platform.removeFromSuperview(drawingView!)
         }
 
         var viewCacheIsEmpty: Bool {

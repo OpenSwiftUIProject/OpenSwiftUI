@@ -139,6 +139,47 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     @inline(__always)
+    package func addSubview(_ child: AnyObject, to parent: AnyObject, at index: Int) {
+        #if canImport(QuartzCore)
+        CoreViewAddSubview(
+            system: viewSystem,
+            parent: parent,
+            child: child,
+            index: UInt(index)
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
+
+    @inline(__always)
+    package func setFrame(_ frame: CGRect, of view: AnyObject) {
+        #if canImport(QuartzCore)
+        CoreViewSetFrame(system: viewSystem, view: view, frame: frame)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
+
+    @inline(__always)
+    package func frame(of view: AnyObject) -> CGRect? {
+        #if canImport(QuartzCore)
+        CoreViewGetFrame(system: viewSystem, view: view)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
+
+    @inline(__always)
+    package func bounds(of view: AnyObject) -> CGRect? {
+        #if canImport(Darwin)
+        view.bounds
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
+    }
+
+    @inline(__always)
     package func maskView(_ view: AnyObject) -> AnyObject? {
         #if canImport(QuartzCore)
         CoreViewMaskView(system: viewSystem, view: view) as AnyObject?

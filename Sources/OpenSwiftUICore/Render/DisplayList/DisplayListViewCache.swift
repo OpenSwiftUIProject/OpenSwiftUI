@@ -133,9 +133,7 @@ extension DisplayList.ViewUpdater {
                    let newInfo = map.removeValue(forKey: key) {
                     removeRecursively(newInfo as AnyObject)
                 }
-                #if canImport(Darwin)
-                CoreViewRemoveFromSuperview(system: platform.viewSystem, view: view)
-                #endif
+                platform.removeFromSuperview(view)
             }
         }
 
@@ -303,9 +301,7 @@ extension DisplayList.ViewUpdater {
                 }
                 if info.view !== oldView {
                     reverseMap.removeValue(forKey: unsafeBitCast(oldView, to: OpaquePointer.self))
-                    #if canImport(Darwin)
-                    CoreViewRemoveFromSuperview(system: platform.viewSystem, view: oldView)
-                    #endif
+                    platform.removeFromSuperview(oldView)
                     reverseMap[unsafeBitCast(info.view, to: OpaquePointer.self)] = key
                     #if canImport(QuartzCore)
                     if index.archiveIdentity == .none, item.identity != .none {
