@@ -109,7 +109,9 @@ private struct ShadowOffsetProperty: DisplayList.ViewUpdater.AsyncLayer.Property
 
     static func boxValue(_ value: CGSize) -> NSObject {
         #if canImport(Darwin)
-        return NSValue(size: value)
+//        return NSValue(size: value)
+        // FIXME
+        return NSObject()
         #else
         return NSObject()
         #endif
