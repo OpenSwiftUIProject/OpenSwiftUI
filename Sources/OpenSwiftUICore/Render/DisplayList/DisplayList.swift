@@ -399,16 +399,37 @@ extension DisplayList {
         }
         
         package mutating func skip(list: DisplayList) {
-            _openSwiftUIUnimplementedFailure()
+            for item in list.items {
+                skip(item: item)
+            }
         }
         
         package mutating func skip(item: Item) {
-            _openSwiftUIUnimplementedFailure()
+            guard item.identity == .none else { return }
+            let saved = enter(identity: item.identity)
+            defer { leave(index: saved) }
+            switch item.value {
+            case let .content(content):
+                if case let .flattened(list, _, _) = content.value {
+                    skip(list: list)
+                }
+            case let .effect(effect, list):
+                skip(list: list)
+                skip(effect: effect)
+            default:
+                break
+            }
         }
         
         package mutating func skip(effect: Effect) {
-            
-            _openSwiftUIUnimplementedFailure()
+            switch effect {
+            case let .archive(archiveIDs):
+                updateArchive(entering: archiveIDs != nil)
+            case let .mask(list, _):
+                skip(list: list)
+            default:
+                break
+            }
         }
         
         package func assertItem(_ item: Item) {}
