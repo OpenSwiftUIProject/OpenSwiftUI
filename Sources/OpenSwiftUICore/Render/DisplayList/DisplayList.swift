@@ -503,18 +503,17 @@ extension DisplayList.Item {
         // TODO eg. .opacity(1.0) -> .identity
     }
 
-    // TBA
     package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool {
-        guard identity == other.identity else { return false }
         switch (value, other.value) {
         case (.empty, .empty):
             return true
-        case (.content, .content):
-            return true
-        case (.effect, .effect):
-            return true
-        case (.states, .states):
-            return true
+        case let (.content(lhs), .content(rhs)):
+            return compareEnumTags(lhs.value, rhs.value)
+        case let (.effect(lhs, _), .effect(rhs, _)):
+            return compareEnumTags(lhs, rhs)
+        case let (.states(lhs), .states(rhs)):
+            guard lhs.count == rhs.count else { return false }
+            return zip(lhs, rhs).allSatisfy { $0.0 == $1.0 }
         default:
             return false
         }
