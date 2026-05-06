@@ -204,7 +204,20 @@ extension DisplayList {
             from list: DisplayList,
             parentState: UnsafePointer<Model.State>
         ) {
-            _openSwiftUIUnimplementedWarning()
+            guard !list.items.isEmpty else {
+                return
+            }
+            for var item in list.items {
+                let savedIndex = viewCache.index.enter(identity: item.identity)
+                defer { viewCache.index.leave(index: savedIndex) }
+                let nextTime = viewCache.prepare(item: &item, parentState: parentState)
+                container.nextTime = min(container.nextTime, nextTime)
+                updateInheritedView(
+                    container: &container,
+                    from: item,
+                    parentState: parentState
+                )
+            }
         }
         
         private func updateAsync(
