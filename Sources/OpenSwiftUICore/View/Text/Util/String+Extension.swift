@@ -46,4 +46,8 @@ extension NSAttributedString {
         )
         return value != nil
     }
+    
+    var updateSchedule: any TimelineSchedule {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
