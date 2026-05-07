@@ -285,7 +285,7 @@ extension DisplayList.ViewUpdater {
                 info.cacheSeed = cacheSeed
                 // Update nextUpdate
                 let newSeed = DisplayList.Seed(version)
-                var isInserted = info.seeds.item != newSeed || state.pointee.globals.pointee.time >= info.nextUpdate
+                var changed = info.seeds.item != newSeed || state.pointee.globals.pointee.time >= info.nextUpdate
                 info.nextUpdate = .infinity
                 // Update parentID
                 let oldParentID = info.parentID
@@ -308,14 +308,14 @@ extension DisplayList.ViewUpdater {
                         info.layer.displayListID = item.identity
                     }
                     #endif
-                    isInserted = true
+                    changed = true
                 }
                 return Result(
                     view: info.view,
                     container: info.container,
                     id: info.id,
                     key: key,
-                    isInserted: isInserted,
+                    changed: changed,
                     isValid: !info.isInvalid,
                     nextUpdate: info.nextUpdate
                 )
@@ -342,7 +342,7 @@ extension DisplayList.ViewUpdater {
                     container: info.container,
                     id: info.id,
                     key: key,
-                    isInserted: true,
+                    changed: true,
                     isValid: !info.isInvalid,
                     nextUpdate: info.nextUpdate
                 )
@@ -392,7 +392,7 @@ extension DisplayList.ViewUpdater {
                 return AsyncResult(
                     view: info.view,
                     key: key,
-                    isInserted: oldItem.version != newItem.version,
+                    changed: oldItem.version != newItem.version,
                     isValid: !info.isInvalid,
                     nextUpdate: info.nextUpdate
                 )
@@ -404,7 +404,7 @@ extension DisplayList.ViewUpdater {
             var container: AnyObject
             var id: ViewInfo.ID
             var key: Key
-            var isInserted: Bool
+            var changed: Bool
             var isValid: Bool
             var nextUpdate: Time
         }
@@ -421,7 +421,7 @@ extension DisplayList.ViewUpdater {
         struct AsyncResult {
             var view: AnyObject
             var key: Key
-            var isInserted: Bool
+            var changed: Bool
             var isValid: Bool
             var nextUpdate: Time
         }

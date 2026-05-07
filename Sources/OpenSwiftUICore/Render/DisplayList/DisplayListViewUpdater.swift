@@ -316,7 +316,7 @@ extension DisplayList {
                 )
                 container.count &+= 1
                 container.nextTime = min(container.nextTime, result.nextUpdate)
-                guard result.isInserted || !wasValid else {
+                guard result.changed || !wasValid else {
                     skipEffectChildren(in: item)
                     return
                 }
@@ -408,7 +408,7 @@ extension DisplayList {
                     return nil
                 }
                 isValid = isValid && result.isValid
-                guard result.isInserted else {
+                guard result.changed else {
                     skipEffectContent(in: oldItem)
                     return result.nextUpdate
                 }
@@ -519,7 +519,7 @@ extension DisplayList {
             else {
                 return result.nextUpdate
             }
-            guard result.isInserted || !wasValid else {
+            guard result.changed || !wasValid else {
                 skipEffectContent(in: oldItem)
                 return result.nextUpdate
             }
