@@ -212,6 +212,39 @@ extension DisplayList.ViewUpdater.Platform {
     // private func updateDrawingViewAsync
 
     // TBA
+    func _makeItemView(
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> DisplayList.ViewUpdater.ViewInfo {
+        switch item.value {
+        case let .content(content):
+            return makeContentView(content, state: state)
+        case let .effect(effect, _):
+            return makeEffectView(effect, state: state)
+        default:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
+        }
+    }
+
+    // TBA
+    func updateItemView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        index: DisplayList.Index,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        switch item.value {
+        case let .content(content):
+            updateContentView(&viewInfo, content: content, item: item, state: state)
+        case let .effect(effect, _):
+            updateEffectView(&viewInfo, effect: effect, item: item, state: state)
+        default:
+            break
+        }
+        updateState(&viewInfo, item: item, size: item.size, state: state)
+    }
+
+    // TBA
     /*fileprivate*/ func updateState(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         item: DisplayList.Item,
@@ -237,6 +270,243 @@ extension DisplayList.ViewUpdater.Platform {
             #endif
             viewInfo.seeds.opacity = opacitySeed
         }
+    }
+
+    // TBA
+    private func makeContentView(
+        _ content: DisplayList.Content,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> DisplayList.ViewUpdater.ViewInfo {
+        switch content.value {
+        case .backdrop:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .backdrop)
+        case .color:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .color)
+        case .chameleonColor:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .chameleonColor)
+        case .image:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .image)
+        case .shape:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .shape)
+        case .shadow:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .shadow)
+        case let .platformView(factory):
+            let view = factory.makePlatformView() ?? missingItemView()
+            definition.makePlatformView(view: view, kind: .platformView)
+            return makeViewInfo(view: view, kind: .platformView)
+        case let .platformLayer(factory):
+            #if canImport(QuartzCore)
+            let view = definition.makeLayerView(
+                type: factory.platformLayerType,
+                kind: .platformLayer
+            )
+            return makeViewInfo(view: view, kind: .platformLayer)
+            #else
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .platformLayer)
+            #endif
+        case .text, .flattened, .drawing:
+            let view = definition.makeDrawingView(
+                options: .init(base: drawingOptions(for: content, state: state))
+            ) as AnyObject
+            return makeViewInfo(view: view, kind: .drawing)
+        case let .view(factory):
+            let view = makeHostedPlatformView(factory: factory) ?? missingItemView()
+            definition.makePlatformView(view: view, kind: .platformView)
+            return makeViewInfo(view: view, kind: .platformView)
+        case .placeholder:
+            return makeViewInfo(view: missingItemView(), kind: .platformView)
+        }
+    }
+
+    // TBA
+    private func makeEffectView(
+        _ effect: DisplayList.Effect,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> DisplayList.ViewUpdater.ViewInfo {
+        switch effect {
+        case .identity, .opacity, .blendMode, .clip, .filter, .contentTransition:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
+        case .geometryGroup:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .geometry)
+        case .compositingGroup, .backdropGroup:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
+        case .archive, .properties, .accessibility, .state:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
+        case let .platformGroup(factory):
+            let view = factory.makePlatformGroup() ?? missingItemView()
+            definition.makePlatformView(view: view, kind: .platformGroup)
+            var info = makeViewInfo(view: view, kind: .platformGroup)
+            info.container = factory.platformGroupContainer(view)
+            return info
+        case .mask:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .mask)
+        case let .transform(transform):
+            let kind: PlatformViewDefinition.ViewKind
+            switch transform {
+            case .affine, .rotation:
+                kind = .geometry
+            case .projection:
+                kind = .projection
+            case .rotation3D:
+                kind = .affine3D
+            }
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: kind)
+        case .animation:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
+        case let .view(factory):
+            let view = makeHostedPlatformView(factory: factory) ?? missingItemView()
+            definition.makePlatformView(view: view, kind: .platformView)
+            return makeViewInfo(view: view, kind: .platformView)
+        case .platform:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .platformEffect)
+        case .interpolatorRoot, .interpolatorLayer, .interpolatorAnimation:
+            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .drawing)
+        }
+    }
+
+    // TBA
+    private func updateContentView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        content: DisplayList.Content,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        switch content.value {
+        case .backdrop, .color, .chameleonColor, .image, .shadow, .view, .placeholder:
+            break
+        case let .shape(path, _, _):
+            definition.setPath(path, shapeView: viewInfo.view)
+        case let .platformView(factory):
+            var view = viewInfo.view
+            factory.updatePlatformView(&view)
+            updateViewReference(&viewInfo, view: view, kind: .platformView)
+        case let .platformLayer(factory):
+            #if canImport(QuartzCore)
+            if let layer = viewInfo.view as? CALayer {
+                factory.updatePlatformLayer(layer)
+            }
+            #endif
+        case .text, .flattened, .drawing:
+            updateDrawingContent(&viewInfo, content: content, item: item, state: state)
+        }
+    }
+
+    // TBA
+    private func updateEffectView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        effect: DisplayList.Effect,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        switch effect {
+        case let .transform(transform):
+            if case let .projection(projectionTransform) = transform {
+                definition.setProjectionTransform(
+                    projectionTransform,
+                    projectionView: viewInfo.view
+                )
+            }
+        case let .platformGroup(factory):
+            var view = viewInfo.view
+            factory.updatePlatformGroup(&view)
+            updateViewReference(&viewInfo, view: view, kind: .platformGroup)
+            viewInfo.container = factory.platformGroupContainer(viewInfo.view)
+        case .identity, .geometryGroup, .compositingGroup, .backdropGroup, .archive,
+             .properties, .opacity, .blendMode, .clip, .mask, .filter, .animation,
+             .contentTransition, .view, .accessibility, .platform, .state,
+             .interpolatorRoot, .interpolatorLayer, .interpolatorAnimation:
+            break
+        }
+    }
+    
+    // TBA
+    private func updateDrawingContent(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        content: DisplayList.Content,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        let contentsScale = state.pointee.globals.pointee.environment.contentsScale
+        let options = drawingOptions(for: content, state: state)
+        var view = viewInfo.view
+        let drawable = updateDrawingView(
+            &view,
+            options: options,
+            contentsScale: contentsScale
+        )
+        updateViewReference(&viewInfo, view: view, kind: .drawing)
+        var drawableContent = PlatformDrawableContent()
+        switch content.value {
+        case let .flattened(list, offset, _):
+            drawableContent.storage = .displayList(
+                list,
+                offset,
+                state.pointee.globals.pointee.time
+            )
+        case let .drawing(contents, offset, _):
+            drawableContent.storage = .rbDisplayList(contents, offset)
+        case .text:
+            drawableContent.storage = .empty
+        default:
+            return
+        }
+        _ = drawable.update(
+            content: drawableContent,
+            required: item.features.contains(.required)
+        )
+    }
+
+    // TBA
+    private func makeViewInfo(
+        view: AnyObject,
+        kind: PlatformViewDefinition.ViewKind
+    ) -> DisplayList.ViewUpdater.ViewInfo {
+        let layer = viewLayer(view)
+        let state = DisplayList.ViewUpdater.Platform.State(kind: kind)
+        return DisplayList.ViewUpdater.ViewInfo(
+            view: view,
+            layer: layer,
+            container: view,
+            state: state
+        )
+    }
+
+    // TBA
+    private func updateViewReference(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        view: AnyObject,
+        kind: PlatformViewDefinition.ViewKind
+    ) {
+        guard viewInfo.view !== view else {
+            return
+        }
+        viewInfo.view = view
+        viewInfo.container = view
+        viewInfo.reset(platform: self)
+    }
+
+    // TBA
+    private func drawingOptions(
+        for content: DisplayList.Content,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> RasterizationOptions {
+        switch content.value {
+        case let .flattened(_, _, options), let .drawing(_, _, options):
+            return options
+        default:
+            return RasterizationOptions()
+        }
+    }
+
+    // TBA
+    private func makeHostedPlatformView(factory: any DisplayList.ViewFactory) -> AnyObject? {
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+
+    // TBA
+    private func missingItemView() -> AnyObject {
+        definition.makeView(kind: .platformView)
     }
 
     // TBA
