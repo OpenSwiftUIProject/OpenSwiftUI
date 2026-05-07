@@ -268,7 +268,6 @@ extension DisplayList {
             return nextTime
         }
 
-        // TBA
         private func updateInheritedView(
             container: inout Container,
             from item: DisplayList.Item,
@@ -281,12 +280,86 @@ extension DisplayList {
                 index: viewCache.index,
                 into: &state
             )
-            updateRequiredContent(
-                container: &container,
-                item: item,
-                state: &state,
-                requirements: requirements
-            )
+            guard requirements.contains(.nestedContent) || item.features.contains(.required) else {
+                skipEffectContent(in: item)
+                return
+            }
+            if requirements.contains(.inheritedView) {
+                var result = withUnsafePointer(to: state) { statePtr in
+                    viewCache.update(
+                        item: item,
+                        state: statePtr,
+                        tag: .inherited,
+                        in: container.id
+                    ) { [platform] _, item, state in
+                        // TODO: Optimize the call here in Platform
+                        var info = ViewInfo(platform: platform, kind: .inherited)
+                        platform.updateState(
+                            &info,
+                            item: item,
+                            size: item.size,
+                            state: state
+                        )
+                        return info
+                    } updateView: { [platform] info, _, item, state in
+                        // TODO: Optimize the call here in Platform
+                        platform.updateState(
+                            &info,
+                            item: item,
+                            size: item.size,
+                            state: state
+                        )
+                    }
+                }
+                isValid = isValid && result.isValid
+                container.platform.addSubview(
+                    result.view,
+                    to: container.rootView,
+                    at: container.count
+                )
+                container.count &+= 1
+                container.nextTime = min(container.nextTime, result.nextUpdate)
+                guard result.isInserted || !wasValid else {
+                    skipEffectChildren(in: item)
+                    return
+                }
+                var childContainer = Container(
+                    rootView: result.container,
+                    platform: platform,
+                    id: result.id
+                )
+                if requirements.contains(.item) {
+                    updateItemView(
+                        container: &childContainer,
+                        from: item,
+                        localState: &state
+                    )
+                } else if case let .effect(_, list) = item.value {
+                    withUnsafePointer(to: state) { statePtr in
+                        update(
+                            container: &childContainer,
+                            from: list,
+                            parentState: statePtr
+                        )
+                    }
+                }
+                childContainer.removeRemaining(viewCache: &viewCache)
+                viewCache.setNextUpdate(childContainer.nextTime, in: &result)
+            } else if requirements.contains(.item) {
+                updateItemView(
+                    container: &container,
+                    from: item,
+                    localState: &state
+                )
+            } else if case let .effect(_, list) = item.value {
+                withUnsafePointer(to: state) { statePtr in
+                    update(
+                        container: &container,
+                        from: list,
+                        parentState: statePtr
+                    )
+                }
+            }
         }
         
         // TBA
@@ -466,105 +539,6 @@ extension DisplayList {
         }
 
         // TBA
-        private func updateRequiredContent(
-            container: inout Container,
-            item: DisplayList.Item,
-            state: inout Model.State,
-            requirements: Model.MergedViewRequirements
-        ) {
-            guard requirements.contains(.nestedContent) || item.features.contains(.required) else {
-                skipEffectContent(in: item)
-                return
-            }
-            if requirements.contains(.inheritedView) {
-                updateInheritedContainer(
-                    container: &container,
-                    item: item,
-                    state: &state,
-                    requirements: requirements
-                )
-                return
-            }
-            if requirements.contains(.item) {
-                updateItemView(
-                    container: &container,
-                    from: item,
-                    localState: &state
-                )
-                return
-            }
-            guard case let .effect(_, list) = item.value else {
-                return
-            }
-            withUnsafePointer(to: state) { statePtr in
-                update(
-                    container: &container,
-                    from: list,
-                    parentState: statePtr
-                )
-            }
-        }
-
-        // TBA
-        private func updateInheritedContainer(
-            container: inout Container,
-            item: DisplayList.Item,
-            state: inout Model.State,
-            requirements: Model.MergedViewRequirements
-        ) {
-            let platform = platform
-            var result = withUnsafePointer(to: state) { statePtr in
-                viewCache.update(
-                    item: item,
-                    state: statePtr,
-                    tag: .inherited,
-                    in: container.id
-                ) { _, item, state in
-                    var info = ViewInfo(platform: platform, kind: .inherited)
-                    platform.updateState(
-                        &info,
-                        item: item,
-                        size: item.size,
-                        state: state
-                    )
-                    return info
-                } updateView: { info, _, item, state in
-                    platform.updateState(
-                        &info,
-                        item: item,
-                        size: item.size,
-                        state: state
-                    )
-                }
-            }
-
-            isValid = isValid && result.isValid
-            container.platform.addSubview(
-                result.view,
-                to: container.rootView,
-                at: container.count
-            )
-            container.count += 1
-            container.nextTime = min(container.nextTime, result.nextUpdate)
-
-            guard result.isInserted || !wasValid else {
-                skipEffectChildren(in: item)
-                return
-            }
-
-            var childContainer = Container(rootView: result.container, platform: platform)
-            childContainer.id = result.id
-            updateRequiredContent(
-                container: &childContainer,
-                item: item,
-                state: &state,
-                requirements: requirements.subtracting(.inheritedView)
-            )
-            childContainer.removeRemaining(viewCache: &viewCache)
-            viewCache.setNextUpdate(childContainer.nextTime, in: &result)
-        }
-
-        // TBA
         private func updateRequiredContentAsync(
             oldItem: DisplayList.Item,
             oldState: inout Model.State,
@@ -604,7 +578,6 @@ extension DisplayList {
             }
         }
 
-        // TBA
         private func skipEffectChildren(in item: DisplayList.Item) {
             guard case let .effect(effect, list) = item.value else {
                 return
@@ -629,16 +602,22 @@ extension DisplayList.ViewUpdater {
     private struct Container {
         var rootView: AnyObject
         var platform: Platform
-        var id: ViewInfo.ID // FIXME
+        var id: ViewInfo.ID
         var nextTime: Time
         var count: Int
 
-        init(rootView: AnyObject, platform: Platform) {
+        init(
+            rootView: AnyObject,
+            platform: Platform,
+            id: ViewInfo.ID = .init(value: 0),
+            nextTime: Time = .infinity,
+            count: Int = 0
+        ) {
             self.rootView = rootView
             self.platform = platform
-            self.id = .init(value: 0)
-            self.nextTime = .infinity
-            self.count = 0
+            self.id = id
+            self.nextTime = nextTime
+            self.count = count
         }
 
         mutating func removeRemaining(viewCache: inout ViewCache) {
