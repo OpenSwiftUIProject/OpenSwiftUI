@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: B86250B2E056EB47628ECF46032DFA4C (SwiftUICore)
 
 import Foundation
@@ -11,7 +11,7 @@ import OpenSwiftUI_SPI
 import OpenQuartzCoreShims
 import QuartzCore_Private
 
-// MARK: - DisplayList.ViewUpdater [WIP]
+// MARK: - DisplayList.ViewUpdater
 
 private var printTree: Bool?
 
@@ -555,33 +555,27 @@ extension DisplayList {
             viewCache.setNextUpdate(nextTime, in: &result)
         }
         
-        // TBA
         private func updateItemViewAsync(
             oldItem: DisplayList.Item,
             oldState: inout Model.State,
             newItem: DisplayList.Item,
             newState: inout Model.State
         ) -> Time? {
-            let platform = platform
-            let asyncResult = withUnsafePointer(to: oldState) { oldStatePtr in
-                withUnsafePointer(to: newState) { newStatePtr in
-                    viewCache.updateAsync(
-                        oldItem: oldItem,
-                        oldState: oldStatePtr,
-                        newItem: newItem,
-                        newState: newStatePtr,
-                        tag: .item
-                    ) { layer, index, oldItem, oldState, newItem, newState in
-                        platform.updateItemViewAsync(
-                            layer: &layer,
-                            index: index,
-                            oldItem: oldItem,
-                            oldState: oldState,
-                            newItem: newItem,
-                            newState: newState
-                        )
-                    }
-                }
+            let asyncResult = viewCache.updateAsync(
+                oldItem: oldItem,
+                oldState: &oldState,
+                newItem: newItem,
+                newState: &newState,
+                tag: .item
+            ) { [platform] layer, index, oldItem, oldState, newItem, newState in
+                platform.updateItemViewAsync(
+                    layer: &layer,
+                    index: index,
+                    oldItem: oldItem,
+                    oldState: oldState,
+                    newItem: newItem,
+                    newState: newState
+                )
             }
             guard var result = asyncResult else {
                 return nil
@@ -593,38 +587,31 @@ extension DisplayList {
                 return result.nextUpdate
             }
             guard result.changed || !wasValid else {
-                if case let .effect(_, list) = oldItem.value {
-                    viewCache.index.skip(list: list)
+                if case let .mask(oldMaskList, _) = oldEffect {
+                    viewCache.index.skip(list: oldMaskList)
                 }
+                viewCache.index.skip(list: oldList)
                 return result.nextUpdate
             }
             oldState.reset()
             newState.reset()
-            let childNextTime = withUnsafePointer(to: oldState) { oldStatePtr in
-                withUnsafePointer(to: newState) { newStatePtr in
-                    updateAsync(
-                        oldList: oldList,
-                        oldParentState: oldStatePtr,
-                        newList: newList,
-                        newParentState: newStatePtr
-                    )
-                }
-            }
+            let childNextTime = updateAsync(
+                oldList: oldList,
+                oldParentState: &oldState,
+                newList: newList,
+                newParentState: &newState
+            )
             guard var nextTime = childNextTime else {
                 return nil
             }
             if case let .mask(oldMaskList, _) = oldEffect,
                case let .mask(newMaskList, _) = newEffect {
-                let maskNextTime = withUnsafePointer(to: oldState) { oldStatePtr in
-                    withUnsafePointer(to: newState) { newStatePtr in
-                        updateAsync(
-                            oldList: oldMaskList,
-                            oldParentState: oldStatePtr,
-                            newList: newMaskList,
-                            newParentState: newStatePtr
-                        )
-                    }
-                }
+                let maskNextTime = updateAsync(
+                    oldList: oldMaskList,
+                    oldParentState: &oldState,
+                    newList: newMaskList,
+                    newParentState: &newState
+                )
                 guard let maskNextTime else {
                     return nil
                 }
