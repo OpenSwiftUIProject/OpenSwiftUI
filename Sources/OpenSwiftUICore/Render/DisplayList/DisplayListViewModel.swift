@@ -27,6 +27,10 @@ extension DisplayList.ViewUpdater {
             init(rawValue: UInt8) {
                 self.rawValue = rawValue
             }
+            
+            static let itemView = MergedViewRequirements(rawValue: 1 << 0)
+            static let inheritedView = MergedViewRequirements(rawValue: 1 << 1)
+            static let nestedContent = MergedViewRequirements(rawValue: 1 << 2)
         }
         
         // MARK: - DisplayList.ViewUpdater.Clip
