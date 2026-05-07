@@ -278,7 +278,9 @@ extension DisplayList {
                 into: &state
             )
             guard requirements.contains(.nestedContent) || item.features.contains(.required) else {
-                skipEffectContent(in: item)
+                if case let .effect(_, list) = item.value {
+                    viewCache.index.skip(list: list)
+                }
                 return
             }
             if requirements.contains(.inheritedView) {
@@ -317,7 +319,10 @@ extension DisplayList {
                 container.count &+= 1
                 container.nextTime = min(container.nextTime, result.nextUpdate)
                 guard result.changed || !wasValid else {
-                    skipEffectChildren(in: item)
+                    if case let .effect(effect, list) = item.value {
+                        viewCache.index.skip(list: list)
+                        viewCache.index.skip(effect: effect)
+                    }
                     return
                 }
                 var childContainer = Container(
@@ -409,7 +414,9 @@ extension DisplayList {
                 }
                 isValid = isValid && result.isValid
                 guard result.changed else {
-                    skipEffectContent(in: oldItem)
+                    if case let .effect(_, list) = oldItem.value {
+                        viewCache.index.skip(list: list)
+                    }
                     return result.nextUpdate
                 }
                 guard let nextTime = updateRequiredContentAsync(
@@ -445,7 +452,10 @@ extension DisplayList {
                 guard oldItem.features == newItem.features else {
                     return nil
                 }
-                skipEffectChildren(in: oldItem)
+                if case let .effect(effect, list) = oldItem.value {
+                    viewCache.index.skip(list: list)
+                    viewCache.index.skip(effect: effect)
+                }
                 return .infinity
             }
             guard requirements.contains(.itemView) else {
@@ -454,16 +464,12 @@ extension DisplayList {
                 else {
                     return .infinity
                 }
-                return withUnsafePointer(to: oldState) { oldStatePtr in
-                    withUnsafePointer(to: newState) { newStatePtr in
-                        updateAsync(
-                            oldList: oldList,
-                            oldParentState: oldStatePtr,
-                            newList: newList,
-                            newParentState: newStatePtr
-                        )
-                    }
-                }
+                return updateAsync(
+                    oldList: oldList,
+                    oldParentState: &oldState,
+                    newList: newList,
+                    newParentState: &newState
+                )
             }
             return updateItemViewAsync(
                 oldItem: oldItem,
@@ -473,13 +479,80 @@ extension DisplayList {
             )
         }
         
-        // TBA
         private func updateItemView(
             container: inout Container,
             from item: DisplayList.Item,
             localState: inout Model.State
         ) {
-            _openSwiftUIUnimplementedWarning()
+            var result = viewCache.update(
+                item: item,
+                state: &localState,
+                tag: .item,
+                in: container.id
+            ) { [platform] index, item, state in
+                var info = platform._makeItemView(item: item, state: state)
+                platform.updateItemView(
+                    &info,
+                    index: index,
+                    item: item,
+                    state: state
+                )
+                return info
+            } updateView: { [platform] info, index, item, state in
+                platform.updateItemView(
+                    &info,
+                    index: index,
+                    item: item,
+                    state: state
+                )
+            }
+            isValid = isValid && result.isValid
+            container.platform.addSubview(
+                result.view,
+                to: container.rootView,
+                at: container.count
+            )
+            container.count &+= 1
+            container.nextTime = min(container.nextTime, result.nextUpdate)
+            guard case let .effect(effect, list) = item.value else {
+                return
+            }
+            guard result.changed || !wasValid else {
+                viewCache.index.skip(list: list)
+                if case let .mask(list, _) = effect {
+                    viewCache.index.skip(list: list)
+                }
+                return
+            }
+            localState.reset()
+            var childContainer = Container(
+                rootView: result.container,
+                platform: platform,
+                id: result.id
+            )
+            update(
+                container: &childContainer,
+                from: list,
+                parentState: &localState
+            )
+            childContainer.removeRemaining(viewCache: &viewCache)
+            var nextTime = childContainer.nextTime
+            if case let .mask(maskList, _) = effect,
+               let maskView = platform.maskView(result.view) {
+                var maskContainer = Container(
+                    rootView: maskView,
+                    platform: platform,
+                    id: result.id
+                )
+                update(
+                    container: &maskContainer,
+                    from: maskList,
+                    parentState: &localState
+                )
+                maskContainer.removeRemaining(viewCache: &viewCache)
+                nextTime = min(nextTime, maskContainer.nextTime)
+            }
+            viewCache.setNextUpdate(nextTime, in: &result)
         }
         
         // TBA
@@ -520,7 +593,9 @@ extension DisplayList {
                 return result.nextUpdate
             }
             guard result.changed || !wasValid else {
-                skipEffectContent(in: oldItem)
+                if case let .effect(_, list) = oldItem.value {
+                    viewCache.index.skip(list: list)
+                }
                 return result.nextUpdate
             }
             oldState.reset()
@@ -557,23 +632,6 @@ extension DisplayList {
             }
             viewCache.setNextUpdate(nextTime, in: &result)
             return result.nextUpdate
-        }
-
-        @inline(__always)
-        private func skipEffectChildren(in item: DisplayList.Item) {
-            guard case let .effect(effect, list) = item.value else {
-                return
-            }
-            viewCache.index.skip(list: list)
-            viewCache.index.skip(effect: effect)
-        }
-
-        @inline(__always)
-        private func skipEffectContent(in item: DisplayList.Item) {
-            guard case let .effect(_, list) = item.value else {
-                return
-            }
-            viewCache.index.skip(list: list)
         }
     }
 }
