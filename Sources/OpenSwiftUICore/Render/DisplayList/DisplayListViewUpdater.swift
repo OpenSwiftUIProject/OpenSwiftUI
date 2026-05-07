@@ -220,7 +220,6 @@ extension DisplayList {
             }
         }
         
-        // TBA
         private func updateAsync(
             oldList: DisplayList,
             oldParentState: UnsafePointer<Model.State>,
@@ -235,22 +234,20 @@ extension DisplayList {
             }
             var nextTime: Time = .infinity
             for index in oldList.items.indices {
-                let originalOldItem = oldList.items[index]
-                let originalNewItem = newList.items[index]
-                guard originalOldItem.identity == originalNewItem.identity else {
+                var oldItem = oldList.items[index]
+                var newItem = newList.items[index]
+                guard oldItem.identity == newItem.identity else {
                     return nil
                 }
-                guard originalOldItem.matchesTopLevelStructure(of: originalNewItem) else {
+                guard oldItem.matchesTopLevelStructure(of: newItem) else {
                     return nil
                 }
-                let savedIndex = viewCache.index.enter(identity: originalNewItem.identity)
+                let savedIndex = viewCache.index.enter(identity: newItem.identity)
                 defer { viewCache.index.leave(index: savedIndex) }
-                var oldItem = originalOldItem
                 let oldNextTime = viewCache.prepare(
                     item: &oldItem,
                     parentState: oldParentState
                 )
-                var newItem = originalNewItem
                 let newNextTime = viewCache.prepare(
                     item: &newItem,
                     parentState: newParentState
@@ -328,7 +325,7 @@ extension DisplayList {
                     platform: platform,
                     id: result.id
                 )
-                if requirements.contains(.item) {
+                if requirements.contains(.itemView) {
                     updateItemView(
                         container: &childContainer,
                         from: item,
@@ -345,7 +342,7 @@ extension DisplayList {
                 }
                 childContainer.removeRemaining(viewCache: &viewCache)
                 viewCache.setNextUpdate(childContainer.nextTime, in: &result)
-            } else if requirements.contains(.item) {
+            } else if requirements.contains(.itemView) {
                 updateItemView(
                     container: &container,
                     from: item,
@@ -553,7 +550,7 @@ extension DisplayList {
                 skipEffectContent(in: oldItem)
                 return .infinity
             }
-            if requirements.contains(.item) {
+            if requirements.contains(.itemView) {
                 return updateItemViewAsync(
                     oldItem: oldItem,
                     oldState: &oldState,
