@@ -349,6 +349,56 @@ extension DisplayList.ViewUpdater {
             }
         }
 
+        mutating func updateAsync(
+            oldItem: DisplayList.Item,
+            oldState: UnsafePointer<Model.State>,
+            newItem: DisplayList.Item,
+            newState: UnsafePointer<Model.State>,
+            tag: Tag,
+            updateView: (
+                inout AsyncLayer,
+                DisplayList.Index,
+                DisplayList.Item,
+                UnsafePointer<Model.State>,
+                DisplayList.Item,
+                UnsafePointer<Model.State>
+            ) -> Bool
+        ) -> AsyncResult? {
+            guard oldItem.identity == newItem.identity else {
+                return nil
+            }
+            let key = Key(id: index.id, tag: tag)
+            return withUnsafeMutablePointer(to: &self) { cache in
+                guard var info = cache.pointee.map[key] else {
+                    return nil
+                }
+                var layer = AsyncLayer(
+                    layer: info.layer,
+                    cache: cache,
+                    kind: info.state.kind,
+                    flags: info.state.flags,
+                    nextUpdate: .infinity,
+                    isInvalid: info.isInvalid
+                )
+                guard updateView(&layer, cache.pointee.index, oldItem, oldState, newItem, newState) else {
+                    return nil
+                }
+                let shouldWriteBack = info.isInvalid != layer.isInvalid || info.nextUpdate != layer.nextUpdate
+                info.isInvalid = layer.isInvalid
+                info.nextUpdate = layer.nextUpdate
+                if shouldWriteBack {
+                    cache.pointee.map[key] = info
+                }
+                return AsyncResult(
+                    view: info.view,
+                    key: key,
+                    isInserted: oldItem.version != newItem.version,
+                    isValid: !info.isInvalid,
+                    nextUpdate: info.nextUpdate
+                )
+            }
+        }
+
         struct Result {
             var view: AnyObject
             var container: AnyObject
@@ -369,8 +419,10 @@ extension DisplayList.ViewUpdater {
         }
 
         struct AsyncResult {
-            var unknown: AnyObject // FIXME
+            var view: AnyObject
             var key: Key
+            var isInserted: Bool
+            var isValid: Bool
             var nextUpdate: Time
         }
 

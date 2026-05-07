@@ -358,34 +358,7 @@ extension DisplayList {
                 }
             }
         }
-        
-        // TBA
-        private func updateInheritedViewAsync(
-            oldItem: DisplayList.Item,
-            oldState: UnsafePointer<Model.State>,
-            newItem: DisplayList.Item,
-            newState: UnsafePointer<Model.State>
-        ) -> ViewCache.AsyncResult? {
-            viewCache.updateAsync(
-                oldItem: oldItem,
-                oldState: oldState,
-                newItem: newItem,
-                newState: newState,
-                tag: .inherited
-            ) { layer, _, oldItem, oldState, newItem, newState in
-                platform.updateStateAsync(
-                    layer: &layer,
-                    oldItem: oldItem,
-                    oldSize: oldItem.size,
-                    oldState: oldState,
-                    newItem: newItem,
-                    newSize: newItem.size,
-                    newState: newState
-                )
-            }
-        }
-        
-        // TBA
+
         private func updateInheritedViewAsync(
             oldItem: DisplayList.Item,
             oldParentState: UnsafePointer<Model.State>,
@@ -409,15 +382,26 @@ extension DisplayList {
             guard oldRequirements == newRequirements else {
                 return nil
             }
-            if newRequirements.contains(.inheritedView) {
+            if oldRequirements.contains(.inheritedView) {
                 let result = withUnsafePointer(to: oldState) { oldStatePtr in
                     withUnsafePointer(to: newState) { newStatePtr in
-                        updateInheritedViewAsync(
+                        viewCache.updateAsync(
                             oldItem: oldItem,
                             oldState: oldStatePtr,
                             newItem: newItem,
-                            newState: newStatePtr
-                        )
+                            newState: newStatePtr,
+                            tag: .inherited
+                        ) { layer, _, oldItem, oldState, newItem, newState in
+                            platform.updateStateAsync(
+                                layer: &layer,
+                                oldItem: oldItem,
+                                oldSize: oldItem.size,
+                                oldState: oldState,
+                                newItem: newItem,
+                                newSize: newItem.size,
+                                newState: newState
+                            )
+                        }
                     }
                 }
                 guard var result else {
@@ -425,28 +409,31 @@ extension DisplayList {
                 }
                 isValid = isValid && result.isValid
                 guard result.isInserted else {
-                    skipEffectChildren(in: oldItem)
+                    skipEffectContent(in: oldItem)
                     return result.nextUpdate
                 }
+                // TBA
                 guard let nextTime = updateRequiredContentAsync(
                     oldItem: oldItem,
                     oldState: &oldState,
                     newItem: newItem,
                     newState: &newState,
-                    requirements: newRequirements
+                    requirements: oldRequirements
                 ) else {
                     return nil
                 }
                 viewCache.setNextUpdate(nextTime, in: &result)
                 return result.nextUpdate
+            } else {
+                // TBA
+                return updateRequiredContentAsync(
+                    oldItem: oldItem,
+                    oldState: &oldState,
+                    newItem: newItem,
+                    newState: &newState,
+                    requirements: oldRequirements
+                )
             }
-            return updateRequiredContentAsync(
-                oldItem: oldItem,
-                oldState: &oldState,
-                newItem: newItem,
-                newState: &newState,
-                requirements: newRequirements
-            )
         }
         
         // TBA
