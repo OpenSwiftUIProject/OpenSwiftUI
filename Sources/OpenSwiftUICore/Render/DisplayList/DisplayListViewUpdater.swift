@@ -220,14 +220,405 @@ extension DisplayList {
             }
         }
         
+        // TBA
         private func updateAsync(
             oldList: DisplayList,
             oldParentState: UnsafePointer<Model.State>,
             newList: DisplayList,
             newParentState: UnsafePointer<Model.State>
         ) -> Time? {
+            guard oldList.items.count == newList.items.count else {
+                return nil
+            }
+            guard !oldList.items.isEmpty else {
+                return .infinity
+            }
+            var nextTime: Time = .infinity
+            for index in oldList.items.indices {
+                let originalOldItem = oldList.items[index]
+                let originalNewItem = newList.items[index]
+                guard originalOldItem.identity == originalNewItem.identity else {
+                    return nil
+                }
+                guard originalOldItem.matchesTopLevelStructure(of: originalNewItem) else {
+                    return nil
+                }
+                let savedIndex = viewCache.index.enter(identity: originalNewItem.identity)
+                defer { viewCache.index.leave(index: savedIndex) }
+                var oldItem = originalOldItem
+                let oldNextTime = viewCache.prepare(
+                    item: &oldItem,
+                    parentState: oldParentState
+                )
+                var newItem = originalNewItem
+                let newNextTime = viewCache.prepare(
+                    item: &newItem,
+                    parentState: newParentState
+                )
+                guard let childNextTime = updateInheritedViewAsync(
+                    oldItem: oldItem,
+                    oldParentState: oldParentState,
+                    newItem: newItem,
+                    newParentState: newParentState
+                ) else {
+                    return nil
+                }
+                nextTime = min(nextTime, oldNextTime, newNextTime, childNextTime)
+            }
+            return nextTime
+        }
+
+        // TBA
+        private func updateInheritedView(
+            container: inout Container,
+            from item: DisplayList.Item,
+            parentState: UnsafePointer<Model.State>
+        ) {
+            var item = item
+            var state = parentState.pointee
+            let requirements = Model.merge(
+                item: &item,
+                index: viewCache.index,
+                into: &state
+            )
+            updateRequiredContent(
+                container: &container,
+                item: item,
+                state: &state,
+                requirements: requirements
+            )
+        }
+        
+        // TBA
+        private func updateInheritedViewAsync(
+            oldItem: DisplayList.Item,
+            oldState: UnsafePointer<Model.State>,
+            newItem: DisplayList.Item,
+            newState: UnsafePointer<Model.State>
+        ) -> ViewCache.AsyncResult? {
+            viewCache.updateAsync(
+                oldItem: oldItem,
+                oldState: oldState,
+                newItem: newItem,
+                newState: newState,
+                tag: .inherited
+            ) { layer, _, oldItem, oldState, newItem, newState in
+                platform.updateStateAsync(
+                    layer: &layer,
+                    oldItem: oldItem,
+                    oldSize: oldItem.size,
+                    oldState: oldState,
+                    newItem: newItem,
+                    newSize: newItem.size,
+                    newState: newState
+                )
+            }
+        }
+        
+        // TBA
+        private func updateInheritedViewAsync(
+            oldItem: DisplayList.Item,
+            oldParentState: UnsafePointer<Model.State>,
+            newItem: DisplayList.Item,
+            newParentState: UnsafePointer<Model.State>
+        ) -> Time? {
+            var oldItem = oldItem
+            var oldState = oldParentState.pointee
+            let oldRequirements = Model.merge(
+                item: &oldItem,
+                index: viewCache.index,
+                into: &oldState
+            )
+            var newItem = newItem
+            var newState = newParentState.pointee
+            let newRequirements = Model.merge(
+                item: &newItem,
+                index: viewCache.index,
+                into: &newState
+            )
+            guard oldRequirements == newRequirements else {
+                return nil
+            }
+            if newRequirements.contains(.inheritedView) {
+                let result = withUnsafePointer(to: oldState) { oldStatePtr in
+                    withUnsafePointer(to: newState) { newStatePtr in
+                        updateInheritedViewAsync(
+                            oldItem: oldItem,
+                            oldState: oldStatePtr,
+                            newItem: newItem,
+                            newState: newStatePtr
+                        )
+                    }
+                }
+                guard var result else {
+                    return nil
+                }
+                isValid = isValid && result.isValid
+                guard result.isInserted else {
+                    skipEffectChildren(in: oldItem)
+                    return result.nextUpdate
+                }
+                guard let nextTime = updateRequiredContentAsync(
+                    oldItem: oldItem,
+                    oldState: &oldState,
+                    newItem: newItem,
+                    newState: &newState,
+                    requirements: newRequirements
+                ) else {
+                    return nil
+                }
+                viewCache.setNextUpdate(nextTime, in: &result)
+                return result.nextUpdate
+            }
+            return updateRequiredContentAsync(
+                oldItem: oldItem,
+                oldState: &oldState,
+                newItem: newItem,
+                newState: &newState,
+                requirements: newRequirements
+            )
+        }
+        
+        // TBA
+        private func updateItemView(
+            container: inout Container,
+            from item: DisplayList.Item,
+            localState: inout Model.State
+        ) {
             _openSwiftUIUnimplementedWarning()
-            return nil
+        }
+        
+        // TBA
+        private func updateItemViewAsync(
+            oldItem: DisplayList.Item,
+            oldState: inout Model.State,
+            newItem: DisplayList.Item,
+            newState: inout Model.State
+        ) -> Time? {
+            let platform = platform
+            let asyncResult = withUnsafePointer(to: oldState) { oldStatePtr in
+                withUnsafePointer(to: newState) { newStatePtr in
+                    viewCache.updateAsync(
+                        oldItem: oldItem,
+                        oldState: oldStatePtr,
+                        newItem: newItem,
+                        newState: newStatePtr,
+                        tag: .item
+                    ) { layer, index, oldItem, oldState, newItem, newState in
+                        platform.updateItemViewAsync(
+                            layer: &layer,
+                            index: index,
+                            oldItem: oldItem,
+                            oldState: oldState,
+                            newItem: newItem,
+                            newState: newState
+                        )
+                    }
+                }
+            }
+            guard var result = asyncResult else {
+                return nil
+            }
+            isValid = isValid && result.isValid
+            guard case let .effect(oldEffect, oldList) = oldItem.value,
+                  case let .effect(newEffect, newList) = newItem.value
+            else {
+                return result.nextUpdate
+            }
+            guard result.isInserted || !wasValid else {
+                skipEffectContent(in: oldItem)
+                return result.nextUpdate
+            }
+            oldState.reset()
+            newState.reset()
+            let childNextTime = withUnsafePointer(to: oldState) { oldStatePtr in
+                withUnsafePointer(to: newState) { newStatePtr in
+                    updateAsync(
+                        oldList: oldList,
+                        oldParentState: oldStatePtr,
+                        newList: newList,
+                        newParentState: newStatePtr
+                    )
+                }
+            }
+            guard var nextTime = childNextTime else {
+                return nil
+            }
+            if case let .mask(oldMaskList, _) = oldEffect,
+               case let .mask(newMaskList, _) = newEffect {
+                let maskNextTime = withUnsafePointer(to: oldState) { oldStatePtr in
+                    withUnsafePointer(to: newState) { newStatePtr in
+                        updateAsync(
+                            oldList: oldMaskList,
+                            oldParentState: oldStatePtr,
+                            newList: newMaskList,
+                            newParentState: newStatePtr
+                        )
+                    }
+                }
+                guard let maskNextTime else {
+                    return nil
+                }
+                nextTime = min(nextTime, maskNextTime)
+            }
+            viewCache.setNextUpdate(nextTime, in: &result)
+            return result.nextUpdate
+        }
+
+        // TBA
+        private func updateRequiredContent(
+            container: inout Container,
+            item: DisplayList.Item,
+            state: inout Model.State,
+            requirements: Model.MergedViewRequirements
+        ) {
+            guard requirements.contains(.nestedContent) || item.features.contains(.required) else {
+                skipEffectContent(in: item)
+                return
+            }
+            if requirements.contains(.inheritedView) {
+                updateInheritedContainer(
+                    container: &container,
+                    item: item,
+                    state: &state,
+                    requirements: requirements
+                )
+                return
+            }
+            if requirements.contains(.item) {
+                updateItemView(
+                    container: &container,
+                    from: item,
+                    localState: &state
+                )
+                return
+            }
+            guard case let .effect(_, list) = item.value else {
+                return
+            }
+            withUnsafePointer(to: state) { statePtr in
+                update(
+                    container: &container,
+                    from: list,
+                    parentState: statePtr
+                )
+            }
+        }
+
+        // TBA
+        private func updateInheritedContainer(
+            container: inout Container,
+            item: DisplayList.Item,
+            state: inout Model.State,
+            requirements: Model.MergedViewRequirements
+        ) {
+            let platform = platform
+            var result = withUnsafePointer(to: state) { statePtr in
+                viewCache.update(
+                    item: item,
+                    state: statePtr,
+                    tag: .inherited,
+                    in: container.id
+                ) { _, item, state in
+                    var info = ViewInfo(platform: platform, kind: .inherited)
+                    platform.updateState(
+                        &info,
+                        item: item,
+                        size: item.size,
+                        state: state
+                    )
+                    return info
+                } updateView: { info, _, item, state in
+                    platform.updateState(
+                        &info,
+                        item: item,
+                        size: item.size,
+                        state: state
+                    )
+                }
+            }
+
+            isValid = isValid && result.isValid
+            container.platform.addSubview(
+                result.view,
+                to: container.rootView,
+                at: container.count
+            )
+            container.count += 1
+            container.nextTime = min(container.nextTime, result.nextUpdate)
+
+            guard result.isInserted || !wasValid else {
+                skipEffectChildren(in: item)
+                return
+            }
+
+            var childContainer = Container(rootView: result.container, platform: platform)
+            childContainer.id = result.id
+            updateRequiredContent(
+                container: &childContainer,
+                item: item,
+                state: &state,
+                requirements: requirements.subtracting(.inheritedView)
+            )
+            childContainer.removeRemaining(viewCache: &viewCache)
+            viewCache.setNextUpdate(childContainer.nextTime, in: &result)
+        }
+
+        // TBA
+        private func updateRequiredContentAsync(
+            oldItem: DisplayList.Item,
+            oldState: inout Model.State,
+            newItem: DisplayList.Item,
+            newState: inout Model.State,
+            requirements: Model.MergedViewRequirements
+        ) -> Time? {
+            guard requirements.contains(.nestedContent) || newItem.features.contains(.required) else {
+                guard oldItem.features == newItem.features else {
+                    return nil
+                }
+                skipEffectContent(in: oldItem)
+                return .infinity
+            }
+            if requirements.contains(.item) {
+                return updateItemViewAsync(
+                    oldItem: oldItem,
+                    oldState: &oldState,
+                    newItem: newItem,
+                    newState: &newState
+                )
+            }
+            guard case let .effect(_, oldList) = oldItem.value,
+                  case let .effect(_, newList) = newItem.value
+            else {
+                return .infinity
+            }
+            return withUnsafePointer(to: oldState) { oldStatePtr in
+                withUnsafePointer(to: newState) { newStatePtr in
+                    updateAsync(
+                        oldList: oldList,
+                        oldParentState: oldStatePtr,
+                        newList: newList,
+                        newParentState: newStatePtr
+                    )
+                }
+            }
+        }
+
+        // TBA
+        private func skipEffectChildren(in item: DisplayList.Item) {
+            guard case let .effect(effect, list) = item.value else {
+                return
+            }
+            viewCache.index.skip(list: list)
+            viewCache.index.skip(effect: effect)
+        }
+
+        @inline(__always)
+        private func skipEffectContent(in item: DisplayList.Item) {
+            guard case let .effect(_, list) = item.value else {
+                return
+            }
+            viewCache.index.skip(list: list)
         }
     }
 }
