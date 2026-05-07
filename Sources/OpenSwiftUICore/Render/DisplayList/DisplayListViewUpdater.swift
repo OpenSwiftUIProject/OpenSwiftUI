@@ -412,7 +412,6 @@ extension DisplayList {
                     skipEffectContent(in: oldItem)
                     return result.nextUpdate
                 }
-                // TBA
                 guard let nextTime = updateRequiredContentAsync(
                     oldItem: oldItem,
                     oldState: &oldState,
@@ -425,7 +424,6 @@ extension DisplayList {
                 viewCache.setNextUpdate(nextTime, in: &result)
                 return result.nextUpdate
             } else {
-                // TBA
                 return updateRequiredContentAsync(
                     oldItem: oldItem,
                     oldState: &oldState,
@@ -434,6 +432,45 @@ extension DisplayList {
                     requirements: oldRequirements
                 )
             }
+        }
+        
+        private func updateRequiredContentAsync(
+            oldItem: DisplayList.Item,
+            oldState: inout Model.State,
+            newItem: DisplayList.Item,
+            newState: inout Model.State,
+            requirements: Model.MergedViewRequirements
+        ) -> Time? {
+            guard requirements.contains(.nestedContent) || newItem.features.contains(.required) else {
+                guard oldItem.features == newItem.features else {
+                    return nil
+                }
+                skipEffectChildren(in: oldItem)
+                return .infinity
+            }
+            guard requirements.contains(.itemView) else {
+                guard case let .effect(_, oldList) = oldItem.value,
+                      case let .effect(_, newList) = newItem.value
+                else {
+                    return .infinity
+                }
+                return withUnsafePointer(to: oldState) { oldStatePtr in
+                    withUnsafePointer(to: newState) { newStatePtr in
+                        updateAsync(
+                            oldList: oldList,
+                            oldParentState: oldStatePtr,
+                            newList: newList,
+                            newParentState: newStatePtr
+                        )
+                    }
+                }
+            }
+            return updateItemViewAsync(
+                oldItem: oldItem,
+                oldState: &oldState,
+                newItem: newItem,
+                newState: &newState
+            )
         }
         
         // TBA
@@ -522,46 +559,7 @@ extension DisplayList {
             return result.nextUpdate
         }
 
-        // TBA
-        private func updateRequiredContentAsync(
-            oldItem: DisplayList.Item,
-            oldState: inout Model.State,
-            newItem: DisplayList.Item,
-            newState: inout Model.State,
-            requirements: Model.MergedViewRequirements
-        ) -> Time? {
-            guard requirements.contains(.nestedContent) || newItem.features.contains(.required) else {
-                guard oldItem.features == newItem.features else {
-                    return nil
-                }
-                skipEffectContent(in: oldItem)
-                return .infinity
-            }
-            if requirements.contains(.itemView) {
-                return updateItemViewAsync(
-                    oldItem: oldItem,
-                    oldState: &oldState,
-                    newItem: newItem,
-                    newState: &newState
-                )
-            }
-            guard case let .effect(_, oldList) = oldItem.value,
-                  case let .effect(_, newList) = newItem.value
-            else {
-                return .infinity
-            }
-            return withUnsafePointer(to: oldState) { oldStatePtr in
-                withUnsafePointer(to: newState) { newStatePtr in
-                    updateAsync(
-                        oldList: oldList,
-                        oldParentState: oldStatePtr,
-                        newList: newList,
-                        newParentState: newStatePtr
-                    )
-                }
-            }
-        }
-
+        @inline(__always)
         private func skipEffectChildren(in item: DisplayList.Item) {
             guard case let .effect(effect, list) = item.value else {
                 return

@@ -211,6 +211,87 @@ extension DisplayList.ViewUpdater.Platform {
     // private func updateDrawingView
     // private func updateDrawingViewAsync
 
+    // TBA
+    /*fileprivate*/ func updateState(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        item: DisplayList.Item,
+        size: CGSize,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        let position = item.position
+        if viewInfo.state.position != position || viewInfo.state.size != size {
+            setFrame(CGRect(origin: position, size: size), of: viewInfo.view)
+            viewInfo.state.position = position
+            viewInfo.state.size = size
+        }
+        let opacitySeed = DisplayList.Seed(state.pointee.versions.opacity)
+        if viewInfo.seeds.opacity != opacitySeed {
+            #if canImport(QuartzCore)
+            CoreViewSetOpacity(
+                system: viewSystem,
+                view: viewInfo.view,
+                opacity: CGFloat(state.pointee.opacity)
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
+            viewInfo.seeds.opacity = opacitySeed
+        }
+    }
+
+    // TBA
+    func updateStateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldItem: DisplayList.Item,
+        oldSize: CGSize,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newSize: CGSize,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        guard oldItem.frame == newItem.frame, oldSize == newSize else {
+            return false
+        }
+        let oldVersions = oldState.pointee.versions
+        let newVersions = newState.pointee.versions
+        guard oldVersions.opacity == newVersions.opacity,
+              oldVersions.blend == newVersions.blend,
+              oldVersions.transform == newVersions.transform,
+              oldVersions.clips == newVersions.clips,
+              oldVersions.filters == newVersions.filters,
+              oldVersions.properties == newVersions.properties
+        else {
+            return false
+        }
+        return layer.updateShadowStyle(
+            oldShadow: oldState.pointee.shadow?.value,
+            newShadow: newState.pointee.shadow?.value
+        )
+    }
+
+    // TBA
+    func updateItemViewAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        index: DisplayList.Index,
+        oldItem: DisplayList.Item,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        guard oldItem.version == newItem.version else {
+            return false
+        }
+        return updateStateAsync(
+            layer: &layer,
+            oldItem: oldItem,
+            oldSize: oldItem.size,
+            oldState: oldState,
+            newItem: newItem,
+            newSize: newItem.size,
+            newState: newState
+        )
+    }
+
     func forEachChild(
         of viewInfo: DisplayList.ViewUpdater.ViewInfo,
         do body: (AnyObject) -> Void
