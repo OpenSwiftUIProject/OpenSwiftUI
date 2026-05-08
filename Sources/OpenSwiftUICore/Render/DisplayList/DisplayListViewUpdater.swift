@@ -277,7 +277,7 @@ extension DisplayList {
                 index: viewCache.index,
                 into: &state
             )
-            guard requirements.contains(.nestedContent) || item.features.contains(.required) else {
+            guard requirements.contains(.visibleContent) || item.features.contains(.required) else {
                 if case let .effect(_, list) = item.value {
                     viewCache.index.skip(list: list)
                 }
@@ -448,7 +448,7 @@ extension DisplayList {
             newState: inout Model.State,
             requirements: Model.MergedViewRequirements
         ) -> Time? {
-            guard requirements.contains(.nestedContent) || newItem.features.contains(.required) else {
+            guard requirements.contains(.visibleContent) || newItem.features.contains(.required) else {
                 guard oldItem.features == newItem.features else {
                     return nil
                 }

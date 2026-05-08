@@ -49,6 +49,12 @@ extension CGRect {
     package var isFinite: Bool {
         x.isFinite && y.isFinite && width.isFinite && height.isFinite
     }
+
+    @inline(__always)
+    package func approximates(_ other: CGRect, epsilon: CGFloat) -> Bool {
+        origin.approximates(other.origin, epsilon: epsilon)
+        && size.approximates(other.size, epsilon: epsilon)
+    }
     
     @inlinable
     package func flushNullToZero() -> CGRect {
