@@ -372,7 +372,10 @@ extension DisplayList.ViewUpdater.Platform {
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
         switch content.value {
-        case .backdrop, .color, .chameleonColor, .image, .shadow, .view, .placeholder:
+        case let .color(resolved):
+            let cgColor = resolved.cgColor
+            viewLayer(viewInfo.view).backgroundColor = cgColor
+        case .backdrop, .chameleonColor, .image, .shadow, .view, .placeholder:
             break
         case let .shape(path, _, _):
             definition.setPath(path, shapeView: viewInfo.view)
