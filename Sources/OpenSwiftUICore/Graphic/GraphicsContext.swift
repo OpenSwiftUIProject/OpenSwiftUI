@@ -536,6 +536,10 @@ extension GraphicsContext {
         #endif
     }
 
+    package func renderMissingPlatformView(size: CGSize) {
+        _openSwiftUIUnimplementedWarning()
+    }
+
     // FIXME
     struct ORBLayerFlags: OptionSet {
         let rawValue: UInt32

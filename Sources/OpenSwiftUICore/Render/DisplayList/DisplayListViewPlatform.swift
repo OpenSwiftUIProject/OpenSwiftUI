@@ -188,6 +188,20 @@ extension DisplayList.ViewUpdater.Platform {
         #endif
     }
 
+    @inline(__always)
+    package func setClipsToBounds(_ clips: Bool, of view: AnyObject, onLayer: Bool) {
+        #if canImport(QuartzCore)
+        CoreViewSetClipsToBounds(
+            system: viewSystem,
+            view: view,
+            clips: clips,
+            onLayer: onLayer
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
+    }
+
     func updateDrawingView(
         _ drawingView: inout AnyObject,
         options: RasterizationOptions,
@@ -224,6 +238,18 @@ extension DisplayList.ViewUpdater.Platform {
         default:
             return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
         }
+    }
+    
+    private func missingPlatformView() -> AnyObject {
+        let drawable = definition.makeDrawingView(options: .init(base: .init()))
+        let view = drawable as AnyObject
+        setClipsToBounds(false, of: view, onLayer: false)
+        var content = PlatformDrawableContent()
+        content.storage = .graphicsCallback { context, size in
+            context.renderMissingPlatformView(size: size)
+        }
+        _ = drawable.update(content: content, required: false)
+        return view
     }
 
     // TBA
