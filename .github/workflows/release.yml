@@ -9,15 +9,8 @@ permissions:
   contents: write
 
 jobs:
-  release-notes:
-    uses: ./.github/workflows/release_notes.yml
-    with:
-      tag-name: ${{ github.ref_name }}
-    secrets: inherit
-
   build-xcframeworks:
     name: Build and Upload XCFrameworks
-    needs: release-notes
     runs-on: macos-15
     outputs:
       checksum_OpenSwiftUI: ${{ steps.build.outputs.checksum_OpenSwiftUI }}
@@ -40,6 +33,17 @@ jobs:
           tag-name: ${{ github.ref_name }}
           signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
           signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+      - name: Create release
+        env:
+          TAG_NAME: ${{ github.ref_name }}
+        run: |
+          if gh release view "${TAG_NAME}" > /dev/null 2>&1; then
+            echo "Release ${TAG_NAME} already exists."
+          else
+            gh release create "${TAG_NAME}" \
+              --title "${TAG_NAME}" \
+              --notes "Release assets are being uploaded. Release notes will be added after the binary package update completes."
+          fi
       - name: Upload assets to release
         run: gh release upload "${{ github.ref_name }}" build/*.xcframework.zip --clobber
 
@@ -86,3 +90,10 @@ jobs:
           git commit -m "Update to ${VERSION} with code-signed XCFrameworks"
           git tag "${VERSION}"
           git push origin main --tags
+
+  release-notes:
+    uses: ./.github/workflows/release_notes.yml
+    needs: update-binary-repo
+    with:
+      tag-name: ${{ github.ref_name }}
+    secrets: inherit

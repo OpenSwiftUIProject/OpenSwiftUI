@@ -100,7 +100,7 @@ jobs:
             echo "No highlights generated."
           fi
 
-      - name: Create release
+      - name: Create or update release notes
         env:
           TAG_NAME: ${{ inputs.tag-name }}
         run: |
