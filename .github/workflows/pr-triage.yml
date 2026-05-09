@@ -16,6 +16,7 @@ permissions:
 
 jobs:
   triage-pr:
+    continue-on-error: true
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/pr-triage.yml@main
     with:
       # fromJSON workaround number inputs: https://github.com/orgs/community/discussions/67182#discussioncomment-8617964

@@ -46,8 +46,8 @@ jobs:
           TAG_NAME: ${{ inputs.tag-name }}
         run: |
           if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
-            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN not set, using placeholder highlights"
-            printf '## Highlights\n\n_To be written._\n' > /tmp/highlights.md
+            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN not set, continuing without highlights"
+            : > /tmp/highlights.md
             exit 0
           fi
 
@@ -85,13 +85,20 @@ jobs:
           STATIC_EOF
           } > /tmp/prompt.txt
 
-          npx -y @anthropic-ai/claude-code@latest \
+          if ! npx -y @anthropic-ai/claude-code@latest \
             --model claude-opus-4-6 \
             -p "$(cat /tmp/prompt.txt)" \
-            --output-format text > /tmp/highlights.md
+            --output-format text > /tmp/highlights.md; then
+            echo "::warning::Claude Code highlights generation failed, continuing without highlights"
+            : > /tmp/highlights.md
+          fi
 
-          echo "Generated highlights:"
-          cat /tmp/highlights.md
+          if [ -s /tmp/highlights.md ]; then
+            echo "Generated highlights:"
+            cat /tmp/highlights.md
+          else
+            echo "No highlights generated."
+          fi
 
       - name: Create release
         env:
