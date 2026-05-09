@@ -18,12 +18,7 @@ public struct PackageContextEnvironmentProvider: EnvironmentProvider {
     public init() {}
 
     public func value(forKey key: String) -> String? {
-        #if TUIST
-        // FIXME: upstream issue tuist#10616
-        ProcessInfo.processInfo.environment[key]
-        #else
         Context.environment[key]
-        #endif
     }
 }
 
@@ -149,14 +144,7 @@ let isXcodeEnv = envStringValue("__CFBundleIdentifier", searchInDomain: false) =
 let development = envBoolValue("DEVELOPMENT", default: false)
 let warningsAsErrorsCondition = envBoolValue("WERROR", default: isXcodeEnv && development)
 
-#if TUIST
-// FIXME: upstream issue tuist#10616
-let packageDirectory = FileManager.default.currentDirectoryPath
-#else
-let packageDirectory = Context.packageDirectory
-#endif
-
-let swiftCorelibsPath = envStringValue("LIB_SWIFT_PATH") ?? "\(packageDirectory)/Sources/SwiftCorelibs/include"
+let swiftCorelibsPath = envStringValue("LIB_SWIFT_PATH") ?? "\(Context.packageDirectory)/Sources/SwiftCorelibs/include"
 
 let releaseVersion = envIntValue("TARGET_RELEASE", default: 2024)
 

@@ -1,5 +1,5 @@
 {
-  "originHash" : "181200ab8951ff06d346194e4de80b86efbead80fa8e5e420013c921e7641cc6",
+  "originHash" : "afc62d00673294351d1211741d1784b4899d77e604eb785765a9e2f192e14979",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "77dc490786d5192ab926e1e5063c0dd0bf1dd4d8"
+        "revision" : "6166503bad036fd8325ddfcb0341fc5ad45db576"
       }
     },
     {
@@ -51,8 +51,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "6675bc0ff86e61436e615df6fc5174e043e57924",
-        "version" : "1.4.1"
+        "revision" : "03cc312c2c933ed87abace34044a5dff7a3117c1",
+        "version" : "1.5.0"
       }
     },
     {
