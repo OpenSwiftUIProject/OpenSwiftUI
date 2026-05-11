@@ -1,5 +1,11 @@
 import ProjectDescription
 
 let tuist = Tuist(
-    project: .tuist()
+    project: .tuist(
+        generationOptions: .options(
+            manifestEnvironment: [
+                "OPENSWIFTUI_*",
+            ]
+        )
+    )
 )
