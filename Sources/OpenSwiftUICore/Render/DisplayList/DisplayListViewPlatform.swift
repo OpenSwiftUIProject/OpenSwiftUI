@@ -297,7 +297,15 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     private func missingPlatformView() -> AnyObject {
-        _openSwiftUIUnimplementedFailure()
+        let drawable = definition.makeDrawingView(options: .init(base: .init()))
+        let view = drawable as AnyObject
+        setClipsToBounds(false, of: view, onLayer: false)
+        var content = PlatformDrawableContent()
+        content.storage = .graphicsCallback { context, size in
+            context.renderMissingPlatformView(size: size)
+        }
+        _ = drawable.update(content: content, required: false)
+        return view
     }
 
     private func updateShapeView(
