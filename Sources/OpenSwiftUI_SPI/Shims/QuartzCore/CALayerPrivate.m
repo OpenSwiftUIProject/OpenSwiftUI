@@ -61,6 +61,16 @@
     func(self, selector, mask);
 }
 
+- (BOOL)shadowPathIsBounds_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"shadowPathIsBounds", NO);
+    return func(self, selector);
+}
+
+- (void)setShadowPathIsBounds_openswiftui_safe_wrapper:(BOOL)value {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setShadowPathIsBounds:", , BOOL);
+    func(self, selector, value);
+}
+
 - (BOOL)allowsHitTesting_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsHitTesting", YES);
     return func(self, selector);

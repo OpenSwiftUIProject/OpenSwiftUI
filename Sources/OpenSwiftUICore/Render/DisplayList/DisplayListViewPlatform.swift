@@ -326,7 +326,26 @@ extension DisplayList.ViewUpdater.Platform {
         shadow: ResolvedShadowStyle,
         size: CGSize
     ) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        let layer = viewInfo.layer
+        if path.boundingRect == CGRect(origin: .zero, size: size) {
+            var helper = ShapeLayerShadowHelper(
+                platform: self,
+                layer: layer,
+                path: path,
+                offset: .zero,
+                shadow: shadow,
+                updateShape: true
+            )
+            helper.visitPaint(Color.Resolved.white)
+        } else {
+            layer.shadowPath = path.cgPath
+            layer.shadowPathIsBounds = false
+            setShadow(shadow, layer: layer)
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 
     private func updateDrawingView(
