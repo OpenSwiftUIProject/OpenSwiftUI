@@ -91,6 +91,8 @@ extension DisplayList.ViewUpdater {
 
         struct ViewFlags: OptionSet {
             let rawValue: UInt8
+
+            static var _3: ViewFlags { .init(rawValue: 1 << 3) }
         }
     }
 }
@@ -390,7 +392,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     private func updateDrawingViewAsync(
-        _ layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        _ asyncLayer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldOptions: RasterizationOptions,
         newOptions: RasterizationOptions,
         content: PlatformDrawableContent.Storage,
@@ -398,7 +400,30 @@ extension DisplayList.ViewUpdater.Platform {
         newSize: CGSize,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard oldOptions == newOptions,
+              let delegate = asyncLayer.layer.delegate,
+              let drawable = delegate as? PlatformDrawable
+        else {
+            return false
+        }
+        let bounds: CGRect
+        if asyncLayer.flags.contains(._3), let clipRect = newState.pointee.clipRect() {
+            bounds = clipRect.rect
+        } else {
+            bounds = CGRect(origin: .zero, size: newSize)
+        }
+        var drawableContent = PlatformDrawableContent()
+        drawableContent.storage = content
+        guard let update = drawable.makeAsyncUpdate(
+            content: drawableContent,
+            required: sizeChanged,
+            layer: asyncLayer.layer,
+            bounds: bounds
+        ) else {
+            return false
+        }
+        asyncLayer.cache.pointee.pendingAsyncUpdates.append(update)
+        return true
     }
 
     private func updateClipShapes(
@@ -444,7 +469,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     private func updateClipShapesAsync(
-        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        asyncLayer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
@@ -452,7 +477,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     private func updateGeometryAsync(
-        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        asyncLayer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldItem: DisplayList.Item,
         oldSize: CGSize,
         oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
@@ -464,7 +489,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     private func updateShadowAsync(
-        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        asyncLayer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         oldItem: DisplayList.Item,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
