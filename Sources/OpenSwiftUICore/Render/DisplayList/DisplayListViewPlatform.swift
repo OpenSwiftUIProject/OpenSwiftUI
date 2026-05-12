@@ -336,7 +336,21 @@ extension DisplayList.ViewUpdater.Platform {
         content: PlatformDrawableContent.Storage,
         sizeChanged: Bool
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let oldView = viewInfo.view
+        let drawable = updateDrawingView(
+            &viewInfo.view,
+            options: options,
+            contentsScale: contentsScale
+        )
+        var drawableContent = PlatformDrawableContent()
+        drawableContent.storage = content
+        viewInfo.isInvalid = !drawable.update(
+            content: drawableContent,
+            required: sizeChanged
+        )
+        if viewInfo.view !== oldView {
+            viewInfo.reset(platform: self)
+        }
     }
 
     private func updateShapeViewAsync(
