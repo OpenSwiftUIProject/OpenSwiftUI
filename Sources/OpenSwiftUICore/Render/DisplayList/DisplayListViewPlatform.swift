@@ -247,6 +247,181 @@ extension DisplayList.ViewUpdater.Platform {
         _openSwiftUIPlatformUnimplementedWarning()
         #endif
     }
+    
+    func updateItemView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        index: DisplayList.Index,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+    
+    func updateItemViewAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        index: DisplayList.Index,
+        oldItem: DisplayList.Item,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+    
+    func updateState(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        item: DisplayList.Item,
+        size: CGSize,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+    
+    func updateStateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldItem: DisplayList.Item,
+        oldSize: CGSize,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newSize: CGSize,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+    
+    func _makeItemView(
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> DisplayList.ViewUpdater.ViewInfo {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func missingPlatformView() -> AnyObject {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateShapeView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        state: inout DisplayList.ViewUpdater.Model.State,
+        size: inout CGSize,
+        path: Path,
+        paint: AnyResolvedPaint,
+        style: FillStyle,
+        contentsChanged: Bool
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateShadowView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        path: Path,
+        shadow: ResolvedShadowStyle,
+        size: CGSize
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateDrawingView(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        options: RasterizationOptions,
+        contentsScale: CGFloat,
+        content: PlatformDrawableContent.Storage,
+        sizeChanged: Bool
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateShapeViewAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldState: inout DisplayList.ViewUpdater.Model.State,
+        oldSize: inout CGSize,
+        oldPath: Path,
+        oldPaint: AnyResolvedPaint,
+        oldStyle: FillStyle,
+        newState: inout DisplayList.ViewUpdater.Model.State,
+        newSize: inout CGSize,
+        newPath: Path,
+        newPaint: AnyResolvedPaint,
+        newStyle: FillStyle,
+        contentsChanged: Bool
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateDrawingViewAsync(
+        _ layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldOptions: RasterizationOptions,
+        newOptions: RasterizationOptions,
+        content: PlatformDrawableContent.Storage,
+        sizeChanged: Bool,
+        newSize: CGSize,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateClipShapes(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateGeometry(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        item: DisplayList.Item,
+        size: CGSize,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        clipRectChanged: Bool
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateShadow(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        item: DisplayList.Item
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateProperties(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateClipShapesAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateGeometryAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldItem: DisplayList.Item,
+        oldSize: CGSize,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newSize: CGSize,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool? {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    private func updateShadowAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        oldItem: DisplayList.Item,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        boundsChanged: Bool
+    ) -> Bool {
+        _openSwiftUIUnimplementedFailure()
+    }
 
     func updateDrawingView(
         _ drawingView: inout AnyObject,
@@ -267,84 +442,8 @@ extension DisplayList.ViewUpdater.Platform {
         return drawable
     }
 
-    // TODO:
-    // private func updateDrawingView
-    // private func updateDrawingViewAsync
-
     // TBA
-    func _makeItemView(
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) -> DisplayList.ViewUpdater.ViewInfo {
-        switch item.value {
-        case let .content(content):
-            return makeContentView(content, state: state)
-        case let .effect(effect, _):
-            return makeEffectView(effect, state: state)
-        default:
-            return DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
-        }
-    }
-    
-    private func missingPlatformView() -> AnyObject {
-        let drawable = definition.makeDrawingView(options: .init(base: .init()))
-        let view = drawable as AnyObject
-        setClipsToBounds(false, of: view, onLayer: false)
-        var content = PlatformDrawableContent()
-        content.storage = .graphicsCallback { context, size in
-            context.renderMissingPlatformView(size: size)
-        }
-        _ = drawable.update(content: content, required: false)
-        return view
-    }
-
-    // TBA
-    func updateItemView(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        index: DisplayList.Index,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        switch item.value {
-        case let .content(content):
-            updateContentView(&viewInfo, content: content, item: item, state: state)
-        case let .effect(effect, _):
-            updateEffectView(&viewInfo, effect: effect, item: item, state: state)
-        default:
-            break
-        }
-        updateState(&viewInfo, item: item, size: item.size, state: state)
-    }
-
-    // TBA
-    /*fileprivate*/ func updateState(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        item: DisplayList.Item,
-        size: CGSize,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        let position = item.position
-        if viewInfo.state.position != position || viewInfo.state.size != size {
-            setFrame(CGRect(origin: position, size: size), of: viewInfo.view)
-            viewInfo.state.position = position
-            viewInfo.state.size = size
-        }
-        let opacitySeed = DisplayList.Seed(state.pointee.versions.opacity)
-        if viewInfo.seeds.opacity != opacitySeed {
-            #if canImport(QuartzCore)
-            CoreViewSetOpacity(
-                system: viewSystem,
-                view: viewInfo.view,
-                opacity: CGFloat(state.pointee.opacity)
-            )
-            #else
-            _openSwiftUIPlatformUnimplementedWarning()
-            #endif
-            viewInfo.seeds.opacity = opacitySeed
-        }
-    }
-
-    // TBA
+    @inline(__always)
     private func makeContentView(
         _ content: DisplayList.Content,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
@@ -391,6 +490,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func makeEffectView(
         _ effect: DisplayList.Effect,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
@@ -437,6 +537,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func updateContentView(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         content: DisplayList.Content,
@@ -467,6 +568,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func updateEffectView(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         effect: DisplayList.Effect,
@@ -495,6 +597,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
     
     // TBA
+    @inline(__always)
     private func updateDrawingContent(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         content: DisplayList.Content,
@@ -532,6 +635,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func makeViewInfo(
         view: AnyObject,
         kind: PlatformViewDefinition.ViewKind
@@ -547,6 +651,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func updateViewReference(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         view: AnyObject,
@@ -561,6 +666,7 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func drawingOptions(
         for content: DisplayList.Content,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
@@ -574,67 +680,16 @@ extension DisplayList.ViewUpdater.Platform {
     }
 
     // TBA
+    @inline(__always)
     private func makeHostedPlatformView(factory: any DisplayList.ViewFactory) -> AnyObject? {
         _openSwiftUIUnimplementedWarning()
         return nil
     }
 
     // TBA
+    @inline(__always)
     private func missingItemView() -> AnyObject {
         definition.makeView(kind: .platformView)
-    }
-
-    // TBA
-    func updateStateAsync(
-        layer: inout DisplayList.ViewUpdater.AsyncLayer,
-        oldItem: DisplayList.Item,
-        oldSize: CGSize,
-        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
-        newItem: DisplayList.Item,
-        newSize: CGSize,
-        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) -> Bool {
-        guard oldItem.frame == newItem.frame, oldSize == newSize else {
-            return false
-        }
-        let oldVersions = oldState.pointee.versions
-        let newVersions = newState.pointee.versions
-        guard oldVersions.opacity == newVersions.opacity,
-              oldVersions.blend == newVersions.blend,
-              oldVersions.transform == newVersions.transform,
-              oldVersions.clips == newVersions.clips,
-              oldVersions.filters == newVersions.filters,
-              oldVersions.properties == newVersions.properties
-        else {
-            return false
-        }
-        return layer.updateShadowStyle(
-            oldShadow: oldState.pointee.shadow?.value,
-            newShadow: newState.pointee.shadow?.value
-        )
-    }
-
-    // TBA
-    func updateItemViewAsync(
-        layer: inout DisplayList.ViewUpdater.AsyncLayer,
-        index: DisplayList.Index,
-        oldItem: DisplayList.Item,
-        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
-        newItem: DisplayList.Item,
-        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) -> Bool {
-        guard oldItem.version == newItem.version else {
-            return false
-        }
-        return updateStateAsync(
-            layer: &layer,
-            oldItem: oldItem,
-            oldSize: oldItem.size,
-            oldState: oldState,
-            newItem: newItem,
-            newSize: newItem.size,
-            newState: newState
-        )
     }
 
     func forEachChild(
