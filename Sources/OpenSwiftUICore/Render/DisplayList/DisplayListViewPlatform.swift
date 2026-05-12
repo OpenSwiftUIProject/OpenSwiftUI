@@ -201,6 +201,52 @@ extension DisplayList.ViewUpdater.Platform {
         _openSwiftUIPlatformUnimplementedWarning()
         #endif
     }
+    
+    package func setShadow(_ shadow: ResolvedShadowStyle?, layer: CALayer) {
+        #if canImport(QuartzCore)
+        if let shadow {
+            if viewSystem != .caLayer, let delegate = layer.delegate {
+                let view = delegate as AnyObject
+                CoreViewSetShadow(
+                    system: CoreViewResolvedSystem(system: viewSystem, view: view),
+                    view: view,
+                    color: shadow.color.cgColor,
+                    radius: shadow.radius,
+                    offset: shadow.offset
+                )
+            } else {
+                CoreViewSetShadow(
+                    system: .caLayer,
+                    view: layer,
+                    color: shadow.color.cgColor,
+                    radius: shadow.radius,
+                    offset: shadow.offset
+                )
+            }
+        } else {
+            if viewSystem != .caLayer, let delegate = layer.delegate {
+                let view = delegate as AnyObject
+                CoreViewSetShadow(
+                    system: CoreViewResolvedSystem(system: viewSystem, view: view),
+                    view: view,
+                    color: nil,
+                    radius: 0,
+                    offset: .zero
+                )
+            } else {
+                CoreViewSetShadow(
+                    system: .caLayer,
+                    view: layer,
+                    color: nil,
+                    radius: 0,
+                    offset: .zero
+                )
+            }
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
+    }
 
     func updateDrawingView(
         _ drawingView: inout AnyObject,
