@@ -411,7 +411,17 @@ extension DisplayList.ViewUpdater.Platform {
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let properties = state.pointee.properties
+        definition.setIgnoresEvents(
+            properties.contains(.ignoresEvents),
+            of: viewInfo.view
+        )
+        #if canImport(QuartzCore)
+        // TODO: Add CALayerDisableUpdateMask enum in the future
+        viewLayer(viewInfo.view).disableUpdateMask = properties.contains(.screencaptureProhibited) ? 0x12 : 0
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 
     private func updateClipShapesAsync(

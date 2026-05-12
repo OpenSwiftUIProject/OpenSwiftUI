@@ -51,6 +51,16 @@
     func(self, selector, needsLayout);
 }
 
+- (uint32_t)disableUpdateMask_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(uint32_t, @"disableUpdateMask", 0);
+    return func(self, selector);
+}
+
+- (void)setDisableUpdateMask_openswiftui_safe_wrapper:(uint32_t)mask {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setDisableUpdateMask:", , uint32_t);
+    func(self, selector, mask);
+}
+
 - (BOOL)allowsHitTesting_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsHitTesting", YES);
     return func(self, selector);
