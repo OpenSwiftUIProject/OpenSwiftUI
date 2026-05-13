@@ -6,9 +6,7 @@
 //  ID: 7A45621CE16223183E03CAC88E8C5E60 (SwiftUICore)
 
 package import Foundation
-#if canImport(QuartzCore)
-package import QuartzCore
-#endif
+package import OpenQuartzCoreShims
 
 // MARK: - AnyViewFactory
 
@@ -33,11 +31,9 @@ extension AnyViewFactory where Self: View {
 // MARK: - PlatformLayerFactory [TODO]
 
 package protocol PlatformLayerFactory: AnyViewFactory {
-    #if canImport(QuartzCore)
     var platformLayerType: CALayer.Type { get }
 
     func updatePlatformLayer(_ layer: CALayer)
-    #endif
 
     func renderPlatformLayer(
         in ctx: GraphicsContext,
@@ -198,7 +194,6 @@ package struct EmptyViewFactory: AnyViewFactory {
     }
 }
 
-#if canImport(QuartzCore)
 extension EmptyViewFactory: PlatformLayerFactory {
     private class MissingLayer: CALayer {
         required init?(coder: NSCoder) {
@@ -245,7 +240,6 @@ extension EmptyViewFactory: PlatformLayerFactory {
         _openSwiftUIUnimplementedFailure()
     }
 }
-#endif
 
 extension EmptyViewFactory: PlatformViewFactory {
     package func makePlatformView() -> AnyObject? {

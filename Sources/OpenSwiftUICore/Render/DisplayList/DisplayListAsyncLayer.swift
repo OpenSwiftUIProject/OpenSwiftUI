@@ -30,5 +30,30 @@ extension DisplayList.ViewUpdater {
         let flags: DisplayList.ViewUpdater.Platform.ViewFlags
         var nextUpdate: Time
         var isInvalid: Bool
+
+        @inline(__always)
+        var isBoundsOriginEnabled: Bool {
+            flags.contains(.boundsOrigin)
+        }
+
+        @inline(__always)
+        var isAffineTransformEnabled: Bool {
+            flags.contains(.affineTransform)
+        }
+
+        @inline(__always)
+        var isProjectionGeometryEnabled: Bool {
+            flags.contains(.projectionGeometry)
+        }
+
+        @inline(__always)
+        var isClipRectEnabled: Bool {
+            flags.contains(.clipRect)
+        }
+
+        @inline(__always)
+        var isMaskLayerEnabled: Bool {
+            flags.contains(.maskLayer)
+        }
     }
 }
