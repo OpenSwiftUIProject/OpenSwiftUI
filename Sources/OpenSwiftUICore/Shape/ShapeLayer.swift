@@ -7,6 +7,7 @@
 //  ID: E19F490D25D5E0EC8A24903AF958E341 (SwiftUICore)
 
 import OpenQuartzCoreShims
+// import OpenRenderBoxShims
 
 // MARK: - ShapeLayerShadowHelper [WIP]
 
@@ -21,4 +22,33 @@ struct ShapeLayerShadowHelper: ResolvedPaintVisitor {
     mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
         _openSwiftUIUnimplementedFailure()
     }
+}
+
+// MARK: - ShapeType [WIP]
+
+enum ShapeType {
+    case rect(CGRect, radius: CGFloat, style: RoundedCornerStyle)
+    case rectBorder(CGRect, radius: CGFloat, style: RoundedCornerStyle, lineWidth: CGFloat)
+    case strokedPath(Path, style: StrokeStyle)
+    case empty
+    case other
+
+    init(_ path: Path) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+//    private func initFromFilled(
+//        type: ORBPathShapeType,
+//        shape: UnsafePointer<ORBPathShape>
+//    ) {
+//        _openSwiftUIUnimplementedFailure()
+//    }
+//
+//    private func initFromStroked(
+//        type: ORBPathShapeType,
+//        shape: UnsafePointer<ORBPathShape>,
+//        style: StrokeStyle
+//    ) {
+//        _openSwiftUIUnimplementedFailure()
+//    }
 }
