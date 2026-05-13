@@ -503,16 +503,10 @@ extension DisplayList.Item {
             case .platformGroup, .mask:
                 return false
             case let .transform(transform):
-                switch transform {
-                case let .affine(transform):
-                    return transform == .identity
-                case .projection:
-                    return false
-                case let .rotation(data):
-                    return data.transform == .identity
-                case .rotation3D:
+                guard let affineTransform = transform.affineTransform else {
                     return false
                 }
+                return affineTransform == .identity
             case .animation, .view:
                 _openSwiftUIUnreachableCode()
             default:
@@ -602,15 +596,7 @@ extension DisplayList.Item {
             case .clip, .platformGroup, .mask:
                 return false
             case let .transform(transform):
-                let affineTransform: CGAffineTransform
-                switch transform {
-                case let .affine(transform):
-                    affineTransform = transform
-                case .projection:
-                    return false
-                case let .rotation(data):
-                    affineTransform = data.transform
-                case .rotation3D:
+                guard let affineTransform = transform.affineTransform else {
                     return false
                 }
                 return affineTransform.isUniform

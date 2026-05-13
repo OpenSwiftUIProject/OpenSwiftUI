@@ -260,6 +260,30 @@ extension DisplayList {
         case projection(ProjectionTransform)
         case rotation(_RotationEffect.Data)
         case rotation3D(_Rotation3DEffect.Data)
+
+        @inline(__always)
+        package var affineTransform: CGAffineTransform? {
+            switch self {
+            case let .affine(transform):
+                return transform
+            case let .rotation(data):
+                return data.transform
+            case .projection, .rotation3D:
+                return nil
+            }
+        }
+
+        @inline(__always)
+        package var projectionTransform: ProjectionTransform? {
+            switch self {
+            case let .projection(transform):
+                return transform
+            case let .rotation3D(data):
+                return data.transform
+            case .affine, .rotation:
+                return nil
+            }
+        }
     }
     
     package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
