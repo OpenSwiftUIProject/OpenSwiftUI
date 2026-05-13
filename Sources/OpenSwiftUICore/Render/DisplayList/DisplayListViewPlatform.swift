@@ -511,7 +511,12 @@ extension DisplayList.ViewUpdater.Platform {
                     kind: .chameleonColor
                 )
             case .image:
+                #if canImport(QuartzCore)
                 let view = definition.makeLayerView(type: ImageLayer.self, kind: .image)
+                #else
+                let view = definition.makeLayerView(type: CALayer.self, kind: .image)
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
                 return DisplayList.ViewUpdater.ViewInfo(
                     view: view,
                     layer: viewLayer(view),
@@ -1125,8 +1130,12 @@ extension DisplayList.ViewUpdater.Platform {
     ) {
         switch content.value {
         case let .color(resolved):
+            #if canImport(QuartzCore)
             let cgColor = resolved.cgColor
             viewLayer(viewInfo.view).backgroundColor = cgColor
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         case .backdrop, .chameleonColor, .image, .shadow, .view, .placeholder:
             break
         case let .shape(path, _, _):

@@ -166,7 +166,12 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         fileprivate var boundingRect: CGRect {
             switch kind {
             case .cgPath:
+                #if canImport(CoreGraphics)
                 return data.cgPath.takeUnretainedValue().boundingBoxOfPath
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                return .zero
+                #endif
             case .rbPath:
                 _openSwiftUIUnimplementedWarning()
                 // return data.rbPath.boundingBox // FIXME: RB API

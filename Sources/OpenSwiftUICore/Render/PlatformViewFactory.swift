@@ -196,6 +196,7 @@ package struct EmptyViewFactory: AnyViewFactory {
 
 extension EmptyViewFactory: PlatformLayerFactory {
     private class MissingLayer: CALayer {
+        #if canImport(QuartzCore)
         required init?(coder: NSCoder) {
             super.init(coder: coder)
         }
@@ -222,6 +223,7 @@ extension EmptyViewFactory: PlatformLayerFactory {
             get { true }
             set {}
         }
+        #endif
     }
 
     package var platformLayerType: CALayer.Type {
