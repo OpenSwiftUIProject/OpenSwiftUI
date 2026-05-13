@@ -9,6 +9,9 @@
 public import OpenQuartzCoreShims
 import Foundation
 import OpenSwiftUI_SPI
+#if canImport(QuartzCore)
+import QuartzCore_Private
+#endif
 
 // MARK: - PlatformViewDefinition
 
@@ -57,9 +60,7 @@ open class PlatformViewDefinition: @unchecked Sendable {
     open class func makeView(kind: PlatformViewDefinition.ViewKind, item: Any) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
     #endif
     open class func makeView(kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
-    #if canImport(Darwin)
     open class func makeLayerView(type: CALayer.Type, kind: PlatformViewDefinition.ViewKind) -> AnyObject { _openSwiftUIBaseClassAbstractMethod() }
-    #endif
     open class func makePlatformView(view: AnyObject, kind: PlatformViewDefinition.ViewKind) { _openSwiftUIBaseClassAbstractMethod() }
     open class func makeDrawingView(options: PlatformDrawableOptions) -> any PlatformDrawable { _openSwiftUIBaseClassAbstractMethod() }
     open class func setPath(_ path: Path, shapeView: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }

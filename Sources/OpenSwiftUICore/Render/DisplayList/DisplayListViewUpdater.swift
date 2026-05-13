@@ -9,7 +9,9 @@
 import Foundation
 import OpenSwiftUI_SPI
 import OpenQuartzCoreShims
+#if canImport(QuartzCore)
 import QuartzCore_Private
+#endif
 
 // MARK: - DisplayList.ViewUpdater
 
