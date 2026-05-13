@@ -278,6 +278,41 @@ extension DisplayList.ViewUpdater.Platform {
         _openSwiftUIPlatformUnimplementedWarning()
         #endif
     }
+
+    @inline(__always)
+    package func setGeometry(
+        of view: AnyObject,
+        useViewAPIs: Bool,
+        positionChanged: Bool,
+        boundsOriginChanged: Bool,
+        boundsSizeChanged: Bool,
+        position: CGPoint,
+        bounds: CGRect
+    ) {
+        #if canImport(QuartzCore)
+        CoreViewSetGeometry(
+            system: viewSystem,
+            view: view,
+            useViewAPIs: useViewAPIs,
+            positionChanged: positionChanged,
+            boundsOriginChanged: boundsOriginChanged,
+            boundsSizeChanged: boundsSizeChanged,
+            position: position,
+            bounds: bounds
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
+    }
+
+    @inline(__always)
+    package func setMaskGeometry(of view: AnyObject, bounds: CGRect) {
+        #if canImport(QuartzCore)
+        CoreViewSetMaskGeometry(system: viewSystem, view: view, bounds: bounds)
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
+    }
     
     package func setShadow(_ shadow: ResolvedShadowStyle?, layer: CALayer) {
         #if canImport(QuartzCore)
@@ -693,7 +728,113 @@ extension DisplayList.ViewUpdater.Platform {
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         clipRectChanged: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        let modelState = state.pointee
+        let sizeChanged = viewInfo.state.size != size
+        let transformSeed = DisplayList.Seed(modelState.versions.transform)
+        let transformChanged = viewInfo.seeds.transform != transformSeed
+        viewInfo.seeds.transform = transformSeed
+        guard sizeChanged || transformChanged || clipRectChanged else {
+            return false
+        }
+        // TBA
+        let hadBoundsOrigin = viewInfo.state.isBoundsOriginEnabled
+        let hadAffineTransform = viewInfo.state.isAffineTransformEnabled
+        let usesProjection = viewInfo.state.isProjectionGeometryEnabled
+        let usesClipRect = viewInfo.state.isClipRectEnabled
+
+        var clipRectPresent = false
+        var bounds = CGRect(origin: .zero, size: size)
+        var position = CGPoint(x: modelState.transform.tx, y: modelState.transform.ty)
+        if usesClipRect, let clipRect = modelState.clipRect() {
+            clipRectPresent = true
+            bounds = clipRect.rect
+            position.x += bounds.origin.x
+            position.y += bounds.origin.y
+        }
+
+        let shouldComparePosition = transformChanged || (clipRectPresent && clipRectChanged)
+        let positionChanged = shouldComparePosition && viewInfo.state.position != position
+        if positionChanged {
+            viewInfo.state.position = position
+        }
+
+        let boundsSizeChanged = viewInfo.state.size != bounds.size
+        if boundsSizeChanged {
+            viewInfo.state.size = bounds.size
+        }
+
+        let hasBoundsOrigin = bounds.origin != .zero
+        let boundsOriginChanged = hadBoundsOrigin || hasBoundsOrigin
+        let boundsChanged = boundsOriginChanged || boundsSizeChanged
+
+        if boundsOriginChanged {
+            viewInfo.state.isBoundsOriginEnabled = hasBoundsOrigin
+        }
+
+        if usesProjection {
+            if boundsChanged {
+                CoreViewSetSize(system: viewSystem, view: viewInfo.view, size: bounds.size)
+            }
+            viewLayer(viewInfo.view).contentsScale = modelState.globals.pointee.environment.contentsScale
+            if boundsChanged, viewInfo.state.kind == .mask {
+                setMaskGeometry(of: viewInfo.view, bounds: bounds)
+            }
+            return boundsChanged
+        }
+
+        var affineTransform = modelState.transform
+        affineTransform.tx = 0
+        affineTransform.ty = 0
+        let hasAffineTransform = affineTransform != .identity
+        if transformChanged && (hadAffineTransform || hasAffineTransform) {
+            CoreViewSetTransform(
+                system: viewSystem,
+                view: viewInfo.view,
+                transform: affineTransform
+            )
+            if hasAffineTransform {
+                viewInfo.state.isAffineTransformEnabled = true
+            } else {
+                viewInfo.state.isAffineTransformEnabled = false
+            }
+        }
+
+        let useViewAPIs: Bool
+        switch viewInfo.state.kind {
+        case .platformView, .platformGroup, .platformLayer:
+            useViewAPIs = true
+        default:
+            useViewAPIs = false
+        }
+        let sanitizedPosition = CGPoint(
+            x: position.x.mappingNaN(to: 0),
+            y: position.y.mappingNaN(to: 0)
+        )
+        let sanitizedBounds = CGRect(
+            x: bounds.origin.x.mappingNaN(to: 0),
+            y: bounds.origin.y.mappingNaN(to: 0),
+            width: bounds.size.width.mappingNaN(to: 0),
+            height: bounds.size.height.mappingNaN(to: 0)
+        )
+        setGeometry(
+            of: viewInfo.view,
+            useViewAPIs: useViewAPIs,
+            positionChanged: positionChanged,
+            boundsOriginChanged: boundsOriginChanged,
+            boundsSizeChanged: boundsSizeChanged,
+            position: sanitizedPosition,
+            bounds: sanitizedBounds
+        )
+
+        if boundsChanged, viewInfo.state.kind == .mask {
+            setMaskGeometry(of: viewInfo.view, bounds: bounds)
+        }
+        return boundsChanged
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        return false
+        #endif
     }
 
     private func updateShadow(
