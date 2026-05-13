@@ -22,7 +22,7 @@
 
 @property (nonatomic, assign) int64_t openSwiftUI_displayListID;
 
-- (void)openSwiftUI_setNoAnimationDelegate;
+- (void)openSwiftUI_setNoAnimationDelegate OPENSWIFTUI_SWIFT_NAME(setNoAnimationDelegate());
 
 @end
 

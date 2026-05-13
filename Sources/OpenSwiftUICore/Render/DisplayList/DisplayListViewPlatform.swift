@@ -7,6 +7,7 @@
 //  ID: 8BBC66CBE42B8A65F8A2F3799C81A349 (SwiftUICore)
 
 public import OpenQuartzCoreShims
+import Foundation
 import OpenSwiftUI_SPI
 
 // MARK: - PlatformViewDefinition
@@ -89,10 +90,12 @@ extension DisplayList.ViewUpdater {
             }
         }
 
+        // TODO: Optimize the case name and add inline helper in State to do contains/insert/remove logic
         struct ViewFlags: OptionSet {
             let rawValue: UInt8
 
             static var _3: ViewFlags { .init(rawValue: 1 << 3) }
+            static var _4: ViewFlags { .init(rawValue: 1 << 4) }
         }
     }
 }
@@ -430,7 +433,57 @@ extension DisplayList.ViewUpdater.Platform {
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        if let clipRect = state.pointee.clipRect() {
+            setClipsToBounds(true, of: viewInfo.view, onLayer: false)
+            let layer = viewInfo.layer
+            layer.cornerRadius = clipRect.clampedCornerRadius
+            layer.cornerCurve = clipRect.style == .continuous ? .continuous : .circular
+            viewInfo.state.flags.insert(._3)
+            if viewInfo.state.flags.contains(._4) {
+                layer.mask = nil
+                viewInfo.state.flags.remove(._4)
+            }
+
+        } else {
+            if viewInfo.state.flags.contains(._3) {
+                viewInfo.state.flags.remove(._3)
+                setClipsToBounds(false, of: viewInfo.view, onLayer: false)
+                let layer = viewInfo.layer
+                var bounds = layer.bounds
+                bounds.origin = .zero
+                layer.bounds = bounds
+                layer.cornerRadius = 0
+                layer.cornerCurve = .circular
+            }
+            let clips = state.pointee.clips
+            guard !clips.isEmpty else {
+                if viewInfo.state.flags.contains(._4) {
+                    let layer = viewInfo.layer
+                    layer.mask = nil
+                    viewInfo.state.flags.remove(._4)
+                }
+                return
+            }
+            let layer = viewInfo.layer
+            let maskLayer: MaskLayer
+            if let mask = layer.mask as? MaskLayer {
+                maskLayer = mask
+            } else {
+                maskLayer = MaskLayer()
+                maskLayer.anchorPoint = .zero
+                maskLayer.setNoAnimationDelegate()
+                layer.mask = maskLayer
+            }
+            viewInfo.state.flags.insert(._4)
+            let transform = state.pointee.transform.inverted()
+            if maskLayer.clips != clips || maskLayer.clipTransform != transform {
+                maskLayer.setClips(clips, transform: transform)
+            }
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 
     private func updateGeometry(

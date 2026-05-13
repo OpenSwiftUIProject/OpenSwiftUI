@@ -228,7 +228,7 @@ extension DisplayList.ViewUpdater {
         
         // MARK: - DisplayList.ViewUpdater.Clip
         
-        struct Clip {
+        struct Clip: Equatable {
             var path: Path
             var transform: CGAffineTransform?
             var style: FillStyle
