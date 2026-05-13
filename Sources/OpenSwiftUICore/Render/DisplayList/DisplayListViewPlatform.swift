@@ -842,7 +842,73 @@ extension DisplayList.ViewUpdater.Platform {
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         item: DisplayList.Item
     ) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        guard let shadow = state.pointee.shadow?.value else {
+            let shadowSeed = DisplayList.Seed(state.pointee.versions.shadow)
+            guard viewInfo.seeds.shadow != shadowSeed else {
+                return
+            }
+            switch viewInfo.state.kind {
+            case .platformView, .platformGroup, .platformLayer:
+                return
+            default:
+                CoreViewSetShadow(
+                    system: viewSystem,
+                    view: viewInfo.view,
+                    color: nil,
+                    radius: 0,
+                    offset: .zero
+                )
+                return
+            }
+        }
+        guard viewInfo.state.kind != .inherited,
+              case let .content(content) = item.value
+        else {
+            CoreViewSetShadow(
+                system: viewSystem,
+                view: viewInfo.view,
+                color: shadow.color.cgColor,
+                radius: shadow.radius,
+                offset: shadow.offset
+            )
+            return
+        }
+        switch content.value {
+        case let .color(color):
+            var colorShadow = shadow
+            colorShadow.color = shadow.color.multiplyingOpacity(by: color.opacity)
+            viewInfo.layer.shadowPathIsBounds = true
+            viewInfo.layer.shadowPath = nil
+            setShadow(colorShadow, layer: viewInfo.layer)
+        case let .shape(path, paint, _):
+            let bounds = ShapeLayerHelper.makeLayerBounds(
+                size: item.size,
+                path: path,
+                layerType: type(of: viewInfo.layer),
+                contentsScale: state.pointee.globals.pointee.environment.contentsScale
+            )
+            var helper = ShapeLayerShadowHelper(
+                platform: self,
+                layer: viewInfo.layer,
+                path: path,
+                offset: bounds.origin,
+                shadow: shadow,
+                updateShape: false
+            )
+            paint.visit(&helper)
+        default:
+            CoreViewSetShadow(
+                system: viewSystem,
+                view: viewInfo.view,
+                color: shadow.color.cgColor,
+                radius: shadow.radius,
+                offset: shadow.offset
+            )
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 
     private func updateProperties(

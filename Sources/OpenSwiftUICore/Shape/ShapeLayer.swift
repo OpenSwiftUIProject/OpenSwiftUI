@@ -37,6 +37,15 @@ struct ShapeLayerHelper: ResolvedPaintVisitor {
     mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
         _openSwiftUIUnimplementedFailure()
     }
+
+    static func makeLayerBounds(
+        size: CGSize,
+        path: Path,
+        layerType: CALayer.Type,
+        contentsScale: CGFloat
+    ) -> CGRect {
+        _openSwiftUIUnimplementedFailure()
+    }
 }
 
 // MARK: - ShapeLayerShadowHelper [WIP]
