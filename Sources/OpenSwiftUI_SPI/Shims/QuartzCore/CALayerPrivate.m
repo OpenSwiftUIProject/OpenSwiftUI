@@ -41,6 +41,36 @@
     func(self, selector, allows);
 }
 
+- (BOOL)needsLayoutOnGeometryChange_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"needsLayoutOnGeometryChange", NO);
+    return func(self, selector);
+}
+
+- (void)setNeedsLayoutOnGeometryChange_openswiftui_safe_wrapper:(BOOL)needsLayout {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setNeedsLayoutOnGeometryChange:", , BOOL);
+    func(self, selector, needsLayout);
+}
+
+- (uint32_t)disableUpdateMask_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(uint32_t, @"disableUpdateMask", 0);
+    return func(self, selector);
+}
+
+- (void)setDisableUpdateMask_openswiftui_safe_wrapper:(uint32_t)mask {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setDisableUpdateMask:", , uint32_t);
+    func(self, selector, mask);
+}
+
+- (BOOL)shadowPathIsBounds_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"shadowPathIsBounds", NO);
+    return func(self, selector);
+}
+
+- (void)setShadowPathIsBounds_openswiftui_safe_wrapper:(BOOL)value {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setShadowPathIsBounds:", , BOOL);
+    func(self, selector, value);
+}
+
 - (BOOL)allowsHitTesting_openswiftui_safe_wrapper {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"allowsHitTesting", YES);
     return func(self, selector);

@@ -14,6 +14,7 @@
 
 #include "OpenSwiftUIViewSystem.h"
 #include <QuartzCore/QuartzCore.h>
+#include <Foundation/Foundation.h>
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 

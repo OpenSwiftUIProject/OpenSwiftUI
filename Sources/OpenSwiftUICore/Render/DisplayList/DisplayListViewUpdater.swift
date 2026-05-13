@@ -2,17 +2,22 @@
 //  DisplayListViewUpdater.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: B86250B2E056EB47628ECF46032DFA4C (SwiftUICore)
+
+import Foundation
+import OpenSwiftUI_SPI
+import OpenQuartzCoreShims
+#if canImport(QuartzCore)
+import QuartzCore_Private
+#endif
+
+// MARK: - DisplayList.ViewUpdater
 
 private var printTree: Bool?
 
-import Foundation
-import OpenQuartzCoreShims
-
 extension DisplayList {
-    // FIXME
     final package class ViewUpdater: ViewRendererBase {
         weak var host: (any ViewRendererHost)?
         var viewCache: DisplayList.ViewUpdater.ViewCache
@@ -38,6 +43,14 @@ extension DisplayList {
             self.wasValid = false
         }
         
+        var platform: Platform {
+            viewCache.platform
+        }
+
+        var exportedObject: AnyObject? {
+            nil
+        }
+        
         func render(
             rootView: AnyObject,
             from list: DisplayList,
@@ -46,33 +59,75 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
-            viewCache.clearAsyncValues()
+            if environment != lastEnv {
+                lastEnv = environment
+                isValid = false
+                viewCache.invalidateAll()
+                seed = .init()
+            }
+            if isValid, DisplayList.Seed(version) == seed, nextUpdate >= time {
+                return nextUpdate
+            }
+            #if canImport(QuartzCore)
+            if lastTime == .zero {
+                let layer = platform.viewLayer(rootView)
+                layer.allowsGroupOpacity = false
+                layer.allowsGroupBlending = false
+            }
+            #endif
+            let newSeed = DisplayList.Seed(version)
+            seed = newSeed
+            asyncSeed = newSeed
+            wasValid = isValid
+            isValid = true
+            lastList = list
+            lastTime = time
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
             }
             if let printTree, printTree {
                 print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at \(time):\n\(list.description)")
             }
-
-            let newSeed = DisplayList.Seed(version)
-            let seedChanged = newSeed != seed
-            let envChanged = environment != lastEnv
-
-            wasValid = isValid
-
-            if seedChanged || envChanged || !isValid {
-                // TODO: Walk display list items and create/update platform views
+            let globals = Model.State.Globals(
+                updater: self,
+                time: time,
+                maxVersion: maxVersion,
+                environment: lastEnv
+            )
+            return withUnsafePointer(to: globals) { globalsPtr in
+                let parentState = Model.State(globals: globalsPtr)
+                viewCache.index = .init()
                 viewCache.currentList = list
-                seed = newSeed
-                lastEnv = environment
-                isValid = true
+                viewCache.clearAsyncValues()
+                #if canImport(QuartzCore)
+                let layer = platform.viewLayer(rootView)
+                let needsLayoutOnGeometryChange = layer.needsLayoutOnGeometryChange
+                layer.needsLayoutOnGeometryChange = false
+                #endif
+                var container = Container(rootView: rootView, platform: viewCache.platform)
+                withUnsafePointer(to: parentState) { parentStatePtr in
+                    update(
+                        container: &container,
+                        from: list,
+                        parentState: parentStatePtr
+                    )
+                }
+                container.removeRemaining(viewCache: &viewCache)
+                viewCache.reclaim(time: time)
+                viewCache.currentList = DisplayList()
+                if !isValid {
+                    container.nextTime = time
+                }
+                if let host, let observer = host.as(ViewGraphRenderObserver.self) {
+                    observer.didRender()
+                }
+                let nextTime = container.nextTime
+                nextUpdate = nextTime
+                #if canImport(QuartzCore)
+                layer.needsLayoutOnGeometryChange = needsLayoutOnGeometryChange
+                #endif
+                return nextTime
             }
-
-            lastList = list
-            lastTime = time
-            nextUpdate = .infinity
-
-            return nextUpdate
         }
         
         func renderAsync(
@@ -82,123 +137,542 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
-            // Phase 1: Version hash early return
-            let newAsyncSeed = DisplayList.Seed(version)
-            if newAsyncSeed == asyncSeed, lastTime >= time {
+            if isValid, DisplayList.Seed(version) == asyncSeed, nextUpdate >= time {
                 return nextUpdate
             }
-
-            // Phase 2: Debug print
             if printTree == nil {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
             }
             if let printTree, printTree {
                 print("Async view at \(time):\n\(list.description)")
             }
-
-            // Phase 3: Save state and call updateAsync
-            wasValid = isValid
-            let oldList = viewCache.currentList
-
-            guard let resultTime = updateAsync(oldList: oldList, newList: list) else {
-                // Cancelled: rollback
-                isValid = wasValid
-                return nil
-            }
-
-            // Phase 4: Commit
-            viewCache.commitAsyncValues(targetTimestamp: targetTimestamp)
-            viewCache.currentList = list
-            asyncSeed = newAsyncSeed
-            lastTime = time
-            nextUpdate = resultTime
-            isValid = true
-
-            return resultTime
-        }
-
-        private func updateAsync(oldList: DisplayList, newList: DisplayList) -> Time? {
-            let oldItems = oldList.items
-            let newItems = newList.items
-            guard oldItems.count == newItems.count else {
-                return nil
-            }
-
-            var nextTime: Time = .infinity
-
-            for i in 0 ..< oldItems.count {
-                let oldItem = oldItems[i]
-                let newItem = newItems[i]
-
-                guard oldItem.matchesTopLevelStructure(of: newItem) else {
-                    return nil
-                }
-
-                switch (oldItem.value, newItem.value) {
-                case let (.effect(_, oldChild), .effect(_, newChild)):
-                    guard let childTime = updateAsync(oldList: oldChild, newList: newChild) else {
+            let newGlobals = Model.State.Globals(
+                updater: self,
+                time: time,
+                maxVersion: maxVersion,
+                environment: lastEnv
+            )
+            let oldGlobals = Model.State.Globals(
+                updater: self,
+                time: lastTime,
+                maxVersion: maxVersion,
+                environment: lastEnv
+            )
+            return withUnsafePointer(to: newGlobals) { newGlobalsPtr in
+                withUnsafePointer(to: oldGlobals) { oldGlobalsPtr in
+                    let oldParentState = Model.State(globals: oldGlobalsPtr)
+                    let newParentState = Model.State(globals: newGlobalsPtr)
+                    viewCache.index = .init()
+                    wasValid = isValid
+                    isValid = true
+                    let oldList = lastList
+                    let resultTime = withUnsafePointer(to: oldParentState) { oldParentStatePtr in
+                        withUnsafePointer(to: newParentState) { newParentStatePtr in
+                            updateAsync(
+                                oldList: oldList,
+                                oldParentState: oldParentStatePtr,
+                                newList: list,
+                                newParentState: newParentStatePtr
+                            )
+                        }
+                    }
+                    guard let resultTime else {
+                        viewCache.clearPendingAsyncValues()
+                        isValid = wasValid
                         return nil
                     }
-                    nextTime = min(nextTime, childTime)
-                case let (.states(oldStates), .states(newStates)):
-                    guard oldStates.count == newStates.count else {
-                        return nil
-                    }
-                    for j in 0 ..< oldStates.count {
-                        let (oldHash, oldChild) = oldStates[j]
-                        let (newHash, newChild) = newStates[j]
-                        guard oldHash == newHash else {
-                            return nil
-                        }
-                        guard let stateTime = updateAsync(
-                            oldList: oldChild,
-                            newList: newChild
-                        ) else {
-                            return nil
-                        }
-                        nextTime = min(nextTime, stateTime)
-                    }
-                case (.content, .content):
-                    // TODO: updateItemViewAsync — leaf platform view property update
-                    if oldItem.version != newItem.version {
-                        // Content changed but structure same — would update platform view here
-                    }
-                case (.empty, .empty):
-                    break
-                default:
-                    break
+                    viewCache.commitAsyncValues(targetTimestamp: targetTimestamp)
+                    lastList = list
+                    lastTime = time
+                    asyncSeed = seed
+                    nextUpdate = resultTime
+                    return resultTime
                 }
             }
-
-            return nextTime
         }
         
         func destroy(rootView: AnyObject) {
-            isValid = false
-            wasValid = false
-            lastList = DisplayList()
-            lastEnv = .invalid
-            seed = DisplayList.Seed()
-            asyncSeed = DisplayList.Seed()
-            nextUpdate = .infinity
-            viewCache.currentList = DisplayList()
-            viewCache.pendingAsyncUpdates.removeAll()
+            var container = Container(rootView: rootView, platform: viewCache.platform)
+            container.removeRemaining(viewCache: &viewCache)
+            viewCache.reclaim(time: .infinity)
         }
         
         var viewCacheIsEmpty: Bool {
             viewCache.map.isEmpty
         }
-
-        var platform: Platform {
-            viewCache.platform
+        
+        private func update(
+            container: inout Container,
+            from list: DisplayList,
+            parentState: UnsafePointer<Model.State>
+        ) {
+            guard !list.items.isEmpty else {
+                return
+            }
+            for var item in list.items {
+                let savedIndex = viewCache.index.enter(identity: item.identity)
+                defer { viewCache.index.leave(index: savedIndex) }
+                let nextTime = viewCache.prepare(item: &item, parentState: parentState)
+                container.nextTime = min(container.nextTime, nextTime)
+                updateInheritedView(
+                    container: &container,
+                    from: item,
+                    parentState: parentState
+                )
+            }
+        }
+        
+        private func updateAsync(
+            oldList: DisplayList,
+            oldParentState: UnsafePointer<Model.State>,
+            newList: DisplayList,
+            newParentState: UnsafePointer<Model.State>
+        ) -> Time? {
+            guard oldList.items.count == newList.items.count else {
+                return nil
+            }
+            guard !oldList.items.isEmpty else {
+                return .infinity
+            }
+            var nextTime: Time = .infinity
+            for index in oldList.items.indices {
+                var oldItem = oldList.items[index]
+                var newItem = newList.items[index]
+                guard oldItem.identity == newItem.identity else {
+                    return nil
+                }
+                guard oldItem.matchesTopLevelStructure(of: newItem) else {
+                    return nil
+                }
+                let savedIndex = viewCache.index.enter(identity: newItem.identity)
+                defer { viewCache.index.leave(index: savedIndex) }
+                let oldNextTime = viewCache.prepare(
+                    item: &oldItem,
+                    parentState: oldParentState
+                )
+                let newNextTime = viewCache.prepare(
+                    item: &newItem,
+                    parentState: newParentState
+                )
+                guard let childNextTime = updateInheritedViewAsync(
+                    oldItem: oldItem,
+                    oldParentState: oldParentState,
+                    newItem: newItem,
+                    newParentState: newParentState
+                ) else {
+                    return nil
+                }
+                nextTime = min(nextTime, oldNextTime, newNextTime, childNextTime)
+            }
+            return nextTime
         }
 
-        var exportedObject: AnyObject? {
-            // TODO
-            nil
+        private func updateInheritedView(
+            container: inout Container,
+            from item: DisplayList.Item,
+            parentState: UnsafePointer<Model.State>
+        ) {
+            var item = item
+            var state = parentState.pointee
+            let requirements = Model.merge(
+                item: &item,
+                index: viewCache.index,
+                into: &state
+            )
+            guard requirements.contains(.visibleContent) || item.features.contains(.required) else {
+                if case let .effect(_, list) = item.value {
+                    viewCache.index.skip(list: list)
+                }
+                return
+            }
+            if requirements.contains(.inheritedView) {
+                var result = withUnsafePointer(to: state) { statePtr in
+                    viewCache.update(
+                        item: item,
+                        state: statePtr,
+                        tag: .inherited,
+                        in: container.id
+                    ) { [platform] _, item, state in
+                        // TODO: Optimize the call here in Platform
+                        var info = ViewInfo(platform: platform, kind: .inherited)
+                        platform.updateState(
+                            &info,
+                            item: item,
+                            size: item.size,
+                            state: state
+                        )
+                        return info
+                    } updateView: { [platform] info, _, item, state in
+                        // TODO: Optimize the call here in Platform
+                        platform.updateState(
+                            &info,
+                            item: item,
+                            size: item.size,
+                            state: state
+                        )
+                    }
+                }
+                isValid = isValid && result.isValid
+                container.platform.addSubview(
+                    result.view,
+                    to: container.rootView,
+                    at: container.count
+                )
+                container.count &+= 1
+                container.nextTime = min(container.nextTime, result.nextUpdate)
+                guard result.changed || !wasValid else {
+                    if case let .effect(effect, list) = item.value {
+                        viewCache.index.skip(list: list)
+                        viewCache.index.skip(effect: effect)
+                    }
+                    return
+                }
+                var childContainer = Container(
+                    rootView: result.container,
+                    platform: platform,
+                    id: result.id
+                )
+                if requirements.contains(.itemView) {
+                    updateItemView(
+                        container: &childContainer,
+                        from: item,
+                        localState: &state
+                    )
+                } else if case let .effect(_, list) = item.value {
+                    withUnsafePointer(to: state) { statePtr in
+                        update(
+                            container: &childContainer,
+                            from: list,
+                            parentState: statePtr
+                        )
+                    }
+                }
+                childContainer.removeRemaining(viewCache: &viewCache)
+                viewCache.setNextUpdate(childContainer.nextTime, in: &result)
+            } else if requirements.contains(.itemView) {
+                updateItemView(
+                    container: &container,
+                    from: item,
+                    localState: &state
+                )
+            } else if case let .effect(_, list) = item.value {
+                withUnsafePointer(to: state) { statePtr in
+                    update(
+                        container: &container,
+                        from: list,
+                        parentState: statePtr
+                    )
+                }
+            }
+        }
+
+        private func updateInheritedViewAsync(
+            oldItem: DisplayList.Item,
+            oldParentState: UnsafePointer<Model.State>,
+            newItem: DisplayList.Item,
+            newParentState: UnsafePointer<Model.State>
+        ) -> Time? {
+            var oldItem = oldItem
+            var oldState = oldParentState.pointee
+            let oldRequirements = Model.merge(
+                item: &oldItem,
+                index: viewCache.index,
+                into: &oldState
+            )
+            var newItem = newItem
+            var newState = newParentState.pointee
+            let newRequirements = Model.merge(
+                item: &newItem,
+                index: viewCache.index,
+                into: &newState
+            )
+            guard oldRequirements == newRequirements else {
+                return nil
+            }
+            if oldRequirements.contains(.inheritedView) {
+                let result = withUnsafePointer(to: oldState) { oldStatePtr in
+                    withUnsafePointer(to: newState) { newStatePtr in
+                        viewCache.updateAsync(
+                            oldItem: oldItem,
+                            oldState: oldStatePtr,
+                            newItem: newItem,
+                            newState: newStatePtr,
+                            tag: .inherited
+                        ) { layer, _, oldItem, oldState, newItem, newState in
+                            platform.updateStateAsync(
+                                layer: &layer,
+                                oldItem: oldItem,
+                                oldSize: oldItem.size,
+                                oldState: oldState,
+                                newItem: newItem,
+                                newSize: newItem.size,
+                                newState: newState
+                            )
+                        }
+                    }
+                }
+                guard var result else {
+                    return nil
+                }
+                isValid = isValid && result.isValid
+                guard result.changed else {
+                    if case let .effect(_, list) = oldItem.value {
+                        viewCache.index.skip(list: list)
+                    }
+                    return result.nextUpdate
+                }
+                guard let nextTime = updateRequiredContentAsync(
+                    oldItem: oldItem,
+                    oldState: &oldState,
+                    newItem: newItem,
+                    newState: &newState,
+                    requirements: oldRequirements
+                ) else {
+                    return nil
+                }
+                viewCache.setNextUpdate(nextTime, in: &result)
+                return result.nextUpdate
+            } else {
+                return updateRequiredContentAsync(
+                    oldItem: oldItem,
+                    oldState: &oldState,
+                    newItem: newItem,
+                    newState: &newState,
+                    requirements: oldRequirements
+                )
+            }
+        }
+        
+        private func updateRequiredContentAsync(
+            oldItem: DisplayList.Item,
+            oldState: inout Model.State,
+            newItem: DisplayList.Item,
+            newState: inout Model.State,
+            requirements: Model.MergedViewRequirements
+        ) -> Time? {
+            guard requirements.contains(.visibleContent) || newItem.features.contains(.required) else {
+                guard oldItem.features == newItem.features else {
+                    return nil
+                }
+                if case let .effect(effect, list) = oldItem.value {
+                    viewCache.index.skip(list: list)
+                    viewCache.index.skip(effect: effect)
+                }
+                return .infinity
+            }
+            guard requirements.contains(.itemView) else {
+                guard case let .effect(_, oldList) = oldItem.value,
+                      case let .effect(_, newList) = newItem.value
+                else {
+                    return .infinity
+                }
+                return updateAsync(
+                    oldList: oldList,
+                    oldParentState: &oldState,
+                    newList: newList,
+                    newParentState: &newState
+                )
+            }
+            return updateItemViewAsync(
+                oldItem: oldItem,
+                oldState: &oldState,
+                newItem: newItem,
+                newState: &newState
+            )
+        }
+        
+        private func updateItemView(
+            container: inout Container,
+            from item: DisplayList.Item,
+            localState: inout Model.State
+        ) {
+            var result = viewCache.update(
+                item: item,
+                state: &localState,
+                tag: .item,
+                in: container.id
+            ) { [platform] index, item, state in
+                var info = platform._makeItemView(item: item, state: state)
+                platform.updateItemView(
+                    &info,
+                    index: index,
+                    item: item,
+                    state: state
+                )
+                return info
+            } updateView: { [platform] info, index, item, state in
+                platform.updateItemView(
+                    &info,
+                    index: index,
+                    item: item,
+                    state: state
+                )
+            }
+            isValid = isValid && result.isValid
+            container.platform.addSubview(
+                result.view,
+                to: container.rootView,
+                at: container.count
+            )
+            container.count &+= 1
+            container.nextTime = min(container.nextTime, result.nextUpdate)
+            guard case let .effect(effect, list) = item.value else {
+                return
+            }
+            guard result.changed || !wasValid else {
+                viewCache.index.skip(list: list)
+                if case let .mask(list, _) = effect {
+                    viewCache.index.skip(list: list)
+                }
+                return
+            }
+            localState.reset()
+            var childContainer = Container(
+                rootView: result.container,
+                platform: platform,
+                id: result.id
+            )
+            update(
+                container: &childContainer,
+                from: list,
+                parentState: &localState
+            )
+            childContainer.removeRemaining(viewCache: &viewCache)
+            var nextTime = childContainer.nextTime
+            if case let .mask(maskList, _) = effect,
+               let maskView = platform.maskView(result.view) {
+                var maskContainer = Container(
+                    rootView: maskView,
+                    platform: platform,
+                    id: result.id
+                )
+                update(
+                    container: &maskContainer,
+                    from: maskList,
+                    parentState: &localState
+                )
+                maskContainer.removeRemaining(viewCache: &viewCache)
+                nextTime = min(nextTime, maskContainer.nextTime)
+            }
+            viewCache.setNextUpdate(nextTime, in: &result)
+        }
+        
+        private func updateItemViewAsync(
+            oldItem: DisplayList.Item,
+            oldState: inout Model.State,
+            newItem: DisplayList.Item,
+            newState: inout Model.State
+        ) -> Time? {
+            let asyncResult = viewCache.updateAsync(
+                oldItem: oldItem,
+                oldState: &oldState,
+                newItem: newItem,
+                newState: &newState,
+                tag: .item
+            ) { [platform] layer, index, oldItem, oldState, newItem, newState in
+                platform.updateItemViewAsync(
+                    layer: &layer,
+                    index: index,
+                    oldItem: oldItem,
+                    oldState: oldState,
+                    newItem: newItem,
+                    newState: newState
+                )
+            }
+            guard var result = asyncResult else {
+                return nil
+            }
+            isValid = isValid && result.isValid
+            guard case let .effect(oldEffect, oldList) = oldItem.value,
+                  case let .effect(newEffect, newList) = newItem.value
+            else {
+                return result.nextUpdate
+            }
+            guard result.changed || !wasValid else {
+                if case let .mask(oldMaskList, _) = oldEffect {
+                    viewCache.index.skip(list: oldMaskList)
+                }
+                viewCache.index.skip(list: oldList)
+                return result.nextUpdate
+            }
+            oldState.reset()
+            newState.reset()
+            let childNextTime = updateAsync(
+                oldList: oldList,
+                oldParentState: &oldState,
+                newList: newList,
+                newParentState: &newState
+            )
+            guard var nextTime = childNextTime else {
+                return nil
+            }
+            if case let .mask(oldMaskList, _) = oldEffect,
+               case let .mask(newMaskList, _) = newEffect {
+                let maskNextTime = updateAsync(
+                    oldList: oldMaskList,
+                    oldParentState: &oldState,
+                    newList: newMaskList,
+                    newParentState: &newState
+                )
+                guard let maskNextTime else {
+                    return nil
+                }
+                nextTime = min(nextTime, maskNextTime)
+            }
+            viewCache.setNextUpdate(nextTime, in: &result)
+            return result.nextUpdate
         }
     }
 }
+
+// MARK: - DisplayList.ViewUpdater.Container
+
+extension DisplayList.ViewUpdater {
+    private struct Container {
+        var rootView: AnyObject
+        var platform: Platform
+        var id: ViewInfo.ID
+        var nextTime: Time
+        var count: Int
+
+        init(
+            rootView: AnyObject,
+            platform: Platform,
+            id: ViewInfo.ID = .init(value: 0),
+            nextTime: Time = .infinity,
+            count: Int = 0
+        ) {
+            self.rootView = rootView
+            self.platform = platform
+            self.id = id
+            self.nextTime = nextTime
+            self.count = count
+        }
+
+        mutating func removeRemaining(viewCache: inout ViewCache) {
+            let subviews = platform.subviews(rootView)
+            guard count < subviews.count else {
+                return
+            }
+            for index in (count..<subviews.count).reversed() {
+                let view = subviews[index]
+                let pointer = unsafeBitCast(view, to: OpaquePointer.self)
+                guard let key = viewCache.reverseMap[pointer] else {
+                    continue
+                }
+                var info = viewCache.map[key]!
+                if !info.isRemoved {
+                    info.isRemoved = true
+                    viewCache.map[key] = info
+                    viewCache.removed.insert(key)
+                }
+                platform.removeFromSuperview(view)
+            }
+        }
+    }
+}
+
+// MARK: - DisplayList.ViewUpdater.ViewInfo
 
 extension DisplayList.ViewUpdater {
     struct ViewInfo {
@@ -214,6 +688,30 @@ extension DisplayList.ViewUpdater {
             var properties: DisplayList.Seed
             var platformSeeds: DisplayList.ViewUpdater.PlatformViewInfo.Seeds
 
+            init(_ seed: DisplayList.Seed = .init()) {
+                item = seed
+                content = seed
+                opacity = seed
+                blend = seed
+                transform = seed
+                clips = seed
+                filters = seed
+                shadow = seed
+                properties = .init()
+                platformSeeds = .init()
+            }
+
+            @inline(__always)
+            init(kind: PlatformViewDefinition.ViewKind) {
+                let seed: DisplayList.Seed = switch kind {
+                case .platformView, .platformGroup:
+                    .undefined
+                default:
+                    .init()
+                }
+                self.init(seed)
+            }
+
             mutating func invalidate() {
                 item.invalidate()
                 content.invalidate()
@@ -224,6 +722,11 @@ extension DisplayList.ViewUpdater {
                 filters.invalidate()
                 shadow.invalidate()
                 properties.invalidate()
+            }
+            
+            @inline(__always)
+            mutating func reset() {
+                self = .init()
             }
         }
 
@@ -253,14 +756,9 @@ extension DisplayList.ViewUpdater {
             self.layer = layer
             self.container = container
             self.state = state
-            self.id = ID(value: 0)
-            self.parentID = ID(value: 0)
-            self.seeds = Seeds(
-                item: .init(), content: .init(), opacity: .init(),
-                blend: .init(), transform: .init(), clips: .init(),
-                filters: .init(), shadow: .init(), properties: .init(),
-                platformSeeds: .init()
-            )
+            self.id = ID(value: UniqueID().value)
+            self.parentID = ID(value: -1)
+            self.seeds = Seeds(kind: state.kind)
             self.cacheSeed = 0
             self.isRemoved = false
             self.isInvalid = false
@@ -271,84 +769,17 @@ extension DisplayList.ViewUpdater {
             platform: Platform,
             kind: PlatformViewDefinition.ViewKind
         ) {
-            _openSwiftUIUnimplementedFailure()
+            let view = platform.definition.makeView(kind: kind)
+            let layer = platform.viewLayer(view)
+            let state = Platform.State(kind: kind)
+            self.init(view: view, layer: layer, container: view, state: state)
         }
 
-        func reset() {
-            _openSwiftUIUnimplementedFailure()
-        }
-    }
-}
-
-// MARK: - DisplayList.ViewUpdater.Model [WIP]
-
-extension DisplayList.ViewUpdater {
-    enum Model {
-        struct Clip {
-            var path: Path
-            var transform: CGAffineTransform?
-            var style: FillStyle
-
-            var isEmpty: Bool {
-                // TODO
-                false
-            }
-        }
-
-        struct State {
-            struct Versions {
-                var opacity: DisplayList.Version
-                var blend: DisplayList.Version
-                var transform: DisplayList.Version
-                var clips: DisplayList.Version
-                var filters: DisplayList.Version
-                var shadow: DisplayList.Version
-                var properties: DisplayList.Version
-            }
-
-            struct Globals {
-                var updater: DisplayList.ViewUpdater
-                var time: Time
-                var maxVersion: DisplayList.Version
-                var environment: DisplayList.ViewRenderer.Environment
-            }
-
-            var globals: UnsafePointer<Globals>
-            var opacity: Float
-            var blend: GraphicsBlendMode
-            var transform: CGAffineTransform
-            var clips: [Clip]
-            var filters: [GraphicsFilter]
-            var shadow: Indirect<ResolvedShadowStyle>
-            var properties: DisplayList.Properties
-            var rewriteVibrantColorMatrix: Bool
-            var compositingGroup: Bool
-            var backdropGroupID: UInt32
-            var stateHashes: [StrongHash]
-            var platformState: PlatformState
-            var versions: Versions
-
-            var hasDODEffects: Bool {
-                // TODO
-                false
-            }
-
-            func reset() {
-                // TODO
-            }
-
-            func clipRect() -> FixedRoundedRect? {
-                // TODO
-                nil
-            }
-
-            func adjust(for transform: CGAffineTransform) {
-                // TODO
-            }
-
-            mutating func addClip(_ path: Path, style: FillStyle) {
-                // TODO
-            }
+        mutating func reset(platform: Platform) {
+            layer = platform.viewLayer(view)
+            seeds.reset()
+            state.reset()
+            nextUpdate = .infinity
         }
     }
 }

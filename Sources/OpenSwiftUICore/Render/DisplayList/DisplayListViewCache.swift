@@ -99,6 +99,20 @@ extension DisplayList.ViewUpdater {
             asyncModifierGroup = nil
         }
 
+        @inline(__always)
+        mutating func clearPendingAsyncValues() {
+            pendingAsyncValues = [:]
+            pendingAsyncUpdates = []
+        }
+
+        mutating func invalidateAll() {
+            map = map.mapValues { info in
+                var info = info
+                info.seeds.invalidate()
+                return info
+            }
+        }
+
         mutating func reclaim(time: Time) {
             removed.forEach { key in
                 guard let info = map[key], info.isRemoved else { return }
@@ -119,9 +133,7 @@ extension DisplayList.ViewUpdater {
                    let newInfo = map.removeValue(forKey: key) {
                     removeRecursively(newInfo as AnyObject)
                 }
-                #if canImport(Darwin)
-                CoreViewRemoveFromSuperview(system: platform.viewSystem, view: view)
-                #endif
+                platform.removeFromSuperview(view)
             }
         }
 
@@ -197,8 +209,7 @@ extension DisplayList.ViewUpdater {
                 update()
             }
             // Reset state
-            pendingAsyncValues = [:]
-            pendingAsyncUpdates = []
+            clearPendingAsyncValues()
             #else
             _openSwiftUIPlatformUnimplementedWarning()
             #endif
@@ -274,7 +285,7 @@ extension DisplayList.ViewUpdater {
                 info.cacheSeed = cacheSeed
                 // Update nextUpdate
                 let newSeed = DisplayList.Seed(version)
-                var isInserted = info.seeds.item != newSeed || state.pointee.globals.pointee.time >= info.nextUpdate
+                var changed = info.seeds.item != newSeed || state.pointee.globals.pointee.time >= info.nextUpdate
                 info.nextUpdate = .infinity
                 // Update parentID
                 let oldParentID = info.parentID
@@ -290,23 +301,21 @@ extension DisplayList.ViewUpdater {
                 }
                 if info.view !== oldView {
                     reverseMap.removeValue(forKey: unsafeBitCast(oldView, to: OpaquePointer.self))
-                    #if canImport(Darwin)
-                    CoreViewRemoveFromSuperview(system: platform.viewSystem, view: oldView)
-                    #endif
+                    platform.removeFromSuperview(oldView)
                     reverseMap[unsafeBitCast(info.view, to: OpaquePointer.self)] = key
                     #if canImport(QuartzCore)
                     if index.archiveIdentity == .none, item.identity != .none {
                         info.layer.displayListID = item.identity
                     }
                     #endif
-                    isInserted = true
+                    changed = true
                 }
                 return Result(
                     view: info.view,
                     container: info.container,
                     id: info.id,
                     key: key,
-                    isInserted: isInserted,
+                    changed: changed,
                     isValid: !info.isInvalid,
                     nextUpdate: info.nextUpdate
                 )
@@ -333,7 +342,57 @@ extension DisplayList.ViewUpdater {
                     container: info.container,
                     id: info.id,
                     key: key,
-                    isInserted: true,
+                    changed: true,
+                    isValid: !info.isInvalid,
+                    nextUpdate: info.nextUpdate
+                )
+            }
+        }
+
+        mutating func updateAsync(
+            oldItem: DisplayList.Item,
+            oldState: UnsafePointer<Model.State>,
+            newItem: DisplayList.Item,
+            newState: UnsafePointer<Model.State>,
+            tag: Tag,
+            updateView: (
+                inout AsyncLayer,
+                DisplayList.Index,
+                DisplayList.Item,
+                UnsafePointer<Model.State>,
+                DisplayList.Item,
+                UnsafePointer<Model.State>
+            ) -> Bool
+        ) -> AsyncResult? {
+            guard oldItem.identity == newItem.identity else {
+                return nil
+            }
+            let key = Key(id: index.id, tag: tag)
+            return withUnsafeMutablePointer(to: &self) { cache in
+                guard var info = cache.pointee.map[key] else {
+                    return nil
+                }
+                var layer = AsyncLayer(
+                    layer: info.layer,
+                    cache: cache,
+                    kind: info.state.kind,
+                    flags: info.state.flags,
+                    nextUpdate: .infinity,
+                    isInvalid: info.isInvalid
+                )
+                guard updateView(&layer, cache.pointee.index, oldItem, oldState, newItem, newState) else {
+                    return nil
+                }
+                let shouldWriteBack = info.isInvalid != layer.isInvalid || info.nextUpdate != layer.nextUpdate
+                info.isInvalid = layer.isInvalid
+                info.nextUpdate = layer.nextUpdate
+                if shouldWriteBack {
+                    cache.pointee.map[key] = info
+                }
+                return AsyncResult(
+                    view: info.view,
+                    key: key,
+                    changed: oldItem.version != newItem.version,
                     isValid: !info.isInvalid,
                     nextUpdate: info.nextUpdate
                 )
@@ -345,7 +404,7 @@ extension DisplayList.ViewUpdater {
             var container: AnyObject
             var id: ViewInfo.ID
             var key: Key
-            var isInserted: Bool
+            var changed: Bool
             var isValid: Bool
             var nextUpdate: Time
         }
@@ -360,8 +419,10 @@ extension DisplayList.ViewUpdater {
         }
 
         struct AsyncResult {
-            var unknown: AnyObject // FIXME
+            var view: AnyObject
             var key: Key
+            var changed: Bool
+            var isValid: Bool
             var nextUpdate: Time
         }
 

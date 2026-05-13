@@ -22,6 +22,9 @@ typedef NSString *CALayerContentsScaling NS_TYPED_ENUM;
 @property (nonatomic, assign, readonly) BOOL hasBeenCommitted_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(hasBeenCommitted);
 @property (nonatomic, assign) BOOL allowsGroupBlending_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsGroupBlending);
 @property (nonatomic, assign) BOOL allowsHitTesting_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(allowsHitTesting);
+@property (nonatomic, assign) BOOL needsLayoutOnGeometryChange_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(needsLayoutOnGeometryChange);
+@property (nonatomic, assign) uint32_t disableUpdateMask_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(disableUpdateMask);
+@property (nonatomic, assign) BOOL shadowPathIsBounds_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(shadowPathIsBounds);
 
 /// Private property to control contents alpha channel swizzling.
 /// When set to kCALayerContentsSwizzleAAAA, the alpha channel is replicated to all channels.

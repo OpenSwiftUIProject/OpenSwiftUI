@@ -178,9 +178,27 @@ extension DisplayList {
             indirect case view(any _DisplayList_ViewFactory)
             case placeholder(id: Identity)
         }
+        
         package init(_ value: Content.Value, seed: Seed) {
             self.value = value
             self.seed = seed
+        }
+        
+        @inline(__always)
+        var features: DisplayList.Features {
+            switch value {
+            case let .platformView(factory):
+                return factory.features
+            case let .text(view, _):
+                let resolved = view.text
+                return resolved.isDynamic && resolved.archiveOptions.isArchived ? .dynamicContent : []
+            case let .flattened(list, _, _):
+                return list.features.union(.flattened)
+            case .view, .placeholder:
+                return .views
+            default:
+                return []
+            }
         }
     }
 
@@ -209,13 +227,63 @@ extension DisplayList {
         indirect case interpolatorRoot(InterpolatorGroup, contentOrigin: CGPoint, contentOffset: CGSize)
         case interpolatorLayer(InterpolatorGroup, serial: UInt32)
         indirect case interpolatorAnimation(InterpolatorAnimation)
-    }
         
+        @inline(__always)
+        var features: DisplayList.Features {
+            switch self {
+            case let .properties(properties):
+                return properties.features
+            case let .platformGroup(factory):
+                return factory.features
+            case .mask(let list, _):
+                return list.features
+            case .animation:
+                return .animations
+            case .view:
+                return .views
+            case let .platform(platformEffect):
+                return platformEffect.features
+            case .state:
+                return .stateEffects
+            case .interpolatorRoot:
+                return .interpolatorRoots
+            case let .interpolatorLayer(group, _):
+                return group.features.union([.interpolatorLayers, .required])
+            default:
+                return []
+            }
+        }
+    }
+
     package enum Transform {
         case affine(CGAffineTransform)
         case projection(ProjectionTransform)
         case rotation(_RotationEffect.Data)
         case rotation3D(_Rotation3DEffect.Data)
+
+        @inline(__always)
+        package var affineTransform: CGAffineTransform? {
+            switch self {
+            case let .affine(transform):
+                return transform
+            case let .rotation(data):
+                return data.transform
+            case .projection, .rotation3D:
+                return nil
+            }
+        }
+
+        @inline(__always)
+        package var projectionTransform: ProjectionTransform? {
+            switch self {
+            case let .projection(transform):
+                return transform
+            case let .rotation3D(data):
+                return data.transform
+            case .affine, .rotation:
+                return nil
+            }
+        }
     }
     
     package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
@@ -260,6 +328,9 @@ extension DisplayList {
         package static func < (lhs: Version, rhs: Version) -> Bool {
             lhs.value < rhs.value
         }
+        
+        @inline(__always)
+        var seed: Seed { .init(self) }
     }
 
     package struct Seed: Hashable {
@@ -299,9 +370,11 @@ extension DisplayList {
     
     package struct Properties: OptionSet {
         package let rawValue: UInt8
+
         package init(rawValue: UInt8) {
             self.rawValue = rawValue
         }
+
         package static let foregroundLayer = Properties(rawValue: 1 << 0)
         package static let ignoresEvents = Properties(rawValue: 1 << 1)
         package static let privacySensitive = Properties(rawValue: 1 << 2)
@@ -310,6 +383,11 @@ extension DisplayList {
         package static let tertiaryForegroundLayer = Properties(rawValue: 1 << 5)
         package static let quaternaryForegroundLayer = Properties(rawValue: 1 << 6)
         package static let screencaptureProhibited = Properties(rawValue: 1 << 7)
+        
+        @inline(__always)
+        var features: DisplayList.Features {
+            contains(.privacySensitive) ? .required : []
+        }
     }
     
     package struct Key: PreferenceKey {
@@ -399,16 +477,37 @@ extension DisplayList {
         }
         
         package mutating func skip(list: DisplayList) {
-            _openSwiftUIUnimplementedFailure()
+            for item in list.items {
+                skip(item: item)
+            }
         }
         
         package mutating func skip(item: Item) {
-            _openSwiftUIUnimplementedFailure()
+            guard item.identity == .none else { return }
+            let saved = enter(identity: item.identity)
+            defer { leave(index: saved) }
+            switch item.value {
+            case let .content(content):
+                if case let .flattened(list, _, _) = content.value {
+                    skip(list: list)
+                }
+            case let .effect(effect, list):
+                skip(list: list)
+                skip(effect: effect)
+            default:
+                break
+            }
         }
         
         package mutating func skip(effect: Effect) {
-            
-            _openSwiftUIUnimplementedFailure()
+            switch effect {
+            case let .archive(archiveIDs):
+                updateArchive(entering: archiveIDs != nil)
+            case let .mask(list, _):
+                skip(list: list)
+            default:
+                break
+            }
         }
         
         package func assertItem(_ item: Item) {}
@@ -482,26 +581,35 @@ extension DisplayList.Item {
         // TODO eg. .opacity(1.0) -> .identity
     }
 
-    // TBA
     package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool {
-        guard identity == other.identity else { return false }
         switch (value, other.value) {
         case (.empty, .empty):
             return true
-        case (.content, .content):
-            return true
-        case (.effect, .effect):
-            return true
-        case (.states, .states):
-            return true
+        case let (.content(lhs), .content(rhs)):
+            return compareEnumTags(lhs.value, rhs.value)
+        case let (.effect(lhs, _), .effect(rhs, _)):
+            return compareEnumTags(lhs, rhs)
+        case let (.states(lhs), .states(rhs)):
+            guard lhs.count == rhs.count else { return false }
+            return zip(lhs, rhs).allSatisfy { $0.0 == $1.0 }
         default:
             return false
         }
     }
-
+    
     package var features: DisplayList.Features {
-        // TODO
-        []
+        switch value {
+        case .empty:
+            return []
+        case let .content(content):
+            return content.features
+        case let .effect(effect, list):
+            return effect.features.union(list.features)
+        case let .states(states):
+            return states.reduce(into: [.states]) { features, state in
+                features.formUnion(state.1.features)
+            }
+        }
     }
 }
 
@@ -550,6 +658,10 @@ extension DisplayList {
 
         func reset() {
             _openSwiftUIEmptyStub()
+        }
+
+        var features: Features {
+            []
         }
 
         func rewriteDisplayList(

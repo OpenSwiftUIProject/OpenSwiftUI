@@ -484,7 +484,10 @@ package class ResolvedStyledText: CustomStringConvertible {
     final private var _computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics?
 
     final package var isDynamic: Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return false
+        }
+        return storage.isDynamic
     }
 
     final package var isEmpty: Bool {
@@ -506,8 +509,10 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final var schedule: (any TimelineSchedule)? {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        guard let storage, storage.isDynamic else {
+            return nil
+        }
+        return storage.updateSchedule
     }
 
     package init(
@@ -530,7 +535,7 @@ package class ResolvedStyledText: CustomStringConvertible {
         self.layoutProperties = layoutProperties
         self.layoutMargins = layoutMargins ?? .zero
         self.stylePadding = stylePadding
-        self.archiveOptions = .isArchived
+        self.archiveOptions = archiveOptions
         self.isCollapsible = isCollapsible
         self.features = features
         self.styles = styles

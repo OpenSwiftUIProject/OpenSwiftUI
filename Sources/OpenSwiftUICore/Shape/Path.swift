@@ -161,6 +161,26 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
                 return ORBPath(storage: storage, callbacks: Self.bufferCallbacks)
             }
         }
+        
+        @inline(__always)
+        fileprivate var boundingRect: CGRect {
+            switch kind {
+            case .cgPath:
+                #if canImport(CoreGraphics)
+                return data.cgPath.takeUnretainedValue().boundingBoxOfPath
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                return .zero
+                #endif
+            case .rbPath:
+                _openSwiftUIUnimplementedWarning()
+                // return data.rbPath.boundingBox // FIXME: RB API
+                return .zero
+            case .buffer:
+                let storage = unsafeBitCast(self, to: ORBPath.Storage.self)
+                return storage.boundingRect
+            }
+        }
 
         @inline(__always)
         fileprivate func retainRBPath() -> ORBPath {
@@ -451,7 +471,20 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
     /// A Boolean value indicating whether the path contains zero elements.
     public var isEmpty: Bool {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            true
+        case let .rect(rect):
+            rect.isNull
+        case let .ellipse(rect):
+            rect.isNull
+        case let .roundedRect(fixedRoundedRect):
+            fixedRoundedRect.rect.isNull
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(pathBox):
+            pathBox.rbPath.isEmpty
+        }
     }
 
     /// A rectangle containing all path segments.
@@ -460,7 +493,20 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// in the path but not including control points for Bézier
     /// curves.
     public var boundingRect: CGRect {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            .null
+        case let .rect(rect):
+            rect
+        case let .ellipse(rect):
+            rect
+        case let .roundedRect(fixedRoundedRect):
+            fixedRoundedRect.rect
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(pathBox):
+            pathBox.boundingRect
+        }
     }
 
     /// Returns true if the path contains a specified point.

@@ -12,7 +12,9 @@ import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
+#if _OPENSWIFTUI_SWIFTUI_RENDER
 import OpenSwiftUISymbolDualTestsSupport
+#endif
 import COpenSwiftUI
 
 /// A UIView which hosts an OpenSwiftUI View hierarchy.

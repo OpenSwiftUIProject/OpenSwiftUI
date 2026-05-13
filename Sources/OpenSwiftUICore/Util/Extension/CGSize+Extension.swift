@@ -113,6 +113,11 @@ extension CGSize {
 }
 
 extension CGSize {
+    @inlinable
+    package static var infinity: CGSize {
+        CGSize(width: CGFloat.infinity, height: CGFloat.infinity)
+    }
+    
     package static let invalidValue: CGSize = CGSize(width: Double.nan, height: Double.nan)
 }
 
