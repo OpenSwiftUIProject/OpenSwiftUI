@@ -3,7 +3,8 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.0.87
-//  WIP
+//  Status: WIP
+//  ID: 07401C2C9845FAA2984B0D65D34F2B64 (SwiftUICore)
 
 package enum GraphicsFilter {
     case blur(BlurStyle)
@@ -123,6 +124,18 @@ package enum GraphicsBlendMode: Equatable {
             case (.blendMode(let lhs), .blendMode(let rhs)): lhs == rhs
             case (.caFilter(let lhs), .caFilter(let rhs)): lhs === rhs
             default: false
+        }
+    }
+    
+    @inline(__always)
+    var filter: Any? {
+        switch self {
+        case let .caFilter(filter):
+            return filter
+        case let .blendMode(mode):
+            // TODO: _ORBBlendModeGetCompositingFilter & ORBBlendMode
+            _openSwiftUIUnimplementedWarning()
+            return nil
         }
     }
 }

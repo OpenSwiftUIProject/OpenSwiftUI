@@ -328,6 +328,9 @@ extension DisplayList {
         package static func < (lhs: Version, rhs: Version) -> Bool {
             lhs.value < rhs.value
         }
+        
+        @inline(__always)
+        var seed: Seed { .init(self) }
     }
 
     package struct Seed: Hashable {

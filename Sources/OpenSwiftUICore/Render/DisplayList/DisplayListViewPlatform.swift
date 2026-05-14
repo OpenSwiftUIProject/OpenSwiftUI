@@ -401,9 +401,73 @@ extension DisplayList.ViewUpdater.Platform {
         size: CGSize,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        if viewInfo.seeds.opacity != state.pointee.versions.opacity.seed {
+            CoreViewSetOpacity(
+                system: viewSystem,
+                view: viewInfo.view,
+                opacity: CGFloat(state.pointee.opacity)
+            )
+            viewInfo.seeds.opacity = state.pointee.versions.opacity.seed
+        }
+        if viewInfo.seeds.blend != state.pointee.versions.blend.seed {
+            CoreViewSetCompositingFilter(
+                system: viewSystem,
+                view: viewInfo.view,
+                filter: state.pointee.blend.filter
+            )
+            viewInfo.seeds.blend = state.pointee.versions.blend.seed
+        }
+        if viewInfo.seeds.filters != state.pointee.versions.filters.seed {
+            var filters = state.pointee.filters
+            if viewInfo.state.kind == .drawing {
+                let color = filters.popColorMultiply(drawable: viewInfo.view as? PlatformDrawable)
+                viewInfo.layer.contentsMultiplyColor = color?.cgColor
+            }
+            CoreViewSetFilters(
+                system: viewSystem,
+                view: viewInfo.view,
+                filters: filters.caFilters()
+            )
+            viewInfo.seeds.filters = state.pointee.versions.filters.seed
+        }
+
+        let clipRectChanged: Bool
+        if viewInfo.seeds.clips != state.pointee.versions.clips.seed ||
+            viewInfo.seeds.transform != state.pointee.versions.transform.seed {
+            let oldFlags = viewInfo.state.flags
+            updateClipShapes(&viewInfo, state: state)
+            viewInfo.seeds.clips = state.pointee.versions.clips.seed
+            clipRectChanged = oldFlags.union(viewInfo.state.flags).contains(.clipRect)
+        } else {
+            clipRectChanged = false
+        }
+        let boundsChanged = updateGeometry(
+            &viewInfo,
+            item: item,
+            size: size,
+            state: state,
+            clipRectChanged: clipRectChanged
+        )
+        if boundsChanged || viewInfo.seeds.shadow != state.pointee.versions.shadow.seed || viewInfo.seeds.item != item.version.seed {
+            updateShadow(&viewInfo, state: state, item: item)
+            viewInfo.seeds.shadow = state.pointee.versions.shadow.seed
+        }
+        if viewInfo.seeds.properties != state.pointee.versions.properties.seed {
+            updateProperties(&viewInfo, state: state)
+            viewInfo.seeds.properties = state.pointee.versions.properties.seed
+        }
+        switch viewInfo.state.kind {
+        case .image, .drawing, .platformView, .platformGroup, .platformLayer:
+            break
+        default:
+            viewInfo.layer.contentsScale = state.pointee.globals.pointee.environment.contentsScale
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
-    
+
     func updateStateAsync(
         layer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldItem: DisplayList.Item,
@@ -1119,34 +1183,35 @@ extension DisplayList.ViewUpdater.Platform {
         item: DisplayList.Item,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        let contentsScale = state.pointee.globals.pointee.environment.contentsScale
-        let options = drawingOptions(for: content, state: state)
-        var view = viewInfo.view
-        let drawable = updateDrawingView(
-            &view,
-            options: options,
-            contentsScale: contentsScale
-        )
-        updateViewReference(&viewInfo, view: view, kind: .drawing)
-        var drawableContent = PlatformDrawableContent()
-        switch content.value {
-        case let .flattened(list, offset, _):
-            drawableContent.storage = .displayList(
-                list,
-                offset,
-                state.pointee.globals.pointee.time
-            )
-        case let .drawing(contents, offset, _):
-            drawableContent.storage = .rbDisplayList(contents, offset)
-        case .text:
-            drawableContent.storage = .empty
-        default:
-            return
-        }
-        _ = drawable.update(
-            content: drawableContent,
-            required: item.features.contains(.required)
-        )
+        _openSwiftUIUnimplementedFailure()
+//        let contentsScale = state.pointee.globals.pointee.environment.contentsScale
+//        let options = drawingOptions(for: content, state: state)
+//        var view = viewInfo.view
+//        let drawable = updateDrawingView(
+//            &view,
+//            options: options,
+//            contentsScale: contentsScale
+//        )
+//        updateViewReference(&viewInfo, view: view, kind: .drawing)
+//        var drawableContent = PlatformDrawableContent()
+//        switch content.value {
+//        case let .flattened(list, offset, _):
+//            drawableContent.storage = .displayList(
+//                list,
+//                offset,
+//                state.pointee.globals.pointee.time
+//            )
+//        case let .drawing(contents, offset, _):
+//            drawableContent.storage = .rbDisplayList(contents, offset)
+//        case .text:
+//            drawableContent.storage = .empty
+//        default:
+//            return
+//        }
+//        _ = drawable.update(
+//            content: drawableContent,
+//            required: item.features.contains(.required)
+//        )
     }
 
     // TBA
@@ -1208,3 +1273,34 @@ extension DisplayList.GraphicsRenderer {
         #endif
     }
 }
+
+// MARK: - GraphicsFilter + Platform Filters
+
+extension [GraphicsFilter] {
+    fileprivate mutating func popColorMultiply(
+        drawable: @autoclosure () -> PlatformDrawable?
+    ) -> Color.Resolved? {
+        guard case let .colorMultiply(color) = last,
+              let drawable = drawable(),
+              type(of: drawable).allowsContentsMultiplyColor
+        else {
+            return nil
+        }
+        removeLast()
+        return color
+    }
+
+    @inline(__always)
+    func caFilters() -> [Any]? {
+        // _CAFilterArrayAppend + makeCAFilter
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
+
+//extension GraphicsFilter {
+//    // 07401C2C9845FAA2984B0D65D34F2B64
+//    fileprivate func makeCAFilter() -> CAFilter? {
+//        _openSwiftUIUnimplementedFailure()
+//    }
+//}
