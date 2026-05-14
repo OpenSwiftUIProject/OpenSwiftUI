@@ -2,6 +2,12 @@
 //  GeometryEffectExample.swift
 //  Shared
 
+#if OPENSWIFTUI
+import OpenSwiftUI
+#else
+import SwiftUI
+#endif
+
 struct AsyncRenderExample: View {
     @State private var items = [6]
 

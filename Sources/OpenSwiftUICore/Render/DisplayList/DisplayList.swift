@@ -107,6 +107,24 @@ package struct DisplayList: Equatable {
     package var isEmpty: Bool {
         items.isEmpty
     }
+    
+    // TODO
+    
+    package func nextUpdate(after time: Time) -> Time {
+        guard !features.contains(.animations) else {
+            return time
+        }
+        var nextUpdate = Time.infinity
+        if features.contains(.dynamicContent) {
+            for item in items {
+                nextUpdate = min(nextUpdate, item.nextUpdate(after: time))
+                if nextUpdate == time {
+                    break
+                }
+            }
+        }
+        return nextUpdate
+    }
 }
 
 @available(*, unavailable)
@@ -177,6 +195,38 @@ extension DisplayList {
             indirect case drawing(any ORBDisplayListContents, CGPoint, RasterizationOptions)
             indirect case view(any _DisplayList_ViewFactory)
             case placeholder(id: Identity)
+            
+            @inline(__always)
+            var caseName: String {
+                switch self {
+                case .backdrop:
+                    return "backdrop"
+                case .color:
+                    return "color"
+                case .chameleonColor:
+                    return "chameleonColor"
+                case .image:
+                    return "image"
+                case .shape:
+                    return "shape"
+                case .shadow:
+                    return "shadow"
+                case .platformView:
+                    return "platformView"
+                case .platformLayer:
+                    return "platformLayer"
+                case .text:
+                    return "text"
+                case .flattened:
+                    return "flattened"
+                case .drawing:
+                    return "drawing"
+                case .view:
+                    return "view"
+                case .placeholder:
+                    return "placeholder"
+                }
+            }
         }
         
         package init(_ value: Content.Value, seed: Seed) {
@@ -618,6 +668,8 @@ extension DisplayList.Item {
 extension DisplayList {
     // FIXME
     package class InterpolatorGroup {
+        var maxDuration: Double = .zero
+
         private struct Contents {
             var list: DisplayList
             var origin: CGPoint
@@ -664,6 +716,10 @@ extension DisplayList {
             []
         }
 
+        func nextUpdate(after _: Time) -> Time {
+            .infinity
+        }
+
         func rewriteDisplayList(
             _ list: inout DisplayList,
             time: Attribute<Time>,
@@ -674,6 +730,104 @@ extension DisplayList {
             _openSwiftUIEmptyStub()
             return false
         }
+    }
+
+    package class UnaryInterpolatorGroup: InterpolatorGroup {
+        var layer: InterpolatorLayer = .init()
+
+        var contentsScale: Float = .zero
+
+        var rasterizationOptions: RasterizationOptions = .init()
+
+        override func nextUpdate(after time: Time) -> Time {
+            layer.nextUpdate(after: time)
+        }
+    }
+
+    struct InterpolatorLayer {
+        struct Contents {
+            var list: DisplayList = .init()
+            var origin: CGPoint = .zero
+            var rbList: (any ORBDisplayListContents)?
+            var nextTime: Time = .infinity
+            var numericValue: Float?
+        }
+
+        struct Removed {
+            var contents: Contents = .init()
+            var interpolator: ORBDisplayListInterpolator?
+            var transition: ORBTransition?
+            var animation: ORBAnimation = .init()
+            var listener: AnimationListener?
+            var begin: Time = .zero
+            var duration: Double = .zero
+            var phase: Phase = .pending
+        }
+
+        enum Phase {
+            case pending
+            case first
+            case second
+            case running
+        }
+
+        var contents: Contents = .init()
+        var removed: [Removed] = []
+        var time: Time = .zero
+        var renderer: DisplayList.GraphicsRenderer?
+        var contentSeed: DisplayList.Seed = .init()
+        var supportsVFD: Bool = false
+        var needsUpdate: Bool = false
+
+        @inline(__always)
+        func nextUpdate(after _: Time) -> Time {
+            removed.isEmpty ? contents.nextTime : time
+        }
+    }
+}
+
+extension DisplayList.Item {
+    package func nextUpdate(after time: Time) -> Time {
+        var nextUpdate = Time.infinity
+        switch value {
+        case let .content(content):
+            switch content.value {
+            case let .text(text, _):
+                nextUpdate = min(nextUpdate, text.text.nextUpdate(after: time, equivalentDate: .now, reduceFrequency: false)
+                )
+            case let .flattened(list, _, _):
+                nextUpdate = min(nextUpdate, list.nextUpdate(after: time))
+            default:
+                break
+            }
+        case let .effect(effect, list):
+            nextUpdate = min(nextUpdate, list.nextUpdate(after: time))
+            switch effect {
+            case let .mask(mask, _):
+                nextUpdate = min(nextUpdate, mask.nextUpdate(after: time))
+            case .animation:
+                nextUpdate = time
+            case let .interpolatorLayer(group, _):
+                nextUpdate = min(nextUpdate, group.nextUpdate(after: time))
+            default:
+                break
+            }
+        case let .states(states):
+            for (_, list) in states {
+                let nestedUpdate: Time
+                if list.features.contains(.animations) {
+                    nestedUpdate = time
+                } else if list.features.contains(.dynamicContent) {
+                    nestedUpdate = list.nextUpdate(after: time)
+                } else {
+                    nestedUpdate = .infinity
+                }
+                nextUpdate = min(nextUpdate, nestedUpdate)
+            }
+        case .empty:
+            break
+        }
+        return nextUpdate
     }
 }
 

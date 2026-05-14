@@ -657,7 +657,15 @@ package class ResolvedStyledText: CustomStringConvertible {
         equivalentDate date: Date,
         reduceFrequency: Bool = false
     ) -> Time {
-        _openSwiftUIUnimplementedFailure()
+        let nextDate = schedule?.nextEntry(
+            after: date,
+            mode: reduceFrequency ? .lowFrequency : .normal,
+            limit: .minimumTimelineScheduleLimit
+        )
+        guard let nextDate else {
+            return .infinity
+        }
+        return time + nextDate.timeIntervalSince(date)
     }
 
     final package var updatesAsynchronously: Bool {

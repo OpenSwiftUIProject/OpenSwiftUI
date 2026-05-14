@@ -132,6 +132,19 @@ extension TimelineSchedule {
     ) -> AnySequence<Date> {
         AnySequence(entries(within: range, mode: mode, limit: limit))
     }
+}
+
+extension TimelineSchedule {
+    package func nextEntry(
+        after date: Date,
+        mode: TimelineScheduleMode,
+        limit: UInt?
+    ) -> Date {
+        entries(from: date, mode: mode)
+            .lazy
+            .abort(after: limit)
+            .first { $0 > date } ?? .distantFuture
+    }
 
     private func entries(
         within range: Range<Date>,

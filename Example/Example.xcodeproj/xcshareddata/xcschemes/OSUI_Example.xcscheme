@@ -70,6 +70,11 @@
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
+            key = "OPENSWIFTUI_PRINT_TREE"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
             key = "SWIFTUI_PRINT_TREE"
             value = "1"
             isEnabled = "NO">

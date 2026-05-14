@@ -1,5 +1,5 @@
 {
-  "originHash" : "047e75478b6b29a30bd35ca5b73629b56f798201d50a499829a56db6950a58e1",
+  "originHash" : "1221d0c3e48bda30a29eacd81da55d5c773886403122d803c0ecb46307918ec1",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "abfeee71f12fdd8237726feb93655dcad26cfd8c"
+        "revision" : "b8617716aa0e9074ead8a71a8d843c4f4febdee4"
       }
     },
     {

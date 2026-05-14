@@ -60,5 +60,124 @@ extension DisplayList.ViewUpdater {
         var isContentGeometryEnabled: Bool {
             flags.contains(.contentGeometry)
         }
+        
+        @inline(__always)
+        mutating func update<P>(
+            _ property: P.Type,
+            from oldValue: P.Value,
+            to newValue: P.Value
+        ) where P: Property, P.Value: Equatable {
+            guard oldValue != newValue else {
+                return
+            }
+            setValue(P.self, to: newValue)
+        }
+
+        @inline(__always)
+        mutating func setValue<P>(
+            _ property: P.Type,
+            to value: P.Value
+        ) where P: Property {
+            cache.pointee.setAsyncValue(
+                P.boxValue(value),
+                for: P.keyPath,
+                in: layer,
+                usingPresentationModifier: P.supportsPresentationModifier
+            )
+        }
     }
+    
+    // MARK: - AsyncLayer.Property
+    
+    struct BackgroundColor: AsyncLayer.Property {
+        static let keyPath = "backgroundColor"
+
+        static func boxValue(_ value: Color.Resolved) -> NSObject {
+            #if canImport(Darwin)
+            unsafeDowncast(value.cgColor, to: NSObject.self)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct PositionLayer: AsyncLayer.Property {
+        static let keyPath = "position"
+
+        static func boxValue(_ value: CGPoint) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(point: value)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct BoundsLayer: AsyncLayer.Property {
+        static let keyPath = "bounds"
+
+        static func boxValue(_ value: CGRect) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(rect: value)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct AffineTransformLayer: AsyncLayer.Property {
+        static let keyPath = "transform"
+
+        static func boxValue(_ value: CGAffineTransform) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(caTransform3D: CATransform3DMakeAffineTransform(value))
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct LayerProjectionTransform: AsyncLayer.Property {
+        static let keyPath = "transform"
+
+        static func boxValue(_ value: ProjectionTransform) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(caTransform3D: CATransform3D(value))
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct OpacityLayer: AsyncLayer.Property {
+        static let keyPath = "opacity"
+
+        static func boxValue(_ value: Float) -> NSObject {
+            NSNumber(value: value)
+        }
+    }
+
+    struct CornerRadiusLayer: AsyncLayer.Property {
+        static let keyPath = "cornerRadius"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
+    struct ContentsMultiplyColor: AsyncLayer.Property {
+        static let keyPath = "contentsMultiplyColor"
+
+        static func boxValue(_ value: Color.Resolved?) -> NSObject {
+            #if canImport(Darwin)
+            guard let value else {
+                return NSNull()
+            }
+            return unsafeDowncast(value.cgColor, to: NSObject.self)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
 }

@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by GraphicsContext and Platform
+//  Status: Blocked by GraphicsContext
 //  ID: 8BBC66CBE42B8A65F8A2F3799C81A349 (SwiftUICore)
 
 public import OpenQuartzCoreShims
@@ -187,7 +187,7 @@ extension DisplayList.ViewUpdater {
     }
 }
 
-// MARK: - DisplayList.ViewUpdater.Platform API [WIP]
+// MARK: - DisplayList.ViewUpdater.Platform API
 
 extension DisplayList.ViewUpdater.Platform {
     package init(definition: PlatformViewDefinition.Type) {
@@ -381,9 +381,312 @@ extension DisplayList.ViewUpdater.Platform {
         item: DisplayList.Item,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        _openSwiftUIUnimplementedFailure()
+        var item = item
+        switch item.value {
+        case let .content(content):
+            guard viewInfo.seeds.content != content.seed else {
+                updateSizeDependentContent(&viewInfo, item: item, state: state)
+                return
+            }
+            var localState = state.pointee
+            var size = item.size
+            viewInfo.isInvalid = false
+            viewInfo.state.isContentGeometryEnabled = false
+            switch content.value {
+            case let .backdrop(effect):
+                if viewInfo.state.kind != .backdrop {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                #if canImport(QuartzCore)
+                let layer = viewInfo.layer as! CABackdropLayer
+                let hasZeroScale = effect.scale == 0
+                layer.scale = hasZeroScale ? 1.0 : CGFloat(effect.scale)
+                layer.allowsInPlaceFiltering = hasZeroScale
+                layer.backgroundColor = effect.color.cgColor
+                let groupID = state.pointee.backdropGroupID
+                layer.groupName = groupID == 0 ? nil : "OpenSwiftUI-\(groupID)"
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
+            case let .color(color):
+                if viewInfo.state.kind != .color {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                #if canImport(QuartzCore)
+                viewInfo.layer.backgroundColor = color.cgColor
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
+            case .chameleonColor:
+                if viewInfo.state.kind != .chameleonColor {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case let .image(image):
+                if viewInfo.state.kind != .image {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                #if canImport(QuartzCore)
+                let layer = viewInfo.layer as! ImageLayer
+                layer.update(image: image, size: size)
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
+                adjustImageContentGeometry(
+                    image: image,
+                    state: &localState,
+                    size: &size
+                )
+                viewInfo.state.isContentGeometryEnabled = true
+            case let .shape(path, paint, style):
+                if viewInfo.state.kind != .shape {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                updateShapeView(
+                    &viewInfo,
+                    state: &localState,
+                    size: &size,
+                    path: path,
+                    paint: paint,
+                    style: style,
+                    contentsChanged: true
+                )
+            case let .shadow(path, shadow):
+                if viewInfo.state.kind != .shadow {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                updateShadowView(
+                    &viewInfo,
+                    path: path,
+                    shadow: shadow,
+                    size: size
+                )
+            case let .platformView(factory):
+                if viewInfo.state.kind != .platformView {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let oldView = viewInfo.view
+                factory.updatePlatformView(&viewInfo.view)
+                let newView = viewInfo.view
+                if oldView !== newView {
+                    definition.makePlatformView(view: newView, kind: .platformView)
+                    viewInfo.reset(platform: self)
+                }
+            case let .platformLayer(factory):
+                if viewInfo.state.kind != .platformLayer {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let layer = viewInfo.layer
+                #if canImport(QuartzCore)
+                layer.contentsScale = state.pointee.globals.pointee.environment.contentsScale
+                #endif
+                factory.updatePlatformLayer(layer)
+            case let .text(text, textSize):
+                if viewInfo.state.kind != .drawing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                var options = RasterizationOptions()
+                options.isAccelerated = text.needsDrawingGroup
+                updateDrawingView(
+                    &viewInfo,
+                    options: options,
+                    contentsScale: state.pointee.globals.pointee.environment.contentsScale,
+                    content: .platformCallback { size in
+                        text.text.draw(
+                            in: CGRect(origin: .zero, size: size),
+                            with: textSize,
+                            applyingMarginOffsets: true,
+                            containsResolvable: text.text.isDynamic,
+                            context: .shared,
+                            renderer: text.renderer
+                        )
+                    },
+                    sizeChanged: viewInfo.state.size != item.size
+                )
+                viewInfo.nextUpdate = min(
+                    viewInfo.nextUpdate,
+                    text.text.nextUpdate(
+                        after: state.pointee.globals.pointee.time,
+                        equivalentDate: .now,
+                        reduceFrequency: false
+                    )
+                )
+            case let .flattened(list, offset, options):
+                if viewInfo.state.kind != .drawing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let time = state.pointee.globals.pointee.time
+                updateDrawingView(
+                    &viewInfo,
+                    options: options,
+                    contentsScale: state.pointee.globals.pointee.environment.contentsScale,
+                    content: .displayList(
+                        list,
+                        offset,
+                        time
+                    ),
+                    sizeChanged: viewInfo.state.size != item.size
+                )
+                viewInfo.nextUpdate = min(viewInfo.nextUpdate, list.nextUpdate(after: time))
+            case let .drawing(contents, offset, options):
+                if viewInfo.state.kind != .drawing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                updateDrawingView(
+                    &viewInfo,
+                    options: options,
+                    contentsScale: state.pointee.globals.pointee.environment.contentsScale,
+                    content: .rbDisplayList(contents, offset),
+                    sizeChanged: viewInfo.state.size != item.size
+                )
+            case .view, .placeholder:
+                _openSwiftUIUnreachableCode()
+            }
+            if viewInfo.state.isContentGeometryEnabled {
+                localState.versions.transform.combine(with: item.version)
+            }
+            if !viewInfo.isInvalid, viewInfo.nextUpdate == .infinity {
+                viewInfo.seeds.content = content.seed
+            }
+            withUnsafePointer(to: localState) { statePtr in
+                updateState(
+                    &viewInfo,
+                    item: item,
+                    size: size,
+                    state: statePtr
+                )
+            }
+        case let .effect(effect, _):
+            let contentChanged = viewInfo.seeds.content != item.version.seed
+            var changed = contentChanged
+            if !changed {
+                let transformChanged: Bool
+                if case let .transform(transform) = effect,
+                   transform.projectionTransform != nil,
+                   viewInfo.seeds.transform != state.pointee.versions.transform.seed {
+                    transformChanged = true
+                } else {
+                    transformChanged = false
+                }
+                changed = changed || transformChanged
+            }
+            guard changed else {
+                updateSizeDependentContent(&viewInfo, item: item, state: state)
+                return
+            }
+            viewInfo.seeds.content = item.version.seed
+            switch effect {
+            case .geometryGroup:
+                if viewInfo.state.kind != .geometry {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case .compositingGroup:
+                if viewInfo.state.kind != .compositing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case let .platformGroup(factory):
+                if viewInfo.state.kind != .platformGroup {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let oldView = viewInfo.view
+                factory.updatePlatformGroup(&viewInfo.view)
+                let newView = viewInfo.view
+                if oldView !== newView {
+                    definition.makePlatformView(view: newView, kind: .platformGroup)
+                    viewInfo.reset(platform: self)
+                }
+                viewInfo.container = factory.platformGroupContainer(newView)
+            case .mask:
+                if viewInfo.state.kind != .mask {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case let .transform(transform):
+                if let projectionTransform = transform.projectionTransform {
+                    if viewInfo.state.kind != .projection {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                    definition.setProjectionTransform(
+                        projectionTransform.concatenating(ProjectionTransform(state.pointee.transform)),
+                        projectionView: viewInfo.view
+                    )
+                }
+            case .platform:
+                if viewInfo.state.kind != .platformEffect {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            default:
+                _openSwiftUIUnreachableCode()
+            }
+            updateState(
+                &viewInfo,
+                item: item,
+                size: item.size,
+                state: state
+            )
+        case .empty, .states:
+            _openSwiftUIUnreachableCode()
+        }
     }
-    
+
+    @inline(__always)
+    private func updateSizeDependentContent(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        guard viewInfo.state.isContentGeometryEnabled else {
+            if viewInfo.state.kind == .drawing && viewInfo.state.size != item.size {
+                let drawable = viewInfo.view as! PlatformDrawable
+                viewInfo.isInvalid = !drawable.update(content: nil, required: true)
+            }
+            updateState(
+                &viewInfo,
+                item: item,
+                size: item.size,
+                state: state
+            )
+            return
+        }
+        guard case let .content(content) = item.value else {
+            _openSwiftUIUnreachableCode()
+        }
+        var size = item.size
+        var localState = state.pointee
+        switch content.value {
+        case let .image(image):
+            adjustImageContentGeometry(
+                image: image,
+                state: &localState,
+                size: &size
+            )
+        case let .shape(path, paint, style):
+            updateShapeView(
+                &viewInfo,
+                state: &localState,
+                size: &size,
+                path: path,
+                paint: paint,
+                style: style,
+                contentsChanged: false
+            )
+        default:
+            viewInfo.seeds.content = .init()
+            Log.internalError(
+                "Invalid size-dependent display list content: %s, %s",
+                content.value.caseName,
+                "\(viewInfo.state.kind)"
+            )
+        }
+        localState.versions.transform.combine(with: item.version)
+        withUnsafePointer(to: localState) { statePtr in
+            updateState(
+                &viewInfo,
+                item: item,
+                size: size,
+                state: statePtr
+            )
+        }
+    }
+
     func updateItemViewAsync(
         layer: inout DisplayList.ViewUpdater.AsyncLayer,
         index: DisplayList.Index,
@@ -392,7 +695,272 @@ extension DisplayList.ViewUpdater.Platform {
         newItem: DisplayList.Item,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        switch (oldItem.value, newItem.value) {
+        case let (.content(oldContent), .content(newContent)):
+            guard oldContent.seed != newContent.seed else {
+                return updateSizeDependentContentAsync(
+                    layer: &layer,
+                    oldItem: oldItem,
+                    oldState: oldState,
+                    newItem: newItem,
+                    newState: newState
+                )
+            }
+            var oldLocalState = oldState.pointee
+            var newLocalState = newState.pointee
+            var oldSize = oldItem.size
+            var newSize = newItem.size
+            layer.isInvalid = false
+            switch (oldContent.value, newContent.value) {
+            case let (.color(oldColor), .color(newColor)):
+                layer.update(
+                    DisplayList.ViewUpdater.BackgroundColor.self,
+                    from: oldColor,
+                    to: newColor
+                )
+            case let (.image(oldImage), .image(newImage)):
+                #if canImport(QuartzCore)
+                guard ImageLayer.updateAsync(
+                    layer: &layer,
+                    oldImage: oldImage,
+                    oldSize: oldSize,
+                    newImage: newImage,
+                    newSize: newSize
+                ) else {
+                    return false
+                }
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                return false
+                #endif
+                adjustImageContentGeometry(
+                    image: oldImage,
+                    state: &oldLocalState,
+                    size: &oldSize
+                )
+                adjustImageContentGeometry(
+                    image: newImage,
+                    state: &newLocalState,
+                    size: &newSize
+                )
+            case let (.shape(oldPath, oldPaint, oldStyle), .shape(newPath, newPaint, newStyle)):
+                guard updateShapeViewAsync(
+                    layer: &layer,
+                    oldState: &oldLocalState,
+                    oldSize: &oldSize,
+                    oldPath: oldPath,
+                    oldPaint: oldPaint,
+                    oldStyle: oldStyle,
+                    newState: &newLocalState,
+                    newSize: &newSize,
+                    newPath: newPath,
+                    newPaint: newPaint,
+                    newStyle: newStyle,
+                    contentsChanged: true
+                ) else {
+                    return false
+                }
+            case let (.flattened(_, _, oldOptions), .flattened(newList, newOffset, newOptions)):
+                let time = newState.pointee.globals.pointee.time
+                guard updateDrawingViewAsync(
+                    &layer,
+                    oldOptions: oldOptions,
+                    newOptions: newOptions,
+                    content: .displayList(newList, newOffset, time),
+                    sizeChanged: oldItem.size != newItem.size,
+                    newSize: newItem.size,
+                    newState: newState
+                ) else {
+                    return false
+                }
+                layer.nextUpdate = min(layer.nextUpdate, newList.nextUpdate(after: time))
+            case let (.drawing(_, _, oldOptions), .drawing(newContents, newOffset, newOptions)):
+                guard updateDrawingViewAsync(
+                    &layer,
+                    oldOptions: oldOptions,
+                    newOptions: newOptions,
+                    content: .rbDisplayList(newContents, newOffset),
+                    sizeChanged: oldItem.size != newItem.size,
+                    newSize: newItem.size,
+                    newState: newState
+                ) else {
+                    return false
+                }
+            default:
+                return false
+            }
+            return withUnsafePointer(to: oldLocalState) { oldStatePtr in
+                withUnsafePointer(to: newLocalState) { newStatePtr in
+                    updateStateAsync(
+                        layer: &layer,
+                        oldItem: oldItem,
+                        oldSize: oldSize,
+                        oldState: oldStatePtr,
+                        newItem: newItem,
+                        newSize: newSize,
+                        newState: newStatePtr
+                    )
+                }
+            }
+        case let (.effect(oldEffect, _), .effect(newEffect, _)):
+            let contentChanged = oldItem.version != newItem.version
+            var changed = contentChanged
+            if !changed {
+                let transformChanged: Bool
+                if case let .transform(oldTransform) = oldEffect,
+                   oldTransform.projectionTransform != nil,
+                   oldState.pointee.versions.transform != newState.pointee.versions.transform {
+                    transformChanged = true
+                } else {
+                    transformChanged = false
+                }
+                changed = changed || transformChanged
+            }
+            guard changed else {
+                return updateSizeDependentContentAsync(
+                    layer: &layer,
+                    oldItem: oldItem,
+                    oldState: oldState,
+                    newItem: newItem,
+                    newState: newState
+                )
+            }
+            switch (oldEffect, newEffect) {
+            case let (.platformGroup(oldFactory), .platformGroup(newFactory)):
+                guard !oldFactory.needsUpdateFor(newValue: newFactory) else {
+                    return false
+                }
+            case let (.transform(oldTransform), .transform(newTransform)):
+                if let oldProjectionTransform = oldTransform.projectionTransform,
+                   let newProjectionTransform = newTransform.projectionTransform {
+                    layer.update(
+                        DisplayList.ViewUpdater.LayerProjectionTransform.self,
+                        from: oldProjectionTransform.concatenating(ProjectionTransform(oldState.pointee.transform)),
+                        to: newProjectionTransform.concatenating(ProjectionTransform(newState.pointee.transform))
+                    )
+                }
+            default:
+                break
+            }
+            return updateStateAsync(
+                layer: &layer,
+                oldItem: oldItem,
+                oldSize: oldItem.size,
+                oldState: oldState,
+                newItem: newItem,
+                newSize: newItem.size,
+                newState: newState
+            )
+        default:
+            return false
+        }
+    }
+
+    @inline(__always)
+    private func updateSizeDependentContentAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldItem: DisplayList.Item,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        guard layer.isContentGeometryEnabled else {
+            return updateStateAsync(
+                layer: &layer,
+                oldItem: oldItem,
+                oldSize: oldItem.size,
+                oldState: oldState,
+                newItem: newItem,
+                newSize: newItem.size,
+                newState: newState
+            )
+        }
+        guard case let .content(oldContent) = oldItem.value,
+              case let .content(newContent) = newItem.value
+        else {
+            return false
+        }
+        var oldLocalState = oldState.pointee
+        var newLocalState = newState.pointee
+        var oldSize = oldItem.size
+        var newSize = newItem.size
+        switch (oldContent.value, newContent.value) {
+        case let (.image(oldImage), .image(newImage)):
+            adjustImageContentGeometry(
+                image: oldImage,
+                state: &oldLocalState,
+                size: &oldSize
+            )
+            adjustImageContentGeometry(
+                image: newImage,
+                state: &newLocalState,
+                size: &newSize
+            )
+        case let (.shape(oldPath, _, _), .shape(newPath, _, _)):
+            adjustShapeContentGeometry(
+                layer: layer,
+                state: &oldLocalState,
+                size: &oldSize,
+                path: oldPath
+            )
+            adjustShapeContentGeometry(
+                layer: layer,
+                state: &newLocalState,
+                size: &newSize,
+                path: newPath
+            )
+        default:
+            return false
+        }
+        return withUnsafePointer(to: oldLocalState) { oldStatePtr in
+            withUnsafePointer(to: newLocalState) { newStatePtr in
+                updateStateAsync(
+                    layer: &layer,
+                    oldItem: oldItem,
+                    oldSize: oldSize,
+                    oldState: oldStatePtr,
+                    newItem: newItem,
+                    newSize: newSize,
+                    newState: newStatePtr
+                )
+            }
+        }
+    }
+
+    @inline(__always)
+    private func adjustImageContentGeometry(
+        image: GraphicsImage,
+        state: inout DisplayList.ViewUpdater.Model.State,
+        size: inout CGSize
+    ) {
+        let orientation = image.bitmapOrientation
+        if orientation != .up {
+            state.transform = CGAffineTransform(
+                orientation: orientation,
+                in: size
+            ).concatenating(state.transform)
+            size = size.apply(orientation)
+        }
+    }
+
+    @inline(__always)
+    private func adjustShapeContentGeometry(
+        layer: DisplayList.ViewUpdater.AsyncLayer,
+        state: inout DisplayList.ViewUpdater.Model.State,
+        size: inout CGSize,
+        path: Path
+    ) {
+        let bounds = ShapeLayerHelper.makeLayerBounds(
+            size: size,
+            path: path,
+            layerType: type(of: layer.layer),
+            contentsScale: state.globals.pointee.environment.contentsScale
+        )
+        state.transform = state.transform.translatedBy(
+            x: bounds.origin.x,
+            y: bounds.origin.y
+        )
+        size = bounds.size
     }
     
     func updateState(
@@ -477,7 +1045,73 @@ extension DisplayList.ViewUpdater.Platform {
         newSize: CGSize,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard oldState.pointee.properties == newState.pointee.properties else {
+            return false
+        }
+        layer.update(
+            DisplayList.ViewUpdater.OpacityLayer.self,
+            from: oldState.pointee.opacity,
+            to: newState.pointee.opacity
+        )
+        guard oldState.pointee.versions.blend == newState.pointee.versions.blend else {
+            return false
+        }
+        if oldState.pointee.versions.filters != newState.pointee.versions.filters {
+            var oldFilters = oldState.pointee.filters
+            var newFilters = newState.pointee.filters
+            if layer.kind == .drawing {
+                let oldColor = oldFilters.popColorMultiply(drawable: layer.layer.delegate as? PlatformDrawable)
+                let newColor = newFilters.popColorMultiply(drawable: layer.layer.delegate as? PlatformDrawable)
+                layer.update(
+                    DisplayList.ViewUpdater.ContentsMultiplyColor.self,
+                    from: oldColor,
+                    to: newColor
+                )
+            }
+            guard GraphicsFilter.updateAsync(
+                layer: &layer,
+                oldFilters: oldFilters,
+                newFilters: newFilters
+            ) else {
+                return false
+            }
+        }
+        if oldState.pointee.versions.clips != newState.pointee.versions.clips ||
+            oldState.pointee.versions.transform != newState.pointee.versions.transform {
+            guard updateClipShapesAsync(
+                asyncLayer: &layer,
+                oldState: oldState,
+                newState: newState
+            ) else {
+                return false
+            }
+        }
+        guard let boundsChanged = updateGeometryAsync(
+            asyncLayer: &layer,
+            oldItem: oldItem,
+            oldSize: oldSize,
+            oldState: oldState,
+            newItem: newItem,
+            newSize: newSize,
+            newState: newState
+        ) else {
+            return false
+        }
+        if boundsChanged ||
+            oldState.pointee.versions.shadow != newState.pointee.versions.shadow ||
+            oldItem.version != newItem.version {
+            guard updateShadowAsync(
+                asyncLayer: &layer,
+                oldState: oldState,
+                oldItem: oldItem,
+                newState: newState,
+                newItem: newItem,
+                boundsChanged: boundsChanged
+            ) else {
+                return false
+            }
+        }
+        return true
     }
 
     func _makeItemView(
@@ -560,8 +1194,10 @@ extension DisplayList.ViewUpdater.Platform {
                     container: view,
                     state: .init(kind: .platformLayer)
                 )
-            case .text:
-                let view = definition.makeDrawingView(options: .init(base: .init())) as AnyObject
+            case let .text(text, _):
+                var options = RasterizationOptions()
+                options.isAccelerated = text.needsDrawingGroup
+                let view = definition.makeDrawingView(options: .init(base: options)) as AnyObject
                 return DisplayList.ViewUpdater.ViewInfo(
                     view: view,
                     layer: viewLayer(view),
@@ -587,8 +1223,8 @@ extension DisplayList.ViewUpdater.Platform {
                 let info = DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
                 #if canImport(QuartzCore)
                 let layer = info.layer
-                info.layer.allowsGroupOpacity = true
-                info.layer.allowsGroupBlending = true
+                layer.allowsGroupOpacity = true
+                layer.allowsGroupBlending = true
                 #else
                 _openSwiftUIPlatformUnimplementedWarning()
                 #endif
@@ -769,7 +1405,61 @@ extension DisplayList.ViewUpdater.Platform {
         newStyle: FillStyle,
         contentsChanged: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        let currentLayerType = type(of: layer.layer)
+        let oldOriginalSize = oldSize
+        let newOriginalSize = newSize
+        let oldContentsScale = oldState.globals.pointee.environment.contentsScale
+        let newContentsScale = newState.globals.pointee.environment.contentsScale
+        let oldBounds = ShapeLayerHelper.makeLayerBounds(
+            size: oldOriginalSize,
+            path: oldPath,
+            layerType: currentLayerType,
+            contentsScale: oldContentsScale
+        )
+        let newBounds = ShapeLayerHelper.makeLayerBounds(
+            size: newOriginalSize,
+            path: newPath,
+            layerType: currentLayerType,
+            contentsScale: newContentsScale
+        )
+        if contentsChanged {
+            var oldHelper = ShapeLayerHelper(
+                layer: layer.layer,
+                layerType: currentLayerType,
+                path: oldPath,
+                origin: oldBounds.origin,
+                paint: oldPaint,
+                paintBounds: CGRect(
+                    origin: CGPoint(x: -oldBounds.origin.x, y: -oldBounds.origin.y),
+                    size: oldOriginalSize
+                ),
+                style: oldStyle,
+                contentsScale: oldContentsScale,
+                mayClip: !oldState.hasDODEffects
+            )
+            var newHelper = ShapeLayerHelper(
+                layer: layer.layer,
+                layerType: currentLayerType,
+                path: newPath,
+                origin: newBounds.origin,
+                paint: newPaint,
+                paintBounds: CGRect(
+                    origin: CGPoint(x: -newBounds.origin.x, y: -newBounds.origin.y),
+                    size: newOriginalSize
+                ),
+                style: newStyle,
+                contentsScale: newContentsScale,
+                mayClip: !newState.hasDODEffects
+            )
+            guard ShapeLayerHelper.updateAsync(layer: &layer, old: &oldHelper, new: &newHelper) else {
+                return false
+            }
+        }
+        oldState.transform = oldState.transform.translatedBy(x: oldBounds.origin.x, y: oldBounds.origin.y)
+        newState.transform = newState.transform.translatedBy(x: newBounds.origin.x, y: newBounds.origin.y)
+        oldSize = oldBounds.size
+        newSize = newBounds.size
+        return true
     }
 
     private func updateDrawingViewAsync(
@@ -1075,7 +1765,48 @@ extension DisplayList.ViewUpdater.Platform {
         oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        guard !oldState.pointee.clips.isEmpty || !newState.pointee.clips.isEmpty else {
+            return true
+        }
+        if asyncLayer.isClipRectEnabled {
+            guard let oldClipRect = oldState.pointee.clipRect(),
+                  let newClipRect = newState.pointee.clipRect(),
+                  oldClipRect.style == newClipRect.style
+            else {
+                return false
+            }
+            asyncLayer.update(
+                DisplayList.ViewUpdater.CornerRadiusLayer.self,
+                from: oldClipRect.clampedCornerRadius,
+                to: newClipRect.clampedCornerRadius
+            )
+            return true
+        } else {
+            guard newState.pointee.clipRect() == nil,
+                  let maskLayer = asyncLayer.layer.mask else {
+                return false
+            }
+            var maskAsyncLayer = DisplayList.ViewUpdater.AsyncLayer(
+                layer: maskLayer,
+                cache: asyncLayer.cache,
+                kind: asyncLayer.kind,
+                flags: asyncLayer.flags,
+                nextUpdate: asyncLayer.nextUpdate,
+                isInvalid: asyncLayer.isInvalid
+            )
+            return MaskLayer.updateClipsAsync(
+                layer: &maskAsyncLayer,
+                oldClips: oldState.pointee.clips,
+                newClips: newState.pointee.clips,
+                oldTransform: oldState.pointee.transform.inverted(),
+                newTransform: newState.pointee.transform.inverted()
+            )
+        }
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     private func updateGeometryAsync(
@@ -1087,7 +1818,80 @@ extension DisplayList.ViewUpdater.Platform {
         newSize: CGSize,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool? {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        var oldBounds = CGRect(origin: .zero, size: oldSize)
+        var newBounds = CGRect(origin: .zero, size: newSize)
+        var oldPosition = CGPoint(
+            x: oldState.pointee.transform.tx,
+            y: oldState.pointee.transform.ty
+        )
+        var newPosition = CGPoint(
+            x: newState.pointee.transform.tx,
+            y: newState.pointee.transform.ty
+        )
+
+        if asyncLayer.isClipRectEnabled,
+           let oldClipRect = oldState.pointee.clipRect(),
+           let newClipRect = newState.pointee.clipRect() {
+            oldBounds = oldClipRect.rect
+            newBounds = newClipRect.rect
+            oldPosition.x += oldBounds.origin.x
+            oldPosition.y += oldBounds.origin.y
+            newPosition.x += newBounds.origin.x
+            newPosition.y += newBounds.origin.y
+        }
+
+        let boundsChanged = oldBounds != newBounds
+        if boundsChanged {
+            switch asyncLayer.kind {
+            case .platformView, .platformGroup, .platformLayer:
+                return nil
+            default:
+                break
+            }
+            asyncLayer.setValue(
+                DisplayList.ViewUpdater.BoundsLayer.self,
+                to: newBounds
+            )
+            if asyncLayer.kind == .mask {
+                var maskLayer = DisplayList.ViewUpdater.AsyncLayer(
+                    layer: asyncLayer.layer.mask!,
+                    cache: asyncLayer.cache,
+                    kind: asyncLayer.kind,
+                    flags: asyncLayer.flags,
+                    nextUpdate: asyncLayer.nextUpdate,
+                    isInvalid: asyncLayer.isInvalid
+                )
+                maskLayer.setValue(
+                    DisplayList.ViewUpdater.BoundsLayer.self,
+                    to: newBounds
+                )
+            }
+        }
+        guard !asyncLayer.isProjectionGeometryEnabled else {
+            return boundsChanged
+        }
+        asyncLayer.update(
+            DisplayList.ViewUpdater.PositionLayer.self,
+            from: oldPosition,
+            to: newPosition
+        )
+        var oldTransform = oldState.pointee.transform
+        oldTransform.tx = 0
+        oldTransform.ty = 0
+        var newTransform = newState.pointee.transform
+        newTransform.tx = 0
+        newTransform.ty = 0
+        asyncLayer.update(
+            DisplayList.ViewUpdater.AffineTransformLayer.self,
+            from: oldTransform,
+            to: newTransform
+        )
+        return boundsChanged
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     private func updateShadowAsync(
@@ -1098,7 +1902,84 @@ extension DisplayList.ViewUpdater.Platform {
         newItem: DisplayList.Item,
         boundsChanged: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        let oldShadow = oldState.pointee.shadow?.value
+        let newShadow = newState.pointee.shadow?.value
+        switch (oldShadow, newShadow) {
+        case (nil, nil):
+            return true
+        case (nil, _?), (_?, nil):
+            return false
+        case let (oldShadow?, newShadow?):
+            guard boundsChanged || oldShadow != newShadow else {
+                return true
+            }
+            guard asyncLayer.kind != .inherited,
+                  case let .content(oldContent) = oldItem.value,
+                  case let .content(newContent) = newItem.value
+            else {
+                return asyncLayer.updateShadowStyle(
+                    oldShadow: oldShadow,
+                    newShadow: newShadow
+                )
+            }
+            switch (oldContent.value, newContent.value) {
+            case let (.color(oldColor), .color(newColor)):
+                return _updateShadowAsync(
+                    layer: &asyncLayer,
+                    oldShadow: oldShadow,
+                    newShadow: newShadow,
+                    oldPaintOpacity: oldColor.opacity,
+                    newPaintOpacity: newColor.opacity
+                )
+            case let (.shape(oldPath, oldPaint, _), .shape(newPath, newPaint, _)):
+                let layerType = type(of: asyncLayer.layer)
+                let oldBounds = ShapeLayerHelper.makeLayerBounds(
+                    size: oldItem.size,
+                    path: oldPath,
+                    layerType: layerType,
+                    contentsScale: oldState.pointee.globals.pointee.environment.contentsScale
+                )
+                let newBounds = ShapeLayerHelper.makeLayerBounds(
+                    size: newItem.size,
+                    path: newPath,
+                    layerType: layerType,
+                    contentsScale: newState.pointee.globals.pointee.environment.contentsScale
+                )
+                var oldHelper = ShapeLayerShadowHelper(
+                    platform: self,
+                    layer: asyncLayer.layer,
+                    path: oldPath,
+                    offset: oldBounds.origin,
+                    shadow: oldShadow,
+                    updateShape: false
+                )
+                var newHelper = ShapeLayerShadowHelper(
+                    platform: self,
+                    layer: asyncLayer.layer,
+                    path: newPath,
+                    offset: newBounds.origin,
+                    shadow: newShadow,
+                    updateShape: false
+                )
+                return ShapeLayerShadowHelper.updateAsync(
+                    layer: &asyncLayer,
+                    old: &oldHelper,
+                    new: &newHelper,
+                    oldPaint: oldPaint,
+                    newPaint: newPaint
+                )
+            default:
+                return asyncLayer.updateShadowStyle(
+                    oldShadow: oldShadow,
+                    newShadow: newShadow
+                )
+            }
+        }
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     func updateDrawingView(
@@ -1120,129 +2001,10 @@ extension DisplayList.ViewUpdater.Platform {
         return drawable
     }
 
-    // TBA
-    @inline(__always)
-    private func updateContentView(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        content: DisplayList.Content,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        switch content.value {
-        case let .color(resolved):
-            #if canImport(QuartzCore)
-            let cgColor = resolved.cgColor
-            viewLayer(viewInfo.view).backgroundColor = cgColor
-            #else
-            _openSwiftUIPlatformUnimplementedWarning()
-            #endif
-        case .backdrop, .chameleonColor, .image, .shadow, .view, .placeholder:
-            break
-        case let .shape(path, _, _):
-            definition.setPath(path, shapeView: viewInfo.view)
-        case let .platformView(factory):
-            var view = viewInfo.view
-            factory.updatePlatformView(&view)
-            updateViewReference(&viewInfo, view: view, kind: .platformView)
-        case let .platformLayer(factory):
-            #if canImport(QuartzCore)
-            if let layer = viewInfo.view as? CALayer {
-                factory.updatePlatformLayer(layer)
-            }
-            #endif
-        case .text, .flattened, .drawing:
-            updateDrawingContent(&viewInfo, content: content, item: item, state: state)
-        }
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateEffectView(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        effect: DisplayList.Effect,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        switch effect {
-        case let .transform(transform):
-            if case let .projection(projectionTransform) = transform {
-                definition.setProjectionTransform(
-                    projectionTransform,
-                    projectionView: viewInfo.view
-                )
-            }
-        case let .platformGroup(factory):
-            var view = viewInfo.view
-            factory.updatePlatformGroup(&view)
-            updateViewReference(&viewInfo, view: view, kind: .platformGroup)
-            viewInfo.container = factory.platformGroupContainer(viewInfo.view)
-        case .identity, .geometryGroup, .compositingGroup, .backdropGroup, .archive,
-             .properties, .opacity, .blendMode, .clip, .mask, .filter, .animation,
-             .contentTransition, .view, .accessibility, .platform, .state,
-             .interpolatorRoot, .interpolatorLayer, .interpolatorAnimation:
-            break
-        }
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateDrawingContent(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        content: DisplayList.Content,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        _openSwiftUIUnimplementedFailure()
-//        let contentsScale = state.pointee.globals.pointee.environment.contentsScale
-//        let options = drawingOptions(for: content, state: state)
-//        var view = viewInfo.view
-//        let drawable = updateDrawingView(
-//            &view,
-//            options: options,
-//            contentsScale: contentsScale
-//        )
-//        updateViewReference(&viewInfo, view: view, kind: .drawing)
-//        var drawableContent = PlatformDrawableContent()
-//        switch content.value {
-//        case let .flattened(list, offset, _):
-//            drawableContent.storage = .displayList(
-//                list,
-//                offset,
-//                state.pointee.globals.pointee.time
-//            )
-//        case let .drawing(contents, offset, _):
-//            drawableContent.storage = .rbDisplayList(contents, offset)
-//        case .text:
-//            drawableContent.storage = .empty
-//        default:
-//            return
-//        }
-//        _ = drawable.update(
-//            content: drawableContent,
-//            required: item.features.contains(.required)
-//        )
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateViewReference(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        view: AnyObject,
-        kind: PlatformViewDefinition.ViewKind
-    ) {
-        guard viewInfo.view !== view else {
-            return
-        }
-        viewInfo.view = view
-        viewInfo.container = view
-        viewInfo.reset(platform: self)
-    }
-
     func forEachChild(
         of viewInfo: DisplayList.ViewUpdater.ViewInfo,
         do body: (AnyObject) -> Void
     ) {
-        #if canImport(Darwin)
         let kind = viewInfo.state.kind
         if kind.isContainer {
             for subview in subviews(viewInfo.container) {
@@ -1252,10 +2014,9 @@ extension DisplayList.ViewUpdater.Platform {
         if kind == .mask,
            let maskView = maskView(viewInfo.view) {
             for subview in subviews(maskView) {
-                body(subview as AnyObject)
+                body(subview)
             }
         }
-        #endif
     }
 }
 
@@ -1283,7 +2044,7 @@ extension DisplayList.GraphicsRenderer {
     }
 }
 
-// MARK: - GraphicsFilter + Platform Filters
+// MARK: - GraphicsFilter + Platform Filters [TODO]
 
 extension [GraphicsFilter] {
     fileprivate mutating func popColorMultiply(
@@ -1313,3 +2074,14 @@ extension [GraphicsFilter] {
 //        _openSwiftUIUnimplementedFailure()
 //    }
 //}
+
+extension GraphicsFilter {
+    static func updateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldFilters: [GraphicsFilter],
+        newFilters: [GraphicsFilter]
+    ) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
+}

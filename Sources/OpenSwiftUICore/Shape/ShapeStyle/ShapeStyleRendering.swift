@@ -444,10 +444,14 @@ final package class _ShapeStyle_InterpolatorGroup: DisplayList.InterpolatorGroup
         _openSwiftUIUnimplementedWarning()
         return .interpolatorData(group: .init(), serial: 0)
     }
-}
 
-extension DisplayList {
-    struct InterpolatorLayer {}
+    override func nextUpdate(after time: Time) -> Time {
+        var nextUpdate = Time.infinity
+        for layer in layers {
+            nextUpdate = min(nextUpdate, layer.state.nextUpdate(after: time))
+        }
+        return nextUpdate
+    }
 }
 
 
