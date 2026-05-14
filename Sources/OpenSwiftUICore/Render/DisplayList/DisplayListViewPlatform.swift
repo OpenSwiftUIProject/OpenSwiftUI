@@ -415,7 +415,7 @@ extension DisplayList.ViewUpdater.Platform {
     ) -> Bool {
         _openSwiftUIUnimplementedFailure()
     }
-    
+
     func _makeItemView(
         item: DisplayList.Item,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
@@ -803,9 +803,8 @@ extension DisplayList.ViewUpdater.Platform {
         clipRectChanged: Bool
     ) -> Bool {
         #if canImport(QuartzCore)
-        let modelState = state.pointee
         let sizeChanged = viewInfo.state.size != size
-        let transformSeed = DisplayList.Seed(modelState.versions.transform)
+        let transformSeed = DisplayList.Seed(state.pointee.versions.transform)
         let transformChanged = viewInfo.seeds.transform != transformSeed
         viewInfo.seeds.transform = transformSeed
         guard sizeChanged || transformChanged || clipRectChanged else {
@@ -819,8 +818,8 @@ extension DisplayList.ViewUpdater.Platform {
 
         var clipRectPresent = false
         var bounds = CGRect(origin: .zero, size: size)
-        var position = CGPoint(x: modelState.transform.tx, y: modelState.transform.ty)
-        if usesClipRect, let clipRect = modelState.clipRect() {
+        var position = CGPoint(x: state.pointee.transform.tx, y: state.pointee.transform.ty)
+        if usesClipRect, let clipRect = state.pointee.clipRect() {
             clipRectPresent = true
             bounds = clipRect.rect
             position.x += bounds.origin.x
@@ -850,14 +849,14 @@ extension DisplayList.ViewUpdater.Platform {
             if boundsChanged {
                 CoreViewSetSize(system: viewSystem, view: viewInfo.view, size: bounds.size)
             }
-            viewLayer(viewInfo.view).contentsScale = modelState.globals.pointee.environment.contentsScale
+            viewLayer(viewInfo.view).contentsScale = state.pointee.globals.pointee.environment.contentsScale
             if boundsChanged, viewInfo.state.kind == .mask {
                 setMaskGeometry(of: viewInfo.view, bounds: bounds)
             }
             return boundsChanged
         }
 
-        var affineTransform = modelState.transform
+        var affineTransform = state.pointee.transform
         affineTransform.tx = 0
         affineTransform.ty = 0
         let hasAffineTransform = affineTransform != .identity
@@ -1111,7 +1110,7 @@ extension DisplayList.ViewUpdater.Platform {
             break
         }
     }
-    
+
     // TBA
     @inline(__always)
     private func updateDrawingContent(
