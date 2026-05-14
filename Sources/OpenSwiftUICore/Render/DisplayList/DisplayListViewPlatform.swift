@@ -1915,7 +1915,6 @@ extension DisplayList.ViewUpdater.Platform {
         of viewInfo: DisplayList.ViewUpdater.ViewInfo,
         do body: (AnyObject) -> Void
     ) {
-        #if canImport(Darwin)
         let kind = viewInfo.state.kind
         if kind.isContainer {
             for subview in subviews(viewInfo.container) {
@@ -1925,10 +1924,9 @@ extension DisplayList.ViewUpdater.Platform {
         if kind == .mask,
            let maskView = maskView(viewInfo.view) {
             for subview in subviews(maskView) {
-                body(subview as AnyObject)
+                body(subview)
             }
         }
-        #endif
     }
 }
 
