@@ -1698,7 +1698,48 @@ extension DisplayList.ViewUpdater.Platform {
         oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        guard !oldState.pointee.clips.isEmpty || !newState.pointee.clips.isEmpty else {
+            return true
+        }
+        if asyncLayer.isClipRectEnabled {
+            guard let oldClipRect = oldState.pointee.clipRect(),
+                  let newClipRect = newState.pointee.clipRect(),
+                  oldClipRect.style == newClipRect.style
+            else {
+                return false
+            }
+            asyncLayer.update(
+                DisplayList.ViewUpdater.CornerRadiusLayer.self,
+                from: oldClipRect.clampedCornerRadius,
+                to: newClipRect.clampedCornerRadius
+            )
+            return true
+        } else {
+            guard newState.pointee.clipRect() == nil,
+                  let maskLayer = asyncLayer.layer.mask else {
+                return false
+            }
+            var maskAsyncLayer = DisplayList.ViewUpdater.AsyncLayer(
+                layer: maskLayer,
+                cache: asyncLayer.cache,
+                kind: asyncLayer.kind,
+                flags: asyncLayer.flags,
+                nextUpdate: asyncLayer.nextUpdate,
+                isInvalid: asyncLayer.isInvalid
+            )
+            return MaskLayer.updateClipsAsync(
+                layer: &maskAsyncLayer,
+                oldClips: oldState.pointee.clips,
+                newClips: newState.pointee.clips,
+                oldTransform: oldState.pointee.transform.inverted(),
+                newTransform: newState.pointee.transform.inverted()
+            )
+        }
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     private func updateGeometryAsync(

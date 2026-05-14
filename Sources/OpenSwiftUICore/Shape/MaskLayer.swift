@@ -112,6 +112,17 @@ final class MaskLayer: CAShapeLayer {
         finalTransform.ty += position.x * finalTransform.b + position.y * finalTransform.d - position.y
         layer.setAffineTransform(finalTransform)
     }
+    
+    static func updateClipsAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldClips: [DisplayList.ViewUpdater.Model.Clip],
+        newClips: [DisplayList.ViewUpdater.Model.Clip],
+        oldTransform: CGAffineTransform,
+        newTransform: CGAffineTransform
+    ) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
 }
 
 #endif

@@ -121,6 +121,14 @@ extension DisplayList.ViewUpdater {
         }
     }
 
+    struct CornerRadiusLayer: AsyncLayer.Property {
+        static let keyPath = "cornerRadius"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
     struct ContentsMultiplyColor: AsyncLayer.Property {
         static let keyPath = "contentsMultiplyColor"
 
