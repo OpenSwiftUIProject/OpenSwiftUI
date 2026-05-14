@@ -385,58 +385,7 @@ extension DisplayList.ViewUpdater.Platform {
         switch item.value {
         case let .content(content):
             guard viewInfo.seeds.content != content.seed else {
-                guard viewInfo.state.isContentGeometryEnabled else {
-                    if viewInfo.state.kind == .drawing && viewInfo.state.size != item.size {
-                        let drawable = viewInfo.view as! PlatformDrawable
-                        viewInfo.isInvalid = !drawable.update(content: nil, required: true)
-                    }
-                    updateState(
-                        &viewInfo,
-                        item: item,
-                        size: item.size,
-                        state: state
-                    )
-                    return
-                }
-                var size = item.size
-                var localState = state.pointee
-                switch content.value {
-                case let .image(image):
-                    let orientation = image.bitmapOrientation
-                    if orientation != .up {
-                        localState.transform = CGAffineTransform(
-                            orientation: orientation,
-                            in: size
-                        ).concatenating(localState.transform)
-                        size = size.apply(orientation)
-                    }
-                case let .shape(path, paint, style):
-                    updateShapeView(
-                        &viewInfo,
-                        state: &localState,
-                        size: &size,
-                        path: path,
-                        paint: paint,
-                        style: style,
-                        contentsChanged: false
-                    )
-                default:
-                    viewInfo.seeds.content = .init()
-                    Log.internalError(
-                        "Invalid size-dependent display list content: %s, %s",
-                        content.value.caseName,
-                        "\(viewInfo.state.kind)"
-                    )
-                }
-                localState.versions.transform.combine(with: item.version)
-                withUnsafePointer(to: localState) { statePtr in
-                    updateState(
-                        &viewInfo,
-                        item: item,
-                        size: size,
-                        state: statePtr
-                    )
-                }
+                updateSizeDependentContent(&viewInfo, item: item, state: state)
                 return
             }
             var localState = state.pointee
@@ -601,59 +550,66 @@ extension DisplayList.ViewUpdater.Platform {
                     state: statePtr
                 )
             }
-        case let .effect(effect, _): // TBA
+        case let .effect(effect, _):
             let contentChanged = viewInfo.seeds.content != item.version.seed
-            if contentChanged {
-                viewInfo.seeds.content = item.version.seed
-                switch effect {
-                case .geometryGroup:
-                    if viewInfo.state.kind != .geometry {
-                        viewInfo = _makeItemView(item: item, state: state)
-                    }
-                case .compositingGroup:
-                    if viewInfo.state.kind != .compositing {
-                        viewInfo = _makeItemView(item: item, state: state)
-                    }
-                    #if canImport(QuartzCore)
-                    viewInfo.layer.allowsGroupOpacity = true
-                    viewInfo.layer.allowsGroupBlending = true
-                    #endif
-                case let .platformGroup(factory):
-                    if viewInfo.state.kind != .platformGroup {
-                        viewInfo = _makeItemView(item: item, state: state)
-                    }
-                    let oldView = viewInfo.view
-                    factory.updatePlatformGroup(&viewInfo.view)
-                    if oldView !== viewInfo.view {
-                        definition.makePlatformView(view: viewInfo.view, kind: .platformGroup)
-                        viewInfo.reset(platform: self)
-                    }
-                    viewInfo.container = factory.platformGroupContainer(viewInfo.view)
-                case .mask:
-                    if viewInfo.state.kind != .mask {
-                        viewInfo = _makeItemView(item: item, state: state)
-                    }
-                case let .transform(transform):
-                    guard let projectionTransform = transform.projectionTransform else {
-                        _openSwiftUIUnreachableCode()
-                    }
+            var changed = contentChanged
+            if !changed {
+                let transformChanged: Bool
+                if case let .transform(transform) = effect,
+                   transform.projectionTransform != nil,
+                   viewInfo.seeds.transform != state.pointee.versions.transform.seed {
+                    transformChanged = true
+                } else {
+                    transformChanged = false
+                }
+                changed = changed || transformChanged
+            }
+            guard changed else {
+                updateSizeDependentContent(&viewInfo, item: item, state: state)
+                return
+            }
+            viewInfo.seeds.content = item.version.seed
+            switch effect {
+            case .geometryGroup:
+                if viewInfo.state.kind != .geometry {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case .compositingGroup:
+                if viewInfo.state.kind != .compositing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case let .platformGroup(factory):
+                if viewInfo.state.kind != .platformGroup {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let oldView = viewInfo.view
+                factory.updatePlatformGroup(&viewInfo.view)
+                let newView = viewInfo.view
+                if oldView !== newView {
+                    definition.makePlatformView(view: newView, kind: .platformGroup)
+                    viewInfo.reset(platform: self)
+                }
+                viewInfo.container = factory.platformGroupContainer(newView)
+            case .mask:
+                if viewInfo.state.kind != .mask {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case let .transform(transform):
+                if let projectionTransform = transform.projectionTransform {
                     if viewInfo.state.kind != .projection {
                         viewInfo = _makeItemView(item: item, state: state)
                     }
                     definition.setProjectionTransform(
-                        projectionTransform,
+                        projectionTransform.concatenating(ProjectionTransform(state.pointee.transform)),
                         projectionView: viewInfo.view
                     )
-                case .platform:
-                    if viewInfo.state.kind != .platformEffect {
-                        viewInfo = _makeItemView(item: item, state: state)
-                    }
-                case .identity, .backdropGroup, .archive, .properties, .opacity,
-                        .blendMode, .clip, .filter, .animation, .contentTransition,
-                        .view, .accessibility, .state, .interpolatorRoot,
-                        .interpolatorLayer, .interpolatorAnimation:
-                    break
                 }
+            case .platform:
+                if viewInfo.state.kind != .platformEffect {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            default:
+                _openSwiftUIUnreachableCode()
             }
             updateState(
                 &viewInfo,
@@ -663,6 +619,69 @@ extension DisplayList.ViewUpdater.Platform {
             )
         case .empty, .states:
             _openSwiftUIUnreachableCode()
+        }
+    }
+
+    @inline(__always)
+    private func updateSizeDependentContent(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        item: DisplayList.Item,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        guard viewInfo.state.isContentGeometryEnabled else {
+            if viewInfo.state.kind == .drawing && viewInfo.state.size != item.size {
+                let drawable = viewInfo.view as! PlatformDrawable
+                viewInfo.isInvalid = !drawable.update(content: nil, required: true)
+            }
+            updateState(
+                &viewInfo,
+                item: item,
+                size: item.size,
+                state: state
+            )
+            return
+        }
+        guard case let .content(content) = item.value else {
+            _openSwiftUIUnreachableCode()
+        }
+        var size = item.size
+        var localState = state.pointee
+        switch content.value {
+        case let .image(image):
+            let orientation = image.bitmapOrientation
+            if orientation != .up {
+                localState.transform = CGAffineTransform(
+                    orientation: orientation,
+                    in: size
+                ).concatenating(localState.transform)
+                size = size.apply(orientation)
+            }
+        case let .shape(path, paint, style):
+            updateShapeView(
+                &viewInfo,
+                state: &localState,
+                size: &size,
+                path: path,
+                paint: paint,
+                style: style,
+                contentsChanged: false
+            )
+        default:
+            viewInfo.seeds.content = .init()
+            Log.internalError(
+                "Invalid size-dependent display list content: %s, %s",
+                content.value.caseName,
+                "\(viewInfo.state.kind)"
+            )
+        }
+        localState.versions.transform.combine(with: item.version)
+        withUnsafePointer(to: localState) { statePtr in
+            updateState(
+                &viewInfo,
+                item: item,
+                size: size,
+                state: statePtr
+            )
         }
     }
 
@@ -1402,112 +1421,6 @@ extension DisplayList.ViewUpdater.Platform {
         drawable.setContentsScale(contentsScale)
         drawingView = drawable
         return drawable
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateContentView(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        content: DisplayList.Content,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        switch content.value {
-        case let .color(resolved):
-            #if canImport(QuartzCore)
-            let cgColor = resolved.cgColor
-            viewLayer(viewInfo.view).backgroundColor = cgColor
-            #else
-            _openSwiftUIPlatformUnimplementedWarning()
-            #endif
-        case .backdrop, .chameleonColor, .image, .shadow, .view, .placeholder:
-            break
-        case let .shape(path, _, _):
-            definition.setPath(path, shapeView: viewInfo.view)
-        case let .platformView(factory):
-            let oldView = viewInfo.view
-            factory.updatePlatformView(&viewInfo.view)
-            if oldView !== viewInfo.view {
-                viewInfo.reset(platform: self)
-            }
-        case let .platformLayer(factory):
-            #if canImport(QuartzCore)
-            if let layer = viewInfo.view as? CALayer {
-                factory.updatePlatformLayer(layer)
-            }
-            #endif
-        case .text, .flattened, .drawing:
-            updateDrawingContent(&viewInfo, content: content, item: item, state: state)
-        }
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateEffectView(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        effect: DisplayList.Effect,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        switch effect {
-        case let .transform(transform):
-            if case let .projection(projectionTransform) = transform {
-                definition.setProjectionTransform(
-                    projectionTransform,
-                    projectionView: viewInfo.view
-                )
-            }
-        case let .platformGroup(factory):
-            let oldView = viewInfo.view
-            factory.updatePlatformGroup(&viewInfo.view)
-            if oldView !== viewInfo.view {
-                viewInfo.reset(platform: self)
-            }
-            viewInfo.container = factory.platformGroupContainer(viewInfo.view)
-        case .identity, .geometryGroup, .compositingGroup, .backdropGroup, .archive,
-             .properties, .opacity, .blendMode, .clip, .mask, .filter, .animation,
-             .contentTransition, .view, .accessibility, .platform, .state,
-             .interpolatorRoot, .interpolatorLayer, .interpolatorAnimation:
-            break
-        }
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateDrawingContent(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        content: DisplayList.Content,
-        item: DisplayList.Item,
-        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
-    ) {
-        _openSwiftUIUnimplementedFailure()
-//        let contentsScale = state.pointee.globals.pointee.environment.contentsScale
-//        let options = drawingOptions(for: content, state: state)
-//        var view = viewInfo.view
-//        let drawable = updateDrawingView(
-//            &view,
-//            options: options,
-//            contentsScale: contentsScale
-//        )
-//        var drawableContent = PlatformDrawableContent()
-//        switch content.value {
-//        case let .flattened(list, offset, _):
-//            drawableContent.storage = .displayList(
-//                list,
-//                offset,
-//                state.pointee.globals.pointee.time
-//            )
-//        case let .drawing(contents, offset, _):
-//            drawableContent.storage = .rbDisplayList(contents, offset)
-//        case .text:
-//            drawableContent.storage = .empty
-//        default:
-//            return
-//        }
-//        _ = drawable.update(
-//            content: drawableContent,
-//            required: item.features.contains(.required)
-//        )
     }
 
     func forEachChild(
