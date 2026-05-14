@@ -107,6 +107,26 @@ package struct DisplayList: Equatable {
     package var isEmpty: Bool {
         items.isEmpty
     }
+    
+    // TODO
+    
+    // TBA
+    package func nextUpdate(after time: Time) -> Time {
+        guard !features.contains(.animations) else {
+            return time
+        }
+        var nextUpdate = Time.infinity
+        guard features.contains(.dynamicContent) else {
+            return nextUpdate
+        }
+        for item in items {
+            nextUpdate = min(nextUpdate, item.nextUpdate(after: time))
+            if nextUpdate <= time {
+                break
+            }
+        }
+        return nextUpdate
+    }
 }
 
 @available(*, unavailable)
@@ -705,6 +725,51 @@ extension DisplayList {
         ) -> Bool {
             _openSwiftUIEmptyStub()
             return false
+        }
+    }
+}
+
+extension DisplayList.Item {
+    package func nextUpdate(after time: Time) -> Time {
+        switch value {
+        case let .content(content):
+            switch content.value {
+            case let .text(text, _):
+                return text.text.nextUpdate(
+                    after: time,
+                    equivalentDate: .now,
+                    reduceFrequency: false
+                )
+            case let .flattened(list, _, _):
+                return list.nextUpdate(after: time)
+            default:
+                return .infinity
+            }
+        case let .effect(effect, list):
+            var nextUpdate = list.nextUpdate(after: time)
+            if case let .mask(mask, _) = effect {
+                nextUpdate = min(nextUpdate, mask.nextUpdate(after: time))
+            }
+            return nextUpdate
+        case let .states(states):
+            var nextUpdate = Time.infinity
+            for (_, list) in states {
+                let nestedUpdate: Time
+                if list.features.contains(.animations) {
+                    nestedUpdate = time
+                } else if list.features.contains(.dynamicContent) {
+                    nestedUpdate = list.nextUpdate(after: time)
+                } else {
+                    nestedUpdate = .infinity
+                }
+                nextUpdate = min(nextUpdate, nestedUpdate)
+                if nextUpdate <= time {
+                    break
+                }
+            }
+            return nextUpdate
+        case .empty:
+            return .infinity
         }
     }
 }
