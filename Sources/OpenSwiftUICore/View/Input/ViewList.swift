@@ -1530,8 +1530,8 @@ extension _ViewListOutputs {
         var fromIndex = 0
         var mergedStaticCount: Int? = 0
         for (index, output) in outputs.enumerated() {
-            if let staticCount = output.staticCount {
-                mergedStaticCount = (mergedStaticCount ?? 0) + staticCount
+            if let oldMergedStaticCount = mergedStaticCount, let staticCount = output.staticCount {
+                mergedStaticCount = oldMergedStaticCount + staticCount
             } else {
                 mergedStaticCount = nil
             }
