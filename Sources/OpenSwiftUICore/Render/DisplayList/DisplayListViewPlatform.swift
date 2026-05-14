@@ -412,7 +412,11 @@ extension DisplayList.ViewUpdater.Platform {
                 if viewInfo.state.kind != .color {
                     viewInfo = _makeItemView(item: item, state: state)
                 }
+                #if canImport(QuartzCore)
                 viewInfo.layer.backgroundColor = color.cgColor
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
             case .chameleonColor:
                 if viewInfo.state.kind != .chameleonColor {
                     viewInfo = _makeItemView(item: item, state: state)
@@ -421,8 +425,12 @@ extension DisplayList.ViewUpdater.Platform {
                 if viewInfo.state.kind != .image {
                     viewInfo = _makeItemView(item: item, state: state)
                 }
+                #if canImport(QuartzCore)
                 let layer = viewInfo.layer as! ImageLayer
                 layer.update(image: image, size: size)
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
                 adjustImageContentGeometry(
                     image: image,
                     state: &localState,
@@ -711,6 +719,7 @@ extension DisplayList.ViewUpdater.Platform {
                     to: newColor
                 )
             case let (.image(oldImage), .image(newImage)):
+                #if canImport(QuartzCore)
                 guard ImageLayer.updateAsync(
                     layer: &layer,
                     oldImage: oldImage,
@@ -720,6 +729,10 @@ extension DisplayList.ViewUpdater.Platform {
                 ) else {
                     return false
                 }
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                return false
+                #endif
                 adjustImageContentGeometry(
                     image: oldImage,
                     state: &oldLocalState,
