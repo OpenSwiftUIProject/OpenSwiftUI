@@ -177,6 +177,38 @@ extension DisplayList {
             indirect case drawing(any ORBDisplayListContents, CGPoint, RasterizationOptions)
             indirect case view(any _DisplayList_ViewFactory)
             case placeholder(id: Identity)
+            
+            @inline(__always)
+            var caseName: String {
+                switch self {
+                case .backdrop:
+                    return "backdrop"
+                case .color:
+                    return "color"
+                case .chameleonColor:
+                    return "chameleonColor"
+                case .image:
+                    return "image"
+                case .shape:
+                    return "shape"
+                case .shadow:
+                    return "shadow"
+                case .platformView:
+                    return "platformView"
+                case .platformLayer:
+                    return "platformLayer"
+                case .text:
+                    return "text"
+                case .flattened:
+                    return "flattened"
+                case .drawing:
+                    return "drawing"
+                case .view:
+                    return "view"
+                case .placeholder:
+                    return "placeholder"
+                }
+            }
         }
         
         package init(_ value: Content.Value, seed: Seed) {

@@ -381,9 +381,291 @@ extension DisplayList.ViewUpdater.Platform {
         item: DisplayList.Item,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        _openSwiftUIUnimplementedFailure()
+        var item = item
+        switch item.value {
+        case let .content(content):
+            guard viewInfo.seeds.content != content.seed else {
+                guard viewInfo.state.isContentGeometryEnabled else {
+                    if viewInfo.state.kind == .drawing && viewInfo.state.size != item.size {
+                        let drawable = viewInfo.view as! PlatformDrawable
+                        viewInfo.isInvalid = !drawable.update(content: nil, required: true)
+                    }
+                    updateState(
+                        &viewInfo,
+                        item: item,
+                        size: item.size,
+                        state: state
+                    )
+                    return
+                }
+                var size = item.size
+                var localState = state.pointee
+                switch content.value {
+                case let .image(image):
+                    let orientation = image.bitmapOrientation
+                    if orientation != .up {
+                        localState.transform = CGAffineTransform(
+                            orientation: orientation,
+                            in: size
+                        ).concatenating(localState.transform)
+                        size = size.apply(orientation)
+                    }
+                case let .shape(path, paint, style):
+                    updateShapeView(
+                        &viewInfo,
+                        state: &localState,
+                        size: &size,
+                        path: path,
+                        paint: paint,
+                        style: style,
+                        contentsChanged: false
+                    )
+                default:
+                    viewInfo.seeds.content = .init()
+                    Log.internalError(
+                        "Invalid size-dependent display list content: %s, %s",
+                        content.value.caseName,
+                        "\(viewInfo.state.kind)"
+                    )
+                }
+                localState.versions.transform.combine(with: item.version)
+                withUnsafePointer(to: localState) { statePtr in
+                    updateState(
+                        &viewInfo,
+                        item: item,
+                        size: size,
+                        state: statePtr
+                    )
+                }
+                return
+            }
+            var localState = state.pointee
+            var size = item.size
+            viewInfo.isInvalid = false
+            viewInfo.state.isContentGeometryEnabled = false
+            switch content.value {
+            case let .backdrop(effect):
+                if viewInfo.state.kind != .backdrop {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                #if canImport(QuartzCore)
+                let layer = viewInfo.layer as! CABackdropLayer
+                let hasZeroScale = effect.scale == 0
+                layer.scale = hasZeroScale ? 1.0 : CGFloat(effect.scale)
+                layer.allowsInPlaceFiltering = hasZeroScale
+                layer.backgroundColor = effect.color.cgColor
+                let groupID = state.pointee.backdropGroupID
+                layer.groupName = groupID == 0 ? nil : "OpenSwiftUI-\(groupID)"
+                #else
+                _openSwiftUIPlatformUnimplementedWarning()
+                #endif
+            case let .color(color):
+                if viewInfo.state.kind != .color {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                viewInfo.layer.backgroundColor = color.cgColor
+            case .chameleonColor:
+                if viewInfo.state.kind != .chameleonColor {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+            case let .image(image):
+                if viewInfo.state.kind != .image {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let layer = viewInfo.layer as! ImageLayer
+                layer.update(image: image, size: size)
+                let orientation = image.bitmapOrientation
+                if orientation != .up {
+                    localState.transform = CGAffineTransform(
+                        orientation: orientation,
+                        in: size
+                    ).concatenating(localState.transform)
+                }
+                size = size.apply(orientation)
+                viewInfo.state.isContentGeometryEnabled = true
+            case let .shape(path, paint, style):
+                if viewInfo.state.kind != .shape {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                updateShapeView(
+                    &viewInfo,
+                    state: &localState,
+                    size: &size,
+                    path: path,
+                    paint: paint,
+                    style: style,
+                    contentsChanged: true
+                )
+            case let .shadow(path, shadow):
+                if viewInfo.state.kind != .shadow {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                updateShadowView(
+                    &viewInfo,
+                    path: path,
+                    shadow: shadow,
+                    size: size
+                )
+            case let .platformView(factory):
+                if viewInfo.state.kind != .platformView {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let oldView = viewInfo.view
+                factory.updatePlatformView(&viewInfo.view)
+                let newView = viewInfo.view
+                if oldView !== newView {
+                    definition.makePlatformView(view: newView, kind: .platformView)
+                    viewInfo.reset(platform: self)
+                }
+            case let .platformLayer(factory):
+                if viewInfo.state.kind != .platformLayer {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let layer = viewInfo.layer
+                #if canImport(QuartzCore)
+                layer.contentsScale = state.pointee.globals.pointee.environment.contentsScale
+                #endif
+                factory.updatePlatformLayer(layer)
+            case let .text(text, textSize):
+                if viewInfo.state.kind != .drawing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                var options = RasterizationOptions()
+                options.isAccelerated = text.needsDrawingGroup
+                updateDrawingView(
+                    &viewInfo,
+                    options: options,
+                    contentsScale: state.pointee.globals.pointee.environment.contentsScale,
+                    content: .platformCallback { size in
+                        text.text.draw(
+                            in: CGRect(origin: .zero, size: size),
+                            with: textSize,
+                            applyingMarginOffsets: true,
+                            containsResolvable: text.text.isDynamic,
+                            context: .shared,
+                            renderer: text.renderer
+                        )
+                    },
+                    sizeChanged: viewInfo.state.size != item.size
+                )
+                viewInfo.nextUpdate = min(
+                    viewInfo.nextUpdate,
+                    text.text.nextUpdate(
+                        after: state.pointee.globals.pointee.time,
+                        equivalentDate: .now,
+                        reduceFrequency: false
+                    )
+                )
+            case let .flattened(list, offset, options):
+                if viewInfo.state.kind != .drawing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                let time = state.pointee.globals.pointee.time
+                updateDrawingView(
+                    &viewInfo,
+                    options: options,
+                    contentsScale: state.pointee.globals.pointee.environment.contentsScale,
+                    content: .displayList(
+                        list,
+                        offset,
+                        time
+                    ),
+                    sizeChanged: viewInfo.state.size != item.size
+                )
+                viewInfo.nextUpdate = min(viewInfo.nextUpdate, list.nextUpdate(after: time))
+            case let .drawing(contents, offset, options):
+                if viewInfo.state.kind != .drawing {
+                    viewInfo = _makeItemView(item: item, state: state)
+                }
+                updateDrawingView(
+                    &viewInfo,
+                    options: options,
+                    contentsScale: state.pointee.globals.pointee.environment.contentsScale,
+                    content: .rbDisplayList(contents, offset),
+                    sizeChanged: viewInfo.state.size != item.size
+                )
+            case .view, .placeholder:
+                _openSwiftUIUnreachableCode()
+            }
+            if viewInfo.state.isContentGeometryEnabled {
+                localState.versions.transform.combine(with: item.version)
+            }
+            if !viewInfo.isInvalid, viewInfo.nextUpdate == .infinity {
+                viewInfo.seeds.content = content.seed
+            }
+            withUnsafePointer(to: localState) { statePtr in
+                updateState(
+                    &viewInfo,
+                    item: item,
+                    size: size,
+                    state: statePtr
+                )
+            }
+        case let .effect(effect, _): // TBA
+            let contentChanged = viewInfo.seeds.content != item.version.seed
+            if contentChanged {
+                viewInfo.seeds.content = item.version.seed
+                switch effect {
+                case .geometryGroup:
+                    if viewInfo.state.kind != .geometry {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                case .compositingGroup:
+                    if viewInfo.state.kind != .compositing {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                    #if canImport(QuartzCore)
+                    viewInfo.layer.allowsGroupOpacity = true
+                    viewInfo.layer.allowsGroupBlending = true
+                    #endif
+                case let .platformGroup(factory):
+                    if viewInfo.state.kind != .platformGroup {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                    let oldView = viewInfo.view
+                    factory.updatePlatformGroup(&viewInfo.view)
+                    if oldView !== viewInfo.view {
+                        definition.makePlatformView(view: viewInfo.view, kind: .platformGroup)
+                        viewInfo.reset(platform: self)
+                    }
+                    viewInfo.container = factory.platformGroupContainer(viewInfo.view)
+                case .mask:
+                    if viewInfo.state.kind != .mask {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                case let .transform(transform):
+                    guard let projectionTransform = transform.projectionTransform else {
+                        _openSwiftUIUnreachableCode()
+                    }
+                    if viewInfo.state.kind != .projection {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                    definition.setProjectionTransform(
+                        projectionTransform,
+                        projectionView: viewInfo.view
+                    )
+                case .platform:
+                    if viewInfo.state.kind != .platformEffect {
+                        viewInfo = _makeItemView(item: item, state: state)
+                    }
+                case .identity, .backdropGroup, .archive, .properties, .opacity,
+                        .blendMode, .clip, .filter, .animation, .contentTransition,
+                        .view, .accessibility, .state, .interpolatorRoot,
+                        .interpolatorLayer, .interpolatorAnimation:
+                    break
+                }
+            }
+            updateState(
+                &viewInfo,
+                item: item,
+                size: item.size,
+                state: state
+            )
+        case .empty, .states:
+            _openSwiftUIUnreachableCode()
+        }
     }
-    
+
     func updateItemViewAsync(
         layer: inout DisplayList.ViewUpdater.AsyncLayer,
         index: DisplayList.Index,
@@ -1143,9 +1425,11 @@ extension DisplayList.ViewUpdater.Platform {
         case let .shape(path, _, _):
             definition.setPath(path, shapeView: viewInfo.view)
         case let .platformView(factory):
-            var view = viewInfo.view
-            factory.updatePlatformView(&view)
-            updateViewReference(&viewInfo, view: view, kind: .platformView)
+            let oldView = viewInfo.view
+            factory.updatePlatformView(&viewInfo.view)
+            if oldView !== viewInfo.view {
+                viewInfo.reset(platform: self)
+            }
         case let .platformLayer(factory):
             #if canImport(QuartzCore)
             if let layer = viewInfo.view as? CALayer {
@@ -1174,9 +1458,11 @@ extension DisplayList.ViewUpdater.Platform {
                 )
             }
         case let .platformGroup(factory):
-            var view = viewInfo.view
-            factory.updatePlatformGroup(&view)
-            updateViewReference(&viewInfo, view: view, kind: .platformGroup)
+            let oldView = viewInfo.view
+            factory.updatePlatformGroup(&viewInfo.view)
+            if oldView !== viewInfo.view {
+                viewInfo.reset(platform: self)
+            }
             viewInfo.container = factory.platformGroupContainer(viewInfo.view)
         case .identity, .geometryGroup, .compositingGroup, .backdropGroup, .archive,
              .properties, .opacity, .blendMode, .clip, .mask, .filter, .animation,
@@ -1203,7 +1489,6 @@ extension DisplayList.ViewUpdater.Platform {
 //            options: options,
 //            contentsScale: contentsScale
 //        )
-//        updateViewReference(&viewInfo, view: view, kind: .drawing)
 //        var drawableContent = PlatformDrawableContent()
 //        switch content.value {
 //        case let .flattened(list, offset, _):
@@ -1223,21 +1508,6 @@ extension DisplayList.ViewUpdater.Platform {
 //            content: drawableContent,
 //            required: item.features.contains(.required)
 //        )
-    }
-
-    // TBA
-    @inline(__always)
-    private func updateViewReference(
-        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
-        view: AnyObject,
-        kind: PlatformViewDefinition.ViewKind
-    ) {
-        guard viewInfo.view !== view else {
-            return
-        }
-        viewInfo.view = view
-        viewInfo.container = view
-        viewInfo.reset(platform: self)
     }
 
     func forEachChild(
