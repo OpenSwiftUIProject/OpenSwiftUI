@@ -1751,7 +1751,80 @@ extension DisplayList.ViewUpdater.Platform {
         newSize: CGSize,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool? {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        var oldBounds = CGRect(origin: .zero, size: oldSize)
+        var newBounds = CGRect(origin: .zero, size: newSize)
+        var oldPosition = CGPoint(
+            x: oldState.pointee.transform.tx,
+            y: oldState.pointee.transform.ty
+        )
+        var newPosition = CGPoint(
+            x: newState.pointee.transform.tx,
+            y: newState.pointee.transform.ty
+        )
+
+        if asyncLayer.isClipRectEnabled,
+           let oldClipRect = oldState.pointee.clipRect(),
+           let newClipRect = newState.pointee.clipRect() {
+            oldBounds = oldClipRect.rect
+            newBounds = newClipRect.rect
+            oldPosition.x += oldBounds.origin.x
+            oldPosition.y += oldBounds.origin.y
+            newPosition.x += newBounds.origin.x
+            newPosition.y += newBounds.origin.y
+        }
+
+        let boundsChanged = oldBounds != newBounds
+        if boundsChanged {
+            switch asyncLayer.kind {
+            case .platformView, .platformGroup, .platformLayer:
+                return nil
+            default:
+                break
+            }
+            asyncLayer.setValue(
+                DisplayList.ViewUpdater.BoundsLayer.self,
+                to: newBounds
+            )
+            if asyncLayer.kind == .mask {
+                var maskLayer = DisplayList.ViewUpdater.AsyncLayer(
+                    layer: asyncLayer.layer.mask!,
+                    cache: asyncLayer.cache,
+                    kind: asyncLayer.kind,
+                    flags: asyncLayer.flags,
+                    nextUpdate: asyncLayer.nextUpdate,
+                    isInvalid: asyncLayer.isInvalid
+                )
+                maskLayer.setValue(
+                    DisplayList.ViewUpdater.BoundsLayer.self,
+                    to: newBounds
+                )
+            }
+        }
+        guard !asyncLayer.isProjectionGeometryEnabled else {
+            return boundsChanged
+        }
+        asyncLayer.update(
+            DisplayList.ViewUpdater.PositionLayer.self,
+            from: oldPosition,
+            to: newPosition
+        )
+        var oldTransform = oldState.pointee.transform
+        oldTransform.tx = 0
+        oldTransform.ty = 0
+        var newTransform = newState.pointee.transform
+        newTransform.tx = 0
+        newTransform.ty = 0
+        asyncLayer.update(
+            DisplayList.ViewUpdater.AffineTransformLayer.self,
+            from: oldTransform,
+            to: newTransform
+        )
+        return boundsChanged
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     private func updateShadowAsync(

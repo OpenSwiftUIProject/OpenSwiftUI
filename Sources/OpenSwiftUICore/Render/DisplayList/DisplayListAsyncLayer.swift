@@ -101,6 +101,42 @@ extension DisplayList.ViewUpdater {
         }
     }
 
+    struct PositionLayer: AsyncLayer.Property {
+        static let keyPath = "position"
+
+        static func boxValue(_ value: CGPoint) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(point: value)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct BoundsLayer: AsyncLayer.Property {
+        static let keyPath = "bounds"
+
+        static func boxValue(_ value: CGRect) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(rect: value)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct AffineTransformLayer: AsyncLayer.Property {
+        static let keyPath = "transform"
+
+        static func boxValue(_ value: CGAffineTransform) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(caTransform3D: CATransform3DMakeAffineTransform(value))
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
     struct LayerProjectionTransform: AsyncLayer.Property {
         static let keyPath = "transform"
 
