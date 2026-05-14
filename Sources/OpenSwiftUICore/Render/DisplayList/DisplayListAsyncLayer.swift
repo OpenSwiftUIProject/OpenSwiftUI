@@ -70,8 +70,16 @@ extension DisplayList.ViewUpdater {
             guard oldValue != newValue else {
                 return
             }
+            setValue(P.self, to: newValue)
+        }
+
+        @inline(__always)
+        mutating func setValue<P>(
+            _ property: P.Type,
+            to value: P.Value
+        ) where P: Property {
             cache.pointee.setAsyncValue(
-                P.boxValue(newValue),
+                P.boxValue(value),
                 for: P.keyPath,
                 in: layer,
                 usingPresentationModifier: P.supportsPresentationModifier
@@ -99,6 +107,29 @@ extension DisplayList.ViewUpdater {
         static func boxValue(_ value: ProjectionTransform) -> NSObject {
             #if canImport(QuartzCore)
             NSValue(caTransform3D: CATransform3D(value))
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct OpacityLayer: AsyncLayer.Property {
+        static let keyPath = "opacity"
+
+        static func boxValue(_ value: Float) -> NSObject {
+            NSNumber(value: value)
+        }
+    }
+
+    struct ContentsMultiplyColor: AsyncLayer.Property {
+        static let keyPath = "contentsMultiplyColor"
+
+        static func boxValue(_ value: Color.Resolved?) -> NSObject {
+            #if canImport(Darwin)
+            guard let value else {
+                return NSNull()
+            }
+            return unsafeDowncast(value.cgColor, to: NSObject.self)
             #else
             _openSwiftUIPlatformUnimplementedFailure()
             #endif

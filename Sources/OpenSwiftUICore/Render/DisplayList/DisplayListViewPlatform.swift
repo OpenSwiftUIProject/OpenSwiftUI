@@ -1032,7 +1032,73 @@ extension DisplayList.ViewUpdater.Platform {
         newSize: CGSize,
         newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard oldState.pointee.properties == newState.pointee.properties else {
+            return false
+        }
+        layer.update(
+            DisplayList.ViewUpdater.OpacityLayer.self,
+            from: oldState.pointee.opacity,
+            to: newState.pointee.opacity
+        )
+        guard oldState.pointee.versions.blend == newState.pointee.versions.blend else {
+            return false
+        }
+        if oldState.pointee.versions.filters != newState.pointee.versions.filters {
+            var oldFilters = oldState.pointee.filters
+            var newFilters = newState.pointee.filters
+            if layer.kind == .drawing {
+                let oldColor = oldFilters.popColorMultiply(drawable: layer.layer.delegate as? PlatformDrawable)
+                let newColor = newFilters.popColorMultiply(drawable: layer.layer.delegate as? PlatformDrawable)
+                layer.update(
+                    DisplayList.ViewUpdater.ContentsMultiplyColor.self,
+                    from: oldColor,
+                    to: newColor
+                )
+            }
+            guard GraphicsFilter.updateAsync(
+                layer: &layer,
+                oldFilters: oldFilters,
+                newFilters: newFilters
+            ) else {
+                return false
+            }
+        }
+        if oldState.pointee.versions.clips != newState.pointee.versions.clips ||
+            oldState.pointee.versions.transform != newState.pointee.versions.transform {
+            guard updateClipShapesAsync(
+                asyncLayer: &layer,
+                oldState: oldState,
+                newState: newState
+            ) else {
+                return false
+            }
+        }
+        guard let boundsChanged = updateGeometryAsync(
+            asyncLayer: &layer,
+            oldItem: oldItem,
+            oldSize: oldSize,
+            oldState: oldState,
+            newItem: newItem,
+            newSize: newSize,
+            newState: newState
+        ) else {
+            return false
+        }
+        if boundsChanged ||
+            oldState.pointee.versions.shadow != newState.pointee.versions.shadow ||
+            oldItem.version != newItem.version {
+            guard updateShadowAsync(
+                asyncLayer: &layer,
+                oldState: oldState,
+                oldItem: oldItem,
+                newState: newState,
+                newItem: newItem,
+                boundsChanged: boundsChanged
+            ) else {
+                return false
+            }
+        }
+        return true
     }
 
     func _makeItemView(
@@ -1752,3 +1818,14 @@ extension [GraphicsFilter] {
 //        _openSwiftUIUnimplementedFailure()
 //    }
 //}
+
+extension GraphicsFilter {
+    static func updateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldFilters: [GraphicsFilter],
+        newFilters: [GraphicsFilter]
+    ) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
+}
