@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by GraphicsContext and Platform
+//  Status: Blocked by GraphicsContext
 //  ID: 8BBC66CBE42B8A65F8A2F3799C81A349 (SwiftUICore)
 
 public import OpenQuartzCoreShims
@@ -187,7 +187,7 @@ extension DisplayList.ViewUpdater {
     }
 }
 
-// MARK: - DisplayList.ViewUpdater.Platform API [WIP]
+// MARK: - DisplayList.ViewUpdater.Platform API
 
 extension DisplayList.ViewUpdater.Platform {
     package init(definition: PlatformViewDefinition.Type) {
@@ -2031,7 +2031,7 @@ extension DisplayList.GraphicsRenderer {
     }
 }
 
-// MARK: - GraphicsFilter + Platform Filters
+// MARK: - GraphicsFilter + Platform Filters [TODO]
 
 extension [GraphicsFilter] {
     fileprivate mutating func popColorMultiply(
