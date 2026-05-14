@@ -110,19 +110,17 @@ package struct DisplayList: Equatable {
     
     // TODO
     
-    // TBA
     package func nextUpdate(after time: Time) -> Time {
         guard !features.contains(.animations) else {
             return time
         }
         var nextUpdate = Time.infinity
-        guard features.contains(.dynamicContent) else {
-            return nextUpdate
-        }
-        for item in items {
-            nextUpdate = min(nextUpdate, item.nextUpdate(after: time))
-            if nextUpdate <= time {
-                break
+        if features.contains(.dynamicContent) {
+            for item in items {
+                nextUpdate = min(nextUpdate, item.nextUpdate(after: time))
+                if nextUpdate == time {
+                    break
+                }
             }
         }
         return nextUpdate
@@ -670,6 +668,8 @@ extension DisplayList.Item {
 extension DisplayList {
     // FIXME
     package class InterpolatorGroup {
+        var maxDuration: Double = .zero
+
         private struct Contents {
             var list: DisplayList
             var origin: CGPoint
@@ -716,6 +716,10 @@ extension DisplayList {
             []
         }
 
+        func nextUpdate(after _: Time) -> Time {
+            .infinity
+        }
+
         func rewriteDisplayList(
             _ list: inout DisplayList,
             time: Attribute<Time>,
@@ -727,32 +731,88 @@ extension DisplayList {
             return false
         }
     }
+
+    package class UnaryInterpolatorGroup: InterpolatorGroup {
+        var layer: InterpolatorLayer = .init()
+
+        var contentsScale: Float = .zero
+
+        var rasterizationOptions: RasterizationOptions = .init()
+
+        override func nextUpdate(after time: Time) -> Time {
+            layer.nextUpdate(after: time)
+        }
+    }
+
+    struct InterpolatorLayer {
+        struct Contents {
+            var list: DisplayList = .init()
+            var origin: CGPoint = .zero
+            var rbList: (any ORBDisplayListContents)?
+            var nextTime: Time = .infinity
+            var numericValue: Float?
+        }
+
+        struct Removed {
+            var contents: Contents = .init()
+            var interpolator: ORBDisplayListInterpolator?
+            var transition: ORBTransition?
+            var animation: ORBAnimation = .init()
+            var listener: AnimationListener?
+            var begin: Time = .zero
+            var duration: Double = .zero
+            var phase: Phase = .pending
+        }
+
+        enum Phase {
+            case pending
+            case first
+            case second
+            case running
+        }
+
+        var contents: Contents = .init()
+        var removed: [Removed] = []
+        var time: Time = .zero
+        var renderer: DisplayList.GraphicsRenderer?
+        var contentSeed: DisplayList.Seed = .init()
+        var supportsVFD: Bool = false
+        var needsUpdate: Bool = false
+
+        @inline(__always)
+        func nextUpdate(after _: Time) -> Time {
+            removed.isEmpty ? contents.nextTime : time
+        }
+    }
 }
 
 extension DisplayList.Item {
     package func nextUpdate(after time: Time) -> Time {
+        var nextUpdate = Time.infinity
         switch value {
         case let .content(content):
             switch content.value {
             case let .text(text, _):
-                return text.text.nextUpdate(
-                    after: time,
-                    equivalentDate: .now,
-                    reduceFrequency: false
+                nextUpdate = min(nextUpdate, text.text.nextUpdate(after: time, equivalentDate: .now, reduceFrequency: false)
                 )
             case let .flattened(list, _, _):
-                return list.nextUpdate(after: time)
+                nextUpdate = min(nextUpdate, list.nextUpdate(after: time))
             default:
-                return .infinity
+                break
             }
         case let .effect(effect, list):
-            var nextUpdate = list.nextUpdate(after: time)
-            if case let .mask(mask, _) = effect {
+            nextUpdate = min(nextUpdate, list.nextUpdate(after: time))
+            switch effect {
+            case let .mask(mask, _):
                 nextUpdate = min(nextUpdate, mask.nextUpdate(after: time))
+            case .animation:
+                nextUpdate = time
+            case let .interpolatorLayer(group, _):
+                nextUpdate = min(nextUpdate, group.nextUpdate(after: time))
+            default:
+                break
             }
-            return nextUpdate
         case let .states(states):
-            var nextUpdate = Time.infinity
             for (_, list) in states {
                 let nestedUpdate: Time
                 if list.features.contains(.animations) {
@@ -763,14 +823,11 @@ extension DisplayList.Item {
                     nestedUpdate = .infinity
                 }
                 nextUpdate = min(nextUpdate, nestedUpdate)
-                if nextUpdate <= time {
-                    break
-                }
             }
-            return nextUpdate
         case .empty:
-            return .infinity
+            break
         }
+        return nextUpdate
     }
 }
 
