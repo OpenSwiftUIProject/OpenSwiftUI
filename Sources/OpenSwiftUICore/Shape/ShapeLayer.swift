@@ -79,6 +79,47 @@ struct ShapeLayerShadowHelper: ResolvedPaintVisitor {
     mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
         _openSwiftUIUnimplementedFailure()
     }
+
+    @inline(__always)
+    static func updateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        old: UnsafeMutablePointer<ShapeLayerShadowHelper>,
+        new: UnsafeMutablePointer<ShapeLayerShadowHelper>,
+        oldPaint: AnyResolvedPaint,
+        newPaint: AnyResolvedPaint
+    ) -> Bool {
+        return withUnsafeMutablePointer(to: &layer) { layer in
+            var helper = ShapeLayerAsyncShadowHelper(
+                layer: layer,
+                old: old,
+                new: new,
+                newPaint: newPaint,
+                result: false
+            )
+            oldPaint.visit(&helper)
+            return helper.result
+        }
+    }
+}
+
+func _updateShadowAsync(
+    layer: inout DisplayList.ViewUpdater.AsyncLayer,
+    oldShadow: ResolvedShadowStyle?,
+    newShadow: ResolvedShadowStyle?,
+    oldPaintOpacity: Float,
+    newPaintOpacity: Float
+) -> Bool {
+    var oldShadow = oldShadow
+    var newShadow = newShadow
+    if var shadow = oldShadow {
+        shadow.color = shadow.color.multiplyingOpacity(by: oldPaintOpacity)
+        oldShadow = shadow
+    }
+    if var shadow = newShadow {
+        shadow.color = shadow.color.multiplyingOpacity(by: newPaintOpacity)
+        newShadow = shadow
+    }
+    return layer.updateShadowStyle(oldShadow: oldShadow, newShadow: newShadow)
 }
 
 // MARK: - Async Shape Helpers
@@ -106,7 +147,7 @@ private struct ShapeLayerAsyncShadowHelper: ResolvedPaintVisitor {
     }
 }
 
-// FIXME: ShapeLayerShadowHelper & ShapeLayerAsyncShadowHelper
+// MARK: - AsyncLayer + shadow
 
 extension DisplayList.ViewUpdater.AsyncLayer {
     @discardableResult
@@ -117,51 +158,48 @@ extension DisplayList.ViewUpdater.AsyncLayer {
         switch (oldShadow, newShadow) {
         case (nil, nil):
             return true
-        case let (oldShadow?, newShadow?):
-            guard oldShadow.kind == newShadow.kind else {
-                return false
-            }
-            update(ShadowOffsetProperty.self, from: oldShadow.offset, to: newShadow.offset)
-            update(ShadowRadiusProperty.self, from: oldShadow.radius, to: newShadow.radius)
-            update(ShadowColorProperty.self, from: oldShadow.color, to: newShadow.color)
-            return !isInvalid
+        case let (oldShadow?, newShadow?) where oldShadow.kind == newShadow.kind:
+            update(DisplayList.ViewUpdater.ShadowOffsetProperty.self, from: oldShadow.offset, to: newShadow.offset)
+            update(DisplayList.ViewUpdater.ShadowRadiusProperty.self, from: oldShadow.radius, to: newShadow.radius)
+            update(DisplayList.ViewUpdater.ShadowColorProperty.self, from: oldShadow.color, to: newShadow.color)
+            return true
         default:
             return false
         }
     }
 }
 
-private struct ShadowColorProperty: DisplayList.ViewUpdater.AsyncLayer.Property {
-    static let keyPath = "shadowColor"
+extension DisplayList.ViewUpdater {
+    struct ShadowOffsetProperty: DisplayList.ViewUpdater.AsyncLayer.Property {
+        static let keyPath = "shadowOffset"
 
-    static func boxValue(_ value: Color.Resolved) -> NSObject {
-        #if canImport(Darwin)
-        return value.cgColor as! NSObject
-        #else
-        return NSObject()
-        #endif
+        static func boxValue(_ value: CGSize) -> NSObject {
+            #if canImport(Darwin)
+            NSValue(size: value)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
     }
-}
+    
+    struct ShadowRadiusProperty: DisplayList.ViewUpdater.AsyncLayer.Property {
+        static let keyPath = "shadowRadius"
 
-private struct ShadowRadiusProperty: DisplayList.ViewUpdater.AsyncLayer.Property {
-    static let keyPath = "shadowRadius"
-
-    static func boxValue(_ value: CGFloat) -> NSObject {
-        NSNumber(value: Double(value))
+        static func boxValue(_ value: Double) -> NSObject {
+            NSNumber(value: value)
+        }
     }
-}
 
-private struct ShadowOffsetProperty: DisplayList.ViewUpdater.AsyncLayer.Property {
-    static let keyPath = "shadowOffset"
+    struct ShadowColorProperty: DisplayList.ViewUpdater.AsyncLayer.Property {
+        static let keyPath = "shadowColor"
 
-    static func boxValue(_ value: CGSize) -> NSObject {
-        #if canImport(Darwin)
-//        return NSValue(size: value)
-        // FIXME
-        return NSObject()
-        #else
-        return NSObject()
-        #endif
+        static func boxValue(_ value: Color.Resolved) -> NSObject {
+            #if canImport(Darwin)
+            unsafeDowncast(value.cgColor, to: NSObject.self)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
     }
 }
 

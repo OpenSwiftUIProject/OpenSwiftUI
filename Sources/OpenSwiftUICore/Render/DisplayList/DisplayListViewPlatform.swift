@@ -1889,7 +1889,84 @@ extension DisplayList.ViewUpdater.Platform {
         newItem: DisplayList.Item,
         boundsChanged: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(QuartzCore)
+        let oldShadow = oldState.pointee.shadow?.value
+        let newShadow = newState.pointee.shadow?.value
+        switch (oldShadow, newShadow) {
+        case (nil, nil):
+            return true
+        case (nil, _?), (_?, nil):
+            return false
+        case let (oldShadow?, newShadow?):
+            guard boundsChanged || oldShadow != newShadow else {
+                return true
+            }
+            guard asyncLayer.kind != .inherited,
+                  case let .content(oldContent) = oldItem.value,
+                  case let .content(newContent) = newItem.value
+            else {
+                return asyncLayer.updateShadowStyle(
+                    oldShadow: oldShadow,
+                    newShadow: newShadow
+                )
+            }
+            switch (oldContent.value, newContent.value) {
+            case let (.color(oldColor), .color(newColor)):
+                return _updateShadowAsync(
+                    layer: &asyncLayer,
+                    oldShadow: oldShadow,
+                    newShadow: newShadow,
+                    oldPaintOpacity: oldColor.opacity,
+                    newPaintOpacity: newColor.opacity
+                )
+            case let (.shape(oldPath, oldPaint, _), .shape(newPath, newPaint, _)):
+                let layerType = type(of: asyncLayer.layer)
+                let oldBounds = ShapeLayerHelper.makeLayerBounds(
+                    size: oldItem.size,
+                    path: oldPath,
+                    layerType: layerType,
+                    contentsScale: oldState.pointee.globals.pointee.environment.contentsScale
+                )
+                let newBounds = ShapeLayerHelper.makeLayerBounds(
+                    size: newItem.size,
+                    path: newPath,
+                    layerType: layerType,
+                    contentsScale: newState.pointee.globals.pointee.environment.contentsScale
+                )
+                var oldHelper = ShapeLayerShadowHelper(
+                    platform: self,
+                    layer: asyncLayer.layer,
+                    path: oldPath,
+                    offset: oldBounds.origin,
+                    shadow: oldShadow,
+                    updateShape: false
+                )
+                var newHelper = ShapeLayerShadowHelper(
+                    platform: self,
+                    layer: asyncLayer.layer,
+                    path: newPath,
+                    offset: newBounds.origin,
+                    shadow: newShadow,
+                    updateShape: false
+                )
+                return ShapeLayerShadowHelper.updateAsync(
+                    layer: &asyncLayer,
+                    old: &oldHelper,
+                    new: &newHelper,
+                    oldPaint: oldPaint,
+                    newPaint: newPaint
+                )
+            default:
+                return asyncLayer.updateShadowStyle(
+                    oldShadow: oldShadow,
+                    newShadow: newShadow
+                )
+            }
+        }
+        #else
+        _openSwiftUIUnimplementedWarning()
+        return false
+        #endif
     }
 
     func updateDrawingView(
