@@ -1392,7 +1392,61 @@ extension DisplayList.ViewUpdater.Platform {
         newStyle: FillStyle,
         contentsChanged: Bool
     ) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        let currentLayerType = type(of: layer.layer)
+        let oldOriginalSize = oldSize
+        let newOriginalSize = newSize
+        let oldContentsScale = oldState.globals.pointee.environment.contentsScale
+        let newContentsScale = newState.globals.pointee.environment.contentsScale
+        let oldBounds = ShapeLayerHelper.makeLayerBounds(
+            size: oldOriginalSize,
+            path: oldPath,
+            layerType: currentLayerType,
+            contentsScale: oldContentsScale
+        )
+        let newBounds = ShapeLayerHelper.makeLayerBounds(
+            size: newOriginalSize,
+            path: newPath,
+            layerType: currentLayerType,
+            contentsScale: newContentsScale
+        )
+        if contentsChanged {
+            var oldHelper = ShapeLayerHelper(
+                layer: layer.layer,
+                layerType: currentLayerType,
+                path: oldPath,
+                origin: oldBounds.origin,
+                paint: oldPaint,
+                paintBounds: CGRect(
+                    origin: CGPoint(x: -oldBounds.origin.x, y: -oldBounds.origin.y),
+                    size: oldOriginalSize
+                ),
+                style: oldStyle,
+                contentsScale: oldContentsScale,
+                mayClip: !oldState.hasDODEffects
+            )
+            var newHelper = ShapeLayerHelper(
+                layer: layer.layer,
+                layerType: currentLayerType,
+                path: newPath,
+                origin: newBounds.origin,
+                paint: newPaint,
+                paintBounds: CGRect(
+                    origin: CGPoint(x: -newBounds.origin.x, y: -newBounds.origin.y),
+                    size: newOriginalSize
+                ),
+                style: newStyle,
+                contentsScale: newContentsScale,
+                mayClip: !newState.hasDODEffects
+            )
+            guard ShapeLayerHelper.updateAsync(layer: &layer, old: &oldHelper, new: &newHelper) else {
+                return false
+            }
+        }
+        oldState.transform = oldState.transform.translatedBy(x: oldBounds.origin.x, y: oldBounds.origin.y)
+        newState.transform = newState.transform.translatedBy(x: newBounds.origin.x, y: newBounds.origin.y)
+        oldSize = oldBounds.size
+        newSize = newBounds.size
+        return true
     }
 
     private func updateDrawingViewAsync(

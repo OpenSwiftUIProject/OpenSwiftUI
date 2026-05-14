@@ -46,6 +46,24 @@ struct ShapeLayerHelper: ResolvedPaintVisitor {
     ) -> CGRect {
         _openSwiftUIUnimplementedFailure()
     }
+
+    static func updateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        old: UnsafeMutablePointer<ShapeLayerHelper>,
+        new: UnsafeMutablePointer<ShapeLayerHelper>
+    ) -> Bool {
+        guard old.pointee.style.isEOFilled == new.pointee.style.isEOFilled,
+              old.pointee.style.isAntialiased == new.pointee.style.isAntialiased,
+              old.pointee.mayClip == new.pointee.mayClip
+        else {
+            return false
+        }
+        return withUnsafeMutablePointer(to: &layer) { layer in
+            var helper = ShapeLayerAsyncHelper(layer: layer, old: old, new: new, result: false)
+            old.pointee.paint.visit(&helper)
+            return helper.result
+        }
+    }
 }
 
 // MARK: - ShapeLayerShadowHelper [WIP]
