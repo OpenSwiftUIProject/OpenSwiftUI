@@ -149,6 +149,18 @@ extension DisplayList.ViewUpdater {
                     }
                 }
             }
+
+            @inline(__always)
+            var isContentGeometryEnabled: Bool {
+                get { flags.contains(.contentGeometry) }
+                set {
+                    if newValue {
+                        flags.insert(.contentGeometry)
+                    } else {
+                        flags.remove(.contentGeometry)
+                    }
+                }
+            }
         }
 
         struct ViewFlags: OptionSet {
@@ -168,6 +180,9 @@ extension DisplayList.ViewUpdater {
             
             @inline(__always)
             static var maskLayer: ViewFlags { .init(rawValue: 1 << 4) }
+
+            @inline(__always)
+            static var contentGeometry: ViewFlags { .init(rawValue: 1 << 5) }
         }
     }
 }
@@ -557,7 +572,66 @@ extension DisplayList.ViewUpdater.Platform {
         style: FillStyle,
         contentsChanged: Bool
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let currentLayerType = type(of: viewInfo.layer)
+        let originalSize = size
+        let contentsScale = state.globals.pointee.environment.contentsScale
+        var bounds = ShapeLayerHelper.makeLayerBounds(
+            size: originalSize,
+            path: path,
+            layerType: currentLayerType,
+            contentsScale: contentsScale
+        )
+
+        if contentsChanged {
+            var helper = ShapeLayerHelper(
+                layer: viewInfo.layer,
+                layerType: currentLayerType,
+                path: path,
+                origin: bounds.origin,
+                paint: paint,
+                paintBounds: CGRect(
+                    origin: CGPoint(x: -bounds.origin.x, y: -bounds.origin.y),
+                    size: originalSize
+                ),
+                style: style,
+                contentsScale: contentsScale,
+                mayClip: !state.hasDODEffects
+            )
+            paint.visit(&helper)
+            if helper.layerType != currentLayerType {
+                bounds = ShapeLayerHelper.makeLayerBounds(
+                    size: originalSize,
+                    path: path,
+                    layerType: helper.layerType,
+                    contentsScale: contentsScale
+                )
+                helper.origin = bounds.origin
+                helper.paintBounds = CGRect(
+                    origin: CGPoint(x: -bounds.origin.x, y: -bounds.origin.y),
+                    size: originalSize
+                )
+                let view = definition.makeLayerView(type: helper.layerType, kind: .shape)
+                viewInfo = DisplayList.ViewUpdater.ViewInfo(
+                    view: view,
+                    layer: viewLayer(view),
+                    container: view,
+                    state: .init(kind: .shape)
+                )
+                helper.layer = viewInfo.layer
+                paint.visit(&helper)
+            }
+            let shapePath: Path
+            if bounds.origin.y == 0 {
+                shapePath = path
+            } else {
+                let offset = -bounds.origin.y
+                shapePath = path.applying(CGAffineTransform(translationX: offset, y: offset))
+            }
+            definition.setPath(shapePath, shapeView: viewInfo.view)
+            viewInfo.state.isContentGeometryEnabled = true
+        }
+        state.transform = state.transform.translatedBy(x: bounds.origin.x, y: bounds.origin.y)
+        size = bounds.size
     }
 
     private func updateShadowView(

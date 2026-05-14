@@ -55,5 +55,10 @@ extension DisplayList.ViewUpdater {
         var isMaskLayerEnabled: Bool {
             flags.contains(.maskLayer)
         }
+
+        @inline(__always)
+        var isContentGeometryEnabled: Bool {
+            flags.contains(.contentGeometry)
+        }
     }
 }
