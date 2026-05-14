@@ -560,8 +560,10 @@ extension DisplayList.ViewUpdater.Platform {
                     container: view,
                     state: .init(kind: .platformLayer)
                 )
-            case .text:
-                let view = definition.makeDrawingView(options: .init(base: .init())) as AnyObject
+            case let .text(text, _):
+                var options = RasterizationOptions()
+                options.isAccelerated = text.needsDrawingGroup
+                let view = definition.makeDrawingView(options: .init(base: options)) as AnyObject
                 return DisplayList.ViewUpdater.ViewInfo(
                     view: view,
                     layer: viewLayer(view),
