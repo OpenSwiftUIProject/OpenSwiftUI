@@ -111,32 +111,6 @@ extension DisplayList.ViewUpdater.AsyncLayer {
             return false
         }
     }
-
-    private mutating func update<P>(
-        _ property: P.Type,
-        from oldValue: P.Value,
-        to newValue: P.Value
-    ) where P: Property, P.Value: Equatable {
-        guard oldValue != newValue else {
-            return
-        }
-        setValue(newValue, for: property)
-    }
-
-    private mutating func setValue<P>(
-        _ value: P.Value,
-        for property: P.Type
-    ) where P: Property {
-        guard !isInvalid else {
-            return
-        }
-        cache.pointee.setAsyncValue(
-            P.boxValue(value),
-            for: P.keyPath,
-            in: layer,
-            usingPresentationModifier: P.supportsPresentationModifier
-        )
-    }
 }
 
 private struct ShadowColorProperty: DisplayList.ViewUpdater.AsyncLayer.Property {

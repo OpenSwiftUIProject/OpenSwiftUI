@@ -132,15 +132,16 @@ final package class ImageLayer: CALayer {
         add(animation, forKey: nil)
     }
 
-//    func updateAsync(
-//        layer: DisplayList.ViewUpdater.AsyncLayer,
-//        oldImage: GraphicsImage,
-//        oldSize: CGSize,
-//        newImage: GraphicsImage,
-//        newSize: CGSize
-//    ) -> Bool {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+    static func updateAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldImage: GraphicsImage,
+        oldSize: CGSize,
+        newImage: GraphicsImage,
+        newSize: CGSize
+    ) -> Bool {
+        _openSwiftUIUnimplementedWarning()
+        return false
+    }
 }
 
 // MARK: - GraphicsImage + LayerStretch

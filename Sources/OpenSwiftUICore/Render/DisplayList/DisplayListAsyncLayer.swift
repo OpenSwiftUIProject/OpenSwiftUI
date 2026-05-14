@@ -60,5 +60,49 @@ extension DisplayList.ViewUpdater {
         var isContentGeometryEnabled: Bool {
             flags.contains(.contentGeometry)
         }
+        
+        @inline(__always)
+        mutating func update<P>(
+            _ property: P.Type,
+            from oldValue: P.Value,
+            to newValue: P.Value
+        ) where P: Property, P.Value: Equatable {
+            guard oldValue != newValue else {
+                return
+            }
+            cache.pointee.setAsyncValue(
+                P.boxValue(newValue),
+                for: P.keyPath,
+                in: layer,
+                usingPresentationModifier: P.supportsPresentationModifier
+            )
+        }
     }
+    
+    // MARK: - AsyncLayer.Property
+    
+    struct BackgroundColor: AsyncLayer.Property {
+        static let keyPath = "backgroundColor"
+
+        static func boxValue(_ value: Color.Resolved) -> NSObject {
+            #if canImport(Darwin)
+            unsafeDowncast(value.cgColor, to: NSObject.self)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
+    struct LayerProjectionTransform: AsyncLayer.Property {
+        static let keyPath = "transform"
+
+        static func boxValue(_ value: ProjectionTransform) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(caTransform3D: CATransform3D(value))
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
 }
