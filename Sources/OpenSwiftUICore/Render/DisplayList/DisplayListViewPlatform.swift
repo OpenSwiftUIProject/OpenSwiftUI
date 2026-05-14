@@ -1144,8 +1144,8 @@ extension DisplayList.ViewUpdater.Platform {
                 let info = DisplayList.ViewUpdater.ViewInfo(platform: self, kind: .compositing)
                 #if canImport(QuartzCore)
                 let layer = info.layer
-                info.layer.allowsGroupOpacity = true
-                info.layer.allowsGroupBlending = true
+                layer.allowsGroupOpacity = true
+                layer.allowsGroupBlending = true
                 #else
                 _openSwiftUIPlatformUnimplementedWarning()
                 #endif
