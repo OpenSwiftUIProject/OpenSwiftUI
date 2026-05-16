@@ -2,7 +2,7 @@
 //  DisplayList.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: F37E3733E490AA5E3BDC045E3D34D9F8 (SwiftUICore)
 
@@ -68,13 +68,11 @@ package struct DisplayList: Equatable {
     }
     
     package init(_ item: Item) {
-        // TODO
-        switch item.value {
-        case .empty:
+        if case .empty = item.value {
             items = []
             features = []
             properties = []
-        default:
+        } else {
             items = [item]
             features = item.features
             properties = item.properties
@@ -82,7 +80,6 @@ package struct DisplayList: Equatable {
     }
     
     package init(_ items: [Item]) {
-        // TOOD
         var features: Features = []
         var properties: Properties = []
         for item in items {
@@ -95,13 +92,18 @@ package struct DisplayList: Equatable {
     }
 
     package mutating func append(_ item: Item) {
-        _openSwiftUIUnimplementedFailure()
+        if case .empty = item.value {
+            return
+        }
+        items.append(item)
+        features.formUnion(item.features)
+        properties.formUnion(item.properties)
     }
     
     package mutating func append(contentsOf other: DisplayList) {
-        // TODO
-        items.append(contentsOf: other.items)
-//        _openSwiftUIUnimplementedFailure()
+        for item in other.items {
+            append(item)
+        }
     }
 
     package var isEmpty: Bool {
