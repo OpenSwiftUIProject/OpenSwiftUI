@@ -3,12 +3,41 @@ name: UI Tests
 on:
   push:
     branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to test
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - ios
+          - macos
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
 
 jobs:
   ios_uitest:
     name: Execute UI tests on iOS
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "ios"]'), inputs.platform)) ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+        (
+          github.event.comment.body == '/uitest' ||
+          startsWith(github.event.comment.body, '/uitest all') ||
+          startsWith(github.event.comment.body, '/uitest ios')
+        )
+      )
     strategy:
       fail-fast: false
       matrix:
@@ -35,7 +64,21 @@ jobs:
       OPENSWIFTUI_LINK_TESTING: 0
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Resolve PR checkout target
+        if: github.event_name == 'issue_comment'
+        id: pull-request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.issue.number;
+            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number });
+            core.setOutput("repository", pull.head.repo.full_name);
+            core.setOutput("ref", pull.head.sha);
       - uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pull-request.outputs.repository || github.repository }}
+          ref: ${{ steps.pull-request.outputs.ref || github.sha }}
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
@@ -56,6 +99,19 @@ jobs:
 
   macos_uitest:
     name: Execute UI tests on macOS
+    if: >-
+      github.event_name == 'push' ||
+      (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "macos"]'), inputs.platform)) ||
+      (
+        github.event_name == 'issue_comment' &&
+        github.event.issue.pull_request &&
+        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+        (
+          github.event.comment.body == '/uitest' ||
+          startsWith(github.event.comment.body, '/uitest all') ||
+          startsWith(github.event.comment.body, '/uitest macos')
+        )
+      )
     strategy:
       fail-fast: false
       matrix:
@@ -77,7 +133,21 @@ jobs:
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Resolve PR checkout target
+        if: github.event_name == 'issue_comment'
+        id: pull-request
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.issue.number;
+            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number });
+            core.setOutput("repository", pull.head.repo.full_name);
+            core.setOutput("ref", pull.head.sha);
       - uses: actions/checkout@v4
+        with:
+          repository: ${{ steps.pull-request.outputs.repository || github.repository }}
+          ref: ${{ steps.pull-request.outputs.ref || github.sha }}
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
