@@ -26,6 +26,41 @@ struct DisplayListTests {
         #expect(combineVersion.value == 999)        
     }
 
+    @Test
+    func properties() {
+        func item(_ value: DisplayList.Item.Value) -> DisplayList.Item {
+            DisplayList.Item(
+                value,
+                frame: .zero,
+                identity: .init(decodedValue: 1),
+                version: .init(decodedValue: 1)
+            )
+        }
+
+        let privacyItem = item(.effect(.properties(.privacySensitive), .init()))
+        let ignoresEventsItem = item(.effect(.properties(.ignoresEvents), .init()))
+        let privacyList = DisplayList(privacyItem)
+        let ignoresEventsList = DisplayList(ignoresEventsItem)
+
+        #expect(privacyList.properties == .privacySensitive)
+        #expect(ignoresEventsList.properties == .ignoresEvents)
+
+        let maskItem = item(.effect(.mask(privacyList), ignoresEventsList))
+        #expect(DisplayList(maskItem).properties == [.privacySensitive, .ignoresEvents])
+
+        let flattenedItem = item(.content(.init(
+            .flattened(privacyList, .zero, .init()),
+            seed: .init(decodedValue: 1)
+        )))
+        #expect(DisplayList(flattenedItem).properties == .privacySensitive)
+
+        let statesItem = item(.states([
+            (StrongHash(of: 1), privacyList),
+            (StrongHash(of: 2), ignoresEventsList),
+        ]))
+        #expect(DisplayList(statesItem).properties == [.privacySensitive, .ignoresEvents])
+    }
+
     @Suite
     struct DisplayListItemMatchesTopLevelStructureTests {
         enum TestCase {
