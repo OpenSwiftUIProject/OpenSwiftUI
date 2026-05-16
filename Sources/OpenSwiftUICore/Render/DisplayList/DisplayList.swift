@@ -661,6 +661,36 @@ extension DisplayList.Item {
             }
         }
     }
+
+    package var properties: DisplayList.Properties {
+        switch value {
+        case .empty:
+            return []
+        case let .content(content):
+            if case let .flattened(list, _, _) = content.value {
+                return list.properties
+            } else {
+                return []
+            }
+        case let .effect(effect, list):
+            var properties = list.properties
+            switch effect {
+            case let .properties(effectProperties):
+                properties.formUnion(effectProperties)
+            case let .mask(mask, _):
+                properties.formUnion(mask.properties)
+            case let .interpolatorLayer(group, _):
+                properties.formUnion(group.properties)
+            default:
+                break
+            }
+            return properties
+        case let .states(states):
+            return states.reduce(into: []) { properties, state in
+                properties.formUnion(state.1.properties)
+            }
+        }
+    }
 }
 
 // TODO
@@ -716,6 +746,10 @@ extension DisplayList {
             []
         }
 
+        var properties: Properties {
+            []
+        }
+
         func nextUpdate(after _: Time) -> Time {
             .infinity
         }
@@ -741,6 +775,10 @@ extension DisplayList {
 
         override func nextUpdate(after time: Time) -> Time {
             layer.nextUpdate(after: time)
+        }
+
+        override var properties: Properties {
+            layer.properties
         }
     }
 
@@ -782,6 +820,12 @@ extension DisplayList {
         @inline(__always)
         func nextUpdate(after _: Time) -> Time {
             removed.isEmpty ? contents.nextTime : time
+        }
+
+        var properties: Properties {
+            removed.reduce(into: contents.list.properties) { properties, removed in
+                properties.formUnion(removed.contents.list.properties)
+            }
         }
     }
 }
