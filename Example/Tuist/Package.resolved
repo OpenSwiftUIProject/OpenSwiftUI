@@ -1,5 +1,5 @@
 {
-  "originHash" : "5df6e9019cf62bebb17ce17263bb199baabb9bf0e205b68f2e787623f4636d83",
+  "originHash" : "154116076f9106391f665916f636f6142e20264d7bdbff93d21cf58c63c1c2fc",
   "pins" : [
     {
       "identity" : "equatable",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "8d63c405f565fb287042e0b8dc3bf0c4b8b2b56f"
+        "revision" : "050239bd42b19a4c8b1ef3936bfb9f3589ecfc46"
       }
     },
     {
@@ -25,7 +25,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
       "state" : {
         "branch" : "main",
-        "revision" : "814dbe008056db6007bfc3d27fe585837f30e9ed"
+        "revision" : "05e0581e76b7153338836469320a4789fd0257e2"
       }
     },
     {
@@ -33,8 +33,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/apple/swift-collections",
       "state" : {
-        "revision" : "6675bc0ff86e61436e615df6fc5174e043e57924",
-        "version" : "1.4.1"
+        "revision" : "03cc312c2c933ed87abace34044a5dff7a3117c1",
+        "version" : "1.5.0"
       }
     },
     {
