@@ -9,6 +9,7 @@
 import Foundation
 import OpenQuartzCoreShims
 import OpenSwiftUI_SPI
+import UIFoundation_Private
 // import OpenRenderBoxShims
 
 // MARK: - ShapeLayerHelper [WIP]
@@ -175,7 +176,7 @@ extension DisplayList.ViewUpdater {
 
         static func boxValue(_ value: CGSize) -> NSObject {
             #if canImport(Darwin)
-            NSValue(size: value)
+            NSValue(cgSize: value)
             #else
             _openSwiftUIPlatformUnimplementedFailure()
             #endif

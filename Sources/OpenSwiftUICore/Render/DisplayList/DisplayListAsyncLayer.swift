@@ -7,6 +7,7 @@
 
 import Foundation
 import OpenQuartzCoreShims
+import UIFoundation_Private
 
 protocol _DisplayList_ViewUpdater_AsyncLayerProperty {
     associatedtype Value
@@ -106,7 +107,7 @@ extension DisplayList.ViewUpdater {
 
         static func boxValue(_ value: CGPoint) -> NSObject {
             #if canImport(QuartzCore)
-            NSValue(point: value)
+            NSValue(cgPoint: value)
             #else
             _openSwiftUIPlatformUnimplementedFailure()
             #endif
@@ -118,7 +119,7 @@ extension DisplayList.ViewUpdater {
 
         static func boxValue(_ value: CGRect) -> NSObject {
             #if canImport(QuartzCore)
-            NSValue(rect: value)
+            NSValue(cgRect: value)
             #else
             _openSwiftUIPlatformUnimplementedFailure()
             #endif
