@@ -106,11 +106,48 @@ package struct DisplayList: Equatable {
         }
     }
 
+    package mutating func reserveCapacity(_ count: Int) {
+        items.reserveCapacity(count)
+    }
+
+    package mutating func transform(_ body: (inout Item) -> Void) {
+        features = []
+        properties = []
+        guard !items.isEmpty else {
+            return
+        }
+        var transformedFeatures: Features = []
+        var transformedProperties: Properties = []
+        for index in items.indices {
+            body(&items[index])
+            transformedFeatures.formUnion(items[index].features)
+            transformedProperties.formUnion(items[index].properties)
+        }
+        features = transformedFeatures
+        properties = transformedProperties
+    }
+
+    package mutating func translate(by offset: CGSize, version: Version) {
+        guard !items.isEmpty else {
+            return
+        }
+        for index in items.indices {
+            items[index].frame.origin += offset
+            items[index].version.combine(with: version)
+        }
+    }
+
     package var isEmpty: Bool {
         items.isEmpty
     }
-    
-    // TODO
+
+    package var version: Version {
+        var version = Version()
+        for item in items {
+            version.combine(with: item.version)
+        }
+        return version
+    }
     
     package func nextUpdate(after time: Time) -> Time {
         guard !features.contains(.animations) else {
@@ -126,6 +163,76 @@ package struct DisplayList: Equatable {
             }
         }
         return nextUpdate
+    }
+
+    @discardableResult
+    package func forEachIdentity(_ body: (Identity, inout Bool) -> Void) -> Bool {
+        for item in items {
+            if item.identity != .none {
+                var stop = false
+                body(item.identity, &stop)
+                guard !stop else {
+                    return false
+                }
+            }
+            switch item.value {
+            case let .content(content):
+                if case let .flattened(list, _, _) = content.value {
+                    guard list.forEachIdentity(body) else {
+                        return false
+                    }
+                }
+            case let .effect(effect, list):
+                if case let .mask(mask, _) = effect {
+                    guard mask.forEachIdentity(body) else {
+                        return false
+                    }
+                }
+                guard list.forEachIdentity(body) else {
+                    return false
+                }
+            case let .states(states):
+                for (_, list) in states {
+                    guard list.forEachIdentity(body) else {
+                        return false
+                    }
+                }
+            case .empty:
+                break
+            }
+        }
+        return true
+    }
+
+    package func forEachRBDisplayList(_ body: (any ORBDisplayListContents) -> Void) {
+        for item in items {
+            switch item.value {
+            case let .content(content):
+                switch content.value {
+                case let .flattened(list, _, _):
+                    list.forEachRBDisplayList(body)
+                case let .drawing(rbList, _, _):
+                    body(rbList)
+                default:
+                    break
+                }
+            case let .effect(effect, list):
+                if case let .mask(mask, _) = effect {
+                    mask.forEachRBDisplayList(body)
+                }
+                list.forEachRBDisplayList(body)
+            case let .states(states):
+                for (_, list) in states {
+                    list.forEachRBDisplayList(body)
+                }
+            case .empty:
+                break
+            }
+        }
+    }
+
+    package static func == (a: DisplayList, b: DisplayList) -> Bool {
+        a.items == b.items && a.features == b.features && a.properties == b.properties
     }
 }
 
@@ -313,7 +420,6 @@ extension DisplayList {
         case rotation(_RotationEffect.Data)
         case rotation3D(_Rotation3DEffect.Data)
 
-        @inline(__always)
         package var affineTransform: CGAffineTransform? {
             switch self {
             case let .affine(transform):
@@ -325,7 +431,6 @@ extension DisplayList {
             }
         }
 
-        @inline(__always)
         package var projectionTransform: ProjectionTransform? {
             switch self {
             case let .projection(transform):
