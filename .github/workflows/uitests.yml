@@ -201,13 +201,16 @@ jobs:
             const state = process.env.JOB_STATUS === "success" ? "success" :
               process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
+            const description = process.env.JOB_STATUS === "cancelled" ?
+              "iOS UI tests were cancelled." :
+              `iOS UI tests completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
               sha: process.env.STATUS_SHA,
               state,
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: `iOS UI tests completed with ${state}.`,
+              description,
               context: process.env.STATUS_CONTEXT,
             });
 
@@ -294,12 +297,15 @@ jobs:
             const state = process.env.JOB_STATUS === "success" ? "success" :
               process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
+            const description = process.env.JOB_STATUS === "cancelled" ?
+              "macOS UI tests were cancelled." :
+              `macOS UI tests completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
               sha: process.env.STATUS_SHA,
               state,
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: `macOS UI tests completed with ${state}.`,
+              description,
               context: process.env.STATUS_CONTEXT,
             });
