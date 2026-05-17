@@ -91,7 +91,7 @@ public struct Text: Equatable, Sendable {
         Log.runtimeIssues("Only unstyled text can be used with %s", [context])
     }
 
-    // MARK: - Text.Modifier [WIP]
+    // MARK: - Text.Modifier
 
     @usableFromInline
     @frozen
@@ -107,8 +107,50 @@ public struct Text: Equatable, Sendable {
         case anyTextModifier(AnyTextModifier)
 
         func modify(style: inout Text.Style, environment: EnvironmentValues) {
-            // Blocked by Text.Style
-            _openSwiftUIUnimplementedWarning()
+            switch self {
+            case let .color(color):
+                guard let color else {
+                    style.color = Semantics.TextModifiersOverrideParentValues.isEnabled ? .default : .implicit
+                    return
+                }
+                let baseStyle = style.color.baseStyle(in: environment)
+                let copiedStyle = AnyShapeStyle(color).copyStyle(
+                    name: .foreground,
+                    in: environment,
+                    foregroundStyle: baseStyle
+                )
+                style.color = .explicit(copiedStyle)
+            case let .font(font):
+                guard let font else {
+                    style.baseFont = Semantics.FontModifiersNilResetValues.isEnabled ? .default : .implicit
+                    return
+                }
+                style.baseFont = .explicit(font)
+            case .italic:
+                style.addFontModifier(type: Font.ItalicModifier.self)
+            case let .weight(weight):
+                if let weight {
+                    style.addFontModifier(Font.WeightModifier(weight: weight))
+                } else {
+                    style.removeFontModifier(ofType: Font.WeightModifier.self)
+                    style.removeFontModifier(ofType: Font.BoldModifier.self)
+                }
+            case let .kerning(value):
+                if Semantics.TextModifiersOverrideParentValues.isEnabled {
+                    style.kerning = value
+                } else {
+                    style.kerning = (style.kerning ?? .zero) + value
+                }
+            case let .tracking(value):
+                style.tracking = value
+            case let .baseline(value):
+                _ = Semantics.TextModifiersOverrideParentValues.isEnabled
+                style.baselineOffset = value
+            case .rounded:
+                style.addFontModifier(Font.DesignModifier(design: .rounded))
+            case let .anyTextModifier(anyTextModifier):
+                anyTextModifier.modify(style: &style, environment: environment)
+            }
         }
 
         @usableFromInline
