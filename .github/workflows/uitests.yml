@@ -172,17 +172,11 @@ jobs:
         with:
           repository: ${{ needs.prepare_issue_comment.outputs.repository || github.repository }}
           ref: ${{ needs.prepare_issue_comment.outputs.ref || github.sha }}
-      - name: Setup Xcode
-        uses: OpenSwiftUIProject/setup-xcode@v2
-        with:
-          xcode-version: ${{ matrix.xcode-version }}
-      - name: Set up build environment
-        run: Scripts/CI/darwin_setup_build.sh
-        shell: bash
       - name: Run UI Tests
         id: run-tests
         uses: ./.github/actions/uitests
         with:
+          xcode-version: ${{ matrix.xcode-version }}
           platform: ios
           destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
           artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}
@@ -267,17 +261,11 @@ jobs:
         with:
           repository: ${{ needs.prepare_issue_comment.outputs.repository || github.repository }}
           ref: ${{ needs.prepare_issue_comment.outputs.ref || github.sha }}
-      - name: Setup Xcode
-        uses: OpenSwiftUIProject/setup-xcode@v2
-        with:
-          xcode-version: ${{ matrix.xcode-version }}
-      - name: Set up build environment
-        run: Scripts/CI/darwin_setup_build.sh
-        shell: bash
       - name: Run UI Tests
         id: run-tests
         uses: ./.github/actions/uitests
         with:
+          xcode-version: ${{ matrix.xcode-version }}
           platform: macos
           destination: "platform=macOS"
           artifact-name: macos-uitest-snapshots

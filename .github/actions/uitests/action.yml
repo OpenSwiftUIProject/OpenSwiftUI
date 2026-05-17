@@ -2,6 +2,10 @@ name: Run UI Tests
 description: Execute UI tests and collect artifacts if failure
 
 inputs:
+  xcode-version:
+    description: 'Xcode version to use'
+    required: false
+    default: '16.4'
   platform:
     description: 'Platform to test (ios or macos)'
     required: true
@@ -20,9 +24,39 @@ outputs:
 runs:
   using: composite
   steps:
+    - name: Setup Xcode
+      uses: OpenSwiftUIProject/setup-xcode@v2
+      with:
+        xcode-version: ${{ inputs.xcode-version }}
+
+    - name: Set up mise
+      uses: jdx/mise-action@v2
+      with:
+        install: false
+        cache: false
+
+    - name: Install Tuist
+      run: |
+        cd Example
+        mise trust mise.toml
+        mise install
+        tuist version
+      shell: bash
+
+    - name: Set up build environment
+      run: Scripts/CI/darwin_setup_build.sh
+      shell: bash
+
     - name: Install xcbeautify
       shell: bash
       run: brew install xcbeautify
+
+    - name: Generate Example project
+      shell: bash
+      run: |
+        cd Example
+        mise exec -- tuist install
+        mise exec -- tuist generate --no-open
 
     - name: Record baseline images with SwiftUI
       shell: bash
