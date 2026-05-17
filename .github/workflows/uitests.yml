@@ -21,7 +21,7 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
-  checks: write
+  statuses: write
 
 jobs:
   prepare_issue_comment:
@@ -42,10 +42,9 @@ jobs:
       ref: ${{ steps.prepare.outputs.ref }}
       ios-requested: ${{ steps.prepare.outputs.ios-requested }}
       macos-requested: ${{ steps.prepare.outputs.macos-requested }}
-      ios-check-run-id: ${{ steps.prepare.outputs.ios-check-run-id }}
-      macos-check-run-id: ${{ steps.prepare.outputs.macos-check-run-id }}
+      status-enabled: ${{ steps.prepare.outputs.status-enabled }}
     steps:
-      - name: Prepare PR check runs
+      - name: Prepare PR commit statuses
         id: prepare
         uses: actions/github-script@v7
         with:
@@ -60,8 +59,7 @@ jobs:
               ref: "",
               "ios-requested": "false",
               "macos-requested": "false",
-              "ios-check-run-id": "",
-              "macos-check-run-id": "",
+              "status-enabled": "false",
             };
             const setOutputs = () => {
               for (const [name, value] of Object.entries(outputs)) {
@@ -93,28 +91,25 @@ jobs:
 
             const sameRepository = pull.head.repo.full_name === `${owner}/${repo}`;
             if (!sameRepository) {
-              core.warning(`Skipping PR check run creation for fork PR ${pull.head.repo.full_name}@${pull.head.sha}.`);
+              core.warning(`Skipping PR commit status creation for fork PR ${pull.head.repo.full_name}@${pull.head.sha}.`);
               setOutputs();
               return;
             }
 
+            outputs["status-enabled"] = "true";
             const details_url = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`;
             for (const platform of platforms) {
               const label = platform === "ios" ? "iOS" : "macOS";
-              const { data: checkRun } = await github.rest.checks.create({
+              const description = `Queued by @${comment.user.login} with ${body}.`.slice(0, 140);
+              await github.rest.repos.createCommitStatus({
                 owner,
                 repo,
-                name: `UI Tests / ${label}`,
-                head_sha: pull.head.sha,
-                status: "queued",
-                details_url,
-                external_id: `${context.runId}:${platform}`,
-                output: {
-                  title: `UI Tests / ${label} queued`,
-                  summary: `Triggered by @${comment.user.login} with \`${body}\`.`,
-                },
+                sha: pull.head.sha,
+                state: "pending",
+                target_url: details_url,
+                description,
+                context: `UI Tests / ${label}`,
               });
-              outputs[`${platform}-check-run-id`] = String(checkRun.id);
             }
             setOutputs();
 
@@ -145,7 +140,9 @@ jobs:
       - self-hosted
       - ${{ matrix.os }}
     env:
-      CHECK_RUN_ID: ${{ needs.prepare_issue_comment.outputs.ios-check-run-id }}
+      STATUS_CONTEXT: UI Tests / iOS
+      STATUS_ENABLED: ${{ needs.prepare_issue_comment.outputs.status-enabled }}
+      STATUS_SHA: ${{ needs.prepare_issue_comment.outputs.ref }}
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -157,23 +154,20 @@ jobs:
       OPENSWIFTUI_LINK_TESTING: 0
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Mark PR check run in progress
-        if: github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
+      - name: Mark PR status running
+        if: github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            await github.rest.checks.update({
+            await github.rest.repos.createCommitStatus({
               owner,
               repo,
-              check_run_id: Number(process.env.CHECK_RUN_ID),
-              status: "in_progress",
-              started_at: new Date().toISOString(),
-              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              output: {
-                title: "UI Tests / iOS running",
-                summary: "The requested iOS UI tests are running.",
-              },
+              sha: process.env.STATUS_SHA,
+              state: "pending",
+              target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              description: "iOS UI tests are running.",
+              context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
         with:
@@ -196,29 +190,28 @@ jobs:
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
-      - name: Complete PR check run
-        if: always() && github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
+      - name: Complete PR status
+        if: always() && github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         env:
           JOB_STATUS: ${{ job.status }}
         with:
           script: |
             const { owner, repo } = context.repo;
-            const conclusion = process.env.JOB_STATUS === "success" ? "success" :
-              process.env.JOB_STATUS === "cancelled" ? "cancelled" :
+            const state = process.env.JOB_STATUS === "success" ? "success" :
+              process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
-            await github.rest.checks.update({
+            const description = process.env.JOB_STATUS === "cancelled" ?
+              "iOS UI tests were cancelled." :
+              `iOS UI tests completed with ${state}.`;
+            await github.rest.repos.createCommitStatus({
               owner,
               repo,
-              check_run_id: Number(process.env.CHECK_RUN_ID),
-              status: "completed",
-              conclusion,
-              completed_at: new Date().toISOString(),
-              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              output: {
-                title: `UI Tests / iOS ${conclusion}`,
-                summary: `The requested iOS UI tests completed with conclusion: ${conclusion}.`,
-              },
+              sha: process.env.STATUS_SHA,
+              state,
+              target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              description,
+              context: process.env.STATUS_CONTEXT,
             });
 
   macos_uitest:
@@ -244,7 +237,9 @@ jobs:
       - self-hosted
       - ${{ matrix.os }}
     env:
-      CHECK_RUN_ID: ${{ needs.prepare_issue_comment.outputs.macos-check-run-id }}
+      STATUS_CONTEXT: UI Tests / macOS
+      STATUS_ENABLED: ${{ needs.prepare_issue_comment.outputs.status-enabled }}
+      STATUS_SHA: ${{ needs.prepare_issue_comment.outputs.ref }}
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -255,23 +250,20 @@ jobs:
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Mark PR check run in progress
-        if: github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
+      - name: Mark PR status running
+        if: github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            await github.rest.checks.update({
+            await github.rest.repos.createCommitStatus({
               owner,
               repo,
-              check_run_id: Number(process.env.CHECK_RUN_ID),
-              status: "in_progress",
-              started_at: new Date().toISOString(),
-              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              output: {
-                title: "UI Tests / macOS running",
-                summary: "The requested macOS UI tests are running.",
-              },
+              sha: process.env.STATUS_SHA,
+              state: "pending",
+              target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              description: "macOS UI tests are running.",
+              context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
         with:
@@ -294,27 +286,26 @@ jobs:
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
-      - name: Complete PR check run
-        if: always() && github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
+      - name: Complete PR status
+        if: always() && github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         env:
           JOB_STATUS: ${{ job.status }}
         with:
           script: |
             const { owner, repo } = context.repo;
-            const conclusion = process.env.JOB_STATUS === "success" ? "success" :
-              process.env.JOB_STATUS === "cancelled" ? "cancelled" :
+            const state = process.env.JOB_STATUS === "success" ? "success" :
+              process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
-            await github.rest.checks.update({
+            const description = process.env.JOB_STATUS === "cancelled" ?
+              "macOS UI tests were cancelled." :
+              `macOS UI tests completed with ${state}.`;
+            await github.rest.repos.createCommitStatus({
               owner,
               repo,
-              check_run_id: Number(process.env.CHECK_RUN_ID),
-              status: "completed",
-              conclusion,
-              completed_at: new Date().toISOString(),
-              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              output: {
-                title: `UI Tests / macOS ${conclusion}`,
-                summary: `The requested macOS UI tests completed with conclusion: ${conclusion}.`,
-              },
+              sha: process.env.STATUS_SHA,
+              state,
+              target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              description,
+              context: process.env.STATUS_CONTEXT,
             });
