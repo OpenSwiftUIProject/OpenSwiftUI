@@ -21,21 +21,113 @@ permissions:
   contents: read
   issues: read
   pull-requests: read
+  checks: write
 
 jobs:
+  prepare_issue_comment:
+    name: Prepare issue comment UI tests
+    if: >-
+      github.event_name == 'issue_comment' &&
+      github.event.issue.pull_request &&
+      contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+      (
+        github.event.comment.body == '/uitest' ||
+        startsWith(github.event.comment.body, '/uitest all') ||
+        startsWith(github.event.comment.body, '/uitest ios') ||
+        startsWith(github.event.comment.body, '/uitest macos')
+      )
+    runs-on: ubuntu-latest
+    outputs:
+      repository: ${{ steps.prepare.outputs.repository }}
+      ref: ${{ steps.prepare.outputs.ref }}
+      ios-requested: ${{ steps.prepare.outputs.ios-requested }}
+      macos-requested: ${{ steps.prepare.outputs.macos-requested }}
+      ios-check-run-id: ${{ steps.prepare.outputs.ios-check-run-id }}
+      macos-check-run-id: ${{ steps.prepare.outputs.macos-check-run-id }}
+    steps:
+      - name: Prepare PR check runs
+        id: prepare
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const pull_number = context.payload.issue.number;
+            const comment = context.payload.comment;
+            const body = comment.body.trim();
+            const allowedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const outputs = {
+              repository: "",
+              ref: "",
+              "ios-requested": "false",
+              "macos-requested": "false",
+              "ios-check-run-id": "",
+              "macos-check-run-id": "",
+            };
+            const setOutputs = () => {
+              for (const [name, value] of Object.entries(outputs)) {
+                core.setOutput(name, value);
+              }
+            };
+
+            const args = body.split(/\s+/);
+            if (args[0] !== "/uitest" || !allowedAssociations.has(comment.author_association)) {
+              setOutputs();
+              return;
+            }
+
+            const requested = args[1] ?? "all";
+            const platforms =
+              requested === "all" ? ["ios", "macos"] :
+              requested === "ios" || requested === "macos" ? [requested] :
+              [];
+            if (platforms.length === 0) {
+              setOutputs();
+              return;
+            }
+
+            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number });
+            outputs.repository = pull.head.repo.full_name;
+            outputs.ref = pull.head.sha;
+            outputs["ios-requested"] = String(platforms.includes("ios"));
+            outputs["macos-requested"] = String(platforms.includes("macos"));
+
+            const sameRepository = pull.head.repo.full_name === `${owner}/${repo}`;
+            if (!sameRepository) {
+              core.warning(`Skipping PR check run creation for fork PR ${pull.head.repo.full_name}@${pull.head.sha}.`);
+              setOutputs();
+              return;
+            }
+
+            const details_url = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`;
+            for (const platform of platforms) {
+              const label = platform === "ios" ? "iOS" : "macOS";
+              const { data: checkRun } = await github.rest.checks.create({
+                owner,
+                repo,
+                name: `UI Tests / ${label}`,
+                head_sha: pull.head.sha,
+                status: "queued",
+                details_url,
+                external_id: `${context.runId}:${platform}`,
+                output: {
+                  title: `UI Tests / ${label} queued`,
+                  summary: `Triggered by @${comment.user.login} with \`${body}\`.`,
+                },
+              });
+              outputs[`${platform}-check-run-id`] = String(checkRun.id);
+            }
+            setOutputs();
+
   ios_uitest:
     name: Execute UI tests on iOS
+    needs: prepare_issue_comment
     if: >-
-      github.event_name == 'push' ||
-      (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "ios"]'), inputs.platform)) ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request &&
-        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+      always() && (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "ios"]'), inputs.platform)) ||
         (
-          github.event.comment.body == '/uitest' ||
-          startsWith(github.event.comment.body, '/uitest all') ||
-          startsWith(github.event.comment.body, '/uitest ios')
+          github.event_name == 'issue_comment' &&
+          needs.prepare_issue_comment.outputs.ios-requested == 'true'
         )
       )
     strategy:
@@ -53,6 +145,7 @@ jobs:
       - self-hosted
       - ${{ matrix.os }}
     env:
+      CHECK_RUN_ID: ${{ needs.prepare_issue_comment.outputs.ios-check-run-id }}
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -64,21 +157,28 @@ jobs:
       OPENSWIFTUI_LINK_TESTING: 0
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Resolve PR checkout target
-        if: github.event_name == 'issue_comment'
-        id: pull-request
+      - name: Mark PR check run in progress
+        if: github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            const pull_number = context.payload.issue.number;
-            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number });
-            core.setOutput("repository", pull.head.repo.full_name);
-            core.setOutput("ref", pull.head.sha);
+            await github.rest.checks.update({
+              owner,
+              repo,
+              check_run_id: Number(process.env.CHECK_RUN_ID),
+              status: "in_progress",
+              started_at: new Date().toISOString(),
+              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              output: {
+                title: "UI Tests / iOS running",
+                summary: "The requested iOS UI tests are running.",
+              },
+            });
       - uses: actions/checkout@v4
         with:
-          repository: ${{ steps.pull-request.outputs.repository || github.repository }}
-          ref: ${{ steps.pull-request.outputs.ref || github.sha }}
+          repository: ${{ needs.prepare_issue_comment.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_issue_comment.outputs.ref || github.sha }}
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
@@ -96,20 +196,41 @@ jobs:
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
+      - name: Complete PR check run
+        if: always() && github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
+        uses: actions/github-script@v7
+        env:
+          JOB_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const conclusion = process.env.JOB_STATUS === "success" ? "success" :
+              process.env.JOB_STATUS === "cancelled" ? "cancelled" :
+              "failure";
+            await github.rest.checks.update({
+              owner,
+              repo,
+              check_run_id: Number(process.env.CHECK_RUN_ID),
+              status: "completed",
+              conclusion,
+              completed_at: new Date().toISOString(),
+              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              output: {
+                title: `UI Tests / iOS ${conclusion}`,
+                summary: `The requested iOS UI tests completed with conclusion: ${conclusion}.`,
+              },
+            });
 
   macos_uitest:
     name: Execute UI tests on macOS
+    needs: prepare_issue_comment
     if: >-
-      github.event_name == 'push' ||
-      (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "macos"]'), inputs.platform)) ||
-      (
-        github.event_name == 'issue_comment' &&
-        github.event.issue.pull_request &&
-        contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+      always() && (
+        github.event_name == 'push' ||
+        (github.event_name == 'workflow_dispatch' && contains(fromJSON('["all", "macos"]'), inputs.platform)) ||
         (
-          github.event.comment.body == '/uitest' ||
-          startsWith(github.event.comment.body, '/uitest all') ||
-          startsWith(github.event.comment.body, '/uitest macos')
+          github.event_name == 'issue_comment' &&
+          needs.prepare_issue_comment.outputs.macos-requested == 'true'
         )
       )
     strategy:
@@ -123,6 +244,7 @@ jobs:
       - self-hosted
       - ${{ matrix.os }}
     env:
+      CHECK_RUN_ID: ${{ needs.prepare_issue_comment.outputs.macos-check-run-id }}
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -133,21 +255,28 @@ jobs:
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       GH_TOKEN: ${{ github.token }}
     steps:
-      - name: Resolve PR checkout target
-        if: github.event_name == 'issue_comment'
-        id: pull-request
+      - name: Mark PR check run in progress
+        if: github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
         uses: actions/github-script@v7
         with:
           script: |
             const { owner, repo } = context.repo;
-            const pull_number = context.payload.issue.number;
-            const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number });
-            core.setOutput("repository", pull.head.repo.full_name);
-            core.setOutput("ref", pull.head.sha);
+            await github.rest.checks.update({
+              owner,
+              repo,
+              check_run_id: Number(process.env.CHECK_RUN_ID),
+              status: "in_progress",
+              started_at: new Date().toISOString(),
+              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              output: {
+                title: "UI Tests / macOS running",
+                summary: "The requested macOS UI tests are running.",
+              },
+            });
       - uses: actions/checkout@v4
         with:
-          repository: ${{ steps.pull-request.outputs.repository || github.repository }}
-          ref: ${{ steps.pull-request.outputs.ref || github.sha }}
+          repository: ${{ needs.prepare_issue_comment.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_issue_comment.outputs.ref || github.sha }}
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
@@ -165,3 +294,27 @@ jobs:
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
+      - name: Complete PR check run
+        if: always() && github.event_name == 'issue_comment' && env.CHECK_RUN_ID != ''
+        uses: actions/github-script@v7
+        env:
+          JOB_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const conclusion = process.env.JOB_STATUS === "success" ? "success" :
+              process.env.JOB_STATUS === "cancelled" ? "cancelled" :
+              "failure";
+            await github.rest.checks.update({
+              owner,
+              repo,
+              check_run_id: Number(process.env.CHECK_RUN_ID),
+              status: "completed",
+              conclusion,
+              completed_at: new Date().toISOString(),
+              details_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              output: {
+                title: `UI Tests / macOS ${conclusion}`,
+                summary: `The requested macOS UI tests completed with conclusion: ${conclusion}.`,
+              },
+            });
