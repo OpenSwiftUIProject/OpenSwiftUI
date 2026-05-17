@@ -35,6 +35,7 @@ let openSwiftUIModeSettings: SettingsDictionary = [
 ]
 
 let debugModeSettings: SettingsDictionary = [
+    "ENABLE_TESTABILITY": "YES",
     "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) DEBUG=1",
     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) DEBUG",
     "SWIFT_COMPILATION_MODE": "singlefile",
@@ -42,6 +43,7 @@ let debugModeSettings: SettingsDictionary = [
 ]
 
 let openSwiftUIDebugModeSettings = openSwiftUIModeSettings.merging([
+    "ENABLE_TESTABILITY": "YES",
     "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) OPENSWIFTUI=1 DEBUG=1",
     "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) OPENSWIFTUI DEBUG",
     "SWIFT_COMPILATION_MODE": "singlefile",
