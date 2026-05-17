@@ -128,7 +128,6 @@ let hostingExampleSettings = commonAppSettings.merging([
     "SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD": "NO",
     "SUPPORTS_XR_DESIGNED_FOR_IPHONE_IPAD": "NO",
     "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
-    "SWIFT_VERSION": "6.0",
     "XROS_DEPLOYMENT_TARGET": "2.0",
 ])
 

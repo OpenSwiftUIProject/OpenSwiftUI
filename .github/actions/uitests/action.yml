@@ -64,6 +64,7 @@ runs:
         cd Example
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
+          -workspace Example.xcworkspace \
           -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
@@ -79,6 +80,7 @@ runs:
         rm -rf /tmp/${{ inputs.platform }}-uitest.xcresult
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
+          -workspace Example.xcworkspace \
           -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
