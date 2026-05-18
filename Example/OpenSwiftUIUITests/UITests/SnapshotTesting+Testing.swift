@@ -8,6 +8,18 @@ import TestingHost
 import Foundation
 
 let defaultSize = CGSize(width: 200, height: 200)
+let snapshotReferenceDirectory: String = {
+    #if os(macOS)
+    let os = "macOS"
+    #elseif os(iOS) && targetEnvironment(simulator)
+    let os = "iOS_Simulator"
+    #else
+    #error("Unsupported UI test platform")
+    #endif
+    let directory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]! + "/\(os)"
+    print("SNAPSHOT_REFERENCE_DIR: \(directory)")
+    return directory
+}()
 
 #if os(macOS)
 import AppKit
@@ -146,12 +158,7 @@ private func openSwiftUIAssertSnapshot<Value, Format>(
     line: UInt = #line,
     column: UInt = #column
 ) {
-    #if os(macOS)
-    let os = "macOS"
-    #elseif os(iOS) && targetEnvironment(simulator)
-    let os = "iOS_Simulator"
-    #endif
-    let snapshotDirectory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]! + "/\(os)/" + fileID.description
+    let snapshotDirectory = snapshotReferenceDirectory + "/" + fileID.description
     let failure = verifySnapshot(
         of: value(),
         as: snapshotting,
