@@ -21,7 +21,7 @@
       }
     ],
     "targetForVariableExpansion" : {
-      "containerPath" : "container:Example.xcodeproj",
+      "containerPath" : "container:Example_Legacy.xcodeproj",
       "identifier" : "275751E22DEE1441003E467C",
       "name" : "TestingHost"
     }
@@ -29,8 +29,8 @@
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:Example.xcodeproj",
-        "identifier" : "E3439414A64A65510C1A69E1",
+        "containerPath" : "container:Example_Legacy.xcodeproj",
+        "identifier" : "279283B82DFF11CE00234D64",
         "name" : "OpenSwiftUIUITests"
       }
     }
