@@ -18,13 +18,13 @@
                BlueprintIdentifier = "27CD0B482AFC8D37003665EB"
                BuildableName = "Example.app"
                BlueprintName = "Example"
-               ReferencedContainer = "container:Example.xcodeproj">
+               ReferencedContainer = "container:Example_Legacy.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "SwiftUIDebug"
+      buildConfiguration = "OpenSwiftUIDebug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -43,13 +43,13 @@
                BlueprintIdentifier = "279283B82DFF11CE00234D64"
                BuildableName = "OpenSwiftUIUITests.xctest"
                BlueprintName = "OpenSwiftUIUITests"
-               ReferencedContainer = "container:Example.xcodeproj">
+               ReferencedContainer = "container:Example_Legacy.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "SwiftUIDebug"
+      buildConfiguration = "OpenSwiftUIDebug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -65,10 +65,15 @@
             BlueprintIdentifier = "27CD0B482AFC8D37003665EB"
             BuildableName = "Example.app"
             BlueprintName = "Example"
-            ReferencedContainer = "container:Example.xcodeproj">
+            ReferencedContainer = "container:Example_Legacy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
+         <EnvironmentVariable
+            key = "OPENSWIFTUI_PRINT_TREE"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
          <EnvironmentVariable
             key = "SWIFTUI_PRINT_TREE"
             value = "1"
@@ -77,7 +82,7 @@
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "SwiftUIRelease"
+      buildConfiguration = "OpenSwiftUIRelease"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -89,15 +94,15 @@
             BlueprintIdentifier = "27CD0B482AFC8D37003665EB"
             BuildableName = "Example.app"
             BlueprintName = "Example"
-            ReferencedContainer = "container:Example.xcodeproj">
+            ReferencedContainer = "container:Example_Legacy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "SwiftUIDebug">
+      buildConfiguration = "OpenSwiftUIDebug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "SwiftUIRelease"
+      buildConfiguration = "OpenSwiftUIRelease"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

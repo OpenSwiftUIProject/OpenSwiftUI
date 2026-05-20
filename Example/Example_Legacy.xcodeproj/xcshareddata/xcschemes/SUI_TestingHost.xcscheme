@@ -18,7 +18,7 @@
                BlueprintIdentifier = "275751E22DEE1441003E467C"
                BuildableName = "TestingHost.app"
                BlueprintName = "TestingHost"
-               ReferencedContainer = "container:Example.xcodeproj">
+               ReferencedContainer = "container:Example_Legacy.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
@@ -47,7 +47,7 @@
             BlueprintIdentifier = "275751E22DEE1441003E467C"
             BuildableName = "TestingHost.app"
             BlueprintName = "TestingHost"
-            ReferencedContainer = "container:Example.xcodeproj">
+            ReferencedContainer = "container:Example_Legacy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </LaunchAction>
@@ -64,7 +64,7 @@
             BlueprintIdentifier = "275751E22DEE1441003E467C"
             BuildableName = "TestingHost.app"
             BlueprintName = "TestingHost"
-            ReferencedContainer = "container:Example.xcodeproj">
+            ReferencedContainer = "container:Example_Legacy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>

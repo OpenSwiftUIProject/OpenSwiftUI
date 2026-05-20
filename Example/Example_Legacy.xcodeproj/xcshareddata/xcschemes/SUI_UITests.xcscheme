@@ -27,7 +27,7 @@
                BlueprintIdentifier = "279283B82DFF11CE00234D64"
                BuildableName = "OpenSwiftUIUITests.xctest"
                BlueprintName = "OpenSwiftUIUITests"
-               ReferencedContainer = "container:Example.xcodeproj">
+               ReferencedContainer = "container:Example_Legacy.xcodeproj">
             </BuildableReference>
          </TestableReference>
       </Testables>

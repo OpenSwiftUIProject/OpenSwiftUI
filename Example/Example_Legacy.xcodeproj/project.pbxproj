@@ -351,7 +351,7 @@
 					};
 				};
 			};
-			buildConfigurationList = 27CD0B442AFC8D37003665EB /* Build configuration list for PBXProject "Example" */;
+			buildConfigurationList = 27CD0B442AFC8D37003665EB /* Build configuration list for PBXProject "Example_Legacy" */;
 			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
@@ -1337,7 +1337,7 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = OpenSwiftUIDebug;
 		};
-		27CD0B442AFC8D37003665EB /* Build configuration list for PBXProject "Example" */ = {
+		27CD0B442AFC8D37003665EB /* Build configuration list for PBXProject "Example_Legacy" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
 				27CD0B562AFC8D38003665EB /* SwiftUIDebug */,

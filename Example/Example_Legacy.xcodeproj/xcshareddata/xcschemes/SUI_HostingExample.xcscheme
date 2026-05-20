@@ -18,13 +18,13 @@
                BlueprintIdentifier = "27D49DF72BA604FB00F6E2E2"
                BuildableName = "HostingExample.app"
                BlueprintName = "HostingExample"
-               ReferencedContainer = "container:Example.xcodeproj">
+               ReferencedContainer = "container:Example_Legacy.xcodeproj">
             </BuildableReference>
          </BuildActionEntry>
       </BuildActionEntries>
    </BuildAction>
    <TestAction
-      buildConfiguration = "OpenSwiftUIDebug"
+      buildConfiguration = "SwiftUIDebug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       shouldUseLaunchSchemeArgsEnv = "YES">
@@ -36,7 +36,7 @@
       </TestPlans>
    </TestAction>
    <LaunchAction
-      buildConfiguration = "OpenSwiftUIDebug"
+      buildConfiguration = "SwiftUIDebug"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
@@ -52,12 +52,22 @@
             BlueprintIdentifier = "27D49DF72BA604FB00F6E2E2"
             BuildableName = "HostingExample.app"
             BlueprintName = "HostingExample"
-            ReferencedContainer = "container:Example.xcodeproj">
+            ReferencedContainer = "container:Example_Legacy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
             key = "SWIFTUI_PRINT_TREE"
+            value = "1"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "AG_PRINT_CYCLES"
+            value = "2"
+            isEnabled = "NO">
+         </EnvironmentVariable>
+         <EnvironmentVariable
+            key = "AG_TRAP_CYCLES"
             value = "1"
             isEnabled = "NO">
          </EnvironmentVariable>
@@ -69,7 +79,7 @@
       </EnvironmentVariables>
    </LaunchAction>
    <ProfileAction
-      buildConfiguration = "OpenSwiftUIRelease"
+      buildConfiguration = "SwiftUIRelease"
       shouldUseLaunchSchemeArgsEnv = "YES"
       savedToolIdentifier = ""
       useCustomWorkingDirectory = "NO"
@@ -81,15 +91,15 @@
             BlueprintIdentifier = "27D49DF72BA604FB00F6E2E2"
             BuildableName = "HostingExample.app"
             BlueprintName = "HostingExample"
-            ReferencedContainer = "container:Example.xcodeproj">
+            ReferencedContainer = "container:Example_Legacy.xcodeproj">
          </BuildableReference>
       </BuildableProductRunnable>
    </ProfileAction>
    <AnalyzeAction
-      buildConfiguration = "OpenSwiftUIRelease">
+      buildConfiguration = "SwiftUIDebug">
    </AnalyzeAction>
    <ArchiveAction
-      buildConfiguration = "OpenSwiftUIRelease"
+      buildConfiguration = "SwiftUIRelease"
       revealArchiveInOrganizer = "YES">
    </ArchiveAction>
 </Scheme>

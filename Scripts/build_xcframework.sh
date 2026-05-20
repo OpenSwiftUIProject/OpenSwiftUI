@@ -2,6 +2,11 @@
 
 set -e
 
+: "${OPENSWIFTUI_LIBRARY_TYPE:=dynamic}"
+: "${OPENSWIFTUI_USE_LOCAL_DEPS:=1}"
+export OPENSWIFTUI_LIBRARY_TYPE
+export OPENSWIFTUI_USE_LOCAL_DEPS
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 

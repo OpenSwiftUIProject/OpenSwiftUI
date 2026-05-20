@@ -2,30 +2,33 @@
 
 ## Pre-Requirements
 
-Clone other components to the same directory of `OpenSwiftUI`
+Run the CI setup script from the `OpenSwiftUI` repository root. It checks out the local package dependencies used by the generated Example project.
 
 ```shell
-cd ..
-git clone https://github.com/OpenSwiftUIProject/OpenAttributeGraph.git
-git clone https://github.com/OpenSwiftUIProject/OpenRenderBox.git 
-git clone https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git 
+# From OpenSwiftUI/Example
+../Scripts/CI/darwin_setup_build.sh
 ```
+
+`OpenCoreGraphics` and `OpenObservation` are resolved through the `OpenSwiftUI` package dependency.
 
 ## Configure AttributeGraph Backend
 
 Since OpenAttributeGraph is not yet completed, you need to configure an AG backend before building.
 
-Use Apple's private AttributeGraph framework (Darwin only):
-
-```shell
-export OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH=1
-```
+This example defaults to Apple's private AttributeGraph framework through `mise.toml`.
 
 Or use the Compute module:
 
 ```shell
 export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
 export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_USE_BINARY=1
+```
+
+## Generate Project
+
+```shell
+mise exec -- tuist install
+mise exec -- tuist generate --no-open
 ```
 
 ## Example
