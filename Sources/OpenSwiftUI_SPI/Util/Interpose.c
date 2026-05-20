@@ -4,10 +4,21 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN && _OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #include <stdbool.h>
 #include <stdint.h>
+
+// MARK: - kdebug_is_enabled
+
+extern bool kdebug_is_enabled(uint32_t debugid);
+
+static bool my_kdebug_is_enabled(uint32_t debugid) {
+    return true;
+}
+
+#if _OPENSWIFTUI_SWIFTUI_RENDER
+
 #include <dispatch/dispatch.h>
 #include <os/log.h>
 #include <CoreFoundation/CoreFoundation.h>
@@ -84,14 +95,6 @@ static inline CFStringRef _interpose_protocol_description(const void *protocol) 
     CFStringRef result = CFStringCreateWithCString(kCFAllocatorDefault, name, kCFStringEncodingUTF8);
     CFAutorelease(result);
     return result;
-}
-
-// MARK: - kdebug_is_enabled
-
-extern bool kdebug_is_enabled(uint32_t debugid);
-
-static bool my_kdebug_is_enabled(uint32_t debugid) {
-    return true;
 }
 
 // MARK: - Color.Resolved Nominal Type Descriptor
@@ -175,6 +178,8 @@ static const void *my_swift_conformsToProtocol2(const void *type, const void *pr
     return result;
 }
 
+#endif /* _OPENSWIFTUI_SWIFTUI_RENDER */
+
 // MARK: - Interpose Registration
 
 typedef struct interpose_s {
@@ -186,10 +191,12 @@ __attribute__((used)) static const interpose_t interposers[]
     __attribute__((section("__DATA, __interpose"))) = {
     // Interpose kdebug_is_enabled to always return true to perform Signpost testing with Instruments
     { (const void *)my_kdebug_is_enabled, (const void *)kdebug_is_enabled },
+#if _OPENSWIFTUI_SWIFTUI_RENDER
     // Interpose swift_dynamicCast to handle casts to SwiftUI's internal Color.Resolved type to fix SwiftUI.ShapeLayerHelper visit check for Shape.fill API
     { (const void *)my_swift_dynamicCast, (const void *)swift_dynamicCast },
     // Interpose swift_conformsToProtocol2 to redirect SwiftUI.PlatformDrawable conformance checks to OpenSwiftUI.PlatformDrawable for Text's CGDrawingView
     { (const void *)my_swift_conformsToProtocol2, (const void *)swift_conformsToProtocol2 },
+#endif
 };
 
-#endif /* OPENSWIFTUI_TARGET_OS_DARWIN && _OPENSWIFTUI_SWIFTUI_RENDER */
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
