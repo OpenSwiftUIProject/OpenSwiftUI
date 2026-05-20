@@ -15,6 +15,10 @@ inputs:
   artifact-name:
     description: 'Name for the artifact upload'
     required: true
+  reference-root:
+    description: 'Root directory for persistent UI test reference images'
+    required: false
+    default: /Volumes/Workspace/OpenSwiftUI_CI/ReferenceImages
 
 outputs:
   test-result:
@@ -62,6 +66,8 @@ runs:
       shell: bash
       run: |
         cd Example
+        snapshot_reference_root="${{ inputs.reference-root }}"
+        mkdir -p "$snapshot_reference_root"
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
           -workspace Example.xcworkspace \
@@ -69,6 +75,7 @@ runs:
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
+          SNAPSHOT_REFERENCE_ROOT="$snapshot_reference_root" \
           2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified || true
 
     - name: Run UI tests with OpenSwiftUI
@@ -77,6 +84,8 @@ runs:
       shell: bash
       run: |
         cd Example
+        snapshot_reference_root="${{ inputs.reference-root }}"
+        mkdir -p "$snapshot_reference_root"
         rm -rf /tmp/${{ inputs.platform }}-uitest.xcresult
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
@@ -86,6 +95,7 @@ runs:
           -skipMacroValidation \
           -skipPackagePluginValidation \
           -resultBundlePath /tmp/${{ inputs.platform }}-uitest.xcresult \
+          SNAPSHOT_REFERENCE_ROOT="$snapshot_reference_root" \
           2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions --preserve-unbeautified
 
     - name: Collect failed snapshots

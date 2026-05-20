@@ -100,6 +100,7 @@ let commonAppSettings: SettingsDictionary = [
         "$(BUILD_DIR)/Release$(EFFECTIVE_PLATFORM_NAME)",
     ],
     "SDKROOT": "auto",
+    "SNAPSHOT_REFERENCE_ROOT": "$(PROJECT_DIR)/ReferenceImages",
     "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator macosx xros xrsimulator",
     "SUPPORTS_MACCATALYST": "NO",
     "SWIFT_EMIT_LOC_STRINGS": "YES",
@@ -192,7 +193,7 @@ let appDependencies: [TargetDependency] = [
 let testArguments = Arguments.arguments(
     environmentVariables: [
         "SNAPSHOT_REFERENCE_DIR": .environmentVariable(
-            value: "$(PROJECT_DIR)/ReferenceImages",
+            value: "$(SNAPSHOT_REFERENCE_ROOT)",
             isEnabled: true
         ),
         "SWIFTUI_PRINT_TREE": .environmentVariable(value: "1", isEnabled: false),

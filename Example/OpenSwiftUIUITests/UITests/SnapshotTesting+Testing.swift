@@ -11,12 +11,18 @@ let defaultSize = CGSize(width: 200, height: 200)
 let snapshotReferenceDirectory: String = {
     #if os(macOS)
     let os = "macOS"
-    #elseif os(iOS) && targetEnvironment(simulator)
+    #elseif os(iOS)
+    #if targetEnvironment(simulator)
     let os = "iOS_Simulator"
+    #else
+    let os = "iOS"
+    #endif
     #else
     #error("Unsupported UI test platform")
     #endif
-    let directory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]! + "/\(os)"
+    let version = ProcessInfo.processInfo.operatingSystemVersion
+    let osVersion = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
+    let directory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]! + "/\(os)/\(osVersion)"
     print("SNAPSHOT_REFERENCE_DIR: \(directory)")
     return directory
 }()
