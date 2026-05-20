@@ -55,6 +55,14 @@ runs:
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
 
+    - name: Disable LookInside & LookIn servers
+      shell: bash
+      run: |
+        {
+          echo "OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER=0"
+          echo "OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=0"
+        } >> "$GITHUB_ENV"
+
     - name: Generate Example project
       shell: bash
       run: |
