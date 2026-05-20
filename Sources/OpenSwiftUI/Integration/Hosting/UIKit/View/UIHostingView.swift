@@ -12,7 +12,7 @@ import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
 public import OpenSwiftUICore
-#if _OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDER
 import OpenSwiftUISymbolDualTestsSupport
 #endif
 import COpenSwiftUI

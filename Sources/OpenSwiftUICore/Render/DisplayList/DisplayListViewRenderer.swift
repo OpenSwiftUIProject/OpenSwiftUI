@@ -136,7 +136,7 @@ extension DisplayList {
             return renderer.exportedObject
         }
 
-        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && OPENSWIFTUI_SWIFTUI_RENDER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
         private func swiftUI_render(
             rootView: AnyObject,
@@ -158,7 +158,7 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
-            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && OPENSWIFTUI_SWIFTUI_RENDER
             swiftUI_render(
                 rootView: rootView,
                 from: list,
@@ -183,7 +183,7 @@ extension DisplayList {
             #endif
         }
 
-        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && OPENSWIFTUI_SWIFTUI_RENDER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderAsync")
         private func swiftUI_renderAsync(
             to list: DisplayList,
@@ -203,7 +203,7 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
-            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && OPENSWIFTUI_SWIFTUI_RENDER
             swiftUI_renderAsync(
                 to: list,
                 time: time,

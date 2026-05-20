@@ -11,7 +11,7 @@
 @_spi(DisplayList_ViewSystem)
 import OpenSwiftUICore
 import AppKit
-#if _OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDER
 import OpenSwiftUISymbolDualTestsSupport
 #endif
 import COpenSwiftUI
