@@ -14,6 +14,11 @@ on:
           - all
           - ios
           - macos
+      update_reference:
+        description: Update reference images before running UI tests
+        required: false
+        default: false
+        type: boolean
   issue_comment:
     types: [created]
 
@@ -32,9 +37,7 @@ jobs:
       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
       (
         github.event.comment.body == '/uitest' ||
-        startsWith(github.event.comment.body, '/uitest all') ||
-        startsWith(github.event.comment.body, '/uitest ios') ||
-        startsWith(github.event.comment.body, '/uitest macos')
+        startsWith(github.event.comment.body, '/uitest ')
       )
     runs-on: ubuntu-latest
     outputs:
@@ -42,6 +45,7 @@ jobs:
       ref: ${{ steps.prepare.outputs.ref }}
       ios-requested: ${{ steps.prepare.outputs.ios-requested }}
       macos-requested: ${{ steps.prepare.outputs.macos-requested }}
+      update-reference: ${{ steps.prepare.outputs.update-reference }}
       status-enabled: ${{ steps.prepare.outputs.status-enabled }}
     steps:
       - name: Prepare PR commit statuses
@@ -59,6 +63,7 @@ jobs:
               ref: "",
               "ios-requested": "false",
               "macos-requested": "false",
+              "update-reference": "false",
               "status-enabled": "false",
             };
             const setOutputs = () => {
@@ -73,7 +78,14 @@ jobs:
               return;
             }
 
-            const requested = args[1] ?? "all";
+            const updateRequested = args.slice(1).includes("update");
+            const platformArgs = args.slice(1).filter((arg) => arg !== "update");
+            if (platformArgs.length > 1) {
+              setOutputs();
+              return;
+            }
+
+            const requested = platformArgs[0] ?? "all";
             const platforms =
               requested === "all" ? ["ios", "macos"] :
               requested === "ios" || requested === "macos" ? [requested] :
@@ -88,6 +100,7 @@ jobs:
             outputs.ref = pull.head.sha;
             outputs["ios-requested"] = String(platforms.includes("ios"));
             outputs["macos-requested"] = String(platforms.includes("macos"));
+            outputs["update-reference"] = String(updateRequested);
 
             const sameRepository = pull.head.repo.full_name === `${owner}/${repo}`;
             if (!sameRepository) {
@@ -180,6 +193,7 @@ jobs:
           platform: ios
           destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
           artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}
+          update-reference: ${{ (github.event_name == 'workflow_dispatch' && inputs.update_reference) || needs.prepare_issue_comment.outputs.update-reference == 'true' }}
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1
@@ -269,6 +283,7 @@ jobs:
           platform: macos
           destination: "platform=macOS"
           artifact-name: macos-uitest-snapshots
+          update-reference: ${{ (github.event_name == 'workflow_dispatch' && inputs.update_reference) || needs.prepare_issue_comment.outputs.update-reference == 'true' }}
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
         run: exit 1

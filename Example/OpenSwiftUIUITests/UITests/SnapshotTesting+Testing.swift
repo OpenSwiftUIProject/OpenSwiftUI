@@ -8,6 +8,16 @@ import TestingHost
 import Foundation
 
 let defaultSize = CGSize(width: 200, height: 200)
+
+private let defaultSnapshotReferenceRoot: String = {
+    URL(fileURLWithPath: #filePath)
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .deletingLastPathComponent()
+        .appendingPathComponent("ReferenceImages")
+        .path
+}()
+
 let snapshotReferenceDirectory: String = {
     #if os(macOS)
     let os = "macOS"
@@ -22,7 +32,14 @@ let snapshotReferenceDirectory: String = {
     #endif
     let version = ProcessInfo.processInfo.operatingSystemVersion
     let osVersion = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
-    let directory = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]! + "/\(os)/\(osVersion)"
+    let configuredRoot = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]
+    let referenceRoot: String
+    if let configuredRoot, !configuredRoot.isEmpty, !configuredRoot.contains("$(") {
+        referenceRoot = configuredRoot
+    } else {
+        referenceRoot = defaultSnapshotReferenceRoot
+    }
+    let directory = referenceRoot + "/\(os)/\(osVersion)"
     print("SNAPSHOT_REFERENCE_DIR: \(directory)")
     return directory
 }()

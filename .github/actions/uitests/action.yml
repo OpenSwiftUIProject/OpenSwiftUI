@@ -19,6 +19,10 @@ inputs:
     description: 'Root directory for persistent UI test reference images'
     required: false
     default: /Volumes/Workspace/OpenSwiftUI_CI/ReferenceImages
+  update-reference:
+    description: 'Force updating reference images before running UI tests'
+    required: false
+    default: 'false'
 
 outputs:
   test-result:
@@ -62,21 +66,121 @@ runs:
         mise exec -- tuist install
         mise exec -- tuist generate --no-open
 
-    - name: Record baseline images with SwiftUI
+    - name: Resolve snapshot reference directory
+      id: reference
+      shell: bash
+      run: |
+        snapshot_reference_root="${{ inputs.reference-root }}"
+        case "${{ inputs.platform }}" in
+          macos)
+            snapshot_platform="macOS"
+            snapshot_version="$(sw_vers -productVersion)"
+            ;;
+          ios)
+            snapshot_platform="iOS_Simulator"
+            snapshot_version="$(sed -n 's/.*OS=\([^,]*\).*/\1/p' <<< "${{ inputs.destination }}")"
+            if [[ -z "$snapshot_version" ]]; then
+              echo "::error::Unable to resolve iOS simulator version from destination: ${{ inputs.destination }}"
+              exit 1
+            fi
+            IFS=. read -r major minor patch extra <<< "$snapshot_version"
+            patch="${patch:-0}"
+            snapshot_version="$major.$minor.$patch"
+            ;;
+          *)
+            echo "::error::Unsupported UI test platform: ${{ inputs.platform }}"
+            exit 1
+            ;;
+        esac
+
+        snapshot_reference_dir="$snapshot_reference_root/$snapshot_platform/$snapshot_version"
+        needs_record="${{ inputs.update-reference }}"
+        if [[ "$needs_record" != "true" ]]; then
+          if [[ -d "$snapshot_reference_dir" ]] && find "$snapshot_reference_dir" -type f -print -quit | grep -q .; then
+            needs_record="false"
+          else
+            needs_record="true"
+          fi
+        fi
+
+        echo "root=$snapshot_reference_root" >> "$GITHUB_OUTPUT"
+        echo "directory=$snapshot_reference_dir" >> "$GITHUB_OUTPUT"
+        echo "needs-record=$needs_record" >> "$GITHUB_OUTPUT"
+        echo "Snapshot reference directory: $snapshot_reference_dir"
+        echo "Record SwiftUI baseline: $needs_record"
+
+    - name: Use persistent snapshot reference directory
       shell: bash
       run: |
         cd Example
-        snapshot_reference_root="${{ inputs.reference-root }}"
+        snapshot_reference_root="${{ steps.reference.outputs.root }}"
+        ruby -e '
+          value = ARGV.fetch(0)
+          paths = ARGV.drop(1)
+          paths.each do |path|
+            text = File.read(path)
+            environment_variable = [
+              "         <EnvironmentVariable",
+              "            key = \"SNAPSHOT_REFERENCE_DIR\"",
+              "            value = \"#{value}\"",
+              "            isEnabled = \"YES\">",
+              "         </EnvironmentVariable>",
+            ].join("\n")
+            updated = if text.include?("key = \"SNAPSHOT_REFERENCE_DIR\"")
+              text.gsub(/(key = "SNAPSHOT_REFERENCE_DIR"\n\s+value = ")[^"]+(")/) do
+                "#{$1}#{value}#{$2}"
+              end
+            else
+              text.sub(/(<EnvironmentVariables>\n)/) do
+                "#{$1}#{environment_variable}\n"
+              end
+            end
+            abort("EnvironmentVariables block not found in #{path}") if updated == text
+            File.write(path, updated)
+          end
+        ' \
+          "$snapshot_reference_root" \
+          Example.xcodeproj/xcshareddata/xcschemes/SUI_UITests.xcscheme \
+          Example.xcodeproj/xcshareddata/xcschemes/OSUI_UITests.xcscheme
+
+    - name: Record baseline images with SwiftUI
+      if: steps.reference.outputs.needs-record == 'true'
+      shell: bash
+      run: |
+        cd Example
+        snapshot_reference_root="${{ steps.reference.outputs.root }}"
+        snapshot_reference_dir="${{ steps.reference.outputs.directory }}"
+        lockfile="$snapshot_reference_root/.lock"
         mkdir -p "$snapshot_reference_root"
+
+        if ( set -o noclobber; printf '%s\n' "run=${GITHUB_RUN_ID} job=${GITHUB_JOB} attempt=${GITHUB_RUN_ATTEMPT}" > "$lockfile" ) 2>/dev/null; then
+          trap 'rm -f "$lockfile"' EXIT INT TERM
+        else
+          echo "::error::Snapshot reference images are locked by $(cat "$lockfile" 2>/dev/null || echo "another UI test run")."
+          exit 1
+        fi
+
         set -o pipefail
+        record_status=0
         NSUnbufferedIO=YES xcodebuild test \
           -workspace Example.xcworkspace \
           -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
-          SNAPSHOT_REFERENCE_ROOT="$snapshot_reference_root" \
-          2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified || true
+          2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified || record_status=$?
+
+        if [[ "$record_status" -ne 0 ]]; then
+          echo "SwiftUI baseline recording exited with status $record_status; continuing if reference images were written."
+        fi
+
+        if [[ ! -d "$snapshot_reference_dir" ]] || ! find "$snapshot_reference_dir" -type f -print -quit | grep -q .; then
+          echo "::error::SwiftUI baseline did not create reference images in $snapshot_reference_dir."
+          if [[ "$record_status" -ne 0 ]]; then
+            exit "$record_status"
+          fi
+          exit 1
+        fi
 
     - name: Run UI tests with OpenSwiftUI
       id: uitest
@@ -84,8 +188,6 @@ runs:
       shell: bash
       run: |
         cd Example
-        snapshot_reference_root="${{ inputs.reference-root }}"
-        mkdir -p "$snapshot_reference_root"
         rm -rf /tmp/${{ inputs.platform }}-uitest.xcresult
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
@@ -95,7 +197,6 @@ runs:
           -skipMacroValidation \
           -skipPackagePluginValidation \
           -resultBundlePath /tmp/${{ inputs.platform }}-uitest.xcresult \
-          SNAPSHOT_REFERENCE_ROOT="$snapshot_reference_root" \
           2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions --preserve-unbeautified
 
     - name: Collect failed snapshots
