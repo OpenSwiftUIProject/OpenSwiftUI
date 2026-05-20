@@ -55,10 +55,6 @@ runs:
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
 
-    - name: Install xcbeautify
-      shell: bash
-      run: brew install xcbeautify
-
     - name: Generate Example project
       shell: bash
       run: |
@@ -168,7 +164,7 @@ runs:
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
-          2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified || record_status=$?
+          2>&1 || record_status=$?
 
         if [[ "$record_status" -ne 0 ]]; then
           echo "SwiftUI baseline recording exited with status $record_status; continuing if reference images were written."
@@ -206,7 +202,7 @@ runs:
           -skipMacroValidation \
           -skipPackagePluginValidation \
           -resultBundlePath "$result_bundle" \
-          2>&1 | tee "$test_log" | xcbeautify --renderer github-actions --preserve-unbeautified
+          2>&1 | tee "$test_log"
 
     - name: Collect failed snapshots
       if: steps.uitest.outcome == 'failure'
