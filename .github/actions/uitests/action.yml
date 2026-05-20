@@ -188,7 +188,16 @@ runs:
       shell: bash
       run: |
         cd Example
-        rm -rf /tmp/${{ inputs.platform }}-uitest.xcresult
+        uitest_tmp="${RUNNER_TEMP:-/tmp}/uitests-${GITHUB_RUN_ID}-${{ inputs.platform }}"
+        rm -rf "$uitest_tmp"
+        mkdir -p "$uitest_tmp/artifacts"
+        result_bundle="$uitest_tmp/${{ inputs.platform }}-uitest.xcresult"
+        test_log="$uitest_tmp/${{ inputs.platform }}-uitest.log"
+        echo "tmp_dir=$uitest_tmp" >> "$GITHUB_OUTPUT"
+        echo "result_bundle=$result_bundle" >> "$GITHUB_OUTPUT"
+        echo "test_log=$test_log" >> "$GITHUB_OUTPUT"
+        echo "artifact_dir=$uitest_tmp/artifacts" >> "$GITHUB_OUTPUT"
+        echo "xcresult_archive=$uitest_tmp/${{ inputs.artifact-name }}.xcresult.zip" >> "$GITHUB_OUTPUT"
         set -o pipefail
         NSUnbufferedIO=YES xcodebuild test \
           -workspace Example.xcworkspace \
@@ -196,36 +205,43 @@ runs:
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
-          -resultBundlePath /tmp/${{ inputs.platform }}-uitest.xcresult \
-          2>&1 | tee /tmp/${{ inputs.platform }}-uitest.log | xcbeautify --renderer github-actions --preserve-unbeautified
+          -resultBundlePath "$result_bundle" \
+          2>&1 | tee "$test_log" | xcbeautify --renderer github-actions --preserve-unbeautified
 
     - name: Collect failed snapshots
       if: steps.uitest.outcome == 'failure'
       shell: bash
       run: |
-        Scripts/CI/collect_uitest_failures.sh /tmp/${{ inputs.platform }}-uitest.log /tmp/uitest-artifacts
+        Scripts/CI/collect_uitest_failures.sh \
+          "${{ steps.uitest.outputs.test_log }}" \
+          "${{ steps.uitest.outputs.artifact_dir }}"
 
     - name: Upload test artifacts
       if: steps.uitest.outcome == 'failure'
       uses: actions/upload-artifact@v4
       with:
         name: ${{ inputs.artifact-name }}
-        path: /tmp/uitest-artifacts/
+        path: ${{ steps.uitest.outputs.artifact_dir }}
         retention-days: 7
 
     - name: Zip xcresult bundle
       if: steps.uitest.outcome == 'failure'
       shell: bash
       run: |
-        cd /tmp
-        mv ${{ inputs.platform }}-uitest.xcresult ${{ inputs.artifact-name }}.xcresult
-        zip -r -q ${{ inputs.artifact-name }}.xcresult.zip ${{ inputs.artifact-name }}.xcresult
+        uitest_tmp="${{ steps.uitest.outputs.tmp_dir }}"
+        result_bundle="${{ steps.uitest.outputs.result_bundle }}"
+        archive_bundle="$uitest_tmp/${{ inputs.artifact-name }}.xcresult"
+        archive_path="${{ steps.uitest.outputs.xcresult_archive }}"
+        rm -rf "$archive_bundle" "$archive_path"
+        mv "$result_bundle" "$archive_bundle"
+        cd "$uitest_tmp"
+        zip -r -q "$archive_path" "${{ inputs.artifact-name }}.xcresult"
 
     - name: Upload xcresult bundle
       if: steps.uitest.outcome == 'failure'
       uses: actions/upload-artifact@v7
       with:
         name: ${{ inputs.artifact-name }}.xcresult.zip
-        path: /tmp/${{ inputs.artifact-name }}.xcresult.zip
+        path: ${{ steps.uitest.outputs.xcresult_archive }}
         archive: false
         retention-days: 7
