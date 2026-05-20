@@ -1,6 +1,12 @@
 import ProjectDescription
+import ProjectDescriptionHelpers
 
 // MARK: - Constants
+
+configureOpenSwiftUIEnvironment()
+let exampleServerConfiguration = OpenSwiftUIExampleServerConfiguration.resolve()
+let enableLookInsideServer = exampleServerConfiguration.enableLookInsideServer
+let enableLookInServer = exampleServerConfiguration.enableLookInServer
 
 let destinations: Destinations = [.iPhone, .iPad, .mac, .appleVision]
 
@@ -50,12 +56,18 @@ let openSwiftUIDebugModeSettings = openSwiftUIModeSettings.merging([
     "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
 ])
 
+let inspectUIServerReleaseExclusionSettings: SettingsDictionary = (enableLookInsideServer || enableLookInServer)
+    ? [
+        "EXCLUDED_SOURCE_FILE_NAMES": "$(inherited) LookInsideServer* LookinServer*",
+    ]
+    : [:]
+
 func targetConfigurations(_ xcconfig: Path) -> [Configuration] {
     [
         .debug(name: swiftUIDebug, settings: swiftUIModeSettings.merging(debugModeSettings), xcconfig: xcconfig),
-        .release(name: swiftUIRelease, settings: swiftUIModeSettings, xcconfig: xcconfig),
+        .release(name: swiftUIRelease, settings: swiftUIModeSettings.merging(inspectUIServerReleaseExclusionSettings), xcconfig: xcconfig),
         .debug(name: openSwiftUIDebug, settings: openSwiftUIDebugModeSettings, xcconfig: xcconfig),
-        .release(name: openSwiftUIRelease, settings: openSwiftUIModeSettings, xcconfig: xcconfig),
+        .release(name: openSwiftUIRelease, settings: openSwiftUIModeSettings.merging(inspectUIServerReleaseExclusionSettings), xcconfig: xcconfig),
     ]
 }
 
@@ -184,10 +196,23 @@ let privateFrameworkDependencies: [TargetDependency] = [
     .external(name: "BacklightServices", condition: .when([.ios, .visionos])),
 ]
 
+let debugServerDependencies: [TargetDependency]
+if enableLookInsideServer {
+    debugServerDependencies = [
+        .external(name: "LookInsideServer", condition: .when([.ios, .macos])),
+    ]
+} else if enableLookInServer {
+    debugServerDependencies = [
+        .external(name: "LookinServer", condition: .when([.ios])),
+    ]
+} else {
+    debugServerDependencies = []
+}
+
 let appDependencies: [TargetDependency] = [
     .external(name: "OpenSwiftUI"),
     .external(name: "Equatable"),
-] + privateFrameworkDependencies
+] + privateFrameworkDependencies + debugServerDependencies
 
 let testArguments = Arguments.arguments(
     environmentVariables: [

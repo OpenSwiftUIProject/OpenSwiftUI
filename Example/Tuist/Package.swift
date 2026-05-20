@@ -2,20 +2,50 @@
 
 import PackageDescription
 
-let package = Package(
+#if TUIST
+import ProjectDescriptionHelpers
+
+public struct PackageContextEnvironmentProvider: EnvironmentProvider {
+    public init() {}
+
+    public func value(forKey key: String) -> String? {
+        Context.environment[key]
+    }
+}
+
+configureOpenSwiftUIEnvironment(provider: PackageContextEnvironmentProvider())
+let exampleServerConfiguration = OpenSwiftUIExampleServerConfiguration.resolve()
+let enableLookInsideServer = exampleServerConfiguration.enableLookInsideServer
+let enableLookInServer = exampleServerConfiguration.enableLookInServer
+#else
+let enableLookInsideServer = false
+let enableLookInServer = false
+#endif
+
+var dependencies: [PackageDescription.Package.Dependency] = [
+    .package(path: "../../"),
+    .package(path: "../../../OpenAttributeGraph"),
+    .package(path: "../../../OpenRenderBox"),
+    .package(path: "../../../DarwinPrivateFrameworks"),
+    .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
+    .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
+    .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
+    .package(url: "https://github.com/OpenSwiftUIProject/equatable.git", branch: "main"),
+    .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
+    .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing", exact: "1.18.9-osui"),
+]
+
+if enableLookInsideServer {
+    dependencies.append(.package(url: "https://github.com/LookInsideApp/LookInside-Release.git", from: "0.2.2"))
+}
+
+if enableLookInServer {
+    dependencies.append(.package(url: "https://github.com/QMUI/LookinServer.git", from: "1.2.8"))
+}
+
+let package = PackageDescription.Package(
     name: "ExampleDependencies",
-    dependencies: [
-        .package(path: "../../"),
-        .package(path: "../../../OpenAttributeGraph"),
-        .package(path: "../../../OpenRenderBox"),
-        .package(path: "../../../DarwinPrivateFrameworks"),
-        .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
-        .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
-        .package(url: "https://github.com/OpenSwiftUIProject/equatable.git", branch: "main"),
-        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
-        .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing", exact: "1.18.9-osui"),
-    ]
+    dependencies: dependencies
 )
 
 #if TUIST
@@ -40,33 +70,47 @@ let openSwiftUITargetSettings: SettingsDictionary = [
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
 ]
 
+var packageProductTypes: [String: ProjectDescription.Product] = [
+    "OpenSwiftUI": ProjectDescription.Product.framework,
+    "OpenSwiftUICore": ProjectDescription.Product.staticFramework,
+    "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
+    "COpenSwiftUI": ProjectDescription.Product.staticFramework,
+    "OpenSwiftUIMacros": ProjectDescription.Product.macro,
+    "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
+    "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
+    "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,
+    "OpenCoreGraphicsShims": ProjectDescription.Product.staticFramework,
+    "OpenObservation": ProjectDescription.Product.staticFramework,
+    "OpenQuartzCoreShims": ProjectDescription.Product.staticFramework,
+    "OpenRenderBoxShims": ProjectDescription.Product.staticFramework,
+    "SymbolLocator": ProjectDescription.Product.staticFramework,
+]
+
+var packageProductDestinations: [String: Destinations] = [
+    "OpenSwiftUI": examplePackageDestinations,
+    "OpenSwiftUICore": examplePackageDestinations,
+    "OpenSwiftUI_SPI": examplePackageDestinations,
+    "OpenSwiftUIExtension": examplePackageDestinations,
+    "OpenSwiftUIBridge": examplePackageDestinations,
+    "OpenAttributeGraph": examplePackageDestinations,
+    "OpenAttributeGraphShims": examplePackageDestinations,
+    "OpenRenderBox": examplePackageDestinations,
+    "OpenRenderBoxShims": examplePackageDestinations,
+]
+
+if enableLookInsideServer {
+    packageProductTypes["LookInsideServer"] = ProjectDescription.Product.framework
+    packageProductDestinations["LookInsideServer"] = [.iPhone, .iPad, .mac]
+}
+
+if enableLookInServer {
+    packageProductTypes["LookinServer"] = ProjectDescription.Product.framework
+    packageProductDestinations["LookinServer"] = [.iPhone, .iPad]
+}
+
 let packageSettings = PackageSettings(
-    productTypes: [
-        "OpenSwiftUI": ProjectDescription.Product.framework,
-        "OpenSwiftUICore": ProjectDescription.Product.staticFramework,
-        "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
-        "COpenSwiftUI": ProjectDescription.Product.staticFramework,
-        "OpenSwiftUIMacros": ProjectDescription.Product.macro,
-        "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
-        "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
-        "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,
-        "OpenCoreGraphicsShims": ProjectDescription.Product.staticFramework,
-        "OpenObservation": ProjectDescription.Product.staticFramework,
-        "OpenQuartzCoreShims": ProjectDescription.Product.staticFramework,
-        "OpenRenderBoxShims": ProjectDescription.Product.staticFramework,
-        "SymbolLocator": ProjectDescription.Product.staticFramework,
-    ],
-    productDestinations: [
-        "OpenSwiftUI": examplePackageDestinations,
-        "OpenSwiftUICore": examplePackageDestinations,
-        "OpenSwiftUI_SPI": examplePackageDestinations,
-        "OpenSwiftUIExtension": examplePackageDestinations,
-        "OpenSwiftUIBridge": examplePackageDestinations,
-        "OpenAttributeGraph": examplePackageDestinations,
-        "OpenAttributeGraphShims": examplePackageDestinations,
-        "OpenRenderBox": examplePackageDestinations,
-        "OpenRenderBoxShims": examplePackageDestinations,
-    ],
+    productTypes: packageProductTypes,
+    productDestinations: packageProductDestinations,
     baseSettings: .settings(
         configurations: openSwiftUIPackageConfigurations,
         defaultSettings: .none,

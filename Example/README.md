@@ -31,6 +31,24 @@ mise exec -- tuist install
 mise exec -- tuist generate --no-open
 ```
 
+By default, the generated Debug Example targets include LookInsideServer. You can switch the debug inspector server before running `tuist install` and `tuist generate`:
+
+```shell
+# Default
+export OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER=1
+export OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=0
+
+# Use Lookin instead
+export OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER=0
+export OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=1
+
+# Disable both
+export OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER=0
+export OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=0
+```
+
+Do not enable both server variables at the same time.
+
 ## Example
 
 A OpenSwiftUI/SwiftUI `App` lifecycle example.
