@@ -97,7 +97,8 @@ runs:
             ;;
         esac
 
-        snapshot_reference_dir="$snapshot_reference_root/$snapshot_platform/$snapshot_version"
+        snapshot_reference_platform_dir="$snapshot_reference_root/$snapshot_platform"
+        snapshot_reference_dir="$snapshot_reference_platform_dir/$snapshot_version"
         needs_record="${{ inputs.update-reference }}"
         if [[ "$needs_record" != "true" ]]; then
           if [[ -d "$snapshot_reference_dir" ]] && find "$snapshot_reference_dir" -type f -print -quit | grep -q .; then
@@ -108,7 +109,9 @@ runs:
         fi
 
         echo "root=$snapshot_reference_root" >> "$GITHUB_OUTPUT"
+        echo "platform-directory=$snapshot_reference_platform_dir" >> "$GITHUB_OUTPUT"
         echo "directory=$snapshot_reference_dir" >> "$GITHUB_OUTPUT"
+        echo "lockfile=$snapshot_reference_platform_dir/.lock" >> "$GITHUB_OUTPUT"
         echo "needs-record=$needs_record" >> "$GITHUB_OUTPUT"
         echo "Snapshot reference directory: $snapshot_reference_dir"
         echo "Record SwiftUI baseline: $needs_record"
@@ -148,21 +151,65 @@ runs:
           Example.xcodeproj/xcshareddata/xcschemes/OSUI_UITests.xcscheme
 
     - name: Record baseline images with SwiftUI
+      id: record-baseline
       if: steps.reference.outputs.needs-record == 'true'
+      continue-on-error: true
       shell: bash
       run: |
         cd Example
-        snapshot_reference_root="${{ steps.reference.outputs.root }}"
+        snapshot_reference_platform_dir="${{ steps.reference.outputs.platform-directory }}"
         snapshot_reference_dir="${{ steps.reference.outputs.directory }}"
-        lockfile="$snapshot_reference_root/.lock"
-        mkdir -p "$snapshot_reference_root"
+        lockfile="${{ steps.reference.outputs.lockfile }}"
+        lock_nonce="$(uuidgen 2>/dev/null || printf '%s-%s-%s' "$$" "$RANDOM" "$RANDOM")"
+        lock_owner="run=${GITHUB_RUN_ID} job=${GITHUB_JOB} attempt=${GITHUB_RUN_ATTEMPT} platform=${{ inputs.platform }} destination=${{ inputs.destination }} nonce=${lock_nonce}"
+        echo "lockfile=$lockfile" >> "$GITHUB_OUTPUT"
+        echo "lock-owner=$lock_owner" >> "$GITHUB_OUTPUT"
+        mkdir -p "$snapshot_reference_platform_dir"
 
-        if ( set -o noclobber; printf '%s\n' "run=${GITHUB_RUN_ID} job=${GITHUB_JOB} attempt=${GITHUB_RUN_ATTEMPT}" > "$lockfile" ) 2>/dev/null; then
-          trap 'rm -f "$lockfile"' EXIT INT TERM
+        remove_current_lock() {
+          if [[ -f "$lockfile" ]] && [[ "$(cat "$lockfile" 2>/dev/null || true)" == "$lock_owner" ]]; then
+            rm -f "$lockfile"
+          fi
+        }
+
+        remove_completed_run_lock() {
+          if [[ ! -f "$lockfile" ]]; then
+            return
+          fi
+
+          local existing_lock existing_run existing_status
+          existing_lock="$(cat "$lockfile" 2>/dev/null || true)"
+          existing_run="$(sed -n 's/^run=\([^ ]*\).*/\1/p' <<< "$existing_lock")"
+          if [[ -z "$existing_run" ]] || ! command -v gh >/dev/null 2>&1; then
+            return
+          fi
+
+          existing_status="$(gh run view "$existing_run" --repo "$GITHUB_REPOSITORY" --json status --jq .status 2>/dev/null || true)"
+          if [[ "$existing_status" == "completed" ]]; then
+            echo "::notice::Removing stale snapshot reference lock from completed run $existing_run."
+            rm -f "$lockfile"
+          fi
+        }
+
+        acquire_lock() {
+          ( set -o noclobber; printf '%s\n' "$lock_owner" > "$lockfile" ) 2>/dev/null
+        }
+
+        lock_acquired=false
+        remove_completed_run_lock
+        if acquire_lock; then
+          lock_acquired=true
         else
+          remove_completed_run_lock
+          if acquire_lock; then
+            lock_acquired=true
+          fi
+        fi
+        if [[ "$lock_acquired" != "true" ]]; then
           echo "::error::Snapshot reference images are locked by $(cat "$lockfile" 2>/dev/null || echo "another UI test run")."
           exit 1
         fi
+        trap remove_current_lock EXIT INT TERM
 
         set -o pipefail
         record_status=0
@@ -185,6 +232,21 @@ runs:
           fi
           exit 1
         fi
+
+    - name: Clean up snapshot reference lock
+      if: always() && steps.reference.outputs.needs-record == 'true'
+      shell: bash
+      run: |
+        lockfile="${{ steps.record-baseline.outputs.lockfile }}"
+        lock_owner="${{ steps.record-baseline.outputs.lock-owner }}"
+        if [[ -n "$lockfile" ]] && [[ -f "$lockfile" ]] && [[ "$(cat "$lockfile" 2>/dev/null || true)" == "$lock_owner" ]]; then
+          rm -f "$lockfile"
+        fi
+
+    - name: Fail if baseline recording failed
+      if: steps.record-baseline.outcome == 'failure'
+      shell: bash
+      run: exit 1
 
     - name: Run UI tests with OpenSwiftUI
       id: uitest
