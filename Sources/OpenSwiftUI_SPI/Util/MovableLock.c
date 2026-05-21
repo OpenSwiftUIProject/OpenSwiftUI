@@ -29,9 +29,9 @@ MovableLock _MovableLockCreate() {
         abort();
     }
     pthread_mutex_init(&lock->mutex, NULL);
-    pthread_cond_init(&lock->cond1, NULL);
-    pthread_cond_init(&lock->cond2, NULL);
-    pthread_cond_init(&lock->cond3, NULL);
+    pthread_cond_init(&lock->lockCondition, NULL);
+    pthread_cond_init(&lock->syncMainCondition, NULL);
+    pthread_cond_init(&lock->waitCondition, NULL);
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     lock->main = pthread_main_thread_np();
     #endif
@@ -39,9 +39,9 @@ MovableLock _MovableLockCreate() {
 }
 
 void _MovableLockDestroy(MovableLock lock) {
-    pthread_cond_destroy(&lock->cond1);
-    pthread_cond_destroy(&lock->cond2);
-    pthread_cond_destroy(&lock->cond3);
+    pthread_cond_destroy(&lock->lockCondition);
+    pthread_cond_destroy(&lock->syncMainCondition);
+    pthread_cond_destroy(&lock->waitCondition);
     pthread_mutex_destroy(&lock->mutex);
     free(lock);
 }
@@ -76,8 +76,8 @@ void _MovableLockUnlock(MovableLock lock) {
     if (lock->level != 0) {
         return;
     }
-    if (lock->unknown != 0) {
-        pthread_cond_signal(&lock->cond1);
+    if (lock->waiterCount != 0) {
+        pthread_cond_signal(&lock->lockCondition);
     }
     lock->owner = NULL;
     pthread_mutex_unlock(&lock->mutex);
@@ -91,17 +91,17 @@ void _MovableLockSyncMain(MovableLock lock, const void *context, void (*function
     } else {
         lock->function = function;
         lock->context = context;
-        if (lock->unknown5) {
-            pthread_cond_signal_thread_np(&lock->cond1, lock->main);
-        } else if (!lock->unknown4) {
-            lock->unknown4 = true;
+        if (lock->mainThreadWaiting) {
+            pthread_cond_signal_thread_np(&lock->lockCondition, lock->main);
+        } else if (!lock->syncMainCallbackPending) {
+            lock->syncMainCallbackPending = true;
             dispatch_async_f(dispatch_get_main_queue(), lock, (dispatch_function_t)&sync_main_callback);
-            if (lock->unknown5) {
-                pthread_cond_signal_thread_np(&lock->cond1, lock->main);
+            if (lock->mainThreadWaiting) {
+                pthread_cond_signal_thread_np(&lock->lockCondition, lock->main);
             }
         }
         while (lock->function) {
-            pthread_cond_wait(&lock->cond2, &lock->mutex);
+            pthread_cond_wait(&lock->syncMainCondition, &lock->mutex);
         }
     }
     #endif
@@ -113,10 +113,10 @@ void _MovableLockWait(MovableLock lock) {
     uint32_t level = lock->level;
     lock->level = 0;
     lock->owner = NULL;
-    if (lock->unknown != 0) {
-        pthread_cond_broadcast(&lock->cond1);
+    if (lock->waiterCount != 0) {
+        pthread_cond_broadcast(&lock->lockCondition);
     }
-    pthread_cond_wait(&lock->cond3, &lock->mutex);
+    pthread_cond_wait(&lock->waitCondition, &lock->mutex);
     while (lock->owner) {
         wait_for_lock(lock, owner);
     }
@@ -127,15 +127,15 @@ void _MovableLockWait(MovableLock lock) {
 
 void _MovableLockBroadcast(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
-    pthread_cond_broadcast(&lock->cond3);
+    pthread_cond_broadcast(&lock->waitCondition);
     #endif
 }
 
 void wait_for_lock(MovableLock lock, pthread_t owner) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
-    lock->unknown += 1;
+    lock->waiterCount += 1;
     if (lock->main == owner) {
-        lock->unknown5 = 1;
+        lock->mainThreadWaiting = true;
         if (lock->function) {
             uint32_t original_level = lock->level;
             pthread_t original_owner = lock->owner;
@@ -146,21 +146,21 @@ void wait_for_lock(MovableLock lock, pthread_t owner) {
             lock->owner = original_owner;
             lock->function = NULL;
             lock->context = NULL;
-            pthread_cond_signal(&lock->cond2);
+            pthread_cond_signal(&lock->syncMainCondition);
         }
     }
-    pthread_cond_wait(&lock->cond1, &lock->mutex);
+    pthread_cond_wait(&lock->lockCondition, &lock->mutex);
     if (lock->main == owner) {
-        lock->unknown5 = 0;
+        lock->mainThreadWaiting = false;
     }
-    lock->unknown -= 1;
+    lock->waiterCount -= 1;
     #endif
 }
 
 void sync_main_callback(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     _MovableLockLock(lock);
-    lock->unknown4 = 0;
+    lock->syncMainCallbackPending = false;
     _MovableLockUnlock(lock);
     #endif
 }

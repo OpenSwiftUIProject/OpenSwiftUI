@@ -196,12 +196,19 @@ let cfCGTypes = envBoolValue("CF_CGTYPES", default: buildForDarwinPlatform)
 
 var sharedCSettings: [CSetting] = [
     .define("NDEBUG", .when(configuration: .release)),
+    // Rewrite malloc() to malloc_type_malloc() for type-isolated allocation buckets (xzone malloc).
+    .unsafeFlags(["-ftyped-memory-operations"], .when(platforms: .darwinPlatforms)),
     .unsafeFlags(["-fmodules"]),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
     .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
 var sharedCxxSettings: [CXXSetting] = [
+    .define("NDEBUG", .when(configuration: .release)),
+    // Rewrite malloc() to malloc_type_malloc() for type-isolated allocation buckets (xzone malloc).
+    .unsafeFlags(["-ftyped-memory-operations"], .when(platforms: .darwinPlatforms)),
+    // Rewrite operator new/delete to typed variants (operator new(size_t, std::__type_descriptor_t)).
+    .unsafeFlags(["-ftyped-cxx-new-delete"], .when(platforms: .darwinPlatforms)),
     .unsafeFlags(["-fcxx-modules"]),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
     .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),

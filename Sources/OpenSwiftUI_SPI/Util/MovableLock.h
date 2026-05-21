@@ -15,17 +15,17 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 typedef struct MovableLock_s {
     pthread_mutex_t mutex;
-    pthread_cond_t cond1;
-    pthread_cond_t cond2;
-    pthread_cond_t cond3;
+    pthread_cond_t lockCondition;
+    pthread_cond_t syncMainCondition;
+    pthread_cond_t waitCondition;
     pthread_t main;
     pthread_t owner;
     uint32_t level;
-    uint32_t unknown;
+    uint32_t waiterCount;
     void (* _Nullable function)(const void *context);
     const void * _Nullable context;
-    bool unknown4;
-    bool unknown5;
+    bool syncMainCallbackPending;
+    bool mainThreadWaiting;
 } MovableLock_t;
 
 typedef MovableLock_t *MovableLock __attribute((swift_newtype(struct)));
