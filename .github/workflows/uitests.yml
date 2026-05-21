@@ -3,6 +3,10 @@ name: UI Tests
 on:
   push:
     branches: [main]
+    paths:
+      - 'Example/OpenSwiftUIUITests/**'
+      - '.github/workflows/uitests.yml'
+      - '.github/actions/uitests/action.yml'
   workflow_dispatch:
     inputs:
       platform:
