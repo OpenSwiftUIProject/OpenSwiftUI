@@ -19,5 +19,5 @@ jobs:
     uses: OpenSwiftUIProject/github-workflows/.github/workflows/issue-triage.yml@main
     with:
       # fromJSON workaround number inputs: https://github.com/orgs/community/discussions/67182#discussioncomment-8617964
-      issue_number: ${{ fromJSON(inputs.issue_number) }}
+      issue_number: ${{ inputs.issue_number && fromJSON(inputs.issue_number) || github.event.issue.number }}
     secrets: inherit
