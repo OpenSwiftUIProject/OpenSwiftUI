@@ -56,7 +56,6 @@ bool _MovableLockIsOutermostOwner(MovableLock lock) {
     return pthread_self() == owner && lock->level == 1;
 }
 
-__attribute__((noinline))
 void _MovableLockLock(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     pthread_t owner = pthread_self();
@@ -73,7 +72,6 @@ void _MovableLockLock(MovableLock lock) {
     #endif
 }
 
-__attribute__((noinline))
 void _MovableLockUnlock(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     lock->level -= 1;
@@ -166,8 +164,10 @@ static void wait_for_lock(MovableLock lock, pthread_t owner) {
 
 static void sync_main_callback(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
+    [[clang::noinline]]
     _MovableLockLock(lock);
     lock->syncMainCallbackPending = false;
+    [[clang::noinline]]
     _MovableLockUnlock(lock);
     #endif
 }
