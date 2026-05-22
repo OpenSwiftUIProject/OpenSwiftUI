@@ -38,7 +38,7 @@ OPENSWIFTUI_EXPORT
 OPENSWIFTUI_REFINED_FOR_SWIFT
 void _MovableLockDestroy(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.destroy(self:));
 bool _MovableLockIsOwner(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(getter:MovableLock.isOwner(self:));
-bool _MovableLockIsOuterMostOwner(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(getter:MovableLock.isOuterMostOwner(self:));
+bool _MovableLockIsOutermostOwner(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(getter:MovableLock.isOutermostOwner(self:));
 void _MovableLockLock(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.lock(self:));
 void _MovableLockUnlock(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.unlock(self:));
 void _MovableLockSyncMain(MovableLock lock, const void *context, void (*function)(const void *context)) OPENSWIFTUI_SWIFT_NAME(MovableLock.syncMain(self:_:function:));

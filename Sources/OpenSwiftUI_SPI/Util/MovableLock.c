@@ -17,8 +17,8 @@
 extern pthread_t pthread_main_thread_np(void);
 #endif
 
-void wait_for_lock(MovableLock lock, pthread_t thread);
-void sync_main_callback(MovableLock lock);
+static void wait_for_lock(MovableLock lock, pthread_t thread) __attribute__((noinline));
+static void sync_main_callback(MovableLock lock);
 
 MovableLock _MovableLockCreate() {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
@@ -47,13 +47,16 @@ void _MovableLockDestroy(MovableLock lock) {
 }
 
 bool _MovableLockIsOwner(MovableLock lock) {
-    return pthread_self() == lock->owner;
+    pthread_t owner = lock->owner;
+    return pthread_self() == owner;
 }
 
-bool _MovableLockIsOuterMostOwner(MovableLock lock) {
-    return pthread_self() == lock->owner && lock->level == 1;
+bool _MovableLockIsOutermostOwner(MovableLock lock) {
+    pthread_t owner = lock->owner;
+    return pthread_self() == owner && lock->level == 1;
 }
 
+__attribute__((noinline))
 void _MovableLockLock(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     pthread_t owner = pthread_self();
@@ -70,6 +73,7 @@ void _MovableLockLock(MovableLock lock) {
     #endif
 }
 
+__attribute__((noinline))
 void _MovableLockUnlock(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     lock->level -= 1;
@@ -131,17 +135,20 @@ void _MovableLockBroadcast(MovableLock lock) {
     #endif
 }
 
-void wait_for_lock(MovableLock lock, pthread_t owner) {
+static void wait_for_lock(MovableLock lock, pthread_t owner) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     lock->waiterCount += 1;
     if (lock->main == owner) {
         lock->mainThreadWaiting = true;
         if (lock->function) {
+            pthread_t original_owner = __atomic_load_n(&lock->owner, __ATOMIC_SEQ_CST);
             uint32_t original_level = lock->level;
-            pthread_t original_owner = lock->owner;
-            lock->owner = lock->main;
+            pthread_t main = lock->main;
+            lock->owner = main;
             lock->level = original_level + 1;
-            lock->function(lock->context);
+            void (*function)(const void *) = lock->function;
+            const void *context = lock->context;
+            function(context);
             lock->level = original_level;
             lock->owner = original_owner;
             lock->function = NULL;
@@ -157,7 +164,7 @@ void wait_for_lock(MovableLock lock, pthread_t owner) {
     #endif
 }
 
-void sync_main_callback(MovableLock lock) {
+static void sync_main_callback(MovableLock lock) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     _MovableLockLock(lock);
     lock->syncMainCallbackPending = false;
