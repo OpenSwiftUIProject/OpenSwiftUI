@@ -30,7 +30,7 @@ typedef struct MovableLock_s {
 
 typedef MovableLock_t *MovableLock __attribute((swift_newtype(struct)));
 
-MovableLock _MovableLockCreate(void) OPENSWIFTUI_SWIFT_NAME(MovableLock.create());
+MovableLock _MovableLockCreate(void) OPENSWIFTUI_SWIFT_NAME(MovableLock.init());
 
 void _MovableLockDestroy(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.destroy(self:));
 

@@ -10,7 +10,7 @@ final class MovableLockTests {
     let lock: MovableLock
 
     init() {
-        lock = MovableLock.create()
+        lock = MovableLock()
     }
 
     deinit {
@@ -20,13 +20,13 @@ final class MovableLockTests {
     @Test
     func owner() {
         #expect(lock.isOwner == false)
-        #expect(lock.isOuterMostOwner == false)
+        #expect(lock.isOutermostOwner == false)
         lock.lock()
         #expect(lock.isOwner == true)
-        #expect(lock.isOuterMostOwner == true)
+        #expect(lock.isOutermostOwner == true)
         lock.unlock()
         #expect(lock.isOwner == false)
-        #expect(lock.isOuterMostOwner == false)
+        #expect(lock.isOutermostOwner == false)
     }
 }
 #endif
