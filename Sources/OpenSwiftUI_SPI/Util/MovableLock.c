@@ -17,7 +17,7 @@
 extern pthread_t pthread_main_thread_np(void);
 #endif
 
-static void wait_for_lock(MovableLock lock, pthread_t thread) __attribute__((noinline));
+static void wait_for_lock(MovableLock lock, pthread_t thread);
 static void sync_main_callback(MovableLock lock);
 
 MovableLock _MovableLockCreate() {
@@ -65,6 +65,7 @@ void _MovableLockLock(MovableLock lock) {
     }
     pthread_mutex_lock(&lock->mutex);
     while (lock->owner) {
+        [[clang::noinline]]
         wait_for_lock(lock, owner);
     }
     lock->owner = owner;
@@ -120,6 +121,7 @@ void _MovableLockWait(MovableLock lock) {
     }
     pthread_cond_wait(&lock->waitCondition, &lock->mutex);
     while (lock->owner) {
+        [[clang::noinline]]
         wait_for_lock(lock, owner);
     }
     lock->owner = owner;
