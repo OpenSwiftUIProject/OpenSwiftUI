@@ -15,17 +15,17 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 typedef struct MovableLock_s {
     pthread_mutex_t mutex;
-    pthread_cond_t lockCondition;
-    pthread_cond_t syncMainCondition;
-    pthread_cond_t waitCondition;
-    pthread_t main;
-    pthread_t owner;
-    uint32_t level;
-    uint32_t waiterCount;
-    void (* _Nullable function)(const void *context);
-    const void * _Nullable context;
-    bool syncMainCallbackPending;
-    bool mainThreadWaiting;
+    pthread_cond_t lock_condition;
+    pthread_cond_t main_callback_condition;
+    pthread_cond_t broadcast_condition;
+    pthread_t main_thread;
+    pthread_t owner_thread;
+    uint32_t lock_level;
+    uint32_t waiter_count;
+    void (* _Nullable main_callback)(const void *main_callback_context);
+    const void * _Nullable main_callback_context;
+    bool main_callback_pending;
+    bool main_thread_waiting;
 } MovableLock_t;
 
 typedef MovableLock_t *MovableLock __attribute((swift_newtype(struct)));
@@ -42,7 +42,7 @@ void _MovableLockLock(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.lock(
 
 void _MovableLockUnlock(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.unlock(self:));
 
-void _MovableLockSyncMain(MovableLock lock, const void *context, void (*function)(const void *context)) OPENSWIFTUI_SWIFT_NAME(MovableLock.syncMain(self:_:function:));
+void _MovableLockSyncMain(MovableLock lock, const void *main_callback_context, void (*main_callback)(const void *main_callback_context)) OPENSWIFTUI_SWIFT_NAME(MovableLock.syncMain(self:_:function:));
 
 void _MovableLockWait(MovableLock lock) OPENSWIFTUI_SWIFT_NAME(MovableLock.wait(self:));
 
