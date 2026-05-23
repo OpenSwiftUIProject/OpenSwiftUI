@@ -13,7 +13,7 @@ on:
         required: true
         type: string
     secrets:
-      CLAUDE_CODE_OAUTH_TOKEN:
+      COPILOT_GITHUB_TOKEN:
         required: false
 
 permissions:
@@ -40,13 +40,13 @@ jobs:
           echo "Generated changelog:"
           cat /tmp/changelog.md
 
-      - name: Generate highlights with Claude Code
+      - name: Generate highlights with Copilot
         env:
-          CLAUDE_CODE_OAUTH_TOKEN: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
+          COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
           TAG_NAME: ${{ inputs.tag-name }}
         run: |
-          if [ -z "$CLAUDE_CODE_OAUTH_TOKEN" ]; then
-            echo "::warning::CLAUDE_CODE_OAUTH_TOKEN not set, continuing without highlights"
+          if [ -z "$COPILOT_GITHUB_TOKEN" ]; then
+            echo "::warning::COPILOT_GITHUB_TOKEN not set, continuing without highlights"
             : > /tmp/highlights.md
             exit 0
           fi
@@ -85,11 +85,13 @@ jobs:
           STATIC_EOF
           } > /tmp/prompt.txt
 
-          if ! npx -y @anthropic-ai/claude-code@latest \
-            --model claude-opus-4-6 \
+          npm install -g @github/copilot
+
+          if ! copilot \
             -p "$(cat /tmp/prompt.txt)" \
-            --output-format text > /tmp/highlights.md; then
-            echo "::warning::Claude Code highlights generation failed, continuing without highlights"
+            -s \
+            --no-ask-user > /tmp/highlights.md; then
+            echo "::warning::Copilot highlights generation failed, continuing without highlights"
             : > /tmp/highlights.md
           fi
 
