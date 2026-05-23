@@ -143,11 +143,16 @@ extension DisplayList {
         }()
 
         private static func validateSwiftUIRendererABI() {
-            guard #available(iOS 18.5, macOS 15.5, *),
-                  #unavailable(iOS 26.0, macOS 26.0)
-            else {
-                preconditionFailure("Unsupported SwiftUI Renderer ABI version. Only iOS [18.5, 26.0) and macOS [15.5, 26.0) is supported")
+            let message = "Unsupported SwiftUI Renderer ABI version. Supported runtime ranges: iOS/tvOS [18.5, 26.0), macOS [15.5, 26.0), watchOS [11.5, 26.0)."
+            guard #available(iOS 18.5, macOS 15.5, tvOS 18.5, watchOS 11.5, *) else {
+                // Stop if below SwiftUI 6.5.4 version
+                preconditionFailure(message)
             }
+            guard #unavailable(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0) else {
+                // Stop if appleOS 26.0 or above
+                preconditionFailure(message)
+            }
+            return
         }
         #endif
 
