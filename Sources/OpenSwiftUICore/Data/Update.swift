@@ -17,7 +17,7 @@ package enum Update {
 
     private static var depth = 0
     private static var dispatchDepth = 0
-    private static let _lock = MovableLock.create()
+    private static let _lock = MovableLock()
     private static var actions: [() -> Void] = []
     private static let lockAssertionsAreEnabled = EnvironmentHelper.bool(for: "OPENSWIFTUI_ASSERT_LOCKS")
     
