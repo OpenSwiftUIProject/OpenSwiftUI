@@ -4,8 +4,11 @@ set -e
 
 : "${OPENSWIFTUI_LIBRARY_TYPE:=dynamic}"
 : "${OPENSWIFTUI_USE_LOCAL_DEPS:=1}"
+: "${OPENSWIFTUI_SWIFTUI_RENDERER:=0}"
 export OPENSWIFTUI_LIBRARY_TYPE
 export OPENSWIFTUI_USE_LOCAL_DEPS
+export OPENSWIFTUI_SWIFTUI_RENDERER
+# TODO: replace AG with Compute or OAG by default
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"

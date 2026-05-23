@@ -136,7 +136,28 @@ extension DisplayList {
             return renderer.exportedObject
         }
 
-        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+        // OpenSwiftUI Addition:
+        private static let rendererCheck: Void = {
+            #if DEBUG
+            print("ViewRendererVendor: \(viewRendererVendor)")
+            #endif
+
+            // validateSwiftUIRendererABI
+            #if OPENSWIFTUI_SWIFTUI_RENDERER
+            let message = "Unsupported SwiftUI Renderer ABI version. Supported runtime ranges: iOS/tvOS [18.5, 26.0), macOS [15.5, 26.0), watchOS [11.5, 26.0)."
+            guard #available(iOS 18.5, macOS 15.5, tvOS 18.5, watchOS 11.5, *) else {
+                // Stop if below SwiftUI 6.5.4 version
+                preconditionFailure(message)
+            }
+            guard #unavailable(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0) else {
+                // Stop if appleOS 26.0 or above
+                preconditionFailure(message)
+            }
+            return
+            #endif
+        }()
+
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
         private func swiftUI_render(
             rootView: AnyObject,
@@ -158,8 +179,11 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
-            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
-            swiftUI_render(
+            /* OpenSwiftUI Addition Begin */
+            _ = Self.rendererCheck
+            /* OpenSwiftUI Addition End */
+            #if OPENSWIFTUI_SWIFTUI_RENDERER
+            return swiftUI_render(
                 rootView: rootView,
                 from: list,
                 time: time,
@@ -183,7 +207,7 @@ extension DisplayList {
             #endif
         }
 
-        #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderAsync")
         private func swiftUI_renderAsync(
             to list: DisplayList,
@@ -203,8 +227,11 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
-            #if canImport(SwiftUI, _underlyingVersion: 6.5.4) && _OPENSWIFTUI_SWIFTUI_RENDER
-            swiftUI_renderAsync(
+            /* OpenSwiftUI Addition Begin */
+            _ = Self.rendererCheck
+            /* OpenSwiftUI Addition End */
+            #if OPENSWIFTUI_SWIFTUI_RENDERER
+            return swiftUI_renderAsync(
                 to: list,
                 time: time,
                 nextTime: nextTime,

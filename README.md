@@ -104,9 +104,9 @@ for various platforms:
 | **Android** | None | Not supported yet | ❌ | ❌ | ❌ | |
 | **Windows** | None | Not supported yet | ❌ | ❌ | ❌ | |
 
-[^1]: AppKit intergration is partly implemented. Render is support via SwiftUI's render implementation. Other UI framework backend is not intergrated yet.
+[^1]: AppKit intergration is partly implemented. Other UI framework backend is not intergrated yet.
 
-[^2]: UIKit intergration is partly implemented. Render is support via SwiftUI's render implementation.
+[^2]: UIKit intergration is partly implemented.
 
 [^3]: Build and test is supported. But some feature is cut due to known Swift compiler issue.
 
