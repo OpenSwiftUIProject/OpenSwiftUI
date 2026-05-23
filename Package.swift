@@ -291,9 +291,9 @@ if linkBacklightServices {
 }
 
 if swiftUIRenderCondition {
-    sharedCSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER"))
-    sharedCxxSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER"))
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER"))
+    sharedCSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER", .when(platforms: .darwinPlatforms)))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER", .when(platforms: .darwinPlatforms)))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER", .when(platforms: .darwinPlatforms)))
 }
 
 if linkTesting {

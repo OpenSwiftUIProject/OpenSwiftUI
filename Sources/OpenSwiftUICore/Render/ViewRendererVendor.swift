@@ -21,7 +21,7 @@ public struct ViewRendererVendor: RawRepresentable, Hashable, CaseIterable {
     public static var allCases: [ViewRendererVendor] { [.osui, .sui] }
 }
 
-#if canImport(SwiftUI, _underlyingVersion: 6.5.4) && OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDER
 public let viewRendererVendor = ViewRendererVendor.sui
 #else
 public let viewRendererVendor = ViewRendererVendor.osui

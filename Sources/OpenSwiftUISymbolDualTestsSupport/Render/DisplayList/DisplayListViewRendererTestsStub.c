@@ -4,7 +4,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_TARGET_OS_DARWIN && OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDER
 
 #import <SymbolLocator.h>
 
