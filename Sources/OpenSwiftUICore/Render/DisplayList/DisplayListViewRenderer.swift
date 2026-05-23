@@ -136,12 +136,14 @@ extension DisplayList {
             return renderer.exportedObject
         }
 
-        #if OPENSWIFTUI_SWIFTUI_RENDERER
-        private static let swiftUIRendererABICheck: Void = {
-            validateSwiftUIRendererABI()
-        }()
+        // OpenSwiftUI Addition:
+        private static let rendererCheck: Void = {
+            #if DEBUG
+            print("ViewRendererVendor: \(viewRendererVendor)")
+            #endif
 
-        private static func validateSwiftUIRendererABI() {
+            // validateSwiftUIRendererABI
+            #if OPENSWIFTUI_SWIFTUI_RENDERER
             let message = "Unsupported SwiftUI Renderer ABI version. Supported runtime ranges: iOS/tvOS [18.5, 26.0), macOS [15.5, 26.0), watchOS [11.5, 26.0)."
             guard #available(iOS 18.5, macOS 15.5, tvOS 18.5, watchOS 11.5, *) else {
                 // Stop if below SwiftUI 6.5.4 version
@@ -152,8 +154,8 @@ extension DisplayList {
                 preconditionFailure(message)
             }
             return
-        }
-        #endif
+            #endif
+        }()
 
         #if OPENSWIFTUI_SWIFTUI_RENDERER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
@@ -177,8 +179,10 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
+            /* OpenSwiftUI Addition Begin */
+            _ = Self.rendererCheck
+            /* OpenSwiftUI Addition End */
             #if OPENSWIFTUI_SWIFTUI_RENDERER
-            _ = Self.swiftUIRendererABICheck
             return swiftUI_render(
                 rootView: rootView,
                 from: list,
@@ -223,8 +227,10 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
+            /* OpenSwiftUI Addition Begin */
+            _ = Self.rendererCheck
+            /* OpenSwiftUI Addition End */
             #if OPENSWIFTUI_SWIFTUI_RENDERER
-            _ = Self.swiftUIRendererABICheck
             return swiftUI_renderAsync(
                 to: list,
                 time: time,
