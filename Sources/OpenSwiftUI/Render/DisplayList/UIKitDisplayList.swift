@@ -10,7 +10,7 @@
 import COpenSwiftUI
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import UIKit
-#if OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDERER
 import OpenSwiftUISymbolDualTestsSupport
 #endif
 import QuartzCore_Private

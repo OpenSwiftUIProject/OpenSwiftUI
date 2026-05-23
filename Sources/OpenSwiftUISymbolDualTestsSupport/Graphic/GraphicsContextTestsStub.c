@@ -4,7 +4,7 @@
 
 #include "OpenSwiftUIBase.h"
 
-#if OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDERER
 
 #import <SymbolLocator.h>
 

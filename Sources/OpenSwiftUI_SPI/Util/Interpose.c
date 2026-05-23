@@ -17,7 +17,7 @@ static bool my_kdebug_is_enabled(uint32_t debugid) {
     return true;
 }
 
-#if OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDERER
 
 #include <dispatch/dispatch.h>
 #include <os/log.h>
@@ -178,7 +178,7 @@ static const void *my_swift_conformsToProtocol2(const void *type, const void *pr
     return result;
 }
 
-#endif /* OPENSWIFTUI_SWIFTUI_RENDER */
+#endif /* OPENSWIFTUI_SWIFTUI_RENDERER */
 
 // MARK: - Interpose Registration
 
@@ -191,7 +191,7 @@ __attribute__((used)) static const interpose_t interposers[]
     __attribute__((section("__DATA, __interpose"))) = {
     // Interpose kdebug_is_enabled to always return true to perform Signpost testing with Instruments
     { (const void *)my_kdebug_is_enabled, (const void *)kdebug_is_enabled },
-#if OPENSWIFTUI_SWIFTUI_RENDER
+#if OPENSWIFTUI_SWIFTUI_RENDERER
     // Interpose swift_dynamicCast to handle casts to SwiftUI's internal Color.Resolved type to fix SwiftUI.ShapeLayerHelper visit check for Shape.fill API
     { (const void *)my_swift_dynamicCast, (const void *)swift_dynamicCast },
     // Interpose swift_conformsToProtocol2 to redirect SwiftUI.PlatformDrawable conformance checks to OpenSwiftUI.PlatformDrawable for Text's CGDrawingView

@@ -523,13 +523,13 @@ public struct GraphicsContext {
 }
 
 extension GraphicsContext {
-    #if OPENSWIFTUI_SWIFTUI_RENDER
+    #if OPENSWIFTUI_SWIFTUI_RENDERER
     @_silgen_name("OpenSwiftUITestStub_GraphicsContextDrawPathWithShadingAndStyle")
     private func swiftUI_draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle)
     #endif
 
     package func draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle) {
-        #if OPENSWIFTUI_SWIFTUI_RENDER
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         swiftUI_draw(path, with: shading, style: style)
         #else
         _openSwiftUIUnimplementedWarning()

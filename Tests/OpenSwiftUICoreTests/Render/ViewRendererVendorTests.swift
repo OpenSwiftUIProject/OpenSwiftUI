@@ -15,7 +15,7 @@ struct ViewRendererVendorTests {
 
     @Test
     func activeVendor() {
-        #if OPENSWIFTUI_SWIFTUI_RENDER
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         #expect(viewRendererVendor == .sui)
         #else
         #expect(viewRendererVendor == .osui)

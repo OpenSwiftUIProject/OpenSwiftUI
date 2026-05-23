@@ -136,8 +136,7 @@ extension DisplayList {
             return renderer.exportedObject
         }
 
-
-        #if OPENSWIFTUI_SWIFTUI_RENDER
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         private static let swiftUIRendererABICheck: Void = {
             validateSwiftUIRendererABI()
         }()
@@ -156,7 +155,7 @@ extension DisplayList {
         }
         #endif
 
-        #if OPENSWIFTUI_SWIFTUI_RENDER
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderRootView")
         private func swiftUI_render(
             rootView: AnyObject,
@@ -178,7 +177,7 @@ extension DisplayList {
             maxVersion: DisplayList.Version,
             environment: DisplayList.ViewRenderer.Environment
         ) -> Time {
-            #if OPENSWIFTUI_SWIFTUI_RENDER
+            #if OPENSWIFTUI_SWIFTUI_RENDERER
             _ = Self.swiftUIRendererABICheck
             return swiftUI_render(
                 rootView: rootView,
@@ -204,7 +203,7 @@ extension DisplayList {
             #endif
         }
 
-        #if OPENSWIFTUI_SWIFTUI_RENDER
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
         @_silgen_name("OpenSwiftUITestStub_DisplayListViewRendererRenderAsync")
         private func swiftUI_renderAsync(
             to list: DisplayList,
@@ -224,7 +223,7 @@ extension DisplayList {
             version: DisplayList.Version,
             maxVersion: DisplayList.Version
         ) -> Time? {
-            #if OPENSWIFTUI_SWIFTUI_RENDER
+            #if OPENSWIFTUI_SWIFTUI_RENDERER
             _ = Self.swiftUIRendererABICheck
             return swiftUI_renderAsync(
                 to: list,

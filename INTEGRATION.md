@@ -189,13 +189,13 @@ Currently, AttributeGraph is missing some symbols for iOS device. Until OpenAttr
 
 By default, OpenSwiftUI does not require a specific SwiftUI renderer ABI version.
 
-The ABI limitation only applies when you explicitly opt into the SwiftUI renderer by setting `OPENSWIFTUI_SWIFTUI_RENDER=1`. That renderer uses private SwiftUI APIs which do not guarantee ABI stability.
+The ABI limitation only applies when you explicitly opt into the SwiftUI renderer by setting `OPENSWIFTUI_SWIFTUI_RENDERER=1`. That renderer uses private SwiftUI APIs which do not guarantee ABI stability.
 
 **Current supported SwiftUI renderer ABI versions:**
 - **iOS 18.5 to before iOS 26.0**
 - **macOS 15.5 to before macOS 26.0**
 
-**Impact:** If `OPENSWIFTUI_SWIFTUI_RENDER=1` is enabled, your runtime platform version must be in the supported range to avoid runtime compatibility issues.
+**Impact:** If `OPENSWIFTUI_SWIFTUI_RENDERER=1` is enabled, your runtime platform version must be in the supported range to avoid runtime compatibility issues.
 
 ## Troubleshooting
 

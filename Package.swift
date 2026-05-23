@@ -171,7 +171,7 @@ let swiftLogCondition = envBoolValue("SWIFT_LOG", default: !buildForDarwinPlatfo
 let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwinPlatform)
 let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
 
-let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDER", default: false)
+let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
 
 let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
 
@@ -291,9 +291,9 @@ if linkBacklightServices {
 }
 
 if swiftUIRenderCondition {
-    sharedCSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER", .when(platforms: .darwinPlatforms)))
-    sharedCxxSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER", .when(platforms: .darwinPlatforms)))
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDER", .when(platforms: .darwinPlatforms)))
+    sharedCSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDERER", .when(platforms: .darwinPlatforms)))
+    sharedCxxSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDERER", .when(platforms: .darwinPlatforms)))
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_SWIFTUI_RENDERER", .when(platforms: .darwinPlatforms)))
 }
 
 if linkTesting {
