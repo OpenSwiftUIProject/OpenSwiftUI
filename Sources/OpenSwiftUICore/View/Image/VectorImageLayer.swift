@@ -129,6 +129,31 @@ extension VectorImageLayer: ProtobufMessage {
     }
 }
 
+#if OPENSWIFTUI_LINK_COREUI
+private let valueLock = NSLock()
+
+extension CUINamedVectorGlyph {
+    package func image(at sizeAndScale: (CGSize, CGFloat)?, value: Float?) -> CGImage? {
+        valueLock.lock()
+        defer {
+            valueLock.unlock()
+        }
+        let oldMinValue = variableMinValue
+        let oldMaxValue = variableMaxValue
+        defer {
+            setVariableMinValue(oldMinValue)
+            setVariableMaxValue(oldMaxValue)
+        }
+        setVariableMinValue(value == nil ? .infinity : .zero)
+        setVariableMaxValue(value.map { CGFloat($0) } ?? .infinity)
+        guard let (size, scale) = sizeAndScale else {
+            return image
+        }
+        return rasterizeImage(usingScaleFactor: scale, forTargetSize: size)?.takeRetainedValue()
+    }
+}
+#endif
+
 // MARK: - VectorImageContents
 
 @_spi(ForOpenSwiftUIOnly)
