@@ -26,7 +26,19 @@ export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_USE_BINARY=1
 
 ## Generate Project
 
+The recommended setup path is the local setup script:
+
 ```shell
+./setup.sh
+```
+
+The script trusts and installs the tools declared by `Example/mise.toml`, then runs Tuist through `mise exec` so the pinned Tuist version is used.
+
+To run the steps manually:
+
+```shell
+mise trust mise.toml
+mise install
 mise exec -- tuist install
 mise exec -- tuist generate --no-open
 ```
