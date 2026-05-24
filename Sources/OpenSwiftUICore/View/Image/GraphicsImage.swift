@@ -280,7 +280,7 @@ package struct ResolvedVectorGlyph: Equatable {
     }
 }
 
-// MARK: - GraphicsImage + Extension [WIP]
+// MARK: - GraphicsImage + Extension
 
 extension GraphicsImage {
     package var bitmapOrientation: Image.Orientation {
@@ -291,6 +291,60 @@ extension GraphicsImage {
     }
 
     package func render(at targetSize: CGSize, prefersMask: Bool = false) -> CGImage? {
-        _openSwiftUIUnimplementedFailure()
+        guard targetSize.width > 0, targetSize.height > 0 else {
+            return nil
+        }
+        switch contents {
+        case let .cgImage(cgImage):
+            return cgImage
+        case let .vectorGlyph(vectorGlyph):
+            #if OPENSWIFTUI_LINK_COREUI
+            let sizeAndScale = renderedSize(at: targetSize).map { ($0, scale) }
+            guard let glyph = vectorGlyph.glyph else {
+                return nil
+            }
+            return glyph.image(
+                at: sizeAndScale,
+                value: vectorGlyph.value
+            )
+            #else
+            return nil
+            #endif
+        case let .vectorLayer(vectorLayer):
+            let imageSize: CGSize
+            if let renderedSize = renderedSize(at: targetSize) {
+                imageSize = renderedSize
+            } else if scale != 0 {
+                imageSize = unrotatedPixelSize * (1.0 / scale)
+            } else {
+                imageSize = .zero
+            }
+            return vectorLayer.image(
+                size: imageSize,
+                imageScale: scale,
+                prefersMask: prefersMask
+            )
+        default:
+            return nil
+        }
+    }
+
+    private func renderedSize(at targetSize: CGSize) -> CGSize? {
+        if let resizingInfo {
+            guard resizingInfo.capInsets.isEmpty, resizingInfo.mode == .stretch else {
+                return nil
+            }
+        }
+        let renderedSize = targetSize.apply(orientation)
+        let nativeSize: CGSize
+        if scale != 0 {
+            nativeSize = unrotatedPixelSize * (1.0 / scale)
+        } else {
+            nativeSize = .zero
+        }
+        guard renderedSize != nativeSize else {
+            return nil
+        }
+        return renderedSize
     }
 }

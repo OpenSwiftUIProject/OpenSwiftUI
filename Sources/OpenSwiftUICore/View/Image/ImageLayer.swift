@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete - Blocked by AsyncUpdate
+//  Status: Complete
 //  ID: 854C382F3D9A82BFCF900A549E57F233 (SwiftUICore)
 
 #if canImport(Darwin)
@@ -139,8 +139,83 @@ final package class ImageLayer: CALayer {
         newImage: GraphicsImage,
         newSize: CGSize
     ) -> Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        guard (oldImage.maskColor == nil) == (newImage.maskColor == nil),
+              oldImage.interpolation == newImage.interpolation,
+              oldImage.isAntialiased == newImage.isAntialiased
+        else {
+            return false
+        }
+        switch (oldImage.contents, newImage.contents) {
+        case (.cgImage, .cgImage):
+            return updateAsyncLayerProperties(
+                layer: &layer,
+                oldImage: oldImage,
+                oldSize: oldSize,
+                newImage: newImage,
+                newSize: newSize
+            )
+        case (.ioSurface, .ioSurface):
+            return updateAsyncLayerProperties(
+                layer: &layer,
+                oldImage: oldImage,
+                oldSize: oldSize,
+                newImage: newImage,
+                newSize: newSize
+            )
+        case let (.vectorGlyph(oldContents), .vectorGlyph(newContents)) where oldContents == newContents:
+            return updateAsyncLayerProperties(
+                layer: &layer,
+                oldImage: oldImage,
+                oldSize: oldSize,
+                newImage: newImage,
+                newSize: newSize
+            )
+        case let (.color(oldColor), .color(newColor)):
+            layer.update(
+                DisplayList.ViewUpdater.BackgroundColor.self,
+                from: oldColor,
+                to: newColor
+            )
+            return true
+        default:
+            return false
+        }
+    }
+
+    @inline(__always)
+    private static func updateAsyncLayerProperties(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldImage: GraphicsImage,
+        oldSize: CGSize,
+        newImage: GraphicsImage,
+        newSize: CGSize
+    ) -> Bool {
+        guard oldSize == newSize else {
+            return false
+        }
+        let (oldCenter, oldTiled) = oldImage.layerStretchInPixels(size: oldSize)
+        let (newCenter, newTiled) = newImage.layerStretchInPixels(size: newSize)
+        guard oldTiled == newTiled else {
+            return false
+        }
+        layer.update(
+            DisplayList.ViewUpdater.ContentsCenter.self,
+            from: oldCenter,
+            to: newCenter
+        )
+        layer.update(
+            DisplayList.ViewUpdater.ContentsScale.self,
+            from: oldImage.scale,
+            to: newImage.scale
+        )
+        if let newMaskColor = newImage.maskColor {
+            layer.update(
+                DisplayList.ViewUpdater.ContentsMultiplyColor.self,
+                from: oldImage.maskColor,
+                to: newMaskColor
+            )
+        }
+        return true
     }
 }
 

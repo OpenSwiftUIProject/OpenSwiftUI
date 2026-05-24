@@ -963,7 +963,62 @@ extension DisplayList.ViewUpdater.Platform {
         size = bounds.size
     }
     
-    func updateState(
+    @inline(__always)
+    func makeInheritedViewInfo(
+        item: DisplayList.Item,
+        size: CGSize,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> DisplayList.ViewUpdater.ViewInfo {
+        var viewInfo = DisplayList.ViewUpdater.ViewInfo(
+            platform: self,
+            kind: .inherited
+        )
+        updateState(
+            &viewInfo,
+            item: item,
+            size: size,
+            state: state
+        )
+        return viewInfo
+    }
+
+    @inline(__always)
+    func updateInheritedViewInfo(
+        _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
+        item: DisplayList.Item,
+        size: CGSize,
+        state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) {
+        updateState(
+            &viewInfo,
+            item: item,
+            size: size,
+            state: state
+        )
+    }
+
+    @inline(__always)
+    func updateInheritedLayerAsync(
+        layer: inout DisplayList.ViewUpdater.AsyncLayer,
+        oldItem: DisplayList.Item,
+        oldSize: CGSize,
+        oldState: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
+        newItem: DisplayList.Item,
+        newSize: CGSize,
+        newState: UnsafePointer<DisplayList.ViewUpdater.Model.State>
+    ) -> Bool {
+        updateStateAsync(
+            layer: &layer,
+            oldItem: oldItem,
+            oldSize: oldSize,
+            oldState: oldState,
+            newItem: newItem,
+            newSize: newSize,
+            newState: newState
+        )
+    }
+
+    private func updateState(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         item: DisplayList.Item,
         size: CGSize,
@@ -1036,7 +1091,7 @@ extension DisplayList.ViewUpdater.Platform {
         #endif
     }
 
-    func updateStateAsync(
+    private func updateStateAsync(
         layer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldItem: DisplayList.Item,
         oldSize: CGSize,

@@ -126,6 +126,18 @@ extension DisplayList.ViewUpdater {
         }
     }
 
+    struct ContentsCenter: AsyncLayer.Property {
+        static let keyPath = "contentsCenter"
+
+        static func boxValue(_ value: CGRect) -> NSObject {
+            #if canImport(QuartzCore)
+            NSValue(cgRect: value)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
+    }
+
     struct AffineTransformLayer: AsyncLayer.Property {
         static let keyPath = "transform"
 
@@ -160,6 +172,14 @@ extension DisplayList.ViewUpdater {
 
     struct CornerRadiusLayer: AsyncLayer.Property {
         static let keyPath = "cornerRadius"
+
+        static func boxValue(_ value: CGFloat) -> NSObject {
+            NSNumber(value: Double(value))
+        }
+    }
+
+    struct ContentsScale: AsyncLayer.Property {
+        static let keyPath = "contentsScale"
 
         static func boxValue(_ value: CGFloat) -> NSObject {
             NSNumber(value: Double(value))
