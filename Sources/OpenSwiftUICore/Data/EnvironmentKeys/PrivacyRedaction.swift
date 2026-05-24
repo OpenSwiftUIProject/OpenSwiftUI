@@ -11,7 +11,7 @@ import OpenCoreGraphicsShims
 
 // MARK: - PrivacyRedactionViewModifier
 
-private struct PrivacyRedactionViewModifier: ViewModifier {
+private struct PrivacyRedactionViewModifier: MultiViewModifier, PrimitiveViewModifier {
     var sensitive: Bool
 
     nonisolated static func _makeView(
@@ -111,7 +111,7 @@ private struct PrivacyRedactionViewModifier: ViewModifier {
                 if sensitive {
                     properties.formUnion(.privacySensitive)
                 }
-                if sensitive {
+                if hideForScreencapture {
                     properties.formUnion(.screencaptureProhibited)
                 }
                 return .properties(properties)
@@ -120,7 +120,7 @@ private struct PrivacyRedactionViewModifier: ViewModifier {
             static var isScrapeable: Bool { true }
 
             var scrapeableContent: ScrapeableContent.Content? {
-                guard shouldRedact, hideForScreencapture else {
+                guard shouldRedact || hideForScreencapture else {
                     return nil
                 }
                 return .hidden
