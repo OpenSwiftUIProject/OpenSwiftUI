@@ -963,7 +963,7 @@ extension DisplayList.ViewUpdater.Platform {
         size = bounds.size
     }
     
-    func updateState(
+    private func updateState(
         _ viewInfo: inout DisplayList.ViewUpdater.ViewInfo,
         item: DisplayList.Item,
         size: CGSize,
@@ -1036,7 +1036,7 @@ extension DisplayList.ViewUpdater.Platform {
         #endif
     }
 
-    func updateStateAsync(
+    private func updateStateAsync(
         layer: inout DisplayList.ViewUpdater.AsyncLayer,
         oldItem: DisplayList.Item,
         oldSize: CGSize,
