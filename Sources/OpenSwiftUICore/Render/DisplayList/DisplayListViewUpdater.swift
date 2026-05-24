@@ -293,18 +293,13 @@ extension DisplayList {
                         tag: .inherited,
                         in: container.id
                     ) { [platform] _, item, state in
-                        // TODO: Optimize the call here in Platform
-                        var info = ViewInfo(platform: platform, kind: .inherited)
-                        platform.updateState(
-                            &info,
+                        platform.makeInheritedViewInfo(
                             item: item,
                             size: item.size,
                             state: state
                         )
-                        return info
                     } updateView: { [platform] info, _, item, state in
-                        // TODO: Optimize the call here in Platform
-                        platform.updateState(
+                        platform.updateInheritedViewInfo(
                             &info,
                             item: item,
                             size: item.size,
@@ -399,7 +394,7 @@ extension DisplayList {
                             newState: newStatePtr,
                             tag: .inherited
                         ) { layer, _, oldItem, oldState, newItem, newState in
-                            platform.updateStateAsync(
+                            platform.updateInheritedLayerAsync(
                                 layer: &layer,
                                 oldItem: oldItem,
                                 oldSize: oldItem.size,
