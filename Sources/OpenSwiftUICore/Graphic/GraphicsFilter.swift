@@ -139,3 +139,12 @@ package enum GraphicsBlendMode: Equatable {
         }
     }
 }
+
+extension GraphicsFilter {
+    package var isIdentity: Bool {
+        // TODO
+        false
+    }
+}
+
+// TODO: Extension API

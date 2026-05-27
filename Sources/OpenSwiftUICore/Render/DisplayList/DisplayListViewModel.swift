@@ -74,7 +74,7 @@ extension DisplayList.ViewUpdater {
             state.transform = state.transform.translatedBy(x: item.position.x, y: item.position.y)
             state.versions.transform.combine(with: item.version)
             let value = item.value
-            value.finishMerge(&requirements, item: &item, state: &state)
+            value.finishMerge(&requirements, item: &item, index: index, state: &state)
             return requirements
         }
         
@@ -114,98 +114,67 @@ extension DisplayList.ViewUpdater {
             _ effect: DisplayList.Effect,
             list: DisplayList,
             item: inout DisplayList.Item,
+            index: DisplayList.Index,
             into state: inout State,
             requirements: inout MergedViewRequirements
         ) {
             switch effect {
-            case .identity, .geometryGroup, .archive, .animation, .contentTransition,
-                    .accessibility, .interpolatorRoot, .interpolatorLayer, .interpolatorAnimation:
-                requirements.insert(.visibleContent)
+            case .identity, .archive,
+                 .contentTransition, .accessibility,
+                 .platform, .interpolatorRoot,
+                 .interpolatorLayer, .interpolatorAnimation:
+                break
+            case .geometryGroup, .platformGroup:
+                requirements.formUnion(.itemView)
             case .compositingGroup:
                 state.compositingGroup = true
-                state.versions.properties.combine(with: item.version)
-                requirements.formUnion([.inheritedView, .visibleContent])
+                requirements.formUnion(.itemView)
             case let .backdropGroup(enabled):
-                if enabled {
-                    state.backdropGroupID &+= 1
-                }
-                state.versions.properties.combine(with: item.version)
-                requirements.insert(.visibleContent)
+                state.backdropGroupID = enabled ? item.identity.value ^ (index.archiveIdentity.value &* 33) : .zero
             case let .properties(properties):
                 state.properties.formUnion(properties)
                 state.versions.properties.combine(with: item.version)
-                requirements.insert(.visibleContent)
-            case .platformGroup, .view, .platform:
-                requirements.formUnion([.inheritedView, .visibleContent])
             case let .opacity(opacity):
                 state.opacity *= opacity
                 state.versions.opacity.combine(with: item.version)
-                requirements.insert(.visibleContent)
             case let .blendMode(blend):
                 state.blend = blend
                 state.versions.blend.combine(with: item.version)
-                requirements.insert(.visibleContent)
             case let .clip(path, style, _):
                 state.addClip(path, style: style)
                 state.versions.clips.combine(with: item.version)
-                requirements.insert(.visibleContent)
             case .mask:
-                requirements.formUnion([.inheritedView, .visibleContent])
+                state.rewriteVibrantColorMatrix = true
+                requirements.formUnion(.itemView)
             case let .transform(transform):
-                merge(transform, item: item, into: &state, requirements: &requirements)
+                if let affineTransform = transform.affineTransform {
+                    state.transform = affineTransform.concatenating(state.transform)
+                    state.adjust(for: affineTransform)
+                    state.versions.transform.combine(with: item.version)
+                } else if let projectionTransform = transform.projectionTransform {
+                    if !projectionTransform.isIdentity {
+                        requirements.formUnion(.itemView)
+                    }
+                }
             case let .filter(filter):
-                merge(filter, list: list, item: &item, into: &state, requirements: &requirements)
+                switch filter {
+                case let .shadow(shadow):
+                    state.shadow = Indirect(shadow)
+                    state.versions.shadow.combine(with: item.version)
+                case .shader:
+                    break
+                default:
+                    guard !filter.isIdentity else {
+                        break
+                    }
+                    state.filters.append(filter)
+                    state.versions.filters.combine(with: item.version)
+                }
+            case .animation, .view:
+                _openSwiftUIUnreachableCode()
             case let .state(hash):
                 state.stateHashes.append(hash)
-                requirements.formUnion([.inheritedView, .visibleContent])
             }
-        }
-
-        @inline(__always)
-        private static func merge(
-            _ transform: DisplayList.Transform,
-            item: DisplayList.Item,
-            into state: inout State,
-            requirements: inout MergedViewRequirements
-        ) {
-            if let affineTransform = transform.affineTransform {
-                state.transform = affineTransform.concatenating(state.transform)
-                state.adjust(for: affineTransform)
-                state.versions.transform.combine(with: item.version)
-            } else if let projectionTransform = transform.projectionTransform {
-                if !projectionTransform.isIdentity {
-                    requirements.insert(.itemView)
-                }
-            }
-        }
-
-        @inline(__always)
-        private static func merge(
-            _ filter: GraphicsFilter,
-            list: DisplayList,
-            item: inout DisplayList.Item,
-            into state: inout State,
-            requirements: inout MergedViewRequirements
-        ) {
-            if state.rewriteVibrantColorMatrix,
-               case let .colorMatrix(matrix, false) = filter {
-                item.rewriteVibrancyFilterAsBackdrop(matrix: matrix, list: list)
-                requirements.formUnion([.itemView, .visibleContent])
-                return
-            }
-            switch filter {
-            case let .shadow(shadow):
-                state.shadow = Indirect(shadow)
-                state.versions.shadow.combine(with: item.version)
-            case let .vibrantColorMatrix(matrix):
-                state.rewriteVibrantColorMatrix = true
-                state.filters.append(.colorMatrix(matrix, premultiplied: false))
-                state.versions.filters.combine(with: item.version)
-            default:
-                state.filters.append(filter)
-                state.versions.filters.combine(with: item.version)
-            }
-            requirements.insert(.visibleContent)
         }
 
         @inline(__always)
@@ -412,6 +381,7 @@ extension DisplayList.Item.Value {
     internal func finishMerge(
         _ requirements: inout DisplayList.ViewUpdater.Model.MergedViewRequirements,
         item: inout DisplayList.Item,
+        index: DisplayList.Index,
         state: inout DisplayList.ViewUpdater.Model.State
     ) {
         switch self {
@@ -420,7 +390,7 @@ extension DisplayList.Item.Value {
         case let .content(content):
             DisplayList.ViewUpdater.Model.merge(content, from: item, into: &state, requirements: &requirements)
         case let .effect(effect, list):
-            DisplayList.ViewUpdater.Model.merge(effect, list: list, item: &item, into: &state, requirements: &requirements)
+            DisplayList.ViewUpdater.Model.merge(effect, list: list, item: &item, index: index, into: &state, requirements: &requirements)
         case .states:
             _openSwiftUIUnreachableCode()
         }
