@@ -2114,21 +2114,7 @@ extension [GraphicsFilter] {
         removeLast()
         return color
     }
-
-    @inline(__always)
-    func caFilters() -> [Any]? {
-        // _CAFilterArrayAppend + makeCAFilter
-        _openSwiftUIUnimplementedWarning()
-        return nil
-    }
 }
-
-//extension GraphicsFilter {
-//    // 07401C2C9845FAA2984B0D65D34F2B64
-//    fileprivate func makeCAFilter() -> CAFilter? {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
 
 extension GraphicsFilter {
     static func updateAsync(

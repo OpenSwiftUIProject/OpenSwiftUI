@@ -6,6 +6,11 @@
 //  Status: WIP
 //  ID: 07401C2C9845FAA2984B0D65D34F2B64 (SwiftUICore)
 
+import OpenQuartzCoreShims
+#if canImport(QuartzCore)
+import QuartzCore_Private
+#endif
+
 package enum GraphicsFilter {
     case blur(BlurStyle)
     case variableBlur(VariableBlurStyle)
@@ -173,5 +178,37 @@ extension GraphicsFilter {
         }
     }
 }
+
+extension [GraphicsFilter] {
+    @inline(__always)
+    package func caFilters() -> [Any]? {
+        #if canImport(QuartzCore)
+        let caFilters = _CAFilterArrayCreate()
+        for filter in self {
+            guard let caFilter = filter.makeCAFilter() else {
+                continue
+            }
+            _CAFilterArrayAppend(caFilters, caFilter)
+        }
+        return caFilters as? [Any]
+        #else
+        return nil
+        #endif
+    }
+}
+
+#if canImport(QuartzCore)
+extension GraphicsFilter {
+    fileprivate func makeCAFilter() -> CAFilter? {
+        switch self {
+        case let .blur(style):
+            return CoreAnimationMakeGaussianBlurFilter(radius: style.radius)
+        default:
+            _openSwiftUIUnimplementedWarning()
+            return nil
+        }
+    }
+}
+#endif
 
 // TODO: Extension API
