@@ -6,7 +6,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool))
+@Suite(.snapshots(record: .never, diffTool: diffTool), .disabled(if: viewRendererVendor == .osui, "ShapeType is not implemented"))
 struct ClipEffectUITests {
     // FIXME: Investigate the diff. perceptualPrecision should be 1.0
 

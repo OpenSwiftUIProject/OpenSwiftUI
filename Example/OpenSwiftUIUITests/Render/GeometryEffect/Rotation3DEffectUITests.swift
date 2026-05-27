@@ -6,7 +6,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool))
+@Suite(.snapshots(record: .never, diffTool: diffTool), .disabled(if: viewRendererVendor == .osui, "rotate is not supported"))
 struct Rotation3DEffectUITests {
     @Test
     func rotation3DEffect() {
