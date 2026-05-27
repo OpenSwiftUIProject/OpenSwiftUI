@@ -142,8 +142,35 @@ package enum GraphicsBlendMode: Equatable {
 
 extension GraphicsFilter {
     package var isIdentity: Bool {
-        // TODO
-        false
+        switch self {
+        case let .blur(style):
+            style.isIdentity
+        case let .variableBlur(style):
+            style.isIdentity
+        case let .colorMatrix(matrix, _):
+            matrix.isIdentity
+        case let .colorMultiply(color):
+            color.linearRed == 1 &&
+                color.linearGreen == 1 &&
+                color.linearBlue == 1 &&
+                color.opacity == 1
+        case let .hueRotation(angle):
+            angle.radians == 0
+        case let .saturation(amount):
+            amount == 1
+        case let .brightness(amount):
+            amount == 0
+        case let .contrast(amount):
+            amount == 1
+        case let .grayscale(amount):
+            amount == 0
+        case let .colorMonochrome(monochrome):
+            monochrome.amount == 0
+        case let .luminanceCurve(curve):
+            curve.amount == 0
+        default:
+            false
+        }
     }
 }
 
