@@ -127,7 +127,7 @@ private struct Switch: UIViewRepresentable {
         let isOn = isOn
         let transaction = context.transaction
         Update.enqueueAction(reason: nil) { [transaction] in
-            uiView.setOn(isOn, animated: transaction.disablesAnimations)
+            uiView.setOn(isOn, animated: !transaction.disablesAnimations)
         }
         uiView.preferredStyle = .sliding
         let newTintColor: UIColor? = if let tint {

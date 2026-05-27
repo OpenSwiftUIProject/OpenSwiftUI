@@ -91,26 +91,25 @@ extension DisplayList.ViewUpdater {
             static let visibleContent = MergedViewRequirements(rawValue: 1 << 2)
         }
 
+        @inline(__always)
         fileprivate static func merge(
             _ content: DisplayList.Content,
             from item: DisplayList.Item,
             into state: inout State,
             requirements: inout MergedViewRequirements
         ) {
-            requirements.insert(.itemView)
-            state.versions.properties.combine(with: item.version)
             switch content.value {
             case let .backdrop(effect):
                 appendInheritedFilters(effect.filters, version: item.version, into: &state)
             case let .chameleonColor(_, filters):
                 appendInheritedFilters(filters, version: item.version, into: &state)
-            case .view, .platformView, .platformLayer:
-                requirements.insert(.inheritedView)
             default:
                 break
             }
+            requirements.insert(.itemView)
         }
 
+        @inline(__always)
         fileprivate static func merge(
             _ effect: DisplayList.Effect,
             list: DisplayList,
@@ -162,6 +161,7 @@ extension DisplayList.ViewUpdater {
             }
         }
 
+        @inline(__always)
         private static func merge(
             _ transform: DisplayList.Transform,
             item: DisplayList.Item,
@@ -185,6 +185,7 @@ extension DisplayList.ViewUpdater {
             }
         }
 
+        @inline(__always)
         private static func merge(
             _ filter: GraphicsFilter,
             list: DisplayList,
