@@ -168,20 +168,14 @@ extension DisplayList.ViewUpdater {
             into state: inout State,
             requirements: inout MergedViewRequirements
         ) {
-            switch transform {
-            case let .affine(transform):
-                state.adjust(for: transform)
-                state.transform = transform.concatenating(state.transform)
+            if let affineTransform = transform.affineTransform {
+                state.transform = affineTransform.concatenating(state.transform)
+                state.adjust(for: affineTransform)
                 state.versions.transform.combine(with: item.version)
-                requirements.insert(.visibleContent)
-            case let .projection(transform) where transform.isAffine:
-                let affine = CGAffineTransform(transform)
-                state.adjust(for: affine)
-                state.transform = affine.concatenating(state.transform)
-                state.versions.transform.combine(with: item.version)
-                requirements.insert(.visibleContent)
-            default:
-                requirements.formUnion([.inheritedView, .visibleContent])
+            } else if let projectionTransform = transform.projectionTransform {
+                if !projectionTransform.isIdentity {
+                    requirements.insert(.itemView)
+                }
             }
         }
 
