@@ -115,23 +115,26 @@ jobs:
 
             outputs["status-enabled"] = "true";
             const details_url = `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`;
+            const renderers = ["SwiftUI Renderer", "OpenSwiftUI Renderer"];
             for (const platform of platforms) {
               const label = platform === "ios" ? "iOS" : "macOS";
-              const description = `Queued by @${comment.user.login} with ${body}.`.slice(0, 140);
-              await github.rest.repos.createCommitStatus({
-                owner,
-                repo,
-                sha: pull.head.sha,
-                state: "pending",
-                target_url: details_url,
-                description,
-                context: `UI Tests / ${label}`,
-              });
+              for (const renderer of renderers) {
+                const description = `Queued by @${comment.user.login} with ${body}.`.slice(0, 140);
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha: pull.head.sha,
+                  state: "pending",
+                  target_url: details_url,
+                  description,
+                  context: `UI Tests / ${label} / ${renderer}`,
+                });
+              }
             }
             setOutputs();
 
   ios_uitest:
-    name: Execute UI tests on iOS
+    name: Execute UI tests on iOS (${{ matrix.renderer.name }})
     needs: prepare_issue_comment
     if: >-
       always() && (
@@ -149,6 +152,13 @@ jobs:
         xcode-version: ["16.4"]
         release: [2024]
         ios-version: ["18.5"]
+        renderer:
+          - name: SwiftUI Renderer
+            swiftui_renderer: 1
+            artifact_suffix: swiftui-renderer
+          - name: OpenSwiftUI Renderer
+            swiftui_renderer: 0
+            artifact_suffix: openswiftui-renderer
         include:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
@@ -157,9 +167,10 @@ jobs:
       - self-hosted
       - ${{ matrix.os }}
     env:
-      STATUS_CONTEXT: UI Tests / iOS
+      STATUS_CONTEXT: UI Tests / iOS / ${{ matrix.renderer.name }}
       STATUS_ENABLED: ${{ needs.prepare_issue_comment.outputs.status-enabled }}
       STATUS_SHA: ${{ needs.prepare_issue_comment.outputs.ref }}
+      RENDERER_NAME: ${{ matrix.renderer.name }}
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -168,7 +179,7 @@ jobs:
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENSWIFTUI_LINK_TESTING: 0
-      OPENSWIFTUI_SWIFTUI_RENDERER: 0
+      OPENSWIFTUI_SWIFTUI_RENDERER: ${{ matrix.renderer.swiftui_renderer }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Mark PR status running
@@ -183,7 +194,7 @@ jobs:
               sha: process.env.STATUS_SHA,
               state: "pending",
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: "iOS UI tests are running.",
+              description: `iOS UI tests (${process.env.RENDERER_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
@@ -197,7 +208,7 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
           platform: ios
           destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
-          artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}
+          artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}-${{ matrix.renderer.artifact_suffix }}
           update-reference: ${{ (github.event_name == 'workflow_dispatch' && inputs.update_reference) || needs.prepare_issue_comment.outputs.update-reference == 'true' }}
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
@@ -215,7 +226,7 @@ jobs:
               "failure";
             const description = process.env.JOB_STATUS === "cancelled" ?
               "iOS UI tests were cancelled." :
-              `iOS UI tests completed with ${state}.`;
+              `iOS UI tests (${process.env.RENDERER_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
@@ -227,7 +238,7 @@ jobs:
             });
 
   macos_uitest:
-    name: Execute UI tests on macOS
+    name: Execute UI tests on macOS (${{ matrix.renderer.name }})
     needs: prepare_issue_comment
     if: >-
       always() && (
@@ -244,14 +255,22 @@ jobs:
         os: [macos-15]
         xcode-version: ["16.4"]
         release: [2024]
+        renderer:
+          - name: SwiftUI Renderer
+            swiftui_renderer: 1
+            artifact_suffix: swiftui-renderer
+          - name: OpenSwiftUI Renderer
+            swiftui_renderer: 0
+            artifact_suffix: openswiftui-renderer
     # Limit to self-hosted to reduce action cost
     runs-on:
       - self-hosted
       - ${{ matrix.os }}
     env:
-      STATUS_CONTEXT: UI Tests / macOS
+      STATUS_CONTEXT: UI Tests / macOS / ${{ matrix.renderer.name }}
       STATUS_ENABLED: ${{ needs.prepare_issue_comment.outputs.status-enabled }}
       STATUS_SHA: ${{ needs.prepare_issue_comment.outputs.ref }}
+      RENDERER_NAME: ${{ matrix.renderer.name }}
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -259,7 +278,7 @@ jobs:
       OPENSWIFTUI_SWIFT_CRYPTO: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
-      OPENSWIFTUI_SWIFTUI_RENDERER: 0
+      OPENSWIFTUI_SWIFTUI_RENDERER: ${{ matrix.renderer.swiftui_renderer }}
       GH_TOKEN: ${{ github.token }}
     steps:
       - name: Mark PR status running
@@ -274,7 +293,7 @@ jobs:
               sha: process.env.STATUS_SHA,
               state: "pending",
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: "macOS UI tests are running.",
+              description: `macOS UI tests (${process.env.RENDERER_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
@@ -288,7 +307,7 @@ jobs:
           xcode-version: ${{ matrix.xcode-version }}
           platform: macos
           destination: "platform=macOS"
-          artifact-name: macos-uitest-snapshots
+          artifact-name: macos-uitest-snapshots-${{ matrix.renderer.artifact_suffix }}
           update-reference: ${{ (github.event_name == 'workflow_dispatch' && inputs.update_reference) || needs.prepare_issue_comment.outputs.update-reference == 'true' }}
       - name: Fail if tests failed
         if: steps.run-tests.outputs.test-result == 'failure'
@@ -306,7 +325,7 @@ jobs:
               "failure";
             const description = process.env.JOB_STATUS === "cancelled" ?
               "macOS UI tests were cancelled." :
-              `macOS UI tests completed with ${state}.`;
+              `macOS UI tests (${process.env.RENDERER_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
