@@ -7,9 +7,54 @@
 //  ID: 07401C2C9845FAA2984B0D65D34F2B64 (SwiftUICore)
 
 import Foundation
+package import OpenCoreGraphicsShims
 #if canImport(QuartzCore)
 import QuartzCore_Private
 #endif
+
+// MARK: - ORBGradientFlags + GraphicsContext.GradientOptions [WIP]
+
+//extension ORBGradientFlags {
+//    func union(_ options: GraphicsContext.GradientOptions) -> ORBGradientFlags {
+//        _openSwiftUIUnimplementedFailure()
+//    }
+//}
+
+#if canImport(CoreGraphics)
+
+// MARK: - BlendMode + CGBlendMode
+
+extension BlendMode {
+    package init(_ blendMode: CGBlendMode) {
+        self = switch blendMode {
+        case .normal: .normal
+        case .multiply: .multiply
+        case .screen: .screen
+        case .overlay: .overlay
+        case .darken: .darken
+        case .lighten: .lighten
+        case .colorDodge: .colorDodge
+        case .colorBurn: .colorBurn
+        case .softLight: .softLight
+        case .hardLight: .hardLight
+        case .difference: .difference
+        case .exclusion: .exclusion
+        case .hue: .hue
+        case .saturation: .saturation
+        case .color: .color
+        case .luminosity: .luminosity
+        case .sourceAtop: .sourceAtop
+        case .destinationOver: .destinationOver
+        case .destinationOut: .destinationOut
+        case .plusDarker: .plusDarker
+        case .plusLighter: .plusLighter
+        default: .normal
+        }
+    }
+}
+#endif
+
+// MARK: - [GraphicsFilter] + caFilters
 
 extension [GraphicsFilter] {
     @inline(__always)
@@ -126,6 +171,27 @@ extension GraphicsFilter.Curve {
             NSNumber(value: values.2),
             NSNumber(value: values.3),
         ]
+    }
+}
+#endif
+
+// MARK: - CAFrameRateRange + interval
+
+#if (os(iOS) || os(visionOS)) && canImport(QuartzCore)
+extension CAFrameRateRange {
+    package init(interval: Double) {
+        guard interval != 0 else {
+            self = .default
+            return
+        }
+        let frameRate = round(1.0 / Float(interval))
+        if frameRate <= 40.0 {
+            self.init(minimum: frameRate, maximum: 60.0, preferred: frameRate)
+        } else if frameRate < 80.0 {
+            self = .default
+        } else {
+            self.init(minimum: 80.0, maximum: frameRate, preferred: frameRate)
+        }
     }
 }
 #endif
