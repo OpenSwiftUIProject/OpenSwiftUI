@@ -315,6 +315,7 @@ let targets: [Target] = [
             "OpenSwiftUIUITests/**/*.m",
             "OpenSwiftUIUITests/**/*.c",
         ],
+        headers: .headers(project: "OpenSwiftUIUITests/**/*.h"),
         dependencies: [
             .target(name: "TestingHost"),
             .external(name: "SnapshotTesting"),

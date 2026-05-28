@@ -9,3 +9,4 @@ mise trust "$SCRIPT_DIR/mise.toml"
 mise install
 mise exec -- tuist install
 mise exec -- tuist generate --no-open
+"$SCRIPT_DIR/../Scripts/Xcode/add_spm_headers_to_xcodeproj.rb"
