@@ -6,7 +6,7 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool), .disabled(if: viewRendererVendor == .osui, "blur is not supported"))
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct BlurEffectUITests {
     @Test
     func blurColor() {
