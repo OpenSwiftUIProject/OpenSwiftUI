@@ -53,6 +53,8 @@ import ProjectDescription
 
 let examplePackageDestinations: Destinations = [.iPhone, .iPad, .mac, .appleVision]
 let openSwiftUIPackageDebugSettings: SettingsDictionary = [
+    "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) DEBUG=1",
+    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) DEBUG",
     "SWIFT_COMPILATION_MODE": "singlefile",
     "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
 ]
