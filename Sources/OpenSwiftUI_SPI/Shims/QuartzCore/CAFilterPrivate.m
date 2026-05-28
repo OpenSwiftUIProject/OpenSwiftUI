@@ -39,7 +39,7 @@ extern NSString * const kCAFilterInputRadius;
 extern NSString * const kCAFilterInputRedValues;
 extern NSString * const kCAFilterInputValues;
 
-static NSString *OpenSwiftUICAFilterType(uint32_t type) {
+static NSString *OpenSwiftUICAFilterType(CAFilterType type) {
     static NSString * const * const types[] = {
         &kCAFilterAlphaThreshold,
         &kCAFilterAverageColor,
@@ -63,7 +63,7 @@ static NSString *OpenSwiftUICAFilterType(uint32_t type) {
 
 static NSString *_CAFilterInputKey(CAFilterInputKey key) __attribute__((noinline));
 
-CAFilter *_CAFilterCreate(uint32_t type) {
+CAFilter *_CAFilterCreate(CAFilterType type) {
     NSString *filterType;
     if (type <= 15) {
         filterType = OpenSwiftUICAFilterType(type);
