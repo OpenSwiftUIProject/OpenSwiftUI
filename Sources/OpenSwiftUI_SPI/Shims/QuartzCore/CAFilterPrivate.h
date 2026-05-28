@@ -61,9 +61,9 @@ typedef NS_ENUM(uint32_t, CAFilterType) {
     CAFilterTypeVibrantColorMatrix = 15,
 };
 
-OPENSWIFTUI_EXPORT CAFilter *_CAFilterCreate(CAFilterType type) OPENSWIFTUI_SWIFT_NAME(CAFilterCreate(_:));
+OPENSWIFTUI_EXPORT CAFilter *_CAFilterCreate(CAFilterType type) OPENSWIFTUI_SWIFT_NAME(CAFilter.init(key:));
 OPENSWIFTUI_EXPORT id _Nullable _CAFilterGetInput(CAFilter *filter, CAFilterInputKey key) OPENSWIFTUI_SWIFT_NAME(CAFilterGetInput(_:key:));
-OPENSWIFTUI_EXPORT void _CAFilterSetInput(CAFilter * _Nullable filter, id _Nullable value, CAFilterInputKey key) OPENSWIFTUI_SWIFT_NAME(CAFilterSetInput(_:_:_:));
+OPENSWIFTUI_EXPORT void _CAFilterSetInput(CAFilter * _Nullable filter, id _Nullable value, CAFilterInputKey key) OPENSWIFTUI_SWIFT_NAME(CAFilter.setInput(self:value:key:));
 OPENSWIFTUI_EXPORT NSMutableArray<CAFilter *> *_CAFilterArrayCreate(void) OPENSWIFTUI_SWIFT_NAME(CAFilterArrayCreate());
 OPENSWIFTUI_EXPORT void _CAFilterArrayAppend(NSMutableArray<CAFilter *> *array, CAFilter *filter) OPENSWIFTUI_SWIFT_NAME(CAFilterArrayAppend(_:_:));
 

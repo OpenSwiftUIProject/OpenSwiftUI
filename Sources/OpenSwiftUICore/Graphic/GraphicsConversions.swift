@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 07401C2C9845FAA2984B0D65D34F2B64 (SwiftUICore)
 
 import Foundation
@@ -34,82 +34,82 @@ extension GraphicsFilter {
     fileprivate func makeCAFilter() -> CAFilter? {
         switch self {
         case let .blur(style):
-            let filter = CAFilterCreate(.gaussianBlur)
-            CAFilterSetInput(filter, NSNumber(value: style.radius), .radius)
-            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), .normalizeEdges)
-            CAFilterSetInput(filter, NSNumber(value: style.dither), .dither)
+            let filter = CAFilter(key: .gaussianBlur)
+            filter.setInput(value: NSNumber(value: style.radius), key: .radius)
+            filter.setInput(value: NSNumber(value: style.isOpaque), key: .normalizeEdges)
+            filter.setInput(value: NSNumber(value: style.dither), key: .dither)
             return filter
         case let .variableBlur(style):
-            let filter = CAFilterCreate(.variableBlur)
-            CAFilterSetInput(filter, NSNumber(value: style.caFilterRadius), .radius)
-            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), .normalizeEdges)
-            CAFilterSetInput(filter, NSNumber(value: style.dither), .dither)
+            let filter = CAFilter(key: .variableBlur)
+            filter.setInput(value: NSNumber(value: style.caFilterRadius), key: .radius)
+            filter.setInput(value: NSNumber(value: style.isOpaque), key: .normalizeEdges)
+            filter.setInput(value: NSNumber(value: style.dither), key: .dither)
             if case let .image(image) = style.mask,
                let mask = image.render(at: image.size) {
-                CAFilterSetInput(filter, mask, .maskImage)
+                filter.setInput(value: mask, key: .maskImage)
             }
             return filter
         case .averageColor:
-            return CAFilterCreate(.averageColor)
+            return CAFilter(key: .averageColor)
         case let .colorMatrix(matrix, premultiplied):
-            let filter = CAFilterCreate(.colorMatrix)
-            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), .colorMatrix)
-            CAFilterSetInput(filter, NSNumber(value: premultiplied), .premultipliedValues)
+            let filter = CAFilter(key: .colorMatrix)
+            filter.setInput(value: NSValue(caColorMatrix: matrix.caColorMatrix), key: .colorMatrix)
+            filter.setInput(value: NSNumber(value: premultiplied), key: .premultipliedValues)
             return filter
         case let .colorMultiply(color):
-            let filter = CAFilterCreate(.multiplyColor)
-            CAFilterSetInput(filter, color.cgColor, .color)
+            let filter = CAFilter(key: .multiplyColor)
+            filter.setInput(value: color.cgColor, key: .color)
             return filter
         case let .hueRotation(angle):
-            let filter = CAFilterCreate(.colorHueRotate)
-            CAFilterSetInput(filter, NSNumber(value: angle.radians), .angle)
+            let filter = CAFilter(key: .colorHueRotate)
+            filter.setInput(value: NSNumber(value: angle.radians), key: .angle)
             return filter
         case let .saturation(amount):
-            let filter = CAFilterCreate(.colorSaturate)
-            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
+            let filter = CAFilter(key: .colorSaturate)
+            filter.setInput(value: NSNumber(value: amount), key: .amount)
             return filter
         case let .brightness(amount):
-            let filter = CAFilterCreate(.colorBrightness)
-            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
+            let filter = CAFilter(key: .colorBrightness)
+            filter.setInput(value: NSNumber(value: amount), key: .amount)
             return filter
         case let .contrast(amount):
-            let filter = CAFilterCreate(.colorContrast)
-            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
+            let filter = CAFilter(key: .colorContrast)
+            filter.setInput(value: NSNumber(value: amount), key: .amount)
             return filter
         case .luminanceToAlpha:
-            return CAFilterCreate(.luminanceToAlpha)
+            return CAFilter(key: .luminanceToAlpha)
         case .colorInvert:
-            return CAFilterCreate(.colorInvert)
+            return CAFilter(key: .colorInvert)
         case let .grayscale(amount):
-            let filter = CAFilterCreate(.colorMonochrome)
-            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
+            let filter = CAFilter(key: .colorMonochrome)
+            filter.setInput(value: NSNumber(value: amount), key: .amount)
             return filter
         case let .colorMonochrome(monochrome):
-            let filter = CAFilterCreate(.colorMonochrome)
-            CAFilterSetInput(filter, monochrome.color.cgColor, .color)
-            CAFilterSetInput(filter, NSNumber(value: monochrome.amount), .amount)
-            CAFilterSetInput(filter, NSNumber(value: monochrome.bias), .bias)
+            let filter = CAFilter(key: .colorMonochrome)
+            filter.setInput(value: monochrome.color.cgColor, key: .color)
+            filter.setInput(value: NSNumber(value: monochrome.amount), key: .amount)
+            filter.setInput(value: NSNumber(value: monochrome.bias), key: .bias)
             return filter
         case let .vibrantColorMatrix(matrix):
-            let filter = CAFilterCreate(.vibrantColorMatrix)
-            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), .colorMatrix)
+            let filter = CAFilter(key: .vibrantColorMatrix)
+            filter.setInput(value: NSValue(caColorMatrix: matrix.caColorMatrix), key: .colorMatrix)
             return filter
         case let .luminanceCurve(curve):
-            let filter = CAFilterCreate(.luminanceCurveMap)
-            CAFilterSetInput(filter, curve.curve.caFilterValues, .values)
-            CAFilterSetInput(filter, NSNumber(value: curve.amount), .amount)
+            let filter = CAFilter(key: .luminanceCurveMap)
+            filter.setInput(value: curve.curve.caFilterValues, key: .values)
+            filter.setInput(value: NSNumber(value: curve.amount), key: .amount)
             return filter
         case let .colorCurves(curves):
-            let filter = CAFilterCreate(.curves)
-            CAFilterSetInput(filter, curves.redCurve.caFilterValues, .redValues)
-            CAFilterSetInput(filter, curves.greenCurve.caFilterValues, .greenValues)
-            CAFilterSetInput(filter, curves.blueCurve.caFilterValues, .blueValues)
-            CAFilterSetInput(filter, curves.opacityCurve.caFilterValues, .alphaValues)
+            let filter = CAFilter(key: .curves)
+            filter.setInput(value: curves.redCurve.caFilterValues, key: .redValues)
+            filter.setInput(value: curves.greenCurve.caFilterValues, key: .greenValues)
+            filter.setInput(value: curves.blueCurve.caFilterValues, key: .blueValues)
+            filter.setInput(value: curves.opacityCurve.caFilterValues, key: .alphaValues)
             return filter
         case let .alphaThreshold(threshold):
-            let filter = CAFilterCreate(.alphaThreshold)
-            CAFilterSetInput(filter, threshold.color.cgColor, .color)
-            CAFilterSetInput(filter, NSNumber(value: threshold.amount), .amount)
+            let filter = CAFilter(key: .alphaThreshold)
+            filter.setInput(value: threshold.color.cgColor, key: .color)
+            filter.setInput(value: NSNumber(value: threshold.amount), key: .amount)
             return filter
         case .shadow, .projection, .shader:
             _openSwiftUIUnimplementedFailure()
