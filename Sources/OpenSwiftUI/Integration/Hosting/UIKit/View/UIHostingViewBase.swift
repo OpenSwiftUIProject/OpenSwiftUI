@@ -230,8 +230,30 @@ package class UIHostingViewBase {
         }
     }
 
+    @inline(__always)
+    func updateTransform() {
+        guard let uiView else {
+            return
+        }
+        if !viewGraph.invalidateTransform(), registeredForGeometryChanges {
+            uiView._unregisterForGeometryChanges()
+            registeredForGeometryChanges = false
+        }
+    }
+
     package func updateTransformWithoutGeometryObservation() {
-        _openSwiftUIUnimplementedFailure()
+        guard let uiView else {
+            return
+        }
+        let wasRegisteredForGeometryChanges = registeredForGeometryChanges
+        if !viewGraph.invalidateTransform(), registeredForGeometryChanges {
+            uiView._unregisterForGeometryChanges()
+            registeredForGeometryChanges = false
+        }
+        if !wasRegisteredForGeometryChanges, registeredForGeometryChanges {
+            uiView._unregisterForGeometryChanges()
+            registeredForGeometryChanges = false
+        }
     }
 
     @inline(__always)
@@ -510,7 +532,14 @@ package class UIHostingViewBase {
     }
 
     package func _geometryChanged(_: UnsafeRawPointer, forAncestor: UIView?) {
-        _openSwiftUIUnimplementedFailure()
+        guard let host else {
+            return
+        }
+        if registeredForGeometryChanges {
+            host.invalidateProperties(.transform, mayDeferUpdate: false)
+        } else if !options.contains(.registeredForGeometryChanges) {
+            Log.internalError("Received _geometryChanged with no registration for \(self).")
+        }
     }
 
     package func layoutSubviews() {

@@ -377,7 +377,13 @@ extension ViewGraph {
     
     @discardableResult
     package func invalidateTransform() -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        let rootTransform = $rootTransform
+        guard !rootTransform.valueState.contains(.dirty) else {
+            return false
+        }
+        rootTransform.invalidateValue()
+        delegate?.graphDidChange()
+        return true
     }
 }
 
