@@ -280,7 +280,18 @@ extension _UIHostingView: ViewRendererHost {
     }
 
     package func updateTransform() {
+        base.updateTransform()
+
+        // TODO: Notify UIKit related bridges
         _openSwiftUIUnimplementedWarning()
+
+        if !safeAreaRegions.contains(.container) {
+            invalidateProperties(.safeArea, mayDeferUpdate: false)
+        }
+    }
+
+    package func updateTransformWithoutGeometryObservation() {
+        base.updateTransformWithoutGeometryObservation()
     }
 
     package func updateSize() {
@@ -356,6 +367,11 @@ extension _UIHostingView {
 
 extension _UIHostingView: RootTransformProvider {
     package func rootTransform() -> ViewTransform {
+        if !_base.registeredForGeometryChanges {
+            _base.registeredForGeometryChanges = true
+            _registerForGeometryChanges()
+        }
+        // TODO
         _openSwiftUIUnimplementedWarning()
         return .init()
     }
@@ -392,4 +408,3 @@ public func _makeUIHostingView<Content>(_ view: Content) -> NSObject where Conte
 }
 
 #endif
-

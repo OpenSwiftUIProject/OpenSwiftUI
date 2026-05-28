@@ -243,6 +243,13 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         base.layoutSubviews()
     }
 
+    override dynamic open func _geometryChanged(
+        _ geometry: UnsafeRawPointer,
+        forAncestor ancestor: UIView?
+    ) {
+        base._geometryChanged(geometry, forAncestor: ancestor)
+    }
+
     override dynamic open var frame: CGRect {
         get {
             super.frame

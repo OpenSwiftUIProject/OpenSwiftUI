@@ -36,6 +36,9 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface UIView (OpenSwiftUI_SPI)
 - (instancetype)_initWithLayer:(CALayer *)layer;
+- (void)_geometryChanged:(const void *)geometry forAncestor:(nullable UIView *)ancestor;
+- (void)_registerForGeometryChanges;
+- (void)_unregisterForGeometryChanges;
 - (BOOL)_shouldAnimatePropertyWithKey_openswiftui_safe_wrapper:(NSString *)key OPENSWIFTUI_SWIFT_NAME(_shouldAnimateProperty(withKey:));
 - (void)_setFocusInteractionEnabled_openswiftui_safe_wrapper:(BOOL)enabled OPENSWIFTUI_SWIFT_NAME(_setFocusInteractionEnabled(_:));
 @property(nonatomic, readonly, nullable) UIViewController *_viewControllerForAncestor_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_viewControllerForAncestor);
