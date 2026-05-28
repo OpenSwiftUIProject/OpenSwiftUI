@@ -6,26 +6,109 @@
 
 #if __has_include(<QuartzCore/CoreAnimation.h>)
 
+extern NSString * const kCAFilterAlphaThreshold;
+extern NSString * const kCAFilterAverageColor;
+extern NSString * const kCAFilterColorBrightness;
+extern NSString * const kCAFilterColorContrast;
+extern NSString * const kCAFilterColorHueRotate;
+extern NSString * const kCAFilterColorInvert;
+extern NSString * const kCAFilterColorMatrix;
+extern NSString * const kCAFilterColorMonochrome;
+extern NSString * const kCAFilterColorSaturate;
+extern NSString * const kCAFilterCurves;
+extern NSString * const kCAFilterGaussianBlur;
+extern NSString * const kCAFilterLuminanceCurveMap;
+extern NSString * const kCAFilterLuminanceToAlpha;
+extern NSString * const kCAFilterMultiplyColor;
+extern NSString * const kCAFilterVariableBlur;
+extern NSString * const kCAFilterVibrantColorMatrix;
+
+extern NSString * const kCAFilterInputAlphaValues;
+extern NSString * const kCAFilterInputAmount;
+extern NSString * const kCAFilterInputAngle;
+extern NSString * const kCAFilterInputBias;
+extern NSString * const kCAFilterInputBlueValues;
+extern NSString * const kCAFilterInputColor;
+extern NSString * const kCAFilterInputColorMatrix;
+extern NSString * const kCAFilterInputDither;
+extern NSString * const kCAFilterInputGreenValues;
+extern NSString * const kCAFilterInputHardEdges;
+extern NSString * const kCAFilterInputNormalizeEdges;
+extern NSString * const kCAFilterInputPremultipliedValues;
+extern NSString * const kCAFilterInputRadius;
+extern NSString * const kCAFilterInputRedValues;
+extern NSString * const kCAFilterInputValues;
+
+static NSString *OpenSwiftUICAFilterType(uint32_t type) {
+    static NSString * const * const types[] = {
+        &kCAFilterAlphaThreshold,
+        &kCAFilterAverageColor,
+        &kCAFilterColorBrightness,
+        &kCAFilterColorContrast,
+        &kCAFilterColorHueRotate,
+        &kCAFilterColorInvert,
+        &kCAFilterColorMatrix,
+        &kCAFilterColorMonochrome,
+        &kCAFilterColorSaturate,
+        &kCAFilterCurves,
+        &kCAFilterGaussianBlur,
+        &kCAFilterLuminanceCurveMap,
+        &kCAFilterLuminanceToAlpha,
+        &kCAFilterMultiplyColor,
+        &kCAFilterVariableBlur,
+        &kCAFilterVibrantColorMatrix,
+    };
+    return *types[type];
+}
+
+static NSString *_CAFilterInputKey(uint32_t key) __attribute__((noinline));
+
+CAFilter *_CAFilterCreate(uint32_t type) {
+    NSString *filterType;
+    if (type <= 15) {
+        filterType = OpenSwiftUICAFilterType(type);
+    }
+    return [CAFilter filterWithType:filterType];
+}
+
+id _CAFilterGetInput(CAFilter *filter, uint32_t key) {
+    return [filter valueForKey:_CAFilterInputKey(key)];
+}
+
+static NSString *_CAFilterInputKey(uint32_t key) {
+    switch (key) {
+        case 0: return kCAFilterInputAlphaValues;
+        case 1: return kCAFilterInputAmount;
+        case 2: return kCAFilterInputAngle;
+        case 3: return kCAFilterInputBias;
+        case 4: return kCAFilterInputBlueValues;
+        case 5: return kCAFilterInputColor;
+        case 6: return kCAFilterInputColorMatrix;
+        case 7: return kCAFilterInputDither;
+        case 8: return kCAFilterInputGreenValues;
+        case 9: return kCAFilterInputHardEdges;
+        case 10: return @"inputMaskImage";
+        case 11: return kCAFilterInputNormalizeEdges;
+        case 12: return @"inputPremultipliedAlpha";
+        case 13: return @"inputNormalizeEdgesTransparent";
+        case 14: return kCAFilterInputPremultipliedValues;
+        case 15: return kCAFilterInputRadius;
+        case 16: return kCAFilterInputRedValues;
+        case 17: return kCAFilterInputValues;
+        default: return @"inputMaskImage";
+    }
+}
+
+void _CAFilterSetInput(CAFilter *filter, id value, uint32_t key) {
+    [filter setValue:value forKey:_CAFilterInputKey(key)];
+}
+
 NSMutableArray<CAFilter *> *_CAFilterArrayCreate(void) {
-    return [[NSMutableArray alloc] init];
+    return (__bridge NSMutableArray *)CFArrayCreateMutable(NULL, 0, &kCFTypeArrayCallBacks);
 }
 
 void _CAFilterArrayAppend(NSMutableArray<CAFilter *> *array, CAFilter *filter) {
-    [array addObject:filter];
-}
-
-CAFilter *OpenSwiftUICoreMakeGaussianBlurFilter(CGFloat radius) {
-    Class filterClass = NSClassFromString(@"CAFilter");
-    SEL selector = NSSelectorFromString(@"filterWithType:");
-    if (filterClass == Nil || ![filterClass respondsToSelector:selector]) {
-        return nil;
-    }
-#pragma clang diagnostic push
-#pragma clang diagnostic ignored "-Warc-performSelector-leaks"
-    CAFilter *filter = [filterClass performSelector:selector withObject:@"gaussianBlur"];
-#pragma clang diagnostic pop
-    [filter setValue:@(radius) forKey:@"inputRadius"];
-    return filter;
+    CFArrayAppendValue((__bridge CFMutableArrayRef)array, (__bridge const void *)filter);
 }
 
 #endif /* CoreAnimation.h */
