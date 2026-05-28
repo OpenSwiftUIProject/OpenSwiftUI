@@ -139,7 +139,7 @@ extension DisplayList {
         // OpenSwiftUI Addition:
         private static let rendererCheck: Void = {
             #if DEBUG
-            print("ViewRendererVendor: \(viewRendererVendor)")
+            print("OpenSwiftUI ViewRendererVendor: \(viewRendererVendor)")
             #endif
 
             // validateSwiftUIRendererABI

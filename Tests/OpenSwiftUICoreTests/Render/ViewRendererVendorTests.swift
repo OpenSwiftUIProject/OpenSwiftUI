@@ -14,6 +14,15 @@ struct ViewRendererVendorTests {
     }
 
     @Test
+    func stringRepresentations() {
+        let vendor: ViewRendererVendor = "org.example.Renderer"
+
+        #expect(vendor.rawValue == "org.example.Renderer")
+        #expect(vendor.description == "org.example.Renderer")
+        #expect("\(ViewRendererVendor.osui)" == "org.OpenSwiftUIProject.OpenSwiftUI")
+    }
+
+    @Test
     func activeVendor() {
         #if OPENSWIFTUI_SWIFTUI_RENDERER
         #expect(viewRendererVendor == .sui)
