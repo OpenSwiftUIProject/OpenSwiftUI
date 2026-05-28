@@ -34,19 +34,16 @@ extension GraphicsFilter {
     fileprivate func makeCAFilter() -> CAFilter? {
         switch self {
         case let .blur(style):
-            return makeBlurFilter(
-                type: 10,
-                radius: style.radius,
-                isOpaque: style.isOpaque,
-                dither: style.dither
-            )
+            let filter = CAFilterCreate(10)
+            CAFilterSetInput(filter, NSNumber(value: style.radius), 15)
+            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), 11)
+            CAFilterSetInput(filter, NSNumber(value: style.dither), 7)
+            return filter
         case let .variableBlur(style):
-            let filter = makeBlurFilter(
-                type: 14,
-                radius: style.caFilterRadius,
-                isOpaque: style.isOpaque,
-                dither: style.dither
-            )
+            let filter = CAFilterCreate(14)
+            CAFilterSetInput(filter, NSNumber(value: style.caFilterRadius), 15)
+            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), 11)
+            CAFilterSetInput(filter, NSNumber(value: style.dither), 7)
             if case let .image(image) = style.mask,
                let mask = image.render(at: image.size) {
                 CAFilterSetInput(filter, mask, 10)
@@ -55,7 +52,8 @@ extension GraphicsFilter {
         case .averageColor:
             return CAFilterCreate(1)
         case let .colorMatrix(matrix, premultiplied):
-            let filter = makeColorMatrixFilter(type: 6, matrix: matrix)
+            let filter = CAFilterCreate(6)
+            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), 6)
             CAFilterSetInput(filter, NSNumber(value: premultiplied), 14)
             return filter
         case let .colorMultiply(color):
@@ -63,19 +61,29 @@ extension GraphicsFilter {
             CAFilterSetInput(filter, color.cgColor, 5)
             return filter
         case let .hueRotation(angle):
-            return makeScalarFilter(type: 4, key: 2, value: angle.radians)
+            let filter = CAFilterCreate(4)
+            CAFilterSetInput(filter, NSNumber(value: angle.radians), 2)
+            return filter
         case let .saturation(amount):
-            return makeScalarFilter(type: 8, key: 1, value: amount)
+            let filter = CAFilterCreate(8)
+            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            return filter
         case let .brightness(amount):
-            return makeScalarFilter(type: 2, key: 1, value: amount)
+            let filter = CAFilterCreate(2)
+            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            return filter
         case let .contrast(amount):
-            return makeScalarFilter(type: 3, key: 1, value: amount)
+            let filter = CAFilterCreate(3)
+            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            return filter
         case .luminanceToAlpha:
             return CAFilterCreate(12)
         case .colorInvert:
             return CAFilterCreate(5)
         case let .grayscale(amount):
-            return makeScalarFilter(type: 7, key: 1, value: amount)
+            let filter = CAFilterCreate(7)
+            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            return filter
         case let .colorMonochrome(monochrome):
             let filter = CAFilterCreate(7)
             CAFilterSetInput(filter, monochrome.color.cgColor, 5)
@@ -83,7 +91,9 @@ extension GraphicsFilter {
             CAFilterSetInput(filter, NSNumber(value: monochrome.bias), 3)
             return filter
         case let .vibrantColorMatrix(matrix):
-            return makeColorMatrixFilter(type: 15, matrix: matrix)
+            let filter = CAFilterCreate(15)
+            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), 6)
+            return filter
         case let .luminanceCurve(curve):
             let filter = CAFilterCreate(11)
             CAFilterSetInput(filter, curve.curve.caFilterValues, 17)
@@ -104,34 +114,6 @@ extension GraphicsFilter {
         case .shadow, .projection, .shader:
             _openSwiftUIUnimplementedFailure()
         }
-    }
-
-    @inline(__always)
-    private func makeBlurFilter(
-        type: UInt32,
-        radius: CGFloat,
-        isOpaque: Bool,
-        dither: Bool
-    ) -> CAFilter {
-        let filter = CAFilterCreate(type)
-        CAFilterSetInput(filter, NSNumber(value: radius), 15)
-        CAFilterSetInput(filter, NSNumber(value: isOpaque), 11)
-        CAFilterSetInput(filter, NSNumber(value: dither), 7)
-        return filter
-    }
-
-    @inline(__always)
-    private func makeScalarFilter(type: UInt32, key: UInt32, value: Double) -> CAFilter {
-        let filter = CAFilterCreate(type)
-        CAFilterSetInput(filter, NSNumber(value: value), key)
-        return filter
-    }
-
-    @inline(__always)
-    private func makeColorMatrixFilter(type: UInt32, matrix: _ColorMatrix) -> CAFilter {
-        let filter = CAFilterCreate(type)
-        CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), 6)
-        return filter
     }
 }
 
