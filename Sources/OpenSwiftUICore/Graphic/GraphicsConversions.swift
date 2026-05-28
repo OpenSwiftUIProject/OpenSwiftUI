@@ -35,46 +35,46 @@ extension GraphicsFilter {
         switch self {
         case let .blur(style):
             let filter = CAFilterCreate(10)
-            CAFilterSetInput(filter, NSNumber(value: style.radius), 15)
-            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), 11)
-            CAFilterSetInput(filter, NSNumber(value: style.dither), 7)
+            CAFilterSetInput(filter, NSNumber(value: style.radius), .radius)
+            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), .normalizeEdges)
+            CAFilterSetInput(filter, NSNumber(value: style.dither), .dither)
             return filter
         case let .variableBlur(style):
             let filter = CAFilterCreate(14)
-            CAFilterSetInput(filter, NSNumber(value: style.caFilterRadius), 15)
-            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), 11)
-            CAFilterSetInput(filter, NSNumber(value: style.dither), 7)
+            CAFilterSetInput(filter, NSNumber(value: style.caFilterRadius), .radius)
+            CAFilterSetInput(filter, NSNumber(value: style.isOpaque), .normalizeEdges)
+            CAFilterSetInput(filter, NSNumber(value: style.dither), .dither)
             if case let .image(image) = style.mask,
                let mask = image.render(at: image.size) {
-                CAFilterSetInput(filter, mask, 10)
+                CAFilterSetInput(filter, mask, .maskImage)
             }
             return filter
         case .averageColor:
             return CAFilterCreate(1)
         case let .colorMatrix(matrix, premultiplied):
             let filter = CAFilterCreate(6)
-            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), 6)
-            CAFilterSetInput(filter, NSNumber(value: premultiplied), 14)
+            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), .colorMatrix)
+            CAFilterSetInput(filter, NSNumber(value: premultiplied), .premultipliedValues)
             return filter
         case let .colorMultiply(color):
             let filter = CAFilterCreate(13)
-            CAFilterSetInput(filter, color.cgColor, 5)
+            CAFilterSetInput(filter, color.cgColor, .color)
             return filter
         case let .hueRotation(angle):
             let filter = CAFilterCreate(4)
-            CAFilterSetInput(filter, NSNumber(value: angle.radians), 2)
+            CAFilterSetInput(filter, NSNumber(value: angle.radians), .angle)
             return filter
         case let .saturation(amount):
             let filter = CAFilterCreate(8)
-            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
             return filter
         case let .brightness(amount):
             let filter = CAFilterCreate(2)
-            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
             return filter
         case let .contrast(amount):
             let filter = CAFilterCreate(3)
-            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
             return filter
         case .luminanceToAlpha:
             return CAFilterCreate(12)
@@ -82,34 +82,34 @@ extension GraphicsFilter {
             return CAFilterCreate(5)
         case let .grayscale(amount):
             let filter = CAFilterCreate(7)
-            CAFilterSetInput(filter, NSNumber(value: amount), 1)
+            CAFilterSetInput(filter, NSNumber(value: amount), .amount)
             return filter
         case let .colorMonochrome(monochrome):
             let filter = CAFilterCreate(7)
-            CAFilterSetInput(filter, monochrome.color.cgColor, 5)
-            CAFilterSetInput(filter, NSNumber(value: monochrome.amount), 1)
-            CAFilterSetInput(filter, NSNumber(value: monochrome.bias), 3)
+            CAFilterSetInput(filter, monochrome.color.cgColor, .color)
+            CAFilterSetInput(filter, NSNumber(value: monochrome.amount), .amount)
+            CAFilterSetInput(filter, NSNumber(value: monochrome.bias), .bias)
             return filter
         case let .vibrantColorMatrix(matrix):
             let filter = CAFilterCreate(15)
-            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), 6)
+            CAFilterSetInput(filter, NSValue(caColorMatrix: matrix.caColorMatrix), .colorMatrix)
             return filter
         case let .luminanceCurve(curve):
             let filter = CAFilterCreate(11)
-            CAFilterSetInput(filter, curve.curve.caFilterValues, 17)
-            CAFilterSetInput(filter, NSNumber(value: curve.amount), 1)
+            CAFilterSetInput(filter, curve.curve.caFilterValues, .values)
+            CAFilterSetInput(filter, NSNumber(value: curve.amount), .amount)
             return filter
         case let .colorCurves(curves):
             let filter = CAFilterCreate(9)
-            CAFilterSetInput(filter, curves.redCurve.caFilterValues, 16)
-            CAFilterSetInput(filter, curves.greenCurve.caFilterValues, 8)
-            CAFilterSetInput(filter, curves.blueCurve.caFilterValues, 4)
-            CAFilterSetInput(filter, curves.opacityCurve.caFilterValues, 0)
+            CAFilterSetInput(filter, curves.redCurve.caFilterValues, .redValues)
+            CAFilterSetInput(filter, curves.greenCurve.caFilterValues, .greenValues)
+            CAFilterSetInput(filter, curves.blueCurve.caFilterValues, .blueValues)
+            CAFilterSetInput(filter, curves.opacityCurve.caFilterValues, .alphaValues)
             return filter
         case let .alphaThreshold(threshold):
             let filter = CAFilterCreate(0)
-            CAFilterSetInput(filter, threshold.color.cgColor, 5)
-            CAFilterSetInput(filter, NSNumber(value: threshold.amount), 1)
+            CAFilterSetInput(filter, threshold.color.cgColor, .color)
+            CAFilterSetInput(filter, NSNumber(value: threshold.amount), .amount)
             return filter
         case .shadow, .projection, .shader:
             _openSwiftUIUnimplementedFailure()

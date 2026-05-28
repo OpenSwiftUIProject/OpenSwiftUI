@@ -61,7 +61,7 @@ static NSString *OpenSwiftUICAFilterType(uint32_t type) {
     return *types[type];
 }
 
-static NSString *_CAFilterInputKey(uint32_t key) __attribute__((noinline));
+static NSString *_CAFilterInputKey(CAFilterInputKey key) __attribute__((noinline));
 
 CAFilter *_CAFilterCreate(uint32_t type) {
     NSString *filterType;
@@ -71,35 +71,35 @@ CAFilter *_CAFilterCreate(uint32_t type) {
     return [CAFilter filterWithType:filterType];
 }
 
-id _CAFilterGetInput(CAFilter *filter, uint32_t key) {
+id _CAFilterGetInput(CAFilter *filter, CAFilterInputKey key) {
     return [filter valueForKey:_CAFilterInputKey(key)];
 }
 
-static NSString *_CAFilterInputKey(uint32_t key) {
+static NSString *_CAFilterInputKey(CAFilterInputKey key) {
     switch (key) {
-        case 0: return kCAFilterInputAlphaValues;
-        case 1: return kCAFilterInputAmount;
-        case 2: return kCAFilterInputAngle;
-        case 3: return kCAFilterInputBias;
-        case 4: return kCAFilterInputBlueValues;
-        case 5: return kCAFilterInputColor;
-        case 6: return kCAFilterInputColorMatrix;
-        case 7: return kCAFilterInputDither;
-        case 8: return kCAFilterInputGreenValues;
-        case 9: return kCAFilterInputHardEdges;
-        case 10: return @"inputMaskImage";
-        case 11: return kCAFilterInputNormalizeEdges;
-        case 12: return @"inputPremultipliedAlpha";
-        case 13: return @"inputNormalizeEdgesTransparent";
-        case 14: return kCAFilterInputPremultipliedValues;
-        case 15: return kCAFilterInputRadius;
-        case 16: return kCAFilterInputRedValues;
-        case 17: return kCAFilterInputValues;
+        case CAFilterInputKeyAlphaValues: return kCAFilterInputAlphaValues;
+        case CAFilterInputKeyAmount: return kCAFilterInputAmount;
+        case CAFilterInputKeyAngle: return kCAFilterInputAngle;
+        case CAFilterInputKeyBias: return kCAFilterInputBias;
+        case CAFilterInputKeyBlueValues: return kCAFilterInputBlueValues;
+        case CAFilterInputKeyColor: return kCAFilterInputColor;
+        case CAFilterInputKeyColorMatrix: return kCAFilterInputColorMatrix;
+        case CAFilterInputKeyDither: return kCAFilterInputDither;
+        case CAFilterInputKeyGreenValues: return kCAFilterInputGreenValues;
+        case CAFilterInputKeyHardEdges: return kCAFilterInputHardEdges;
+        case CAFilterInputKeyMaskImage: return @"inputMaskImage";
+        case CAFilterInputKeyNormalizeEdges: return kCAFilterInputNormalizeEdges;
+        case CAFilterInputKeyPremultipliedAlpha: return @"inputPremultipliedAlpha";
+        case CAFilterInputKeyNormalizeEdgesTransparent: return @"inputNormalizeEdgesTransparent";
+        case CAFilterInputKeyPremultipliedValues: return kCAFilterInputPremultipliedValues;
+        case CAFilterInputKeyRadius: return kCAFilterInputRadius;
+        case CAFilterInputKeyRedValues: return kCAFilterInputRedValues;
+        case CAFilterInputKeyValues: return kCAFilterInputValues;
         default: return @"inputMaskImage";
     }
 }
 
-void _CAFilterSetInput(CAFilter *filter, id value, uint32_t key) {
+void _CAFilterSetInput(CAFilter *filter, id value, CAFilterInputKey key) {
     [filter setValue:value forKey:_CAFilterInputKey(key)];
 }
 

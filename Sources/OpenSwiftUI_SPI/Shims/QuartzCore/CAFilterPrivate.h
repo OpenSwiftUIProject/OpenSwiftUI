@@ -21,9 +21,30 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @end
 
+typedef NS_ENUM(uint32_t, CAFilterInputKey) {
+    CAFilterInputKeyAlphaValues = 0,
+    CAFilterInputKeyAmount = 1,
+    CAFilterInputKeyAngle = 2,
+    CAFilterInputKeyBias = 3,
+    CAFilterInputKeyBlueValues = 4,
+    CAFilterInputKeyColor = 5,
+    CAFilterInputKeyColorMatrix = 6,
+    CAFilterInputKeyDither = 7,
+    CAFilterInputKeyGreenValues = 8,
+    CAFilterInputKeyHardEdges = 9,
+    CAFilterInputKeyMaskImage = 10,
+    CAFilterInputKeyNormalizeEdges = 11,
+    CAFilterInputKeyPremultipliedAlpha = 12,
+    CAFilterInputKeyNormalizeEdgesTransparent = 13,
+    CAFilterInputKeyPremultipliedValues = 14,
+    CAFilterInputKeyRadius = 15,
+    CAFilterInputKeyRedValues = 16,
+    CAFilterInputKeyValues = 17,
+};
+
 OPENSWIFTUI_EXPORT CAFilter *_CAFilterCreate(uint32_t type) OPENSWIFTUI_SWIFT_NAME(CAFilterCreate(_:));
-OPENSWIFTUI_EXPORT id _Nullable _CAFilterGetInput(CAFilter *filter, uint32_t key) OPENSWIFTUI_SWIFT_NAME(CAFilterGetInput(_:key:));
-OPENSWIFTUI_EXPORT void _CAFilterSetInput(CAFilter * _Nullable filter, id _Nullable value, uint32_t key) OPENSWIFTUI_SWIFT_NAME(CAFilterSetInput(_:_:_:));
+OPENSWIFTUI_EXPORT id _Nullable _CAFilterGetInput(CAFilter *filter, CAFilterInputKey key) OPENSWIFTUI_SWIFT_NAME(CAFilterGetInput(_:key:));
+OPENSWIFTUI_EXPORT void _CAFilterSetInput(CAFilter * _Nullable filter, id _Nullable value, CAFilterInputKey key) OPENSWIFTUI_SWIFT_NAME(CAFilterSetInput(_:_:_:));
 OPENSWIFTUI_EXPORT NSMutableArray<CAFilter *> *_CAFilterArrayCreate(void) OPENSWIFTUI_SWIFT_NAME(CAFilterArrayCreate());
 OPENSWIFTUI_EXPORT void _CAFilterArrayAppend(NSMutableArray<CAFilter *> *array, CAFilter *filter) OPENSWIFTUI_SWIFT_NAME(CAFilterArrayAppend(_:_:));
 
