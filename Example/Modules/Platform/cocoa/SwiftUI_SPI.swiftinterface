@@ -1,5 +1,6 @@
 // swift-interface-format-version: 1.0
 // swift-module-flags: -enable-objc-interop -enable-library-evolution -swift-version 5 -module-name SwiftUI_SPI -module-abi-name SwiftUI
+import CoreGraphics
 import QuartzCore
 import Swift
 @_exported import SwiftUI
@@ -12,4 +13,9 @@ public class CAHostingLayer<Content> : QuartzCore.CALayer where Content : SwiftU
     get
     set
   }
+}
+
+@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *)
+extension SwiftUI.View {
+  public func variableBlur(maxRadius: CoreGraphics.CGFloat, mask: SwiftUI.Image, opaque: Swift.Bool = false) -> some SwiftUI.View
 }

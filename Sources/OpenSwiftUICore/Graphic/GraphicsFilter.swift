@@ -2,9 +2,10 @@
 //  GraphicsFilter.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
-//  ID: 07401C2C9845FAA2984B0D65D34F2B64 (SwiftUICore)
+
+import OpenQuartzCoreShims
 
 package enum GraphicsFilter {
     case blur(BlurStyle)
@@ -26,6 +27,7 @@ package enum GraphicsFilter {
     case luminanceCurve(GraphicsFilter.LuminanceCurve)
     case colorCurves(GraphicsFilter.ColorCurves)
     case shader(GraphicsFilter.ShaderFilter)
+    case alphaThreshold(GraphicsFilter.AlphaThreshold)
     
     package struct ColorMonochrome: Equatable {
         package var color: Color.Resolved
@@ -83,6 +85,16 @@ package enum GraphicsFilter {
 //            self.size = size
 //        }
     }
+
+    package struct AlphaThreshold: Equatable {
+        package var color: Color.Resolved
+        package var amount: Float
+
+        package init(color: Color.Resolved, amount: Float) {
+            self.color = color
+            self.amount = amount
+        }
+    }
 }
 
 package enum GraphicsBlendMode: Equatable {
@@ -139,3 +151,39 @@ package enum GraphicsBlendMode: Equatable {
         }
     }
 }
+
+extension GraphicsFilter {
+    package var isIdentity: Bool {
+        switch self {
+        case let .blur(style):
+            style.isIdentity
+        case let .variableBlur(style):
+            style.isIdentity
+        case let .colorMatrix(matrix, _):
+            matrix.isIdentity
+        case let .colorMultiply(color):
+            color.linearRed == 1 &&
+                color.linearGreen == 1 &&
+                color.linearBlue == 1 &&
+                color.opacity == 1
+        case let .hueRotation(angle):
+            angle.radians == 0
+        case let .saturation(amount):
+            amount == 1
+        case let .brightness(amount):
+            amount == 0
+        case let .contrast(amount):
+            amount == 1
+        case let .grayscale(amount):
+            amount == 0
+        case let .colorMonochrome(monochrome):
+            monochrome.amount == 0
+        case let .luminanceCurve(curve):
+            curve.amount == 0
+        default:
+            false
+        }
+    }
+}
+
+// TODO: Extension API
