@@ -3,14 +3,85 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 8C53218A357EE528547B0855666BD2E5 (SwiftUICore)
 
 public import Foundation
 
+// MARK: - Text + LocalizedStringKey
+
 @available(OpenSwiftUI_v1_0, *)
 extension Text {
+
+    /// Creates a text view that displays localized content identified by a key.
+    ///
+    /// Use this initializer to look for the `key` parameter in a localization
+    /// table and display the associated string value in the initialized text
+    /// view. If the initializer can't find the key in the table, or if no table
+    /// exists, the text view displays the string representation of the key
+    /// instead.
+    ///
+    ///     Text("pencil") // Localizes the key if possible, or displays "pencil" if not.
+    ///
+    /// When you initialize a text view with a string literal, the view triggers
+    /// this initializer because it assumes you want the string localized, even
+    /// when you don't explicitly specify a table, as in the above example. If
+    /// you haven't provided localization for a particular string, you still get
+    /// reasonable behavior, because the initializer displays the key, which
+    /// typically contains the unlocalized string.
+    ///
+    /// If you initialize a text view with a string variable rather than a
+    /// string literal, the view triggers the ``Text/init(_:)-9d1g4``
+    /// initializer instead, because it assumes that you don't want localization
+    /// in that case. If you do want to localize the value stored in a string
+    /// variable, you can choose to call the `init(_:tableName:bundle:comment:)`
+    /// initializer by first creating a ``LocalizedStringKey`` instance from the
+    /// string variable:
+    ///
+    ///     Text(LocalizedStringKey(someString)) // Localizes the contents of `someString`.
+    ///
+    /// If you have a string literal that you don't want to localize, use the
+    /// ``Text/init(verbatim:)`` initializer instead.
+    ///
+    /// ### Styling localized strings with markdown
+    ///
+    /// If the localized string or the fallback key contains Markdown, the
+    /// view displays the text with appropriate styling. For example, consider
+    /// an app with the following entry in its Spanish localization file:
+    ///
+    ///     "_Please visit our [website](https://www.example.com)._" = "_Visita nuestro [sitio web](https://www.example.com)._";
+    ///
+    /// You can create a `Text` view with the Markdown-formatted base language
+    /// version of the string as the localization key, like this:
+    ///
+    ///     Text("_Please visit our [website](https://www.example.com)._")
+    ///
+    /// When viewed in a Spanish locale, the view uses the Spanish text from the
+    /// strings file, applying the Markdown styling.
+    ///
+    /// ![A text view that says Visita nuestro sitio web, with all text
+    /// displayed in italics. The words sitio web are colored blue to indicate
+    /// they are a link.](OpenSwiftUI-Text-init-localized.png)
+    ///
+    /// > Important: `Text` doesn't render all styling possible in Markdown. It
+    /// doesn't support line breaks, soft breaks, or any style of paragraph- or
+    /// block-based formatting like lists, block quotes, code blocks, or tables.
+    /// It also doesn't support the
+    /// [https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes/3796122-imageURL](imageURL)
+    /// attribute. Parsing with OpenSwiftUI treats any whitespace in the Markdown
+    /// string as described by the
+    /// [https://developer.apple.com/documentation/Foundation/AttributedString/MarkdownParsingOptions/InterpretedSyntax/inlineOnlyPreservingWhitespace](inlineOnlyPreservingWhitespace)
+    /// parsing option.
+    ///
+    /// - Parameters:
+    ///   - key: The key for a string in the table identified by `tableName`.
+    ///   - tableName: The name of the string table to search. If `nil`, use the
+    ///     table in the `Localizable.strings` file.
+    ///   - bundle: The bundle containing the strings file. If `nil`, use the
+    ///     main bundle.
+    ///   - comment: Contextual information about this key-value pair.
     @_semantics("openswiftui.init_with_localization")
+    @_semantics("swiftui.init_with_localization")
     public init(
         _ key: LocalizedStringKey,
         tableName: String? = nil,
@@ -27,6 +98,8 @@ extension Text {
     }
 }
 
+// MARK: - LocalizedStringKey
+
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
@@ -35,23 +108,22 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
     private var arguments: [LocalizedStringKey.FormatArgument]
 
     public init(_ value: String) {
-        self.key = value
-        self.arguments = []
-        _openSwiftUIUnimplementedWarning()
+        self.init(stringLiteral: value)
     }
 
     @_semantics("openswiftui.localized_string_key.init_literal")
+    @_semantics("swiftui.localized_string_key.init_literal")
     public init(stringLiteral value: String) {
         self.key = value
         self.arguments = []
-        _openSwiftUIUnimplementedWarning()
     }
 
     @_semantics("openswiftui.localized_string_key.init_interpolation")
+    @_semantics("swiftui.localized_string_key.init_interpolation")
     public init(stringInterpolation: LocalizedStringKey.StringInterpolation) {
-        self.key = ""
-        self.arguments = []
-        _openSwiftUIUnimplementedWarning()
+        self.key = stringInterpolation.key
+        self.hasFormatting = true
+        self.arguments = stringInterpolation.arguments
     }
 
     package func resolve(
@@ -59,8 +131,9 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         table: String?,
         bundle: Bundle?
     ) -> String {
-        _openSwiftUIUnimplementedWarning()
-        return key
+        var resolved = Text.ResolvedString()
+        resolve(into: &resolved, in: environment, options: [], table: table, bundle: bundle)
+        return resolved.string
     }
 
     @usableFromInline
@@ -238,142 +311,142 @@ public protocol _FormatSpecifiable: Equatable {
 @available(OpenSwiftUI_v1_0, *)
 extension Int: _FormatSpecifiable {
     public var _arg: Int64 {
-        _openSwiftUIUnimplementedFailure()
+        Int64(self)
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Int8: _FormatSpecifiable {
     public var _arg: Int32 {
-        _openSwiftUIUnimplementedFailure()
+        Int32(self)
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Int16: _FormatSpecifiable {
     public var _arg: Int32 {
-        _openSwiftUIUnimplementedFailure()
+        Int32(self)
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Int32: _FormatSpecifiable {
     public var _arg: Int32 {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Int64: _FormatSpecifiable {
     public var _arg: Int64 {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension UInt: _FormatSpecifiable {
     public var _arg: UInt64 {
-        _openSwiftUIUnimplementedFailure()
+        UInt64(self)
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension UInt8: _FormatSpecifiable {
     public var _arg: UInt32 {
-        _openSwiftUIUnimplementedFailure()
+        UInt32(self)
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension UInt16: _FormatSpecifiable {
     public var _arg: UInt32 {
-        _openSwiftUIUnimplementedFailure()
+        UInt32(self)
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension UInt32: _FormatSpecifiable {
     public var _arg: UInt32 {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension UInt64: _FormatSpecifiable {
     public var _arg: UInt64 {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Float: _FormatSpecifiable {
     public var _arg: Float {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension Double: _FormatSpecifiable {
     public var _arg: Double {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
 
 @available(OpenSwiftUI_v1_0, *)
 extension CGFloat: _FormatSpecifiable {
     public var _arg: CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        self
     }
 
     public var _specifier: String {
-        _openSwiftUIUnimplementedFailure()
+        formatSpecifier(Self.self)
     }
 }
