@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete
+//  Status: Complete (Blocked by AttributedStringTextStorage)
 //  ID: 8C53218A357EE528547B0855666BD2E5 (SwiftUICore)
 
 public import Foundation
@@ -296,6 +296,143 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         )
         return format.isEmpty
     }
+
+    func resolveArguments<T>(
+        from format: NSAttributedString,
+        into result: inout T,
+        in environment: EnvironmentValues,
+        options: Text.ResolveOptions,
+        isUniqueSizeVariant: Bool
+    ) where T: ResolvedTextContainer {
+        let textArgs = getTextArguments()
+        guard !textArgs.isEmpty else {
+            result.append(
+                format,
+                in: environment,
+                with: options,
+                isUniqueSizeVariant: isUniqueSizeVariant
+            )
+            return
+        }
+        let string = format.string
+        scan(
+            string: string,
+            in: environment,
+            options: options,
+            textArgs: textArgs
+        ) { _, range in
+            result.append(
+                format.attributedSubstring(from: NSRange(range, in: string)),
+                in: environment,
+                with: options,
+                isUniqueSizeVariant: isUniqueSizeVariant
+            )
+        } appendText: { text, _, environment in
+            text.resolve(into: &result, in: environment, with: options)
+        }
+    }
+
+    func resolveArguments<T>(
+        from format: String,
+        into result: inout T,
+        in environment: EnvironmentValues,
+        options: Text.ResolveOptions,
+        isUniqueSizeVariant: Bool
+    ) where T: ResolvedTextContainer {
+        let textArgs = getTextArguments()
+        guard !textArgs.isEmpty else {
+            result.append(
+                format,
+                in: environment,
+                with: options,
+                isUniqueSizeVariant: isUniqueSizeVariant
+            )
+            return
+        }
+        scan(
+            string: format,
+            in: environment,
+            options: options,
+            textArgs: textArgs
+        ) { string, range in
+            result.append(
+                string[range],
+                in: environment,
+                with: options,
+                isUniqueSizeVariant: isUniqueSizeVariant
+            )
+        } appendText: { text, _, environment in
+            text.resolve(into: &result, in: environment, with: options)
+        }
+
+    }
+
+    private func getTextArguments() -> [(Int, LocalizedStringKey.FormatArgument)] {
+        arguments.filter { argument in
+            guard case .text = argument.storage else {
+                return false
+            }
+            return true
+        }.map { argument in
+            guard case let .text(_, token) = argument.storage else {
+                _openSwiftUIUnreachableCode()
+            }
+            return (token.id, argument)
+        }
+    }
+
+    private func scan(
+        string: String,
+        in environment: EnvironmentValues,
+        options: Text.ResolveOptions,
+        textArgs: [(Int, LocalizedStringKey.FormatArgument)],
+        appendLiteral: (String, Range<String.Index>) -> Void,
+        appendText: (Text, Range<String.Index>, EnvironmentValues) -> Void
+    ) {
+        let argumentMap = Dictionary(uniqueKeysWithValues: textArgs)
+        let scanner = Scanner(string: string)
+        scanner.charactersToBeSkipped = nil
+        let replacement = CharacterSet(charactersIn: String(FormatArgument.Token.delimiter))
+        repeat {
+            let literalStart = scanner.currentIndex
+            if scanner.scanUpToCharacters(from: replacement) != nil {
+                appendLiteral(string, literalStart..<scanner.currentIndex)
+            }
+            let tokenStart = scanner.currentIndex
+            guard scanner.scanCharacter() == FormatArgument.Token.delimiter,
+                  let tokenID = scanner.scanInt(representation: .decimal),
+                  scanner.scanCharacter() == FormatArgument.Token.delimiter else {
+                continue
+            }
+            guard let argument = argumentMap[tokenID],
+                  case let .text(text, _) = argument.storage else {
+                Log.internalWarning("Text interpolation look up miss.\n    source: \(string)\n    id: \(tokenID)")
+                continue
+            }
+            let tokenEnd = scanner.currentIndex
+            let tokenRange = tokenStart..<tokenEnd
+            #if canImport(Darwin)
+            var textEnvironment = environment
+            if string[tokenRange].count != string.count {
+                let locale = environment.locale
+                let capitalizationContext = environment.capitalizationContext
+                if tokenStart == string.startIndex {
+                    textEnvironment.capitalizationContext = .lazy {
+                        .middleOfSentence == capitalizationContext.resolved ? .middleOfSentence : .beginningOfSentence
+                    }
+                } else {
+                    textEnvironment.capitalizationContext = .lazy {
+                        _isBeginningOfSentence(string, String(string[tokenRange]), locale) ? .beginningOfSentence : .middleOfSentence
+                    }
+                }
+            }
+            appendText(text, tokenRange, textEnvironment)
+            #else
+            appendText(text, tokenRange, environment)
+            #endif
+        } while !scanner.isAtEnd
+    }
+
     // MARK: - LocalizedStringKey.FormatArgument
 
     @usableFromInline
@@ -500,11 +637,6 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         a.key == b.key &&
         a.hasFormatting == b.hasFormatting &&
         a.arguments == b.arguments
-    }
-
-    private func localizedFormat(table: String?, bundle: Bundle?) -> String {
-        let bundle = bundle ?? .main
-        return bundle.localizedString(forKey: key, value: nil, table: table)
     }
 }
 
