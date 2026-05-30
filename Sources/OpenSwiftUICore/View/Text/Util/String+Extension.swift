@@ -37,6 +37,10 @@ extension AttributedString {
 }
 
 extension NSAttributedString {
+    convenience package init(openSwiftUIAttributedString attributedString: AttributedString) {
+        _openSwiftUIUnimplementedFailure()
+    }
+
     package var isDynamic: Bool {
         guard length >= 1 else { return false }
         let value = attribute(

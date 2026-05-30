@@ -7,6 +7,7 @@
 //  ID: 8C53218A357EE528547B0855666BD2E5 (SwiftUICore)
 
 public import Foundation
+import OpenAttributeGraphShims
 
 // MARK: - Text + LocalizedStringKey
 
@@ -103,8 +104,8 @@ extension Text {
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
-    internal var key: String
-    internal var hasFormatting: Bool = false
+    var key: String
+    var hasFormatting: Bool = false
     private var arguments: [LocalizedStringKey.FormatArgument]
 
     public init(_ value: String) {
@@ -136,11 +137,91 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         return resolved.string
     }
 
+    // MARK: - LocalizedStringKey.FormatArgument
+
     @usableFromInline
-    internal struct FormatArgument: Equatable {
+    struct FormatArgument: Equatable {
+        let storage: LocalizedStringKey.FormatArgument.Storage
+
+        init(value: CVarArg, formatter: Formatter? = nil) {
+            if let formatter {
+                self.storage = .value(value, formatter.copy() as? Formatter)
+            } else {
+                self.storage = .value(value, nil)
+            }
+        }
+
+        init(storage: LocalizedStringKey.FormatArgument.Storage) {
+            self.storage = storage
+        }
+
+        fileprivate func resolve(
+            in environment: EnvironmentValues,
+            idiom: AnyInterfaceIdiom?
+        ) -> (result: CVarArg, exact: Bool) {
+            let result: CVarArg
+            switch storage {
+            case let .value(value, formatter):
+                guard let formatter else {
+                    result = value
+                    break
+                }
+                (formatter as? EnvironmentConfigurableFormatter)?.configure(in: environment)
+                guard let string = formatter.string(for: value) else {
+                    Log.externalWarning("The supplied formatter \(formatter) returned `nil` when invoked with \(value). An empty string will be used instead.")
+                    result = ""
+                    break
+                }
+                result = string
+            case let .text(_, token):
+                result = "\u{FFFC}\(token.id.description)\u{FFFC}"
+            case let .attributedString(attributedString):
+                _ = environment.accessibilityEnabled
+                result = NSAttributedString(openSwiftUIAttributedString: attributedString)
+            case let .localizedStringResource(resource):
+                result = NSAttributedString(openSwiftUIAttributedString: resource.resolve(in: environment))
+            }
+            return (result, environment.textSizeVariant == .regular)
+        }
+
         @usableFromInline
         internal static func == (lhs: LocalizedStringKey.FormatArgument, rhs: LocalizedStringKey.FormatArgument) -> Bool {
-            _openSwiftUIUnimplementedFailure()
+            lhs.storage == rhs.storage
+        }
+
+        enum Storage: Equatable {
+            case value(CVarArg, Formatter?)
+            case text(Text, Token)
+            case attributedString(AttributedString)
+            #if canImport(Darwin)
+            // Only appleOS Foundation support LocalizedStringResource
+            case localizedStringResource(LocalizedStringResource)
+            #endif
+
+            static func == (lhs: Storage, rhs: Storage) -> Bool {
+                switch (lhs, rhs) {
+                case let (.value(lhsValue, lhsFormatter), .value(rhsValue, rhsFormatter)):
+                    return compareValues(lhsValue, rhsValue) && lhsFormatter == rhsFormatter
+                case let (.text(lhsText, lhsToken), .text(rhsText, rhsToken)):
+                    return lhsText == rhsText && lhsToken == rhsToken
+                case let (.attributedString(lhsString), .attributedString(rhsString)):
+                    return lhsString == rhsString
+                #if canImport(Darwin)
+                case let (.localizedStringResource(lhsResource), .localizedStringResource(rhsResource)):
+                    return lhsResource == rhsResource
+                #endif
+                default:
+                    return false
+                }
+            }
+        }
+
+        struct Token: Equatable, Hashable, Identifiable {
+            let id: Int
+
+            init(id: Int) {
+                self.id = id
+            }
         }
     }
 
