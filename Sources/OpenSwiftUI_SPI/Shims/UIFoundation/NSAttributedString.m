@@ -14,6 +14,13 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @implementation NSAttributedString (OpenSwiftUI_SPI)
 
+- (instancetype)initOpenSwiftUIAttributedStringWithFormat:(NSAttributedString *)format
+                                                  options:(NSAttributedStringFormattingOptions)options
+                                                   locale:(NSLocale * _Nullable)locale
+                                                arguments:(va_list)arguments {
+    return [self initWithFormat:format options:options locale:locale arguments:arguments];
+}
+
 - (NSAttributedString *)_ui_attributedSubstringFromRange_openswiftui_safe_wrapper:(NSRange)range scaledByScaleFactor:(CGFloat)factor {
     OPENSWIFTUI_SAFE_WRAPPER_IMP(NSAttributedString *, @"_ui_attributedSubstringFromRange:scaledByScaleFactor", nil, NSRange, CGFloat);
     return func(self, selector, range, factor);
@@ -33,4 +40,3 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif
-

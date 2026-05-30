@@ -8,6 +8,7 @@
 
 public import Foundation
 import OpenAttributeGraphShims
+import OpenSwiftUI_SPI
 
 // MARK: - Text + LocalizedStringKey
 
@@ -178,6 +179,80 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         return resolved.string
     }
 
+    func resolve<T>(
+        into result: inout T,
+        in environment: EnvironmentValues,
+        options: Text.ResolveOptions,
+        table: String?,
+        bundle: Bundle?
+    ) where T: ResolvedTextContainer {
+        if Semantics.MarkdownSupportForLocalizedStringKey.isEnabled {
+            let bundle = bundle ?? .main
+            #if canImport(Darwin)
+            let format = _LocalizeAttributedString(bundle, key, table, environment.locale)
+            #else
+            let localizedString = bundle.localizedString(forKey: key, value: nil, table: table)
+            let format = NSAttributedString(
+                string: localizedString
+            )
+            #endif
+            guard hasFormatting else {
+                result.append(format, in: environment, with: options)
+                return
+            }
+            let inflectionArguments = getArgumentsForInflection(
+                for: format,
+                in: environment,
+                idiom: result.idiom,
+                with: options,
+                including: result.style
+            )
+            let formattedFormat = withVaList(inflectionArguments.arguments) { arguments in
+                NSAttributedString(
+                    openSwiftUIAttributedStringWithFormat: format,
+                    options: [],
+                    locale: environment.locale,
+                    arguments: arguments
+                )
+            }
+            resolveArguments(
+                from: formattedFormat,
+                into: &result,
+                in: environment,
+                options: options,
+                isUniqueSizeVariant: inflectionArguments.isUniqueSizeVariant
+            )
+        } else {
+            let bundle = bundle ?? .main
+            #if canImport(Darwin)
+            let localizedString = _LocalizeString(bundle, key, table, environment.locale)
+            #else
+            let localizedString = bundle.localizedString(forKey: key, value: nil, table: table)
+            #endif
+            guard hasFormatting else {
+                result.append(localizedString, in: environment, with: options)
+                return
+            }
+            var isUniqueSizeVariant = environment.textSizeVariant == .regular
+            let resolvedArguments = arguments.map { argument -> CVarArg in
+                let resolved = argument.resolve(in: environment, idiom: result.idiom)
+                isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
+                return resolved.result
+            }
+            let format = String(
+                format: localizedString,
+                locale: environment.locale,
+                arguments: resolvedArguments
+            )
+            resolveArguments(
+                from: format,
+                into: &result,
+                in: environment,
+                options: options,
+                isUniqueSizeVariant: isUniqueSizeVariant
+            )
+        }
+    }
 
     func getArgumentsForInflection(
         for attributedString: NSAttributedString,
