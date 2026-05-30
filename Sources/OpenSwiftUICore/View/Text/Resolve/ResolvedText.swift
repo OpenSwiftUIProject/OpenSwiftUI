@@ -121,7 +121,13 @@ extension Text {
             with options: Text.ResolveOptions,
             isUniqueSizeVariant: Bool
         ) {
-            _openSwiftUIUnimplementedFailure()
+            // FIXME: Workaround append issue
+            if self.attributedString == nil {
+                self.attributedString = NSMutableAttributedString(attributedString: attributedString)
+            } else {
+                self.attributedString?.append(attributedString)
+            }
+            _openSwiftUIUnimplementedWarning()
         }
 
         package mutating func append(
