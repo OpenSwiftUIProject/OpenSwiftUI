@@ -127,6 +127,47 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         self.arguments = stringInterpolation.arguments
     }
 
+    var isStyled: Bool {
+        for argument in arguments {
+            switch argument.storage {
+            case .value:
+                continue
+            case let .text(text, _):
+                if text.isStyled() {
+                    return true
+                }
+            case let .attributedString(attributedString):
+                if attributedString.isStyled {
+                    return true
+                }
+            #if canImport(Darwin)
+            case let .localizedStringResource(resource):
+                if resource.resolve(in: .init()).isStyled {
+                    return true
+                }
+            #endif
+            }
+        }
+        let options = AttributedString.MarkdownParsingOptions(
+            allowsExtendedAttributes: false,
+            interpretedSyntax: .inlineOnlyPreservingWhitespace,
+            failurePolicy: .throwError
+        )
+        guard let attributedString = try? AttributedString(
+            markdown: key,
+            options: options,
+            baseURL: nil
+        ) else {
+            return false
+        }
+        return attributedString.runs[
+            AttributeScopes.FoundationAttributes.InlinePresentationIntentAttribute.self,
+            AttributeScopes.FoundationAttributes.LinkAttribute.self
+        ].contains { inlinePresentationIntent, link, _ in
+            inlinePresentationIntent != nil || link != nil
+        }
+    }
+
     package func resolve(
         in environment: EnvironmentValues,
         table: String?,
@@ -400,6 +441,17 @@ extension LocalizedStringKey: Sendable {}
 
 @available(*, unavailable)
 extension LocalizedStringKey.FormatArgument: Sendable {}
+
+#if canImport(Darwin)
+extension LocalizedStringResource {
+    // FIXME
+    func resolve(in environment: EnvironmentValues) -> AttributedString {
+        var resource = self
+        resource.locale = environment.locale
+        return AttributedString(localized: resource)
+    }
+}
+#endif
 
 @_alwaysEmitIntoClient
 internal var int64Specifier: String {
