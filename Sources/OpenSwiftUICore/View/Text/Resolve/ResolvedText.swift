@@ -489,7 +489,7 @@ extension Text {
             in environment: EnvironmentValues,
             with options: Text.ResolveOptions
         ) {
-            string.append("￼") // object replacement character (U+FFFC)
+            string.append(String.nsAttachment)
         }
 
         mutating func append(
@@ -497,7 +497,7 @@ extension Text {
             in environment: EnvironmentValues,
             with options: Text.ResolveOptions
         ) {
-            string.append("￼") // object replacement character (U+FFFC)
+            string.append(String.nsAttachment)
         }
 
         mutating func append<R>(

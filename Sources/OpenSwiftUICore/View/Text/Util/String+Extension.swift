@@ -9,7 +9,7 @@ package import Foundation
 
 extension String {
     package static var nsAttachment: String {
-        String("￼")
+        "\u{FFFC}"
     }
 
     package init(_ attributedString: AttributedString) {
@@ -19,7 +19,7 @@ extension String {
 
 extension Character {
     package static var nsAttachment: Character {
-        Character("￼")
+        Character(.nsAttachment)
     }
 }
 

@@ -333,7 +333,7 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
                 }
                 result = string
             case let .text(_, token):
-                result = "\u{FFFC}\(token.id.description)\u{FFFC}"
+                result = token.string
             case let .attributedString(attributedString):
                 _ = environment.accessibilityEnabled
                 result = NSAttributedString(openSwiftUIAttributedString: attributedString)
@@ -380,6 +380,14 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
 
             init(id: Int) {
                 self.id = id
+            }
+
+            @inline(__always)
+            static var delimiter: Character { .nsAttachment }
+
+            @inline(__always)
+            var string: String {
+                "\(Self.delimiter)\(id.description)\(Self.delimiter)"
             }
         }
     }
