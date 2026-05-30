@@ -341,6 +341,8 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
     }
 }
 
+// MARK: - LocalizedTextStorage
+
 private final class LocalizedTextStorage: AnyTextStorage, @unchecked Sendable {
     let key: LocalizedStringKey
     let table: String?
@@ -350,6 +352,43 @@ private final class LocalizedTextStorage: AnyTextStorage, @unchecked Sendable {
         self.key = key
         self.table = table
         self.bundle = bundle
+    }
+
+    override func resolve<T>(
+        into result: inout T,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) where T: ResolvedTextContainer {
+        key.resolve(into: &result, in: environment, options: options, table: table, bundle: bundle)
+    }
+
+    override func resolvesToEmpty(
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) -> Bool {
+        key.resolvesToEmpty(in: environment, options: options, table: table, bundle: bundle)
+    }
+
+    override func isEqual(to other: AnyTextStorage) -> Bool {
+        guard let other = other as? LocalizedTextStorage else {
+            return false
+        }
+        return key == other.key &&
+        table == other.table &&
+        bundle == other.bundle
+    }
+
+    override func isStyled(options: Text.ResolveOptions) -> Bool {
+        key.isStyled
+    }
+
+    override var localizationInfo: _LocalizationInfo {
+        .localized(
+            key: key.key,
+            tableName: table,
+            bundle: bundle,
+            hasFormatting: key.hasFormatting
+        )
     }
 }
 
