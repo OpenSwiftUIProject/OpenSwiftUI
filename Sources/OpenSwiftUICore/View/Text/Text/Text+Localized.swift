@@ -270,6 +270,32 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         }
         return (resolvedArguments, isUniqueSizeVariant)
     }
+
+    func resolvesToEmpty(
+        in environment: EnvironmentValues,
+        options: Text.ResolveOptions,
+        table: String?,
+        bundle: Bundle?
+    ) -> Bool {
+        let bundle = bundle ?? .main
+        #if canImport(Darwin)
+        let localizedString = _LocalizeString(bundle, key, table, environment.locale)
+        #else
+        let localizedString = bundle.localizedString(forKey: key, value: nil, table: table)
+        #endif
+        guard hasFormatting else {
+            return localizedString.isEmpty
+        }
+        let resolvedArguments = arguments.map { argument -> CVarArg in
+            argument.resolve(in: environment, idiom: _GraphInputs.defaultInterfaceIdiom).result
+        }
+        let format = String(
+            format: localizedString,
+            locale: environment.locale,
+            arguments: resolvedArguments
+        )
+        return format.isEmpty
+    }
     // MARK: - LocalizedStringKey.FormatArgument
 
     @usableFromInline
