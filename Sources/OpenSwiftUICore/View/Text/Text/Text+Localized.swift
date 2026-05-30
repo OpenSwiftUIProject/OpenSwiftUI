@@ -225,42 +225,60 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         }
     }
 
+    // MARK: - LocalizedStringKey.StringInterpolation
+
     public struct StringInterpolation: StringInterpolationProtocol {
+        var key: String = ""
+        var arguments: [FormatArgument]
+        var seed: UniqueSeedGenerator = .init()
+
         @_semantics("openswiftui.localized.interpolation_init")
+        @_semantics("swiftui.localized.interpolation_init")
         public init(literalCapacity: Int, interpolationCount: Int) {
-            _openSwiftUIUnimplementedFailure()
+            key.reserveCapacity(literalCapacity + interpolationCount * 2)
+            arguments = []
+            arguments.reserveCapacity(interpolationCount)
         }
 
         @_semantics("openswiftui.localized.appendLiteral")
+        @_semantics("swiftui.localized.appendLiteral")
         public mutating func appendLiteral(_ literal: String) {
-            _openSwiftUIUnimplementedFailure()
+            key.append(literal.replacingOccurrences(of: "%", with: "%%"))
         }
 
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation(_ string: String) {
-            _openSwiftUIUnimplementedFailure()
+            key.append("%@")
+            arguments.append(.init(value: string))
         }
 
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<Subject>(_ subject: Subject, formatter: Formatter? = nil) where Subject: ReferenceConvertible {
-            _openSwiftUIUnimplementedFailure()
+            appendInterpolation(subject as! NSObject, formatter: formatter)
         }
 
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<Subject>(_ subject: Subject, formatter: Formatter? = nil) where Subject: NSObject {
-            _openSwiftUIUnimplementedFailure()
+            let argument = LocalizedStringKey.FormatArgument(value: subject, formatter: formatter)
+            key.append("%@")
+            arguments.append(argument)
         }
 
-//        @available(OpenSwiftUI_v2_5, *)
+        @available(OpenSwiftUI_v3_0, *)
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<F>(_ input: F.FormatInput, format: F) where F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == String {
-            _openSwiftUIUnimplementedFailure()
+            appendInterpolation(Text(input, format: format))
         }
 
         @available(OpenSwiftUI_v6_0, *)
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation<F>(_ input: F.FormatInput, format: F) where F: FormatStyle, F.FormatInput: Equatable, F.FormatOutput == AttributedString {
-            _openSwiftUIUnimplementedFailure()
+            appendInterpolation(Text(input, format: format))
         }
 
         @_transparent
@@ -269,30 +287,57 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         }
 
         @_semantics("openswiftui.localized.appendInterpolation_param_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_param_specifier")
         public mutating func appendInterpolation<T>(_ value: T, specifier: String) where T: _FormatSpecifiable {
-            _openSwiftUIUnimplementedFailure()
+            key.append(specifier)
+            arguments.append(.init(storage: .value(value._arg, nil)))
         }
 
         @available(OpenSwiftUI_v2_0, *)
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation(_ text: Text) {
-            _openSwiftUIUnimplementedFailure()
+            let token = LocalizedStringKey.FormatArgument.Token(id: seed.generate())
+            let argument = LocalizedStringKey.FormatArgument(storage: .text(text, token))
+            key.append("%@")
+            arguments.append(argument)
         }
 
-//        @available(OpenSwiftUI_v2_5, *)
+        @available(OpenSwiftUI_v3_0, *)
         @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
         public mutating func appendInterpolation(_ attributedString: AttributedString) {
-            _openSwiftUIUnimplementedFailure()
+            let argument = LocalizedStringKey.FormatArgument(storage: .attributedString(attributedString))
+            key.append("%@")
+            arguments.append(argument)
         }
+
+        #if canImport(Darwin)
+        @available(OpenSwiftUI_v4_0, *)
+        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+        public mutating func appendInterpolation(_ resource: LocalizedStringResource) {
+            let argument = LocalizedStringKey.FormatArgument(storage: .localizedStringResource(resource))
+            key.append("%@")
+            arguments.append(argument)
+        }
+        #endif
 
         @available(*, unavailable, message: "Unsupported type for interpolation, see LocalizedStringKey.StringInterpolation for supported types.")
         public mutating func appendInterpolation<T>(_ view: T) where T: View {
-            _openSwiftUIUnimplementedFailure()
+            _openSwiftUIUnreachableCode()
         }
     }
 
     public static func == (a: LocalizedStringKey, b: LocalizedStringKey) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        a.key == b.key &&
+        a.hasFormatting == b.hasFormatting &&
+        a.arguments == b.arguments
+    }
+
+    private func localizedFormat(table: String?, bundle: Bundle?) -> String {
+        let bundle = bundle ?? .main
+        return bundle.localizedString(forKey: key, value: nil, table: table)
     }
 }
 
