@@ -9,7 +9,20 @@ public import Foundation
 
 // MARK: - EnvironmentConfigurableFormatter
 
+/// A formatter that can apply text-related environment values before use.
+///
+/// OpenSwiftUI calls this hook for Foundation formatters whose output depends
+/// on environment-provided formatting state, such as locale, calendar, or time
+/// zone. Conforming formatters update only the environment-dependent properties
+/// they support.
+///
+/// - Note: Some Foundation formatter types are only available on Apple
+///   platforms.
 protocol EnvironmentConfigurableFormatter: AnyObject {
+    /// Updates the formatter with values from the current environment.
+    ///
+    /// - Parameter environment: The environment values that should influence
+    ///   the formatter's output.
     func configure(in environment: EnvironmentValues)
 }
 
