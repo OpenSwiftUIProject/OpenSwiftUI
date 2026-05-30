@@ -33,11 +33,13 @@ extension ISO8601DateFormatter: EnvironmentConfigurableFormatter {
 
 // MARK: - DateComponentsFormatter + EnvironmentConfigurableFormatter
 
+#if canImport(Darwin)
 extension DateComponentsFormatter: EnvironmentConfigurableFormatter {
     func configure(in environment: EnvironmentValues) {
         calendar = environment.calendar
     }
 }
+#endif
 
 // MARK: - DateIntervalFormatter + EnvironmentConfigurableFormatter
 
@@ -59,12 +61,14 @@ extension NumberFormatter: EnvironmentConfigurableFormatter {
 
 // MARK: - MeasurementFormatter + EnvironmentConfigurableFormatter
 
+#if canImport(Darwin)
 extension MeasurementFormatter: EnvironmentConfigurableFormatter {
     func configure(in environment: EnvironmentValues) {
         locale = environment.locale
         numberFormatter.locale = environment.locale
     }
 }
+#endif
 
 // MARK: - MassFormatter + EnvironmentConfigurableFormatter
 
