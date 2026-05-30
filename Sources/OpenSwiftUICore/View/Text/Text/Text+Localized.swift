@@ -178,6 +178,23 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         return resolved.string
     }
 
+
+    func getArgumentsForInflection(
+        for attributedString: NSAttributedString,
+        in environment: EnvironmentValues,
+        idiom: AnyInterfaceIdiom?,
+        with options: Text.ResolveOptions,
+        including style: Text.Style
+    ) -> (arguments: [CVarArg], isUniqueSizeVariant: Bool) {
+        var isUniqueSizeVariant = environment.textSizeVariant == .regular
+        let resolvedArguments = arguments.map { argument -> CVarArg in
+            // TODO: AttributedStringTextStorage
+            let resolved = argument.resolve(in: environment, idiom: idiom)
+            isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
+            return resolved.result
+        }
+        return (resolvedArguments, isUniqueSizeVariant)
+    }
     // MARK: - LocalizedStringKey.FormatArgument
 
     @usableFromInline
@@ -226,7 +243,7 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         }
 
         @usableFromInline
-        internal static func == (lhs: LocalizedStringKey.FormatArgument, rhs: LocalizedStringKey.FormatArgument) -> Bool {
+        static func == (lhs: LocalizedStringKey.FormatArgument, rhs: LocalizedStringKey.FormatArgument) -> Bool {
             lhs.storage == rhs.storage
         }
 
