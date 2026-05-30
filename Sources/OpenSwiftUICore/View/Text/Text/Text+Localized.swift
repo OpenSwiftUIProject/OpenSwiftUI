@@ -235,6 +235,7 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
             #endif
             }
         }
+        #if canImport(Darwin)
         let options = AttributedString.MarkdownParsingOptions(
             allowsExtendedAttributes: false,
             interpretedSyntax: .inlineOnlyPreservingWhitespace,
@@ -253,6 +254,9 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         ].contains { inlinePresentationIntent, link, _ in
             inlinePresentationIntent != nil || link != nil
         }
+        #else
+        return false
+        #endif
     }
 
     package func resolve(
@@ -272,16 +276,10 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         table: String?,
         bundle: Bundle?
     ) where T: ResolvedTextContainer {
+        #if canImport(Darwin)
         if Semantics.MarkdownSupportForLocalizedStringKey.isEnabled {
             let bundle = bundle ?? .main
-            #if canImport(Darwin)
             let format = _LocalizeAttributedString(bundle, key, table, environment.locale)
-            #else
-            let localizedString = bundle.localizedString(forKey: key, value: nil, table: table)
-            let format = NSAttributedString(
-                string: localizedString
-            )
-            #endif
             guard hasFormatting else {
                 result.append(format, in: environment, with: options)
                 return
@@ -310,11 +308,7 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
             )
         } else {
             let bundle = bundle ?? .main
-            #if canImport(Darwin)
             let localizedString = _LocalizeString(bundle, key, table, environment.locale)
-            #else
-            let localizedString = bundle.localizedString(forKey: key, value: nil, table: table)
-            #endif
             guard hasFormatting else {
                 result.append(localizedString, in: environment, with: options)
                 return
@@ -338,6 +332,32 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
                 isUniqueSizeVariant: isUniqueSizeVariant
             )
         }
+        #else
+        let bundle = bundle ?? .main
+        let localizedString = _LocalizeString(bundle, key, table, environment.locale)
+        guard hasFormatting else {
+            result.append(localizedString, in: environment, with: options)
+            return
+        }
+        var isUniqueSizeVariant = environment.textSizeVariant == .regular
+        let resolvedArguments = arguments.map { argument -> CVarArg in
+            let resolved = argument.resolve(in: environment, idiom: result.idiom)
+            isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
+            return resolved.result
+        }
+        let format = String(
+            format: localizedString,
+            locale: environment.locale,
+            arguments: resolvedArguments
+        )
+        resolveArguments(
+            from: format,
+            into: &result,
+            in: environment,
+            options: options,
+            isUniqueSizeVariant: isUniqueSizeVariant
+        )
+        #endif
     }
 
     func getArgumentsForInflection(
@@ -364,11 +384,7 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
         bundle: Bundle?
     ) -> Bool {
         let bundle = bundle ?? .main
-        #if canImport(Darwin)
         let localizedString = _LocalizeString(bundle, key, table, environment.locale)
-        #else
-        let localizedString = bundle.localizedString(forKey: key, value: nil, table: table)
-        #endif
         guard hasFormatting else {
             return localizedString.isEmpty
         }
@@ -560,8 +576,10 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
             case let .attributedString(attributedString):
                 _ = environment.accessibilityEnabled
                 result = NSAttributedString(openSwiftUIAttributedString: attributedString)
+            #if canImport(Darwin)
             case let .localizedStringResource(resource):
                 result = NSAttributedString(openSwiftUIAttributedString: resource.resolve(in: environment))
+            #endif
             }
             return (result, environment.textSizeVariant == .regular)
         }
@@ -1206,3 +1224,23 @@ extension CGFloat: _FormatSpecifiable {
         formatSpecifier(Self.self)
     }
 }
+
+// Non-Darwin compatibility layer
+#if !canImport(Darwin)
+package func _LocalizeString(_ bundle: Bundle, _ key: String, _ table: String?, _ locale: Locale?) -> String {
+    bundle.localizedString(forKey: key, value: nil, table: table)
+}
+
+package func _LocalizeAttributedString(_ bundle: Bundle, _ key: String, _ table: String?, _ locale: Locale?) -> NSAttributedString {
+    NSAttributedString(string: bundle.localizedString(forKey: key, value: nil, table: table))
+}
+
+// Linux Foundation does not provide libswiftObjectiveC's NSObject CVarArg conformance yet.
+// Traced on swift-corelibs-foundation#5487
+extension NSObject: @retroactive CVarArg {
+    public var _cVarArgEncoding: [Int] {
+        _encodeBitsAsWords(self)
+    }
+}
+
+#endif
