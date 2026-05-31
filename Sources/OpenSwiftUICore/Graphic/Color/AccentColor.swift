@@ -203,25 +203,3 @@ package protocol SystemAccentValueProvider {
     static func accentColorName(value: SystemAccentValue) -> CoreUISystemCatalogColorName
     #endif
 }
-
-// FIXME: TintAdjustmentMode
-package extension EnvironmentValues {
-    var effectiveTintAdjustmentMode: TintAdjustmentMode {
-        .normal
-    }
-}
-
-package enum TintAdjustmentMode {
-    case normal
-    case desaturated
-}
-
-extension Color {
-    package func tintAdjustmentMode(_ mode: TintAdjustmentMode) -> Color {
-        self
-    }
-
-    package var tintAdjusted: Color {
-        self
-    }
-}
