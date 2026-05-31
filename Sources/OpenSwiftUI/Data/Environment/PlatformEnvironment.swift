@@ -38,7 +38,7 @@ extension EnvironmentValues {
     }
 
     private mutating func _configureForPlatform(traitCollection: TraitCollection?) {
-        // defaultAccentColorProvider = OpenSwiftUIDefaultAccentColorProvider.self
+        defaultAccentColorProvider = OpenSwiftUIDefaultAccentColorProvider.self
         #if OPENSWIFTUI_LINK_COREUI
         cuiNamedColorProvider = KitCoreUINamedColorProvider.self
         #endif
@@ -46,7 +46,7 @@ extension EnvironmentValues {
         #if os(macOS)
         // accessibilityTextAttributeResolver =
         // fallbackFontProvider =
-        // systemAccentValueProvider =
+        systemAccentValueProvider = MacSystemAccentValueProvider.self
         #endif
 
         // resolvedTextProvider = OpenSwiftUIResolvedTextProvider.self
