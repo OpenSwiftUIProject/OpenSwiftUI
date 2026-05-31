@@ -161,6 +161,7 @@ let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform && 
 let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform && !isSPIBuild)
 let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform && !isSPIBuild)
 let linkBacklightServices = envBoolValue("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
+let linkGestures = envBoolValue("LINK_GESTURES", default: buildForDarwinPlatform && !isSPIBuild && releaseVersion >= 2025)
 // This should be disabled for UI test target due to link issue of Testing.
 // Only enable for non-UI test targets.
 let linkTesting = envBoolValue("LINK_TESTING")
@@ -288,6 +289,9 @@ if linkBacklightServices {
             .when(platforms: [.iOS, .visionOS])
         )
     )
+}
+if linkGestures {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_LINK_GESTURES"))
 }
 
 if swiftUIRenderCondition {
@@ -417,6 +421,10 @@ extension Target {
                 condition: .when(platforms: [.iOS, .visionOS])
             )
         )
+    }
+
+    func addGesturesSettings() {
+        dependencies.append(.product(name: "Gestures", package: "DarwinPrivateFrameworks"))
     }
 
     func addOpenCombineSettings() {
@@ -837,12 +845,24 @@ if renderBoxCondition {
     openSwiftUIBridgeTestTarget.addRBSettings()
 }
 
-if attributeGraphCondition || renderBoxCondition {
+if linkGestures {
+    openSwiftUICoreTarget.addGesturesSettings()
+    openSwiftUITarget.addGesturesSettings()
+
+    openSwiftUISPITestTarget.addGesturesSettings()
+    openSwiftUICoreTestTarget.addGesturesSettings()
+    openSwiftUITestTarget.addGesturesSettings()
+    openSwiftUICompatibilityTestTarget.addGesturesSettings()
+    openSwiftUIBridgeTestTarget.addGesturesSettings()
+}
+
+if attributeGraphCondition || renderBoxCondition || linkGestures {
     let release = EnvManager.shared.withDomain("DarwinPrivateFrameworks") {
         envIntValue("TARGET_RELEASE", default: 2024)
     }
     package.platforms = switch release {
         case 2024: [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
+        case 2025: [.iOS("26.0"), .macOS("26.0"), .macCatalyst("26.0"), .tvOS("26.0"), .watchOS("26.0"), .visionOS("26.0")]
         default: nil
     }
 } else {
@@ -876,7 +896,7 @@ if useLocalDeps {
         .package(path: "../OpenRenderBox"),
         .package(path: "../OpenObservation"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkBacklightServices {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkBacklightServices || linkGestures {
         dependencies.append(.package(path: "../DarwinPrivateFrameworks"))
     }
     package.dependencies += dependencies
@@ -888,7 +908,7 @@ if useLocalDeps {
         .package(url: "https://github.com/OpenSwiftUIProject/OpenRenderBox", branch: "main"),
         .package(url: "https://github.com/OpenSwiftUIProject/OpenObservation", branch: "main"),
     ]
-    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols {
+    if attributeGraphCondition || renderBoxCondition || linkCoreUI || linkCoreSVG || linkSFSymbols || linkGestures {
         dependencies.append(.package(url: "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git", branch: "main"))
     }
     package.dependencies += dependencies
