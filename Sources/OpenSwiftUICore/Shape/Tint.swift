@@ -1,9 +1,9 @@
 //
-//  TintShape.swift
+//  Tint.swift
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: EB037BD7690CB8A700384AACA7B075E4 (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -186,4 +186,42 @@ extension _ViewInputs {
     }
 }
 
-// MARK: - TintShapeStyle [TODO]
+// MARK: - ShapeStyle + TintShapeStyle
+
+@available(OpenSwiftUI_v3_0, *)
+extension ShapeStyle where Self == TintShapeStyle {
+    /// A style that reflects the current tint color.
+    ///
+    /// You can set the tint color with the `tint(_:)` modifier. If no explicit
+    /// tint is set, the tint is derived from the app's accent color.
+    @_alwaysEmitIntoClient
+    public static var tint: TintShapeStyle {
+        .init()
+    }
+}
+
+// MARK: - TintShapeStyle
+
+/// A style that reflects the current tint color.
+///
+/// You can set the tint color with the ``View/tint(_:)`` modifier. If no
+/// explicit tint is set, the tint is derived from the app's accent color.
+///
+/// You can also use ``ShapeStyle/tint`` to construct this style.
+@available(OpenSwiftUI_v3_0, *)
+public struct TintShapeStyle: ShapeStyle {
+    /// Creates a tint shape style.
+    public init() {}
+
+    public func _apply(to shape: inout _ShapeStyle_Shape) {
+        if let tint = shape.environment.tint {
+            tint._apply(to: &shape)
+        } else {
+            Color.accent._apply(to: &shape)
+        }
+    }
+
+    public static func _apply(to type: inout _ShapeStyle_ShapeType) {
+        type.result = .bool(true)
+    }
+}
