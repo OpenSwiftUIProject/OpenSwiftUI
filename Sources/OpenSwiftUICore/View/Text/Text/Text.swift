@@ -414,7 +414,12 @@ extension _LocalizationInfo: Sendable {}
 @available(OpenSwiftUI_v2_0, *)
 extension Text {
     public var _localizationInfo: _LocalizationInfo {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case let .verbatim(string):
+            .verbatim(string)
+        case let .anyTextStorage(storage):
+            storage.localizationInfo
+        }
     }
 }
 

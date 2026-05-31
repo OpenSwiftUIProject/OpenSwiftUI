@@ -11,8 +11,8 @@ import SwiftUI
 struct TextExample: View {
     var body: some View {
         VStack {
-            Text(verbatim: "Hello World")
-            Text(verbatim: "From OpenSwiftUI")
+            Text("Hello World")
+            Text("From OpenSwiftUI")
                 .foregroundStyle(.red)
         }
     }

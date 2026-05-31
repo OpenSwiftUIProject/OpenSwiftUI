@@ -32,6 +32,7 @@ typedef OPENSWIFTUI_OPTIONS(NSInteger, NSUnderlineStyle) {
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @interface NSAttributedString (OpenSwiftUI_SPI)
+- (instancetype)initOpenSwiftUIAttributedStringWithFormat:(NSAttributedString *)format options:(NSAttributedStringFormattingOptions)options locale:(NSLocale * _Nullable)locale arguments:(va_list)arguments;
 - (NSAttributedString *)_ui_attributedSubstringFromRange_openswiftui_safe_wrapper:(NSRange)range scaledByScaleFactor:(CGFloat)factor OPENSWIFTUI_SWIFT_NAME(_ui_attributedSubstring(from:scaledBy:));
 @end
 

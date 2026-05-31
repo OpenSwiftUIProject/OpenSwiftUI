@@ -121,7 +121,13 @@ extension Text {
             with options: Text.ResolveOptions,
             isUniqueSizeVariant: Bool
         ) {
-            _openSwiftUIUnimplementedFailure()
+            // FIXME: Workaround append issue
+            if self.attributedString == nil {
+                self.attributedString = NSMutableAttributedString(attributedString: attributedString)
+            } else {
+                self.attributedString?.append(attributedString)
+            }
+            _openSwiftUIUnimplementedWarning()
         }
 
         package mutating func append(
@@ -489,7 +495,7 @@ extension Text {
             in environment: EnvironmentValues,
             with options: Text.ResolveOptions
         ) {
-            string.append("￼") // object replacement character (U+FFFC)
+            string.append(String.nsAttachment)
         }
 
         mutating func append(
@@ -497,7 +503,7 @@ extension Text {
             in environment: EnvironmentValues,
             with options: Text.ResolveOptions
         ) {
-            string.append("￼") // object replacement character (U+FFFC)
+            string.append(String.nsAttachment)
         }
 
         mutating func append<R>(
