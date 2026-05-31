@@ -36,7 +36,7 @@ struct TintTests {
             Issue.record("Expected accent fallback color")
             return
         }
-        #expect(color == .accent)
+        #expect(color == .accentColor)
     }
 
     @Test
