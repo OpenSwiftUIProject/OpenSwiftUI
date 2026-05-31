@@ -186,7 +186,7 @@ private struct Switch: NSViewRepresentable {
         nsView.font = font.platformFont(in: context.environment)
         if let superview = nsView.superview {
             let appearance = superview.effectiveAppearance
-            nsView.appearance = if let tint, tint != Color.accent {
+            nsView.appearance = if let tint, tint != Color.accentColor {
                 appearance.applyingTintColor(.init(tint))
             } else {
                 nil

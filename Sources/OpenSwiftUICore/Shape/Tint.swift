@@ -172,7 +172,7 @@ extension EnvironmentValues {
     }
 
     package var resolvedTintColor: Color.Resolved {
-        (tintColor ?? .accent).resolve(in: self)
+        (tintColor ?? .accentColor).resolve(in: self)
     }
 }
 
@@ -217,7 +217,7 @@ public struct TintShapeStyle: ShapeStyle {
         if let tint = shape.environment.tint {
             tint._apply(to: &shape)
         } else {
-            Color.accent._apply(to: &shape)
+            Color.accentColor._apply(to: &shape)
         }
     }
 
