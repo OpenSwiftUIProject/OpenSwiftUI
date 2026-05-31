@@ -8,6 +8,8 @@
 
 #if os(macOS)
 
+import Foundation
+
 // MARK: - Appearance
 
 package struct Appearance: Hashable {
@@ -97,8 +99,19 @@ package protocol AppearanceAssetKey {
 extension EnvironmentValues {
     package func appearance(allowsVibrantBlending: Bool?) -> any _ResolvedAppearance {
         let allowsVibrantBlending = allowsVibrantBlending ?? self.allowsVibrantBlending
+        #if OPENSWIFTUI_LINK_COREUI
+        _openSwiftUIUnimplementedWarning()
         // TODO: CatalogAppearance
-        _openSwiftUIUnimplementedFailure()
+        return CatalogAppearance(
+            renderer: unsafeBitCast(NSObject(), to: OpaquePointer.self),
+            catalog: .init(),
+            name: "",
+            bundle: .main,
+            defaultBlendMode: .multiply
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 }
 
