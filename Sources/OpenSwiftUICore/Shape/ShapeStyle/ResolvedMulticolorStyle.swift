@@ -53,7 +53,7 @@ package struct ResolvedMulticolorStyle: Equatable, @unchecked Sendable {
         case "black":
             return .black
         default:
-            #if canImport(Darwin)
+            #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
             return Color.Resolved.named(name, bundle: bundle, environment: environment)
             #else
             return nil

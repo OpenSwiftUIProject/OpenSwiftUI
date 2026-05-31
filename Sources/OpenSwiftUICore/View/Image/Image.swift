@@ -155,7 +155,7 @@ package struct ImageResolutionContext {
         to glyph: CUINamedVectorGlyph,
         variableValue: CGFloat
     ) -> Bool {
-        #if canImport(Darwin)
+        #if canImport(Darwin) && OPENSWIFTUI_LINK_COREUI
         guard let symbolAnimator,
               !options.contains(.animationsDisabled),
               let transactionAttribute = transaction.attribute
@@ -273,7 +273,7 @@ package struct ImageResolutionContext {
         }
         #else
         _openSwiftUIUnimplementedWarning()
-        return false
+        return true
         #endif
     }
 
