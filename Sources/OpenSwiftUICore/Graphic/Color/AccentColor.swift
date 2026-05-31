@@ -145,24 +145,16 @@ extension EnvironmentValues {
         guard let systemAccentValueProvider else {
             return .blue
         }
-        let _ = systemAccentValue
-        //        switch systemAccentValue {
-        //        case .red: .red
-        //        case .orange: .orange
-        //        case .yellow: .yellow
-        //        case .green: .green
-        //        case .blue: .blue
-        //        case .purple: .purple
-        //        case .pink: .pink
-        //        case .graphite: .gray
-        //        case .multicolor, .hardware: .blue
-        //        }
-        // let _ = appearance(allowsVibrantBlending: nil)
-        // TODO:
-        _openSwiftUIUnimplementedWarning()
-        return .blue
+        let colorName = systemAccentValueProvider.accentColorName(value: systemAccentValue)
+        guard let color = appearance(allowsVibrantBlending: nil)
+            .asset(for: colorName)?
+            .0
+        else {
+            return .blue
+        }
+        return Color(color)
         #else
-        .blue
+        return .blue
         #endif
     }
 
