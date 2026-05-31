@@ -6,7 +6,7 @@
 
 package import OpenAttributeGraphShims
 
-// MARK: - GestureInputs [6.5.4]
+// MARK: - GestureInputs
 
 /// Input (aka inherited) attributes for gesture objects.
 @available(OpenSwiftUI_v1_0, *)
@@ -148,6 +148,11 @@ extension _GestureInputs {
         @inlinable
         package static var gestureGraph: _GestureInputs.Options {
             .init(rawValue: 1 << 4)
+        }
+
+        @inlinable
+        package static var hasChangedCallbacks: _GestureInputs.Options {
+            .init(rawValue: 1 << 5)
         }
     }
 }
