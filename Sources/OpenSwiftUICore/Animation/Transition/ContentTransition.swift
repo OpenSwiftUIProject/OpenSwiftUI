@@ -350,6 +350,17 @@ public struct ContentTransition: Equatable, Sendable {
     /// system uses an opacity transition instead.
     public static let interpolate: ContentTransition = .init(storage: .named(.init())) // FIXME
 
+    public static func numericText(countsDown: Bool = false) -> ContentTransition {
+        // FIXME
+        .init(storage: .named(.init(name: .numericText(.init(direction: .fixed(downwards: countsDown))))))
+    }
+
+    @_spi(Private)
+    @available(*, deprecated, message: "replaced by numericText(countsDown:)")
+    public static func numericText(increasing: Bool) -> ContentTransition {
+        .numericText(countsDown: !increasing)
+    }
+
     // MARK: - ContentTransition.Options
 
     @_spi(Private)
