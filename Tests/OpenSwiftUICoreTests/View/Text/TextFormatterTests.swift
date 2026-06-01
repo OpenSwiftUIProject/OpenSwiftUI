@@ -7,19 +7,24 @@ import Foundation
 import Testing
 
 struct TextFormatterTests {
+    #if canImport(ObjectiveC)
     @Test
     func referenceConvertibleFormatterResolves() {
         let date = Date(timeIntervalSinceReferenceDate: 0)
         let formatter = DateFormatter()
         formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
 
-        let text = Text(date, formatter: formatter)
-        let environment = fixedEnvironment()
+        expectDateFormatterText(Text(date, formatter: formatter), formatter: formatter)
+    }
+    #endif
 
-        #expect(text.resolveString(in: environment) == "2001-01-01 00:00:00")
-        #expect(formatter.locale == environment.locale)
-        #expect(formatter.calendar == environment.calendar)
-        #expect(formatter.timeZone == environment.timeZone)
+    @Test
+    func dateObjectFormatterResolves() {
+        let date = NSDate(timeIntervalSinceReferenceDate: 0)
+        let formatter = DateFormatter()
+        formatter.dateFormat = "yyyy-MM-dd HH:mm:ss"
+
+        expectDateFormatterText(Text(date, formatter: formatter), formatter: formatter)
     }
 
     @Test
@@ -73,6 +78,15 @@ struct TextFormatterTests {
         environment.calendar = calendar
         environment.timeZone = calendar.timeZone
         return environment
+    }
+
+    private func expectDateFormatterText(_ text: Text, formatter: DateFormatter) {
+        let environment = fixedEnvironment()
+
+        #expect(text.resolveString(in: environment) == "2001-01-01 00:00:00")
+        #expect(formatter.locale == environment.locale)
+        #expect(formatter.calendar == environment.calendar)
+        #expect(formatter.timeZone == environment.timeZone)
     }
 }
 
