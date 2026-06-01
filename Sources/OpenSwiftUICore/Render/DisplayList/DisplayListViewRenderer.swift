@@ -74,6 +74,9 @@ extension DisplayList {
             case none
             case updating
             case rasterizing
+            /* OpenSwiftUI Addition Begin */
+            case stdout
+            /* OpenSwiftUI Addition End */
         }
 
         private var state: State = .none
@@ -94,6 +97,9 @@ extension DisplayList {
             let isValid = switch configuration.renderer {
             case .default: state == .updating
             case .rasterized: state == .rasterizing
+            /* OpenSwiftUI Addition Begin */
+            case .stdout: state == .stdout
+            /* OpenSwiftUI Addition End */
             }
             if !isValid {
                 if let renderer {
@@ -110,6 +116,12 @@ extension DisplayList {
                     rasterizer.options = options
                     rasterizer.renderer.platformViewMode = options.drawsPlatformViews ? .rendered(update: true) : .unsupported
                     rasterizer.host = host
+                /* OpenSwiftUI Addition Begin */
+                case let .stdout(options):
+                    let stdoutRenderer = renderer as! StdoutDisplayListRenderer
+                    stdoutRenderer.options = options
+                    stdoutRenderer.host = host
+                /* OpenSwiftUI Addition End */
                 }
             } else {
                 switch configuration.renderer {
@@ -126,6 +138,15 @@ extension DisplayList {
                     )
                     renderer = rasterizer
                     state = .rasterizing
+                /* OpenSwiftUI Addition Begin */
+                case let .stdout(options):
+                    renderer = StdoutDisplayListRenderer(
+                        platform: platform,
+                        host: host,
+                        options: options
+                    )
+                    state = .stdout
+                /* OpenSwiftUI Addition End */
                 }
             }
             return renderer!
