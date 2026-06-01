@@ -1235,9 +1235,9 @@ package func _LocalizeAttributedString(_ bundle: Bundle, _ key: String, _ table:
     NSAttributedString(string: bundle.localizedString(forKey: key, value: nil, table: table))
 }
 
-// Linux Foundation does not provide libswiftObjectiveC's NSObject CVarArg conformance yet.
+// Linux Foundation does not provide NSAttributedString's CVarArg conformance yet.
 // Traced on swift-corelibs-foundation#5487
-extension NSObject: @retroactive CVarArg {
+extension NSAttributedString: @retroactive CVarArg {
     public var _cVarArgEncoding: [Int] {
         _encodeBitsAsWords(self)
     }
