@@ -2,6 +2,19 @@ import ProjectDescription
 
 let appName = "StdoutRendererDemo"
 
+let debugBuildSettings: SettingsDictionary = [
+    "ALWAYS_SEARCH_USER_PATHS": "NO",
+    "GCC_OPTIMIZATION_LEVEL": "0",
+    "ONLY_ACTIVE_ARCH": "YES",
+    "SWIFT_COMPILATION_MODE": "singlefile",
+    "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
+]
+
+let releaseBuildSettings: SettingsDictionary = [
+    "SWIFT_COMPILATION_MODE": "wholemodule",
+    "SWIFT_OPTIMIZATION_LEVEL": "-O",
+]
+
 let appSettings: SettingsDictionary = [
     "CODE_SIGN_STYLE": "Automatic",
     "DEVELOPMENT_TEAM": "",
@@ -49,8 +62,8 @@ let target = Target.target(
     settings: .settings(
         base: appSettings,
         configurations: [
-            .debug(name: "Debug"),
-            .release(name: "Release"),
+            .debug(name: "Debug", settings: debugBuildSettings),
+            .release(name: "Release", settings: releaseBuildSettings),
         ],
         defaultSettings: .none
     )
@@ -80,8 +93,8 @@ let project = Project(
     ),
     settings: .settings(
         configurations: [
-            .debug(name: "Debug"),
-            .release(name: "Release"),
+            .debug(name: "Debug", settings: debugBuildSettings),
+            .release(name: "Release", settings: releaseBuildSettings),
         ],
         defaultSettings: .none,
         defaultConfiguration: "Debug"

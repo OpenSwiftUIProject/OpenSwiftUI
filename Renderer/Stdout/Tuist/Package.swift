@@ -9,6 +9,7 @@ let package = Package(
         .package(path: "../../../../OpenAttributeGraph"),
         .package(path: "../../../../OpenRenderBox"),
         .package(path: "../../../../DarwinPrivateFrameworks"),
+        .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
         .package(url: "https://github.com/apple/swift-collections", from: "1.1.0"),
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
         .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
@@ -26,6 +27,8 @@ let packageProductTypes: [String: ProjectDescription.Product] = [
     "OpenSwiftUI_SPI": .staticFramework,
     "COpenSwiftUI": .staticFramework,
     "OpenSwiftUIMacros": .macro,
+    "OpenSwiftUITestsSupport": .staticFramework,
+    "OpenSwiftUISymbolDualTestsSupport": .staticFramework,
     "OpenAttributeGraphShims": .staticFramework,
     "OpenCoreGraphicsShims": .staticFramework,
     "OpenObservation": .staticFramework,
@@ -37,12 +40,15 @@ let packageProductTypes: [String: ProjectDescription.Product] = [
     "CoreSVG": .framework,
     "SFSymbols": .framework,
     "BacklightServices": .framework,
+    "SymbolLocator": .staticFramework,
 ]
 
 let packageProductDestinations: [String: Destinations] = [
     "OpenSwiftUI": packageDestinations,
     "OpenSwiftUICore": packageDestinations,
     "OpenSwiftUI_SPI": packageDestinations,
+    "OpenSwiftUITestsSupport": packageDestinations,
+    "OpenSwiftUISymbolDualTestsSupport": packageDestinations,
     "OpenAttributeGraph": packageDestinations,
     "OpenAttributeGraphShims": packageDestinations,
     "OpenRenderBox": packageDestinations,
@@ -52,6 +58,20 @@ let packageProductDestinations: [String: Destinations] = [
     "CoreUI": packageDestinations,
     "CoreSVG": packageDestinations,
     "SFSymbols": packageDestinations,
+    "SymbolLocator": packageDestinations,
+]
+
+let debugBuildSettings: SettingsDictionary = [
+    "ALWAYS_SEARCH_USER_PATHS": "NO",
+    "GCC_OPTIMIZATION_LEVEL": "0",
+    "ONLY_ACTIVE_ARCH": "YES",
+    "SWIFT_COMPILATION_MODE": "singlefile",
+    "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
+]
+
+let releaseBuildSettings: SettingsDictionary = [
+    "SWIFT_COMPILATION_MODE": "wholemodule",
+    "SWIFT_OPTIMIZATION_LEVEL": "-O",
 ]
 
 let packageSettings = PackageSettings(
@@ -59,8 +79,8 @@ let packageSettings = PackageSettings(
     productDestinations: packageProductDestinations,
     baseSettings: .settings(
         configurations: [
-            .debug(name: "Debug"),
-            .release(name: "Release"),
+            .debug(name: "Debug", settings: debugBuildSettings),
+            .release(name: "Release", settings: releaseBuildSettings),
         ],
         defaultSettings: .none,
         defaultConfiguration: "Debug"

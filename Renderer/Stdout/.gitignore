@@ -1,7 +1,9 @@
 .build
 .swiftpm
+.xcodebuild
 Derived
 Package.resolved
+xcodebuild.log
 *.xcodeproj
 *.xcworkspace
 Tuist/.build

@@ -17,3 +17,8 @@ cd Renderer/Stdout
 ```
 
 On macOS, use the Stdout Tuist project for Xcode runs.
+
+```sh
+cd Renderer/Stdout
+./open-xcode.sh
+```

@@ -20,6 +20,9 @@ Use the Tuist project when running the demo from Xcode on macOS:
 ./open-xcode.sh
 ```
 
+The script runs `tuist install`, generates the workspace without opening during
+generation, then opens `StdoutRenderer.xcworkspace`.
+
 The Tuist project uses local OpenSwiftUI, OpenAttributeGraph, OpenRenderBox,
 and DarwinPrivateFrameworks dependencies so Xcode does not need to open the
 Swift package directly.

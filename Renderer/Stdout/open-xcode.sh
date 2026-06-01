@@ -10,5 +10,5 @@ if [[ "$(uname -s)" != "Darwin" ]]; then
 fi
 
 tuist install
-tuist generate
+tuist generate --no-open
 open StdoutRenderer.xcworkspace
