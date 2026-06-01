@@ -150,6 +150,12 @@ extension App {
     /// a platform-appropriate way.
     public static func main() {
         let app = Self()
+        /* OpenSwiftUI Addition Begin */
+        if let rendererConfiguration = Self._rendererConfiguration,
+           case let .stdout(options) = rendererConfiguration.renderer {
+            runStdoutApp(app, options: options)
+        }
+        /* OpenSwiftUI Addition End */
         runApp(app)
     }
 
@@ -191,6 +197,13 @@ typealias DelegateBaseClass = NSResponder
 typealias PlatformApplication = NSApplication
 typealias PlatformApplicationDelegate = NSApplicationDelegate
 #else
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#elseif os(WASI)
+import WASILibc
+#endif
 import Foundation
 // FIXME: Temporarily use NSObject as a placeholder
 typealias DelegateBaseClass = NSObject
