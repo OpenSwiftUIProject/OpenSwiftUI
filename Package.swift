@@ -730,7 +730,12 @@ let openSwiftUIExtensionTarget = Target.target(
 let openSwiftUILinuxDemoTarget = Target.executableTarget(
     name: "OpenSwiftUILinuxDemo",
     dependencies: ["OpenSwiftUI"],
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: [
+        .linkedLibrary("ssl", .when(platforms: [.android])),
+        .linkedLibrary("crypto", .when(platforms: [.android])),
+        .linkedLibrary("z", .when(platforms: [.android])),
+    ]
 )
 
 let openSwiftUITestTarget = Target.testTarget(

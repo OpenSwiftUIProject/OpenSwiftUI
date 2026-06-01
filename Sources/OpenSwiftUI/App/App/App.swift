@@ -204,6 +204,8 @@ typealias PlatformApplicationDelegate = NSApplicationDelegate
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+#elseif canImport(Android)
+import Android
 #elseif os(WASI)
 import WASILibc
 #endif
