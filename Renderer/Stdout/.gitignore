@@ -1,3 +1,9 @@
 .build
 .swiftpm
+Derived
 Package.resolved
+*.xcodeproj
+*.xcworkspace
+Tuist/.build
+Tuist/.swiftpm
+Tuist/Dependencies

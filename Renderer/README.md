@@ -13,5 +13,7 @@ Run it from this repository:
 
 ```sh
 cd Renderer/Stdout
-swift run ExampleApp
+./run-example.sh
 ```
+
+On macOS, use the Stdout Tuist project for Xcode runs.
