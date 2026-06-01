@@ -197,8 +197,13 @@ typealias DelegateBaseClass = NSObject
 typealias PlatformApplication = NSObject
 typealias PlatformApplicationDelegate = AnyObject
 
-func runApp(_ app: some App) -> Never {
-    _openSwiftUIPlatformUnimplementedFailure()
+func runApp<Application>(_ app: Application) -> Never where Application: App {
+    let rendererConfiguration = Application._rendererConfiguration ?? .stdout()
+    guard case let .stdout(options) = rendererConfiguration.renderer else {
+        print("OpenSwiftUI currently supports only the stdout renderer on this platform.")
+        exit(1)
+    }
+    runStdoutApp(app, options: options)
 }
 
 func runTestingApp<V1, V2>(rootView: V1, comparisonView: V2, didLaunch: @escaping (any TestHost, any TestHost) -> ()) -> Never where V1: View, V2: View {
