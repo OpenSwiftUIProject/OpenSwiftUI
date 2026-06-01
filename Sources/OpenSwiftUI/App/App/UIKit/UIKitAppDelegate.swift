@@ -338,6 +338,11 @@ final class AppSceneDelegate: UIResponder, UIWindowSceneDelegate {
         self.sceneItemID = item.id
         let rootView = self.makeRootView(item.value.view)
         let hostingController = UIHostingController(rootView: rootView)
+        /* OpenSwiftUI Addition Begin */
+        if let rendererConfiguration = appGraph.rendererConfiguration {
+            hostingController._rendererConfiguration = rendererConfiguration
+        }
+        /* OpenSwiftUI Addition End */
         hostingController.host.delegate = self
         hostingController.host.inheritedEnvironment = item.environment
         let window = UIWindow(windowScene: windowScene)

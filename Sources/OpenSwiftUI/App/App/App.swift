@@ -6,7 +6,8 @@
 //  Status: Complete
 //  ID: 20E520D074F8AF54E6253E3E22B86490 (SwiftUI)
 
-import OpenSwiftUICore
+@_spi(StdoutRenderer)
+public import OpenSwiftUICore
 
 // MARK: - App
 
@@ -126,6 +127,15 @@ public protocol App {
     /// provide one. You typically rely on the default initializer for
     /// your app.
     init()
+
+    /* OpenSwiftUI Addition Begin */
+    /// The global default renderer configuration used by the app lifecycle.
+    ///
+    /// If set, OpenSwiftUI applies this configuration to renderers that it
+    /// creates for the app.
+    @_spi(StdoutRenderer)
+    nonisolated static var _rendererConfiguration: _RendererConfiguration? { get }
+    /* OpenSwiftUI Addition End */
 }
 
 extension App {
@@ -142,6 +152,13 @@ extension App {
         let app = Self()
         runApp(app)
     }
+
+    /* OpenSwiftUI Addition Begin */
+    @_spi(StdoutRenderer)
+    nonisolated public static var _rendererConfiguration: _RendererConfiguration? {
+        nil
+    }
+    /* OpenSwiftUI Addition End */
 }
 
 // MARK: - AppRootModifier

@@ -60,6 +60,11 @@ class AppDelegate: NSResponder, NSApplicationDelegate {
         let items = AppGraph.shared?.rootSceneList?.items ?? []
         let view = items[0].value.view
         let hostingVC = NSHostingController(rootView: view.frame(width: 500, height: 300).rootEnvironment())
+        /* OpenSwiftUI Addition Begin */
+        if let rendererConfiguration = graph.rendererConfiguration {
+            hostingVC._rendererConfiguration = rendererConfiguration
+        }
+        /* OpenSwiftUI Addition End */
         let windowVC = WindowController(hostingVC)
         windowVC.showWindow(nil)
         self.windowVC = windowVC
