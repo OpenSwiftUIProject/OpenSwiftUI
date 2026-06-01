@@ -445,8 +445,6 @@ extension Text {
     }
 }
 
-#if canImport(Darwin)
-
 // MARK: - Text.System
 
 extension Text {
@@ -492,11 +490,16 @@ extension String.System {
 
 extension Bundle {
     package static var kit: Bundle {
-        Bundle(
+        #if canImport(Darwin)
+        return Bundle(
             for: NSClassFromString(
                 isAppKitBased() ? "NSApplication" : "UIApplication"
             )!
         )
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        return .main
+        #endif
     }
 }
 
@@ -537,5 +540,3 @@ extension Bundle {
         Bundle(for: OpenSwiftUICoreClass.self)
     }
 }
-
-#endif
