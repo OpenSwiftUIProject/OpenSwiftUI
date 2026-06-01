@@ -134,7 +134,7 @@ public protocol App {
     /// If set, OpenSwiftUI applies this configuration to renderers that it
     /// creates for the app.
     @_spi(StdoutRenderer)
-    nonisolated static var _rendererConfiguration: _RendererConfiguration? { get }
+    nonisolated static var rendererConfiguration: _RendererConfiguration? { get }
     /* OpenSwiftUI Addition End */
 }
 
@@ -151,7 +151,7 @@ extension App {
     public static func main() {
         let app = Self()
         /* OpenSwiftUI Addition Begin */
-        if let rendererConfiguration = Self._rendererConfiguration,
+        if let rendererConfiguration = Self.rendererConfiguration,
            case let .stdout(options) = rendererConfiguration.renderer {
             runStdoutApp(app, options: options)
         }
@@ -161,7 +161,7 @@ extension App {
 
     /* OpenSwiftUI Addition Begin */
     @_spi(StdoutRenderer)
-    nonisolated public static var _rendererConfiguration: _RendererConfiguration? {
+    nonisolated public static var rendererConfiguration: _RendererConfiguration? {
         nil
     }
     /* OpenSwiftUI Addition End */
@@ -211,7 +211,7 @@ typealias PlatformApplication = NSObject
 typealias PlatformApplicationDelegate = AnyObject
 
 func runApp<Application>(_ app: Application) -> Never where Application: App {
-    let rendererConfiguration = Application._rendererConfiguration ?? .stdout()
+    let rendererConfiguration = Application.rendererConfiguration ?? .stdout()
     guard case let .stdout(options) = rendererConfiguration.renderer else {
         print("OpenSwiftUI currently supports only the stdout renderer on this platform.")
         exit(1)

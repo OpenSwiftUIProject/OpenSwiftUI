@@ -74,7 +74,7 @@ package final class AppGraph: GraphHost {
 
     init<Application>(app: Application) where Application: App {
         /* OpenSwiftUI Addition Begin */
-        rendererConfiguration = Application._rendererConfiguration
+        rendererConfiguration = Application.rendererConfiguration
         /* OpenSwiftUI Addition End */
         makeRootScene = { inputs in
             let fields = DynamicPropertyCache.fields(of: Application.self)

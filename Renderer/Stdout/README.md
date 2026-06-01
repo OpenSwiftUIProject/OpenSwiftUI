@@ -17,5 +17,5 @@ The example configures the app renderer with:
 ```swift
 @_spi(StdoutRenderer) import OpenSwiftUI
 
-static var _rendererConfiguration: _RendererConfiguration? { .stdout() }
+static var rendererConfiguration: _RendererConfiguration? { .stdout() }
 ```

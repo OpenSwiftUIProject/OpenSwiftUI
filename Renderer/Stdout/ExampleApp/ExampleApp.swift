@@ -2,7 +2,7 @@
 
 @main
 struct ExampleApp: App {
-    static var _rendererConfiguration: _RendererConfiguration? { .stdout() }
+    static var rendererConfiguration: _RendererConfiguration? { .stdout() }
 
     var body: some Scene {
         WindowGroup {
