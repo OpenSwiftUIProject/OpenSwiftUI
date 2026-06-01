@@ -6,8 +6,11 @@ The package depends on the local OpenSwiftUI checkout at `../..`.
 ## Run
 
 ```sh
-swift run ExampleApp
+./run-example.sh
 ```
+
+The script selects AttributeGraph on macOS and Compute on other platforms,
+then runs `swift run ExampleApp`.
 
 The example configures the app renderer with:
 
