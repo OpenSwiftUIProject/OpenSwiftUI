@@ -727,6 +727,12 @@ let openSwiftUIExtensionTarget = Target.target(
     swiftSettings: sharedSwiftSettings
 )
 
+let openSwiftUILinuxDemoTarget = Target.executableTarget(
+    name: "OpenSwiftUILinuxDemo",
+    dependencies: ["OpenSwiftUI"],
+    swiftSettings: sharedSwiftSettings
+)
+
 let openSwiftUITestTarget = Target.testTarget(
     name: "OpenSwiftUITests",
     dependencies: [
@@ -832,6 +838,10 @@ if supportMultiProducts {
     ]
 }
 
+if !buildForDarwinPlatform {
+    products.append(.executable(name: "OpenSwiftUILinuxDemo", targets: ["OpenSwiftUILinuxDemo"]))
+}
+
 // MARK: - Package
 
 let package = Package(
@@ -864,6 +874,10 @@ if versionedDocCPlugin {
 
 if renderGTKCondition {
     package.targets.append(cgtkTarget)
+}
+
+if !buildForDarwinPlatform {
+    package.targets.append(openSwiftUILinuxDemoTarget)
 }
 
 if !compatibilityTestCondition {
