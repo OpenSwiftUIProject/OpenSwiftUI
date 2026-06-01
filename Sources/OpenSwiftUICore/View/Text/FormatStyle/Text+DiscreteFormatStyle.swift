@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: C8A98712CE9284278805F6E671356D1B (SwiftUICore)
 
 public import Foundation
@@ -424,44 +424,6 @@ extension TimeDataSource {
 /// platformes.
 @available(OpenSwiftUI_v6_0, *)
 public enum SystemFormatStyle: Sendable {}
-
-// MARK: - Environment-Dependent FormatStyle Hooks
-
-protocol CalendarDependentFormatStyle: FormatStyle {
-    func calendar(_ calendar: Calendar) -> Self
-}
-
-protocol TimeZoneDependentFormatStyle: FormatStyle {
-    func timeZone(_ timeZone: TimeZone) -> Self
-}
-
-protocol InterfaceIdiomDependentFormatStyle: FormatStyle {
-    func interfaceIdiom(_ idiom: AnyInterfaceIdiom) -> Self
-}
-
-protocol TextAlignmentDependentFormatStyle: FormatStyle {
-    func textAlignment(_ alignment: TextAlignment) -> Self
-}
-
-protocol UpdateFrequencyDependentFormatStyle: FormatStyle {
-    func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self
-}
-
-extension FormatStyle {
-    package func calendar(_ calendar: Calendar) -> Self {
-        guard let style = self as? any CalendarDependentFormatStyle else {
-            return self
-        }
-        return style.calendar(calendar) as! Self
-    }
-
-    package func timeZone(_ timeZone: TimeZone) -> Self {
-        guard let style = self as? any TimeZoneDependentFormatStyle else {
-            return self
-        }
-        return style.timeZone(timeZone) as! Self
-    }
-}
 
 // MARK: - Text + DiscreteFormatStyle
 

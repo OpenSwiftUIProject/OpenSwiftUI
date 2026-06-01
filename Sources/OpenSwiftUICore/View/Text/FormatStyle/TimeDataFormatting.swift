@@ -20,7 +20,7 @@ enum TimeDataFormatting: ResolvableStringAttributeFamily {
         nil
     }
 
-    enum UpdateFrequency: Hashable, Comparable, Codable {
+    enum UpdateFrequency: Hashable, Comparable, Codable, Sendable {
         case high
         case second
         case minute
