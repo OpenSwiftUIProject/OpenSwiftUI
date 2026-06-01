@@ -5,6 +5,8 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+public import Foundation
+
 // MARK: - _RendererConfiguration
 
 /// Renderer configuration for a hosting view.
@@ -19,6 +21,13 @@ public struct _RendererConfiguration {
         /// An alternative renderer that rasterizes everything in the
         /// local process.
         indirect case rasterized(_ options: _RendererConfiguration.RasterizationOptions = .init())
+
+        /* OpenSwiftUI Addition Begin */
+        /// A renderer that writes a textual representation of the display list
+        /// to standard output.
+        @_spi(StdoutRenderer)
+        indirect case stdout(_ options: _RendererConfiguration.StdoutOptions = .init())
+        /* OpenSwiftUI Addition End */
     }
 
     /// The renderer kind and its specific configuration.
@@ -39,6 +48,34 @@ public struct _RendererConfiguration {
     public static func rasterized(_ options: _RendererConfiguration.RasterizationOptions = .init()) -> _RendererConfiguration {
         _RendererConfiguration(renderer: .rasterized(options))
     }
+
+    /* OpenSwiftUI Addition Begin */
+
+    /// Returns a configuration to render the display list to standard output.
+    @_spi(StdoutRenderer)
+    public static func stdout(_ options: _RendererConfiguration.StdoutOptions = .init()) -> _RendererConfiguration {
+        _RendererConfiguration(renderer: .stdout(options))
+    }
+
+    /* OpenSwiftUI Addition End */
+
+    /* OpenSwiftUI Addition Begin */
+
+    // MARK: - _RendererConfiguration.StdoutOptions
+
+    /// Options for the `stdout` renderer.
+    @_spi(StdoutRenderer)
+    public struct StdoutOptions {
+        /// The surface size reported by the stdout renderer.
+        public var surface: CGSize = defaultSurfaceSize
+
+        // TODO: Get from host platform API
+        private static let defaultSurfaceSize = CGSize(width: 640.0, height: 480.0)
+
+        public init() {}
+    }
+
+    /* OpenSwiftUI Addition End */
 
     // MARK: - _RendererConfiguration.RasterizationOptions
 
@@ -89,6 +126,12 @@ extension _RendererConfiguration.Renderer: Sendable {}
 
 @available(*, unavailable)
 extension _RendererConfiguration.RasterizationOptions: Sendable {}
+
+/* OpenSwiftUI Addition Begin */
+@_spi(StdoutRenderer)
+@available(*, unavailable)
+extension _RendererConfiguration.StdoutOptions: Sendable {}
+/* OpenSwiftUI Addition End */
 
 // MARK: - RasterizationOptions + _RendererConfiguration.RasterizationOptions
 
