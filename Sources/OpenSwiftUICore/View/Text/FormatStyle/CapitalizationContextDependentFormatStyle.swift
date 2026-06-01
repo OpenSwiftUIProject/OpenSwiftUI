@@ -6,7 +6,6 @@
 //  Status: Complete (Blocked by SystemFormatStyle)
 //  ID: B2C9C13C743DF2F6E22ED614C39E3A5D (SwiftUICore)
 
-#if canImport(Darwin)
 public import Foundation
 
 protocol CapitalizationContextDependentFormatStyle: FormatStyle {
@@ -44,4 +43,3 @@ extension EnvironmentValues {
 // Date.AnchoredRelativeFormatStyle
 // Date.FormatStyle
 // ...
-#endif
