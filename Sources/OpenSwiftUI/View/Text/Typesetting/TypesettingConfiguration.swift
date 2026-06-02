@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 package import UIKit
 
 // MARK: - TypesettingConfigurationKey + UITraitBridgedEnvironmentKey

@@ -8,7 +8,7 @@
 #if canImport(Darwin)
 // MARK: - EdgeInsets + Conversion
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 public import UIKit
 #elseif canImport(AppKit)
 public import AppKit

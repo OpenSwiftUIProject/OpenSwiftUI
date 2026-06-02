@@ -15,7 +15,7 @@ extension OpenSwiftUI.View {
         OpenSwiftUI.NSHostingController(rootView: self)
     }
 }
-#elseif canImport(UIKit)
+#elseif !os(Android) && canImport(UIKit)
 public import UIKit
 extension OpenSwiftUI.View {
     @available(*, deprecated, message: "Use the OpenSwiftUI #Preview macro or PreviewProvider instead.")

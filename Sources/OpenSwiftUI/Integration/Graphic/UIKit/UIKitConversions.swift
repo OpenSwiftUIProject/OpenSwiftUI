@@ -6,7 +6,7 @@
 //  Status: WIP
 //  ID: 6DC24D5146AF4B80347A1025025F68EE (SwiftUI)
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 
 public import OpenSwiftUICore
 public import UIKit

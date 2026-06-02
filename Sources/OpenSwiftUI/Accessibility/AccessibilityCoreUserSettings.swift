@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 import Accessibility
 package import OpenSwiftUICore
 import UIKit

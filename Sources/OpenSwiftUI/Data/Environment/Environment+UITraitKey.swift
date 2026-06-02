@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 859636D0EA4E0B7C4D7D1B41B613A4D5 (SwiftUI)
 
-#if canImport(UIKit)
+#if !os(Android) && canImport(UIKit)
 
 public import OpenSwiftUICore
 public import UIKit

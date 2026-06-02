@@ -169,6 +169,7 @@ let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwin
 let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
+let androidUIKitCondition = envBoolValue("ANDROID_UIKIT", default: false)
 
 let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isVDCDocGenerationBuild && !compatibilityTestCondition)
 
@@ -249,6 +250,9 @@ if !compatibilityTestCondition {
 
 if development {
     sharedSwiftSettings.append(.define("OPENSWIFTUI_DEVELOPMENT"))
+}
+if androidUIKitCondition {
+    sharedSwiftSettings.append(.define("OPENSWIFTUI_ANDROID_UIKIT", .when(platforms: [.android])))
 }
 
 sharedCSettings.append(.define("OPENSWIFTUI_LINK_COREUI", to: linkCoreUI ? "1" : "0"))
@@ -729,13 +733,19 @@ let openSwiftUIExtensionTarget = Target.target(
 
 let openSwiftUILinuxDemoTarget = Target.executableTarget(
     name: "OpenSwiftUILinuxDemo",
-    dependencies: ["OpenSwiftUI"],
+    dependencies: [
+        "OpenSwiftUI",
+        "OpenSwiftUICore",
+        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
+    ],
     swiftSettings: sharedSwiftSettings,
     linkerSettings: [
         .linkedLibrary("ssl", .when(platforms: [.android])),
         .linkedLibrary("crypto", .when(platforms: [.android])),
         .linkedLibrary("z", .when(platforms: [.android])),
-    ]
+    ] + (androidUIKitCondition ? [
+        .unsafeFlags(["-Xlinker", "--allow-multiple-definition"], .when(platforms: [.android])),
+    ] : [])
 )
 
 let openSwiftUITestTarget = Target.testTarget(
@@ -1032,6 +1042,13 @@ if swiftCryptoCondition {
     )
     openSwiftUICoreTarget.addSwiftCryptoSettings()
     openSwiftUITarget.addSwiftCryptoSettings()
+}
+
+if androidUIKitCondition {
+    package.dependencies.append(.package(path: "../UIKit-cross-platform"))
+    openSwiftUILinuxDemoTarget.dependencies.append(
+        .product(name: "UIKit", package: "UIKit-cross-platform", condition: .when(platforms: [.android]))
+    )
 }
 
 #if TUIST
