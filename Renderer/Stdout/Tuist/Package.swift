@@ -47,6 +47,8 @@ let packageProductDestinations: [String: Destinations] = [
     "OpenSwiftUI": packageDestinations,
     "OpenSwiftUICore": packageDestinations,
     "OpenSwiftUI_SPI": packageDestinations,
+    "OpenSwiftUIExtension": packageDestinations,
+    "OpenSwiftUIBridge": packageDestinations,
     "OpenSwiftUITestsSupport": packageDestinations,
     "OpenSwiftUISymbolDualTestsSupport": packageDestinations,
     "OpenAttributeGraph": packageDestinations,
@@ -84,13 +86,6 @@ let packageSettings = PackageSettings(
         ],
         defaultSettings: .none,
         defaultConfiguration: "Debug"
-    ),
-    targetSettings: [
-        "OpenSwiftUI": .settings(
-            base: [
-                "DYLIB_INSTALL_NAME_BASE": "@rpath",
-            ]
-        ),
-    ]
+    )
 )
 #endif

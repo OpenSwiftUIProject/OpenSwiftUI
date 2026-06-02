@@ -21,11 +21,14 @@ Use the Tuist project when running the demo from Xcode on macOS:
 ```
 
 The script runs `tuist install`, generates the workspace without opening during
-generation, then opens `StdoutRenderer.xcworkspace`.
+generation, then opens `StdoutRenderer.xcworkspace`. If `mise` is available, the
+script uses the repository-pinned Tuist version.
 
 The Tuist project uses local OpenSwiftUI, OpenAttributeGraph, OpenRenderBox,
 and DarwinPrivateFrameworks dependencies so Xcode does not need to open the
-Swift package directly.
+Swift package directly. Its package settings mirror the generated Example
+project's local OpenSwiftUI product destinations, keeping AttributeGraph
+enabled on macOS while preserving valid generated target platforms.
 
 The example configures the app renderer with:
 
