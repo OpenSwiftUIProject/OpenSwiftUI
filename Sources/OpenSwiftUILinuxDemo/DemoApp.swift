@@ -1,5 +1,17 @@
 import OpenSwiftUI
 
+struct ContentView: View {
+    var body: some View {
+        VStack(spacing: 10.0) {
+            Text("OpenSwiftUI on Android")
+            Text("with UIKit-cross-platform")
+            Color.red
+            Color.blue
+        }
+        .frame(width: 640.0, height: 480.0)
+    }
+}
+
 #if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
 import Android
 import OpenSwiftUIAndroidDemo
@@ -18,10 +30,7 @@ struct DemoApp {
 struct DemoApp: App {
     var body: some Scene {
         WindowGroup {
-            VStack(spacing: 10.0) {
-                Color.red
-                Color.blue
-            }
+            ContentView()
         }
     }
 }

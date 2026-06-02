@@ -168,11 +168,16 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
 @MainActor
 private enum AndroidUIKitDemoViewFactory {
     static let defaultSize = UIKit.CGSize(width: 640.0, height: 480.0)
+    private static let titleText = "OpenSwiftUI on Android"
+    private static let subtitleText = "with UIKit-cross-platform"
+    private static let titleSize = UIKit.CGSize(width: 640.0, height: 36.0)
+    private static let subtitleSize = UIKit.CGSize(width: 640.0, height: 32.0)
+    private static let spacing: UIKit.CGFloat = 10.0
 
     static func makeRootView(size: UIKit.CGSize) -> UIView {
         let root = AndroidUIViewPlatformViewDefinition.makeView(kind: .inherited) as! UIView
         root.frame = UIKit.CGRect(origin: .zero, size: size)
-        root.backgroundColor = .clear
+        root.backgroundColor = .black
         return root
     }
 
@@ -180,23 +185,41 @@ private enum AndroidUIKitDemoViewFactory {
         rootView.subviews.forEach { $0.removeFromSuperview() }
         rootView.frame = UIKit.CGRect(origin: .zero, size: size)
 
-        let topHeight = (size.height - 10.0) / 2.0
-        let bottomY = topHeight + 10.0
+        let titleFrame = centeredFrame(size: titleSize, y: 0.0, in: size)
+        let subtitleY = titleFrame.maxY + spacing
+        let subtitleFrame = centeredFrame(size: subtitleSize, y: subtitleY, in: size)
+        let colorTopY = subtitleFrame.maxY + spacing
+        let colorHeight = (size.height - colorTopY - spacing) / 2.0
+        let bottomY = colorTopY + colorHeight + spacing
+
+        addTextLabel(to: rootView, frame: titleFrame, text: titleText, fontSize: 18.0)
+        addTextLabel(to: rootView, frame: subtitleFrame, text: subtitleText, fontSize: 16.0)
 
         addColorView(
             to: rootView,
-            frame: UIKit.CGRect(x: 0.0, y: 0.0, width: size.width, height: topHeight),
+            frame: UIKit.CGRect(x: 0.0, y: colorTopY, width: size.width, height: colorHeight),
             color: UIColor(red: 255.0 / 255.0, green: 59.0 / 255.0, blue: 48.0 / 255.0, alpha: 1.0)
         )
         addColorView(
             to: rootView,
-            frame: UIKit.CGRect(x: 0.0, y: bottomY, width: size.width, height: topHeight),
+            frame: UIKit.CGRect(x: 0.0, y: bottomY, width: size.width, height: colorHeight),
             color: UIColor(red: 0.0 / 255.0, green: 122.0 / 255.0, blue: 255.0 / 255.0, alpha: 1.0)
         )
 
         if isPrintTreeEnabled() {
-            print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at Time(seconds: 0.0):\n\(displayListDescription(size: size, topHeight: topHeight, bottomY: bottomY))")
+            print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at Time(seconds: 0.0):\n\(displayListDescription(size: size, titleFrame: titleFrame, subtitleFrame: subtitleFrame, colorTopY: colorTopY, colorHeight: colorHeight, bottomY: bottomY))")
         }
+    }
+
+    private static func addTextLabel(to rootView: UIView, frame: UIKit.CGRect, text: String, fontSize: UIKit.CGFloat) {
+        let label = UILabel(frame: .zero)
+        label.layer.anchorPoint = .zero
+        label.frame = frame
+        label.text = text
+        label.textAlignment = .center
+        label.textColor = .white
+        label.font = .systemFont(ofSize: fontSize)
+        rootView.addSubview(label)
     }
 
     private static func addColorView(to rootView: UIView, frame: UIKit.CGRect, color: UIColor) {
@@ -206,15 +229,39 @@ private enum AndroidUIKitDemoViewFactory {
         rootView.addSubview(colorView)
     }
 
-    private static func displayListDescription(size: UIKit.CGSize, topHeight: UIKit.CGFloat, bottomY: UIKit.CGFloat) -> String {
+    private static func centeredFrame(size childSize: UIKit.CGSize, y: UIKit.CGFloat, in size: UIKit.CGSize) -> UIKit.CGRect {
+        UIKit.CGRect(
+            x: (size.width - childSize.width) / 2.0,
+            y: y,
+            width: childSize.width,
+            height: childSize.height
+        )
+    }
+
+    private static func displayListDescription(
+        size: UIKit.CGSize,
+        titleFrame: UIKit.CGRect,
+        subtitleFrame: UIKit.CGRect,
+        colorTopY: UIKit.CGFloat,
+        colorHeight: UIKit.CGFloat,
+        bottomY: UIKit.CGFloat
+    ) -> String {
         """
         (display-list
           (item #:identity 1 #:version 7
-            (frame (0.0 0.0; \(format(size.width)) \(format(topHeight))))
+            (frame (\(format(titleFrame.minX)) \(format(titleFrame.minY)); \(format(titleFrame.width)) \(format(titleFrame.height))))
+            (content-seed 3)
+            (text "\(titleText)"))
+          (item #:identity 2 #:version 8
+            (frame (\(format(subtitleFrame.minX)) \(format(subtitleFrame.minY)); \(format(subtitleFrame.width)) \(format(subtitleFrame.height))))
+            (content-seed 4)
+            (text "\(subtitleText)"))
+          (item #:identity 3 #:version 9
+            (frame (0.0 \(format(colorTopY)); \(format(size.width)) \(format(colorHeight))))
             (content-seed 5)
             (color #FF3B30FF))
-          (item #:identity 2 #:version 8
-            (frame (0.0 \(format(bottomY)); \(format(size.width)) \(format(topHeight))))
+          (item #:identity 4 #:version 10
+            (frame (0.0 \(format(bottomY)); \(format(size.width)) \(format(colorHeight))))
             (content-seed 7)
             (color #007AFFFF)))
         """
