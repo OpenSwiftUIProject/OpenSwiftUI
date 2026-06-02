@@ -210,7 +210,7 @@ extension Text {
 //        internal var glyphInfo: CTGlyphInfo?
 //        internal var shadow: TextShadowModifier?
 //        internal var transition: TextTransitionModifier?
-//        internal var scale: Text.Scale?
+        internal var scale: Text.Scale?
 //        internal var superscript: Text.Superscript?
         internal var typesettingConfiguration: TypesettingConfiguration = .init()
 //        internal var customAttributes: [TextAttributeModifierBase]
