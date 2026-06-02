@@ -1,8 +1,16 @@
 #if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
-import Android
+import JNI
 import UIKit
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import OpenQuartzCoreShims
+
+@_silgen_name("SDLJNI_OnLoad")
+private func SDLJNI_OnLoad(
+    _ vm: UnsafeMutablePointer<JavaVM?>,
+    _ reserved: UnsafeMutableRawPointer?
+) -> JavaInt
+
+nonisolated(unsafe) private var didConfigureNativeLoaders = false
 
 @_cdecl("OpenSwiftUIAndroidDemoConfigureUIKit")
 public func OpenSwiftUIAndroidDemoConfigureUIKit() {
@@ -11,9 +19,34 @@ public func OpenSwiftUIAndroidDemoConfigureUIKit() {
     }
 }
 
+@_cdecl("Java_org_openswiftui_androiddemo_MainActivity_configureOpenSwiftUI")
+func OpenSwiftUIAndroidDemoConfigureFromJava(
+    _ env: UnsafeMutablePointer<JNIEnv?>?,
+    _ activity: JavaObject?
+) {
+    configureNativeLoaders(env: env)
+    OpenSwiftUIAndroidDemoConfigureUIKit()
+}
+
+private func configureNativeLoaders(env: UnsafeMutablePointer<JNIEnv?>?) {
+    guard !didConfigureNativeLoaders, let env else {
+        return
+    }
+    var vm: UnsafeMutablePointer<JavaVM?>?
+    _ = env.pointee!.pointee.GetJavaVM(env, &vm)
+    guard let vm else {
+        return
+    }
+    _ = SwiftJNI_OnLoad(vm, nil)
+    _ = SDLJNI_OnLoad(vm, nil)
+    didConfigureNativeLoaders = true
+}
+
 @MainActor
-struct AndroidUIKitDemoRunner {
-    func run() -> Int32 {
+public struct AndroidUIKitDemoRunner {
+    public init() {}
+
+    public func run() -> Int32 {
         UIKitAndroid.UIApplicationDelegateClass = AndroidOpenSwiftUIAppDelegate.self
 
         let application = UIApplication()

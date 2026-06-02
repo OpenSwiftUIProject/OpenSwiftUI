@@ -1,0 +1,4 @@
+rootProject.name = 'OpenSwiftUIAndroidDemo'
+include ':app'
+include ':uikit'
+project(':uikit').projectDir = new File(rootProject.projectDir, '../../../UIKit-cross-platform')

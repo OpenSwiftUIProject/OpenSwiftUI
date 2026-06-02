@@ -2,6 +2,7 @@ import OpenSwiftUI
 
 #if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
 import Android
+import OpenSwiftUIAndroidDemo
 
 @main
 struct DemoApp {
