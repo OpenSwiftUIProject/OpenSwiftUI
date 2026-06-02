@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by AttributeScopes
+//  Status: WIP
 
 package import Foundation
 
@@ -30,7 +30,62 @@ extension AttributedString {
 
     package var isStyled: Bool {
         runs.contains { run in
-            // TODO: AttributeScopes
+            #if canImport(CoreText)
+            let hasAdaptiveImageGlyph = run.adaptiveImageGlyph != nil
+            #endif
+            if run.font != nil {
+                return true
+            }
+            if run.foregroundColor != nil {
+                return true
+            }
+            if run.backgroundColor != nil {
+                return true
+            }
+            if run.strikethroughStyle != nil {
+                return true
+            }
+            if run.underlineStyle != nil {
+                return true
+            }
+            if run.kern != nil {
+                return true
+            }
+            if run.tracking != nil {
+                return true
+            }
+            if run.baselineOffset != nil {
+                return true
+            }
+            if run.textScale != nil {
+                return true
+            }
+            if run.superscript != nil {
+                return true
+            }
+            if run.privateStrikethroughColor != nil {
+                return true
+            }
+            if run.privateUnderlineColor != nil {
+                return true
+            }
+            if let inlinePresentationIntent = run.inlinePresentationIntent,
+               !inlinePresentationIntent.intersection([
+                   .emphasized,
+                   .stronglyEmphasized,
+                   .strikethrough,
+                   .code,
+               ]).isEmpty {
+                return true
+            }
+            if run.link != nil {
+                return true
+            }
+            #if canImport(CoreText)
+            if hasAdaptiveImageGlyph {
+                return true
+            }
+            #endif
             return false
         }
     }
