@@ -1,0 +1,54 @@
+name: Stdout Renderer
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+jobs:
+  stdout_renderer_linux:
+    name: Run stdout renderer on Linux
+    runs-on: ubuntu-22.04
+    container: swift:6.1.0-jammy
+    env:
+      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_SWIFT_LOG: 1
+      OPENSWIFTUI_SWIFT_CRYPTO: 1
+    steps:
+      - uses: actions/checkout@v4
+      - name: Toolchain fix patch
+        run: |
+          # Fix swift-corelibs-foundation#5211
+          .github/scripts/fix-toolchain.sh
+      - name: Run stdout renderer example
+        run: Renderer/Stdout/run-example.sh
+
+  stdout_renderer_macos:
+    name: Run stdout renderer on macOS
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        xcode-version: ["16.4"]
+        release: [2024]
+    runs-on:
+      - self-hosted
+      - ${{ matrix.os }}
+    env:
+      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: OpenSwiftUIProject/setup-xcode@v2
+        with:
+          xcode-version: ${{ matrix.xcode-version }}
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
+      - name: Run stdout renderer example
+        run: Renderer/Stdout/run-example.sh
