@@ -12,6 +12,7 @@ Darwin)
 *)
     export OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH=0
     export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
+    export OPENSWIFTUI_LIB_SWIFT_PATH="$(swiftly use --print-location)/usr/lib/swift"
     ;;
 esac
 
