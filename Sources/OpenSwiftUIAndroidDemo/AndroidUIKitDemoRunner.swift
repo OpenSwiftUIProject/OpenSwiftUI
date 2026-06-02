@@ -1,4 +1,6 @@
 #if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
+import Bionic
+import Foundation
 import JNI
 import UIKit
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
@@ -83,17 +85,12 @@ private final class AndroidOpenSwiftUIAppDelegate: UIResponder, UIApplicationDel
 @MainActor
 private final class AndroidOpenSwiftUIViewController: UIViewController {
     override func loadView() {
-        view = AndroidUIKitDemoViewFactory.makeRootView(size: AndroidUIKitDemoViewFactory.defaultSize)
+        view = AndroidBreathingDemoRootView(frame: UIKit.CGRect(origin: .zero, size: AndroidBreathingDemoRootView.defaultSize))
     }
 
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
-        AndroidUIKitDemoViewFactory.installDemo(in: view, size: AndroidUIKitDemoViewFactory.defaultSize)
-    }
-
-    override func viewDidLayoutSubviews() {
-        super.viewDidLayoutSubviews()
-        AndroidUIKitDemoViewFactory.installDemo(in: view, size: AndroidUIKitDemoViewFactory.defaultSize)
+        (view as? AndroidBreathingDemoRootView)?.startAnimation()
     }
 }
 
@@ -166,103 +163,124 @@ final class AndroidUIViewPlatformViewDefinition: PlatformViewDefinition, @unchec
 }
 
 @MainActor
-private enum AndroidUIKitDemoViewFactory {
+private final class AndroidBreathingDemoRootView: UIView {
     static let defaultSize = UIKit.CGSize(width: 640.0, height: 480.0)
-    private static let titleText = "OpenSwiftUI on Android"
-    private static let subtitleText = "with UIKit-cross-platform"
-    private static let titleSize = UIKit.CGSize(width: 640.0, height: 36.0)
-    private static let subtitleSize = UIKit.CGSize(width: 640.0, height: 32.0)
-    private static let spacing: UIKit.CGFloat = 10.0
+    private static let titleText = "Breathing Colors"
+    private static let spacing: UIKit.CGFloat = 40.0
+    private static let titleHeight: UIKit.CGFloat = 42.0
+    private static let squareBaseSize: UIKit.CGFloat = 200.0
+    private static let barSize = UIKit.CGSize(width: 200.0, height: 20.0)
+    private static let barCornerRadius: UIKit.CGFloat = 10.0
 
-    static func makeRootView(size: UIKit.CGSize) -> UIView {
-        let root = AndroidUIViewPlatformViewDefinition.makeView(kind: .inherited) as! UIView
-        root.frame = UIKit.CGRect(origin: .zero, size: size)
-        root.backgroundColor = .black
-        return root
+    private let titleLabel = UILabel(frame: .zero)
+    private let squareView = AndroidUIViewPlatformViewDefinition.makeView(kind: .color) as! UIView
+    private let barView = AndroidUIViewPlatformViewDefinition.makeView(kind: .color) as! UIView
+    private let displayLink = DisplayLink()
+
+    override init(frame: UIKit.CGRect) {
+        super.init(frame: frame)
+        layer.anchorPoint = .zero
+        backgroundColor = .black
+        setupSubviews()
+        layoutBreathingSubviews()
+        updateAnimation()
     }
 
-    static func installDemo(in rootView: UIView, size: UIKit.CGSize) {
-        rootView.subviews.forEach { $0.removeFromSuperview() }
-        rootView.frame = UIKit.CGRect(origin: .zero, size: size)
+    deinit {
+        displayLink.invalidate()
+    }
 
-        let titleFrame = centeredFrame(size: titleSize, y: 0.0, in: size)
-        let subtitleY = titleFrame.maxY + spacing
-        let subtitleFrame = centeredFrame(size: subtitleSize, y: subtitleY, in: size)
-        let colorTopY = subtitleFrame.maxY + spacing
-        let colorHeight = (size.height - colorTopY - spacing) / 2.0
-        let bottomY = colorTopY + colorHeight + spacing
-
-        addTextLabel(to: rootView, frame: titleFrame, text: titleText, fontSize: 18.0)
-        addTextLabel(to: rootView, frame: subtitleFrame, text: subtitleText, fontSize: 16.0)
-
-        addColorView(
-            to: rootView,
-            frame: UIKit.CGRect(x: 0.0, y: colorTopY, width: size.width, height: colorHeight),
-            color: UIColor(red: 255.0 / 255.0, green: 59.0 / 255.0, blue: 48.0 / 255.0, alpha: 1.0)
-        )
-        addColorView(
-            to: rootView,
-            frame: UIKit.CGRect(x: 0.0, y: bottomY, width: size.width, height: colorHeight),
-            color: UIColor(red: 0.0 / 255.0, green: 122.0 / 255.0, blue: 255.0 / 255.0, alpha: 1.0)
-        )
-
-        if isPrintTreeEnabled() {
-            print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at Time(seconds: 0.0):\n\(displayListDescription(size: size, titleFrame: titleFrame, subtitleFrame: subtitleFrame, colorTopY: colorTopY, colorHeight: colorHeight, bottomY: bottomY))")
+    func startAnimation() {
+        displayLink.callback = { [weak self] in
+            MainActor.assumeIsolated {
+                self?.updateAnimation()
+            }
         }
+        displayLink.isPaused = false
     }
 
-    private static func addTextLabel(to rootView: UIView, frame: UIKit.CGRect, text: String, fontSize: UIKit.CGFloat) {
-        let label = UILabel(frame: .zero)
-        label.layer.anchorPoint = .zero
-        label.frame = frame
-        label.text = text
-        label.textAlignment = .center
-        label.textColor = .white
-        label.font = .systemFont(ofSize: fontSize)
-        rootView.addSubview(label)
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        layoutBreathingSubviews()
     }
 
-    private static func addColorView(to rootView: UIView, frame: UIKit.CGRect, color: UIColor) {
-        let colorView = AndroidUIViewPlatformViewDefinition.makeView(kind: .color) as! UIView
-        colorView.frame = frame
-        colorView.backgroundColor = color
-        rootView.addSubview(colorView)
+    private func setupSubviews() {
+        titleLabel.layer.anchorPoint = .zero
+        titleLabel.text = Self.titleText
+        titleLabel.textAlignment = .left
+        titleLabel.textColor = .white
+        titleLabel.font = .boldSystemFont(ofSize: 18.0)
+        addSubview(titleLabel)
+
+        squareView.backgroundColor = .blue
+        addSubview(squareView)
+
+        barView.backgroundColor = .blue
+        barView.layer.cornerRadius = Self.barCornerRadius
+        addSubview(barView)
     }
 
-    private static func centeredFrame(size childSize: UIKit.CGSize, y: UIKit.CGFloat, in size: UIKit.CGSize) -> UIKit.CGRect {
-        UIKit.CGRect(
-            x: (size.width - childSize.width) / 2.0,
-            y: y,
-            width: childSize.width,
-            height: childSize.height
+    private func layoutBreathingSubviews() {
+        let size = bounds.size == .zero ? Self.defaultSize : bounds.size
+        titleLabel.frame = UIKit.CGRect(
+            x: 0.0,
+            y: 0.0,
+            width: size.width,
+            height: Self.titleHeight
         )
+        barView.frame = UIKit.CGRect(
+            x: (size.width - Self.barSize.width) / 2.0,
+            y: Self.titleHeight + Self.spacing + Self.squareBaseSize + Self.spacing,
+            width: Self.barSize.width,
+            height: Self.barSize.height
+        )
+        updateAnimation()
+    }
+
+    private func updateAnimation() {
+        let time = Date().timeIntervalSince1970
+        let breathe = (sin(time) + 1.0) / 2.0
+        let opacity = UIKit.CGFloat(0.3 + breathe * 0.7)
+        let scale = UIKit.CGFloat(0.8 + breathe * 0.4)
+        let squareSize = Self.squareBaseSize * scale
+        let size = bounds.size == .zero ? Self.defaultSize : bounds.size
+        let squareCenterY = Self.titleHeight + Self.spacing + Self.squareBaseSize / 2.0
+
+        squareView.frame = UIKit.CGRect(
+            x: (size.width - squareSize) / 2.0,
+            y: squareCenterY - squareSize / 2.0,
+            width: squareSize,
+            height: squareSize
+        )
+        squareView.alpha = opacity
+        barView.alpha = opacity
+
+        if Self.isPrintTreeEnabled() {
+            print("View \(Unmanaged.passUnretained(self).toOpaque()) at Time(seconds: \(Self.format(time))):\n\(Self.displayListDescription(size: size, squareFrame: squareView.frame, barFrame: barView.frame, opacity: opacity))")
+        }
     }
 
     private static func displayListDescription(
         size: UIKit.CGSize,
-        titleFrame: UIKit.CGRect,
-        subtitleFrame: UIKit.CGRect,
-        colorTopY: UIKit.CGFloat,
-        colorHeight: UIKit.CGFloat,
-        bottomY: UIKit.CGFloat
+        squareFrame: UIKit.CGRect,
+        barFrame: UIKit.CGRect,
+        opacity: UIKit.CGFloat
     ) -> String {
         """
         (display-list
           (item #:identity 1 #:version 7
-            (frame (\(format(titleFrame.minX)) \(format(titleFrame.minY)); \(format(titleFrame.width)) \(format(titleFrame.height))))
+            (frame (0.0 0.0; \(format(size.width)) \(format(titleHeight))))
             (content-seed 3)
             (text "\(titleText)"))
           (item #:identity 2 #:version 8
-            (frame (\(format(subtitleFrame.minX)) \(format(subtitleFrame.minY)); \(format(subtitleFrame.width)) \(format(subtitleFrame.height))))
-            (content-seed 4)
-            (text "\(subtitleText)"))
-          (item #:identity 3 #:version 9
-            (frame (0.0 \(format(colorTopY)); \(format(size.width)) \(format(colorHeight))))
+            (frame (\(format(squareFrame.minX)) \(format(squareFrame.minY)); \(format(squareFrame.width)) \(format(squareFrame.height))))
             (content-seed 5)
-            (color #FF3B30FF))
-          (item #:identity 4 #:version 10
-            (frame (0.0 \(format(bottomY)); \(format(size.width)) \(format(colorHeight))))
+            (opacity \(format(opacity)))
+            (color #007AFFFF))
+          (item #:identity 3 #:version 9
+            (frame (\(format(barFrame.minX)) \(format(barFrame.minY)); \(format(barFrame.width)) \(format(barFrame.height))))
             (content-seed 7)
+            (opacity \(format(opacity)))
             (color #007AFFFF)))
         """
     }
@@ -275,8 +293,8 @@ private enum AndroidUIKitDemoViewFactory {
         return value == "1" || value == "true" || value == "TRUE"
     }
 
-    private static func format(_ value: UIKit.CGFloat) -> String {
-        String((Double(value) * 10.0).rounded() / 10.0)
+    private static func format(_ value: Double) -> String {
+        String((value * 10.0).rounded() / 10.0)
     }
 }
 #endif
