@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 9E031884FB9C9CDFD774AD0758E0F537 (SwiftUICore)
 
 public import Foundation
@@ -14,7 +14,185 @@ public import CoreText
 public import Accessibility
 #endif
 
-// TODO: AttributedStringTextStorage
+// MARK: - Text + AttributedString
+
+@available(OpenSwiftUI_v3_0, *)
+extension Text {
+
+    /// Creates a text view that displays styled attributed content.
+    ///
+    /// ### Format text by combining attributes and view modifiers
+    ///
+    /// Use this initializer to style text according to attributes found in the
+    /// specified
+    /// [AttributedString](https://developer.apple.com/documentation/Foundation/AttributedString).
+    /// Attributes in the attributed string take precedence over styles added by
+    /// view modifiers. For example, the attributed text in the following
+    /// example appears in blue, despite the use of the
+    /// ``View/foregroundColor(_:)`` modifier to use red throughout the enclosing
+    /// ``VStack``:
+    ///
+    ///     var content: AttributedString {
+    ///         var attributedString = AttributedString("Blue text")
+    ///         attributedString.foregroundColor = .blue
+    ///         return attributedString
+    ///     }
+    ///
+    ///     var body: some View {
+    ///         VStack {
+    ///             Text(content)
+    ///             Text("Red text")
+    ///         }
+    ///         .foregroundColor(.red)
+    ///     }
+    ///
+    /// ![A vertical stack of two text views, the top labeled Blue Text with a
+    /// blue font color, and the bottom labeled Red Text with a red font
+    /// color.](SwiftUI-Text-init-attributed.png)
+    ///
+    /// OpenSwiftUI combines text attributes with OpenSwiftUI modifiers whenever
+    /// possible. For example, the following listing creates text that is both
+    /// bold and red:
+    ///
+    ///     var content: AttributedString {
+    ///         var content = AttributedString("Some text")
+    ///         content.inlinePresentationIntent = .stronglyEmphasized
+    ///         return content
+    ///     }
+    ///
+    ///     var body: some View {
+    ///         Text(content).foregroundColor(Color.red)
+    ///     }
+    ///
+    /// ### Supported Foundation attributes
+    ///
+    /// An OpenSwiftUI ``Text`` view renders most of the styles defined by the
+    /// Foundation attribute
+    /// [inlinePresentationIntent](https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes/3796123-inlinePresentationIntent),
+    /// like the
+    /// [stronglyEmphasized](https://developer.apple.com/documentation/Foundation/InlinePresentationIntent/3746899-stronglyEmphasized)
+    /// value, which OpenSwiftUI presents as bold text.
+    ///
+    /// > Important: ``Text`` uses only a subset of the attributes defined in
+    /// [FoundationAttributes](https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes).
+    /// `Text` renders all
+    /// [InlinePresentationIntent](https://developer.apple.com/documentation/Foundation/InlinePresentationIntent)
+    /// attributes except for
+    /// [lineBreak](https://developer.apple.com/documentation/Foundation/InlinePresentationIntent/3787563-lineBreak)
+    /// and
+    /// [softBreak](https://developer.apple.com/documentation/Foundation/InlinePresentationIntent/3787564-softBreak).
+    /// It also respects
+    /// [writingDirection](https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes/writingDirection)
+    /// and renders the
+    /// [link](https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes/3764633-link)
+    /// attribute as a clickable link. `Text` ignores any other
+    /// Foundation-defined attributes in an attributed string.
+    ///
+    /// ### OpenSwiftUI attributes
+    ///
+    /// OpenSwiftUI also defines additional attributes in the attribute scope
+    /// ``AttributeScopes/OpenSwiftUIAttributes`` which you can access from an
+    /// attributed string's ``AttributeScopes/openSwiftUI`` property.
+    /// OpenSwiftUI attributes take precedence over equivalent attributes from
+    /// other frameworks, such as
+    /// [UIKitAttributes](https://developer.apple.com/documentation/Foundation/AttributeScopes/UIKitAttributes)
+    /// and
+    /// [AppKitAttributes](https://developer.apple.com/documentation/Foundation/AttributeScopes/AppKitAttributes).
+    ///
+    /// ### Markdown support
+    ///
+    /// You can create an `AttributedString` with Markdown syntax, which allows
+    /// you to style distinct runs within a `Text` view:
+    ///
+    ///     let content = try! AttributedString(
+    ///         markdown: "**Thank You!** Please visit our [website](http://example.com).")
+    ///
+    ///     var body: some View {
+    ///         Text(content)
+    ///     }
+    ///
+    /// The `**` syntax around "Thank You!" applies an
+    /// [inlinePresentationIntent](https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes/3796123-inlinePresentationIntent)
+    /// attribute with the value
+    /// [stronglyEmphasized](https://developer.apple.com/documentation/Foundation/InlinePresentationIntent/3746899-stronglyEmphasized).
+    /// OpenSwiftUI renders this as bold text, as described earlier. The link
+    /// syntax around "website" creates a
+    /// [link](https://developer.apple.com/documentation/Foundation/AttributeScopes/FoundationAttributes/3764633-link)
+    /// attribute, which `Text` styles to indicate it's a link.
+    ///
+    /// ![A text view that says Thank you. Please visit our website. The text
+    /// The view displays the words Thank you in a bold font, and the word
+    /// website styled to indicate it is a
+    /// link.](SwiftUI-Text-init-markdown.png)
+    ///
+    /// You can also use Markdown syntax in localized string keys, which means
+    /// you can write the above example without needing to explicitly create an
+    /// `AttributedString`:
+    ///
+    ///     var body: some View {
+    ///         Text("**Thank You!** Please visit our [website](https://example.com).")
+    ///     }
+    ///
+    /// In your app's strings files, use Markdown syntax to apply styling to the
+    /// app's localized strings. You also use this approach when you want to
+    /// perform automatic grammar agreement on localized strings, with the
+    /// `^[text](inflect:true)` syntax.
+    ///
+    /// For details about Markdown syntax support in OpenSwiftUI, see
+    /// ``Text/init(_:tableName:bundle:comment:)``.
+    ///
+    /// - Parameters:
+    ///   - attributedContent: An attributed string to style and display, in
+    ///     accordance with its attributes.
+    @_disfavoredOverload
+    public init(_ attributedContent: AttributedString) {
+        self.init(anyTextStorage: AttributedStringTextStorage(str: attributedContent))
+    }
+}
+
+// MARK: - AttributedStringTextStorage
+
+final class AttributedStringTextStorage: AnyTextStorage, @unchecked Sendable {
+    let str: AttributedString
+
+    init(str: AttributedString) {
+        self.str = str
+    }
+
+    override func resolve<T>(
+        into result: inout T,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) where T: ResolvedTextContainer {
+        result.append(
+            NSAttributedString(openSwiftUIAttributedString: str),
+            in: environment,
+            with: options
+        )
+    }
+
+    override func resolvesToEmpty(
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) -> Bool {
+        str.characters.isEmpty
+    }
+
+    override func isEqual(to other: AnyTextStorage) -> Bool {
+        guard let other = other as? AttributedStringTextStorage else {
+            return false
+        }
+        return str == other.str
+    }
+
+    override func isStyled(options: Text.ResolveOptions) -> Bool {
+        str.isStyled
+    }
+
+    override func allowsTypesettingLanguage() -> Bool {
+        true
+    }
+}
 
 // MARK: - AttributeScopes.OpenSwiftUIAttributes
 
