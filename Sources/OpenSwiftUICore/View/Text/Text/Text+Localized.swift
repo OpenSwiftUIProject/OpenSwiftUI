@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by AttributedStringTextStorage)
+//  Status: Complete
 //  ID: 8C53218A357EE528547B0855666BD2E5 (SwiftUICore)
 
 public import Foundation
@@ -97,6 +97,29 @@ extension Text {
                 bundle: bundle
             )
         )
+    }
+}
+
+@available(OpenSwiftUI_v1_0, *)
+extension Text {
+    func withInlinePresentationIntent(from attributes: [NSAttributedString.Key: Any]) -> Text {
+        guard let inlinePresentationIntent = attributes[.inlinePresentationIntent] as? UInt else {
+            return self
+        }
+        var text = self
+        if (inlinePresentationIntent & (1 << 0)) != 0 {
+            text.modifiers.append(.italic)
+        }
+        if (inlinePresentationIntent & (1 << 1)) != 0 {
+            text.modifiers.append(.anyTextModifier(BoldTextModifier()))
+        }
+        if (inlinePresentationIntent & (1 << 2)) != 0 {
+            text.modifiers.append(.anyTextModifier(MonospacedTextModifier()))
+        }
+        if (inlinePresentationIntent & (1 << 5)) != 0 {
+            text = text.strikethrough()
+        }
+        return text
     }
 }
 
@@ -369,10 +392,66 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
     ) -> (arguments: [CVarArg], isUniqueSizeVariant: Bool) {
         var isUniqueSizeVariant = environment.textSizeVariant == .regular
         let resolvedArguments = arguments.map { argument -> CVarArg in
-            // TODO: AttributedStringTextStorage
-            let resolved = argument.resolve(in: environment, idiom: idiom)
-            isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
-            return resolved.result
+            guard case let .text(text, token) = argument.storage,
+                  case let .anyTextStorage(anyTextStorage) = text.storage,
+                  let attributedStringStorage = anyTextStorage as? AttributedStringTextStorage,
+                  attributedStringStorage.str.foundation.morphology != nil else {
+                let resolved = argument.resolve(in: environment, idiom: idiom)
+                isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
+                return resolved.result
+            }
+            let locale = environment.locale
+            let formatArguments = arguments.map { argument in
+                argument.resolve(in: environment, idiom: idiom).result
+            }
+            let formattedAttributedString = withVaList(formatArguments) { arguments in
+                NSAttributedString(
+                    openSwiftUIAttributedStringWithFormat: attributedString,
+                    options: [],
+                    locale: environment.locale,
+                    arguments: arguments
+                )
+            }
+            guard let tokenRange = formattedAttributedString.string.range(of: token.string) else {
+                let resolved = argument.resolve(in: environment, idiom: idiom)
+                isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
+                return resolved.result
+            }
+            let nsTokenRange = NSRange(tokenRange, in: formattedAttributedString.string)
+            let tokenAttributes = formattedAttributedString.attributes(
+                at: nsTokenRange.location,
+                longestEffectiveRange: nil,
+                in: nsTokenRange
+            )
+
+            var resolvedStyle = style
+            var hasTrackingModifier = false
+            for modifier in text.withInlinePresentationIntent(from: tokenAttributes).modifiers.reversed() {
+                if case .tracking = modifier {
+                    hasTrackingModifier = true
+                }
+                modifier.modify(style: &resolvedStyle, environment: environment)
+            }
+
+            var properties = Text.ResolvedProperties()
+            var attributes = resolvedStyle.nsAttributes(
+                content: { String(attributedStringStorage.str.characters) },
+                environment: environment,
+                includeDefaultAttributes: true,
+                with: options,
+                properties: &properties
+            )
+            if hasTrackingModifier {
+                if let tracking = resolvedStyle.tracking {
+                    attributes[.kitTracking] = tracking
+                } else {
+                    attributes[.kitTracking] = nil
+                }
+            }
+            let result = NSMutableAttributedString(openSwiftUIAttributedString: attributedStringStorage.str)
+            result.addAttributes(attributes, range: NSRange(location: 0, length: result.length))
+            isUniqueSizeVariant = isUniqueSizeVariant || properties.features.contains(.isUniqueSizeVariant)
+            return result
         }
         return (resolvedArguments, isUniqueSizeVariant)
     }

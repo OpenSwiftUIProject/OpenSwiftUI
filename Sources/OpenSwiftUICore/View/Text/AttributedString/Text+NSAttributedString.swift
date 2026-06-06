@@ -26,6 +26,8 @@ extension NSAttributedString.Key {
 
     package static let _textScale: NSAttributedString.Key = .init("NSTextScale")
 
+    package static let kitTracking: NSAttributedString.Key = .init("CTTracking")
+
     #if canImport(CoreText)
     package static let _textScaleRatio: NSAttributedString.Key = .init(kCTTextScaleRatioAttributeName as String)
     #endif
