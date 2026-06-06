@@ -331,10 +331,216 @@ extension AttributeDynamicLookup {
     }
 }
 
+package typealias NSAttributedStringAttributes = [NSAttributedString.Key: Any]
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension AttributedString {
+    public func nsAttributedString(in environment: EnvironmentValues = .init()) -> NSAttributedString {
+        let attributedString = NSMutableAttributedString(self)
+        var properties = Text.ResolvedProperties()
+        attributedString.convertToPlatformStyled(
+            style: .init(),
+            environment: environment,
+            includeDefaultAttributes: false,
+            options: Text.ResolveOptions(for: environment),
+            properties: &properties
+        )
+        if environment.sensitiveContent {
+            properties.addSensitive()
+        }
+        return attributedString
+    }
+}
+
+extension NSMutableAttributedString {
+    func convertToPlatformStyled(
+        style: Text.Style,
+        environment: EnvironmentValues,
+        includeDefaultAttributes: Bool,
+        options: Text.ResolveOptions,
+        properties: inout Text.ResolvedProperties
+    ) {
+        enumerateAttributes(
+            in: NSRange(location: 0, length: length),
+            options: []
+        ) { attributes, range, _ in
+            var attributes = attributes
+            var style = style
+            attributes.transferAttributedStringStyles(to: &style)
+            let originalString = attributedSubstring(from: range).string
+            let platformAttributes = style.nsAttributes(
+                content: { originalString },
+                environment: environment,
+                includeDefaultAttributes: includeDefaultAttributes,
+                with: options,
+                properties: &properties
+            )
+            var mergedAttributes = attributes
+            mergedAttributes.merge(platformAttributes) { _, new in new }
+            setAttributes(mergedAttributes, range: range)
+            var resolvedString = originalString.caseConvertedIfNeeded(environment)
+            if environment.shouldRedactContent {
+                resolvedString = String(repeating: "􀮷", count: resolvedString.count)
+            }
+            replaceCharacters(in: range, with: resolvedString)
+        }
+    }
+}
+
+@available(OpenSwiftUI_v6_0, *)
+extension Dictionary where Key == NSAttributedString.Key, Value == Any {
+    fileprivate mutating func transferAttributedStringStyles(to style: inout Text.Style) {
+        let fontKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.FontAttribute.name)
+        if let font = self[fontKey] as? Font {
+            style.baseFont = .explicit(font)
+            self[fontKey] = nil
+        }
+
+        let foregroundColorKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.ForegroundColorAttribute.name)
+        if let foregroundColor = self[foregroundColorKey] as? Color {
+            style.color = .explicit(AnyShapeStyle(foregroundColor))
+            self[foregroundColorKey] = nil
+        }
+
+        let backgroundColorKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.BackgroundColorAttribute.name)
+        if let backgroundColor = self[backgroundColorKey] as? Color {
+            style.backgroundColor = backgroundColor
+            self[backgroundColorKey] = nil
+        }
+
+        let strikethroughStyleKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.StrikethroughStyleAttribute.name)
+        if let strikethroughStyle = self[strikethroughStyleKey] as? Text.LineStyle {
+            style.strikethrough = .explicit(strikethroughStyle)
+            self[strikethroughStyleKey] = nil
+        }
+
+        let strikethroughColorKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.StrikethroughColorAttribute.name)
+        if let strikethroughColor = self[strikethroughColorKey] as? Color {
+            switch style.strikethrough {
+            case .implicit, .default:
+                style.strikethrough = .explicit(.init(color: strikethroughColor))
+            case .explicit:
+                break
+            }
+            self[strikethroughColorKey] = nil
+        }
+
+        let underlineStyleKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.UnderlineStyleAttribute.name)
+        if let underlineStyle = self[underlineStyleKey] as? Text.LineStyle {
+            style.underline = .explicit(underlineStyle)
+            self[underlineStyleKey] = nil
+        }
+
+        let underlineColorKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.UnderlineColorAttribute.name)
+        if let underlineColor = self[underlineColorKey] as? Color {
+            switch style.underline {
+            case .implicit, .default:
+                style.underline = .explicit(.init(color: underlineColor))
+            case .explicit:
+                break
+            }
+            self[underlineColorKey] = nil
+        }
+
+        let encapsulationKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.EncapsulationAttribute.name)
+        if let encapsulation = self[encapsulationKey] as? Text.Encapsulation {
+            style.encapsulation = encapsulation
+            self[encapsulationKey] = nil
+        }
+
+        let kerningKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.KerningAttribute.name)
+        if let kern = self[kerningKey] as? CGFloat {
+            style.kerning = kern
+            self[kerningKey] = nil
+        }
+
+        let trackingKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.TrackingAttribute.name)
+        if let tracking = self[trackingKey] as? CGFloat {
+            style.tracking = tracking
+            self[trackingKey] = nil
+        }
+
+        let baselineOffsetKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.BaselineOffsetAttribute.name)
+        if let baselineOffset = self[baselineOffsetKey] as? CGFloat {
+            style.baselineOffset = baselineOffset
+            self[baselineOffsetKey] = nil
+        }
+
+        #if canImport(CoreText)
+        let glyphInfoKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.GlyphInfoAttribute.name)
+        if let glyphInfo = self[glyphInfoKey],
+           CFGetTypeID(glyphInfo as AnyObject) == CTGlyphInfoGetTypeID() {
+            let glyphInfo: CTGlyphInfo = glyphInfo as! CTGlyphInfo
+            style.glyphInfo = glyphInfo
+            self[glyphInfoKey] = nil
+        }
+        #endif
+
+        let textScaleKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.TextScaleAttribute.name)
+        if let textScale = self[textScaleKey] as? Text.Scale {
+            style.scale = textScale
+            self[textScaleKey] = nil
+        }
+
+        let superscriptKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.SuperscriptAttribute.name)
+        if self[superscriptKey] is Text.Superscript {
+            style.superscript = .default
+            self[superscriptKey] = nil
+        }
+
+        let customAttributesKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.CustomContainerAttribute.name)
+        if let customAttributes = self[customAttributesKey] as? Text.CustomAttributes {
+            style.customAttributes = customAttributes.attributes
+            self[customAttributesKey] = nil
+        }
+
+        let fontModifiersKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.FontModifiersAttribute.name)
+        if let fontModifiers = self[fontModifiersKey] as? [AnyFontModifier] {
+            style.fontModifiers.append(contentsOf: fontModifiers)
+            self[fontModifiersKey] = nil
+        }
+
+        let inlinePresentationIntentKey = NSAttributedString.Key.inlinePresentationIntent
+        if let inlinePresentationIntent = self[inlinePresentationIntentKey] as? UInt {
+            if (inlinePresentationIntent & (1 << 0)) != 0 {
+                style.fontModifiers.append(.static(Font.ItalicModifier.self))
+            }
+            if (inlinePresentationIntent & (1 << 1)) != 0 {
+                style.fontModifiers.append(.static(Font.BoldModifier.self))
+            }
+            if (inlinePresentationIntent & (1 << 2)) != 0 {
+                style.fontModifiers.append(.static(Font.MonospacedModifier.self))
+            }
+            if (inlinePresentationIntent & (1 << 5)) != 0 {
+                style.strikethrough = .explicit(.single)
+            }
+            self[inlinePresentationIntentKey] = nil
+        }
+
+        if style.typesettingConfiguration.language == .automatic {
+            let languageIdentifierKey = NSAttributedString.Key.languageIdentifier
+            if let languageIdentifier = self[languageIdentifierKey] as? String {
+                style.typesettingConfiguration.language = .explicit(Locale.Language(identifier: languageIdentifier))
+            }
+        }
+
+        #if canImport(CoreText)
+        let adaptiveImageGlyphKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.AdaptiveImageGlyphAttribute.name)
+        if let adaptiveImageGlyph = self[adaptiveImageGlyphKey] as? AttributedString.AdaptiveImageGlyph {
+            style.adaptiveImageGlyph = adaptiveImageGlyph
+            self[adaptiveImageGlyphKey] = nil
+        }
+        #endif
+    }
+}
+
 // FIXME
 @available(OpenSwiftUI_v1_0, *)
 extension Text {
     package struct Superscript: Hashable, Sendable {
+        package static let `default`: Text.Superscript = .init(0)
+
         package var value: Int
 
         package init(_ value: Int) {
@@ -344,8 +550,19 @@ extension Text {
 
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)
-    public struct CustomAttributes: Hashable, Sendable {
-        @_spi(Private)
+    public struct CustomAttributes: @unchecked Sendable, Hashable {
         public init() {}
+
+        package var attributes: [TextAttributeModifierBase] = []
+    }
+}
+
+package class TextAttributeModifierBase: AnyTextModifier, Hashable {
+    package static func == (lhs: TextAttributeModifierBase, rhs: TextAttributeModifierBase) -> Bool {
+        lhs === rhs
+    }
+
+    package func hash(into hasher: inout Hasher) {
+        _openSwiftUIUnimplementedWarning()
     }
 }
