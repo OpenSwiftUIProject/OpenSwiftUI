@@ -138,6 +138,11 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
     override public final func linkURL(_ parameters: LinkURLParameters) -> URL? {
         _openSwiftUIUnimplementedFailure()
     }
+
+    public override func transformingEquivalentAttributes(_ attributedString: AttributedString) -> AttributedString {
+        _openSwiftUIUnimplementedWarning()
+        return attributedString
+    }
 }
 
 @_spi(ForOpenSwiftUIOnly)

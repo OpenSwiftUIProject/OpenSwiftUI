@@ -93,7 +93,20 @@ extension AttributedString {
 
 extension NSAttributedString {
     convenience package init(openSwiftUIAttributedString attributedString: AttributedString) {
-        _openSwiftUIUnimplementedFailure()
+        let transformedAttributedString = CoreGlue2.shared.transformingEquivalentAttributes(attributedString)
+        do {
+            let nsAttributedString = try NSAttributedString(
+                transformedAttributedString,
+                including: \.openSwiftUI
+            )
+            self.init(attributedString: nsAttributedString)
+        } catch {
+            Log.runtimeIssues(
+                "AttributedString %@ has invalid attributes. A plain string will be used instead.",
+                [attributedString.description]
+            )
+            self.init(string: String(attributedString.characters))
+        }
     }
 
     package var isDynamic: Bool {
