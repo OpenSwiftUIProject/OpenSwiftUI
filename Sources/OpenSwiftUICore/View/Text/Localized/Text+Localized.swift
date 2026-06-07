@@ -1001,24 +1001,6 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
             arguments.append(argument)
         }
 
-        #if canImport(Darwin)
-        /// Appends the localized string resource to a string interpolation.
-        ///
-        /// Don't call this method directly; it's used by the compiler when
-        /// interpreting string interpolations.
-        ///
-        /// - Parameters:
-        ///   - value: The localized string resource to append.
-        @available(OpenSwiftUI_v4_0, *)
-        @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
-        @_semantics("swiftui.localized.appendInterpolation_@_specifier")
-        public mutating func appendInterpolation(_ resource: LocalizedStringResource) {
-            let argument = LocalizedStringKey.FormatArgument(storage: .localizedStringResource(resource))
-            key.append("%@")
-            arguments.append(argument)
-        }
-        #endif
-
         @available(*, unavailable, message: "Unsupported type for interpolation, see LocalizedStringKey.StringInterpolation for supported types.")
         public mutating func appendInterpolation<T>(_ view: T) where T: View {
             _openSwiftUIUnreachableCode()
@@ -1085,17 +1067,6 @@ extension LocalizedStringKey: Sendable {}
 
 @available(*, unavailable)
 extension LocalizedStringKey.FormatArgument: Sendable {}
-
-#if canImport(Darwin)
-extension LocalizedStringResource {
-    // FIXME
-    func resolve(in environment: EnvironmentValues) -> AttributedString {
-        var resource = self
-        resource.locale = environment.locale
-        return AttributedString(localized: resource)
-    }
-}
-#endif
 
 @_alwaysEmitIntoClient
 internal var int64Specifier: String {
