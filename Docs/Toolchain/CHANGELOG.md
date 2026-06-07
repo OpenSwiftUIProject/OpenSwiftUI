@@ -118,6 +118,52 @@ Prefer per-invocation flags in CI when the workflow owns the command line. Use
 the global sentinel only when the command path is hard to thread through, such
 as nested package or generated workspace invocations.
 
+### iOS SwiftPM Test Runner Launch
+
+With Xcode 26.3, Swift 6.2.4, and the iOS 18.5 simulator, arm64 SwiftPM package
+test runners can fail before any test case runs:
+
+```text
+Failed to install or launch the test runner.
+Underlying Error: Process spawn via launchd failed.
+Underlying Error: Codesigning issue.
+```
+
+Local validation showed the test bundle itself passed `codesign --verify`, but
+the arm64 simulator launch path still failed with `CoreSimulator.LaunchdSimError`
+code 162. Forcing the iOS simulator destination to x86_64 avoids that launch
+path and lets the tests execute:
+
+```sh
+xcodebuild test \
+  -destination "platform=iOS Simulator,OS=18.5,name=iPhone 16 Pro,arch=x86_64" \
+  ONLY_ACTIVE_ARCH=YES
+```
+
+Apply this to both `xcodebuild build` and `xcodebuild test` steps so the built
+test bundles match the architecture used by the test runner.
+
+After this workaround, the compatibility test runner launches and reaches real
+test execution. The remaining local failures were the
+`ChangedBodyPropertyCompatibilityTests` expectations:
+
+- `zeroPropertyView()` expected
+  `ChangedBodyPropertyCompatibilityTests.ContentView: @self changed.`
+- `propertyView()` expected
+  `ChangedBodyPropertyCompatibilityTests.ContentView: @self changed.`
+- `statePropertyView()` expected
+  `ChangedBodyPropertyCompatibilityTests.ContentView: @self, @identity, _name changed.`
+
+In all three cases, `verifyLog(expected:)` executed and compared
+`entries.last` against the expected message, but `entries.last` was `nil`.
+That makes these ordinary compatibility test failures, not package resolution,
+macro prebuilt, signing, or simulator launch failures.
+
+Since x86_64 is only being used as a CI workaround for the Xcode 26.3 / iOS
+18.5 arm64 launch issue, skip `ChangedBodyPropertyCompatibilityTests` under
+x86_64 rather than treating OSLogStore behavior on that workaround path as a
+release-blocking regression.
+
 ## Swift 6.1
 
 OpenSwiftUI PR: [#276](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/276)

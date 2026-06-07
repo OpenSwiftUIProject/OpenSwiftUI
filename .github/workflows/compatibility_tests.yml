@@ -102,13 +102,17 @@ jobs:
         run: |
           set -o pipefail
           # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+          # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
+          # runners with CoreSimulator codesigning errors; force the x86_64
+          # simulator slice until that launch path is fixed.
           NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
             -only-testing:OpenSwiftUICompatibilityTests \
             -skipMacroValidation \
             -skipPackagePluginValidation \
+            ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -116,13 +120,16 @@ jobs:
         run: |
           set -o pipefail
           # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+          # See the OpenSwiftUI iOS compatibility step above: force x86_64 to
+          # avoid the arm64 package test runner launch/codesigning failure.
           NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
             -only-testing:OpenSwiftUICompatibilityTests \
             -skipMacroValidation \
             -skipPackagePluginValidation \
+            ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
