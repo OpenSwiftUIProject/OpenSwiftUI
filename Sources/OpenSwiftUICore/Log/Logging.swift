@@ -162,7 +162,6 @@ package enum Log {
     @usableFromInline
     package static var runtimeIssuesLog: OSLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
-    @_transparent
     @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
