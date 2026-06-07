@@ -93,6 +93,7 @@ extension AttributedString {
 
 extension NSAttributedString {
     convenience package init(openSwiftUIAttributedString attributedString: AttributedString) {
+        #if canImport(Darwin)
         let transformedAttributedString = CoreGlue2.shared.transformingEquivalentAttributes(attributedString)
         do {
             let nsAttributedString = try NSAttributedString(
@@ -107,6 +108,9 @@ extension NSAttributedString {
             )
             self.init(string: String(attributedString.characters))
         }
+        #else
+        self.init(string: String(attributedString.characters))
+        #endif
     }
 
     package var isDynamic: Bool {

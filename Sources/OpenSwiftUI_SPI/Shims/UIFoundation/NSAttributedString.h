@@ -25,6 +25,30 @@ typedef OPENSWIFTUI_OPTIONS(NSInteger, NSUnderlineStyle) {
     NSUnderlineStyleByWord API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0))            = 0x8000
 } API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0));
 
+#if !OPENSWIFTUI_TARGET_OS_DARWIN
+
+typedef unsigned long NSUInteger;
+
+// Support for Markdown:
+
+// Presentation intents correspond to the Markdown constructs applied to a certain range.
+// The system may supply a default presentation for these intents in certain contexts.
+
+// Inline presentation intents.
+// For use with NSInlinePresentationAttributeName.
+typedef OPENSWIFTUI_OPTIONS(NSUInteger, NSInlinePresentationIntent) {
+    NSInlinePresentationIntentEmphasized                   = 1 << 0,
+    NSInlinePresentationIntentStronglyEmphasized           = 1 << 1,
+    NSInlinePresentationIntentCode                         = 1 << 2,
+    NSInlinePresentationIntentStrikethrough                = 1 << 5,
+    NSInlinePresentationIntentSoftBreak                    = 1 << 6,
+    NSInlinePresentationIntentLineBreak                    = 1 << 7,
+    NSInlinePresentationIntentInlineHTML                   = 1 << 8,
+    NSInlinePresentationIntentBlockHTML                    = 1 << 9
+} API_AVAILABLE(macos(12.0), ios(15.0), watchos(8.0), tvos(15.0)) OPENSWIFTUI_SWIFT_NAME(InlinePresentationIntent);
+
+#endif
+
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #import <Foundation/Foundation.h>

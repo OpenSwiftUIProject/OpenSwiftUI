@@ -392,6 +392,7 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
     ) -> (arguments: [CVarArg], isUniqueSizeVariant: Bool) {
         var isUniqueSizeVariant = environment.textSizeVariant == .regular
         let resolvedArguments = arguments.map { argument -> CVarArg in
+            #if canImport(Darwin)
             guard case let .text(text, token) = argument.storage,
                   case let .anyTextStorage(anyTextStorage) = text.storage,
                   let attributedStringStorage = anyTextStorage as? AttributedStringTextStorage,
@@ -452,6 +453,11 @@ public struct LocalizedStringKey: Equatable, ExpressibleByStringInterpolation {
             result.addAttributes(attributes, range: NSRange(location: 0, length: result.length))
             isUniqueSizeVariant = isUniqueSizeVariant || properties.features.contains(.isUniqueSizeVariant)
             return result
+            #else
+            let resolved = argument.resolve(in: environment, idiom: idiom)
+            isUniqueSizeVariant = isUniqueSizeVariant || resolved.exact
+            return resolved.result
+            #endif
         }
         return (resolvedArguments, isUniqueSizeVariant)
     }

@@ -287,11 +287,3 @@ private final class FormatStyleStorage: AnyTextStorage, @unchecked Sendable {
         false
     }
 }
-
-#if !canImport(Darwin)
-extension NSAttributedString {
-    fileprivate convenience init(_ attributedString: AttributedString) {
-        self.init(string: String(attributedString))
-    }
-}
-#endif

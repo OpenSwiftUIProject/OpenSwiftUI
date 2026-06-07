@@ -218,7 +218,7 @@ extension Text {
         internal var scale: Text.Scale?
         internal var superscript: Text.Superscript?
         internal var typesettingConfiguration: TypesettingConfiguration = .init()
-        internal var customAttributes: [TextAttributeModifierBase]
+        internal var customAttributes: [TextAttributeModifierBase] = []
         #if canImport(Darwin)
         internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
         #endif

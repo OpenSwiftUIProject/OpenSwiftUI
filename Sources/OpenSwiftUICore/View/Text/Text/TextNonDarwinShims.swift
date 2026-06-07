@@ -3,7 +3,8 @@
 //  OpenSwiftUICore
 
 #if !canImport(Darwin)
-package import Foundation
+public import Foundation
+public import UIFoundation_Private
 
 package class NSParagraphStyle {}
 package class NSMutableParagraphStyle {}
@@ -23,4 +24,46 @@ package class NSTextLineFragment: NSObject {
     private(set) package var attributedString: NSAttributedString
     private var range: NSRange
 }
+
+extension NSAttributedString {
+    public convenience init(_ attributedString: AttributedString) {
+        self.init(string: String(attributedString))
+    }
+}
+
+extension NSAttributedString.Key {
+    public static let inlinePresentationIntent: NSAttributedString.Key = .init("NSInlinePresentationIntent")
+
+    public static let languageIdentifier: NSAttributedString.Key = .init("NSLanguage")
+}
+
+extension InlinePresentationIntent: @retroactive Hashable {
+    public func hash(into hasher: inout Hasher) {
+        rawValue.hash(into: &hasher)
+    }
+}
+
+extension AttributeScopes.FoundationAttributes {
+    public var inlinePresentationIntent: AttributeScopes.FoundationAttributes.InlinePresentationIntentAttribute {
+        get {
+            _openSwiftUIUnreachableCode()
+        }
+    }
+
+    @frozen public enum InlinePresentationIntentAttribute: CodableAttributedStringKey {
+        public typealias Value = InlinePresentationIntent
+        public static let name: String = "NSInlinePresentationIntent"
+
+        public static func decode(from decoder: any Decoder) throws -> Value {
+            let container = try decoder.singleValueContainer()
+            return Value(rawValue: try container.decode(Value.RawValue.self))
+        }
+
+        public static func encode(_ value: Value, to encoder: any Encoder) throws {
+            var container = encoder.singleValueContainer()
+            try container.encode(value.rawValue)
+        }
+    }
+}
+
 #endif
