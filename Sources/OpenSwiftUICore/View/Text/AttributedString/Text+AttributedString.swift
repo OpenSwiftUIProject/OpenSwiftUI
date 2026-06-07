@@ -714,35 +714,3 @@ extension Dictionary where Key == NSAttributedString.Key, Value == Any {
         #endif
     }
 }
-
-// FIXME
-@available(OpenSwiftUI_v1_0, *)
-extension Text {
-    package struct Superscript: Hashable, Sendable {
-        package static let `default`: Text.Superscript = .init(0)
-
-        package var value: Int
-
-        package init(_ value: Int) {
-            self.value = value
-        }
-    }
-
-    @_spi(Private)
-    @available(OpenSwiftUI_v5_0, *)
-    public struct CustomAttributes: @unchecked Sendable, Hashable {
-        public init() {}
-
-        package var attributes: [TextAttributeModifierBase] = []
-    }
-}
-
-package class TextAttributeModifierBase: AnyTextModifier, Hashable {
-    package static func == (lhs: TextAttributeModifierBase, rhs: TextAttributeModifierBase) -> Bool {
-        lhs === rhs
-    }
-
-    package func hash(into hasher: inout Hasher) {
-        _openSwiftUIUnimplementedWarning()
-    }
-}
