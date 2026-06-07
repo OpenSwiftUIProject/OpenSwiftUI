@@ -1,5 +1,5 @@
 {
-  "originHash" : "0f8a072585da3899cfbf7b80693774376f747e63c0805d25e6f792f78ccbdfd1",
+  "originHash" : "41017ad3153c643b413e18cfea9f01329068bcfa5b7c9d3847007c4d59856986",
   "pins" : [
     {
       "identity" : "equatable",
@@ -76,10 +76,10 @@
     {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/swift-snapshot-testing",
+      "location" : "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git",
       "state" : {
-        "revision" : "6456a4fd141fa6ae4aedfb433987038293220cfd",
-        "version" : "1.18.9-osui"
+        "revision" : "ad5e3190cc63dc288f28546f9c6827efc1e9d495",
+        "version" : "1.19.2"
       }
     },
     {
