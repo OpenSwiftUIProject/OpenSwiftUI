@@ -9,6 +9,7 @@
 public import Foundation
 import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
+import UIFoundation_Private
 
 // MARK: - Text + LocalizedStringKey
 
@@ -106,17 +107,18 @@ extension Text {
         guard let inlinePresentationIntent = attributes[.inlinePresentationIntent] as? UInt else {
             return self
         }
+        let intent = InlinePresentationIntent(rawValue: inlinePresentationIntent)
         var text = self
-        if (inlinePresentationIntent & (1 << 0)) != 0 {
+        if intent.contains(.emphasized) {
             text.modifiers.append(.italic)
         }
-        if (inlinePresentationIntent & (1 << 1)) != 0 {
+        if intent.contains(.stronglyEmphasized) {
             text.modifiers.append(.anyTextModifier(BoldTextModifier()))
         }
-        if (inlinePresentationIntent & (1 << 2)) != 0 {
+        if intent.contains(.code) {
             text.modifiers.append(.anyTextModifier(MonospacedTextModifier()))
         }
-        if (inlinePresentationIntent & (1 << 5)) != 0 {
+        if intent.contains(.strikethrough) {
             text = text.strikethrough()
         }
         return text

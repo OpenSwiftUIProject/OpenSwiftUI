@@ -13,6 +13,7 @@ public import CoreText
 #if canImport(Accessibility)
 public import Accessibility
 #endif
+import UIFoundation_Private
 
 // MARK: - Text + AttributedString
 
@@ -681,16 +682,17 @@ extension Dictionary where Key == NSAttributedString.Key, Value == Any {
 
         let inlinePresentationIntentKey = NSAttributedString.Key.inlinePresentationIntent
         if let inlinePresentationIntent = self[inlinePresentationIntentKey] as? UInt {
-            if (inlinePresentationIntent & (1 << 0)) != 0 {
+            let intent = InlinePresentationIntent(rawValue: inlinePresentationIntent)
+            if intent.contains(.emphasized) {
                 style.fontModifiers.append(.static(Font.ItalicModifier.self))
             }
-            if (inlinePresentationIntent & (1 << 1)) != 0 {
+            if intent.contains(.stronglyEmphasized) {
                 style.fontModifiers.append(.static(Font.BoldModifier.self))
             }
-            if (inlinePresentationIntent & (1 << 2)) != 0 {
+            if intent.contains(.code) {
                 style.fontModifiers.append(.static(Font.MonospacedModifier.self))
             }
-            if (inlinePresentationIntent & (1 << 5)) != 0 {
+            if intent.contains(.strikethrough) {
                 style.strikethrough = .explicit(.single)
             }
             self[inlinePresentationIntentKey] = nil
