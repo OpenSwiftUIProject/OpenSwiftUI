@@ -76,7 +76,7 @@ struct DyldPrivateTests {
         #if targetEnvironment(macCatalyst)
         #expect(platform == .MACCATALYST)
         #elseif targetEnvironment(simulator)
-        #if os(iOS) || os(visionOS)
+        #if os(iOS)
         #expect(platform == .IOSSIMULATOR)
         #elseif os(tvOS)
         #expect(platform == .TVOSSIMULATOR)
@@ -88,7 +88,7 @@ struct DyldPrivateTests {
         preconditionFailure("Unsupported Darwin simulator platform")
         #endif
         #else
-        #if os(iOS) || os(visionOS)
+        #if os(iOS)
         #expect(platform == .IOS)
         #elseif os(macOS)
         #expect(platform == .MACOS)

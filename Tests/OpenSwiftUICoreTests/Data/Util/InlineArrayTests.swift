@@ -369,7 +369,7 @@ struct ArrayWith2InlineTests {
     }
 
     // NOTE: iOS and some platform do not support exit test. Use varibale to enable/disable such test case in the future
-    #if !os(iOS) && os(visionOS)
+    #if !os(iOS) && !os(visionOS)
 
     // MARK: - Edge Cases and Error Conditions
 
