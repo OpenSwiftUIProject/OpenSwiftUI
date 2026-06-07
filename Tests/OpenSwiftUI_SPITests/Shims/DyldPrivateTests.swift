@@ -19,10 +19,10 @@ struct DyldPrivateTests {
         )) == true)
 
         #if os(iOS) || os(visionOS)
-        if #unavailable(iOS 19) {
+        if #unavailable(iOS 26) {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DYLD_IOS_VERSION._19_0.rawValue,
+                version: DYLD_IOS_VERSION._26_0.rawValue,
             )) == false)
             if #unavailable(iOS 18) {
                 #expect(dyld_program_sdk_at_least(.init(
@@ -38,14 +38,14 @@ struct DyldPrivateTests {
         } else {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DYLD_IOS_VERSION._19_0.rawValue,
+                version: DYLD_IOS_VERSION._26_0.rawValue,
             )) == true)
         }
         #elseif os(macOS)
-        if #unavailable(macOS 16) {
+        if #unavailable(macOS 26) {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DYLD_MACOSX_VERSION._16_0.rawValue,
+                version: DYLD_MACOSX_VERSION._26_0.rawValue,
             )) == false)
             if #unavailable(macOS 15) {
                 #expect(dyld_program_sdk_at_least(.init(
@@ -61,7 +61,7 @@ struct DyldPrivateTests {
         } else {
             #expect(dyld_program_sdk_at_least(.init(
                 platform: dyld_get_active_platform(),
-                version: DYLD_MACOSX_VERSION._16_0.rawValue,
+                version: DYLD_MACOSX_VERSION._26_0.rawValue,
             )) == true)
         }
         #else
