@@ -44,8 +44,26 @@ struct SemanticsTests {
         // This is currently tied with the toolchain's xctest binary
         #if os(iOS) || os(visionOS)
         #if compiler(<6.2) && compiler(>=6.1)
-        // Path: /Applications/Xcode-16.3.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // Path: /Applications/Xcode-16.4.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
         // SDK version: 18.4
+        // min version: 14.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == false)
+        #expect(isDeployedOnOrAfter(.v4) == false)
+        #expect(isDeployedOnOrAfter(.v5) == false)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #elseif compiler(>=6.2) && compiler(<6.3)
+        // Path: /Applications/Xcode-26.3.0.app/Contents/Developer/Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: 26.2
         // min version: 14.0
         #expect(isLinkedOnOrAfter(.v1) == true)
         #expect(isLinkedOnOrAfter(.v2) == true)
@@ -64,8 +82,26 @@ struct SemanticsTests {
         #endif
         #elseif os(macOS)
         #if compiler(<6.2) && compiler(>=6.1)
-        // Path: /Applications/Xcode-16.3.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // Path: /Applications/Xcode-16.4.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
         // SDK version: 15.4
+        // min version: 14.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == true)
+        #expect(isDeployedOnOrAfter(.v4) == true)
+        #expect(isDeployedOnOrAfter(.v5) == true)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #elseif compiler(>=6.2) && compiler(<6.3)
+        // Path: /Applications/Xcode-26.3.0.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: 26.2
         // min version: 14.0
         #expect(isLinkedOnOrAfter(.v1) == true)
         #expect(isLinkedOnOrAfter(.v2) == true)
