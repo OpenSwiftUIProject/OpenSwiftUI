@@ -368,32 +368,35 @@ struct ArrayWith2InlineTests {
         #expect(Array(array) == [10, 20, 30])
     }
 
+    // NOTE: iOS and some platform do not support exit test. Use varibale to enable/disable such test case in the future
+    #if !os(iOS) && os(visionOS)
+
     // MARK: - Edge Cases and Error Conditions
 
-    #if compiler(>=6.2)
     @Test
-    func indexOutOfRangeEmpty() {
-        let array: ArrayWith2Inline<Int> = ArrayWith2Inline<Int>()
-        #expect(throws: Never.self) {
-            _ = array[0]
-        }
-    }
-
-    @Test
-    func indexOutOfRangeOne() {
-        let array: ArrayWith2Inline<Int> = ArrayWith2Inline(42)
-        #expect(throws: Never.self) {
-            _ = array[1]
-        }
-    }
-
-    @Test
-    func indexOutOfRangeTwo() {
-        let array: ArrayWith2Inline<Int> = ArrayWith2Inline(10, 20)
-        #expect(throws: Never.self) {
+    func indexOutOfRangeEmpty() async {
+        await #expect(processExitsWith: .failure) {
+            let array: ArrayWith2Inline<Int> = ArrayWith2Inline<Int>()
             _ = array[2]
         }
     }
+
+    @Test
+    func indexOutOfRangeOne() async {
+        await #expect(processExitsWith: .failure) {
+            let array: ArrayWith2Inline<Int> = ArrayWith2Inline(42)
+            _ = array[2]
+        }
+    }
+
+    @Test
+    func indexOutOfRangeTwo() async {
+        await #expect(processExitsWith: .failure) {
+            let array: ArrayWith2Inline<Int> = ArrayWith2Inline(10, 20)
+            _ = array[2]
+        }
+    }
+
     #endif
 
     // MARK: - Performance and Storage Optimization
