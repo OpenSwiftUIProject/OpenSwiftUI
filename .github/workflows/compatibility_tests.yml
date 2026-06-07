@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.4"]
+        xcode-version: ["26.3"]
         release: [2024]
     # Limit to self-hosted to reduce action cost
     runs-on:
@@ -63,7 +63,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.4"]
+        xcode-version: ["26.3"]
         release: [2024]
         ios-version: ["18.5"]
         include:
