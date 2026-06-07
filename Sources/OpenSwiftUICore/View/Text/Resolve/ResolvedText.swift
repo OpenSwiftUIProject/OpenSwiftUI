@@ -8,6 +8,9 @@
 
 package import Foundation
 package import UIFoundation_Private
+#if canImport(CoreText)
+import CoreText
+#endif
 
 // MARK: - ResolvedTextContainer
 
@@ -207,15 +210,17 @@ extension Text {
         internal var encapsulation: Text.Encapsulation?
         internal var speech: AccessibilitySpeechAttributes?
         package var accessibility: AccessibilityTextAttributes?
-//        internal var glyphInfo: CTGlyphInfo?
+        #if canImport(CoreText)
+        internal var glyphInfo: CTGlyphInfo?
+        #endif
 //        internal var shadow: TextShadowModifier?
 //        internal var transition: TextTransitionModifier?
-//        internal var scale: Text.Scale?
-//        internal var superscript: Text.Superscript?
+        internal var scale: Text.Scale?
+        internal var superscript: Text.Superscript?
         internal var typesettingConfiguration: TypesettingConfiguration = .init()
-//        internal var customAttributes: [TextAttributeModifierBase]
+        internal var customAttributes: [TextAttributeModifierBase] = []
         #if canImport(Darwin)
-//        internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
+        internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
         #endif
         package var clearedFontModifiers: Set<ObjectIdentifier> = []
 
