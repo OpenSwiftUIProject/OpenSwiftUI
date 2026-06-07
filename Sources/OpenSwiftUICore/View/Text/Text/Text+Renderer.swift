@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Empty
+//  Status: WIP
 //  ID: 7F70C8A76EE0356881289646072938C0 (SwiftUICore)
 
 #if canImport(CoreText)
@@ -13,7 +13,7 @@ import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
 import UIFoundation_Private
 
-// TODO
+// TODO: TextRenderer
 
 /// A proxy for a text view that custom text renderers use.
 @available(OpenSwiftUI_v6_0, *)
@@ -32,9 +32,96 @@ public struct TextProxy {
     }
 }
 
+// TODO: View + textRenderer
+
+// MARK: - TextAttribute
+
 /// A value that you can attach to text views and that text renderers can query.
 @available(OpenSwiftUI_v5_0, *)
-public protocol TextAttribute {}
+public protocol TextAttribute: Hashable {}
+
+// MARK: - Text + customAttribute
+
+@available(OpenSwiftUI_v5_0, *)
+extension Text {
+    /// Adds a custom attribute to the text view.
+    ///
+    /// Only one attribute of each type may be attached to each text
+    /// view, with inner attributes taking precedence.
+    ///
+    /// - Parameter value: The attribute to attach.
+    ///
+    /// - Returns: A version of the text view with `value` attached.
+    public func customAttribute<T>(_ value: T) -> Text where T: TextAttribute {
+        modified(with: .anyTextModifier(TextAttributeModifier(value: value)))
+    }
+}
+
+// MARK: - TextAttributeModifierBase
+
+package class TextAttributeModifierBase: AnyTextModifier, Hashable {
+    package func hash(into hasher: inout Hasher) {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
+    package static func == (lhs: TextAttributeModifierBase, rhs: TextAttributeModifierBase) -> Bool {
+        lhs.isEqual(to: rhs)
+    }
+}
+
+// MARK: - TextAttributeModifier
+
+private final class TextAttributeModifier<Value>: TextAttributeModifierBase where Value: TextAttribute {
+    let attribute: Value
+
+    init(value: Value) {
+        attribute = value
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.customAttributes.append(self)
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? TextAttributeModifier<Value> else {
+            return false
+        }
+        return attribute == other.attribute
+    }
+
+    override package func hash(into hasher: inout Hasher) {
+        attribute.hash(into: &hasher)
+    }
+}
+
+// MARK: Text + CustomAttributes
+
+@_spi(Private)
+@available(OpenSwiftUI_v5_0, *)
+extension Text {
+    public struct CustomAttributes: @unchecked Sendable, Hashable {
+        var attributes: [TextAttributeModifierBase] = []
+
+        public init() {
+            _openSwiftUIEmptyStub()
+        }
+
+        public mutating func add<T>(_ value: T) where T: TextAttribute {
+            attributes.append(TextAttributeModifier(value: value))
+        }
+
+        public subscript<T>(_ key: T.Type) -> T? where T: TextAttribute {
+            for attribute in attributes {
+                if let modifier = attribute as? TextAttributeModifier<T> {
+                    return modifier.attribute
+                }
+            }
+            return nil
+        }
+    }
+}
+
+// TODO: _TextRendererViewModifier
 
 // MARK: - TextRendererBoxBase
 
