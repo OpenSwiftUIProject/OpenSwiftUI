@@ -3,6 +3,7 @@
 //  OpenSwiftUICoreTests
 
 import Foundation
+import OpenCoreGraphicsShims
 import OpenSwiftUICore
 import Testing
 

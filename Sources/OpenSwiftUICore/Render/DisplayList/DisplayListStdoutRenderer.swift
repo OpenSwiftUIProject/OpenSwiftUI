@@ -5,6 +5,7 @@
 //  Status: WIP
 
 package import Foundation
+package import OpenCoreGraphicsShims
 import OpenSwiftUI_SPI
 
 // MARK: - DisplayList + stdout rendering
