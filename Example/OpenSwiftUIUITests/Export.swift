@@ -7,10 +7,10 @@ import SnapshotTesting
 
 #if OPENSWIFTUI
 @_exported import OpenSwiftUI
-let shouldRecord: Bool? = nil
+let shouldRecord: SnapshotTestingConfiguration.Record? = nil
 #else
 @_exported import SwiftUI
-let shouldRecord: Bool? = true
+let shouldRecord: SnapshotTestingConfiguration.Record? = .all
 
 public struct ViewRendererVendor: RawRepresentable, Hashable, CaseIterable {
     public let rawValue: String
