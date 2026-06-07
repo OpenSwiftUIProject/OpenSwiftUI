@@ -42,7 +42,9 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
           set -o pipefail
+          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
           NSUnbufferedIO=YES swift test \
+            --disable-experimental-prebuilts \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -51,7 +53,9 @@ jobs:
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
           set -o pipefail
+          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
           NSUnbufferedIO=YES swift test \
+            --disable-experimental-prebuilts \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -97,7 +101,8 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
           set -o pipefail
-          NSUnbufferedIO=YES xcodebuild test \
+          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
@@ -110,7 +115,8 @@ jobs:
       - name: Run compatibility tests on SwiftUI + iOS
         run: |
           set -o pipefail
-          NSUnbufferedIO=YES xcodebuild test \
+          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
