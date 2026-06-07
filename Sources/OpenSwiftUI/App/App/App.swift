@@ -160,7 +160,6 @@ extension App {
     }
 
     /* OpenSwiftUI Addition Begin */
-    @_spi(StdoutRenderer)
     nonisolated public static var rendererConfiguration: _RendererConfiguration? {
         nil
     }
