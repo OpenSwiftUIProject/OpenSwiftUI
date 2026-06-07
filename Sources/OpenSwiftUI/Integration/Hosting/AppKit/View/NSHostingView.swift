@@ -421,28 +421,22 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         // TODO
         NSAnimationContext.runAnimationGroup { context in
             context.allowsImplicitAnimation = false
-            isUpdating = true
-            // TODO
-            render(targetTimestamp: nil)
-            // TODO
-            isUpdating = false
-            // TODO
-            if needsDeferredUpdate {
-                if !viewGraph.updateRequiredMainThread {
-                    if isLinkedOnOrAfter(.v3) {
-                        if startAsyncRendering() {
-                            needsDeferredUpdate = false
-                        }
+            var iteration = 0
+            repeat {
+                needsDeferredUpdate = false
+                isUpdating = true
+                render(targetTimestamp: nil)
+                isUpdating = false
+                if needsDeferredUpdate,
+                   !viewGraph.updateRequiredMainThread,
+                   isLinkedOnOrAfter(.v3),
+                   !viewGraph.mayDeferUpdate {
+                    if startAsyncRendering() {
+                        needsDeferredUpdate = false
                     }
                 }
-            }
-            if needsDeferredUpdate {
-                onNextMainRunLoop { [weak self] in
-                    guard let self else { return }
-                    setNeedsUpdate()
-                }
-                needsDeferredUpdate = false
-            }
+                iteration += 1
+            } while needsDeferredUpdate && iteration < 8
         }
     }
 
@@ -782,8 +776,12 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     static func defaultViewGraphOutputs() -> ViewGraph.Outputs { .defaults }
 
     func setNeedsUpdate() {
-        needsUpdateConstraints = true
-        needsLayout = true
+        if isUpdating {
+            needsDeferredUpdate = true
+        } else {
+            needsUpdateConstraints = true
+            needsLayout = true
+        }
     }
 
     // MARK: - Window Notification Handlers
@@ -954,10 +952,13 @@ extension NSHostingView: ViewRendererHost {
 
             if adjustedDelay >= 0.25 {
                 setUpdateTimer(delay: adjustedDelay)
-            } else if isUpdating {
-                needsDeferredUpdate = true
-            } else {
+            } else if adjustedDelay == 0 || !isUpdating {
                 setNeedsUpdate()
+            } else {
+                onNextMainRunLoop { [weak self] in
+                    guard let self else { return }
+                    setNeedsUpdate()
+                }
             }
 
             // TODO: Notify delegate
