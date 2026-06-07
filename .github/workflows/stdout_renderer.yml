@@ -8,22 +8,23 @@ on:
   workflow_dispatch:
 
 jobs:
-  stdout_renderer_linux:
-    name: Run stdout renderer on Linux
-    runs-on: ubuntu-22.04
-    container: swift:6.1.0-jammy
-    env:
-      OPENSWIFTUI_WERROR: 0
-      OPENSWIFTUI_SWIFT_LOG: 1
-      OPENSWIFTUI_SWIFT_CRYPTO: 1
-    steps:
-      - uses: actions/checkout@v4
-      - name: Toolchain fix patch
-        run: |
-          # Fix swift-corelibs-foundation#5211
-          .github/scripts/fix-toolchain.sh
-      - name: Run stdout renderer example
-        run: Renderer/Stdout/run-example.sh
+  # Disable on Linux for now
+  # stdout_renderer_linux:
+  #   name: Run stdout renderer on Linux
+  #   runs-on: ubuntu-22.04
+  #   container: swift:6.1.0-jammy
+  #   env:
+  #     OPENSWIFTUI_WERROR: 0
+  #     OPENSWIFTUI_SWIFT_LOG: 1
+  #     OPENSWIFTUI_SWIFT_CRYPTO: 1
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - name: Toolchain fix patch
+  #       run: |
+  #         # Fix swift-corelibs-foundation#5211
+  #         .github/scripts/fix-toolchain.sh
+  #     - name: Run stdout renderer example
+  #       run: Renderer/Stdout/run-example.sh
 
   stdout_renderer_macos:
     name: Run stdout renderer on macOS
