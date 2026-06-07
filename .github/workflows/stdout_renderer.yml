@@ -19,10 +19,6 @@ jobs:
   #     OPENSWIFTUI_SWIFT_CRYPTO: 1
   #   steps:
   #     - uses: actions/checkout@v4
-  #     - name: Toolchain fix patch
-  #       run: |
-  #         # Fix swift-corelibs-foundation#5211
-  #         .github/scripts/fix-toolchain.sh
   #     - name: Run stdout renderer example
   #       run: Renderer/Stdout/run-example.sh
 
