@@ -26,6 +26,11 @@ package final class AppGraph: GraphHost {
 
     static var delegateBox: AnyFallbackDelegateBox? = nil
 
+    /* OpenSwiftUI Addition Begin */
+    /// The global default renderer configuration declared by the launched app.
+    let rendererConfiguration: _RendererConfiguration?
+    /* OpenSwiftUI Addition End */
+
     private var makeRootScene: (_SceneInputs) -> _SceneOutputs
 
     private var observers: Set<HashableWeakBox<AnyObject>> = .init()
@@ -68,6 +73,9 @@ package final class AppGraph: GraphHost {
     private var rootCommandsList: CommandsList?
 
     init<Application>(app: Application) where Application: App {
+        /* OpenSwiftUI Addition Begin */
+        rendererConfiguration = Application.rendererConfiguration
+        /* OpenSwiftUI Addition End */
         makeRootScene = { inputs in
             let fields = DynamicPropertyCache.fields(of: Application.self)
             var inputs = inputs
