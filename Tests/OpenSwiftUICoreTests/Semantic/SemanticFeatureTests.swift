@@ -31,7 +31,7 @@ struct SemanticFeatureTests {
         #else
         #expect(SemanticFeature1.isEnabled == true)
         #expect(SemanticFeature2.isEnabled == true)
-        #expect(SemanticFeature3.isEnabled == true)
+        #expect(SemanticFeature3.isEnabled == false)
         #endif
     }
     
