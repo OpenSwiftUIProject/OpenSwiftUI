@@ -32,12 +32,14 @@ struct MainActorUtilsTests {
         Self.assumeWithMaximal()
     }
 
+    #if !os(iOS) && !os(visionOS)
     @Test
     func nonMainActorFailure() async {
         await #expect(processExitsWith: .failure) {
             Self.assumeWithFirstRelease()
         }
     }
+    #endif
 
     @Test(containsRuntimeIssue("%s This warning will become a runtime crash in a future version of OpenSwiftUI."))
     func nonMainActorRuntimeIssue() async {
