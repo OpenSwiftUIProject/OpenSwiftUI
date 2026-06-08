@@ -2,6 +2,7 @@
 //  GestureInputs.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenAttributeGraphShims
@@ -79,6 +80,15 @@ public struct _GestureInputs {
     package func animatedPosition() -> Attribute<ViewOrigin> {
         viewSubgraph.apply {
             viewInputs.animatedPosition()
+        }
+    }
+
+    package var transform: Attribute<ViewTransform> {
+        let defaultTransform = intern(ViewTransform(), id: .defaultValue)
+        return viewSubgraph.apply {
+            var transform = IndirectAttribute(source: defaultTransform)
+            transform.source = viewInputs.transform
+            return transform.projectedValue
         }
     }
 
