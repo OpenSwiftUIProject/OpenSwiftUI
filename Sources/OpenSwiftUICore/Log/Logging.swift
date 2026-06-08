@@ -150,12 +150,21 @@ package enum Log {
     @usableFromInline
     package static var runtimeIssuesLog = Logger(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
-    @_transparent
     @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        #if OPENSWIFTUI_LINK_TESTING
+        if Test.current != nil {
+            let comment: Comment = #"[Runtime Issue] message: \#(message().description) args: \#(args())"#
+            #if swift(>=6.3)
+            Issue.record(comment, severity: .warning)
+            #else
+            Issue.record(comment)
+            #endif
+        }
+        #endif
         runtimeIssuesLog.log(level: .critical, "\(message())")
     }
     #else
