@@ -2,9 +2,10 @@
 //  EmptyGesture.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - EmptyGesture [6.5.4]
+// MARK: - EmptyGesture
 
 package struct EmptyGesture<Value>: PrimitiveGesture {
     package init() {}

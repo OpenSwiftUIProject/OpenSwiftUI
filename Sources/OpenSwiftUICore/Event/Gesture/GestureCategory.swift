@@ -2,9 +2,10 @@
 //  GestureCategory.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - GestureCategory [6.5.4]
+// MARK: - GestureCategory
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)

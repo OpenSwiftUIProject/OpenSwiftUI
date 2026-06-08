@@ -2,9 +2,10 @@
 //  GesturePhase.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - GesturePhase [6.5.4]
+// MARK: - GesturePhase
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -82,14 +83,14 @@ extension GesturePhase {
     }
 }
 
-// MARK: - GesturePhase + Defaultable [6.5.4]
+// MARK: - GesturePhase + Defaultable
 
 @_spi(ForOpenSwiftUIOnly)
 extension GesturePhase: Defaultable {
     package static var defaultValue: GesturePhase<Wrapped> { .failed }
 }
 
-// MARK: - GestureCategory + Defaultable [6.5.4]
+// MARK: - GestureCategory + Defaultable
 
 @_spi(ForOpenSwiftUIOnly)
 extension GestureCategory: Defaultable {

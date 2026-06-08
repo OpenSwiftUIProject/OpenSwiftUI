@@ -2,6 +2,7 @@
 //  GestureDebug.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: 40D5679141F478561068F8E300838A67 (SwiftUICore)
 
@@ -71,11 +72,11 @@ extension GestureDebug.Data: Defaultable {
     package static let defaultValue: GestureDebug.Data = .init()
 }
 
-// MARK: - PrimitiveDebuggableGesture [6.5.4]
+// MARK: - PrimitiveDebuggableGesture
 
 package protocol PrimitiveDebuggableGesture {}
 
-// MARK: - DebuggableGesturePhase [6.5.4]
+// MARK: - DebuggableGesturePhase
 
 package protocol DebuggableGesturePhase {
     associatedtype PhaseValue

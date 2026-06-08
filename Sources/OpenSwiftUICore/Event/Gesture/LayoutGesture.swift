@@ -2,9 +2,10 @@
 //  LayoutGesture.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: WIP
 
-// MARK: - LayoutGesture [6.5.4] [WIP]
+// MARK: - LayoutGesture [WIP]
 
 package protocol LayoutGesture: PrimitiveDebuggableGesture, PrimitiveGesture where Value == () {
     var responder: MultiViewResponder { get }
@@ -31,7 +32,7 @@ extension LayoutGesture {
     }
 }
 
-// MARK: - DefaultLayoutGesture [6.5.4] [WIP]
+// MARK: - DefaultLayoutGesture [WIP]
 
 package struct DefaultLayoutGesture: LayoutGesture {
     package var responder: MultiViewResponder
@@ -40,7 +41,7 @@ package struct DefaultLayoutGesture: LayoutGesture {
     package typealias Value = ()
 }
 
-// MARK: - LayoutGestureChildProxy [6.5.4] [WIP]
+// MARK: - LayoutGestureChildProxy [WIP]
 
 package struct LayoutGestureChildProxy: RandomAccessCollection {
     package struct Child {

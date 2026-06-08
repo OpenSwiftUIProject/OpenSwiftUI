@@ -2,11 +2,12 @@
 //  GestureOutputs.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenAttributeGraphShims
 
-// MARK: - GestureOutputs [6.5.4]
+// MARK: - GestureOutputs
 
 /// Output (aka synthesized) attributes for gesture objects.
 @available(OpenSwiftUI_v1_0, *)

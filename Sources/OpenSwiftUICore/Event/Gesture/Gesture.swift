@@ -2,10 +2,11 @@
 //  Gesture.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 5DF390A778F4D193C5F92C06542566B0 (SwiftUICore)
 
-// MARK: - Gesture [6.5.4]
+// MARK: - Gesture
 
 /// An instance that matches a sequence of events to a gesture, and returns a
 /// stream of values for each of its states.
@@ -31,11 +32,11 @@ public protocol Gesture<Value> {
     var body: Body { get }
 }
 
-// MARK: - PrimitiveGesture [6.5.4]
+// MARK: - PrimitiveGesture
 
 package protocol PrimitiveGesture: Gesture where Body == Never {}
 
-// MARK: - PubliclyPrimitiveGesture [6.5.4]
+// MARK: - PubliclyPrimitiveGesture
 
 package protocol PubliclyPrimitiveGesture: PrimitiveGesture {
     associatedtype InternalBody: Gesture where Value == InternalBody.Value
@@ -63,7 +64,7 @@ extension PubliclyPrimitiveGesture {
     }
 }
 
-// MARK: - Never + Gesture [6.5.4]
+// MARK: - Never + Gesture
 
 @available(OpenSwiftUI_v1_0, *)
 extension Never: Gesture {
@@ -77,7 +78,7 @@ extension PrimitiveGesture {
     }
 }
 
-// MARK: - GestureBodyAccessor [6.5.4]
+// MARK: - GestureBodyAccessor
 
 private struct GestureBodyAccessor<Container>: BodyAccessor where Container: Gesture {
     typealias Body = Container.Body

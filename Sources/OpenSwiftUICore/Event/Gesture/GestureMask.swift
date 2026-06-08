@@ -2,9 +2,10 @@
 //  GestureMask.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - GestureMask [6.5.4]
+// MARK: - GestureMask
 
 /// Options that control how adding a gesture to a view affects other gestures
 /// recognized by the view and its subviews.

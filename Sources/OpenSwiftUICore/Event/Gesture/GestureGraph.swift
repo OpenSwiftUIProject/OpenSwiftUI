@@ -2,17 +2,18 @@
 //  GestureGraph.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: WIP
 
 import OpenAttributeGraphShims
 
-// MARK: - GestureGraphDelegate [6.5.4]
+// MARK: - GestureGraphDelegate
 
 package protocol GestureGraphDelegate: AnyObject {
     func enqueueAction(_ action: @escaping () -> Void)
 }
 
-// MARK: - GestureGraph [6.5.4] [WIP]
+// MARK: - GestureGraph [WIP]
 
 final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvertible {
     weak var rootResponder: AnyGestureResponder?
