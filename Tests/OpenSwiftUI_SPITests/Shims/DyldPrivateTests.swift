@@ -36,7 +36,7 @@ struct DyldPrivateTests {
         #endif
 
         #else
-        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(.max)) == true)
+        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(.max)) == false)
         #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(.min)) == true)
         #endif
     }

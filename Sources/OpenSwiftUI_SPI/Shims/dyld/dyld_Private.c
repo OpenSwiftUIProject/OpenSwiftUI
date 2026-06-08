@@ -31,7 +31,9 @@ bool dyld_minos_at_least(const struct mach_header* mh, dyld_build_version_t vers
 }
 
 bool dyld_program_sdk_at_least(dyld_build_version_t version) {
-    return true;
+    // Preserve the sentinel behavior used by Darwin: no program is linked against
+    // the theoretical maximum SDK version.
+    return version.version != UINT32_MAX;
 }
 
 bool dyld_program_minos_at_least(dyld_build_version_t version) {
