@@ -155,9 +155,11 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        let message = message()
+        let args = args()
         #if OPENSWIFTUI_LINK_TESTING
         if Test.current != nil {
-            let comment: Comment = #"[Runtime Issue] message: \#(message().description) args: \#(args())"#
+            let comment: Comment = #"[Runtime Issue] message: \#(message.description) args: \#(args)"#
             #if swift(>=6.3)
             Issue.record(comment, severity: .warning)
             #else
@@ -165,7 +167,7 @@ package enum Log {
             #endif
         }
         #endif
-        runtimeIssuesLog.log(level: .critical, "\(message())")
+        runtimeIssuesLog.log(level: .critical, "message: \(message.description) args: \(args)")
     }
     #else
     @usableFromInline
@@ -176,9 +178,11 @@ package enum Log {
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        let message = message()
+        let args = args()
         #if OPENSWIFTUI_LINK_TESTING
         if Test.current != nil {
-            let comment: Comment = #"[Runtime Issue] message: \#(message().description) args: \#(args())"#
+            let comment: Comment = #"[Runtime Issue] message: \#(message.description) args: \#(args)"#
             #if swift(>=6.3)
             Issue.record(comment, severity: .warning)
             #else
@@ -191,12 +195,12 @@ package enum Log {
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-        )(.fault, dso, runtimeIssuesLog, message(), args())
+        )(.fault, dso, runtimeIssuesLog, message, args)
         #else
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-        )(.fault, #dsohandle, runtimeIssuesLog, message(), args())
+        )(.fault, #dsohandle, runtimeIssuesLog, message, args)
         #endif
     }
     
