@@ -203,7 +203,6 @@ package enum Log {
         )(.fault, #dsohandle, runtimeIssuesLog, message, args)
         #endif
     }
-    
     #endif
     package static let propertyChangeLog: Logger = Logger(subsystem: subsystem, category: "Changed Body Properties")
     package static var unlocatedIssuesLog: Logger = Logger(subsystem: subsystem, category: "Invalid Configuration")
