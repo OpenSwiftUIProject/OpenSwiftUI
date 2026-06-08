@@ -696,6 +696,7 @@ final class StdoutRenderer: ViewRendererBase {
     var options: _RendererConfiguration.StdoutOptions
     private var seed: DisplayList.Seed = .init()
     private var hasRendered = false
+    private let printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE") ?? false
 
     init(
         platform: DisplayList.ViewUpdater.Platform,
@@ -725,6 +726,9 @@ final class StdoutRenderer: ViewRendererBase {
         }
         hasRendered = true
         seed = nextSeed
+        if printTree {
+            print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at \(time):\n\(list.description)")
+        }
         print(options.outputFormatter.format(list, version: version))
         if let host, let observer = host.as(ViewGraphRenderObserver.self) {
             observer.didRender()
