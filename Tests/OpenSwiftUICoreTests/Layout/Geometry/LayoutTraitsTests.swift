@@ -84,23 +84,25 @@ struct LayoutTraitsTests {
             (1.0, 4.0, 3.0, true),
             (1.0, 2.0, 1.5, true),
         ])
-        func exitTest(_ min: CGFloat, _ ideal: CGFloat, _ max: CGFloat, _ expectedFailure: Bool) {
-            let block = {
+        func exitTest(_ min: CGFloat, _ ideal: CGFloat, _ max: CGFloat, _ expectedFailure: Bool) async {
+            if expectedFailure {
+                #if compiler(>=6.3) // ST-12
+                #if !os(iOS) && !os(visionOS)
+                await #expect(processExitsWith: .failure) { [min, idea, max] in
+                    _ = Dimension(min: min, ideal: ideal, max: max)
+                    var d = Dimension.fixed(.zero)
+                    d.max = ideal
+                    d.ideal = ideal
+                    d.min = min
+                }
+                #endif
+                #endif
+            } else {
                 _ = Dimension(min: min, ideal: ideal, max: max)
                 var d = Dimension.fixed(.zero)
                 d.max = ideal
                 d.ideal = ideal
                 d.min = min
-            }
-            if expectedFailure {
-                withKnownIssue {
-                    Issue.record("Skip since swift-testing does not support exit test yet")
-                    // FIXME: Comment the crash case temporary since exit test is not supported on swift-testing so far.
-                    // Blocked by #expect(exist:)
-                    // block()
-                }
-            } else {
-                block()
             }
         }
 
