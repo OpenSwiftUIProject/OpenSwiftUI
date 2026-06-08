@@ -48,10 +48,14 @@ struct DyldPrivateTests {
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(.min)) == true)
         #if os(iOS) || os(visionOS)
         // Path: Xcode-26.3.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
-        // min version: iOS 14.0
+        // min version: iOS 13.0 (x86_64) & iOS 14.0 (arm64)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_0.rawValue)) == false)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._15_0.rawValue)) == false)
+        #if arch(arm64)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._14_0.rawValue)) == true)
+        #else
+        #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._14_0.rawValue)) == false)
+        #endif
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._13_0.rawValue)) == true)
         #elseif os(macOS)
         // Path: Xcode-26.3.0.app Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest

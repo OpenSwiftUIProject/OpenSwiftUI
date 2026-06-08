@@ -46,7 +46,7 @@ struct SemanticsTests {
         #if compiler(<6.2) && compiler(>=6.1)
         // Path: Xcode-16.4.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
         // SDK version: iOS 18.4
-        // min version: iOS 14.0
+        // min version: iOS 13.0 (x86_64) & iOS 14.0 (arm64)
         #expect(isLinkedOnOrAfter(.v1) == true)
         #expect(isLinkedOnOrAfter(.v2) == true)
         #expect(isLinkedOnOrAfter(.v3) == true)
@@ -64,7 +64,7 @@ struct SemanticsTests {
         #elseif compiler(>=6.2) && compiler(<6.3)
         // Path: Xcode-26.3.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
         // SDK version: iOS 26.2
-        // min version: iOS 14.0
+        // min version: iOS 13.0 (x86_64) & iOS 14.0 (arm64)
         #expect(isLinkedOnOrAfter(.v1) == true)
         #expect(isLinkedOnOrAfter(.v2) == true)
         #expect(isLinkedOnOrAfter(.v3) == true)
@@ -73,7 +73,11 @@ struct SemanticsTests {
         #expect(isLinkedOnOrAfter(.v6) == true)
         #expect(isLinkedOnOrAfter(.v7) == false)
         #expect(isDeployedOnOrAfter(.v1) == true)
+        #if arch(arm64)
         #expect(isDeployedOnOrAfter(.v2) == true)
+        #else
+        #expect(isDeployedOnOrAfter(.v2) == false)
+        #endif
         #expect(isDeployedOnOrAfter(.v3) == false)
         #expect(isDeployedOnOrAfter(.v4) == false)
         #expect(isDeployedOnOrAfter(.v5) == false)
