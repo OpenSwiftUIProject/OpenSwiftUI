@@ -2,7 +2,10 @@
 //  GestureModifier.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
+
+// MARK: - GestureModifier
 
 package protocol GestureModifier {
     associatedtype Value
@@ -16,11 +19,15 @@ package protocol GestureModifier {
     ) -> _GestureOutputs<Value>
 }
 
+// MARK: - Gesture + modifier
+
 extension Gesture {
     package func modifier<T>(_ modifier: T) -> ModifierGesture<T, Self> where T: GestureModifier, Value == T.BodyValue {
         ModifierGesture(content: self, modifier: modifier)
     }
 }
+
+// MARK: - ModifierGesture
 
 package struct ModifierGesture<ContentModifier, Content>: PrimitiveGesture
     where ContentModifier: GestureModifier,
