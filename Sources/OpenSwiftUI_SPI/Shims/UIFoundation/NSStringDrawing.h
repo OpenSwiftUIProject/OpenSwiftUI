@@ -18,7 +18,6 @@
 //
 
 #import <Foundation/Foundation.h>
-#import "UIFoundationHelper.h"
 @class NSAttributedString;
 @class NSString;
 @class NSStringDrawingContext;
@@ -58,7 +57,7 @@ typedef NS_OPTIONS(NSInteger, NSStringDrawingOptions) {
     NSStringDrawingUsesFontLeading = 1 << 1, // Uses the font leading for calculating line heights
     NSStringDrawingUsesDeviceMetrics = 1 << 3, // Uses image glyph bounds instead of typographic bounds
     NSStringDrawingTruncatesLastVisibleLine API_AVAILABLE(macos(10.5), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0)) = 1 << 5, // Truncates and adds the ellipsis character to the last visible line if the text doesn't fit into the bounds specified. Ignored if NSStringDrawingUsesLineFragmentOrigin is not also set.
-    #if OPENSWIFTUI_UIFOUNDATION_HAS_SDK_26_ADDITIONS
+    #if OPENSWIFTUI_HAS_SDK_26_ADDITIONS
     /// Specifies the behavior for resolving ``NSTextAlignment.natural`` to the visual alignment.
     ///
     /// When set, the resolved visual alignment is determined by the resolved base writing direction; otherwise, it is using the user’s preferred language.

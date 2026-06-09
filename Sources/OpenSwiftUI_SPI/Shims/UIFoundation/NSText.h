@@ -18,7 +18,6 @@
 */
 
 #import <Foundation/Foundation.h>
-#import "UIFoundationHelper.h"
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
