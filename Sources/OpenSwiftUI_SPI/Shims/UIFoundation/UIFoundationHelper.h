@@ -1,0 +1,21 @@
+//
+//  UIFoundationHelper.h
+//  OpenSwiftUI_SPI
+
+#pragma once
+
+#import "OpenSwiftUIBase.h"
+
+#if OPENSWIFTUI_TARGET_OS_DARWIN
+
+#if (defined(__IPHONE_27_0) && __IPHONE_OS_VERSION_MAX_ALLOWED >= __IPHONE_27_0) || \
+    (defined(__MAC_27_0) && __MAC_OS_X_VERSION_MAX_ALLOWED >= __MAC_27_0) || \
+    (defined(__TV_27_0) && __TV_OS_VERSION_MAX_ALLOWED >= __TV_27_0) || \
+    (defined(__WATCH_27_0) && __WATCH_OS_VERSION_MAX_ALLOWED >= __WATCH_27_0) || \
+    (defined(__VISIONOS_27_0) && __VISION_OS_VERSION_MAX_ALLOWED >= __VISIONOS_27_0)
+#define OPENSWIFTUI_UIFOUNDATION_HAS_SDK_27_ADDITIONS 1
+#else
+#define OPENSWIFTUI_UIFOUNDATION_HAS_SDK_27_ADDITIONS 0
+#endif
+
+#endif /* OPENSWIFTUI_TARGET_OS_DARWIN */
