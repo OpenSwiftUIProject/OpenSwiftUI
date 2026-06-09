@@ -23,10 +23,12 @@ public struct _RendererConfiguration {
         indirect case rasterized(_ options: _RendererConfiguration.RasterizationOptions = .init())
 
         /* OpenSwiftUI Addition Begin */
+        #if !OPENSWIFTUI_SWIFTUI_RENDERER
         /// A renderer that writes a textual representation of the display list
         /// to standard output.
         @_spi(StdoutRenderer)
         indirect case stdout(_ options: _RendererConfiguration.StdoutOptions = .init())
+        #endif
         /* OpenSwiftUI Addition End */
     }
 
@@ -51,11 +53,13 @@ public struct _RendererConfiguration {
 
     /* OpenSwiftUI Addition Begin */
 
+    #if !OPENSWIFTUI_SWIFTUI_RENDERER
     /// Returns a configuration to render the display list to standard output.
     @_spi(StdoutRenderer)
     public static func stdout(_ options: _RendererConfiguration.StdoutOptions = .init()) -> _RendererConfiguration {
         _RendererConfiguration(renderer: .stdout(options))
     }
+    #endif
 
     /* OpenSwiftUI Addition End */
 

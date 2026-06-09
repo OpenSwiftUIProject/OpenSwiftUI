@@ -2,6 +2,7 @@
 //  StdoutRendererHost.swift
 //  OpenSwiftUICore
 
+#if !OPENSWIFTUI_SWIFTUI_RENDERER
 import Foundation
 
 // MARK: - StdoutRendererHost
@@ -103,3 +104,4 @@ final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRend
 }
 
 private final class StdoutPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {}
+#endif

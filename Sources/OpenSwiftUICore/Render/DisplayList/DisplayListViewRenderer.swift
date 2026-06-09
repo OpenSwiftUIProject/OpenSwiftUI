@@ -75,7 +75,9 @@ extension DisplayList {
             case updating
             case rasterizing
             /* OpenSwiftUI Addition Begin */
+            #if !OPENSWIFTUI_SWIFTUI_RENDERER
             case stdout
+            #endif
             /* OpenSwiftUI Addition End */
         }
 
@@ -98,7 +100,9 @@ extension DisplayList {
             case .default: state == .updating
             case .rasterized: state == .rasterizing
             /* OpenSwiftUI Addition Begin */
+            #if !OPENSWIFTUI_SWIFTUI_RENDERER
             case .stdout: state == .stdout
+            #endif
             /* OpenSwiftUI Addition End */
             }
             if !isValid {
@@ -117,10 +121,12 @@ extension DisplayList {
                     rasterizer.renderer.platformViewMode = options.drawsPlatformViews ? .rendered(update: true) : .unsupported
                     rasterizer.host = host
                 /* OpenSwiftUI Addition Begin */
+                #if !OPENSWIFTUI_SWIFTUI_RENDERER
                 case let .stdout(options):
                     let stdoutRenderer = renderer as! StdoutDisplayListRenderer
                     stdoutRenderer.options = options
                     stdoutRenderer.host = host
+                #endif
                 /* OpenSwiftUI Addition End */
                 }
             } else {
@@ -139,6 +145,7 @@ extension DisplayList {
                     renderer = rasterizer
                     state = .rasterizing
                 /* OpenSwiftUI Addition Begin */
+                #if !OPENSWIFTUI_SWIFTUI_RENDERER
                 case let .stdout(options):
                     renderer = StdoutDisplayListRenderer(
                         platform: platform,
@@ -146,6 +153,7 @@ extension DisplayList {
                         options: options
                     )
                     state = .stdout
+                #endif
                 /* OpenSwiftUI Addition End */
                 }
             }
