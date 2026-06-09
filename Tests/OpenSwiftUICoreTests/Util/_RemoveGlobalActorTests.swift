@@ -19,8 +19,8 @@ struct _RemoveGlobalActorTests {
         A.p()
     }
 
-    #if compiler(>=6.2) && !os(iOS)
-    // TODO: iOS and some platform do not support exit test. Use varibale to enable/disable such test case in the future
+    // NOTE: iOS and some platform do not support exit test. Use varibale to enable/disable such test case in the future
+    #if !os(iOS) && !os(visionOS)
     @Test
     func standaloneConstraintCrash() async {
         struct B: _RemoveGlobalActorIsolation {

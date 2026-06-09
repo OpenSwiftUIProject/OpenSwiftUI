@@ -5,7 +5,7 @@ inputs:
   xcode-version:
     description: 'Xcode version to use'
     required: false
-    default: '16.4'
+    default: '26.3'
   tag-name:
     description: 'Tag name for release URLs (empty for manual builds)'
     required: false

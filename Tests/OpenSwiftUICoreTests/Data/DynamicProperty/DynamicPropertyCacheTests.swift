@@ -44,7 +44,7 @@ struct DynamicPropertyCacheTests {
         case main(MainP, MainP)
     }
 
-    @Test
+    @Test(containsRuntimeIssue("%s is marked async, but contains properties that require the main thread."))
     func enumFields() {
         let fieldsE = DynamicPropertyCache.fields(of: E.self)
         #expect(

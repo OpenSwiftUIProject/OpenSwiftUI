@@ -1,5 +1,5 @@
 {
-  "originHash" : "73c7e25a0dafcf7f83a529d2236e8548d15cf7607e97b6589202aca65e7c9b3c",
+  "originHash" : "5103f85dbbced6ddddbe8d671804a1c9bdede9e4d43fb5507e296d9d44beadaf",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "add5e79e8e8a7f24db4a70648f397b4d04000db3"
+        "revision" : "b0c3d94ff6b7200754ad2adf948fd3c6ebaef956"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "6166503bad036fd8325ddfcb0341fc5ad45db576"
+        "revision" : "2f3beaf322a340e4600478409f75efef52418ffa"
       }
     },
     {
@@ -43,16 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "7a963a0a50b309b0a063fe7b5c171619bb93868d"
-      }
-    },
-    {
-      "identity" : "swift-collections",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/apple/swift-collections",
-      "state" : {
-        "revision" : "fea17c02d767f46b23070fdfdacc28a03a39232a",
-        "version" : "1.5.1"
+        "revision" : "38d099fb3144cc4b268de962658cf810a6144896"
       }
     },
     {

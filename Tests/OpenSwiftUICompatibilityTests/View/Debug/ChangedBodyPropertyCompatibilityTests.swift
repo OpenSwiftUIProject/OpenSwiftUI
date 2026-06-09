@@ -7,7 +7,14 @@ import Testing
 import OSLog
 import OpenSwiftUITestsSupport
 
+#if arch(x86_64)
+private let isX86_64 = true
+#else
+private let isX86_64 = false
+#endif
+
 @MainActor
+@Suite(.disabled(if: isX86_64, "OSLogStore does not reliably return current-process log entries on x86_64 simulator."))
 struct ChangedBodyPropertyCompatibilityTests {
     @available(iOS 15, macOS 12, *)
     private func verifyLog(expected: String) throws {

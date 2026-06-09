@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["16.4"]
+        xcode-version: ["26.3"]
         release: [2024]
     # Limit to self-hosted to reduce action cost
     runs-on:
@@ -43,7 +43,9 @@ jobs:
       - name: Build and run tests in debug mode with coverage
         run: |
           set -o pipefail
+          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
           NSUnbufferedIO=YES swift test \
+            --disable-experimental-prebuilts \
             -c debug \
             --filter OpenSwiftUITests \
             --filter OpenSwiftUICoreTests \

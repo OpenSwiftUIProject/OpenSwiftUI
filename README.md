@@ -58,7 +58,7 @@ See Example folder and try it with ExampleApp
 
 ## Build
 
-The current suggested toolchain to build the project is Swift 6.1.2 / Xcode 16.4 with macOS 15.5 or iOS 18.5 Simulator.
+The current suggested toolchain to build the project is Swift 6.2.4 / Xcode 26.3 with macOS 15.5 or iOS 18.5 Simulator.
 
 ### Build without testing framework
 

@@ -150,32 +150,43 @@ package enum Log {
     @usableFromInline
     package static var runtimeIssuesLog = Logger(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
-    @_transparent
     @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
-        runtimeIssuesLog.log(level: .critical, "\(message())")
+        let message = message()
+        let args = args()
+        #if OPENSWIFTUI_LINK_TESTING
+        if Test.current != nil {
+            let comment: Comment = #"[Runtime Issue] message: \#(message.description) args: \#(args)"#
+            #if swift(>=6.3)
+            Issue.record(comment, severity: .warning)
+            #else
+            Issue.record(comment)
+            #endif
+        }
+        #endif
+        runtimeIssuesLog.log(level: .critical, "message: \(message.description) args: \(args)")
     }
     #else
     @usableFromInline
     package static var runtimeIssuesLog: OSLog = OSLog(subsystem: "com.apple.runtime-issues", category: "OpenSwiftUI")
     
-    @_transparent
     @usableFromInline
     package static func runtimeIssues(
         _ message: @autoclosure () -> StaticString,
         _ args: @autoclosure () -> [CVarArg] = []
     ) {
+        let message = message()
+        let args = args()
         #if OPENSWIFTUI_LINK_TESTING
         if Test.current != nil {
-            let comment: Comment = #"[Runtime Issue]: message - "\#(message().description)" args: \#(args())"#
+            let comment: Comment = #"[Runtime Issue] message: \#(message.description) args: \#(args)"#
             #if swift(>=6.3)
             Issue.record(comment, severity: .warning)
             #else
-            // TODO: Wait for Swift 6.2 Issue handler
-            // Issue.record(comment)
+            Issue.record(comment)
             #endif
         }
         #endif
@@ -184,15 +195,14 @@ package enum Log {
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-        )(.fault, dso, runtimeIssuesLog, message(), args())
+        )(.fault, dso, runtimeIssuesLog, message, args)
         #else
         unsafeBitCast(
             os_log as (OSLogType, UnsafeRawPointer, OSLog, StaticString, CVarArg...) -> Void,
             to: ((OSLogType, UnsafeRawPointer, OSLog, StaticString, [CVarArg]) -> Void).self
-        )(.fault, #dsohandle, runtimeIssuesLog, message(), args())
+        )(.fault, #dsohandle, runtimeIssuesLog, message, args)
         #endif
     }
-    
     #endif
     package static let propertyChangeLog: Logger = Logger(subsystem: subsystem, category: "Changed Body Properties")
     package static var unlocatedIssuesLog: Logger = Logger(subsystem: subsystem, category: "Invalid Configuration")

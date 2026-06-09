@@ -11,32 +11,48 @@ struct MainActorUtilsTests {
         func foo() {}
     }
 
-    @Test
-    @MainActor
-    func mainActorOperation() {
-        Semantics.v6.test {
-            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v6) {
-                let a = A()
-                a.foo()
-            }
+    private static func assumeWithFirstRelease() {
+        MainActor.assumeIsolatedIfLinkedOnOrAfter(.firstRelease) {
+            let a = A()
+            a.foo()
         }
-        Semantics.v5.test {
-            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v6) {
-                let a = A()
-                a.foo()
-            }
+    }
+
+    private static func assumeWithMaximal() {
+        MainActor.assumeIsolatedIfLinkedOnOrAfter(.maximal) {
+            let a = A()
+            a.foo()
         }
     }
 
     @Test
-    func nonMainActorOperation() {
-        // TODO: swift-testing does not exist yet
-        // Expect crash (Need to fork and crash to avoid affect other Semantics.force check on main actor)
-//        Semantics.v6.test {
-//            MainActor.assumeIsolatedIfLinkedOnOrAfter(.v6) {
-//                let a = A()
-//                a.foo()
-//            }
-//        }
+    @MainActor
+    func mainActorAssumePass() {
+        Self.assumeWithFirstRelease()
+    }
+
+    // On non-Darwin platforms, Swift Testing may run @MainActor tests on a
+    // Swift executor that is not Thread.isMainThread, which intentionally
+    // records a runtime issue in the fallback path.
+    #if canImport(Darwin)
+    @Test
+    @MainActor
+    func mainActorAssumeFail() {
+        Self.assumeWithMaximal()
+    }
+    #endif
+
+    #if !os(iOS) && !os(visionOS)
+    @Test
+    func nonMainActorAssumePassWithFailure() async {
+        await #expect(processExitsWith: .failure) {
+            Self.assumeWithFirstRelease()
+        }
+    }
+    #endif
+
+    @Test(containsRuntimeIssue("%s This warning will become a runtime crash in a future version of OpenSwiftUI."))
+    func nonMainActorAssumeFailWithRuntimeIssue() async {
+        Self.assumeWithMaximal()
     }
 }

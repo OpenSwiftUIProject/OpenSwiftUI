@@ -77,7 +77,7 @@ struct FlexFrameLayoutTests {
         #expect(layout.minHeight?.isApproximatelyEqual(to: 0) == true)
     }
 
-    @Test(arguments: [
+    @Test(containsRuntimeIssue("Invalid frame dimension (negative or non-finite)."), arguments: [
         (20.0, 10.0, 30.0, 15.0),
         (50.0, 25.0, 100.0, 50.0),
         (100.0, 0.0, 200.0, 0.0)
@@ -98,7 +98,7 @@ struct FlexFrameLayoutTests {
         #expect(layout.idealHeight?.isApproximatelyEqual(to: minHeight) == true)
     }
 
-    @Test(arguments: [
+    @Test(containsRuntimeIssue("Invalid frame dimension (negative or non-finite)."), arguments: [
         (30.0, 20.0, 40.0, 25.0),
         (100.0, 50.0, 200.0, 100.0),
         (50.0, 25.0, 75.0, 50.0)
@@ -121,7 +121,7 @@ struct FlexFrameLayoutTests {
 
     // MARK: - Corner Cases with Special Float Values
 
-    @Test(arguments: [
+    @Test(containsRuntimeIssue("Invalid frame dimension (negative or non-finite)."), arguments: [
         Double.infinity,
         -Double.infinity,
         Double.nan
@@ -142,7 +142,7 @@ struct FlexFrameLayoutTests {
         #expect(layout.maxWidth == nil)
     }
 
-    @Test(arguments: [
+    @Test(containsRuntimeIssue("Invalid frame dimension (negative or non-finite)."), arguments: [
         Double.infinity,
         -Double.infinity,
         Double.nan

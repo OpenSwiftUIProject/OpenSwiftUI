@@ -5,7 +5,7 @@ inputs:
   xcode-version:
     description: 'Xcode version to use'
     required: false
-    default: '16.4'
+    default: '26.3'
   platform:
     description: 'Platform to test (ios or macos)'
     required: true
