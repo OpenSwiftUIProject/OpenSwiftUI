@@ -5,11 +5,32 @@ found while validating CI, package dependencies, and platform-specific tests.
 
 | Date | OpenSwiftUI PR | Toolchain move | Notes |
 | --- | --- | --- | --- |
+| 2026-06-09 | [#902](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/902) | Add Xcode 27 / SDK 27 support | Added SDK 26/27 addition guards and updated UIFoundation shims while keeping Xcode 26.3 / macOS 26.2 compatibility. |
 | 2026-06-07 | [#899](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/899) | Xcode 16.4 / Swift 6.1 to Xcode 26.3 / Swift 6.2.4 | Kept `macos-15` and iOS 18.5 while documenting the Linux compiler crash, index store, prebuilt package, runtime issue, and Linux dyld shim workarounds. |
 | 2025-11-18 | [#634](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/634) | Initial Xcode 26 SDK support | Added SDK 26 compatibility without moving CI to iOS 26 or macOS 26 destinations. |
 | 2025-05-11 | [#276](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/276) | Swift 6.0 / Xcode 16.0 to Swift 6.1 / Xcode 16.3 | Added the temporary Linux SDK header patch for swift-corelibs-foundation#5211. |
 | 2025-04-05 | [#241](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/241) | Xcode version selector cleanup | `16.0` resolved to Xcode 16.3 in setup tooling, so CI was changed to use a precise Xcode version. |
 | 2024-09-17 | [#118](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/118) | Add Xcode 16 and Swift 6 support on macOS | Closed [#117](https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/117). Also updated Linux/Wasm Swift 6 nightly jobs and fixed several Swift 6 warnings and iOS 18 test issues. |
+
+## Xcode 27 SDK
+
+OpenSwiftUI PR: [#902](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/902)
+
+### Version Targets
+
+- Apple platforms: Xcode 27.0 beta / SDK 27.0 compatibility.
+- Backward compatibility: keep Xcode 26.3 / macOS 26.2 SDK builds working.
+- SDK feature guards: use `OPENSWIFTUI_HAS_SDK_26_ADDITIONS` and
+  `OPENSWIFTUI_HAS_SDK_27_ADDITIONS` from `OpenSwiftUIBase.h` for headers that
+  need to match SDK-specific public definitions.
+
+### Validation
+
+- Xcode 27 / macOS 27: `AppKit` + `UIFoundation_Private` import typecheck.
+- Xcode 26.3 / macOS 26.2: `AppKit` + `UIFoundation_Private` import typecheck.
+- Xcode 26.3 / macOS 26.2: `swift build --target OpenSwiftUI_SPI`.
+- Xcode 27 and Xcode 26.4.1 iOS SDKs: `UIKit` + `UIFoundation_Private` import
+  typecheck.
 
 ## Swift 6.2
 
