@@ -75,6 +75,7 @@ private struct DependentPhase<V>: Rule {
     }
 }
 
+@_spi(ForOpenSwiftUIOnly)
 extension GesturePhase {
     func paused() -> GesturePhase {
         switch self {

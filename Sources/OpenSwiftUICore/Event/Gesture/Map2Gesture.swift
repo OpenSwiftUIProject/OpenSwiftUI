@@ -80,9 +80,8 @@ extension Gesture {
 
 // MARK: - GesturePhase + combining
 
-@_spi(ForSwiftUIOnly)
+@_spi(ForOpenSwiftUIOnly)
 extension GesturePhase {
-    @_spi(ForSwiftUIOnly)
     package func and<Other, Result>(
         _ phase: GesturePhase<Other>,
         value transform: (Wrapped, Other) -> Result
@@ -101,14 +100,12 @@ extension GesturePhase {
         }
     }
 
-    @_spi(ForSwiftUIOnly)
     package func and<Other>(
         _ phase: GesturePhase<Other>
     ) -> GesturePhase<(Wrapped, Other)> {
         and(phase) { ($0, $1) }
     }
 
-    @_spi(ForSwiftUIOnly)
     package func and<Other>(
         _ phase: GesturePhase<Other>
     ) -> GesturePhase<Void> {
