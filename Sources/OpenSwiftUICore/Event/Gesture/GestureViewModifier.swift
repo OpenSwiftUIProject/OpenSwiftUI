@@ -651,20 +651,3 @@ private struct ContentPhase<Value>: ResettableGestureRule {
         value = phase.withValue(())
     }
 }
-
-// MARK: - Optional: Gesture [WIP]
-
-extension Optional: Gesture where Wrapped: Gesture {
-    public typealias Value = Wrapped.Value
-    
-    nonisolated public static func _makeGesture(
-        gesture: _GraphValue<Optional<Wrapped>>,
-        inputs: _GestureInputs
-    ) -> _GestureOutputs<Wrapped.Value> {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    public typealias Body = Never
-}
-
-extension Optional: PrimitiveGesture where Wrapped: Gesture {}
