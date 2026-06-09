@@ -2,6 +2,7 @@
 //  ExclusiveGesture.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: C6A5F4DE707A20D3CFD8B7768E28573B (SwiftUICore)
 
