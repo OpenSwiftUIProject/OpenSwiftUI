@@ -8,7 +8,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-// Modified based on iOS 18.5 SDK
+// Modified based on iOS 18.5 SDK and macOS 27.0 SDK
 
 //  NSParagraphStyle.h
 //  UIKit
@@ -22,6 +22,7 @@
 #import "NSText.h"
 
 @class NSTextList;
+@class NSTextBlock;
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
@@ -75,6 +76,11 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0),
 
 + (NSCharacterSet *)columnTerminatorsForLocale:(nullable NSLocale *)aLocale API_AVAILABLE(macos(10.11), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Returns the column terminators for locale. Passing nil returns an instance corresponding to +[NSLocale systemLocale]. For matching user's formatting preferences, pass +[NSLocale currentLocale]. Can be used as the value for NSTabColumnTerminatorsAttributeName to make a decimal tab stop.
 
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS
+- (instancetype)initWithTextAlignment:(NSTextAlignment)alignment location:(CGFloat)loc options:(NSDictionary<NSTextTabOptionKey, id> *)options NS_DESIGNATED_INITIALIZER; // Initializes a text tab with the text alignment, location, and options. The text alignment is used to determine the position of text inside the tab column.
+
+@property (readonly, NS_NONATOMIC_IOSONLY) NSTextAlignment alignment; // Defines the alignment of tab column contents.
+#endif
 @property (readonly, NS_NONATOMIC_IOSONLY) CGFloat location; // Location of the tab stop inside the line fragment rect coordinate system
 @property (readonly, NS_NONATOMIC_IOSONLY) NSDictionary<NSTextTabOptionKey, id> *options; // Optional configuration attributes
 @end
@@ -84,6 +90,10 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0),
 OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0))
 @interface NSParagraphStyle : NSObject <NSCopying, NSMutableCopying, NSSecureCoding>
 
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS
+@property (readonly, NS_NONATOMIC_IOSONLY) NSTextAlignment alignment;
+
+#endif
 @property (class, readonly, copy, NS_NONATOMIC_IOSONLY) NSParagraphStyle *defaultParagraphStyle; // This class property returns a shared and cached NSParagraphStyle instance with the default style settings, with same value as the result of [[NSParagraphStyle alloc] init].
 
 + (NSWritingDirection)defaultWritingDirectionForLanguage:(nullable NSString *)languageName;  // languageName is in ISO lang region format
@@ -118,9 +128,18 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0),
 
 @property (readonly, copy, NS_NONATOMIC_IOSONLY) NSArray<NSTextList *> *textLists API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));     // Array to specify the text lists containing the paragraph, nested from outermost to innermost.
 
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS
+@property (readonly, copy, NS_NONATOMIC_IOSONLY) NSArray<__kindof NSTextBlock *> *textBlocks API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), visionos(1.0), watchos(2.0)); // Array to specify the text blocks containing the paragraph, nested from outermost to innermost.
+
+#endif
 @property (readonly, NS_NONATOMIC_IOSONLY) BOOL allowsDefaultTighteningForTruncation API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Tightens inter-character spacing in attempt to fit lines wider than the available space if the line break mode is one of the truncation modes before starting to truncate. NO by default. The maximum amount of tightening performed is determined by the system based on contexts such as font, line width, etc.
 
 @property (readonly, NS_NONATOMIC_IOSONLY) NSLineBreakStrategy lineBreakStrategy API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0)); // Specifies the line break strategies that may be used for laying out the paragraph.  The default value is NSLineBreakStrategyNone.
+
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS && OPENSWIFTUI_TARGET_OS_OSX
+@property (readonly) float tighteningFactorForTruncation; // Specifies the threshold for using tightening as an alternative to truncation when -allowsDefaultTighteningForTruncation=NO.
+@property (readonly) NSInteger headerLevel; // Specifies whether the paragraph is to be treated as a header for purposes of HTML generation.
+#endif
 
 @end
 
@@ -128,6 +147,9 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0),
 OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0), visionos(1.0))
 @interface NSMutableParagraphStyle : NSParagraphStyle
 
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS
+@property (NS_NONATOMIC_IOSONLY) NSTextAlignment alignment;
+#endif
 @property (NS_NONATOMIC_IOSONLY) CGFloat lineSpacing;
 @property (NS_NONATOMIC_IOSONLY) CGFloat paragraphSpacing;
 @property (NS_NONATOMIC_IOSONLY) CGFloat firstLineHeadIndent;
@@ -146,11 +168,19 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0),
 @property (NS_NONATOMIC_IOSONLY) BOOL allowsDefaultTighteningForTruncation API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
 @property (NS_NONATOMIC_IOSONLY) NSLineBreakStrategy lineBreakStrategy API_AVAILABLE(macos(10.11), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
 @property (NS_NONATOMIC_IOSONLY, copy) NSArray<NSTextList *> *textLists API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS
+@property (copy, NS_NONATOMIC_IOSONLY) NSArray<__kindof NSTextBlock *> *textBlocks API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), visionos(1.0), watchos(2.0));
+#endif
 
 - (void)addTabStop:(NSTextTab *)anObject API_AVAILABLE(macos(10.0), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
 - (void)removeTabStop:(NSTextTab *)anObject API_AVAILABLE(macos(10.0), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
 
 - (void)setParagraphStyle:(NSParagraphStyle *)obj API_AVAILABLE(macos(10.0), ios(9.0), tvos(9.0), watchos(2.0), visionos(1.0));
+
+#if OPENSWIFTUI_HAS_SDK_27_ADDITIONS && OPENSWIFTUI_TARGET_OS_OSX
+@property float tighteningFactorForTruncation;
+@property NSInteger headerLevel;
+#endif
 
 @end
 
