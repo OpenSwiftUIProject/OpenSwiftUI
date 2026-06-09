@@ -129,12 +129,14 @@ public protocol App {
     init()
 
     /* OpenSwiftUI Addition Begin */
+    #if !OPENSWIFTUI_SWIFTUI_RENDERER
     /// The global default renderer configuration used by the app lifecycle.
     ///
     /// If set, OpenSwiftUI applies this configuration to renderers that it
     /// creates for the app.
     @_spi(StdoutRenderer)
     nonisolated static var rendererConfiguration: _RendererConfiguration? { get }
+    #endif
     /* OpenSwiftUI Addition End */
 }
 
@@ -151,10 +153,12 @@ extension App {
     public static func main() {
         let app = Self()
         /* OpenSwiftUI Addition Begin */
+        #if !OPENSWIFTUI_SWIFTUI_RENDERER
         if let rendererConfiguration = Self.rendererConfiguration,
            case let .stdout(options) = rendererConfiguration.renderer {
             runStdoutApp(app, options: options)
         }
+        #endif
         /* OpenSwiftUI Addition End */
         runApp(app)
     }

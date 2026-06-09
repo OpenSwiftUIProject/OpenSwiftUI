@@ -2,6 +2,7 @@
 //  StdoutApp.swift
 //  OpenSwiftUI
 
+#if !OPENSWIFTUI_SWIFTUI_RENDERER
 #if canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -45,3 +46,4 @@ func runStdoutApp(
     }
     exit(0)
 }
+#endif

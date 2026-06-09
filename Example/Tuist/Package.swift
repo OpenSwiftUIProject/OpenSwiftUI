@@ -32,7 +32,7 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
     .package(url: "https://github.com/OpenSwiftUIProject/equatable.git", branch: "main"),
     .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
-    .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing", exact: "1.18.9-osui"),
+    .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git", exact: "1.19.2"),
 ]
 
 if enableLookInsideServer {
