@@ -5,7 +5,7 @@ found while validating CI, package dependencies, and platform-specific tests.
 
 | Date | OpenSwiftUI PR | Toolchain move | Notes |
 | --- | --- | --- | --- |
-| 2026-06-07 | [#899](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/899) | Xcode 16.4 / Swift 6.1 to Xcode 26.3 / Swift 6.2.4 | Kept `macos-15` and iOS 18.5 while documenting the Linux compiler crash, index store, and prebuilt package workarounds. |
+| 2026-06-07 | [#899](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/899) | Xcode 16.4 / Swift 6.1 to Xcode 26.3 / Swift 6.2.4 | Kept `macos-15` and iOS 18.5 while documenting the Linux compiler crash, index store, prebuilt package, runtime issue, and Linux dyld shim workarounds. |
 | 2025-11-18 | [#634](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/634) | Initial Xcode 26 SDK support | Added SDK 26 compatibility without moving CI to iOS 26 or macOS 26 destinations. |
 | 2025-05-11 | [#276](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/276) | Swift 6.0 / Xcode 16.0 to Swift 6.1 / Xcode 16.3 | Added the temporary Linux SDK header patch for swift-corelibs-foundation#5211. |
 | 2025-04-05 | [#241](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/241) | Xcode version selector cleanup | `16.0` resolved to Xcode 16.3 in setup tooling, so CI was changed to use a precise Xcode version. |
@@ -59,6 +59,24 @@ OpenAttributeGraph's Ubuntu CI reproduced a Swift 6.2.4 compiler crash:
 
 Resolution: use Swift 6.3.2 for Linux jobs that compile OpenAttributeGraph C++
 interop tests.
+
+### Linux dyld SDK Sentinel
+
+The non-Darwin `dyld_program_sdk_at_least` shim used to return `true` for every
+version. That hid code paths guarded by `Semantics.maximal`, because the
+theoretical maximum SDK was treated as if it were linked.
+
+Keep the Linux stub aligned with Darwin's sentinel behavior:
+
+- `dyld_program_sdk_at_least(.max)` should return `false`.
+- Ordinary SDK version checks should continue to return `true`.
+- `dyld_program_minos_at_least(.max)` can continue returning `true` on
+  non-Darwin because the min OS shim is only a permissive fallback.
+
+After changing this, update tests that previously expected
+`SemanticFeature` values introduced at `.maximal` to be enabled on Linux. A
+`.maximal` feature should be disabled by default unless the test explicitly
+forces semantics.
 
 ### Apple-Platform Index Store Crash
 
@@ -117,6 +135,88 @@ touch ~/.swiftpm/cache/prebuilts/noprebuilts
 Prefer per-invocation flags in CI when the workflow owns the command line. Use
 the global sentinel only when the command path is hard to thread through, such
 as nested package or generated workspace invocations.
+
+### Nested Packages and Generated Workspaces
+
+Do not only update the root package when bumping the tools version. Nested
+packages and generated workspace inputs can still pin the old Swift tools
+version and fail after the root package starts requiring Swift 6.2.
+
+The Swift 6.2 bump updated these OpenSwiftUI package entry points together:
+
+- `Package.swift`
+- `Example/Tuist/Package.swift`
+- `Renderer/Stdout/Package.swift`
+- `Renderer/Stdout/Tuist/Package.swift`
+
+The stdout renderer workflow is a useful canary for this class of problem. It
+can fail even after the main package and compatibility jobs are green if the
+renderer's standalone package still declares an older tools version.
+
+### Runtime Issue Recording in Tests
+
+Ubuntu CI enables both `OPENSWIFTUI_SWIFT_LOG=1` and
+`OPENSWIFTUI_LINK_TESTING=1`. Keep the SwiftLog and OSLog implementations of
+`Log.runtimeIssues` behaviorally aligned under `OPENSWIFTUI_LINK_TESTING`:
+
+- Evaluate `message()` and `args()` once at the top of the helper.
+- If `Test.current != nil`, call `Issue.record(...)` with a comment formatted
+  as:
+
+  ```text
+  [Runtime Issue] message: <message> args: <args>
+  ```
+
+- On Swift 6.2, use `Issue.record(comment)`. The `severity: .warning`
+  overload is a Swift 6.3 path.
+- Keep logging the message and arguments in the SwiftLog path. Printing the raw
+  message plus args is enough for CI triage; do not add formatter complexity
+  unless the tests actually need it.
+- Avoid `@_transparent` on runtime issue helpers that contain swift-testing
+  hook logic.
+
+Tests that intentionally trigger a runtime issue should use an
+`IssueHandlingTrait` filter such as `containsRuntimeIssue(...)`. The filter
+should both remove the expected runtime issue from the reported issue stream and
+record a failure if the expected runtime issue never appears.
+
+### MainActor and Main Thread Checks
+
+`@MainActor` isolation is not the same thing as `Thread.isMainThread` on every
+platform. On Linux, swift-testing can execute an `@MainActor` test body on a
+Swift executor that is not Foundation's main thread. Code that checks
+`Thread.isMainThread` can therefore record a runtime issue even inside an
+`@MainActor` test.
+
+For `MainActor.assumeIsolatedIfLinkedOnOrAfter` tests:
+
+- Use a linked-on-or-after semantic such as `.firstRelease` to test the
+  `MainActor.assumeIsolated` path.
+- Use `.maximal` to test the fallback path, but wrap expected warnings with the
+  runtime issue handler.
+- Keep Darwin-only assertions guarded with `#if canImport(Darwin)` when they
+  rely on `@MainActor` being backed by the OS main thread.
+
+### Exit Tests
+
+Swift 6.2 exit tests are useful for crash-only paths, but they are not
+available everywhere OpenSwiftUI runs tests. Keep exit-test cases guarded for
+platforms that do not support them, especially iOS and visionOS:
+
+```swift
+#if !os(iOS) && !os(visionOS)
+@Test
+func crashPath() async {
+    await #expect(processExitsWith: .failure) {
+        ...
+    }
+}
+#endif
+```
+
+If an expected failure can be expressed as a runtime issue instead of a process
+exit, prefer the runtime issue handler. It keeps the test in-process and avoids
+platform-specific exit-test availability.
 
 ### iOS SwiftPM Test Runner Launch
 
