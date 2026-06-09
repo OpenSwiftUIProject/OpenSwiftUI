@@ -98,6 +98,15 @@ jobs:
         shell: bash
       - name: Install xcbeautify
         run: brew install xcbeautify
+      - name: Prepare isolated DerivedData
+        shell: bash
+        run: |
+          openswiftui_derived_data_path="${RUNNER_TEMP:-/tmp}/compatibility-ios-derived-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}-openswiftui"
+          swiftui_derived_data_path="${RUNNER_TEMP:-/tmp}/compatibility-ios-derived-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}-swiftui"
+          rm -rf "$openswiftui_derived_data_path" "$swiftui_derived_data_path"
+          mkdir -p "$openswiftui_derived_data_path" "$swiftui_derived_data_path"
+          echo "OPENSWIFTUI_DERIVED_DATA_PATH=$openswiftui_derived_data_path" >> "$GITHUB_ENV"
+          echo "SWIFTUI_DERIVED_DATA_PATH=$swiftui_derived_data_path" >> "$GITHUB_ENV"
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
           set -o pipefail
@@ -110,6 +119,7 @@ jobs:
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
             -only-testing:OpenSwiftUICompatibilityTests \
+            -derivedDataPath "$OPENSWIFTUI_DERIVED_DATA_PATH" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
             ONLY_ACTIVE_ARCH=YES \
@@ -127,9 +137,20 @@ jobs:
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
             -only-testing:OpenSwiftUICompatibilityTests \
+            -derivedDataPath "$SWIFTUI_DERIVED_DATA_PATH" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
             ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
+      - name: Clean up isolated DerivedData
+        if: always()
+        shell: bash
+        run: |
+          if [[ -n "${OPENSWIFTUI_DERIVED_DATA_PATH:-}" ]]; then
+            rm -rf "$OPENSWIFTUI_DERIVED_DATA_PATH"
+          fi
+          if [[ -n "${SWIFTUI_DERIVED_DATA_PATH:-}" ]]; then
+            rm -rf "$SWIFTUI_DERIVED_DATA_PATH"
+          fi

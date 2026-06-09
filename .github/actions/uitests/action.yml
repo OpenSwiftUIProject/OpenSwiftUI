@@ -150,6 +150,16 @@ runs:
           Example.xcodeproj/xcshareddata/xcschemes/SUI_UITests.xcscheme \
           Example.xcodeproj/xcshareddata/xcschemes/OSUI_UITests.xcscheme
 
+    - name: Prepare isolated build directory
+      id: build-directory
+      shell: bash
+      run: |
+        build_root="${RUNNER_TEMP:-/tmp}/uitests-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ inputs.artifact-name }}"
+        derived_data_path="$build_root/DerivedData"
+        rm -rf "$derived_data_path"
+        mkdir -p "$derived_data_path"
+        echo "derived-data-path=$derived_data_path" >> "$GITHUB_OUTPUT"
+
     - name: Record baseline images with SwiftUI
       id: record-baseline
       if: steps.reference.outputs.needs-record == 'true'
@@ -219,6 +229,7 @@ runs:
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
+          -derivedDataPath "${{ steps.build-directory.outputs.derived-data-path }}" \
           2>&1 || record_status=$?
 
         if [[ "$record_status" -ne 0 ]]; then
@@ -254,7 +265,7 @@ runs:
       shell: bash
       run: |
         cd Example
-        uitest_tmp="${RUNNER_TEMP:-/tmp}/uitests-${GITHUB_RUN_ID}-${{ inputs.platform }}"
+        uitest_tmp="${RUNNER_TEMP:-/tmp}/uitests-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ inputs.artifact-name }}"
         rm -rf "$uitest_tmp"
         mkdir -p "$uitest_tmp/artifacts"
         result_bundle="$uitest_tmp/${{ inputs.platform }}-uitest.xcresult"
@@ -271,6 +282,7 @@ runs:
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
+          -derivedDataPath "${{ steps.build-directory.outputs.derived-data-path }}" \
           -resultBundlePath "$result_bundle" \
           2>&1 | tee "$test_log"
 
@@ -311,3 +323,12 @@ runs:
         path: ${{ steps.uitest.outputs.xcresult_archive }}
         archive: false
         retention-days: 7
+
+    - name: Clean up isolated build directory
+      if: always()
+      shell: bash
+      run: |
+        derived_data_path="${{ steps.build-directory.outputs.derived-data-path }}"
+        if [[ -n "$derived_data_path" ]]; then
+          rm -rf "$derived_data_path"
+        fi
