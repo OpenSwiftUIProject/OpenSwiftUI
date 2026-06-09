@@ -2,12 +2,13 @@
 //  GestureViewModifier.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: 9DF46B4E935FF03A55FF3DDFB0B1FF2B (SwiftUICore)
 
 package import OpenAttributeGraphShims
 
-// MARK: - GestureViewModifier [6.5.4]
+// MARK: - GestureViewModifier
 
 package protocol GestureViewModifier: MultiViewModifier, PrimitiveViewModifier {
     associatedtype ContentGesture: Gesture
@@ -21,7 +22,7 @@ package protocol GestureViewModifier: MultiViewModifier, PrimitiveViewModifier {
     var gestureMask: GestureMask { get }
 }
 
-// MARK: - GestureResponderExclusionPolicy [6.5.4]
+// MARK: - GestureResponderExclusionPolicy
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -37,7 +38,7 @@ public enum GestureResponderExclusionPolicy {
 @available(*, unavailable)
 extension GestureResponderExclusionPolicy: Sendable {}
 
-// MARK: - GestureCombiner [6.5.4]
+// MARK: - GestureCombiner
 
 package protocol GestureCombiner {
     associatedtype Result: Gesture where Result.Value == ()
@@ -50,7 +51,7 @@ package protocol GestureCombiner {
     static var exclusionPolicy: GestureResponderExclusionPolicy { get }
 }
 
-// MARK: - GestureViewModifier + Default Implementation [6.5.4]
+// MARK: - GestureViewModifier + Default Implementation
 
 extension GestureViewModifier {
     package var name: String? { nil }
@@ -90,7 +91,7 @@ extension GestureViewModifier {
     }
 }
 
-// MARK: - AddGestureModifier [6.5.4]
+// MARK: - AddGestureModifier
 
 package struct AddGestureModifier<T>: GestureViewModifier where T: Gesture {
     package var gesture: T
@@ -112,7 +113,7 @@ package struct AddGestureModifier<T>: GestureViewModifier where T: Gesture {
     package typealias ContentGesture = T
 }
 
-// MARK: - DefaultGestureCombiner [6.5.4]
+// MARK: - DefaultGestureCombiner
 
 package struct DefaultGestureCombiner: GestureCombiner {
     package typealias Base = ExclusiveGesture<AnyGesture<Void>, AnyGesture<Void>>
@@ -129,7 +130,7 @@ package struct DefaultGestureCombiner: GestureCombiner {
     }
 }
 
-// MARK: - AnyGestureContainingResponder [6.5.4]
+// MARK: - AnyGestureContainingResponder
 
 package protocol AnyGestureContainingResponder: ViewResponder {
     var viewSubgraph: Subgraph { get }
@@ -143,7 +144,7 @@ package protocol AnyGestureContainingResponder: ViewResponder {
     func detachContainer()
 }
 
-// MARK: - AnyGestureResponder [6.5.4]
+// MARK: - AnyGestureResponder
 
 package protocol AnyGestureResponder: AnyGestureContainingResponder {
     var inputs: _ViewInputs { get }
@@ -271,7 +272,7 @@ extension AnyGestureResponder {
     }
 }
 
-// MARK: - GestureResponder [6.5.4] [WIP]
+// MARK: - GestureResponder [WIP]
 
 private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGestureResponder where Modifier: GestureViewModifier {
     let modifier: Attribute<Modifier>
@@ -407,7 +408,7 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
     }
 }
 
-// MARK: - GestureFilter [6.5.4]
+// MARK: - GestureFilter
 
 private struct GestureFilter<Modifier>: StatefulRule where Modifier: GestureViewModifier {
     typealias Value = [ViewResponder]
@@ -441,7 +442,7 @@ private struct GestureFilter<Modifier>: StatefulRule where Modifier: GestureView
     }
 }
 
-// MARK: - GestureAccessibilityProvider [6.5.4]
+// MARK: - GestureAccessibilityProvider
 
 package protocol GestureAccessibilityProvider {
     nonisolated static func makeGesture(
@@ -478,7 +479,7 @@ extension _ViewInputs {
     }
 }
 
-// MARK: - GestureViewChild [6.5.4]
+// MARK: - GestureViewChild
 
 private struct GestureViewChild<Modifier>: Rule where Modifier: GestureViewModifier {
     @Attribute var modifier: Modifier
@@ -496,7 +497,7 @@ private struct GestureViewChild<Modifier>: Rule where Modifier: GestureViewModif
     }
 }
 
-// MARK: - CombiningGestureViewChild [6.5.4]
+// MARK: - CombiningGestureViewChild
 
 private struct CombiningGestureViewChild<Modifier>: Rule where Modifier: GestureViewModifier {
     @Attribute var modifier: Modifier
@@ -542,12 +543,12 @@ private struct CombiningGestureViewChild<Modifier>: Rule where Modifier: Gesture
     }
 }
 
-// MARK: - GestureViewDebug [6.5.4] [WIP]
+// MARK: - GestureViewDebug [WIP]
 
 private struct GestureViewDebug<Modifier> where Modifier: GestureViewModifier {
 }
 
-// MARK: - SubviewsGesture [6.5.4]
+// MARK: - SubviewsGesture
 
 private struct SubviewsGesture: PrimitiveGesture, PrimitiveDebuggableGesture {
     typealias Value = ()
@@ -576,15 +577,15 @@ private struct SubviewsGesture: PrimitiveGesture, PrimitiveDebuggableGesture {
     }
 }
 
-// MARK: - SimultaneousGestureCombiner [6.5.4] [WIP]
+// MARK: - SimultaneousGestureCombiner [WIP]
 
 struct SimultaneousGestureCombiner {}
 
-// MARK: - HighPriorityGestureCombiner [6.5.4] [WIP]
+// MARK: - HighPriorityGestureCombiner [WIP]
 
 struct HighPriorityGestureCombiner {}
 
-// MARK: - SubviewsPhase [6.5.4] [WIP]
+// MARK: - SubviewsPhase [WIP]
 
 private struct SubviewsPhase: StatefulRule, ObservedAttribute {
     struct Value {
@@ -612,7 +613,7 @@ private struct SubviewsPhase: StatefulRule, ObservedAttribute {
     }
 }
 
-// MARK: - ContentGesture [6.5.4]
+// MARK: - ContentGesture
 
 private struct ContentGesture<V>: GestureModifier {
     typealias Value = Void
@@ -634,7 +635,7 @@ private struct ContentGesture<V>: GestureModifier {
     }
 }
 
-// MARK: - ContentPhase [6.5.4]
+// MARK: - ContentPhase
 
 private struct ContentPhase<Value>: ResettableGestureRule {
     @Attribute var phase: GesturePhase<Value>

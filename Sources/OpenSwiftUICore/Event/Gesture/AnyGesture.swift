@@ -2,12 +2,13 @@
 //  AnyGesture.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 9726BF9F3BA5F571B5F201AD7C8C86F0 (SwiftUICore)
 
 import OpenAttributeGraphShims
 
-// MARK: - AnyGesture [6.5.4]
+// MARK: - AnyGesture
 
 /// A type-erased gesture.
 @available(OpenSwiftUI_v1_0, *)

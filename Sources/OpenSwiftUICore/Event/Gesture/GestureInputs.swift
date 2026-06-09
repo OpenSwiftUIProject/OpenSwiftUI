@@ -2,11 +2,12 @@
 //  GestureInputs.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenAttributeGraphShims
 
-// MARK: - GestureInputs [6.5.4]
+// MARK: - GestureInputs
 
 /// Input (aka inherited) attributes for gesture objects.
 @available(OpenSwiftUI_v1_0, *)
@@ -82,6 +83,15 @@ public struct _GestureInputs {
         }
     }
 
+    package var transform: Attribute<ViewTransform> {
+        let defaultTransform = intern(ViewTransform(), id: .defaultValue)
+        return viewSubgraph.apply {
+            var transform = IndirectAttribute(source: defaultTransform)
+            transform.source = viewInputs.transform
+            return transform.projectedValue
+        }
+    }
+
     package func intern<T>(
         _ value: T,
         id: GraphHost.ConstantID
@@ -148,6 +158,11 @@ extension _GestureInputs {
         @inlinable
         package static var gestureGraph: _GestureInputs.Options {
             .init(rawValue: 1 << 4)
+        }
+
+        @inlinable
+        package static var hasChangedCallbacks: _GestureInputs.Options {
+            .init(rawValue: 1 << 5)
         }
     }
 }

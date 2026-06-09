@@ -2,9 +2,12 @@
 //  GestureCategory.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - GestureCategory [6.5.4]
+package import OpenAttributeGraphShims
+
+// MARK: - GestureCategory
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -34,10 +37,29 @@ public struct GestureCategory: OptionSet {
             value: inout GestureCategory.Key.Value,
             nextValue: () -> GestureCategory.Key.Value
         ) {
-            value = GestureCategory(rawValue: value.rawValue | nextValue().rawValue)
+            value.formUnion(nextValue())
         }
     }
 }
 
 @available(*, unavailable)
 extension GestureCategory: Sendable {}
+
+// MARK: - PreferencesInputs + GestureCategory
+
+extension PreferencesInputs {
+    @inline(__always)
+    var containsGestureCategory: Bool {
+        contains(GestureCategory.Key.self)
+    }
+}
+
+// MARK: - PreferencesOutputs + GestureCategory
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var gestureCategory: Attribute<GestureCategory>? {
+        get { self[GestureCategory.Key.self] }
+        set { self[GestureCategory.Key.self] = newValue }
+    }
+}

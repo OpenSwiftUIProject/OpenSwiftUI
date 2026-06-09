@@ -2,12 +2,13 @@
 //  RepeatGesture.swift
 //  OpenSwiftUICore
 //
-//  Status: Unimplmented
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: BECD07FC80B4CA0BF429B041392E806A (SwiftUICore)
 
 import OpenAttributeGraphShims
 
-// MARK: - RepeatGesture [6.5.4]
+// MARK: - RepeatGesture
 
 extension Gesture {
     package func repeatCount(
@@ -32,7 +33,26 @@ package struct RepeatGesture<Value>: GestureModifier {
         inputs: _GestureInputs,
         body: (_GestureInputs) -> _GestureOutputs<Value>
     ) -> _GestureOutputs<Value> {
-        _openSwiftUIUnimplementedFailure()
+        let resetDelta = Attribute(value: UInt32.zero)
+        let resetSeed = Attribute(RepeatResetSeed(
+            resetSeed: inputs.resetSeed,
+            delta: resetDelta
+        ))
+        var childInputs = inputs
+        childInputs.resetSeed = resetSeed
+        let outputs = body(childInputs)
+        let phase = Attribute(RepeatPhase(
+            modifier: modifier.value,
+            phase: outputs.phase,
+            time: inputs.viewInputs.time,
+            resetSeed: inputs.resetSeed,
+            resetDelta: resetDelta,
+            useGestureGraph: inputs.options.contains(.gestureGraph),
+            deadline: nil,
+            index: .zero,
+            lastResetSeed: .zero
+        ))
+        return outputs.withPhase(phase)
     }
 }
 
@@ -50,10 +70,62 @@ private struct RepeatPhase<V>: ResettableGestureRule {
     typealias PhaseValue = V
     typealias Value = GesturePhase<V>
 
+    mutating func resetPhase() {
+        deadline = nil
+        index = .zero
+    }
+
     mutating func updateValue() {
         guard resetIfNeeded() else {
             return
         }
-        _openSwiftUIUnimplementedFailure()
+        if let deadline, deadline < time {
+            value = .failed
+            return
+        }
+        switch phase {
+        case .possible:
+            value = phase
+        case let .active(value):
+            deadline = nil
+            let repeatLimit = modifier.count - 1
+            if repeatLimit > Int(index) {
+                self.value = .possible(value)
+            } else {
+                self.value = phase
+            }
+        case let .ended(wrapped):
+            index &+= 1
+            if modifier.count > Int(index) {
+                deadline = time + modifier.maximumDelay
+                value = .possible(wrapped)
+                GraphHost.currentHost.continueTransaction { [_resetDelta, index] in
+                    _resetDelta.value = index
+                }
+            } else {
+                deadline = nil
+                value = phase
+            }
+        case .failed:
+            value = phase
+        }
+        guard let deadline else {
+            return
+        }
+        if useGestureGraph {
+            let gestureGraph = GestureGraph.current
+            gestureGraph.nextUpdateTime = min(gestureGraph.nextUpdateTime, deadline)
+        } else {
+            ViewGraph.current.nextUpdate.gestures.at(deadline)
+        }
+    }
+}
+
+private struct RepeatResetSeed: Rule {
+    @Attribute var resetSeed: UInt32
+    @Attribute var delta: UInt32
+
+    var value: UInt32 {
+        resetSeed &+ delta
     }
 }

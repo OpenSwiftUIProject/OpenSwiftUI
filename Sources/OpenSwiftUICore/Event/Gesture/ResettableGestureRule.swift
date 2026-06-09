@@ -2,11 +2,12 @@
 //  ResettableGestureRule.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenAttributeGraphShims
 
-// MARK: - ResettableGestureRule [6.5.4]
+// MARK: - ResettableGestureRule
 
 package protocol ResettableGestureRule: StatefulRule {
     associatedtype PhaseValue = Void

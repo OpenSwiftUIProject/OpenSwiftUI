@@ -112,10 +112,6 @@ extension PreferencesOutputs {
     }
 }
 
-// TODO: - View + truePreference
-
-// TODO: - Gesture + truePreference
-
 // MARK: - HostPreferencesWriter
 
 private struct HostPreferencesWriter<K>: StatefulRule, AsyncAttribute, CustomStringConvertible where K: PreferenceKey {
@@ -166,4 +162,63 @@ private struct HostPreferencesWriter<K>: StatefulRule, AsyncAttribute, CustomStr
     var description: String {
         "Preference: \(K.readableName)"
     }
+}
+
+// MARK: - View + truePreference
+
+@available(OpenSwiftUI_v1_0, *)
+extension View {
+    @MainActor
+    @preconcurrency
+    package func truePreference<K>(_ key: K.Type = K.self) -> some View where K: PreferenceKey, K.Value == Bool {
+        modifier(TruePreferenceWritingModifier<K>())
+    }
+}
+
+// MARK: - TruePreferenceWritingModifier
+
+private struct TruePreferenceWritingModifier<K>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where K: PreferenceKey, K.Value == Bool {
+    nonisolated static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        var outputs = body(_Graph(), inputs)
+        outputs.preferences.makePreferenceWriter(
+            inputs: inputs.preferences,
+            key: K.self,
+            value: inputs.intern(true, id: .trueValue)
+        )
+        return outputs
+    }
+}
+
+// MARK: - Gesture + truePreference
+
+extension Gesture {
+    package func truePreference<K>(_ key: K.Type = K.self) -> some Gesture<Value> where K: PreferenceKey, K.Value == Bool {
+        modifier(TruePreferenceWritingGestureModifier<K, Value>())
+    }
+}
+
+// MARK: - TruePreferenceWritingGestureModifier
+
+private struct TruePreferenceWritingGestureModifier<K, GestureValue>: GestureModifier where K: PreferenceKey, K.Value == Bool {
+    static func _makeGesture(
+        modifier: _GraphValue<TruePreferenceWritingGestureModifier<K, GestureValue>>,
+        inputs: _GestureInputs,
+        body: (_GestureInputs) -> _GestureOutputs<GestureValue>
+    ) -> _GestureOutputs<GestureValue> {
+        var outputs = body(inputs)
+        outputs.preferences.makePreferenceWriter(
+            inputs: inputs.preferences,
+            key: K.self,
+            value: inputs.intern(true, id: .trueValue)
+        )
+        return outputs
+    }
+
+    typealias Value = GestureValue
+
+    typealias BodyValue = GestureValue
 }

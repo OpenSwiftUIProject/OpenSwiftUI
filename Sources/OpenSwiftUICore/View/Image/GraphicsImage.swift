@@ -196,7 +196,9 @@ package struct ResolvedVectorGlyph: Equatable {
             allowsContentTransitions = false
             variableValue = value.map { CGFloat($0) } ?? .infinity
         }
+        #if OPENSWIFTUI_LINK_COREUI
         animator.glyph = glyph
+        #endif
         animator.variableValue = variableValue
         animator.flipsRightToLeft = flipsRightToLeft
         animator.renderingMode = context.effectiveSymbolRenderingMode?.rbRenderingMode ?? 255
