@@ -859,8 +859,25 @@ extension NSHostingView {
     }
 
     public func _renderAsyncForTest(interval: Double) -> Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        advanceTimeForTest(interval: interval)
+        canAdvanceTimeAutomatically = false
+        var result = true
+        repeat {
+            RunLoop.flushObservers()
+            let didRender = Update.locked {
+                renderAsync(targetTimestamp: nil) != nil
+            }
+            if didRender {
+                CATransaction.flush()
+                if result {
+                    result = !viewGraph.updateRequiredMainThread
+                }
+            } else {
+                result = false
+            }
+        } while !propertiesNeedingUpdate.isEmpty
+        canAdvanceTimeAutomatically = true
+        return result
     }
 }
 
