@@ -393,7 +393,7 @@ extension DisplayList {
                             newItem: newItem,
                             newState: newStatePtr,
                             tag: .inherited
-                        ) { layer, _, oldItem, oldState, newItem, newState in
+                        ) { [platform] layer, _, oldItem, oldState, newItem, newState in
                             platform.updateInheritedLayerAsync(
                                 layer: &layer,
                                 oldItem: oldItem,
