@@ -28,6 +28,8 @@ jobs:
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENSWIFTUI_LINK_TESTING: 1
+      # Match Xcode's test launcher so OSLogStore can read current-process debug messages.
+      OS_ACTIVITY_DT_MODE: "YES"
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
