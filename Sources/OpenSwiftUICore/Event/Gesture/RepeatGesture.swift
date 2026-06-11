@@ -24,6 +24,7 @@ package struct RepeatGesture<Value>: GestureModifier {
     package var maximumDelay: Double
 
     package init(count: Int, maximumDelay: Double = 0.35) {
+        precondition(count > 0, "count must be positive")
         self.count = count
         self.maximumDelay = maximumDelay
     }
