@@ -197,7 +197,11 @@ extension AnyOptionalAttribute {
     }
 
     package init(_ attribute: AnyAttribute?) {
-        preconditionFailure("#39")
+        if let attribute {
+            self = Swift.unsafeBitCast(attribute.rawValue, to: AnyOptionalAttribute.self)
+        } else {
+            self = AnyOptionalAttribute()
+        }
     }
 }
 
