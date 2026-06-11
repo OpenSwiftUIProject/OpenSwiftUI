@@ -10,6 +10,42 @@ OpenSwiftUI uses Swift-DocC to generate API documentation, which is hosted on Gi
 
 The documentation is built from the `OpenSwiftUI` target and includes symbols from `OpenSwiftUICore` via `@_exported import`. System framework symbols (CoreFoundation, CoreGraphics, etc.) are filtered out to keep the documentation focused on OpenSwiftUI's own APIs.
 
+## CI Deployment
+
+Documentation is built and published by `.github/workflows/documentation.yml`.
+The workflow deploys to GitHub Pages when a version tag like `0.18.3` is pushed,
+or when the workflow is run manually from the Actions tab.
+
+The workflow:
+
+1. Checks out the repository on a macOS runner.
+2. Selects the project Xcode version.
+3. Runs `Scripts/CI/darwin_setup_build.sh` so local package dependencies match
+   the rest of the macOS CI environment.
+4. Shallow-clones `OpenSwiftUIProject/swift-docc-render-artifact` at
+   `release/6.3-colorful` and exports its `dist/` directory as `DOCC_HTML_DIR`.
+5. Builds the static DocC site with
+   `Scripts/build-documentation.sh --clean --hosting-base-path /OpenSwiftUI`,
+   with source links pointing at the triggering tag or manual workflow ref.
+6. Uploads `.docs/build/docc-output` with `actions/upload-pages-artifact`.
+7. Deploys the uploaded artifact with `actions/deploy-pages`.
+
+**GitHub Pages settings:**
+- **Source:** GitHub Actions
+- **Environment:** `github-pages`
+
+GitHub repository setup:
+
+1. Open the repository on GitHub.
+2. Go to **Settings > Pages**.
+3. Under **Build and deployment**, set **Source** to **GitHub Actions**.
+4. Go to **Settings > Environments > github-pages**.
+5. Under **Deployment branches and tags**, either choose **No restriction**, or
+   choose **Selected branches and tags** and add:
+   - tag pattern `[0-9]*.[0-9]*.[0-9]*`
+   - branch pattern `main` if you want manual `workflow_dispatch` deployments
+     from the default branch
+
 ## Documentation Scripts
 
 Two scripts are provided for documentation management:
@@ -43,6 +79,19 @@ Builds documentation locally with optional preview server.
 - `--source-service-base-url URL` - Base URL for source links
 - `--clean` - Clean build artifacts and force rebuild
 
+Set `DOCC_HTML_DIR` to use a custom swift-docc-render `dist/` directory. CI
+uses the renderer from
+`OpenSwiftUIProject/swift-docc-render-artifact@release/6.3-colorful`. For local
+preview with the same renderer, use a local checkout:
+
+```bash
+DOCC_HTML_DIR=/path/to/swift-docc-render-artifact/dist \
+  ./Scripts/build-documentation.sh --preview
+```
+
+For local preview, omit `--hosting-base-path`; that option is only applied to
+static builds for GitHub Pages.
+
 **Example workflow:**
 ```bash
 # Preview documentation locally before deploying
@@ -55,27 +104,28 @@ Builds documentation locally with optional preview server.
 
 ### `Scripts/update-gh-pages-documentation.sh`
 
-Builds and deploys documentation to GitHub Pages.
+Legacy manual deployment script. Prefer the GitHub Actions workflow for normal
+publishing; this script is kept as an emergency/manual fallback.
 
 **Usage:**
 ```bash
-# Build and deploy documentation to GitHub Pages
-./Scripts/update-gh-pages-documentation.sh --hosting-base-path /OpenSwiftUI
+# Build and deploy documentation to the legacy gh-pages branch
+./Scripts/update-gh-pages-documentation.sh
 
 # Test deployment without pushing (dry-run)
-./Scripts/update-gh-pages-documentation.sh --hosting-base-path /OpenSwiftUI --echo-without-push
+./Scripts/update-gh-pages-documentation.sh --echo-without-push
 
 # Deploy using existing build (skip building)
-./Scripts/update-gh-pages-documentation.sh --no-build --hosting-base-path /OpenSwiftUI
+./Scripts/update-gh-pages-documentation.sh --no-build
 
 # Deploy with internal symbols
-./Scripts/update-gh-pages-documentation.sh --minimum-access-level internal --hosting-base-path /OpenSwiftUI
+./Scripts/update-gh-pages-documentation.sh --minimum-access-level internal
 ```
 
-**Important:** Always use `--hosting-base-path /OpenSwiftUI` when deploying to GitHub Pages, as the site is served from a subdirectory. Without this flag, CSS/JS resources will fail to load.
+The script defaults to `--hosting-base-path /OpenSwiftUI` because the site is served from a subdirectory. Without this setting, CSS/JS resources will fail to load.
 
 **Options:**
-- `--hosting-base-path PATH` - **Required** for GitHub Pages deployment (use `/OpenSwiftUI`)
+- `--hosting-base-path PATH` - Base path for GitHub Pages deployment (default: `/OpenSwiftUI`)
 - `--no-build` - Skip building, use existing documentation output
 - `--echo-without-push` - Show push command without executing (for testing)
 - `--minimum-access-level LEVEL` - Symbol visibility (default: public)
@@ -91,9 +141,9 @@ Builds and deploys documentation to GitHub Pages.
 
 **Note:** Force push is used by default to keep the repository size small by avoiding accumulation of large binary files (CSS, JS, images) in git history. Each deployment completely replaces the previous one.
 
-## GitHub Pages Configuration
+## Legacy GitHub Pages Branch Layout
 
-The documentation is deployed to the `gh-pages` branch with the following structure:
+The legacy manual script deploys to the `gh-pages` branch with the following structure:
 
 ```
 gh-pages/
@@ -106,11 +156,6 @@ gh-pages/
     ├── documentation/
     └── ...
 ```
-
-**GitHub Pages settings:**
-- **Source:** Deploy from branch
-- **Branch:** `gh-pages`
-- **Folder:** `/docs`
 
 ## Why Self-Hosted Instead of Swift Package Index?
 
@@ -150,19 +195,20 @@ We appreciate the Swift Package Index team's efforts in providing documentation 
 
 # 3. Verify changes at http://localhost:8000/documentation/openswiftui
 
-# 4. Deploy to GitHub Pages
-./Scripts/update-gh-pages-documentation.sh --hosting-base-path /OpenSwiftUI
+# 4. Merge the documentation changes
 
-# 5. Wait 1-2 minutes for GitHub Pages to rebuild
+# 5. Push a version tag such as 0.18.3, or run the Documentation workflow manually
 # 6. Verify at https://openswiftuiproject.github.io/OpenSwiftUI/documentation/openswiftui/
 ```
 
 ### For major API changes:
 
-If you've added new public APIs or significantly changed the module structure, use `--clean` to force regeneration of symbol graphs:
+The CI workflow already uses `--clean` to force symbol graph regeneration. For
+local verification after adding new public APIs or changing module structure,
+run:
 
 ```bash
-./Scripts/update-gh-pages-documentation.sh --clean --hosting-base-path /OpenSwiftUI
+./Scripts/build-documentation.sh --clean --preview
 ```
 
 ## Troubleshooting
@@ -173,10 +219,14 @@ If you've added new public APIs or significantly changed the module structure, u
 
 **Cause:** Documentation was built without `--hosting-base-path /OpenSwiftUI` flag.
 
-**Solution:** Rebuild and redeploy with the correct flag:
+**Solution:** The CI workflow already passes the correct base path. For manual
+local checks, rebuild with:
 ```bash
-./Scripts/update-gh-pages-documentation.sh --hosting-base-path /OpenSwiftUI
+./Scripts/build-documentation.sh --hosting-base-path /OpenSwiftUI
 ```
+
+If you use the legacy manual deployment script, keep its default
+`/OpenSwiftUI` base path or pass an explicit equivalent.
 
 ### Symbol graphs are stale
 
@@ -222,11 +272,10 @@ If you've added new public APIs or significantly changed the module structure, u
   --preview
 ```
 
-### Testing deployment without pushing
+### Testing legacy deployment without pushing
 
 ```bash
 ./Scripts/update-gh-pages-documentation.sh \
-  --hosting-base-path /OpenSwiftUI \
   --echo-without-push
 ```
 
@@ -244,7 +293,7 @@ The build process filters symbol graphs to remove re-exported system framework s
 4. Only symbols from `OpenSwiftUI` and `OpenSwiftUICore` modules are kept
 5. Typical reduction: ~10,000 → ~4,300 symbols
 
-### Git Worktree Approach
+### Legacy Git Worktree Approach
 
 The deployment script uses git worktree to manage the gh-pages branch:
 
@@ -262,7 +311,7 @@ By default, deployments use `git push --force` to prevent repository size growth
 - Force push keeps only the latest version in git history
 - Trade-off: No documentation version history in git (use git tags on main branch for versioning instead)
 
-To preserve history: `./Scripts/update-gh-pages-documentation.sh --no-force --hosting-base-path /OpenSwiftUI`
+To preserve history: `./Scripts/update-gh-pages-documentation.sh --no-force`
 
 ## Future Improvements
 
@@ -270,11 +319,6 @@ The following improvements are planned for the documentation system:
 
 - [ ] **Remove default implementation** - Currently, the documentation includes default implementations from protocol extensions. These can clutter the documentation and make it harder to find the primary API declarations. Future work will add filtering to hide default implementations while keeping protocol requirements visible.
 
-- [ ] **Migrate to GitHub Actions** - The current deployment process uses a local `gh-pages` branch and manual script execution. Migrating to GitHub Actions would provide:
-  - Automatic documentation updates on every push to main
-  - Consistent build environment (no local machine dependencies)
-  - Build artifacts and logs available in GitHub UI
-  - Easier collaboration (no need to run deployment scripts locally)
-  - Integration with PR previews (optional)
-
-  This would replace the manual `./Scripts/update-gh-pages-documentation.sh` workflow with an automated CI/CD pipeline.
+- [x] **Migrate to GitHub Actions** - Documentation deployment now runs through
+  `.github/workflows/documentation.yml`, with publication from version tags and
+  manual workflow runs.

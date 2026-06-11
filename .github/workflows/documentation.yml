@@ -1,0 +1,95 @@
+name: Documentation
+
+on:
+  push:
+    tags:
+      - '[0-9]*.[0-9]*.[0-9]*'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: Build DocC site
+    runs-on:
+      - self-hosted
+      - macos-15
+    env:
+      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: 2024
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LINK_TESTING: 0
+      OPENSWIFTUI_SPI_GENERATE_DOCS: 1
+      SPI_GENERATE_DOCS: 1
+      DOCC_RENDERER_REPOSITORY: OpenSwiftUIProject/swift-docc-render-artifact
+      DOCC_RENDERER_REF: release/6.3-colorful
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Xcode
+        uses: OpenSwiftUIProject/setup-xcode@v2
+        with:
+          xcode-version: "26.3"
+      - name: Set up build environment
+        run: Scripts/CI/darwin_setup_build.sh
+        shell: bash
+      - name: Check out DocC renderer
+        run: |
+          renderer_path="${RUNNER_TEMP}/swift-docc-render-artifact"
+          rm -rf "$renderer_path"
+          git clone \
+            --depth 1 \
+            --filter=blob:none \
+            --single-branch \
+            --branch "$DOCC_RENDERER_REF" \
+            "https://github.com/${DOCC_RENDERER_REPOSITORY}.git" \
+            "$renderer_path"
+          test -d "$renderer_path/dist"
+          echo "DOCC_HTML_DIR=$renderer_path/dist" >> "$GITHUB_ENV"
+        shell: bash
+      - name: Build DocC for GitHub Pages
+        run: |
+          Scripts/build-documentation.sh \
+            --clean \
+            --hosting-base-path /OpenSwiftUI \
+            --source-service github \
+            --source-service-base-url "https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/${GITHUB_REF_NAME}"
+        shell: bash
+      - name: Prepare Pages artifact
+        run: touch .docs/build/docc-output/.nojekyll
+        shell: bash
+      - name: Install GNU tar
+        run: |
+          if ! command -v gtar >/dev/null 2>&1; then
+            brew install gnu-tar
+          fi
+        shell: bash
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v4
+        with:
+          path: .docs/build/docc-output
+
+  deploy:
+    name: Deploy DocC site
+    if: startsWith(github.ref, 'refs/tags/') || github.event_name == 'workflow_dispatch'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      pages: write
+      id-token: write
+    concurrency:
+      group: pages
+      cancel-in-progress: true
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4

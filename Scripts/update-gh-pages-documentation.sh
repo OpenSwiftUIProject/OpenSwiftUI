@@ -25,7 +25,7 @@ DOCC_OUTPUT_DIR="$BUILD_DIR/docc-output"
 BUILD_DOCS=true
 MINIMUM_ACCESS_LEVEL="public"
 TARGET_NAME="OpenSwiftUI"
-HOSTING_BASE_PATH=""
+HOSTING_BASE_PATH="/OpenSwiftUI"
 CLEAN_BUILD=false
 SOURCE_SERVICE="github"
 SOURCE_SERVICE_BASE_URL="https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main"
@@ -44,15 +44,16 @@ Usage: $(basename "$0") [OPTIONS]
 
 Publish Swift documentation to GitHub Pages using DocC.
 
-This script will build documentation (or use existing build) and deploy it
-to the gh-pages branch for GitHub Pages hosting.
+This legacy script will build documentation (or use existing build) and deploy
+it to the gh-pages branch for GitHub Pages hosting. The canonical deployment
+path is now .github/workflows/documentation.yml.
 
 OPTIONS:
     --no-build                    Skip building documentation (use existing output)
     --minimum-access-level LEVEL  Set minimum access level (public, internal, private)
                                   Default: public
     --target TARGET               Target to document (default: OpenSwiftUI)
-    --hosting-base-path PATH      Base path for hosting (e.g., /OpenSwiftUI)
+    --hosting-base-path PATH      Base path for hosting (default: /OpenSwiftUI)
     --source-service SERVICE      Source service (github, gitlab, bitbucket)
     --source-service-base-url URL Base URL for source service
                                   (e.g., https://github.com/user/repo/blob/main)
@@ -157,6 +158,7 @@ log_info "Configuration:"
 log_info "  Target: $TARGET_NAME"
 log_info "  Build Documentation: $BUILD_DOCS"
 log_info "  Force Push: $FORCE_PUSH"
+log_warning "This is the legacy manual deployment path. Documentation is deployed from CI on version tags and manual workflow runs."
 if [[ -n "$HOSTING_BASE_PATH" ]]; then
     log_info "  Hosting Base Path: $HOSTING_BASE_PATH"
 fi

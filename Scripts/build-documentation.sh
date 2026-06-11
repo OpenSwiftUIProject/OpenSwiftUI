@@ -57,6 +57,10 @@ OPTIONS:
     --clean                       Clean build artifacts and force rebuild
     -h, --help                    Show this help message
 
+ENVIRONMENT:
+    DOCC_HTML_DIR                 Use an existing swift-docc-render dist directory.
+                                  When unset, DocC uses its bundled renderer.
+
 EXAMPLES:
     # Build and preview documentation (source links enabled by default)
     $(basename "$0") --preview
@@ -94,11 +98,24 @@ log_error() {
 # Function to run docc command
 rundocc() {
     if command -v xcrun >/dev/null 2>&1; then
-        # To use a custom template, set DOCC_HTML_DIR to the dist path of swift-docc-render
         xcrun docc "$@"
     else
         docc "$@"
     fi
+}
+
+configure_docc_renderer() {
+    if [[ -n "${DOCC_HTML_DIR:-}" ]]; then
+        [[ -d "$DOCC_HTML_DIR" ]] || {
+            log_error "DOCC_HTML_DIR does not exist: $DOCC_HTML_DIR"
+            exit 1
+        }
+        export DOCC_HTML_DIR
+        log_info "Using DocC renderer: $DOCC_HTML_DIR"
+        return
+    fi
+
+    log_info "DocC Renderer: bundled default"
 }
 
 # Parse command line arguments
@@ -164,12 +181,19 @@ log_info "  Preview Mode: $PREVIEW_MODE"
 if [[ "$PREVIEW_MODE" == true ]]; then
     log_info "  Preview Port: $PREVIEW_PORT"
 fi
-if [[ -n "$HOSTING_BASE_PATH" ]]; then
+if [[ -n "$HOSTING_BASE_PATH" && "$PREVIEW_MODE" == true ]]; then
+    log_warning "--hosting-base-path is ignored in preview mode; it is intended for static hosting."
+elif [[ -n "$HOSTING_BASE_PATH" ]]; then
     log_info "  Hosting Base Path: $HOSTING_BASE_PATH"
 fi
 if [[ -n "$SOURCE_SERVICE" ]]; then
     log_info "  Source Service: $SOURCE_SERVICE"
     log_info "  Source Service Base URL: $SOURCE_SERVICE_BASE_URL"
+fi
+if [[ -n "${DOCC_HTML_DIR:-}" ]]; then
+    log_info "  DocC Renderer: $DOCC_HTML_DIR"
+else
+    log_info "  DocC Renderer: bundled default"
 fi
 
 # Validate source service configuration
@@ -206,6 +230,7 @@ fi
 log_info "Preparing build directories..."
 mkdir -p "$SYMBOL_GRAPH_DIR"
 mkdir -p "$DOCC_OUTPUT_DIR"
+configure_docc_renderer
 
 # Step 1: Generate symbol graphs
 cd "$REPO_ROOT"
@@ -346,7 +371,7 @@ if [[ -n "$DOCC_CATALOG" ]]; then
         DOCC_ARGS+=(--port "$PREVIEW_PORT")
     fi
 
-    if [[ -n "$HOSTING_BASE_PATH" ]]; then
+    if [[ -n "$HOSTING_BASE_PATH" && "$PREVIEW_MODE" == false ]]; then
         DOCC_ARGS+=(--hosting-base-path "$HOSTING_BASE_PATH")
     fi
 
@@ -365,12 +390,12 @@ if [[ -n "$DOCC_CATALOG" ]]; then
 
     if [[ "$PREVIEW_MODE" == true ]]; then
         # Check if port is already in use
-        if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+        if lsof -Pi :"$PREVIEW_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
             log_warning "Port $PREVIEW_PORT is already in use"
 
             # Find the process using the port
-            PORT_PID=$(lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t)
-            PORT_PROCESS=$(ps -p $PORT_PID -o command= 2>/dev/null || echo "Unknown process")
+            PORT_PID=$(lsof -Pi :"$PREVIEW_PORT" -sTCP:LISTEN -t)
+            PORT_PROCESS=$(ps -p "$PORT_PID" -o command= 2>/dev/null || echo "Unknown process")
 
             log_info "Process using port $PREVIEW_PORT (PID $PORT_PID): $PORT_PROCESS"
 
@@ -380,11 +405,11 @@ if [[ -n "$DOCC_CATALOG" ]]; then
 
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 log_info "Killing process $PORT_PID..."
-                kill $PORT_PID
+                kill "$PORT_PID"
                 sleep 1
 
                 # Verify it's killed
-                if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+                if lsof -Pi :"$PREVIEW_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
                     log_error "Failed to kill process on port $PREVIEW_PORT"
                     exit 1
                 fi
@@ -420,7 +445,7 @@ else
         DOCC_ARGS+=(--port "$PREVIEW_PORT")
     fi
 
-    if [[ -n "$HOSTING_BASE_PATH" ]]; then
+    if [[ -n "$HOSTING_BASE_PATH" && "$PREVIEW_MODE" == false ]]; then
         DOCC_ARGS+=(--hosting-base-path "$HOSTING_BASE_PATH")
     fi
 
@@ -432,12 +457,12 @@ else
 
     if [[ "$PREVIEW_MODE" == true ]]; then
         # Check if port is already in use
-        if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+        if lsof -Pi :"$PREVIEW_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
             log_warning "Port $PREVIEW_PORT is already in use"
 
             # Find the process using the port
-            PORT_PID=$(lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t)
-            PORT_PROCESS=$(ps -p $PORT_PID -o command= 2>/dev/null || echo "Unknown process")
+            PORT_PID=$(lsof -Pi :"$PREVIEW_PORT" -sTCP:LISTEN -t)
+            PORT_PROCESS=$(ps -p "$PORT_PID" -o command= 2>/dev/null || echo "Unknown process")
 
             log_info "Process using port $PREVIEW_PORT (PID $PORT_PID): $PORT_PROCESS"
 
@@ -447,11 +472,11 @@ else
 
             if [[ $REPLY =~ ^[Yy]$ ]]; then
                 log_info "Killing process $PORT_PID..."
-                kill $PORT_PID
+                kill "$PORT_PID"
                 sleep 1
 
                 # Verify it's killed
-                if lsof -Pi :$PREVIEW_PORT -sTCP:LISTEN -t >/dev/null 2>&1; then
+                if lsof -Pi :"$PREVIEW_PORT" -sTCP:LISTEN -t >/dev/null 2>&1; then
                     log_error "Failed to kill process on port $PREVIEW_PORT"
                     exit 1
                 fi
