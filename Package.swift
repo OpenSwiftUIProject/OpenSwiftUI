@@ -929,6 +929,8 @@ if swiftLogCondition {
     )
     openSwiftUICoreTarget.addSwiftLogSettings()
     openSwiftUITarget.addSwiftLogSettings()
+    openSwiftUICoreTestTarget.addSwiftLogSettings()
+    openSwiftUISymbolDualTestsTarget.addSwiftLogSettings()
 }
 
 if swiftCryptoCondition {

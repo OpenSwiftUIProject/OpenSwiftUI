@@ -58,6 +58,8 @@ package struct AttributeType {
 }
 
 extension AnyAttribute {
+    package var description: String { "#\(rawValue)" }
+
     package static var `nil`: AnyAttribute { AnyAttribute(rawValue: 0x2) }
 
     package static var currentWasModified: Bool { false }
@@ -195,7 +197,11 @@ extension AnyOptionalAttribute {
     }
 
     package init(_ attribute: AnyAttribute?) {
-        preconditionFailure("#39")
+        if let attribute {
+            self = Swift.unsafeBitCast(attribute.rawValue, to: AnyOptionalAttribute.self)
+        } else {
+            self = AnyOptionalAttribute()
+        }
     }
 }
 

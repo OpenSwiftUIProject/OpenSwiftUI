@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 9DF46B4E935FF03A55FF3DDFB0B1FF2B (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -272,7 +272,7 @@ extension AnyGestureResponder {
     }
 }
 
-// MARK: - GestureResponder [WIP]
+// MARK: - GestureResponder
 
 private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGestureResponder where Modifier: GestureViewModifier {
     let modifier: Attribute<Modifier>
@@ -332,7 +332,7 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
     }
 
     func makeSubviewsGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
-        makeGesture(inputs: inputs)
+        super.makeGesture(inputs: inputs)
     }
 
     override var gestureContainer: AnyObject? {
@@ -351,7 +351,11 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
         cacheKey: UInt32?,
         options: ViewResponder.ContainsPointsOptions
     ) -> ViewResponder.ContainsPointsResult {
-        _openSwiftUIUnimplementedFailure()
+        var result = super.containsGlobalPoints(points, cacheKey: cacheKey, options: options)
+        if options.contains(.useZDistanceAsPriority) {
+            result.priority = ViewResponder.gestureContainmentPriority
+        }
+        return result
     }
 
     override func bindEvent(_ event: any EventType) -> ResponderNode? {
@@ -369,31 +373,40 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
 
     override func makeGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
         makeWrappedGesture(inputs: inputs) { childInputs in
-//            let childViewInputs = childInputs.viewInputs
-//            let closure: () -> _GestureOutputs<Void> = { [self] in
-//                if inputs.options.contains(.skipCombiners) {
-//                    let childGesture = Attribute(GestureViewChild(
-//                        modifier: modifier,
-//                        isEnabled: childViewInputs.isEnabled,
-//                        viewPhase: childViewInputs.viewPhase
-//                    ))
-//                    return AnyGesture<Void>.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
-//                } else {
-//                    let childGesture = Attribute(CombiningGestureViewChild(
-//                        modifier: modifier,
-//                        isEnabled: childViewInputs.isEnabled,
-//                        viewPhase: childViewInputs.viewPhase,
-//                        node: self
-//                    ))
-//                    return Modifier.Combiner.Result.makeDebuggableGesture(gesture: _GraphValue(childGesture), inputs: childInputs)
-//                }
-//            }
-//            guard inputs.options.contains(.includeDebugOutput) else {
-//                return closure()
-//            }
-//            // TODO: GestureViewDebug
-//            return closure()
-            _openSwiftUIUnimplementedFailure()
+            let childViewInputs = childInputs.viewInputs
+            let outputs: _GestureOutputs<Void> = {
+                if childInputs.options.contains(.skipCombiners) {
+                    let childGesture = Attribute(GestureViewChild(
+                        modifier: modifier,
+                        isEnabled: childViewInputs.isEnabled,
+                        viewPhase: childViewInputs.viewPhase
+                    ))
+                    return AnyGesture<Void>.makeDebuggableGesture(
+                        gesture: _GraphValue(childGesture),
+                        inputs: childInputs
+                    )
+                } else {
+                    let childGesture = Attribute(CombiningGestureViewChild(
+                        modifier: modifier,
+                        isEnabled: childViewInputs.isEnabled,
+                        viewPhase: childViewInputs.viewPhase,
+                        node: self
+                    ))
+                    return Modifier.Combiner.Result.makeDebuggableGesture(
+                        gesture: _GraphValue(childGesture),
+                        inputs: childInputs
+                    )
+                }
+            }()
+            guard childInputs.options.contains(.includeDebugOutput) else {
+                return outputs
+            }
+            var wrappedOutputs = outputs
+            wrappedOutputs.debugData = Attribute(GestureViewDebug(
+                modifier: modifier,
+                debugData: OptionalAttribute(outputs.debugData)
+            ))
+            return wrappedOutputs
         }
     }
 
@@ -406,6 +419,58 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
     override func extendPrintTree(string: inout String) {
         string.append("\(Modifier.ContentGesture.self)")
     }
+}
+
+// MARK: - GestureAccessibilityProvider
+
+package protocol GestureAccessibilityProvider {
+    nonisolated static func makeGesture(
+        mask: @autoclosure () -> Attribute<GestureMask>,
+        inputs: _ViewInputs,
+        outputs: inout _ViewOutputs
+    )
+}
+
+// MARK: - SimultaneousGestureModifier
+
+struct SimultaneousGestureModifier<T>: GestureViewModifier where T: Gesture {
+    var gesture: T
+    var name: String?
+    var gestureMask: GestureMask
+
+    init(
+        _ gesture: T,
+        name: String?,
+        gestureMask: GestureMask
+    ) {
+        self.gesture = gesture
+        self.name = name
+        self.gestureMask = gestureMask
+    }
+
+    typealias ContentGesture = T
+    typealias Combiner = SimultaneousGestureCombiner
+}
+
+// MARK: - HighPriorityGestureModifier
+
+struct HighPriorityGestureModifier<T>: GestureViewModifier where T: Gesture {
+    var gesture: T
+    var name: String?
+    var gestureMask: GestureMask
+
+    init(
+        _ gesture: T,
+        name: String?,
+        gestureMask: GestureMask
+    ) {
+        self.gesture = gesture
+        self.name = name
+        self.gestureMask = gestureMask
+    }
+
+    typealias ContentGesture = T
+    typealias Combiner = HighPriorityGestureCombiner
 }
 
 // MARK: - GestureFilter
@@ -442,15 +507,7 @@ private struct GestureFilter<Modifier>: StatefulRule where Modifier: GestureView
     }
 }
 
-// MARK: - GestureAccessibilityProvider
-
-package protocol GestureAccessibilityProvider {
-    nonisolated static func makeGesture(
-        mask: @autoclosure () -> Attribute<GestureMask>,
-        inputs: _ViewInputs,
-        outputs: inout _ViewOutputs
-    )
-}
+// MARK: - EmptyGestureAccessibilityProvider
 
 struct EmptyGestureAccessibilityProvider: GestureAccessibilityProvider {
     nonisolated static func makeGesture(
@@ -458,8 +515,11 @@ struct EmptyGestureAccessibilityProvider: GestureAccessibilityProvider {
         inputs: _ViewInputs,
         outputs: inout _ViewOutputs
     ) {
+        _openSwiftUIEmptyStub()
     }
 }
+
+// MARK: - Inputs + gestureAccessibilityProvider
 
 extension _GraphInputs {
     private struct GestureAccessibilityProviderKey: GraphInput {
@@ -543,9 +603,29 @@ private struct CombiningGestureViewChild<Modifier>: Rule where Modifier: Gesture
     }
 }
 
-// MARK: - GestureViewDebug [WIP]
+// MARK: - GestureViewDebug
 
-private struct GestureViewDebug<Modifier> where Modifier: GestureViewModifier {
+private struct GestureViewDebug<Modifier>: Rule where Modifier: GestureViewModifier {
+    @Attribute var modifier: Modifier
+    @OptionalAttribute var debugData: GestureDebug.Data?
+
+    typealias Value = GestureDebug.Data
+
+    var value: GestureDebug.Data {
+        guard let debugData else {
+            return GestureDebug.Data()
+        }
+        return GestureDebug.Data(
+            kind: .gesture,
+            type: Modifier.ContentGesture.self,
+            children: [debugData],
+            phase: debugData.phase,
+            attribute: $modifier.identifier,
+            resetSeed: debugData.resetSeed,
+            frame: debugData.frame,
+            properties: .init()
+        )
+    }
 }
 
 // MARK: - SubviewsGesture
@@ -577,15 +657,41 @@ private struct SubviewsGesture: PrimitiveGesture, PrimitiveDebuggableGesture {
     }
 }
 
-// MARK: - SimultaneousGestureCombiner [WIP]
+// MARK: - SimultaneousGestureCombiner
 
-struct SimultaneousGestureCombiner {}
+struct SimultaneousGestureCombiner: GestureCombiner {
+    typealias Base = SimultaneousGesture<AnyGesture<Void>, AnyGesture<Void>>
 
-// MARK: - HighPriorityGestureCombiner [WIP]
+    typealias Result = _MapGesture<Base, Void>
 
-struct HighPriorityGestureCombiner {}
+    static func combine(
+        _ first: AnyGesture<Void>,
+        _ second: AnyGesture<Void>
+    ) -> Result {
+        first.simultaneously(with: second).map { _ in }
+    }
 
-// MARK: - SubviewsPhase [WIP]
+    static var exclusionPolicy: GestureResponderExclusionPolicy { .simultaneous }
+}
+
+// MARK: - HighPriorityGestureCombiner
+
+struct HighPriorityGestureCombiner: GestureCombiner {
+    typealias Base = ExclusiveGesture<AnyGesture<Void>, AnyGesture<Void>>
+
+    typealias Result = _MapGesture<Base, Void>
+
+    static func combine(
+        _ first: AnyGesture<Void>,
+        _ second: AnyGesture<Void>
+    ) -> Result {
+        second.exclusively(before: first).map { _ in }
+    }
+
+    static var exclusionPolicy: GestureResponderExclusionPolicy { .highPriority }
+}
+
+// MARK: - SubviewsPhase
 
 private struct SubviewsPhase: StatefulRule, ObservedAttribute {
     struct Value {
@@ -605,11 +711,57 @@ private struct SubviewsPhase: StatefulRule, ObservedAttribute {
     @OptionalAttribute var childDebugData: GestureDebug.Data?
 
     mutating func updateValue() {
-        _openSwiftUIUnimplementedFailure()
+        let node = gesture.node
+        if resetSeed != oldSeed || childSubgraph == nil || oldNode !== node {
+            if let childSubgraph {
+                outputs.detachIndirectOutputs()
+                self.childSubgraph = nil
+                _childPhase = .init()
+                childSubgraph.willInvalidate(isInserted: true)
+                childSubgraph.invalidate()
+            }
+            oldNode?.resetGesture()
+
+            let newSubgraph = Subgraph(graph: parentSubgraph.graph)
+            childSubgraph = newSubgraph
+            parentSubgraph.addChild(newSubgraph)
+            let childOutputs = newSubgraph.apply {
+                var childInputs = inputs
+                childInputs.copyCaches()
+                let childOutputs = node.makeSubviewsGesture(inputs: childInputs)
+                outputs.attachIndirectOutputs(childOutputs)
+                return childOutputs
+            }
+            _childPhase = OptionalAttribute(childOutputs.phase)
+            _childDebugData = OptionalAttribute(childOutputs.debugData)
+            oldSeed = resetSeed
+            oldNode = node
+        }
+        value = Value(
+            phase: childPhase ?? .failed,
+            debugData: childDebugData ?? GestureDebug.Data()
+        )
     }
 
     func destroy() {
         oldNode?.resetGesture()
+    }
+}
+
+// MARK: - ContentPhase
+
+private struct ContentPhase<Value>: ResettableGestureRule {
+    @Attribute var phase: GesturePhase<Value>
+    @Attribute var resetSeed: UInt32
+    var lastResetSeed: UInt32
+
+    typealias Value = GesturePhase<Void>
+
+    mutating func updateValue() {
+        guard resetIfNeeded() else {
+            return
+        }
+        value = phase.withValue(())
     }
 }
 
@@ -634,37 +786,3 @@ private struct ContentGesture<V>: GestureModifier {
         return outputs.withPhase(phase)
     }
 }
-
-// MARK: - ContentPhase
-
-private struct ContentPhase<Value>: ResettableGestureRule {
-    @Attribute var phase: GesturePhase<Value>
-    @Attribute var resetSeed: UInt32
-    var lastResetSeed: UInt32
-
-    typealias Value = GesturePhase<Void>
-
-    mutating func updateValue() {
-        guard resetIfNeeded() else {
-            return
-        }
-        value = phase.withValue(())
-    }
-}
-
-// MARK: - Optional: Gesture [WIP]
-
-extension Optional: Gesture where Wrapped: Gesture {
-    public typealias Value = Wrapped.Value
-    
-    nonisolated public static func _makeGesture(
-        gesture: _GraphValue<Optional<Wrapped>>,
-        inputs: _GestureInputs
-    ) -> _GestureOutputs<Wrapped.Value> {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    public typealias Body = Never
-}
-
-extension Optional: PrimitiveGesture where Wrapped: Gesture {}
