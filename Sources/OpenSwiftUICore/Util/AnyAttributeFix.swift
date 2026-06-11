@@ -58,6 +58,8 @@ package struct AttributeType {
 }
 
 extension AnyAttribute {
+    package var description: String { "#\(rawValue)" }
+
     package static var `nil`: AnyAttribute { AnyAttribute(rawValue: 0x2) }
 
     package static var currentWasModified: Bool { false }
