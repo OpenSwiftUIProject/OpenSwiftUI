@@ -11,7 +11,31 @@ import OpenAttributeGraphShims
 
 // MARK: - SpatialTapGesture
 
-@available(iOS 16.0, macOS 13.0, watchOS 9.0, visionOS 1.0, *)
+/// A gesture that recognizes one or more taps and reports their location.
+///
+/// To recognize a tap gesture on a view, create and configure the gesture, and
+/// then add it to the view using the ``View/gesture(_:including:)`` modifier.
+/// The following code adds a tap gesture to a ``Circle`` that toggles the color
+/// of the circle based on the tap location:
+///
+///     struct TapGestureView: View {
+///         @State private var location: CGPoint = .zero
+///
+///         var tap: some Gesture {
+///             SpatialTapGesture()
+///                 .onEnded { event in
+///                     self.location = event.location
+///                  }
+///         }
+///
+///         var body: some View {
+///             Circle()
+///                 .fill(self.location.y > 50 ? Color.blue : Color.red)
+///                 .frame(width: 100, height: 100, alignment: .center)
+///                 .gesture(tap)
+///         }
+///     }
+@available(OpenSwiftUI_v4_0, *)
 @_spi_available(tvOS, introduced: 17.0)
 public struct SpatialTapGesture: PrimitiveGesture, Gesture {
     private struct Phase: Rule {
@@ -37,26 +61,41 @@ public struct SpatialTapGesture: PrimitiveGesture, Gesture {
         }
     }
 
+    /// The attributes of a tap gesture.
     public struct Value: Equatable, @unchecked Sendable {
+        /// The location of the tap gesture's current event.
         public var location: CGPoint
     }
 
+    /// The required number of tap events.
     public var count: Int
 
+    /// The coordinate space in which to receive location values.
     public var coordinateSpace: CoordinateSpace
 
-    @available(iOS, introduced: 16.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
-    @available(macOS, introduced: 13.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
-    @available(watchOS, introduced: 9.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    /// Creates a tap gesture with the number of required taps and the
+    /// coordinate space of the gesture's location.
+    ///
+    /// - Parameters:
+    ///   - count: The required number of taps to complete the tap
+    ///     gesture.
+    ///   - coordinateSpace: The coordinate space of the tap gesture's location.
+    @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @available(tvOS, unavailable)
-    @available(visionOS, introduced: 1.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     public init(count: Int = 1, coordinateSpace: CoordinateSpace = .local) {
         self.count = count
         self.coordinateSpace = coordinateSpace
     }
 
-    @available(iOS 17.0, macOS 14.0, watchOS 10.0, *)
+    /// Creates a tap gesture with the number of required taps and the
+    /// coordinate space of the gesture's location.
+    ///
+    /// - Parameters:
+    ///   - count: The required number of taps to complete the tap
+    ///     gesture.
+    ///   - coordinateSpace: The coordinate space of the tap gesture's location.
+    @available(OpenSwiftUI_v5_0, *)
     @_spi_available(tvOS, introduced: 17.0)
     public init(count: Int = 1, coordinateSpace: some CoordinateSpaceProtocol = .local) {
         self.count = count
@@ -68,7 +107,7 @@ public struct SpatialTapGesture: PrimitiveGesture, Gesture {
         inputs: _GestureInputs
     ) -> _GestureOutputs<SpatialTapGesture.Value> {
         let child = Attribute(Child(gesture: gesture.value))
-        let outputs = Child.Value.makeDebuggableGesture(
+        let outputs = Child.Value._makeGesture(
             gesture: _GraphValue(child),
             inputs: inputs
         )
@@ -84,14 +123,44 @@ extension SpatialTapGesture: Sendable {}
 
 // MARK: - View + SpatialTapGesture
 
-@available(iOS 16.0, macOS 13.0, watchOS 9.0, visionOS 1.0, *)
+@available(OpenSwiftUI_v4_0, *)
 @available(tvOS, unavailable)
 extension View {
-    @available(iOS, introduced: 16.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
-    @available(macOS, introduced: 13.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
-    @available(watchOS, introduced: 9.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
-    @available(tvOS, unavailable)
-    @available(visionOS, introduced: 1.0, deprecated: 100000.0, message: "use overload that accepts a CoordinateSpaceProtocol instead")
+    /// Adds an action to perform when this view recognizes a tap gesture,
+    /// and provides the action with the location of the interaction.
+    ///
+    /// Use this method to perform the specified `action` when the user clicks
+    /// or taps on the modified view `count` times. The action closure receives
+    /// the location of the interaction.
+    ///
+    /// > Note: If you create a control that's functionally equivalent
+    /// to a ``Button``, use ``ButtonStyle`` to create a customized button
+    /// instead.
+    ///
+    /// The following code adds a tap gesture to a ``Circle`` that toggles the color
+    /// of the circle based on the tap location.
+    ///
+    ///     struct TapGestureExample: View {
+    ///         @State private var location: CGPoint = .zero
+    ///
+    ///         var body: some View {
+    ///             Circle()
+    ///                 .fill(self.location.y > 50 ? Color.blue : Color.red)
+    ///                 .frame(width: 100, height: 100, alignment: .center)
+    ///                 .onTapGesture { location in
+    ///                     self.location = location
+    ///                 }
+    ///         }
+    ///     }
+    ///
+    /// - Parameters:
+    ///    - count: The number of taps or clicks required to trigger the action
+    ///      closure provided in `action`. Defaults to `1`.
+    ///    - coordinateSpace: The coordinate space in which to receive
+    ///      location values. Defaults to ``CoordinateSpace/local``.
+    ///    - action: The action to perform. This closure receives an input
+    ///      that indicates where the interaction occurred.
+    @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     nonisolated public func onTapGesture(
         count: Int = 1,
@@ -107,9 +176,43 @@ extension View {
     }
 }
 
-@available(iOS 17.0, macOS 14.0, watchOS 10.0, *)
+@available(OpenSwiftUI_v5_0, *)
 @_spi_available(tvOS, introduced: 17.0)
 extension View {
+    /// Adds an action to perform when this view recognizes a tap gesture,
+    /// and provides the action with the location of the interaction.
+    ///
+    /// Use this method to perform the specified `action` when the user clicks
+    /// or taps on the modified view `count` times. The action closure receives
+    /// the location of the interaction.
+    ///
+    /// > Note: If you create a control that's functionally equivalent
+    /// to a ``Button``, use ``ButtonStyle`` to create a customized button
+    /// instead.
+    ///
+    /// The following code adds a tap gesture to a ``Circle`` that toggles the color
+    /// of the circle based on the tap location.
+    ///
+    ///     struct TapGestureExample: View {
+    ///         @State private var location: CGPoint = .zero
+    ///
+    ///         var body: some View {
+    ///             Circle()
+    ///                 .fill(self.location.y > 50 ? Color.blue : Color.red)
+    ///                 .frame(width: 100, height: 100, alignment: .center)
+    ///                 .onTapGesture { location in
+    ///                     self.location = location
+    ///                 }
+    ///         }
+    ///     }
+    ///
+    /// - Parameters:
+    ///    - count: The number of taps or clicks required to trigger the action
+    ///      closure provided in `action`. Defaults to `1`.
+    ///    - coordinateSpace: The coordinate space in which to receive
+    ///      location values. Defaults to ``CoordinateSpace/local``.
+    ///    - action: The action to perform. This closure receives an input
+    ///      that indicates where the interaction occurred.
     nonisolated public func onTapGesture(
         count: Int = 1,
         coordinateSpace: some CoordinateSpaceProtocol = .local,

@@ -11,7 +11,7 @@ package import Foundation
 // MARK: - Image.DynamicRange
 
 @available(OpenSwiftUI_v5_0, *)
-// @_spi_available(watchOS, introduced: 10.0)
+@_spi_available(watchOS, introduced: 10.0)
 extension Image {
     public struct DynamicRange: Hashable, Sendable {
         package enum Storage: UInt8, Hashable, Comparable {
@@ -123,7 +123,7 @@ private struct AllowedDynamicRangeKey : EnvironmentKey {
 }
 
 @available(OpenSwiftUI_v5_0, *)
-// @_spi_available(watchOS, introduced: 10.0)
+@_spi_available(watchOS, introduced: 10.0)
 extension EnvironmentValues {
     /// The allowed dynamic range for the view, or nil.
     public var allowedDynamicRange: Image.DynamicRange? {
@@ -145,7 +145,7 @@ extension EnvironmentValues {
     }
 }
 
-@available(iOS 17.0, macOS 14.0, tvOS 17.0, *)
+@available(OpenSwiftUI_v5_0, *)
 @_spi_available(watchOS, introduced: 10.0)
 extension View {
 
