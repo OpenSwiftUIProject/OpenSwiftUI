@@ -823,33 +823,6 @@ extension View {
 // MARK: - _ViewInputs + applyBackgroundStyle
 
 @available(OpenSwiftUI_v3_0, *)
-package struct _AnchoredShapeStyle<Style>: ShapeStyle where Style: ShapeStyle {
-    package var style: Style
-    package var bounds: CGRect
-
-    package init(style: Style, bounds: CGRect) {
-        self.style = style
-        self.bounds = bounds
-    }
-
-    package static func _makeView<S>(
-        view: _GraphValue<_ShapeView<S, _AnchoredShapeStyle<Style>>>,
-        inputs: _ViewInputs
-    ) -> _ViewOutputs where S: Shape {
-        _ShapeView._makeView(view: view, inputs: inputs)
-    }
-
-    package func _apply(to shape: inout _ShapeStyle_Shape) {
-        shape.bounds = bounds
-        style._apply(to: &shape)
-    }
-
-    package static func _apply(to type: inout _ShapeStyle_ShapeType) {
-        Style._apply(to: &type)
-    }
-}
-
-@available(OpenSwiftUI_v3_0, *)
 package struct ImplicitContainerShape: Shape {
     package init() {}
 
