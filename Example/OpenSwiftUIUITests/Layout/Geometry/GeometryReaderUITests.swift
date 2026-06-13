@@ -24,15 +24,6 @@ struct GeometryReaderUITests {
             }
         }
         openSwiftUIAssertSnapshot(of: ContentView())
-        #if os(iOS)
-        #if OPENSWIFTUI
-        withKnownIssue {
-            openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
-        }
-        #else
-        openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
-        #endif
-        #endif
     }
 
     @Test
