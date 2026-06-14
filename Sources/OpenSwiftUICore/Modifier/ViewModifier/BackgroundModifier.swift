@@ -822,19 +822,6 @@ extension View {
 
 // MARK: - _ViewInputs + applyBackgroundStyle
 
-@available(OpenSwiftUI_v3_0, *)
-package struct ImplicitContainerShape: Shape {
-    package init() {}
-
-    nonisolated package func path(in rect: CGRect) -> Path {
-        Path(rect)
-    }
-
-    nonisolated package var layoutDirectionBehavior: LayoutDirectionBehavior {
-        .fixed
-    }
-}
-
 extension _ViewInputs {
     fileprivate mutating func applyBackgroundStyle<Value, Style>(
         value: Attribute<Value>,
@@ -849,10 +836,6 @@ extension _ViewInputs {
             style: value.applying(offset: offset),
             environment: environment
         ))
-    }
-
-    mutating func setContainerShape<S>(_ shape: Attribute<S>, isSystemShape: Bool) where S: InsettableShape {
-        // TODO: Wire ContainerShapeTransform/ContainerShapeEnvironment when the container-shape pipeline exists.
     }
 }
 
