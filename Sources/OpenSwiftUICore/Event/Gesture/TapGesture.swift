@@ -149,9 +149,6 @@ package let tapDurationThreshold: CGFloat = 0.75
 package struct SingleTapGesture<BaseEvent>: Gesture where BaseEvent: TappableEventType {
     package init() {}
 
-//    typealias Body = ModifierGesture<EventFilter<A>, ModifierGesture<Map2Gesture<A, ModifierGesture<CoordinateSpaceGesture<CGFloat>, DistanceGesture>, A>, ModifierGesture<Map2Gesture<A, ModifierGesture<DurationGesture<TappableEvent>, EventListener<TappableEvent>>, A>, ModifierGesture<(DependentGesture in _8687835E41FEE17B108D67665C1D2D0B)<A>, ModifierGesture<MapGesture<A, A>, EventListener<A>>>>>>
-
-
     package var body: some Gesture<BaseEvent> {
         EventListener<BaseEvent>()
             .discrete()
