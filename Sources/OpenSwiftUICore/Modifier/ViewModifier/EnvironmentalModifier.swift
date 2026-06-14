@@ -23,6 +23,11 @@ public protocol EnvironmentalModifier: ViewModifier where Body == Never {
     @available(OpenSwiftUI_v3_0, *)
     static var _requiresMainThread: Bool { get }
     
+    /// Flag to indicate whether this modifier tracks the values that are used
+    /// in the environment.
+    ///
+    /// The default is `true`. Override and return `false` for special cases
+    /// where this is undesirable.
     @available(OpenSwiftUI_v5_0, *)
     static var _tracksEnvironmentDependencies: Bool { get }
 }

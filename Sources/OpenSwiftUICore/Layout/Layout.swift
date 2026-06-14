@@ -1527,6 +1527,7 @@ public struct LayoutSubview: Equatable {
 
     let containerLayoutDirection: LayoutDirection
 
+    /// Returns the trait value `K` associated with the subview.
     public func _trait<K>(key: K.Type) -> K.Value where K: _ViewTraitKey {
         proxy[key]
     }

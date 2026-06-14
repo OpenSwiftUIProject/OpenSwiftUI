@@ -60,6 +60,7 @@ public protocol TransactionKey {
     /// The default value for the transaction key.
     static var defaultValue: Value { get }
 
+    /// Returns true if `lhs` and `rhs` are equal.
     static func _valuesEqual(_ lhs: Value, _ rhs: Value) -> Swift.Bool
 }
 

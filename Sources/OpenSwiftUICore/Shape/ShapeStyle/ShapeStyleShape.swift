@@ -9,6 +9,7 @@ package import Foundation
 
 // MARK: - _ShapeStyle_Shape
 
+/// A shape that can have a ShapeStyle value applied to it.
 @available(OpenSwiftUI_v3_0, *)
 public struct _ShapeStyle_Shape {
     package enum Operation {

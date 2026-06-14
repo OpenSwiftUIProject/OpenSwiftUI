@@ -244,6 +244,9 @@ extension GraphicsBlendMode: RendererEffect {
 
 // MARK: - GeometryGroupEffect
 
+/// An effect that isolates the translational component of the frame
+/// rects of all content in the child view from changes in the parent
+/// view.
 @available(OpenSwiftUI_v5_0, *)
 @frozen
 public struct _GeometryGroupEffect: RendererEffect, Equatable {

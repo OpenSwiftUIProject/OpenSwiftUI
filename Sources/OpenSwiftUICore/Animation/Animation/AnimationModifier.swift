@@ -11,6 +11,7 @@ import OpenCoreGraphicsShims
 
 // MARK: - _AnimationModifier
 
+/// Concrete modifier type to apply an animation to the child view.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _AnimationModifier<Value>: ViewModifier, PrimitiveViewModifier where Value: Equatable {
