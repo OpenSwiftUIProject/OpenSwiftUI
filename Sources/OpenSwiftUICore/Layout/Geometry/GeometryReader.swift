@@ -3,14 +3,14 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 7D6D22DF7076CCC1FC5284D8E2D1B049 (SwiftUICore)
 
 public import Foundation
 package import OpenAttributeGraphShims
 import OpenSwiftUI_SPI
 
-// MARK: - GeometryReader [WIP]
+// MARK: - GeometryReader
 
 /// A container view that defines its content as a function of its own size and
 /// coordinate space.
@@ -80,7 +80,7 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
         mutating func updateValue() {
             seed &+= 1
             let proxy = GeometryProxy(
-                owner: .current!,
+                owner: attribute.identifier,
                 size: $size,
                 environment: $environment,
                 transform: $transform,
@@ -101,7 +101,7 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
 @available(*, unavailable)
 extension GeometryReader: Sendable {}
 
-// MARK: - GeometryProxy [WIP]
+// MARK: - GeometryProxy
 
 /// A proxy for access to the size and coordinate space (for anchor resolution)
 /// of the container view.
@@ -169,7 +169,9 @@ public struct GeometryProxy {
 
     /// Resolves the value of an anchor to the container view.
     public subscript<T>(anchor: Anchor<T>) -> T {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            placementContext.map { anchor.in($0) } ?? anchor.defaultValue
+        }
     }
 
     /// The safe area inset of the container view.
@@ -188,28 +190,41 @@ public struct GeometryProxy {
     @available(*, deprecated, message: "use overload that accepts a CoordinateSpaceProtocol instead")
     @_disfavoredOverload
     public func frame(in coordinateSpace: CoordinateSpace) -> CGRect {
-        let size = size
-        return Update.perform {
-            guard let placementContext else {
-                return .zero
-            }
-            var rect = CGRect(origin: .zero, size: size)
-            rect.convert(from: placementContext, to: coordinateSpace)
-            return rect
-        }
+        rect(CGRect(origin: .zero, size: size), in: coordinateSpace)
     }
 
     @_spi(Private)
     public func frameClippedToScrollViews(in space: CoordinateSpace) -> (frame: CGRect, exact: Bool) {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            var rect = CGRect(origin: .zero, size: size)
+            guard let placementContext else {
+                return (rect, true)
+            }
+            let exact = rect.whileClippingToScrollViewsConvert(
+                to: space,
+                transform: placementContext.transform
+            )
+            return (rect, exact)
+        }
     }
 
     package func rect(_ r: CGRect, in coordinateSpace: CoordinateSpace) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            var rect = r
+            placementContext.map { rect.convert(from: $0, to: coordinateSpace) }
+            return rect
+        }
     }
 
     package var transform: ViewTransform {
-        _openSwiftUIUnimplementedFailure()
+        Update.perform {
+            guard let transform = _transform.attribute,
+                  let position = _position.attribute
+            else {
+                return ViewTransform()
+            }
+            return context[transform].withPosition(context[position])
+        }
     }
 
     package var environment: EnvironmentValues {
@@ -244,13 +259,13 @@ extension GeometryProxy {
     /// Returns the given coordinate space's bounds rectangle, converted to the
     /// local coordinate space.
     public func bounds(of coordinateSpace: NamedCoordinateSpace) -> CGRect? {
-        _openSwiftUIUnimplementedFailure()
+        transform.containingSizedCoordinateSpace(name: coordinateSpace.name)
     }
 
     /// Returns the container view's bounds rectangle, converted to a defined
     /// coordinate space.
     public func frame(in coordinateSpace: some CoordinateSpaceProtocol) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
+        rect(CGRect(origin: .zero, size: size), in: coordinateSpace.coordinateSpace)
     }
 }
 
@@ -260,7 +275,8 @@ extension GeometryProxy {
         globalPoint: CGPoint,
         to coordinateSpace: some CoordinateSpaceProtocol,
     ) -> CGPoint {
-        _openSwiftUIUnimplementedFailure()
+        // TBA: ViewTransform
+        transform.convert(.localToSpace(coordinateSpace.coordinateSpace), point: globalPoint)
     }
 }
 

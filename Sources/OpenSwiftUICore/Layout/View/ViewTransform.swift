@@ -327,7 +327,11 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
     }
     
     package func containingSizedCoordinateSpace(name: CoordinateSpace.Name) -> CGRect? {
-        _openSwiftUIUnimplementedFailure()
+        var rect: CGRect?
+        forEach { item, _ in
+            item.apply(to: &rect, name: name)
+        }
+        return rect
     }
     
     public var description: String {
