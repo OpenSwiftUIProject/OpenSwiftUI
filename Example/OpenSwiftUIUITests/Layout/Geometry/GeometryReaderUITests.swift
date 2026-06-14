@@ -4,35 +4,14 @@
 
 import SnapshotTesting
 import Testing
+@testable import TestingHost
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct GeometryReaderUITests {
     @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/474"))
     func centerView() {
-        struct ContentView: View {
-            var body: some View {
-                GeometryReader { proxy in
-                    Color.blue
-                        .frame(
-                            width: proxy.size.width / 2,
-                            height: proxy.size.height / 2,
-                        )
-                        .frame(maxWidth: .infinity, maxHeight: .infinity)
-                        .background(Color.yellow.opacity(0.3))
-                }
-            }
-        }
-        openSwiftUIAssertSnapshot(of: ContentView())
-        #if os(iOS)
-        #if OPENSWIFTUI
-        withKnownIssue {
-            openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
-        }
-        #else
-        openSwiftUIAssertSnapshot(of: ContentView(), as: .image)
-        #endif
-        #endif
+        openSwiftUIAssertSnapshot(of: GeometryReaderExample())
     }
 
     @Test

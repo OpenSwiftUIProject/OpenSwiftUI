@@ -189,7 +189,9 @@ private class AnchorValueBox<T>: AnchorValueBoxBase<T.AnchorValue>, @unchecked S
     }
 
     override func convert(to transform: ViewTransform) -> T.AnchorValue {
-        _openSwiftUIUnimplementedFailure()
+        var value = value
+        value.convert(to: .global, transform: transform)
+        return value
     }
 
     override func isEqual(to other: AnchorValueBoxBase<T.AnchorValue>) -> Bool {
