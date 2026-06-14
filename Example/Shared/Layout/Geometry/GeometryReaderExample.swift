@@ -8,8 +8,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-// FIXME: SwiftUI yellow background will ignoreSafeArea while OpenSwiftUI will have it.
-// See #474
 struct GeometryReaderExample: View {
     var body: some View {
         GeometryReader { geometry in
