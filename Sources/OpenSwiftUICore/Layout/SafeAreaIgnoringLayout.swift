@@ -8,6 +8,8 @@
 import OpenAttributeGraphShims
 package import OpenCoreGraphicsShims
 
+/// A UnaryLayout which insets its child by the inverse of the safe area
+/// on the specified edges.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _SafeAreaIgnoringLayout: UnaryLayout {
@@ -49,6 +51,8 @@ public struct _SafeAreaIgnoringLayout: UnaryLayout {
 
 // MARK: - _SafeAreaRegionsIgnoringLayout
 
+/// A UnaryLayout which insets its child by the inverse of the safe area
+/// on the specified edges.
 @available(OpenSwiftUI_v2_0, *)
 @frozen
 public struct _SafeAreaRegionsIgnoringLayout: UnaryLayout {

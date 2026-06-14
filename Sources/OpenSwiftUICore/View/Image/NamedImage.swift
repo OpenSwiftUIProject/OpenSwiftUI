@@ -609,6 +609,7 @@ package enum NamedImage {
 
 @available(OpenSwiftUI_v1_0, *)
 extension Image {
+    /// A way to specify where to load "main bundle" images from.
     public static var _mainNamedBundle: Bundle? { nil }
 }
 

@@ -21,6 +21,13 @@ public protocol _BenchmarkHost: AnyObject {
     @available(OpenSwiftUI_v3_0, *)
     func _renderAsyncForTest(interval: Double) -> Bool
 
+    /// Performs a scrolling test.
+    ///
+    /// - Parameter startOffset: the content offset to start the test from.
+    /// - Parameter iterations: the number of iterations to repeat the test.
+    /// - Parameter delta: the delta in points that the test should move each
+    /// tick of the display.
+    /// - Parameter length: the total length of each iteration in points.
     func _performScrollTest(startOffset: CGFloat, iterations: Int, delta: CGFloat, length: CGFloat, completion: (() -> Void)?)
 }
 

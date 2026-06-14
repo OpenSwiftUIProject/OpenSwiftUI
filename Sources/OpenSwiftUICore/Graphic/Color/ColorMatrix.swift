@@ -36,6 +36,10 @@ public struct ColorMatrix: Equatable {
 
 // MARK: - _ColorMatrix
 
+/// A color matrix. The result of applying to a color is produced by
+/// multiplying the color by the square matrix formed by the first
+/// columns of the color matrix, then adding the last column to the
+/// result.
 @frozen
 public struct _ColorMatrix: Equatable, Codable {
     public var m11: Float = 1, m12: Float = 0, m13: Float = 0, m14: Float = 0, m15: Float = 0

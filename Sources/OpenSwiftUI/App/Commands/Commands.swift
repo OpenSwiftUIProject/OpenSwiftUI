@@ -70,6 +70,7 @@ public protocol Commands {
         inputs: _CommandsInputs
     ) -> _CommandsOutputs
 
+    /// A function that applies `self`'s changes to the given menu.
     func _resolve(into resolved: inout _ResolvedCommands)
 }
 

@@ -198,6 +198,7 @@ extension Font {
         _openSwiftUIUnimplementedFailure()
     }
 
+    /// Create a version of `self` that uses the specified stylistic set.
     public func _stylisticAlternative(_ alternative: Font._StylisticAlternative) -> Font {
         _openSwiftUIUnimplementedFailure()
     }
@@ -276,6 +277,9 @@ extension Font {
         }
     }
 
+    /// A stylistic alternative to apply to the font
+    /// The mapping of Style to a visual style is specific to the underlying
+    /// font
     public enum _StylisticAlternative: Int, Hashable {
         case one = 1
         case two = 2
