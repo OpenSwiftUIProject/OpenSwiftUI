@@ -30,6 +30,7 @@ jobs:
         os: [macos-15]
         xcode-version: ["26.3"]
         release: [2024]
+        backend: [AttributeGraph, Compute]
         include:
           - backend: AttributeGraph
             attributegraph: "1"
