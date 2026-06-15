@@ -8,7 +8,6 @@ set -e
 export OPENSWIFTUI_LIBRARY_TYPE
 export OPENSWIFTUI_USE_LOCAL_DEPS
 export OPENSWIFTUI_SWIFTUI_RENDERER
-# TODO: replace AG with Compute or OAG by default
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -40,8 +39,27 @@ DEFAULT_FRAMEWORK_NAMES=(
     "OpenSwiftUI"
 )
 
+print_usage() {
+    cat <<'USAGE'
+Usage: Scripts/build_xcframework.sh [options] [framework ...]
+
+Options:
+  --sdk <sdk>             Build for an SDK. May be passed multiple times.
+  --archs <arch1,arch2>   Override architectures for the previous --sdk.
+  --debug                 Keep release metadata and copy dSYMs.
+  --compute               Build OpenAttributeGraphShims with the Compute source backend.
+  --skip-tuist-install    Skip tuist install.
+  --framework <name>      Build one framework. May be passed multiple times.
+  --help                  Show this help.
+USAGE
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --help|-h)
+            print_usage
+            exit 0
+            ;;
         --sdk)
             SDKS+=("$2")
             SDK_ARCHS+=("")
@@ -55,6 +73,17 @@ while [[ $# -gt 0 ]]; do
             ;;
         --debug)
             DEBUG_MODE=true
+            shift
+            ;;
+        --compute)
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH=0
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH=0
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY=0
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY
             shift
             ;;
         --skip-tuist-install)
@@ -93,6 +122,37 @@ fi
 if [ "${OPENSWIFTUI_SKIP_TUIST_INSTALL:-0}" = "1" ]; then
     RUN_TUIST_INSTALL=false
 fi
+
+env_flag_enabled() {
+    [ "${1:-0}" = "1" ]
+}
+
+resolve_ag_backend() {
+    if [ -n "${OPENSWIFTUI_AG_BACKEND_NAME:-}" ]; then
+        echo "$OPENSWIFTUI_AG_BACKEND_NAME"
+    elif env_flag_enabled "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}"; then
+        echo "Compute"
+    elif env_flag_enabled "${OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH:-0}"; then
+        echo "DanceUIGraph"
+    elif env_flag_enabled "${OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH:-0}"; then
+        echo "AttributeGraph"
+    else
+        echo "OpenAttributeGraph"
+    fi
+}
+
+resolve_renderer_backend() {
+    if [ -n "${OPENSWIFTUI_RENDERER_BACKEND_NAME:-}" ]; then
+        echo "$OPENSWIFTUI_RENDERER_BACKEND_NAME"
+    elif env_flag_enabled "${OPENSWIFTUI_SWIFTUI_RENDERER:-0}"; then
+        echo "SwiftUI"
+    else
+        echo "OpenSwiftUI"
+    fi
+}
+
+BUILD_AG_BACKEND="$(resolve_ag_backend)"
+BUILD_RENDERER_BACKEND="$(resolve_renderer_backend)"
 
 if ! command -v tuist >/dev/null 2>&1; then
     echo "Error: tuist is required to generate $XCODEPROJ."
@@ -239,6 +299,8 @@ for i in "${!SDKS[@]}"; do
 done
 echo "Debug mode: $DEBUG_MODE"
 echo "Frameworks: ${FRAMEWORK_NAMES[*]}"
+echo "AG backend: $BUILD_AG_BACKEND"
+echo "Renderer backend: $BUILD_RENDERER_BACKEND"
 
 sdk_destination() {
     case "$1" in
@@ -386,6 +448,29 @@ create_xcframework() {
     xcodebuild -create-xcframework "${create_args[@]}" -output "$PROJECT_BUILD_DIR/$scheme.xcframework"
 }
 
+stamp_xcframework_configuration() {
+    local xcframework_path="$1"
+    local info_plist="$xcframework_path/Info.plist"
+    local use_local_deps=false
+
+    if [ ! -f "$info_plist" ]; then
+        echo "Error: Expected $info_plist to exist."
+        exit 1
+    fi
+
+    if env_flag_enabled "$OPENSWIFTUI_USE_LOCAL_DEPS"; then
+        use_local_deps=true
+    fi
+
+    /usr/libexec/PlistBuddy -c "Delete :OpenSwiftUIBuildConfiguration" "$info_plist" >/dev/null 2>&1 || true
+    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration dict" "$info_plist"
+    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:AGBackend string $BUILD_AG_BACKEND" "$info_plist"
+    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:RendererBackend string $BUILD_RENDERER_BACKEND" "$info_plist"
+    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:LibraryType string $OPENSWIFTUI_LIBRARY_TYPE" "$info_plist"
+    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:UsesLocalDependencies bool $use_local_deps" "$info_plist"
+    plutil -convert xml1 "$info_plist"
+}
+
 copy_debug_symbols() {
     local scheme="$1"
 
@@ -417,6 +502,9 @@ for scheme in "${FRAMEWORK_NAMES[@]}"; do
         build_framework "${SDKS[$i]}" "$(sdk_destination "${SDKS[$i]}")" "$scheme" "${SDK_ARCHS[$i]}"
     done
     create_xcframework "$scheme"
+    if [ "$scheme" = "OpenSwiftUI" ]; then
+        stamp_xcframework_configuration "$PROJECT_BUILD_DIR/$scheme.xcframework"
+    fi
     copy_debug_symbols "$scheme"
     echo "Created $PROJECT_BUILD_DIR/$scheme.xcframework"
 done
