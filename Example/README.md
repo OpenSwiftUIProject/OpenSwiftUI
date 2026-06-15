@@ -17,12 +17,13 @@ Since OpenAttributeGraph is not yet completed, you need to configure an AG backe
 
 This example defaults to Apple's private AttributeGraph framework through `mise.toml`.
 
-Or use the Compute module:
+To use Compute instead, run setup with the Compute mise environment:
 
 ```shell
-export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
-export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_USE_BINARY=1
+./setup.sh --compute
 ```
+
+The Compute environment is defined in `mise.compute.toml`. It disables the private AttributeGraph framework and uses `OpenSwiftUIProject/Compute` from source on the `main` branch.
 
 ## Generate Project
 
@@ -34,6 +35,14 @@ The recommended setup path is the local setup script:
 
 The script trusts and installs the tools declared by `Example/mise.toml`, then runs Tuist through `mise exec` so the pinned Tuist version is used.
 
+To generate the project with Compute:
+
+```shell
+./setup.sh --compute
+```
+
+This uses `mise --env compute`, which loads `Example/mise.compute.toml` for `mise install`, `tuist install`, and `tuist generate`.
+
 To run the steps manually:
 
 ```shell
@@ -41,6 +50,15 @@ mise trust mise.toml
 mise install
 mise exec -- tuist install
 mise exec -- tuist generate --no-open
+```
+
+Or with Compute:
+
+```shell
+mise trust mise.compute.toml
+mise --env compute install
+mise --env compute exec -- tuist install
+mise --env compute exec -- tuist generate --no-open
 ```
 
 By default, the generated Debug Example targets include LookInsideServer. You can switch the debug inspector server before running `tuist install` and `tuist generate`:
