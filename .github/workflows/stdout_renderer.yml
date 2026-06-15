@@ -23,13 +23,20 @@ jobs:
   #       run: Renderer/Stdout/run-example.sh
 
   stdout_renderer_macos:
-    name: Run stdout renderer on macOS
+    name: Run stdout renderer on macOS (${{ matrix.backend }})
     strategy:
       fail-fast: false
       matrix:
         os: [macos-15]
         xcode-version: ["26.3"]
         release: [2024]
+        include:
+          - backend: AttributeGraph
+            attributegraph: "1"
+            compute: "0"
+          - backend: Compute
+            attributegraph: "0"
+            compute: "1"
     runs-on:
       - self-hosted
       - ${{ matrix.os }}
@@ -37,6 +44,9 @@ jobs:
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.attributegraph }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.compute }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 0
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
