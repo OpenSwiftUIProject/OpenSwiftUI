@@ -43,8 +43,8 @@ struct HapticFeedbackManagerImplementation: PlatformSensoryFeedback {
 // MARK: - FeedbackRequestContext
 
 struct FeedbackRequestContext {
-    func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
-        switch type {
+    func implementation(_ feedback: SensoryFeedback) -> (any PlatformSensoryFeedback)? {
+        switch feedback.type {
         case .alignment: HapticFeedbackManagerImplementation(pattern: .alignment)
         case .levelChange: HapticFeedbackManagerImplementation(pattern: .levelChange)
         default: nil

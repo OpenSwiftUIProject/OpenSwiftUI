@@ -16,7 +16,7 @@ import UIKit
 
 class AnyUIKitSensoryFeedbackCache {
     func implementation(
-        type: SensoryFeedback.FeedbackType
+        _ feedback: SensoryFeedback
     ) -> LocationBasedSensoryFeedback? {
         _openSwiftUIBaseClassAbstractMethod()
     }
@@ -26,14 +26,14 @@ class AnyUIKitSensoryFeedbackCache {
 
 class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
     weak var host: _UIHostingView<V>?
-    private var cachedGenerators: [GeneratorCacheKey: UIFeedbackGenerator] = [:]
+    private var cachedGenerators: [SensoryFeedback.FeedbackType: UIFeedbackGenerator] = [:]
 
     override func implementation(
-        type: SensoryFeedback.FeedbackType
+        _ feedback: SensoryFeedback
     ) -> LocationBasedSensoryFeedback? {
-        switch type {
+        switch feedback.type {
         case .success:
-            getGenerator(type) {
+            getGenerator(feedback.type) {
                 NotificationFeedbackImplementation(
                     generator: $0,
                     type: .success
@@ -42,7 +42,7 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
                 UINotificationFeedbackGenerator()
             }
         case .warning:
-            getGenerator(type) {
+            getGenerator(feedback.type) {
                 NotificationFeedbackImplementation(
                     generator: $0,
                     type: .warning
@@ -51,7 +51,7 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
                 UINotificationFeedbackGenerator()
             }
         case .error:
-            getGenerator(type) {
+            getGenerator(feedback.type) {
                 NotificationFeedbackImplementation(
                     generator: $0,
                     type: .error
@@ -63,7 +63,7 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
         // SwiftUI implementation Bug: introduced since iOS 17 & iOS 26.2 is still not fixed
         // FB21332474
         case /*.increase, .decrease,*/ .selection:
-            getGenerator(type) {
+            getGenerator(feedback.type) {
                 SelectionFeedbackImplementation(
                     generator: $0 
                 )
@@ -71,19 +71,24 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
                 UISelectionFeedbackGenerator()
             }
         case .alignment, .pathComplete:
-            getGenerator(type) {
+            getGenerator(feedback.type) {
                 CanvasFeedbackImplementation(
                     generator: $0,
-                    type: type
+                    type: feedback.type
                 )
             } createIfNeeded: {
                 UICanvasFeedbackGenerator()
             }
-        case let .impactWeight(weight, intensity):
-            getGenerator(type) {
+        case let .impactWeight(weight):
+            getGenerator(feedback.type) {
                 ImpactFeedbackImplementation(
                     generator: $0,
-                    intensity: intensity
+                    intensity: {
+                        guard case let .intensity(intensity) = feedback.payload else {
+                            fatalError("Misconfigured feedback")
+                        }
+                        return intensity
+                    }()
                 )
             } createIfNeeded: { () -> UIImpactFeedbackGenerator in
                 switch weight {
@@ -92,11 +97,16 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
                 case .heavy: UIImpactFeedbackGenerator(style: .heavy)
                 }
             }
-        case let .impactFlexibility(flexibility, intensity):
-            getGenerator(type) {
+        case let .impactFlexibility(flexibility):
+            getGenerator(feedback.type) {
                 ImpactFeedbackImplementation(
                     generator: $0,
-                    intensity: intensity
+                    intensity: {
+                        guard case let .intensity(intensity) = feedback.payload else {
+                            fatalError("Misconfigured feedback")
+                        }
+                        return intensity
+                    }()
                 )
             } createIfNeeded: { () -> UIImpactFeedbackGenerator in
                 switch flexibility {
@@ -109,56 +119,17 @@ class UIKitSensoryFeedbackCache<V>: AnyUIKitSensoryFeedbackCache where V: View {
         }
     }
 
-    /* OpenSwiftUI Addition Begin */
-
-    // MARK: - GeneratorCacheKey
-
-    /// A cache key that excludes intensity to prevent unbounded cache growth.
-    ///
-    /// Using `SensoryFeedback.FeedbackType` directly as cache key causes issues
-    /// because it includes the intensity value. Since intensity is a `Double`,
-    /// every different intensity creates a new cache entry and generator interaction.
-    /// The generator style (weight/flexibility) doesn't depend on intensity -
-    /// intensity is only used at feedback generation time.
-    private enum GeneratorCacheKey: Hashable {
-        case success
-        case warning
-        case error
-        case selection
-        case alignment
-        case pathComplete
-        case impactWeight(SensoryFeedback.Weight.Storage)
-        case impactFlexibility(SensoryFeedback.Flexibility.Storage)
-
-        init?(_ type: SensoryFeedback.FeedbackType) {
-            switch type {
-            case .success: self = .success
-            case .warning: self = .warning
-            case .error: self = .error
-            case .selection: self = .selection
-            case .alignment: self = .alignment
-            case .pathComplete: self = .pathComplete
-            case let .impactWeight(weight, _): self = .impactWeight(weight)
-            case let .impactFlexibility(flexibility, _): self = .impactFlexibility(flexibility)
-            default: return nil
-            }
-        }
-    }
-
-    /* OpenSwiftUI Addition End */
-
     private func getGenerator<Generator, Feedback>(
         _ type: SensoryFeedback.FeedbackType,
         work: (Generator) -> Feedback,
         createIfNeeded: () -> Generator
     ) -> Feedback? where Generator: UIFeedbackGenerator, Feedback: LocationBasedSensoryFeedback {
-        guard let cacheKey = GeneratorCacheKey(type) else { return nil }
         let generator: Generator
-        if let cachedGenerator = cachedGenerators[cacheKey] {
+        if let cachedGenerator = cachedGenerators[type] {
             generator = cachedGenerator as! Generator
         } else {
             generator = createIfNeeded()
-            cachedGenerators[cacheKey] = generator
+            cachedGenerators[type] = generator
             host!.addInteraction(generator)
         }
         return work(generator)

@@ -230,9 +230,9 @@ struct FeedbackRequestContext {
     var location: WeakAttribute<CGPoint> = .init()
     weak var cache: AnyUIKitSensoryFeedbackCache?
 
-    func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
+    func implementation(_ feedback: SensoryFeedback) -> (any PlatformSensoryFeedback)? {
         guard let cache,
-              let feeback = cache.implementation(type: type),
+              let feeback = cache.implementation(feedback),
               let location = location.attribute else {
             return nil
         }

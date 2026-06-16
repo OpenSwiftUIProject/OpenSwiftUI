@@ -13,7 +13,7 @@
 @available(OpenSwiftUI_v5_0, *)
 @available(visionOS, unavailable)
 public struct SensoryFeedback: Equatable, Sendable {
-    enum FeedbackType: Hashable {
+    enum FeedbackType: Hashable, Sendable {
         case success
         case warning
         case error
@@ -25,11 +25,25 @@ public struct SensoryFeedback: Equatable, Sendable {
         case start
         case stop
         case pathComplete
-        case impactWeight(SensoryFeedback.Weight.Storage, Double)
-        case impactFlexibility(SensoryFeedback.Flexibility.Storage, Double)
+        case impactWeight(SensoryFeedback.Weight.Storage)
+        case impactFlexibility(SensoryFeedback.Flexibility.Storage)
     }
 
     var type: FeedbackType
+
+    // Added in 8.0.66.
+    // See more infor on https://kyleye.top/posts/swiftui-sensoryfeedback-intensity-payload/
+    enum Payload: Equatable, Sendable {
+        case intensity(Double)
+        case empty
+    }
+    
+    var payload: Payload
+
+    init(type: FeedbackType, payload: Payload = .empty) {
+        self.type = type
+        self.payload = payload
+    }
 
     /// Indicates that a task or action has completed.
     ///
@@ -114,7 +128,7 @@ public struct SensoryFeedback: Equatable, Sendable {
     /// feedback in response to it.
     ///
     /// Only plays feedback on iOS and watchOS.
-    public static let impact: SensoryFeedback = .init(type: .impactWeight(.light, 1.0))
+    public static let impact: SensoryFeedback = .init(type: .impactWeight(.light), payload: .intensity(1.0))
 
     /// Provides a physical metaphor you can use to complement a visual
     /// experience.
@@ -128,7 +142,7 @@ public struct SensoryFeedback: Equatable, Sendable {
     ///
     /// Only plays feedback on iOS and watchOS.
     public static func impact(weight: SensoryFeedback.Weight, intensity: Double = 1.0) -> SensoryFeedback {
-        .init(type: .impactWeight(weight.storage, intensity))
+        .init(type: .impactWeight(weight.storage), payload: .intensity(intensity))
     }
 
     /// Provides a physical metaphor you can use to complement a visual
@@ -143,7 +157,7 @@ public struct SensoryFeedback: Equatable, Sendable {
     ///
     /// Only plays feedback on iOS and watchOS.
     public static func impact(flexibility: SensoryFeedback.Flexibility, intensity: Double = 1.0) -> SensoryFeedback {
-        .init(type: .impactFlexibility(flexibility.storage, intensity))
+        .init(type: .impactFlexibility(flexibility.storage), payload: .intensity(intensity))
     }
 
     // MARK: - SensoryFeedback.Weight
