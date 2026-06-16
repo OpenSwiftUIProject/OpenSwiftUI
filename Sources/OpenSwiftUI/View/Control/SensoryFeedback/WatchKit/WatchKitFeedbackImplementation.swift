@@ -40,8 +40,8 @@ struct WatchKitFeedbackImplementation: PlatformSensoryFeedback {
 // MARK: - FeedbackRequestContext
 
 struct FeedbackRequestContext {
-    func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
-        switch type {
+    func implementation(_ feedback: SensoryFeedback) -> (any PlatformSensoryFeedback)? {
+        switch feedback.type {
         case .success: WatchKitFeedbackImplementation(haptic: .success)
         case .warning: WatchKitFeedbackImplementation(haptic: .retry)
         case .error: WatchKitFeedbackImplementation(haptic: .failure)

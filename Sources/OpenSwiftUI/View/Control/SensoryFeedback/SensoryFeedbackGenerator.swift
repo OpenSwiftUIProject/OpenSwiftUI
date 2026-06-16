@@ -176,7 +176,7 @@ private struct CustomFeedbackGenerator<T>: SensoryFeedbackGeneratorModifier wher
                     if let newFeedback {
                         newValue = (
                             newFeedback,
-                            feedbackRequestContext.implementation(type: newFeedback.type)
+                            feedbackRequestContext.implementation(newFeedback)
                         )
                     } else {
                         newValue = nil
@@ -216,7 +216,7 @@ private struct FeedbackGenerator<T>: SensoryFeedbackGeneratorModifier where T: E
         content
             .task(id: feedback) {
                 implementation?.tearDown()
-                implementation = feedbackRequestContext.implementation(type: feedback.type)
+                implementation = feedbackRequestContext.implementation(feedback)
                 implementation?.setUp()
             }
             .onChange(of: trigger) { oldValue, newValue in
@@ -241,7 +241,7 @@ extension View {
 // MARK: - FeedbackRequestContext
 
 struct FeedbackRequestContext {
-    func implementation(type: SensoryFeedback.FeedbackType) -> (any PlatformSensoryFeedback)? {
+    func implementation(_ feedback: SensoryFeedback) -> (any PlatformSensoryFeedback)? {
         nil
     }
 }
