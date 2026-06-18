@@ -123,7 +123,7 @@ public struct OpenSwiftUIExampleServerConfiguration {
     public let enableLookInServer: Bool
 
     public static func resolve() -> OpenSwiftUIExampleServerConfiguration {
-        let enableLookInsideServer = envBoolValue("EXAMPLE_LOOKINSIDE_SERVER", default: true)
+        let enableLookInsideServer = envBoolValue("EXAMPLE_LOOKINSIDE_SERVER", default: false)
         let enableLookInServer = envBoolValue("EXAMPLE_LOOKIN_SERVER", default: false)
         if enableLookInsideServer && enableLookInServer {
             fatalError("\(lookInsideServerEnvKey) and \(lookInServerEnvKey) cannot both be enabled")

@@ -1,5 +1,5 @@
 {
-  "originHash" : "41017ad3153c643b413e18cfea9f01329068bcfa5b7c9d3847007c4d59856986",
+  "originHash" : "01744f7f8b6481b6a65f9cb93b209909899b7246fd0ba73c7508a8652608fc62",
   "pins" : [
     {
       "identity" : "equatable",
@@ -8,24 +8,6 @@
       "state" : {
         "branch" : "main",
         "revision" : "8f1dccead65d97173ed695c6c1ba9d0570d35619"
-      }
-    },
-    {
-      "identity" : "lookinserver",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/QMUI/LookinServer.git",
-      "state" : {
-        "revision" : "e553d1b689d147817dc54ad5c28fcff71e860101",
-        "version" : "1.2.8"
-      }
-    },
-    {
-      "identity" : "lookinside-release",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/LookInsideApp/LookInside-Release.git",
-      "state" : {
-        "revision" : "7514cfa8bd24a78f74d8b982c429e7d61ef58134",
-        "version" : "0.2.2"
       }
     },
     {

@@ -18,8 +18,8 @@ let exampleServerConfiguration = OpenSwiftUIExampleServerConfiguration.resolve()
 let enableLookInsideServer = exampleServerConfiguration.enableLookInsideServer
 let enableLookInServer = exampleServerConfiguration.enableLookInServer
 #else
-let enableLookInsideServer = true
-let enableLookInServer = true
+let enableLookInsideServer = Context.environment["OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER"] == "1"
+let enableLookInServer = Context.environment["OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER"] == "1"
 #endif
 
 var dependencies: [PackageDescription.Package.Dependency] = [

@@ -61,14 +61,14 @@ mise --env compute exec -- tuist install
 mise --env compute exec -- tuist generate --no-open
 ```
 
-By default, the generated Debug Example targets include LookInsideServer. You can switch the debug inspector server before running `tuist install` and `tuist generate`:
+By default, the generated Debug Example targets do not include any debug UI inspector server. You can switch the debug inspector server before running `tuist install` and `tuist generate`:
 
 ```shell
-# Default
+# Use LookInside
 export OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER=1
 export OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=0
 
-# Use Lookin instead
+# Use Lookin
 export OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER=0
 export OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=1
 
