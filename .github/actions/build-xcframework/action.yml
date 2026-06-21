@@ -44,6 +44,27 @@ outputs:
   checksum_OpenRenderBoxShims:
     description: 'Checksum for OpenRenderBoxShims.xcframework.zip'
     value: ${{ steps.checksums.outputs.checksum_OpenRenderBoxShims }}
+  checksum_OpenSwiftUI_Compute:
+    description: 'Checksum for OpenSwiftUI.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenSwiftUI_Compute }}
+  checksum_OpenSwiftUICore_Compute:
+    description: 'Checksum for OpenSwiftUICore.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenSwiftUICore_Compute }}
+  checksum_OpenAttributeGraphShims_Compute:
+    description: 'Checksum for OpenAttributeGraphShims.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenAttributeGraphShims_Compute }}
+  checksum_OpenCoreGraphicsShims_Compute:
+    description: 'Checksum for OpenCoreGraphicsShims.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenCoreGraphicsShims_Compute }}
+  checksum_OpenObservation_Compute:
+    description: 'Checksum for OpenObservation.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenObservation_Compute }}
+  checksum_OpenQuartzCoreShims_Compute:
+    description: 'Checksum for OpenQuartzCoreShims.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenQuartzCoreShims_Compute }}
+  checksum_OpenRenderBoxShims_Compute:
+    description: 'Checksum for OpenRenderBoxShims.Compute.xcframework.zip'
+    value: ${{ steps.checksums.outputs.checksum_OpenRenderBoxShims_Compute }}
 
 runs:
   using: 'composite'
@@ -69,6 +90,9 @@ runs:
     - name: Build XCFrameworks
       run: Scripts/build_xcframework.sh OpenSwiftUI
       shell: bash
+    - name: Build Compute XCFrameworks
+      run: Scripts/build_xcframework.sh --compute --output-suffix Compute OpenSwiftUI
+      shell: bash
     - name: Code sign XCFrameworks
       if: ${{ inputs.signing-certificate-base64 != '' }}
       uses: ./.github/actions/codesign-xcframework
@@ -83,6 +107,13 @@ runs:
           build/OpenObservation.xcframework
           build/OpenQuartzCoreShims.xcframework
           build/OpenRenderBoxShims.xcframework
+          build/OpenSwiftUI.Compute.xcframework
+          build/OpenSwiftUICore.Compute.xcframework
+          build/OpenAttributeGraphShims.Compute.xcframework
+          build/OpenCoreGraphicsShims.Compute.xcframework
+          build/OpenObservation.Compute.xcframework
+          build/OpenQuartzCoreShims.Compute.xcframework
+          build/OpenRenderBoxShims.Compute.xcframework
     - name: Compute Checksums and Generate Summary
       id: checksums
       shell: bash
@@ -100,26 +131,47 @@ runs:
           OpenRenderBoxShims
         )
         BODY=""
-        echo "### XCFramework Binary Targets" >> $GITHUB_STEP_SUMMARY
-        echo "" >> $GITHUB_STEP_SUMMARY
-        echo '```swift' >> $GITHUB_STEP_SUMMARY
-        for fw in "${FRAMEWORKS[@]}"; do
-          if [ -n "$TAG_NAME" ]; then
-            zip -ry "$fw.xcframework.zip" "$fw.xcframework"
-            CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
-            echo "checksum_${fw}=${CHECKSUM}" >> $GITHUB_OUTPUT
-            ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "$TAG_NAME" "$fw" "$CHECKSUM")
-          else
-            ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    path: "%s.xcframework"\n),' "$fw" "$fw")
-          fi
-          echo "$ENTRY" >> $GITHUB_STEP_SUMMARY
-          if [ -n "$BODY" ]; then
-            BODY=$(printf '%s\n%s' "$BODY" "$ENTRY")
-          else
-            BODY="$ENTRY"
-          fi
-        done
-        echo '```' >> $GITHUB_STEP_SUMMARY
+        emit_binary_targets() {
+          local suffix="$1"
+          local title="$2"
+          local collect_body="$3"
+
+          echo "### ${title}" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo '```swift' >> $GITHUB_STEP_SUMMARY
+          for fw in "${FRAMEWORKS[@]}"; do
+            local artifact="$fw"
+            local checksum_key="$fw"
+            if [ -n "$suffix" ]; then
+              artifact="$fw.$suffix"
+              checksum_key="${fw}_${suffix}"
+            fi
+
+            if [ -n "$TAG_NAME" ]; then
+              rm -f "$artifact.xcframework.zip"
+              zip -ry "$artifact.xcframework.zip" "$artifact.xcframework"
+              CHECKSUM=$(swift package compute-checksum "$artifact.xcframework.zip")
+              echo "checksum_${checksum_key}=${CHECKSUM}" >> $GITHUB_OUTPUT
+              ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    url: "https://github.com/OpenSwiftUIProject/OpenSwiftUI/releases/download/%s/%s.xcframework.zip",\n    checksum: "%s"\n),' "$fw" "$TAG_NAME" "$artifact" "$CHECKSUM")
+            else
+              ENTRY=$(printf '.binaryTarget(\n    name: "%s",\n    path: "%s.xcframework"\n),' "$fw" "$artifact")
+            fi
+            echo "$ENTRY" >> $GITHUB_STEP_SUMMARY
+            if [ "$collect_body" = true ]; then
+              if [ -n "$BODY" ]; then
+                BODY=$(printf '%s\n%s' "$BODY" "$ENTRY")
+              else
+                BODY="$ENTRY"
+              fi
+            fi
+          done
+          echo '```' >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+        }
+
+        emit_binary_targets "" "XCFramework Binary Targets" true
+        emit_binary_targets "Compute" "Compute XCFramework Binary Targets" false
+
         echo "body<<EOF" >> $GITHUB_OUTPUT
         echo "$BODY" >> $GITHUB_OUTPUT
         echo "EOF" >> $GITHUB_OUTPUT
