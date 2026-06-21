@@ -161,8 +161,15 @@ extension RendererLeafView where Self: _DisplayList_ViewFactory {
 package struct ViewDecoders {
     package typealias DecodableViewFactory = Decodable & AnyViewFactory
 
+    fileprivate struct DecodableFactoryDecoder {
+        var decode: (Data, ProtobufDecoder) throws -> any AnyViewFactory
+    }
+
     @AtomicBox
-    private static var shared: ViewDecoders = .init()
+    fileprivate static var shared: ViewDecoders = .init()
+
+    @AtomicBox
+    fileprivate static var factoryDecoders: [String: DecodableFactoryDecoder] = [:]
 
     package static func registerDecodableFactoryType<T, U>(
         _ factoryType: T.Type,
@@ -179,16 +186,22 @@ package struct ViewDecoders {
         forID id: String
     ) where T: Decodable, T: AnyViewFactory {
         shared.decodableFactoryTypes[id] = factoryType
-        _openSwiftUIUnimplementedFailure()
+        factoryDecoders[id] = DecodableFactoryDecoder { data, decoder in
+            try decoder.value(fromBinaryPlist: data, type: T.self)
+        }
     }
 
     package static func registerStandard(_ body: () -> Void) {
         body()
     }
 
-    private var decodableFactoryTypes: [String: any DecodableViewFactory.Type] = [:]
+    fileprivate static func factoryDecoder(forID id: String) -> DecodableFactoryDecoder? {
+        factoryDecoders[id]
+    }
 
-    private var hasRegisteredStandardDecoders = false
+    fileprivate var decodableFactoryTypes: [String: any DecodableViewFactory.Type] = [:]
+
+    fileprivate var hasRegisteredStandardDecoders = false
 }
 
 // MARK: - EmptyViewFactory [TODO]
@@ -316,13 +329,6 @@ extension EmptyViewFactory: DisplayList.ViewFactory {
 struct CodableViewFactory: ProtobufMessage {
     var factory: any AnyViewFactory
 
-    private struct CodingTags: ProtobufTag {
-        var rawValue: UInt
-
-        static let id = CodingTags(rawValue: 1)
-        static let data = CodingTags(rawValue: 2)
-    }
-
     private enum Error: Swift.Error {
         case missingView(String)
         case invalidView
@@ -332,10 +338,10 @@ struct CodableViewFactory: ProtobufMessage {
         var id: String?
         var data = Data()
         while let field = try decoder.nextField() {
-            switch field.tag(as: CodingTags.self) {
-            case .id:
+            switch field.tag {
+            case 1:
                 id = try decoder.stringField(field)
-            case .data:
+            case 2:
                 data = try decoder.messageField(field)
             default:
                 try decoder.skipField(field)
@@ -345,10 +351,10 @@ struct CodableViewFactory: ProtobufMessage {
             factory = EmptyViewFactory()
             return
         }
-        guard let factoryType = ViewDecoders.shared.decodableFactoryTypes[id] else {
+        guard let factoryDecoder = ViewDecoders.factoryDecoder(forID: id) else {
             throw Error.missingView(id)
         }
-        factory = try Self.decodeFactory(factoryType, from: data, decoder: decoder)
+        factory = try factoryDecoder.decode(data, decoder)
     }
 
     func encode(to encoder: inout ProtobufEncoder) throws {
@@ -356,16 +362,9 @@ struct CodableViewFactory: ProtobufMessage {
             encoder.archiveHost?.failedToEncodeView(type: factory.viewType)
             return
         }
-        try encoder.stringField(CodingTags.id, encoding.id)
+        try encoder.stringField(1, encoding.id)
         let data = try encoder.binaryPlistData(for: encoding.data)
-        try encoder.messageField(CodingTags.data, data)
+        try encoder.messageField(2, data)
     }
 
-    private static func decodeFactory<T>(
-        _ type: T.Type,
-        from data: Data,
-        decoder: ProtobufDecoder
-    ) throws -> any AnyViewFactory where T: Decodable, T: AnyViewFactory {
-        try decoder.value(fromBinaryPlist: data, type: type)
-    }
 }
