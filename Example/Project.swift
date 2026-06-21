@@ -131,6 +131,8 @@ let hostingExampleSettings = commonAppSettings.merging([
     "CLANG_ENABLE_MODULES": "YES",
     "GENERATE_INFOPLIST_FILE": "YES",
     "INFOPLIST_FILE": "HostingExample/Info.plist",
+    "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphoneos*]": "NO",
+    "INFOPLIST_KEY_UIApplicationSceneManifest_Generation[sdk=iphonesimulator*]": "NO",
     "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphoneos*]": "YES",
     "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=iphonesimulator*]": "YES",
     "INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents[sdk=xros*]": "YES",
