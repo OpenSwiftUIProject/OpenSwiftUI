@@ -49,8 +49,6 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
 
     final package let renderer = DisplayList.ViewRenderer(platform: .init(definition: UIViewPlatformViewDefinition.self))
 
-    // final package let eventBindingManager: EventBindingManager
-
     var allowUIKitAnimations: Int32 = .zero
 
     var disabledBackgroundColor: Bool = false
@@ -115,7 +113,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     var currentEvent: UIEvent? = nil
     
-    // var eventBridge: UIKitEventBindingBridge
+    package var eventBridge: UIKitEventBindingBridge
 
     var colorScheme: ColorScheme? = nil {
         didSet {
@@ -177,6 +175,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             >.self,
             options: options
         )
+        eventBridge = UIKitEventBindingBridge(eventBindingManager: _base.eventBindingManager)
         // TODO
         if _UIUpdateAdaptiveRateNeeded() {
             _base.viewGraph.append(feature: EnableVFDFeature())
@@ -300,6 +299,10 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             #endif
             viewGraph.emptyTransaction(transaction)
         }
+        if traitCollection.userInterfaceIdiom != previousTraitCollection?.userInterfaceIdiom {
+            updateEventBridge()
+        }
+        invalidateProperties(.environment)
     }
 
     open override func safeAreaInsetsDidChange() {
@@ -344,7 +347,17 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
 
     // TODO
-    
+
+    func updateEventBridge() {
+        let bridge = eventBridge
+        guard traitCollection.userInterfaceIdiom == .carPlay,
+              let gestureRecognizer = bridge.gestureRecognizer
+        else {
+            return
+        }
+        gestureRecognizer.allowedTouchTypes = [NSNumber(value: UITouch.TouchType.direct.rawValue)]
+    }
+
     func setRootView(_ view: Content, transaction: Transaction) {
         _rootView = view
         viewGraph.asyncTransaction(transaction) { [weak self] in
