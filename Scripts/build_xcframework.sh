@@ -27,6 +27,7 @@ SDK_ARCHS=()
 DEBUG_MODE=false
 RUN_TUIST_INSTALL=true
 EXPLICIT_FRAMEWORK_NAMES=false
+OUTPUT_SUFFIX=""
 FRAMEWORK_NAMES=()
 
 DEFAULT_FRAMEWORK_NAMES=(
@@ -48,6 +49,7 @@ Options:
   --archs <arch1,arch2>   Override architectures for the previous --sdk.
   --debug                 Keep release metadata and copy dSYMs.
   --compute               Build OpenAttributeGraphShims with the Compute source backend.
+  --output-suffix <name>  Append a suffix to generated xcframework bundle names.
   --skip-tuist-install    Skip tuist install.
   --framework <name>      Build one framework. May be passed multiple times.
   --help                  Show this help.
@@ -85,6 +87,10 @@ while [[ $# -gt 0 ]]; do
             export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE
             export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY
             shift
+            ;;
+        --output-suffix)
+            OUTPUT_SUFFIX="$2"
+            shift 2
             ;;
         --skip-tuist-install)
             RUN_TUIST_INSTALL=false
@@ -299,6 +305,9 @@ for i in "${!SDKS[@]}"; do
 done
 echo "Debug mode: $DEBUG_MODE"
 echo "Frameworks: ${FRAMEWORK_NAMES[*]}"
+if [ -n "$OUTPUT_SUFFIX" ]; then
+    echo "Output suffix: $OUTPUT_SUFFIX"
+fi
 echo "AG backend: $BUILD_AG_BACKEND"
 echo "Renderer backend: $BUILD_RENDERER_BACKEND"
 
@@ -315,6 +324,15 @@ framework_path() {
     local archive_path="$1"
     local scheme="$2"
     echo "$archive_path/Products/Library/Frameworks/$scheme.framework"
+}
+
+xcframework_path() {
+    local scheme="$1"
+    if [ -n "$OUTPUT_SUFFIX" ]; then
+        echo "$PROJECT_BUILD_DIR/$scheme.$OUTPUT_SUFFIX.xcframework"
+    else
+        echo "$PROJECT_BUILD_DIR/$scheme.xcframework"
+    fi
 }
 
 framework_modules_path() {
@@ -437,15 +455,17 @@ build_framework() {
 
 create_xcframework() {
     local scheme="$1"
+    local output_path
+    output_path="$(xcframework_path "$scheme")"
 
-    rm -rf "$PROJECT_BUILD_DIR/$scheme.xcframework"
+    rm -rf "$output_path"
 
     local create_args=()
     for sdk in "${SDKS[@]}"; do
         create_args+=(-framework "$(framework_path "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive" "$scheme")")
     done
 
-    xcodebuild -create-xcframework "${create_args[@]}" -output "$PROJECT_BUILD_DIR/$scheme.xcframework"
+    xcodebuild -create-xcframework "${create_args[@]}" -output "$output_path"
 }
 
 stamp_xcframework_configuration() {
@@ -482,9 +502,9 @@ copy_debug_symbols() {
     for sdk in "${SDKS[@]}"; do
         local local_dsym_dir=""
         case "$sdk" in
-            iphonesimulator) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/ios-*simulator 2>/dev/null | head -1) ;;
-            iphoneos) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/ios-arm64 2>/dev/null | head -1) ;;
-            macosx) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/macos-* 2>/dev/null | head -1) ;;
+            iphonesimulator) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/ios-*simulator 2>/dev/null | head -1) ;;
+            iphoneos) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/ios-arm64 2>/dev/null | head -1) ;;
+            macosx) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/macos-* 2>/dev/null | head -1) ;;
         esac
 
         if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive/dSYMs" ]; then
@@ -503,10 +523,10 @@ for scheme in "${FRAMEWORK_NAMES[@]}"; do
     done
     create_xcframework "$scheme"
     if [ "$scheme" = "OpenSwiftUI" ]; then
-        stamp_xcframework_configuration "$PROJECT_BUILD_DIR/$scheme.xcframework"
+        stamp_xcframework_configuration "$(xcframework_path "$scheme")"
     fi
     copy_debug_symbols "$scheme"
-    echo "Created $PROJECT_BUILD_DIR/$scheme.xcframework"
+    echo "Created $(xcframework_path "$scheme")"
 done
 
 if [ "$DEBUG_MODE" = false ]; then
