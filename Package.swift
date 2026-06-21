@@ -944,6 +944,28 @@ if swiftCryptoCondition {
 #if TUIST
 import struct ProjectDescription.PackageSettings
 import enum ProjectDescription.Product
+import enum ProjectDescription.SettingValue
+import typealias ProjectDescription.SettingsDictionary
+
+let openSwiftUIBuildAGBackend: String
+if let configuredAGBackend = envStringValue("AG_BACKEND_NAME") {
+    openSwiftUIBuildAGBackend = configuredAGBackend
+} else if computeCondition {
+    openSwiftUIBuildAGBackend = "Compute"
+} else if danceUIGraphCondition {
+    openSwiftUIBuildAGBackend = "DanceUIGraph"
+} else if attributeGraphCondition {
+    openSwiftUIBuildAGBackend = "AttributeGraph"
+} else {
+    openSwiftUIBuildAGBackend = "OpenAttributeGraph"
+}
+let openSwiftUIBuildRendererBackend = envStringValue("RENDERER_BACKEND_NAME") ?? (swiftUIRenderCondition ? "SwiftUI" : "OpenSwiftUI")
+let openSwiftUITargetSettings: SettingsDictionary = [
+    "INFOPLIST_KEY_OpenSwiftUIAGBackend": .string(openSwiftUIBuildAGBackend),
+    "INFOPLIST_KEY_OpenSwiftUIRendererBackend": .string(openSwiftUIBuildRendererBackend),
+    "INFOPLIST_KEY_OpenSwiftUILibraryType": .string(configuredLibraryType ?? "automatic"),
+    "INFOPLIST_KEY_OpenSwiftUIUsesLocalDependencies": .string(useLocalDeps ? "YES" : "NO"),
+]
 
 let packageSettings = PackageSettings(
     productTypes: [
@@ -961,6 +983,9 @@ let packageSettings = PackageSettings(
         "OpenRenderBoxShims": ProjectDescription.Product.staticFramework,
         "SymbolLocator": ProjectDescription.Product.staticFramework,
     ],
-    baseProductType: ProjectDescription.Product.staticFramework
+    baseProductType: ProjectDescription.Product.staticFramework,
+    targetSettings: [
+        "OpenSwiftUI": .settings(base: openSwiftUITargetSettings),
+    ]
 )
 #endif

@@ -468,29 +468,6 @@ create_xcframework() {
     xcodebuild -create-xcframework "${create_args[@]}" -output "$output_path"
 }
 
-stamp_xcframework_configuration() {
-    local xcframework_path="$1"
-    local info_plist="$xcframework_path/Info.plist"
-    local use_local_deps=false
-
-    if [ ! -f "$info_plist" ]; then
-        echo "Error: Expected $info_plist to exist."
-        exit 1
-    fi
-
-    if env_flag_enabled "$OPENSWIFTUI_USE_LOCAL_DEPS"; then
-        use_local_deps=true
-    fi
-
-    /usr/libexec/PlistBuddy -c "Delete :OpenSwiftUIBuildConfiguration" "$info_plist" >/dev/null 2>&1 || true
-    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration dict" "$info_plist"
-    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:AGBackend string $BUILD_AG_BACKEND" "$info_plist"
-    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:RendererBackend string $BUILD_RENDERER_BACKEND" "$info_plist"
-    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:LibraryType string $OPENSWIFTUI_LIBRARY_TYPE" "$info_plist"
-    /usr/libexec/PlistBuddy -c "Add :OpenSwiftUIBuildConfiguration:UsesLocalDependencies bool $use_local_deps" "$info_plist"
-    plutil -convert xml1 "$info_plist"
-}
-
 copy_debug_symbols() {
     local scheme="$1"
 
@@ -522,9 +499,6 @@ for scheme in "${FRAMEWORK_NAMES[@]}"; do
         build_framework "${SDKS[$i]}" "$(sdk_destination "${SDKS[$i]}")" "$scheme" "${SDK_ARCHS[$i]}"
     done
     create_xcframework "$scheme"
-    if [ "$scheme" = "OpenSwiftUI" ]; then
-        stamp_xcframework_configuration "$(xcframework_path "$scheme")"
-    fi
     copy_debug_symbols "$scheme"
     echo "Created $(xcframework_path "$scheme")"
 done
