@@ -88,7 +88,7 @@ struct LayoutTraitsTests {
             if expectedFailure {
                 #if compiler(>=6.3) // ST-12
                 #if !os(iOS) && !os(visionOS)
-                await #expect(processExitsWith: .failure) { [min, idea, max] in
+                await #expect(processExitsWith: .failure) { [min, ideal, max] in
                     _ = Dimension(min: min, ideal: ideal, max: max)
                     var d = Dimension.fixed(.zero)
                     d.max = ideal

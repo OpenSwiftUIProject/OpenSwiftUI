@@ -11,6 +11,10 @@ public import OpenCoreGraphicsShims
 public import UniformTypeIdentifiers
 #endif
 
+#if !canImport(CoreGraphics)
+public typealias CGDataConsumer = OpaquePointer
+#endif
+
 // MARK: - _ArchivedViewHostDelegate
 
 @_spi(Private)
