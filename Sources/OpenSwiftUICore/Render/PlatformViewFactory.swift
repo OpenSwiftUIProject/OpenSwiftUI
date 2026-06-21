@@ -3,6 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
+//  Status: Blocked by RB
 //  ID: 7A45621CE16223183E03CAC88E8C5E60 (SwiftUICore)
 
 package import Foundation
@@ -28,7 +29,7 @@ extension AnyViewFactory where Self: View {
     }
 }
 
-// MARK: - PlatformLayerFactory [TODO]
+// MARK: - PlatformLayerFactory
 
 package protocol PlatformLayerFactory: AnyViewFactory {
     var platformLayerType: CALayer.Type { get }
@@ -48,12 +49,16 @@ extension PlatformLayerFactory {
         size: CGSize,
         renderer: DisplayList.GraphicsRenderer
     ) {
-        // TODO: render.platformViewMode
-        _openSwiftUIUnimplementedFailure()
+        if case .ignored = renderer.platformViewMode {
+            return
+        }
+        Log.externalWarning("Unable to render flattened version of \(viewType).")
+        // TODO: GraphicsContext
+        ctx.renderMissingPlatformView(size: size)
     }
 }
 
-// MARK: - PlatformViewFactory [TODO]
+// MARK: - PlatformViewFactory
 
 package protocol PlatformViewFactory: AnyViewFactory {
     func makePlatformView() -> AnyObject?
@@ -75,8 +80,12 @@ extension PlatformViewFactory {
         size: CGSize,
         renderer: DisplayList.GraphicsRenderer
     ) {
-        // TODO: render.platformViewMode
-        _openSwiftUIUnimplementedFailure()
+        if case .ignored = renderer.platformViewMode {
+            return
+        }
+        Log.externalWarning("Unable to render flattened version of \(viewType).")
+        // TODO: GraphicsContext
+        ctx.renderMissingPlatformView(size: size)
     }
 
     package var features: DisplayList.Features {
@@ -118,8 +127,8 @@ extension PlatformGroupFactory {
         size: CGSize,
         renderer: DisplayList.GraphicsRenderer
     ) {
-        // TODO: RB
-        _openSwiftUIUnimplementedFailure()
+        var ctx = ctx
+        renderer.render(list: list, in: &ctx)
     }
 
     package var features: DisplayList.Features {
@@ -152,8 +161,15 @@ extension RendererLeafView where Self: _DisplayList_ViewFactory {
 package struct ViewDecoders {
     package typealias DecodableViewFactory = Decodable & AnyViewFactory
 
+    fileprivate struct DecodableFactoryDecoder {
+        var decode: (Data, ProtobufDecoder) throws -> any AnyViewFactory
+    }
+
     @AtomicBox
-    private static var shared: ViewDecoders = .init()
+    fileprivate static var shared: ViewDecoders = .init()
+
+    @AtomicBox
+    fileprivate static var factoryDecoders: [String: DecodableFactoryDecoder] = [:]
 
     package static func registerDecodableFactoryType<T, U>(
         _ factoryType: T.Type,
@@ -170,16 +186,22 @@ package struct ViewDecoders {
         forID id: String
     ) where T: Decodable, T: AnyViewFactory {
         shared.decodableFactoryTypes[id] = factoryType
-        _openSwiftUIUnimplementedFailure()
+        factoryDecoders[id] = DecodableFactoryDecoder { data, decoder in
+            try decoder.value(fromBinaryPlist: data, type: T.self)
+        }
     }
 
     package static func registerStandard(_ body: () -> Void) {
         body()
     }
 
-    private var decodableFactoryTypes: [String: any DecodableViewFactory.Type] = [:]
+    fileprivate static func factoryDecoder(forID id: String) -> DecodableFactoryDecoder? {
+        factoryDecoders[id]
+    }
 
-    private var hasRegisteredStandardDecoders = false
+    fileprivate var decodableFactoryTypes: [String: any DecodableViewFactory.Type] = [:]
+
+    fileprivate var hasRegisteredStandardDecoders = false
 }
 
 // MARK: - EmptyViewFactory [TODO]
@@ -213,9 +235,10 @@ extension EmptyViewFactory: PlatformLayerFactory {
             GraphicsContext.renderingTo(
                 cgContext: ctx,
                 environment: .init(),
-                deviceScale: .zero
-            ) { _ in
-                _openSwiftUIUnimplementedFailure()
+                deviceScale: nil
+            ) { context in
+                // TODO: RB setup
+                context.renderMissingPlatformView(size: bounds.size)
             }
         }
 
@@ -239,7 +262,8 @@ extension EmptyViewFactory: PlatformLayerFactory {
         size: CGSize,
         renderer: DisplayList.GraphicsRenderer
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // TODO: RB
+        ctx.renderMissingPlatformView(size: size)
     }
 }
 
@@ -261,7 +285,8 @@ extension EmptyViewFactory: PlatformViewFactory {
         size: CGSize,
         renderer: DisplayList.GraphicsRenderer
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // TODO: RB
+        ctx.renderMissingPlatformView(size: size)
     }
 }
 
@@ -279,7 +304,7 @@ extension EmptyViewFactory: PlatformGroupFactory {
     }
 
     package func platformGroupContainer(_ view: AnyObject) -> AnyObject {
-        _openSwiftUIUnimplementedFailure()
+        view
     }
 
     package func renderPlatformGroup(
@@ -288,7 +313,8 @@ extension EmptyViewFactory: PlatformGroupFactory {
         size: CGSize,
         renderer: DisplayList.GraphicsRenderer
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // TODO: RB
+        ctx.renderMissingPlatformView(size: size)
     }
 }
 
@@ -309,14 +335,36 @@ struct CodableViewFactory: ProtobufMessage {
     }
 
     init(from decoder: inout ProtobufDecoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var id: String?
+        var data = Data()
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                id = try decoder.stringField(field)
+            case 2:
+                data = try decoder.messageField(field)
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        guard let id else {
+            factory = EmptyViewFactory()
+            return
+        }
+        guard let factoryDecoder = ViewDecoders.factoryDecoder(forID: id) else {
+            throw Error.missingView(id)
+        }
+        factory = try factoryDecoder.decode(data, decoder)
     }
 
     func encode(to encoder: inout ProtobufEncoder) throws {
         guard let encoding = factory.encoding() else {
-            // TODO: encoder.archiveHost
-            _openSwiftUIUnimplementedFailure()
+            encoder.archiveHost?.failedToEncodeView(type: factory.viewType)
+            return
         }
-        _openSwiftUIUnimplementedFailure()
+        try encoder.stringField(1, encoding.id)
+        let data = try encoder.binaryPlistData(for: encoding.data)
+        try encoder.messageField(2, data)
     }
+
 }

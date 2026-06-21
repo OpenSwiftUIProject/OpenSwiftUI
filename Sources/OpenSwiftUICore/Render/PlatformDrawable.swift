@@ -57,16 +57,18 @@ public struct PlatformDrawableContent: @unchecked Sendable {
     // MARK: - PlatformDrawableContent.State
 
     public struct State {
-        package var mode: DisplayList.GraphicsRenderer.PlatformViewMode = .unsupported
+        package var mode: DisplayList.GraphicsRenderer.PlatformViewMode
 
         package var _renderer: DisplayList.GraphicsRenderer?
 
         package init() {
-            _openSwiftUIEmptyStub()
+            mode = .unsupported
+            _renderer = nil
         }
 
         package init(platformViewMode: DisplayList.GraphicsRenderer.PlatformViewMode) {
             mode = platformViewMode
+            _renderer = nil
         }
 
         package mutating func renderer() -> DisplayList.GraphicsRenderer {

@@ -35,6 +35,10 @@ package struct ProtobufEncoder {
     
     /// User-defined information.
     package var userInfo: [CodingUserInfoKey: Any] = [:]
+
+    package var archiveHost: (any AnyArchivedViewHost)? {
+        userInfo[ArchivedViewCore.archivedViewHostKey] as? any AnyArchivedViewHost
+    }
     
     /// Takes the encoded data.
     ///

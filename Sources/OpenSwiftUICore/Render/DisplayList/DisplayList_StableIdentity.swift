@@ -27,7 +27,7 @@ package struct _DisplayList_StableIdentityMap {
         set { map[index] = newValue }
     }
     package mutating func formUnion(_ other: _DisplayList_StableIdentityMap) {
-        map.merge(other.map) { old, _ in old }
+        map.merge(other.map.lazy.map { ($0.key, $0.value) }) { old, _ in old }
     }
 }
 
@@ -38,11 +38,25 @@ final package class _DisplayList_StableIdentityRoot {
     package init() {}
     
     package final subscript(index: _DisplayList_Identity) -> _DisplayList_StableIdentity? {
-        if let map {
-            return map[index]
-        } else {
-            _openSwiftUIUnimplementedFailure()
+        // TBA
+        if map == nil {
+            var map = _DisplayList_StableIdentityMap()
+            var scopeIndex = scopes.startIndex
+            while scopeIndex < scopes.endIndex {
+                guard let value = scopes[scopeIndex].value else {
+                    let lastIndex = scopes.index(before: scopes.endIndex)
+                    if scopeIndex != lastIndex {
+                        scopes.swapAt(scopeIndex, lastIndex)
+                    }
+                    scopes.removeLast()
+                    continue
+                }
+                map.formUnion(value.map)
+                scopes.formIndex(after: &scopeIndex)
+            }
+            self.map = map
         }
+        return map?[index]
     }
 }
 
