@@ -5,7 +5,7 @@
 #if os(iOS) || os(visionOS)
 import Foundation
 import Testing
-@testable import OpenSwiftUI
+import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 import UIKit
@@ -13,6 +13,26 @@ import OpenSwiftUITestsSupport
 
 @MainActor
 struct UIHostingViewBaseTests {
+    @Test
+    func startUpdateEnvironmentReturnsResolvedTraitEnvironment() {
+        let uiView = UIView()
+        let base = UIHostingViewBase(rootViewType: EmptyView.self, options: [])
+        base.uiView = uiView
+        base.traitCollectionOverride = UITraitCollection(traitsFrom: [
+            UITraitCollection(layoutDirection: .rightToLeft),
+            UITraitCollection(displayScale: 3.0),
+        ])
+
+        var inheritedEnvironment = EnvironmentValues()
+        inheritedEnvironment.layoutDirection = .leftToRight
+        inheritedEnvironment.displayScale = 1.0
+        base.inheritedEnvironment = inheritedEnvironment
+
+        let environment = base.startUpdateEnvironment()
+        #expect(environment.layoutDirection == .rightToLeft)
+        #expect(environment.displayScale == 3.0)
+    }
+
     @Test(.bug(id: "#406"))
     func uiWindowSceneDeallocIssue() async throws {
         struct ContentView: View {
