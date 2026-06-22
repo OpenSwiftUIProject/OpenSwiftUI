@@ -93,6 +93,7 @@ public protocol ViewModifier {
 
 package protocol PrimitiveViewModifier: ViewModifier where Body == Never {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension ViewModifier where Body == Never {
     public func body(content _: Content) -> Never {
         bodyError()
@@ -116,8 +117,9 @@ extension ViewModifier {
 
 package protocol UnaryViewModifier: ViewModifier {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension UnaryViewModifier {
-    nonisolated static func _makeViewList(
+    nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
         inputs: _ViewListInputs,
         body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
@@ -125,7 +127,7 @@ extension UnaryViewModifier {
         makeUnaryViewList(modifier: modifier, inputs: inputs, body: body)
     }
 
-    nonisolated static func _viewListCount(
+    nonisolated public static func _viewListCount(
         inputs: _ViewListCountInputs,
         body: (_ViewListCountInputs) -> Int?
     ) -> Int? {
@@ -137,6 +139,7 @@ extension UnaryViewModifier {
 
 package protocol MultiViewModifier: ViewModifier {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension MultiViewModifier {
     nonisolated public static func _makeViewList(
         modifier: _GraphValue<Self>,
@@ -149,6 +152,7 @@ extension MultiViewModifier {
 
 // MARK: - ViewModifier + _GraphInputsModifier
 
+@available(OpenSwiftUI_v1_0, *)
 extension ViewModifier where Self: _GraphInputsModifier, Body == Never {
     nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
@@ -185,6 +189,7 @@ package protocol ViewInputsModifier: ViewModifier where Body == Never {
     nonisolated static func _makeViewInputs(modifier: _GraphValue<Self>, inputs: inout _ViewInputs)
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension ViewInputsModifier {
     package static var graphInputsSemantics: Semantics? {
         nil
