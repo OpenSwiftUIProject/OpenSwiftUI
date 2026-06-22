@@ -212,7 +212,7 @@ package class UIHostingViewBase {
         }
         var result = traitCollection.resolvedEnvironment(base: EnvironmentValues(environment.plist))
         result.configureForPlatform(traitCollection: traitCollection)
-        return environment
+        return result
     }
 
     package func endUpdateEnvironment(_ environment: EnvironmentValues) {
