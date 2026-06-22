@@ -407,4 +407,14 @@ public func _makeUIHostingView<Content>(_ view: Content) -> NSObject where Conte
     _UIHostingView(rootView: view)
 }
 
+// MARK: - _UIHostingView + AnyUIHostingView
+
+extension _UIHostingView: AnyUIHostingView {
+    package var debugName: String? {
+        // TODO: UIHostingViewDebugOptions
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
+
 #endif
