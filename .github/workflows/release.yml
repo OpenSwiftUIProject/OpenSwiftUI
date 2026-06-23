@@ -20,15 +20,11 @@ jobs:
       checksum_OpenObservation: ${{ steps.build.outputs.checksum_OpenObservation }}
       checksum_OpenQuartzCoreShims: ${{ steps.build.outputs.checksum_OpenQuartzCoreShims }}
       checksum_OpenRenderBoxShims: ${{ steps.build.outputs.checksum_OpenRenderBoxShims }}
-      checksum_OpenSwiftUI_Compute: ${{ steps.build.outputs.checksum_OpenSwiftUI_Compute }}
-      checksum_OpenSwiftUICore_Compute: ${{ steps.build.outputs.checksum_OpenSwiftUICore_Compute }}
-      checksum_OpenAttributeGraphShims_Compute: ${{ steps.build.outputs.checksum_OpenAttributeGraphShims_Compute }}
-      checksum_OpenCoreGraphicsShims_Compute: ${{ steps.build.outputs.checksum_OpenCoreGraphicsShims_Compute }}
-      checksum_OpenObservation_Compute: ${{ steps.build.outputs.checksum_OpenObservation_Compute }}
-      checksum_OpenQuartzCoreShims_Compute: ${{ steps.build.outputs.checksum_OpenQuartzCoreShims_Compute }}
-      checksum_OpenRenderBoxShims_Compute: ${{ steps.build.outputs.checksum_OpenRenderBoxShims_Compute }}
     env:
-      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 0
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -71,13 +67,6 @@ jobs:
           CHECKSUM_OpenObservation: ${{ needs.build-xcframeworks.outputs.checksum_OpenObservation }}
           CHECKSUM_OpenQuartzCoreShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenQuartzCoreShims }}
           CHECKSUM_OpenRenderBoxShims: ${{ needs.build-xcframeworks.outputs.checksum_OpenRenderBoxShims }}
-          CHECKSUM_OpenSwiftUI_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUI_Compute }}
-          CHECKSUM_OpenSwiftUICore_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenSwiftUICore_Compute }}
-          CHECKSUM_OpenAttributeGraphShims_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenAttributeGraphShims_Compute }}
-          CHECKSUM_OpenCoreGraphicsShims_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenCoreGraphicsShims_Compute }}
-          CHECKSUM_OpenObservation_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenObservation_Compute }}
-          CHECKSUM_OpenQuartzCoreShims_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenQuartzCoreShims_Compute }}
-          CHECKSUM_OpenRenderBoxShims_Compute: ${{ needs.build-xcframeworks.outputs.checksum_OpenRenderBoxShims_Compute }}
         run: |
           if [ -z "$BINARY_REPO_PAT" ]; then
             echo "::notice::BINARY_REPO_PAT not set, skipping binary repo update"
@@ -109,9 +98,13 @@ jobs:
               Package.swift.template > Package.swift
           }
 
+          update_readme_version() {
+            perl -0pi -e 's|(\.package\(url:\s*"https://github\.com/OpenSwiftUIProject/OpenSwiftUI-spm",\s*from:\s*")[^"]+(")|$1$ENV{VERSION}$2|g' README.md
+          }
+
           commit_package_if_needed() {
             local message="$1"
-            git add Package.swift
+            git add Package.swift README.md
             if git diff --cached --quiet; then
               echo "No changes for $(git branch --show-current)"
               return 1
@@ -127,27 +120,13 @@ jobs:
             "$CHECKSUM_OpenObservation" \
             "$CHECKSUM_OpenQuartzCoreShims" \
             "$CHECKSUM_OpenRenderBoxShims"
+          update_readme_version
           echo "Generated Package.swift:"
           head -50 Package.swift
           if commit_package_if_needed "Update to ${VERSION} with code-signed XCFrameworks"; then
             git tag "${VERSION}"
           fi
           git push origin main --tags
-
-          git fetch origin --prune
-          git switch --track origin/compute
-          render_package \
-            "$CHECKSUM_OpenSwiftUI_Compute" \
-            "$CHECKSUM_OpenSwiftUICore_Compute" \
-            "$CHECKSUM_OpenAttributeGraphShims_Compute" \
-            "$CHECKSUM_OpenCoreGraphicsShims_Compute" \
-            "$CHECKSUM_OpenObservation_Compute" \
-            "$CHECKSUM_OpenQuartzCoreShims_Compute" \
-            "$CHECKSUM_OpenRenderBoxShims_Compute"
-          echo "Generated Compute Package.swift:"
-          head -50 Package.swift
-          commit_package_if_needed "Update Compute to ${VERSION} with code-signed XCFrameworks" || true
-          git push origin compute
 
   release-notes:
     uses: ./.github/workflows/release_notes.yml

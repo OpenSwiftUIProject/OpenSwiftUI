@@ -27,7 +27,6 @@ SDK_ARCHS=()
 DEBUG_MODE=false
 RUN_TUIST_INSTALL=true
 EXPLICIT_FRAMEWORK_NAMES=false
-OUTPUT_SUFFIX=""
 FRAMEWORK_NAMES=()
 
 DEFAULT_FRAMEWORK_NAMES=(
@@ -49,7 +48,6 @@ Options:
   --archs <arch1,arch2>   Override architectures for the previous --sdk.
   --debug                 Keep release metadata and copy dSYMs.
   --compute               Build OpenAttributeGraphShims with the Compute source backend.
-  --output-suffix <name>  Append a suffix to generated xcframework bundle names.
   --skip-tuist-install    Skip tuist install.
   --framework <name>      Build one framework. May be passed multiple times.
   --help                  Show this help.
@@ -88,10 +86,6 @@ while [[ $# -gt 0 ]]; do
             export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY
             shift
             ;;
-        --output-suffix)
-            OUTPUT_SUFFIX="$2"
-            shift 2
-            ;;
         --skip-tuist-install)
             RUN_TUIST_INSTALL=false
             shift
@@ -118,47 +112,21 @@ if [ ${#FRAMEWORK_NAMES[@]} -eq 0 ] ||
     FRAMEWORK_NAMES=("${DEFAULT_FRAMEWORK_NAMES[@]}")
 fi
 
-# Default: macosx and iphonesimulator.
+# Default: macosx and iphonesimulator. Compute builds also include iphoneos.
 # Note: iphoneos SDK support is blocked by an AG issue. See #835.
 if [ ${#SDKS[@]} -eq 0 ]; then
-    SDKS=("macosx" "iphonesimulator")
-    SDK_ARCHS=("" "")
+    if [ "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}" = "1" ]; then
+        SDKS=("macosx" "iphonesimulator" "iphoneos")
+        SDK_ARCHS=("" "" "")
+    else
+        SDKS=("macosx" "iphonesimulator")
+        SDK_ARCHS=("" "")
+    fi
 fi
 
 if [ "${OPENSWIFTUI_SKIP_TUIST_INSTALL:-0}" = "1" ]; then
     RUN_TUIST_INSTALL=false
 fi
-
-env_flag_enabled() {
-    [ "${1:-0}" = "1" ]
-}
-
-resolve_ag_backend() {
-    if [ -n "${OPENSWIFTUI_AG_BACKEND_NAME:-}" ]; then
-        echo "$OPENSWIFTUI_AG_BACKEND_NAME"
-    elif env_flag_enabled "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}"; then
-        echo "Compute"
-    elif env_flag_enabled "${OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH:-0}"; then
-        echo "DanceUIGraph"
-    elif env_flag_enabled "${OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH:-0}"; then
-        echo "AttributeGraph"
-    else
-        echo "OpenAttributeGraph"
-    fi
-}
-
-resolve_renderer_backend() {
-    if [ -n "${OPENSWIFTUI_RENDERER_BACKEND_NAME:-}" ]; then
-        echo "$OPENSWIFTUI_RENDERER_BACKEND_NAME"
-    elif env_flag_enabled "${OPENSWIFTUI_SWIFTUI_RENDERER:-0}"; then
-        echo "SwiftUI"
-    else
-        echo "OpenSwiftUI"
-    fi
-}
-
-BUILD_AG_BACKEND="$(resolve_ag_backend)"
-BUILD_RENDERER_BACKEND="$(resolve_renderer_backend)"
 
 if ! command -v tuist >/dev/null 2>&1; then
     echo "Error: tuist is required to generate $XCODEPROJ."
@@ -305,11 +273,6 @@ for i in "${!SDKS[@]}"; do
 done
 echo "Debug mode: $DEBUG_MODE"
 echo "Frameworks: ${FRAMEWORK_NAMES[*]}"
-if [ -n "$OUTPUT_SUFFIX" ]; then
-    echo "Output suffix: $OUTPUT_SUFFIX"
-fi
-echo "AG backend: $BUILD_AG_BACKEND"
-echo "Renderer backend: $BUILD_RENDERER_BACKEND"
 
 sdk_destination() {
     case "$1" in
@@ -328,11 +291,7 @@ framework_path() {
 
 xcframework_path() {
     local scheme="$1"
-    if [ -n "$OUTPUT_SUFFIX" ]; then
-        echo "$PROJECT_BUILD_DIR/$scheme.$OUTPUT_SUFFIX.xcframework"
-    else
-        echo "$PROJECT_BUILD_DIR/$scheme.xcframework"
-    fi
+    echo "$PROJECT_BUILD_DIR/$scheme.xcframework"
 }
 
 framework_modules_path() {
