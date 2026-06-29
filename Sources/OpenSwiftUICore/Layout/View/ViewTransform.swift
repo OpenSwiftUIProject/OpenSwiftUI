@@ -248,7 +248,7 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         var stop = false
         if inverted {
             if pendingTranslation != .zero {
-                body(.translation(pendingTranslation), &stop)
+                body(.translation(-pendingTranslation), &stop)
                 if stop { return }
             }
             var element: AnyElement = head
@@ -265,7 +265,7 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
             ) { bufferPointer in
                 bufferPointer.initializeElement(at: 0, to: head)
                 var element = head
-                var index = 0
+                var index = 1
                 while let next = element.next {
                     bufferPointer.initializeElement(at: index, to: next)
                     element = next
@@ -296,26 +296,119 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         } else if case .local = space2 {
             return true
         } else {
-            forEach(inverted: false) { item, stop in
-                // TODO
+            let name1: CoordinateSpace.Name = switch space1 {
+                case let .named(name): .name(name)
+                case let .id(id): .id(id)
+                default: _openSwiftUIUnreachableCode()
             }
-            _openSwiftUIUnimplementedFailure()
+            let name2: CoordinateSpace.Name = switch space2 {
+                case let .named(name): .name(name)
+                case let .id(id): .id(id)
+                default: _openSwiftUIUnreachableCode()
+            }
+            var found1 = false
+            var found2 = false
+            forEach(inverted: false) { item, stop in
+                switch item {
+                case let .coordinateSpace(name), let .sizedSpace(name, _):
+                    found1 = name1 == name
+                    found2 = name2 == name
+                default:
+                    break
+                }
+                stop = found1 || found2
+            }
+            return found1 && !found2
         }
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, _ body: (ViewTransform.Item) -> Void) {
         guard !isEmpty else { return }
-        _openSwiftUIUnimplementedFailure()
+        let conversion = conversion.normalized()
+        
+        var active = false
+        switch conversion {
+        case let .rootToSpace(space):
+            guard space != .root else { return }
+            active = true
+        case let .spaceToRoot(space):
+            active = space == .local
+        case let .localToSpace(space):
+            guard space != .local else { return }
+            active = true
+        case let .spaceToLocal(space):
+            active = space == .root
+        case .spaceToSpace:
+            active = false
+        }
+
+        let inverted = switch conversion {
+        case .rootToSpace, .spaceToLocal:
+            false
+        case .spaceToRoot, .localToSpace:
+            true
+        case let .spaceToSpace(space1, space2):
+            !spaceBeforeSpace(space1, space2)
+        }
+
+        forEach(inverted: inverted) { item, stop in
+            switch item {
+            case let .coordinateSpace(name), let .sizedSpace(name, _):
+                let space = name.space
+                switch conversion {
+                case let .rootToSpace(target), let .localToSpace(target):
+                    guard space != target else {
+                        stop = true
+                        return
+                    }
+                case let .spaceToRoot(source), let .spaceToLocal(source):
+                    if space == source {
+                        active = true
+                    }
+                case let .spaceToSpace(source, target):
+                    guard space != target else {
+                        stop = true
+                        return
+                    }
+                    if space == source {
+                        active = true
+                    }
+                }
+            default:
+                break
+            }
+            if active {
+                body(item)
+            }
+        }
+    }
+
+    package func convert<Points>(
+        _ conversion: ViewTransform.Conversion,
+        points: inout Points
+    ) where Points: MutableCollection, Points.Element == CGPoint {
+        guard !isEmpty else { return }
+        guard !points.isEmpty else { return }
+        convert(conversion) { item in
+            points._applyTransform(item: item)
+        }
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, points: inout [CGPoint]) {
         guard !isEmpty else { return }
-        _openSwiftUIUnimplementedFailure()
+        guard !points.isEmpty else { return }
+        convert(conversion) { item in
+            points._applyTransform(item: item)
+        }
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, point: CGPoint) -> CGPoint {
         guard !isEmpty else { return point }
-        _openSwiftUIUnimplementedFailure()
+        var point = point
+        convert(conversion) { item in
+            point.applyTransform(item: item)
+        }
+        return point
     }
     
     package var containingScrollGeometry: ScrollGeometry? {
@@ -350,6 +443,37 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
 @_spi(ForOpenSwiftUIOnly)
 @available(*, unavailable)
 extension ViewTransform: Sendable {}
+
+// Mark: MutableCollection + Extension
+
+extension MutableCollection where Element == CGPoint {
+    fileprivate mutating func _apply(_ matrix: ProjectionTransform, inverse: Bool) {
+        for index in indices {
+            let point = self[index]
+            self[index] = inverse ? point.unapplying(matrix) : point.applying(matrix)
+        }
+    }
+
+    fileprivate mutating func _applyTransform(item: ViewTransform.Item) {
+        switch item {
+        case let .translation(offset):
+            for index in indices {
+                self[index].x += offset.width
+                self[index].y += offset.height
+            }
+        case let .affineTransform(matrix, inverse):    
+            let transform = inverse ? matrix.inverted() : matrix
+            for index in indices {
+                let point = self[index]
+                self[index] = point.applying(transform)
+            }
+        case let .projectionTransform(matrix, inverse):
+            _apply(matrix, inverse: inverse)
+        default:
+            break
+        }
+    }
+}
 
 @_spi(ForOpenSwiftUIOnly)
 extension ViewTransform {
