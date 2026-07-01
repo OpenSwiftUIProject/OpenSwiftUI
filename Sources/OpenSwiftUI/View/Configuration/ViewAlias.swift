@@ -225,12 +225,12 @@ private struct SourceFormula<Source>: AnySourceFormula where Source: View {
             return .init()
         }
         return if source.valueIsNil == nil {
-            Optional<Source>.makeDebuggableView(
+            Source.makeDebuggableView(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
         } else {
-            Source.makeDebuggableView(
+            Optional<Source>.makeDebuggableView(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
@@ -246,12 +246,12 @@ private struct SourceFormula<Source>: AnySourceFormula where Source: View {
             return .emptyViewList(inputs: inputs)
         }
         return if source.valueIsNil == nil {
-            Optional<Source>.makeDebuggableViewList(
+            Source.makeDebuggableViewList(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
         } else {
-            Source.makeDebuggableViewList(
+            Optional<Source>.makeDebuggableViewList(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
@@ -263,9 +263,9 @@ private struct SourceFormula<Source>: AnySourceFormula where Source: View {
         inputs: _ViewListCountInputs
     ) -> Int? {
         if source.valueIsNil == nil {
-            Optional<Source>._viewListCount(inputs: inputs)
-        } else {
             Source._viewListCount(inputs: inputs)
+        } else {
+            Optional<Source>._viewListCount(inputs: inputs)
         }
     }
 }
