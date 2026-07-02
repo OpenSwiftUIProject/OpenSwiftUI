@@ -30,9 +30,9 @@ public struct _PreferenceWritingModifier<Key>: ViewModifier, MultiViewModifier, 
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        var inputs = inputs
-        inputs.preferences.remove(Key.self)
-        var outputs = body(_Graph(), inputs)
+        var newInputs = inputs
+        newInputs.preferences.remove(Key.self)
+        var outputs = body(_Graph(), newInputs)
         outputs.preferences
             .makePreferenceWriter(
                 inputs: inputs.preferences,

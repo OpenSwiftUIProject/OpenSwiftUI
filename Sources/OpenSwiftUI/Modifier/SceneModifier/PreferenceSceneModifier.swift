@@ -16,9 +16,9 @@ extension _PreferenceWritingModifier: _SceneModifier {
         inputs: _SceneInputs,
         body: @escaping (_Graph, _SceneInputs) -> _SceneOutputs
     ) -> _SceneOutputs {
-        var inputs = inputs
-        inputs.preferences.remove(Key.self)
-        var outputs = body(_Graph(), inputs)
+        var newInputs = inputs
+        newInputs.preferences.remove(Key.self)
+        var outputs = body(_Graph(), newInputs)
         outputs.preferences
             .makePreferenceWriter(
                 inputs: inputs.preferences,
