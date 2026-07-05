@@ -13,6 +13,14 @@ usage() {
     "  --compute  Use mise.compute.toml while installing tools and generating the project."
 }
 
+run_mise() {
+  if [[ ${#MISE_ARGS[@]} -gt 0 ]]; then
+    mise "${MISE_ARGS[@]}" "$@"
+  else
+    mise "$@"
+  fi
+}
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --compute)
@@ -35,6 +43,6 @@ mise trust "$SCRIPT_DIR/mise.toml"
 if [[ ${#MISE_ARGS[@]} -gt 0 ]]; then
   mise trust "$SCRIPT_DIR/mise.compute.toml"
 fi
-mise "${MISE_ARGS[@]}" install
-mise "${MISE_ARGS[@]}" exec -- tuist install
-mise "${MISE_ARGS[@]}" exec -- tuist generate --no-open
+run_mise install
+run_mise exec -- tuist install
+run_mise exec -- tuist generate --no-open
