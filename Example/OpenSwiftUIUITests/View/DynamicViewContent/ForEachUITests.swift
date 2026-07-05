@@ -120,6 +120,13 @@ struct ForEachUITests {
     }
 
     @Test(
+        .disabled("Temporarily disabled for Compute snapshot crash. It works fine when this single test case. But it will crash when running the whole ForEachUITests suite for Compute on macOS") {
+            #if os(macOS)
+            attributeGraphVendor == .compute
+            #else
+            false
+            #endif
+        },
         .bug(
             "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/655",
             id: 655

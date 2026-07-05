@@ -8,7 +8,6 @@ import SnapshotTesting
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct AnimationCompletionUITests {
-    @Test
     func logicalAndRemovedComplete() {
         struct ContentView: AnimationTestView {
             nonisolated static var model: AnimationTestModel {

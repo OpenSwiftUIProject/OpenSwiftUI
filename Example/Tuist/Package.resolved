@@ -2,6 +2,15 @@
   "originHash" : "01744f7f8b6481b6a65f9cb93b209909899b7246fd0ba73c7508a8652608fc62",
   "pins" : [
     {
+      "identity" : "compute",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/OpenSwiftUIProject/Compute",
+      "state" : {
+        "revision" : "bf9cfe57ba8b3dc7307a95fb10a6133e70db3089",
+        "version" : "0.3.0-bugfix.1"
+      }
+    },
+    {
       "identity" : "equatable",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/equatable.git",

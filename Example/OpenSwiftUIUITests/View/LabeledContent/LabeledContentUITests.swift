@@ -6,7 +6,10 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool))
+@Suite(
+    .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for Compute snapshot stack overflow. See https://github.com/jcmosc/Compute/issues/47"),
+    .snapshots(record: .never, diffTool: diffTool)
+)
 struct LabeledContentUITests {
     @Test
     func defaultStyle() {
