@@ -10,6 +10,7 @@ cd $REPO_ROOT
 
 # The order of these scripts matters.
 # The more foundational frameworks should be set up last.
+Scripts/CI/compute_setup.sh
 Scripts/CI/openattributegraph_setup.sh
 Scripts/CI/openrenderbox_setup.sh
 Scripts/CI/opencoregraphics_setup.sh

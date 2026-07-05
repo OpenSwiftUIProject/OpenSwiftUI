@@ -8,7 +8,6 @@ set -e
 export OPENSWIFTUI_LIBRARY_TYPE
 export OPENSWIFTUI_USE_LOCAL_DEPS
 export OPENSWIFTUI_SWIFTUI_RENDERER
-# TODO: replace AG with Compute or OAG by default
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
@@ -40,8 +39,27 @@ DEFAULT_FRAMEWORK_NAMES=(
     "OpenSwiftUI"
 )
 
+print_usage() {
+    cat <<'USAGE'
+Usage: Scripts/build_xcframework.sh [options] [framework ...]
+
+Options:
+  --sdk <sdk>             Build for an SDK. May be passed multiple times.
+  --archs <arch1,arch2>   Override architectures for the previous --sdk.
+  --debug                 Keep release metadata and copy dSYMs.
+  --compute               Build OpenAttributeGraphShims with the Compute source backend.
+  --skip-tuist-install    Skip tuist install.
+  --framework <name>      Build one framework. May be passed multiple times.
+  --help                  Show this help.
+USAGE
+}
+
 while [[ $# -gt 0 ]]; do
     case "$1" in
+        --help|-h)
+            print_usage
+            exit 0
+            ;;
         --sdk)
             SDKS+=("$2")
             SDK_ARCHS+=("")
@@ -55,6 +73,17 @@ while [[ $# -gt 0 ]]; do
             ;;
         --debug)
             DEBUG_MODE=true
+            shift
+            ;;
+        --compute)
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH=0
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH=0
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
+            OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY=0
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE
+            export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY
             shift
             ;;
         --skip-tuist-install)
@@ -83,11 +112,16 @@ if [ ${#FRAMEWORK_NAMES[@]} -eq 0 ] ||
     FRAMEWORK_NAMES=("${DEFAULT_FRAMEWORK_NAMES[@]}")
 fi
 
-# Default: macosx and iphonesimulator.
+# Default: macosx and iphonesimulator. Compute builds also include iphoneos.
 # Note: iphoneos SDK support is blocked by an AG issue. See #835.
 if [ ${#SDKS[@]} -eq 0 ]; then
-    SDKS=("macosx" "iphonesimulator")
-    SDK_ARCHS=("" "")
+    if [ "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}" = "1" ]; then
+        SDKS=("macosx" "iphonesimulator" "iphoneos")
+        SDK_ARCHS=("" "" "")
+    else
+        SDKS=("macosx" "iphonesimulator")
+        SDK_ARCHS=("" "")
+    fi
 fi
 
 if [ "${OPENSWIFTUI_SKIP_TUIST_INSTALL:-0}" = "1" ]; then
@@ -255,6 +289,11 @@ framework_path() {
     echo "$archive_path/Products/Library/Frameworks/$scheme.framework"
 }
 
+xcframework_path() {
+    local scheme="$1"
+    echo "$PROJECT_BUILD_DIR/$scheme.xcframework"
+}
+
 framework_modules_path() {
     local framework="$1"
     if [ -d "$framework/Versions" ]; then
@@ -375,15 +414,17 @@ build_framework() {
 
 create_xcframework() {
     local scheme="$1"
+    local output_path
+    output_path="$(xcframework_path "$scheme")"
 
-    rm -rf "$PROJECT_BUILD_DIR/$scheme.xcframework"
+    rm -rf "$output_path"
 
     local create_args=()
     for sdk in "${SDKS[@]}"; do
         create_args+=(-framework "$(framework_path "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive" "$scheme")")
     done
 
-    xcodebuild -create-xcframework "${create_args[@]}" -output "$PROJECT_BUILD_DIR/$scheme.xcframework"
+    xcodebuild -create-xcframework "${create_args[@]}" -output "$output_path"
 }
 
 copy_debug_symbols() {
@@ -397,9 +438,9 @@ copy_debug_symbols() {
     for sdk in "${SDKS[@]}"; do
         local local_dsym_dir=""
         case "$sdk" in
-            iphonesimulator) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/ios-*simulator 2>/dev/null | head -1) ;;
-            iphoneos) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/ios-arm64 2>/dev/null | head -1) ;;
-            macosx) local_dsym_dir=$(ls -d "$PROJECT_BUILD_DIR/$scheme.xcframework"/macos-* 2>/dev/null | head -1) ;;
+            iphonesimulator) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/ios-*simulator 2>/dev/null | head -1) ;;
+            iphoneos) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/ios-arm64 2>/dev/null | head -1) ;;
+            macosx) local_dsym_dir=$(ls -d "$(xcframework_path "$scheme")"/macos-* 2>/dev/null | head -1) ;;
         esac
 
         if [ -n "$local_dsym_dir" ] && [ -d "$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive/dSYMs" ]; then
@@ -418,7 +459,7 @@ for scheme in "${FRAMEWORK_NAMES[@]}"; do
     done
     create_xcframework "$scheme"
     copy_debug_symbols "$scheme"
-    echo "Created $PROJECT_BUILD_DIR/$scheme.xcframework"
+    echo "Created $(xcframework_path "$scheme")"
 done
 
 if [ "$DEBUG_MODE" = false ]; then

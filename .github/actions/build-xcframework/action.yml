@@ -67,7 +67,7 @@ runs:
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
     - name: Build XCFrameworks
-      run: Scripts/build_xcframework.sh OpenSwiftUI
+      run: Scripts/build_xcframework.sh --compute OpenSwiftUI
       shell: bash
     - name: Code sign XCFrameworks
       if: ${{ inputs.signing-certificate-base64 != '' }}
@@ -105,6 +105,7 @@ runs:
         echo '```swift' >> $GITHUB_STEP_SUMMARY
         for fw in "${FRAMEWORKS[@]}"; do
           if [ -n "$TAG_NAME" ]; then
+            rm -f "$fw.xcframework.zip"
             zip -ry "$fw.xcframework.zip" "$fw.xcframework"
             CHECKSUM=$(swift package compute-checksum "$fw.xcframework.zip")
             echo "checksum_${fw}=${CHECKSUM}" >> $GITHUB_OUTPUT

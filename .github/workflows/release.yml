@@ -21,7 +21,10 @@ jobs:
       checksum_OpenQuartzCoreShims: ${{ steps.build.outputs.checksum_OpenQuartzCoreShims }}
       checksum_OpenRenderBoxShims: ${{ steps.build.outputs.checksum_OpenRenderBoxShims }}
     env:
-      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 0
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       GH_TOKEN: ${{ github.token }}
     steps:
@@ -73,22 +76,56 @@ jobs:
           cd OpenSwiftUI-spm
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          sed \
-            -e "s|{{VERSION}}|${VERSION}|g" \
-            -e "s|{{CHECKSUM_OpenSwiftUI}}|${CHECKSUM_OpenSwiftUI}|g" \
-            -e "s|{{CHECKSUM_OpenSwiftUICore}}|${CHECKSUM_OpenSwiftUICore}|g" \
-            -e "s|{{CHECKSUM_OpenAttributeGraphShims}}|${CHECKSUM_OpenAttributeGraphShims}|g" \
-            -e "s|{{CHECKSUM_OpenCoreGraphicsShims}}|${CHECKSUM_OpenCoreGraphicsShims}|g" \
-            -e "s|{{CHECKSUM_OpenObservation}}|${CHECKSUM_OpenObservation}|g" \
-            -e "s|{{CHECKSUM_OpenQuartzCoreShims}}|${CHECKSUM_OpenQuartzCoreShims}|g" \
-            -e "s|{{CHECKSUM_OpenRenderBoxShims}}|${CHECKSUM_OpenRenderBoxShims}|g" \
-            Package.swift.template > Package.swift
+
+          render_package() {
+            local checksum_OpenSwiftUI="$1"
+            local checksum_OpenSwiftUICore="$2"
+            local checksum_OpenAttributeGraphShims="$3"
+            local checksum_OpenCoreGraphicsShims="$4"
+            local checksum_OpenObservation="$5"
+            local checksum_OpenQuartzCoreShims="$6"
+            local checksum_OpenRenderBoxShims="$7"
+
+            sed \
+              -e "s|{{VERSION}}|${VERSION}|g" \
+              -e "s|{{CHECKSUM_OpenSwiftUI}}|${checksum_OpenSwiftUI}|g" \
+              -e "s|{{CHECKSUM_OpenSwiftUICore}}|${checksum_OpenSwiftUICore}|g" \
+              -e "s|{{CHECKSUM_OpenAttributeGraphShims}}|${checksum_OpenAttributeGraphShims}|g" \
+              -e "s|{{CHECKSUM_OpenCoreGraphicsShims}}|${checksum_OpenCoreGraphicsShims}|g" \
+              -e "s|{{CHECKSUM_OpenObservation}}|${checksum_OpenObservation}|g" \
+              -e "s|{{CHECKSUM_OpenQuartzCoreShims}}|${checksum_OpenQuartzCoreShims}|g" \
+              -e "s|{{CHECKSUM_OpenRenderBoxShims}}|${checksum_OpenRenderBoxShims}|g" \
+              Package.swift.template > Package.swift
+          }
+
+          update_readme_version() {
+            perl -0pi -e 's|(\.package\(url:\s*"https://github\.com/OpenSwiftUIProject/OpenSwiftUI-spm",\s*from:\s*")[^"]+(")|$1$ENV{VERSION}$2|g' README.md
+          }
+
+          commit_package_if_needed() {
+            local message="$1"
+            git add Package.swift README.md
+            if git diff --cached --quiet; then
+              echo "No changes for $(git branch --show-current)"
+              return 1
+            fi
+            git commit -m "$message"
+          }
+
+          render_package \
+            "$CHECKSUM_OpenSwiftUI" \
+            "$CHECKSUM_OpenSwiftUICore" \
+            "$CHECKSUM_OpenAttributeGraphShims" \
+            "$CHECKSUM_OpenCoreGraphicsShims" \
+            "$CHECKSUM_OpenObservation" \
+            "$CHECKSUM_OpenQuartzCoreShims" \
+            "$CHECKSUM_OpenRenderBoxShims"
+          update_readme_version
           echo "Generated Package.swift:"
           head -50 Package.swift
-          git add Package.swift
-          git diff --cached --quiet && echo "No changes" && exit 0
-          git commit -m "Update to ${VERSION} with code-signed XCFrameworks"
-          git tag "${VERSION}"
+          if commit_package_if_needed "Update to ${VERSION} with code-signed XCFrameworks"; then
+            git tag "${VERSION}"
+          fi
           git push origin main --tags
 
   release-notes:
