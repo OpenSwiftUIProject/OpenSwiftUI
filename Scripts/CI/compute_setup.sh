@@ -9,7 +9,13 @@ REPO_ROOT="$(dirname $(dirname $(dirname $(filepath $0))))"
 
 clone_checkout_compute() {
   cd $REPO_ROOT
-  revision=$(Scripts/CI/get_revision.sh compute)
+  revision="${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_VERSION:-}"
+  if [ -z "$revision" ]; then
+    revision=$(Scripts/CI/get_revision.sh compute 2>/dev/null || true)
+  fi
+  if [ -z "$revision" ]; then
+    revision="0.3.0-bugfix.1"
+  fi
   cd ..
   if [ ! -d Compute ]; then
     gh repo clone OpenSwiftUIProject/Compute
@@ -21,11 +27,7 @@ clone_checkout_compute() {
     git stash --quiet || true
     git reset --hard --quiet origin/main
   fi
-  if [ -n "$revision" ]; then
-    git checkout --quiet "$revision"
-  else
-    echo "No pinned revision for Compute, using default branch."
-  fi
+  git checkout --quiet "$revision"
 }
 
 update_compute() {
