@@ -42,7 +42,7 @@ extension CGSize {
     }
     
     @inlinable
-    package var isNan: Bool {
+    package var isNaN: Bool {
         width.isNaN || height.isNaN
     }
     
