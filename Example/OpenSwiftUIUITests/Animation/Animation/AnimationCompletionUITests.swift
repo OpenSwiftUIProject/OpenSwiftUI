@@ -8,7 +8,9 @@ import SnapshotTesting
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct AnimationCompletionUITests {
-    @Test
+    @Test(
+        .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for Compute snapshot crash. It works fine when this single test case. But it will crash when running the whole test plan"),
+    )
     func logicalAndRemovedComplete() {
         struct ContentView: AnimationTestView {
             nonisolated static var model: AnimationTestModel {

@@ -23,6 +23,10 @@ inputs:
     description: 'Force updating reference images before running UI tests'
     required: false
     default: 'false'
+  compute:
+    description: 'Generate the Example project with the Compute backend'
+    required: false
+    default: 'false'
 
 outputs:
   test-result:
@@ -43,14 +47,6 @@ runs:
         install: false
         cache: false
 
-    - name: Install Tuist
-      run: |
-        cd Example
-        mise trust mise.toml
-        mise install
-        tuist version
-      shell: bash
-
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
       shell: bash
@@ -67,8 +63,11 @@ runs:
       shell: bash
       run: |
         cd Example
-        mise exec -- tuist install
-        mise exec -- tuist generate --no-open
+        if [[ "${{ inputs.compute }}" == "true" ]]; then
+          ./setup.sh --compute
+        else
+          ./setup.sh
+        fi
 
     - name: Resolve snapshot reference directory
       id: reference
