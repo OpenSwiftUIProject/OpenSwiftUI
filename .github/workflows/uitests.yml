@@ -5,6 +5,8 @@ on:
     branches: [main]
     paths:
       - 'Example/OpenSwiftUIUITests/**'
+      - 'Example/setup.sh'
+      - 'Example/mise*.toml'
       - '.github/workflows/uitests.yml'
       - '.github/actions/uitests/action.yml'
   workflow_dispatch:

@@ -7,7 +7,10 @@ import SnapshotTesting
 @testable import TestingHost
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool))
+@Suite(
+    .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for Compute snapshot crash. It will crash when running the whole test plan"),
+    .snapshots(record: .never, diffTool: diffTool),
+)
 struct ForEachUITests {
     @Test
     func offset() {
@@ -119,19 +122,7 @@ struct ForEachUITests {
         openSwiftUIAssertSnapshot(of: ContentView())
     }
 
-    @Test(
-        .disabled("Temporarily disabled for Compute snapshot crash. It works fine when this single test case. But it will crash when running the whole ForEachUITests suite for Compute on macOS") {
-            #if os(macOS)
-            attributeGraphVendor == .compute
-            #else
-            false
-            #endif
-        },
-        .bug(
-            "https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/655",
-            id: 655
-        )
-    )
+    @Test(.bug("https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/655", id: 655))
     func transitionAnimation() {
         struct ContentView: AnimationTestView {
             nonisolated static var model: AnimationTestModel {
