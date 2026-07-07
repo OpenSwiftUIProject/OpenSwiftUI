@@ -356,6 +356,74 @@ project_args_for_scheme() {
     esac
 }
 
+compute_source_backend_enabled() {
+    [ "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}" = "1" ] &&
+    [ "${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY:-0}" != "1" ]
+}
+
+compute_project_path() {
+    first_existing_project "$PROJECT_ROOT/../Compute/Compute.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Compute/Compute.xcodeproj"
+}
+
+compute_archive_path() {
+    local sdk="$1"
+    echo "$PROJECT_BUILD_DIR/Compute-$sdk.xcarchive"
+}
+
+compute_framework_search_path() {
+    local sdk="$1"
+    dirname "$(framework_path "$(compute_archive_path "$sdk")" "Compute")"
+}
+
+prebuild_compute_framework() {
+    local sdk="$1"
+    local destination="$2"
+    local archs="$3"
+
+    local archive_path
+    archive_path="$(compute_archive_path "$sdk")"
+
+    local project_path
+    project_path="$(compute_project_path)"
+    if [ ! -d "$project_path" ]; then
+        echo "Error: Expected Tuist to generate $project_path."
+        exit 1
+    fi
+
+    rm -rf "$archive_path"
+
+    local xcodebuild_args=(
+        archive
+        -project "$project_path"
+        -scheme "Compute"
+        -configuration Release
+        -archivePath "$archive_path"
+        -sdk "$sdk"
+        -destination "$destination"
+        -derivedDataPath "$DERIVED_DATA_PATH"
+        -skipPackagePluginValidation
+        -skipMacroValidation
+        INSTALL_PATH=Library/Frameworks
+        SKIP_INSTALL=NO
+        BUILD_LIBRARY_FOR_DISTRIBUTION=YES
+        SWIFT_EMIT_MODULE_INTERFACE=YES
+        ENABLE_USER_SCRIPT_SANDBOXING=NO
+    )
+
+    if [ -n "$archs" ]; then
+        xcodebuild_args+=("ARCHS=${archs//,/ }")
+    fi
+
+    xcodebuild "${xcodebuild_args[@]}"
+
+    local framework
+    framework="$(framework_path "$archive_path" "Compute")"
+    if [ ! -d "$framework" ]; then
+        echo "Error: Archive did not contain $framework."
+        exit 1
+    fi
+}
+
 build_framework() {
     local sdk="$1"
     local destination="$2"
@@ -365,6 +433,12 @@ build_framework() {
     local archive_path="$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive"
     local project_args
     read -r -a project_args <<<"$(project_args_for_scheme "$scheme")"
+
+    local framework_search_paths=()
+    if [ "$scheme" = "OpenAttributeGraphShims" ] && compute_source_backend_enabled; then
+        prebuild_compute_framework "$sdk" "$destination" "$archs"
+        framework_search_paths+=("$(compute_framework_search_path "$sdk")")
+    fi
 
     rm -rf "$archive_path"
 
@@ -389,6 +463,10 @@ build_framework() {
 
     if [ -n "$archs" ]; then
         xcodebuild_args+=("ARCHS=${archs//,/ }")
+    fi
+
+    if [ ${#framework_search_paths[@]} -gt 0 ]; then
+        xcodebuild_args+=("FRAMEWORK_SEARCH_PATHS=${framework_search_paths[*]} \$(inherited)")
     fi
 
     xcodebuild "${xcodebuild_args[@]}"

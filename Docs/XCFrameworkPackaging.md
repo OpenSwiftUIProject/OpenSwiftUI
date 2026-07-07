@@ -245,6 +245,44 @@ and depend on the single `OpenSwiftUI` package product. The distribution uses
 multiple binary targets internally only so that Xcode and SwiftPM can resolve the
 Swift module graph normally.
 
+## Compute Source Backend
+
+The release workflow can build `OpenAttributeGraphShims` against the local
+Compute source backend instead of a prebuilt AttributeGraph-compatible binary.
+In that configuration `OpenAttributeGraphShims` imports the Swift `Compute`
+module.
+
+When `OpenAttributeGraphShims` is archived by itself, Xcode does not build
+`Compute` as a target dependency. The generated project has the framework
+reference needed for module lookup, but the standalone archive command does not
+have a built `Compute.framework` in its framework search paths. The failure mode
+is:
+
+```text
+error: Unable to find module dependency: 'Compute'
+```
+
+The packaging script handles this by pre-archiving `Compute` for the same SDK
+and destination before archiving `OpenAttributeGraphShims`, then passing that
+archive's `Products/Library/Frameworks` directory through
+`FRAMEWORK_SEARCH_PATHS`.
+
+This prebuild is a compile-time/link-time input, not a new dynamic runtime
+dependency:
+
+- `Compute.framework/Compute` is a static framework binary (`current ar archive`).
+- `OpenAttributeGraphShims.xcframework` does not embed `Compute.framework`.
+- `OpenAttributeGraphShims` remains a static framework and may contain unresolved
+  Compute symbols when inspected by itself.
+- The final `OpenSwiftUI.framework` dynamic library has no `Compute.framework`
+  entry in `otool -L`.
+- The final `OpenSwiftUI.framework` resolves the Compute symbols by statically
+  linking the Compute object code into the dynamic library.
+
+So the source-backend release shape still publishes the same OpenSwiftUI
+xcframework set. It does not require consumers to embed or load a separate
+Compute dynamic framework.
+
 Dynamic frameworks should be avoided unless there is a runtime reason to share
 or load the frameworks dynamically. They make embedding, signing, launch-time
 loading, and artifact management more complicated.
