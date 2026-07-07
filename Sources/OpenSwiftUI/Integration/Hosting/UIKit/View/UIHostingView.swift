@@ -242,6 +242,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         base.layoutSubviews()
     }
 
+    @_spi(_)
     override dynamic open func _geometryChanged(
         _ geometry: UnsafeRawPointer,
         forAncestor ancestor: UIView?
