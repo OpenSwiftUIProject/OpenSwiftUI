@@ -960,11 +960,13 @@ if let configuredAGBackend = envStringValue("AG_BACKEND_NAME") {
     openSwiftUIBuildAGBackend = "OpenAttributeGraph"
 }
 let openSwiftUIBuildRendererBackend = envStringValue("RENDERER_BACKEND_NAME") ?? (swiftUIRenderCondition ? "SwiftUI" : "OpenSwiftUI")
+let openSwiftUIBuildLibraryType = configuredLibraryType ?? "automatic"
 let openSwiftUITargetSettings: SettingsDictionary = [
-    "INFOPLIST_KEY_OpenSwiftUIAGBackend": .string(openSwiftUIBuildAGBackend),
-    "INFOPLIST_KEY_OpenSwiftUIRendererBackend": .string(openSwiftUIBuildRendererBackend),
-    "INFOPLIST_KEY_OpenSwiftUILibraryType": .string(configuredLibraryType ?? "automatic"),
-    "INFOPLIST_KEY_OpenSwiftUIUsesLocalDependencies": .string(useLocalDeps ? "YES" : "NO"),
+    "INFOPLIST_FILE": .string("Configurations/OpenSwiftUI-Info.plist"),
+    "OPENSWIFTUI_BUILD_AG_BACKEND": .string(openSwiftUIBuildAGBackend),
+    "OPENSWIFTUI_BUILD_RENDERER_BACKEND": .string(openSwiftUIBuildRendererBackend),
+    "OPENSWIFTUI_BUILD_LIBRARY_TYPE": .string(openSwiftUIBuildLibraryType),
+    "OPENSWIFTUI_BUILD_USES_LOCAL_DEPENDENCIES": .string(useLocalDeps ? "YES" : "NO"),
 ]
 
 let packageSettings = PackageSettings(
