@@ -2,7 +2,7 @@
 //  ViewAlias.swift
 //  OpenSwiftUI
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: D9F7AF928092578A4B8FA861B49E2161 (SwiftUI)
 
@@ -24,8 +24,6 @@ import OpenAttributeGraphShims
 protocol ViewAlias: PrimitiveView {
     init()
 }
-
-// Audited for 6.5.4
 
 extension ViewAlias {
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
@@ -225,12 +223,12 @@ private struct SourceFormula<Source>: AnySourceFormula where Source: View {
             return .init()
         }
         return if source.valueIsNil == nil {
-            Optional<Source>.makeDebuggableView(
+            Source.makeDebuggableView(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
         } else {
-            Source.makeDebuggableView(
+            Optional<Source>.makeDebuggableView(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
@@ -246,12 +244,12 @@ private struct SourceFormula<Source>: AnySourceFormula where Source: View {
             return .emptyViewList(inputs: inputs)
         }
         return if source.valueIsNil == nil {
-            Optional<Source>.makeDebuggableViewList(
+            Source.makeDebuggableViewList(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
         } else {
-            Source.makeDebuggableViewList(
+            Optional<Source>.makeDebuggableViewList(
                 view: _GraphValue(Attribute(identifier: attribute)),
                 inputs: inputs
             )
@@ -263,9 +261,9 @@ private struct SourceFormula<Source>: AnySourceFormula where Source: View {
         inputs: _ViewListCountInputs
     ) -> Int? {
         if source.valueIsNil == nil {
-            Optional<Source>._viewListCount(inputs: inputs)
-        } else {
             Source._viewListCount(inputs: inputs)
+        } else {
+            Optional<Source>._viewListCount(inputs: inputs)
         }
     }
 }

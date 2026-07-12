@@ -654,7 +654,9 @@ let openSwiftUITestsSupportTarget = Target.target(
     dependencies: (compatibilityTestCondition ? [] : ["OpenSwiftUI"]),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings + (compatibilityTestCondition ? [
+        .unsafeFlags(["-I", "\(Context.packageDirectory)/Example/Modules/Platform/cocoa"]),
+    ] : [])
 )
 
 let openSwiftUIExtensionTarget = Target.target(
@@ -688,7 +690,9 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     exclude: ["README.md"],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings + (compatibilityTestCondition ? [
+        .unsafeFlags(["-I", "\(Context.packageDirectory)/Example/Modules/Platform/cocoa"]),
+    ] : [])
 )
 
 // MARK: - OpenSwiftUIBridge Target
