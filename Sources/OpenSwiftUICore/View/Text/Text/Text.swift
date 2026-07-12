@@ -12,7 +12,7 @@ public import Foundation
 public typealias NSInteger = Int
 #endif
 
-// MARK: - Text [WIP]
+// MARK: - Text
 
 @available(OpenSwiftUI_v1_0, *)
 @frozen
@@ -236,7 +236,15 @@ public struct Text: Equatable, Sendable {
         with options: Text.ResolveOptions = [],
         idiom: AnyInterfaceIdiom? = nil
     ) -> (string: String, hasResolvableAttributes: Bool) {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .verbatim(let string):
+            return (string, false)
+        case .anyTextStorage:
+            var resolved = Text.ResolvedString()
+            resolved.idiom = idiom
+            resolve(into: &resolved, in: environment, with: options)
+            return (resolved.string, resolved.hasResolvableAttributes)
+        }
     }
 
     package func resolveString(
@@ -247,10 +255,10 @@ public struct Text: Equatable, Sendable {
         switch storage {
         case let .verbatim(string):
             return string
-        case let .anyTextStorage(anyTextStorage):
+        case let .anyTextStorage:
             var resolved = Text.ResolvedString()
             resolved.idiom = idiom
-            storage.resolve(into: &resolved, in: environment, with: options)
+            resolve(into: &resolved, in: environment, with: options)
             return resolved.string
         }
     }
@@ -260,15 +268,15 @@ public struct Text: Equatable, Sendable {
         in environment: EnvironmentValues,
         with options: Text.ResolveOptions
     ) where T: ResolvedTextContainer {
-        let style = result.style
+        let oldStyle = result.style
         if modifiers.isEmpty {
             storage.resolve(into: &result, in: environment, with: options)
         } else {
-            for modifier in modifiers {
+            for modifier in modifiers.reversed() {
                 modifier.modify(style: &result.style, environment: environment)
             }
-            result.style = style
             storage.resolve(into: &result, in: environment, with: options)
+            result.style = oldStyle
         }
     }
 
