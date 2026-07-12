@@ -34,7 +34,7 @@ extension Text {
     /// typically contains the unlocalized string.
     ///
     /// If you initialize a text view with a string variable rather than a
-    /// string literal, the view triggers the ``Text/init(_:)-9d1g4``
+    /// string literal, the view triggers the ``Text/init(_:)-3dz13``
     /// initializer instead, because it assumes that you don't want localization
     /// in that case. If you do want to localize the value stored in a string
     /// variable, you can choose to call the `init(_:tableName:bundle:comment:)`

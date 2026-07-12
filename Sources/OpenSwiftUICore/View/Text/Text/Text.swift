@@ -103,7 +103,7 @@ public import Foundation
 ///     Text(verbatim: "pencil") // Displays the string "pencil" in any locale.
 ///
 /// If you initialize a text view with a variable value, the view uses the
-/// ``Text/init(_:)-9d1g4`` initializer, which doesn't localize the string. However,
+/// ``Text/init(_:)-3dz13`` initializer, which doesn't localize the string. However,
 /// you can request localization by creating a ``LocalizedStringKey`` instance
 /// first, which triggers the ``Text/init(_:tableName:bundle:comment:)``
 /// initializer instead:
@@ -138,7 +138,7 @@ public import Foundation
 ///     let name = Text(person.name).bold()
 ///     Text("Hello, \(name)")
 ///
-/// The example above uses ``LocalizedStringKey/StringInterpolation/appendInterpolation(_:)-4qyfo``
+/// The example above uses ``LocalizedStringKey/StringInterpolation/appendInterpolation(_:)-7xnfe``
 /// and will look up the `"Hello, %@"` in the localized string file and
 /// interpolate a bold text rendering the value of  `name`.
 ///
@@ -355,7 +355,7 @@ public struct Text: Equatable, Sendable {
     ///
     /// If you want to localize a string literal before displaying it, use the
     /// ``Text/init(_:tableName:bundle:comment:)`` initializer instead. If you
-    /// want to display a string variable, use the ``Text/init(_:)-9d1g4``
+    /// want to display a string variable, use the ``Text/init(_:)-3dz13``
     /// initializer, which also bypasses localization.
     ///
     /// - Parameter content: A string to display without localization.
