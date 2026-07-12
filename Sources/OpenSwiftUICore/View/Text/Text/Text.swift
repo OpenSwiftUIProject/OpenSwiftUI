@@ -17,6 +17,7 @@ public typealias NSInteger = Int
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct Text: Equatable, Sendable {
+
     // MARK: - Text.Storage
 
     @usableFromInline
@@ -203,6 +204,9 @@ public struct Text: Equatable, Sendable {
         package static let allowsTextSuffix: Text.ResolveOptions = .init(rawValue: 1 << 6)
 
         package static let includeSupportForRepeatedResolution: Text.ResolveOptions = .init(rawValue: 1 << 7)
+
+        @available(OpenSwiftUI_v7_0, *)
+        package static let ignoreMarkdown: Text.ResolveOptions = .init(rawValue: 1 << 8)
     }
 
     @usableFromInline
