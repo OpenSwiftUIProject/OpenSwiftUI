@@ -84,19 +84,19 @@ extension ResolvedTextContainer {
 extension Text {
     package struct Resolved: ResolvedTextContainer {
         package var style: Text.Style = .init()
-
+        
         package var attributedString: NSMutableAttributedString?
-
+        
         package var includeDefaultAttributes: Bool = true
-
+        
         package var idiom: AnyInterfaceIdiom?
-
+        
         package var properties: Text.ResolvedProperties = .init()
-
+        
         package init() {
             _openSwiftUIEmptyStub()
         }
-
+        
         package mutating func append<S>(
             _ string: S,
             in env: EnvironmentValues,
@@ -117,7 +117,7 @@ extension Text {
             }
             _openSwiftUIUnimplementedWarning()
         }
-
+        
         package mutating func append(
             _ attributedString: NSAttributedString,
             in env: EnvironmentValues,
@@ -132,7 +132,7 @@ extension Text {
             }
             _openSwiftUIUnimplementedWarning()
         }
-
+        
         package mutating func append(
             _ image: Image.Resolved,
             in environment: EnvironmentValues,
@@ -140,7 +140,7 @@ extension Text {
         ) {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func append(
             _ namedImage: Image.NamedResolved,
             in environment: EnvironmentValues,
@@ -148,7 +148,7 @@ extension Text {
         ) {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func append<R>(
             resolvable: R,
             in environment: EnvironmentValues,
@@ -157,7 +157,7 @@ extension Text {
         ) where R: ResolvableStringAttribute {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package func nsAttributes(
             content: (() -> String)?,
             in environment: EnvironmentValues,
@@ -166,7 +166,7 @@ extension Text {
         ) -> [NSAttributedString.Key: Any] {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         private mutating func append(
             _ string: String,
             with attributes: [NSAttributedString.Key: Any],
@@ -194,9 +194,9 @@ extension Text {
             }
         }
     }
-
+    
     // MARK: - Text.Style [WIP]
-
+    
     package struct Style {
         internal var baseFont: TextStyleFont = .default
         internal var fontModifiers: [AnyFontModifier] = []
@@ -210,32 +210,32 @@ extension Text {
         internal var encapsulation: Text.Encapsulation?
         internal var speech: AccessibilitySpeechAttributes?
         package var accessibility: AccessibilityTextAttributes?
-        #if canImport(CoreText)
+#if canImport(CoreText)
         internal var glyphInfo: CTGlyphInfo?
-        #endif
-//        internal var shadow: TextShadowModifier?
-//        internal var transition: TextTransitionModifier?
+#endif
+        //        internal var shadow: TextShadowModifier?
+        //        internal var transition: TextTransitionModifier?
         internal var scale: Text.Scale?
         internal var superscript: Text.Superscript?
         internal var typesettingConfiguration: TypesettingConfiguration = .init()
         internal var customAttributes: [TextAttributeModifierBase] = []
-        #if canImport(Darwin)
+#if canImport(Darwin)
         internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
-        #endif
+#endif
         package var clearedFontModifiers: Set<ObjectIdentifier> = []
-
+        
         init() {
             // FIXME
             _openSwiftUIUnimplementedWarning()
         }
-
+        
         // MARK: - Text.Style.LineStyle
-
+        
         package enum LineStyle {
             case implicit
             case explicit(Text.LineStyle)
             case `default`
-
+            
             package func resolve(
                 in environment: EnvironmentValues,
                 fallbackStyle: @autoclosure () -> Text.LineStyle?
@@ -258,15 +258,15 @@ extension Text {
                 )
             }
         }
-
+        
         // MARK: - Text.Style.TextStyleColor [WIP]
-
+        
         package enum TextStyleColor {
             case implicit
             case explicit(AnyShapeStyle)
             case `default`
             case foregroundKeyColor(base: AnyShapeStyle)
-
+            
             package func resolve(
                 in environment: EnvironmentValues,
                 with options: Text.ResolveOptions,
@@ -316,14 +316,14 @@ extension Text {
                 }
             }
         }
-
+        
         // MARK: - Text.Style.TextStyleFont
-
+        
         package enum TextStyleFont {
             case implicit
             case explicit(Font)
             case `default`
-
+            
             package func resolve(
                 in environment: EnvironmentValues,
                 includeDefaultAttributes: Bool = true
@@ -341,121 +341,163 @@ extension Text {
                 return font
             }
         }
-
+        
         package func fontTraits(in environment: EnvironmentValues) -> Font.ResolvedTraits {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func addFontModifier<M>(_ modifier: M) where M: FontModifier {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func addFontModifier<M>(type: M.Type) where M: StaticFontModifier {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func removeFontModifier<M>(ofType _: M.Type) where M: FontModifier {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func removeFontModifier<M>(ofType _: M.Type) where M: StaticFontModifier {
             _openSwiftUIUnimplementedFailure()
         }
     }
-
+    
     // FIXME
     package struct ResolvedProperties {
         package var insets: EdgeInsets = .zero
-
+        
         package var features: Text.ResolvedProperties.Features = []
-
+        
         package var styles: [_ShapeStyle_Pack.Style] = []
-
+        
         package var transitions: [Text.ResolvedProperties.Transition] = []
-
+        
         package var suffix: ResolvedTextSuffix = .none
-
+        
         package struct CustomAttachments {
             package var characterIndices: [Int]
-
+            
             package init(characterIndices: [Int] = []) {
                 self.characterIndices = characterIndices
             }
-
+            
             package var isEmpty: Bool {
                 characterIndices.isEmpty
             }
         }
-
+        
         package var customAttachments: Text.ResolvedProperties.CustomAttachments = .init()
-
+        
         package init() {
             _openSwiftUIUnimplementedWarning()
         }
-
+        
         package mutating func registerCustomAttachment(at offset: Int) {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package struct Features: OptionSet {
             package let rawValue: UInt16
-
+            
             package init(rawValue: UInt16) {
                 self.rawValue = rawValue
             }
-
+            
             package static let keyColor: Text.ResolvedProperties.Features = .init(rawValue: 1 << 0)
-
+            
             package static let attachments: Text.ResolvedProperties.Features = .init(rawValue: 1 << 1)
-
+            
             package static let sensitive: Text.ResolvedProperties.Features = .init(rawValue: 1 << 2)
-
+            
             package static let customRenderer: Text.ResolvedProperties.Features = .init(rawValue: 1 << 3)
-
+            
             package static let useTextLayoutManager: Text.ResolvedProperties.Features = .init(rawValue: 1 << 4)
-
+            
             package static let useTextSuffix: Text.ResolvedProperties.Features = .init(rawValue: 1 << 5)
-
+            
             package static let produceTextLayout: Text.ResolvedProperties.Features = .init(rawValue: 1 << 6)
-
+            
             package static let checkInterpolationStrategy: Text.ResolvedProperties.Features = .init(rawValue: 1 << 8)
-
+            
             package static let isUniqueSizeVariant: Text.ResolvedProperties.Features = .init(rawValue: 1 << 8)
         }
-
+        
         package struct Transition: Equatable {
             package var transition: ContentTransition
-
+            
             package init(transition: ContentTransition) {
                 self.transition = transition
             }
         }
-
+        
         package struct Paragraph {
             package var compositionLanguage: NSCompositionLanguage
-
+            
             var cachedStyle: NSParagraphStyle?
         }
-
+        
         package var paragraph: Text.ResolvedProperties.Paragraph = .init(compositionLanguage: .none)
-
+        
         package mutating func addColor(_ c: Color.Resolved) {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func addAttachment() {
             _openSwiftUIUnimplementedFailure()
         }
-
+        
         package mutating func addSensitive() {
             features.insert(.sensitive)
         }
-
+        
         package mutating func addCustomStyle(_ style: _ShapeStyle_Pack.Style) -> Color.Resolved {
             _openSwiftUIUnimplementedFailure()
         }
     }
 }
+
+// MARK: - EnvironmentValues + disableLinkColor
+
+extension EnvironmentValues {
+    private struct DisableLinkColorKey: EnvironmentKey {
+        static var defaultValue: Bool { false }
+    }
+
+    package var disableLinkColor: Bool {
+        get { self[DisableLinkColorKey.self] }
+        set { self[DisableLinkColorKey.self] = newValue }
+    }
+}
+
+// MARK: - EnvironmentValues + resolvedTextProvider
+
+package protocol ResolvedTextProvider {
+    static func defaultLinkColor(for environment: EnvironmentValues) -> Color
+
+    static func updateImageTextAttachment(
+        in attachment: NSTextAttachment,
+        image: Image.Resolved
+    )
+
+    static func updateWidgetTextAttachment(
+        _ attachment: NSTextAttachment,
+        namedImage: Image.NamedResolved
+    )
+}
+
+extension EnvironmentValues {
+    private struct ResolvedTextProviderKey: EnvironmentKey {
+        static var defaultValue: (any ResolvedTextProvider.Type)?
+    }
+
+    package var resolvedTextProvider: (any ResolvedTextProvider.Type)? {
+        get { self[ResolvedTextProviderKey.self] }
+        set { self[ResolvedTextProviderKey.self] = newValue }
+    }
+}
+
+// MARK: - Text.ResolvedString
 
 extension Text {
     struct ResolvedString: ResolvedTextContainer {
@@ -463,10 +505,6 @@ extension Text {
         var idiom: AnyInterfaceIdiom?
         var string: String = ""
         var hasResolvableAttributes: Bool = false
-
-        init() {
-            _openSwiftUIEmptyStub()
-        }
 
         mutating func append<S>(
             _ string: S,
@@ -526,22 +564,12 @@ extension Text {
                 Log.internalWarning("Unable to resolve custom attribute \(resolvable)")
                 return
             }
+            hasResolvableAttributes = true
             append(
                 String(attributedString.characters),
                 in: environment,
                 with: options
             )
         }
-    }
-}
-
-extension EnvironmentValues {
-    private struct DisableLinkColorKey: EnvironmentKey {
-        static var defaultValue: Bool { false }
-    }
-
-    package var disableLinkColor: Bool {
-        get { self[DisableLinkColorKey.self] }
-        set { self[DisableLinkColorKey.self] = newValue }
     }
 }

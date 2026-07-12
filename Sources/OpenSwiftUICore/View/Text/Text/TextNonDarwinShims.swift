@@ -6,8 +6,9 @@
 public import Foundation
 public import UIFoundation_Private
 
-package class NSParagraphStyle {}
-package class NSMutableParagraphStyle {}
+package class NSParagraphStyle: NSObject {}
+package class NSMutableParagraphStyle: NSObject {}
+package class TextAttachment: NSObject {}
 
 extension NSMutableAttributedString {
     package var isEmptyOrTerminatedByParagraphSeparator: Bool {
