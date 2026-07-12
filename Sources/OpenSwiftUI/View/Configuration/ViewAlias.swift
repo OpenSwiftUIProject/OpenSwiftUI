@@ -2,7 +2,7 @@
 //  ViewAlias.swift
 //  OpenSwiftUI
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: D9F7AF928092578A4B8FA861B49E2161 (SwiftUI)
 
@@ -24,8 +24,6 @@ import OpenAttributeGraphShims
 protocol ViewAlias: PrimitiveView {
     init()
 }
-
-// Audited for 6.5.4
 
 extension ViewAlias {
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
