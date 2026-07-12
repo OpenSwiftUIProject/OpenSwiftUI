@@ -561,6 +561,68 @@ package class AnyTextModifier {
 @available(*, unavailable)
 extension AnyTextModifier: Sendable {}
 
+extension Text.Modifier {
+    @inline(__always)
+    static func strikethrough(_ lineStyle: Text.LineStyle?) -> Self {
+        .anyTextModifier(StrikethroughTextModifier(lineStyle))
+    }
+
+    @inline(__always)
+    static func underline(_ lineStyle: Text.LineStyle?) -> Self {
+        .anyTextModifier(UnderlineTextModifier(lineStyle))
+    }
+
+    @inline(__always)
+    static func stylisticAlternative(_ alternative: Font._StylisticAlternative) -> Self {
+        .anyTextModifier(StylisticAlternativeTextModifier(alternative))
+    }
+
+    @inline(__always)
+    static func bold(_ isActive: Bool = true) -> Self {
+        .anyTextModifier(BoldTextModifier(isActive: isActive))
+    }
+
+    @inline(__always)
+    static func italic(_ isActive: Bool = true) -> Self {
+        .anyTextModifier(ItalicTextModifier(isActive: isActive))
+    }
+
+    @inline(__always)
+    static func monospaced(_ isActive: Bool = true) -> Self {
+        .anyTextModifier(MonospacedTextModifier(isActive: isActive))
+    }
+
+    @inline(__always)
+    static func design(_ design: Font.Design?) -> Self {
+        .anyTextModifier(TextDesignModifier(design))
+    }
+
+    @inline(__always)
+    static func monospacedDigit() -> Self {
+        .anyTextModifier(MonospacedDigitTextModifier())
+    }
+
+    @inline(__always)
+    static func collapsible() -> Self {
+        .anyTextModifier(CollapsibleTextModifier())
+    }
+
+    @inline(__always)
+    static func width(_ width: CGFloat?) -> Self {
+        .anyTextModifier(TextWidthModifier(width))
+    }
+
+    @inline(__always)
+    static func foregroundStyle<S>(_ style: S) -> Self where S: ShapeStyle {
+        .anyTextModifier(TextForegroundStyleModifier(style))
+    }
+
+    @inline(__always)
+    static func foregroundKeyColor() -> Self {
+        .anyTextModifier(TextForegroundKeyColorModifier())
+    }
+}
+
 final class StrikethroughTextModifier: AnyTextModifier {
     let lineStyle: Text.LineStyle?
 

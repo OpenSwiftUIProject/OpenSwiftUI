@@ -53,7 +53,7 @@ extension Text {
     ///
     /// - Returns: A version of the text view with `value` attached.
     public func customAttribute<T>(_ value: T) -> Text where T: TextAttribute {
-        modified(with: .anyTextModifier(TextAttributeModifier(value: value)))
+        modified(with: .customAttribute(value))
     }
 }
 
@@ -91,6 +91,13 @@ private final class TextAttributeModifier<Value>: TextAttributeModifierBase wher
 
     override package func hash(into hasher: inout Hasher) {
         attribute.hash(into: &hasher)
+    }
+}
+
+extension Text.Modifier {
+    @inline(__always)
+    static func customAttribute<T>(_ value: T) -> Self where T: TextAttribute {
+        .anyTextModifier(TextAttributeModifier(value: value))
     }
 }
 
@@ -546,7 +553,10 @@ extension Text.Layout {
     }
 }
 
-// TODO
+// TODO: GraphicsContext + draw for Text.Layout
+
+// TODO: Text.Layout + foregroundColor
+
 
 // MARK: - TextRendererInput
 
@@ -573,5 +583,141 @@ extension EnvironmentValues {
     var textRendererAddsDrawingGroup: Bool {
         get { self[TextRendererAddsDrawingGroupKey.self] }
         set { self[TextRendererAddsDrawingGroupKey.self] = newValue }
+    }
+}
+
+// MARK: - Text + modifier
+
+@available(OpenSwiftUI_v1_0, *)
+extension Text {
+    @available(*, deprecated, renamed: "foregroundStyle(_:)")
+    public func foregroundColor(_ color: Color?) -> Text {
+        modified(with: .color(color))
+    }
+
+    @available(OpenSwiftUI_v5_0, *)
+    public func foregroundStyle<S>(_ style: S) -> Text where S: ShapeStyle {
+        if let color = style as? Color {
+            return modified(with: .color(color))
+        } else {
+            return modified(with: .foregroundStyle(style))
+        }
+    }
+
+    public func font(_ font: Font?) -> Text {
+        modified(with: .font(font))
+    }
+
+    public func fontWeight(_ weight: Font.Weight?) -> Text {
+        modified(with: .weight(weight))
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
+    public func fontWidth(_ width: Font.Width?) -> Text {
+        modified(with: .width(width?.value))
+    }
+
+    public func bold() -> Text {
+        modified(with: .bold())
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
+    public func bold(_ isActive: Bool) -> Text {
+        modified(with: .bold(isActive))
+    }
+
+    public func italic() -> Text {
+        modified(with: .italic())
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
+    public func italic(_ isActive: Bool) -> Text {
+        modified(with: .italic(isActive))
+    }
+
+    @available(OpenSwiftUI_v4_4, *)
+    public func monospaced(_ isActive: Bool = true) -> Text {
+        modified(with: .monospaced(isActive))
+    }
+
+    @available(OpenSwiftUI_v4_1, *)
+    public func fontDesign(_ design: Font.Design?) -> Text {
+        modified(with: .design(design))
+    }
+
+    @available(OpenSwiftUI_v3_0, *)
+    public func monospacedDigit() -> Text {
+        modified(with: .monospacedDigit())
+    }
+
+    public func strikethrough(
+        _ isActive: Bool = true,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .strikethrough(
+            isActive ? Text.LineStyle(color: color) : nil
+        ))
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
+    public func strikethrough(
+        _ isActive: Bool = true,
+        pattern: Text.LineStyle.Pattern,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .strikethrough(
+            isActive ? Text.LineStyle(pattern: pattern, color: color) : nil
+        ))
+    }
+
+    public func underline(
+        _ isActive: Bool = true,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .underline(
+            isActive ? Text.LineStyle(color: color) : nil
+        ))
+    }
+
+    @available(OpenSwiftUI_v4_0, *)
+    public func underline(
+        _ isActive: Bool = true,
+        pattern: Text.LineStyle.Pattern,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .underline(
+            isActive ? Text.LineStyle(pattern: pattern, color: color) : nil
+        ))
+    }
+
+    public func kerning(_ kerning: CGFloat) -> Text {
+        modified(with: .kerning(kerning))
+    }
+
+    public func tracking(_ tracking: CGFloat) -> Text {
+        modified(with: .tracking(tracking))
+    }
+
+    public func baselineOffset(_ baselineOffset: CGFloat) -> Text {
+        modified(with: .baseline(baselineOffset))
+    }
+
+    public func _stylisticAlternative(_ alternative: Font._StylisticAlternative) -> Text {
+        modified(with: .stylisticAlternative(alternative))
+    }
+
+    @_spi(Private)
+    @available(OpenSwiftUI_v3_0, *)
+    public func collapsible() -> Text {
+        modified(with: .collapsible())
+    }
+
+    package func isCollapsible() -> Bool {
+        modifiers.contains {
+            guard case let .anyTextModifier(modifier) = $0 else {
+                return false
+            }
+            return modifier is CollapsibleTextModifier
+        }
     }
 }
