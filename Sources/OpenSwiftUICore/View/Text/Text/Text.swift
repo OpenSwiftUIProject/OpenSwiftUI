@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 7800CE2E251A218329C9998E1C3194FD (SwiftUICore)
 
 public import Foundation
@@ -373,7 +373,7 @@ extension AnyTextStorage: CustomDebugStringConvertible {
     }
 }
 
-// MARK: - AnyTextModifier [WIP]
+// MARK: - AnyTextModifier
 
 @available(OpenSwiftUI_v1_0, *)
 @usableFromInline
@@ -394,45 +394,310 @@ package class AnyTextModifier {
 @available(*, unavailable)
 extension AnyTextModifier: Sendable {}
 
-//final package class SpeechModifier: AnyTextModifier {
-//    final package let value: AccessibilitySpeechAttributes
-//
-//    package init(_ value: AccessibilitySpeechAttributes) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    final package func isStyled(options: Text.ResolveOptions = []) -> Bool {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    final package func modify(style: inout Text.Style, environment: EnvironmentValues) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    final package func isEqual(to other: AnyTextModifier) -> Bool {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
-//
-//final package class TextShadowModifier: AnyTextModifier {
-//    final package func modify(style: inout Text.Style, environment: EnvironmentValues) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    final package func isEqual(to other: AnyTextModifier) -> Bool {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
-//
-//final package class TextTransitionModifier: AnyTextModifier {
-//    final package func modify(style: inout Text.Style, environment: EnvironmentValues) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    final package func isEqual(to other: AnyTextModifier) -> Bool {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
+final class StrikethroughTextModifier: AnyTextModifier {
+    let lineStyle: Text.LineStyle?
+
+    init(_ lineStyle: Text.LineStyle?) {
+        self.lineStyle = lineStyle
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.strikethrough = lineStyle.map { .explicit($0) } ?? .default
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? StrikethroughTextModifier else {
+            return false
+        }
+        return lineStyle == other.lineStyle
+    }
+}
+
+final class UnderlineTextModifier: AnyTextModifier {
+    let lineStyle: Text.LineStyle?
+
+    init(_ lineStyle: Text.LineStyle?) {
+        self.lineStyle = lineStyle
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.underline = lineStyle.map { .explicit($0) } ?? .default
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? UnderlineTextModifier else {
+            return false
+        }
+        return lineStyle == other.lineStyle
+    }
+}
+
+private final class StylisticAlternativeTextModifier: AnyTextModifier {
+    let value: Font._StylisticAlternative
+
+    init(_ value: Font._StylisticAlternative) {
+        self.value = value
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.addFontModifier(Font.StylisticAlternativeModifier(alternative: value))
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? StylisticAlternativeTextModifier else {
+            return false
+        }
+        return value == other.value
+    }
+}
+
+final class BoldTextModifier: AnyTextModifier {
+    let isActive: Bool
+
+    init(isActive: Bool = true) {
+        self.isActive = isActive
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        if isActive {
+            style.addFontModifier(type: Font.BoldModifier.self)
+        } else {
+            style.removeFontModifier(ofType: Font.BoldModifier.self)
+        }
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? BoldTextModifier else {
+            return false
+        }
+        return isActive == other.isActive
+    }
+}
+
+final class ItalicTextModifier: AnyTextModifier {
+    let isActive: Bool
+
+    init(isActive: Bool = true) {
+        self.isActive = isActive
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        if isActive {
+            style.addFontModifier(type: Font.ItalicModifier.self)
+        } else {
+            style.removeFontModifier(ofType: Font.ItalicModifier.self)
+        }
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? ItalicTextModifier else {
+            return false
+        }
+        return isActive == other.isActive
+    }
+}
+
+final class MonospacedTextModifier: AnyTextModifier {
+    let isActive: Bool
+
+    init(isActive: Bool = true) {
+        self.isActive = isActive
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        if isActive {
+            style.addFontModifier(type: Font.MonospacedModifier.self)
+        } else {
+            style.removeFontModifier(ofType: Font.MonospacedModifier.self)
+        }
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? MonospacedTextModifier else {
+            return false
+        }
+        return isActive == other.isActive
+    }
+}
+
+final class TextDesignModifier: AnyTextModifier {
+    let design: Font.Design?
+
+    init(_ design: Font.Design?) {
+        self.design = design
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        if let design {
+            style.addFontModifier(Font.DesignModifier(design: design))
+        } else {
+            style.removeFontModifier(ofType: Font.DesignModifier.self)
+        }
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? TextDesignModifier else {
+            return false
+        }
+        return design == other.design
+    }
+}
+
+final class MonospacedDigitTextModifier: AnyTextModifier {
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.addFontModifier(type: Font.MonospacedDigitModifier.self)
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        other is MonospacedDigitTextModifier
+    }
+}
+
+final class CollapsibleTextModifier: AnyTextModifier {
+    override func isStyled(options: Text.ResolveOptions) -> Bool {
+        false
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {}
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        other is CollapsibleTextModifier
+    }
+}
+
+final package class SpeechModifier: AnyTextModifier {
+    let value: AccessibilitySpeechAttributes
+
+    init(_ value: AccessibilitySpeechAttributes) {
+        self.value = value
+    }
+
+    override package func isStyled(options: Text.ResolveOptions) -> Bool {
+        options.contains(.includeAccessibility)
+    }
+
+    override package func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        if let speech = style.speech {
+            style.speech = value.combined(with: speech)
+        } else {
+            style.speech = value
+        }
+    }
+
+    override package func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? SpeechModifier else {
+            return false
+        }
+        return value == other.value
+    }
+}
+
+final package class TextShadowModifier: AnyTextModifier {
+    let shadow: _ShadowEffect
+
+    init(_ shadow: _ShadowEffect) {
+        self.shadow = shadow
+    }
+
+    override package func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.shadow = self
+    }
+
+    override package func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? TextShadowModifier else {
+            return false
+        }
+        return shadow == other.shadow
+    }
+}
+
+final package class TextTransitionModifier: AnyTextModifier {
+    let resolved: Text.ResolvedProperties.Transition
+
+    init(_ transition: ContentTransition) {
+        self.resolved = .init(transition: transition)
+    }
+
+    override package func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.transition = self
+    }
+
+    override package func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? TextTransitionModifier else {
+            return false
+        }
+        return resolved == other.resolved
+    }
+}
+
+final class TextWidthModifier: AnyTextModifier {
+    let width: CGFloat?
+
+    init(_ width: CGFloat?) {
+        self.width = width
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        if let width {
+            style.addFontModifier(Font.WidthModifier(width: width))
+        } else {
+            style.removeFontModifier(ofType: Font.WidthModifier.self)
+        }
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? TextWidthModifier else {
+            return false
+        }
+        return width == other.width
+    }
+}
+
+final class TextForegroundStyleModifier: AnyTextModifier {
+    let style: AnyShapeStyle
+
+    init<S>(_ style: S) where S: ShapeStyle {
+        self.style = AnyShapeStyle(style)
+    }
+
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        let foregroundStyle = style.color.baseStyle(in: environment)
+        let newStyle = self.style.copyStyle(in: environment, foregroundStyle: foregroundStyle)
+        style.color = .explicit(newStyle)
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        guard let other = other as? TextForegroundStyleModifier else {
+            return false
+        }
+        return style.storage == other.style.storage
+    }
+}
+
+final class TextForegroundKeyColorModifier: AnyTextModifier {
+    override func modify(style: inout Text.Style, environment: EnvironmentValues) {
+        style.color = .foregroundKeyColor(base: style.color.baseStyle(in: environment))
+    }
+
+    override func isEqual(to other: AnyTextModifier) -> Bool {
+        other is TextForegroundKeyColorModifier
+    }
+}
+
+extension Text.Style.TextStyleColor {
+    fileprivate func baseStyle(in environment: EnvironmentValues) -> AnyShapeStyle {
+        switch self {
+        case .implicit:
+            return environment.foregroundStyle ?? HierarchicalShapeStyle.sharedPrimary
+        case let .explicit(anyShapeStyle):
+            return anyShapeStyle
+        case .default:
+            return environment.defaultForegroundStyle ?? HierarchicalShapeStyle.sharedPrimary
+        case let .foregroundKeyColor(base):
+            return base
+        }
+    }
+}
 
 @available(OpenSwiftUI_v2_0, *)
 extension Text {
@@ -465,25 +730,30 @@ extension Text {
     }
 }
 
+// MARK: - Text + shadow
+
 @_spi(_)
 @available(OpenSwiftUI_v3_0, *)
 extension Text {
-    @_spi(_)
     public func shadow(
         color: Color = Color(.sRGBLinear, white: 0, opacity: 0.33),
         radius: CGFloat,
         x: CGFloat = 0,
         y: CGFloat = 0
     ) -> Text {
-        _openSwiftUIUnimplementedFailure()
+        modified(with: .anyTextModifier(TextShadowModifier(
+            _ShadowEffect(color: color, radius: radius, offset: CGSize(width: x, height: y))
+        )))
     }
 }
 
-@_spi(OpenSwiftUIPrivate)
+// MARK: - Text + contentTransition
+
+@_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
 extension Text {
     public func contentTransition(_ transition: ContentTransition) -> Text {
-        _openSwiftUIUnimplementedFailure()
+        modified(with: .anyTextModifier(TextTransitionModifier(transition)))
     }
 }
 

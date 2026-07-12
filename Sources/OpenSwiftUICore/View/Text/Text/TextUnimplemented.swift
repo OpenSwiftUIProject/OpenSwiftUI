@@ -10,11 +10,3 @@ extension Text {
         self
     }
 }
-
-class BoldTextModifier: AnyTextModifier {
-
-}
-
-class MonospacedTextModifier: AnyTextModifier {
-
-}
