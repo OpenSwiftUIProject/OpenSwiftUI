@@ -3,7 +3,11 @@
 //  OpenSwiftUITestsSupport
 
 import Foundation
+#if OPENSWIFTUI
 package import OpenSwiftUICore
+#else
+package import SwiftUI_SPI
+#endif
 
 package enum DisplayListUtil {
     package static func renderDisplayList<Content: View>(_ content: Content) -> String {

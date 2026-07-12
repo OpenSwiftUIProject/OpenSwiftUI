@@ -15,6 +15,28 @@ public class CAHostingLayer<Content> : QuartzCore.CALayer where Content : SwiftU
   }
 }
 
+public struct DisplayList : Swift.CustomStringConvertible {
+  public struct Version {}
+  public var description: Swift.String {
+    get
+  }
+}
+
+public final class ViewGraph {
+  public struct Outputs : Swift.OptionSet {
+    public let rawValue: Swift.UInt8
+    public init(rawValue: Swift.UInt8)
+    public static var displayList: ViewGraph.Outputs {
+      get
+    }
+  }
+  public init<Root>(rootViewType: Root.Type, requestedOutputs: ViewGraph.Outputs) where Root : SwiftUI.View
+  public func instantiateOutputs()
+  public func setRootView<Root>(_ view: Root) where Root : SwiftUI.View
+  public func setProposedSize(_ size: CoreGraphics.CGSize)
+  public func displayList() -> (DisplayList, DisplayList.Version)
+}
+
 @available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *)
 extension SwiftUI.View {
   public func variableBlur(maxRadius: CoreGraphics.CGFloat, mask: SwiftUI.Image, opaque: Swift.Bool = false) -> some SwiftUI.View
