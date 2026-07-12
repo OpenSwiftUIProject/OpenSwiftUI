@@ -333,11 +333,7 @@ package class AnyTextStorage {
         with options: Text.ResolveOptions
     ) -> Bool {
         var resolved = Text.ResolvedString()
-        #if os(iOS) || os(visionOS)
-        resolved.idiom = .init(.phone)
-        #elseif os(macOS)
-        resolved.idiom = isCatalyst() ? .init(.pad) : .init(.mac)
-        #endif
+        resolved.idiom = _GraphInputs.defaultInterfaceIdiom
         resolve(into: &resolved, in: environment, with: options)
         return resolved.string.isEmpty
     }
@@ -368,11 +364,7 @@ extension AnyTextStorage: CustomDebugStringConvertible {
     package var debugDescription: String {
         var description = "<\(Self.self): \(self)>"
         var resolved = Text.Resolved()
-        #if os(iOS) || os(visionOS)
-        resolved.idiom = .init(.phone)
-        #elseif os(macOS)
-        resolved.idiom = isCatalyst() ? .init(.pad) : .init(.mac)
-        #endif
+        resolved.idiom = _GraphInputs.defaultInterfaceIdiom
         resolve(into: &resolved, in: .init(), with: [])
         if let attributedString = resolved.attributedString {
             description.append(#": "\#(attributedString.string)""#)
