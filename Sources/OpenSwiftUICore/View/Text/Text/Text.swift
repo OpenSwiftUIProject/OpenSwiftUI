@@ -8,10 +8,6 @@
 
 public import Foundation
 
-#if !canImport(ObjectiveC)
-public typealias NSInteger = Int
-#endif
-
 // MARK: - Text
 
 @available(OpenSwiftUI_v1_0, *)

@@ -6,6 +6,8 @@
 public import Foundation
 public import UIFoundation_Private
 
+public typealias NSInteger = Int
+
 package class NSParagraphStyle: NSObject {}
 package class NSMutableParagraphStyle: NSObject {}
 package class TextAttachment: NSObject {}
