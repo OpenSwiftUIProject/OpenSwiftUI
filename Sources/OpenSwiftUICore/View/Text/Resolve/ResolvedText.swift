@@ -362,8 +362,9 @@ extension Text {
             _openSwiftUIUnimplementedFailure()
         }
     }
-    
-    // FIXME
+
+    // MARK: - Text.ResolvedProperties
+
     package struct ResolvedProperties {
         package var insets: EdgeInsets = .zero
         
@@ -374,7 +375,9 @@ extension Text {
         package var transitions: [Text.ResolvedProperties.Transition] = []
         
         package var suffix: ResolvedTextSuffix = .none
-        
+
+        // MARK: - Text.ResolvedProperties.CustomAttachments
+
         package struct CustomAttachments {
             package var characterIndices: [Int]
             
@@ -390,13 +393,15 @@ extension Text {
         package var customAttachments: Text.ResolvedProperties.CustomAttachments = .init()
         
         package init() {
-            _openSwiftUIUnimplementedWarning()
+            _openSwiftUIEmptyStub()
         }
         
         package mutating func registerCustomAttachment(at offset: Int) {
-            _openSwiftUIUnimplementedFailure()
+            customAttachments.characterIndices.append(offset)
         }
-        
+
+        // MARK: - Text.ResolvedProperties.Features
+
         package struct Features: OptionSet {
             package let rawValue: UInt16
             
@@ -415,14 +420,16 @@ extension Text {
             package static let useTextLayoutManager: Text.ResolvedProperties.Features = .init(rawValue: 1 << 4)
             
             package static let useTextSuffix: Text.ResolvedProperties.Features = .init(rawValue: 1 << 5)
-            
+
             package static let produceTextLayout: Text.ResolvedProperties.Features = .init(rawValue: 1 << 6)
-            
-            package static let checkInterpolationStrategy: Text.ResolvedProperties.Features = .init(rawValue: 1 << 8)
-            
+
+            package static let checkInterpolationStrategy: Text.ResolvedProperties.Features = .init(rawValue: 1 << 7)
+
             package static let isUniqueSizeVariant: Text.ResolvedProperties.Features = .init(rawValue: 1 << 8)
         }
-        
+
+        // MARK: - Text.ResolvedProperties.Transition
+
         package struct Transition: Equatable {
             package var transition: ContentTransition
             
@@ -430,29 +437,54 @@ extension Text {
                 self.transition = transition
             }
         }
-        
+
+        // MARK: - Text.ResolvedProperties.Paragraph
+
         package struct Paragraph {
-            package var compositionLanguage: NSCompositionLanguage
-            
+            package var compositionLanguage: NSCompositionLanguage = .unset
+
             var cachedStyle: NSParagraphStyle?
         }
         
-        package var paragraph: Text.ResolvedProperties.Paragraph = .init(compositionLanguage: .none)
-        
+        package var paragraph: Text.ResolvedProperties.Paragraph = .init()
+
         package mutating func addColor(_ c: Color.Resolved) {
-            _openSwiftUIUnimplementedFailure()
+            if c.linearRed == -1, c.linearGreen == -1 {
+                features.insert(.keyColor)
+            }
         }
         
         package mutating func addAttachment() {
-            _openSwiftUIUnimplementedFailure()
+            features.insert(.attachments)
         }
         
         package mutating func addSensitive() {
             features.insert(.sensitive)
         }
         
-        package mutating func addCustomStyle(_ style: _ShapeStyle_Pack.Style) -> Color.Resolved {
-            _openSwiftUIUnimplementedFailure()
+        package mutating func addCustomStyle(
+            _ style: ShapeStyle.Pack.Style
+        ) -> Color.Resolved {
+            if let color = style.color {
+                return color.multiplyingOpacity(by: style.opacity)
+            }
+            var index = 0
+            while index < styles.count {
+                if styles[index] == style {
+                    break
+                }
+                index += 1
+            }
+            if index == styles.count {
+                styles.append(style)
+                features.insert(.keyColor)
+            }
+            return Color.Resolved(
+                linearRed: -1,
+                linearGreen: -1,
+                linearBlue: Float(index) / 1024,
+                opacity: 1
+            )
         }
     }
 }
