@@ -20,6 +20,7 @@
 
 #import <Foundation/Foundation.h>
 #import "NSText.h"
+#import "NSCompositionLanguage.h"
 
 @class NSTextList;
 @class NSTextBlock;
@@ -181,6 +182,16 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0),
 @property float tighteningFactorForTruncation;
 @property NSInteger headerLevel;
 #endif
+
+@end
+
+@interface NSMutableParagraphStyle (OpenSwiftUI_SPI)
+
+@property (nonatomic) NSCompositionLanguage compositionLanguage_openswiftui_safe_wrapper
+    OPENSWIFTUI_SWIFT_NAME(compositionLanguage);
+
+@property (nonatomic) BOOL fullyJustified_openswiftui_safe_wrapper
+    OPENSWIFTUI_SWIFT_NAME(fullyJustified);
 
 @end
 

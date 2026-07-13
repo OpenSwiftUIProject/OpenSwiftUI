@@ -457,6 +457,34 @@ extension Text {
     }
 }
 
+// MARK: - Text.ResolvedProperties.Paragraph + Extension
+
+extension Text.ResolvedProperties.Paragraph {
+    package mutating func style(environment: EnvironmentValues) -> NSParagraphStyle {
+        if let cachedStyle {
+            return cachedStyle
+        }
+        let style = makeParagraphStyle(environment: environment)
+        style.compositionLanguage = compositionLanguage
+        if environment.shouldRedactContent {
+            style.fullyJustified = true
+            style.baseWritingDirection = switch environment.layoutDirection {
+            case .leftToRight: .leftToRight
+            case .rightToLeft: .rightToLeft
+            }
+            style.lineBreakMode = .byCharWrapping
+        }
+        cachedStyle = style
+        return style
+    }
+
+    package mutating func markParagraphBoundary(_ paragraphBoundary: Bool) {
+        if paragraphBoundary {
+            cachedStyle = nil
+        }
+    }
+}
+
 // MARK: - EnvironmentValues + disableLinkColor
 
 extension EnvironmentValues {
