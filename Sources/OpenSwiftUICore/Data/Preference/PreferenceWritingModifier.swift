@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 62AFEFEED1A7034F09E120B80AB01BF9 (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -13,8 +13,6 @@ package import OpenAttributeGraphShims
 /// A modifier that returns a value for a named preference key.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
-@MainActor
-@preconcurrency
 public struct _PreferenceWritingModifier<Key>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Key: PreferenceKey {
 
     /// The value to return for `Key`
@@ -25,14 +23,14 @@ public struct _PreferenceWritingModifier<Key>: ViewModifier, MultiViewModifier, 
         self.value = value
     }
 
-    nonisolated public  static func _makeView(
+    nonisolated public static func _makeView(
         modifier: _GraphValue<Self>,
         inputs: _ViewInputs,
         body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
     ) -> _ViewOutputs {
-        var inputs = inputs
-        inputs.preferences.remove(Key.self)
-        var outputs = body(_Graph(), inputs)
+        var newInputs = inputs
+        newInputs.preferences.remove(Key.self)
+        var outputs = body(_Graph(), newInputs)
         outputs.preferences
             .makePreferenceWriter(
                 inputs: inputs.preferences,
@@ -168,8 +166,6 @@ private struct HostPreferencesWriter<K>: StatefulRule, AsyncAttribute, CustomStr
 
 @available(OpenSwiftUI_v1_0, *)
 extension View {
-    @MainActor
-    @preconcurrency
     package func truePreference<K>(_ key: K.Type = K.self) -> some View where K: PreferenceKey, K.Value == Bool {
         modifier(TruePreferenceWritingModifier<K>())
     }
