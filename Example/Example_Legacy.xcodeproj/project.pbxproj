@@ -1378,7 +1378,7 @@
 			repositoryURL = "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git";
 			requirement = {
 				kind = exactVersion;
-				version = "1.19.2";
+				version = "1.19.3";
 			};
 		};
 		278EF52B2E2272F2009C32EB /* XCRemoteSwiftPackageReference "equatable" */ = {

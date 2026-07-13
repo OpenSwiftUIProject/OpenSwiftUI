@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git",
       "state" : {
-        "revision" : "ad5e3190cc63dc288f28546f9c6827efc1e9d495",
-        "version" : "1.19.2"
+        "revision" : "1bc16f430d8410e7f087d4c787767b26fd32fe30",
+        "version" : "1.19.3"
       }
     },
     {
