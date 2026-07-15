@@ -9,16 +9,14 @@
 
 @available(OpenSwiftUI_v2_0, *)
 extension _PreferenceWritingModifier: _SceneModifier {
-    @MainActor
-    @preconcurrency
     public static func _makeScene(
         modifier: _GraphValue<Self>,
         inputs: _SceneInputs,
         body: @escaping (_Graph, _SceneInputs) -> _SceneOutputs
     ) -> _SceneOutputs {
-        var inputs = inputs
-        inputs.preferences.remove(Key.self)
-        var outputs = body(_Graph(), inputs)
+        var newInputs = inputs
+        newInputs.preferences.remove(Key.self)
+        var outputs = body(_Graph(), newInputs)
         outputs.preferences
             .makePreferenceWriter(
                 inputs: inputs.preferences,
@@ -32,9 +30,7 @@ extension _PreferenceWritingModifier: _SceneModifier {
 @available(OpenSwiftUI_v4_0, *)
 extension Scene {
     @inlinable
-    @MainActor
-    @preconcurrency
-    internal func preference<K>(
+    package func preference<K>(
         key: K.Type = K.self,
         value: K.Value
     ) -> some Scene where K: PreferenceKey {
@@ -46,8 +42,6 @@ extension Scene {
 
 @available(OpenSwiftUI_v2_0, *)
 extension _PreferenceTransformModifier: _SceneModifier {
-    @MainActor
-    @preconcurrency
     public static func _makeScene(
         modifier: _GraphValue<Self>,
         inputs: _SceneInputs,
@@ -66,9 +60,7 @@ extension _PreferenceTransformModifier: _SceneModifier {
 @available(OpenSwiftUI_v4_0, *)
 extension Scene {
     @inlinable
-    @MainActor
-    @preconcurrency
-    internal func transformPreference<K>(
+    func transformPreference<K>(
         _ key: K.Type = K.self,
         _ callback: @escaping (inout K.Value) -> Void
     ) -> some Scene where K: PreferenceKey {

@@ -460,7 +460,8 @@ let project = Project(
     targets: targets,
     schemes: schemes,
     additionalFiles: [
-        "../Configurations/**",
+        "../Configurations/OpenSwiftUI-Info.plist",
+        "../Configurations/Shared/basic/**",
         "Modules/**",
         "ReferenceImages/**",
         "OpenSwiftUIUITests/OpenSwiftUIUITests.xctestplan",

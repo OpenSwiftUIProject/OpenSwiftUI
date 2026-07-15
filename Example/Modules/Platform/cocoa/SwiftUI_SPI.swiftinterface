@@ -5,6 +5,23 @@ import QuartzCore
 import Swift
 @_exported import SwiftUI
 
+@available(iOS 18.2, macOS 15.2, *)
+@frozen public struct TransactionalPreferenceActionModifier<Key> : SwiftUI.ViewModifier where Key : SwiftUI.PreferenceKey, Key.Value : Swift.Equatable {
+  public var action: (Key.Value, SwiftUI.Transaction) -> Swift.Void
+  @_alwaysEmitIntoClient public init(action: @escaping (Key.Value, SwiftUI.Transaction) -> Swift.Void) {
+    self.action = action
+  }
+  nonisolated public static func _makeView(modifier: SwiftUI._GraphValue<SwiftUI_SPI.TransactionalPreferenceActionModifier<Key>>, inputs: SwiftUI._ViewInputs, body: @escaping (SwiftUI._Graph, SwiftUI._ViewInputs) -> SwiftUI._ViewOutputs) -> SwiftUI._ViewOutputs
+  public typealias Body = Swift.Never
+}
+
+@available(iOS 18.2, macOS 15.2, *)
+extension SwiftUI.View {
+  @_alwaysEmitIntoClient nonisolated public func onPreferenceChange<Key>(_ key: Key.Type = Key.self, action: @escaping @Sendable (Key.Value, SwiftUI.Transaction) -> Swift.Void) -> some SwiftUI.View where Key : SwiftUI.PreferenceKey, Key.Value : Swift.Equatable {
+    return modifier(SwiftUI_SPI.TransactionalPreferenceActionModifier<Key>(action: action))
+  }
+}
+
 @_hasMissingDesignatedInitializers @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
 public class CAHostingLayer<Content> : QuartzCore.CALayer where Content : SwiftUI.View {
   public init(rootView: Content, environment: SwiftUI.EnvironmentValues = .init())
