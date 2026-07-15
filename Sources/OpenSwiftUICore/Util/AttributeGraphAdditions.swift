@@ -100,7 +100,6 @@ package protocol InvalidatableAttribute: _AttributeBody {
     static func willInvalidate(attribute: AnyAttribute)
 }
 
-#if !OPENSWIFTUI_ANY_ATTRIBUTE_FIX
 extension AnyAttribute.Flags {
     package static var transactional: Subgraph.Flags {
         .init(rawValue: 1 << 0)
@@ -126,7 +125,6 @@ extension Subgraph.ChildFlags {
         .init(rawValue: 1 << 0)
     }
 }
-#endif
 
 extension Subgraph {
     package func addSecondaryChild(_ child: Subgraph) {
@@ -184,11 +182,7 @@ extension Attribute {
 
 extension WeakAttribute {
     package var uncheckedIdentifier: Attribute<Value> {
-        #if OPENSWIFTUI_ANY_ATTRIBUTE_FIX
-        _openSwiftUIUnimplementedFailure()
-        #else
         Attribute(identifier: AnyWeakAttribute(self)._details.identifier)
-        #endif
     }
 
     package func allowsAsyncUpdate() -> Bool {

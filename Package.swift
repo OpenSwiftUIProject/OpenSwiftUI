@@ -154,9 +154,6 @@ let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", 
 
 let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
 
-// For #39
-let anyAttributeFix = envBoolValue("ANY_ATTRIBUTE_FIX", default: !buildForDarwinPlatform)
-
 let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
 let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform && !isSPIBuild)
 let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform && !isSPIBuild)
@@ -242,10 +239,6 @@ if !compatibilityTestCondition {
     sharedCSettings.append(.define("OPENSWIFTUI"))
     sharedCxxSettings.append(.define("OPENSWIFTUI"))
     sharedSwiftSettings.append(.define("OPENSWIFTUI"))
-}
-
-if anyAttributeFix {
-    sharedSwiftSettings.append(.define("OPENSWIFTUI_ANY_ATTRIBUTE_FIX"))
 }
 
 if development {
