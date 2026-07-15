@@ -5,11 +5,7 @@
 //  Audited for 6.0.87
 //  Status: Complete
 
-#if canImport(Darwin)
 package import OpenAttributeGraphShims
-#else
-import OpenAttributeGraphShims
-#endif
 
 extension _ViewInputs {
     package func makeIndirectOutputs() -> _ViewOutputs {
