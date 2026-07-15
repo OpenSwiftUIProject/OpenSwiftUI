@@ -471,6 +471,12 @@ extension [Platform] {
 }
 
 extension [SwiftSetting] {
+    fileprivate func compatibilityTestSettings() -> Self {
+        self + (compatibilityTestCondition ? [
+            .unsafeFlags(["-I\(Context.packageDirectory)/Example/Modules/Platform/cocoa"]),
+        ] : [])
+    }
+
     /// Settings which define commonly-used OS availability macros.
     ///
     /// These leverage a pseudo-experimental feature in the Swift compiler for
@@ -655,9 +661,7 @@ let openSwiftUITestsSupportTarget = Target.target(
     dependencies: (compatibilityTestCondition ? [] : ["OpenSwiftUI"]),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings + (compatibilityTestCondition ? [
-        .unsafeFlags(["-I", "\(Context.packageDirectory)/Example/Modules/Platform/cocoa"]),
-    ] : [])
+    swiftSettings: sharedSwiftSettings.compatibilityTestSettings()
 )
 
 let openSwiftUIExtensionTarget = Target.target(
@@ -691,9 +695,7 @@ let openSwiftUICompatibilityTestTarget = Target.testTarget(
     exclude: ["README.md"],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings + (compatibilityTestCondition ? [
-        .unsafeFlags(["-I", "\(Context.packageDirectory)/Example/Modules/Platform/cocoa"]),
-    ] : [])
+    swiftSettings: sharedSwiftSettings.compatibilityTestSettings()
 )
 
 // MARK: - OpenSwiftUIBridge Target
