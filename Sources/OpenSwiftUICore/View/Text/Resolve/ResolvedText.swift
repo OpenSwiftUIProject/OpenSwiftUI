@@ -195,38 +195,37 @@ extension Text {
         }
     }
     
-    // MARK: - Text.Style [WIP]
+    // MARK: - Text.Style
     
     package struct Style {
-        internal var baseFont: TextStyleFont = .default
-        internal var fontModifiers: [AnyFontModifier] = []
-        internal var color: TextStyleColor = .default
-        internal var backgroundColor: Color?
-        internal var baselineOffset: CGFloat?
-        internal var kerning: CGFloat?
-        internal var tracking: CGFloat?
-        internal var strikethrough: LineStyle = .default
-        internal var underline: LineStyle = .default
-        internal var encapsulation: Text.Encapsulation?
-        internal var speech: AccessibilitySpeechAttributes?
+        var baseFont: TextStyleFont = .implicit
+        var fontModifiers: [AnyFontModifier] = []
+        var color: TextStyleColor = .implicit
+        var backgroundColor: Color?
+        var baselineOffset: CGFloat?
+        var kerning: CGFloat?
+        var tracking: CGFloat?
+        var strikethrough: LineStyle = .implicit
+        var underline: LineStyle = .implicit
+        var encapsulation: Text.Encapsulation?
+        var speech: AccessibilitySpeechAttributes?
         package var accessibility: AccessibilityTextAttributes?
-#if canImport(CoreText)
-        internal var glyphInfo: CTGlyphInfo?
-#endif
-        //        internal var shadow: TextShadowModifier?
-        //        internal var transition: TextTransitionModifier?
-        internal var scale: Text.Scale?
-        internal var superscript: Text.Superscript?
-        internal var typesettingConfiguration: TypesettingConfiguration = .init()
-        internal var customAttributes: [TextAttributeModifierBase] = []
-#if canImport(Darwin)
-        internal var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
-#endif
+        #if canImport(CoreText)
+        var glyphInfo: CTGlyphInfo?
+        #endif
+        var shadow: TextShadowModifier?
+        var transition: TextTransitionModifier?
+        var scale: Text.Scale?
+        var superscript: Text.Superscript?
+        var typesettingConfiguration: TypesettingConfiguration = .init()
+        var customAttributes: [TextAttributeModifierBase] = []
+        #if canImport(Darwin)
+        var adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph?
+        #endif
         package var clearedFontModifiers: Set<ObjectIdentifier> = []
         
         init() {
-            // FIXME
-            _openSwiftUIUnimplementedWarning()
+            _openSwiftUIEmptyStub()
         }
         
         // MARK: - Text.Style.LineStyle
