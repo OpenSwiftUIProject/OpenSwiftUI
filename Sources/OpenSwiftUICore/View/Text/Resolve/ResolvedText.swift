@@ -249,7 +249,42 @@ extension Text {
             with options: Text.ResolveOptions,
             transition: ContentTransition?
         ) where R: ResolvableStringAttribute {
-            _openSwiftUIUnimplementedFailure()
+            var style = style
+            if style.transition == nil, var transition {
+                transition.isReplaceable = true
+                style.transition = TextTransitionModifier(transition)
+            }
+            let attributedString: NSMutableAttributedString?
+            if environment.redactionReasons.contains(.placeholder) {
+                attributedString = ResolvableTextSegmentAttribute.buildStaticTextSegment(
+                    for: resolvable,
+                    style: style,
+                    environment: environment,
+                    includeDefaultAttributes: includeDefaultAttributes,
+                    options: options,
+                    properties: &properties
+                )
+            } else {
+                attributedString = ResolvableTextSegmentAttribute.buildDynamicTextSegment(
+                    for: resolvable,
+                    style: style,
+                    environment: environment,
+                    includeDefaultAttributes: includeDefaultAttributes,
+                    options: options,
+                    properties: &properties
+                )
+            }
+            guard let attributedString else {
+                Log.internalWarning("Unable to resolve custom attribute \(resolvable)")
+                return
+            }
+            if let current = self.attributedString {
+                current.append(attributedString)
+            } else {
+                self.attributedString = NSMutableAttributedString(
+                    attributedString: attributedString
+                )
+            }
         }
         
         package func nsAttributes(
