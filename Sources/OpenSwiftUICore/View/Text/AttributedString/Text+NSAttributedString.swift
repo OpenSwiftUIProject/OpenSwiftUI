@@ -22,17 +22,15 @@ let kCTTextScaleRatioAttributeName: CFString
 #endif
 
 extension NSAttributedString.Key {
-    package static let resolvableAttributeConfiguration: NSAttributedString.Key = .init("OpenSwiftUI.resolvableAttributeConfiguration")
+    static let resolvableAttributeConfiguration: NSAttributedString.Key = .init("OpenSwiftUI.resolvableAttributeConfiguration")
 
-    package static let _textScale: NSAttributedString.Key = .init("NSTextScale")
-
-    package static let kitTracking: NSAttributedString.Key = .init("CTTracking")
+    static let _textScale: NSAttributedString.Key = .init("NSTextScale")
 
     #if canImport(CoreText)
-    package static let _textScaleRatio: NSAttributedString.Key = .init(kCTTextScaleRatioAttributeName as String)
+    static let _textScaleRatio: NSAttributedString.Key = .init(kCTTextScaleRatioAttributeName as String)
     #endif
 
-    package static let _textScaleStaticWeightMatching: NSAttributedString.Key = .init("NSTextScaleStaticWeightMatching")
+    static let _textScaleStaticWeightMatching: NSAttributedString.Key = .init("NSTextScaleStaticWeightMatching")
 }
 
 extension NSAttributedString {
