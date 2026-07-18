@@ -180,25 +180,24 @@ extension Text {
                 properties: &properties
             )
             if !environment.shouldRedactContent {
-                let resolvedImage: Image.Resolved
-                if let foregroundColor = style.color.resolve(
-                    in: environment,
-                    with: options,
-                    properties: &properties
-                ) {
-                    resolvedImage = image.foregroundColor { foregroundColor }
-                } else {
-                    resolvedImage = image
+                let resolvedImage = image.foregroundColor {
+                    let color = style.color.resolve(
+                        in: environment,
+                        with: options,
+                        properties: &properties,
+                        includeDefaultAttributes: true
+                    )!
+                    properties.addColor(color)
+                    return color
                 }
-
                 let attachment = OpenSwiftUITextAttachment(image: resolvedImage)
                 if options.contains(.includeAccessibility),
                    !resolvedImage.decorative,
                    let label = resolvedImage.label {
-//                    attachment.accessibilityLabel = label.text.resolveString(
-//                        in: environment,
-//                        with: options
-//                    )
+                    attachment.accessibilityLabel = label.text.resolveString(
+                        in: environment,
+                        with: options
+                    )
                 }
                 environment.resolvedTextProvider?.updateImageTextAttachment(
                     in: attachment,
@@ -211,7 +210,7 @@ extension Text {
                 with: attributes,
                 in: environment
             )
-            properties.features.formUnion(.attachments)
+            properties.addAttachment()
         }
         
         package mutating func append(

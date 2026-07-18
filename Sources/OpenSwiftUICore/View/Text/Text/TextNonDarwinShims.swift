@@ -55,9 +55,15 @@ extension NSParagraphStyle {
 package class NSMutableParagraphStyle: NSParagraphStyle {}
 
 package class NSTextAttachment: NSObject {
+    override init() {
+        super.init()
+    }
+
     package init(data: Data?, ofType: String?) {
         super.init()
     }
+
+    package var accessibilityLabel: String?
 }
 
 extension NSMutableAttributedString {

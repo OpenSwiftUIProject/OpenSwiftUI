@@ -88,6 +88,12 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0),
 
 @end
 
+@interface NSTextAttachment (OpenSwiftUI_SPI)
+
+@property (nullable, strong) NSString *accessibilityLabel;
+
+@end
+
 NS_HEADER_AUDIT_END(nullability, sendability)
 
 #endif

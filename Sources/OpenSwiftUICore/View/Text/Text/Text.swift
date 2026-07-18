@@ -418,7 +418,7 @@ public struct Text: Equatable, Sendable {
         switch storage {
         case let .verbatim(string):
             return string
-        case let .anyTextStorage:
+        case .anyTextStorage:
             var resolved = Text.ResolvedString()
             resolved.idiom = idiom
             resolve(into: &resolved, in: environment, with: options)
