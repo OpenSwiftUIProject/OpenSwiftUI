@@ -54,7 +54,11 @@ extension NSParagraphStyle {
 
 package class NSMutableParagraphStyle: NSParagraphStyle {}
 
-package class NSTextAttachment: NSObject {}
+package class NSTextAttachment: NSObject {
+    package init(data: Data?, ofType: String?) {
+        super.init()
+    }
+}
 
 extension NSMutableAttributedString {
     package var isEmptyOrTerminatedByParagraphSeparator: Bool {

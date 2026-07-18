@@ -513,6 +513,9 @@ public struct GraphicsContext {
     }
 
     // FIXME
+    public struct Shading: Sendable {}
+
+    // FIXME
     package enum ResolvedShading: Sendable {
         case backdrop(Color.Resolved)
         case color(Color.Resolved)
@@ -523,6 +526,29 @@ public struct GraphicsContext {
 }
 
 extension GraphicsContext {
+    #if OPENSWIFTUI_SWIFTUI_RENDERER
+    @_silgen_name("OpenSwiftUITestStub_GraphicsContextDrawImageInRectStyleShading")
+    private func swiftUI_draw(
+        _ image: GraphicsImage,
+        in rect: CGRect,
+        style: FillStyle,
+        shading: Shading?
+    )
+    #endif
+
+    package func draw(
+        _ image: GraphicsImage,
+        in rect: CGRect,
+        style: FillStyle,
+        shading: Shading?
+    ) {
+        #if OPENSWIFTUI_SWIFTUI_RENDERER
+        swiftUI_draw(image, in: rect, style: style, shading: shading)
+        #else
+        _openSwiftUIUnimplementedWarning()
+        #endif
+    }
+
     #if OPENSWIFTUI_SWIFTUI_RENDERER
     @_silgen_name("OpenSwiftUITestStub_GraphicsContextDrawPathWithShadingAndStyle")
     private func swiftUI_draw(_ path: Path, with shading: GraphicsContext.ResolvedShading, style: PathDrawingStyle)

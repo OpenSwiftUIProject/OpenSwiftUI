@@ -517,6 +517,41 @@ extension Text.ResolvedProperties.Paragraph {
     }
 }
 
+// MARK: - OpenSwiftUITextAttachment
+
+class OpenSwiftUITextAttachment: NSTextAttachment {
+    let graphicsImage: GraphicsImage
+    let alignmentOrigin: CGPoint
+
+    init(image: Image.Resolved) {
+        graphicsImage = image.image
+        if case .vectorGlyph = graphicsImage.contents {
+            alignmentOrigin = image.alignmentOrigin
+        } else {
+            alignmentOrigin = .zero
+        }
+        super.init(data: nil, ofType: nil)
+    }
+
+    @available(*, unavailable)
+    required init?(coder: NSCoder) {
+        _openSwiftUIUnreachableCode()
+    }
+
+    func draw(in context: inout GraphicsContext, at point: CGPoint) {
+        let origin = CGPoint(
+            x: alignmentOrigin.x + point.x,
+            y: alignmentOrigin.y + point.y
+        )
+        context.draw(
+            graphicsImage,
+            in: CGRect(origin: origin, size: graphicsImage.size),
+            style: FillStyle(),
+            shading: nil
+        )
+    }
+}
+
 // MARK: - EnvironmentValues + disableLinkColor
 
 extension EnvironmentValues {
