@@ -60,7 +60,9 @@ jobs:
           # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
           # runners with CoreSimulator codesigning errors. Build the x86_64
           # simulator slice to match the test command below until that is fixed.
-          NSUnbufferedIO=YES xcodebuild build \
+          # Swift 6.2 macro prebuilts do not support the x86_64 simulator
+          # testable macro target, so build SwiftSyntax from source instead.
+          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO build \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -74,7 +76,7 @@ jobs:
           set -o pipefail
           # See the build step above: force x86_64 to avoid the arm64 package
           # test runner launch/codesigning failure on this Xcode/iOS pair.
-          NSUnbufferedIO=YES xcodebuild test \
+          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
