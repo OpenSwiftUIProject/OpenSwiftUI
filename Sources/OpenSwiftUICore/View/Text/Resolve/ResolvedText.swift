@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 7AFAB46D18FA6D189589CFA78D8B2B2E (SwiftUICore)
 
 package import Foundation
@@ -82,15 +82,14 @@ extension ResolvedTextContainer {
 }
 
 extension Text {
+
+    // MARK: - Text.Resolved
+
     package struct Resolved: ResolvedTextContainer {
         package var style: Text.Style = .init()
-        
         package var attributedString: NSMutableAttributedString?
-        
         package var includeDefaultAttributes: Bool = true
-        
         package var idiom: AnyInterfaceIdiom?
-        
         package var properties: Text.ResolvedProperties = .init()
         
         package init() {
@@ -103,7 +102,7 @@ extension Text {
             with options: Text.ResolveOptions,
             isUniqueSizeVariant: Bool
         ) where S: StringProtocol {
-            var string = String(string).caseConvertedIfNeeded(env)
+            let string = String(string).caseConvertedIfNeeded(env)
             let attributes = style.nsAttributes(
                 content: { string },
                 environment: env,
@@ -115,7 +114,9 @@ extension Text {
             if attributedString!.isEmptyOrTerminatedByParagraphSeparator {
                 properties.paragraph.cachedStyle = nil
             }
-            _openSwiftUIUnimplementedWarning()
+            if isUniqueSizeVariant {
+                properties.features.formUnion(.isUniqueSizeVariant)
+            }
         }
         
         package mutating func append(
@@ -124,13 +125,47 @@ extension Text {
             with options: Text.ResolveOptions,
             isUniqueSizeVariant: Bool
         ) {
-            // FIXME: Workaround append issue
-            if self.attributedString == nil {
-                self.attributedString = NSMutableAttributedString(attributedString: attributedString)
-            } else {
-                self.attributedString?.append(attributedString)
+            attributedString.enumerateAttributes(
+                in: NSRange(location: 0, length: attributedString.length)
+            ) { sourceAttributes, range, _ in
+                var attributes = sourceAttributes
+                var style = self.style
+                attributes.transferAttributedStringStyles(to: &style)
+                if sourceAttributes[.kitLink] != nil {
+                    let foregroundColorKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.ForegroundColorAttribute.name)
+                    if !options.contains(.disableLinkColor),
+                       sourceAttributes[foregroundColorKey] == nil {
+                        let linkColor = env.tintColor
+                        ?? env.resolvedTextProvider?.defaultLinkColor(for: env)
+                        ?? .accentColor
+                        style.color = .explicit(AnyShapeStyle(linkColor))
+                    }
+                }
+                let string = attributedString
+                    .attributedSubstring(from: range)
+                    .string
+                    .caseConvertedIfNeeded(env)
+                let platformAttributes = style.nsAttributes(
+                    content: { string },
+                    environment: env,
+                    includeDefaultAttributes: includeDefaultAttributes,
+                    with: options,
+                    properties: &properties
+                )
+                attributes.merge(platformAttributes) { old, _ in old }
+                append(string, with: attributes, in: env)
+                if self.attributedString!.isEmptyOrTerminatedByParagraphSeparator {
+                    properties.paragraph.cachedStyle = nil
+                }
             }
-            _openSwiftUIUnimplementedWarning()
+            if self.attributedString == nil {
+                self.attributedString = NSMutableAttributedString(
+                    attributedString: attributedString
+                )
+            }
+            if isUniqueSizeVariant {
+                properties.features.formUnion(.isUniqueSizeVariant)
+            }
         }
         
         package mutating func append(
@@ -138,7 +173,45 @@ extension Text {
             in environment: EnvironmentValues,
             with options: Text.ResolveOptions
         ) {
-            _openSwiftUIUnimplementedFailure()
+            var attributes = nsAttributes(
+                content: nil,
+                in: environment,
+                with: options,
+                properties: &properties
+            )
+            if !environment.shouldRedactContent {
+                let resolvedImage: Image.Resolved
+                if let foregroundColor = style.color.resolve(
+                    in: environment,
+                    with: options,
+                    properties: &properties
+                ) {
+                    resolvedImage = image.foregroundColor { foregroundColor }
+                } else {
+                    resolvedImage = image
+                }
+
+                let attachment = OpenSwiftUITextAttachment(image: resolvedImage)
+                if options.contains(.includeAccessibility),
+                   !resolvedImage.decorative,
+                   let label = resolvedImage.label {
+//                    attachment.accessibilityLabel = label.text.resolveString(
+//                        in: environment,
+//                        with: options
+//                    )
+                }
+                environment.resolvedTextProvider?.updateImageTextAttachment(
+                    in: attachment,
+                    image: resolvedImage
+                )
+                attributes[.kitAttachment] = attachment
+            }
+            append(
+                .nsAttachment,
+                with: attributes,
+                in: environment
+            )
+            properties.features.formUnion(.attachments)
         }
         
         package mutating func append(
@@ -164,7 +237,13 @@ extension Text {
             with options: Text.ResolveOptions,
             properties: inout Text.ResolvedProperties
         ) -> [NSAttributedString.Key: Any] {
-            _openSwiftUIUnimplementedFailure()
+            style.nsAttributes(
+                content: content,
+                environment: environment,
+                includeDefaultAttributes: includeDefaultAttributes,
+                with: options,
+                properties: &properties
+            )
         }
         
         private mutating func append(
@@ -642,8 +721,7 @@ extension Text {
             append(
                 attributedString.string,
                 in: env,
-                with: options,
-                isUniqueSizeVariant: isUniqueSizeVariant
+                with: options
             )
         }
 

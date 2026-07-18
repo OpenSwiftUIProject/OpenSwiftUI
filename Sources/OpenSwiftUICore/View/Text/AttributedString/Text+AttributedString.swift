@@ -654,9 +654,8 @@ extension NSMutableAttributedString {
     }
 }
 
-@available(OpenSwiftUI_v6_0, *)
 extension Dictionary where Key == NSAttributedString.Key, Value == Any {
-    fileprivate mutating func transferAttributedStringStyles(to style: inout Text.Style) {
+    mutating func transferAttributedStringStyles(to style: inout Text.Style) {
         let fontKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.FontAttribute.name)
         if let font = self[fontKey] as? Font {
             style.baseFont = .explicit(font)
