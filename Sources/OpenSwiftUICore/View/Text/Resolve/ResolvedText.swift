@@ -343,23 +343,43 @@ extension Text {
         }
         
         package func fontTraits(in environment: EnvironmentValues) -> Font.ResolvedTraits {
-            _openSwiftUIUnimplementedFailure()
+            let font = baseFont.resolve(in: environment, includeDefaultAttributes: true)
+            let environmentModifiers = environment.fontModifiers
+            if fontModifiers.isEmpty && environmentModifiers.isEmpty {
+                return font!.resolveTraits(in: environment.fontResolutionContext)
+            }
+            let context = environment.fontResolutionContext
+            var descriptor = font!.resolve(in: context)
+            for modifier in environmentModifiers {
+                modifier.modify(descriptor: &descriptor, in: context)
+            }
+            for modifier in fontModifiers {
+                modifier.modify(descriptor: &descriptor, in: context)
+            }
+            return .init(descriptor)
         }
         
         package mutating func addFontModifier<M>(_ modifier: M) where M: FontModifier {
-            _openSwiftUIUnimplementedFailure()
+            fontModifiers.append(.dynamic(modifier))
         }
         
         package mutating func addFontModifier<M>(type: M.Type) where M: StaticFontModifier {
-            _openSwiftUIUnimplementedFailure()
+            fontModifiers.append(.static(M.self))
         }
         
         package mutating func removeFontModifier<M>(ofType _: M.Type) where M: FontModifier {
-            _openSwiftUIUnimplementedFailure()
+            let typeID = ObjectIdentifier(M.self)
+            fontModifiers.removeAll { $0 is AnyDynamicFontModifier<M> }
+            clearedFontModifiers.insert(typeID)
         }
         
         package mutating func removeFontModifier<M>(ofType _: M.Type) where M: StaticFontModifier {
-            _openSwiftUIUnimplementedFailure()
+            let typeID = ObjectIdentifier(M.self)
+            fontModifiers.removeAll {
+                $0 is AnyStaticFontModifier<M> ||
+                    (M.self == Font.BoldModifier.self && $0.isboldFontWeightModifier)
+            }
+            clearedFontModifiers.insert(typeID)
         }
     }
 
