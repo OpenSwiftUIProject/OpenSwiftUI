@@ -42,16 +42,12 @@ let openSwiftUIModeSettings: SettingsDictionary = [
 
 let debugModeSettings: SettingsDictionary = [
     "ENABLE_TESTABILITY": "YES",
-    "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) DEBUG=1",
-    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) DEBUG",
     "SWIFT_COMPILATION_MODE": "singlefile",
     "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
 ]
 
 let openSwiftUIDebugModeSettings = openSwiftUIModeSettings.merging([
     "ENABLE_TESTABILITY": "YES",
-    "GCC_PREPROCESSOR_DEFINITIONS": "$(inherited) OPENSWIFTUI=1 DEBUG=1",
-    "SWIFT_ACTIVE_COMPILATION_CONDITIONS": "$(inherited) OPENSWIFTUI DEBUG",
     "SWIFT_COMPILATION_MODE": "singlefile",
     "SWIFT_OPTIMIZATION_LEVEL": "-Onone",
 ])
@@ -75,7 +71,7 @@ func settings(base: SettingsDictionary = [:], xcconfig: Path) -> Settings {
     .settings(
         base: base,
         configurations: targetConfigurations(xcconfig),
-        defaultSettings: .none,
+        defaultSettings: .essential,
         defaultConfiguration: "OpenSwiftUIDebug"
     )
 }
@@ -454,7 +450,7 @@ let project = Project(
     ),
     settings: .settings(
         configurations: projectConfigurations,
-        defaultSettings: .none,
+        defaultSettings: .essential,
         defaultConfiguration: "OpenSwiftUIDebug"
     ),
     targets: targets,

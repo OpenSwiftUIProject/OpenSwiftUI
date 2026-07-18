@@ -4,7 +4,7 @@
     {
       "identity" : "compute",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/Compute",
+      "location" : "https://github.com/openswiftuiproject/compute",
       "state" : {
         "revision" : "bf9cfe57ba8b3dc7307a95fb10a6133e70db3089",
         "version" : "0.3.0-bugfix.1"
@@ -13,7 +13,7 @@
     {
       "identity" : "equatable",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/equatable.git",
+      "location" : "https://github.com/openswiftuiproject/equatable",
       "state" : {
         "branch" : "main",
         "revision" : "8f1dccead65d97173ed695c6c1ba9d0570d35619"
@@ -22,7 +22,7 @@
     {
       "identity" : "opencoregraphics",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
+      "location" : "https://github.com/openswiftuiproject/opencoregraphics",
       "state" : {
         "branch" : "main",
         "revision" : "050239bd42b19a4c8b1ef3936bfb9f3589ecfc46"
@@ -31,7 +31,7 @@
     {
       "identity" : "openobservation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "location" : "https://github.com/openswiftuiproject/openobservation",
       "state" : {
         "branch" : "main",
         "revision" : "05e0581e76b7153338836469320a4789fd0257e2"
@@ -67,7 +67,7 @@
     {
       "identity" : "swift-snapshot-testing",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git",
+      "location" : "https://github.com/openswiftuiproject/swift-snapshot-testing",
       "state" : {
         "revision" : "1bc16f430d8410e7f087d4c787767b26fd32fe30",
         "version" : "1.19.3"
@@ -85,7 +85,7 @@
     {
       "identity" : "symbollocator",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
+      "location" : "https://github.com/openswiftuiproject/symbollocator",
       "state" : {
         "revision" : "546053c03f282df1a8270853da6692e1b078be09",
         "version" : "0.2.1"
