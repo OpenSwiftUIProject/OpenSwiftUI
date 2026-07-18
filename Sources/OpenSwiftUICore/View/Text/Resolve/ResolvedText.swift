@@ -218,7 +218,29 @@ extension Text {
             in environment: EnvironmentValues,
             with options: Text.ResolveOptions
         ) {
-            _openSwiftUIUnimplementedFailure()
+            guard options.contains(.writeAuxiliaryMetadata) else {
+                return
+            }
+            var attributes = nsAttributes(
+                content: nil,
+                in: environment,
+                with: options,
+                properties: &properties
+            )
+            if !environment.shouldRedactContent {
+                let attachment = NSTextAttachment()
+                environment.resolvedTextProvider?.updateWidgetTextAttachment(
+                    attachment,
+                    namedImage: namedImage
+                )
+                attributes[.kitAttachment] = attachment
+            }
+            append(
+                .nsAttachment,
+                with: attributes,
+                in: environment
+            )
+            properties.addAttachment()
         }
         
         package mutating func append<R>(
