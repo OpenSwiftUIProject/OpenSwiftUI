@@ -93,4 +93,4 @@
 --wraptypealiases preserve
 --xcodeindentation disabled
 --yodaswap always
---disable unusedArguments
+--disable unusedArguments,simplifyGenericConstraints
