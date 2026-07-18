@@ -259,7 +259,7 @@ extension Text {
             }
         }
         
-        // MARK: - Text.Style.TextStyleColor [WIP]
+        // MARK: - Text.Style.TextStyleColor
         
         package enum TextStyleColor {
             case implicit
@@ -282,7 +282,7 @@ extension Text {
                     guard !options.contains(.foregroundKeyColor) else {
                         return .init(linearWhite: -1, opacity: 1)
                     }
-                    let s = environment.defaultForegroundStyle
+                    let s = environment.foregroundStyle
                     style = .init(s?.fallbackColor(in: environment, level: 0) ?? .primary)
                 case .explicit(let anyShapeStyle):
                     style = anyShapeStyle
@@ -293,7 +293,7 @@ extension Text {
                     guard !options.contains(.foregroundKeyColor) else {
                         return .init(linearWhite: -1, opacity: 1)
                     }
-                    let s = environment.foregroundStyle
+                    let s = environment.defaultForegroundStyle
                     style = .init(s?.fallbackColor(in: environment, level: 0) ?? .primary)
                 case .foregroundKeyColor(let base):
                     guard !options.contains(.allowsKeyColors) else {
