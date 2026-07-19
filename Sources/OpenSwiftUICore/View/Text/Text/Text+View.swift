@@ -740,14 +740,42 @@ package class ResolvedStyledText: CustomStringConvertible {
         nil
     }
 
-    // TBA
-
     final package func resolvedContent(in context: ResolvableStringResolutionContext) -> NSAttributedString? {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return nil
+        }
+        guard storage.isDynamic, archiveOptions.isArchived else {
+            return storage
+        }
+        guard let mutable = storage.mutableCopy() as? NSMutableAttributedString else {
+            return nil
+        }
+        ResolvableTextSegmentAttribute.update(mutable, in: context)
+        return mutable
     }
 
     final package func resolvingContent(in context: ResolvableStringResolutionContext) -> ResolvedStyledText {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage,
+              storage.isDynamic,
+              let mutable = storage.mutableCopy() as? NSMutableAttributedString
+        else {
+            return self
+        }
+        ResolvableTextSegmentAttribute.update(mutable, in: context)
+        return ResolvedStyledText.styledText(
+            storage: mutable,
+            layoutProperties: layoutProperties,
+            layoutMargins: nil,
+            stylePadding: stylePadding,
+            archiveOptions: archiveOptions,
+            isCollapsible: isCollapsible,
+            features: features,
+            suffix: .none,
+            attachments: .init(),
+            styles: styles,
+            transitions: transitions,
+            scaleFactorOverride: scaleFactorOverride
+        )
     }
 
     final package func nextUpdate(
@@ -901,51 +929,59 @@ extension TextDrawingContext: Sendable {}
 
 // MARK: - ResolvedStyledText + Extension [WIP]
 
-//extension ResolvedStyledText {
-//    package static func styledText(
-//        storage: NSAttributedString?,
-//        layoutProperties: TextLayoutProperties,
-//        layoutMargins: EdgeInsets?,
-//        stylePadding: EdgeInsets,
-//        archiveOptions: ArchivedViewInput.Value,
-//        isCollapsible: Bool,
-//        features: Text.ResolvedProperties.Features,
-//        suffix: ResolvedTextSuffix,
-//        attachments: Text.ResolvedProperties.CustomAttachments,
-//        styles: [_ShapeStyle_Pack.Style],
-//        transitions: [Text.ResolvedProperties.Transition],
-//        scaleFactorOverride: CGFloat?,
-//        isInitialResolution: Bool = true
-//    ) -> ResolvedStyledText
-//
-//    package static func styledText(
-//        storage: NSAttributedString?,
-//        stylePadding: EdgeInsets = EdgeInsets(),
-//        layoutProperties: TextLayoutProperties,
-//        archiveOptions: ArchivedViewInput.Value = .init(),
-//        isCollapsible: Bool = false,
-//        features: Text.ResolvedProperties.Features = .init(),
-//        suffix: ResolvedTextSuffix = .none,
-//        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
-//        styles: [_ShapeStyle_Pack.Style] = .init(),
-//        transitions: [Text.ResolvedProperties.Transition] = .init()
-//    ) -> ResolvedStyledText
-//
-//    package static func styledText(
-//        storage: NSAttributedString?,
-//        stylePadding: EdgeInsets = EdgeInsets(),
-//        environment: EnvironmentValues,
-//        archiveOptions: ArchivedViewInput.Value = .init(),
-//        isCollapsible: Bool = false,
-//        features: Text.ResolvedProperties.Features = .init(),
-//        suffix: ResolvedTextSuffix = .none,
-//        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
-//        styles: [_ShapeStyle_Pack.Style] = .init(),
-//        transitions: [Text.ResolvedProperties.Transition] = .init(),
-//        writingMode: Text.WritingMode? = nil,
-//        sizeFitting: Bool = false
-//    ) -> ResolvedStyledText
-//}
+extension ResolvedStyledText {
+    package static func styledText(
+        storage: NSAttributedString?,
+        layoutProperties: TextLayoutProperties,
+        layoutMargins: EdgeInsets?,
+        stylePadding: EdgeInsets,
+        archiveOptions: ArchivedViewInput.Value,
+        isCollapsible: Bool,
+        features: Text.ResolvedProperties.Features,
+        suffix: ResolvedTextSuffix,
+        attachments: Text.ResolvedProperties.CustomAttachments,
+        styles: [_ShapeStyle_Pack.Style],
+        transitions: [Text.ResolvedProperties.Transition],
+        scaleFactorOverride: CGFloat?,
+        isInitialResolution: Bool = true
+    ) -> ResolvedStyledText {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package static func styledText(
+        storage: NSAttributedString?,
+        stylePadding: EdgeInsets = EdgeInsets(),
+        layoutProperties: TextLayoutProperties,
+        archiveOptions: ArchivedViewInput.Value = .init(),
+        isCollapsible: Bool = false,
+        features: Text.ResolvedProperties.Features = .init(),
+        suffix: ResolvedTextSuffix = .none,
+        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
+        styles: [_ShapeStyle_Pack.Style] = .init(),
+        transitions: [Text.ResolvedProperties.Transition] = .init()
+    ) -> ResolvedStyledText {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+
+    package static func styledText(
+        storage: NSAttributedString?,
+        stylePadding: EdgeInsets = EdgeInsets(),
+        environment: EnvironmentValues,
+        archiveOptions: ArchivedViewInput.Value = .init(),
+        isCollapsible: Bool = false,
+        features: Text.ResolvedProperties.Features = .init(),
+        suffix: ResolvedTextSuffix = .none,
+        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
+        styles: [_ShapeStyle_Pack.Style] = .init(),
+        transitions: [Text.ResolvedProperties.Transition] = .init(),
+        writingMode: Text.WritingMode? = nil,
+        sizeFitting: Bool = false
+    ) -> ResolvedStyledText {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+}
 
 // MARK: - CodableResolvedStyledText [WIP]
 
