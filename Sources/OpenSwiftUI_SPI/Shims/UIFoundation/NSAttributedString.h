@@ -64,6 +64,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property(readonly, assign, nonatomic) BOOL isEmptyOrTerminatedByParagraphSeparator_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(isEmptyOrTerminatedByParagraphSeparator);
 @end
 
+@interface NSCharacterSet (OpenSwiftUI_SPI)
+@property(class, readonly, nonatomic) NSCharacterSet *ic_emojiCharacterSet;
+@end
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif

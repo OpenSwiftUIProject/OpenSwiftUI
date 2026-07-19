@@ -57,6 +57,9 @@ package func CTFontDescriptorCreateForUIType(
 
 // MARK: - CTFont private API
 
+@_silgen_name("CTFontCopySystemUIFontExcessiveLineHeightCharacterSet")
+package func CTFontCopySystemUIFontExcessiveLineHeightCharacterSet() -> CFCharacterSet?
+
 @_silgen_name("CTFontIsSystemUIFont")
 package func CTFontIsSystemUIFont(_ font: CTFont) -> Bool
 

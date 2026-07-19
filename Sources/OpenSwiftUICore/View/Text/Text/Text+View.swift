@@ -11,6 +11,9 @@ package import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
 import UIFoundation_Private
+#if canImport(CoreText)
+package import CoreText
+#endif
 
 // MARK: - Text + View [WIP]
 
@@ -441,6 +444,37 @@ extension TextLayoutProperties: ProtobufMessage {
         _openSwiftUIUnimplementedFailure()
     }
 }
+
+#if canImport(CoreText)
+extension NSAttributedString {
+    static let oversizedScalars: CharacterSet = {
+        guard let characterSet = CTFontCopySystemUIFontExcessiveLineHeightCharacterSet() else {
+            return CharacterSet()
+        }
+        return characterSet as CharacterSet
+    }()
+
+    static let oversizedScalarsWithoutEmoji = oversizedScalars.subtracting(
+        NSCharacterSet.ic_emoji as CharacterSet
+    )
+
+    fileprivate func allFonts() -> Set<CTFont> {
+        var fonts: Set<CTFont> = []
+        enumerateAttribute(
+            .kitFont,
+            in: NSRange(location: 0, length: length),
+            options: []
+        ) { value, _, _ in
+            guard let value else {
+                return
+            }
+            let font = value as! CTFont
+            fonts.insert(font)
+        }
+        return fonts
+    }
+}
+#endif
 
 // MARK: - ResolvedStyledText [WIP]
 
