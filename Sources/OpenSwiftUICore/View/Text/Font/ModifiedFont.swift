@@ -213,15 +213,12 @@ extension Font {
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
     public enum VariationAxisIdentifier: Int, Hashable {
-        case weight = 0x77676864
-
-        case width = 0x77647468
-
-        case slant = 0x736c6e74
-
-        case opticalSize = 0x6f70737a
-
-        case italic = 0x6974616c
+        // TODO: Use a FourCC macro for these raw values.
+        case weight = 0x77676874 // "wght"
+        case width = 0x77647468 // "wdth"
+        case slant = 0x736c6e74 // "slnt"
+        case opticalSize = 0x6f70737a // "opsz"
+        case italic = 0x6974616c // "ital"
     }
 
     @_spi(Private)
