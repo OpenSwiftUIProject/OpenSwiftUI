@@ -8,6 +8,13 @@ import CoreFoundation
 
 // MARK: - Private CoreText APIs
 
+// MARK: - CTFontSymbolicTraits
+
+extension CTFontSymbolicTraits {
+    package static let tightLeading = CTFontSymbolicTraits(rawValue: 1 << 15)
+    package static let looseLeading = CTFontSymbolicTraits(rawValue: 1 << 16)
+}
+
 // MARK: - CTFontDescriptor private API
 
 /// Private CoreText function to get the weight value from a font descriptor.
@@ -16,6 +23,11 @@ import CoreFoundation
 /// - Returns: The weight value as a CGFloat.
 @_silgen_name("CTFontDescriptorGetWeight")
 package func CTFontDescriptorGetWeight(_ descriptor: CTFontDescriptor) -> CGFloat
+
+@_silgen_name("CTFontDescriptorGetSymbolicTraits")
+package func CTFontDescriptorGetSymbolicTraits(
+    _ descriptor: CTFontDescriptor
+) -> CTFontSymbolicTraits
 
 @_silgen_name("CTFontDescriptorGetTextStyleSize")
 package func CTFontDescriptorGetTextStyleSize(
@@ -33,6 +45,16 @@ package func CTFontDescriptorCreateWithTextStyleAndAttributes(
     _ attributes: CFDictionary
 ) -> CTFontDescriptor
 
+@_silgen_name("CTFontDescriptorIsSystemUIFont")
+package func CTFontDescriptorIsSystemUIFont(_ descriptor: CTFontDescriptor) -> Bool
+
+@_silgen_name("CTFontDescriptorCreateForUIType")
+package func CTFontDescriptorCreateForUIType(
+    _ uiType: CTFontUIFontType,
+    _ size: CGFloat,
+    _ language: CFString?
+) -> CTFontDescriptor
+
 // MARK: - CTFont private API
 
 @_silgen_name("CTFontIsSystemUIFont")
@@ -48,6 +70,9 @@ package func CTFontGetAccessibilityBoldWeightOfWeight(_ weight: CGFloat) -> CGFl
 
 @_silgen_name("kCTFontUIFontDesignTrait")
 let kCTFontUIFontDesignTrait: CFString
+
+@_silgen_name("kCTFontGradeTrait")
+let kCTFontGradeTrait: CFString?
 
 @_silgen_name("kCTFontLegibilityWeightAttribute")
 let kCTFontLegibilityWeightAttribute: CFString
@@ -190,15 +215,5 @@ let kCTFontWidthExpanded: CGFloat
 let kCTFontWidthStandard: CGFloat
 
 @_silgen_name("kCTFontWidthTrait")
-let kCTFontWidthTrait: CGFloat
-
-#else
-
-public import Foundation
-
-// Placeholder for CoreText when not available.
-public class CTFontDescriptor: NSObject {}
-
-public class CTFont: NSObject {}
-
+let kCTFontWidthTrait: CFString
 #endif

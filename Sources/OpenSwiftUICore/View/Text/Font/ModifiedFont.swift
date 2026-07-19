@@ -2,19 +2,23 @@
 //  ModifiedFont.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Status: Complete
+//  Audited for 6.5.4
 //  ID: 25811D44B7BE5E768C1CBA33158F398B (SwiftUICore)
 
 public import Foundation
 #if canImport(CoreText)
 package import CoreText
 #endif
+#if canImport(CoreFoundation)
+public import CoreFoundation
+#endif
 
 @available(OpenSwiftUI_v1_0, *)
 extension Font {
     /// Adds italics to the font.
     public func italic() -> Font {
-        Font(provider: StaticModifierProvider<ItalicModifier>(base: self))
+        modifier(type: ItalicModifier.self)
     }
 
     /// Adjusts the font to enable all small capitals.
@@ -22,7 +26,7 @@ extension Font {
     /// See ``Font/lowercaseSmallCaps()`` and ``Font/uppercaseSmallCaps()`` for
     /// more details.
     public func smallCaps() -> Font {
-        _openSwiftUIUnimplementedFailure()
+        lowercaseSmallCaps().uppercaseSmallCaps()
     }
 
     /// Adjusts the font to enable lowercase small capitals.
@@ -32,7 +36,7 @@ extension Font {
     /// caps, such as titles. It may include forms related to small capitals,
     /// such as old-style figures.
     public func lowercaseSmallCaps() -> Font {
-        _openSwiftUIUnimplementedFailure()
+        feature(37, 1)
     }
 
     /// Adjusts the font to enable uppercase small capitals.
@@ -42,7 +46,7 @@ extension Font {
     /// as acronyms, but which are desired in small-cap form to avoid disrupting
     /// the flow of text.
     public func uppercaseSmallCaps() -> Font {
-        _openSwiftUIUnimplementedFailure()
+        feature(38, 1)
     }
 
     /// Returns a modified font that uses fixed-width digits, while leaving
@@ -78,29 +82,23 @@ extension Font {
     ///
     /// - Returns: A font that uses fixed-width numeric characters.
     public func monospacedDigit() -> Font {
-        Font(provider: StaticModifierProvider<MonospacedDigitModifier>(base: self))
+        modifier(type: MonospacedDigitModifier.self)
     }
 
     /// Sets the weight of the font.
     public func weight(_ weight: Font.Weight) -> Font {
-        Font(provider: ModifierProvider(
-            base: self,
-            modifier: AnyFontModifier.dynamic(WeightModifier(weight: weight))
-        ))
+        modifier(AnyFontModifier.dynamic(WeightModifier(weight: weight)))
     }
 
     /// Sets the width of the font.
     @available(OpenSwiftUI_v4_0, *)
     public func width(_ width: Font.Width) -> Font {
-        Font(provider: ModifierProvider(
-            base: self,
-            modifier: AnyFontModifier.dynamic(WidthModifier(width: width.value))
-        ))
+        modifier(AnyFontModifier.dynamic(WidthModifier(width: width.value)))
     }
 
     /// Adds bold styling to the font.
     public func bold() -> Font {
-        Font(provider: StaticModifierProvider<BoldModifier>(base: self))
+        modifier(type: BoldModifier.self)
     }
 
     /// Returns a fixed-width font from the same family as the base font.
@@ -149,7 +147,7 @@ extension Font {
     /// if one is available, and a default fixed-width font otherwise.
     @available(OpenSwiftUI_v3_0, *)
     public func monospaced() -> Font {
-        Font(provider: StaticModifierProvider<MonospacedModifier>(base: self))
+        modifier(type: MonospacedModifier.self)
     }
 
     /// Adjusts the line spacing of a font.
@@ -170,72 +168,69 @@ extension Font {
     ///   the original font if it doesn't support line spacing adjustments.
     @available(OpenSwiftUI_v2_0, *)
     public func leading(_ leading: Font.Leading) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(LeadingModifier(leading: leading))
     }
     
     @available(OpenSwiftUI_v2_0, *)
     @available(*, deprecated, renamed: "leading")
     public func _leading(_ leading: Font._Leading) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(LeadingModifier(leading: .init(leading)))
     }
 
-    #if canImport(CoreText)
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
     public func feature(_ type: Int, _ selector: Int) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(FeatureSettingModifier(type: type, selector: selector))
     }
 
     @_spi(Private)
     @available(OpenSwiftUI_v3_0, *)
     public func feature(_ settings: String...) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(OpenTypeFeatureSettingModifier(settings: settings))
     }
 
+    #if canImport(CoreFoundation)
     @_spi(Widget)
     @available(OpenSwiftUI_v4_0, *)
     public func features(_ features: [CFDictionary]) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(FeatureDictionariesSettingModifier(features: features))
     }
+    #endif
 
     /// Create a version of `self` that uses the specified stylistic set.
     public func _stylisticAlternative(_ alternative: Font._StylisticAlternative) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(StylisticAlternativeModifier(alternative: alternative))
     }
 
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
     public func variation(_ identifier: Font.VariationAxisIdentifier, _ value: CGFloat) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(VariationModifier(identifier: identifier, value: value))
     }
-    #endif
 
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
     public enum VariationAxisIdentifier: Int, Hashable {
-        case weight = 0x77676864
-
-        case width = 0x77647468
-
-        case slant = 0x736c6e74
-
-        case opticalSize = 0x6f70737a
-
-        case italic = 0x6974616c
+        // TODO: Use a FourCC macro for these raw values.
+        case weight = 0x77676874 // "wght"
+        case width = 0x77647468 // "wdth"
+        case slant = 0x736c6e74 // "slnt"
+        case opticalSize = 0x6f70737a // "opsz"
+        case italic = 0x6974616c // "ital"
     }
 
     @_spi(Private)
     @available(OpenSwiftUI_v2_0, *)
     public func grade(_ grade: Int) -> Font {
-        _openSwiftUIUnimplementedFailure()
+        modifier(GradeModifier(grade: grade))
     }
 
-    package func modifier(_ modifier: some FontModifier) -> Font {
-        _openSwiftUIUnimplementedFailure()
+    package func modifier<M>(_ modifier: M) -> Font where M: FontModifier {
+        Font(provider: ModifierProvider(base: self, modifier: modifier))
     }
 
-    package func modifier(type: (some StaticFontModifier).Type) -> Font {
-        _openSwiftUIUnimplementedFailure()
+    package func modifier<M>(type: M.Type) -> Font where M: StaticFontModifier {
+        Font(provider: StaticModifierProvider<M>(base: self))
     }
 
     /// A weight to use for fonts.
@@ -327,6 +322,14 @@ extension Font {
         /// This value typically increases line spacing by 1 point for watchOS
         /// and 2 points on other platforms.
         case loose
+
+        init(_ leading: _Leading) {
+            switch leading {
+            case .tight: self = .tight
+            case .loose: self = .loose
+            case .standard: self = .standard
+            }
+        }
     }
 
     public enum _Leading: Hashable {
@@ -343,6 +346,8 @@ extension Font {
                 .boldTrait,
                 .boldTrait,
             ) ?? descriptor
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
             #endif
         }
 
@@ -359,13 +364,47 @@ extension Font {
                 .italicTrait,
                 .italicTrait,
             ) ?? descriptor
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
             #endif
         }
     }
 
     package struct MonospacedModifier: StaticFontModifier {
         package static func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            if let monospacedDescriptor = CTFontDescriptorCreateCopyWithSymbolicTraits(
+                descriptor,
+                .monoSpaceTrait,
+                .monoSpaceTrait
+            ), CTFontDescriptorGetSymbolicTraits(descriptor).contains(.monoSpaceTrait) {
+                descriptor = monospacedDescriptor
+            } else if CTFontDescriptorIsSystemUIFont(descriptor) {
+                DesignModifier(design: .monospaced).modify(
+                    descriptor: &descriptor,
+                    in: context
+                )
+            } else {
+                let size = CTFontDescriptorCopyAttribute(
+                    descriptor,
+                    kCTFontSizeAttribute
+                ) as? CGFloat ?? 0.0
+                let weight = CTFontDescriptorGetWeight(descriptor)
+                descriptor = CTFontDescriptorCreateForUIType(
+                    .userFixedPitch,
+                    size,
+                    nil
+                )
+                if weight != 0.0 {
+                    WeightModifier(weight: .init(value: weight)).modify(
+                        descriptor: &descriptor,
+                        in: context
+                    )
+                }
+            }
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
@@ -377,9 +416,11 @@ extension Font {
             }
             descriptor = CTFontDescriptorCreateCopyWithFeature(
                 descriptor,
-                6.0 as CFNumber, // kCTFontFeatureTypeIdentifierKey
-                1.0 as CFNumber, // kCTFontFeatureSelectorIdentifierKey
+                6 as CFNumber,
+                0 as CFNumber
             )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
             #endif
         }
     }
@@ -388,19 +429,19 @@ extension Font {
         package let design: Font.Design
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package func hash(into hasher: inout Hasher) {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package static func == (a: Font.DesignModifier, b: Font.DesignModifier) -> Bool {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package var hashValue: Int {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            var traits = CTFontDescriptorCopyAttribute(
+                descriptor,
+                kCTFontTraitsAttribute
+            ) as? [String: Any] ?? [:]
+            traits[kCTFontUIFontDesignTrait as String] = design.ctFontDesign
+            descriptor = CTFontDescriptorCreateCopyWithAttributes(
+                descriptor,
+                [kCTFontTraitsAttribute: traits] as CFDictionary
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
@@ -408,7 +449,28 @@ extension Font {
         package var leading: Font.Leading
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            let value: CTFontSymbolicTraits
+            let mask: CTFontSymbolicTraits
+            switch leading {
+            case .standard:
+                value = []
+                mask = [.tightLeading, .looseLeading]
+            case .tight:
+                value = .tightLeading
+                mask = .tightLeading
+            case .loose:
+                value = .looseLeading
+                mask = .looseLeading
+            }
+            descriptor = CTFontDescriptorCreateCopyWithSymbolicTraits(
+                descriptor,
+                value,
+                mask
+            ) ?? descriptor
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
@@ -417,19 +479,18 @@ extension Font {
         package var selector: Int
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package func hash(into hasher: inout Hasher) {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package static func == (a: Font.FeatureSettingModifier, b: Font.FeatureSettingModifier) -> Bool {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package var hashValue: Int {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            descriptor = CTFontDescriptorCreateCopyWithFeature(
+                descriptor,
+                type as CFNumber,
+                selector as CFNumber
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
@@ -437,28 +498,36 @@ extension Font {
         package var settings: [String]
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package func hash(into hasher: inout Hasher) {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package static func == (a: Font.OpenTypeFeatureSettingModifier, b: Font.OpenTypeFeatureSettingModifier) -> Bool {
-            _openSwiftUIUnimplementedFailure()
-        }
-
-        package var hashValue: Int {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            descriptor = CTFontDescriptorCreateCopyWithAttributes(
+                descriptor,
+                [kCTFontFeatureSettingsAttribute: settings] as CFDictionary
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
-    #if canImport(CoreText)
+    #if canImport(CoreFoundation)
     package struct FeatureDictionariesSettingModifier: FontModifier {
         package var features: [CFDictionary]
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            descriptor = CTFontDescriptorCreateCopyWithAttributes(
+                descriptor,
+                [kCTFontFeatureSettingsAttribute: features] as CFDictionary
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
     #endif
@@ -467,7 +536,40 @@ extension Font {
         package var weight: Font.Weight
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            if CTFontDescriptorIsSystemUIFont(descriptor) {
+                descriptor = CTFontDescriptorCreateCopyWithAttributes(
+                    descriptor,
+                    [
+                        kCTFontTraitsAttribute: [
+                            kCTFontWeightTrait: weight.value,
+                        ],
+                    ] as CFDictionary
+                )
+            } else {
+                guard let familyName = CTFontDescriptorCopyAttribute(
+                    descriptor,
+                    kCTFontFamilyNameAttribute
+                ) else {
+                    return
+                }
+                var attributes = CTFontDescriptorCopyAttributes(descriptor) as? [CFString: Any] ?? [:]
+                attributes[kCTFontNameAttribute] = nil
+                attributes[kCTFontFamilyNameAttribute] = familyName
+                var traits = CTFontDescriptorCopyAttribute(
+                    descriptor,
+                    kCTFontTraitsAttribute
+                ) as? [CFString: Any] ?? [:]
+                traits[kCTFontWeightTrait] = weight.value
+                attributes[kCTFontTraitsAttribute] = traits
+                descriptor = CTFontDescriptorCreateWithAttributes(attributes as CFDictionary)
+            }
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
 
         package func modify(traits: inout Font.ResolvedTraits) {
@@ -479,7 +581,37 @@ extension Font {
         package var width: CGFloat
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            if CTFontDescriptorIsSystemUIFont(descriptor) {
+                descriptor = CTFontDescriptorCreateCopyWithAttributes(
+                    descriptor,
+                    [
+                        kCTFontTraitsAttribute: [
+                            kCTFontWidthTrait: width,
+                        ],
+                    ] as CFDictionary
+                )
+            } else {
+                guard let familyName = CTFontDescriptorCopyAttribute(
+                    descriptor,
+                    kCTFontFamilyNameAttribute
+                ) else {
+                    return
+                }
+                var attributes = CTFontDescriptorCopyAttributes(descriptor) as? [CFString: Any] ?? [:]
+                attributes[kCTFontNameAttribute] = nil
+                attributes[kCTFontFamilyNameAttribute] = familyName
+                var traits = CTFontDescriptorCopyAttribute(
+                    descriptor,
+                    kCTFontTraitsAttribute
+                ) as? [CFString: Any] ?? [:]
+                traits[kCTFontWidthTrait] = width
+                attributes[kCTFontTraitsAttribute] = traits
+                descriptor = CTFontDescriptorCreateWithAttributes(attributes as CFDictionary)
+            }
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
 
         package func modify(traits: inout Font.ResolvedTraits) {
@@ -491,7 +623,18 @@ extension Font {
         package var alternative: Font._StylisticAlternative
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            descriptor = CTFontDescriptorCreateCopyWithFeature(
+                descriptor,
+                35 as CFNumber,
+                (alternative.rawValue * 2) as CFNumber
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
@@ -500,7 +643,18 @@ extension Font {
         package var value: CGFloat
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            descriptor = CTFontDescriptorCreateCopyWithVariation(
+                descriptor,
+                identifier.rawValue as CFNumber,
+                value
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 
@@ -508,7 +662,21 @@ extension Font {
         package var grade: Int
 
         package func modify(descriptor: inout CTFontDescriptor, in context: Font.Context) {
-            _openSwiftUIUnimplementedFailure()
+            #if canImport(CoreText)
+            guard !context.shouldRedactContent else {
+                return
+            }
+            descriptor = CTFontDescriptorCreateCopyWithAttributes(
+                descriptor,
+                [
+                    kCTFontTraitsAttribute: [
+                        kCTFontGradeTrait: grade,
+                    ],
+                ] as CFDictionary
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
         }
     }
 }
