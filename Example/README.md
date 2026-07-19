@@ -15,7 +15,7 @@ Run the CI setup script from the `OpenSwiftUI` repository root. It checks out th
 
 Since OpenAttributeGraph is not yet completed, you need to configure an AG backend before building.
 
-This example defaults to Apple's private AttributeGraph framework through `mise.toml`.
+This example defaults to Apple's private AttributeGraph framework through the repository's root `mise.toml`.
 
 To use Compute instead, run setup with the Compute mise environment:
 
@@ -23,7 +23,7 @@ To use Compute instead, run setup with the Compute mise environment:
 ./setup.sh --compute
 ```
 
-The Compute environment is defined in `mise.compute.toml`. It disables the private AttributeGraph framework and uses `OpenSwiftUIProject/Compute` from source with `0.3.0-bugfix.1` tag.
+The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses `OpenSwiftUIProject/Compute` from source with `0.3.0-bugfix.1` tag.
 
 ## Generate Project
 
@@ -33,7 +33,7 @@ The recommended setup path is the local setup script:
 ./setup.sh
 ```
 
-The script trusts and installs the tools declared by `Example/mise.toml`, then runs Tuist through `mise exec` so the pinned Tuist version is used.
+The script trusts and installs the tools declared by the repository's root `mise.toml`, then runs Tuist through `mise exec` so the pinned Tuist version is used.
 
 To generate the project with Compute:
 
@@ -41,12 +41,12 @@ To generate the project with Compute:
 ./setup.sh --compute
 ```
 
-This uses `mise --env compute`, which loads `Example/mise.compute.toml` for `mise install`, `tuist install`, and `tuist generate`.
+This uses `mise --env compute`, which loads the repository's root `mise.compute.toml` for `mise install`, `tuist install`, and `tuist generate`.
 
 To run the steps manually:
 
 ```shell
-mise trust mise.toml
+mise trust ../mise.toml
 mise install
 mise exec -- tuist install
 mise exec -- tuist generate --no-open
@@ -55,7 +55,7 @@ mise exec -- tuist generate --no-open
 Or with Compute:
 
 ```shell
-mise trust mise.compute.toml
+mise trust ../mise.compute.toml
 mise --env compute install
 mise --env compute exec -- tuist install
 mise --env compute exec -- tuist generate --no-open

@@ -10,7 +10,7 @@ usage() {
     "Usage: $(basename "$0") [--compute]" \
     "" \
     "Options:" \
-    "  --compute  Use mise.compute.toml while installing tools and generating the project."
+    "  --compute  Use ../mise.compute.toml while installing tools and generating the project."
 }
 
 run_mise() {
@@ -39,9 +39,9 @@ while [[ $# -gt 0 ]]; do
 done
 
 cd "$SCRIPT_DIR"
-mise trust "$SCRIPT_DIR/mise.toml"
+mise trust "$SCRIPT_DIR/../mise.toml"
 if [[ ${#MISE_ARGS[@]} -gt 0 ]]; then
-  mise trust "$SCRIPT_DIR/mise.compute.toml"
+  mise trust "$SCRIPT_DIR/../mise.compute.toml"
 fi
 run_mise install
 run_mise exec -- tuist install
