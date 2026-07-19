@@ -693,8 +693,11 @@ package class ResolvedStyledText: CustomStringConvertible {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package func _deleteMethod2() {
-        _openSwiftUIUnimplementedFailure()
+    package func metrics(
+        in size: CGSize,
+        layoutMargins: EdgeInsets?
+    ) -> NSAttributedString.Metrics {
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func size(
@@ -860,11 +863,6 @@ extension ResolvedStyledText {
         let height = -(dm.top - lm.top)
         return CGSize(width: width, height: height)
     }
-}
-
-extension ResolvedStyledText {
-    // FIXME
-    package class StringDrawing: ResolvedStyledText {}
 }
 
 // MARK: - TextDrawingContext
