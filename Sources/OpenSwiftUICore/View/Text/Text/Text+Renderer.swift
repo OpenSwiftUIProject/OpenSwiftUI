@@ -49,11 +49,11 @@ extension Text {
     /// Only one attribute of each type may be attached to each text
     /// view, with inner attributes taking precedence.
     ///
-    /// - Parameter value: The attribute to attach.
+    /// - Parameter value: the attribute to attach.
     ///
-    /// - Returns: A version of the text view with `value` attached.
+    /// - Returns: a version of the text view with `value` attached.
     public func customAttribute<T>(_ value: T) -> Text where T: TextAttribute {
-        modified(with: .anyTextModifier(TextAttributeModifier(value: value)))
+        modified(with: .customAttribute(value))
     }
 }
 
@@ -91,6 +91,13 @@ private final class TextAttributeModifier<Value>: TextAttributeModifierBase wher
 
     override package func hash(into hasher: inout Hasher) {
         attribute.hash(into: &hasher)
+    }
+}
+
+extension Text.Modifier {
+    @inline(__always)
+    static func customAttribute<T>(_ value: T) -> Self where T: TextAttribute {
+        .anyTextModifier(TextAttributeModifier(value: value))
     }
 }
 
@@ -202,51 +209,11 @@ extension Text {
                 lhs.value < rhs.value
             }
 
-            /// Returns a value that is offset the specified distance from this value.
-            ///
-            /// Use the `advanced(by:)` method in generic code to offset a value by a
-            /// specified distance. If you're working directly with numeric values, use
-            /// the addition operator (`+`) instead of this method.
-            ///
-            ///     func addOne<T: Strideable>(to x: T) -> T
-            ///         where T.Stride: ExpressibleByIntegerLiteral
-            ///     {
-            ///         return x.advanced(by: 1)
-            ///     }
-            ///
-            ///     let x = addOne(to: 5)
-            ///     // x == 6
-            ///     let y = addOne(to: 3.5)
-            ///     // y = 4.5
-            ///
-            /// If this type's `Stride` type conforms to `BinaryInteger`, then for a
-            /// value `x`, a distance `n`, and a value `y = x.advanced(by: n)`,
-            /// `x.distance(to: y) == n`. Using this method with types that have a
-            /// noninteger `Stride` may result in an approximation. If the result of
-            /// advancing by `n` is not representable as a value of this type, then a
-            /// runtime error may occur.
-            ///
-            /// - Parameter n: The distance to advance this value.
-            /// - Returns: A value that is offset from this value by `n`.
-            ///
-            /// - Complexity: O(1)
             @_alwaysEmitIntoClient
             public func advanced(by n: Int) -> Text.Layout.CharacterIndex {
                 .init(value: value + n)
             }
 
-            /// Returns the distance from this value to the given value, expressed as a
-            /// stride.
-            ///
-            /// If this type's `Stride` type conforms to `BinaryInteger`, then for two
-            /// values `x` and `y`, and a distance `n = x.distance(to: y)`,
-            /// `x.advanced(by: n) == y`. Using this method with types that have a
-            /// noninteger `Stride` may result in an approximation.
-            ///
-            /// - Parameter other: The value to calculate the distance to.
-            /// - Returns: The distance from this value to `other`.
-            ///
-            /// - Complexity: O(1)
             @_alwaysEmitIntoClient
             public func distance(to other: Text.Layout.CharacterIndex) -> Int {
                 other.value - value
@@ -333,6 +300,7 @@ extension Text {
                 _openSwiftUIUnimplementedFailure()
             }
 
+            /// The typographic bounds of the line.
             public var typographicBounds: Text.Layout.TypographicBounds {
                 _openSwiftUIUnimplementedFailure()
             }
@@ -371,6 +339,7 @@ extension Text {
 
         // MARK: - Text.Layout.Run [WIP]
 
+        /// A run of placed glyphs in a text layout.
         public struct Run: RandomAccessCollection, Equatable {
             @_spi(Private)
             @available(OpenSwiftUI_v6_0, *)
@@ -401,18 +370,25 @@ extension Text {
                 RunSlice(run: self, indices: bounds)
             }
 
+            /// The custom attribute of type `T` associated with the
+            /// run of glyphs, or nil. If no run contains the custom
+            /// attribute we also check its attachment's runs.
             public subscript<T>(key: T.Type) -> T? where T: TextAttribute {
                 _openSwiftUIUnimplementedFailure()
             }
 
+            /// The layout direction of the text run.
             public var layoutDirection: LayoutDirection {
                 _openSwiftUIUnimplementedFailure()
             }
 
+            /// The typographic bounds of the run of glyphs.
             public var typographicBounds: Text.Layout.TypographicBounds {
                 _openSwiftUIUnimplementedFailure()
             }
 
+            /// The array of character indices corresponding to the
+            /// glyphs in `self`.
             public var characterIndices: [Text.Layout.CharacterIndex] {
                 _openSwiftUIUnimplementedFailure()
             }
@@ -456,15 +432,20 @@ extension Text {
                 _openSwiftUIUnimplementedFailure()
             }
 
+            /// The custom attribute of type `T` associated with the
+            /// run of glyphs, or nil.
             @_alwaysEmitIntoClient
             public subscript<T>(key: T.Type) -> T? where T: TextAttribute {
                 run[key]
             }
 
+            /// The typographic bounds of the partial run of glyphs.
             public var typographicBounds: Text.Layout.TypographicBounds {
                 _openSwiftUIUnimplementedFailure()
             }
 
+            /// The array of character indices corresponding to the
+            /// glyphs in `self`.
             public var characterIndices: [Text.Layout.CharacterIndex] {
                 _openSwiftUIUnimplementedFailure()
             }
@@ -546,7 +527,10 @@ extension Text.Layout {
     }
 }
 
-// TODO
+// TODO: GraphicsContext + draw for Text.Layout
+
+// TODO: Text.Layout + foregroundColor
+
 
 // MARK: - TextRendererInput
 
@@ -573,5 +557,462 @@ extension EnvironmentValues {
     var textRendererAddsDrawingGroup: Bool {
         get { self[TextRendererAddsDrawingGroupKey.self] }
         set { self[TextRendererAddsDrawingGroupKey.self] = newValue }
+    }
+}
+
+// MARK: - Text + modifier
+
+@available(OpenSwiftUI_v1_0, *)
+extension Text {
+    /// Sets the color of the text displayed by this view.
+    ///
+    /// Use this method to change the color of the text rendered by a text view.
+    ///
+    /// For example, you can display the names of the colors red, green, and
+    /// blue in their respective colors:
+    ///
+    ///     HStack {
+    ///         Text("Red").foregroundColor(.red)
+    ///         Text("Green").foregroundColor(.green)
+    ///         Text("Blue").foregroundColor(.blue)
+    ///     }
+    ///
+    /// ![Three text views arranged horizontally, each containing
+    ///     the name of a color displayed in that
+    ///     color.](OpenSwiftUI-Text-foregroundColor.png)
+    ///
+    /// - Parameter color: The color to use when displaying this text.
+    /// - Returns: A text view that uses the color value you supply.
+    @available(*, deprecated, renamed: "foregroundStyle(_:)")
+    public func foregroundColor(_ color: Color?) -> Text {
+        modified(with: .color(color))
+    }
+
+    /// Sets the style of the text displayed by this view.
+    ///
+    /// Use this method to change the rendering style of the text
+    /// rendered by a text view.
+    ///
+    /// For example, you can display the names of the colors red,
+    /// green, and blue in their respective colors:
+    ///
+    ///     HStack {
+    ///         Text("Red").foregroundStyle(.red)
+    ///         Text("Green").foregroundStyle(.green)
+    ///         Text("Blue").foregroundStyle(.blue)
+    ///     }
+    ///
+    /// ![Three text views arranged horizontally, each containing
+    ///     the name of a color displayed in that
+    ///     color.](OpenSwiftUI-Text-foregroundColor.png)
+    ///
+    /// - Parameter style: The style to use when displaying this text.
+    /// - Returns: A text view that uses the color value you supply.
+    @available(OpenSwiftUI_v5_0, *)
+    public func foregroundStyle<S>(_ style: S) -> Text where S: ShapeStyle {
+        if let color = style as? Color {
+            return modified(with: .color(color))
+        } else {
+            return modified(with: .foregroundStyle(style))
+        }
+    }
+
+    /// Sets the default font for text in the view.
+    ///
+    /// Use `font(_:)` to apply a specific font to an individual
+    /// Text View, or all of the text views in a container.
+    ///
+    /// In the example below, the first text field has a font set directly,
+    /// while the font applied to the following container applies to all of the
+    /// text views inside that container:
+    ///
+    ///     VStack {
+    ///         Text("Font applied to a text view.")
+    ///             .font(.largeTitle)
+    ///
+    ///         VStack {
+    ///             Text("These two text views have the same font")
+    ///             Text("applied to their parent view.")
+    ///         }
+    ///         .font(.system(size: 16, weight: .light, design: .default))
+    ///     }
+    ///
+    ///
+    /// ![Applying a font to a single text view or a view container](OpenSwiftUI-view-font.png)
+    ///
+    /// - Parameter font: The font to use when displaying this text.
+    /// - Returns: Text that uses the font you specify.
+    public func font(_ font: Font?) -> Text {
+        modified(with: .font(font))
+    }
+
+    /// Sets the font weight of the text.
+    ///
+    /// - Parameter weight: One of the available font weights.
+    ///
+    /// - Returns: Text that uses the font weight you specify.
+    public func fontWeight(_ weight: Font.Weight?) -> Text {
+        modified(with: .weight(weight))
+    }
+
+    /// Sets the font width of the text.
+    ///
+    /// - Parameter width: One of the available font widths.
+    ///
+    /// - Returns: Text that uses the font width you specify, if available.
+    @available(OpenSwiftUI_v4_0, *)
+    public func fontWidth(_ width: Font.Width?) -> Text {
+        modified(with: .width(width?.value))
+    }
+
+    /// Applies a bold or emphasized treatment to the fonts of the text.
+    ///
+    /// For fonts created from text styles, it could mean applying emphasized
+    /// styling, which does not necessarily mean the bold weight specifically,
+    /// so this modifier is not to be confused with ``Text/fontWeight(_:)``.
+    ///
+    /// For example:
+    ///
+    ///     Text("hello").font(.body).bold()
+    ///
+    /// will most likely get you the emphasized version of body text style,
+    /// which is often in ``Font/Weight/semibold`` weight. While
+    ///
+    ///     Text("hello").font(.body).fontWeight(.bold)
+    ///
+    /// will specifically get you the body text style font in the
+    /// ``Font/Weight/bold`` weight.
+    ///
+    /// - Returns: Bold or emphasized text.
+    public func bold() -> Text {
+        modified(with: .bold())
+    }
+
+    /// Applies a bold font weight to the text.
+    ///
+    /// - Parameter isActive: A Boolean value that indicates
+    ///   whether text has bold styling.
+    ///
+    /// - Returns: Bold text.
+    @available(OpenSwiftUI_v4_0, *)
+    public func bold(_ isActive: Bool) -> Text {
+        modified(with: .bold(isActive))
+    }
+
+    /// Applies italics to the text.
+    ///
+    /// - Returns: Italic text.
+    public func italic() -> Text {
+        modified(with: .italic())
+    }
+
+    /// Applies italics to the text.
+    ///
+    /// - Parameter isActive: A Boolean value that indicates
+    ///   whether italic styling is added.
+    ///
+    /// - Returns: Italic text.
+    @available(OpenSwiftUI_v4_0, *)
+    public func italic(_ isActive: Bool) -> Text {
+        modified(with: .italic(isActive))
+    }
+
+    /// Modifies the font of the text to use the fixed-width variant
+    /// of the current font, if possible.
+    ///
+    /// - Parameter isActive: A Boolean value that indicates
+    ///   whether monospaced styling is added. Default value is `true`.
+    ///
+    /// - Returns: Monospaced text.
+    @available(OpenSwiftUI_v4_4, *)
+    public func monospaced(_ isActive: Bool = true) -> Text {
+        modified(with: .monospaced(isActive))
+    }
+
+    /// Sets the font design of the text.
+    ///
+    /// - Parameter design: One of the available font designs.
+    ///
+    /// - Returns: Text that uses the font design you specify.
+    @available(OpenSwiftUI_v4_1, *)
+    public func fontDesign(_ design: Font.Design?) -> Text {
+        modified(with: .design(design))
+    }
+
+    /// Modifies the text view's font to use fixed-width digits, while leaving
+    /// other characters proportionally spaced.
+    ///
+    /// This modifier only affects numeric characters, and leaves all other
+    /// characters unchanged.
+    ///
+    /// The following example shows the effect of `monospacedDigit()` on a
+    /// text view. It arranges two text views in a ``VStack``, each displaying
+    /// a formatted date that contains many instances of the character 1.
+    /// The second text view uses the `monospacedDigit()`. Because 1 is
+    /// usually a narrow character in proportional fonts, applying the
+    /// modifier widens all of the 1s, and the text view as a whole.
+    /// The non-digit characters in the text view remain unaffected.
+    ///
+    ///     let myDate = DateComponents(
+    ///         calendar: Calendar(identifier: .gregorian),
+    ///         timeZone: TimeZone(identifier: "EST"),
+    ///         year: 2011,
+    ///         month: 1,
+    ///         day: 11,
+    ///         hour: 11,
+    ///         minute: 11
+    ///     ).date!
+    ///
+    ///     var body: some View {
+    ///         VStack(alignment: .leading) {
+    ///             Text(myDate.formatted(date: .long, time: .complete))
+    ///                 .font(.system(size: 20))
+    ///             Text(myDate.formatted(date: .long, time: .complete))
+    ///                 .font(.system(size: 20))
+    ///                 .monospacedDigit()
+    ///         }
+    ///         .padding()
+    ///         .navigationTitle("monospacedDigit() Modifier")
+    ///     }
+    ///
+    /// ![Two vertically stacked text views, displaying the date January 11,
+    /// 2011, 11:11:00 AM. The second text view uses fixed-width digits, causing
+    /// all of the 1s to be wider than in the first text
+    /// view.](Text-monospacedDigit-1)
+    ///
+    /// If the base font of the text view doesn't support fixed-width digits,
+    /// the font remains unchanged.
+    ///
+    /// - Returns: A text view with a modified font that uses fixed-width
+    /// numeric characters, while leaving other characters proportionally
+    /// spaced.
+    @available(OpenSwiftUI_v3_0, *)
+    public func monospacedDigit() -> Text {
+        modified(with: .monospacedDigit())
+    }
+
+    /// Applies a strikethrough to the text.
+    ///
+    /// - Parameters:
+    ///   - isActive: A Boolean value that indicates whether the text has a
+    ///     strikethrough applied.
+    ///   - color: The color of the strikethrough. If `color` is `nil`, the
+    ///     strikethrough uses the default foreground color.
+    ///
+    /// - Returns: Text with a line through its center.
+    public func strikethrough(
+        _ isActive: Bool = true,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .strikethrough(
+            isActive ? Text.LineStyle(color: color) : nil
+        ))
+    }
+
+    /// Applies a strikethrough to the text.
+    ///
+    /// - Parameters:
+    ///   - isActive: A Boolean value that indicates whether strikethrough
+    ///     is added. The default value is `true`.
+    ///   - pattern: The pattern of the line.
+    ///   - color: The color of the strikethrough. If `color` is `nil`, the
+    ///     strikethrough uses the default foreground color.
+    ///
+    /// - Returns: Text with a line through its center.
+    @available(OpenSwiftUI_v4_0, *)
+    public func strikethrough(
+        _ isActive: Bool = true,
+        pattern: Text.LineStyle.Pattern,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .strikethrough(
+            isActive ? Text.LineStyle(pattern: pattern, color: color) : nil
+        ))
+    }
+
+    /// Applies an underline to the text.
+    ///
+    /// - Parameters:
+    ///   - isActive: A Boolean value that indicates whether the text has an
+    ///     underline.
+    ///   - color: The color of the underline. If `color` is `nil`, the
+    ///     underline uses the default foreground color.
+    ///
+    /// - Returns: Text with a line running along its baseline.
+    public func underline(
+        _ isActive: Bool = true,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .underline(
+            isActive ? Text.LineStyle(color: color) : nil
+        ))
+    }
+
+    /// Applies an underline to the text.
+    ///
+    /// - Parameters:
+    ///   - isActive: A Boolean value that indicates whether underline
+    ///     styling is added. The default value is `true`.
+    ///   - pattern: The pattern of the line.
+    ///   - color: The color of the underline. If `color` is `nil`, the
+    ///     underline uses the default foreground color.
+    ///
+    /// - Returns: Text with a line running along its baseline.
+    @available(OpenSwiftUI_v4_0, *)
+    public func underline(
+        _ isActive: Bool = true,
+        pattern: Text.LineStyle.Pattern,
+        color: Color? = nil
+    ) -> Text {
+        modified(with: .underline(
+            isActive ? Text.LineStyle(pattern: pattern, color: color) : nil
+        ))
+    }
+
+    /// Sets the spacing, or kerning, between characters.
+    ///
+    /// Kerning defines the offset, in points, that a text view should shift
+    /// characters from the default spacing. Use positive kerning to widen the
+    /// spacing between characters. Use negative kerning to tighten the spacing
+    /// between characters.
+    ///
+    ///     VStack(alignment: .leading) {
+    ///         Text("ABCDEF").kerning(-3)
+    ///         Text("ABCDEF")
+    ///         Text("ABCDEF").kerning(3)
+    ///     }
+    ///
+    /// The last character in the first case, which uses negative kerning,
+    /// experiences cropping because the kerning affects the trailing edge of
+    /// the text view as well.
+    ///
+    /// ![Three text views showing character groups, with progressively
+    /// increasing spacing between the characters in each
+    /// group.](OpenSwiftUI-Text-kerning-1.png)
+    ///
+    /// Kerning attempts to maintain ligatures. For example, the Hoefler Text
+    /// font uses a ligature for the letter combination _ffl_, as in the word
+    /// _raffle_, shown here with a small negative and a small positive kerning:
+    ///
+    /// ![Two text views showing the word raffle in the Hoefler Text font, the
+    /// first with small negative and the second with small positive kerning.
+    /// The letter combination ffl has the same shape in both variants because
+    /// it acts as a ligature.](OpenSwiftUI-Text-kerning-2.png)
+    ///
+    /// The *ffl* letter combination keeps a constant shape as the other letters
+    /// move together or apart. Beyond a certain point in either direction,
+    /// however, kerning does disable nonessential ligatures.
+    ///
+    /// ![Two text views showing the word raffle in the Hoefler Text font, the
+    /// first with large negative and the second with large positive kerning.
+    /// The letter combination ffl does not act as a ligature in either
+    /// case.](OpenSwiftUI-Text-kerning-3.png)
+    ///
+    /// - Important: If you add both the ``Text/tracking(_:)`` and
+    ///   ``Text/kerning(_:)`` modifiers to a view, the view applies the
+    ///   tracking and ignores the kerning.
+    ///
+    /// - Parameter kerning: The spacing to use between individual characters in
+    ///   this text. Value of `0` sets the kerning to the system default value.
+    ///
+    /// - Returns: Text with the specified amount of kerning.
+    public func kerning(_ kerning: CGFloat) -> Text {
+        modified(with: .kerning(kerning))
+    }
+
+    /// Sets the tracking for the text.
+    ///
+    /// Tracking adds space, measured in points, between the characters in the
+    /// text view. A positive value increases the spacing between characters,
+    /// while a negative value brings the characters closer together.
+    ///
+    ///     VStack(alignment: .leading) {
+    ///         Text("ABCDEF").tracking(-3)
+    ///         Text("ABCDEF")
+    ///         Text("ABCDEF").tracking(3)
+    ///     }
+    ///
+    /// The code above uses an unusually large amount of tracking to make it
+    /// easy to see the effect.
+    ///
+    /// ![Three text views showing character groups with progressively
+    /// increasing spacing between the characters in each
+    /// group.](OpenSwiftUI-Text-tracking.png)
+    ///
+    /// The effect of tracking resembles that of the ``Text/kerning(_:)``
+    /// modifier, but adds or removes trailing whitespace, rather than changing
+    /// character offsets. Also, using any nonzero amount of tracking disables
+    /// nonessential ligatures, whereas kerning attempts to maintain ligatures.
+    ///
+    /// - Important: If you add both the ``Text/tracking(_:)`` and
+    ///   ``Text/kerning(_:)`` modifiers to a view, the view applies the
+    ///   tracking and ignores the kerning.
+    ///
+    /// - Parameter tracking: The amount of additional space, in points, that
+    ///   the view should add to each character cluster after layout. Value of `0`
+    ///   sets the tracking to the system default value.
+    ///
+    /// - Returns: Text with the specified amount of tracking.
+    public func tracking(_ tracking: CGFloat) -> Text {
+        modified(with: .tracking(tracking))
+    }
+
+    /// Sets the vertical offset for the text relative to its baseline.
+    ///
+    /// Change the baseline offset to move the text in the view (in points) up
+    /// or down relative to its baseline. The bounds of the view expand to
+    /// contain the moved text.
+    ///
+    ///     HStack(alignment: .top) {
+    ///         Text("Hello")
+    ///             .baselineOffset(-10)
+    ///             .border(Color.red)
+    ///         Text("Hello")
+    ///             .border(Color.green)
+    ///         Text("Hello")
+    ///             .baselineOffset(10)
+    ///             .border(Color.blue)
+    ///     }
+    ///     .background(Color(white: 0.9))
+    ///
+    /// By drawing a border around each text view, you can see how the text
+    /// moves, and how that affects the view.
+    ///
+    /// ![Three text views, each with the word "Hello" outlined by a border and
+    /// aligned along the top edges. The first and last are larger than the
+    /// second, with padding inside the border above the word "Hello" in the
+    /// first case, and padding inside the border below the word in the last
+    /// case.](OpenSwiftUI-Text-baselineOffset.png)
+    ///
+    /// The first view, with a negative offset, grows downward to handle the
+    /// lowered text. The last view, with a positive offset, grows upward. The
+    /// enclosing ``HStack`` instance, shown in gray, ensures all the text views
+    /// remain aligned at their top edge, regardless of the offset.
+    ///
+    /// - Parameter baselineOffset: The amount to shift the text vertically (up
+    ///   or down) relative to its baseline.
+    ///
+    /// - Returns: Text that's above or below its baseline.
+    public func baselineOffset(_ baselineOffset: CGFloat) -> Text {
+        modified(with: .baseline(baselineOffset))
+    }
+
+    public func _stylisticAlternative(_ alternative: Font._StylisticAlternative) -> Text {
+        modified(with: .stylisticAlternative(alternative))
+    }
+
+    @_spi(Private)
+    @available(OpenSwiftUI_v3_0, *)
+    public func collapsible() -> Text {
+        modified(with: .collapsible())
+    }
+
+    package func isCollapsible() -> Bool {
+        modifiers.contains {
+            guard case let .anyTextModifier(modifier) = $0 else {
+                return false
+            }
+            return modifier is CollapsibleTextModifier
+        }
     }
 }

@@ -3,9 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 package import Foundation
+
+// MARK: - String + Extension
 
 extension String {
     package static var nsAttachment: String {
@@ -17,113 +19,60 @@ extension String {
     }
 }
 
+// MARK: - Character + Extension
+
 extension Character {
     package static var nsAttachment: Character {
         Character(.nsAttachment)
     }
 }
 
+// MARK: - AttributedString + Extension
+
 extension AttributedString {
     package var isEmpty: Bool {
         characters.isEmpty
     }
-
-    package var isStyled: Bool {
-        runs.contains { run in
-            #if canImport(CoreText)
-            let hasAdaptiveImageGlyph = run.adaptiveImageGlyph != nil
-            #endif
-            if run.font != nil {
-                return true
-            }
-            if run.foregroundColor != nil {
-                return true
-            }
-            if run.backgroundColor != nil {
-                return true
-            }
-            if run.strikethroughStyle != nil {
-                return true
-            }
-            if run.underlineStyle != nil {
-                return true
-            }
-            if run.kern != nil {
-                return true
-            }
-            if run.tracking != nil {
-                return true
-            }
-            if run.baselineOffset != nil {
-                return true
-            }
-            if run.textScale != nil {
-                return true
-            }
-            if run.superscript != nil {
-                return true
-            }
-            if run.privateStrikethroughColor != nil {
-                return true
-            }
-            if run.privateUnderlineColor != nil {
-                return true
-            }
-            if let inlinePresentationIntent = run.inlinePresentationIntent,
-               !inlinePresentationIntent.intersection([
-                   .emphasized,
-                   .stronglyEmphasized,
-                   .strikethrough,
-                   .code,
-               ]).isEmpty {
-                return true
-            }
-            if run.link != nil {
-                return true
-            }
-            #if canImport(CoreText)
-            if hasAdaptiveImageGlyph {
-                return true
-            }
-            #endif
-            return false
-        }
-    }
 }
+
+// MARK: - NSAttributedString.Key + Kit Extension
+
+extension NSAttributedString.Key {
+    static let kitFont: NSAttributedString.Key = .init("NSFont")
+
+    static let kitParagraphStyle: NSAttributedString.Key = .init("NSParagraphStyle")
+
+    static let kitForegroundColor: NSAttributedString.Key = .init("NSColor")
+
+    static let kitBackgroundColor: NSAttributedString.Key = .init("NSBackgroundColor")
+
+    static let kitKern: NSAttributedString.Key = .init("NSKern")
+
+    static let kitTracking: NSAttributedString.Key = .init("CTTracking")
+
+    static let kitStrikethroughStyle: NSAttributedString.Key = .init("NSStrikethrough")
+
+    static let kitUnderlineStyle: NSAttributedString.Key = .init("NSUnderline")
+
+    static let kitShadow: NSAttributedString.Key = .init("NSShadow")
+
+    static let kitAttachment: NSAttributedString.Key = .init("NSAttachment")
+
+    static let kitLink: NSAttributedString.Key = .init("NSLink")
+
+    static let kitBaselineOffset: NSAttributedString.Key = .init("NSBaselineOffset")
+
+    static let kitUnderlineColor: NSAttributedString.Key = .init("NSUnderlineColor")
+
+    static let kitStrikethroughColor: NSAttributedString.Key = .init("NSStrikethroughColor")
+}
+
+#if canImport(CoreText)
+import CoreText
 
 extension NSAttributedString {
-    convenience package init(openSwiftUIAttributedString attributedString: AttributedString) {
-        #if canImport(Darwin)
-        let transformedAttributedString = CoreGlue2.shared.transformingEquivalentAttributes(attributedString)
-        do {
-            let nsAttributedString = try NSAttributedString(
-                transformedAttributedString,
-                including: \.openSwiftUI
-            )
-            self.init(attributedString: nsAttributedString)
-        } catch {
-            Log.runtimeIssues(
-                "AttributedString %@ has invalid attributes. A plain string will be used instead.",
-                [attributedString.description]
-            )
-            self.init(string: String(attributedString.characters))
-        }
-        #else
-        self.init(string: String(attributedString.characters))
-        #endif
-    }
-
-    package var isDynamic: Bool {
-        guard length >= 1 else { return false }
-        let value = attribute(
-            .updateSchedule,
-            at: 0,
-            effectiveRange: nil
-        )
-        return value != nil
-    }
-    
-    var updateSchedule: any TimelineSchedule {
-        _openSwiftUIUnimplementedFailure()
+    func kitFont(at index: Int) -> CTFont? {
+        attribute(.kitFont, at: index, effectiveRange: nil) as! CTFont?
     }
 }
+#endif

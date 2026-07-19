@@ -168,21 +168,3 @@ extension EnvironmentValues {
         set { self[StringResolutionDate.self] = newValue }
     }
 }
-
-// FIXME: PlatformAttributeResolver
-
-package struct PlatformAttributeResolver {
-    let content: String
-    let style: Text.Style
-    let environment: EnvironmentValues
-    let options: Text.ResolveOptions
-    let defaultAttributes: [NSAttributedString.Key: Any]
-    var properties: Text.ResolvedProperties
-
-    func platformAttributes(
-        for container: AttributeContainer,
-        includeDefaultValueAttributes: Bool
-    ) -> [NSAttributedString.Key: Any] {
-        _openSwiftUIUnimplementedFailure()
-    }
-}

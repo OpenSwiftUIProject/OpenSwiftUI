@@ -6,8 +6,65 @@
 public import Foundation
 public import UIFoundation_Private
 
-package class NSParagraphStyle {}
-package class NSMutableParagraphStyle {}
+public typealias NSInteger = Int
+
+package enum NSWritingDirection: Int {
+    case natural = -1
+    case leftToRight = 0
+    case rightToLeft = 1
+}
+
+package enum NSLineBreakMode: Int {
+    case byWordWrapping = 0
+    case byCharWrapping
+    case byClipping
+    case byTruncatingHead
+    case byTruncatingTail
+    case byTruncatingMiddle
+}
+
+package class NSParagraphStyle: NSObject {
+    fileprivate var _compositionLanguage: NSCompositionLanguage = .unset
+    fileprivate var _fullyJustified = false
+    fileprivate var _baseWritingDirection: NSWritingDirection = .natural
+    fileprivate var _lineBreakMode: NSLineBreakMode = .byWordWrapping
+}
+
+extension NSParagraphStyle {
+    package var compositionLanguage: NSCompositionLanguage {
+        get { _compositionLanguage }
+        set { _compositionLanguage = newValue }
+    }
+
+    package var fullyJustified: Bool {
+        get { _fullyJustified }
+        set { _fullyJustified = newValue }
+    }
+
+    package var baseWritingDirection: NSWritingDirection {
+        get { _baseWritingDirection }
+        set { _baseWritingDirection = newValue }
+    }
+
+    package var lineBreakMode: NSLineBreakMode {
+        get { _lineBreakMode }
+        set { _lineBreakMode = newValue }
+    }
+}
+
+package class NSMutableParagraphStyle: NSParagraphStyle {}
+
+package class NSTextAttachment: NSObject {
+    override init() {
+        super.init()
+    }
+
+    package init(data: Data?, ofType: String?) {
+        super.init()
+    }
+
+    package var accessibilityLabel: String?
+}
 
 extension NSMutableAttributedString {
     package var isEmptyOrTerminatedByParagraphSeparator: Bool {

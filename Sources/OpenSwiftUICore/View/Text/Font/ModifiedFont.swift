@@ -600,7 +600,7 @@ extension AnyFontModifier {
         guard let weight = self as? AnyDynamicFontModifier<Font.WeightModifier> else {
             return false
         }
-        return weight.modifier.weight.value >= Font.Weight.bold.value
+        return weight.modifier.weight.value >= Font.Weight.semibold.value
     }
 }
 

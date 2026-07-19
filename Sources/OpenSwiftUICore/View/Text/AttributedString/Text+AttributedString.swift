@@ -532,6 +532,93 @@ extension AttributedString {
     }
 }
 
+extension AttributedString {
+    package var isStyled: Bool {
+        runs.contains { run in
+            #if canImport(CoreText)
+            let hasAdaptiveImageGlyph = run.adaptiveImageGlyph != nil
+            #endif
+            if run.font != nil {
+                return true
+            }
+            if run.foregroundColor != nil {
+                return true
+            }
+            if run.backgroundColor != nil {
+                return true
+            }
+            if run.strikethroughStyle != nil {
+                return true
+            }
+            if run.underlineStyle != nil {
+                return true
+            }
+            if run.kern != nil {
+                return true
+            }
+            if run.tracking != nil {
+                return true
+            }
+            if run.baselineOffset != nil {
+                return true
+            }
+            if run.textScale != nil {
+                return true
+            }
+            if run.superscript != nil {
+                return true
+            }
+            if run.privateStrikethroughColor != nil {
+                return true
+            }
+            if run.privateUnderlineColor != nil {
+                return true
+            }
+            if let inlinePresentationIntent = run.inlinePresentationIntent,
+               !inlinePresentationIntent.intersection([
+                   .emphasized,
+                   .stronglyEmphasized,
+                   .strikethrough,
+                   .code,
+               ]).isEmpty {
+                return true
+            }
+            if run.link != nil {
+                return true
+            }
+            #if canImport(CoreText)
+            if hasAdaptiveImageGlyph {
+                return true
+            }
+            #endif
+            return false
+        }
+    }
+}
+
+extension NSAttributedString {
+    convenience init(openSwiftUIAttributedString attributedString: AttributedString) {
+        #if canImport(Darwin)
+        let transformedAttributedString = CoreGlue2.shared.transformingEquivalentAttributes(attributedString)
+        do {
+            let nsAttributedString = try NSAttributedString(
+                transformedAttributedString,
+                including: \.openSwiftUI
+            )
+            self.init(attributedString: nsAttributedString)
+        } catch {
+            Log.runtimeIssues(
+                "AttributedString %@ has invalid attributes. A plain string will be used instead.",
+                [attributedString.description]
+            )
+            self.init(string: String(attributedString.characters))
+        }
+        #else
+        self.init(string: String(attributedString.characters))
+        #endif
+    }
+}
+
 extension NSMutableAttributedString {
     func convertToPlatformStyled(
         style: Text.Style,
@@ -567,9 +654,8 @@ extension NSMutableAttributedString {
     }
 }
 
-@available(OpenSwiftUI_v6_0, *)
 extension Dictionary where Key == NSAttributedString.Key, Value == Any {
-    fileprivate mutating func transferAttributedStringStyles(to style: inout Text.Style) {
+    mutating func transferAttributedStringStyles(to style: inout Text.Style) {
         let fontKey = NSAttributedString.Key(AttributeScopes.OpenSwiftUIAttributes.FontAttribute.name)
         if let font = self[fontKey] as? Font {
             style.baseFont = .explicit(font)
