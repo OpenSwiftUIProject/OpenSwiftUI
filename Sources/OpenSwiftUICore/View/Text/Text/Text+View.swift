@@ -473,6 +473,31 @@ extension NSAttributedString {
         }
         return fonts
     }
+
+    func oversizedDrawingMargin(from characterSet: CharacterSet) -> EdgeInsets {
+        guard string.rangeOfCharacter(from: characterSet) != nil else {
+            return .zero
+        }
+        return allFonts().reduce(into: .zero) { margins, font in
+            var left: CGFloat = 0
+            var top: CGFloat = 0
+            var right: CGFloat = 0
+            var bottom: CGFloat = 0
+            guard CTFontGetLanguageAwareOutsets(
+                font,
+                &left,
+                &top,
+                &right,
+                &bottom
+            ) else {
+                return
+            }
+            margins.top = max(margins.top, top)
+            margins.leading = max(margins.leading, left)
+            margins.bottom = max(margins.bottom, bottom)
+            margins.trailing = max(margins.trailing, right)
+        }
+    }
 }
 #endif
 
@@ -568,23 +593,33 @@ package class ResolvedStyledText: CustomStringConvertible {
         archiveOptions: ArchivedViewInput.Value,
         isCollapsible: Bool,
         features: Text.ResolvedProperties.Features,
-        suffix: ResolvedTextSuffix,
-        attachments: Text.ResolvedProperties.CustomAttachments,
+        suffix _: ResolvedTextSuffix,
+        attachments _: Text.ResolvedProperties.CustomAttachments,
         styles: [_ShapeStyle_Pack.Style],
         transitions: [Text.ResolvedProperties.Transition],
-        scaleFactorOverride: CGFloat?
+        scaleFactorOverride _: CGFloat?
     ) {
-        // FIXME
-        _openSwiftUIUnimplementedWarning()
         self.storage = storage
         self.layoutProperties = layoutProperties
-        self.layoutMargins = layoutMargins ?? .zero
         self.stylePadding = stylePadding
         self.archiveOptions = archiveOptions
         self.isCollapsible = isCollapsible
         self.features = features
         self.styles = styles
         self.transitions = transitions
+        var computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics? = nil
+        if let layoutMargins {
+            self.layoutMargins = layoutMargins
+        } else if let storage {
+            self.layoutMargins = layoutProperties.textSizing.layoutMargins(
+                for: storage,
+                metrics: &computedMaxFontMetrics,
+                layoutProperties: layoutProperties
+            )
+        } else {
+            self.layoutMargins = .zero
+        }
+        self._computedMaxFontMetrics = computedMaxFontMetrics
     }
 
     package func lineHeightScalingAdjustment(
