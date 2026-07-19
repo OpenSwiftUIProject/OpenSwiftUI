@@ -7,6 +7,9 @@
 
 package import Foundation
 package import UIFoundation_Private
+#if canImport(CoreText)
+package import CoreText
+#endif
 
 package func makeParagraphStyle(environment: EnvironmentValues) -> NSMutableParagraphStyle {
     let paragraphStyle = NSMutableParagraphStyle()
@@ -126,7 +129,62 @@ extension NSAttributedString {
     }
 
     package var maxFontMetrics: EncodedFontMetrics {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreText)
+        var capHeight: CGFloat = 0
+        var ascender: CGFloat = 0
+        var descender: CGFloat = 0
+        var leading: CGFloat?
+        var outsets = EdgeInsets.zero
+        let hasOversizedScalars = string.rangeOfCharacter(from: Self.oversizedScalars) != nil
+        let usesTextRenderingMetrics = Semantics.TextRenderingMetrics.isEnabled
+        enumerateAttribute(
+            .kitFont,
+            in: NSRange(location: 0, length: length),
+            options: .longestEffectiveRangeNotRequired
+        ) { value, _, _ in
+            guard let value else {
+                return
+            }
+            let font = value as! CTFont
+            let fontAscender = font.ascender
+            let fontDescender = font.descender
+            capHeight = max(capHeight, font.capHeight)
+            ascender = max(ascender, fontAscender)
+            descender = max(descender, fontDescender)
+            leading = leading.map { max($0, font.leading) } ?? font.leading
+            if hasOversizedScalars || font.mayRequireLanguageAwareOutsets {
+                var left: CGFloat = 0
+                var top: CGFloat = 0
+                var right: CGFloat = 0
+                var bottom: CGFloat = 0
+                if CTFontGetLanguageAwareOutsets(font, &left, &top, &right, &bottom) {
+                    outsets.top = max(outsets.top, top)
+                    outsets.leading = max(outsets.leading, left)
+                    outsets.bottom = max(outsets.bottom, bottom)
+                    outsets.trailing = max(outsets.trailing, right)
+                    return
+                }
+            }
+            if usesTextRenderingMetrics, !font.isSystemUIFont {
+                var clippingAscender = fontAscender
+                var clippingDescender = fontDescender
+                if CTFontGetClippingMetrics(font, &clippingAscender, &clippingDescender) {
+                    outsets.top = max(outsets.top, max(0, clippingAscender - fontAscender))
+                    outsets.bottom = max(outsets.bottom, max(0, clippingDescender - fontDescender))
+                }
+            }
+        }
+        return EncodedFontMetrics(
+            capHeight: capHeight,
+            ascender: ascender,
+            descender: -descender,
+            leading: leading ?? 0,
+            outsets: outsets
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        return EncodedFontMetrics()
+        #endif
     }
 }
 

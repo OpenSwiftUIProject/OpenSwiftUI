@@ -60,6 +60,22 @@ package func CTFontDescriptorCreateForUIType(
 @_silgen_name("CTFontCopySystemUIFontExcessiveLineHeightCharacterSet")
 package func CTFontCopySystemUIFontExcessiveLineHeightCharacterSet() -> CFCharacterSet?
 
+@_silgen_name("CTFontGetLanguageAwareOutsets")
+package func CTFontGetLanguageAwareOutsets(
+    _ font: CTFont,
+    _ left: UnsafeMutablePointer<CGFloat>,
+    _ top: UnsafeMutablePointer<CGFloat>,
+    _ right: UnsafeMutablePointer<CGFloat>,
+    _ bottom: UnsafeMutablePointer<CGFloat>
+) -> Bool
+
+@_silgen_name("CTFontGetClippingMetrics")
+package func CTFontGetClippingMetrics(
+    _ font: CTFont,
+    _ ascent: UnsafeMutablePointer<CGFloat>,
+    _ descent: UnsafeMutablePointer<CGFloat>
+) -> Bool
+
 @_silgen_name("CTFontIsSystemUIFont")
 package func CTFontIsSystemUIFont(_ font: CTFont) -> Bool
 
