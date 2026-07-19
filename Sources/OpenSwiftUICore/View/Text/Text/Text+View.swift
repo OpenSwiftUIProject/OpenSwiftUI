@@ -501,7 +501,7 @@ extension NSAttributedString {
 }
 #endif
 
-// MARK: - ResolvedStyledText [WIP]
+// MARK: - ResolvedStyledText [Blocked by ORB]
 
 @available(OpenSwiftUI_v6_0, *)
 @usableFromInline
@@ -767,21 +767,26 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final package var updatesAsynchronously: Bool {
-        _openSwiftUIUnimplementedFailure()
+        isDynamic && archiveOptions.isArchived
     }
 
     @usableFromInline
     final package var description: String {
-        _openSwiftUIUnimplementedFailure()
+        storage?.string ?? ""
     }
 
     final package var accessibilityText: Text {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return Text("")
+        }
+        return AccessibilityText(storage).text
     }
 
-//    final package var cgStyleHandler: RBCGStyleHandler? {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+    // TODO: RB
+
+    final package var cgStyleHandler: ORBCGStyleHandler? {
+        _openSwiftUIUnimplementedFailure()
+    }
 
     final package func makeRBDisplayList(
         for size: CGSize,
@@ -791,6 +796,9 @@ package class ResolvedStyledText: CustomStringConvertible {
         _openSwiftUIUnimplementedFailure()
     }
 }
+
+// FIXME: RB
+package class ORBCGStyleHandler {}
 
 extension ResolvedStyledText {
     package func textSizeCacheMetrics(in size: CGSize) -> (UInt?, CGSize) {
