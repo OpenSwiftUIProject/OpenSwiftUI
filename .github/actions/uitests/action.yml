@@ -222,7 +222,8 @@ runs:
 
         set -o pipefail
         record_status=0
-        NSUnbufferedIO=YES xcodebuild test \
+        # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+        NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
           -workspace Example.xcworkspace \
           -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
@@ -275,7 +276,8 @@ runs:
         echo "artifact_dir=$uitest_tmp/artifacts" >> "$GITHUB_OUTPUT"
         echo "xcresult_archive=$uitest_tmp/${{ inputs.artifact-name }}.xcresult.zip" >> "$GITHUB_OUTPUT"
         set -o pipefail
-        NSUnbufferedIO=YES xcodebuild test \
+        # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+        NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
           -workspace Example.xcworkspace \
           -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
