@@ -654,37 +654,41 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext = .shared,
         renderer: TextRendererBoxBase? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        draw(
+            in: drawingArea,
+            with: measuredSize,
+            applyingMarginOffsets: applyingMarginOffsets,
+            containsResolvable: isDynamic,
+            context: context,
+            renderer: renderer
+        )
     }
 
     package var majorAxis: Axis {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func drawingScale(size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func spacing() -> Spacing {
-        _openSwiftUIUnimplementedWarning()
-        return .init()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
-        _openSwiftUIUnimplementedWarning()
-        return CGSize(width: 50, height: 50)
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func size(in request: CGSize) -> CGSize {
-        _openSwiftUIUnimplementedWarning()
-        return CGSize(width: 50, height: 50)
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func frameSize(in request: CGSize) -> CGSize {
-        _openSwiftUIUnimplementedWarning()
-        return CGSize(width: 50, height: 50)
+        size(in: request)
     }
 
+    // FIXME
     package func _deleteMethod1() {
         _openSwiftUIUnimplementedFailure()
     }
@@ -697,22 +701,21 @@ package class ResolvedStyledText: CustomStringConvertible {
         in request: CGSize,
         context: TextDrawingContext
     ) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func explicitAlignment(
         _ k: AlignmentKey,
         at size: CGSize
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func linkURL(
         at point: CGPoint,
         in size: CGSize
     ) -> URL? {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func draw(
@@ -723,14 +726,7 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext,
         renderer: TextRendererBoxBase? = nil
     ) {
-        #if canImport(Darwin)
-        var r = drawingArea
-        r.y = r.height
-        self.storage?.draw(with: r, context: context.ctx)
-        _openSwiftUIUnimplementedWarning()
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func layoutValue(
@@ -738,8 +734,10 @@ package class ResolvedStyledText: CustomStringConvertible {
         with measuredSize: CGSize,
         applyingMarginOffsets: Bool = true
     ) -> Text.Layout? {
-        _openSwiftUIUnimplementedFailure()
+        nil
     }
+
+    // TBA
 
     final package func resolvedContent(in context: ResolvableStringResolutionContext) -> NSAttributedString? {
         _openSwiftUIUnimplementedFailure()
