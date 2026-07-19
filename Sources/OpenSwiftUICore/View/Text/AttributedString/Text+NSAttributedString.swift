@@ -107,6 +107,22 @@ extension NSAttributedString {
     package struct EncodedFontMetrics {
         package var capHeight: CGFloat, ascender: CGFloat, descender: CGFloat, leading: CGFloat
         package var outsets: EdgeInsets
+
+        init(capHeight: CGFloat, ascender: CGFloat, descender: CGFloat, leading: CGFloat, outsets: EdgeInsets) {
+            self.capHeight = capHeight
+            self.ascender = ascender
+            self.descender = descender
+            self.leading = leading
+            self.outsets = outsets
+        }
+
+        init() {
+            self.capHeight = .zero
+            self.ascender = .zero
+            self.descender = .zero
+            self.leading = .zero
+            self.outsets = .zero
+        }
     }
 
     package var maxFontMetrics: EncodedFontMetrics {

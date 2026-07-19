@@ -453,13 +453,12 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package var scaleFactorOverride: CGFloat? {
         didSet {
-            // TODO
-            _openSwiftUIUnimplementedWarning()
+            resetCache()
         }
     }
 
     package func resetCache() {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     final package let storage: NSAttributedString?
@@ -469,8 +468,7 @@ package class ResolvedStyledText: CustomStringConvertible {
     final package let archiveOptions: ArchivedViewInput.Value
 
     package var drawingMargins: EdgeInsets {
-        _openSwiftUIUnimplementedWarning()
-        return .zero
+        .zero
     }
 
     final package let isCollapsible: Bool
@@ -481,8 +479,6 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package let transitions: [Text.ResolvedProperties.Transition]
 
-    final private var _computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics?
-
     final package var isDynamic: Bool {
         guard let storage else {
             return false
@@ -491,21 +487,36 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final package var isEmpty: Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return true
+        }
+        return storage.length == 0
     }
 
     final package var needsStyledRendering: Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        features.contains(.keyColor) || (
+            features.contains(.attachments) &&
+            archiveOptions.isArchived &&
+            !isDynamic
+        )
     }
 
     final package var needsRBDisplayList: Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        !isDynamic && (
+            features.contains(.customRenderer) ||
+            (archiveOptions.isArchived && archiveOptions.preciseTextLayout)
+        )
     }
 
+    final private var _computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics?
+
     final package var maxFontMetrics: NSAttributedString.EncodedFontMetrics {
-        _openSwiftUIUnimplementedFailure()
+        if let _computedMaxFontMetrics {
+            return _computedMaxFontMetrics
+        }
+        let metrics = storage?.maxFontMetrics ?? .init()
+        _computedMaxFontMetrics = metrics
+        return metrics
     }
 
     final var schedule: (any TimelineSchedule)? {
