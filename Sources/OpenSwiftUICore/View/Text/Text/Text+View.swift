@@ -627,7 +627,24 @@ package class ResolvedStyledText: CustomStringConvertible {
         maximumLineHeight: CGFloat,
         minimumLineHeight: CGFloat
     ) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        guard (lineHeightMultiple != 0 && lineHeightMultiple < 1) ||
+                maximumLineHeight != 0 ||
+                minimumLineHeight != 0
+        else {
+            return .zero
+        }
+        let fontMetrics = maxFontMetrics
+        let fontLineHeight = fontMetrics.ascender - fontMetrics.descender
+        let multiple = lineHeightMultiple == 0 ? 1 : lineHeightMultiple
+        let proposedLineHeight = multiple * fontLineHeight
+        let maximum = maximumLineHeight == 0 ? proposedLineHeight : maximumLineHeight
+        let constrainedLineHeight = proposedLineHeight.clamp(
+            min: minimumLineHeight,
+            max: maximum
+        )
+        return constrainedLineHeight < fontLineHeight
+            ? fontLineHeight - constrainedLineHeight
+            : .zero
     }
 
     final package func draw(
