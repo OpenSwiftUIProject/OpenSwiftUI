@@ -8,6 +8,14 @@ public import UIFoundation_Private
 
 public typealias NSInteger = Int
 
+class NSStringDrawingContext: NSObject {
+    var wrapsForTruncationMode = false
+    var wantsBaselineOffset = false
+    var wantsScaledLineHeight = false
+    var wantsScaledBaselineOffset = false
+    var cachesLayout = false
+}
+
 package enum NSWritingDirection: Int {
     case natural = -1
     case leftToRight = 0

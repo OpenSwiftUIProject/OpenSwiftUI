@@ -819,31 +819,23 @@ extension ResolvedStyledText {
 
 // MARK: - TextDrawingContext
 
-#if !canImport(Darwin)
-class NSStringDrawingContext {}
-#endif
-
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
 final public class TextDrawingContext {
     @AtomicBox
     var ctx: NSStringDrawingContext
 
-    init(ctx: NSStringDrawingContext) {
-        self.ctx = ctx
-    }
-
-    static let shared: TextDrawingContext = {
+    private init() {
         let ctx = NSStringDrawingContext()
-        #if canImport(Darwin)
         ctx.wrapsForTruncationMode = true
         ctx.wantsBaselineOffset = true
         ctx.wantsScaledLineHeight = true
         ctx.wantsScaledBaselineOffset = true
         ctx.cachesLayout = true
-        #endif
-        return TextDrawingContext(ctx: ctx)
-    }()
+        self.ctx = ctx
+    }
+
+    static let shared = TextDrawingContext()
 }
 
 @_spi(ForOpenSwiftUIOnly)
