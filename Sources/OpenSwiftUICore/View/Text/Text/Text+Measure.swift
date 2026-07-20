@@ -42,8 +42,55 @@ extension NSAttributedString {
         }
     }
 
-    // TODO
-    struct CacheMetrics {}
+    struct MetricsCache {
+        var kitCache: AnyObject?
+        let string: NSAttributedString
+        let lineLimit: Int?
+        let lowerLineLimit: Int?
+        let minScaleFactor: CGFloat
+        let bodyHeadOutdent: CGFloat
+        let pixelLength: CGFloat
+        let widthIsFlexible: Bool
+        let drawWithRequestedWidth: Bool
+        let isCollapsible: Bool
+        var entries: [(CGSize, Metrics)]
+
+        init(
+            _ string: NSAttributedString?,
+            scaleFactorOverride: CGFloat?,
+            lineLimit: Int?,
+            lowerLineLimit: Int?,
+            minScaleFactor: CGFloat,
+            bodyHeadOutdent: CGFloat,
+            pixelLength: CGFloat,
+            widthIsFlexible: Bool,
+            drawWithRequestedWidth: Bool,
+            isCollapsible: Bool
+        ) {
+            self.kitCache = nil
+            self.string = string?.scaled(by: scaleFactorOverride ?? 1) ?? .emptyString
+            self.lineLimit = lineLimit
+            self.lowerLineLimit = lowerLineLimit
+            // A scale override has already been baked into `string`, so the drawing
+            // context must not apply the original minimum scale factor a second time.
+            self.minScaleFactor = scaleFactorOverride == nil ? minScaleFactor : 1
+            self.bodyHeadOutdent = bodyHeadOutdent
+            self.pixelLength = pixelLength
+            self.widthIsFlexible = widthIsFlexible
+            self.drawWithRequestedWidth = drawWithRequestedWidth
+            self.isCollapsible = isCollapsible
+            self.entries = []
+        }
+
+        mutating func metrics(
+            requestedSize: CGSize,
+            layoutMargins: EdgeInsets,
+            wantsNumberOfLineFragments: Bool,
+            context: TextDrawingContext
+        ) -> Metrics {
+            _openSwiftUIUnimplementedFailure()
+        }
+    }
 
     private static let emptyString = NSAttributedString()
 
