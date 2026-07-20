@@ -91,6 +91,12 @@ package class NSTextLineFragment: NSObject {
 }
 
 extension NSAttributedString {
+    // Work around https://github.com/swiftlang/swift/issues/71874.
+    @_nonoverride
+    public convenience init() {
+        self.init(string: "")
+    }
+
     public convenience init(_ attributedString: AttributedString) {
         self.init(string: String(attributedString))
     }
