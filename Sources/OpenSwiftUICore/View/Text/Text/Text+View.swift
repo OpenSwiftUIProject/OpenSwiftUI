@@ -797,24 +797,25 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 }
 
-// FIXME: RB
-package class ORBCGStyleHandler {}
-
 extension ResolvedStyledText {
     package func textSizeCacheMetrics(in size: CGSize) -> (UInt?, CGSize) {
-        _openSwiftUIUnimplementedFailure()
+        let metrics = metrics(in: size, layoutMargins: nil)
+        return (metrics.numberOfLines, metrics.size)
     }
 
     package func linkURLMetrics(
         in size: CGSize,
         layoutMargins: EdgeInsets
     ) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        metrics(in: size, layoutMargins: layoutMargins).scale
     }
 }
 
 @available(*, unavailable)
 extension ResolvedStyledText: Sendable {}
+
+// FIXME: RB
+package class ORBCGStyleHandler {}
 
 // MARK: - ResolvedStyledText + layout extension
 
@@ -830,7 +831,7 @@ extension ResolvedStyledText {
         explicitAlignment(
             VerticalAlignment.lastTextBaseline.key,
             at: size
-        ) ?? .zero
+        ) ?? size.height
     }
 
     package func frame(in request: CGSize, renderer: TextRendererBoxBase?) -> CGRect {
