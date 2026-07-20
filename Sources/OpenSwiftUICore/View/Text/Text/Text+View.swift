@@ -312,7 +312,7 @@ public struct TextLayoutProperties: Equatable {
 
     package var textSizing: Text.Sizing = .standard
 
-    private var textShape: TextShape = .bounds
+    fileprivate var textShape: TextShape = .bounds
 
     private struct Flags: OptionSet {
         var rawValue: UInt8
@@ -927,7 +927,7 @@ final public class TextDrawingContext {
 @available(*, unavailable)
 extension TextDrawingContext: Sendable {}
 
-// MARK: - ResolvedStyledText + Extension [WIP]
+// MARK: - ResolvedStyledText + styledText
 
 extension ResolvedStyledText {
     package static func styledText(
@@ -942,10 +942,51 @@ extension ResolvedStyledText {
         attachments: Text.ResolvedProperties.CustomAttachments,
         styles: [_ShapeStyle_Pack.Style],
         transitions: [Text.ResolvedProperties.Transition],
-        scaleFactorOverride: CGFloat?,
-        isInitialResolution: Bool = true
+        scaleFactorOverride: CGFloat?
     ) -> ResolvedStyledText {
-        _openSwiftUIUnimplementedFailure()
+        let layoutManagerFeatures: Text.ResolvedProperties.Features = [
+            .customRenderer,
+            .useTextLayoutManager,
+            .produceTextLayout,
+            .checkInterpolationStrategy,
+        ]
+        let requiresTextLayoutManager =
+            layoutProperties.writingMode != .horizontalTopToBottom ||
+            !features.intersection(layoutManagerFeatures).isEmpty ||
+            !attachments.isEmpty ||
+            suffix != .none ||
+            layoutProperties.textShape != .bounds
+        if requiresTextLayoutManager {
+            return TextLayoutManager(
+                storage: storage,
+                layoutProperties: layoutProperties,
+                layoutMargins: layoutMargins,
+                stylePadding: stylePadding,
+                archiveOptions: archiveOptions,
+                isCollapsible: isCollapsible,
+                features: features,
+                suffix: suffix,
+                attachments: attachments,
+                styles: styles,
+                transitions: transitions,
+                scaleFactorOverride: scaleFactorOverride
+            )
+        } else {
+            return StringDrawing(
+                storage: storage,
+                layoutProperties: layoutProperties,
+                layoutMargins: layoutMargins,
+                stylePadding: stylePadding,
+                archiveOptions: archiveOptions,
+                isCollapsible: isCollapsible,
+                features: features,
+                suffix: suffix,
+                attachments: attachments,
+                styles: styles,
+                transitions: transitions,
+                scaleFactorOverride: scaleFactorOverride
+            )
+        }
     }
 
     package static func styledText(
@@ -960,9 +1001,21 @@ extension ResolvedStyledText {
         styles: [_ShapeStyle_Pack.Style] = .init(),
         transitions: [Text.ResolvedProperties.Transition] = .init()
     ) -> ResolvedStyledText {
-        _openSwiftUIUnimplementedFailure()
+        styledText(
+            storage: storage,
+            layoutProperties: layoutProperties,
+            layoutMargins: nil,
+            stylePadding: stylePadding,
+            archiveOptions: archiveOptions,
+            isCollapsible: isCollapsible,
+            features: features,
+            suffix: suffix,
+            attachments: attachments,
+            styles: styles,
+            transitions: transitions,
+            scaleFactorOverride: nil
+        )
     }
-
 
     package static func styledText(
         storage: NSAttributedString?,
@@ -975,12 +1028,29 @@ extension ResolvedStyledText {
         attachments: Text.ResolvedProperties.CustomAttachments = .init(),
         styles: [_ShapeStyle_Pack.Style] = .init(),
         transitions: [Text.ResolvedProperties.Transition] = .init(),
-        writingMode: Text.WritingMode? = nil,
+        writingMode: Text.WritingMode?,
         sizeFitting: Bool = false
     ) -> ResolvedStyledText {
-        _openSwiftUIUnimplementedFailure()
+        var layoutProperties = TextLayoutProperties(environment)
+        if let writingMode {
+            layoutProperties.writingMode = writingMode
+        }
+        layoutProperties.sizeFitting = sizeFitting
+        return styledText(
+            storage: storage,
+            layoutProperties: layoutProperties,
+            layoutMargins: nil,
+            stylePadding: stylePadding,
+            archiveOptions: archiveOptions,
+            isCollapsible: isCollapsible,
+            features: features,
+            suffix: suffix,
+            attachments: attachments,
+            styles: styles,
+            transitions: transitions,
+            scaleFactorOverride: nil
+        )
     }
-
 }
 
 // MARK: - CodableResolvedStyledText [WIP]

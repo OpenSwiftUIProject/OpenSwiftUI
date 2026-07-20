@@ -69,4 +69,7 @@ extension NSAttributedString.Metrics: Sendable {}
 extension ResolvedStyledText {
     // FIXME
     package class StringDrawing: ResolvedStyledText {}
+
+    // FIXME
+    package class TextLayoutManager: ResolvedStyledText {}
 }
