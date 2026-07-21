@@ -49,7 +49,7 @@ extension CTFont {
     }
 
     package var stylisticClass: CTFontStylisticClass {
-        .init(rawValue: CTFontGetSymbolicTraits(self).rawValue & CTFontSymbolicTraits.traitClassMask.rawValue)
+        .init(rawValue: symbolicTraits.rawValue & CTFontSymbolicTraits.traitClassMask.rawValue)
     }
 
     package func scaled(
@@ -85,14 +85,10 @@ extension CTFont {
     }
 
     package var mayRequireLanguageAwareOutsets: Bool {
-        guard symbolicTraits.isEmpty else {
+        guard !symbolicTraits.contains(.italicTrait), weight <= kCTFontWeightHeavy else {
             return true
         }
-        guard weight <= kCTFontWeightHeavy else {
-            return true
-        }
-        let stylisticClass = stylisticClass
-        return stylisticClass == [.modernSerifsClass] || stylisticClass == [.oldStyleSerifsClass, .modernSerifsClass]
+        return [CTFontStylisticClass.scriptsClass, .ornamentalsClass].contains(stylisticClass)
     }
 }
 

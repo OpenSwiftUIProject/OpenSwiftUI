@@ -11,6 +11,9 @@ package import OpenAttributeGraphShims
 public import OpenCoreGraphicsShims
 package import OpenRenderBoxShims
 import UIFoundation_Private
+#if canImport(CoreText)
+package import CoreText
+#endif
 
 // MARK: - Text + View [WIP]
 
@@ -309,7 +312,7 @@ public struct TextLayoutProperties: Equatable {
 
     package var textSizing: Text.Sizing = .standard
 
-    private var textShape: TextShape = .bounds
+    fileprivate var textShape: TextShape = .bounds
 
     private struct Flags: OptionSet {
         var rawValue: UInt8
@@ -442,7 +445,63 @@ extension TextLayoutProperties: ProtobufMessage {
     }
 }
 
-// MARK: - ResolvedStyledText [WIP]
+#if canImport(CoreText)
+extension NSAttributedString {
+    static let oversizedScalars: CharacterSet = {
+        guard let characterSet = CTFontCopySystemUIFontExcessiveLineHeightCharacterSet() else {
+            return CharacterSet()
+        }
+        return characterSet as CharacterSet
+    }()
+
+    static let oversizedScalarsWithoutEmoji = oversizedScalars.subtracting(
+        NSCharacterSet.ic_emoji as CharacterSet
+    )
+
+    fileprivate func allFonts() -> Set<CTFont> {
+        var fonts: Set<CTFont> = []
+        enumerateAttribute(
+            .kitFont,
+            in: NSRange(location: 0, length: length),
+            options: []
+        ) { value, _, _ in
+            guard let value else {
+                return
+            }
+            let font = value as! CTFont
+            fonts.insert(font)
+        }
+        return fonts
+    }
+
+    func oversizedDrawingMargin(from characterSet: CharacterSet) -> EdgeInsets {
+        guard string.rangeOfCharacter(from: characterSet) != nil else {
+            return .zero
+        }
+        return allFonts().reduce(into: .zero) { margins, font in
+            var left: CGFloat = 0
+            var top: CGFloat = 0
+            var right: CGFloat = 0
+            var bottom: CGFloat = 0
+            guard CTFontGetLanguageAwareOutsets(
+                font,
+                &left,
+                &top,
+                &right,
+                &bottom
+            ) else {
+                return
+            }
+            margins.top = max(margins.top, top)
+            margins.leading = max(margins.leading, left)
+            margins.bottom = max(margins.bottom, bottom)
+            margins.trailing = max(margins.trailing, right)
+        }
+    }
+}
+#endif
+
+// MARK: - ResolvedStyledText [Blocked by ORB]
 
 @available(OpenSwiftUI_v6_0, *)
 @usableFromInline
@@ -453,13 +512,12 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package var scaleFactorOverride: CGFloat? {
         didSet {
-            // TODO
-            _openSwiftUIUnimplementedWarning()
+            resetCache()
         }
     }
 
     package func resetCache() {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     final package let storage: NSAttributedString?
@@ -469,8 +527,7 @@ package class ResolvedStyledText: CustomStringConvertible {
     final package let archiveOptions: ArchivedViewInput.Value
 
     package var drawingMargins: EdgeInsets {
-        _openSwiftUIUnimplementedWarning()
-        return .zero
+        .zero
     }
 
     final package let isCollapsible: Bool
@@ -481,8 +538,6 @@ package class ResolvedStyledText: CustomStringConvertible {
 
     final package let transitions: [Text.ResolvedProperties.Transition]
 
-    final private var _computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics?
-
     final package var isDynamic: Bool {
         guard let storage else {
             return false
@@ -491,21 +546,36 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final package var isEmpty: Bool {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return true
+        }
+        return storage.length == 0
     }
 
     final package var needsStyledRendering: Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        features.contains(.keyColor) || (
+            features.contains(.attachments) &&
+            archiveOptions.isArchived &&
+            !isDynamic
+        )
     }
 
     final package var needsRBDisplayList: Bool {
-        _openSwiftUIUnimplementedWarning()
-        return false
+        !isDynamic && (
+            features.contains(.customRenderer) ||
+            (archiveOptions.isArchived && archiveOptions.preciseTextLayout)
+        )
     }
 
+    final private var _computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics?
+
     final package var maxFontMetrics: NSAttributedString.EncodedFontMetrics {
-        _openSwiftUIUnimplementedFailure()
+        if let _computedMaxFontMetrics {
+            return _computedMaxFontMetrics
+        }
+        let metrics = storage?.maxFontMetrics ?? .init()
+        _computedMaxFontMetrics = metrics
+        return metrics
     }
 
     final var schedule: (any TimelineSchedule)? {
@@ -523,23 +593,33 @@ package class ResolvedStyledText: CustomStringConvertible {
         archiveOptions: ArchivedViewInput.Value,
         isCollapsible: Bool,
         features: Text.ResolvedProperties.Features,
-        suffix: ResolvedTextSuffix,
-        attachments: Text.ResolvedProperties.CustomAttachments,
+        suffix _: ResolvedTextSuffix,
+        attachments _: Text.ResolvedProperties.CustomAttachments,
         styles: [_ShapeStyle_Pack.Style],
         transitions: [Text.ResolvedProperties.Transition],
-        scaleFactorOverride: CGFloat?
+        scaleFactorOverride _: CGFloat?
     ) {
-        // FIXME
-        _openSwiftUIUnimplementedWarning()
         self.storage = storage
         self.layoutProperties = layoutProperties
-        self.layoutMargins = layoutMargins ?? .zero
         self.stylePadding = stylePadding
         self.archiveOptions = archiveOptions
         self.isCollapsible = isCollapsible
         self.features = features
         self.styles = styles
         self.transitions = transitions
+        var computedMaxFontMetrics: NSAttributedString.EncodedFontMetrics? = nil
+        if let layoutMargins {
+            self.layoutMargins = layoutMargins
+        } else if let storage {
+            self.layoutMargins = layoutProperties.textSizing.layoutMargins(
+                for: storage,
+                metrics: &computedMaxFontMetrics,
+                layoutProperties: layoutProperties
+            )
+        } else {
+            self.layoutMargins = .zero
+        }
+        self._computedMaxFontMetrics = computedMaxFontMetrics
     }
 
     package func lineHeightScalingAdjustment(
@@ -547,7 +627,24 @@ package class ResolvedStyledText: CustomStringConvertible {
         maximumLineHeight: CGFloat,
         minimumLineHeight: CGFloat
     ) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        guard (lineHeightMultiple != 0 && lineHeightMultiple < 1) ||
+                maximumLineHeight != 0 ||
+                minimumLineHeight != 0
+        else {
+            return .zero
+        }
+        let fontMetrics = maxFontMetrics
+        let fontLineHeight = fontMetrics.ascender - fontMetrics.descender
+        let multiple = lineHeightMultiple == 0 ? 1 : lineHeightMultiple
+        let proposedLineHeight = multiple * fontLineHeight
+        let maximum = maximumLineHeight == 0 ? proposedLineHeight : maximumLineHeight
+        let constrainedLineHeight = proposedLineHeight.clamp(
+            min: minimumLineHeight,
+            max: maximum
+        )
+        return constrainedLineHeight < fontLineHeight
+            ? fontLineHeight - constrainedLineHeight
+            : .zero
     }
 
     final package func draw(
@@ -557,65 +654,71 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext = .shared,
         renderer: TextRendererBoxBase? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        draw(
+            in: drawingArea,
+            with: measuredSize,
+            applyingMarginOffsets: applyingMarginOffsets,
+            containsResolvable: isDynamic,
+            context: context,
+            renderer: renderer
+        )
     }
 
     package var majorAxis: Axis {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func drawingScale(size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func spacing() -> Spacing {
-        _openSwiftUIUnimplementedWarning()
-        return .init()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
-        _openSwiftUIUnimplementedWarning()
-        return CGSize(width: 50, height: 50)
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func size(in request: CGSize) -> CGSize {
-        _openSwiftUIUnimplementedWarning()
-        return CGSize(width: 50, height: 50)
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func frameSize(in request: CGSize) -> CGSize {
-        _openSwiftUIUnimplementedWarning()
-        return CGSize(width: 50, height: 50)
+        size(in: request)
     }
 
+    // FIXME
     package func _deleteMethod1() {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package func _deleteMethod2() {
-        _openSwiftUIUnimplementedFailure()
+    package func metrics(
+        in size: CGSize,
+        layoutMargins: EdgeInsets?
+    ) -> NSAttributedString.Metrics {
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func size(
         in request: CGSize,
         context: TextDrawingContext
     ) -> CGSize {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func explicitAlignment(
         _ k: AlignmentKey,
         at size: CGSize
     ) -> CGFloat? {
-        _openSwiftUIUnimplementedWarning()
-        return nil
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func linkURL(
         at point: CGPoint,
         in size: CGSize
     ) -> URL? {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func draw(
@@ -626,14 +729,7 @@ package class ResolvedStyledText: CustomStringConvertible {
         context: TextDrawingContext,
         renderer: TextRendererBoxBase? = nil
     ) {
-        #if canImport(Darwin)
-        var r = drawingArea
-        r.y = r.height
-        self.storage?.draw(with: r, context: context.ctx)
-        _openSwiftUIUnimplementedWarning()
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func layoutValue(
@@ -641,15 +737,45 @@ package class ResolvedStyledText: CustomStringConvertible {
         with measuredSize: CGSize,
         applyingMarginOffsets: Bool = true
     ) -> Text.Layout? {
-        _openSwiftUIUnimplementedFailure()
+        nil
     }
 
     final package func resolvedContent(in context: ResolvableStringResolutionContext) -> NSAttributedString? {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return nil
+        }
+        guard storage.isDynamic, archiveOptions.isArchived else {
+            return storage
+        }
+        guard let mutable = storage.mutableCopy() as? NSMutableAttributedString else {
+            return nil
+        }
+        ResolvableTextSegmentAttribute.update(mutable, in: context)
+        return mutable
     }
 
     final package func resolvingContent(in context: ResolvableStringResolutionContext) -> ResolvedStyledText {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage,
+              storage.isDynamic,
+              let mutable = storage.mutableCopy() as? NSMutableAttributedString
+        else {
+            return self
+        }
+        ResolvableTextSegmentAttribute.update(mutable, in: context)
+        return ResolvedStyledText.styledText(
+            storage: mutable,
+            layoutProperties: layoutProperties,
+            layoutMargins: nil,
+            stylePadding: stylePadding,
+            archiveOptions: archiveOptions,
+            isCollapsible: isCollapsible,
+            features: features,
+            suffix: .none,
+            attachments: .init(),
+            styles: styles,
+            transitions: transitions,
+            scaleFactorOverride: scaleFactorOverride
+        )
     }
 
     final package func nextUpdate(
@@ -669,21 +795,26 @@ package class ResolvedStyledText: CustomStringConvertible {
     }
 
     final package var updatesAsynchronously: Bool {
-        _openSwiftUIUnimplementedFailure()
+        isDynamic && archiveOptions.isArchived
     }
 
     @usableFromInline
     final package var description: String {
-        _openSwiftUIUnimplementedFailure()
+        storage?.string ?? ""
     }
 
     final package var accessibilityText: Text {
-        _openSwiftUIUnimplementedFailure()
+        guard let storage else {
+            return Text("")
+        }
+        return AccessibilityText(storage).text
     }
 
-//    final package var cgStyleHandler: RBCGStyleHandler? {
-//        _openSwiftUIUnimplementedFailure()
-//    }
+    // TODO: RB
+
+    final package var cgStyleHandler: ORBCGStyleHandler? {
+        _openSwiftUIUnimplementedFailure()
+    }
 
     final package func makeRBDisplayList(
         for size: CGSize,
@@ -696,19 +827,23 @@ package class ResolvedStyledText: CustomStringConvertible {
 
 extension ResolvedStyledText {
     package func textSizeCacheMetrics(in size: CGSize) -> (UInt?, CGSize) {
-        _openSwiftUIUnimplementedFailure()
+        let metrics = metrics(in: size, layoutMargins: nil)
+        return (metrics.numberOfLines, metrics.size)
     }
 
     package func linkURLMetrics(
         in size: CGSize,
         layoutMargins: EdgeInsets
     ) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        metrics(in: size, layoutMargins: layoutMargins).scale
     }
 }
 
 @available(*, unavailable)
 extension ResolvedStyledText: Sendable {}
+
+// FIXME: RB
+package class ORBCGStyleHandler {}
 
 // MARK: - ResolvedStyledText + layout extension
 
@@ -724,7 +859,7 @@ extension ResolvedStyledText {
         explicitAlignment(
             VerticalAlignment.lastTextBaseline.key,
             at: size
-        ) ?? .zero
+        ) ?? size.height
     }
 
     package func frame(in request: CGSize, renderer: TextRendererBoxBase?) -> CGRect {
@@ -767,16 +902,7 @@ extension ResolvedStyledText {
     }
 }
 
-extension ResolvedStyledText {
-    // FIXME
-    package class StringDrawing: ResolvedStyledText {}
-}
-
 // MARK: - TextDrawingContext
-
-#if !canImport(Darwin)
-class NSStringDrawingContext {}
-#endif
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -784,74 +910,148 @@ final public class TextDrawingContext {
     @AtomicBox
     var ctx: NSStringDrawingContext
 
-    init(ctx: NSStringDrawingContext) {
-        self.ctx = ctx
-    }
-
-    static let shared: TextDrawingContext = {
+    private init() {
         let ctx = NSStringDrawingContext()
-        #if canImport(Darwin)
         ctx.wrapsForTruncationMode = true
         ctx.wantsBaselineOffset = true
         ctx.wantsScaledLineHeight = true
         ctx.wantsScaledBaselineOffset = true
         ctx.cachesLayout = true
-        #endif
-        return TextDrawingContext(ctx: ctx)
-    }()
+        self.ctx = ctx
+    }
+
+    static let shared = TextDrawingContext()
 }
 
 @_spi(ForOpenSwiftUIOnly)
 @available(*, unavailable)
 extension TextDrawingContext: Sendable {}
 
-// MARK: - ResolvedStyledText + Extension [WIP]
+// MARK: - ResolvedStyledText + styledText
 
-//extension ResolvedStyledText {
-//    package static func styledText(
-//        storage: NSAttributedString?,
-//        layoutProperties: TextLayoutProperties,
-//        layoutMargins: EdgeInsets?,
-//        stylePadding: EdgeInsets,
-//        archiveOptions: ArchivedViewInput.Value,
-//        isCollapsible: Bool,
-//        features: Text.ResolvedProperties.Features,
-//        suffix: ResolvedTextSuffix,
-//        attachments: Text.ResolvedProperties.CustomAttachments,
-//        styles: [_ShapeStyle_Pack.Style],
-//        transitions: [Text.ResolvedProperties.Transition],
-//        scaleFactorOverride: CGFloat?,
-//        isInitialResolution: Bool = true
-//    ) -> ResolvedStyledText
-//
-//    package static func styledText(
-//        storage: NSAttributedString?,
-//        stylePadding: EdgeInsets = EdgeInsets(),
-//        layoutProperties: TextLayoutProperties,
-//        archiveOptions: ArchivedViewInput.Value = .init(),
-//        isCollapsible: Bool = false,
-//        features: Text.ResolvedProperties.Features = .init(),
-//        suffix: ResolvedTextSuffix = .none,
-//        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
-//        styles: [_ShapeStyle_Pack.Style] = .init(),
-//        transitions: [Text.ResolvedProperties.Transition] = .init()
-//    ) -> ResolvedStyledText
-//
-//    package static func styledText(
-//        storage: NSAttributedString?,
-//        stylePadding: EdgeInsets = EdgeInsets(),
-//        environment: EnvironmentValues,
-//        archiveOptions: ArchivedViewInput.Value = .init(),
-//        isCollapsible: Bool = false,
-//        features: Text.ResolvedProperties.Features = .init(),
-//        suffix: ResolvedTextSuffix = .none,
-//        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
-//        styles: [_ShapeStyle_Pack.Style] = .init(),
-//        transitions: [Text.ResolvedProperties.Transition] = .init(),
-//        writingMode: Text.WritingMode? = nil,
-//        sizeFitting: Bool = false
-//    ) -> ResolvedStyledText
-//}
+extension ResolvedStyledText {
+    package static func styledText(
+        storage: NSAttributedString?,
+        layoutProperties: TextLayoutProperties,
+        layoutMargins: EdgeInsets?,
+        stylePadding: EdgeInsets,
+        archiveOptions: ArchivedViewInput.Value,
+        isCollapsible: Bool,
+        features: Text.ResolvedProperties.Features,
+        suffix: ResolvedTextSuffix,
+        attachments: Text.ResolvedProperties.CustomAttachments,
+        styles: [_ShapeStyle_Pack.Style],
+        transitions: [Text.ResolvedProperties.Transition],
+        scaleFactorOverride: CGFloat?
+    ) -> ResolvedStyledText {
+        let layoutManagerFeatures: Text.ResolvedProperties.Features = [
+            .customRenderer,
+            .useTextLayoutManager,
+            .produceTextLayout,
+            .checkInterpolationStrategy,
+        ]
+        let requiresTextLayoutManager =
+            layoutProperties.writingMode != .horizontalTopToBottom ||
+            !features.intersection(layoutManagerFeatures).isEmpty ||
+            !attachments.isEmpty ||
+            suffix != .none ||
+            layoutProperties.textShape != .bounds
+        if requiresTextLayoutManager {
+            return TextLayoutManager(
+                storage: storage,
+                layoutProperties: layoutProperties,
+                layoutMargins: layoutMargins,
+                stylePadding: stylePadding,
+                archiveOptions: archiveOptions,
+                isCollapsible: isCollapsible,
+                features: features,
+                suffix: suffix,
+                attachments: attachments,
+                styles: styles,
+                transitions: transitions,
+                scaleFactorOverride: scaleFactorOverride
+            )
+        } else {
+            return StringDrawing(
+                storage: storage,
+                layoutProperties: layoutProperties,
+                layoutMargins: layoutMargins,
+                stylePadding: stylePadding,
+                archiveOptions: archiveOptions,
+                isCollapsible: isCollapsible,
+                features: features,
+                suffix: suffix,
+                attachments: attachments,
+                styles: styles,
+                transitions: transitions,
+                scaleFactorOverride: scaleFactorOverride
+            )
+        }
+    }
+
+    package static func styledText(
+        storage: NSAttributedString?,
+        stylePadding: EdgeInsets = EdgeInsets(),
+        layoutProperties: TextLayoutProperties,
+        archiveOptions: ArchivedViewInput.Value = .init(),
+        isCollapsible: Bool = false,
+        features: Text.ResolvedProperties.Features = .init(),
+        suffix: ResolvedTextSuffix = .none,
+        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
+        styles: [_ShapeStyle_Pack.Style] = .init(),
+        transitions: [Text.ResolvedProperties.Transition] = .init()
+    ) -> ResolvedStyledText {
+        styledText(
+            storage: storage,
+            layoutProperties: layoutProperties,
+            layoutMargins: nil,
+            stylePadding: stylePadding,
+            archiveOptions: archiveOptions,
+            isCollapsible: isCollapsible,
+            features: features,
+            suffix: suffix,
+            attachments: attachments,
+            styles: styles,
+            transitions: transitions,
+            scaleFactorOverride: nil
+        )
+    }
+
+    package static func styledText(
+        storage: NSAttributedString?,
+        stylePadding: EdgeInsets = EdgeInsets(),
+        environment: EnvironmentValues,
+        archiveOptions: ArchivedViewInput.Value = .init(),
+        isCollapsible: Bool = false,
+        features: Text.ResolvedProperties.Features = .init(),
+        suffix: ResolvedTextSuffix = .none,
+        attachments: Text.ResolvedProperties.CustomAttachments = .init(),
+        styles: [_ShapeStyle_Pack.Style] = .init(),
+        transitions: [Text.ResolvedProperties.Transition] = .init(),
+        writingMode: Text.WritingMode?,
+        sizeFitting: Bool = false
+    ) -> ResolvedStyledText {
+        var layoutProperties = TextLayoutProperties(environment)
+        if let writingMode {
+            layoutProperties.writingMode = writingMode
+        }
+        layoutProperties.sizeFitting = sizeFitting
+        return styledText(
+            storage: storage,
+            layoutProperties: layoutProperties,
+            layoutMargins: nil,
+            stylePadding: stylePadding,
+            archiveOptions: archiveOptions,
+            isCollapsible: isCollapsible,
+            features: features,
+            suffix: suffix,
+            attachments: attachments,
+            styles: styles,
+            transitions: transitions,
+            scaleFactorOverride: nil
+        )
+    }
+}
 
 // MARK: - CodableResolvedStyledText [WIP]
 

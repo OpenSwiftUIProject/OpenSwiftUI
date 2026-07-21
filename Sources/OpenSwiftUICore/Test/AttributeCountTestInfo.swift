@@ -2,9 +2,10 @@
 //  AttributeCountTestInfo.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - AttributeCountTestInfo [6.4.41]
+// MARK: - AttributeCountTestInfo
 
 package struct AttributeCountTestInfo: Equatable {
     var attributeCounts: [String: UInt32] = [:]
@@ -19,17 +20,3 @@ package struct AttributeCountTestInfo: Equatable {
         history.merge(other.history) { $0 + $1 }
     }
 }
-
-// MARK: - AttributeCountInfoKey [6.4.41]
-
-package struct AttributeCountInfoKey: HostPreferenceKey {
-    package static let defaultValue = AttributeCountTestInfo()
-
-    package static func reduce(
-        value: inout AttributeCountTestInfo,
-        nextValue: () -> AttributeCountTestInfo
-    ) {
-        value.merge(nextValue())
-    }
-}
-

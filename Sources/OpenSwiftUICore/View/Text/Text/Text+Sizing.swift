@@ -6,6 +6,8 @@
 //  Status: Complete
 //  ID: 22747AAF70EE5063D02F299CE90A18BE (SwiftUICore)
 
+import Foundation
+
 // MARK: TextSizingModifier
 
 protocol TextSizingModifier: Equatable {
@@ -76,15 +78,50 @@ extension Text {
     }
 }
 
-//extension Text.Sizing {
-//    func layoutMargins(
-//        for: NSAttributedString,
-//        metrics: inout NSAttributedString.EncodedFontMetrics?
-//        layoutProperties: LayoutProperties
-//    ) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
+extension Text.Sizing {
+    func layoutMargins(
+        for attributedString: NSAttributedString,
+        metrics: inout NSAttributedString.EncodedFontMetrics?,
+        layoutProperties: TextLayoutProperties
+    ) -> EdgeInsets {
+        var margins: EdgeInsets
+        switch storage {
+        case .standard:
+            margins = .zero
+        case .uniformLineHeight:
+            let fontMetrics = attributedString.maxFontMetrics
+            metrics = fontMetrics
+            if let leading = metrics?.leading, leading != 0 {
+                let fontLineHeight = fontMetrics.ascender - fontMetrics.descender
+                let roundedLineHeight = fontLineHeight.rounded(.up, toMultipleOf: layoutProperties.pixelLength)
+                let adjustment = (leading + fontLineHeight - roundedLineHeight) * 0.5
+                margins = EdgeInsets(horizontal: 0, vertical: adjustment)
+            } else {
+                margins = .zero
+            }
+        case .adjustsForOversizedCharacters:
+            #if canImport(CoreText)
+            margins = attributedString.oversizedDrawingMargin(from: NSAttributedString.oversizedScalarsWithoutEmoji)
+            margins.round(.up, toMultipleOf: layoutProperties.pixelLength)
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            margins = .zero
+            #endif
+        }
+        if layoutProperties.writingMode == .verticalRightToLeft {
+            margins = EdgeInsets(
+                top: margins.leading,
+                leading: margins.bottom,
+                bottom: margins.trailing,
+                trailing: margins.top
+            )
+        }
+        for modifier in modifiers.reversed() {
+            modifier.updateLayoutMargins(&margins)
+        }
+        return margins
+    }
+}
 
 private struct TextSizingKey: EnvironmentKey {
     static let defaultValue: Text.Sizing = .standard

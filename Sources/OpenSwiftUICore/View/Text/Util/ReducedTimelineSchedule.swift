@@ -23,6 +23,15 @@ extension NSAttributedString {
     }
 
     var updateSchedule: any TimelineSchedule {
-        _openSwiftUIUnimplementedFailure()
+        guard length >= 1,
+              let schedule = attribute(
+                  .updateSchedule,
+                  at: 0,
+                  effectiveRange: nil
+              ) as? any TimelineSchedule
+        else {
+            return ExplicitTimelineSchedule([])
+        }
+        return schedule
     }
 }

@@ -8,6 +8,14 @@ public import UIFoundation_Private
 
 public typealias NSInteger = Int
 
+class NSStringDrawingContext: NSObject {
+    var wrapsForTruncationMode = false
+    var wantsBaselineOffset = false
+    var wantsScaledLineHeight = false
+    var wantsScaledBaselineOffset = false
+    var cachesLayout = false
+}
+
 package enum NSWritingDirection: Int {
     case natural = -1
     case leftToRight = 0
@@ -83,6 +91,12 @@ package class NSTextLineFragment: NSObject {
 }
 
 extension NSAttributedString {
+    // Work around https://github.com/swiftlang/swift/issues/71874.
+    @_nonoverride
+    public convenience init() {
+        self.init(string: "")
+    }
+
     public convenience init(_ attributedString: AttributedString) {
         self.init(string: String(attributedString))
     }
