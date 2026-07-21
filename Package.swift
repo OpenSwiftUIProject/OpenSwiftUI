@@ -778,7 +778,7 @@ let package = Package(
     products: products,
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "601.0.0"),
+        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "603.0.0"),
     ],
     targets: [
         openSwiftUISPITarget,
