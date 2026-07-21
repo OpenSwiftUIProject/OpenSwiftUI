@@ -7,6 +7,10 @@
 //  ID: 68D51D45BC7225E72FB030F887E5A492 (SwiftUICore)
 
 public import Foundation
+import UIFoundation_Private
+#if canImport(CoreText)
+import CoreText
+#endif
 
 @available(OpenSwiftUI_v6_0, *)
 extension NSAttributedString {
@@ -148,6 +152,7 @@ extension NSAttributedString {
 
     private static let emptyString = NSAttributedString()
 
+    // TBA
     private func measured(
         requestedSize: CGSize,
         lineLimit: Int?,
@@ -160,9 +165,189 @@ extension NSAttributedString {
         wantsNumberOfLineFragments: Bool,
         context: TextDrawingContext
     ) -> NSAttributedString.Metrics {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        return context.withStringDrawingContext(
+            minScaleFactor: minScaleFactor,
+            lineLimit: lineLimit,
+            kitCache: kitCache,
+            useNSLayoutManager: hasLinkAttributes
+        ) { drawingContext in
+            if wantsNumberOfLineFragments || bodyHeadOutdent > 0 {
+                drawingContext.wantsNumberOfLineFragments = true
+            }
+
+            let limitedFontHeight: CGFloat
+            if let lowerLineLimit, lowerLineLimit >= 1, length >= 1 {
+                limitedFontHeight = self.limitedFontHeight(by: lowerLineLimit) ?? 0
+            } else {
+                limitedFontHeight = 0
+            }
+
+            let measuredWidth: CGFloat
+            if requestedSize.width == .infinity {
+                measuredWidth = .greatestFiniteMagnitude
+            } else if requestedSize.width <= 0 {
+                measuredWidth = 1
+            } else {
+                measuredWidth = requestedSize.width
+            }
+
+            let measuredHeight: CGFloat
+            if requestedSize.height == .infinity {
+                measuredHeight = max(.greatestFiniteMagnitude, limitedFontHeight)
+            } else if requestedSize.height <= 0 {
+                measuredHeight = max(1, limitedFontHeight)
+            } else {
+                measuredHeight = max(requestedSize.height, limitedFontHeight)
+            }
+
+            let rect = boundingRect(
+                with: CGSize(width: measuredWidth, height: measuredHeight),
+                options: NSString.DrawingOptions(rawValue: 0x10_0001),
+                context: drawingContext
+            )
+            kitCache = drawingContext.layout as AnyObject?
+            drawingContext.layout = nil
+
+            let scaledLineHeight = drawingContext.scaledLineHeight
+            let resultHeight = scaledLineHeight == 0 ? rect.height : scaledLineHeight
+            var resultWidth = rect.width
+
+            if bodyHeadOutdent > 0 {
+                let lineFragmentCount = drawingContext.numberOfLineFragments
+                var matchesSourceLineCount = lineFragmentCount == 1
+                if !matchesSourceLineCount {
+                    let components = string.components(separatedBy: .newlines)
+                    let sourceLineCount: Int
+                    if components.last?.isEmpty == true {
+                        sourceLineCount = components.count - 1
+                    } else {
+                        sourceLineCount = components.count
+                    }
+                    let limitedSourceLineCount = lineLimit.map { min(sourceLineCount, $0) } ?? sourceLineCount
+                    matchesSourceLineCount = limitedSourceLineCount == lineFragmentCount
+                }
+                if matchesSourceLineCount {
+                    let outdentedWidth = rect.width + bodyHeadOutdent
+                    if requestedSize.width > 0 {
+                        resultWidth = min(outdentedWidth, measuredWidth)
+                    } else {
+                        resultWidth = max(outdentedWidth, 1)
+                    }
+                }
+            }
+
+            var size = CGSize(
+                width: widthIsFlexible ? requestedSize.width : (resultWidth == 1 ? 0 : resultWidth),
+                height: resultHeight == 1 ? 0 : resultHeight
+            )
+            if isCollapsible, size.height > requestedSize.height {
+                size = .zero
+            }
+            size.height = max(size.height, limitedFontHeight)
+
+            let reportsLineFragments = drawingContext.wantsNumberOfLineFragments
+            let numberOfLines = reportsLineFragments ? UInt(drawingContext.numberOfLineFragments) : nil
+            return Metrics(
+                size: size,
+                scale: drawingContext.actualScaleFactor,
+                firstBaseline: drawingContext.firstBaselineOffset,
+                lastBaseline: scaledLineHeight == 0
+                    ? drawingContext.baselineOffset
+                    : drawingContext.scaledBaselineOffset,
+                baselineAdjustment: 0,
+                requestedWidth: requestedSize.width,
+                numberOfLines: numberOfLines,
+                hasTruncatedRanges: drawingContext.hasTruncatedRanges
+            )
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        return Metrics(
+            size: .zero,
+            scale: 1,
+            firstBaseline: 0,
+            lastBaseline: 0,
+            baselineAdjustment: 0,
+            requestedWidth: requestedSize.width,
+            numberOfLines: wantsNumberOfLineFragments ? 0 : nil,
+            hasTruncatedRanges: false
+        )
+        #endif
+    }
+
+    // FIXME
+    #if canImport(Darwin)
+    private var hasLinkAttributes: Bool {
+        var result = false
+        enumerateAttribute(.kitLink, in: NSRange(location: 0, length: length)) { value, _, stop in
+            let link: URL?
+            if let value = value as? URL {
+                link = value
+            } else if let value = value as? String {
+                link = URL(string: value)
+            } else {
+                link = nil
+            }
+            if link != nil {
+                result = true
+                stop.pointee = true
+            }
+        }
+        return result
+    }
+
+    // FIXME
+    private func limitedFontHeight(by lineLimit: Int) -> CGFloat? {
+        #if canImport(CoreText)
+        guard lineLimit >= 1, let font = kitFont(at: 0) else {
+            return nil
+        }
+        let lineHeight = CTFontGetAscent(font) + CTFontGetDescent(font)
+        return CGFloat(lineLimit) * lineHeight + CGFloat(lineLimit - 1) * CTFontGetLeading(font)
+        #else
+        return nil
+        #endif
+    }
+    #endif
+}
+
+// TBA
+#if canImport(Darwin)
+@available(OpenSwiftUI_v6_0, *)
+private extension TextDrawingContext {
+    func withStringDrawingContext<Result>(
+        minScaleFactor: CGFloat,
+        lineLimit: Int?,
+        kitCache: AnyObject?,
+        useNSLayoutManager: Bool,
+        `do` body: (NSStringDrawingContext) -> Result
+    ) -> Result {
+        $ctx.access { drawingContext in
+            if minScaleFactor <= 0 {
+                drawingContext.minimumScaleFactor = 1
+            } else if minScaleFactor >= 1 {
+                drawingContext.minimumScaleFactor = 0
+            } else {
+                drawingContext.minimumScaleFactor = minScaleFactor
+            }
+            drawingContext.scaledLineHeight = 0
+            drawingContext.scaledBaselineOffset = 0
+            drawingContext.maximumNumberOfLines = lineLimit.map { max($0, 1) } ?? 0
+            drawingContext.cachesLayout = true
+            drawingContext.layout = kitCache
+            drawingContext.wantsNumberOfLineFragments = false
+            drawingContext.activeRenderers = useNSLayoutManager ? 8 : 0
+            drawingContext.linkTextAttributesProvider = { attributes, _ in
+                var attributes = attributes ?? [:]
+                attributes.removeValue(forKey: .kitForegroundColor)
+                return attributes
+            }
+            return body(drawingContext)
+        }
     }
 }
+#endif
 
 @available(*, unavailable)
 extension NSAttributedString.Metrics: Sendable {}
