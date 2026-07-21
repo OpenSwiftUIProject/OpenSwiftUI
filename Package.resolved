@@ -1,5 +1,5 @@
 {
-  "originHash" : "9ee38d6f53b74893089a214e320ca61727938f544556a98e447376e3d3f9f15e",
+  "originHash" : "3e4458027d5c69453bb80f8dc4daa2b61492d2a6ab8cd796cdeaeaf0fcf7423b",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -34,7 +34,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
       "state" : {
         "branch" : "main",
-        "revision" : "05e0581e76b7153338836469320a4789fd0257e2"
+        "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
       }
     },
     {
@@ -60,8 +60,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax",
       "state" : {
-        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
-        "version" : "601.0.1"
+        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
+        "version" : "603.0.2"
       }
     },
     {

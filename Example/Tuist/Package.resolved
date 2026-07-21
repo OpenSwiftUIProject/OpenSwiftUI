@@ -1,5 +1,5 @@
 {
-  "originHash" : "3b75843b30de7ae52117746121db03c09c1cef5f4217c839e9b86c5e31fc1265",
+  "originHash" : "ee286270d6801deb55932ce0284217d2bb8c6af5df688799e2ec977426804b04",
   "pins" : [
     {
       "identity" : "compute",
@@ -16,7 +16,7 @@
       "location" : "https://github.com/openswiftuiproject/equatable",
       "state" : {
         "branch" : "main",
-        "revision" : "8f1dccead65d97173ed695c6c1ba9d0570d35619"
+        "revision" : "c50e4f72fdd163a43738dfd4d92bf62c2531f367"
       }
     },
     {
@@ -34,7 +34,7 @@
       "location" : "https://github.com/openswiftuiproject/openobservation",
       "state" : {
         "branch" : "main",
-        "revision" : "05e0581e76b7153338836469320a4789fd0257e2"
+        "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
       }
     },
     {
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/swiftlang/swift-syntax",
       "state" : {
-        "revision" : "f99ae8aa18f0cf0d53481901f88a0991dc3bd4a2",
-        "version" : "601.0.1"
+        "revision" : "79e4b74a295b6eb74a8b585e3a39d29e70c1dbd1",
+        "version" : "603.0.2"
       }
     },
     {
