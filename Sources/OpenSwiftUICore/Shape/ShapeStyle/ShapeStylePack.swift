@@ -493,8 +493,8 @@ extension _ShapeStyle_Pack.Fill: Animatable {
         case zero
         case color(Color.Resolved.AnimatableData)
         case vibrantColor(Color.ResolvedVibrant.AnimatableData)
+        case linearGradient(LinearGradient._Paint.AnimatableData)
         // TODO: Gradient + Shader
-        // case linearGradient(LinearGradient._Paint.AnimatableData)
         // case radialGradient(RadialGradient._Paint.AnimatableData)
         // case ellipticalGradient(EllipticalGradient._Paint.AnimatableData)
         // case angularGradient(AngularGradient._Paint.AnimatableData)
@@ -538,9 +538,17 @@ extension _ShapeStyle_Pack.Fill: Animatable {
                 default: break
                 }
             case let .paint(anyPaint):
-                _ = anyPaint
-                // TODO: PaintSetVisitor for gradient/shader types
-                break
+                switch self {
+                    case let .linearGradient(data):
+                        var visitor = PaintSetVisitor<LinearGradient._Paint>(
+                            data: data,
+                            result: .color(.clear)
+                        )
+                        anyPaint.visit(&visitor)
+                        fill = visitor.result
+                    // TODO: Handle gradient and shader paint types
+                    default: break
+                }
             case .foregroundMaterial(var resolved, let materialStyle):
                 switch self {
                 case let .color(data):
@@ -583,6 +591,13 @@ extension _ShapeStyle_Pack.Fill: Animatable {
                 }
                 lhsData += rhsData
                 lhs = .vibrantColor(lhsData)
+            case let .linearGradient(rhsData):
+                guard case var .linearGradient(lhsData) = lhs else {
+                    lhs = rhs
+                    return
+                }
+                lhsData += rhsData
+                lhs = .linearGradient(lhsData)
             case let .colorMatrix(rhsData):
                 guard case var .colorMatrix(lhsData) = lhs else {
                     lhs = rhs
@@ -597,26 +612,43 @@ extension _ShapeStyle_Pack.Fill: Animatable {
             switch rhs {
             case .zero: return
             case let .color(rhsData):
-                guard case var .color(lhsData) = lhs else {
-                    lhs = rhs
-                    return
+                switch lhs {
+                case var .color(lhsData):
+                    lhsData -= rhsData
+                    lhs = .color(lhsData)
+                case .zero:
+                    lhs = .color(rhsData.scaled(by: -1))
+                default: break
                 }
-                lhsData -= rhsData
-                lhs = .color(lhsData)
             case let .vibrantColor(rhsData):
-                guard case var .vibrantColor(lhsData) = lhs else {
-                    lhs = rhs
-                    return
+                switch lhs {
+                case var .vibrantColor(lhsData):
+                    lhsData -= rhsData
+                    lhs = .vibrantColor(lhsData)
+                case .zero:
+                    lhs = .vibrantColor(rhsData.scaled(by: -1))
+                default: break
                 }
-                lhsData -= rhsData
-                lhs = .vibrantColor(lhsData)
+            case let .linearGradient(rhsData):
+                switch lhs {
+                case var .linearGradient(lhsData):
+                    lhsData -= rhsData
+                    lhs = .linearGradient(lhsData)
+                case .zero:
+                    lhs = .linearGradient(rhsData.scaled(by: -1))
+                default: break
+                }
             case let .colorMatrix(rhsData):
-                guard case var .colorMatrix(lhsData) = lhs else {
-                    lhs = rhs
-                    return
+                switch lhs {
+                case var .colorMatrix(lhsData):
+                    lhsData.subtract(rhsData)
+                    lhs = .colorMatrix(lhsData)
+                case .zero:
+                    var result = rhsData
+                    result.scale(by: -1)
+                    lhs = .colorMatrix(result)
+                default: break
                 }
-                lhsData.subtract(rhsData)
-                lhs = .colorMatrix(lhsData)
             }
         }
 
@@ -644,6 +676,9 @@ extension _ShapeStyle_Pack.Fill: Animatable {
             case var .vibrantColor(data):
                 data.scale(by: rhs)
                 self = .vibrantColor(data)
+            case var .linearGradient(data):
+                data.scale(by: rhs)
+                self = .linearGradient(data)
             case var .colorMatrix(data):
                 data.scale(by: rhs)
                 self = .colorMatrix(data)
@@ -655,6 +690,7 @@ extension _ShapeStyle_Pack.Fill: Animatable {
             case .zero: return 0.0
             case let .color(data): return data.magnitudeSquared
             case let .vibrantColor(data): return data.magnitudeSquared
+            case let .linearGradient(data): return data.magnitudeSquared
             case let .colorMatrix(data): return data.magnitudeSquared
             }
         }
@@ -664,6 +700,7 @@ extension _ShapeStyle_Pack.Fill: Animatable {
             case (.zero, .zero): return true
             case let (.color(lhs), .color(rhs)): return lhs == rhs
             case let (.vibrantColor(lhs), .vibrantColor(rhs)): return lhs == rhs
+            case let (.linearGradient(lhs), .linearGradient(rhs)): return lhs == rhs
             case let (.colorMatrix(lhs), .colorMatrix(rhs)): return lhs == rhs
             default: return false
             }
@@ -687,8 +724,20 @@ extension _ShapeStyle_Pack.Fill: Animatable {
             func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
                 if let color = paint as? Color.Resolved {
                     result.pointee = .color(color.animatableData)
+                } else if let linearGradient = paint as? LinearGradient._Paint {
+                    result.pointee = .linearGradient(linearGradient.animatableData)
                 }
-                // TODO: Handle gradient and shader paint types
+                // else if let radialGradient = paint as? RadialGradient._Paint {
+                //     result.pointee = .radialGradient(radialGradient.animatableData)
+                // } else if let ellipticalGradient = paint as? EllipticalGradient._Paint {
+                //     result.pointee = .ellipticalGradient(ellipticalGradient.animatableData)
+                // } else if let angularGradient = paint as? AngularGradient._Paint {
+                //     result.pointee = .angularGradient(angularGradient.animatableData)
+                // } else if let meshGradient = paint as? MeshGradient._Paint {
+                //     result.pointee = .meshGradient(meshGradient.animatableData)
+                // } else if let shader = paint as? Shader.ResolvedShader {
+                //     result.pointee = .shader(ShaderVectorData(shader))
+                // }
             }
         }
     }

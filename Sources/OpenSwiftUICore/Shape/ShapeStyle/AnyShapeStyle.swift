@@ -36,8 +36,8 @@ public struct AnyShapeStyle: ShapeStyle {
             storage = style.storage
         } else if let color = style as? Color {
             storage = .init(box: color.provider)
-//        } else if let gradient = style as? AnyGradient {
-//            storage = .init(box: gradient.provider)
+       } else if let gradient = style as? AnyGradient {
+           storage = .init(box: gradient.provider)
         } else {
             storage = .init(box: ShapeStyleBox(style))
         }
