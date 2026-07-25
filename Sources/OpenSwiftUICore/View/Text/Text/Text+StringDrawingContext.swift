@@ -3,10 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 68D51D45BC7225E72FB030F887E5A492 (SwiftUICore)
 
 public import Foundation
+import OpenSwiftUI_SPI
 #if canImport(UIFoundation_Private)
 import UIFoundation_Private
 #endif
@@ -317,8 +318,272 @@ extension TextDrawingContext {
 extension NSAttributedString.Metrics: Sendable {}
 
 extension ResolvedStyledText {
-    // FIXME
-    package class StringDrawing: ResolvedStyledText {}
+    final package class StringDrawing: ResolvedStyledText {
+        var cache: NSAttributedString.MetricsCache
+
+        override package var drawingMargins: EdgeInsets {
+            let fontMetrics = maxFontMetrics
+            var margins = fontMetrics.outsets
+            margins.top += lineHeightScalingAdjustment(
+                lineHeightMultiple: layoutProperties.lineHeightMultiple,
+                maximumLineHeight: layoutProperties.maximumLineHeight,
+                minimumLineHeight: layoutProperties.minimumLineHeight
+            )
+            margins = margins.adding(stylePadding)
+            margins.round(.up, toMultipleOf: layoutProperties.pixelLength)
+            return margins
+        }
+
+        override package init(
+            storage: NSAttributedString?,
+            layoutProperties: TextLayoutProperties,
+            layoutMargins: EdgeInsets?,
+            stylePadding: EdgeInsets,
+            archiveOptions: ArchivedViewInput.Value,
+            isCollapsible: Bool,
+            features: Text.ResolvedProperties.Features,
+            suffix: ResolvedTextSuffix,
+            attachments: Text.ResolvedProperties.CustomAttachments,
+            styles: [_ShapeStyle_Pack.Style],
+            transitions: [Text.ResolvedProperties.Transition],
+            scaleFactorOverride: CGFloat?
+        ) {
+            let widthIsFlexible = layoutProperties.widthIsFlexible || (storage?.isDynamic == true && archiveOptions.isArchived)
+            cache = NSAttributedString.MetricsCache(
+                storage,
+                scaleFactorOverride: scaleFactorOverride,
+                lineLimit: layoutProperties.lineLimit,
+                lowerLineLimit: layoutProperties.lowerLineLimit,
+                minScaleFactor: layoutProperties.minScaleFactor,
+                bodyHeadOutdent: layoutProperties.bodyHeadOutdent,
+                pixelLength: layoutProperties.pixelLength,
+                widthIsFlexible: widthIsFlexible,
+                drawWithRequestedWidth: layoutProperties.hyphenationFactor != 0,
+                isCollapsible: isCollapsible
+            )
+            super.init(
+                storage: storage,
+                layoutProperties: layoutProperties,
+                layoutMargins: layoutMargins,
+                stylePadding: stylePadding,
+                archiveOptions: archiveOptions,
+                isCollapsible: isCollapsible,
+                features: features,
+                suffix: suffix,
+                attachments: attachments,
+                styles: styles,
+                transitions: transitions,
+                scaleFactorOverride: scaleFactorOverride
+            )
+        }
+
+        override package func sizeThatFits(_ proposedSize: _ProposedSize) -> CGSize {
+            cache.metrics(
+                requestedSize: proposedSize.fixingUnspecifiedDimensions(at: .infinity),
+                layoutMargins: layoutMargins,
+                wantsNumberOfLineFragments: false,
+                context: .shared
+            ).size
+        }
+
+        override package func resetCache() {
+            cache = NSAttributedString.MetricsCache(
+                storage,
+                scaleFactorOverride: scaleFactorOverride,
+                lineLimit: layoutProperties.lineLimit,
+                lowerLineLimit: layoutProperties.lowerLineLimit,
+                minScaleFactor: layoutProperties.minScaleFactor,
+                bodyHeadOutdent: layoutProperties.bodyHeadOutdent,
+                pixelLength: layoutProperties.pixelLength,
+                widthIsFlexible: cache.widthIsFlexible,
+                drawWithRequestedWidth: layoutProperties.hyphenationFactor != 0,
+                isCollapsible: cache.isCollapsible
+            )
+        }
+
+        override package var majorAxis: Axis {
+            .vertical
+        }
+
+        override package func drawingScale(size: CGSize) -> CGFloat {
+            if let scaleFactorOverride {
+                return scaleFactorOverride
+            }
+            guard layoutProperties.minScaleFactor != 1 else {
+                return 1
+            }
+            return cache.metrics(
+                requestedSize: size,
+                layoutMargins: layoutMargins,
+                wantsNumberOfLineFragments: false,
+                context: .shared
+            ).scale
+        }
+
+        override package func spacing() -> Spacing {
+            let idealMetrics = cache.metrics(
+                requestedSize: CGSize.infinity,
+                layoutMargins: layoutMargins,
+                wantsNumberOfLineFragments: false,
+                context: .shared
+            )
+            return Spacing.textSpacing(
+                maxFontMetrics: maxFontMetrics,
+                idealMetrics: idealMetrics,
+                layoutProperties: layoutProperties
+            )
+        }
+
+        override package func size(in request: CGSize) -> CGSize {
+            cache.metrics(
+                requestedSize: request,
+                layoutMargins: layoutMargins,
+                wantsNumberOfLineFragments: false,
+                context: .shared
+            ).size
+        }
+
+        override package func metrics(
+            in size: CGSize,
+            layoutMargins: EdgeInsets?
+        ) -> NSAttributedString.Metrics {
+            cache.metrics(
+                requestedSize: size,
+                layoutMargins: layoutMargins ?? self.layoutMargins,
+                wantsNumberOfLineFragments: true,
+                context: .shared
+            )
+        }
+
+        override package func size(
+            in request: CGSize,
+            context: TextDrawingContext
+        ) -> CGSize {
+            cache.metrics(
+                requestedSize: request,
+                layoutMargins: layoutMargins,
+                wantsNumberOfLineFragments: false,
+                context: context
+            ).size
+        }
+
+        override package func explicitAlignment(
+            _ k: AlignmentKey,
+            at size: CGSize
+        ) -> CGFloat? {
+            if k == VerticalAlignment.lastTextBaseline.key {
+                return cache.metrics(
+                    requestedSize: size,
+                    layoutMargins: layoutMargins,
+                    wantsNumberOfLineFragments: false,
+                    context: .shared
+                ).lastBaseline
+            } else if k == VerticalAlignment.firstTextBaseline.key {
+                return cache.metrics(
+                    requestedSize: size,
+                    layoutMargins: layoutMargins,
+                    wantsNumberOfLineFragments: false,
+                    context: .shared
+                ).firstBaseline
+            } else if k == VerticalAlignment._firstTextLineCenter.key {
+                let firstBaseline = cache.metrics(
+                    requestedSize: size,
+                    layoutMargins: layoutMargins,
+                    wantsNumberOfLineFragments: false,
+                    context: .shared
+                ).firstBaseline
+                return firstBaseline - maxFontMetrics.capHeight * 0.5
+            } else if k == HorizontalAlignment.leadingText.key {
+                return layoutMargins.leading
+            } else {
+                return nil
+            }
+        }
+
+        override package func draw(
+            in drawingArea: CGRect,
+            with measuredSize: CGSize,
+            applyingMarginOffsets: Bool,
+            containsResolvable: Bool,
+            context: TextDrawingContext,
+            renderer: TextRendererBoxBase?
+        ) {
+            guard let storage else {
+                return
+            }
+            let metrics = cache.metrics(
+                requestedSize: measuredSize,
+                layoutMargins: layoutMargins,
+                wantsNumberOfLineFragments: false,
+                context: .shared
+            )
+            let scale: CGFloat
+            if let scaleFactorOverride {
+                scale = scaleFactorOverride
+            } else if layoutProperties.minScaleFactor == 1 {
+                scale = 1
+            } else {
+                scale = metrics.scale
+            }
+            let reusableKitCache = scale == 1 && !containsResolvable
+                ? cache.kitCache
+                : nil
+            var rect = CGRect(
+                x: drawingArea.origin.x,
+                y: drawingArea.origin.y + metrics.baselineAdjustment,
+                width: metrics.size.width + layoutProperties.bodyHeadOutdent,
+                height: metrics.size.height
+            )
+            if applyingMarginOffsets {
+                rect = rect.inset(by: layoutMargins)
+                rect.origin.x += drawingMargins.leading - layoutMargins.leading
+                rect.origin.y += drawingMargins.top - layoutMargins.top
+            }
+            if cache.drawWithRequestedWidth, metrics.requestedWidth != .infinity {
+                let availableWidth = rect.width
+                let requestedWidth = metrics.requestedWidth
+                let alignmentFactor: CGFloat
+                switch layoutProperties.multilineTextAlignment {
+                case .leading:
+                    alignmentFactor = layoutProperties.layoutDirection == .rightToLeft ? 1 : 0
+                case .center:
+                    alignmentFactor = 0.5
+                case .trailing:
+                    alignmentFactor = layoutProperties.layoutDirection == .leftToRight ? 1 : 0
+                }
+                rect.origin.x += (availableWidth - requestedWidth) * alignmentFactor
+                rect.size.width = requestedWidth
+            }
+            // TODO: CoreGraphicsContext.current + RB with cgStyleHandler
+            #if canImport(Darwin)
+            context.withStringDrawingContext(
+                minScaleFactor: 1,
+                lineLimit: layoutProperties.lineLimit,
+                kitCache: reusableKitCache,
+                useNSLayoutManager: storage.hasLinkAttributes
+            ) { drawingContext in
+                let drawingString = storage.scaled(by: scale)
+                drawingString.draw(
+                    with: rect,
+                    options: [
+                        .usesLineFragmentOrigin,
+                        .requiresFullTextLayout,
+                    ],
+                    context: drawingContext
+                )
+            }
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
+        }
+
+        override package func linkURL(
+            at point: CGPoint,
+            in size: CGSize
+        ) -> URL? {
+            CoreGlue2.shared.linkURL(at: point, in: size, stringDrawing: self)
+        }
+    }
 
     // FIXME
     package class TextLayoutManager: ResolvedStyledText {}
