@@ -7,6 +7,9 @@
 //  ID: 68D51D45BC7225E72FB030F887E5A492 (SwiftUICore)
 
 public import Foundation
+#if canImport(UIFoundation_Private)
+import UIFoundation_Private
+#endif
 
 @available(OpenSwiftUI_v6_0, *)
 extension NSAttributedString {
@@ -160,7 +163,153 @@ extension NSAttributedString {
         wantsNumberOfLineFragments: Bool,
         context: TextDrawingContext
     ) -> NSAttributedString.Metrics {
-        _openSwiftUIUnimplementedFailure()
+        context.withStringDrawingContext(
+            minScaleFactor: minScaleFactor,
+            lineLimit: lineLimit,
+            kitCache: kitCache,
+            useNSLayoutManager: hasLinkAttributes
+        ) { drawingContext in
+            #if canImport(Darwin)
+            if wantsNumberOfLineFragments || bodyHeadOutdent > 0 {
+                drawingContext.wantsNumberOfLineFragments = true
+            }
+            let limitedFontHeight: CGFloat
+            if let lowerLineLimit, lowerLineLimit >= 1, length >= 1 {
+                limitedFontHeight = self.limitedFontHeight(by: lowerLineLimit) ?? 0
+            } else {
+                limitedFontHeight = 0
+            }
+            func normalized(_ value: CGFloat) -> CGFloat {
+                switch value {
+                case ...0: .leastNonzeroMagnitude
+                case .infinity: .greatestFiniteMagnitude
+                default: value
+                }
+            }
+            let rect = boundingRect(
+                with: CGSize(
+                    width: normalized(requestedSize.width),
+                    height: max(normalized(requestedSize.height), limitedFontHeight)
+                ),
+                options: [
+                    .usesLineFragmentOrigin,
+                    .requiresFullTextLayout,
+                ],
+                context: drawingContext
+            )
+            kitCache = drawingContext.layout as AnyObject?
+            drawingContext.layout = nil
+            var width = rect.width
+            var height = rect.height
+            if drawingContext.scaledLineHeight != 0 {
+                height = drawingContext.scaledLineHeight
+            }
+            if bodyHeadOutdent > 0 {
+                let matchesSourceLineCount: Bool
+                if drawingContext.numberOfLineFragments != 1 {
+                    let components = string.components(separatedBy: .newlines)
+                    let sourceLineCount: Int
+                    if components.last?.isEmpty == true {
+                        sourceLineCount = components.count - 1
+                    } else {
+                        sourceLineCount = components.count
+                    }
+                    let limitedSourceLineCount = lineLimit.map { min(sourceLineCount, $0) } ?? sourceLineCount
+                    matchesSourceLineCount = limitedSourceLineCount == drawingContext.numberOfLineFragments
+                } else {
+                    matchesSourceLineCount = true
+                }
+                if matchesSourceLineCount {
+                    let outdentedWidth = rect.width + bodyHeadOutdent
+                    width = min(outdentedWidth, normalized(requestedSize.width))
+                }
+            }
+
+            if widthIsFlexible {
+                width = requestedSize.width
+            } else {
+                if width == .leastNonzeroMagnitude {
+                    width = .zero
+                }
+            }
+            height = height.ensuringNonzeroValue()
+            if isCollapsible && height > requestedSize.height {
+                width = .zero
+                height = .zero
+            }
+            return Metrics(
+                size: CGSize(
+                    width: width,
+                    height: max(height, limitedFontHeight)
+                ),
+                scale: drawingContext.actualScaleFactor,
+                firstBaseline: drawingContext.firstBaselineOffset,
+                lastBaseline: drawingContext.scaledLineHeight == 0
+                    ? drawingContext.baselineOffset
+                    : drawingContext.scaledBaselineOffset,
+                baselineAdjustment: 0,
+                requestedWidth: requestedSize.width,
+                numberOfLines: drawingContext.wantsNumberOfLineFragments ? UInt(drawingContext.numberOfLineFragments) : nil,
+                hasTruncatedRanges: drawingContext.hasTruncatedRanges
+            )
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            return Metrics(
+                size: .zero,
+                scale: 1,
+                firstBaseline: 0,
+                lastBaseline: 0,
+                baselineAdjustment: 0,
+                requestedWidth: requestedSize.width,
+                numberOfLines: wantsNumberOfLineFragments ? 0 : nil,
+                hasTruncatedRanges: false
+            )
+            #endif
+        }
+    }
+}
+
+#if canImport(Darwin)
+extension NSString.DrawingOptions {
+    /// Requires the normal text-layout path to produce the final result, while
+    /// still allowing the ultra-fast line breaker to run as a preflight.
+    @inline(__always)
+    static var requiresFullTextLayout: Self {
+        Self(rawValue: 1 << 20)
+    }
+}
+#endif
+
+extension TextDrawingContext {
+    func withStringDrawingContext<Result>(
+        minScaleFactor: CGFloat,
+        lineLimit: Int?,
+        kitCache: AnyObject?,
+        useNSLayoutManager: Bool,
+        `do` body: (NSStringDrawingContext) -> Result
+    ) -> Result {
+        $ctx.access { drawingContext in
+            #if canImport(Darwin)
+            drawingContext.minimumScaleFactor = switch minScaleFactor {
+            case 1...: 0
+            case ...0: .leastNonzeroMagnitude
+            default: minScaleFactor
+            }
+            drawingContext.scaledLineHeight = 0
+            drawingContext.scaledBaselineOffset = 0
+            drawingContext.maximumNumberOfLines = lineLimit.map { max($0, 1) } ?? 0
+            drawingContext.cachesLayout = true
+            drawingContext.layout = kitCache
+            drawingContext.wantsNumberOfLineFragments = false
+            drawingContext.activeRenderers = useNSLayoutManager ? .nsLayoutManager : []
+            drawingContext.linkTextAttributesProvider = { attributes, _ in
+                var attributes = attributes ?? [:]
+                attributes[.kitForegroundColor] = nil
+                return attributes
+            }
+            #endif
+            return body(drawingContext)
+        }
     }
 }
 
@@ -173,4 +322,27 @@ extension ResolvedStyledText {
 
     // FIXME
     package class TextLayoutManager: ResolvedStyledText {}
+}
+
+// FIXME
+extension NSAttributedString {
+    var hasLinkAttributes: Bool {
+        var result = false
+        enumerateAttribute(.kitLink, in: NSRange(location: 0, length: length)) { value, _, stop in
+            // FIXME: URL.init()
+            let link: URL?
+            if let value = value as? URL {
+                link = value
+            } else if let value = value as? String {
+                link = URL(string: value)
+            } else {
+                link = nil
+            }
+            if link != nil {
+                result = true
+                stop.pointee = true
+            }
+        }
+        return result
+    }
 }
