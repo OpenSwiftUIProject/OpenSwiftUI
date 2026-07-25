@@ -1184,7 +1184,7 @@ struct ResolvedTextHelper {
     ) -> ResolvedStyledText? {
         // FIXME
         _openSwiftUIUnimplementedWarning()
-        return ResolvedStyledText(
+        return ResolvedStyledText.styledText(
             storage: text?.resolveAttributedString(in: environment),
             layoutProperties: .init(),
             layoutMargins: nil,
