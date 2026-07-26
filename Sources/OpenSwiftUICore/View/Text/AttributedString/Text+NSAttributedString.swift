@@ -378,6 +378,9 @@ extension Text.Style {
             #endif
             properties.transitions.append(transition.resolved)
         }
+        if includeDefaultAttributes || shouldRedactContent {
+            attributes[.kitParagraphStyle] = properties.paragraph.style(environment: environment)
+        }
         return attributes
     }
 }
