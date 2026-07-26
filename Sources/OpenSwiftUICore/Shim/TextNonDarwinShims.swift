@@ -52,7 +52,7 @@ package struct NSLineBreakStrategy: OptionSet {
     package static let standard = NSLineBreakStrategy(rawValue: 0xFFFF)
 }
 
-package class NSParagraphStyle: NSObject, NSCopying, NSMutableCopying {
+package class NSParagraphStyle: CFCompatObject, NSCopying, NSMutableCopying {
     fileprivate var _compositionLanguage: NSCompositionLanguage = .unset
     fileprivate var _fullyJustified = false
     fileprivate var _spansAllLines = false
@@ -97,6 +97,45 @@ package class NSParagraphStyle: NSObject, NSCopying, NSMutableCopying {
         let style = NSMutableParagraphStyle()
         style.copyProperties(from: self)
         return style
+    }
+
+    package override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? NSParagraphStyle else { return false }
+        return _compositionLanguage == other._compositionLanguage
+            && _fullyJustified == other._fullyJustified
+            && _spansAllLines == other._spansAllLines
+            && _baseWritingDirection == other._baseWritingDirection
+            && _horizontalAlignment == other._horizontalAlignment
+            && _lineBreakMode == other._lineBreakMode
+            && _secondaryLineBreakMode == other._secondaryLineBreakMode
+            && _lineBreakStrategy == other._lineBreakStrategy
+            && _lineSpacing == other._lineSpacing
+            && _lineHeightMultiple == other._lineHeightMultiple
+            && _maximumLineHeight == other._maximumLineHeight
+            && _minimumLineHeight == other._minimumLineHeight
+            && _firstLineHeadIndent == other._firstLineHeadIndent
+            && _hyphenationFactor == other._hyphenationFactor
+            && _allowsDefaultTighteningForTruncation == other._allowsDefaultTighteningForTruncation
+    }
+
+    package override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(_compositionLanguage)
+        hasher.combine(_fullyJustified)
+        hasher.combine(_spansAllLines)
+        hasher.combine(_baseWritingDirection)
+        hasher.combine(_horizontalAlignment)
+        hasher.combine(_lineBreakMode)
+        hasher.combine(_secondaryLineBreakMode)
+        hasher.combine(_lineBreakStrategy.rawValue)
+        hasher.combine(_lineSpacing)
+        hasher.combine(_lineHeightMultiple)
+        hasher.combine(_maximumLineHeight)
+        hasher.combine(_minimumLineHeight)
+        hasher.combine(_firstLineHeadIndent)
+        hasher.combine(_hyphenationFactor)
+        hasher.combine(_allowsDefaultTighteningForTruncation)
+        return hasher.finalize()
     }
 }
 
@@ -179,8 +218,8 @@ extension NSParagraphStyle {
 
 package class NSMutableParagraphStyle: NSParagraphStyle {}
 
-package class NSTextAttachment: NSObject {
-    override init() {
+package class NSTextAttachment: CFCompatObject {
+    package override init() {
         super.init()
     }
 
@@ -199,7 +238,7 @@ extension NSMutableAttributedString {
 
 let NSTextEncapsulationAttributeName: NSAttributedString.Key = .init("NSTextEncapsulation")
 
-package class NSTextEncapsulation: NSObject {
+package class NSTextEncapsulation: CFCompatObject {
     package var scale: NSTextEncapsulationScale = .medium
     package var shape: NSTextEncapsulationShape = .roundedRectangle
     package var style: NSTextEncapsulationStyle = .outline
@@ -213,10 +252,11 @@ package class NSTextEncapsulation: NSObject {
     }
 }
 
-package class NSTextLineFragment: NSObject {
+package class NSTextLineFragment: CFCompatObject {
     package init(attributedString: NSAttributedString, range: NSRange) {
         self.attributedString = attributedString
         self.range = range
+        super.init()
     }
 
     private(set) package var attributedString: NSAttributedString

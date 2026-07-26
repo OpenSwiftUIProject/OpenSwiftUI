@@ -6,7 +6,7 @@
 package import Foundation
 
 /// A CGColor replacement in non-Darwin platform.
-final package class NDColor: NSObject {
+final package class NDColor: CFCompatObject {
     package let red: CGFloat
 
     package let green: CGFloat
@@ -20,6 +20,24 @@ final package class NDColor: NSObject {
         self.green = green
         self.blue = blue
         self.alpha = alpha
+        super.init()
+    }
+
+    package override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? NDColor else { return false }
+        return other.red == red
+            && other.green == green
+            && other.blue == blue
+            && other.alpha == alpha
+    }
+
+    package override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(red)
+        hasher.combine(green)
+        hasher.combine(blue)
+        hasher.combine(alpha)
+        return hasher.finalize()
     }
 }
 
