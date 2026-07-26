@@ -54,21 +54,16 @@ package func makeParagraphStyle(environment: EnvironmentValues) -> NSMutablePara
     return paragraphStyle
 }
 
-#if canImport(CoreText)
-@_silgen_name("kCTUIFontTextStyleTitle0")
-let kCTTextScaleRatioAttributeName: CFString
-#endif
-
 extension NSAttributedString.Key {
-    static let resolvableAttributeConfiguration: NSAttributedString.Key = .init("OpenSwiftUI.resolvableAttributeConfiguration")
+    package static let resolvableAttributeConfiguration: NSAttributedString.Key = .init("OpenSwiftUI.resolvableAttributeConfiguration")
 
-    static let _textScale: NSAttributedString.Key = .init("NSTextScale")
+    package static let _textScale: NSAttributedString.Key = .init("NSTextScale")
 
     #if canImport(CoreText)
-    static let _textScaleRatio: NSAttributedString.Key = .init(kCTTextScaleRatioAttributeName as String)
+    package static let _textScaleRatio: NSAttributedString.Key = .init(kCTTextScaleRatioAttributeName as String)
     #endif
 
-    static let _textScaleStaticWeightMatching: NSAttributedString.Key = .init("NSTextScaleStaticWeightMatching")
+    package static let _textScaleStaticWeightMatching: NSAttributedString.Key = .init("NSTextScaleStaticWeightMatching")
 }
 
 extension NSAttributedString {

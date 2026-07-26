@@ -235,4 +235,10 @@ let kCTFontWidthStandard: CGFloat
 
 @_silgen_name("kCTFontWidthTrait")
 let kCTFontWidthTrait: CFString
+
+// MARK: - Attribute Name
+
+@_silgen_name("kCTTextScaleRatioAttributeName")
+let kCTTextScaleRatioAttributeName: CFString
+
 #endif
