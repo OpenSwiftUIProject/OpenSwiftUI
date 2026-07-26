@@ -7,6 +7,7 @@
 //  ID: E539E054FF6DF2E95534C4C9F8C35428 (SwiftUICore)
 
 public import Foundation
+import UIFoundation_Private
 #if canImport(CoreText)
 import CoreText_Private
 #endif
@@ -251,6 +252,31 @@ extension TypesettingLanguage {
                 identifier: language.maximalIdentifier,
                 modifyFont: flags.contains(.modifyFont)
             )
+        }
+    }
+
+    func apply(
+        content: (() -> String)?,
+        locale: Locale,
+        to attributes: inout [NSAttributedString.Key: Any],
+        modifiers: inout [AnyFontModifier],
+        properties: inout Text.ResolvedProperties
+    ) {
+        guard self != .automatic else {
+            return
+        }
+        switch resolve(with: content, locale: locale) {
+        case let .language(identifier, modifyFont):
+            attributes[.languageIdentifier] = identifier
+            let compositionLanguage = CTParagraphStyleGetCompositionLanguageForLanguage(identifier as CFString)
+            properties.paragraph.compositionLanguage = NSCompositionLanguage(rawValue: compositionLanguage.rawValue)!
+            if modifyFont {
+                modifiers.append(.languageModifier(identifier))
+            }
+        case let .font(identifier):
+            modifiers.append(.languageModifier(identifier))
+        case .none:
+            break
         }
     }
 }

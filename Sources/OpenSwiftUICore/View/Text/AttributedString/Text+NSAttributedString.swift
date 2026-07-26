@@ -281,6 +281,13 @@ extension Text.Style {
         }
         modifiers.append(contentsOf: fontModifiers)
         properties.paragraph.compositionLanguage = .unset
+        typesettingConfiguration.language.apply(
+            content: content,
+            locale: environment.locale,
+            to: &attributes,
+            modifiers: &modifiers,
+            properties: &properties
+        )
         return attributes
     }
 }
