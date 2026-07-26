@@ -5,6 +5,9 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+let _kCTTextScaleAttributeName = "NSTextScale"
+let _kCTTextScaleSecondary = "NSTextScaleSecondary"
+
 @available(OpenSwiftUI_v1_0, *)
 extension Text {
 
@@ -39,7 +42,7 @@ extension Text {
 
 extension Text.Scale {
     package init?(_ string: String) {
-        guard string == "NSTextScaleSecondary" else {
+        guard string == _kCTTextScaleSecondary else {
             return nil
         }
         self = .secondary

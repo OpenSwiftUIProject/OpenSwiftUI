@@ -61,7 +61,7 @@ package func makeParagraphStyle(environment: EnvironmentValues) -> NSMutablePara
 extension NSAttributedString.Key {
     package static let resolvableAttributeConfiguration: NSAttributedString.Key = .init("OpenSwiftUI.resolvableAttributeConfiguration")
 
-    package static let _textScale: NSAttributedString.Key = .init("NSTextScale")
+    package static let _textScale: NSAttributedString.Key = .init(_kCTTextScaleAttributeName)
 
     #if canImport(CoreText)
     package static let _textScaleRatio: NSAttributedString.Key = .init(kCTTextScaleRatioAttributeName as String)
@@ -278,7 +278,7 @@ extension Text.Style {
         properties: inout Text.ResolvedProperties
     ) -> [NSAttributedString.Key: Any] {
         var attributes: [NSAttributedString.Key: Any] = [:]
-        let isRedacted = environment.shouldRedactContent
+        let shouldRedactContent = environment.shouldRedactContent
         var modifiers = environment.fontModifiers
         if !clearedFontModifiers.isEmpty {
             modifiers = modifiers.filter { !clearedFontModifiers.contains($0.typeID) }
@@ -340,6 +340,9 @@ extension Text.Style {
         }
         if let encapsulation {
             attributes[NSTextEncapsulationAttributeName] = encapsulation.resolve(in: environment)
+        }
+        if !environment.shouldRedactContent, (scale ?? environment.textScale) == .secondary {
+            attributes[._textScale] = _kCTTextScaleSecondary
         }
         return attributes
     }
