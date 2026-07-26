@@ -308,6 +308,18 @@ extension Text.Style {
             attributes[.kitBackgroundColor] = resolved.kitColor
             properties.addColor(resolved)
         }
+        let baselineOffsetValue = baselineOffset ?? environment.defaultBaselineOffset
+        if baselineOffsetValue != 0 {
+            attributes[.kitBaselineOffset] = baselineOffsetValue
+        }
+        let kerningValue = kerning ?? environment.defaultKerning
+        if kerningValue != 0 {
+            attributes[.kitKern] = kerningValue
+        }
+        let trackingValue = tracking ?? environment.defaultTracking
+        if trackingValue != 0 {
+            attributes[.kitTracking] = trackingValue
+        }
         return attributes
     }
 }
