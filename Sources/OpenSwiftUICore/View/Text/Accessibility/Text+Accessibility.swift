@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Text.Style
+//  Status: Complete
 //  ID: 96A6D9E0D6EA43C386EBC45EDA3A548B (SwiftUICore)
 
 package import Foundation
@@ -106,20 +106,15 @@ package struct AccessibilityText: Equatable {
     }
 
     package init(_ string: Any) {
-        #if canImport(Darwin)
-        let object = string as AnyObject
-        if object.isKind(of: NSAttributedString.self) {
-            self.storage = .attributed(object as! NSAttributedString)
+        if let attributedString = string as? NSAttributedString {
+            self.storage = .attributed(attributedString)
             self.optional = false
-        } else if let string = object as? String {
+        } else if let string = string as? String {
             self.storage = .plain(string)
             self.optional = false
         } else {
             preconditionFailure("not a string type")
         }
-        #else
-        _openSwiftUIPlatformUnimplementedFailure()
-        #endif
     }
 
     package var text: Text {
@@ -155,15 +150,36 @@ final package class AccessibilityTextStorage: AnyTextStorage, @unchecked Sendabl
     }
 }
 
-// MARK: - AccessibilityText + Protobuf [WIP]
+// MARK: - AccessibilityText + Protobuf
 
 extension AccessibilityText: ProtobufMessage {
     package func encode(to encoder: inout ProtobufEncoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case let .plain(string):
+            try encoder.stringField(1, string)
+        case let .attributed(attributedString):
+            try encoder.messageField(2, CodableAttributedString(attributedString))
+        }
+        encoder.boolField(3, optional)
     }
 
     package init(from decoder: inout ProtobufDecoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var storage: Storage = .plain("")
+        var optional = false
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                storage = .plain(try decoder.stringField(field))
+            case 2:
+                let attributedString: CodableAttributedString = try decoder.messageField(field)
+                storage = .attributed(attributedString.base)
+            case 3:
+                optional = try decoder.boolField(field)
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        self.init(storage: storage, optional: optional)
     }
 }
 
@@ -206,7 +222,7 @@ package struct AccessibilityTextAttributes: Equatable {
     }
 }
 
-// MARK: - AccessibilityTextModifier [WIP]
+// MARK: - AccessibilityTextModifier
 
 final package class AccessibilityTextModifier: AnyTextModifier {
     package let value: AccessibilityTextAttributes
@@ -220,7 +236,11 @@ final package class AccessibilityTextModifier: AnyTextModifier {
     }
 
     override func modify(style: inout Text.Style, environment: EnvironmentValues) {
-        // TODO: Text.Style
+        if let accessibility = style.accessibility {
+            style.accessibility = value.combined(with: accessibility)
+        } else {
+            style.accessibility = value
+        }
     }
 
     override func isEqual(to other: AnyTextModifier) -> Bool {
