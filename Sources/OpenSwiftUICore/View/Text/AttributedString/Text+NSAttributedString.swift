@@ -353,6 +353,31 @@ extension Text.Style {
             )
         }
         #endif
+        if let shadow {
+            let resolved = shadow.shadow.resolve(in: environment).style
+            properties.insets.formPointwiseMin(resolved.insets)
+            #if canImport(Darwin)
+            if let platformColor = CoreColor.platformColor(resolvedColor: resolved.color),
+               let kitShadow = CoreMakeNSShadow(
+                   color: platformColor,
+                   offsetX: resolved.offset.width,
+                   offsetY: resolved.offset.height,
+                   blurRadius: resolved.radius * 2
+               ) {
+                attributes[.kitShadow] = kitShadow
+            }
+            #endif
+        } else if options.contains(.includeTransitions), let transition {
+            #if canImport(Darwin)
+            if let kitShadow = CoreMakeNSShadowWithCustomStyleIndex(
+                system: .default,
+                index: CGFloat(properties.transitions.count)
+            ) {
+                attributes[.kitShadow] = kitShadow
+            }
+            #endif
+            properties.transitions.append(transition.resolved)
+        }
         return attributes
     }
 }
