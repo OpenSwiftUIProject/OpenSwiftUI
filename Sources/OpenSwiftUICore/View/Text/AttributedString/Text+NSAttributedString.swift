@@ -381,6 +381,17 @@ extension Text.Style {
         if includeDefaultAttributes || shouldRedactContent {
             attributes[.kitParagraphStyle] = properties.paragraph.style(environment: environment)
         }
+        if options.contains(.includeAccessibility), !shouldRedactContent {
+            resolveAccessibilitySpeechAttributes(
+                into: &attributes,
+                environment: environment,
+                includeDefaultAttributes: includeDefaultAttributes
+            )
+            resolveAccessibilityTextAttributes(
+                into: &attributes,
+                environment: environment
+            )
+        }
         return attributes
     }
 }
