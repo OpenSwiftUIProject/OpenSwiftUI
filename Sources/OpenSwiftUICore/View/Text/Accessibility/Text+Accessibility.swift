@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Text.Style
+//  Status: WIP
 //  ID: 96A6D9E0D6EA43C386EBC45EDA3A548B (SwiftUICore)
 
 package import Foundation
@@ -206,7 +206,7 @@ package struct AccessibilityTextAttributes: Equatable {
     }
 }
 
-// MARK: - AccessibilityTextModifier [WIP]
+// MARK: - AccessibilityTextModifier
 
 final package class AccessibilityTextModifier: AnyTextModifier {
     package let value: AccessibilityTextAttributes
@@ -220,7 +220,11 @@ final package class AccessibilityTextModifier: AnyTextModifier {
     }
 
     override func modify(style: inout Text.Style, environment: EnvironmentValues) {
-        // TODO: Text.Style
+        if let accessibility = style.accessibility {
+            style.accessibility = value.combined(with: accessibility)
+        } else {
+            style.accessibility = value
+        }
     }
 
     override func isEqual(to other: AnyTextModifier) -> Bool {
