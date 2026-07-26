@@ -8,14 +8,49 @@
 package import Foundation
 package import UIFoundation_Private
 #if canImport(CoreText)
-package import CoreText
+import CoreText
 #endif
 
 package func makeParagraphStyle(environment: EnvironmentValues) -> NSMutableParagraphStyle {
+    let layoutProperties = TextLayoutProperties(environment)
     let paragraphStyle = NSMutableParagraphStyle()
-    #if canImport(Darwin)
-    // TODO
-    #endif
+    paragraphStyle.horizontalAlignment = NSTextHorizontalAlignment(
+        layoutProperties.multilineTextAlignment,
+        layoutDirection: layoutProperties.layoutDirection,
+        writingMode: layoutProperties.writingMode
+    )
+    let isBalanced = environment.paragraphTypesetting.storage == .balanced
+    switch environment.textJustification.storage {
+    case let .full(full):
+        paragraphStyle.fullyJustified = true
+        paragraphStyle.spansAllLines = full.allLines || isBalanced
+    case .none:
+        paragraphStyle.fullyJustified = false
+        paragraphStyle.spansAllLines = isBalanced
+    }
+    paragraphStyle.lineBreakMode = switch layoutProperties.truncationMode {
+    case .head: .byTruncatingHead
+    case .tail: .byTruncatingTail
+    case .middle: .byTruncatingMiddle
+    }
+    paragraphStyle.lineSpacing = layoutProperties.lineSpacing
+    paragraphStyle.lineBreakStrategy = .standard
+    if !environment.avoidsOrphans {
+        paragraphStyle.lineBreakStrategy = paragraphStyle.lineBreakStrategy.subtracting(.pushOut)
+    }
+    paragraphStyle.lineHeightMultiple = layoutProperties.lineHeightMultiple
+    paragraphStyle.maximumLineHeight = layoutProperties.maximumLineHeight
+    paragraphStyle.minimumLineHeight = layoutProperties.minimumLineHeight
+    let hyphenationDisabled = layoutProperties.hyphenationDisabled
+    paragraphStyle.hyphenationFactor = hyphenationDisabled ? 0 : Float(layoutProperties.hyphenationFactor)
+    paragraphStyle.secondaryLineBreakMode = hyphenationDisabled ? .byClipping : .byWordWrapping
+    paragraphStyle.firstLineHeadIndent = layoutProperties.bodyHeadOutdent
+    if environment.bodyHeadOutdent > 0 {
+        paragraphStyle.baseWritingDirection = environment.writingMode == .verticalRightToLeft
+            ? .leftToRight
+            : NSWritingDirection(layoutProperties.layoutDirection)
+    }
+    paragraphStyle.allowsDefaultTighteningForTruncation = environment.allowsTightening
     return paragraphStyle
 }
 

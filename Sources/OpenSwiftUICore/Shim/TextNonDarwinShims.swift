@@ -38,11 +38,36 @@ package enum NSTextHorizontalAlignment: Int {
     case center = 4
 }
 
+package struct NSLineBreakStrategy: OptionSet {
+    package let rawValue: UInt
+
+    package init(rawValue: UInt) {
+        self.rawValue = rawValue
+    }
+
+    package static let pushOut = NSLineBreakStrategy(rawValue: 1 << 0)
+
+    package static let hangulWordPriority = NSLineBreakStrategy(rawValue: 1 << 1)
+
+    package static let standard = NSLineBreakStrategy(rawValue: 0xFFFF)
+}
+
 package class NSParagraphStyle: NSObject {
     fileprivate var _compositionLanguage: NSCompositionLanguage = .unset
     fileprivate var _fullyJustified = false
+    fileprivate var _spansAllLines = false
     fileprivate var _baseWritingDirection: NSWritingDirection = .natural
+    fileprivate var _horizontalAlignment: NSTextHorizontalAlignment = .natural
     fileprivate var _lineBreakMode: NSLineBreakMode = .byWordWrapping
+    fileprivate var _secondaryLineBreakMode: NSLineBreakMode = .byWordWrapping
+    fileprivate var _lineBreakStrategy: NSLineBreakStrategy = []
+    fileprivate var _lineSpacing: CGFloat = .zero
+    fileprivate var _lineHeightMultiple: CGFloat = .zero
+    fileprivate var _maximumLineHeight: CGFloat = .zero
+    fileprivate var _minimumLineHeight: CGFloat = .zero
+    fileprivate var _firstLineHeadIndent: CGFloat = .zero
+    fileprivate var _hyphenationFactor: Float = .zero
+    fileprivate var _allowsDefaultTighteningForTruncation = false
 }
 
 extension NSParagraphStyle {
@@ -56,14 +81,69 @@ extension NSParagraphStyle {
         set { _fullyJustified = newValue }
     }
 
+    package var spansAllLines: Bool {
+        get { _spansAllLines }
+        set { _spansAllLines = newValue }
+    }
+
     package var baseWritingDirection: NSWritingDirection {
         get { _baseWritingDirection }
         set { _baseWritingDirection = newValue }
     }
 
+    package var horizontalAlignment: NSTextHorizontalAlignment {
+        get { _horizontalAlignment }
+        set { _horizontalAlignment = newValue }
+    }
+
     package var lineBreakMode: NSLineBreakMode {
         get { _lineBreakMode }
         set { _lineBreakMode = newValue }
+    }
+
+    package var secondaryLineBreakMode: NSLineBreakMode {
+        get { _secondaryLineBreakMode }
+        set { _secondaryLineBreakMode = newValue }
+    }
+
+    package var lineBreakStrategy: NSLineBreakStrategy {
+        get { _lineBreakStrategy }
+        set { _lineBreakStrategy = newValue }
+    }
+
+    package var lineSpacing: CGFloat {
+        get { _lineSpacing }
+        set { _lineSpacing = newValue }
+    }
+
+    package var lineHeightMultiple: CGFloat {
+        get { _lineHeightMultiple }
+        set { _lineHeightMultiple = newValue }
+    }
+
+    package var maximumLineHeight: CGFloat {
+        get { _maximumLineHeight }
+        set { _maximumLineHeight = newValue }
+    }
+
+    package var minimumLineHeight: CGFloat {
+        get { _minimumLineHeight }
+        set { _minimumLineHeight = newValue }
+    }
+
+    package var firstLineHeadIndent: CGFloat {
+        get { _firstLineHeadIndent }
+        set { _firstLineHeadIndent = newValue }
+    }
+
+    package var hyphenationFactor: Float {
+        get { _hyphenationFactor }
+        set { _hyphenationFactor = newValue }
+    }
+
+    package var allowsDefaultTighteningForTruncation: Bool {
+        get { _allowsDefaultTighteningForTruncation }
+        set { _allowsDefaultTighteningForTruncation = newValue }
     }
 }
 
