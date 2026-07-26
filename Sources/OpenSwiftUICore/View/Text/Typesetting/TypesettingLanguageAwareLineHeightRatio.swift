@@ -5,6 +5,10 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+#if canImport(CoreText)
+import CoreText_Private
+#endif
+
 // MARK: - TypesettingLanguageAwareLineHeightRatio
 
 @_spi(Private)
@@ -83,5 +87,44 @@ extension Text {
             return self
         }
         return modified(with: .anyTextModifier(LanguageAwareLineHeightRatioTextModifier(ratio: ratio)))
+    }
+}
+
+// MARK: - LanguageAwareLineHeightRatioFontModifier
+
+extension TypesettingLanguageAwareLineHeightRatio {
+    func apply(to modifiers: inout [AnyFontModifier]) {
+        let modifier: LanguageAwareLineHeightRatioFontModifier
+        switch storage {
+        case .automatic:
+            return
+        case let .custom(ratio):
+            modifier = .init(ratio: ratio)
+        case .disable:
+            modifier = .init(ratio: 0)
+        case .legacy:
+            modifier = .init(ratio: 0.33)
+        }
+        modifiers.append(.dynamic(modifier))
+    }
+}
+
+struct LanguageAwareLineHeightRatioFontModifier: FontModifier {
+    let ratio: Double
+
+    func modify(
+        descriptor: inout CTFontDescriptor,
+        in context: Font.Context
+    ) {
+        #if canImport(CoreText)
+        descriptor = CTFontDescriptorCreateCopyWithAttributes(
+            descriptor,
+            [
+                kCTFontLanguageAwareLineHeightRatioAttribute: ratio,
+            ] as CFDictionary
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 }

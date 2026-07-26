@@ -288,6 +288,7 @@ extension Text.Style {
             modifiers: &modifiers,
             properties: &properties
         )
+        typesettingConfiguration.languageAwareLineHeightRatio.apply(to: &modifiers)
         return attributes
     }
 }
