@@ -4,6 +4,7 @@
 
 #if canImport(CoreText)
 package import CoreText
+package import CoreText_Private
 import CoreFoundation
 package import Foundation
 
@@ -247,6 +248,16 @@ let kCTFontWidthStandard: CGFloat
 
 @_silgen_name("kCTFontWidthTrait")
 let kCTFontWidthTrait: CFString
+
+// MARK: - CTAdaptiveImageGlyph
+
+@available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
+extension CTAdaptiveImageGlyph {
+    @_silgen_name("$sSo20CTAdaptiveImageGlyphC8CoreTextE09_adaptivebC014convertingFromAB10Foundation16AttributedStringVACE08AdaptivebC0V_tFZ")
+    package static func _adaptiveImageGlyph(
+        convertingFrom adaptiveImageGlyph: AttributedString.AdaptiveImageGlyph
+    ) -> CTAdaptiveImageGlyph
+}
 
 // MARK: - Attribute Name
 

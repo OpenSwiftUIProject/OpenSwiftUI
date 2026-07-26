@@ -344,6 +344,15 @@ extension Text.Style {
         if !environment.shouldRedactContent, (scale ?? environment.textScale) == .secondary {
             attributes[._textScale] = _kCTTextScaleSecondary
         }
+        #if canImport(Darwin)
+        if let adaptiveImageGlyph {
+            attributes[.adaptiveImageGlyph] = NSAdaptiveImageGlyph(
+                ctAdaptiveImageGlyph: CTAdaptiveImageGlyph._adaptiveImageGlyph(
+                    convertingFrom: adaptiveImageGlyph
+                )
+            )
+        }
+        #endif
         return attributes
     }
 }
