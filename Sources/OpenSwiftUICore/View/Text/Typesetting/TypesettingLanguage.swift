@@ -8,9 +8,7 @@
 
 public import Foundation
 import UIFoundation_Private
-#if canImport(CoreText)
 import CoreText_Private
-#endif
 
 // MARK: - TypesettingLanguage
 
@@ -268,8 +266,10 @@ extension TypesettingLanguage {
         switch resolve(with: content, locale: locale) {
         case let .language(identifier, modifyFont):
             attributes[.languageIdentifier] = identifier
+            #if canImport(Darwin)
             let compositionLanguage = CTParagraphStyleGetCompositionLanguageForLanguage(identifier as CFString)
             properties.paragraph.compositionLanguage = NSCompositionLanguage(rawValue: compositionLanguage.rawValue)!
+            #endif
             if modifyFont {
                 modifiers.append(.languageModifier(identifier))
             }
