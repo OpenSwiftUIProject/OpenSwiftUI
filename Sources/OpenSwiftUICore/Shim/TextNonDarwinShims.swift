@@ -31,11 +31,112 @@ package enum NSLineBreakMode: Int {
     case byTruncatingMiddle
 }
 
-package class NSParagraphStyle: NSObject {
+package enum NSTextHorizontalAlignment: Int {
+    case natural = 0
+    case left = 2
+    case right = 3
+    case center = 4
+}
+
+package struct NSLineBreakStrategy: OptionSet {
+    package let rawValue: UInt
+
+    package init(rawValue: UInt) {
+        self.rawValue = rawValue
+    }
+
+    package static let pushOut = NSLineBreakStrategy(rawValue: 1 << 0)
+
+    package static let hangulWordPriority = NSLineBreakStrategy(rawValue: 1 << 1)
+
+    package static let standard = NSLineBreakStrategy(rawValue: 0xFFFF)
+}
+
+package class NSParagraphStyle: CFCompatObject, NSCopying, NSMutableCopying {
     fileprivate var _compositionLanguage: NSCompositionLanguage = .unset
     fileprivate var _fullyJustified = false
+    fileprivate var _spansAllLines = false
     fileprivate var _baseWritingDirection: NSWritingDirection = .natural
+    fileprivate var _horizontalAlignment: NSTextHorizontalAlignment = .natural
     fileprivate var _lineBreakMode: NSLineBreakMode = .byWordWrapping
+    fileprivate var _secondaryLineBreakMode: NSLineBreakMode = .byWordWrapping
+    fileprivate var _lineBreakStrategy: NSLineBreakStrategy = []
+    fileprivate var _lineSpacing: CGFloat = .zero
+    fileprivate var _lineHeightMultiple: CGFloat = .zero
+    fileprivate var _maximumLineHeight: CGFloat = .zero
+    fileprivate var _minimumLineHeight: CGFloat = .zero
+    fileprivate var _firstLineHeadIndent: CGFloat = .zero
+    fileprivate var _hyphenationFactor: Float = .zero
+    fileprivate var _allowsDefaultTighteningForTruncation = false
+
+    fileprivate func copyProperties(from other: NSParagraphStyle) {
+        _compositionLanguage = other._compositionLanguage
+        _fullyJustified = other._fullyJustified
+        _spansAllLines = other._spansAllLines
+        _baseWritingDirection = other._baseWritingDirection
+        _horizontalAlignment = other._horizontalAlignment
+        _lineBreakMode = other._lineBreakMode
+        _secondaryLineBreakMode = other._secondaryLineBreakMode
+        _lineBreakStrategy = other._lineBreakStrategy
+        _lineSpacing = other._lineSpacing
+        _lineHeightMultiple = other._lineHeightMultiple
+        _maximumLineHeight = other._maximumLineHeight
+        _minimumLineHeight = other._minimumLineHeight
+        _firstLineHeadIndent = other._firstLineHeadIndent
+        _hyphenationFactor = other._hyphenationFactor
+        _allowsDefaultTighteningForTruncation = other._allowsDefaultTighteningForTruncation
+    }
+
+    package func copy(with zone: NSZone? = nil) -> Any {
+        let style = NSParagraphStyle()
+        style.copyProperties(from: self)
+        return style
+    }
+
+    package func mutableCopy(with zone: NSZone? = nil) -> Any {
+        let style = NSMutableParagraphStyle()
+        style.copyProperties(from: self)
+        return style
+    }
+
+    package override func isEqual(_ object: Any?) -> Bool {
+        guard let other = object as? NSParagraphStyle else { return false }
+        return _compositionLanguage == other._compositionLanguage
+            && _fullyJustified == other._fullyJustified
+            && _spansAllLines == other._spansAllLines
+            && _baseWritingDirection == other._baseWritingDirection
+            && _horizontalAlignment == other._horizontalAlignment
+            && _lineBreakMode == other._lineBreakMode
+            && _secondaryLineBreakMode == other._secondaryLineBreakMode
+            && _lineBreakStrategy == other._lineBreakStrategy
+            && _lineSpacing == other._lineSpacing
+            && _lineHeightMultiple == other._lineHeightMultiple
+            && _maximumLineHeight == other._maximumLineHeight
+            && _minimumLineHeight == other._minimumLineHeight
+            && _firstLineHeadIndent == other._firstLineHeadIndent
+            && _hyphenationFactor == other._hyphenationFactor
+            && _allowsDefaultTighteningForTruncation == other._allowsDefaultTighteningForTruncation
+    }
+
+    package override var hash: Int {
+        var hasher = Hasher()
+        hasher.combine(_compositionLanguage)
+        hasher.combine(_fullyJustified)
+        hasher.combine(_spansAllLines)
+        hasher.combine(_baseWritingDirection)
+        hasher.combine(_horizontalAlignment)
+        hasher.combine(_lineBreakMode)
+        hasher.combine(_secondaryLineBreakMode)
+        hasher.combine(_lineBreakStrategy.rawValue)
+        hasher.combine(_lineSpacing)
+        hasher.combine(_lineHeightMultiple)
+        hasher.combine(_maximumLineHeight)
+        hasher.combine(_minimumLineHeight)
+        hasher.combine(_firstLineHeadIndent)
+        hasher.combine(_hyphenationFactor)
+        hasher.combine(_allowsDefaultTighteningForTruncation)
+        return hasher.finalize()
+    }
 }
 
 extension NSParagraphStyle {
@@ -49,21 +150,76 @@ extension NSParagraphStyle {
         set { _fullyJustified = newValue }
     }
 
+    package var spansAllLines: Bool {
+        get { _spansAllLines }
+        set { _spansAllLines = newValue }
+    }
+
     package var baseWritingDirection: NSWritingDirection {
         get { _baseWritingDirection }
         set { _baseWritingDirection = newValue }
+    }
+
+    package var horizontalAlignment: NSTextHorizontalAlignment {
+        get { _horizontalAlignment }
+        set { _horizontalAlignment = newValue }
     }
 
     package var lineBreakMode: NSLineBreakMode {
         get { _lineBreakMode }
         set { _lineBreakMode = newValue }
     }
+
+    package var secondaryLineBreakMode: NSLineBreakMode {
+        get { _secondaryLineBreakMode }
+        set { _secondaryLineBreakMode = newValue }
+    }
+
+    package var lineBreakStrategy: NSLineBreakStrategy {
+        get { _lineBreakStrategy }
+        set { _lineBreakStrategy = newValue }
+    }
+
+    package var lineSpacing: CGFloat {
+        get { _lineSpacing }
+        set { _lineSpacing = newValue }
+    }
+
+    package var lineHeightMultiple: CGFloat {
+        get { _lineHeightMultiple }
+        set { _lineHeightMultiple = newValue }
+    }
+
+    package var maximumLineHeight: CGFloat {
+        get { _maximumLineHeight }
+        set { _maximumLineHeight = newValue }
+    }
+
+    package var minimumLineHeight: CGFloat {
+        get { _minimumLineHeight }
+        set { _minimumLineHeight = newValue }
+    }
+
+    package var firstLineHeadIndent: CGFloat {
+        get { _firstLineHeadIndent }
+        set { _firstLineHeadIndent = newValue }
+    }
+
+    package var hyphenationFactor: Float {
+        get { _hyphenationFactor }
+        set { _hyphenationFactor = newValue }
+    }
+
+    package var allowsDefaultTighteningForTruncation: Bool {
+        get { _allowsDefaultTighteningForTruncation }
+        set { _allowsDefaultTighteningForTruncation = newValue }
+    }
 }
 
 package class NSMutableParagraphStyle: NSParagraphStyle {}
 
-package class NSTextAttachment: NSObject {
-    override init() {
+package class NSTextAttachment: CFCompatObject {
+    package override init() {
         super.init()
     }
 
@@ -80,10 +236,27 @@ extension NSMutableAttributedString {
     }
 }
 
-package class NSTextLineFragment: NSObject {
+let NSTextEncapsulationAttributeName: NSAttributedString.Key = .init("NSTextEncapsulation")
+
+package class NSTextEncapsulation: CFCompatObject {
+    package var scale: NSTextEncapsulationScale = .medium
+    package var shape: NSTextEncapsulationShape = .roundedRectangle
+    package var style: NSTextEncapsulationStyle = .outline
+    package var platterSize: NSTextEncapsulationPlatterSize = .regular
+    package var lineWeight: CGFloat = .zero
+    package var color: NSObject?
+    package var minimumWidth: CGFloat = .zero
+
+    package func setPlatformColor(_ platformColor: NSObject?) {
+        color = platformColor
+    }
+}
+
+package class NSTextLineFragment: CFCompatObject {
     package init(attributedString: NSAttributedString, range: NSRange) {
         self.attributedString = attributedString
         self.range = range
+        super.init()
     }
 
     private(set) package var attributedString: NSAttributedString

@@ -65,6 +65,15 @@ package struct AccessibilitySpeechAttributes: Equatable {
         self.phoneticRepresentation = phoneticRepresentation
     }
 
+    package init(in environment: EnvironmentValues) {
+        self.init(
+            alwaysIncludesPunctuation: environment.speechAlwaysIncludesPunctuation,
+            spellsOutCharacters: environment.speechSpellsOutCharacters,
+            adjustedPitch: environment.speechAdjustedPitch,
+            announcementsPriority: environment.speechAnnouncementsPriority
+        )
+    }
+
     package func applyTo(environment: inout EnvironmentValues) {
         environment.speechAlwaysIncludesPunctuation = alwaysIncludesPunctuation
         environment.speechSpellsOutCharacters = spellsOutCharacters
@@ -91,6 +100,17 @@ extension Text.Style {
         environment: EnvironmentValues,
         includeDefaultAttributes: Bool = true
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let speechAttributes = AccessibilitySpeechAttributes(
+            alwaysIncludesPunctuation: speech?.alwaysIncludesPunctuation ?? environment.speechAlwaysIncludesPunctuation,
+            spellsOutCharacters: speech?.spellsOutCharacters ?? environment.speechSpellsOutCharacters,
+            adjustedPitch: speech?.adjustedPitch ?? environment.speechAdjustedPitch,
+            announcementsPriority: speech?.announcementsPriority ?? environment.speechAnnouncementsPriority
+        )
+        AccessibilityCore.resolveAccessibilitySpeechAttributes(
+            into: &attributes,
+            speechAttr: speechAttributes,
+            environment: environment,
+            includeDefaultAttributes: includeDefaultAttributes
+        )
     }
 }

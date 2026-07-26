@@ -145,3 +145,10 @@ private struct TextSuffixModifier: PrimitiveViewModifier, _GraphInputsModifier {
 private struct TextSuffixKey: EnvironmentKey {
     static let defaultValue: ResolvedTextSuffix = .none
 }
+
+extension EnvironmentValues {
+    package var textSuffix: ResolvedTextSuffix {
+        get { self[TextSuffixKey.self] }
+        set { self[TextSuffixKey.self] = newValue }
+    }
+}

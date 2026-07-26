@@ -13,6 +13,7 @@
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
 #include <CoreGraphics/CoreGraphics.h>
+#include "OpenSwiftUICoreSystem.h"
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
@@ -27,6 +28,20 @@ id _Nullable OpenSwiftUICoreShadowGetPlatformColor(id shadow) OPENSWIFTUI_SWIFT_
 
 OPENSWIFTUI_EXPORT
 Class _Nullable OpenSwiftUICoreShadowClass(void) OPENSWIFTUI_SWIFT_NAME(CoreShadowClass());
+
+OPENSWIFTUI_EXPORT
+id _Nullable OpenSwiftUICoreMakeNSShadow(
+    id color,
+    CGFloat offsetX,
+    CGFloat offsetY,
+    CGFloat blurRadius
+) OPENSWIFTUI_SWIFT_NAME(CoreMakeNSShadow(color:offsetX:offsetY:blurRadius:));
+
+OPENSWIFTUI_EXPORT
+id _Nullable OpenSwiftUICoreMakeNSShadowWithCustomStyleIndex(
+    OpenSwiftUICoreSystem system,
+    CGFloat index
+) OPENSWIFTUI_SWIFT_NAME(CoreMakeNSShadowWithCustomStyleIndex(system:index:));
 
 OPENSWIFTUI_ASSUME_NONNULL_END
 

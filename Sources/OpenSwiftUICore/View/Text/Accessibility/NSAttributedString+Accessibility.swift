@@ -79,7 +79,8 @@ extension AccessibilityCore {
         _ attributes: inout [NSAttributedString.Key: Any],
         environment: EnvironmentValues
     ) {
-        _openSwiftUIUnimplementedFailure()
+        environment.accessibilityTextAttributeResolver?
+            .resolveDefaultAttributes(&attributes)
     }
 
     package static func resolveAccessibilitySpeechAttributes(
@@ -88,7 +89,13 @@ extension AccessibilityCore {
         environment: EnvironmentValues,
         includeDefaultAttributes: Bool = true
     ) {
-        _openSwiftUIUnimplementedFailure()
+        environment.accessibilityTextAttributeResolver?
+            .resolveAccessibilitySpeechAttributes(
+                into: &attributes,
+                speechAttr: speechAttr,
+                environment: environment,
+                includeDefaultAttributes: includeDefaultAttributes
+            )
     }
 
     package static func textsResolvedToAttributedText(
@@ -110,7 +117,27 @@ extension Text {
         in environment: EnvironmentValues,
         idiom: AnyInterfaceIdiom? = nil
     ) -> AccessibilityText? {
-        _openSwiftUIUnimplementedFailure()
+        AccessibilityText(self, environment: environment, idiom: idiom)
+    }
+}
+
+// MARK: - Text.Style + AccessibilityTextAttributes
+
+extension Text.Style {
+    package func resolveAccessibilityTextAttributes(
+        into attributes: inout [NSAttributedString.Key: Any],
+        environment: EnvironmentValues
+    ) {
+        environment.accessibilityTextAttributeResolver?
+            .resolveTextStyleAttributes(
+                &attributes,
+                textStyle: self,
+                environment: environment
+            )
+        AccessibilityCore.resolveAttributedTextAttributes(
+            &attributes,
+            environment: environment
+        )
     }
 }
 

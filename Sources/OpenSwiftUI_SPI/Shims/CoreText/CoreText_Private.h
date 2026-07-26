@@ -7,6 +7,7 @@
 #ifndef OpenSwiftUI_SPI_CoreText_Private_h
 #define OpenSwiftUI_SPI_CoreText_Private_h
 
+#include "Private/CTAdaptiveImageGlyph.h"
 #include "Private/CTCompositionLanguage.h"
 #include "Private/CTFontSPI.h"
 #include "Private/CTFontLegibilityWeight.h"

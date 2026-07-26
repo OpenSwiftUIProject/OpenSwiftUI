@@ -130,9 +130,9 @@ Class NSColorSpaceClass(void) {
 + (NSObject *)colorWithSystem:(OpenSwiftUICoreSystem)system cgColor: (CGColorRef)cgColor {
     Class colorClass = OpenSwiftUICoreColorClass(system);
     if (colorClass) {
-        return [colorClass colorWithCGColor: cgColor];
+        return [colorClass colorWithCGColor:cgColor];
     } else {
-        return [[OpenSwiftUICoreColor alloc] initWithCGColor: cgColor];
+        return [[OpenSwiftUICoreColor alloc] initWithCGColor:cgColor];
     }
 }
 

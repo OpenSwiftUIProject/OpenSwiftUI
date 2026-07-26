@@ -101,6 +101,12 @@ extension Text.Modifier {
     }
 }
 
+extension NSAttributedString.Key {
+    static let customAttributes: NSAttributedString.Key = .init(
+        AttributeScopes.OpenSwiftUIAttributes.CustomContainerAttribute.name
+    )
+}
+
 // MARK: Text + CustomAttributes
 
 @_spi(Private)
@@ -111,6 +117,10 @@ extension Text {
 
         public init() {
             _openSwiftUIEmptyStub()
+        }
+
+        package init(attributes: [TextAttributeModifierBase]) {
+            self.attributes = attributes
         }
 
         public mutating func add<T>(_ value: T) where T: TextAttribute {

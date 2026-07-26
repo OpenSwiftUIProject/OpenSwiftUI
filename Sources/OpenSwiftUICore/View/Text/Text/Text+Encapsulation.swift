@@ -92,5 +92,31 @@ extension Text {
 
             public static let large: Text.Encapsulation.PlatterSize = .init(nsPlatterSize: .large)
         }
+
+        func resolve(in environment: EnvironmentValues) -> NSTextEncapsulation {
+            let resolved = NSTextEncapsulation()
+            if let scale {
+                resolved.scale = scale.nsScale
+            }
+            if let shape {
+                resolved.shape = shape.nsShape
+            }
+            if let style {
+                resolved.style = style.nsStyle
+            }
+            if let platterSize {
+                resolved.platterSize = platterSize.nsPlatterSize
+            }
+            if let lineWeight {
+                resolved.lineWeight = lineWeight
+            }
+            if let color {
+                resolved.setPlatformColor(color.resolve(in: environment).kitColor)
+            }
+            if let minimumWidth {
+                resolved.minimumWidth = minimumWidth
+            }
+            return resolved
+        }
     }
 }
