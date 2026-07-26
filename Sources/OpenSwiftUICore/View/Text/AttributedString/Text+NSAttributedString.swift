@@ -392,6 +392,9 @@ extension Text.Style {
                 environment: environment
             )
         }
+        if !customAttributes.isEmpty {
+            attributes[.customAttributes] = Text.CustomAttributes(attributes: customAttributes)
+        }
         return attributes
     }
 }
