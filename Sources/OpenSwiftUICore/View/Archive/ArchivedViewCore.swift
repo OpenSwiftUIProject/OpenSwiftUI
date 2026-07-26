@@ -27,7 +27,7 @@ package struct ArchivedViewCore {
 
         package var preferredBundleLanguage: String? = Bundle.main.preferredLocalizations.first
         @CodableRawRepresentable
-        package var preferredCompositionLanguage: CTCompositionLanguage = OpenSwiftUI_CTParagraphStyleGetCompositionLanguageForLanguage(nil)
+        package var preferredCompositionLanguage: CTCompositionLanguage = CTParagraphStyleGetCompositionLanguageForLanguage(nil)
 
         package init(
             majorVersion: Int = ArchivedViewCore.majorVersion,

@@ -24,13 +24,9 @@ OPENSWIFTUI_EXTERN_C_BEGIN
 
 CTCompositionLanguage CTParagraphStyleGetCompositionLanguageForLanguage(CFStringRef language);
 
-static inline CTCompositionLanguage OpenSwiftUI_CTParagraphStyleGetCompositionLanguageForLanguage(CFStringRef language) {
-    return CTParagraphStyleGetCompositionLanguageForLanguage(language);
-}
-
 #else
 
-static inline CTCompositionLanguage OpenSwiftUI_CTParagraphStyleGetCompositionLanguageForLanguage(CFStringRef language) {
+static inline CTCompositionLanguage CTParagraphStyleGetCompositionLanguageForLanguage(CFStringRef language) {
     return kCTCompositionLanguageUnset;
 }
 
