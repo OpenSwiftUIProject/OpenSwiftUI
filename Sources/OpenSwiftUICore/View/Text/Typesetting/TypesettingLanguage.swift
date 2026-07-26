@@ -4,8 +4,12 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
+//  ID: E539E054FF6DF2E95534C4C9F8C35428 (SwiftUICore)
 
 public import Foundation
+#if canImport(CoreText)
+import CoreText_Private
+#endif
 
 // MARK: - TypesettingLanguage
 
@@ -207,5 +211,89 @@ extension Text {
         }
         let modifier: Text.Modifier = .anyTextModifier(LanguageTextModifier(language: language))
         return modified(with: modifier)
+    }
+}
+
+// MARK: - TypesettingLanguage + Resolution
+
+extension TypesettingLanguage {
+    enum Resolved {
+        case language(identifier: String, modifyFont: Bool)
+        case font(identifier: String)
+        case none
+    }
+
+    func resolve(
+        with content: (() -> String)?,
+        locale: Locale
+    ) -> Resolved {
+        switch storage {
+        case .automatic:
+            return .none
+        case .contentAware:
+            #if canImport(CoreText)
+            if let content,
+               let identifier = CTFontCopyTallestTextStyleLanguageForString(
+                   content() as CFString
+               ) as String? {
+                return .font(identifier: identifier)
+            }
+            #endif
+            guard let languageCode = locale.language.languageCode else {
+                return .none
+            }
+            return .language(
+                identifier: languageCode.identifier,
+                modifyFont: true
+            )
+        case let .explicit(language, flags):
+            return .language(
+                identifier: language.maximalIdentifier,
+                modifyFont: flags.contains(.modifyFont)
+            )
+        }
+    }
+}
+
+// MARK: - LanguageFontModifier
+
+extension AnyFontModifier {
+    private static var languageModifiers: [String: AnyFontModifier] = [:]
+
+    fileprivate static func languageModifier(_ identifier: String) -> AnyFontModifier {
+        if let modifier = languageModifiers[identifier] {
+            return modifier
+        }
+        let modifier = AnyFontModifier.dynamic(
+            LanguageFontModifier(identifier: identifier)
+        )
+        languageModifiers[identifier] = modifier
+        return modifier
+    }
+}
+
+struct LanguageFontModifier: FontModifier {
+    var identifier: String
+
+    func modify(
+        descriptor: inout CTFontDescriptor,
+        in context: Font.Context
+    ) {
+        #if canImport(CoreText)
+        guard CTFontDescriptorCopyAttribute(
+            descriptor,
+            kCTFontDescriptorLanguageAttribute
+        ) == nil else {
+            return
+        }
+        descriptor = CTFontDescriptorCreateCopyWithAttributes(
+            descriptor,
+            [
+                kCTFontDescriptorLanguageAttribute: identifier,
+            ] as CFDictionary
+        )
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 }

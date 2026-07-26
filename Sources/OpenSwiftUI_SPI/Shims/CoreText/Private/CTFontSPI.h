@@ -1,7 +1,6 @@
 //
 //  CTFontSPI.h
 //  OpenSwiftUI_SPI
-//
 
 #pragma once
 

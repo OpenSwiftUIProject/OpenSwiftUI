@@ -60,6 +60,11 @@ package func CTFontDescriptorCreateForUIType(
 @_silgen_name("CTFontCopySystemUIFontExcessiveLineHeightCharacterSet")
 package func CTFontCopySystemUIFontExcessiveLineHeightCharacterSet() -> CFCharacterSet?
 
+@_silgen_name("CTFontCopyTallestTextStyleLanguageForString")
+package func CTFontCopyTallestTextStyleLanguageForString(
+    _ string: CFString
+) -> CFString?
+
 @_silgen_name("CTFontGetLanguageAwareOutsets")
 package func CTFontGetLanguageAwareOutsets(
     _ font: CTFont,
@@ -95,6 +100,12 @@ let kCTFontGradeTrait: CFString?
 
 @_silgen_name("kCTFontLegibilityWeightAttribute")
 let kCTFontLegibilityWeightAttribute: CFString
+
+@_silgen_name("kCTFontDescriptorLanguageAttribute")
+let kCTFontDescriptorLanguageAttribute: CFString
+
+@_silgen_name("kCTFontLanguageAwareLineHeightRatioAttribute")
+let kCTFontLanguageAwareLineHeightRatioAttribute: CFString
 
 // MARK: - CTFontTextStyle
 
