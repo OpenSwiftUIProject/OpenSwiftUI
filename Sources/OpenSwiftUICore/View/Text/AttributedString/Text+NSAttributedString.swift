@@ -117,7 +117,15 @@ extension EnvironmentValues {
         includeDefaultAttributes: Bool = true,
         options: Text.ResolveOptions = []
     ) -> [NSAttributedString.Key: Any] {
-        _openSwiftUIUnimplementedFailure()
+        var properties = Text.ResolvedProperties()
+        let style = Text.Style()
+        return style.nsAttributes(
+            content: nil,
+            environment: self,
+            includeDefaultAttributes: includeDefaultAttributes,
+            with: options,
+            properties: &properties
+        )
     }
 }
 
