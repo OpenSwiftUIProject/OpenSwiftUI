@@ -52,7 +52,7 @@ package struct NSLineBreakStrategy: OptionSet {
     package static let standard = NSLineBreakStrategy(rawValue: 0xFFFF)
 }
 
-package class NSParagraphStyle: NSObject {
+package class NSParagraphStyle: NSObject, NSCopying, NSMutableCopying {
     fileprivate var _compositionLanguage: NSCompositionLanguage = .unset
     fileprivate var _fullyJustified = false
     fileprivate var _spansAllLines = false
@@ -68,6 +68,36 @@ package class NSParagraphStyle: NSObject {
     fileprivate var _firstLineHeadIndent: CGFloat = .zero
     fileprivate var _hyphenationFactor: Float = .zero
     fileprivate var _allowsDefaultTighteningForTruncation = false
+
+    fileprivate func copyProperties(from other: NSParagraphStyle) {
+        _compositionLanguage = other._compositionLanguage
+        _fullyJustified = other._fullyJustified
+        _spansAllLines = other._spansAllLines
+        _baseWritingDirection = other._baseWritingDirection
+        _horizontalAlignment = other._horizontalAlignment
+        _lineBreakMode = other._lineBreakMode
+        _secondaryLineBreakMode = other._secondaryLineBreakMode
+        _lineBreakStrategy = other._lineBreakStrategy
+        _lineSpacing = other._lineSpacing
+        _lineHeightMultiple = other._lineHeightMultiple
+        _maximumLineHeight = other._maximumLineHeight
+        _minimumLineHeight = other._minimumLineHeight
+        _firstLineHeadIndent = other._firstLineHeadIndent
+        _hyphenationFactor = other._hyphenationFactor
+        _allowsDefaultTighteningForTruncation = other._allowsDefaultTighteningForTruncation
+    }
+
+    package func copy(with zone: NSZone? = nil) -> Any {
+        let style = NSParagraphStyle()
+        style.copyProperties(from: self)
+        return style
+    }
+
+    package func mutableCopy(with zone: NSZone? = nil) -> Any {
+        let style = NSMutableParagraphStyle()
+        style.copyProperties(from: self)
+        return style
+    }
 }
 
 extension NSParagraphStyle {
