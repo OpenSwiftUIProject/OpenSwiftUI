@@ -89,17 +89,20 @@ extension Text {
         options: Text.ResolveOptions = [.includeSupportForRepeatedResolution],
         idiom: AnyInterfaceIdiom? = nil
     ) -> NSAttributedString? {
-        // FIXME
-        _openSwiftUIUnimplementedWarning()
         var container = Text.Resolved()
         container.includeDefaultAttributes = includeDefaultAttributes
         container.idiom = idiom
-        // container.properties = options
-        resolve(into: &container, in: environment, with: options)
-        if let attributedString = container.attributedString {
-            // attributedString.resolveUpdateSchedule(recalculate: true )
+        var configuration = environment.typesettingConfiguration
+        if !storage.allowsTypesettingLanguage() {
+            configuration.language = .automatic
         }
-        return container.attributedString
+        container.style.typesettingConfiguration = configuration
+        resolve(into: &container, in: environment, with: options)
+        let attributedString = container.attributedString
+        if let attributedString {
+            _ = attributedString.resolveUpdateSchedule(recalculate: true)
+        }
+        return attributedString
     }
 
     package func resolveAttributedStringAndProperties(
@@ -108,7 +111,43 @@ extension Text {
         options: Text.ResolveOptions = [.includeSupportForRepeatedResolution],
         idiom: AnyInterfaceIdiom? = nil
     ) -> (NSAttributedString?, Text.ResolvedProperties) {
-        _openSwiftUIUnimplementedFailure()
+        var container = Text.Resolved()
+        container.includeDefaultAttributes = includeDefaultAttributes
+        container.idiom = idiom
+        var configuration = environment.typesettingConfiguration
+        if !storage.allowsTypesettingLanguage() {
+            configuration.language = .automatic
+        }
+        container.style.typesettingConfiguration = configuration
+        if options.contains([.allowsKeyColors, .allowsTextSuffix]) {
+            let styles = environment.textSuffix.styles
+            if !styles.isEmpty {
+                container.properties.styles = styles
+                container.properties.features = .keyColor
+            }
+        }
+        resolve(into: &container, in: environment, with: options)
+        let attributedString = container.attributedString
+        container.properties.suffix = .none
+        if options.contains(.allowsTextSuffix) {
+            let suffix = environment.textSuffix
+            switch suffix {
+            case .none:
+                break
+            case .truncated:
+                container.properties.suffix = suffix
+            case let .alwaysVisible(line, _):
+                let offset = attributedString?.length ?? 0
+                // TODO: append ConcreteCustomTextAttachment(LineAttachment(line:bounds:))
+                _openSwiftUIUnimplementedWarning()
+                container.properties.registerCustomAttachment(at: offset)
+                container.properties.suffix = suffix
+            }
+        }
+        if let attributedString {
+            _ = attributedString.resolveUpdateSchedule(recalculate: true)
+        }
+        return (attributedString, container.properties)
     }
 }
 
