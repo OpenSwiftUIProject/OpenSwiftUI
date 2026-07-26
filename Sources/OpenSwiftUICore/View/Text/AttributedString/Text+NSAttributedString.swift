@@ -395,6 +395,15 @@ extension Text.Style {
         if !customAttributes.isEmpty {
             attributes[.customAttributes] = Text.CustomAttributes(attributes: customAttributes)
         }
+        #if canImport(CoreText)
+        if superscript != nil, let font = attributes[.kitFont] as! CTFont? {
+            let baselineOffset = attributes[.kitBaselineOffset] as? CGFloat ?? .zero
+            let newFont = font.scaled(by: 0.65, toMultipleOf: 0.25, maintainVisualWeight: true)
+            let newBaselineOffset = baselineOffset + (font.capHeight - newFont.capHeight)
+            attributes[.kitFont] = newFont
+            attributes[.kitBaselineOffset] = newBaselineOffset
+        }
+        #endif
         return attributes
     }
 }
