@@ -6,12 +6,13 @@
 //  Status: Complete
 //  ID: 82074A2E22E8635055FCB3A2D5E40280 (SwiftUICore)
 
+package import UIFoundation_Private
+
 @available(OpenSwiftUI_v1_0, *)
 extension Text {
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)
     public struct WritingMode: Sendable, Hashable {
-        @_spi(Private)
         package enum Storage {
             case horizontalTopToBottom
             case verticalRightToLeft
@@ -63,27 +64,50 @@ extension Text.WritingMode: ProtobufEnum {
     }
 }
 
-//#if canImport(UIFoundation_Private)
-//import UIFoundation_Private
-//
-//extension NSTextHorizontalAlignment {
-//    package init(
-//        _ alignment: TextAlignment,
-//        layoutDirection: LayoutDirection,
-//        writingMode: Text.WritingMode
-//    ) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//
-//    package init(in environment: EnvironmentValues) {
-//        _openSwiftUIUnimplementedFailure()
-//    }
-//}
-//
-//#endif
+// MARK: - NSTextHorizontalAlignment + TextAlignment
 
-//extension NSWritingDirection {
-//    package init(_ layoutDirection: LayoutDirection) {
-//
-//    }
-//}
+extension NSTextHorizontalAlignment {
+    /// Resolves the visual alignment of a paragraph.
+    ///
+    /// A vertical writing mode maps the leading and trailing edges onto the
+    /// top and bottom of the line, so the layout direction only participates
+    /// in the resolution for a horizontal writing mode.
+    package init(
+        _ alignment: TextAlignment,
+        layoutDirection: LayoutDirection,
+        writingMode: Text.WritingMode
+    ) {
+        guard case .horizontalTopToBottom = writingMode.storage else {
+            self = switch alignment {
+            case .leading: .left
+            case .center: .center
+            case .trailing: .right
+            }
+            return
+        }
+        self = switch (alignment, layoutDirection) {
+        case (.center, _): .center
+        case (.leading, .leftToRight), (.trailing, .rightToLeft): .left
+        case (.leading, .rightToLeft), (.trailing, .leftToRight): .right
+        }
+    }
+
+    package init(in environment: EnvironmentValues) {
+        self.init(
+            environment.multilineTextAlignment,
+            layoutDirection: environment.layoutDirection,
+            writingMode: environment.writingMode
+        )
+    }
+}
+
+// MARK: - NSWritingDirection + LayoutDirection
+
+extension NSWritingDirection {
+    package init(_ layoutDirection: LayoutDirection) {
+        self = switch layoutDirection {
+        case .leftToRight: .leftToRight
+        case .rightToLeft: .rightToLeft
+        }
+    }
+}

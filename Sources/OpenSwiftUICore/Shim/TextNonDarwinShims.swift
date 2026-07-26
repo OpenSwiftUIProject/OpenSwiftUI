@@ -31,6 +31,13 @@ package enum NSLineBreakMode: Int {
     case byTruncatingMiddle
 }
 
+package enum NSTextHorizontalAlignment: Int {
+    case natural = 0
+    case left = 2
+    case right = 3
+    case center = 4
+}
+
 package class NSParagraphStyle: NSObject {
     fileprivate var _compositionLanguage: NSCompositionLanguage = .unset
     fileprivate var _fullyJustified = false

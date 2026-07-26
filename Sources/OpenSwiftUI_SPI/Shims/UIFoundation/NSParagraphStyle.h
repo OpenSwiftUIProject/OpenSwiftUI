@@ -68,6 +68,17 @@ typedef NS_OPTIONS(NSUInteger, NSLineBreakStrategy) {
 
 #endif // !__NSPARAGRAPH_STYLE_SHARED_SECTION__
 
+// The resolved horizontal alignment of a paragraph. Unlike `NSTextAlignment`,
+// the leading and trailing values are expressed in visual terms, and the
+// natural value is resolved by the text engine using the base writing
+// direction of the line.
+typedef NS_ENUM(NSInteger, NSTextHorizontalAlignment) {
+    NSTextHorizontalAlignmentNatural = 0,
+    NSTextHorizontalAlignmentLeft = 2,
+    NSTextHorizontalAlignmentRight = 3,
+    NSTextHorizontalAlignmentCenter = 4,
+};
+
 // NSTextTab
 typedef NSString * NSTextTabOptionKey NS_TYPED_ENUM API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0));
 OPENSWIFTUI_EXPORT NSTextTabOptionKey NSTabColumnTerminatorsAttributeName API_AVAILABLE(macos(10.0), ios(7.0), tvos(9.0), watchos(2.0), visionos(1.0)); // An attribute for NSTextTab options.  The value is NSCharacterSet.  The character set is used to determine the tab column terminating character.  The tab and newline characters are implied even if not included in the character set.
@@ -192,6 +203,15 @@ OPENSWIFTUI_EXPORT API_AVAILABLE(macos(10.0), ios(6.0), tvos(9.0), watchos(2.0),
 
 @property (nonatomic) BOOL fullyJustified_openswiftui_safe_wrapper
     OPENSWIFTUI_SWIFT_NAME(fullyJustified);
+
+@property (nonatomic) NSTextHorizontalAlignment horizontalAlignment_openswiftui_safe_wrapper
+    OPENSWIFTUI_SWIFT_NAME(horizontalAlignment);
+
+@property (nonatomic) BOOL spansAllLines_openswiftui_safe_wrapper
+    OPENSWIFTUI_SWIFT_NAME(spansAllLines);
+
+@property (nonatomic) NSLineBreakMode secondaryLineBreakMode_openswiftui_safe_wrapper
+    OPENSWIFTUI_SWIFT_NAME(secondaryLineBreakMode);
 
 @end
 

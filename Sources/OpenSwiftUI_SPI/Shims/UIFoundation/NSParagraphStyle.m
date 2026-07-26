@@ -32,6 +32,36 @@
     func(self, selector, fullyJustified);
 }
 
+- (NSTextHorizontalAlignment)horizontalAlignment_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSTextHorizontalAlignment, @"horizontalAlignment", NSTextHorizontalAlignmentNatural);
+    return func(self, selector);
+}
+
+- (void)setHorizontalAlignment_openswiftui_safe_wrapper:(NSTextHorizontalAlignment)horizontalAlignment {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setHorizontalAlignment:", , NSTextHorizontalAlignment);
+    func(self, selector, horizontalAlignment);
+}
+
+- (BOOL)spansAllLines_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"spansAllLines", NO);
+    return func(self, selector);
+}
+
+- (void)setSpansAllLines_openswiftui_safe_wrapper:(BOOL)spansAllLines {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setSpansAllLines:", , BOOL);
+    func(self, selector, spansAllLines);
+}
+
+- (NSLineBreakMode)secondaryLineBreakMode_openswiftui_safe_wrapper {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSLineBreakMode, @"secondaryLineBreakMode", NSLineBreakByWordWrapping);
+    return func(self, selector);
+}
+
+- (void)setSecondaryLineBreakMode_openswiftui_safe_wrapper:(NSLineBreakMode)secondaryLineBreakMode {
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(void, @"setSecondaryLineBreakMode:", , NSLineBreakMode);
+    func(self, selector, secondaryLineBreakMode);
+}
+
 @end
 
 #endif
