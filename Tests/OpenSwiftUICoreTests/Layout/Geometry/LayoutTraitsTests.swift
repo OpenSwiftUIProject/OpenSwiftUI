@@ -86,7 +86,6 @@ struct LayoutTraitsTests {
         ])
         func exitTest(_ min: CGFloat, _ ideal: CGFloat, _ max: CGFloat, _ expectedFailure: Bool) async {
             if expectedFailure {
-                #if compiler(>=6.3) // ST-12
                 #if !os(iOS) && !os(visionOS)
                 await #expect(processExitsWith: .failure) { [min, ideal, max] in
                     _ = Dimension(min: min, ideal: ideal, max: max)
@@ -95,7 +94,6 @@ struct LayoutTraitsTests {
                     d.ideal = ideal
                     d.min = min
                 }
-                #endif
                 #endif
             } else {
                 _ = Dimension(min: min, ideal: ideal, max: max)

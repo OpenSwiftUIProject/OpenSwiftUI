@@ -24,7 +24,7 @@ jobs:
   # stdout_renderer_linux:
   #   name: Run stdout renderer on Linux
   #   runs-on: ubuntu-22.04
-  #   container: swift:6.2.4-jammy
+  #   container: swift:6.3.3-jammy
   #   env:
   #     OPENSWIFTUI_WERROR: 0
   #     OPENSWIFTUI_SWIFT_LOG: 1
@@ -40,7 +40,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
         backend: [AttributeGraph, Compute]
         include:

@@ -32,7 +32,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
         include:
@@ -93,12 +93,9 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
-          # runners with CoreSimulator codesigning errors. Build the x86_64
-          # simulator slice to match the test command below until that is fixed.
-          # Swift 6.2 macro prebuilts do not support the x86_64 simulator
-          # testable macro target, so build SwiftSyntax from source instead.
-          NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build -IDEPackageEnablePrebuilts=NO \
+          # Keep the iOS 18.5 test runner on x86_64 until the arm64 launch path
+          # is validated with Xcode 26.6. Build the matching simulator slice.
+          NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -112,8 +109,8 @@ jobs:
           set -o pipefail
           source Scripts/Tuist/common.sh
           # See the build step above: force x86_64 to avoid the arm64 package
-          # test runner launch/codesigning failure on this Xcode/iOS pair.
-          NSUnbufferedIO=YES tuist_xcodebuild "$TEST_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
+          # test runner launch/codesigning failure seen on the previous toolchain.
+          NSUnbufferedIO=YES tuist_xcodebuild "$TEST_RESULT_BUNDLE_PATH" test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \

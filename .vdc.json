@@ -67,9 +67,6 @@
     "openobservation": "../OpenObservation",
     "openrenderbox": "../OpenRenderBox"
   },
-  "buildArguments": [
-    "--disable-index-store"
-  ],
   "doccArguments": [
     "--emit-digest"
   ]

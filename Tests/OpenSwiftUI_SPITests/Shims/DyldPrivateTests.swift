@@ -20,16 +20,16 @@ struct DyldPrivateTests {
         #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(.min)) == true)
 
         #if os(iOS) || os(visionOS)
-        // Path: Xcode-26.3.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
-        // SDK version: iOS 26.2
-        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_3.rawValue)) == false)
-        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_2.rawValue)) == true)
+        // Path: Xcode-26.6.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: iOS 26.4
+        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_5.rawValue)) == false)
+        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_4.rawValue)) == true)
         #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_0.rawValue)) == true)
         #elseif os(macOS)
-        // Path: Xcode-26.3.0.app Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
-        // SDK version: macOS 26.2
-        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._26_3.rawValue)) == false)
-        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._26_2.rawValue)) == true)
+        // Path: Xcode-26.6.0.app Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: macOS 26.4
+        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._26_5.rawValue)) == false)
+        #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._26_4.rawValue)) == true)
         #expect(dyld_program_sdk_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._26_0.rawValue)) == true)
         #else
         preconditionFailure("Unsupported Darwin platform")
@@ -47,7 +47,7 @@ struct DyldPrivateTests {
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(.max)) == false)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(.min)) == true)
         #if os(iOS) || os(visionOS)
-        // Path: Xcode-26.3.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // Path: Xcode-26.6.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
         // min version: iOS 13.0 (x86_64) & iOS 14.0 (arm64)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._26_0.rawValue)) == false)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._15_0.rawValue)) == false)
@@ -58,7 +58,7 @@ struct DyldPrivateTests {
         #endif
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_IOS_VERSION._13_0.rawValue)) == true)
         #elseif os(macOS)
-        // Path: Xcode-26.3.0.app Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // Path: Xcode-26.6.0.app Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
         // min version: macOS 14.0
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._26_0.rawValue)) == false)
         #expect(dyld_program_minos_at_least(activePlatformBuildVersion(DYLD_MACOSX_VERSION._15_0.rawValue)) == false)

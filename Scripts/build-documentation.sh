@@ -262,9 +262,7 @@ if [[ "$REBUILD_NEEDED" == true ]] || [[ "$CLEAN_BUILD" == true ]]; then
     fi
 
     log_info "Generating symbol graphs..."
-    # Swift 6.2 crashes while indexing AppKit with the local private framework shims.
     swift build \
-        --disable-index-store \
         --target "$TARGET_NAME" \
         -Xswiftc -emit-symbol-graph \
         -Xswiftc -emit-symbol-graph-dir \

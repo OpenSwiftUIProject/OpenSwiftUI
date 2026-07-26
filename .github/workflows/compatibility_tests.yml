@@ -29,7 +29,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
     # Limit to self-hosted to reduce action cost
     runs-on:
@@ -58,11 +58,7 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
           set -o pipefail
-          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-          # Swift 6.2 also crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
-            --disable-experimental-prebuilts \
-            --disable-index-store \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -71,11 +67,7 @@ jobs:
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
           set -o pipefail
-          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-          # Swift 6.2 also crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
-            --disable-experimental-prebuilts \
-            --disable-index-store \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -90,7 +82,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
         include:
@@ -150,11 +142,9 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-          # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
-          # runners with CoreSimulator codesigning errors; force the x86_64
-          # simulator slice until that launch path is fixed.
-          NSUnbufferedIO=YES tuist_xcodebuild "$OPENSWIFTUI_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
+          # Keep the iOS 18.5 test runner on x86_64 until the arm64 launch path
+          # is validated with Xcode 26.6.
+          NSUnbufferedIO=YES tuist_xcodebuild "$OPENSWIFTUI_RESULT_BUNDLE_PATH" test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -170,10 +160,9 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
           # See the OpenSwiftUI iOS compatibility step above: force x86_64 to
           # avoid the arm64 package test runner launch/codesigning failure.
-          NSUnbufferedIO=YES tuist_xcodebuild "$SWIFTUI_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
+          NSUnbufferedIO=YES tuist_xcodebuild "$SWIFTUI_RESULT_BUNDLE_PATH" test \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
