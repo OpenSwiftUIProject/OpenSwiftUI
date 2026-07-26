@@ -197,6 +197,22 @@ extension NSMutableAttributedString {
     }
 }
 
+let NSTextEncapsulationAttributeName: NSAttributedString.Key = .init("NSTextEncapsulation")
+
+package class NSTextEncapsulation: NSObject {
+    package var scale: NSTextEncapsulationScale = .medium
+    package var shape: NSTextEncapsulationShape = .roundedRectangle
+    package var style: NSTextEncapsulationStyle = .outline
+    package var platterSize: NSTextEncapsulationPlatterSize = .regular
+    package var lineWeight: CGFloat = .zero
+    package var color: NSObject?
+    package var minimumWidth: CGFloat = .zero
+
+    package func setPlatformColor(_ platformColor: NSObject?) {
+        color = platformColor
+    }
+}
+
 package class NSTextLineFragment: NSObject {
     package init(attributedString: NSAttributedString, range: NSRange) {
         self.attributedString = attributedString

@@ -8,7 +8,11 @@
 package import Foundation
 package import UIFoundation_Private
 #if canImport(CoreText)
-import CoreText
+package import CoreText
+package import CoreText_Private
+#endif
+#if canImport(Darwin)
+package import OpenSwiftUI_SPI
 #endif
 
 package func makeParagraphStyle(environment: EnvironmentValues) -> NSMutableParagraphStyle {
@@ -333,6 +337,9 @@ extension Text.Style {
                 attributes[.kitUnderlineColor] = color.kitColor
                 properties.addColor(color)
             }
+        }
+        if let encapsulation {
+            attributes[NSTextEncapsulationAttributeName] = encapsulation.resolve(in: environment)
         }
         return attributes
     }

@@ -5,6 +5,7 @@
 #if canImport(CoreText)
 package import CoreText
 import CoreFoundation
+package import Foundation
 
 // MARK: - Private CoreText APIs
 
@@ -251,5 +252,8 @@ let kCTFontWidthTrait: CFString
 
 @_silgen_name("kCTTextScaleRatioAttributeName")
 let kCTTextScaleRatioAttributeName: CFString
+
+@_silgen_name("NSTextEncapsulationAttributeName")
+let NSTextEncapsulationAttributeName: NSAttributedString.Key
 
 #endif
