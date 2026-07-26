@@ -273,7 +273,14 @@ extension Text.Style {
         with options: Text.ResolveOptions,
         properties: inout Text.ResolvedProperties
     ) -> [NSAttributedString.Key: Any] {
-        _openSwiftUIUnimplementedWarning()
-        return [:]
+        var attributes: [NSAttributedString.Key: Any] = [:]
+        let isRedacted = environment.shouldRedactContent
+        var modifiers = environment.fontModifiers
+        if !clearedFontModifiers.isEmpty {
+            modifiers = modifiers.filter { !clearedFontModifiers.contains($0.typeID) }
+        }
+        modifiers.append(contentsOf: fontModifiers)
+        properties.paragraph.compositionLanguage = .unset
+        return attributes
     }
 }
