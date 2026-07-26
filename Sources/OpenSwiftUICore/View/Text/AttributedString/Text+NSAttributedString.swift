@@ -289,6 +289,25 @@ extension Text.Style {
             properties: &properties
         )
         typesettingConfiguration.languageAwareLineHeightRatio.apply(to: &modifiers)
+        if let font = baseFont.resolve(in: environment, includeDefaultAttributes: includeDefaultAttributes) {
+            attributes[.kitFont] = font.platformFont(in: environment, modifiers: modifiers)
+        } else {
+            attributes[.kitFont] = nil
+        }
+        if let color = color.resolve(
+            in: environment,
+            with: options,
+            properties: &properties,
+            includeDefaultAttributes: includeDefaultAttributes && !options.contains(.writeAuxiliaryMetadata)
+        ) {
+            attributes[.kitForegroundColor] = color.kitColor
+            properties.addColor(color)
+        }
+        if let backgroundColor {
+            let resolved = backgroundColor.resolve(in: environment)
+            attributes[.kitBackgroundColor] = resolved.kitColor
+            properties.addColor(resolved)
+        }
         return attributes
     }
 }
