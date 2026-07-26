@@ -320,6 +320,20 @@ extension Text.Style {
         if trackingValue != 0 {
             attributes[.kitTracking] = trackingValue
         }
+        if let resolved = strikethrough.resolve(in: environment, fallbackStyle: environment.strikethroughStyle) {
+            attributes[.kitStrikethroughStyle] = NSNumber(value: resolved.nsUnderlineStyle.rawValue)
+            if let color = resolved.color {
+                attributes[.kitStrikethroughColor] = color.kitColor
+                properties.addColor(color)
+            }
+        }
+        if let resolved = underline.resolve(in: environment, fallbackStyle: environment.underlineStyle) {
+            attributes[.kitUnderlineStyle] = NSNumber(value: resolved.nsUnderlineStyle.rawValue)
+            if let color = resolved.color {
+                attributes[.kitUnderlineColor] = color.kitColor
+                properties.addColor(color)
+            }
+        }
         return attributes
     }
 }
