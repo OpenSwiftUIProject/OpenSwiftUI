@@ -13,6 +13,8 @@ public import CoreText
 
 @available(OpenSwiftUI_v1_0, *)
 extension Font {
+    /// Create a custom font with the given `name` and `size` that scales with
+    /// the body text style.
     public static func custom(_ name: String, size: CGFloat) -> Font {
         Font(
             provider: NamedProvider(
@@ -23,6 +25,8 @@ extension Font {
         )
     }
 
+    /// Create a custom font with the given `name` and `size` that scales
+    /// relative to the given `textStyle`.
     @available(OpenSwiftUI_v2_0, *)
     public static func custom(
         _ name: String,
@@ -48,6 +52,8 @@ extension Font {
         custom(name, size: size, relativeTo: textStyle)
     }
 
+    /// Create a custom font with the given `name` and a fixed `size` that does
+    /// not scale with Dynamic Type.
     @available(OpenSwiftUI_v2_0, *)
     public static func custom(_ name: String, fixedSize: CGFloat) -> Font {
         Font(
@@ -65,6 +71,22 @@ extension Font {
         custom(name, fixedSize: verbatimSize)
     }
 
+    /// Creates a custom font from a platform font instance.
+    ///
+    /// Initializing ``Font`` with platform font instance
+    /// ([CTFont](https://developer.apple.com/documentation/coretext/ctfont-q6r))
+    /// can bridge OpenSwiftUI ``Font`` with
+    /// [NSFont](https://developer.apple.com/documentation/appkit/nsfont) or
+    /// [UIFont](https://developer.apple.com/documentation/uikit/uifont), both
+    /// of which are toll-free bridged to
+    /// [CTFont](https://developer.apple.com/documentation/coretext/ctfont-q6r).
+    /// For example:
+    ///
+    ///     // Use native Core Text API to create desired ctFont.
+    ///     let ctFont = CTFontCreateUIFontForLanguage(.system, 12, nil)!
+    ///
+    ///     // Create OpenSwiftUI Text with the CTFont instance.
+    ///     let text = Text("Hello").font(Font(ctFont))
     public init(_ font: CTFont) {
         self.init(provider: PlatformFontProvider(font: font))
     }
