@@ -69,10 +69,14 @@ let openSwiftUIPackageConfigurations: [Configuration] = [
 let openSwiftUITargetSettings: SettingsDictionary = [
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
 ]
+let openSwiftUICoreTargetSettings: SettingsDictionary = [
+    "DYLIB_INSTALL_NAME_BASE": "@rpath",
+    "OTHER_LDFLAGS": "$(inherited) -ObjC",
+]
 
 var packageProductTypes: [String: ProjectDescription.Product] = [
     "OpenSwiftUI": ProjectDescription.Product.framework,
-    "OpenSwiftUICore": ProjectDescription.Product.staticFramework,
+    "OpenSwiftUICore": ProjectDescription.Product.framework,
     "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
     "COpenSwiftUI": ProjectDescription.Product.staticFramework,
     "OpenSwiftUIMacros": ProjectDescription.Product.macro,
@@ -119,6 +123,12 @@ let packageSettings = PackageSettings(
     targetSettings: [
         "OpenSwiftUI": .settings(
             base: openSwiftUITargetSettings,
+            configurations: openSwiftUIPackageConfigurations,
+            defaultSettings: .essential,
+            defaultConfiguration: "OpenSwiftUIDebug"
+        ),
+        "OpenSwiftUICore": .settings(
+            base: openSwiftUICoreTargetSettings,
             configurations: openSwiftUIPackageConfigurations,
             defaultSettings: .essential,
             defaultConfiguration: "OpenSwiftUIDebug"
