@@ -179,13 +179,15 @@ package struct PropertyList: CustomStringConvertible {
             }
         }
         set {
-            guard let result = find(
-                elements.map { .passUnretained($0) },
-                key: key
-            ), K.valuesEqual(newValue, result.takeUnretainedValue().value)
-            else {
-                prependValue(newValue, for: key)
-                return
+            withExtendedLifetime(elements) {
+                guard let result = find(
+                    elements.map { .passUnretained($0) },
+                    key: key
+                ), K.valuesEqual(newValue, result.takeUnretainedValue().value)
+                else {
+                    prependValue(newValue, for: key)
+                    return
+                }
             }
         }
     }
