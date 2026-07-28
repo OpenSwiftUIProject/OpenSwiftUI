@@ -23,7 +23,7 @@ To use Compute instead, run setup with the Compute mise environment:
 ./setup.sh --compute
 ```
 
-The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses `OpenSwiftUIProject/Compute` from source with `0.3.0-bugfix.1` tag.
+The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses the Compute 0.4.1 binary release.
 
 ## Generate Project
 
