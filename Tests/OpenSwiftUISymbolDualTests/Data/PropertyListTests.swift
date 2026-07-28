@@ -40,7 +40,7 @@ extension PropertyList {
     func swiftUI_mayNotBeEqual(to: PropertyList) -> Bool
 
     @_silgen_name("OpenSwiftUITestStub_PropertyListMayNotBeEqualIgnoredTypes")
-    func swiftUI_mayNotBeEqual(to: PropertyList, ignoredTypes: inout [ObjectIdentifier]) -> Bool
+    func swiftUI_mayNotBeEqual(to: PropertyList, ignoredTypes: [ObjectIdentifier]) -> Bool
 
     @_silgen_name("OpenSwiftUITestStub_PropertyListSet")
     mutating func swiftUI_set(_ other: PropertyList)
@@ -204,6 +204,22 @@ struct PropertyListTests {
         #expect(plist4.swiftUI_description == #"""
         [IntKey = 42, StringKey = Hello]
         """#)
+    }
+
+    @Test
+    func mayNotBeEqualDoesNotMutateIgnoredTypes() {
+        var plist1 = PropertyList(swiftUI: ())
+        plist1[swiftUI: IntKey.self] = 1
+        plist1[swiftUI: StringKey.self] = "same"
+
+        var plist2 = PropertyList(swiftUI: ())
+        plist2[swiftUI: IntKey.self] = 2
+        plist2[swiftUI: StringKey.self] = "same"
+
+        let ignoredTypes = [ObjectIdentifier(IntKey.self)]
+
+        #expect(!plist1.swiftUI_mayNotBeEqual(to: plist2, ignoredTypes: ignoredTypes))
+        #expect(ignoredTypes == [ObjectIdentifier(IntKey.self)])
     }
 }
 

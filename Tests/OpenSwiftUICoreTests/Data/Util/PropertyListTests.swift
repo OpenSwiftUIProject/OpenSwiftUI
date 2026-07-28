@@ -142,6 +142,22 @@ struct PropertyListTests {
         [IntKey = 42, StringKey = Hello]
         """#)
     }
+
+    @Test
+    func mayNotBeEqualDoesNotMutateIgnoredTypes() {
+        var plist1 = PropertyList()
+        plist1[IntKey.self] = 1
+        plist1[StringKey.self] = "same"
+
+        var plist2 = PropertyList()
+        plist2[IntKey.self] = 2
+        plist2[StringKey.self] = "same"
+
+        let ignoredTypes = [ObjectIdentifier(IntKey.self)]
+
+        #expect(!plist1.mayNotBeEqual(to: plist2, ignoredTypes: ignoredTypes))
+        #expect(ignoredTypes == [ObjectIdentifier(IntKey.self)])
+    }
 }
 
 struct PropertyListTrackerTests {

@@ -110,7 +110,7 @@ extension _GraphInputs: GraphReusable {
             return false
         }
         var ignoredTypes = reusableInputsArray + [ObjectIdentifier(ReusableInputs.self)]
-        guard !customInputs.mayNotBeEqual(to: other.customInputs, ignoredTypes: &ignoredTypes) else {
+        guard !customInputs.mayNotBeEqual(to: other.customInputs, ignoredTypes: ignoredTypes) else {
             Log.graphReuse("Reuse failed: custom inputs plist equality")
             return false
         }

@@ -235,8 +235,7 @@ package struct PropertyList: CustomStringConvertible {
     /// - Parameter other: The PropertyList to compare with.
     /// - Returns: `true` if the PropertyLists might not be equal, otherwise `false`.
     package func mayNotBeEqual(to other: PropertyList) -> Bool {
-        var ignoredTypes = [ObjectIdentifier]()
-        return mayNotBeEqual(to: other, ignoredTypes: &ignoredTypes)
+        mayNotBeEqual(to: other, ignoredTypes: [])
     }
 
     /// Checks if this PropertyList might not be equal to another PropertyList, ignoring specified types.
@@ -245,11 +244,12 @@ package struct PropertyList: CustomStringConvertible {
     ///   - other: The PropertyList to compare with.
     ///   - ignoredTypes: Types to ignore during comparison.
     /// - Returns: `true` if the PropertyLists might not be equal, otherwise `false`.
-    package func mayNotBeEqual(to other: PropertyList, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+    package func mayNotBeEqual(to other: PropertyList, ignoredTypes: [ObjectIdentifier]) -> Bool {
         guard let elements,
               let otherElements = other.elements else {
             return !isEmpty || !other.isEmpty
         }
+        var ignoredTypes = ignoredTypes
         return !compareLists(
             .passUnretained(elements),
             .passUnretained(otherElements),
