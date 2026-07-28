@@ -30,7 +30,7 @@
 @implementation UICollectionView (OpenSwiftUITesting_Swizzles)
 + (void)_performOpenSwiftUITestingOverrides {
     #if !OPENSWIFTUI_TARGET_OS_VISION
-    _SwizzleMethods(UIScreen.class, @selector(_viewAnimationsForCurrentUpdateWithCollectionViewAnimator:), @selector(_OpenSwiftUITesting__viewAnimationsForCurrentUpdateWithCollectionViewAnimator:));
+    _SwizzleMethods(UICollectionView.class, @selector(_viewAnimationsForCurrentUpdateWithCollectionViewAnimator:), @selector(_OpenSwiftUITesting__viewAnimationsForCurrentUpdateWithCollectionViewAnimator:));
     #endif
 }
 
