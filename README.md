@@ -155,13 +155,3 @@ SwiftUI is a trademark of Apple Inc. This project is not affiliated with, endors
 This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 For third-party licenses and acknowledgements, see [CREDITS.md](CREDITS.md).
-
-## Star History
-
-<a href="https://star-history.com/#OpenSwiftUIProject/OpenSwiftUI&Date">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://api.star-history.com/svg?repos=OpenSwiftUIProject/OpenSwiftUI&type=Date&theme=dark" />
-    <source media="(prefers-color-scheme: light)" srcset="https://api.star-history.com/svg?repos=OpenSwiftUIProject/OpenSwiftUI&type=Date" />
-    <img alt="Star History Chart" src="https://api.star-history.com/svg?repos=OpenSwiftUIProject/OpenSwiftUI&type=Date" />
-  </picture>
-</a>
