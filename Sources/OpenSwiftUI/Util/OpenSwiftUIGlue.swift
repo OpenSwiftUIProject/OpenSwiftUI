@@ -11,6 +11,11 @@ public import OpenSwiftUICore
 @_spiOnly
 public import OpenAttributeGraphShims
 import COpenSwiftUI
+#if os(iOS) || os(visionOS) || os(tvOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
 
 // MARK: - OpenSwiftUIGlue
 
@@ -66,12 +71,78 @@ final public class OpenSwiftUIGlue: CoreGlue {
         L.makeLayoutView(root: root, inputs: inputs, body: body)
     }
 
+    override final public func defaultOpenURLAction(
+        env: EnvironmentValues
+    ) -> OpenURLAction {
+        OpenURLAction(isDefault: true) { url, completion in
+            #if os(iOS) || os(visionOS)
+            if let scene = env.sceneSession?.scene {
+                scene.open(
+                    url,
+                    options: nil,
+                    completionHandler: completion
+                )
+            } else {
+                UIApplication.shared.open(
+                    url,
+                    options: [:],
+                    completionHandler: completion
+                )
+            }
+            #elseif os(tvOS)
+            UIApplication.shared.open(
+                url,
+                options: [:],
+                completionHandler: completion
+            )
+            #elseif os(macOS)
+            // TBA
+            NSWorkspace.shared.open(
+                url,
+                configuration: .init()
+            ) { _, error in
+                completion(error == nil)
+            }
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            completion(false)
+            #endif
+        }
+    }
+
+    override final public func defaultOpenSensitiveURLAction() -> OpenURLAction {
+        OpenURLAction(isDefault: true) { url, completion in
+            #if os(iOS) || os(visionOS)
+            let configuration = _LSOpenConfiguration()
+            configuration.isSensitive = true
+            let selector = Selector(("_currentOpenApplicationEndpoint"))
+            if let scene = UIApplication.shared.connectedScenes.first,
+               scene.responds(to: selector),
+               let endpoint = scene.perform(selector) {
+                configuration.targetConnectionEndpoint = endpoint.takeUnretainedValue()
+            }
+            guard let workspace = LSApplicationWorkspace.default() else {
+                return
+            }
+            workspace.open(
+                url,
+                configuration: configuration
+            ) { _, error in
+                if let error {
+                    Log.internalWarning(
+                        "Failed to open sensitive URL \(url). Error: \(error)"
+                    )
+                }
+                completion(error == nil)
+            }
+            #else
+            _openSwiftUIPlatformUnimplementedWarning()
+            #endif
+        }
+    }
+
     // TODO
 }
-
-@_spi(ForOpenSwiftUIOnly)
-@available(*, unavailable)
-extension OpenSwiftUIGlue: Sendable {}
 
 // MARK: - OpenSwiftUIGlue2
 
@@ -144,7 +215,3 @@ final public class OpenSwiftUIGlue2: CoreGlue2 {
         return attributedString
     }
 }
-
-@_spi(ForOpenSwiftUIOnly)
-@available(*, unavailable)
-extension OpenSwiftUIGlue2: Sendable {}

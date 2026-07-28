@@ -109,9 +109,13 @@ open class CoreGlue: NSObject {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-//    open func defaultOpenURLAction(env: EnvironmentValues) -> OpenURLAction {
-//        _openSwiftUIBaseClassAbstractMethod()
-//    }
+    open func defaultOpenURLAction(env: EnvironmentValues) -> OpenURLAction {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
+
+    open func defaultOpenSensitiveURLAction() -> OpenURLAction {
+        _openSwiftUIBaseClassAbstractMethod()
+    }
 
     #if canImport(Darwin)
     override dynamic public init() {
