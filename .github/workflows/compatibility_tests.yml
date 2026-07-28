@@ -63,6 +63,9 @@ jobs:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
   compatibility_tests_ios:
     name: Execute compatibility tests for iOS
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -93,6 +96,16 @@ jobs:
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
           xcode-version: ${{ matrix.xcode-version }}
+      - name: Set up mise
+        uses: jdx/mise-action@v2
+        with:
+          install: false
+          cache: false
+      - name: Set up Tuist
+        run: |
+          source Scripts/Tuist/common.sh
+          tuist_ci_setup
+        shell: bash
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
@@ -103,18 +116,25 @@ jobs:
         run: |
           openswiftui_derived_data_path="${RUNNER_TEMP:-/tmp}/compatibility-ios-derived-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}-openswiftui"
           swiftui_derived_data_path="${RUNNER_TEMP:-/tmp}/compatibility-ios-derived-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}-swiftui"
+          openswiftui_result_bundle_path="${RUNNER_TEMP:-/tmp}/compatibility-ios-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}-openswiftui.xcresult"
+          swiftui_result_bundle_path="${RUNNER_TEMP:-/tmp}/compatibility-ios-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}-swiftui.xcresult"
           rm -rf "$openswiftui_derived_data_path" "$swiftui_derived_data_path"
           mkdir -p "$openswiftui_derived_data_path" "$swiftui_derived_data_path"
-          echo "OPENSWIFTUI_DERIVED_DATA_PATH=$openswiftui_derived_data_path" >> "$GITHUB_ENV"
-          echo "SWIFTUI_DERIVED_DATA_PATH=$swiftui_derived_data_path" >> "$GITHUB_ENV"
+          {
+            echo "OPENSWIFTUI_DERIVED_DATA_PATH=$openswiftui_derived_data_path"
+            echo "SWIFTUI_DERIVED_DATA_PATH=$swiftui_derived_data_path"
+            echo "OPENSWIFTUI_RESULT_BUNDLE_PATH=$openswiftui_result_bundle_path"
+            echo "SWIFTUI_RESULT_BUNDLE_PATH=$swiftui_result_bundle_path"
+          } >> "$GITHUB_ENV"
       - name: Run compatibility tests on OpenSwiftUI + iOS
         run: |
           set -o pipefail
+          source Scripts/Tuist/common.sh
           # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
           # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
           # runners with CoreSimulator codesigning errors; force the x86_64
           # simulator slice until that launch path is fixed.
-          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
+          NSUnbufferedIO=YES tuist_xcodebuild "$OPENSWIFTUI_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -129,10 +149,11 @@ jobs:
       - name: Run compatibility tests on SwiftUI + iOS
         run: |
           set -o pipefail
+          source Scripts/Tuist/common.sh
           # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
           # See the OpenSwiftUI iOS compatibility step above: force x86_64 to
           # avoid the arm64 package test runner launch/codesigning failure.
-          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
+          NSUnbufferedIO=YES tuist_xcodebuild "$SWIFTUI_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -153,4 +174,10 @@ jobs:
           fi
           if [[ -n "${SWIFTUI_DERIVED_DATA_PATH:-}" ]]; then
             rm -rf "$SWIFTUI_DERIVED_DATA_PATH"
+          fi
+          if [[ -n "${OPENSWIFTUI_RESULT_BUNDLE_PATH:-}" ]]; then
+            rm -rf "$OPENSWIFTUI_RESULT_BUNDLE_PATH"
+          fi
+          if [[ -n "${SWIFTUI_RESULT_BUNDLE_PATH:-}" ]]; then
+            rm -rf "$SWIFTUI_RESULT_BUNDLE_PATH"
           fi

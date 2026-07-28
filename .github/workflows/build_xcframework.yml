@@ -3,6 +3,10 @@ name: Build XCFramework
 on:
   workflow_dispatch:
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   build_xcframework:
     name: Build XCFrameworks

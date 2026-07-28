@@ -59,6 +59,12 @@ runs:
           echo "OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER=0"
         } >> "$GITHUB_ENV"
 
+    - name: Set up Tuist
+      shell: bash
+      run: |
+        source Scripts/Tuist/common.sh
+        tuist_ci_setup
+
     - name: Generate Example project
       shell: bash
       run: |
@@ -165,6 +171,7 @@ runs:
       continue-on-error: true
       shell: bash
       run: |
+        source Scripts/Tuist/common.sh
         cd Example
         snapshot_reference_platform_dir="${{ steps.reference.outputs.platform-directory }}"
         snapshot_reference_dir="${{ steps.reference.outputs.directory }}"
@@ -222,8 +229,9 @@ runs:
 
         set -o pipefail
         record_status=0
+        baseline_result_bundle="${RUNNER_TEMP:-/tmp}/swiftui-baseline-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ inputs.artifact-name }}.xcresult"
         # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-        NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
+        NSUnbufferedIO=YES tuist_xcodebuild "$baseline_result_bundle" test -IDEPackageEnablePrebuilts=NO \
           -workspace Example.xcworkspace \
           -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
@@ -250,9 +258,11 @@ runs:
       run: |
         lockfile="${{ steps.record-baseline.outputs.lockfile }}"
         lock_owner="${{ steps.record-baseline.outputs.lock-owner }}"
+        baseline_result_bundle="${RUNNER_TEMP:-/tmp}/swiftui-baseline-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ inputs.artifact-name }}.xcresult"
         if [[ -n "$lockfile" ]] && [[ -f "$lockfile" ]] && [[ "$(cat "$lockfile" 2>/dev/null || true)" == "$lock_owner" ]]; then
           rm -f "$lockfile"
         fi
+        rm -rf "$baseline_result_bundle"
 
     - name: Fail if baseline recording failed
       if: steps.record-baseline.outcome == 'failure'
@@ -264,6 +274,7 @@ runs:
       continue-on-error: true
       shell: bash
       run: |
+        source Scripts/Tuist/common.sh
         cd Example
         uitest_tmp="${RUNNER_TEMP:-/tmp}/uitests-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ inputs.artifact-name }}"
         rm -rf "$uitest_tmp"
@@ -277,14 +288,13 @@ runs:
         echo "xcresult_archive=$uitest_tmp/${{ inputs.artifact-name }}.xcresult.zip" >> "$GITHUB_OUTPUT"
         set -o pipefail
         # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-        NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
+        NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test -IDEPackageEnablePrebuilts=NO \
           -workspace Example.xcworkspace \
           -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \
           -skipMacroValidation \
           -skipPackagePluginValidation \
           -derivedDataPath "${{ steps.build-directory.outputs.derived-data-path }}" \
-          -resultBundlePath "$result_bundle" \
           2>&1 | tee "$test_log"
 
     - name: Collect failed snapshots

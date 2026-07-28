@@ -256,6 +256,12 @@ jobs:
   ios_uitest:
     name: Execute UI tests on iOS (${{ matrix.configuration.id }})
     needs: prepare_uitests
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
+      id-token: write
     if: >-
       needs.prepare_uitests.outputs.ios-requested == 'true'
     strategy:
@@ -349,6 +355,12 @@ jobs:
   macos_uitest:
     name: Execute UI tests on macOS (${{ matrix.configuration.id }})
     needs: prepare_uitests
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
+      id-token: write
     if: >-
       needs.prepare_uitests.outputs.macos-requested == 'true'
     strategy:

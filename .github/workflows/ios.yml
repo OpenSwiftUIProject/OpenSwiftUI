@@ -9,6 +9,9 @@ on:
 jobs:
   ios_test:
     name: Execute tests on iOS
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       fail-fast: false
       matrix:
@@ -42,6 +45,16 @@ jobs:
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
           xcode-version: ${{ matrix.xcode-version }}
+      - name: Set up mise
+        uses: jdx/mise-action@v2
+        with:
+          install: false
+          cache: false
+      - name: Set up Tuist
+        run: |
+          source Scripts/Tuist/common.sh
+          tuist_ci_setup
+        shell: bash
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash
@@ -51,18 +64,25 @@ jobs:
         shell: bash
         run: |
           derived_data_path="${RUNNER_TEMP:-/tmp}/ios-derived-data-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}"
+          build_result_bundle_path="${RUNNER_TEMP:-/tmp}/ios-build-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}.xcresult"
+          test_result_bundle_path="${RUNNER_TEMP:-/tmp}/ios-test-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ matrix.ios-version }}-${{ matrix.release }}.xcresult"
           rm -rf "$derived_data_path"
           mkdir -p "$derived_data_path"
-          echo "DERIVED_DATA_PATH=$derived_data_path" >> "$GITHUB_ENV"
+          {
+            echo "DERIVED_DATA_PATH=$derived_data_path"
+            echo "BUILD_RESULT_BUNDLE_PATH=$build_result_bundle_path"
+            echo "TEST_RESULT_BUNDLE_PATH=$test_result_bundle_path"
+          } >> "$GITHUB_ENV"
       - name: Build test target in debug mode
         run: |
           set -o pipefail
+          source Scripts/Tuist/common.sh
           # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
           # runners with CoreSimulator codesigning errors. Build the x86_64
           # simulator slice to match the test command below until that is fixed.
           # Swift 6.2 macro prebuilts do not support the x86_64 simulator
           # testable macro target, so build SwiftSyntax from source instead.
-          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO build \
+          NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -74,9 +94,10 @@ jobs:
       - name: Run test target in debug mode
         run: |
           set -o pipefail
+          source Scripts/Tuist/common.sh
           # See the build step above: force x86_64 to avoid the arm64 package
           # test runner launch/codesigning failure on this Xcode/iOS pair.
-          NSUnbufferedIO=YES xcodebuild -IDEPackageEnablePrebuilts=NO test \
+          NSUnbufferedIO=YES tuist_xcodebuild "$TEST_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
@@ -91,4 +112,10 @@ jobs:
         run: |
           if [[ -n "${DERIVED_DATA_PATH:-}" ]]; then
             rm -rf "$DERIVED_DATA_PATH"
+          fi
+          if [[ -n "${BUILD_RESULT_BUNDLE_PATH:-}" ]]; then
+            rm -rf "$BUILD_RESULT_BUNDLE_PATH"
+          fi
+          if [[ -n "${TEST_RESULT_BUNDLE_PATH:-}" ]]; then
+            rm -rf "$TEST_RESULT_BUNDLE_PATH"
           fi
