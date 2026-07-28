@@ -179,13 +179,15 @@ package struct PropertyList: CustomStringConvertible {
             }
         }
         set {
-            guard let result = find(
-                elements.map { .passUnretained($0) },
-                key: key
-            ), K.valuesEqual(newValue, result.takeUnretainedValue().value)
-            else {
-                prependValue(newValue, for: key)
-                return
+            withExtendedLifetime(elements) {
+                guard let result = find(
+                    elements.map { .passUnretained($0) },
+                    key: key
+                ), K.valuesEqual(newValue, result.takeUnretainedValue().value)
+                else {
+                    prependValue(newValue, for: key)
+                    return
+                }
             }
         }
     }
@@ -233,8 +235,7 @@ package struct PropertyList: CustomStringConvertible {
     /// - Parameter other: The PropertyList to compare with.
     /// - Returns: `true` if the PropertyLists might not be equal, otherwise `false`.
     package func mayNotBeEqual(to other: PropertyList) -> Bool {
-        var ignoredTypes = [ObjectIdentifier]()
-        return mayNotBeEqual(to: other, ignoredTypes: &ignoredTypes)
+        mayNotBeEqual(to: other, ignoredTypes: [])
     }
 
     /// Checks if this PropertyList might not be equal to another PropertyList, ignoring specified types.
@@ -243,11 +244,12 @@ package struct PropertyList: CustomStringConvertible {
     ///   - other: The PropertyList to compare with.
     ///   - ignoredTypes: Types to ignore during comparison.
     /// - Returns: `true` if the PropertyLists might not be equal, otherwise `false`.
-    package func mayNotBeEqual(to other: PropertyList, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+    package func mayNotBeEqual(to other: PropertyList, ignoredTypes: [ObjectIdentifier]) -> Bool {
         guard let elements,
               let otherElements = other.elements else {
             return !isEmpty || !other.isEmpty
         }
+        var ignoredTypes = ignoredTypes
         return !compareLists(
             .passUnretained(elements),
             .passUnretained(otherElements),
@@ -817,12 +819,12 @@ extension PropertyList {
     @usableFromInline
     package class Element: CustomStringConvertible {
         let keyType: any Any.Type
-        let before: Element?
-        var after: Element?
-        var skip: Unmanaged<Element>?
-        let length: UInt32
-        let skipCount: UInt32
-        let skipFilter: BloomFilter
+        fileprivate let before: Element?
+        fileprivate var after: Element?
+        fileprivate var skip: Unmanaged<Element>?
+        fileprivate let length: UInt32
+        fileprivate let skipCount: UInt32
+        fileprivate let skipFilter: BloomFilter
         let id = UniqueID()
 
         fileprivate init(keyType: any Any.Type, before: Element?, after: Element?) {
@@ -908,7 +910,7 @@ extension PropertyList {
         ///   - other: The element to compare with.
         ///   - ignoredTypes: Types to ignore during comparison.
         /// - Returns: `true` if the elements match, otherwise `false`.
-        func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+        fileprivate func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
             _openSwiftUIBaseClassAbstractMethod()
         }
 
@@ -918,7 +920,7 @@ extension PropertyList {
         ///   - before: The element to link before this one.
         ///   - after: The element to link after this one.
         /// - Returns: A new element with the same value but different links.
-        func copy(before: Element?, after: Element?) -> Element {
+        fileprivate func copy(before: Element?, after: Element?) -> Element {
             _openSwiftUIBaseClassAbstractMethod()
         }
 
