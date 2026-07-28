@@ -968,11 +968,15 @@ let openSwiftUITargetSettings: SettingsDictionary = [
     "OPENSWIFTUI_BUILD_LIBRARY_TYPE": .string(openSwiftUIBuildLibraryType),
     "OPENSWIFTUI_BUILD_USES_LOCAL_DEPENDENCIES": .string(useLocalDeps ? "YES" : "NO"),
 ]
+let openSwiftUICoreTargetSettings: SettingsDictionary = [
+    "DYLIB_INSTALL_NAME_BASE": "@rpath",
+    "OTHER_LDFLAGS": "$(inherited) -ObjC",
+]
 
 let packageSettings = PackageSettings(
     productTypes: [
         "OpenSwiftUI": ProjectDescription.Product.framework,
-        "OpenSwiftUICore": ProjectDescription.Product.staticFramework,
+        "OpenSwiftUICore": ProjectDescription.Product.framework,
         "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
         "COpenSwiftUI": ProjectDescription.Product.staticFramework,
         "OpenSwiftUIMacros": ProjectDescription.Product.macro,
@@ -988,6 +992,7 @@ let packageSettings = PackageSettings(
     baseProductType: ProjectDescription.Product.staticFramework,
     targetSettings: [
         "OpenSwiftUI": .settings(base: openSwiftUITargetSettings),
+        "OpenSwiftUICore": .settings(base: openSwiftUICoreTargetSettings),
     ]
 )
 #endif

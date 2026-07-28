@@ -2,7 +2,7 @@
 
 ## Current Status
 
-OpenSwiftUI supports Xcode Preview rendering as of [PR #829](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/829).
+OpenSwiftUI supports Xcode Preview rendering through the shim introduced in [PR #829](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/829). Source builds and binary distributions must also satisfy the linkage requirements below.
 
 ### How It Works
 
@@ -17,6 +17,14 @@ Since OpenSwiftUI cannot use SwiftUI's `#Preview` macro directly (it targets `Sw
 }
 ```
 
+### Binary XCFramework Requirements
+
+Xcode Preview's XOJIT loading model requires both `OpenSwiftUI.framework` and `OpenSwiftUICore.framework` to be dynamic. Packaging `OpenSwiftUICore` as a static framework allows Preview to relink another copy of Core into the preview product, which can duplicate runtime metadata and crash the Preview process.
+
+Link `OpenSwiftUICore` with `-ObjC` when building the framework so Objective-C categories from the static `OpenSwiftUI_SPI` dependency are retained in the Core dylib. This is a framework-build setting; consumers of the resulting XCFrameworks do not need to add `-ObjC`.
+
+This layout was validated with locally built XCFrameworks consumed through `OpenSwiftUI-spm` local binary targets: the Tuist Example's `HostingVC` Preview rendered without consumer-side linker flags.
+
 ### The `waitingForPreviewThunks` Problem
 
 In Xcode Preview mode, SwiftUI gates graph instantiation behind a `waitingForPreviewThunks` flag (checked via `XCODE_RUNNING_FOR_PREVIEWS` env var). After all preview dylibs are loaded, `PreviewsInjection.framework` calls `SwiftUI.__previewThunksHaveFinishedLoading()` to unblock graph hosts.
@@ -25,7 +33,9 @@ In Xcode Preview mode, SwiftUI gates graph instantiation behind a `waitingForPre
 
 **Current fix**: `waitingForPreviewThunks` is hardcoded to `false`, bypassing the blocking entirely. This is semantically correct because OpenSwiftUI has no preview thunk producers today.
 
-## PreviewsInjection Sequence
+## SwiftUI PreviewsInjection Reference Sequence
+
+The following sequence describes SwiftUI's reference path. OpenSwiftUI currently bypasses the initial wait as described above.
 
 ```mermaid
 sequenceDiagram

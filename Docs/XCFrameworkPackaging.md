@@ -197,10 +197,17 @@ modules.
 Use multiple xcframeworks, one per Swift module, and expose them through one
 Swift package product.
 
-Prefer static frameworks for these xcframeworks:
+Build `OpenSwiftUI` and `OpenSwiftUICore` as dynamic frameworks. Xcode
+Preview's XOJIT loading model can relink a static Core into the preview product,
+creating a second copy of its Swift runtime metadata. Keeping both modules
+dynamic gives Core one runtime identity. Link `OpenSwiftUICore` with `-ObjC`
+while building the framework so Objective-C categories from its static SPI
+dependency are retained.
+
+Prefer static frameworks for the remaining support xcframeworks:
 
 - They preserve the Swift module graph for the compiler.
-- They avoid embedding many dynamic frameworks into client apps.
+- They avoid embedding additional dynamic frameworks into client apps.
 - They let the final app link the implementation code into the app binary.
 - They keep the user-facing API as one package product.
 
@@ -283,6 +290,7 @@ So the source-backend release shape still publishes the same OpenSwiftUI
 xcframework set. It does not require consumers to embed or load a separate
 Compute dynamic framework.
 
-Dynamic frameworks should be avoided unless there is a runtime reason to share
-or load the frameworks dynamically. They make embedding, signing, launch-time
-loading, and artifact management more complicated.
+Dynamic frameworks should be limited to modules with a runtime reason to share
+one loaded identity. `OpenSwiftUI` and `OpenSwiftUICore` are the intentional
+exceptions; the remaining support frameworks stay static to minimize embedding,
+signing, launch-time loading, and artifact-management overhead.
