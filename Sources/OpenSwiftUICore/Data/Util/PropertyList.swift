@@ -819,12 +819,12 @@ extension PropertyList {
     @usableFromInline
     package class Element: CustomStringConvertible {
         let keyType: any Any.Type
-        let before: Element?
-        var after: Element?
-        var skip: Unmanaged<Element>?
-        let length: UInt32
-        let skipCount: UInt32
-        let skipFilter: BloomFilter
+        fileprivate let before: Element?
+        fileprivate var after: Element?
+        fileprivate var skip: Unmanaged<Element>?
+        fileprivate let length: UInt32
+        fileprivate let skipCount: UInt32
+        fileprivate let skipFilter: BloomFilter
         let id = UniqueID()
 
         fileprivate init(keyType: any Any.Type, before: Element?, after: Element?) {
@@ -910,7 +910,7 @@ extension PropertyList {
         ///   - other: The element to compare with.
         ///   - ignoredTypes: Types to ignore during comparison.
         /// - Returns: `true` if the elements match, otherwise `false`.
-        func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
+        fileprivate func matches(_ other: Element, ignoredTypes: inout [ObjectIdentifier]) -> Bool {
             _openSwiftUIBaseClassAbstractMethod()
         }
 
@@ -920,7 +920,7 @@ extension PropertyList {
         ///   - before: The element to link before this one.
         ///   - after: The element to link after this one.
         /// - Returns: A new element with the same value but different links.
-        func copy(before: Element?, after: Element?) -> Element {
+        fileprivate func copy(before: Element?, after: Element?) -> Element {
             _openSwiftUIBaseClassAbstractMethod()
         }
 
