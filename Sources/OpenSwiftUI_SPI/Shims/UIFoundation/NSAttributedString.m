@@ -22,7 +22,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 }
 
 - (NSAttributedString *)_ui_attributedSubstringFromRange_openswiftui_safe_wrapper:(NSRange)range scaledByScaleFactor:(CGFloat)factor {
-    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSAttributedString *, @"_ui_attributedSubstringFromRange:scaledByScaleFactor", nil, NSRange, CGFloat);
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(NSAttributedString *, @"_ui_attributedSubstringFromRange:scaledByScaleFactor:", nil, NSRange, CGFloat);
     return func(self, selector, range, factor);
 }
 
@@ -31,7 +31,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @implementation NSMutableAttributedString (OpenSwiftUI_SPI)
 
 - (BOOL)isEmptyOrTerminatedByParagraphSeparator_openswiftui_safe_wrapper {
-    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"isEmptyOrTerminatedByParagraphSeparator:scaledByScaleFactor", false);
+    OPENSWIFTUI_SAFE_WRAPPER_IMP(BOOL, @"isEmptyOrTerminatedByParagraphSeparator", false);
     return func(self, selector);
 }
 
