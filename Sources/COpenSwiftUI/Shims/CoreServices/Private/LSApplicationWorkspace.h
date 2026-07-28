@@ -21,7 +21,9 @@ NS_ASSUME_NONNULL_BEGIN
 
 @interface LSApplicationWorkspace : NSObject
 +(nullable instancetype)defaultWorkspace;
--(void)openURL:(NSURL *)url configuration:(_LSOpenConfiguration *)config completionHandler:(void (^)(BOOL))completion;
+-(void)openURL:(NSURL *)url
+ configuration:(_LSOpenConfiguration *)config
+ completionHandler:(void (^)(NSDictionary<NSString *, id> * _Nullable result, NSError * _Nullable error))completion;
 @end
 
 NS_ASSUME_NONNULL_END

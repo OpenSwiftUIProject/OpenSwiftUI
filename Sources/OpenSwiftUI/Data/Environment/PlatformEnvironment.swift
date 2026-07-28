@@ -50,7 +50,7 @@ extension EnvironmentValues {
         #endif
 
         // resolvedTextProvider = OpenSwiftUIResolvedTextProvider.self
-        // hasSystemOpenURLAction = true
+        hasSystemOpenURLAction = true
 
         #if os(iOS) || os(visionOS)
         // bridgedEnvironmentResolver = UITraitBridgedEnvironmentResolver.self
