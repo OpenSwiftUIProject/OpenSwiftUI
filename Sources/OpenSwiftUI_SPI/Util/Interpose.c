@@ -100,10 +100,10 @@ static inline CFStringRef _interpose_protocol_description(const void *protocol) 
 // MARK: - Color.Resolved Nominal Type Descriptor
 
 extern const void $s7SwiftUI5ColorV8ResolvedVN;
-extern const void *$s15OpenSwiftUICore5ColorV8ResolvedVN;
+extern const void *$s11OpenSwiftUI5ColorV8ResolvedVN;
 
 const void *_OpenSwiftUI_ColorResolvedNTD(void) {
-    return &$s15OpenSwiftUICore5ColorV8ResolvedVN;
+    return &$s11OpenSwiftUI5ColorV8ResolvedVN;
 }
 
 // MARK: - swift_dynamicCast
@@ -142,10 +142,10 @@ static bool my_swift_dynamicCast(void *dest, void *src, const void *srcType, con
 // MARK: - PlatformDrawable Protocol Descriptor
 
 extern const void $s7SwiftUI16PlatformDrawableMp;
-extern const void $s15OpenSwiftUICore16PlatformDrawableMp;
+extern const void $s11OpenSwiftUI16PlatformDrawableMp;
 
 const void *_OpenSwiftUI_PlatformDrawablePD(void) {
-    return &$s15OpenSwiftUICore16PlatformDrawableMp;
+    return &$s11OpenSwiftUI16PlatformDrawableMp;
 }
 
 // MARK: - swift_conformsToProtocol2
