@@ -44,7 +44,7 @@ OPENSWIFTUI_EXPORT
 const void *$s15OpenSwiftUICore20DefaultStyleModifierMp;
 
 const void *_OpenSwiftUI_defaultStyleModifierProtocolDescriptor(void) {
-    return &$s15OpenSwiftUICore15GestureModifierMp;
+    return &$s15OpenSwiftUICore20DefaultStyleModifierMp;
 }
 
 OPENSWIFTUI_EXPORT
