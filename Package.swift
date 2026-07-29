@@ -821,7 +821,6 @@ if symbolLocatorCondition {
 
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
-    openSwiftUITarget.addAGSettings()
 
     openSwiftUISPITestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
