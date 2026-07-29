@@ -258,6 +258,7 @@ RUBY
 # macro usages inline where needed. Avoid forcing generated macro tool targets to
 # archive for simulator SDKs, where Xcode can try to build them for the target
 # platform instead of the host platform.
+remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/Projects/OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenSwiftUIMacros"
@@ -324,6 +325,17 @@ first_existing_project() {
     echo "$1"
 }
 
+dependency_project_path() {
+    local local_project="$1"
+    shift
+
+    if [ "${OPENSWIFTUI_USE_LOCAL_DEPS:-0}" = "1" ]; then
+        echo "$local_project"
+    else
+        first_existing_project "$@"
+    fi
+}
+
 project_args_for_scheme() {
     local scheme="$1"
 
@@ -332,22 +344,22 @@ project_args_for_scheme() {
             echo "-workspace" "$XCODEWORKSPACE"
             ;;
         _AttributeGraphDeviceSwiftShims)
-            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj")"
+            echo "-project" "$(dependency_project_path "$PROJECT_ROOT/../DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Projects/DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/DarwinPrivateFrameworks/DarwinPrivateFrameworks.xcodeproj")"
             ;;
         OpenAttributeGraphShims)
-            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenAttributeGraph/OpenAttributeGraph.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenAttributeGraph/OpenAttributeGraph.xcodeproj")"
+            echo "-project" "$(dependency_project_path "$PROJECT_ROOT/../OpenAttributeGraph/OpenAttributeGraph.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Projects/OpenAttributeGraph/OpenAttributeGraph.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenAttributeGraph/OpenAttributeGraph.xcodeproj")"
             ;;
         OpenCoreGraphics|OpenCoreGraphicsShims|OpenQuartzCore|OpenQuartzCoreShims)
-            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenCoreGraphics/OpenCoreGraphics.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenCoreGraphics/OpenCoreGraphics.xcodeproj")"
+            echo "-project" "$(dependency_project_path "$PROJECT_ROOT/../OpenCoreGraphics/OpenCoreGraphics.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Projects/OpenCoreGraphics/OpenCoreGraphics.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenCoreGraphics/OpenCoreGraphics.xcodeproj")"
             ;;
         OpenObservation|OpenObservationCxx)
-            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj")"
+            echo "-project" "$(dependency_project_path "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Projects/OpenObservation/OpenObservation.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj")"
             ;;
         OpenRenderBoxShims)
-            echo "-project" "$(first_existing_project "$PROJECT_ROOT/../OpenRenderBox/OpenRenderBox.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenRenderBox/OpenRenderBox.xcodeproj")"
+            echo "-project" "$(dependency_project_path "$PROJECT_ROOT/../OpenRenderBox/OpenRenderBox.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Projects/OpenRenderBox/OpenRenderBox.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/OpenRenderBox/OpenRenderBox.xcodeproj")"
             ;;
         SymbolLocator)
-            echo "-project" "$PROJECT_ROOT/.build/tuist-derived/SymbolLocator/SymbolLocator.xcodeproj"
+            echo "-project" "$(first_existing_project "$PROJECT_ROOT/.build/tuist-derived/Projects/SymbolLocator/SymbolLocator.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/SymbolLocator/SymbolLocator.xcodeproj")"
             ;;
         *)
             echo "Error: No Xcode project mapping for $scheme." >&2
@@ -362,7 +374,7 @@ compute_source_backend_enabled() {
 }
 
 compute_project_path() {
-    first_existing_project "$PROJECT_ROOT/../Compute/Compute.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Compute/Compute.xcodeproj"
+    dependency_project_path "$PROJECT_ROOT/../Compute/Xcode/Compute.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Projects/Compute/Compute.xcodeproj" "$PROJECT_ROOT/.build/tuist-derived/Compute/Compute.xcodeproj"
 }
 
 compute_archive_path() {
