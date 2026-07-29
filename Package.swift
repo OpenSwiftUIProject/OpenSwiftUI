@@ -629,10 +629,6 @@ let openSwiftUITarget = Target.target(
     dependencies: [
         "OpenSwiftUICore",
         "COpenSwiftUI",
-        .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
-        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
-        .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
-        .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
