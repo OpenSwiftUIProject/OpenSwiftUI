@@ -8,7 +8,7 @@ import Testing
 
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
-struct TextHeightUITests {
+struct TextUITests {
     @Test
     func foregroundColor() {
         openSwiftUIAssertSnapshot(of: TextForegroundExample())
