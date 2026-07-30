@@ -6,8 +6,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/openswiftuiproject/compute",
       "state" : {
-        "revision" : "bf9cfe57ba8b3dc7307a95fb10a6133e70db3089",
-        "version" : "0.3.0-bugfix.1"
+        "revision" : "a8387801fb54836919bec824f99049b28245d0b3",
+        "version" : "0.4.1-bugfix.2"
       }
     },
     {
