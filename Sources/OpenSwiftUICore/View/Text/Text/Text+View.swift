@@ -1299,25 +1299,3 @@ struct StyledTextLayoutEngine: LayoutEngine {
         text.storage?.string
     }
 }
-
-// FIXME
-
-extension EnvironmentValues {
-    private struct LineLimitKey: EnvironmentKey {
-        static var defaultValue: Int? { nil }
-    }
-
-    public var lineLimit: Int? {
-        get { self[LineLimitKey.self] }
-        set { self[LineLimitKey.self] = newValue }
-    }
-
-    private struct LowerLineLimitKey: EnvironmentKey {
-        static var defaultValue: Int? { nil }
-    }
-
-    package var lowerLineLimit: Int? {
-        get { self[LowerLineLimitKey.self] }
-        set { self[LowerLineLimitKey.self] = newValue }
-    }
-}
