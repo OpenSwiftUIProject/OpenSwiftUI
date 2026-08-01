@@ -2,48 +2,34 @@
 //  ViewTransform.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: CE19A3CEA6B9730579C42CE4C3071E74 (SwiftUI)
 //  ID: 1CC2FE016A82CF91549A64E942CE8ED4 (SwiftUICore)
 
 package import Foundation
-#if !canImport(Darwin)
 package import OpenCoreGraphicsShims
-#endif
+
+// MARK: - ViewTransform [WIP]
 
 @_spi(ForOpenSwiftUIOnly)
 public struct ViewTransform: Equatable, CustomStringConvertible {
+
+    // MARK: - ViewTransform.Conversion
+
     package enum Conversion {
         case rootToSpace(CoordinateSpace)
         case spaceToRoot(CoordinateSpace)
         case localToSpace(CoordinateSpace)
         case spaceToLocal(CoordinateSpace)
         case spaceToSpace(CoordinateSpace, CoordinateSpace)
-        
+
         package static func globalToSpace(_ space: CoordinateSpace) -> ViewTransform.Conversion {
             .spaceToSpace(.global, space)
         }
-        
+
         package static func spaceToGlobal(_ space: CoordinateSpace) -> ViewTransform.Conversion {
             .spaceToSpace(space, .global)
-        }
-        
-        // FIXME
-        @inline(__always)
-        func normalized() -> Conversion {
-            guard case let .spaceToSpace(space1, space2) = self else { return self }
-            if case .local = space1 {
-                return .localToSpace(space2)
-            } else if case .local = space2 {
-                return .spaceToLocal(space1)
-            } else if .root == space1 {
-                return .rootToSpace(space2)
-            } else if .root == space2 {
-                return .spaceToRoot(space1)
-            } else {
-                return self
-            }
         }
     }
     
