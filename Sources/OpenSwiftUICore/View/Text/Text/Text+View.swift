@@ -1099,16 +1099,30 @@ private struct StyledTextLayoutComputer: StatefulRule, AsyncAttribute {
     }
 }
 
-// MARK: - TextLayoutQuery [WIP]
+// MARK: - TextLayoutQuery
 
-struct TextLayoutQuery {
-    var _resolvedText: Attribute<ResolvedStyledText>
-    var _position: Attribute<CGPoint>
-    var _size: Attribute<CGSize>
-    var _transform: Attribute<ViewTransform>
+private struct TextLayoutQuery: Rule, AsyncAttribute {
+    @Attribute var resolvedText: ResolvedStyledText
+    @Attribute var position: CGPoint
+    @Attribute var size: CGSize
+    @Attribute var transform: ViewTransform
 
     var value: [Text.LayoutKey.AnchoredLayout] {
-        _openSwiftUIUnimplementedFailure()
+        guard let layout = resolvedText.layoutValue(
+            in: CGRect(origin: .zero, size: size),
+            with: size,
+            applyingMarginOffsets: false
+        ) else {
+            return []
+        }
+        let origin = Anchor<CGPoint>.Source.topLeading.prepare(
+            geometry: AnchorGeometry(
+                position: $position,
+                size: $size,
+                transform: $transform
+            )
+        )
+        return [.init(origin: origin, layout: layout)]
     }
 }
 
