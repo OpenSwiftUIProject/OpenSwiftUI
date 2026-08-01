@@ -426,69 +426,97 @@ private class BufferedElement: AnyElement {
     }
 }
 
+// MARK: - ViewTransform.UnsafeBuffer
+
 @_spi(ForOpenSwiftUIOnly)
 extension ViewTransform {
     package struct UnsafeBuffer: Equatable {
         var contents: UnsafeHeterogeneousBuffer
-        
+
         typealias Element = UnsafeHeterogeneousBuffer.Element
-        
+
         package init() {
             contents = .init()
         }
-        
+
         package mutating func destroy() {
             contents.destroy()
         }
-        
+
         package mutating func appendTranslation(_ size: CGSize) {
             guard size != .zero else { return }
-            contents.append(TranslationElement(offset: size), vtable: _VTable<TranslationElement>.self)
+            contents.append(
+                TranslationElement(offset: size),
+                vtable: _VTable<TranslationElement>.self
+            )
         }
-        
+
         package mutating func appendAffineTransform(_ matrix: CGAffineTransform, inverse: Bool) {
             if matrix.isTranslation {
                 let tranlation = CGSize(width: matrix.tx, height: matrix.ty)
                 appendTranslation(inverse ? -tranlation : tranlation)
             } else {
-                contents.append(AffineTransformElement(matrix: matrix, inverse: inverse), vtable: _VTable<AffineTransformElement>.self)
+                contents.append(
+                    AffineTransformElement(matrix: matrix, inverse: inverse),
+                    vtable: _VTable<AffineTransformElement>.self
+                )
             }
         }
-        
+
         package mutating func appendProjectionTransform(_ matrix: ProjectionTransform, inverse: Bool) {
             if matrix.isAffine {
                 appendAffineTransform(CGAffineTransform(matrix), inverse: inverse)
             } else {
-                contents.append(ProjectionTransformElement(matrix: matrix, inverse: inverse), vtable: _VTable<ProjectionTransformElement>.self)
+                contents.append(
+                    ProjectionTransformElement(matrix: matrix, inverse: inverse),
+                    vtable: _VTable<ProjectionTransformElement>.self
+                )
             }
         }
-        
+
         package mutating func appendCoordinateSpace(id: CoordinateSpace.ID) {
-            contents.append(CoordinateSpaceIDElement(id: id), vtable: _VTable<CoordinateSpaceIDElement>.self)
+            contents.append(
+                CoordinateSpaceIDElement(id: id),
+                vtable: _VTable<CoordinateSpaceIDElement>.self
+            )
         }
-        
+
         package mutating func appendSizedSpace(id: CoordinateSpace.ID, size: CGSize) {
-            contents.append(SizedSpaceIDElement(id: id, size: size), vtable: _VTable<SizedSpaceIDElement>.self)
+            contents.append(
+                SizedSpaceIDElement(id: id, size: size),
+                vtable: _VTable<SizedSpaceIDElement>.self
+            )
         }
-        
+
         package mutating func appendScrollGeometry(_ geometry: ScrollGeometry, isClipped: Bool) {
-            contents.append(ScrollGeometryItem(base: geometry, isClipped: isClipped), vtable: _VTable<ScrollGeometryItem>.self)
+            contents.append(
+                ScrollGeometryItem(base: geometry, isClipped: isClipped),
+                vtable: _VTable<ScrollGeometryItem>.self
+            )
         }
-                
-        package static func == (lhs: ViewTransform.UnsafeBuffer, rhs: ViewTransform.UnsafeBuffer) -> Bool {
-            guard lhs.contents.count == rhs.contents.count else { return false }
-            guard lhs.contents.count > 0 else { return true }
-            for index in lhs.contents.indices {
-                let lhsElement = lhs.contents[index]
-                let rhsElement = rhs.contents[index]
+
+        package static func == (
+            lhs: ViewTransform.UnsafeBuffer,
+            rhs: ViewTransform.UnsafeBuffer
+        ) -> Bool {
+            let lhsCount = lhs.contents.count
+            let rhsCount = rhs.contents.count
+            guard lhsCount == rhsCount else { return false }
+            for (lhsElement, rhsElement) in zip(lhs.contents, rhs.contents) {
                 guard lhsElement.item.pointee.vtable == rhsElement.item.pointee.vtable,
-                      lhsElement.vtable(as: VTable.self).equal(lhsElement, rhsElement)
-                else { return false }
+                      lhsElement.vtable(as: VTable.self).equal(lhsElement, rhsElement) else {
+                    return false
+                }
+                continue
             }
             return true
         }
-        
-        fileprivate func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+
+        fileprivate func forEach(
+            inverted: Bool,
+            stop: inout Bool,
+            _ body: (ViewTransform.Item, inout Bool) -> ()
+        ) {
             if inverted {
                 withUnsafeTemporaryAllocation(
                     of: UnsafeBuffer.Element.self,
@@ -498,57 +526,94 @@ extension ViewTransform {
                         bufferPointer.initializeElement(at: index, to: element)
                     }
                     for element in bufferPointer.reversed() {
-                        element.vtable(as: VTable.self).forEach(elt: element, inverted: true, stop: &stop, body)
+                        element.vtable(as: VTable.self)
+                            .forEach(elt: element, inverted: true, stop: &stop, body)
                         if stop { return }
                     }
                 }
             } else {
                 for element in contents {
-                    element.vtable(as: VTable.self).forEach(elt: element, inverted: false, stop: &stop, body)
+                    element.vtable(as: VTable.self)
+                        .forEach(elt: element, inverted: false, stop: &stop, body)
                     if stop { return }
                 }
             }
         }
-        
+
         fileprivate var description: String {
             let contentsDescription = contents.map { element in
                 element.vtable(as: VTable.self).description(elt: element)
             }
             return "[\(contentsDescription.joined(separator: ", "))]"
         }
-        
+
         // MARK: - ViewTransform.UnsafeBuffer.VTable
-        
+
         private class VTable: _UnsafeHeterogeneousBuffer_VTable {
-            class func forEach(elt: _UnsafeHeterogeneousBuffer_Element, inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {}
-            class func description(elt: _UnsafeHeterogeneousBuffer_Element) -> String { "" }
-            class func equal(_ lhs: _UnsafeHeterogeneousBuffer_Element, _ rhs: _UnsafeHeterogeneousBuffer_Element) -> Bool { false }
+            class func forEach(
+                elt: _UnsafeHeterogeneousBuffer_Element,
+                inverted: Bool,
+                stop: inout Bool,
+                _ body: (ViewTransform.Item, inout Bool) -> ()
+            ) {
+                _openSwiftUIEmptyStub()
+            }
+
+            class func description(
+                elt: _UnsafeHeterogeneousBuffer_Element
+            ) -> String {
+                ""
+            }
+
+            class func equal(
+                _ lhs: _UnsafeHeterogeneousBuffer_Element,
+                _ rhs: _UnsafeHeterogeneousBuffer_Element
+            ) -> Bool {
+                false
+            }
         }
-        
+
         private final class _VTable<Element>: VTable where Element: ViewTransformElement {
             override class func hasType<T>(_ type: T.Type) -> Bool {
                 Element.self == type
             }
-            
-            override class func moveInitialize(elt: _UnsafeHeterogeneousBuffer_Element, from: _UnsafeHeterogeneousBuffer_Element) {
+
+            override class func moveInitialize(
+                elt: _UnsafeHeterogeneousBuffer_Element,
+                from: _UnsafeHeterogeneousBuffer_Element
+            ) {
                 let dest = elt.body(as: Element.self)
                 let source = from.body(as: Element.self)
                 dest.initialize(to: source.move())
             }
-            
-            override class func deinitialize(elt: UnsafeHeterogeneousBuffer.Element) {
-                elt.body(as: Element.self).deinitialize(count: 1)
+
+            override class func deinitialize(
+                elt: UnsafeHeterogeneousBuffer.Element
+            ) {
+                elt.body(as: Element.self)
+                    .deinitialize(count: 1)
             }
-            
-            override class func forEach(elt: _UnsafeHeterogeneousBuffer_Element, inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-                elt.body(as: Element.self).pointee.forEach(inverted: inverted, stop: &stop, body)
+
+            override class func forEach(
+                elt: _UnsafeHeterogeneousBuffer_Element,
+                inverted: Bool,
+                stop: inout Bool,
+                _ body: (ViewTransform.Item, inout Bool) -> ()
+            ) {
+                elt.body(as: Element.self)
+                    .pointee.forEach(inverted: inverted, stop: &stop, body)
             }
-            
-            override class func description(elt: _UnsafeHeterogeneousBuffer_Element) -> String {
+
+            override class func description(
+                elt: _UnsafeHeterogeneousBuffer_Element
+            ) -> String {
                 String(describing: elt.body(as: Element.self).pointee)
             }
-            
-            override class func equal(_ lhs: _UnsafeHeterogeneousBuffer_Element, _ rhs: _UnsafeHeterogeneousBuffer_Element) -> Bool {
+
+            override class func equal(
+                _ lhs: _UnsafeHeterogeneousBuffer_Element,
+                _ rhs: _UnsafeHeterogeneousBuffer_Element
+            ) -> Bool {
                 let lhs = lhs.body(as: Element.self)
                 let rhs = rhs.body(as: Element.self)
                 return lhs.pointee == rhs.pointee
