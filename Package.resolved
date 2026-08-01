@@ -1,10 +1,10 @@
 {
-  "originHash" : "3e4458027d5c69453bb80f8dc4daa2b61492d2a6ab8cd796cdeaeaf0fcf7423b",
+  "originHash" : "e3ca252fe6b740be3c1429ef06f8f1cbc4e04ce5cc0321909987e852b5b3a81a",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
+      "location" : "https://github.com/openswiftuiproject/darwinprivateframeworks",
       "state" : {
         "branch" : "main",
         "revision" : "d93839821ebebdab22081fbc0f3d0b8cb0e30b2f"
@@ -25,13 +25,13 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "050239bd42b19a4c8b1ef3936bfb9f3589ecfc46"
+        "revision" : "df5ab4c4dcd0afc8fde978f6a0ad5228bb8aee17"
       }
     },
     {
       "identity" : "openobservation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "location" : "https://github.com/openswiftuiproject/openobservation",
       "state" : {
         "branch" : "main",
         "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
@@ -40,7 +40,7 @@
     {
       "identity" : "openrenderbox",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
+      "location" : "https://github.com/openswiftuiproject/openrenderbox",
       "state" : {
         "branch" : "main",
         "revision" : "d6db14f180068c6813a936088e767c2ca99c308d"
@@ -67,7 +67,7 @@
     {
       "identity" : "symbollocator",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/SymbolLocator.git",
+      "location" : "https://github.com/openswiftuiproject/symbollocator",
       "state" : {
         "revision" : "546053c03f282df1a8270853da6692e1b078be09",
         "version" : "0.2.1"

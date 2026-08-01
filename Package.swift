@@ -586,7 +586,10 @@ let openSwiftUICoreTarget = Target.target(
     ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: computeCondition ? [
+        .linkedLibrary("c++", .when(platforms: .darwinPlatforms)),
+    ] : []
 )
 
 let openSwiftUICoreTestTarget = Target.testTarget(
@@ -629,10 +632,6 @@ let openSwiftUITarget = Target.target(
     dependencies: [
         "OpenSwiftUICore",
         "COpenSwiftUI",
-        .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
-        .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
-        .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
-        .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
@@ -825,7 +824,6 @@ if symbolLocatorCondition {
 
 if attributeGraphCondition {
     openSwiftUICoreTarget.addAGSettings()
-    openSwiftUITarget.addAGSettings()
 
     openSwiftUISPITestTarget.addAGSettings()
     openSwiftUICoreTestTarget.addAGSettings()
@@ -983,10 +981,11 @@ let packageSettings = PackageSettings(
         "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
         "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
         "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,
-        "OpenCoreGraphicsShims": ProjectDescription.Product.staticFramework,
-        "OpenObservation": ProjectDescription.Product.staticFramework,
-        "OpenQuartzCoreShims": ProjectDescription.Product.staticFramework,
-        "OpenRenderBoxShims": ProjectDescription.Product.staticFramework,
+        "OpenCoreGraphicsShims": ProjectDescription.Product.framework,
+        "OpenObservation": ProjectDescription.Product.framework,
+        "OpenObservationCxx": ProjectDescription.Product.staticFramework,
+        "OpenQuartzCoreShims": ProjectDescription.Product.framework,
+        "OpenRenderBoxShims": ProjectDescription.Product.framework,
         "SymbolLocator": ProjectDescription.Product.staticFramework,
     ],
     baseProductType: ProjectDescription.Product.staticFramework,
