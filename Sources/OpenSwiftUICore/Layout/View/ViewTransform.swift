@@ -32,7 +32,9 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
             .spaceToSpace(space, .global)
         }
     }
-    
+
+    // MARK: - ViewTransform.Item
+
     package enum Item: Equatable {
         case translation(CGSize)
         case affineTransform(CGAffineTransform, inverse: Bool)
@@ -40,69 +42,60 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         case coordinateSpace(CoordinateSpace.Name)
         case sizedSpace(CoordinateSpace.Name, size: CGSize)
         case scrollGeometry(ViewTransform.ScrollGeometryItem)
-        
-        fileprivate func apply(to rect: inout CGRect?, name: CoordinateSpace.Name) {
+
+        fileprivate func apply(to rect: inout CGRect?, coordinateSpaceName: CoordinateSpace.Name) {
             switch self {
-                case let .translation(offset):
-                    rect?.origin += offset
-                case let .affineTransform(matrix, inverse):
-                    #if canImport(CoreGraphics)
-                    guard matrix.isRectilinear else {
-                        rect = nil
-                        break
-                    }
-                    let transform = inverse ? matrix.inverted() : matrix
-                    if var rect {
-                        rect = rect.applying(transform)
-                    }
-                    #else
-                    _openSwiftUIPlatformUnimplementedWarning()
-                    #endif
-                case .projectionTransform:
+            case let .translation(offset):
+                rect?.origin += offset
+            case let .affineTransform(matrix, inverse):
+                guard matrix.isRectilinear else {
                     rect = nil
-                case .coordinateSpace:
                     break
-                case let .sizedSpace(spaceName, size):
-                    guard spaceName == name else { break }
-                    rect = CGRect(origin: .zero, size: size)
-                case .scrollGeometry:
-                    break
+                }
+                rect = rect?.applying(inverse ? matrix.inverted() : matrix)
+            case .projectionTransform:
+                rect = nil
+            case .coordinateSpace:
+                break
+            case let .sizedSpace(spaceName, size):
+                guard spaceName == coordinateSpaceName else { break }
+                rect = CGRect(origin: .zero, size: size)
+            case .scrollGeometry:
+                break
             }
         }
-        
+
         fileprivate func apply(to geometry: inout ScrollGeometry?, allowUnclipped: Bool) {
             switch self {
-                case let .translation(offset):
-                    geometry?.contentOffset += offset
-                case let .affineTransform(matrix, inverse):
-                    #if canImport(CoreGraphics)
-                    guard matrix.isRectilinear else {
-                        geometry = nil
-                        break
-                    }
-                    let transform = inverse ? matrix.inverted() : matrix
-                    if var geometry {
-                        geometry.contentOffset = geometry.contentOffset.applying(transform)
-                        geometry.containerSize = geometry.containerSize.applying(transform)
-                    }
-                    #else
-                    _openSwiftUIPlatformUnimplementedWarning()
-                    #endif
-                case .projectionTransform:
+            case let .translation(offset):
+                geometry?.contentOffset += offset
+            case let .affineTransform(matrix, inverse):
+                guard matrix.isRectilinear else {
                     geometry = nil
-                case .coordinateSpace:
                     break
-                case .sizedSpace:
+                }
+                if let oldGeometry = geometry {
+                    let transform = inverse ? matrix.inverted() : matrix
+                    geometry!.contentOffset = oldGeometry.contentOffset.applying(transform)
+                    geometry!.containerSize = oldGeometry.containerSize.applying(transform)
+                }
+            case .projectionTransform:
+                geometry = nil
+            case .coordinateSpace:
+                break
+            case .sizedSpace:
+                break
+            case let .scrollGeometry(geometryItem):
+                guard geometryItem.isClipped || allowUnclipped else {
                     break
-                case let .scrollGeometry(geometryItem):
-                    guard geometryItem.isClipped || allowUnclipped else {
-                        break
-                    }
-                    geometry = geometryItem.base
+                }
+                geometry = geometryItem.base
             }
         }
     }
-    
+
+    // MARK: - ViewTransform.ScrollGeometryItem
+
     package struct ScrollGeometryItem: ViewTransformElement {
         var base: ScrollGeometry
         var isClipped: Bool
@@ -315,7 +308,7 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
     package func containingSizedCoordinateSpace(name: CoordinateSpace.Name) -> CGRect? {
         var rect: CGRect?
         forEach { item, _ in
-            item.apply(to: &rect, name: name)
+            item.apply(to: &rect, coordinateSpaceName: name)
         }
         return rect
     }
