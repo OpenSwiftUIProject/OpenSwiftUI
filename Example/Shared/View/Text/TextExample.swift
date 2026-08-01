@@ -20,7 +20,7 @@ struct TextForegroundExample: View {
 }
 
 struct TextFormatStyleExample: View {
-    @State private var myDate = Date()
+    @State private var myDate = Date(timeIntervalSince1970: 1_767_225_600)
 
     var body: some View {
         VStack {
