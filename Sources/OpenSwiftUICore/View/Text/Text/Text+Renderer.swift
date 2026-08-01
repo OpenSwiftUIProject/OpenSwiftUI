@@ -1026,3 +1026,14 @@ extension Text {
         }
     }
 }
+
+extension _ShapeStyle_Shape.PreparedTextResult {
+    package func apply(to text: Text) -> Text {
+        switch self {
+        case let .foregroundColor(color):
+            text.modified(with: .color(color))
+        case .foregroundKeyColor:
+            text.modified(with: .foregroundKeyColor())
+        }
+    }
+}

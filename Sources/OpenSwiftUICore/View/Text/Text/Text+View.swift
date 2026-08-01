@@ -1099,20 +1099,34 @@ private struct StyledTextLayoutComputer: StatefulRule, AsyncAttribute {
     }
 }
 
-// MARK: - TextLayoutQuery [WIP]
+// MARK: - TextLayoutQuery
 
-struct TextLayoutQuery {
-    var _resolvedText: Attribute<ResolvedStyledText>
-    var _position: Attribute<CGPoint>
-    var _size: Attribute<CGSize>
-    var _transform: Attribute<ViewTransform>
+private struct TextLayoutQuery: Rule, AsyncAttribute {
+    @Attribute var resolvedText: ResolvedStyledText
+    @Attribute var position: CGPoint
+    @Attribute var size: CGSize
+    @Attribute var transform: ViewTransform
 
     var value: [Text.LayoutKey.AnchoredLayout] {
-        _openSwiftUIUnimplementedFailure()
+        guard let layout = resolvedText.layoutValue(
+            in: CGRect(origin: .zero, size: size),
+            with: size,
+            applyingMarginOffsets: false
+        ) else {
+            return []
+        }
+        let origin = Anchor<CGPoint>.Source.topLeading.prepare(
+            geometry: AnchorGeometry(
+                position: $position,
+                size: $size,
+                transform: $transform
+            )
+        )
+        return [.init(origin: origin, layout: layout)]
     }
 }
 
-// MARK: - ResolvedTextFilter [WIP]
+// MARK: - ResolvedTextFilter
 
 private struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
     @Attribute var text: Text
@@ -1121,14 +1135,58 @@ private struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
 
     typealias Value = ResolvedStyledText
 
-    func updateValue() {
-        // FIXME
-        _openSwiftUIUnimplementedWarning()
-        value = helper.resolve(text, with: environment, sizeFitting: false)!
+    mutating func updateValue() {
+        let (text, textChanged) = $text.changedValue()
+        let (environment, environmentChanged) = $environment.changedValue()
+        let shouldUpdate: Bool
+        if !hasValue {
+            shouldUpdate = true
+        } else if textChanged, helper.lastText != text {
+            shouldUpdate = true
+        } else if environmentChanged,
+                  helper.tracker.hasDifferentUsedValues(environment.plist) {
+            shouldUpdate = true
+        } else {
+            switch helper.nextUpdate {
+            case let .time(nextUpdate):
+                shouldUpdate = helper.time >= nextUpdate
+            case let .recipe(lastTime, lastDate, reduceFrequency, resolved):
+                let nextUpdate = resolved.nextUpdate(
+                    after: lastTime,
+                    equivalentDate: lastDate,
+                    reduceFrequency: reduceFrequency
+                )
+                helper.nextUpdate = .time(nextUpdate)
+                shouldUpdate = helper.time >= nextUpdate
+            case .none:
+                shouldUpdate = false
+            }
+        }
+        if shouldUpdate {
+            value = helper.resolve(text, with: environment, sizeFitting: false)!
+        }
+        let nextUpdate: Time?
+        switch helper.nextUpdate {
+        case let .time(time):
+            nextUpdate = time
+        case let .recipe(lastTime, lastDate, reduceFrequency, resolved):
+            let time = resolved.nextUpdate(
+                after: lastTime,
+                equivalentDate: lastDate,
+                reduceFrequency: reduceFrequency
+            )
+            helper.nextUpdate = .time(time)
+            nextUpdate = time
+        case .none:
+            nextUpdate = nil
+        }
+        if let nextUpdate, helper.time < nextUpdate {
+            ViewGraph.current.nextUpdate.views.at(nextUpdate)
+        }
     }
 }
 
-// MARK: - ResolvedTextHelper [WIP]
+// MARK: - ResolvedTextHelper
 
 struct ResolvedTextHelper {
     enum NextUpdate {
@@ -1177,27 +1235,97 @@ struct ResolvedTextHelper {
         self.sizeVariant = sizeVariant
     }
 
-    func resolve(
+    mutating func resolve(
         _ text: Text?,
-        with environment: EnvironmentValues,
+        with sourceEnvironment: EnvironmentValues,
         sizeFitting: Bool
     ) -> ResolvedStyledText? {
-        // FIXME
-        _openSwiftUIUnimplementedWarning()
-        return ResolvedStyledText.styledText(
-            storage: text?.resolveAttributedString(in: environment),
-            layoutProperties: .init(),
-            layoutMargins: nil,
-            stylePadding: .zero,
-            archiveOptions: .init(),
-            isCollapsible: false,
-            features: [],
-            suffix: .none,
-            attachments: .init(),
-            styles: [],
-            transitions: [],
-            scaleFactorOverride: nil
+        tracker.reset()
+        guard var text else {
+            nextUpdate = .none
+            return nil
+        }
+        var environment = EnvironmentValues(
+            sourceEnvironment.plist,
+            tracker: tracker
         )
+        if let referenceDate {
+            environment.resolvableStringReferenceDate = referenceDate
+        }
+        if sizeVariant != .regular {
+            environment.textSizeVariant = sizeVariant
+        }
+        lastText = text
+
+        let resolutionDate: Date
+        if let date = environment.stringResolutionDate {
+            resolutionDate = date
+        } else {
+            _ = time
+            resolutionDate = .now
+        }
+        environment.stringResolutionDate = resolutionDate
+        if includeDefaultAttributes {
+            var shape = _ShapeStyle_Shape(
+                operation: .prepareText(level: 0),
+                environment: environment
+            )
+            ForegroundStyle()._apply(to: &shape)
+            if case let .preparedText(result) = shape.result {
+                text = result.apply(to: text)
+            }
+        }
+        var options = Text.ResolveOptions(for: environment)
+        options.formUnion(
+            attachmentsAsAuxiliaryMetadata
+                ? .writeAuxiliaryMetadata
+                : .includeTransitions
+        )
+        if allowsKeyColors {
+            options.formUnion(.allowsKeyColors)
+        }
+        if features.contains(.useTextSuffix) {
+            options.formUnion(.allowsTextSuffix)
+        }
+        if archiveOptions.isArchived {
+            options.formUnion(.includeSupportForRepeatedResolution)
+        }
+        let (storage, properties) = text.resolveAttributedStringAndProperties(
+            in: environment,
+            includeDefaultAttributes:
+                includeDefaultAttributes || attachmentsAsAuxiliaryMetadata,
+            options: options,
+            idiom: idiom
+        )
+        let resolved = ResolvedStyledText.styledText(
+            storage: storage,
+            stylePadding: properties.insets.negatedInsets,
+            environment: environment,
+            archiveOptions: archiveOptions,
+            isCollapsible: text.isCollapsible(),
+            features: features.union(properties.features),
+            suffix: properties.suffix,
+            attachments: properties.customAttachments,
+            styles: properties.styles,
+            transitions: properties.transitions,
+            writingMode: nil,
+            sizeFitting: sizeFitting
+        )
+        let isDynamic = resolved.isDynamic
+        if !archiveOptions.isArchived,
+           referenceDate == nil || referenceDate == .some(nil),
+           isDynamic
+        {
+            nextUpdate = .recipe(
+                lastTime: time,
+                lastDate: resolutionDate,
+                reduceFrequency: environment.isLuminanceReduced,
+                resolved: resolved
+            )
+        } else {
+            nextUpdate = .none
+        }
+        return resolved
     }
 }
 
@@ -1236,13 +1364,63 @@ private struct TextChildQuery<P>: Rule, AsyncAttribute, ScrapeableAttribute wher
     }
 }
 
-struct ResolvedOptionalTextFilter {
-    var _text: Attribute<Optional<Text>>
-    var _environment: Attribute<EnvironmentValues>
+// MARK: - ResolvedOptionalTextFilter
+
+struct ResolvedOptionalTextFilter: StatefulRule, AsyncAttribute {
+    @Attribute var text: Text?
+    @Attribute var environment: EnvironmentValues
     var helper: ResolvedTextHelper
 
-    func updateValue() {
-        _openSwiftUIUnimplementedFailure()
+    typealias Value = ResolvedStyledText?
+
+    mutating func updateValue() {
+        let (text, textChanged) = $text.changedValue()
+        let (environment, environmentChanged) = $environment.changedValue()
+        let shouldUpdate: Bool
+        if !hasValue {
+            shouldUpdate = true
+        } else if textChanged, helper.lastText != text {
+            shouldUpdate = true
+        } else if environmentChanged,
+                  helper.tracker.hasDifferentUsedValues(environment.plist) {
+            shouldUpdate = true
+        } else {
+            switch helper.nextUpdate {
+            case let .time(nextUpdate):
+                shouldUpdate = helper.time >= nextUpdate
+            case let .recipe(lastTime, lastDate, reduceFrequency, resolved):
+                let nextUpdate = resolved.nextUpdate(
+                    after: lastTime,
+                    equivalentDate: lastDate,
+                    reduceFrequency: reduceFrequency
+                )
+                helper.nextUpdate = .time(nextUpdate)
+                shouldUpdate = helper.time >= nextUpdate
+            case .none:
+                shouldUpdate = false
+            }
+        }
+        if shouldUpdate {
+            value = helper.resolve(text, with: environment, sizeFitting: false)
+        }
+        let nextUpdate: Time?
+        switch helper.nextUpdate {
+        case let .time(time):
+            nextUpdate = time
+        case let .recipe(lastTime, lastDate, reduceFrequency, resolved):
+            let time = resolved.nextUpdate(
+                after: lastTime,
+                equivalentDate: lastDate,
+                reduceFrequency: reduceFrequency
+            )
+            helper.nextUpdate = .time(time)
+            nextUpdate = time
+        case .none:
+            nextUpdate = nil
+        }
+        if let nextUpdate, helper.time < nextUpdate {
+            ViewGraph.current.nextUpdate.views.at(nextUpdate)
+        }
     }
 }
 
