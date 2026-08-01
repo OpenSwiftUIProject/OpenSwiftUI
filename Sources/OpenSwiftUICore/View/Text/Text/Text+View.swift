@@ -1128,7 +1128,7 @@ private struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
     }
 }
 
-// MARK: - ResolvedTextHelper [WIP]
+// MARK: - ResolvedTextHelper
 
 struct ResolvedTextHelper {
     enum NextUpdate {
@@ -1177,27 +1177,97 @@ struct ResolvedTextHelper {
         self.sizeVariant = sizeVariant
     }
 
-    func resolve(
+    mutating func resolve(
         _ text: Text?,
-        with environment: EnvironmentValues,
+        with sourceEnvironment: EnvironmentValues,
         sizeFitting: Bool
     ) -> ResolvedStyledText? {
-        // FIXME
-        _openSwiftUIUnimplementedWarning()
-        return ResolvedStyledText.styledText(
-            storage: text?.resolveAttributedString(in: environment),
-            layoutProperties: .init(),
-            layoutMargins: nil,
-            stylePadding: .zero,
-            archiveOptions: .init(),
-            isCollapsible: false,
-            features: [],
-            suffix: .none,
-            attachments: .init(),
-            styles: [],
-            transitions: [],
-            scaleFactorOverride: nil
+        tracker.reset()
+        guard var text else {
+            nextUpdate = .none
+            return nil
+        }
+        var environment = EnvironmentValues(
+            sourceEnvironment.plist,
+            tracker: tracker
         )
+        if let referenceDate {
+            environment.resolvableStringReferenceDate = referenceDate
+        }
+        if sizeVariant != .regular {
+            environment.textSizeVariant = sizeVariant
+        }
+        lastText = text
+
+        let resolutionDate: Date
+        if let date = environment.stringResolutionDate {
+            resolutionDate = date
+        } else {
+            _ = time
+            resolutionDate = .now
+        }
+        environment.stringResolutionDate = resolutionDate
+        if includeDefaultAttributes {
+            var shape = _ShapeStyle_Shape(
+                operation: .prepareText(level: 0),
+                environment: environment
+            )
+            ForegroundStyle()._apply(to: &shape)
+            if case let .preparedText(result) = shape.result {
+                text = result.apply(to: text)
+            }
+        }
+        var options = Text.ResolveOptions(for: environment)
+        options.formUnion(
+            attachmentsAsAuxiliaryMetadata
+                ? .writeAuxiliaryMetadata
+                : .includeTransitions
+        )
+        if allowsKeyColors {
+            options.formUnion(.allowsKeyColors)
+        }
+        if features.contains(.useTextSuffix) {
+            options.formUnion(.allowsTextSuffix)
+        }
+        if archiveOptions.isArchived {
+            options.formUnion(.includeSupportForRepeatedResolution)
+        }
+        let (storage, properties) = text.resolveAttributedStringAndProperties(
+            in: environment,
+            includeDefaultAttributes:
+                includeDefaultAttributes || attachmentsAsAuxiliaryMetadata,
+            options: options,
+            idiom: idiom
+        )
+        let resolved = ResolvedStyledText.styledText(
+            storage: storage,
+            stylePadding: properties.insets.negatedInsets,
+            environment: environment,
+            archiveOptions: archiveOptions,
+            isCollapsible: text.isCollapsible(),
+            features: features.union(properties.features),
+            suffix: properties.suffix,
+            attachments: properties.customAttachments,
+            styles: properties.styles,
+            transitions: properties.transitions,
+            writingMode: nil,
+            sizeFitting: sizeFitting
+        )
+        let isDynamic = resolved.isDynamic
+        if !archiveOptions.isArchived,
+           referenceDate == nil || referenceDate == .some(nil),
+           isDynamic
+        {
+            nextUpdate = .recipe(
+                lastTime: time,
+                lastDate: resolutionDate,
+                reduceFrequency: environment.isLuminanceReduced,
+                resolved: resolved
+            )
+        } else {
+            nextUpdate = .none
+        }
+        return resolved
     }
 }
 
