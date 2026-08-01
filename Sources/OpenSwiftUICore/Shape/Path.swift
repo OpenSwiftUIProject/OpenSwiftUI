@@ -843,6 +843,12 @@ extension Path {
     ) -> Path {
         _openSwiftUIUnimplementedFailure()
     }
+
+    func mapPoints(_ body: (inout [CGPoint]) -> ()) -> Path {
+        // TODO
+        _openSwiftUIUnimplementedWarning()
+        return self
+    }
 }
 
 // MARK: - RenderBox

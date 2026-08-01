@@ -769,39 +769,34 @@ extension ViewTransform.ScrollGeometryItem: ViewTransformElement {
         body(.scrollGeometry(self), &stop)
     }
 }
-
-// MARK: - ViewTransformable
+// MARK: - ApplyViewTransform
 
 private protocol ApplyViewTransform {
     mutating func applyTransform(item: ViewTransform.Item)
 }
 
 extension ApplyViewTransform {
-    mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
         transform.convert(.localToSpace(space)) { item in
             applyTransform(item: item)
         }
     }
+
+    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
+        transform.convert(.spaceToLocal(space)) { item in
+            applyTransform(item: item)
+        }
+    }
 }
+
+// MARK: - ViewTransformable
 
 package protocol ViewTransformable {
     mutating func convert(to space: CoordinateSpace, transform: ViewTransform)
     mutating func convert(from space: CoordinateSpace, transform: ViewTransform)
 }
 
-extension ViewTransformable where Self: ApplyViewTransform {
-    mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
-        transform.convert(.localToSpace(space)) { item in
-            applyTransform(item: item)
-        }
-    }
-    
-    mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
-        transform.convert(.spaceToLocal(space)) { item in
-            applyTransform(item: item)
-        }
-    }
-}
+// MARK: - CGPoint + ApplyViewTransform & ViewTransformable
 
 extension CGPoint: ApplyViewTransform, ViewTransformable {
     package mutating func applyTransform(item: ViewTransform.Item) {
@@ -809,7 +804,6 @@ extension CGPoint: ApplyViewTransform, ViewTransformable {
             case let .translation(offset):
                 self += offset
             case let .affineTransform(matrix, inverse):
-                #if canImport(CoreGraphics)
                 if inverse {
                     if matrix.isTranslation {
                         self -= CGSize(width: matrix.tx, height: matrix.ty)
@@ -819,86 +813,102 @@ extension CGPoint: ApplyViewTransform, ViewTransformable {
                 } else {
                     self = applying(matrix)
                 }
-                #else
-                _openSwiftUIPlatformUnimplementedWarning()
-                #endif
             case let .projectionTransform(matrix, inverse):
                 self = inverse ? unapplying(matrix) : applying(matrix)
             case .coordinateSpace, .sizedSpace, .scrollGeometry:
                 break
         }
     }
-    
-    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
-        self = transform.convert(.localToSpace(space), point: self)
+}
+
+extension MutableCollection where Element == CGPoint {
+    fileprivate mutating func _applyTransform(item: ViewTransform.Item) {
+        switch item {
+        case let .translation(offset):
+            for index in indices {
+                self[index] += offset
+            }
+        case let .affineTransform(matrix, inverse):
+            let transform = inverse ? matrix.inverted() : matrix
+            for index in indices {
+                self[index] = self[index].applying(transform)
+            }
+        case let .projectionTransform(matrix, inverse):
+            _apply(matrix, inverse: inverse)
+        case .coordinateSpace, .sizedSpace, .scrollGeometry:
+            break
+        }
     }
-    
-    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
-        self = transform.convert(.spaceToLocal(space), point: self)
+
+    fileprivate mutating func _apply(_ transform: ProjectionTransform, inverse: Bool) {
+        for index in indices {
+            self[index] = inverse ? self[index].unapplying(transform) : self[index].applying(transform)
+        }
     }
 }
 
 extension [CGPoint]: ApplyViewTransform, ViewTransformable {
     package mutating func applyTransform(item: ViewTransform.Item) {
-        switch item {
-            case let .translation(offset):
-                self = map { $0 + offset }
-            case let .affineTransform(matrix, inverse):
-                #if canImport(CoreGraphics)
-                let tranform = inverse ? matrix.inverted() : matrix
-                self = map { $0.applying(tranform) }
-                #else
-                _openSwiftUIPlatformUnimplementedWarning()
-                #endif
-            case let .projectionTransform(matrix, inverse):
-                apply(matrix, inverse: inverse)
-            case .coordinateSpace, .sizedSpace, .scrollGeometry:
-                break
-        }
+        _applyTransform(item: item)
     }
-    
+
     package mutating func apply(_ m: ProjectionTransform, inverse: Bool) {
-        self = map { inverse ? $0.unapplying(m) : $0.applying(m) }
-    }
-    
-    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
-        transform.convert(.localToSpace(space), points: &self)
-    }
-    
-    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
-        transform.convert(.spaceToLocal(space), points: &self)
+        _apply(m, inverse: inverse)
     }
 }
 
+// MARK: - CGRect + ViewTransformable
+
 extension CGRect: ViewTransformable {
     package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
-        guard !isNull else { return }
-        guard !isInfinite else { return }
+        guard !isNull, !isInfinite else { return }
         var points = cornerPoints
         points.convert(to: space, transform: transform)
         self = CGRect(cornerPoints: points)
     }
-    
+
     package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
-        guard !isNull else { return }
-        guard !isInfinite else { return }
+        guard !isNull, !isInfinite else { return }
         var points = cornerPoints
         points.convert(from: space, transform: transform)
         self = CGRect(cornerPoints: points)
     }
-    
-    package mutating func whileClippingToScrollViewsConvert(to space: CoordinateSpace, transform: ViewTransform) -> Bool {
-        guard !isNull else { return true }
-        guard !isInfinite else { return true }
+
+    package mutating func convertAndClipToScrollView(to space: CoordinateSpace, transform: ViewTransform) -> Bool {
+        guard !isNull, !isInfinite else { return true }
+        var isNonRectilinear = false
         transform.convert(.localToSpace(space)) { item in
-            // TODO
+            switch item {
+            case let .translation(offset):
+                origin += offset
+            case let .affineTransform(matrix, inverse):
+                self = applying(inverse ? matrix.inverted() : matrix)
+                isNonRectilinear = isNonRectilinear || !matrix.isRectilinear
+            case let .projectionTransform(matrix, inverse):
+                if !isNull && !isInfinite {
+                    var points = cornerPoints
+                    points.apply(matrix, inverse: inverse)
+                    self = CGRect(cornerPoints: points)
+                }
+                isNonRectilinear = true
+            case .coordinateSpace, .sizedSpace:
+                break
+            case let .scrollGeometry(geometry):
+                self = intersection(CGRect(origin: .zero, size: geometry.base.containerSize))
+            }
         }
-        _openSwiftUIUnimplementedFailure()
+        return !isNonRectilinear
     }
 }
 
-// TODO: Path + ViewTransformable
-//extension Path: ViewTransformable {
-//    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform)
-//    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform)
-//}
+// MARK: - Path + ViewTransformable
+
+extension Path: ViewTransformable {
+    package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
+        mapPoints { $0.convert(to: space, transform: transform) }
+    }
+
+    package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
+        mapPoints { $0.convert(from: space, transform: transform) }
+    }
+}
