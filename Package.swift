@@ -586,7 +586,10 @@ let openSwiftUICoreTarget = Target.target(
     ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: computeCondition ? [
+        .linkedLibrary("c++", .when(platforms: .darwinPlatforms)),
+    ] : []
 )
 
 let openSwiftUICoreTestTarget = Target.testTarget(
