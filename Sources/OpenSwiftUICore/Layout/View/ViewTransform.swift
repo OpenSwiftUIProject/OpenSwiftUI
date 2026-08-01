@@ -698,77 +698,6 @@ extension ViewTransform {
     }
 }
 
-// MARK: - ViewTransformElement
-
-private protocol ViewTransformElement: Equatable {
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ())
-}
-
-private struct TranslationElement: ViewTransformElement {
-    var offset: CGSize
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.translation(inverted ? -offset : offset), &stop)
-    }
-}
-
-private struct AffineTransformElement: ViewTransformElement {
-    var matrix: CGAffineTransform
-    var inverse: Bool
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.affineTransform(matrix, inverse: inverse), &stop)
-    }
-}
-
-private struct ProjectionTransformElement: ViewTransformElement {
-    var matrix: ProjectionTransform
-    var inverse: Bool
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.projectionTransform(matrix, inverse: inverse), &stop)
-    }
-}
-
-private struct CoordinateSpaceElement: ViewTransformElement {
-    var name: AnyHashable
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.coordinateSpace(.name(name)), &stop)
-    }
-}
-
-private struct CoordinateSpaceIDElement: ViewTransformElement {
-    var id: CoordinateSpace.ID
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.coordinateSpace(.id(id)), &stop)
-    }
-}
-
-private struct SizedSpaceElement: ViewTransformElement {
-    var name: AnyHashable
-    var size: CGSize
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.sizedSpace(.name(name), size: size), &stop)
-    }
-}
-
-private struct SizedSpaceIDElement: ViewTransformElement {
-    var id: CoordinateSpace.ID
-    var size: CGSize
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.sizedSpace(.id(id), size: size), &stop)
-    }
-}
-
-extension ViewTransform.ScrollGeometryItem: ViewTransformElement {
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        body(.scrollGeometry(self), &stop)
-    }
-}
 // MARK: - ApplyViewTransform
 
 private protocol ApplyViewTransform {
@@ -910,5 +839,77 @@ extension Path: ViewTransformable {
 
     package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
         mapPoints { $0.convert(from: space, transform: transform) }
+    }
+}
+
+// MARK: - ViewTransformElement
+
+private protocol ViewTransformElement: Equatable {
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ())
+}
+
+private struct TranslationElement: ViewTransformElement {
+    var offset: CGSize
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.translation(inverted ? -offset : offset), &stop)
+    }
+}
+
+private struct SizedSpaceIDElement: ViewTransformElement {
+    var id: CoordinateSpace.ID
+    var size: CGSize
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.sizedSpace(.id(id), size: size), &stop)
+    }
+}
+
+private struct SizedSpaceElement: ViewTransformElement {
+    var name: AnyHashable
+    var size: CGSize
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.sizedSpace(.name(name), size: size), &stop)
+    }
+}
+
+private struct CoordinateSpaceIDElement: ViewTransformElement {
+    var id: CoordinateSpace.ID
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.coordinateSpace(.id(id)), &stop)
+    }
+}
+
+private struct AffineTransformElement: ViewTransformElement {
+    var matrix: CGAffineTransform
+    var inverse: Bool
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.affineTransform(matrix, inverse: inverse != inverted), &stop)
+    }
+}
+
+private struct CoordinateSpaceElement: ViewTransformElement {
+    var name: AnyHashable
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.coordinateSpace(.name(name)), &stop)
+    }
+}
+
+private struct ProjectionTransformElement: ViewTransformElement {
+    var matrix: ProjectionTransform
+    var inverse: Bool
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.projectionTransform(matrix, inverse: inverse != inverted), &stop)
+    }
+}
+
+extension ViewTransform.ScrollGeometryItem: ViewTransformElement {
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.scrollGeometry(self), &stop)
     }
 }
