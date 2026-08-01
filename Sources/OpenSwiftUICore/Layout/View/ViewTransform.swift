@@ -96,17 +96,9 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
 
     // MARK: - ViewTransform.ScrollGeometryItem
 
-    package struct ScrollGeometryItem: ViewTransformElement {
+    package struct ScrollGeometryItem: Equatable {
         var base: ScrollGeometry
         var isClipped: Bool
-        
-        func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-            body(.scrollGeometry(self), &stop)
-        }
-        
-        package static func == (lhs: ViewTransform.ScrollGeometryItem, rhs: ViewTransform.ScrollGeometryItem) -> Bool {
-            lhs.base == rhs.base && lhs.isClipped == rhs.isClipped
-        }
     }
     
     private var head: AnyElement?
@@ -524,6 +516,12 @@ private struct SizedSpaceIDElement: ViewTransformElement {
     
     func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
         body(.sizedSpace(.id(id), size: size), &stop)
+    }
+}
+
+extension ViewTransform.ScrollGeometryItem: ViewTransformElement {
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        body(.scrollGeometry(self), &stop)
     }
 }
 
