@@ -322,6 +322,110 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
 @available(*, unavailable)
 extension ViewTransform: Sendable {}
 
+// MARK: - AnyElement
+
+private class AnyElement {
+    var next: AnyElement?
+    let depth: Int
+
+    init(next: AnyElement?) {
+        self.next = next
+        if let next {
+            self.depth = next.depth + 1
+        } else {
+            self.depth = 1
+        }
+    }
+
+    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        _openSwiftUIEmptyStub()
+    }
+
+    func isEqual(to other: AnyElement) -> Bool {
+        false
+    }
+
+    var description: String? { nil }
+}
+
+private class Element<Value>: AnyElement where Value: ViewTransformElement {
+    let translation: CGSize
+    let element: Value
+
+    init(next: AnyElement?, translation: CGSize, element: Value) {
+        self.translation = translation
+        self.element = element
+        super.init(next: next)
+    }
+
+    override func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        if !inverted, translation != .zero {
+            body(.translation(translation), &stop)
+            if stop { return }
+        }
+        element.forEach(inverted: inverted, stop: &stop, body)
+        if stop { return }
+        if inverted, translation != .zero {
+            body(.translation(-translation), &stop)
+        }
+    }
+
+    override func isEqual(to other: AnyElement) -> Bool {
+        guard let other = other as? Element<Value> else { return false }
+        return translation == other.translation && element == other.element
+    }
+
+    override var description: String? {
+        let description = String(describing: element)
+        if translation == .zero {
+            return description
+        } else {
+            return "(\(translation), \(description))"
+        }
+    }
+}
+
+private class BufferedElement: AnyElement {
+    let translation: CGSize
+    var elements: ViewTransform.UnsafeBuffer
+
+    init(next: AnyElement?, translation: CGSize, elements: ViewTransform.UnsafeBuffer) {
+        self.translation = translation
+        self.elements = elements
+        super.init(next: next)
+    }
+
+    deinit {
+        elements.destroy()
+    }
+
+    override func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
+        if !inverted, translation != .zero {
+            body(.translation(translation), &stop)
+            if stop { return }
+        }
+        elements.forEach(inverted: inverted, stop: &stop, body)
+        if stop { return }
+        if inverted, translation != .zero {
+            body(.translation(-translation), &stop)
+        }
+    }
+
+    override func isEqual(to other: AnyElement) -> Bool {
+        guard let other = other as? BufferedElement else { return false }
+        return translation == other.translation && elements == other.elements
+    }
+
+    override var description: String? {
+        let description = elements.description
+        if translation == .zero {
+            return description
+        } else {
+            return "(\(translation), \(description))"
+        }
+    }
+}
+
 @_spi(ForOpenSwiftUIOnly)
 extension ViewTransform {
     package struct UnsafeBuffer: Equatable {
@@ -522,96 +626,6 @@ private struct SizedSpaceIDElement: ViewTransformElement {
 extension ViewTransform.ScrollGeometryItem: ViewTransformElement {
     func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
         body(.scrollGeometry(self), &stop)
-    }
-}
-
-// MARK: - AnyElement
-
-private class AnyElement {
-    var next: AnyElement?
-    let depth: Int
-    
-    init(next: AnyElement?) {
-        self.next = next
-        self.depth = (next?.depth ?? 0) + 1
-    }
-    
-    func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {}
-    func isEqual(to other: AnyElement) -> Bool { false }
-    var description: String? { nil }
-}
-
-private class Element<Value>: AnyElement where Value: ViewTransformElement {
-    let translation: CGSize
-    let element: Value
-
-    init(next: AnyElement?, translation: CGSize, element: Value) {
-        self.translation = translation
-        self.element = element
-        super.init(next: next)
-    }
-    
-    override func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        if !inverted, translation != .zero {
-            body(.translation(translation), &stop)
-            if stop { return }
-        }
-        element.forEach(inverted: inverted, stop: &stop, body)
-        if stop { return }
-        if inverted, translation != .zero {
-            body(.translation(-translation), &stop)
-        }
-    }
-    
-    override func isEqual(to other: AnyElement) -> Bool {
-        guard let otherElement = other as? Element<Value> else { return false }
-        return translation == otherElement.translation && element == otherElement.element
-    }
-    
-    override var description: String? {
-        let description = String(describing: element)
-        if translation == .zero {
-            return description
-        } else {
-            return "(\(translation), \(description))"
-        }
-    }
-}
-
-private class BufferedElement: AnyElement {
-    let translation: CGSize
-    var elements: ViewTransform.UnsafeBuffer
-    
-    init(next: AnyElement?, translation: CGSize, elements: ViewTransform.UnsafeBuffer) {
-        self.translation = translation
-        self.elements = elements
-        super.init(next: next)
-    }
-    
-    override func forEach(inverted: Bool, stop: inout Bool, _ body: (ViewTransform.Item, inout Bool) -> ()) {
-        if !inverted, translation != .zero {
-            body(.translation(translation), &stop)
-            if stop { return }
-        }
-        elements.forEach(inverted: inverted, stop: &stop, body)
-        if stop { return }
-        if inverted, translation != .zero {
-            body(.translation(-translation), &stop)
-        }
-    }
-    
-    override func isEqual(to other: AnyElement) -> Bool {
-        guard let otherElement = other as? BufferedElement else { return false }
-        return translation == otherElement.translation && elements == otherElement.elements
-    }
-    
-    override var description: String? {
-        let description = elements.description
-        if translation == .zero {
-            return description
-        } else {
-            return "(\(translation), \(description))"
-        }
     }
 }
 
