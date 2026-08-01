@@ -9,11 +9,7 @@ struct AnimationCompatibilityTests {
     func description() {
         let animation = Animation.default
         #expect(animation.description == "DefaultAnimation()")
-        #if OPENSWIFTUI
-        #expect(animation.debugDescription == "AnyAnimator(OpenSwiftUICore.DefaultAnimation())")
-        #else
-        #expect(animation.debugDescription == "AnyAnimator(SwiftUI.DefaultAnimation())")
-        #endif
+        #expect(animation.debugDescription == "AnyAnimator(OpenSwiftUI.DefaultAnimation())".normalizeSwiftUI)
         #expect(animation.customMirror.description == "Mirror for Animation")
     }
 }

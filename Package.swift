@@ -586,7 +586,9 @@ let openSwiftUICoreTarget = Target.target(
     ] + (swiftUIRenderCondition && symbolLocatorCondition ? ["OpenSwiftUISymbolDualTestsSupport"] : []),
     cSettings: sharedCSettings,
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings,
+    swiftSettings: sharedSwiftSettings + [
+        .unsafeFlags(["-module-abi-name", "OpenSwiftUI"]),
+    ],
     linkerSettings: computeCondition ? [
         .linkedLibrary("c++", .when(platforms: .darwinPlatforms)),
     ] : []
@@ -969,6 +971,7 @@ let openSwiftUITargetSettings: SettingsDictionary = [
 let openSwiftUICoreTargetSettings: SettingsDictionary = [
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
     "OTHER_LDFLAGS": "$(inherited) -ObjC",
+    "OTHER_SWIFT_FLAGS": "$(inherited) -module-abi-name OpenSwiftUI",
 ]
 
 let packageSettings = PackageSettings(

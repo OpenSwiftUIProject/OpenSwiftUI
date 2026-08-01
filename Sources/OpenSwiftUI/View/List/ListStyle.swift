@@ -21,8 +21,6 @@ struct GroupedFormTextFieldStyleContext: StyleContext {}
 
 struct RadioGroupStyleContext: StyleContext {}
 
-struct ToolbarStyleContext: StyleContext {}
-
 struct ColumnarLabeledContentStyle: LabeledContentStyle {
     func makeBody(configuration: Configuration) -> some View {
         _openSwiftUIUnimplementedFailure()
