@@ -1350,13 +1350,63 @@ private struct TextChildQuery<P>: Rule, AsyncAttribute, ScrapeableAttribute wher
     }
 }
 
-struct ResolvedOptionalTextFilter {
-    var _text: Attribute<Optional<Text>>
-    var _environment: Attribute<EnvironmentValues>
+// MARK: - ResolvedOptionalTextFilter
+
+struct ResolvedOptionalTextFilter: StatefulRule, AsyncAttribute {
+    @Attribute var text: Text?
+    @Attribute var environment: EnvironmentValues
     var helper: ResolvedTextHelper
 
-    func updateValue() {
-        _openSwiftUIUnimplementedFailure()
+    typealias Value = ResolvedStyledText?
+
+    mutating func updateValue() {
+        let (text, textChanged) = $text.changedValue()
+        let (environment, environmentChanged) = $environment.changedValue()
+        let shouldUpdate: Bool
+        if !hasValue {
+            shouldUpdate = true
+        } else if textChanged, helper.lastText != text {
+            shouldUpdate = true
+        } else if environmentChanged,
+                  helper.tracker.hasDifferentUsedValues(environment.plist) {
+            shouldUpdate = true
+        } else {
+            switch helper.nextUpdate {
+            case let .time(nextUpdate):
+                shouldUpdate = helper.time >= nextUpdate
+            case let .recipe(lastTime, lastDate, reduceFrequency, resolved):
+                let nextUpdate = resolved.nextUpdate(
+                    after: lastTime,
+                    equivalentDate: lastDate,
+                    reduceFrequency: reduceFrequency
+                )
+                helper.nextUpdate = .time(nextUpdate)
+                shouldUpdate = helper.time >= nextUpdate
+            case .none:
+                shouldUpdate = false
+            }
+        }
+        if shouldUpdate {
+            value = helper.resolve(text, with: environment, sizeFitting: false)
+        }
+        let nextUpdate: Time?
+        switch helper.nextUpdate {
+        case let .time(time):
+            nextUpdate = time
+        case let .recipe(lastTime, lastDate, reduceFrequency, resolved):
+            let time = resolved.nextUpdate(
+                after: lastTime,
+                equivalentDate: lastDate,
+                reduceFrequency: reduceFrequency
+            )
+            helper.nextUpdate = .time(time)
+            nextUpdate = time
+        case .none:
+            nextUpdate = nil
+        }
+        if let nextUpdate, helper.time < nextUpdate {
+            ViewGraph.current.nextUpdate.views.at(nextUpdate)
+        }
     }
 }
 
