@@ -219,29 +219,30 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         var stop = false
         if inverted {
             if pendingTranslation != .zero {
-                body(.translation(pendingTranslation), &stop)
+                body(.translation(-pendingTranslation), &stop)
                 if stop { return }
             }
-            var element: AnyElement = head
+            var current: AnyElement = head
             repeat {
-                element.forEach(inverted: true, stop: &stop, body)
+                let next = current.next
+                current.forEach(inverted: true, stop: &stop, body)
                 if stop { return }
-                guard let next = element.next else { break }
-                element = next
+                guard let next else { break }
+                current = next
             } while true
         } else {
             withUnsafeTemporaryAllocation(
                 of: AnyElement.self,
                 capacity: head.depth
             ) { bufferPointer in
-                bufferPointer.initializeElement(at: 0, to: head)
-                var element = head
+                var current: AnyElement = head
                 var index = 0
-                while let next = element.next {
-                    bufferPointer.initializeElement(at: index, to: next)
-                    element = next
+                repeat {
+                    bufferPointer.initializeElement(at: index, to: current)
                     index &+= 1
-                }
+                    guard let next = current.next else { break }
+                    current = next
+                } while true
                 for element in bufferPointer.reversed() {
                     element.forEach(inverted: false, stop: &stop, body)
                     if stop { return }
@@ -276,7 +277,82 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
     
     package func convert(_ conversion: ViewTransform.Conversion, _ body: (ViewTransform.Item) -> Void) {
         guard !isEmpty else { return }
-        _openSwiftUIUnimplementedFailure()
+        let newConversion: ViewTransform.Conversion
+        if case let .spaceToSpace(lhsSpace, rhsSpace) = conversion {
+            if lhsSpace.isLocal {
+                newConversion = .localToSpace(rhsSpace)
+            } else if rhsSpace.isLocal {
+                newConversion = .spaceToLocal(lhsSpace)
+            } else if lhsSpace.isGlobal {
+                newConversion = .rootToSpace(rhsSpace)
+            } else if rhsSpace.isGlobal {
+                newConversion = .spaceToRoot(lhsSpace)
+            } else {
+                newConversion = conversion
+            }
+        } else {
+            newConversion = conversion
+        }
+        var isActive = false
+        switch newConversion {
+            case let .rootToSpace(space):
+                guard !space.isGlobal else { return }
+                isActive = true
+            case let .spaceToRoot(space):
+                isActive = space.isLocal
+            case let .localToSpace(space):
+                guard !space.isLocal else { return }
+                isActive = true
+            case let .spaceToLocal(space):
+                isActive = space.isGlobal
+            case .spaceToSpace:
+                break
+        }
+        let inverted: Bool
+        switch newConversion {
+            case .rootToSpace, .spaceToLocal:
+                inverted = false
+            case .spaceToRoot, .localToSpace:
+                inverted = true
+            case let .spaceToSpace(lhsSpace, rhsSpace):
+                inverted = !spaceBeforeSpace(lhsSpace, rhsSpace)
+        }
+        forEach(inverted: inverted) { item, stop in
+            let itemSpace: CoordinateSpace?
+            switch item {
+            case let .coordinateSpace(name):
+                itemSpace = name.space
+            case let .sizedSpace(name, _):
+                itemSpace = name.space
+            default:
+                itemSpace = nil
+            }
+            if let itemSpace {
+                switch newConversion {
+                case let .rootToSpace(space),
+                    let .localToSpace(space):
+                    if itemSpace == space {
+                        stop = true
+                        return
+                    }
+                case let .spaceToRoot(space),
+                    let .spaceToLocal(space):
+                    if itemSpace == space {
+                        isActive = true
+                    }
+                case let .spaceToSpace(lhsSpace, rhsSpace):
+                    if itemSpace == rhsSpace {
+                        stop = true
+                        return
+                    }
+                    if itemSpace == lhsSpace {
+                        isActive = true
+                    }
+            }
+            if isActive {
+                body(item)
+            }
+        }
     }
     
     package func convert(_ conversion: ViewTransform.Conversion, points: inout [CGPoint]) {
