@@ -971,7 +971,6 @@ let openSwiftUITargetSettings: SettingsDictionary = [
 let openSwiftUICoreTargetSettings: SettingsDictionary = [
     "DYLIB_INSTALL_NAME_BASE": "@rpath",
     "OTHER_LDFLAGS": "$(inherited) -ObjC",
-    "OTHER_SWIFT_FLAGS": "$(inherited) -module-abi-name OpenSwiftUI",
 ]
 
 let packageSettings = PackageSettings(
