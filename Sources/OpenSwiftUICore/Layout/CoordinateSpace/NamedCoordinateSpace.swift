@@ -2,7 +2,7 @@
 //  NamedCoordinateSpace.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A named coordinate space.
@@ -10,6 +10,7 @@
 /// Use the `coordinateSpace(_:)` modifier to assign a name to the local
 /// coordinate space of a  parent view. Child views can then refer to that
 /// coordinate space using `.named(_:)`.
+@available(OpenSwiftUI_v5_0, *)
 public struct NamedCoordinateSpace: CoordinateSpaceProtocol, Equatable {
     package var name: CoordinateSpace.Name
     
@@ -20,9 +21,7 @@ public struct NamedCoordinateSpace: CoordinateSpaceProtocol, Equatable {
     public var coordinateSpace: CoordinateSpace { name.space }
 }
 
-@available(*, unavailable)
-extension NamedCoordinateSpace: Sendable {}
-
+@available(OpenSwiftUI_v5_0, *)
 extension CoordinateSpaceProtocol where Self == NamedCoordinateSpace {
     /// Creates a named coordinate space using the given value.
     ///
@@ -41,3 +40,6 @@ extension CoordinateSpaceProtocol where Self == NamedCoordinateSpace {
         NamedCoordinateSpace(name: .id(id))
     }
 }
+
+@available(*, unavailable)
+extension NamedCoordinateSpace: Sendable {}

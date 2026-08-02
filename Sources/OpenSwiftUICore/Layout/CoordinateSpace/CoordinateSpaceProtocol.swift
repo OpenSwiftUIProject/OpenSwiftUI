@@ -2,7 +2,7 @@
 //  CoordinateSpaceProtocol.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A frame of reference within the layout system.
@@ -30,6 +30,7 @@
 /// You don't typically create types conforming to this protocol yourself.
 /// Instead, use the system-provided `.global`, `.local`, and `.named(_:)`
 /// implementations.
+@available(OpenSwiftUI_v5_0, *)
 public protocol CoordinateSpaceProtocol {
     /// The resolved coordinate space.
     var coordinateSpace: CoordinateSpace { get }
