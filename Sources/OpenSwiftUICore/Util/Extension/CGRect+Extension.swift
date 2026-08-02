@@ -156,10 +156,11 @@ extension CGRect {
     }
     
     package init(cornerPoints p: ArraySlice<CGPoint>) {
-        let p0 = p[0]
-        let p1 = p[1]
-        let p2 = p[2]
-        let p3 = p[3]
+        let startIndex = p.startIndex
+        let p0 = p[startIndex]
+        let p1 = p[startIndex + 1]
+        let p2 = p[startIndex + 2]
+        let p3 = p[startIndex + 3]
         
         let minX = min(min(p0.x, p1.x), min(p2.x, p3.x))
         let minY = min(min(p0.y, p1.y), min(p2.y, p3.y))
