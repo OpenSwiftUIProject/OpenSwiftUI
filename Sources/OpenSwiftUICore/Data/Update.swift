@@ -227,16 +227,3 @@ package enum Update {
         return body()
     }
 }
-
-// FIXME
-package enum CustomEventTrace {
-    package enum ActionEventType {
-        package enum Reason: UInt32 {
-            case onAppear = 65
-            case onChange = 67
-            case onDisappear = 68
-            case gesture = 71
-            case didReleaseButton = 82
-        }
-    }
-}
