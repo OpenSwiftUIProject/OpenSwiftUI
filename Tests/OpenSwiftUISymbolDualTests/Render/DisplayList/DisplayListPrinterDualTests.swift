@@ -446,12 +446,17 @@ private let expectedFiltersDescription = DualExpectedString(
     (frame (0.0 0.0; 0.0 0.0))
     (effect
       (filter
+        (shader ShaderFilter(shader: OpenSwiftUI.Shader.ResolvedShader(rbShader: nil, maxSampleOffset: (1.0, 2.0), options: OpenSwiftUI.Shader.Options(rawValue: 3)), size: (3.0, 4.0))))))
+  (item #:version 0
+    (frame (0.0 0.0; 0.0 0.0))
+    (effect
+      (filter
         (alpha-threshold #000000FF #:amount 0.5)))))
 """
 )
 
 private let expectedFiltersMinimalDescription = DualExpectedString(
-    openSwiftUI: "(DL(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F)))"
+    openSwiftUI: "(DL(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F))(I:0(E F)))"
 )
 
 @MainActor
@@ -544,6 +549,12 @@ private func effectDisplayList() -> DisplayList {
 private func filterDisplayList() -> DisplayList {
     let curve = GraphicsFilter.Curve((0, 0.25, 0.75, 1))
     let matrix = _ColorMatrix()
+    // TODO: Use a real non nil shader case here after we implement ORBShader
+    let shader = Shader.ResolvedShader(
+        rbShader: nil,
+        maxSampleOffset: CGSize(width: 1, height: 2),
+        options: [.dithersColor, .colorFilter]
+    )
     let filters: [GraphicsFilter] = [
         .blur(.init(radius: 1)),
         .variableBlur(.init(radius: 2)),
@@ -569,8 +580,7 @@ private func filterDisplayList() -> DisplayList {
             blueCurve: curve,
             opacityCurve: curve
         )),
-        // TODO: Add `.shader` after `GraphicsFilter.ShaderFilter` has
-        // ABI-compatible storage and can be safely projected into SwiftUICore.
+        .shader(.init(shader: shader, size: CGSize(width: 3, height: 4))),
         .alphaThreshold(.init(color: .black, amount: 0.5)),
     ]
     return DisplayList(filters.map { effectItem(.filter($0)) })
