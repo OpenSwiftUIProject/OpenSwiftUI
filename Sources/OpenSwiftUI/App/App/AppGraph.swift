@@ -115,7 +115,7 @@ package final class AppGraph: GraphHost {
                 RootEnvironment(
                     environment: graphInputs.environment,
                     phase: $rootScenePhase,
-                    sceneKeyboardShorts: $sceneKeyboardShortcuts
+                    sceneKeyboardShortcuts: $sceneKeyboardShortcuts
                 )
             )
             inputs.preferences.add(HostPreferencesKey.self)
@@ -253,9 +253,14 @@ private struct AppBodyAccessor<Application>: BodyAccessor where Application: App
 private struct RootEnvironment: Rule {
     @Attribute var environment: EnvironmentValues
     @Attribute var phase: ScenePhase
-    @Attribute var sceneKeyboardShorts: [SceneID: KeyboardShortcut]
+    @Attribute var sceneKeyboardShortcuts: [SceneID: KeyboardShortcut]
 
     var value: EnvironmentValues {
-        environment
+        var env = environment
+        env.configureForRoot()
+        env.scenePhase = phase
+        env.configureForPlatform(traitCollection: nil)
+        env.sceneKeyboardShortcuts = sceneKeyboardShortcuts
+        return env
     }
 }

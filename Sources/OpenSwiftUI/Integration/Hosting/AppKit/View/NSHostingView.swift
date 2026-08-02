@@ -912,6 +912,7 @@ extension NSHostingView {
 @available(watchOS, unavailable)
 @available(visionOS, unavailable)
 extension NSHostingView: ViewRendererHost {
+    // FIXME
     package func updateEnvironment() {
         var environment: EnvironmentValues
         if let inheritedEnvironment {
@@ -920,6 +921,7 @@ extension NSHostingView: ViewRendererHost {
             environment = initialInheritedEnvironment
         } else {
             environment = EnvironmentValues()
+            environment.configureForRoot()
         }
         if let environmentOverride {
             environment.plist.override(with: environmentOverride.plist)
