@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: WIP
 
+package import OpenCoreGraphicsShims
 import OpenQuartzCoreShims
 
 package enum GraphicsFilter {
@@ -77,13 +78,13 @@ package enum GraphicsFilter {
     }
 
     package struct ShaderFilter {
-//        package var shader: Shader.ResolvedShader
-//        package var size: CGSize
-//        
-//        package init(shader: Shader.ResolvedShader, size: CGSize) {
-//            self.shader = shader
-//            self.size = size
-//        }
+        package var shader: Shader.ResolvedShader
+        package var size: CGSize
+
+        package init(shader: Shader.ResolvedShader, size: CGSize) {
+            self.shader = shader
+            self.size = size
+        }
     }
 
     package struct AlphaThreshold: Equatable {
