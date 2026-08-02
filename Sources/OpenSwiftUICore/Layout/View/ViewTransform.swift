@@ -3,14 +3,14 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: CE19A3CEA6B9730579C42CE4C3071E74 (SwiftUI)
 //  ID: 1CC2FE016A82CF91549A64E942CE8ED4 (SwiftUICore)
 
 package import Foundation
 package import OpenCoreGraphicsShims
 
-// MARK: - ViewTransform [WIP]
+// MARK: - ViewTransform
 
 @_spi(ForOpenSwiftUIOnly)
 public struct ViewTransform: Equatable, CustomStringConvertible {
@@ -100,29 +100,29 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         var base: ScrollGeometry
         var isClipped: Bool
     }
-    
+
     private var head: AnyElement?
     package private(set) var positionAdjustment: CGSize
     private var pendingTranslation: CGSize
-    
+
     package init() {
         self.head = nil
         self.positionAdjustment = .zero
         self.pendingTranslation = .zero
     }
-    
+
     package var isEmpty: Bool {
         head == nil && pendingTranslation == .zero
     }
-    
+
     public static func == (lhs: ViewTransform, rhs: ViewTransform) -> Bool {
         guard lhs.positionAdjustment == rhs.positionAdjustment && lhs.pendingTranslation == rhs.pendingTranslation else { return false }
         guard let lhsHead = lhs.head, let rhsHead = rhs.head else { return lhs.head == nil && rhs.head == nil }
         guard lhsHead.depth == rhsHead.depth else { return false }
-        
+
         var lhsNode: AnyElement? = lhsHead
         var rhsNode: AnyElement? = rhsHead
-        
+
         while let lhsElement = lhsNode, let rhsElement = rhsNode {
             guard lhsElement !== rhsElement else { return true }
             guard lhsElement.isEqual(to: rhsElement) else { return false }
@@ -131,89 +131,117 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         }
         return lhsNode == nil && rhsNode == nil
     }
-    
+
     package mutating func append(movingContentsOf elements: inout UnsafeBuffer) {
         head = BufferedElement(next: head, translation: pendingTranslation, elements: elements)
         pendingTranslation = .zero
         elements = UnsafeBuffer()
     }
-    
+
     package mutating func appendPosition(_ position: CGPoint) {
         let adjustedPosition = position - positionAdjustment
         pendingTranslation = pendingTranslation - CGSize(adjustedPosition)
         positionAdjustment = CGSize(position)
     }
-    
+
     package func withPosition(_ position: CGPoint) -> ViewTransform {
         var copy = self
         copy.appendPosition(position)
         return copy
     }
-    
+
     package mutating func appendPosition(_ position: CGPoint, scale: CGFloat) {
         let adjustedPosition = position - positionAdjustment
         pendingTranslation = pendingTranslation - CGSize(adjustedPosition)
         positionAdjustment = CGSize(position) * scale
     }
-    
+
     package mutating func resetPosition(_ position: CGPoint) {
         let adjustedPosition = position - positionAdjustment
         pendingTranslation = pendingTranslation - CGSize(adjustedPosition)
         positionAdjustment = .zero
     }
-    
+
     package mutating func setPositionAdjustment(_ offset: CGSize) {
         positionAdjustment = offset
     }
-    
+
     package mutating func appendTranslation(_ size: CGSize) {
         pendingTranslation += size
     }
-    
+
     package mutating func appendAffineTransform(_ matrix: CGAffineTransform, inverse: Bool) {
         if matrix.isTranslation {
             let translation = CGSize(width: matrix.tx, height: matrix.ty)
             appendTranslation(inverse ? -translation : translation)
         } else {
-            head = Element(next: head, translation: pendingTranslation, element: AffineTransformElement(matrix: matrix, inverse: inverse))
+            head = Element(
+                next: head,
+                translation: pendingTranslation,
+                element: AffineTransformElement(matrix: matrix, inverse: inverse)
+            )
             pendingTranslation = .zero
         }
     }
-    
+
     package mutating func appendProjectionTransform(_ matrix: ProjectionTransform, inverse: Bool) {
         if matrix.isAffine {
             appendAffineTransform(CGAffineTransform(matrix), inverse: inverse)
         } else {
-            head = Element(next: head, translation: pendingTranslation, element: ProjectionTransformElement(matrix: matrix, inverse: inverse))
+            head = Element(
+                next: head,
+                translation: pendingTranslation,
+                element: ProjectionTransformElement(matrix: matrix, inverse: inverse)
+            )
             pendingTranslation = .zero
         }
     }
-    
+
     package mutating func appendCoordinateSpace(name: AnyHashable) {
-        head = Element(next: head, translation: pendingTranslation, element: CoordinateSpaceElement(name: name))
+        head = Element(
+            next: head,
+            translation: pendingTranslation,
+            element: CoordinateSpaceElement(name: name)
+        )
         pendingTranslation = .zero
     }
-    
+
     package mutating func appendCoordinateSpace(id: CoordinateSpace.ID) {
-        head = Element(next: head, translation: pendingTranslation, element: CoordinateSpaceIDElement(id: id))
+        head = Element(
+            next: head,
+            translation: pendingTranslation,
+            element: CoordinateSpaceIDElement(id: id)
+        )
         pendingTranslation = .zero
     }
-    
+
     package mutating func appendSizedSpace(name: AnyHashable, size: CGSize) {
-        head = Element(next: head, translation: pendingTranslation, element: SizedSpaceElement(name: name, size: size))
+        head = Element(
+            next: head,
+            translation: pendingTranslation,
+            element: SizedSpaceElement(name: name, size: size)
+        )
         pendingTranslation = .zero
     }
-    
+
     package mutating func appendSizedSpace(id: CoordinateSpace.ID, size: CGSize) {
-        head = Element(next: head, translation: pendingTranslation, element: SizedSpaceIDElement(id: id, size: size))
+        head = Element(
+            next: head,
+            translation: pendingTranslation,
+            element: SizedSpaceIDElement(id: id, size: size)
+        )
         pendingTranslation = .zero
     }
-    
+
     package mutating func appendScrollGeometry(_ geometry: ScrollGeometry, isClipped: Bool) {
-        head = Element(next: head, translation: pendingTranslation, element: ScrollGeometryItem(base: geometry, isClipped: isClipped))
+        head = Element(
+            next: head,
+            translation: pendingTranslation,
+            element: ScrollGeometryItem(base: geometry, isClipped: isClipped)
+        )
         pendingTranslation = .zero
     }
-    
+
     package func forEach(inverted: Bool, _ body: (Item, inout Bool) -> Void) {
         guard let head else { return }
         var stop = false
@@ -253,28 +281,51 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
             }
         }
     }
-    
+
     package func forEach(_ body: (ViewTransform.Item, inout Bool) -> Void) {
         forEach(inverted: false, body)
     }
-    
-    private func spaceBeforeSpace(_ space1: CoordinateSpace, _ space2: CoordinateSpace) -> Bool {
-        if case .global = space1 {
-            return true
-        } else if case .local = space1 {
-            return false
-        } else if case .global = space2 {
-            return false
-        } else if case .local = space2 {
-            return true
-        } else {
-            forEach(inverted: false) { item, stop in
-                // TODO
-            }
-            _openSwiftUIUnimplementedFailure()
+
+    private func spaceBeforeSpace(_ lhsSpace: CoordinateSpace, _ rhsSpace: CoordinateSpace) -> Bool {
+        let lhsName: CoordinateSpace.Name
+        let rhsName: CoordinateSpace.Name
+        switch (lhsSpace, rhsSpace) {
+        case let (.named(lhs), .named(rhs)):
+            lhsName = .name(lhs)
+            rhsName = .name(rhs)
+        case let (.named(lhs), .id(rhs)):
+            lhsName = .name(lhs)
+            rhsName = .id(rhs)
+        case let (.id(lhs), .named(rhs)):
+            lhsName = .id(lhs)
+            rhsName = .name(rhs)
+        case let (.id(lhs), .id(rhs)):
+            lhsName = .id(lhs)
+            rhsName = .id(rhs)
+        case (.global, _): return true
+        case (.local, _): return false
+        case (_, .global): return false
+        case (_, .local): return true
         }
+        var foundLHSName = false
+        var foundRHSName = false
+        forEach(inverted: false) { item, stop in
+            let name: CoordinateSpace.Name
+            switch item {
+                case let .coordinateSpace(itemName):
+                    name = itemName
+                case let .sizedSpace(itemName, _):
+                    name = itemName
+                default:
+                    return
+            }
+            foundLHSName = name == lhsName
+            foundRHSName = name == rhsName
+            stop = foundLHSName || foundRHSName
+        }
+        return foundLHSName && !foundRHSName
     }
-    
+
     package func convert(_ conversion: ViewTransform.Conversion, _ body: (ViewTransform.Item) -> Void) {
         guard !isEmpty else { return }
         let newConversion: ViewTransform.Conversion
@@ -348,31 +399,53 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
                     if itemSpace == lhsSpace {
                         isActive = true
                     }
+                }
             }
             if isActive {
                 body(item)
             }
         }
     }
-    
-    package func convert(_ conversion: ViewTransform.Conversion, points: inout [CGPoint]) {
-        guard !isEmpty else { return }
-        _openSwiftUIUnimplementedFailure()
+
+    package func convert<C>(_ conversion: ViewTransform.Conversion, points: inout C) where C: MutableCollection, C.Element == CGPoint {
+        guard !isEmpty, !points.isEmpty else { return }
+        convert(conversion) { item in
+            points._applyTransform(item: item)
+        }
     }
-    
+
+    package func convert(_ conversion: ViewTransform.Conversion, points: inout [CGPoint]) {
+        guard !isEmpty, !points.isEmpty else { return }
+        convert(conversion) { item in
+            points.applyTransform(item: item)
+        }
+    }
+
     package func convert(_ conversion: ViewTransform.Conversion, point: CGPoint) -> CGPoint {
         guard !isEmpty else { return point }
-        _openSwiftUIUnimplementedFailure()
+        var point = point
+        convert(conversion) { item in
+            point.applyTransform(item: item)
+        }
+        return point
     }
-    
+
     package var containingScrollGeometry: ScrollGeometry? {
-        _openSwiftUIUnimplementedFailure()
+        var geometry: ScrollGeometry?
+        forEach { item, _ in
+            item.apply(to: &geometry, allowUnclipped: false)
+        }
+        return geometry
     }
-    
+
     package var nearestScrollGeometry: ScrollGeometry? {
-        _openSwiftUIUnimplementedFailure()
+        var geometry: ScrollGeometry?
+        forEach { item, _ in
+            item.apply(to: &geometry, allowUnclipped: true)
+        }
+        return geometry
     }
-    
+
     package func containingSizedCoordinateSpace(name: CoordinateSpace.Name) -> CGRect? {
         var rect: CGRect?
         forEach { item, _ in
@@ -380,7 +453,7 @@ public struct ViewTransform: Equatable, CustomStringConvertible {
         }
         return rect
     }
-    
+
     public var description: String {
         var descriptionArray = pendingTranslation == .zero ? [] : [String(describing: pendingTranslation)]
         var element = head
