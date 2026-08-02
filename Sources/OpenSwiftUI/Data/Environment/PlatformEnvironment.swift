@@ -67,6 +67,7 @@ extension EnvironmentValues {
 }
 
 // FIXME
+import Foundation
 
 struct OpenSwiftUIAccessibilityTextResolver: AccessibilityTextAttributeResolver {
     func resolveDefaultAttributes(
