@@ -6,12 +6,16 @@
 //  Status: WIP
 //  ID: 92DCAEF653F89C7A009F5FFAA858DAF3 (SwiftUI)
 
+//  NOTE: This API's actual availability is between OpenSwiftUI v4.0 and v4.1:
+//  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+//  @available(macOS, unavailable)
+
 public import OpenSwiftUICore
 
 // MARK: - JindoTripleVStack [TBA]
 
 @_spi(Jindo)
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 public struct JindoTripleVStack: Layout {
     public struct Configuration {
@@ -165,12 +169,12 @@ public struct JindoTripleVStack: Layout {
         )
     }
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-    @available(macOS, unavailable, introduced: 10.15)
+    @available(OpenSwiftUI_v4_1, *)
+    @available(macOS, unavailable)
     public typealias AnimatableData = EmptyAnimatableData
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-    @available(macOS, unavailable, introduced: 13.0)
+    @available(OpenSwiftUI_v4_1, *)
+    @available(macOS, unavailable)
     public typealias Cache = ()
 
     private func adjusted(_ proposal: ProposedViewSize) -> ProposedViewSize {
@@ -225,40 +229,38 @@ extension JindoTripleVStack.HorizontalSizing: Sendable {}
 extension JindoTripleVStack.Position: Sendable {}
 
 @_spi(Jindo)
-@available(watchOS 11.0, tvOS 18.0, *)
-#if os(macOS)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
-#endif
 extension JindoTripleVStack.Position {
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static let leading = JindoTripleVStack.Position(region: .leading)
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static func leading(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .leading, leadingInset: inset)
     }
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static let trailing = JindoTripleVStack.Position(region: .trailing)
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static func trailing(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .trailing, trailingInset: inset)
     }
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static let center = JindoTripleVStack.Position(region: .center)
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static let bottom = JindoTripleVStack.Position(region: .bottom)
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static func bottom(
         leadingInset: CGFloat? = nil,
@@ -271,18 +273,16 @@ extension JindoTripleVStack.Position {
         )
     }
 
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public static let notch = JindoTripleVStack.Position(region: .notch)
 }
 
 @_spi(Jindo)
-@available(watchOS 11.0, tvOS 18.0, *)
-#if os(macOS)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
-#endif
 extension JindoTripleVStack {
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     public struct ContentMargins {
         fileprivate var top: CGFloat?
@@ -312,38 +312,38 @@ extension JindoTripleVStack {
 extension JindoTripleVStack.ContentMargins: Sendable {}
 
 @_spi(Jindo)
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 @available(*, deprecated, message: "Use HorizontalSizing")
 extension JindoTripleVStack.HorizontalMode: Equatable {}
 
 @_spi(Jindo)
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 @available(*, deprecated, message: "Use HorizontalSizing")
 extension JindoTripleVStack.HorizontalMode: Hashable {}
 
 // MARK: - Layout values [TBA]
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 private struct ContentMarginsKey: LayoutValueKey {
     static let defaultValue: JindoTripleVStack.ContentMargins? = nil
 }
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 private struct PriorityKey: LayoutValueKey {
     static let defaultValue: Double? = nil
 }
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 private struct VerticalPlacementKey: LayoutValueKey {
     static let defaultValue = JindoTripleVStack.VerticalPlacement.default
 }
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 private struct PositionKey: LayoutValueKey {
     typealias Value = JindoTripleVStack.Position
@@ -353,7 +353,7 @@ private struct PositionKey: LayoutValueKey {
 
 extension View {
     @_spi(Jindo)
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     nonisolated public func jindoPosition(
         _ position: JindoTripleVStack.Position
@@ -362,7 +362,7 @@ extension View {
     }
 
     @_spi(Jindo)
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     nonisolated public func jindoVerticalPlacement(
         _ verticalPlacement: JindoTripleVStack.VerticalPlacement
@@ -371,14 +371,14 @@ extension View {
     }
 
     @_spi(Jindo)
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     nonisolated public func jindoPriority(_ priority: Double?) -> some View {
         layoutValue(key: PriorityKey.self, value: priority)
     }
 
     @_spi(Jindo)
-    @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+    @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
     nonisolated public func jindoContentMargins(
         _ contentMargins: JindoTripleVStack.ContentMargins?
@@ -389,7 +389,7 @@ extension View {
 
 // MARK: - Layout implementation [TBA]
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 private extension JindoTripleVStack {
     struct Implementation {
