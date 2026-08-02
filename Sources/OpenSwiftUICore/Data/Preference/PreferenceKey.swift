@@ -2,7 +2,7 @@
 //  PreferenceKey.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 3D8838A231BB2CC7FC00E7880D8B2FC4 (SwiftUICore)
 
@@ -71,6 +71,9 @@ extension PreferenceKey {
         if name.isEmpty {
             let fullname = _typeName(Self.self, qualified: true)
             let results = fullname.split(maxSplits: 1) { $0 == "." }
+            guard results.count >= 2 else {
+                return fullname
+            }
             return String(results[1])
         } else {
             return name
@@ -88,7 +91,7 @@ package protocol PreferenceKeyVisitor {
     mutating func visit<K>(key: K.Type) where K: PreferenceKey
 }
 
-// MARK: - PreferenceKeys [6.5.4]
+// MARK: - PreferenceKeys
 
 package struct PreferenceKeys: Equatable, RandomAccessCollection, MutableCollection {
     var keys: [any PreferenceKey.Type] = []

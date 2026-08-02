@@ -177,7 +177,7 @@ package struct ViewDecoders {
     ) where T: Decodable, T: AnyViewFactory {
         registerDecodableFactoryType(
             factoryType,
-            forID: _typeName(type, qualified: true)
+            forID: _typeName(type)
         )
     }
 
