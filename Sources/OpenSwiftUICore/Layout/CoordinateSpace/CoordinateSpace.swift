@@ -2,7 +2,7 @@
 //  CoordinateSpace.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 /// A resolved coordinate space created by the coordinate space protocol.
@@ -10,6 +10,7 @@
 /// You don't typically use `CoordinateSpace` directly. Instead, use the static
 /// properties and functions of `CoordinateSpaceProtocol` such as `.global`,
 /// `.local`, and `.named(_:)`.
+@available(OpenSwiftUI_v1_0, *)
 public enum CoordinateSpace {
     /// The global coordinate space at the root of the view hierarchy.
     case global
@@ -21,6 +22,7 @@ public enum CoordinateSpace {
     case named(AnyHashable)
     
     @_spi(ForOpenSwiftUIOnly)
+    @available(OpenSwiftUI_v6_0, *)
     public struct ID: Equatable, Sendable {
         let value: UniqueID
         
@@ -30,6 +32,7 @@ public enum CoordinateSpace {
     }
     
     @_spi(ForOpenSwiftUIOnly)
+    @available(OpenSwiftUI_v6_0, *)
     case id(CoordinateSpace.ID)
   
     package static let root: CoordinateSpace = .global
@@ -51,12 +54,14 @@ public enum CoordinateSpace {
 @available(*, unavailable)
 extension CoordinateSpace: Sendable {}
 
+@available(OpenSwiftUI_v1_0, *)
 extension CoordinateSpace {
     public var isGlobal: Bool { self == .global }
     
     public var isLocal: Bool { self == .local }
 }
 
+@available(OpenSwiftUI_v1_0, *)
 extension CoordinateSpace: Equatable, Hashable {
     public func hash(into hasher: inout Hasher) {
         switch self {

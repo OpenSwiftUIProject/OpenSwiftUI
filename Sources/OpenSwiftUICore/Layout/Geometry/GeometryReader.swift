@@ -200,7 +200,7 @@ public struct GeometryProxy {
             guard let placementContext else {
                 return (rect, true)
             }
-            let exact = rect.whileClippingToScrollViewsConvert(
+            let exact = rect.convertAndClipToScrollView(
                 to: space,
                 transform: placementContext.transform
             )
