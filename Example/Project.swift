@@ -333,6 +333,9 @@ let targets: [Target] = [
 
 // MARK: - Schemes
 
+let swiftUIDisplayListLLDBInitFile: Path =
+    "../Scripts/LLDB/.lldbinit-swiftui"
+
 func scheme(
     name: String,
     target: TargetReference,
@@ -342,7 +345,8 @@ func scheme(
         .testableTarget(target: "OpenSwiftUIUITests", parallelization: .enabled),
     ],
     includeTestAction: Bool = true,
-    runArguments: Arguments = launchArguments
+    runArguments: Arguments = launchArguments,
+    customLLDBInitFile: Path? = nil
 ) -> Scheme {
     .scheme(
         name: name,
@@ -358,6 +362,7 @@ func scheme(
             : nil,
         runAction: .runAction(
             configuration: debugConfiguration,
+            customLLDBInitFile: customLLDBInitFile,
             executable: .executable(target),
             arguments: runArguments
         ),
@@ -382,7 +387,8 @@ let schemes: [Scheme] = [
         name: "SUI_Example",
         target: "Example",
         debugConfiguration: swiftUIDebug,
-        releaseConfiguration: swiftUIRelease
+        releaseConfiguration: swiftUIRelease,
+        customLLDBInitFile: swiftUIDisplayListLLDBInitFile
     ),
     scheme(
         name: "OSUI_HostingExample",
@@ -398,7 +404,8 @@ let schemes: [Scheme] = [
         debugConfiguration: swiftUIDebug,
         releaseConfiguration: swiftUIRelease,
         testableTargets: [],
-        runArguments: swiftUIHostingLaunchArguments
+        runArguments: swiftUIHostingLaunchArguments,
+        customLLDBInitFile: swiftUIDisplayListLLDBInitFile
     ),
     scheme(
         name: "OSUI_TestingHost",
@@ -412,7 +419,8 @@ let schemes: [Scheme] = [
         target: "TestingHost",
         debugConfiguration: swiftUIDebug,
         releaseConfiguration: swiftUIRelease,
-        includeTestAction: false
+        includeTestAction: false,
+        customLLDBInitFile: swiftUIDisplayListLLDBInitFile
     ),
     .scheme(
         name: "OSUI_UITests",
