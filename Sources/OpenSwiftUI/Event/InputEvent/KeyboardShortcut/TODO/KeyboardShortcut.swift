@@ -4,6 +4,7 @@
 //
 //  Audited for 3.5.2
 //  Status: Blocked by EnvironmentValues
+//  ID: 254C3FE5924A018B482F2F0C0D49154 (SwiftUI)
 
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -99,5 +100,19 @@ extension KeyboardShortcut: Hashable {
         key.character.hash(into: &hasher)
         hasher.combine(modifiers.rawValue)
         hasher.combine(localization.style)
+    }
+}
+
+// MARK: EnvironmentValues + sceneKeyboardShortcuts
+
+extension EnvironmentValues {
+    private struct SceneKeyboardShortcutsKey: EnvironmentKey {
+        static var defaultValue: [SceneID: KeyboardShortcut] { [:] }
+    }
+
+    @inline(__always)
+    var sceneKeyboardShortcuts: [SceneID: KeyboardShortcut] {
+        get { self[SceneKeyboardShortcutsKey] }
+        set { self[SceneKeyboardShortcutsKey] = newValue }
     }
 }
