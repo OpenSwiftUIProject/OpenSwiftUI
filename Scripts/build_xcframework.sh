@@ -28,6 +28,7 @@ SDKS=()
 SDK_ARCHS=()
 DEBUG_MODE=false
 RUN_TUIST_INSTALL=true
+CLEAN_DERIVED_DATA=true
 EXPLICIT_FRAMEWORK_NAMES=false
 FRAMEWORK_NAMES=()
 
@@ -51,6 +52,7 @@ Options:
   --debug                 Keep release metadata and copy dSYMs.
   --compute               Build OpenAttributeGraphShims with the Compute source backend.
   --skip-tuist-install    Skip tuist install.
+  --keep-derived-data     Reuse DerivedData from a previous build.
   --framework <name>      Build one framework. May be passed multiple times.
   --help                  Show this help.
 USAGE
@@ -90,6 +92,10 @@ while [[ $# -gt 0 ]]; do
             ;;
         --skip-tuist-install)
             RUN_TUIST_INSTALL=false
+            shift
+            ;;
+        --keep-derived-data)
+            CLEAN_DERIVED_DATA=false
             shift
             ;;
         --framework)
@@ -543,7 +549,11 @@ copy_debug_symbols() {
     done
 }
 
-rm -rf "$DERIVED_DATA_PATH"
+if [ "$CLEAN_DERIVED_DATA" = true ]; then
+    rm -rf "$DERIVED_DATA_PATH"
+else
+    echo "Reusing DerivedData at $DERIVED_DATA_PATH"
+fi
 mkdir -p "$PROJECT_BUILD_DIR"
 
 for scheme in "${FRAMEWORK_NAMES[@]}"; do

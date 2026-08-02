@@ -25,6 +25,17 @@ This project is in active development and contains multiple Swift packages with 
 # Generates module interfaces for library evolution
 ```
 
+### Build a Local XCFramework Slice
+
+Use the slice helper for a faster iPhone Simulator arm64 Release build:
+
+```bash
+# Build the OpenSwiftUICore XCFramework slice.
+Scripts/build_xcframework_slice.sh osuicore
+# Build the OpenSwiftUI XCFramework slice and its Core dependency.
+Scripts/build_xcframework_slice.sh osui
+```
+
 ### Environment Variables
 The build system uses many environment variables for configuration:
 - `OPENSWIFTUI_BUILD_FOR_DARWIN_PLATFORM`: Build for Darwin platforms (default: true on macOS)
