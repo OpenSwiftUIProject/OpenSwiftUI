@@ -132,4 +132,21 @@ struct SExpPrinterTests {
             (C)))
         """)
     }
+
+    @Test
+    func printableDescription() {
+        struct Test: SExpPrintable {
+            var tag: String { "test-printable" }
+
+            func print(into printer: inout SExpPrinter) {
+                printer.print("value")
+            }
+        }
+
+        let printable: any SExpPrintable = Test()
+        #expect(printable.description == """
+        (test-printable
+          value)
+        """)
+    }
 }
