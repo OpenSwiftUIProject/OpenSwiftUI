@@ -50,6 +50,7 @@
    </TestAction>
    <LaunchAction
       buildConfiguration = "SwiftUIDebug"
+      customLLDBInitFile = "$(SRCROOT)/../Scripts/LLDB/.lldbinit-swiftui"
       selectedDebuggerIdentifier = "Xcode.DebuggerFoundation.Debugger.LLDB"
       selectedLauncherIdentifier = "Xcode.DebuggerFoundation.Launcher.LLDB"
       launchStyle = "0"
