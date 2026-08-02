@@ -722,7 +722,9 @@ extension EnvironmentValues {
 // MARK: - EnvironmentValues + resolvedTextProvider
 
 package protocol ResolvedTextProvider {
-    static func defaultLinkColor(for environment: EnvironmentValues) -> Color
+    static func defaultLinkColor(
+        for environment: EnvironmentValues
+    ) -> Color
 
     static func updateImageTextAttachment(
         in attachment: NSTextAttachment,
@@ -737,7 +739,7 @@ package protocol ResolvedTextProvider {
 
 extension EnvironmentValues {
     private struct ResolvedTextProviderKey: EnvironmentKey {
-        static var defaultValue: (any ResolvedTextProvider.Type)?
+        static var defaultValue: (any ResolvedTextProvider.Type)? { nil }
     }
 
     package var resolvedTextProvider: (any ResolvedTextProvider.Type)? {

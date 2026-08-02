@@ -4,6 +4,7 @@
 //
 //  Audited for 6.5.4
 //  Status: Complete
+//  ID: 6C8C95D62F88AD34FB6AA150854F1BBB (SwiftUICore)
 
 import OpenAttributeGraphShims
 
@@ -145,4 +146,15 @@ package protocol BridgedEnvironmentResolver {
     static func read<K>(for key: K.Type, from environment: EnvironmentValues) -> K.Value where K: EnvironmentKey
 
     static func write<K>(for key: K.Type, to environment: inout EnvironmentValues, value: K.Value) where K: EnvironmentKey
+}
+
+extension EnvironmentValues {
+    private struct BridgedEnvironmentResolverKey: EnvironmentKey {
+        static var defaultValue: (any BridgedEnvironmentResolver.Type)? { nil }
+    }
+
+    package var bridgedEnvironmentResolver: (any BridgedEnvironmentResolver.Type)? {
+        get { self[BridgedEnvironmentResolverKey.self] }
+        set { self[BridgedEnvironmentResolverKey.self] = newValue }
+    }
 }

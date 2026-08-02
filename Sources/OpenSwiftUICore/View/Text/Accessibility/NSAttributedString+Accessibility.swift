@@ -144,7 +144,9 @@ extension Text.Style {
 // MARK: - AccessibilityTextAttributeResolver
 
 package protocol AccessibilityTextAttributeResolver {
-    func resolveDefaultAttributes(_: inout [NSAttributedString.Key: Any])
+    func resolveDefaultAttributes(
+        _: inout [NSAttributedString.Key: Any]
+    )
 
     func resolveTextStyleAttributes(
         _: inout [NSAttributedString.Key: Any],
