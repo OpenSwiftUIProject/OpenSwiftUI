@@ -3,15 +3,17 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by ViewTransform+CoordinateSpace
+//  Status: Complete
 //  ID: C4DC82F2A500E9B6DEA3064A36584B42 (SwiftUICore)
 
 import Foundation
 package import OpenAttributeGraphShims
+package import OpenCoreGraphicsShims
 
 // MARK: - SafeAreaRegions
 
 /// A set of symbolic safe area regions.
+@available(OpenSwiftUI_v2_0, *)
 @frozen
 public struct SafeAreaRegions: OptionSet {
     public let rawValue: UInt
@@ -33,7 +35,7 @@ public struct SafeAreaRegions: OptionSet {
     package static let background = SafeAreaRegions(rawValue: 1 << 0)
 }
 
-// MARK: - SafeAreaInsets [WIP]
+// MARK: - SafeAreaInsets
 
 package struct SafeAreaInsets: Equatable {
     package enum OptionalValue: Equatable {
@@ -88,19 +90,70 @@ package struct SafeAreaInsets: Equatable {
         return insets
     }
 
-    // FIXME: This does not handle coordinate space conversions.
     private func adjust(
         _ rect: inout CGRect,
         regions: SafeAreaRegions,
         to context: _PositionAwarePlacementContext
     ) {
-        let (selectedInsets, _) = mergedInsets(regions: regions)
+        let (selectedInsets, totalInsets) = mergedInsets(regions: regions)
         guard !selectedInsets.isEmpty else { return }
-        // TODO: ViewTransform coordinate space conversion
-        rect.origin.x -= selectedInsets.leading
-        rect.origin.y -= selectedInsets.top
-        rect.size.width += (selectedInsets.leading + selectedInsets.trailing)
-        rect.size.height += (selectedInsets.top + selectedInsets.bottom)
+
+        var points: [CGPoint]?
+        var isInvalid = false
+        context.transform.convert(.spaceToLocal(.id(space))) { item in
+            if case let .sizedSpace(.id(id), size) = item, id == space {
+                let innerRect = CGRect(origin: .zero, size: size).inset(by: totalInsets)
+                points = innerRect.cornerPoints
+                points?.append(contentsOf: innerRect.inset(by: -selectedInsets).cornerPoints)
+            } else {
+                switch item {
+                    case let .affineTransform(transform, _):
+                        if !transform.isRectilinear {
+                            isInvalid = true
+                        }
+                    case let .projectionTransform(transform, _):
+                        if !transform.isAffine ||
+                           !CGAffineTransform(transform).isRectilinear {
+                            isInvalid = true
+                        }
+                    default:
+                        break
+                }
+                if !isInvalid {
+                    points?.applyTransform(item: item)
+                }
+            }
+        }
+        guard !isInvalid, let points else { return }
+
+        let innerRect = CGRect(cornerPoints: points[0...3])
+        let outerRect = CGRect(cornerPoints: points[4...7])
+        let minY = rect.minY
+        let maxY = rect.maxY
+        let minX = rect.minX
+        let maxX = rect.maxX
+        let epsilon = context.pixelLength * 0.5 + 0.001
+
+        if minY - epsilon < innerRect.minY,
+           outerRect.minY < minY + epsilon {
+            let delta = minY - outerRect.minY
+            rect.origin.y -= delta
+            rect.size.height += delta
+        }
+        if innerRect.maxY < maxY + epsilon,
+           maxY - epsilon < outerRect.maxY {
+            rect.size.height += outerRect.maxY - maxY
+        }
+        if minX - epsilon < innerRect.minX,
+           outerRect.minX < minX + epsilon {
+            let delta = minX - outerRect.minX
+            rect.origin.x -= delta
+            rect.size.width += delta
+        }
+        if innerRect.maxX < maxX + epsilon,
+           maxX - epsilon < outerRect.maxX {
+            rect.size.width += outerRect.maxX - maxX
+        }
     }
 
     private func mergedInsets(regions: SafeAreaRegions) -> (selected: EdgeInsets, total: EdgeInsets) {
@@ -110,14 +163,12 @@ package struct SafeAreaInsets: Equatable {
         var selected: EdgeInsets = .zero
         var total: EdgeInsets = .zero
 
-        // Track which edges can still contribute to the selected insets.
-        // This prevents inner safe area modifiers from overriding outer ones.
-        // For example, if an outer modifier sets a top inset for a different region,
-        // an inner modifier matching our region shouldn't override that top edge.
+        // Track which edges can still contribute to the selected insets after
+        // later elements in the array have been considered.
         var availableEdges: Edge.Set = .all
 
-        // Iterate through elements in reverse order (from innermost to outermost modifier).
-        // This ensures that outer modifiers take precedence over inner ones for each edge.
+        // A disjoint element with a nonzero inset consumes that edge, preventing
+        // earlier elements from contributing it to the selected region.
         for element in elements.reversed() {
             let insets = element.insets
             if element.regions.isDisjoint(with: regions) {
@@ -153,8 +204,10 @@ package struct SafeAreaInsets: Equatable {
     }
 }
 
-// MARK: - _SafeAreaInsetsModifier [6.4.41]
+// MARK: - _SafeAreaInsetsModifier
 
+@MainActor
+@preconcurrency
 package struct _SafeAreaInsetsModifier: MultiViewModifier, PrimitiveViewModifier, Equatable {
     var elements: [SafeAreaInsets.Element]
     var nextInsets: SafeAreaInsets.OptionalValue?
@@ -249,10 +302,11 @@ extension _PositionAwarePlacementContext {
     }
 }
 
-// MARK: - SafeAreaInsetsModifier [6.4.41]
+// MARK: - SafeAreaInsetsModifier
 
 package typealias SafeAreaInsetsModifier = ModifiedContent<_PaddingLayout, _SafeAreaInsetsModifier>
 
+@available(OpenSwiftUI_v2_0, *)
 extension View {
     @MainActor
     @preconcurrency
@@ -270,7 +324,7 @@ extension View {
     }
 }
 
-// MARK: - ResolvedSafeAreaInsets [6.4.41]
+// MARK: - ResolvedSafeAreaInsets
 
 package struct ResolvedSafeAreaInsets: Rule, AsyncAttribute {
     let regions: SafeAreaRegions
