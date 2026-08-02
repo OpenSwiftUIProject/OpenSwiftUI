@@ -2,7 +2,7 @@
 //  View_Indirect.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenAttributeGraphShims

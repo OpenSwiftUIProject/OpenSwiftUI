@@ -2,10 +2,10 @@
 //  PreferenceCombiner.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 59D15989E597719355BF0EAE6CB41FF9 (SwiftUI)
-//  ID: EAF68AEE5E08E2f44FEB886FE6A27001 (SwiftUICore)
+//  ID: EAF68AEE5E08E2F44FEB886FE6A27001 (SwiftUICore)
 
 package import OpenAttributeGraphShims
 
@@ -108,9 +108,9 @@ private struct PairPreferenceCombiner<K>: Rule, AsyncAttribute where K: Preferen
     }
 }
 
-// MARK: - PreferencesAggregator
+// MARK: - PreferenceAggregator
 
-package struct PreferencesAggregator<K>: Rule, AsyncAttribute where K: PreferenceKey {
+package struct PreferenceAggregator<K>: Rule, AsyncAttribute where K: PreferenceKey {
     package var attributes: [WeakAttribute<K.Value>]
 
     package init(attributes: [Attribute<K.Value>]) {
