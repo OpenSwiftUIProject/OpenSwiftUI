@@ -2,8 +2,10 @@
 //  SExpPrinter.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
+
+// MARK: - SExpPrinter
 
 package struct SExpPrinter {
     var output: String
@@ -55,5 +57,21 @@ package struct SExpPrinter {
             indent.removeLast(2)
         }
         output.append(")")
+    }
+}
+
+// MARK: - SExpPrintable
+
+package protocol SExpPrintable: CustomStringConvertible {
+    func print(into printer: inout SExpPrinter)
+
+    var tag: String { get }
+}
+
+extension SExpPrintable {
+    package var description: String {
+        var printer = SExpPrinter(tag: tag)
+        print(into: &printer)
+        return printer.end()
     }
 }
