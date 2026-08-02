@@ -5,6 +5,56 @@ import QuartzCore
 import Swift
 @_exported import SwiftUI
 
+@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(macOS, unavailable)
+public struct JindoTripleVStack: SwiftUI.Layout {
+  public struct Configuration {
+    public init(
+      notchSize: CoreGraphics.CGSize,
+      horizontalSizing: JindoTripleVStack.HorizontalSizing,
+      layoutMargins: SwiftUI.EdgeInsets
+    )
+  }
+
+  public struct Position {
+    public static let leading: JindoTripleVStack.Position
+    public static let center: JindoTripleVStack.Position
+    public static let trailing: JindoTripleVStack.Position
+    public static let bottom: JindoTripleVStack.Position
+    public static let notch: JindoTripleVStack.Position
+  }
+
+  public struct HorizontalSizing {
+    public static let split: JindoTripleVStack.HorizontalSizing
+  }
+
+  public init(configuration: JindoTripleVStack.Configuration)
+
+  public func sizeThatFits(
+    proposal: SwiftUI.ProposedViewSize,
+    subviews: SwiftUI.LayoutSubviews,
+    cache: inout ()
+  ) -> CoreGraphics.CGSize
+
+  public func placeSubviews(
+    in bounds: CoreGraphics.CGRect,
+    proposal: SwiftUI.ProposedViewSize,
+    subviews: SwiftUI.LayoutSubviews,
+    cache: inout ()
+  )
+
+  public typealias AnimatableData = SwiftUI.EmptyAnimatableData
+  public typealias Cache = ()
+}
+
+@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+@available(macOS, unavailable)
+extension SwiftUI.View {
+  nonisolated public func jindoPosition(
+    _ position: JindoTripleVStack.Position
+  ) -> some SwiftUI.View
+}
+
 @available(iOS 18.2, macOS 15.2, *)
 @frozen public struct TransactionalPreferenceActionModifier<Key> : SwiftUI.ViewModifier where Key : SwiftUI.PreferenceKey, Key.Value : Swift.Equatable {
   public var action: (Key.Value, SwiftUI.Transaction) -> Swift.Void
