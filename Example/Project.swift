@@ -189,8 +189,16 @@ let sharedSources: SourceFilesList = [
     "Shared/**/*.swift",
 ]
 
+let interFontInfoPlist: [String: Plist.Value] = [
+    "UIAppFonts": .array([
+        .string("InterVariable.ttf"),
+        .string("InterVariable-Italic.ttf"),
+    ]),
+]
+
 let sharedResources: ResourceFileElements = [
     "Shared/Assets/Assets.xcassets",
+    "Shared/Assets/fonts/**",
     "Shared/Assets/images/**",
 ]
 
@@ -265,7 +273,7 @@ let targets: [Target] = [
         product: .app,
         bundleId: "org.OpenSwiftUIProject.$(OPENSWIFTUI_TARGET_BUNDLE_ID).Example",
         deploymentTargets: deploymentTargets,
-        infoPlist: .extendingDefault(with: [:]),
+        infoPlist: .extendingDefault(with: interFontInfoPlist),
         sources: [
             "Example/**/*.swift",
             "Shared/**/*.swift",
@@ -289,6 +297,7 @@ let targets: [Target] = [
         resources: [
             .glob(pattern: "HostingExample/Base.lproj/**", inclusionCondition: .when([.ios, .visionos])),
             "Shared/Assets/Assets.xcassets",
+            "Shared/Assets/fonts/**",
             "Shared/Assets/images/**",
         ],
         dependencies: appDependencies,
@@ -300,7 +309,7 @@ let targets: [Target] = [
         product: .app,
         bundleId: "org.OpenSwiftUIProject.$(OPENSWIFTUI_TARGET_BUNDLE_ID).TestingHost",
         deploymentTargets: deploymentTargets,
-        infoPlist: .extendingDefault(with: [:]),
+        infoPlist: .extendingDefault(with: interFontInfoPlist),
         sources: [
             "TestingHost/**/*.swift",
             "Shared/**/*.swift",
