@@ -21,18 +21,21 @@ extension SwiftUI.View {
 }
 #endif
 
-#if canImport(UIKit)
-// FIXME: Not working on macOS yet
-
 #Preview("HostingVC") {
     ContentView()
         ._previewVC()
 }
 
 #Preview("CAHostingLayerExample") {
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    CAHostingLayerExample(
+        content: ContentView(),
+        size: CGSize(width: 500, height: 300)
+    ).makeViewController()
+    #else
     CAHostingLayerExample(
         content: ContentView(),
         size: UIScreen.main.bounds.size
     ).makeViewController()
+    #endif
 }
-#endif

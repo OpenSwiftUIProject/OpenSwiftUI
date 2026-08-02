@@ -2,7 +2,7 @@
 
 ## Current Status
 
-OpenSwiftUI supports Xcode Preview rendering through the shim introduced in [PR #829](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/829). Source builds and binary distributions must also satisfy the linkage requirements below.
+OpenSwiftUI supports Xcode Preview rendering through the shim introduced in [PR #829](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/829). macOS Preview support was enabled by the binary framework fixes in [PR #952](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/952). Source builds and binary distributions must also satisfy the linkage requirements below.
 
 ### How It Works
 
@@ -16,6 +16,8 @@ Since OpenSwiftUI cannot use SwiftUI's `#Preview` macro directly (it targets `Sw
     ContentView()._previewVC()
 }
 ```
+
+The same preview declaration works on both supported targets. Native macOS targets return an `NSViewController` backed by `NSHostingController`; iOS and Mac Catalyst targets return a `UIViewController` backed by `UIHostingController`.
 
 ### Binary XCFramework Requirements
 
