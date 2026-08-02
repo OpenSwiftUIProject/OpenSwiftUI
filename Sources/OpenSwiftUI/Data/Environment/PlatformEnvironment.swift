@@ -2,6 +2,7 @@
 //  PlatformEnvironment.swift
 //  OpenSwiftUI
 //
+//  Audited for 6.5.4
 //  Status: WIP
 //  ID: C3D4386B65791FA87065FFB821A7CBCF (SwiftUI)
 
@@ -17,7 +18,7 @@ typealias TraitCollection = Void
 typealias TraitCollection = Void
 #endif
 
-// MARK: - Environment + Platform [6.4.41]
+// MARK: - Environment + Platform
 
 extension EnvironmentValues {
     static let configuredForPlatform: EnvironmentValues = {
@@ -27,14 +28,17 @@ extension EnvironmentValues {
     }()
 
     mutating func configureForPlatform(traitCollection: TraitCollection?) {
-        guard let traitCollection else {
-            plist.set(Self.configuredForPlatform.plist)
-            return
-        }
         if plist.isIdentical(to: Self.configuredForPlatform.plist) {
+            guard traitCollection != nil else {
+                return
+            }
             plist = .init()
         }
-        _configureForPlatform(traitCollection: traitCollection)
+        if plist.isEmpty, traitCollection == nil {
+            plist = Self.configuredForPlatform.plist
+        } else {
+            _configureForPlatform(traitCollection: traitCollection)
+        }
     }
 
     private mutating func _configureForPlatform(traitCollection: TraitCollection?) {
