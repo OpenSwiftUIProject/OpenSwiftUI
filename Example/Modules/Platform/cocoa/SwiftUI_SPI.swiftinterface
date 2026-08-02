@@ -58,3 +58,8 @@ public final class ViewGraph {
 extension SwiftUI.View {
   public func variableBlur(maxRadius: CoreGraphics.CGFloat, mask: SwiftUI.Image, opaque: Swift.Bool = false) -> some SwiftUI.View
 }
+
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
+extension SwiftUI.View {
+  public func avoidsOrphans(_ flag: Swift.Bool) -> some SwiftUI.View
+}

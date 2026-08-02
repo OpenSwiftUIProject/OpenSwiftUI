@@ -23,4 +23,9 @@ struct TextUITests {
     func textHeight() {
         openSwiftUIAssertSnapshot(of: TextBackgroundHeightExample())
     }
+
+    @Test
+    func orphanAndPushOut() {
+        openSwiftUIAssertSnapshot(of: TextOrphanAndPushOutExample())
+    }
 }
