@@ -14,8 +14,6 @@ package import OpenAttributeGraphShims
 /// preference key.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
-@MainActor
-@preconcurrency
 public struct _PreferenceTransformModifier<Key>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where Key: PreferenceKey {
 
     /// The transform function to apply to `Key`.

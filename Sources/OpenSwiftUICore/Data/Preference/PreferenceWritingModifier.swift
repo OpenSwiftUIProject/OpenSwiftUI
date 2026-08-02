@@ -73,7 +73,10 @@ extension View {
 
     /// Sets a value for the given preference.
     @inlinable
-    public func preference<K>(key: K.Type = K.self, value: K.Value) -> some View where K : PreferenceKey {
+    nonisolated public func preference<K>(
+        key: K.Type = K.self,
+        value: K.Value
+    ) -> some View where K: PreferenceKey {
         modifier(_PreferenceWritingModifier<K>(value: value))
     }
 }

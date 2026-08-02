@@ -2,7 +2,7 @@
 //  PreferenceBridge.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: A9FAE381E99529D5274BA37A9BC9B074 (SwiftUI)
 //  ID: DF57A19C61B44C613EB77C1D47FC679A (SwiftUICore)
@@ -32,9 +32,9 @@ package final class PreferenceBridge {
         requestedPreferences = PreferenceKeys()
         bridgedViewInputs = PropertyList()
         for child in children {
-            let viewGraph = child.takeRetainedValue()
-            viewGraph.invalidatePreferenceBridge()
-            child.release()
+            child._withUnsafeGuaranteedRef { viewGraph in
+                viewGraph.invalidatePreferenceBridge()
+            }
         }
         viewGraph = nil
         isValid = false
@@ -105,9 +105,9 @@ package final class PreferenceBridge {
     
     package func removedStateDidChange() {
         for child in children {
-            let viewGraph = child.takeUnretainedValue()
-            viewGraph.updateRemovedState()
-            child.release()
+            child._withUnsafeGuaranteedRef { viewGraph in
+                viewGraph.updateRemovedState()
+            }
         }
     }
     

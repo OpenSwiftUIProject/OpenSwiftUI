@@ -2,12 +2,13 @@
 //  PreferencesOutputs.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: 639FD567E11A491423DEEA5A95A52B4C (SwiftUICore)
 
 package import OpenAttributeGraphShims
 
-// MARK: - PreferencesOutputs [6.5.4]
+// MARK: - PreferencesOutputs
 
 package struct PreferencesOutputs {
     private var preferences: [KeyValue]
