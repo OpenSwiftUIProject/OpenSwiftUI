@@ -21,7 +21,11 @@ struct ShapeLayerHelper: ResolvedPaintVisitor {
         var requiredType: CALayer.Type?
 
         mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
-            _openSwiftUIUnimplementedFailure()
+            // TBA
+            requiredType = ShapeLayerHelper.layerType(
+                for: shapeType,
+                paint: paint
+            )
         }
     }
 
@@ -36,7 +40,86 @@ struct ShapeLayerHelper: ResolvedPaintVisitor {
     var mayClip: Bool
 
     mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
-        _openSwiftUIUnimplementedFailure()
+        // TBA
+        let shapeType = ShapeType(path)
+        let requiredType = Self.layerType(for: shapeType, paint: paint)
+        guard layerType == requiredType else {
+            layerType = requiredType
+            return
+        }
+
+        #if canImport(QuartzCore)
+        let color = (paint as? Color.Resolved)
+            ?? (paint as? AnchoredResolvedPaint<Color.Resolved>)?.paint
+        guard let color else {
+            layer.backgroundColor = nil
+            layer.borderColor = nil
+            layer.borderWidth = 0
+            layer.contents = nil
+            _openSwiftUIUnimplementedWarning()
+            return
+        }
+
+        layer.contentsScale = contentsScale
+        switch shapeType {
+        case let .rect(_, radius, cornerStyle):
+            layer.backgroundColor = color.cgColor
+            layer.borderColor = nil
+            layer.borderWidth = 0
+            layer.cornerRadius = radius
+            layer.cornerCurve = cornerStyle == .continuous ? .continuous : .circular
+        case let .rectBorder(_, radius, cornerStyle, lineWidth):
+            layer.backgroundColor = nil
+            layer.borderColor = color.cgColor
+            layer.borderWidth = lineWidth
+            layer.cornerRadius = radius
+            layer.cornerCurve = cornerStyle == .continuous ? .continuous : .circular
+        case let .strokedPath(strokedPath, strokeStyle):
+            guard let shapeLayer = layer as? CAShapeLayer else {
+                return
+            }
+            let path = origin == .zero ? strokedPath : strokedPath.applying(
+                CGAffineTransform(translationX: -origin.x, y: -origin.y)
+            )
+            shapeLayer.path = path.cgPath
+            shapeLayer.fillColor = nil
+            shapeLayer.strokeColor = color.cgColor
+            shapeLayer.lineWidth = strokeStyle.lineWidth
+            shapeLayer.lineCap = switch strokeStyle.lineCap {
+            case .round: .round
+            case .square: .square
+            default: .butt
+            }
+            shapeLayer.lineJoin = switch strokeStyle.lineJoin {
+            case .round: .round
+            case .bevel: .bevel
+            default: .miter
+            }
+            shapeLayer.miterLimit = strokeStyle.miterLimit
+            shapeLayer.lineDashPattern = strokeStyle.dash.map { NSNumber(value: Double($0)) }
+            shapeLayer.lineDashPhase = strokeStyle.dashPhase
+        case .empty:
+            layer.backgroundColor = nil
+            layer.borderColor = nil
+            layer.borderWidth = 0
+            layer.cornerRadius = 0
+        case .other:
+            guard let shapeLayer = layer as? CAShapeLayer else {
+                return
+            }
+            let path = origin == .zero ? self.path : self.path.applying(
+                CGAffineTransform(translationX: -origin.x, y: -origin.y)
+            )
+            shapeLayer.path = path.cgPath
+            shapeLayer.fillColor = color.cgColor
+            shapeLayer.fillRule = style.isEOFilled ? .evenOdd : .nonZero
+            shapeLayer.strokeColor = nil
+            shapeLayer.lineDashPattern = nil
+            shapeLayer.lineWidth = 0
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        #endif
     }
 
     static func makeLayerBounds(
@@ -45,7 +128,37 @@ struct ShapeLayerHelper: ResolvedPaintVisitor {
         layerType: CALayer.Type,
         contentsScale: CGFloat
     ) -> CGRect {
-        _openSwiftUIUnimplementedFailure()
+        // TBA
+        #if canImport(QuartzCore)
+        if layerType is CAShapeLayer.Type {
+            return CGRect(origin: .zero, size: size)
+        }
+        #endif
+        _ = contentsScale
+        let bounds = path.boundingRect
+        return bounds.isNull ? .zero : bounds
+    }
+
+    private static func layerType<P>(
+        for shapeType: ShapeType,
+        paint: P
+    ) -> CALayer.Type where P: ResolvedPaint {
+        // TBA
+        let isColor = paint is Color.Resolved
+            || paint is AnchoredResolvedPaint<Color.Resolved>
+        guard isColor else {
+            return CALayer.self
+        }
+        switch shapeType {
+        case .rect, .rectBorder, .empty:
+            return CALayer.self
+        case .strokedPath, .other:
+            #if canImport(QuartzCore)
+            return CAShapeLayer.self
+            #else
+            return CALayer.self
+            #endif
+        }
     }
 
     static func updateAsync(
@@ -214,7 +327,34 @@ enum ShapeType {
     case other
 
     init(_ path: Path) {
-        _openSwiftUIUnimplementedFailure()
+        // TBA
+        switch path.storage {
+        case .empty:
+            self = .empty
+        case let .rect(rect):
+            self = .rect(rect, radius: 0, style: .circular)
+        case let .ellipse(rect):
+            guard rect.width == rect.height else {
+                self = .other
+                return
+            }
+            self = .rect(rect, radius: rect.width / 2, style: .circular)
+        case let .roundedRect(roundedRect):
+            guard roundedRect.isUniform else {
+                self = .other
+                return
+            }
+            self = .rect(
+                roundedRect.rect,
+                radius: roundedRect.clampedCornerRadius,
+                style: roundedRect.style
+            )
+        case .stroked, .trimmed:
+            self = .other
+        case .path:
+            // FIXME: initFromFilled
+            self = .other
+        }
     }
 
 //    private func initFromFilled(

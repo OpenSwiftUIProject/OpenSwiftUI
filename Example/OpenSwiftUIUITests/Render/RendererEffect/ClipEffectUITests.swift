@@ -6,9 +6,9 @@ import Testing
 import SnapshotTesting
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool), .disabled(if: viewRendererVendor == .osui, "ShapeType is not implemented"))
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct ClipEffectUITests {
-    // FIXME: Investigate the diff. perceptualPrecision should be 1.0
+    // FIXME: Investigate the diff. precision should be 1.0
 
     @Test
     func clipShapeCircle() {
