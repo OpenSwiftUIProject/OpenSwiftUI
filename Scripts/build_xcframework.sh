@@ -12,6 +12,8 @@ export OPENSWIFTUI_SWIFTUI_RENDERER
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
 PROJECT_ROOT="$(dirname "$SCRIPT_DIR")"
 
+source "$SCRIPT_DIR/Tuist/common.sh"
+
 cd "$PROJECT_ROOT"
 
 PROJECT_BUILD_DIR="${PROJECT_BUILD_DIR:-"${PROJECT_ROOT}/build"}"
@@ -394,6 +396,7 @@ prebuild_compute_framework() {
 
     local archive_path
     archive_path="$(compute_archive_path "$sdk")"
+    local result_bundle_path="$archive_path.xcresult"
 
     local project_path
     project_path="$(compute_project_path)"
@@ -426,7 +429,7 @@ prebuild_compute_framework() {
         xcodebuild_args+=("ARCHS=${archs//,/ }")
     fi
 
-    xcodebuild "${xcodebuild_args[@]}"
+    tuist_xcodebuild "$result_bundle_path" "${xcodebuild_args[@]}"
 
     local framework
     framework="$(framework_path "$archive_path" "Compute")"
@@ -443,6 +446,7 @@ build_framework() {
     local archs="$4"
 
     local archive_path="$PROJECT_BUILD_DIR/$scheme-$sdk.xcarchive"
+    local result_bundle_path="$archive_path.xcresult"
     local project_args
     read -r -a project_args <<<"$(project_args_for_scheme "$scheme")"
 
@@ -481,7 +485,7 @@ build_framework() {
         xcodebuild_args+=("FRAMEWORK_SEARCH_PATHS=${framework_search_paths[*]} \$(inherited)")
     fi
 
-    xcodebuild "${xcodebuild_args[@]}"
+    tuist_xcodebuild "$result_bundle_path" "${xcodebuild_args[@]}"
 
     local framework
     framework="$(framework_path "$archive_path" "$scheme")"

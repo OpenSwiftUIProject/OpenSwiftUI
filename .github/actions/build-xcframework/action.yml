@@ -57,11 +57,11 @@ runs:
       with:
         install: false
         cache: false
-    - name: Install Tuist
+    - name: Set up Tuist
       run: |
-        mise trust mise.toml
-        mise install
-        tuist version
+        source Scripts/Tuist/common.sh
+        tuist_ci_setup
+        mise exec -- tuist version
       shell: bash
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
