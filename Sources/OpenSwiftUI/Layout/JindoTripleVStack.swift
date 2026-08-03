@@ -14,6 +14,13 @@ public import OpenSwiftUICore
 
 // MARK: - JindoTripleVStack [TBA]
 
+/// A layout that arranges views in leading, center, trailing, bottom, and
+/// notch regions.
+///
+/// Assign each subview a ``JindoTripleVStack/Position`` with the
+/// `jindoPosition(_:)` modifier. The layout uses a
+/// ``JindoTripleVStack/Configuration`` to reserve space for the notch and to
+/// control how the horizontal regions share the available width.
 @_spi(Jindo)
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
@@ -21,7 +28,9 @@ public struct JindoTripleVStack: Layout {
 
     // MARK: - JindoTripleVStack.Configuration
 
+    /// The values that configure a Jindo triple vertical stack.
     public struct Configuration {
+        /// The size of the region reserved for notch content.
         public var notchSize: CGSize
 
         var horizontalSizing: HorizontalSizing
@@ -30,24 +39,42 @@ public struct JindoTripleVStack: Layout {
 
         var sizing: Sizing
 
+        /// The legacy strategy for distributing horizontal space.
+        ///
+        /// Use ``JindoTripleVStack/HorizontalSizing`` when creating a
+        /// configuration instead.
         @available(*, deprecated, message: "Use horizontalSizing")
         public var mode: HorizontalMode {
             get { .leading }
             set {}
         }
 
+        /// The legacy default insets for the layout.
+        ///
+        /// Use the `layoutMargins` argument when creating a configuration
+        /// instead.
         @available(*, deprecated, message: "Use layoutMargins")
         public var defaultInsets: EdgeInsets {
             get { EdgeInsets() }
             set {}
         }
 
+        /// The horizontal alignment of views in the center region.
         public var centerAlignment: TextAlignment
 
+        /// The horizontal alignment of views in the bottom region.
         public var bottomAlignment: TextAlignment
 
+        /// A fixed vertical distance between adjacent views, or `nil` to
+        /// choose spacing automatically.
         public var uniformSpacing: CGFloat?
 
+        /// Creates a configuration with the legacy horizontal layout mode.
+        ///
+        /// - Parameters:
+        ///   - notchSize: The size of the region reserved for notch content.
+        ///   - mode: The strategy for distributing horizontal space.
+        ///   - defaultInsets: The default edge insets for the layout.
         @available(*, deprecated, renamed: "init(notchSize:mode:layoutMargins:)")
         public init(
             notchSize: CGSize,
@@ -63,6 +90,13 @@ public struct JindoTripleVStack: Layout {
             uniformSpacing = nil
         }
 
+        /// Creates a configuration for a Jindo triple vertical stack.
+        ///
+        /// - Parameters:
+        ///   - notchSize: The size of the region reserved for notch content.
+        ///   - horizontalSizing: The strategy for distributing space between
+        ///     the leading and trailing regions.
+        ///   - layoutMargins: The margins surrounding the layout's content.
         public init(
             notchSize: CGSize,
             horizontalSizing: HorizontalSizing,
@@ -85,12 +119,16 @@ public struct JindoTripleVStack: Layout {
 
     private let configuration: Configuration
 
+    /// Creates a Jindo triple vertical stack with the specified configuration.
+    ///
+    /// - Parameter configuration: The values that control the layout.
     public init(configuration: Configuration) {
         self.configuration = configuration
     }
 
     // MARK: - JindoTripleVStack.Position
 
+    /// A value that assigns a subview to one of the layout's regions.
     public struct Position: Equatable {
         fileprivate enum Region: Hashable {
             case leading
@@ -109,6 +147,7 @@ public struct JindoTripleVStack: Layout {
 
     // MARK: - JindoTripleVStack.VerticalPlacement
 
+    /// A strategy for vertically placing a view relative to the notch.
     public struct VerticalPlacement: Equatable {
         private var rawValue: UInt8
 
@@ -116,22 +155,34 @@ public struct JindoTripleVStack: Layout {
             self.rawValue = rawValue
         }
 
+        /// The standard vertical placement for the view's assigned region.
         public static let `default` = VerticalPlacement(rawValue: 0)
 
+        /// Places a view below the notch when it is too wide to fit beside it.
         public static let belowNotchIfTooWide = VerticalPlacement(rawValue: 1)
     }
 
     // MARK: - JindoTripleVStack.HorizontalMode
 
+    /// A legacy strategy for distributing horizontal space.
+    ///
+    /// Use ``JindoTripleVStack/HorizontalSizing`` instead.
     @available(*, deprecated, message: "Use HorizontalSizing")
     public enum HorizontalMode {
+        /// Divides the available horizontal space between both side regions.
         case split
+
+        /// Gives preference to the leading region.
         case leading
+
+        /// Gives preference to the trailing region.
         case trailing
     }
 
     // MARK: - JindoTripleVStack.HorizontalSizing
 
+    /// A strategy for distributing horizontal space between the leading and
+    /// trailing regions.
     public struct HorizontalSizing: Equatable {
         private var rawValue: UInt8
 
@@ -139,12 +190,16 @@ public struct JindoTripleVStack: Layout {
             self.rawValue = rawValue
         }
 
+        /// Lets the layout choose a sizing strategy automatically.
         public static let automatic = HorizontalSizing(rawValue: 0)
 
+        /// Gives preference to the leading region.
         public static let leading = HorizontalSizing(rawValue: 1)
 
+        /// Gives preference to the trailing region.
         public static let trailing = HorizontalSizing(rawValue: 2)
 
+        /// Divides the available horizontal space between both side regions.
         public static let split = HorizontalSizing(rawValue: 3)
     }
 
@@ -230,22 +285,41 @@ extension JindoTripleVStack.Position: Sendable {}
 @available(macOS, unavailable)
 extension JindoTripleVStack.Position {
 
+    /// The leading region of the layout.
     public static let leading = JindoTripleVStack.Position(region: .leading)
 
+    /// Creates a position in the leading region with an optional inset.
+    ///
+    /// - Parameter inset: An optional inset from the leading edge.
+    /// - Returns: A position in the leading region.
     public static func leading(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .leading, leadingInset: inset)
     }
 
+    /// The trailing region of the layout.
     public static let trailing = JindoTripleVStack.Position(region: .trailing)
 
+    /// Creates a position in the trailing region with an optional inset.
+    ///
+    /// - Parameter inset: An optional inset from the trailing edge.
+    /// - Returns: A position in the trailing region.
     public static func trailing(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .trailing, trailingInset: inset)
     }
 
+    /// The center region of the layout.
     public static let center = JindoTripleVStack.Position(region: .center)
 
+    /// The region below the leading, center, and trailing regions.
     public static let bottom = JindoTripleVStack.Position(region: .bottom)
 
+    /// Creates a position in the bottom region with optional horizontal
+    /// insets.
+    ///
+    /// - Parameters:
+    ///   - leadingInset: An optional inset from the leading edge.
+    ///   - trailingInset: An optional inset from the trailing edge.
+    /// - Returns: A position in the bottom region.
     public static func bottom(
         leadingInset: CGFloat? = nil,
         trailingInset: CGFloat? = nil
@@ -253,6 +327,7 @@ extension JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .bottom, leadingInset: leadingInset, trailingInset: trailingInset)
     }
 
+    /// The region reserved for notch content.
     public static let notch = JindoTripleVStack.Position(region: .notch)
 }
 
@@ -263,6 +338,7 @@ extension JindoTripleVStack.Position {
 @available(macOS, unavailable)
 extension JindoTripleVStack {
 
+    /// Optional per-edge margin overrides for a subview in the layout.
     public struct ContentMargins {
         var top: CGFloat?
 
@@ -272,6 +348,15 @@ extension JindoTripleVStack {
 
         var trailing: CGFloat?
 
+        /// Creates a set of optional content-margin overrides.
+        ///
+        /// An edge whose value is `nil` has no explicit override.
+        ///
+        /// - Parameters:
+        ///   - top: An optional override for the top margin.
+        ///   - leading: An optional override for the leading margin.
+        ///   - bottom: An optional override for the bottom margin.
+        ///   - trailing: An optional override for the trailing margin.
         public init(
             top: CGFloat? = nil,
             leading: CGFloat? = nil,
@@ -329,6 +414,12 @@ private struct PositionKey: LayoutValueKey {
 }
 
 extension View {
+    /// Assigns this view to a region of a Jindo triple vertical stack.
+    ///
+    /// Views without this modifier use the bottom position.
+    ///
+    /// - Parameter position: The region in which the layout places this view.
+    /// - Returns: A view with the position value attached.
     @_spi(Jindo)
     @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
@@ -338,6 +429,10 @@ extension View {
         layoutValue(key: PositionKey.self, value: position)
     }
 
+    /// Sets how a Jindo triple vertical stack vertically places this view.
+    ///
+    /// - Parameter verticalPlacement: The vertical placement strategy to use.
+    /// - Returns: A view with the vertical placement value attached.
     @_spi(Jindo)
     @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
@@ -347,6 +442,12 @@ extension View {
         layoutValue(key: VerticalPlacementKey.self, value: verticalPlacement)
     }
 
+    /// Sets a priority that a Jindo triple vertical stack can use when
+    /// resolving its arrangement.
+    ///
+    /// - Parameter priority: The priority value, or `nil` to remove an
+    ///   explicit priority.
+    /// - Returns: A view with the priority value attached.
     @_spi(Jindo)
     @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
@@ -354,6 +455,12 @@ extension View {
         layoutValue(key: PriorityKey.self, value: priority)
     }
 
+    /// Sets per-edge content-margin overrides for this view in a Jindo triple
+    /// vertical stack.
+    ///
+    /// - Parameter contentMargins: The margin overrides, or `nil` to clear
+    ///   explicit overrides.
+    /// - Returns: A view with the content-margin value attached.
     @_spi(Jindo)
     @available(OpenSwiftUI_v4_1, *)
     @available(macOS, unavailable)
