@@ -50,7 +50,7 @@ Options:
   --sdk <sdk>             Build for an SDK. May be passed multiple times.
   --archs <arch1,arch2>   Override architectures for the previous --sdk.
   --debug                 Keep release metadata and copy dSYMs.
-  --compute               Build OpenAttributeGraphShims with the Compute source backend.
+  --compute               Build OpenAttributeGraphShims with mise.compute.toml.
   --skip-tuist-install    Skip tuist install.
   --keep-derived-data     Reuse DerivedData from a previous build.
   --framework <name>      Build one framework. May be passed multiple times.
@@ -80,6 +80,7 @@ while [[ $# -gt 0 ]]; do
             shift
             ;;
         --compute)
+            tuist_use_mise_environment compute
             OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH=0
             OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH=0
             OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
@@ -136,20 +137,22 @@ if [ "${OPENSWIFTUI_SKIP_TUIST_INSTALL:-0}" = "1" ]; then
     RUN_TUIST_INSTALL=false
 fi
 
-if ! command -v tuist >/dev/null 2>&1; then
-    echo "Error: tuist is required to generate $XCODEPROJ."
+if ! command -v mise >/dev/null 2>&1; then
+    echo "Error: mise is required to generate $XCODEPROJ."
     exit 1
 fi
 
+tuist_trust_mise_configuration
+
 if [ "$RUN_TUIST_INSTALL" = true ]; then
     echo "Installing Tuist dependencies..."
-    tuist install
+    tuist_mise exec -- tuist install
 else
     echo "Skipping tuist install."
 fi
 
 echo "Generating Xcode project with Tuist..."
-tuist generate --no-open
+tuist_mise exec -- tuist generate --no-open
 
 if [ ! -d "$XCODEPROJ" ]; then
     echo "Error: Expected Tuist to generate $XCODEPROJ."

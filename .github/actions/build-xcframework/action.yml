@@ -60,8 +60,9 @@ runs:
     - name: Set up Tuist
       run: |
         source Scripts/Tuist/common.sh
+        tuist_use_mise_environment compute
         tuist_ci_setup
-        mise exec -- tuist version
+        tuist_mise exec -- tuist version
       shell: bash
     - name: Set up build environment
       run: Scripts/CI/darwin_setup_build.sh
