@@ -7,6 +7,7 @@ let tuist = Tuist(
     ),
     project: .tuist(
         generationOptions: .options(
+            optionalAuthentication: true,
             enableCaching: Environment.isCI,
             manifestEnvironment: [
                 "DARWINPRIVATEFRAMEWORKS_*",
