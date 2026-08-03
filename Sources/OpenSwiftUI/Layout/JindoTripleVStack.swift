@@ -121,12 +121,16 @@ public struct JindoTripleVStack: Layout {
         public static let belowNotchIfTooWide = VerticalPlacement(rawValue: 1)
     }
 
+    // MARK: - JindoTripleVStack.HorizontalMode
+
     @available(*, deprecated, message: "Use HorizontalSizing")
     public enum HorizontalMode {
         case split
         case leading
         case trailing
     }
+
+    // MARK: - JindoTripleVStack.HorizontalSizing
 
     public struct HorizontalSizing: Equatable {
         private var rawValue: UInt8
@@ -150,7 +154,10 @@ public struct JindoTripleVStack: Layout {
         cache: inout ()
     ) -> CGSize {
         var implementation = Implementation(configuration: configuration, subviews: subviews)
-        return implementation.sizeThatFits(proposal: adjusted(proposal))
+        // FIXME: sizeAndPlaceChildren
+        return implementation.sizeThatFits(
+            proposal: adjusted(proposal)
+        )
     }
 
     public func placeSubviews(
@@ -160,18 +167,15 @@ public struct JindoTripleVStack: Layout {
         cache: inout ()
     ) {
         var implementation = Implementation(configuration: configuration, subviews: subviews)
+        // FIXME: sizeAndPlaceChildren
         implementation.placeSubviews(
             in: adjusted(bounds),
             proposal: adjusted(proposal)
         )
     }
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public typealias AnimatableData = EmptyAnimatableData
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public typealias Cache = ()
 
     private func adjusted(_ proposal: ProposedViewSize) -> ProposedViewSize {
@@ -180,8 +184,8 @@ public struct JindoTripleVStack: Layout {
         }
         let margins = configuration.layoutMargins
         return ProposedViewSize(
-            width: proposal.width.map { $0 - margins.leading - margins.trailing },
-            height: proposal.height.map { $0 - margins.top - margins.bottom }
+            width: proposal.width.map { $0 - margins.horizontal },
+            height: proposal.height.map { $0 - margins.vertical }
         )
     }
 
@@ -189,17 +193,11 @@ public struct JindoTripleVStack: Layout {
         guard configuration.sizing == .v1 else {
             return bounds
         }
-        let margins = configuration.layoutMargins
-        return CGRect(
-            x: bounds.origin.x + margins.leading,
-            y: bounds.origin.y + margins.top,
-            width: bounds.width - margins.leading - margins.trailing,
-            height: bounds.height - margins.top - margins.bottom
-        )
+        return bounds.inset(by: configuration.layoutMargins)
     }
 }
 
-// MARK: - Public conformances [TBA]
+// MARK: - Public conformances
 
 @_spi(Jindo)
 @available(*, unavailable)
@@ -225,10 +223,13 @@ extension JindoTripleVStack.HorizontalSizing: Sendable {}
 @available(*, unavailable)
 extension JindoTripleVStack.Position: Sendable {}
 
+// MARK: - JindoTripleVStack.Position extension
+
 @_spi(Jindo)
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 extension JindoTripleVStack.Position {
+
     public static let leading = JindoTripleVStack.Position(region: .leading)
 
     public static func leading(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
@@ -255,20 +256,21 @@ extension JindoTripleVStack.Position {
     public static let notch = JindoTripleVStack.Position(region: .notch)
 }
 
+// MARK: - JindoTripleVStack.ContentMargins
+
 @_spi(Jindo)
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 extension JindoTripleVStack {
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
+
     public struct ContentMargins {
-        fileprivate var top: CGFloat?
+        var top: CGFloat?
 
-        fileprivate var leading: CGFloat?
+        var leading: CGFloat?
 
-        fileprivate var bottom: CGFloat?
+        var bottom: CGFloat?
 
-        fileprivate var trailing: CGFloat?
+        var trailing: CGFloat?
 
         public init(
             top: CGFloat? = nil,
