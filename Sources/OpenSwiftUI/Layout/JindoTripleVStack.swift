@@ -302,7 +302,7 @@ extension JindoTripleVStack.HorizontalMode: Equatable {}
 @available(*, deprecated, message: "Use HorizontalSizing")
 extension JindoTripleVStack.HorizontalMode: Hashable {}
 
-// MARK: - Layout values [TBA]
+// MARK: - Layout values
 
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
@@ -325,9 +325,7 @@ private struct VerticalPlacementKey: LayoutValueKey {
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 private struct PositionKey: LayoutValueKey {
-    typealias Value = JindoTripleVStack.Position
-
-    static let defaultValue: Value = .bottom
+    static let defaultValue = JindoTripleVStack.Position.bottom
 }
 
 extension View {
