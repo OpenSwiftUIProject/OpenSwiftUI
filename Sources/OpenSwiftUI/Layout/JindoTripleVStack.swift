@@ -89,8 +89,10 @@ public struct JindoTripleVStack: Layout {
         self.configuration = configuration
     }
 
+    // MARK: - JindoTripleVStack.Position
+
     public struct Position: Equatable {
-        fileprivate enum Region {
+        fileprivate enum Region: Hashable {
             case leading
             case trailing
             case center
@@ -100,19 +102,9 @@ public struct JindoTripleVStack: Layout {
 
         fileprivate var region: Region
 
-        fileprivate var leadingInset: CGFloat?
+        var leadingInset: CGFloat? = nil
 
-        fileprivate var trailingInset: CGFloat?
-
-        fileprivate init(
-            region: Region,
-            leadingInset: CGFloat? = nil,
-            trailingInset: CGFloat? = nil
-        ) {
-            self.region = region
-            self.leadingInset = leadingInset
-            self.trailingInset = trailingInset
-        }
+        var trailingInset: CGFloat? = nil
     }
 
     public struct VerticalPlacement: Equatable {
@@ -235,49 +227,29 @@ extension JindoTripleVStack.Position: Sendable {}
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 extension JindoTripleVStack.Position {
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static let leading = JindoTripleVStack.Position(region: .leading)
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static func leading(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .leading, leadingInset: inset)
     }
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static let trailing = JindoTripleVStack.Position(region: .trailing)
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static func trailing(inset: CGFloat? = nil) -> JindoTripleVStack.Position {
         JindoTripleVStack.Position(region: .trailing, trailingInset: inset)
     }
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static let center = JindoTripleVStack.Position(region: .center)
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static let bottom = JindoTripleVStack.Position(region: .bottom)
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static func bottom(
         leadingInset: CGFloat? = nil,
         trailingInset: CGFloat? = nil
     ) -> JindoTripleVStack.Position {
-        JindoTripleVStack.Position(
-            region: .bottom,
-            leadingInset: leadingInset,
-            trailingInset: trailingInset
-        )
+        JindoTripleVStack.Position(region: .bottom, leadingInset: leadingInset, trailingInset: trailingInset)
     }
 
-    @available(OpenSwiftUI_v4_1, *)
-    @available(macOS, unavailable)
     public static let notch = JindoTripleVStack.Position(region: .notch)
 }
 
