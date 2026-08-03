@@ -4,7 +4,9 @@ TUIST_REPOSITORY_ROOT="$(
     cd "$(dirname "${BASH_SOURCE[0]}")/../.." >/dev/null 2>&1
     pwd -P
 )"
-TUIST_CACHE_SOCKET_PATH="${TUIST_CACHE_SOCKET_PATH:-${XDG_STATE_HOME:-$HOME/.local/state}/tuist/OpenSwiftUIProject_openswiftui.sock}"
+TUIST_STATE_DIRECTORY="${TUIST_STATE_DIRECTORY:-${XDG_STATE_HOME:-$HOME/.local/state}/tuist}"
+TUIST_CACHE_SOCKET_PATH="${TUIST_CACHE_SOCKET_PATH:-$TUIST_STATE_DIRECTORY/OpenSwiftUIProject_openswiftui.sock}"
+TUIST_CACHE_DAEMON_STDERR_PATH="${TUIST_CACHE_DAEMON_STDERR_PATH:-$TUIST_STATE_DIRECTORY/tuist.cache.OpenSwiftUIProject_openswiftui.stderr.log}"
 TUIST_MISE_ENVIRONMENT="${TUIST_MISE_ENVIRONMENT:-}"
 
 tuist_use_mise_environment() {
@@ -59,6 +61,27 @@ tuist_wait_for_cache_service() {
     return 69
 }
 
+tuist_print_cache_daemon_stderr() {
+    if [[ -r "$TUIST_CACHE_DAEMON_STDERR_PATH" ]]; then
+        echo "Tuist cache daemon stderr ($TUIST_CACHE_DAEMON_STDERR_PATH):" >&2
+        tail -n 200 "$TUIST_CACHE_DAEMON_STDERR_PATH" >&2
+    else
+        echo "Tuist cache daemon stderr is unavailable at $TUIST_CACHE_DAEMON_STDERR_PATH." >&2
+    fi
+}
+
+tuist_report_cache_unavailable() {
+    local message="$1"
+
+    if [[ "${GITHUB_ACTIONS:-}" == "true" ]]; then
+        echo "::warning::$message" >&2
+    else
+        echo "warning: $message" >&2
+    fi
+
+    tuist_print_cache_daemon_stderr
+}
+
 tuist_ci_setup() (
     set -e
 
@@ -66,8 +89,17 @@ tuist_ci_setup() (
     tuist_trust_mise_configuration
     tuist_mise install
     tuist_mise exec -- tuist auth login
-    tuist_mise exec -- tuist setup cache --path "$TUIST_REPOSITORY_ROOT"
-    tuist_wait_for_cache_service
+
+    if ! tuist_mise exec -- tuist setup cache --path "$TUIST_REPOSITORY_ROOT"; then
+        tuist_report_cache_unavailable "Tuist Xcode cache setup failed; continuing without compilation caching."
+        return 0
+    fi
+
+    if ! tuist_wait_for_cache_service; then
+        tuist_report_cache_unavailable "Tuist Xcode cache daemon did not become ready; continuing without compilation caching."
+    fi
+
+    return 0
 )
 
 tuist_xcodebuild() (
@@ -99,16 +131,18 @@ tuist_xcodebuild() (
             COMPILATION_CACHE_ENABLE_PLUGIN=YES
             COMPILATION_CACHE_ENABLE_DIAGNOSTIC_REMARKS=YES
         )
-    elif [[ -n "${CI:-}" ]]; then
-        echo "Tuist cache service is unavailable at $TUIST_CACHE_SOCKET_PATH." >&2
-        return 69
     else
-        echo "Tuist cache service is unavailable; building without compilation caching." >&2
-        echo "Run 'mise exec -- tuist setup cache' to enable it locally." >&2
         cache_settings=(
             COMPILATION_CACHE_ENABLE_CACHING=NO
             COMPILATION_CACHE_ENABLE_PLUGIN=NO
         )
+
+        if [[ -n "${CI:-}" ]]; then
+            tuist_report_cache_unavailable "Tuist Xcode cache service is unavailable at $TUIST_CACHE_SOCKET_PATH; continuing without compilation caching."
+        else
+            echo "Tuist cache service is unavailable; building without compilation caching." >&2
+            echo "Run 'mise exec -- tuist setup cache' to enable it locally." >&2
+        fi
     fi
 
     rm -rf "$result_bundle_path"
