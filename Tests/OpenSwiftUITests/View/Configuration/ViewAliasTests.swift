@@ -197,7 +197,7 @@ struct ViewAliasTests {
         \(display-list
           \(item #:identity \d+ #:version \d+
             \(frame \([^)]+\)\)
-            \(effect
+            \(effect(?: #:opacity 1\.0)?
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
                 \(content-seed \d+\)

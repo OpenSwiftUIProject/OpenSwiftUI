@@ -6,6 +6,9 @@
 
 import CoreText
 import Foundation
+#if canImport(UIKit)
+import UIKit
+#endif
 import Numerics
 @_spi(ForOpenSwiftUIOnly)
 @_spi(Private)
@@ -23,13 +26,35 @@ private func attributedString(_ string: String, font: CTFont = fixedFont) -> NSA
     NSAttributedString(string: string, attributes: [.kitFont: font])
 }
 
-/// The metrics of ``fixedFont``, whose 16 point line height and 12 point
-/// baseline are already whole pixels.
+/// The metrics used by string drawing for ``fixedFont``. UIKit applies its
+/// platform font metrics to a `CTFont`, while AppKit uses the Core Text metrics.
 private enum FixedFontMetrics {
     static let ascender: CGFloat = 12.3203125
     static let descender: CGFloat = -3.6796875
-    static let lineHeight: CGFloat = 16
-    static let baseline: CGFloat = 12
+
+    #if canImport(UIKit)
+    private static let unroundedLineHeight = (fixedFont as UIFont).lineHeight
+    private static let unroundedBaseline = (fixedFont as UIFont).ascender
+    #else
+    private static let unroundedLineHeight: CGFloat = 16
+    private static let unroundedBaseline: CGFloat = 12
+    #endif
+
+    static let lineHeight = unroundedLineHeight.rounded(.up)
+    static let baseline = unroundedBaseline.rounded()
+    static let baselineAdjustment = baseline - unroundedBaseline
+
+    static func height(lineCount: Int) -> CGFloat {
+        (unroundedLineHeight * CGFloat(lineCount)).rounded(.up)
+    }
+
+    static func lastBaseline(lineCount: Int) -> CGFloat {
+        (
+            unroundedBaseline
+                + unroundedLineHeight * CGFloat(lineCount - 1)
+                + baselineAdjustment
+        ).rounded(.up)
+    }
 }
 
 private func metrics(
@@ -164,7 +189,11 @@ struct NSAttributedStringTests {
             #expect(result.size.height.isApproximatelyEqual(to: FixedFontMetrics.lineHeight))
             #expect(result.firstBaseline.isApproximatelyEqual(to: FixedFontMetrics.baseline))
             #expect(result.lastBaseline.isApproximatelyEqual(to: FixedFontMetrics.baseline))
-            #expect(result.baselineAdjustment.isApproximatelyEqual(to: 0))
+            #expect(
+                result.baselineAdjustment.isApproximatelyEqual(
+                    to: FixedFontMetrics.baselineAdjustment
+                )
+            )
         }
 
         @Test
@@ -175,9 +204,17 @@ struct NSAttributedStringTests {
             #expect(result.requestedWidth == 60)
             #expect(result.size.width <= 60)
             #expect(result.numberOfLines == 4)
-            #expect(result.size.height.isApproximatelyEqual(to: FixedFontMetrics.lineHeight * 4))
+            #expect(
+                result.size.height.isApproximatelyEqual(
+                    to: FixedFontMetrics.height(lineCount: 4)
+                )
+            )
             #expect(result.firstBaseline.isApproximatelyEqual(to: FixedFontMetrics.baseline))
-            #expect(result.lastBaseline.isApproximatelyEqual(to: FixedFontMetrics.baseline + 48))
+            #expect(
+                result.lastBaseline.isApproximatelyEqual(
+                    to: FixedFontMetrics.lastBaseline(lineCount: 4)
+                )
+            )
         }
 
         @Test
@@ -189,9 +226,17 @@ struct NSAttributedStringTests {
 
             #expect(unlimited.numberOfLines == 4)
             #expect(limited.numberOfLines == 2)
-            #expect(limited.size.height.isApproximatelyEqual(to: FixedFontMetrics.lineHeight * 2))
+            #expect(
+                limited.size.height.isApproximatelyEqual(
+                    to: FixedFontMetrics.height(lineCount: 2)
+                )
+            )
             #expect(limited.firstBaseline.isApproximatelyEqual(to: FixedFontMetrics.baseline))
-            #expect(limited.lastBaseline.isApproximatelyEqual(to: FixedFontMetrics.baseline + 16))
+            #expect(
+                limited.lastBaseline.isApproximatelyEqual(
+                    to: FixedFontMetrics.lastBaseline(lineCount: 2)
+                )
+            )
         }
 
         @Test
@@ -287,7 +332,7 @@ struct NSAttributedStringTests {
                     spacing.minima[.init(category: .textBaseline, edge: .bottom)],
                     .distance(FixedFontMetrics.baseline - FixedFontMetrics.lineHeight)
                 )
-                // The 16 point line height gives a 1.6 point default text spacing,
+                // The 16 point Core Text metrics give a 1.6 point default text spacing,
                 // which rounds up to the pixel length only once TextSpacingUIKit0059v2
                 // is enabled, and to 4 points before that.
                 expectApproximatelyEqual(
