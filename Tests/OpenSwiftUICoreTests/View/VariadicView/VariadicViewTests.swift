@@ -48,17 +48,17 @@ struct VariadicViewTests {
             \(display-list
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
-                \(effect
+                \(effect(?: #:opacity 1\.0)?
                   \(item #:identity \d+ #:version \d+
                     \(frame \([^)]+\)\)
-                    \(effect
+                    \(effect(?: #:opacity 1\.0)?
                       \(item #:identity \d+ #:version \d+
                         \(frame \([^)]+\)\)
                         \(content-seed \d+\)
                         \(color #[0-9A-F]{8}\)\)\)\)
                   \(item #:identity \d+ #:version \d+
                     \(frame \([^)]+\)\)
-                    \(effect
+                    \(effect(?: #:opacity 1\.0)?
                       \(item #:identity \d+ #:version \d+
                         \(frame \([^)]+\)\)
                         \(content-seed \d+\)
@@ -99,14 +99,14 @@ struct VariadicViewTests {
             \(display-list
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
-                \(effect
+                \(effect(?: #:opacity 1\.0)?
                   \(item #:identity \d+ #:version \d+
                     \(frame \([^)]+\)\)
                     \(content-seed \d+\)
                     \(color #[0-9A-F]{8}\)\)\)\)
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
-                \(effect
+                \(effect(?: #:opacity 1\.0)?
                   \(item #:identity \d+ #:version \d+
                     \(frame \([^)]+\)\)
                     \(content-seed \d+\)

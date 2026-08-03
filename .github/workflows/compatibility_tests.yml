@@ -43,8 +43,10 @@ jobs:
         run: |
           set -o pipefail
           # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+          # Swift 6.2 also crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
             --disable-experimental-prebuilts \
+            --disable-index-store \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -54,8 +56,10 @@ jobs:
         run: |
           set -o pipefail
           # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
+          # Swift 6.2 also crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
             --disable-experimental-prebuilts \
+            --disable-index-store \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
