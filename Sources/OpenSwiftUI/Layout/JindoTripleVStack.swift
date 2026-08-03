@@ -3,16 +3,16 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 92DCAEF653F89C7A009F5FFAA858DAF3 (SwiftUI)
 
 //  NOTE: This API's actual availability is between OpenSwiftUI v4.0 and v4.1:
 //  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
 //  @available(macOS, unavailable)
 
-public import OpenSwiftUICore
+@_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
 
-// MARK: - JindoTripleVStack [TBA]
+// MARK: - JindoTripleVStack
 
 /// A layout that arranges views in leading, center, trailing, bottom, and
 /// notch regions.
@@ -208,10 +208,10 @@ public struct JindoTripleVStack: Layout {
         subviews: Subviews,
         cache: inout ()
     ) -> CGSize {
-        var implementation = Implementation(configuration: configuration, subviews: subviews)
-        // FIXME: sizeAndPlaceChildren
+        var implementation = Implementation(configuration: configuration, proxies: subviews)
+        let proposal = adjusted(proposal)
         return implementation.sizeThatFits(
-            proposal: adjusted(proposal)
+            in: FixedProposal(width: proposal.width ?? 0, height: proposal.height)
         )
     }
 
@@ -221,11 +221,12 @@ public struct JindoTripleVStack: Layout {
         subviews: Subviews,
         cache: inout ()
     ) {
-        var implementation = Implementation(configuration: configuration, subviews: subviews)
-        // FIXME: sizeAndPlaceChildren
+        var implementation = Implementation(configuration: configuration, proxies: subviews)
+        let bounds = adjusted(bounds)
+        let proposal = adjusted(proposal)
         implementation.placeSubviews(
-            in: adjusted(bounds),
-            proposal: adjusted(proposal)
+            in: bounds,
+            proposal: FixedProposal(width: proposal.width ?? 0, height: proposal.height)
         )
     }
 
@@ -475,445 +476,1396 @@ extension View {
 
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
-private extension JindoTripleVStack {
-    struct Implementation {
-        private let configuration: Configuration
+extension JindoTripleVStack {
+    private struct Header {
+        let configuration: Configuration
 
-        private let subviews: LayoutSubviews
+        let notchIndex: Int?
 
-        private let leadingIndices: [Int]
+        let proxies: LayoutSubviews
 
-        private let centerIndices: [Int]
+        var lastProposedSize: FixedProposal
 
-        private let trailingIndices: [Int]
+        var stackSize: CGSize
 
-        private let bottomIndices: [Int]
+        var stacks: StackIndexedStorage<StackHeader>
 
-        private let notchIndex: Int?
+        var horizontalSizing: HorizontalSizing
 
-        init(configuration: Configuration, subviews: LayoutSubviews) {
-            self.configuration = configuration
-            self.subviews = subviews
+        var horizontalFullWidth: Bool
+    }
 
-            var leadingIndices: [Int] = []
-            var centerIndices: [Int] = []
-            var trailingIndices: [Int] = []
-            var bottomIndices: [Int] = []
-            var notchIndex: Int?
+    private struct MajorAxisGroupState {
+        let stack: Stack
 
-            for index in subviews.indices {
-                switch subviews[index][PositionKey.self].region {
-                case .leading:
-                    leadingIndices.append(index)
-                case .center:
-                    centerIndices.append(index)
-                case .trailing:
-                    trailingIndices.append(index)
-                case .bottom:
-                    bottomIndices.append(index)
-                case .notch:
-                    if notchIndex == nil {
-                        notchIndex = index
-                    }
+        let range: Range<Int>
+
+        var unsizedCount: Int
+
+        var totalAvailable: CGFloat?
+
+        var minHeight: CGFloat?
+
+        var layoutHeight: CGFloat
+
+        var currentMajorAxisPosition: CGFloat
+
+        mutating func consume(_ amount: CGFloat) {
+            totalAvailable = totalAvailable.map { $0 - amount }
+            unsizedCount -= 1
+        }
+    }
+
+    struct MajorAxisGroup {
+        struct Group {
+            let count: Int
+
+            let proposed: CGFloat?
+        }
+
+        let count: Int
+
+        var reserved: (before: CGFloat, after: CGFloat)
+
+        var groups: [Group]
+
+        var allGroups: [Group] {
+            [Group(count: 0, proposed: reserved.before)]
+                + groups
+                + [Group(count: 0, proposed: reserved.after)]
+        }
+
+        mutating func updateWithSplit(at index: Int, before: CGFloat) {
+            if index == 0 {
+                reserved.before = max(reserved.before, before)
+                let group = groups[0]
+                groups[0] = Group(
+                    count: group.count,
+                    proposed: group.proposed.map { max($0 - before, 0) }
+                )
+                return
+            }
+
+            if index == count {
+                let group = groups[0]
+                groups[0] = Group(
+                    count: group.count,
+                    proposed: before - reserved.before
+                )
+                return
+            }
+
+            var remainingCount = index
+            var remainingBefore = before - reserved.before
+            for groupIndex in groups.indices {
+                let group = groups[groupIndex]
+                if remainingCount > group.count {
+                    remainingCount -= group.count
+                    remainingBefore -= group.proposed ?? 0
+                    continue
                 }
-            }
 
-            self.leadingIndices = leadingIndices
-            self.centerIndices = centerIndices
-            self.trailingIndices = trailingIndices
-            self.bottomIndices = bottomIndices
-            self.notchIndex = notchIndex
-        }
-
-        mutating func sizeThatFits(proposal: ProposedViewSize) -> CGSize {
-            compute(proposal: proposal, bounds: nil).size
-        }
-
-        mutating func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize) {
-            let result = compute(proposal: proposal, bounds: bounds)
-            for placement in result.placements {
-                subviews[placement.index].place(
-                    at: placement.origin,
-                    anchor: .topLeading,
-                    proposal: placement.proposal
-                )
-            }
-        }
-
-        private mutating func compute(
-            proposal: ProposedViewSize,
-            bounds: CGRect?
-        ) -> Result {
-            let width = proposal.width ?? 0
-            let origin = bounds?.origin ?? .zero
-
-            let sizing = resolvedHorizontalSizing()
-            let notchWidth = finiteNonnegative(configuration.notchSize.width)
-            let notchHeight = finiteNonnegative(configuration.notchSize.height)
-            let sideLimit = finiteNonnegative((width - notchWidth) / 2)
-            let horizontalFullWidth = leadingIndices.isEmpty || trailingIndices.isEmpty
-            let leadingLimit = horizontalFullWidth && !leadingIndices.isEmpty ? width : sideLimit
-            let trailingLimit = horizontalFullWidth && !trailingIndices.isEmpty ? width : sideLimit
-
-            let centerDemand = max(
-                notchWidth,
-                maximumWidth(of: centerIndices, proposedWidth: width)
-            )
-            let centerWidth = min(width, centerDemand)
-            let sideWidths = sideWidths(
-                totalWidth: width,
-                centerWidth: centerWidth,
-                sizing: sizing
-            )
-
-            let leadingPartition = partition(
-                leadingIndices,
-                sideLimit: sideLimit,
-                allocatedWidth: sideWidths.leading
-            )
-            let trailingPartition = partition(
-                trailingIndices,
-                sideLimit: sideLimit,
-                allocatedWidth: sideWidths.trailing
-            )
-
-            var placements: [Placement] = []
-            placements.reserveCapacity(subviews.count)
-
-            if let bounds, let notchIndex {
-                let notchProposal = ProposedViewSize(configuration.notchSize)
-                let notchSize = sanitized(subviews[notchIndex].sizeThatFits(notchProposal))
-                placements.append(
-                    Placement(
-                        index: notchIndex,
-                        origin: CGPoint(
-                            x: bounds.midX - notchSize.width / 2,
-                            y: bounds.minY - configuration.layoutMargins.top
-                        ),
-                        proposal: notchProposal
+                if remainingCount == group.count {
+                    groups[groupIndex] = Group(
+                        count: group.count,
+                        proposed: group.proposed.map { max(remainingBefore, $0) }
                     )
-                )
-            }
-
-            let centerStart = origin.y
-                + configuration.notchSize.height
-                - configuration.layoutMargins.top
-
-            let leadingTop = layout(
-                leadingPartition.adjacent,
-                startingAt: origin.y,
-                availableWidth: min(leadingLimit, sideWidths.leading),
-                horizontalOrigin: origin.x,
-                alignment: 0,
-                placements: &placements
-            )
-            let trailingTop = layout(
-                trailingPartition.adjacent,
-                startingAt: origin.y,
-                availableWidth: min(trailingLimit, sideWidths.trailing),
-                horizontalOrigin: origin.x + width - min(trailingLimit, sideWidths.trailing),
-                alignment: 1,
-                placements: &placements
-            )
-            let centerTop = layout(
-                centerIndices,
-                startingAt: centerStart,
-                availableWidth: centerWidth,
-                horizontalOrigin: (bounds?.midX ?? width / 2) - centerWidth / 2,
-                alignment: alignmentValue(configuration.centerAlignment),
-                placements: &placements
-            )
-
-            let belowNotchStart = max(
-                origin.y + notchHeight,
-                leadingTop.end,
-                centerTop.end,
-                trailingTop.end
-            )
-
-            let leadingBelow = layout(
-                leadingPartition.deferred,
-                startingAt: belowNotchStart + spacing(
-                    from: leadingPartition.adjacent.last,
-                    to: leadingPartition.deferred.first
-                ),
-                availableWidth: width,
-                horizontalOrigin: origin.x,
-                alignment: 0,
-                placements: &placements
-            )
-            let trailingBelow = layout(
-                trailingPartition.deferred,
-                startingAt: belowNotchStart + spacing(
-                    from: trailingPartition.adjacent.last,
-                    to: trailingPartition.deferred.first
-                ),
-                availableWidth: width,
-                horizontalOrigin: origin.x,
-                alignment: 1,
-                placements: &placements
-            )
-            let belowNotchEnd = max(
-                belowNotchStart,
-                leadingBelow.end,
-                trailingBelow.end
-            )
-
-            var bottomStart = max(
-                leadingTop.end,
-                centerTop.end,
-                trailingTop.end,
-                belowNotchEnd
-            )
-            if let firstBottom = bottomIndices.first {
-                let candidates = [
-                    leadingPartition.adjacent.last,
-                    centerIndices.last,
-                    trailingPartition.adjacent.last,
-                    leadingPartition.deferred.last,
-                    trailingPartition.deferred.last,
-                ]
-                let bottomSpacing = candidates.compactMap { previous in
-                    previous.map { spacing(from: $0, to: firstBottom) }
-                }.max() ?? 0
-                bottomStart += bottomSpacing
-            }
-
-            let bottom = layout(
-                bottomIndices,
-                startingAt: bottomStart,
-                availableWidth: width,
-                horizontalOrigin: origin.x,
-                alignment: alignmentValue(configuration.bottomAlignment),
-                placements: &placements
-            )
-
-            let end = max(
-                origin.y + notchHeight,
-                leadingTop.end,
-                centerTop.end,
-                trailingTop.end,
-                belowNotchEnd,
-                bottom.end
-            )
-            return Result(
-                size: CGSize(width: width, height: finiteNonnegative(end - origin.y)),
-                placements: placements
-            )
-        }
-
-        private func maximumWidth(
-            of indices: [Int],
-            proposedWidth: CGFloat?
-        ) -> CGFloat {
-            indices.reduce(0) { result, index in
-                let margins = contentMargins(for: index)
-                let childWidth = proposedWidth.map {
-                    finiteNonnegative($0 - margins.leading - margins.trailing)
+                    return
                 }
-                let size = sanitized(
-                    subviews[index].sizeThatFits(
-                        ProposedViewSize(width: childWidth, height: nil)
-                    )
+
+                groups[groupIndex] = Group(
+                    count: remainingCount,
+                    proposed: remainingBefore
                 )
-                return max(result, size.width + margins.leading + margins.trailing)
+                groups.insert(
+                    Group(
+                        count: group.count - remainingCount,
+                        proposed: group.proposed.map {
+                            max($0 - remainingBefore, 0)
+                        }
+                    ),
+                    at: groupIndex + 1
+                )
+                return
             }
         }
+    }
 
-        private func resolvedHorizontalSizing() -> HorizontalSizing {
-            if trailingIndices.isEmpty {
-                return .leading
-            }
-            if leadingIndices.isEmpty {
-                return .trailing
-            }
-            guard configuration.horizontalSizing == .automatic else {
-                return configuration.horizontalSizing
-            }
+    private struct StackHeader {
+        let indices: [Int]
 
-            let leadingPriority = maximumJindoPriority(in: leadingIndices + bottomIndices) ?? 0
-            let trailingPriority = maximumJindoPriority(in: trailingIndices + bottomIndices) ?? 0
-            if leadingPriority > trailingPriority {
-                return .leading
-            } else if trailingPriority > leadingPriority {
-                return .trailing
+        let topPrefix: Int
+
+        let reservedSpacing: (top: CGFloat, bottom: CGFloat)
+
+        var uniformSpacing: CGFloat?
+
+        var accumulatedInternalSpacing: [CGFloat]
+
+        var totalInternalSpacing: CGFloat
+
+        mutating func computeSpacingAndPadding(
+            stack: Stack,
+            layoutMargins: EdgeInsets,
+            horizontalFullWidth: Bool,
+            proxies: LayoutSubviews,
+            children: inout [Child]
+        ) {
+            accumulatedInternalSpacing.reserveCapacity(indices.count)
+
+            let baseEdges: Edge.Set
+            if horizontalFullWidth {
+                baseEdges = .horizontal
+            } else if stack == .leading {
+                baseEdges = .leading
+            } else if stack == .trailing {
+                baseEdges = .trailing
             } else {
-                return .split
-            }
-        }
-
-        private func maximumJindoPriority(in indices: [Int]) -> Double? {
-            indices.compactMap { subviews[$0][PriorityKey.self] }.max()
-        }
-
-        private func sideWidths(
-            totalWidth: CGFloat,
-            centerWidth: CGFloat,
-            sizing: HorizontalSizing
-        ) -> (leading: CGFloat, trailing: CGFloat) {
-            if trailingIndices.isEmpty {
-                return (totalWidth, 0)
-            }
-            if leadingIndices.isEmpty {
-                return (0, totalWidth)
+                baseEdges = []
             }
 
-            let remaining = finiteNonnegative(totalWidth - centerWidth)
-            let leadingMinimum = minimumSideWidth(of: leadingIndices)
-            let trailingMinimum = minimumSideWidth(of: trailingIndices)
-            if sizing == .leading {
-                let trailing = min(remaining, trailingMinimum)
-                return (remaining - trailing, trailing)
-            }
-            if sizing == .trailing {
-                let leading = min(remaining, leadingMinimum)
-                return (leading, remaining - leading)
-            }
-            return (remaining / 2, remaining / 2)
-        }
-
-        private func minimumSideWidth(of indices: [Int]) -> CGFloat {
-            indices.reduce(0) { result, index in
-                guard subviews[index][VerticalPlacementKey.self] == .default else {
-                    return result
-                }
-                let margins = contentMargins(for: index)
-                let size = sanitized(
-                    subviews[index].sizeThatFits(
-                        ProposedViewSize(width: 0, height: nil)
-                    )
-                )
-                return max(result, size.width + margins.leading + margins.trailing)
-            }
-        }
-
-        private func partition(
-            _ indices: [Int],
-            sideLimit: CGFloat,
-            allocatedWidth: CGFloat
-        ) -> (adjacent: [Int], deferred: [Int]) {
-            var adjacent: [Int] = []
-            var deferred: [Int] = []
-            let availableWidth = min(sideLimit, allocatedWidth)
-            for index in indices {
-                let placement = subviews[index][VerticalPlacementKey.self]
-                let margins = contentMargins(for: index)
-                let idealSize = sanitized(subviews[index].sizeThatFits(.unspecified))
-                if placement == .belowNotchIfTooWide,
-                   idealSize.width + margins.leading + margins.trailing > availableWidth {
-                    deferred.append(index)
+            var previousIndex = 0
+            for (offset, index) in indices.enumerated() {
+                let distance: CGFloat
+                if offset == 0 {
+                    distance = 0
                 } else {
-                    adjacent.append(index)
+                    distance = uniformSpacing ?? proxies[previousIndex].spacing.distance(
+                        to: proxies[index].spacing,
+                        along: .vertical
+                    )
+                }
+                totalInternalSpacing += distance
+                accumulatedInternalSpacing.append(totalInternalSpacing)
+                children[index].distanceToPrevious[stack] = distance
+
+                if let margins = proxies[index][ContentMarginsKey.self] {
+                    var edges = baseEdges
+                    if offset == 0 {
+                        edges.insert(.top)
+                    }
+                    if offset == indices.count - 1 {
+                        edges.insert(.bottom)
+                    }
+                    children[index].padding = EdgeInsets(
+                        top: (margins.top ?? layoutMargins.top) - layoutMargins.top,
+                        leading: (margins.leading ?? layoutMargins.leading) - layoutMargins.leading,
+                        bottom: (margins.bottom ?? layoutMargins.bottom) - layoutMargins.bottom,
+                        trailing: (margins.trailing ?? layoutMargins.trailing) - layoutMargins.trailing
+                    )
+                    children[index].paddingEdges = edges
+                }
+                previousIndex = index
+            }
+        }
+
+        func majorAxisGroup(for proposal: CGFloat?) -> MajorAxisGroup {
+            MajorAxisGroup(
+                count: indices.count,
+                reserved: (
+                    before: reservedSpacing.top,
+                    after: reservedSpacing.bottom
+                ),
+                groups: [
+                    MajorAxisGroup.Group(
+                        count: indices.count,
+                        proposed: proposal.map {
+                            $0 - reservedSpacing.top - reservedSpacing.bottom
+                        }
+                    ),
+                ]
+            )
+        }
+    }
+
+    private struct StackIndexedStorage<A> {
+        var leading: A
+
+        var center: A
+
+        var trailing: A
+
+        subscript(stack: Stack) -> A {
+            get {
+                switch stack {
+                case .leading: leading
+                case .center: center
+                case .trailing: trailing
                 }
             }
-            return (adjacent, deferred)
+            set {
+                switch stack {
+                case .leading: leading = newValue
+                case .center: center = newValue
+                case .trailing: trailing = newValue
+                }
+            }
+        }
+    }
+
+    fileprivate struct FixedProposal: Equatable {
+        var width: CGFloat
+
+        var height: CGFloat?
+    }
+
+    private struct Child {
+        var layoutPriority: Double
+
+        var majorAxisRangeCache: MajorAxisRangeCache
+
+        var distanceToPrevious: StackIndexedStorage<CGFloat?>
+
+        var majorAxisGroup: StackIndexedStorage<Int?>
+
+        var geometry: ViewGeometry
+
+        var width: CGFloat?
+
+        var hasBeenReduced: Bool
+
+        var padding: EdgeInsets
+
+        var paddingEdges: Edge.Set
+
+        mutating func reduceWidth(to width: CGFloat, edge: Edge.Set) {
+            self.width = width
+            majorAxisRangeCache = MajorAxisRangeCache()
+            hasBeenReduced = true
+            paddingEdges.remove(.leading)
+            paddingEdges.remove(.trailing)
+            paddingEdges.insert(edge)
+        }
+    }
+
+    private enum Stack: UInt8, CaseIterable {
+        case leading
+        case center
+        case trailing
+    }
+
+    private struct MajorAxisRangeCache {
+        var min: CGFloat?
+
+        var max: CGFloat?
+
+        mutating func getMin(_ makeValue: () -> CGFloat) -> CGFloat {
+            guard let min else {
+                let min = makeValue()
+                self.min = min
+                return min
+            }
+            return min
         }
 
-        private func layout(
-            _ indices: [Int],
-            startingAt start: CGFloat,
-            availableWidth: CGFloat,
-            horizontalOrigin: CGFloat,
-            alignment: CGFloat,
-            placements: inout [Placement]
-        ) -> StackResult {
-            guard !indices.isEmpty else {
-                return StackResult(end: start)
+        mutating func getMax(_ makeValue: () -> CGFloat) -> CGFloat {
+            guard let max else {
+                let max = makeValue()
+                self.max = max
+                return max
+            }
+            return max
+        }
+    }
+
+    private struct ProposedMetrics {
+        let leadingWidth: CGFloat
+
+        let trailingWidth: CGFloat
+
+        let centerWidth: CGFloat
+
+        let fullWidth: CGFloat
+
+        let leadingAvailableWidth: CGFloat
+
+        let trailingAvailableWidth: CGFloat
+
+        init(
+            stacks: StackIndexedStorage<StackHeader>,
+            notchSize: CGSize,
+            centerWidth: CGFloat,
+            horizontalSizing: HorizontalSizing,
+            fullWidth: Bool,
+            leadingCenterSpacing: CGFloat,
+            trailingCenterSpacing: CGFloat,
+            leadingTrailingSpacing: CGFloat,
+            proposal: FixedProposal
+        ) {
+            _ = stacks
+
+            let minimumCenterWidth = notchSize.width - 2 * max(
+                leadingCenterSpacing,
+                trailingCenterSpacing
+            )
+            let centerWidth = max(centerWidth, minimumCenterWidth)
+            let halfRemainder = (proposal.width - centerWidth) / 2
+            let leadingAvailableWidth = max(
+                0,
+                halfRemainder - leadingCenterSpacing
+            )
+            let trailingAvailableWidth = max(
+                0,
+                halfRemainder - trailingCenterSpacing
+            )
+            let availableWidth = max(
+                0,
+                proposal.width - (fullWidth ? 0 : leadingTrailingSpacing)
+            )
+
+            let leadingWidth: CGFloat
+            let trailingWidth: CGFloat
+            if fullWidth {
+                if horizontalSizing == .leading {
+                    leadingWidth = availableWidth
+                    trailingWidth = 0
+                } else if horizontalSizing == .trailing {
+                    leadingWidth = 0
+                    trailingWidth = availableWidth
+                } else {
+                    leadingWidth = availableWidth / 2
+                    trailingWidth = availableWidth / 2
+                }
+            } else if horizontalSizing == .leading {
+                leadingWidth = max(0, availableWidth - trailingAvailableWidth)
+                trailingWidth = trailingAvailableWidth
+            } else if horizontalSizing == .trailing {
+                leadingWidth = leadingAvailableWidth
+                trailingWidth = max(0, availableWidth - leadingAvailableWidth)
+            } else {
+                leadingWidth = availableWidth / 2
+                trailingWidth = availableWidth / 2
             }
 
-            var currentY = start
-            var previous: Int?
-            for index in indices {
-                currentY += spacing(from: previous, to: index)
-                let margins = contentMargins(for: index)
-                let proposedWidth = finiteNonnegative(
-                    availableWidth - margins.leading - margins.trailing
-                )
-                let childProposal = ProposedViewSize(width: proposedWidth, height: nil)
-                let size = sanitized(subviews[index].sizeThatFits(childProposal))
-                let occupiedWidth = size.width + margins.leading + margins.trailing
-                let remaining = availableWidth - occupiedWidth
-                let x = horizontalOrigin
-                    + remaining * alignment
-                    + margins.leading
-                let y = currentY + margins.top
-                placements.append(
-                    Placement(
-                        index: index,
-                        origin: CGPoint(x: x, y: y),
-                        proposal: childProposal
+            self.leadingWidth = leadingWidth
+            self.trailingWidth = trailingWidth
+            self.centerWidth = centerWidth
+            self.fullWidth = max(0, proposal.width)
+            self.leadingAvailableWidth = leadingAvailableWidth
+            self.trailingAvailableWidth = trailingAvailableWidth
+        }
+    }
+
+    fileprivate struct Implementation {
+        private var header: Header
+
+        private var children: [Child]
+
+        private var fittingOrder: [Int]
+
+        fileprivate init(configuration: Configuration, proxies: LayoutSubviews) {
+            func indices(in region: Position.Region) -> [Int] {
+                proxies.indices.filter {
+                    proxies[$0][PositionKey.self].region == region
+                }
+            }
+
+            let leadingIndices = indices(in: .leading)
+            let centerIndices = indices(in: .center)
+            let trailingIndices = indices(in: .trailing)
+            let bottomIndices = indices(in: .bottom)
+            _ = indices(in: .notch)
+            let notchIndex = indices(in: .notch).first
+
+            header = Header(
+                configuration: configuration,
+                notchIndex: notchIndex,
+                proxies: proxies,
+                lastProposedSize: FixedProposal(
+                    width: -.infinity,
+                    height: -.infinity
+                ),
+                stackSize: .zero,
+                stacks: StackIndexedStorage(
+                    leading: StackHeader(
+                        indices: leadingIndices + bottomIndices,
+                        topPrefix: leadingIndices.count,
+                        reservedSpacing: (top: 0, bottom: 0),
+                        uniformSpacing: configuration.uniformSpacing,
+                        accumulatedInternalSpacing: [],
+                        totalInternalSpacing: 0
+                    ),
+                    center: StackHeader(
+                        indices: centerIndices + bottomIndices,
+                        topPrefix: centerIndices.count,
+                        reservedSpacing: (
+                            top: configuration.notchSize.height - configuration.layoutMargins.top,
+                            bottom: 0
+                        ),
+                        uniformSpacing: configuration.uniformSpacing,
+                        accumulatedInternalSpacing: [],
+                        totalInternalSpacing: 0
+                    ),
+                    trailing: StackHeader(
+                        indices: trailingIndices + bottomIndices,
+                        topPrefix: trailingIndices.count,
+                        reservedSpacing: (top: 0, bottom: 0),
+                        uniformSpacing: configuration.uniformSpacing,
+                        accumulatedInternalSpacing: [],
+                        totalInternalSpacing: 0
+                    )
+                ),
+                horizontalSizing: .split,
+                horizontalFullWidth: false
+            )
+            children = []
+            fittingOrder = []
+
+            determineHorizontalMode()
+            makeChildren()
+        }
+
+        fileprivate mutating func sizeThatFits(in proposal: FixedProposal) -> CGSize {
+            if header.lastProposedSize != proposal {
+                header.lastProposedSize = proposal
+                header.stackSize = sizeAndPlaceChildren(in: proposal, bounds: nil)
+            }
+            return header.stackSize
+        }
+
+        fileprivate mutating func placeSubviews(
+            in bounds: CGRect,
+            proposal: FixedProposal
+        ) {
+            header.lastProposedSize = proposal
+            header.stackSize = sizeAndPlaceChildren(in: proposal, bounds: bounds)
+        }
+
+        private mutating func determineHorizontalMode() {
+            let configuredSizing = header.configuration.horizontalSizing
+            let horizontalSizing: HorizontalSizing
+            if configuredSizing == .automatic {
+                let leadingPriority = header.stacks.leading.indices
+                    .prefix(header.stacks.leading.topPrefix)
+                    .compactMap { header.proxies[$0][PriorityKey.self] }
+                    .max() ?? 0
+                let trailingPriority = header.stacks.trailing.indices
+                    .prefix(header.stacks.trailing.topPrefix)
+                    .compactMap { header.proxies[$0][PriorityKey.self] }
+                    .max() ?? 0
+
+                if leadingPriority > trailingPriority {
+                    horizontalSizing = .leading
+                } else if leadingPriority < trailingPriority {
+                    horizontalSizing = .trailing
+                } else {
+                    horizontalSizing = .split
+                }
+            } else {
+                horizontalSizing = configuredSizing
+            }
+
+            if header.stacks.trailing.topPrefix == 0 {
+                header.horizontalSizing = .leading
+                header.horizontalFullWidth = true
+            } else if header.stacks.leading.topPrefix == 0 {
+                header.horizontalSizing = .trailing
+                header.horizontalFullWidth = true
+            } else {
+                header.horizontalSizing = horizontalSizing
+                header.horizontalFullWidth = false
+            }
+        }
+
+        private mutating func makeChildren() {
+            children.reserveCapacity(header.proxies.count)
+            fittingOrder.reserveCapacity(header.proxies.count)
+
+            for index in header.proxies.indices {
+                children.append(
+                    Child(
+                        layoutPriority: header.proxies[index].priority,
+                        majorAxisRangeCache: MajorAxisRangeCache(),
+                        distanceToPrevious: StackIndexedStorage(
+                            leading: nil,
+                            center: nil,
+                            trailing: nil
+                        ),
+                        majorAxisGroup: StackIndexedStorage(
+                            leading: nil,
+                            center: nil,
+                            trailing: nil
+                        ),
+                        geometry: .invalidValue,
+                        width: nil,
+                        hasBeenReduced: false,
+                        padding: EdgeInsets(),
+                        paddingEdges: []
                     )
                 )
-                currentY += margins.top + size.height + margins.bottom
-                previous = index
+                fittingOrder.append(index)
             }
-            return StackResult(end: currentY)
+
+            for stack in Stack.allCases {
+                var stackHeader = header.stacks[stack]
+                stackHeader.computeSpacingAndPadding(
+                    stack: stack,
+                    layoutMargins: header.configuration.layoutMargins,
+                    horizontalFullWidth: header.horizontalFullWidth,
+                    proxies: header.proxies,
+                    children: &children
+                )
+                header.stacks[stack] = stackHeader
+            }
         }
 
-        private func spacing(from previous: Int?, to current: Int?) -> CGFloat {
-            guard let previous, let current else {
+        private mutating func sizeAndPlaceChildren(
+            in proposal: FixedProposal,
+            bounds: CGRect?
+        ) -> CGSize {
+            let leadingMinWidth = computeMinWidth(of: .leading, in: proposal)
+            let trailingMinWidth = computeMinWidth(of: .trailing, in: proposal)
+
+            let leadingSpacing = spacing(.leading, axis: .horizontal)
+            let trailingSpacing = spacing(.trailing, axis: .horizontal)
+            let centerSpacing = spacing(.center, axis: .horizontal)
+            let leadingCenterSpacing = leadingSpacing.distance(
+                to: centerSpacing,
+                along: .horizontal
+            )
+            let trailingCenterSpacing = trailingSpacing.distance(
+                to: centerSpacing,
+                along: .horizontal
+            )
+            let leadingTrailingSpacing = leadingSpacing.distance(
+                to: trailingSpacing,
+                along: .horizontal
+            )
+
+            let centerSpacingWidth = 2 * max(
+                leadingCenterSpacing,
+                trailingCenterSpacing
+            )
+            let minimumCenterWidth = header.configuration.notchSize.width
+                - centerSpacingWidth
+            let centerProposalWidth = max(
+                minimumCenterWidth,
+                proposal.width
+                    - 2 * max(leadingMinWidth, trailingMinWidth)
+                    - centerSpacingWidth
+            )
+            let centerWidth = header.stacks.center.indices
+                .prefix(header.stacks.center.topPrefix)
+                .map {
+                    header.proxies[$0].sizeThatFits(
+                        ProposedViewSize(
+                            width: centerProposalWidth,
+                            height: proposal.height
+                        )
+                    ).width
+                }
+                .max() ?? 0
+            let metrics = ProposedMetrics(
+                stacks: header.stacks,
+                notchSize: header.configuration.notchSize,
+                centerWidth: centerWidth,
+                horizontalSizing: header.horizontalSizing,
+                fullWidth: header.horizontalFullWidth,
+                leadingCenterSpacing: leadingCenterSpacing,
+                trailingCenterSpacing: trailingCenterSpacing,
+                leadingTrailingSpacing: leadingTrailingSpacing,
+                proposal: proposal
+            )
+
+            for index in header.stacks.leading.indices
+                .prefix(header.stacks.leading.topPrefix)
+            {
+                children[index].width = metrics.leadingWidth
+            }
+            for index in header.stacks.center.indices
+                .prefix(header.stacks.center.topPrefix)
+            {
+                children[index].width = metrics.centerWidth
+            }
+            for index in header.stacks.trailing.indices
+                .prefix(header.stacks.trailing.topPrefix)
+            {
+                children[index].width = metrics.trailingWidth
+            }
+            for index in header.stacks.leading.indices
+                .dropFirst(header.stacks.leading.topPrefix)
+            {
+                children[index].width = metrics.fullWidth
+            }
+
+            prioritizeAndSizeChildren(in: proposal, resetCache: true)
+            equalizeHeightOfLeadingAndTrailing(in: proposal)
+
+            var remainingResizePasses = max(
+                header.stacks.leading.topPrefix,
+                header.stacks.trailing.topPrefix
+            )
+            while remainingResizePasses > 0 {
+                guard resizeChildrenAdjacentToNotch(
+                    in: proposal,
+                    metrics: metrics
+                ) else {
+                    break
+                }
+                prioritizeAndSizeChildren(in: proposal, resetCache: false)
+                equalizeHeightOfLeadingAndTrailing(in: proposal)
+                remainingResizePasses -= 1
+            }
+
+            pushBelowNotchIfNeeded(in: proposal, metrics: metrics)
+
+            if let bounds {
+                place(
+                    indices: header.stacks.leading.indices
+                        .prefix(header.stacks.leading.topPrefix),
+                    of: .leading,
+                    minorAxisAnchor: 0,
+                    bounds: bounds
+                )
+                place(
+                    indices: header.stacks.trailing.indices
+                        .prefix(header.stacks.trailing.topPrefix),
+                    of: .trailing,
+                    minorAxisAnchor: 1,
+                    bounds: bounds
+                )
+
+                let centerBounds = CGRect(
+                    x: bounds.midX - header.configuration.notchSize.width / 2,
+                    y: bounds.minY,
+                    width: header.configuration.notchSize.width,
+                    height: bounds.height
+                )
+                place(
+                    indices: header.stacks.center.indices
+                        .prefix(header.stacks.center.topPrefix),
+                    of: .center,
+                    minorAxisAnchor: header.configuration.centerAlignment.value,
+                    bounds: centerBounds
+                )
+                place(
+                    indices: header.stacks.leading.indices
+                        .suffix(from: header.stacks.leading.topPrefix),
+                    of: .leading,
+                    minorAxisAnchor: header.configuration.bottomAlignment.value,
+                    bounds: bounds
+                )
+
+                if let notchIndex = header.notchIndex {
+                    var notchChild = children[notchIndex]
+                    resize(
+                        &notchChild,
+                        proposal: ProposedViewSize(
+                            width: header.configuration.notchSize.width,
+                            height: header.configuration.notchSize.height
+                        ),
+                        proxy: header.proxies[notchIndex]
+                    )
+                    children[notchIndex] = notchChild
+                    var geometry = notchChild.geometry
+                    geometry.origin.x = bounds.midX - geometry.dimensions.width / 2
+                    geometry.origin.y = bounds.minY
+                        - header.configuration.layoutMargins.top
+                    header.proxies[notchIndex].place(
+                        in: geometry,
+                        layoutDirection: header.proxies.layoutDirection
+                    )
+                }
+            }
+
+            return header.stackSize
+        }
+
+        private func resize(
+            _ child: inout Child,
+            proposal: ProposedViewSize,
+            proxy: LayoutSubview
+        ) {
+            let padding = child.padding.in(child.paddingEdges)
+            let childProposal = ProposedViewSize(
+                width: proposal.width.map { $0 - padding.horizontal },
+                height: proposal.height.map { $0 - padding.vertical }
+            )
+            var dimensions = proxy.dimensions(in: childProposal)
+            dimensions.size.width += padding.horizontal
+            dimensions.size.height += padding.vertical
+            child.geometry = ViewGeometry(origin: .zero, dimensions: dimensions)
+        }
+
+        private mutating func prioritize(resetCache: Bool) {
+            guard !fittingOrder.isEmpty else {
+                return
+            }
+
+            if resetCache {
+                for index in children.indices {
+                    children[index].majorAxisRangeCache = MajorAxisRangeCache()
+                }
+            }
+
+            var order = fittingOrder
+            func areInDecreasingFittingPriority(_ index0: Int, _ index1: Int) -> Bool {
+                let priority0 = children[index0].layoutPriority
+                let priority1 = children[index1].layoutPriority
+                guard priority0 == priority1 else {
+                    return priority0 > priority1
+                }
+
+                let width0 = children[index0].width
+                let min0 = children[index0].majorAxisRangeCache.getMin {
+                    header.proxies[index0].lengthThatFits(
+                        ProposedViewSize(0, in: .vertical, by: width0),
+                        in: .vertical
+                    )
+                }
+                let max0 = children[index0].majorAxisRangeCache.getMax {
+                    header.proxies[index0].lengthThatFits(
+                        ProposedViewSize(.infinity, in: .vertical, by: width0),
+                        in: .vertical
+                    )
+                }
+                let width1 = children[index1].width
+                let min1 = children[index1].majorAxisRangeCache.getMin {
+                    header.proxies[index1].lengthThatFits(
+                        ProposedViewSize(0, in: .vertical, by: width1),
+                        in: .vertical
+                    )
+                }
+                let max1 = children[index1].majorAxisRangeCache.getMax {
+                    header.proxies[index1].lengthThatFits(
+                        ProposedViewSize(.infinity, in: .vertical, by: width1),
+                        in: .vertical
+                    )
+                }
+                let estimate0 = _LayoutTraits.FlexibilityEstimate(
+                    minLength: min0,
+                    maxLength: max0
+                )
+                let estimate1 = _LayoutTraits.FlexibilityEstimate(
+                    minLength: min1,
+                    maxLength: max1
+                )
+                return estimate0 < estimate1
+            }
+
+            if order.count <= 32 {
+                order.insertionSort(by: areInDecreasingFittingPriority)
+            } else {
+                order.sort(by: areInDecreasingFittingPriority)
+            }
+            fittingOrder = order
+
+            let firstPriority = children[fittingOrder[0]].layoutPriority
+            for orderIndex in fittingOrder.indices.reversed() {
+                let childIndex = fittingOrder[orderIndex]
+                guard children[childIndex].layoutPriority != firstPriority else {
+                    break
+                }
+                guard children[childIndex].majorAxisRangeCache.min == nil else {
+                    continue
+                }
+                children[childIndex].majorAxisRangeCache.min =
+                    header.proxies[childIndex].lengthThatFits(
+                        ProposedViewSize(
+                            0,
+                            in: .vertical,
+                            by: children[childIndex].width
+                        ),
+                        in: .vertical
+                    )
+            }
+        }
+
+        private func spacing(_ stack: Stack, axis: Axis) -> ViewSpacing {
+            let direction = header.proxies.layoutDirection
+            let stackHeader = header.stacks[stack]
+            guard !stackHeader.indices.isEmpty else {
+                return ViewSpacing(.zero, layoutDirection: direction)
+            }
+            var spacing = ViewSpacing(
+                Spacing(minima: [:]),
+                layoutDirection: direction
+            )
+            for (offset, index) in stackHeader.indices.enumerated() {
+                var edges: Edge.Set = axis == .horizontal ? .vertical : .horizontal
+                if offset == 0 {
+                    edges.insert(axis == .horizontal ? .leading : .top)
+                }
+                if offset == stackHeader.indices.count - 1 {
+                    edges.insert(axis == .horizontal ? .trailing : .bottom)
+                }
+                spacing.formUnion(header.proxies[index].spacing, edges: edges)
+            }
+            return spacing
+        }
+
+        private func computeMinWidth(
+            of stack: Stack,
+            in proposal: FixedProposal
+        ) -> CGFloat {
+            let stackHeader = header.stacks[stack]
+            return stackHeader.indices
+                .prefix(stackHeader.topPrefix)
+                .lazy
+                .filter {
+                    header.proxies[$0][VerticalPlacementKey.self]
+                        != .belowNotchIfTooWide
+                }
+                .map {
+                    header.proxies[$0].sizeThatFits(
+                        ProposedViewSize(width: 0, height: proposal.height)
+                    ).width
+                }
+                .max() ?? 0
+        }
+
+        private mutating func prioritizeAndSizeChildren(
+            in proposal: FixedProposal,
+            resetCache: Bool
+        ) {
+            prioritize(resetCache: resetCache)
+            resize(
+                in: proposal,
+                groups: StackIndexedStorage(
+                    leading: header.stacks.leading.majorAxisGroup(for: proposal.height),
+                    center: header.stacks.center.majorAxisGroup(for: proposal.height),
+                    trailing: header.stacks.trailing.majorAxisGroup(for: proposal.height)
+                )
+            )
+        }
+
+        private mutating func equalizeHeightOfLeadingAndTrailing(
+            in proposal: FixedProposal
+        ) {
+            equalizeHeightOfLeadingAndTrailing(
+                in: proposal,
+                leading: header.stacks.leading.majorAxisGroup(for: proposal.height),
+                trailing: header.stacks.trailing.majorAxisGroup(for: proposal.height)
+            )
+        }
+
+        private mutating func pushBelowNotchIfNeeded(
+            in proposal: FixedProposal,
+            metrics: ProposedMetrics
+        ) {
+            let centerHeight = bottomOf(
+                previousChild: header.stacks.center.topPrefix,
+                in: .center,
+                includeSpacing: false
+            )
+            let leadingIndex = indexToPushBelowNotch(
+                in: .leading,
+                availableWidth: metrics.leadingAvailableWidth,
+                centerHeight: centerHeight
+            )
+            let trailingIndex = indexToPushBelowNotch(
+                in: .trailing,
+                availableWidth: metrics.trailingAvailableWidth,
+                centerHeight: centerHeight
+            )
+            guard leadingIndex != nil || trailingIndex != nil else {
+                return
+            }
+
+            var leading = header.stacks.leading.majorAxisGroup(for: proposal.height)
+            var trailing = header.stacks.trailing.majorAxisGroup(for: proposal.height)
+            if let leadingIndex {
+                leading.updateWithSplit(
+                    at: leadingIndex,
+                    before: centerHeight
+                        + distanceToCenterBottom(from: leadingIndex, stack: .leading)
+                        - distanceToPrevious(leadingIndex, stack: .leading)
+                )
+            }
+            if let trailingIndex {
+                trailing.updateWithSplit(
+                    at: trailingIndex,
+                    before: centerHeight
+                        + distanceToCenterBottom(from: trailingIndex, stack: .trailing)
+                        - distanceToPrevious(trailingIndex, stack: .trailing)
+                )
+            }
+
+            resize(
+                in: proposal,
+                groups: StackIndexedStorage(
+                    leading: leading,
+                    center: header.stacks.center.majorAxisGroup(for: proposal.height),
+                    trailing: trailing
+                )
+            )
+            equalizeHeightOfLeadingAndTrailing(
+                in: proposal,
+                leading: leading,
+                trailing: trailing
+            )
+        }
+
+        private mutating func equalizeHeightOfLeadingAndTrailing(
+            in proposal: FixedProposal,
+            leading: MajorAxisGroup,
+            trailing: MajorAxisGroup
+        ) {
+            let leadingPrefix = header.stacks.leading.topPrefix
+            let trailingPrefix = header.stacks.trailing.topPrefix
+            let leadingBottom = bottomOf(
+                previousChild: leadingPrefix,
+                in: .leading,
+                includeSpacing: true
+            )
+            let trailingBottom = bottomOf(
+                previousChild: trailingPrefix,
+                in: .trailing,
+                includeSpacing: true
+            )
+            guard leadingBottom != trailingBottom else {
+                return
+            }
+
+            let bottom = max(leadingBottom, trailingBottom)
+            var leading = leading
+            var trailing = trailing
+            leading.updateWithSplit(
+                at: leadingPrefix,
+                before: bottom - distanceToPrevious(leadingPrefix, stack: .leading)
+            )
+            trailing.updateWithSplit(
+                at: trailingPrefix,
+                before: bottom - distanceToPrevious(trailingPrefix, stack: .trailing)
+            )
+            resize(
+                in: proposal,
+                groups: StackIndexedStorage(
+                    leading: leading,
+                    center: header.stacks.center.majorAxisGroup(for: proposal.height),
+                    trailing: trailing
+                )
+            )
+        }
+
+        private func bottomOf(
+            previousChild: Int,
+            in stack: Stack,
+            includeSpacing: Bool
+        ) -> CGFloat {
+            let stackHeader = header.stacks[stack]
+            guard !stackHeader.indices.isEmpty, previousChild != 0 else {
+                return stackHeader.reservedSpacing.top
+            }
+
+            let previousIndex = stackHeader.indices[previousChild - 1]
+            let previous = children[previousIndex]
+            var bottom = previous.geometry.origin.y + previous.geometry.dimensions.height
+            if includeSpacing, previousChild < stackHeader.indices.count {
+                bottom += children[stackHeader.indices[previousChild]]
+                    .distanceToPrevious[stack]!
+            }
+            return bottom
+        }
+
+        private func distanceToPrevious(_ offset: Int, stack: Stack) -> CGFloat {
+            let stackHeader = header.stacks[stack]
+            guard stackHeader.indices.count > offset else {
                 return 0
             }
-            if let uniformSpacing = configuration.uniformSpacing {
-                return uniformSpacing
+            return children[stackHeader.indices[offset]].distanceToPrevious[stack]!
+        }
+
+        private mutating func resize(
+            in proposal: FixedProposal,
+            groups: StackIndexedStorage<MajorAxisGroup>
+        ) {
+            var states = prepareChildren(with: groups)
+
+            var batchStart = fittingOrder.startIndex
+            while batchStart != fittingOrder.endIndex {
+                let priority = children[fittingOrder[batchStart]].layoutPriority
+                var batchEnd = fittingOrder.index(after: batchStart)
+                while batchEnd != fittingOrder.endIndex,
+                      children[fittingOrder[batchEnd]].layoutPriority == priority
+                {
+                    batchEnd = fittingOrder.index(after: batchEnd)
+                }
+
+                let adjustmentIndices: Range<Int>
+                let subtractMinimum: Bool
+                if batchStart == fittingOrder.startIndex {
+                    adjustmentIndices = batchEnd ..< fittingOrder.endIndex
+                    subtractMinimum = true
+                } else {
+                    adjustmentIndices = batchStart ..< batchEnd
+                    subtractMinimum = false
+                }
+                for orderIndex in adjustmentIndices {
+                    let childIndex = fittingOrder[orderIndex]
+                    let minimum = children[childIndex].majorAxisRangeCache.min!
+                    for stack in Stack.allCases {
+                        guard let stateIndex = children[childIndex].majorAxisGroup[stack]
+                        else {
+                            continue
+                        }
+                        states[stateIndex].totalAvailable = states[stateIndex]
+                            .totalAvailable.map {
+                                subtractMinimum ? $0 - minimum : $0 + minimum
+                            }
+                    }
+                }
+
+                for stateIndex in states.indices {
+                    states[stateIndex].unsizedCount = 0
+                }
+                for orderIndex in batchStart ..< batchEnd {
+                    let childIndex = fittingOrder[orderIndex]
+                    for stack in Stack.allCases {
+                        if let stateIndex = children[childIndex].majorAxisGroup[stack] {
+                            states[stateIndex].unsizedCount += 1
+                        }
+                    }
+                }
+
+                for orderIndex in batchStart ..< batchEnd {
+                    let childIndex = fittingOrder[orderIndex]
+                    var availableShares: [CGFloat] = []
+                    for stack in Stack.allCases {
+                        guard let stateIndex = children[childIndex].majorAxisGroup[stack],
+                              let totalAvailable = states[stateIndex].totalAvailable
+                        else {
+                            continue
+                        }
+                        availableShares.append(
+                            max(
+                                totalAvailable / CGFloat(states[stateIndex].unsizedCount),
+                                0
+                            )
+                        )
+                    }
+
+                    let childProposal = ProposedViewSize(
+                        availableShares.min(),
+                        in: .vertical,
+                        by: children[childIndex].width
+                    )
+                    var child = children[childIndex]
+                    resize(
+                        &child,
+                        proposal: childProposal,
+                        proxy: header.proxies[childIndex]
+                    )
+                    children[childIndex] = child
+                    let height = child.geometry.dimensions.height
+                    let consumedHeight = height.isNaN ? 0 : height
+                    for stack in Stack.allCases {
+                        if let stateIndex = children[childIndex].majorAxisGroup[stack] {
+                            states[stateIndex].consume(consumedHeight)
+                        }
+                    }
+                }
+
+                batchStart = batchEnd
             }
-            return subviews[previous].spacing.distance(
-                to: subviews[current].spacing,
+
+            var stackExtents = StackIndexedStorage<CGFloat>(
+                leading: 0,
+                center: 0,
+                trailing: 0
+            )
+            var sharedTopPrefixPosition: CGFloat = 0
+            for stateIndex in states.indices {
+                var state = states[stateIndex]
+                let stack = state.stack
+                let stackHeader = header.stacks[stack]
+                state.currentMajorAxisPosition = stackExtents[stack]
+                if state.range.lowerBound == stackHeader.topPrefix {
+                    sharedTopPrefixPosition = max(
+                        sharedTopPrefixPosition,
+                        stackExtents[stack]
+                            + distanceToPrevious(state.range.lowerBound, stack: stack)
+                    )
+                }
+
+                var layoutHeight: CGFloat = 0
+                for offset in state.range {
+                    let childIndex = stackHeader.indices[offset]
+                    layoutHeight += children[childIndex].distanceToPrevious[stack]!
+                    layoutHeight += children[childIndex].geometry.dimensions.height
+                }
+                state.layoutHeight = layoutHeight
+                stackExtents[stack] += max(state.minHeight ?? 0, layoutHeight)
+                states[stateIndex] = state
+            }
+
+            var adjustedExtents = StackIndexedStorage<CGFloat>(
+                leading: 0,
+                center: 0,
+                trailing: 0
+            )
+            for stateIndex in states.indices {
+                var state = states[stateIndex]
+                let stack = state.stack
+                let stackHeader = header.stacks[stack]
+                if state.range.lowerBound == stackHeader.topPrefix {
+                    let firstSpacing: CGFloat
+                    if stackHeader.topPrefix < stackHeader.indices.count {
+                        firstSpacing = children[stackHeader.indices[stackHeader.topPrefix]]
+                            .distanceToPrevious[stack]!
+                    } else {
+                        firstSpacing = 0
+                    }
+                    adjustedExtents[stack] = sharedTopPrefixPosition - firstSpacing
+                }
+                state.currentMajorAxisPosition = adjustedExtents[stack]
+                adjustedExtents[stack] += max(
+                    state.minHeight ?? 0,
+                    state.layoutHeight
+                )
+                states[stateIndex] = state
+            }
+
+            var resultHeight: CGFloat = 0
+            let order = placementOrder
+            for childIndex in order {
+                guard header.notchIndex != childIndex else {
+                    continue
+                }
+
+                var positions: [CGFloat] = []
+                for stack in Stack.allCases {
+                    guard let stateIndex = children[childIndex].majorAxisGroup[stack]
+                    else {
+                        continue
+                    }
+                    positions.append(
+                        children[childIndex].distanceToPrevious[stack]!
+                            + states[stateIndex].currentMajorAxisPosition
+                    )
+                }
+                let position = positions.max() ?? 0
+                children[childIndex].geometry.origin.y = position
+                let bottom = position + children[childIndex].geometry.dimensions.height
+                for stack in Stack.allCases {
+                    if let stateIndex = children[childIndex].majorAxisGroup[stack] {
+                        states[stateIndex].currentMajorAxisPosition = bottom
+                    }
+                }
+                resultHeight = max(resultHeight, bottom)
+            }
+
+            header.stackSize = CGSize(width: proposal.width, height: resultHeight)
+        }
+
+        private mutating func prepareChildren(
+            with groups: StackIndexedStorage<MajorAxisGroup>
+        ) -> [MajorAxisGroupState] {
+            var result: [MajorAxisGroupState] = []
+            result.reserveCapacity(9)
+
+            for stack in Stack.allCases {
+                var start = 0
+                for group in groups[stack].allGroups {
+                    let end = start + group.count
+                    let stateIndex = result.count
+                    for offset in start ..< end {
+                        let childIndex = header.stacks[stack].indices[offset]
+                        children[childIndex].majorAxisGroup[stack] = stateIndex
+                    }
+
+                    let totalAvailable = group.proposed.map { proposed in
+                        let internalSpacing: CGFloat
+                        if start == end {
+                            internalSpacing = 0
+                        } else {
+                            let accumulated = header.stacks[stack]
+                                .accumulatedInternalSpacing
+                            internalSpacing = accumulated[end - 1]
+                                - (start > 0 ? accumulated[start - 1] : 0)
+                        }
+                        return proposed - internalSpacing
+                    }
+                    result.append(
+                        MajorAxisGroupState(
+                            stack: stack,
+                            range: start ..< end,
+                            unsizedCount: 0,
+                            totalAvailable: totalAvailable,
+                            minHeight: group.proposed,
+                            layoutHeight: 0,
+                            currentMajorAxisPosition: 0
+                        )
+                    )
+                    start = end
+                }
+            }
+            return result
+        }
+
+        private func distanceToCenterBottom(from offset: Int, stack: Stack) -> CGFloat {
+            let centerHeader = header.stacks.center
+            guard let centerBottom = centerHeader.indices
+                .prefix(centerHeader.topPrefix)
+                .last
+            else {
+                return 0
+            }
+
+            let childIndex = header.stacks[stack].indices[offset]
+            return header.proxies[childIndex].spacing.distance(
+                to: header.proxies[centerBottom].spacing,
                 along: .vertical
             )
         }
 
-        private func contentMargins(for index: Int) -> EdgeInsets {
-            guard let margins = subviews[index][ContentMarginsKey.self] else {
-                return EdgeInsets()
-            }
-            let defaults = configuration.layoutMargins
-            return EdgeInsets(
-                top: (margins.top ?? defaults.top) - defaults.top,
-                leading: (margins.leading ?? defaults.leading) - defaults.leading,
-                bottom: (margins.bottom ?? defaults.bottom) - defaults.bottom,
-                trailing: (margins.trailing ?? defaults.trailing) - defaults.trailing
+        private var placementOrder: some Sequence<Int> {
+            var result = header.stacks.leading.indices
+                .prefix(header.stacks.leading.topPrefix)
+            result.append(
+                contentsOf: header.stacks.center.indices
+                    .prefix(header.stacks.center.topPrefix)
             )
-        }
-
-        private func alignmentValue(_ alignment: TextAlignment) -> CGFloat {
-            switch alignment {
-            case .leading:
-                0
-            case .center:
-                0.5
-            case .trailing:
-                1
-            }
-        }
-
-        private func sanitized(_ size: CGSize) -> CGSize {
-            CGSize(
-                width: finiteNonnegative(size.width),
-                height: finiteNonnegative(size.height)
+            result.append(
+                contentsOf: header.stacks.trailing.indices
+                    .prefix(header.stacks.trailing.topPrefix)
             )
+            result.append(
+                contentsOf: header.stacks.leading.indices
+                    .suffix(from: header.stacks.leading.topPrefix)
+            )
+            return result
         }
 
-        private func finiteNonnegative(_ value: CGFloat) -> CGFloat {
-            guard value.isFinite else {
-                return 0
+        private func shouldPushBelowIfTooWide(_ childIndex: Int) -> Bool {
+            header.proxies[childIndex][VerticalPlacementKey.self]
+                == .belowNotchIfTooWide
+        }
+
+        private func isTooWideForNotch(
+            _ childIndex: Int,
+            availableWidth: CGFloat
+        ) -> Bool {
+            children[childIndex].geometry.dimensions.width > availableWidth
+        }
+
+        private func indexToPushBelowNotch(
+            in stack: Stack,
+            availableWidth: CGFloat?,
+            centerHeight: CGFloat
+        ) -> Int? {
+            guard let availableWidth else {
+                return nil
             }
-            return max(0, value)
+
+            let stackHeader = header.stacks[stack]
+            return (0 ..< stackHeader.topPrefix).first { offset in
+                let childIndex = stackHeader.indices[offset]
+                return isTooWideForNotch(
+                    childIndex,
+                    availableWidth: availableWidth
+                )
+                    && shouldPushBelowIfTooWide(childIndex)
+                    && bottomOf(
+                        previousChild: offset,
+                        in: stack,
+                        includeSpacing: true
+                    ) < centerHeight + distanceToCenterBottom(from: offset, stack: stack)
+            }
         }
 
-        private struct Result {
-            var size: CGSize
-            var placements: [Placement]
+        private func indexToResizeInNotch(
+            in stack: Stack,
+            availableWidth: CGFloat?,
+            centerHeight: CGFloat
+        ) -> Int? {
+            guard let availableWidth else {
+                return nil
+            }
+
+            let stackHeader = header.stacks[stack]
+            for offset in 0 ..< stackHeader.topPrefix {
+                let childIndex = stackHeader.indices[offset]
+                if shouldPushBelowIfTooWide(childIndex) {
+                    break
+                }
+                if isTooWideForNotch(
+                    childIndex,
+                    availableWidth: availableWidth
+                ),
+                    !children[childIndex].hasBeenReduced,
+                    bottomOf(
+                        previousChild: offset,
+                        in: stack,
+                        includeSpacing: true
+                    ) < centerHeight + distanceToCenterBottom(from: offset, stack: stack)
+                {
+                    return offset
+                }
+            }
+            return nil
         }
 
-        private struct Placement {
-            var index: Int
-            var origin: CGPoint
-            var proposal: ProposedViewSize
+        private mutating func resizeChildrenAdjacentToNotch(
+            in proposal: FixedProposal,
+            metrics: ProposedMetrics
+        ) -> Bool {
+            _ = proposal
+
+            let centerHeight = bottomOf(
+                previousChild: header.stacks.center.topPrefix,
+                in: .center,
+                includeSpacing: false
+            )
+            let leadingIndex = indexToResizeInNotch(
+                in: .leading,
+                availableWidth: metrics.leadingAvailableWidth,
+                centerHeight: centerHeight
+            )
+            let trailingIndex = indexToResizeInNotch(
+                in: .trailing,
+                availableWidth: metrics.trailingAvailableWidth,
+                centerHeight: centerHeight
+            )
+            guard leadingIndex != nil || trailingIndex != nil else {
+                return false
+            }
+
+            if let leadingIndex {
+                let childIndex = header.stacks.leading.indices[leadingIndex]
+                children[childIndex].reduceWidth(
+                    to: metrics.leadingAvailableWidth,
+                    edge: .leading
+                )
+            }
+            if let trailingIndex {
+                let childIndex = header.stacks.trailing.indices[trailingIndex]
+                children[childIndex].reduceWidth(
+                    to: metrics.trailingAvailableWidth,
+                    edge: .trailing
+                )
+            }
+            return true
         }
 
-        private struct StackResult {
-            var end: CGFloat
+        private func place(
+            indices: ArraySlice<Int>,
+            of stack: Stack,
+            minorAxisAnchor: CGFloat,
+            bounds: CGRect
+        ) {
+            _ = stack
+
+            let layoutDirection = header.proxies.layoutDirection
+            for index in indices {
+                let child = children[index]
+                let padding = child.padding.in(child.paddingEdges)
+                var geometry = child.geometry
+                geometry.dimensions.size.width -= padding.horizontal
+                geometry.dimensions.size.height -= padding.vertical
+                geometry.origin.y += bounds.minY + padding.top
+                geometry.origin.x = padding.leading
+                    + (bounds.width - geometry.dimensions.width) * minorAxisAnchor
+                geometry.finalizeLayoutDirection(
+                    layoutDirection,
+                    parentSize: bounds.size
+                )
+                geometry.origin.x += bounds.minX
+                header.proxies[index].place(
+                    in: geometry,
+                    layoutDirection: layoutDirection
+                )
+            }
         }
     }
 }
