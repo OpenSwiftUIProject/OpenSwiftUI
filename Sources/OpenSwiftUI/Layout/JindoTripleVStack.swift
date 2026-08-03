@@ -107,6 +107,8 @@ public struct JindoTripleVStack: Layout {
         var trailingInset: CGFloat? = nil
     }
 
+    // MARK: - JindoTripleVStack.VerticalPlacement
+
     public struct VerticalPlacement: Equatable {
         private var rawValue: UInt8
 
