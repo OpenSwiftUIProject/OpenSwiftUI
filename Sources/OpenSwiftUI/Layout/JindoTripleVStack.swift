@@ -18,14 +18,17 @@ public import OpenSwiftUICore
 @available(OpenSwiftUI_v4_1, *)
 @available(macOS, unavailable)
 public struct JindoTripleVStack: Layout {
+
+    // MARK: - JindoTripleVStack.Configuration
+
     public struct Configuration {
         public var notchSize: CGSize
 
-        fileprivate var horizontalSizing: HorizontalSizing
+        var horizontalSizing: HorizontalSizing
 
-        fileprivate var layoutMargins: EdgeInsets
+        var layoutMargins: EdgeInsets
 
-        fileprivate var sizing: Sizing
+        var sizing: Sizing
 
         @available(*, deprecated, message: "Use horizontalSizing")
         public var mode: HorizontalMode {
@@ -74,7 +77,7 @@ public struct JindoTripleVStack: Layout {
             uniformSpacing = nil
         }
 
-        fileprivate enum Sizing {
+        enum Sizing {
             case v1
             case v2
         }
