@@ -68,7 +68,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ github.token }}" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
       - name: Build versioned DocC site
-        uses: OpenSwiftUIProject/VersionedDocC@0.0.8
+        uses: OpenSwiftUIProject/VersionedDocC@0.0.9
         with:
           config: .vdc.json
           publish-oci-cache: true
