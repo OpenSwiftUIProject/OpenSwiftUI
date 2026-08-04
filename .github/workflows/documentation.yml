@@ -8,6 +8,7 @@ on:
 
 permissions:
   contents: read
+  packages: write
 
 jobs:
   build:
@@ -30,7 +31,9 @@ jobs:
       DOCC_RENDERER_REF: release/6.3-colorful
       GH_TOKEN: ${{ github.token }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
@@ -52,17 +55,22 @@ jobs:
           test -d "$renderer_path/dist"
           echo "DOCC_HTML_DIR=$renderer_path/dist" >> "$GITHUB_ENV"
         shell: bash
-      - name: Build DocC for GitHub Pages
-        run: |
-          Scripts/build-documentation.sh \
-            --clean \
-            --hosting-base-path /OpenSwiftUI \
-            --source-service github \
-            --source-service-base-url "https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/${GITHUB_REF_NAME}"
-        shell: bash
-      - name: Prepare Pages artifact
-        run: touch .docs/build/docc-output/.nojekyll
-        shell: bash
+      - name: Restore versioned documentation cache
+        uses: actions/cache@v6
+        with:
+          path: .docs/cache/versioned-docc
+          key: versioned-docc-${{ runner.os }}-${{ hashFiles('.vdc.json', 'Package.resolved') }}-${{ github.sha }}
+          restore-keys: |
+            versioned-docc-${{ runner.os }}-${{ hashFiles('.vdc.json', 'Package.resolved') }}-
+            versioned-docc-${{ runner.os }}-
+      - uses: oras-project/setup-oras@v1
+      - name: Log in to GitHub Container Registry
+        run: echo "${{ github.token }}" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Build versioned DocC site
+        uses: OpenSwiftUIProject/VersionedDocC@0.0.8
+        with:
+          config: .vdc.json
+          publish-oci-cache: true
       - name: Install GNU tar
         run: |
           if ! command -v gtar >/dev/null 2>&1; then
@@ -70,9 +78,9 @@ jobs:
           fi
         shell: bash
       - name: Upload Pages artifact
-        uses: actions/upload-pages-artifact@v4
+        uses: actions/upload-pages-artifact@v5
         with:
-          path: .docs/build/docc-output
+          path: .docs/build/versioned-site/OpenSwiftUI
 
   deploy:
     name: Deploy DocC site
@@ -92,4 +100,4 @@ jobs:
     steps:
       - name: Deploy to GitHub Pages
         id: deployment
-        uses: actions/deploy-pages@v4
+        uses: actions/deploy-pages@v5

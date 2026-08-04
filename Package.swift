@@ -146,6 +146,7 @@ let libraryEvolutionCondition = envBoolValue("LIBRARY_EVOLUTION", default: build
 let compatibilityTestCondition = envBoolValue("COMPATIBILITY_TEST")
 
 let useLocalDeps = envBoolValue("USE_LOCAL_DEPS", default: false)
+let versionedDocCPlugin = envBoolValue("VERSIONED_DOCC_PLUGIN", default: false)
 
 // For OpenAttributeGraphShims
 let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false)
@@ -792,6 +793,15 @@ let package = Package(
         openSwiftUIBridgeTarget,
     ]
 )
+
+if versionedDocCPlugin {
+    package.dependencies.append(
+        .package(
+            url: "https://github.com/OpenSwiftUIProject/VersionedDocC.git",
+            exact: "0.0.8"
+        )
+    )
+}
 
 if renderGTKCondition {
     package.targets.append(cgtkTarget)

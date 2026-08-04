@@ -1,0 +1,59 @@
+{
+  "$schema": "https://raw.githubusercontent.com/OpenSwiftUIProject/VersionedDocC/0.0.8/Schema/VersionedDocC.schema.json",
+  "schemaVersion": 1,
+  "projectName": "OpenSwiftUI",
+  "moduleName": "OpenSwiftUI",
+  "modulePath": "openswiftui",
+  "targetName": "OpenSwiftUI",
+  "catalogPath": "Sources/OpenSwiftUI/OpenSwiftUI.docc",
+  "hostingBasePath": "/OpenSwiftUI",
+  "defaultVersion": "main",
+  "outputPath": ".docs/build/versioned-site/OpenSwiftUI",
+  "cachePath": ".docs/cache/versioned-docc",
+  "releasePolicy": {
+    "latest": 1,
+    "pinned": ["0.19.0"],
+    "development": { "name": "main", "ref": "HEAD" }
+  },
+  "sourceRepository": "https://github.com/OpenSwiftUIProject/OpenSwiftUI",
+  "ociCache": {
+    "repository": "ghcr.io/openswiftuiproject/openswiftui-docc-cache"
+  },
+  "allowedModules": [
+    "OpenSwiftUI",
+    "OpenSwiftUICore"
+  ],
+  "symbolGraph": {
+    "minimumAccessLevel": "public",
+    "skipProtocolImplementations": true
+  },
+  "apiChanges": {
+    "pageSize": 10
+  },
+  "environment": {
+    "OPENSWIFTUI_WERROR": "0",
+    "OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH": "1",
+    "OPENSWIFTUI_COMPATIBILITY_TEST": "0",
+    "OPENSWIFTUI_SWIFT_LOG": "0",
+    "OPENSWIFTUI_SWIFT_CRYPTO": "0",
+    "OPENSWIFTUI_TARGET_RELEASE": "2024",
+    "OPENSWIFTUI_USE_LOCAL_DEPS": "1",
+    "OPENSWIFTUI_LINK_TESTING": "0",
+    "OPENSWIFTUI_SPI_GENERATE_DOCS": "1",
+    "SPI_GENERATE_DOCS": "1",
+    "OPENSWIFTUI_LIBRARY_EVOLUTION": "0"
+  },
+  "localDependencies": {
+    "darwinprivateframeworks": "../DarwinPrivateFrameworks",
+    "openattributegraph": "../OpenAttributeGraph",
+    "opencoregraphics": "../OpenCoreGraphics",
+    "openobservation": "../OpenObservation",
+    "openrenderbox": "../OpenRenderBox"
+  },
+  "buildArguments": [
+    "--disable-index-store"
+  ],
+  "doccArguments": [
+    "--emit-digest"
+  ]
+}

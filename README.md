@@ -26,6 +26,62 @@ Currently, this project is in early development.
 
 The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/documentation/openswiftui/) is hosted on GitHub Pages.
 
+### Versioned documentation
+
+OpenSwiftUI uses
+[VersionedDocC](https://github.com/OpenSwiftUIProject/VersionedDocC) `0.0.8`
+to build `main`, the highest patch from the newest release series, and the
+pinned `0.19.0` comparison baseline. The current automatically selected
+versions are `main`, `0.20.1`, and `0.19.0`:
+
+```shell
+OPENSWIFTUI_VERSIONED_DOCC_PLUGIN=1 \
+swift package --disable-sandbox \
+    --allow-writing-to-package-directory \
+    --allow-network-connections all \
+    versioned-documentation build \
+    --config .vdc.json
+```
+
+The generated site includes a version selector, build dates, a legacy URL
+wildcard redirect to `main`, and an API Changes dashboard generated from each
+version's real public symbol graph. Release source trees use the dependency
+revisions recorded in that tag's `Package.resolved` file.
+
+Symbol graphs are generated with `-skip-protocol-implementations` forced
+through `-Xfrontend`. Protocol-extension APIs therefore appear once on their
+declaring protocol instead of once for every conforming type. This setting is
+part of the artifact fingerprint, so caches created without it are rebuilt.
+
+Each version is stored independently under `.docs/cache/versioned-docc` and
+release artifacts are also published to GHCR. A later release restores those
+immutable directories and builds only a cache miss. With `latest: 1`, a patch
+tag replaces the previous patch in the same `major.minor` documentation series.
+
+Use `--assemble-only` after restoring the required version artifacts to prove
+that no Swift or DocC build is needed for cached releases.
+
+The output `_redirects` file contains the single edge rule:
+
+```text
+/OpenSwiftUI/documentation/* /OpenSwiftUI/main/documentation/:splat 301
+```
+
+Direct GitHub Pages hosting does not execute wildcard redirect rules, so
+VersionedDocC also emits one root `404.html` browser fallback. Put the Pages
+origin behind an edge that supports splat redirects when a real HTTP `301` is
+required, or use VersionedDocC to exercise that behavior locally:
+
+```shell
+OPENSWIFTUI_VERSIONED_DOCC_PLUGIN=1 \
+swift package --disable-sandbox \
+    --allow-writing-to-package-directory \
+    --allow-network-connections all \
+    versioned-documentation preview \
+    --config .vdc.json \
+    --port 8766
+```
+
 ## Notes
 
 this project is for learning and research purposes only.
