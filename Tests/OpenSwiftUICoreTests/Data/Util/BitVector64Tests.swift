@@ -70,4 +70,10 @@ struct BitVector64Tests {
             #expect(bitVector[i] == array[i])
         }
     }
+
+    @Test
+    func testMapBoolWithNonArrayCollection() {
+        let bitVector = "01001010".mapBool { $0 == "1" }
+        #expect(bitVector.rawValue == 0b0101_0010)
+    }
 }
