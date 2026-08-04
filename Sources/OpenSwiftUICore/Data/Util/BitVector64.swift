@@ -2,7 +2,7 @@
 //  BitVector64.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 import Foundation
@@ -36,7 +36,7 @@ public struct BitVector64: OptionSet {
 @available(*, unavailable)
 extension BitVector64: Sendable {}
 
-extension Array {
+extension Collection {
     package func mapBool(_ predicate: (Element) -> Bool) -> BitVector64 {
         var result = BitVector64()
         for (index, element) in enumerated() {
