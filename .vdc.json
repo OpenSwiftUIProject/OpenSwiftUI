@@ -11,8 +11,7 @@
   "outputPath": ".docs/build/versioned-site/OpenSwiftUI",
   "cachePath": ".docs/cache/versioned-docc",
   "releasePolicy": {
-    "latest": 1,
-    "pinned": ["0.19.0"],
+    "latest": 2,
     "development": { "name": "main", "ref": "HEAD" }
   },
   "sourceRepository": "https://github.com/OpenSwiftUIProject/OpenSwiftUI",

@@ -24,23 +24,20 @@ And the API design and documentation is to stay as compatible with the original 
 
 Currently, this project is in early development.
 
-The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/documentation/openswiftui/) is hosted on GitHub Pages.
+The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/main/documentation/openswiftui/) is hosted on GitHub Pages.
 
 ### Versioned documentation
 
 OpenSwiftUI uses
 [VersionedDocC](https://github.com/OpenSwiftUIProject/VersionedDocC) `0.0.8`
-to build `main`, the highest patch from the newest release series, and the
-pinned `0.19.0` comparison baseline. The current automatically selected
-versions are `main`, `0.20.1`, and `0.19.0`:
+to build `main` and the highest patch from each of the two newest `major.minor`
+release series. Version selection follows Git tags automatically and does not
+require updating this README for each release.
+
+Build and preview the canonical multi-version site locally with:
 
 ```shell
-OPENSWIFTUI_VERSIONED_DOCC_PLUGIN=1 \
-swift package --disable-sandbox \
-    --allow-writing-to-package-directory \
-    --allow-network-connections all \
-    versioned-documentation build \
-    --config .vdc.json
+Scripts/preview-documentation.sh
 ```
 
 The generated site includes a version selector, build dates, a legacy URL
@@ -55,8 +52,9 @@ part of the artifact fingerprint, so caches created without it are rebuilt.
 
 Each version is stored independently under `.docs/cache/versioned-docc` and
 release artifacts are also published to GHCR. A later release restores those
-immutable directories and builds only a cache miss. With `latest: 1`, a patch
-tag replaces the previous patch in the same `major.minor` documentation series.
+immutable directories and builds only a cache miss. A patch tag replaces the
+previous patch in the same `major.minor` documentation series; a new release
+series moves the two-series window forward without editing `.vdc.json`.
 
 Use `--assemble-only` after restoring the required version artifacts to prove
 that no Swift or DocC build is needed for cached releases.
@@ -70,17 +68,11 @@ The output `_redirects` file contains the single edge rule:
 Direct GitHub Pages hosting does not execute wildcard redirect rules, so
 VersionedDocC also emits one root `404.html` browser fallback. Put the Pages
 origin behind an edge that supports splat redirects when a real HTTP `301` is
-required, or use VersionedDocC to exercise that behavior locally:
+required. The local preview script uses VersionedDocC's server and exercises
+that redirect as a real HTTP `301`.
 
-```shell
-OPENSWIFTUI_VERSIONED_DOCC_PLUGIN=1 \
-swift package --disable-sandbox \
-    --allow-writing-to-package-directory \
-    --allow-network-connections all \
-    versioned-documentation preview \
-    --config .vdc.json \
-    --port 8766
-```
+See [Docs/Documentation.md](Docs/Documentation.md) for cache restore,
+assemble-only, release preflight, and lower-level command examples.
 
 ## Notes
 

@@ -42,7 +42,10 @@ usage() {
     cat << EOF
 Usage: $(basename "$0") [OPTIONS]
 
-Build Swift documentation using DocC with optional local preview.
+Build single-version Swift documentation using DocC with optional local preview.
+
+For the canonical multi-version site, version selector, API Changes, and legacy
+URL redirects, use Scripts/preview-documentation.sh instead.
 
 OPTIONS:
     --preview                     Preview documentation locally with HTTP server
@@ -62,6 +65,9 @@ ENVIRONMENT:
                                   When unset, DocC uses its bundled renderer.
 
 EXAMPLES:
+    # Build and preview the canonical multi-version site
+    Scripts/preview-documentation.sh
+
     # Build and preview documentation (source links enabled by default)
     $(basename "$0") --preview
 

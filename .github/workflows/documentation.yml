@@ -33,6 +33,7 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
+          ref: main
           fetch-depth: 0
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2

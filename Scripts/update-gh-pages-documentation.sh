@@ -46,7 +46,8 @@ Publish Swift documentation to GitHub Pages using DocC.
 
 This legacy script will build documentation (or use existing build) and deploy
 it to the gh-pages branch for GitHub Pages hosting. The canonical deployment
-path is now .github/workflows/documentation.yml.
+path is now .github/workflows/documentation.yml. For a local preview of that
+multi-version artifact, use Scripts/preview-documentation.sh.
 
 OPTIONS:
     --no-build                    Skip building documentation (use existing output)
