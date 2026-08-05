@@ -797,8 +797,8 @@ let package = Package(
 if versionedDocCPlugin {
     package.dependencies.append(
         .package(
-            url: "https://github.com/OpenSwiftUIProject/VersionedDocC.git",
-            exact: "0.0.8"
+            url: "https://github.com/DocCLab/VersionedDocC.git",
+            exact: "0.0.10"
         )
     )
 }

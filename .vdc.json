@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/OpenSwiftUIProject/VersionedDocC/0.0.9/Schema/VersionedDocC.schema.json",
+  "$schema": "https://raw.githubusercontent.com/DocCLab/VersionedDocC/0.0.10/Schema/VersionedDocC.schema.json",
   "schemaVersion": 1,
   "projectName": "OpenSwiftUI",
   "moduleName": "OpenSwiftUI",

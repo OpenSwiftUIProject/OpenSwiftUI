@@ -1,5 +1,5 @@
 {
-  "originHash" : "fb9281c8d4dea4ae6135aea77aec86bbb2a9ad0a61b59826fcd93a5810bd52bc",
+  "originHash" : "61e0bc3186d6518ad526a87a8da0cad3b4f21aa684407a760f2e414a905c033c",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -76,10 +76,10 @@
     {
       "identity" : "versioneddocc",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/VersionedDocC.git",
+      "location" : "https://github.com/DocCLab/VersionedDocC.git",
       "state" : {
-        "revision" : "a74fa50e2a6b67ad51f257f9250b2066b832ebb0",
-        "version" : "0.0.8"
+        "revision" : "666b92835a079cdbbcd020966e8c5ce8fdfdc3e7",
+        "version" : "0.0.10"
       }
     }
   ],
