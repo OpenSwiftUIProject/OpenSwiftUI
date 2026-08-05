@@ -4,7 +4,7 @@
     {
       "identity" : "darwinprivateframeworks",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
+      "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks",
       "state" : {
         "branch" : "main",
         "revision" : "d93839821ebebdab22081fbc0f3d0b8cb0e30b2f"
@@ -71,15 +71,6 @@
       "state" : {
         "revision" : "546053c03f282df1a8270853da6692e1b078be09",
         "version" : "0.2.1"
-      }
-    },
-    {
-      "identity" : "versioneddocc",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DocCLab/VersionedDocC.git",
-      "state" : {
-        "revision" : "49e1b6761d4075ba453b807e90fd22800c71fbdd",
-        "version" : "0.0.12"
       }
     }
   ],
