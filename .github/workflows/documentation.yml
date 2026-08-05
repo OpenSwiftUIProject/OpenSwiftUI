@@ -68,7 +68,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ github.token }}" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
       - name: Build versioned DocC site
-        uses: DocCLab/VersionedDocC@0.0.10
+        uses: DocCLab/VersionedDocC@0.0.12
         with:
           config: .vdc.json
           publish-oci-cache: true

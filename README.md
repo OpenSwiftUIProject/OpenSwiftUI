@@ -29,7 +29,7 @@ The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/ma
 ### Versioned documentation
 
 OpenSwiftUI uses
-[VersionedDocC](https://github.com/DocCLab/VersionedDocC) `0.0.10`
+[VersionedDocC](https://github.com/DocCLab/VersionedDocC) `0.0.12`
 to build `main` and the highest patch from each of the two newest `major.minor`
 release series. Version selection follows Git tags automatically and does not
 require updating this README for each release.

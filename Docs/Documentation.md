@@ -43,7 +43,7 @@ The workflow:
    `OpenSwiftUIProject/swift-docc-render-artifact@release/6.3-colorful`.
 4. Restores `.docs/cache/versioned-docc` from GitHub Actions cache.
 5. Authenticates ORAS with GHCR.
-6. Runs `DocCLab/VersionedDocC@0.0.10`, restoring immutable release
+6. Runs `DocCLab/VersionedDocC@0.0.12`, restoring immutable release
    artifacts from GHCR, building cache misses, publishing new release artifacts,
    and assembling the versioned site.
 7. Uploads `.docs/build/versioned-site/OpenSwiftUI` and deploys it with GitHub

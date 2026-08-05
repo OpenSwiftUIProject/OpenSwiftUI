@@ -1,5 +1,5 @@
 {
-  "originHash" : "61e0bc3186d6518ad526a87a8da0cad3b4f21aa684407a760f2e414a905c033c",
+  "originHash" : "337b51157714a5d219a1ba1020e5bfc8859481847578b0dc43394489babe6bc3",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -78,8 +78,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/DocCLab/VersionedDocC.git",
       "state" : {
-        "revision" : "666b92835a079cdbbcd020966e8c5ce8fdfdc3e7",
-        "version" : "0.0.10"
+        "revision" : "49e1b6761d4075ba453b807e90fd22800c71fbdd",
+        "version" : "0.0.12"
       }
     }
   ],

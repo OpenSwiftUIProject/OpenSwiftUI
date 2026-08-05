@@ -798,7 +798,7 @@ if versionedDocCPlugin {
     package.dependencies.append(
         .package(
             url: "https://github.com/DocCLab/VersionedDocC.git",
-            exact: "0.0.10"
+            exact: "0.0.12"
         )
     )
 }
