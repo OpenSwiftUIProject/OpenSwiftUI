@@ -4,11 +4,14 @@ on:
   push:
     branches: [main]
     paths:
-      - 'Example/OpenSwiftUIUITests/**'
-      - 'Example/setup.sh'
+      - 'Sources/**'
+      - 'Package.swift'
+      - 'Example/**'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
       - 'mise*.toml'
       - '.github/workflows/uitests.yml'
-      - '.github/actions/uitests/action.yml'
+      - '.github/actions/uitests/**'
   workflow_dispatch:
     inputs:
       platform:

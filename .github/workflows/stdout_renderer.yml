@@ -3,8 +3,20 @@ name: Stdout Renderer
 on:
   push:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Package.swift'
+      - 'Renderer/Stdout/**'
+      - 'Scripts/CI/**'
+      - '.github/workflows/stdout_renderer.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Package.swift'
+      - 'Renderer/Stdout/**'
+      - 'Scripts/CI/**'
+      - '.github/workflows/stdout_renderer.yml'
   workflow_dispatch:
 
 jobs:

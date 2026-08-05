@@ -3,8 +3,24 @@ name: iOS
 on:
   push:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Package.swift'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
+      - 'mise*.toml'
+      - '.github/workflows/ios.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Package.swift'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
+      - 'mise*.toml'
+      - '.github/workflows/ios.yml'
 
 jobs:
   ios_test:

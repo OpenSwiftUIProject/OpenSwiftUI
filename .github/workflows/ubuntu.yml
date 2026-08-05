@@ -3,8 +3,18 @@ name: Ubuntu
 on:
   push:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Package.swift'
+      - '.github/workflows/ubuntu.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Package.swift'
+      - '.github/workflows/ubuntu.yml'
 
 jobs:
   ubuntu_test:

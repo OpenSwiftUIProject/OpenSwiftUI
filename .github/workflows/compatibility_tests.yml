@@ -3,8 +3,24 @@ name: Compatibility tests
 on:
   push:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Package.swift'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
+      - 'mise*.toml'
+      - '.github/workflows/compatibility_tests.yml'
   pull_request:
     branches: [main]
+    paths:
+      - 'Sources/**'
+      - 'Tests/**'
+      - 'Package.swift'
+      - 'Scripts/CI/**'
+      - 'Scripts/Tuist/**'
+      - 'mise*.toml'
+      - '.github/workflows/compatibility_tests.yml'
 
 jobs:
   compatibility_tests_macos:
