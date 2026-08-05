@@ -26,54 +26,6 @@ Currently, this project is in early development.
 
 The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/main/documentation/openswiftui/) is hosted on GitHub Pages.
 
-### Versioned documentation
-
-OpenSwiftUI uses
-[VersionedDocC](https://github.com/DocCLab/VersionedDocC) `0.0.12`
-to build `main` and the highest patch from each of the two newest `major.minor`
-release series. Version selection follows Git tags automatically and does not
-require updating this README for each release.
-
-Build and preview the canonical multi-version site locally with:
-
-```shell
-Scripts/preview-documentation.sh
-```
-
-The generated site includes a version selector, build dates, a legacy URL
-wildcard redirect to `main`, and an API Changes dashboard generated from each
-version's real public symbol graph. Release source trees use the dependency
-revisions recorded in that tag's `Package.resolved` file.
-
-Symbol graphs are generated with `-skip-protocol-implementations` forced
-through `-Xfrontend`. Protocol-extension APIs therefore appear once on their
-declaring protocol instead of once for every conforming type. This setting is
-part of the artifact fingerprint, so caches created without it are rebuilt.
-
-Each version is stored independently under `.docs/cache/versioned-docc` and
-release artifacts are also published to GHCR. A later release restores those
-immutable directories and builds only a cache miss. A patch tag replaces the
-previous patch in the same `major.minor` documentation series; a new release
-series moves the two-series window forward without editing `.vdc.json`.
-
-Use `--assemble-only` after restoring the required version artifacts to prove
-that no Swift or DocC build is needed for cached releases.
-
-The output `_redirects` file contains the single edge rule:
-
-```text
-/OpenSwiftUI/documentation/* /OpenSwiftUI/main/documentation/:splat 301
-```
-
-Direct GitHub Pages hosting does not execute wildcard redirect rules, so
-VersionedDocC also emits one root `404.html` browser fallback. Put the Pages
-origin behind an edge that supports splat redirects when a real HTTP `301` is
-required. The local preview script uses VersionedDocC's server and exercises
-that redirect as a real HTTP `301`.
-
-See [Docs/Documentation.md](Docs/Documentation.md) for cache restore,
-assemble-only, release preflight, and lower-level command examples.
-
 ## Notes
 
 this project is for learning and research purposes only.
@@ -193,6 +145,22 @@ for various platforms:
     - Extensive API collections for OpenSwiftUI & SwiftUI.
 - OpenSwiftUIBridge
     - A bridge layer for migrating other DSL framework to OpenSwiftUI incrementally and mixing them freely.
+
+## Versioned documentation
+
+The documentation site is built with
+[VersionedDocC](https://github.com/DocCLab/VersionedDocC) and automatically
+tracks `main` and recent release series. It provides version switching, build
+dates, and API change comparisons.
+
+Build and preview the site locally with:
+
+```shell
+Scripts/preview-documentation.sh
+```
+
+See [Docs/Documentation.md](Docs/Documentation.md) for configuration, caching,
+and release details.
 
 ## Disclaimer
 
