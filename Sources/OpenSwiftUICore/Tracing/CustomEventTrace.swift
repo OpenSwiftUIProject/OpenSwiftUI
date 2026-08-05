@@ -7,6 +7,7 @@
 //  ID: 97DBD3D593583A413B8B642264BC61AE (SwiftUICore)
 
 package import OpenAttributeGraphShims
+import OpenSwiftUI_SPI
 
 // MARK: - CustomEventCategory
 
@@ -91,7 +92,7 @@ package struct CustomEventTrace {
     }
 
     package static func incrementTraceIDThreadSafe(id: inout UInt32) -> UInt32 {
-        return UInt32(OSAtomicAdd32(2, &id)) / 2
+        return _incrementTraceIDThreadSafe(&id)
     }
     
     package static func setEnabledCategory(_ category: CustomEventCategory, enabled: Bool) {
