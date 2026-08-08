@@ -1,5 +1,5 @@
 {
-  "$schema": "https://raw.githubusercontent.com/DocCLab/VersionedDocC/0.0.12/Schema/VersionedDocC.schema.json",
+  "$schema": "https://raw.githubusercontent.com/DocCLab/VersionedDocC/0.0.14/Schema/VersionedDocC.schema.json",
   "schemaVersion": 1,
   "projectName": "OpenSwiftUI",
   "moduleName": "OpenSwiftUI",
@@ -30,7 +30,13 @@
       {
         "name": "iOS",
         "triple": "arm64-apple-ios",
-        "sdk": "iphoneos"
+        "sdk": "iphoneos",
+        "buildArguments": [
+          "-Xcc",
+          "-F../DarwinPrivateFrameworks/CoreUI/2024/CoreUI.xcframework/ios-arm64-arm64e",
+          "-Xcc",
+          "-F../DarwinPrivateFrameworks/BLS/2024/BacklightServices.xcframework/ios-arm64-arm64e"
+        ]
       },
       {
         "name": "macOS",
@@ -51,8 +57,7 @@
     "OPENSWIFTUI_TARGET_RELEASE": "2024",
     "OPENSWIFTUI_USE_LOCAL_DEPS": "1",
     "OPENSWIFTUI_LINK_TESTING": "0",
-    "OPENSWIFTUI_SPI_GENERATE_DOCS": "1",
-    "SPI_GENERATE_DOCS": "1",
+    "OPENSWIFTUI_IGNORE_AVAILABILITY": "0",
     "OPENSWIFTUI_LIBRARY_EVOLUTION": "0"
   },
   "localDependencies": {

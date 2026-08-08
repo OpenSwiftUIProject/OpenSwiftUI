@@ -127,10 +127,7 @@ let buildForDarwinPlatform = envBoolValue("BUILD_FOR_DARWIN_PLATFORM", default: 
 let buildForDarwinPlatform = envBoolValue("BUILD_FOR_DARWIN_PLATFORM")
 #endif
 
-// https://github.com/SwiftPackageIndex/SwiftPackageIndex-Server/issues/3061#issuecomment-2118821061
-// By-pass https://github.com/swiftlang/swift-package-manager/issues/7580
-let isSPIDocGenerationBuild = envBoolValue("SPI_GENERATE_DOCS", searchInDomain: false)
-let isSPIBuild = envBoolValue("SPI_BUILD", searchInDomain: false)
+let isVDCDocGenerationBuild = envBoolValue("VDC_GENERATE_DOCS", searchInDomain: false)
 
 // Xcode use clang as linker which supports "-iframework" while SwiftPM use swiftc as linker which supports "-Fsystem"
 let systemFrameworkSearchFlag = isXcodeEnv ? "-iframework" : "-Fsystem"
@@ -153,13 +150,13 @@ let computeCondition = envBoolValue("OPENATTRIBUTESHIMS_COMPUTE", default: false
 let danceUIGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_DANCEUIGRAPH", default: false)
 let attributeGraphCondition = envBoolValue("OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH", default: false)
 
-let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform && !isSPIBuild)
+let renderBoxCondition = envBoolValue("RENDERBOX", default: buildForDarwinPlatform)
 
-let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform && !isSPIBuild)
-let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform && !isSPIBuild)
-let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform && !isSPIBuild)
-let linkBacklightServices = envBoolValue("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform && !isSPIBuild)
-let linkGestures = envBoolValue("LINK_GESTURES", default: buildForDarwinPlatform && !isSPIBuild && releaseVersion >= 2025)
+let linkCoreUI = envBoolValue("LINK_COREUI", default: buildForDarwinPlatform)
+let linkCoreSVG = envBoolValue("LINK_CORESVG", default: buildForDarwinPlatform)
+let linkSFSymbols = envBoolValue("LINK_SFSYMBOLS", default: buildForDarwinPlatform)
+let linkBacklightServices = envBoolValue("LINK_BACKLIGHTSERVICES", default: buildForDarwinPlatform)
+let linkGestures = envBoolValue("LINK_GESTURES", default: buildForDarwinPlatform && releaseVersion >= 2025)
 // This should be disabled for UI test target due to link issue of Testing.
 // Only enable for non-UI test targets.
 let linkTesting = envBoolValue("LINK_TESTING")
@@ -172,7 +169,7 @@ let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlat
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
 
-let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isSPIDocGenerationBuild && !compatibilityTestCondition)
+let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isVDCDocGenerationBuild && !compatibilityTestCondition)
 
 // Run @OpenSwiftUIProject/DarwinPrivateFrameworks repo's Scripts/install_internal_sdk.sh XRSimulator to install internal XRSimulator SDK
 let internalXRSDK = envBoolValue("INTERNAL_XR_SDK")
@@ -798,7 +795,7 @@ if versionedDocCPlugin {
     package.dependencies.append(
         .package(
             url: "https://github.com/DocCLab/VersionedDocC.git",
-            exact: "0.0.12"
+            exact: "0.0.14"
         )
     )
 }
@@ -876,7 +873,7 @@ if attributeGraphCondition || renderBoxCondition || linkGestures {
         default: nil
     }
 } else {
-    // For SPI build issue
+    // Keep deployment targets available when optional Darwin integrations are disabled.
     package.platforms = [.iOS(.v18), .macOS(.v15), .macCatalyst(.v18), .tvOS(.v18), .watchOS(.v10), .visionOS(.v2)]
 }
 

@@ -183,6 +183,12 @@ frontend. Protocol-extension APIs are represented once on their declaring
 protocol instead of being repeated for every conforming type. This behavior is
 part of the cache fingerprint.
 
+VersionedDocC runs symbol-graph builds with `VDC_GENERATE_DOCS=1`. The package
+uses this mode to preserve platform availability while keeping the private
+Darwin integrations that contribute public API declarations enabled. The VDC
+configuration also sets `OPENSWIFTUI_IGNORE_AVAILABILITY=0` when rebuilding
+older tags whose manifests predate `VDC_GENERATE_DOCS`.
+
 API Changes pages compare immutable public symbol-graph snapshots. They show
 adjacent selected versions, restore Compare/Show/Search state from the URL, and
 display ten changes per page as configured by `apiChanges.pageSize`.

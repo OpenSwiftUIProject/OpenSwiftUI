@@ -25,8 +25,6 @@ jobs:
       OPENSWIFTUI_TARGET_RELEASE: 2024
       OPENSWIFTUI_USE_LOCAL_DEPS: 1
       OPENSWIFTUI_LINK_TESTING: 0
-      OPENSWIFTUI_SPI_GENERATE_DOCS: 1
-      SPI_GENERATE_DOCS: 1
       DOCC_RENDERER_REPOSITORY: OpenSwiftUIProject/swift-docc-render-artifact
       DOCC_RENDERER_REF: release/6.3-colorful
       GH_TOKEN: ${{ github.token }}
@@ -68,7 +66,7 @@ jobs:
       - name: Log in to GitHub Container Registry
         run: echo "${{ github.token }}" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
       - name: Build versioned DocC site
-        uses: DocCLab/VersionedDocC@0.0.12
+        uses: DocCLab/VersionedDocC@0.0.14
         with:
           config: .vdc.json
           publish-oci-cache: true
