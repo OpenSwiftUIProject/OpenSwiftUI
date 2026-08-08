@@ -24,7 +24,20 @@
   ],
   "symbolGraph": {
     "minimumAccessLevel": "public",
-    "skipProtocolImplementations": true
+    "skipProtocolImplementations": true,
+    "defaultPlatform": "iOS",
+    "platforms": [
+      {
+        "name": "iOS",
+        "triple": "arm64-apple-ios",
+        "sdk": "iphoneos"
+      },
+      {
+        "name": "macOS",
+        "triple": "arm64-apple-macosx",
+        "sdk": "macosx"
+      }
+    ]
   },
   "apiChanges": {
     "pageSize": 10
