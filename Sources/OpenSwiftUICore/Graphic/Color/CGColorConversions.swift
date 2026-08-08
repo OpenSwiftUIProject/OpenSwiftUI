@@ -98,10 +98,13 @@ extension Color.Resolved {
     }
 }
 
-//extension ResolvedGradient {
-//  package var cgGradient: CGGradient? {
-//    get
-//  }
-//}
+extension ResolvedGradient {
+    package var cgGradient: CGGradient? {
+        let colorSpace = Color.Resolved.srgbExtended
+        let colors = stops.map { $0.color.cgColor }
+        let locations = stops.map { CGFloat($0.location) }
+        return CGGradient(colorsSpace: colorSpace, colors: colors as CFArray, locations: locations)
+    }
+}
 
 #endif

@@ -164,32 +164,41 @@ extension Color.Resolved : Animatable {
 
     public var animatableData: AnimatablePair<Float, AnimatablePair<Float, AnimatablePair<Float, Float>>> {
         get {
+            let values: (Float, Float, Float, Float)
             if Self.legacyInterpolation {
-                // ResolvedGradient.Color.Space.convertIn(self)
-                _openSwiftUIUnimplementedFailure()
+                values = (linearRed, linearGreen, linearBlue, opacity)
             } else {
-                return AnimatablePair(
-                    linearRed.scaled(by: .unitScale),
+                let color = ResolvedGradient.ColorSpace.perceptual.convertIn(self)
+                values = (color.r, color.g, color.b, color.a)
+            }
+            return AnimatablePair(
+                values.0.scaled(by: .unitScale),
+                AnimatablePair(
+                    values.1.scaled(by: .unitScale),
                     AnimatablePair(
-                        linearGreen.scaled(by: .unitScale),
-                        AnimatablePair(
-                            linearBlue.scaled(by: .unitScale),
-                            opacity.scaled(by: .unitScale)
-                        )
+                        values.2.scaled(by: .unitScale),
+                        values.3.scaled(by: .unitScale)
                     )
                 )
-            }
+            )
         }
 
         set {
+            let values = newValue.scaled(by: .inverseUnitScale)
             if Self.legacyInterpolation {
-                // ResolvedGradient.Color.Space.convertOut(self)
-                _openSwiftUIUnimplementedFailure()
+                linearRed = values.first
+                linearGreen = values.second.first
+                linearBlue = values.second.second.first
+                opacity = values.second.second.second
             } else {
-                linearRed = newValue.first.scaled(by: .inverseUnitScale)
-                linearGreen = newValue.second.first.scaled(by: .inverseUnitScale)
-                linearBlue = newValue.second.second.first.scaled(by: .inverseUnitScale)
-                opacity = newValue.second.second.second.scaled(by: .inverseUnitScale)
+                self = ResolvedGradient.ColorSpace.perceptual.convertOut(
+                    .init(
+                        r: values.first,
+                        g: values.second.first,
+                        b: values.second.second.first,
+                        a: values.second.second.second
+                    )
+                )
             }
         }
     }
