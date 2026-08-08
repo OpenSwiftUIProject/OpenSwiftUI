@@ -10,6 +10,8 @@ import SwiftUI
 
 struct ContentView: View {
     var body: some View {
-        JindoTripleVStackExample()
+        #if !os(macOS)
+        JindoExample()
+        #endif
     }
 }
