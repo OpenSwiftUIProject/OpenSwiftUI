@@ -74,12 +74,12 @@ extension Font {
     /// Creates a custom font from a platform font instance.
     ///
     /// Initializing ``Font`` with platform font instance
-    /// ([CTFont](https://developer.apple.com/documentation/coretext/ctfont-q6r))
+    /// ([CTFont](https://developer.apple.com/documentation/coretext/ctfont))
     /// can bridge OpenSwiftUI ``Font`` with
     /// [NSFont](https://developer.apple.com/documentation/appkit/nsfont) or
     /// [UIFont](https://developer.apple.com/documentation/uikit/uifont), both
     /// of which are toll-free bridged to
-    /// [CTFont](https://developer.apple.com/documentation/coretext/ctfont-q6r).
+    /// [CTFont](https://developer.apple.com/documentation/coretext/ctfont).
     /// For example:
     ///
     ///     // Use native Core Text API to create desired ctFont.
