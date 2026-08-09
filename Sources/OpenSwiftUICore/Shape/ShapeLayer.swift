@@ -245,7 +245,48 @@ private struct ShapeLayerAsyncHelper: ResolvedPaintVisitor {
     var result: Bool
 
     mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
-        _openSwiftUIUnimplementedFailure()
+        guard let newPaint = new.pointee.paint.as(type: P.self) else {
+            return
+        }
+        // FIXME: PaintType
+        _openSwiftUIUnimplementedWarning()
+        let oldColor = (paint as? Color.Resolved)
+            ?? (paint as? AnchoredResolvedPaint<Color.Resolved>)?.paint
+        let newColor = (newPaint as? Color.Resolved)
+            ?? (newPaint as? AnchoredResolvedPaint<Color.Resolved>)?.paint
+        guard let oldColor, let newColor else {
+            return
+        }
+        switch (ShapeType(old.pointee.path), ShapeType(new.pointee.path)) {
+        case let (
+            .rect(_, oldRadius, oldCornerStyle),
+            .rect(_, newRadius, newCornerStyle)
+        ):
+            switch (oldCornerStyle, newCornerStyle) {
+            case (.circular, .circular), (.continuous, .continuous):
+                break
+            default:
+                return
+            }
+            layer.pointee.update(
+                DisplayList.ViewUpdater.BackgroundColor.self,
+                from: oldColor,
+                to: newColor
+            )
+            layer.pointee.update(
+                DisplayList.ViewUpdater.CornerRadiusLayer.self,
+                from: oldRadius,
+                to: newRadius
+            )
+            layer.pointee.update(
+                DisplayList.ViewUpdater.ContentsScale.self,
+                from: old.pointee.contentsScale,
+                to: new.pointee.contentsScale
+            )
+            result = true
+        default:
+            return
+        }
     }
 }
 
@@ -257,7 +298,25 @@ private struct ShapeLayerAsyncShadowHelper: ResolvedPaintVisitor {
     var result: Bool
 
     mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
-        _openSwiftUIUnimplementedFailure()
+        guard let newPaint = newPaint.as(type: P.self) else {
+            return
+        }
+        // FIXME: PaintType
+        _openSwiftUIUnimplementedWarning()
+        let oldColor = (paint as? Color.Resolved)
+            ?? (paint as? AnchoredResolvedPaint<Color.Resolved>)?.paint
+        let newColor = (newPaint as? Color.Resolved)
+            ?? (newPaint as? AnchoredResolvedPaint<Color.Resolved>)?.paint
+        guard let oldColor, let newColor else {
+            return
+        }
+        result = _updateShadowAsync(
+            layer: &layer.pointee,
+            oldShadow: old.pointee.shadow,
+            newShadow: new.pointee.shadow,
+            oldPaintOpacity: oldColor.opacity,
+            newPaintOpacity: newColor.opacity
+        )
     }
 }
 
