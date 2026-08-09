@@ -7,7 +7,7 @@
 //  ID: 97DBD3D593583A413B8B642264BC61AE (SwiftUICore)
 
 package import OpenAttributeGraphShims
-import OpenSwiftUI_SPI
+import Synchronization
 
 // MARK: - CustomEventCategory
 
@@ -92,7 +92,14 @@ package struct CustomEventTrace {
     }
 
     package static func incrementTraceIDThreadSafe(id: inout UInt32) -> UInt32 {
-        return _incrementTraceIDThreadSafe(&id)
+        let oldID = id
+        id = withUnsafeMutablePointer(to: &id) { pointer in
+            pointer.withMemoryRebound(to: Atomic<Int32>.self, capacity: 1) { atomic in
+                let oldValue = atomic.pointee.wrappingAdd(2, ordering: .relaxed).oldValue
+                return UInt32(Int64(oldValue) + 2)
+            }
+        }
+        return oldID / 2 + 1
     }
     
     package static func setEnabledCategory(_ category: CustomEventCategory, enabled: Bool) {
