@@ -243,7 +243,7 @@ package final class ViewGraph: GraphHost {
             }
             _ViewDebug.initialize(inputs: &inputs)
             if inputs.needsGeometry {
-                // inputs.makeRootMatchedGeometryScope()
+                inputs.makeRootMatchedGeometryScope()
             }
             inputs.base.pushStableType(rootViewType)
             $rootGeometry.mutateBody(
