@@ -241,9 +241,9 @@ extension _ColorMatrix {
         // Matrix coefficients for hue rotation
         // Based on color rotation matrix formula
         self.init(
-            row1: (0.2126 + cosValue * 0.7873 - sinValue * 0.2126, 0.2126 - cosValue * 0.2126 + sinValue * 0.1430, 0.2126 - cosValue * 0.2126 - sinValue * 0.7873, 0, 0),
-            row2: (0.7152 - cosValue * 0.7152 - sinValue * 0.7152, 0.7152 + cosValue * 0.2848 + sinValue * 0.1400, 0.7152 - cosValue * 0.7152 + sinValue * 0.7152, 0, 0),
-            row3: (0.0722 - cosValue * 0.0722 + sinValue * 0.9278, 0.0722 - cosValue * 0.0722 - sinValue * 0.2830, 0.0722 + cosValue * 0.9278 + sinValue * 0.0722, 0, 0),
+            row1: (0.2126 + cosValue * 0.7873 - sinValue * 0.2126, 0.7152 - cosValue * 0.7152 - sinValue * 0.7152, 0.0722 - cosValue * 0.0722 + sinValue * 0.9278, 0, 0),
+            row2: (0.2126 - cosValue * 0.2126 + sinValue * 0.1430, 0.7152 + cosValue * 0.2848 + sinValue * 0.1400, 0.0722 - cosValue * 0.0722 - sinValue * 0.2830, 0, 0),
+            row3: (0.2126 - cosValue * 0.2126 - sinValue * 0.7873, 0.7152 - cosValue * 0.7152 + sinValue * 0.7152, 0.0722 + cosValue * 0.9278 + sinValue * 0.0722, 0, 0),
             row4: (0, 0, 0, 1, 0)
         )
     }
@@ -333,9 +333,9 @@ extension _ColorMatrix {
         let invAmount = 1.0 - amount
         
         self.init(
-            row1: (red * lumR * amount + invAmount, red * lumG * amount, red * lumB * amount, 0, red * amount * bias),
-            row2: (green * lumR * amount, green * lumG * amount + invAmount, green * lumB * amount, 0, green * amount * bias),
-            row3: (blue * lumR * amount, blue * lumG * amount, blue * lumB * amount + invAmount, 0, blue * amount * bias),
+            row1: (red * lumR * amount + invAmount, red * lumG * amount, red * lumB * amount, 0, red * bias * amount),
+            row2: (green * lumR * amount, green * lumG * amount + invAmount, green * lumB * amount, 0, green * bias * amount),
+            row3: (blue * lumR * amount, blue * lumG * amount, blue * lumB * amount + invAmount, 0, blue * bias * amount),
             row4: (0, 0, 0, opacity * amount + invAmount, 0)
         )
     }
