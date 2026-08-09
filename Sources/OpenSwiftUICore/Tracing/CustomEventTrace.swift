@@ -2,8 +2,8 @@
 //  CustomEventTrace.swift
 //  OpenSwiftUICore
 //
-//  Status: Blocked by Graph.addTraceEvent
 //  Audited for 6.5.4
+//  Status: Complete
 //  ID: 97DBD3D593583A413B8B642264BC61AE (SwiftUICore)
 
 package import OpenAttributeGraphShims
@@ -114,8 +114,7 @@ package struct CustomEventTrace {
         }
         recorder.cefOp[4] = category.rawValue
         recorder.cefOp[5] = eventType
-        _openSwiftUIUnimplementedWarning()
-        // recorder.graph.addTraceEvent(recorder.cefOp, value: value)
+        recorder.graph.addTraceEvent(recorder.cefOp, value: value)
     }
 
     package static func observableFireWithTransaction(transaction: UInt32, key: AnyKeyPath?, attribute: AnyAttribute) {
