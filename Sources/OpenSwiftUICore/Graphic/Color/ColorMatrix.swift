@@ -273,13 +273,23 @@ extension _ColorMatrix {
     }
 }
 
-// MARK: - _ColorMatrix + ShapeStyle [TODO]
+// MARK: - _ColorMatrix + ShapeStyle
 
 @_spi(Private)
 @available(OpenSwiftUI_v6_0, *)
 extension _ColorMatrix: ShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        // TODO
+        switch shape.operation {
+        case .prepareText:
+            shape.result = .preparedText(.foregroundKeyColor)
+        case let .resolveStyle(name, levels):
+            guard levels.lowerBound != levels.upperBound else {
+                break
+            }
+            shape.stylePack[name, levels.lowerBound] = .init(.vibrantMatrix(self))
+        default:
+            break
+        }
     }
     
     public typealias Resolved = Never
