@@ -742,6 +742,19 @@ extension DisplayList.Item {
         // TODO eg. .opacity(1.0) -> .identity
     }
 
+    private mutating func canonicalizeIdentityEffect(list: DisplayList) {
+        guard list.items.count == 1 else {
+            return
+        }
+        let item = list.items[0]
+        frame = item.frame.offset(by: CGSize(frame.origin))
+        version.combine(with: item.version)
+        value = item.value
+        if item.identity != .none {
+            identity = item.identity
+        }
+    }
+
     fileprivate func opaqueContentPath() -> (Path, FillStyle)? {
         guard case let .content(content) = value else {
             return nil
