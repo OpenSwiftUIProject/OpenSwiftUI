@@ -8,6 +8,13 @@
 package import OpenAttributeGraphShims
 
 // FIXME
+extension Graph {
+    package func addTraceEvent<T>(_ event: UnsafePointer<Int8>, value: T) {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// FIXME
 extension OAGInputOptions {
     package static var _4: OAGInputOptions {
         .init(rawValue: 1 << 2)
