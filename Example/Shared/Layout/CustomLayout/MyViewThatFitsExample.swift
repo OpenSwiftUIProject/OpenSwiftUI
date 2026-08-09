@@ -8,8 +8,6 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-// The DL does not fully align since we have not implement canonicalize API yet.
-// See https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/349
 struct MyViewThatFitsExample: View {
     @State private var showRed = false
     var body: some View {
