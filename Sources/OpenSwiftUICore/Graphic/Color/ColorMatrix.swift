@@ -44,17 +44,6 @@ public struct _ColorMatrix: Equatable, Codable {
     public var m21: Float = 0, m22: Float = 1, m23: Float = 0, m24: Float = 0, m25: Float = 0
     public var m31: Float = 0, m32: Float = 0, m33: Float = 1, m34: Float = 0, m35: Float = 0
     public var m41: Float = 0, m42: Float = 0, m43: Float = 0, m44: Float = 1, m45: Float = 0
-    
-    @inline(__always)
-    init(m11: Float = 1, m12: Float = 0, m13: Float = 0, m14: Float = 0, m15: Float = 0,
-         m21: Float = 0, m22: Float = 1, m23: Float = 0, m24: Float = 0, m25: Float = 0,
-         m31: Float = 0, m32: Float = 0, m33: Float = 1, m34: Float = 0, m35: Float = 0,
-         m41: Float = 0, m42: Float = 0, m43: Float = 0, m44: Float = 1, m45: Float = 0) {
-        self.m11 = m11; self.m12 = m12; self.m13 = m13; self.m14 = m14; self.m15 = m15
-        self.m21 = m21; self.m22 = m22; self.m23 = m23; self.m24 = m24; self.m25 = m25
-        self.m31 = m31; self.m32 = m32; self.m33 = m33; self.m34 = m34; self.m35 = m35
-        self.m41 = m41; self.m42 = m42; self.m43 = m43; self.m44 = m44; self.m45 = m45
-    }
 
     /// Initializes to the identity matrix.
     @inlinable
@@ -63,8 +52,7 @@ public struct _ColorMatrix: Equatable, Codable {
     /// Initializes to a matrix that will multiply by the value of
     /// `color` in `environment`.
     public init(color: Color, in environment: EnvironmentValues) {
-        // Blocked by Color
-        _openSwiftUIUnimplementedFailure()
+        self.init(colorMultiply: color.provider.resolve(in: environment))
     }
     
     package init(_ m: ColorMatrix) {
@@ -75,11 +63,8 @@ public struct _ColorMatrix: Equatable, Codable {
     }
     
     package var isIdentity: Bool {
-        self == .identity
+        self == .init()
     }
-    
-    @inline(__always)
-    static let identity = _ColorMatrix()
 
     /// Returns the result of concatenating the matrices `a` and `b`.
     public static func * (a: _ColorMatrix, b: _ColorMatrix) -> _ColorMatrix {
