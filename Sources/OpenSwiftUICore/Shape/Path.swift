@@ -47,6 +47,22 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             data = PathData(rbPath: path)
         }
 
+        deinit {
+            switch kind {
+            #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
+            case .cgPath:
+                data.cgPath.release()
+            #endif
+            case .rbPath:
+                data.rbPath.release()
+            case .buffer:
+                withUnsafeMutablePointer(to: &data) { pointer in
+                    let storage = unsafeBitCast(pointer, to: ORBPath.Storage.self)
+                    storage.destroy()
+                }
+            }
+        }
+
         private func prepareBuffer() {
             let path: ORBPath
             switch kind {
@@ -834,7 +850,21 @@ extension Path {
     }
 
     public func applying(_ transform: CGAffineTransform) -> Path {
-        _openSwiftUIUnimplementedFailure()
+        guard !transform.isIdentity else {
+            return self
+        }
+        switch storage {
+        case .empty:
+            return self
+        case let .rect(rect) where transform.isRectilinear:
+            return Path(rect.applying(transform))
+        case let .ellipse(rect) where transform.isRectilinear:
+            return Path(ellipseIn: rect.applying(transform))
+        case let .roundedRect(fixedRoundedRect) where transform.isRectilinear:
+            return Path(storage: .roundedRect(fixedRoundedRect.applying(transform)))
+        default:
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     public func offsetBy(
