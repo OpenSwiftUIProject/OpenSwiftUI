@@ -742,6 +742,29 @@ extension DisplayList.Item {
         // TODO eg. .opacity(1.0) -> .identity
     }
 
+    fileprivate func opaqueContentPath() -> (Path, FillStyle)? {
+        guard case let .content(content) = value else {
+            return nil
+        }
+        switch content.value {
+        case let .color(color):
+            guard color.opacity == 1 else {
+                return nil
+            }
+            return (Path(frame), FillStyle())
+        case let .shape(path, paint, fillStyle):
+            guard paint.isOpaque else {
+                return nil
+            }
+            return (
+                frame.origin != .zero ? path.applying(.init(translationX: frame.x, y: frame.y)) : path,
+                fillStyle
+            )
+        default:
+            return nil
+        }
+    }
+
     package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool {
         switch (value, other.value) {
         case (.empty, .empty):
@@ -801,6 +824,17 @@ extension DisplayList.Item {
                 properties.formUnion(state.1.properties)
             }
         }
+    }
+}
+
+// MARK: - DisplayList + Extension
+
+extension DisplayList {
+    package func opaqueContentPath() -> (Path, FillStyle)? {
+        guard items.count == 1 else {
+            return nil
+        }
+        return items[0].opaqueContentPath()
     }
 }
 
