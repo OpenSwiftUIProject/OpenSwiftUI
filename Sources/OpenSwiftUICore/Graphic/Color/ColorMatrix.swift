@@ -226,10 +226,11 @@ extension _ColorMatrix {
     }
     
     package init(colorInvert x: Float) {
+        let diagonal = 1 - 2 * x
         self.init(
-            row1: (-1, 0, 0, 0, x),
-            row2: (0, -1, 0, 0, x),
-            row3: (0, 0, -1, 0, x),
+            row1: (diagonal, 0, 0, 0, x),
+            row2: (0, diagonal, 0, 0, x),
+            row3: (0, 0, diagonal, 0, x),
             row4: (0, 0, 0, 1, 0)
         )
     }
@@ -302,7 +303,7 @@ extension _ColorMatrix: ProtobufMessage {
         withUnsafePointer(to: self) { pointer in
             let pointer = UnsafeRawPointer(pointer).assumingMemoryBound(to: Float.self)
             let bufferPointer = UnsafeBufferPointer(start: pointer, count: 20)
-            for index: UInt in 1 ... 6 {
+            for index: UInt in 1 ... 20 {
                 encoder.floatField(
                     index,
                     bufferPointer[Int(index &- 1)],
@@ -320,7 +321,7 @@ extension _ColorMatrix: ProtobufMessage {
             while let field = try decoder.nextField() {
                 let tag = field.tag
                 switch tag {
-                    case 1...6: bufferPointer[Int(tag &- 1)] = try decoder.floatField(field)
+                    case 1...20: bufferPointer[Int(tag &- 1)] = try decoder.floatField(field)
                     default: try decoder.skipField(field)
                 }
             }
