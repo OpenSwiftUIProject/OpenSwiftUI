@@ -419,28 +419,6 @@ extension DisplayList {
         case projection(ProjectionTransform)
         case rotation(_RotationEffect.Data)
         case rotation3D(_Rotation3DEffect.Data)
-
-        package var affineTransform: CGAffineTransform? {
-            switch self {
-            case let .affine(transform):
-                return transform
-            case let .rotation(data):
-                return data.transform
-            case .projection, .rotation3D:
-                return nil
-            }
-        }
-
-        package var projectionTransform: ProjectionTransform? {
-            switch self {
-            case let .projection(transform):
-                return transform
-            case let .rotation3D(data):
-                return data.transform
-            case .affine, .rotation:
-                return nil
-            }
-        }
     }
     
     package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
@@ -731,11 +709,223 @@ extension PreferencesOutputs {
     }
 }
 
+// MARK: - DisplayList + AnyEffectAnimator
+
+package protocol _DisplayList_AnyEffectAnimation: ProtobufMessage {
+    static var leafProtobufTag: CodableEffectAnimation.Tag? { get }
+    func makeAnimator() -> any _DisplayList_AnyEffectAnimator
+}
+
+package protocol _DisplayList_AnyEffectAnimator {
+    /// Evaluates the effect animation at the given time and viewport size.
+    ///
+    /// - Parameters:
+    ///   - animation: The existential effect animation. Must be castable to
+    ///     `Animation`; otherwise the method returns
+    ///     ``DisplayList/Effect/identity`` with `finished: true`.
+    ///   - time: The current render time.
+    ///   - size: The viewport size passed to
+    ///     ``EffectAnimation/effect(value:size:)``.
+    /// - Returns: A tuple of the resolved display list effect and a Boolean
+    ///   indicating whether the animation has completed.
+    mutating func evaluate(
+        _ animation: any DisplayList.AnyEffectAnimation,
+        at time: Time,
+        size: CGSize
+    ) -> (DisplayList.Effect, finished: Bool)
+}
+
 // MARK: - DisplayList.Item + Extension
 
 extension DisplayList.Item {
     package mutating func canonicalize(options: DisplayList.Options = .init()) {
-        // TODO eg. .opacity(1.0) -> .identity
+        guard !options.contains(.disableCanonicalization) else {
+            return
+        }
+        switch value {
+        case .empty, .states:
+            return
+        case let .content(content):
+            if frame.isEmpty && !features.contains(.required) {
+                value = .empty
+                return
+            }
+            switch content.value {
+            case let .color(color):
+                if color == .clear {
+                    value = .empty
+                }
+            case let .shape(path, _, _):
+                if path.isEmpty {
+                    value = .empty
+                }
+            case let .shadow(path, shadow):
+                if path.isEmpty || shadow.color.opacity == 0 {
+                    value = .empty
+                }
+            case let .text(text, _):
+                if text.text.isEmpty {
+                    value = .empty
+                }
+            case let .flattened(list, _, _):
+                if list.isEmpty {
+                    value = .empty
+                }
+            default:
+                break
+            }
+        case let .effect(effect, list):
+            guard !list.isEmpty || effect.features.contains(.required) else {
+                value = .empty
+                return
+            }
+            switch effect {
+            case let .opacity(opacity) where opacity >= 1:
+                value = .effect(.identity, list)
+                canonicalizeIdentityEffect(list: list)
+            case let .clip(path, fillStyle, clipOptions):
+                if clipOptions.isEmpty,
+                   list.items.count == 1,
+                   let paint = list.items[0].paint(in: CGRect(origin: .zero, size: frame.size)) {
+                    value = .content(DisplayList.Content(
+                        .shape(path, paint, fillStyle),
+                        seed: DisplayList.Seed(version)
+                    ))
+                }
+            case let .mask(mask, maskOptions):
+                if maskOptions.isEmpty,
+                   list.items.count == 1,
+                   let filter = list.items[0].backdropFilter(size: frame.size) {
+                    value = .effect(.filter(filter), mask)
+                } else if mask.items.count == 1,
+                    let (path, fillStyle) = mask.items[0].opaqueContentPath() {
+                    value = .effect(.clip(path, fillStyle, maskOptions), list)
+                    canonicalize(options: options)
+                }
+            case let .transform(transform):
+                if case let .affine(t) = transform, t == .identity {
+                    value = .effect(.identity, list)
+                    canonicalizeIdentityEffect(list: list)
+                }
+            case let .filter(filter):
+                if filter.isIdentity {
+                    value = .effect(.identity, list)
+                    canonicalizeIdentityEffect(list: list)
+                } else if let outerMatrix = _ColorMatrix(filter, premultiplied: false),
+                       list.items.count == 1,
+                       let (innerMatrix, innerList) = list.items[0].colorMatrix(size: frame.size) {
+                    value = .effect(
+                        .filter(.colorMatrix(outerMatrix * innerMatrix, premultiplied: false)),
+                        innerList
+                    )
+                }
+            case .identity:
+                canonicalizeIdentityEffect(list: list)
+            default:
+                break
+            }
+            guard !list.features.contains(.required) else {
+                return
+            }
+            switch effect {
+            case let .opacity(opacity):
+                if opacity <= 0 {
+                    value = .empty
+                }
+            case let .clip(path, _, _):
+                if path.isEmpty {
+                    value = .empty
+                }
+            case let .mask(mask, _):
+                if mask.isEmpty {
+                    value = .empty
+                }
+            default:
+                break
+            }
+        }
+    }
+
+    private mutating func canonicalizeIdentityEffect(list: DisplayList) {
+        guard list.items.count == 1 else {
+            return
+        }
+        let item = list.items[0]
+        frame = item.frame.offset(by: CGSize(frame.origin))
+        version.combine(with: item.version)
+        value = item.value
+        if item.identity != .none {
+            identity = item.identity
+        }
+    }
+
+    fileprivate func opaqueContentPath() -> (Path, FillStyle)? {
+        guard case let .content(content) = value else {
+            return nil
+        }
+        switch content.value {
+        case let .color(color):
+            guard color.opacity == 1 else {
+                return nil
+            }
+            return (Path(frame), FillStyle())
+        case let .shape(path, paint, fillStyle):
+            guard paint.isOpaque else {
+                return nil
+            }
+            return (
+                frame.origin != .zero ? path.applying(.init(translationX: frame.x, y: frame.y)) : path,
+                fillStyle
+            )
+        default:
+            return nil
+        }
+    }
+
+    private func paint(in rect: CGRect) -> AnyResolvedPaint? {
+        guard case let .content(content) = value else {
+            return nil
+        }
+        switch content.value {
+        case let .color(color):
+            guard rect == frame else {
+                return nil
+            }
+            return _AnyResolvedPaint(color)
+        case let .shape(path, paint, _):
+            guard rect == frame,
+                path == Path(CGRect(origin: .zero, size: rect.size)) else {
+                return nil
+            }
+            return paint
+        default:
+            return nil
+        }
+    }
+
+    private func colorMatrix(size: CGSize) -> (_ColorMatrix, DisplayList)? {
+        guard frame == CGRect(origin: .zero, size: size),
+              case let .effect(.filter(filter), list) = value,
+              let matrix = _ColorMatrix(filter, premultiplied: false) else {
+            return nil
+        }
+        return (matrix, list)
+    }
+
+    private func backdropFilter(size: CGSize) -> GraphicsFilter? {
+        guard let (matrix, list) = colorMatrix(size: size),
+              list.items.count == 1 else {
+            return nil
+        }
+        let item = list.items[0]
+        guard item.frame == CGRect(origin: .zero, size: size),
+              case let .content(content) = item.value,
+              case let .backdrop(backdrop) = content.value,
+              backdrop.color.opacity == 0
+        else {
+            return nil
+        }
+        return .vibrantColorMatrix(matrix)
     }
 
     package func matchesTopLevelStructure(of other: DisplayList.Item) -> Bool {
@@ -796,6 +986,43 @@ extension DisplayList.Item {
             return states.reduce(into: []) { properties, state in
                 properties.formUnion(state.1.properties)
             }
+        }
+    }
+}
+
+// MARK: - DisplayList + Extension
+
+extension DisplayList {
+    package func opaqueContentPath() -> (Path, FillStyle)? {
+        guard items.count == 1 else {
+            return nil
+        }
+        return items[0].opaqueContentPath()
+    }
+}
+
+// MARK: - DisplayList.Transform + Extension
+
+extension DisplayList.Transform {
+    package var affineTransform: CGAffineTransform? {
+        switch self {
+        case let .affine(transform):
+            return transform
+        case let .rotation(data):
+            return data.transform
+        case .projection, .rotation3D:
+            return nil
+        }
+    }
+
+    package var projectionTransform: ProjectionTransform? {
+        switch self {
+        case let .projection(transform):
+            return transform
+        case let .rotation3D(data):
+            return data.transform
+        case .affine, .rotation:
+            return nil
         }
     }
 }
@@ -983,30 +1210,6 @@ extension DisplayList.Item {
 }
 
 package struct AccessibilityNodeAttachment {}
-
-package protocol _DisplayList_AnyEffectAnimation: ProtobufMessage {
-    static var leafProtobufTag: CodableEffectAnimation.Tag? { get }
-    func makeAnimator() -> any _DisplayList_AnyEffectAnimator
-}
-
-package protocol _DisplayList_AnyEffectAnimator {
-    /// Evaluates the effect animation at the given time and viewport size.
-    ///
-    /// - Parameters:
-    ///   - animation: The existential effect animation. Must be castable to
-    ///     `Animation`; otherwise the method returns
-    ///     ``DisplayList/Effect/identity`` with `finished: true`.
-    ///   - time: The current render time.
-    ///   - size: The viewport size passed to
-    ///     ``EffectAnimation/effect(value:size:)``.
-    /// - Returns: A tuple of the resolved display list effect and a Boolean
-    ///   indicating whether the animation has completed.
-    mutating func evaluate(
-        _ animation: any DisplayList.AnyEffectAnimation,
-        at time: Time,
-        size: CGSize
-    ) -> (DisplayList.Effect, finished: Bool)
-}
 
 extension DisplayList.Item {
     func addDrawingGroup(contentSeed: DisplayList.Seed) {
