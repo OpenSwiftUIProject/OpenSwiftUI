@@ -2,8 +2,8 @@
 //  ColorMatrix.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by Color, GraphicsFilter and ShapeStyle
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 623CA953523AF4C256B3825254A7F058 (SwiftUICore)
 
 import OpenCoreGraphicsShims
@@ -146,7 +146,7 @@ extension UnkeyedDecodingContainer {
     }
 }
 
-// MARK: - _ColorMatrix + init [TODO]
+// MARK: - _ColorMatrix + Extension
 
 extension _ColorMatrix {
     @inline(__always)
@@ -163,7 +163,61 @@ extension _ColorMatrix {
     }
     
     package init?(_ filter: GraphicsFilter, premultiplied: Bool = false) {
-        _openSwiftUIUnimplementedFailure()
+        switch filter {
+        case let .colorMatrix(matrix, matrixIsPremultiplied):
+            guard matrixIsPremultiplied == premultiplied else {
+                return nil
+            }
+            self = matrix
+        case let .colorMultiply(color):
+            self.init(colorMultiply: color, premultiplied: premultiplied)
+        case let .hueRotation(angle):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(hueRotation: angle)
+        case let .saturation(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(saturation: amount)
+        case let .brightness(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(brightness: amount)
+        case let .contrast(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(contrast: amount)
+        case .luminanceToAlpha:
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(luminanceToAlpha: ())
+        case .colorInvert:
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(colorInvert: 1)
+        case let .grayscale(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(colorMonochrome: .white, amount: Float(amount), bias: 0)
+        case let .colorMonochrome(monochrome):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(
+                colorMonochrome: monochrome.color,
+                amount: monochrome.amount,
+                bias: monochrome.bias
+            )
+        default:
+            return nil
+        }
     }
     
     package init(colorMultiply c: Color.Resolved, premultiplied: Bool = false) {
@@ -190,6 +244,35 @@ extension _ColorMatrix {
             row1: (0.2126 + cosValue * 0.7873 - sinValue * 0.2126, 0.2126 - cosValue * 0.2126 + sinValue * 0.1430, 0.2126 - cosValue * 0.2126 - sinValue * 0.7873, 0, 0),
             row2: (0.7152 - cosValue * 0.7152 - sinValue * 0.7152, 0.7152 + cosValue * 0.2848 + sinValue * 0.1400, 0.7152 - cosValue * 0.7152 + sinValue * 0.7152, 0, 0),
             row3: (0.0722 - cosValue * 0.0722 + sinValue * 0.9278, 0.0722 - cosValue * 0.0722 - sinValue * 0.2830, 0.0722 + cosValue * 0.9278 + sinValue * 0.0722, 0, 0),
+            row4: (0, 0, 0, 1, 0)
+        )
+    }
+
+    @inline(__always)
+    package init(saturation: Double) {
+        let amount = Float(saturation <= 0 ? 0 : saturation)
+        self.init(
+            row1: (
+                0.2126 + amount * 0.7873,
+                0.7152 - amount * 0.7152,
+                0.0722 - amount * 0.0722,
+                0,
+                0
+            ),
+            row2: (
+                0.2126 - amount * 0.2126,
+                0.7152 + amount * 0.2848,
+                0.0722 - amount * 0.0722,
+                0,
+                0
+            ),
+            row3: (
+                0.2126 - amount * 0.2126,
+                0.7152 - amount * 0.7152,
+                0.0722 + amount * 0.9278,
+                0,
+                0
+            ),
             row4: (0, 0, 0, 1, 0)
         )
     }
