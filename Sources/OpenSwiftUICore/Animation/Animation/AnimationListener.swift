@@ -6,7 +6,9 @@
 //  Status: Complete
 //  ID: 390609F81ACEBEAF00AD8179BD31E870 (SwiftUICore)
 
+#if canImport(Dispatch)
 import Dispatch
+#endif
 
 // MARK: - AnimationListener
 
@@ -100,6 +102,7 @@ private final class AllFinishedListener: AnimationListener, @unchecked Sendable 
 // MARK: - Transaction + AnimationListener
 
 extension Transaction {
+    #if canImport(Dispatch)
     private static var pendingListeners = AtomicBox(wrappedValue: PendingListeners())
 
     private struct PendingListeners {
@@ -156,6 +159,15 @@ extension Transaction {
             }
         }
     }
+    #else
+    private static func addPendingListener(_ listener: AnimationListener) {
+        let listener = UncheckedSendable(listener)
+        Task {
+            try? await Task.sleep(for: .milliseconds(10))
+            listener.value.finalizeTransaction()
+        }
+    }
+    #endif
 
     private struct AnimationListenerKey: TransactionKey {
         static var defaultValue: AnimationListener? { nil }

@@ -9,11 +9,16 @@
 #define MovableLock_h
 
 #include "OpenSwiftUIBase.h"
+#if !OPENSWIFTUI_TARGET_OS_WASI
 #import <pthread.h>
+#endif
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 typedef struct MovableLock_s {
+    #if OPENSWIFTUI_TARGET_OS_WASI
+    uint32_t lock_level;
+    #else
     pthread_mutex_t mutex;
     pthread_cond_t lock_condition;
     pthread_cond_t main_callback_condition;
@@ -26,6 +31,7 @@ typedef struct MovableLock_s {
     const void * _Nullable main_callback_context;
     bool main_callback_pending;
     bool main_thread_waiting;
+    #endif
 } MovableLock_t;
 
 typedef MovableLock_t *MovableLock __attribute((swift_newtype(struct)));

@@ -6,13 +6,6 @@
 //  ID: DE8DAFA613257BEA44770487175C185C (SwiftUICore)
 
 package import Foundation
-#if canImport(Darwin)
-import Darwin
-#elseif canImport(Glibc)
-import Glibc
-#else
-#error("Unsupported Platform")
-#endif
 
 // MARK: - bind [6.5.4]
 
@@ -51,25 +44,13 @@ extension Double {
 
 extension Float {
     package var quantized: Float {
-        #if canImport(Darwin)
-        Darwin.round(self * 256.0) / 256.0
-        #elseif canImport(Glibc)
-        Glibc.round(self * 256.0) / 256.0
-        #else
-        #error("Unsupported Platform")
-        #endif
+        (self * 256.0).rounded() / 256.0
     }
 }
 
 extension CGFloat {
     package var quantized: CGFloat {
-        #if canImport(Darwin)
-        Darwin.round(self * 256.0) / 256.0
-        #elseif canImport(Glibc)
-        Glibc.round(self * 256.0) / 256.0
-        #else
-        #error("Unsupported Platform")
-        #endif
+        (self * 256.0).rounded() / 256.0
     }
 }
 

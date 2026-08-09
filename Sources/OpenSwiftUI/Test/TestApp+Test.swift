@@ -16,9 +16,13 @@ extension _TestApp {
             rootView: _TestApp.RootView().testID(_TestApp.rootViewIdentifier),
             comparisonView: EmptyView()
         ) { host, comparisonHost in
+            #if os(WASI)
+            performBenchmarks(benchmarks, with: host)
+            #else
             DispatchQueue.main.async {
                  performBenchmarks(benchmarks, with: host)
             }
+            #endif
         }
     }
 
@@ -61,4 +65,3 @@ extension _TestApp {
         }
     }
 }
-

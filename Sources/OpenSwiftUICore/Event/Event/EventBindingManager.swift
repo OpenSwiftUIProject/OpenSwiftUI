@@ -32,14 +32,18 @@ final public class EventBindingManager {
         return eventGraphHost.eventBindingManager
     }
 
+    #if !os(WASI)
     private var eventTimer: Timer?
+    #endif
 
     package init() {
         _openSwiftUIEmptyStub()
     }
 
     deinit {
+        #if !os(WASI)
         eventTimer?.invalidate()
+        #endif
     }
 
     package func addForwardedEventDispatcher(_ dispatcher: any ForwardedEventDispatcher) {

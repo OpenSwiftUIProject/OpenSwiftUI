@@ -17,8 +17,10 @@
 extern pthread_t pthread_main_thread_np(void);
 #endif
 
+#if !OPENSWIFTUI_TARGET_OS_WASI
 static void wait_for_lock(MovableLock lock, pthread_t thread);
 static void sync_main_callback(MovableLock lock);
+#endif
 
 MovableLock _MovableLockCreate() {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
@@ -28,6 +30,7 @@ MovableLock _MovableLockCreate() {
     if (!lock) {
         abort();
     }
+    #if !OPENSWIFTUI_TARGET_OS_WASI
     pthread_mutex_init(&lock->mutex, NULL);
     pthread_cond_init(&lock->lock_condition, NULL);
     pthread_cond_init(&lock->main_callback_condition, NULL);
@@ -35,29 +38,42 @@ MovableLock _MovableLockCreate() {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     lock->main_thread = pthread_main_thread_np();
     #endif
+    #endif
     return lock;
 }
 
 void _MovableLockDestroy(MovableLock lock) {
+    #if !OPENSWIFTUI_TARGET_OS_WASI
     pthread_cond_destroy(&lock->lock_condition);
     pthread_cond_destroy(&lock->main_callback_condition);
     pthread_cond_destroy(&lock->broadcast_condition);
     pthread_mutex_destroy(&lock->mutex);
+    #endif
     free(lock);
 }
 
 bool _MovableLockIsOwner(MovableLock lock) {
+    #if OPENSWIFTUI_TARGET_OS_WASI
+    return lock->lock_level != 0;
+    #else
     pthread_t owner = lock->owner_thread;
     return pthread_self() == owner;
+    #endif
 }
 
 bool _MovableLockIsOutermostOwner(MovableLock lock) {
+    #if OPENSWIFTUI_TARGET_OS_WASI
+    return lock->lock_level == 1;
+    #else
     pthread_t owner = lock->owner_thread;
     return pthread_self() == owner && lock->lock_level == 1;
+    #endif
 }
 
 void _MovableLockLock(MovableLock lock) {
-    #if OPENSWIFTUI_TARGET_OS_DARWIN
+    #if OPENSWIFTUI_TARGET_OS_WASI
+    lock->lock_level += 1;
+    #elif OPENSWIFTUI_TARGET_OS_DARWIN
     pthread_t owner = pthread_self();
     if (owner == lock->owner_thread) {
         lock->lock_level += 1;
@@ -74,7 +90,10 @@ void _MovableLockLock(MovableLock lock) {
 }
 
 void _MovableLockUnlock(MovableLock lock) {
-    #if OPENSWIFTUI_TARGET_OS_DARWIN
+    #if OPENSWIFTUI_TARGET_OS_WASI
+    assert(lock->lock_level != 0);
+    lock->lock_level -= 1;
+    #elif OPENSWIFTUI_TARGET_OS_DARWIN
     lock->lock_level -= 1;
     if (lock->lock_level != 0) {
         return;
@@ -88,7 +107,9 @@ void _MovableLockUnlock(MovableLock lock) {
 }
 
 void _MovableLockSyncMain(MovableLock lock, const void *main_callback_context, void (*main_callback)(const void *main_callback_context)) {
-    #if OPENSWIFTUI_TARGET_OS_DARWIN
+    #if OPENSWIFTUI_TARGET_OS_WASI
+    main_callback(main_callback_context);
+    #elif OPENSWIFTUI_TARGET_OS_DARWIN
     if (pthread_self() == lock->main_thread) {
         main_callback(main_callback_context);
     } else {
@@ -135,6 +156,7 @@ void _MovableLockBroadcast(MovableLock lock) {
     #endif
 }
 
+#if !OPENSWIFTUI_TARGET_OS_WASI
 static void wait_for_lock(MovableLock lock, pthread_t owner) {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     lock->waiter_count += 1;
@@ -173,3 +195,4 @@ static void sync_main_callback(MovableLock lock) {
     _MovableLockUnlock(lock);
     #endif
 }
+#endif

@@ -49,7 +49,7 @@ private struct ObjectLocation<Root, Value>: Location where Root: AnyObject {
     }
 
     func checkIsolation() {
-        guard let isolation, isolation === MainActor.shared, !Thread.isMainThread else {
+        guard let isolation, isolation === MainActor.shared, !_isMainThread else {
             return
         }
         let description = String(describing: keyPath)

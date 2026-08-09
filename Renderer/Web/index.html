@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OpenSwiftUI Web Renderer</title>
+  <style>
+    :root {
+      color-scheme: dark;
+      background: #101114;
+    }
+
+    html,
+    body {
+      min-height: 100%;
+      margin: 0;
+    }
+
+    body {
+      display: grid;
+      place-items: center;
+      font-family: system-ui, sans-serif;
+    }
+
+    canvas {
+      max-width: calc(100vw - 32px);
+      height: auto !important;
+      border: 1px solid #34363d;
+      border-radius: 12px;
+      box-shadow: 0 24px 80px rgb(0 0 0 / 45%);
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas" aria-label="OpenSwiftUI Web renderer output"></canvas>
+  <script type="module">
+    import { init } from "./Bundle/index.js";
+    try {
+      await init();
+      document.documentElement.dataset.webRendererStatus = "ready";
+    } catch (error) {
+      document.documentElement.dataset.webRendererStatus = "failed";
+      document.documentElement.dataset.webRendererError = String(error);
+      console.error(error);
+    }
+  </script>
+</body>
+</html>

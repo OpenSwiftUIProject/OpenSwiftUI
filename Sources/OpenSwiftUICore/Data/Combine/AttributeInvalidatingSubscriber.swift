@@ -5,7 +5,9 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+#if !os(WASI)
 import class Foundation.Thread
+#endif
 import OpenAttributeGraphShims
 #if OPENSWIFTUI_OPENCOMBINE
 import OpenCombine
@@ -42,7 +44,7 @@ class AttributeInvalidatingSubscriber<Upstream> where Upstream: Publisher {
 
     private func invalidateAttribute() {
         let style: GraphMutation.Style
-        if !Thread.isMainThread {
+        if !_isMainThread {
             Log.runtimeIssues("Publishing changes from background threads is not allowed; make sure to publish values from the main thread (via operators like receive(on:)) on model updates.")
             style = .immediate
         } else if Update.threadIsUpdating, isLinkedOnOrAfter(.v4) {

@@ -4,7 +4,7 @@
 
 import Foundation
 import OpenCoreGraphicsShims
-import OpenSwiftUICore
+@_spi(WebRenderer) import OpenSwiftUICore
 import Testing
 
 struct DisplayListStdoutRendererTests {
@@ -124,8 +124,12 @@ struct DisplayListStdoutRendererTests {
             ]),
             frame: .zero
         )
+        let selectedState = item(
+            .effect(.state(StrongHash(of: 2)), DisplayList(states)),
+            frame: .zero
+        )
 
-        #expect(DisplayList(states).stdoutDescription(
+        #expect(DisplayList(selectedState).stdoutDescription(
             surface: CGSize(width: 200.0, height: 150.0),
             version: .init(decodedValue: 8)
         ) == """
@@ -133,9 +137,107 @@ struct DisplayListStdoutRendererTests {
         surface: 200.0x150.0
         display-list-version: 8
         rendered:
-          - fill x:0.0 y:0.0 w:10.0 h:20.0 #FF0000FF
           - fill x:30.0 y:40.0 w:50.0 h:60.0 #0000FFFF
         """)
+    }
+
+    @Test
+    func unmatchedStateIsEmpty() {
+        let content = item(
+            .content(.init(
+                .color(.init(colorSpace: .sRGBLinear, red: 1.0, green: 0.0, blue: 0.0)),
+                seed: .init(decodedValue: 1)
+            )),
+            frame: CGRect(x: 0.0, y: 0.0, width: 10.0, height: 20.0)
+        )
+        let states = item(
+            .states([(StrongHash(of: 1), DisplayList(content))]),
+            frame: .zero
+        )
+        let unmatchedState = item(
+            .effect(.state(StrongHash(of: 2)), DisplayList(states)),
+            frame: .zero
+        )
+
+        #expect(DisplayList(unmatchedState).stdoutDescription(
+            surface: CGSize(width: 100.0, height: 100.0),
+            version: .init(decodedValue: 9)
+        ) == """
+        OpenSwiftUI backend: stdout
+        surface: 100.0x100.0
+        display-list-version: 9
+        rendered:
+        """)
+    }
+
+    @Test
+    func webFrame() {
+        let item = item(
+            .content(.init(
+                .color(.init(colorSpace: .sRGBLinear, red: 1.0, green: 0.5, blue: 0.0)),
+                seed: .init(decodedValue: 2)
+            )),
+            frame: CGRect(x: 8.0, y: 12.0, width: 32.0, height: 48.0)
+        )
+
+        let frame = DisplayList(item).webRenderFrame(
+            surface: CGSize(width: 320.0, height: 240.0),
+            version: .init(decodedValue: 9)
+        )
+
+        #expect(frame.surface == CGSize(width: 320.0, height: 240.0))
+        #expect(frame.version == 9)
+        #expect(frame.commands.count == 1)
+        guard case let .fill(rect, transform, cssColor) = frame.commands[0] else {
+            Issue.record("Expected a fill command")
+            return
+        }
+        #expect(rect == CGRect(x: 0.0, y: 0.0, width: 32.0, height: 48.0))
+        #expect(transform == CGAffineTransform(translationX: 8.0, y: 12.0))
+        #expect(cssColor == "#FFBC00FF")
+    }
+
+    @Test
+    func webFramePreservesAffineTransformAndClampsCSSColor() {
+        let content = item(
+            .content(.init(
+                .color(.init(
+                    colorSpace: .sRGBLinear,
+                    red: 4.0,
+                    green: -1.0,
+                    blue: .nan,
+                    opacity: 2.0
+                )),
+                seed: .init(decodedValue: 3)
+            )),
+            frame: CGRect(x: 2.0, y: 3.0, width: 4.0, height: 5.0)
+        )
+        let rotation = CGAffineTransform(
+            a: 0.0,
+            b: 1.0,
+            c: -1.0,
+            d: 0.0,
+            tx: 0.0,
+            ty: 0.0
+        )
+        let transformed = item(
+            .effect(.transform(.affine(rotation)), DisplayList(content)),
+            frame: .zero
+        )
+
+        let frame = DisplayList(transformed).webRenderFrame(
+            surface: CGSize(width: 20.0, height: 20.0),
+            version: .init(decodedValue: 10)
+        )
+
+        #expect(frame.commands.count == 1)
+        guard case let .fill(rect, transform, cssColor) = frame.commands[0] else {
+            Issue.record("Expected a fill command")
+            return
+        }
+        #expect(rect == CGRect(x: 0.0, y: 0.0, width: 4.0, height: 5.0))
+        #expect(transform == rotation.translatedBy(x: 2.0, y: 3.0))
+        #expect(cssColor == "#FF0000FF")
     }
 
     private func item(

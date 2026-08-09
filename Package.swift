@@ -196,6 +196,7 @@ var sharedCSettings: [CSetting] = [
     .unsafeFlags(["-ftyped-memory-operations"], .when(platforms: .darwinPlatforms)),
     .unsafeFlags(["-fmodules"]),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .define("_WASI_EMULATED_MMAN", .when(platforms: [.wasi])),
     .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
@@ -207,6 +208,7 @@ var sharedCxxSettings: [CXXSetting] = [
     .unsafeFlags(["-ftyped-cxx-new-delete"], .when(platforms: .darwinPlatforms)),
     .unsafeFlags(["-fcxx-modules"]),
     .define("_WASI_EMULATED_SIGNAL", .when(platforms: [.wasi])),
+    .define("_WASI_EMULATED_MMAN", .when(platforms: [.wasi])),
     .unsafeFlags(["-isystem", swiftCorelibsPath], .when(platforms: .nonDarwinPlatforms)),
 ]
 
@@ -420,7 +422,13 @@ extension Target {
 
     func addOpenCombineSettings() {
         dependencies.append(.product(name: "OpenCombine", package: "OpenCombine"))
-        dependencies.append(.product(name: "OpenCombineFoundation", package: "OpenCombine"))
+        dependencies.append(
+            .product(
+                name: "OpenCombineFoundation",
+                package: "OpenCombine",
+                condition: .when(platforms: .nonWASIPlatforms)
+            )
+        )
         var swiftSettings = swiftSettings ?? []
         swiftSettings.append(.define("OPENSWIFTUI_OPENCOMBINE"))
         self.swiftSettings = swiftSettings
@@ -458,6 +466,10 @@ extension [Platform] {
 
     static var nonDarwinPlatforms: [Platform] {
         [.linux, .android, .wasi, .openbsd, .windows]
+    }
+
+    static var nonWASIPlatforms: [Platform] {
+        darwinPlatforms + [.linux, .android, .openbsd, .windows]
     }
 }
 

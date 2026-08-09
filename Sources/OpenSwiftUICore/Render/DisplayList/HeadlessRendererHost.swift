@@ -1,20 +1,21 @@
 //
-//  StdoutRendererHost.swift
+//  HeadlessRendererHost.swift
 //  OpenSwiftUICore
+//
 
 #if !OPENSWIFTUI_SWIFTUI_RENDERER
-import Foundation
+package import Foundation
+package import OpenCoreGraphicsShims
 
-// MARK: - StdoutRendererHost
+// MARK: - HeadlessRendererHost
 
-final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRenderDelegate where Content: View {
-    typealias RootView = ModifiedContent<Content, HitTestBindingModifier>
-
+/// A one-shot host shared by renderers that do not own a native platform view.
+final package class HeadlessRendererHost<Content>: ViewRendererHost, ViewGraphRenderDelegate where Content: View {
     package let viewGraph: ViewGraph
     package let renderer: DisplayList.ViewRenderer
     package let rootView: Content
     package let environment: EnvironmentValues
-    package let options: _RendererConfiguration.StdoutOptions
+    package let surface: CGSize
 
     package var currentTimestamp: Time = .zero
     package var propertiesNeedingUpdate: ViewRendererHostProperties = .all
@@ -24,18 +25,18 @@ final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRend
     package init(
         rootView: Content,
         environment: EnvironmentValues,
-        options: _RendererConfiguration.StdoutOptions
+        surface: CGSize,
+        configuration: _RendererConfiguration
     ) {
         self.rootView = rootView
         self.environment = environment
-        self.options = options
+        self.surface = surface
         Update.begin()
-        // The stdout renderer only needs layout and display list output.
-        viewGraph = ViewGraph(rootViewType: RootView.self, requestedOutputs: [.displayList, .layout])
+        viewGraph = ViewGraph(rootViewType: Content.self, requestedOutputs: [.displayList, .layout])
         renderer = DisplayList.ViewRenderer(
-            platform: .init(definition: StdoutPlatformViewDefinition.self)
+            platform: .init(definition: HeadlessPlatformViewDefinition.self)
         )
-        renderer.configuration = .stdout(options)
+        renderer.configuration = configuration
         renderer.host = self
         initializeViewGraph()
         Update.end()
@@ -46,7 +47,7 @@ final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRend
     }
 
     package func updateRootView() {
-        viewGraph.setRootView(Self.makeRootView(rootView))
+        viewGraph.setRootView(rootView)
     }
 
     package func updateEnvironment() {
@@ -58,7 +59,7 @@ final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRend
     }
 
     package func updateSize() {
-        viewGraph.setProposedSize(options.surface)
+        viewGraph.setProposedSize(surface)
     }
 
     package func updateSafeArea() {
@@ -66,7 +67,7 @@ final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRend
     }
 
     package func updateContainerSize() {
-        viewGraph.setContainerSize(.fixed(options.surface))
+        viewGraph.setContainerSize(.fixed(surface))
     }
 
     package func updateFocusStore() {}
@@ -103,5 +104,5 @@ final package class StdoutRendererHost<Content>: ViewRendererHost, ViewGraphRend
     }
 }
 
-private final class StdoutPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {}
+private final class HeadlessPlatformViewDefinition: PlatformViewDefinition, @unchecked Sendable {}
 #endif

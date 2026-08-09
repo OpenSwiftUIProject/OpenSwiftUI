@@ -223,6 +223,9 @@ extension _ViewTest {
 
     public func loop() {
         render()
+        #if os(WASI)
+        _openSwiftUIUnimplementedFailure()
+        #else
         let defaultMode = RunLoop.Mode.default
         let commonMode = RunLoop.Mode.common
         var count: UInt = 0
@@ -234,10 +237,14 @@ extension _ViewTest {
             }
             count += 1
         }
+        #endif
     }
 
     public func turnRunloop(times: Int = 1) {
         Swift.assert(times > 0)
+        #if os(WASI)
+        _openSwiftUIUnimplementedFailure()
+        #else
         let defaultMode = RunLoop.Mode.default
         let commonMode = RunLoop.Mode.common
         let interval = 0.001
@@ -250,9 +257,13 @@ extension _ViewTest {
                 Thread.sleep(forTimeInterval: interval)
             }
         }
+        #endif
     }
 
     private func turnRunLoopIfNeeded(host: any TestHost, seconds: Double, options: TestRenderOptions) {
+        #if os(WASI)
+        return
+        #else
         guard CoreTesting.neeedsRunLoopTurn else {
             return
         }
@@ -275,6 +286,7 @@ extension _ViewTest {
         if CoreTesting.needsRender || CoreTesting.neeedsRunLoopTurn {
             Log.unitTests.log("Render or run loop turn needed after max iterations")
         }
+        #endif
     }
 }
 

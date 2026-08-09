@@ -6,6 +6,7 @@
 //  Status: Complete
 
 public import Foundation
+public import OpenCoreGraphicsShims
 
 // MARK: - _RendererConfiguration
 
@@ -28,6 +29,11 @@ public struct _RendererConfiguration {
         /// to standard output.
         @_spi(StdoutRenderer)
         indirect case stdout(_ options: _RendererConfiguration.StdoutOptions = .init())
+
+        /// A renderer that forwards a static display-list frame to a web
+        /// surface owned by the embedding application.
+        @_spi(WebRenderer)
+        indirect case web(_ options: _RendererConfiguration.WebOptions)
         #endif
         /* OpenSwiftUI Addition End */
     }
@@ -59,6 +65,13 @@ public struct _RendererConfiguration {
     public static func stdout(_ options: _RendererConfiguration.StdoutOptions = .init()) -> _RendererConfiguration {
         _RendererConfiguration(renderer: .stdout(options))
     }
+
+    /// Returns a configuration that renders display-list frames to a web
+    /// surface owned by the embedding application.
+    @_spi(WebRenderer)
+    public static func web(_ options: _RendererConfiguration.WebOptions) -> _RendererConfiguration {
+        _RendererConfiguration(renderer: .web(options))
+    }
     #endif
 
     /* OpenSwiftUI Addition End */
@@ -77,6 +90,26 @@ public struct _RendererConfiguration {
         private static let defaultSurfaceSize = CGSize(width: 640.0, height: 480.0)
 
         public init() {}
+    }
+
+    // MARK: - _RendererConfiguration.WebOptions
+
+    /// Options for the `web` renderer.
+    @_spi(WebRenderer)
+    public struct WebOptions {
+        /// The logical size of the web rendering surface.
+        public var surface: CGSize
+
+        /// Called synchronously whenever a new static frame is available.
+        public var onRender: (_WebRenderFrame) -> Void
+
+        public init(
+            surface: CGSize = CGSize(width: 640.0, height: 480.0),
+            onRender: @escaping (_WebRenderFrame) -> Void
+        ) {
+            self.surface = surface
+            self.onRender = onRender
+        }
     }
 
     /* OpenSwiftUI Addition End */
@@ -135,6 +168,10 @@ extension _RendererConfiguration.RasterizationOptions: Sendable {}
 @_spi(StdoutRenderer)
 @available(*, unavailable)
 extension _RendererConfiguration.StdoutOptions: Sendable {}
+
+@_spi(WebRenderer)
+@available(*, unavailable)
+extension _RendererConfiguration.WebOptions: Sendable {}
 /* OpenSwiftUI Addition End */
 
 // MARK: - RasterizationOptions + _RendererConfiguration.RasterizationOptions

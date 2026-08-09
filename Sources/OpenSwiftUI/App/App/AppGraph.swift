@@ -154,10 +154,12 @@ package final class AppGraph: GraphHost {
             if launchProfileOptions.contains(.profile) {
                 Graph.stopProfiling()
             }
+            #if !os(WASI)
             if !launchProfileOptions.isEmpty {
                 // /tmp/graph.ag-gzon
                 Graph.archiveJSON(name: nil)
             }
+            #endif
         }
     }
 }

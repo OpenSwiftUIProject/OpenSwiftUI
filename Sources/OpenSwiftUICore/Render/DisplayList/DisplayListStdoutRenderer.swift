@@ -21,123 +21,20 @@ extension DisplayList {
             "display-list-version: \(version.value)",
             "rendered:",
         ]
-        for command in stdoutRenderCommands() {
-            lines.append("  - \(command.description)")
+        for command in staticRenderCommands() {
+            lines.append("  - \(command.stdoutDescription)")
         }
         return lines.joined(separator: "\n")
     }
-
-    private func stdoutRenderCommands() -> [StdoutRenderCommand] {
-        var visitor = StdoutRenderCommandVisitor()
-        visitor.append(list: self)
-        return visitor.commands
-    }
 }
 
-private enum StdoutRenderCommand {
-    case fill(frame: CGRect, color: Color.Resolved)
-
-    var description: String {
+private extension DisplayList.StaticRenderCommand {
+    var stdoutDescription: String {
         switch self {
-        case let .fill(frame, color):
-            "fill x:\(stdoutFormat(frame.minX)) y:\(stdoutFormat(frame.minY)) w:\(stdoutFormat(frame.width)) h:\(stdoutFormat(frame.height)) \(color.description)"
+        case let .fill(frame, transform, color):
+            let renderedFrame = frame.applying(transform)
+            return "fill x:\(stdoutFormat(renderedFrame.minX)) y:\(stdoutFormat(renderedFrame.minY)) w:\(stdoutFormat(renderedFrame.width)) h:\(stdoutFormat(renderedFrame.height)) \(color.description)"
         }
-    }
-}
-
-private struct StdoutRenderCommandVisitor {
-    var commands: [StdoutRenderCommand] = []
-
-    mutating func append(
-        list: DisplayList,
-        transform: CGAffineTransform = .identity,
-        opacity: Float = 1.0
-    ) {
-        for item in list.items {
-            append(item: item, transform: transform, opacity: opacity)
-        }
-    }
-
-    private mutating func append(
-        item: DisplayList.Item,
-        transform: CGAffineTransform,
-        opacity: Float
-    ) {
-        switch item.value {
-        case let .content(content):
-            append(
-                content: content,
-                frame: item.frame.applying(transform),
-                transform: transform,
-                opacity: opacity
-            )
-        case let .effect(effect, list):
-            append(effect: effect, list: list, transform: transform, opacity: opacity)
-        case let .states(states):
-            for (_, list) in states {
-                append(list: list, transform: transform, opacity: opacity)
-            }
-        case .empty:
-            break
-        }
-    }
-
-    private mutating func append(
-        content: DisplayList.Content,
-        frame: CGRect,
-        transform: CGAffineTransform,
-        opacity: Float
-    ) {
-        switch content.value {
-        case let .color(color):
-            commands.append(.fill(frame: frame, color: color.multiplyingOpacity(by: opacity)))
-        case let .shape(_, paint, _):
-            if let color = paint.stdoutResolvedColor {
-                commands.append(.fill(frame: frame, color: color.multiplyingOpacity(by: opacity)))
-            }
-        case let .flattened(list, offset, _):
-            append(
-                list: list,
-                transform: transform.concatenating(
-                    CGAffineTransform(translationX: frame.minX + offset.x, y: frame.minY + offset.y)
-                ),
-                opacity: opacity
-            )
-        default:
-            break
-        }
-    }
-
-    private mutating func append(
-        effect: DisplayList.Effect,
-        list: DisplayList,
-        transform: CGAffineTransform,
-        opacity: Float
-    ) {
-        switch effect {
-        case let .opacity(alpha):
-            append(list: list, transform: transform, opacity: opacity * alpha)
-        case let .transform(.affine(affine)):
-            append(list: list, transform: transform.concatenating(affine), opacity: opacity)
-        default:
-            append(list: list, transform: transform, opacity: opacity)
-        }
-    }
-}
-
-private struct StdoutColorPaintVisitor: ResolvedPaintVisitor {
-    var color: Color.Resolved?
-
-    mutating func visitPaint<P>(_ paint: P) where P: ResolvedPaint {
-        color = paint as? Color.Resolved
-    }
-}
-
-private extension AnyResolvedPaint {
-    var stdoutResolvedColor: Color.Resolved? {
-        var visitor = StdoutColorPaintVisitor()
-        visit(&visitor)
-        return visitor.color
     }
 }
 

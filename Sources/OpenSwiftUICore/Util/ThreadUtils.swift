@@ -11,12 +11,21 @@ import Foundation
 // MARK: - ThreadSpecific
 
 final package class ThreadSpecific<T> {
+    #if os(WASI)
+    private var wasiValue: T
+    #else
     private var key: pthread_key_t
+    #endif
     let defaultValue: T
     
     package init(_ defaultValue: T) {
+        #if os(WASI)
+        wasiValue = defaultValue
+        #else
         key = 0
+        #endif
         self.defaultValue = defaultValue
+        #if !os(WASI)
         pthread_key_create(&key) { pointer in
             #if !canImport(Darwin)
             guard let pointer else { return }
@@ -26,12 +35,14 @@ final package class ThreadSpecific<T> {
                 ptr.deallocate()
             }
         }
+        #endif
     }
 
     deinit {
         preconditionFailure("\(Self.self).deinit is unsafe and would leak")
     }
     
+    #if !os(WASI)
     private final var box: UnsafeMutablePointer<Any> {
         let pointer = pthread_getspecific(key)
         if let pointer {
@@ -43,25 +54,42 @@ final package class ThreadSpecific<T> {
             return box
         }
     }
+    #endif
     
     final package var value: T {
         get {
+            #if os(WASI)
+            wasiValue
+            #else
             box.pointee as! T
+            #endif
         }
         set {
+            #if os(WASI)
+            wasiValue = newValue
+            #else
             box.withMemoryRebound(to: T.self, capacity: 1) { $0.pointee = newValue }
+            #endif
         }
     }
 }
 
 // MARK: - Thread + Global helper function
 
+package var _isMainThread: Bool {
+    #if os(WASI)
+    true
+    #else
+    Thread.isMainThread
+    #endif
+}
+
 package func onMainThread(do body: @escaping () -> Void) {
     #if os(WASI)
     // See #76: Thread and RunLoopMode.common is not available on WASI currently
     body()
     #else
-    if Thread.isMainThread {
+    if _isMainThread {
         body()
     } else {
         RunLoop.main.perform(inModes: [.common]) {
@@ -74,7 +102,7 @@ package func onMainThread(do body: @escaping () -> Void) {
 
 package func mainThreadPrecondition() {
     #if !os(WASI)
-    precondition(Thread.isMainThread, "calling into OpenSwiftUI on a non-main thread is not supported")
+    precondition(_isMainThread, "calling into OpenSwiftUI on a non-main thread is not supported")
     #endif
 }
 

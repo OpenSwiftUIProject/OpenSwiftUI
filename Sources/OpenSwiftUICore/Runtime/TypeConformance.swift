@@ -7,6 +7,9 @@
 
 import OpenSwiftUI_SPI
 import OpenAttributeGraphShims
+#if os(WASI)
+import OpenSwiftUICSymbols
+#endif
 
 // MARK: - ProtocolDescriptor
 
@@ -49,8 +52,20 @@ package struct TypeConformance<P> where P: ProtocolDescriptor {
     }
 }
 
+#if os(WASI)
+func swiftConformsToProtocol(
+    _ type: Any.Type,
+    _ protocolDescriptor: UnsafeRawPointer
+) -> UnsafeRawPointer? {
+    _OpenSwiftUI_conformsToProtocol(
+        unsafeBitCast(type, to: UnsafeRawPointer.self),
+        protocolDescriptor
+    )
+}
+#else
 @_silgen_name("swift_conformsToProtocol")
 func swiftConformsToProtocol(
     _ type: Any.Type,
     _ protocolDescriptor: UnsafeRawPointer
 ) -> UnsafeRawPointer?
+#endif

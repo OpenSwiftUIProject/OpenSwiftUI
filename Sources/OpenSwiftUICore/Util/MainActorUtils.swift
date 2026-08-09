@@ -20,7 +20,7 @@ extension MainActor {
             return try assumeIsolated(operation, file: file, line: line)
         } else {
             let context = context.map { "\($0) " } ?? ""
-            if !Thread.isMainThread {
+            if !_isMainThread {
                 Log.runtimeIssues(
                     "%s This warning will become a runtime crash in a future version of OpenSwiftUI.",
                     [context]

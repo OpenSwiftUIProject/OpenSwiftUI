@@ -115,7 +115,7 @@ private struct ActionDispatcherSubscriber<V>: Subscriber, Cancellable  {
     typealias Failure = Never
 
     func respond(to input: V) {
-        if !Thread.isMainThread {
+        if !_isMainThread {
             Log.runtimeIssues("Publishing changes from background threads is not allowed; make sure to publish values from the main thread (via operators like receive(on:)) on model updates.")
         }
         onMainThread {

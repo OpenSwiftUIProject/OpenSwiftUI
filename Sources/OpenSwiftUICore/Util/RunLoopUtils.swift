@@ -8,27 +8,66 @@
 
 package import Foundation
 
-#if !canImport(ObjectiveC)
+#if !canImport(ObjectiveC) && !os(WASI)
 package import CoreFoundation
+#endif
 
+#if !canImport(ObjectiveC)
 /// A compactible implementation for the autoreleasepool API
 @inlinable
 package func autoreleasepool<Result>(invoking body: () throws -> Result) rethrows -> Result {
     try body()
 }
 
+#if !os(WASI)
 extension CFRunLoopMode {
     package static let defaultMode: CFRunLoopMode! = kCFRunLoopDefaultMode
     package static let commonModes: CFRunLoopMode! = kCFRunLoopCommonModes
 }
 #endif
+#endif
 
 package func onNextMainRunLoop(do body: @escaping () -> Void) {
+    #if os(WASI)
+    body()
+    #else
     RunLoop.main.perform(inModes: [.common], block: body)
+    #endif
 }
 
-private var observer: CFRunLoopObserver?
 private var observerActions: [() -> Void] = []
+
+#if os(WASI)
+extension RunLoop {
+    package static func addObserver(_ action: @escaping () -> Void) {
+        observerActions.append(action)
+    }
+
+    package static func flushObservers() {
+        while !observerActions.isEmpty {
+            let actions = observerActions
+            observerActions = []
+            Update.begin()
+            for action in actions {
+                action()
+            }
+            Update.end()
+        }
+    }
+
+    package static func runAllowingEarlyExit(until deadline: Date, stopCondition: () -> Bool) {
+        // A browser event loop cannot be synchronously pumped. Callers may
+        // still observe an already-satisfied stop condition.
+        _ = deadline
+        _ = stopCondition()
+    }
+
+    package static func runAllowingEarlyExit(until deadline: Date) {
+        runAllowingEarlyExit(until: deadline) { false }
+    }
+}
+#else
+private var observer: CFRunLoopObserver?
 
 extension RunLoop {
     package static func addObserver(_ action: @escaping () -> Void) {
@@ -88,3 +127,4 @@ extension RunLoop {
         runAllowingEarlyExit(until: deadline) { false }
     }
 }
+#endif

@@ -8,6 +8,9 @@
 
 import OpenSwiftUI_SPI
 package import Foundation
+#if canImport(Dispatch)
+import Dispatch
+#endif
 
 protocol ViewRendererBase: AnyObject {
     var platform: DisplayList.ViewUpdater.Platform { get }
@@ -77,6 +80,7 @@ extension DisplayList {
             /* OpenSwiftUI Addition Begin */
             #if !OPENSWIFTUI_SWIFTUI_RENDERER
             case stdout
+            case web
             #endif
             /* OpenSwiftUI Addition End */
         }
@@ -102,6 +106,7 @@ extension DisplayList {
             /* OpenSwiftUI Addition Begin */
             #if !OPENSWIFTUI_SWIFTUI_RENDERER
             case .stdout: state == .stdout
+            case .web: state == .web
             #endif
             /* OpenSwiftUI Addition End */
             }
@@ -126,6 +131,10 @@ extension DisplayList {
                     let stdoutRenderer = renderer as! StdoutDisplayListRenderer
                     stdoutRenderer.options = options
                     stdoutRenderer.host = host
+                case let .web(options):
+                    let webRenderer = renderer as! WebDisplayListRenderer
+                    webRenderer.options = options
+                    webRenderer.host = host
                 #endif
                 /* OpenSwiftUI Addition End */
                 }
@@ -153,6 +162,13 @@ extension DisplayList {
                         options: options
                     )
                     state = .stdout
+                case let .web(options):
+                    renderer = WebDisplayListRenderer(
+                        platform: platform,
+                        host: host,
+                        options: options
+                    )
+                    state = .web
                 #endif
                 /* OpenSwiftUI Addition End */
                 }
@@ -373,9 +389,13 @@ extension DisplayList {
                 let duration = renderer.nextTime - time
                 let delay = max(duration, 1e-6)
                 if delay != .infinity {
+                    #if canImport(Dispatch)
                     DispatchQueue.main.async { [weak host] in
                         host?.requestUpdate(after: delay)
                     }
+                    #else
+                    host?.requestUpdate(after: delay)
+                    #endif
                 }
             }
             return content
