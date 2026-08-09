@@ -112,6 +112,9 @@ final class WebDisplayListRenderer: ViewRendererBase {
         }
         hasRendered = true
         seed = nextSeed
+        #if DEBUG
+        print("Web view at \(time):\n\(list.description)")
+        #endif
         options.onRender(list.webRenderFrame(surface: options.surface, version: version))
         if let host, let observer = host.as(ViewGraphRenderObserver.self) {
             observer.didRender()
