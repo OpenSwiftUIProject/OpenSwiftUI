@@ -39,15 +39,7 @@ struct DisplayListPrinterDualTests {
         let displayList = fixture.makeDisplayList()
         #expect(displayList.description == expectedDescription.openSwiftUI)
         #expect(displayList.minimalDescription == expectedMinimalDescription.openSwiftUI)
-
-        guard #available(iOS 18.5, macOS 15.5, tvOS 18.5, watchOS 11.5, *) else {
-            // Stop if below SwiftUI 6.5.4 version
-            return
-        }
-        guard #unavailable(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0) else {
-            // Stop if appleOS 26.0 or above
-            return
-        }
+        guard isSwiftUIVersionAtLeast65AndBefore70 else { return }
         // Projected payloads can retain OpenSwiftUI type metadata in SwiftUI's description.
         #expect(displayList.swiftUI_description.normalizeSwiftUI == expectedDescription.swiftUI)
         #expect(displayList.swiftUI_minimalDescription == expectedMinimalDescription.swiftUI)
@@ -60,15 +52,7 @@ struct DisplayListPrinterDualTests {
     ) {
         let item = fixture.makeItem()
         #expect(item.description == expectedDescription.openSwiftUI)
-
-        guard #available(iOS 18.5, macOS 15.5, tvOS 18.5, watchOS 11.5, *) else {
-            // Stop if below SwiftUI 6.5.4 version
-            return
-        }
-        guard #unavailable(iOS 26.0, macOS 26.0, tvOS 26.0, watchOS 26.0) else {
-            // Stop if appleOS 26.0 or above
-            return
-        }
+        guard isSwiftUIVersionAtLeast65AndBefore70 else { return }
         // Projected payloads can retain OpenSwiftUI type metadata in SwiftUI's description.
         #expect(item.swiftUI_description.normalizeSwiftUI == expectedDescription.swiftUI)
     }
