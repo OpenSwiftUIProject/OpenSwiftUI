@@ -59,6 +59,11 @@ extension SwiftUI.View {
   public func variableBlur(maxRadius: CoreGraphics.CGFloat, mask: SwiftUI.Image, opaque: Swift.Bool = false) -> some SwiftUI.View
 }
 
+@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
+extension SwiftUI.View {
+  nonisolated public func matchedGeometryEffect<ID, S>(id: ID, in namespace: SwiftUI.Namespace.ID, clipShape: S, properties: SwiftUI.MatchedGeometryProperties = .frame, anchor: SwiftUI.UnitPoint = .center, isSource: Swift.Bool = true) -> some SwiftUI.View where ID : Swift.Hashable, S : SwiftUI.Shape
+}
+
 @available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
 extension SwiftUI.View {
   public func avoidsOrphans(_ flag: Swift.Bool) -> some SwiftUI.View
