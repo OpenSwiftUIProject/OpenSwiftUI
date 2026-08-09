@@ -47,6 +47,22 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
             data = PathData(rbPath: path)
         }
 
+        deinit {
+            switch kind {
+            #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
+            case .cgPath:
+                data.cgPath.release()
+            #endif
+            case .rbPath:
+                data.rbPath.release()
+            case .buffer:
+                withUnsafeMutablePointer(to: &data) { pointer in
+                    let storage = unsafeBitCast(pointer, to: ORBPath.Storage.self)
+                    storage.destroy()
+                }
+            }
+        }
+
         private func prepareBuffer() {
             let path: ORBPath
             switch kind {
