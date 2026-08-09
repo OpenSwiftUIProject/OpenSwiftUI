@@ -30,15 +30,37 @@ struct _ColorMatrixTests {
         matrix.m11 = 0
         #expect(matrix.isIdentity == false)
     }
-    
-    @Test(
-        arguments: [
-            (_ColorMatrix(), ""),
-            (_ColorMatrix(m11: 3.0), "0d00004040"),
-        ]
-    )
+
+    @Test(arguments: protobufColorMatrixFixtures)
     func pbMessage(matrix: _ColorMatrix, hexString: String) throws {
         try matrix.testPBEncoding(hexString: hexString)
         try matrix.testPBDecoding(hexString: hexString)
     }
+
+    @Test(arguments: [Float(0), 0.25, 1])
+    func colorInvert(amount: Float) {
+        let matrix = _ColorMatrix(colorInvert: amount)
+        let diagonal = 1 - 2 * amount
+        #expect(matrix.m11 == diagonal)
+        #expect(matrix.m22 == diagonal)
+        #expect(matrix.m33 == diagonal)
+        #expect(matrix.m44 == 1)
+        #expect(matrix.m15 == amount)
+        #expect(matrix.m25 == amount)
+        #expect(matrix.m35 == amount)
+        #expect(matrix.m45 == 0)
+    }
 }
+
+private let colorMatrixFixtures: [_ColorMatrix] = {
+    let identity = _ColorMatrix()
+    var leadingValue = identity
+    leadingValue.m11 = 3
+    var trailingValue = identity
+    trailingValue.m45 = 3
+    return [identity, leadingValue, trailingValue]
+}()
+
+private let protobufColorMatrixFixtures: [(_ColorMatrix, String)] = Array(
+    zip(colorMatrixFixtures, ["", "0d00004040", "a50100004040"])
+)
