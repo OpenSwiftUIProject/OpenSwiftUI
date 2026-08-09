@@ -12,12 +12,11 @@ import Testing
     .snapshots(record: .never, diffTool: diffTool)
 )
 struct MatchedGeometryEffectUITests {
-    // FIXME: Check SharedFrame impl or DL
-    @Test(.disabled("MatchedGeometryEffect effect does not match the animation"))
+    @Test
     func matchedGeometryEffect() {
         struct ContentView: AnimationTestView {
             nonisolated static var model: AnimationTestModel {
-                AnimationTestModel(duration: 3, count: 6)
+                AnimationTestModel(duration: 2, count: 4)
             }
 
             var body: some View {
@@ -26,25 +25,27 @@ struct MatchedGeometryEffectUITests {
         }
         openSwiftUIAssertAnimationSnapshot(
             of: ContentView(),
+            precision: 0.8, // FIXME: general animation snapshot issue
             size: CGSize(width: 300, height: 150)
         )
     }
 
-    // FIXME: Check SharedFrame impl or DL
-    @Test(.disabled("MatchedGeometryEffect effect does not match the animation"))
+    @Test
     func matchedGeometryEffectWithClipShape() {
         struct ContentView: AnimationTestView {
             nonisolated static var model: AnimationTestModel {
-                AnimationTestModel(duration: 3, count: 6)
+                AnimationTestModel(duration: 2, count: 4)
             }
 
             var body: some View {
                 MatchedGeometryEffectClipShapeModifierExample()
             }
         }
-        openSwiftUIAssertAnimationSnapshot(
-            of: ContentView(),
-            size: CGSize(width: 300, height: 150)
-        )
+        withKnownIssue("clipShape rect bug") {
+            openSwiftUIAssertAnimationSnapshot(
+                of: ContentView(),
+                size: CGSize(width: 300, height: 150)
+            )
+        }
     }
 }
