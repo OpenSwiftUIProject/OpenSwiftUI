@@ -2,16 +2,12 @@
 //  ColorMatrix.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by Color, GraphicsFilter and ShapeStyle
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 623CA953523AF4C256B3825254A7F058 (SwiftUICore)
 
-#if canImport(Darwin)
-import CoreGraphics
-#else
+import OpenCoreGraphicsShims
 import Foundation
-#endif
-import OpenSwiftUI_SPI
 import QuartzCore_Private
 
 // MARK: - ColorMatrix
@@ -22,6 +18,7 @@ import QuartzCore_Private
 /// component. You can use the matrix for tasks like creating a color
 /// transformation ``GraphicsContext/Filter`` for a ``GraphicsContext`` using
 /// the ``GraphicsContext/Filter/colorMatrix(_:)`` method.
+@available(OpenSwiftUI_v3_0, *)
 @frozen
 public struct ColorMatrix: Equatable {
     public var r1: Float = 1, r2: Float = 0, r3: Float = 0, r4: Float = 0, r5: Float = 0
@@ -40,30 +37,22 @@ public struct ColorMatrix: Equatable {
 /// multiplying the color by the square matrix formed by the first
 /// columns of the color matrix, then adding the last column to the
 /// result.
+@available(OpenSwiftUI_v2_0, *)
 @frozen
 public struct _ColorMatrix: Equatable, Codable {
     public var m11: Float = 1, m12: Float = 0, m13: Float = 0, m14: Float = 0, m15: Float = 0
     public var m21: Float = 0, m22: Float = 1, m23: Float = 0, m24: Float = 0, m25: Float = 0
     public var m31: Float = 0, m32: Float = 0, m33: Float = 1, m34: Float = 0, m35: Float = 0
     public var m41: Float = 0, m42: Float = 0, m43: Float = 0, m44: Float = 1, m45: Float = 0
-    
-    @inline(__always)
-    init(m11: Float = 1, m12: Float = 0, m13: Float = 0, m14: Float = 0, m15: Float = 0,
-         m21: Float = 0, m22: Float = 1, m23: Float = 0, m24: Float = 0, m25: Float = 0,
-         m31: Float = 0, m32: Float = 0, m33: Float = 1, m34: Float = 0, m35: Float = 0,
-         m41: Float = 0, m42: Float = 0, m43: Float = 0, m44: Float = 1, m45: Float = 0) {
-        self.m11 = m11; self.m12 = m12; self.m13 = m13; self.m14 = m14; self.m15 = m15
-        self.m21 = m21; self.m22 = m22; self.m23 = m23; self.m24 = m24; self.m25 = m25
-        self.m31 = m31; self.m32 = m32; self.m33 = m33; self.m34 = m34; self.m35 = m35
-        self.m41 = m41; self.m42 = m42; self.m43 = m43; self.m44 = m44; self.m45 = m45
-    }
-    
+
+    /// Initializes to the identity matrix.
     @inlinable
     public init() {}
-    
+
+    /// Initializes to a matrix that will multiply by the value of
+    /// `color` in `environment`.
     public init(color: Color, in environment: EnvironmentValues) {
-        // Blocked by Color
-        _openSwiftUIUnimplementedFailure()
+        self.init(colorMultiply: color.provider.resolve(in: environment))
     }
     
     package init(_ m: ColorMatrix) {
@@ -74,20 +63,18 @@ public struct _ColorMatrix: Equatable, Codable {
     }
     
     package var isIdentity: Bool {
-        self == .identity
+        self == .init()
     }
-    
-    @inline(__always)
-    static let identity = _ColorMatrix()
-    
-    /// The missing fifth row would be (0, 0, 0, 0, 1)
-    ///
-    ///     | R' |     | r1 r2 r3 r4 r5 |   | R |
-    ///     | G' |     | g1 g2 g3 g4 g5 |   | G |
-    ///     | B' |  =  | b1 b2 b3 b4 b5 | * | B |
-    ///     | A' |     | a1 a2 a3 a4 a5 |   | A |
-    ///     | 1  |     | 0  0  0  0  1  |   | 1 |
+
+    /// Returns the result of concatenating the matrices `a` and `b`.
     public static func * (a: _ColorMatrix, b: _ColorMatrix) -> _ColorMatrix {
+        // The missing fifth row would be (0, 0, 0, 0, 1)
+        //
+        //     | R' |     | r1 r2 r3 r4 r5 |   | R |
+        //     | G' |     | g1 g2 g3 g4 g5 |   | G |
+        //     | B' |  =  | b1 b2 b3 b4 b5 | * | B |
+        //     | A' |     | a1 a2 a3 a4 a5 |   | A |
+        //     | 1  |     | 0  0  0  0  1  |   | 1 |
         let m11 = a.m11 * b.m11 + a.m12 * b.m21 + a.m13 * b.m31 + a.m14 * b.m41
         let m12 = a.m11 * b.m12 + a.m12 * b.m22 + a.m13 * b.m32 + a.m14 * b.m42
         let m13 = a.m11 * b.m13 + a.m12 * b.m23 + a.m13 * b.m33 + a.m14 * b.m43
@@ -159,7 +146,7 @@ extension UnkeyedDecodingContainer {
     }
 }
 
-// MARK: - _ColorMatrix + init [TODO]
+// MARK: - _ColorMatrix + Extension
 
 extension _ColorMatrix {
     @inline(__always)
@@ -176,7 +163,61 @@ extension _ColorMatrix {
     }
     
     package init?(_ filter: GraphicsFilter, premultiplied: Bool = false) {
-        _openSwiftUIUnimplementedFailure()
+        switch filter {
+        case let .colorMatrix(matrix, matrixIsPremultiplied):
+            guard matrixIsPremultiplied == premultiplied else {
+                return nil
+            }
+            self = matrix
+        case let .colorMultiply(color):
+            self.init(colorMultiply: color, premultiplied: premultiplied)
+        case let .hueRotation(angle):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(hueRotation: angle)
+        case let .saturation(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(saturation: amount)
+        case let .brightness(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(brightness: amount)
+        case let .contrast(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(contrast: amount)
+        case .luminanceToAlpha:
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(luminanceToAlpha: ())
+        case .colorInvert:
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(colorInvert: 1)
+        case let .grayscale(amount):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(colorMonochrome: .white, amount: Float(amount), bias: 0)
+        case let .colorMonochrome(monochrome):
+            guard !premultiplied else {
+                return nil
+            }
+            self.init(
+                colorMonochrome: monochrome.color,
+                amount: monochrome.amount,
+                bias: monochrome.bias
+            )
+        default:
+            return nil
+        }
     }
     
     package init(colorMultiply c: Color.Resolved, premultiplied: Bool = false) {
@@ -200,9 +241,38 @@ extension _ColorMatrix {
         // Matrix coefficients for hue rotation
         // Based on color rotation matrix formula
         self.init(
-            row1: (0.2126 + cosValue * 0.7873 - sinValue * 0.2126, 0.2126 - cosValue * 0.2126 + sinValue * 0.1430, 0.2126 - cosValue * 0.2126 - sinValue * 0.7873, 0, 0),
-            row2: (0.7152 - cosValue * 0.7152 - sinValue * 0.7152, 0.7152 + cosValue * 0.2848 + sinValue * 0.1400, 0.7152 - cosValue * 0.7152 + sinValue * 0.7152, 0, 0),
-            row3: (0.0722 - cosValue * 0.0722 + sinValue * 0.9278, 0.0722 - cosValue * 0.0722 - sinValue * 0.2830, 0.0722 + cosValue * 0.9278 + sinValue * 0.0722, 0, 0),
+            row1: (0.2126 + cosValue * 0.7873 - sinValue * 0.2126, 0.7152 - cosValue * 0.7152 - sinValue * 0.7152, 0.0722 - cosValue * 0.0722 + sinValue * 0.9278, 0, 0),
+            row2: (0.2126 - cosValue * 0.2126 + sinValue * 0.1430, 0.7152 + cosValue * 0.2848 + sinValue * 0.1400, 0.0722 - cosValue * 0.0722 - sinValue * 0.2830, 0, 0),
+            row3: (0.2126 - cosValue * 0.2126 - sinValue * 0.7873, 0.7152 - cosValue * 0.7152 + sinValue * 0.7152, 0.0722 + cosValue * 0.9278 + sinValue * 0.0722, 0, 0),
+            row4: (0, 0, 0, 1, 0)
+        )
+    }
+
+    @inline(__always)
+    package init(saturation: Double) {
+        let amount = Float(saturation <= 0 ? 0 : saturation)
+        self.init(
+            row1: (
+                0.2126 + amount * 0.7873,
+                0.7152 - amount * 0.7152,
+                0.0722 - amount * 0.0722,
+                0,
+                0
+            ),
+            row2: (
+                0.2126 - amount * 0.2126,
+                0.7152 + amount * 0.2848,
+                0.0722 - amount * 0.0722,
+                0,
+                0
+            ),
+            row3: (
+                0.2126 - amount * 0.2126,
+                0.7152 - amount * 0.7152,
+                0.0722 + amount * 0.9278,
+                0,
+                0
+            ),
             row4: (0, 0, 0, 1, 0)
         )
     }
@@ -239,10 +309,11 @@ extension _ColorMatrix {
     }
     
     package init(colorInvert x: Float) {
+        let diagonal = 1 - 2 * x
         self.init(
-            row1: (-1, 0, 0, 0, x),
-            row2: (0, -1, 0, 0, x),
-            row3: (0, 0, -1, 0, x),
+            row1: (diagonal, 0, 0, 0, x),
+            row2: (0, diagonal, 0, 0, x),
+            row3: (0, 0, diagonal, 0, x),
             row4: (0, 0, 0, 1, 0)
         )
     }
@@ -262,9 +333,9 @@ extension _ColorMatrix {
         let invAmount = 1.0 - amount
         
         self.init(
-            row1: (red * lumR * amount + invAmount, red * lumG * amount, red * lumB * amount, 0, red * amount * bias),
-            row2: (green * lumR * amount, green * lumG * amount + invAmount, green * lumB * amount, 0, green * amount * bias),
-            row3: (blue * lumR * amount, blue * lumG * amount, blue * lumB * amount + invAmount, 0, blue * amount * bias),
+            row1: (red * lumR * amount + invAmount, red * lumG * amount, red * lumB * amount, 0, red * bias * amount),
+            row2: (green * lumR * amount, green * lumG * amount + invAmount, green * lumB * amount, 0, green * bias * amount),
+            row3: (blue * lumR * amount, blue * lumG * amount, blue * lumB * amount + invAmount, 0, blue * bias * amount),
             row4: (0, 0, 0, opacity * amount + invAmount, 0)
         )
     }
@@ -286,12 +357,23 @@ extension _ColorMatrix {
     }
 }
 
-// MARK: - _ColorMatrix + ShapeStyle [TODO]
+// MARK: - _ColorMatrix + ShapeStyle
 
 @_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
 extension _ColorMatrix: ShapeStyle {
     public func _apply(to shape: inout _ShapeStyle_Shape) {
-        // TODO
+        switch shape.operation {
+        case .prepareText:
+            shape.result = .preparedText(.foregroundKeyColor)
+        case let .resolveStyle(name, levels):
+            guard levels.lowerBound != levels.upperBound else {
+                break
+            }
+            shape.stylePack[name, levels.lowerBound] = .init(.vibrantMatrix(self))
+        default:
+            break
+        }
     }
     
     public typealias Resolved = Never
@@ -304,7 +386,7 @@ extension _ColorMatrix: ProtobufMessage {
         withUnsafePointer(to: self) { pointer in
             let pointer = UnsafeRawPointer(pointer).assumingMemoryBound(to: Float.self)
             let bufferPointer = UnsafeBufferPointer(start: pointer, count: 20)
-            for index: UInt in 1 ... 6 {
+            for index: UInt in 1 ... 20 {
                 encoder.floatField(
                     index,
                     bufferPointer[Int(index &- 1)],
@@ -322,7 +404,7 @@ extension _ColorMatrix: ProtobufMessage {
             while let field = try decoder.nextField() {
                 let tag = field.tag
                 switch tag {
-                    case 1...6: bufferPointer[Int(tag &- 1)] = try decoder.floatField(field)
+                    case 1...20: bufferPointer[Int(tag &- 1)] = try decoder.floatField(field)
                     default: try decoder.skipField(field)
                 }
             }
@@ -370,6 +452,8 @@ extension _ColorMatrix {
 }
 
 #if canImport(Darwin)
+import OpenSwiftUI_SPI
+
 extension _ColorMatrix {
     var caColorMatrix: CAColorMatrix {
         CAColorMatrix(
