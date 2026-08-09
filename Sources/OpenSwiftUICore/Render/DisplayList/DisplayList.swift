@@ -709,6 +709,32 @@ extension PreferencesOutputs {
     }
 }
 
+// MARK: - DisplayList + AnyEffectAnimator
+
+package protocol _DisplayList_AnyEffectAnimation: ProtobufMessage {
+    static var leafProtobufTag: CodableEffectAnimation.Tag? { get }
+    func makeAnimator() -> any _DisplayList_AnyEffectAnimator
+}
+
+package protocol _DisplayList_AnyEffectAnimator {
+    /// Evaluates the effect animation at the given time and viewport size.
+    ///
+    /// - Parameters:
+    ///   - animation: The existential effect animation. Must be castable to
+    ///     `Animation`; otherwise the method returns
+    ///     ``DisplayList/Effect/identity`` with `finished: true`.
+    ///   - time: The current render time.
+    ///   - size: The viewport size passed to
+    ///     ``EffectAnimation/effect(value:size:)``.
+    /// - Returns: A tuple of the resolved display list effect and a Boolean
+    ///   indicating whether the animation has completed.
+    mutating func evaluate(
+        _ animation: any DisplayList.AnyEffectAnimation,
+        at time: Time,
+        size: CGSize
+    ) -> (DisplayList.Effect, finished: Bool)
+}
+
 // MARK: - DisplayList.Item + Extension
 
 extension DisplayList.Item {
@@ -987,30 +1013,6 @@ extension DisplayList.Item {
 }
 
 package struct AccessibilityNodeAttachment {}
-
-package protocol _DisplayList_AnyEffectAnimation: ProtobufMessage {
-    static var leafProtobufTag: CodableEffectAnimation.Tag? { get }
-    func makeAnimator() -> any _DisplayList_AnyEffectAnimator
-}
-
-package protocol _DisplayList_AnyEffectAnimator {
-    /// Evaluates the effect animation at the given time and viewport size.
-    ///
-    /// - Parameters:
-    ///   - animation: The existential effect animation. Must be castable to
-    ///     `Animation`; otherwise the method returns
-    ///     ``DisplayList/Effect/identity`` with `finished: true`.
-    ///   - time: The current render time.
-    ///   - size: The viewport size passed to
-    ///     ``EffectAnimation/effect(value:size:)``.
-    /// - Returns: A tuple of the resolved display list effect and a Boolean
-    ///   indicating whether the animation has completed.
-    mutating func evaluate(
-        _ animation: any DisplayList.AnyEffectAnimation,
-        at time: Time,
-        size: CGSize
-    ) -> (DisplayList.Effect, finished: Bool)
-}
 
 extension DisplayList.Item {
     func addDrawingGroup(contentSeed: DisplayList.Seed) {
