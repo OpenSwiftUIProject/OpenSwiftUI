@@ -419,28 +419,6 @@ extension DisplayList {
         case projection(ProjectionTransform)
         case rotation(_RotationEffect.Data)
         case rotation3D(_Rotation3DEffect.Data)
-
-        package var affineTransform: CGAffineTransform? {
-            switch self {
-            case let .affine(transform):
-                return transform
-            case let .rotation(data):
-                return data.transform
-            case .projection, .rotation3D:
-                return nil
-            }
-        }
-
-        package var projectionTransform: ProjectionTransform? {
-            switch self {
-            case let .projection(transform):
-                return transform
-            case let .rotation3D(data):
-                return data.transform
-            case .affine, .rotation:
-                return nil
-            }
-        }
     }
     
     package typealias AnyEffectAnimation = _DisplayList_AnyEffectAnimation
@@ -796,6 +774,32 @@ extension DisplayList.Item {
             return states.reduce(into: []) { properties, state in
                 properties.formUnion(state.1.properties)
             }
+        }
+    }
+}
+
+// MARK: - DisplayList.Transform + Extension
+
+extension DisplayList.Transform {
+    package var affineTransform: CGAffineTransform? {
+        switch self {
+        case let .affine(transform):
+            return transform
+        case let .rotation(data):
+            return data.transform
+        case .projection, .rotation3D:
+            return nil
+        }
+    }
+
+    package var projectionTransform: ProjectionTransform? {
+        switch self {
+        case let .projection(transform):
+            return transform
+        case let .rotation3D(data):
+            return data.transform
+        case .affine, .rotation:
+            return nil
         }
     }
 }
