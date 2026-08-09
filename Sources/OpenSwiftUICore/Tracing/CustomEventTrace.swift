@@ -27,6 +27,7 @@ package struct CustomEventTrace {
         var graph: Graph
         var cefOp: UnsafeMutablePointer<Int8>
 
+        @inline(__always)
         package init(graph: Graph) {
             self.graph = graph
 
@@ -41,7 +42,7 @@ package struct CustomEventTrace {
     package enum ObservableEventType: Int8 {
         case firedWithTransaction = 0x46  // "F"
     }
-    
+
     package enum TransactionEventType: Int8 {
         case begin = 0x42                     // "B"
         case end = 0x45                       // "E"
@@ -50,7 +51,7 @@ package struct CustomEventTrace {
         case continueAsNewTransaction = 0x4E  // "N"
         case continueAsContinuation = 0x43    // "C"
     }
-    
+
     package enum ActionEventType: Int8 {
         package enum Reason: UInt32 {
             case onAppear = 0x41          // "A"
@@ -79,14 +80,14 @@ package struct CustomEventTrace {
         case animationRetarget = 6
     }
 
-    private static var enabledCategories: [Bool] = Array(repeating: false, count: 256)
-    
     package static var isEnabled: Swift.Bool {
         recorder != nil
     }
-    
+
+    private static var enabledCategories: [Bool] = Array(repeating: false, count: 256)
+
     package static var recorder: CustomEventTrace.Recorder? = nil
-    
+
     package static func register(graph: Graph) {
         recorder = Recorder(graph: graph)
     }
@@ -101,11 +102,11 @@ package struct CustomEventTrace {
         }
         return oldID / 2 + 1
     }
-    
+
     package static func setEnabledCategory(_ category: CustomEventCategory, enabled: Bool) {
         enabledCategories[Int(category.rawValue)] = enabled
     }
-    
+
     @inline(__always)
     package static func trace<Value>(_ category: CustomEventCategory, _ eventType: Int8, value: Value) {
         guard enabledCategories[Int(category.rawValue)], let recorder else {
@@ -156,7 +157,7 @@ package struct CustomEventTrace {
             value: id
         )
     }
- 
+
     package static func transactionContinueAsNewTransaction(_ id: UInt32) {
         trace(
             .transaction,
@@ -188,7 +189,7 @@ package struct CustomEventTrace {
             value: (id, reason?.rawValue)
         )
     }
- 
+
     package static func finishAction(_ id: UInt32, _ reason: ActionEventType.Reason?) {
         trace(
             .action,
@@ -262,7 +263,7 @@ package struct CustomEventTrace {
             value: (attribute, propertyType, duration, delay, speed, repeatCount)
         )
     }
-    
+
     private static func extractFunctionData(
         _ function: Animation.Function,
         _ duration: inout Double,
@@ -293,7 +294,7 @@ package struct CustomEventTrace {
             extractFunctionData(nested, &duration, &delay, &speed, &repeatCount)
         }
     }
-  
+
     package static func setNeedsUpdate(values: ViewRendererHostProperties) {
         trace(
             .graph,
