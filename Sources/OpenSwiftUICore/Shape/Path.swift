@@ -850,7 +850,21 @@ extension Path {
     }
 
     public func applying(_ transform: CGAffineTransform) -> Path {
-        _openSwiftUIUnimplementedFailure()
+        guard !transform.isIdentity else {
+            return self
+        }
+        switch storage {
+        case .empty:
+            return self
+        case let .rect(rect) where transform.isRectilinear:
+            return Path(rect.applying(transform))
+        case let .ellipse(rect) where transform.isRectilinear:
+            return Path(ellipseIn: rect.applying(transform))
+        case let .roundedRect(fixedRoundedRect) where transform.isRectilinear:
+            return Path(storage: .roundedRect(fixedRoundedRect.applying(transform)))
+        default:
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 
     public func offsetBy(
