@@ -113,7 +113,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     
     var currentEvent: UIEvent? = nil
     
-    package var eventBridge: UIKitEventBindingBridge
+    var eventBridge: UIKitEventBindingBridge
 
     var colorScheme: ColorScheme? = nil {
         didSet {

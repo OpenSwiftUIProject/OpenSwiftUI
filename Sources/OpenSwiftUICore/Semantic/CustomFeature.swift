@@ -21,8 +21,8 @@ package struct UnifiedHitTestingFeature: Feature {
 
 // MARK: GestureContainerFeature [TODO]
 
-struct GestureContainerFeature {
-    static var isEnabled: Bool {
+package struct GestureContainerFeature {
+    package static var isEnabled: Bool {
         false
     }
 }
