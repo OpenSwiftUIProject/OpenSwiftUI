@@ -678,33 +678,43 @@ extension DisplayList.Item {
                 index &+= 1
                 continue
             }
-            var localClipRect = clipRect.applying(inverseTransform)
-            let sectionRect: CGRect
+            let clipRectInItemSpace = clipRect.applying(inverseTransform)
             switch content.value {
             case .backdrop, .color, .chameleonColor, .image, .text, .flattened, .drawing:
-                sectionRect = frame
-            case let .shape(path, _, _):
-                sectionRect = path.boundingRect.offsetBy(dx: frame.origin.x, dy: frame.origin.y)
-            case .shadow, .platformView, .platformLayer, .view, .placeholder:
-                return true
-            }
-            guard localClipRect.hasIntersection(sectionRect) else {
-                return false
-            }
-            let resolvedEffectOutset = effectOutset ?? state.clipDiscardEffectOutset
-            effectOutset = resolvedEffectOutset
-            if resolvedEffectOutset != 0 {
-                guard let insetClipRect = localClipRect.insetBy(dx: resolvedEffectOutset, dy: resolvedEffectOutset) else {
+                guard clipRectInItemSpace.hasIntersection(frame) else {
+                    return false
+                }
+                let resolvedEffectOutset = effectOutset ?? state.clipDiscardEffectOutset
+                effectOutset = resolvedEffectOutset
+                guard let insetClipRect = clipRectInItemSpace.insetBy(
+                    dx: resolvedEffectOutset,
+                    dy: resolvedEffectOutset
+                ), insetClipRect.contains(rect: frame) else {
                     index &+= 1
                     continue
                 }
-                localClipRect = insetClipRect
+            case let .shape(path, _, _):
+                let sectionRect = path.boundingRect.offset(by: CGSize(frame.origin))
+                guard clipRectInItemSpace.hasIntersection(sectionRect) else {
+                    return false
+                }
+                let resolvedEffectOutset = effectOutset ?? state.clipDiscardEffectOutset
+                effectOutset = resolvedEffectOutset
+                guard let insetClipRect = clipRectInItemSpace.insetBy(
+                    dx: resolvedEffectOutset,
+                    dy: resolvedEffectOutset
+                ), insetClipRect.contains(
+                    path: path,
+                    offsetBy: CGSize(frame.origin)
+                ) else {
+                    index &+= 1
+                    continue
+                }
+            case .shadow, .platformView, .platformLayer, .view, .placeholder:
+                return true
             }
-            guard localClipRect.contains(rect: sectionRect) else {
-                index &+= 1
-                continue
-            }
-            state.clips.remove(at: index)
+            state.clips.swapAt(index, state.clips.endIndex - 1)
+            state.clips.removeLast()
         }
         return true
     }

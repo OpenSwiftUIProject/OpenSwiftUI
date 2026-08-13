@@ -126,8 +126,9 @@ package struct FixedRoundedRect: Equatable {
         guard !(cornerSize.width <= rhs.cornerSize.width && cornerSize.height <= rhs.cornerSize.height) else {
             return true
         }
-        let minCornerWidth = min(abs(rect.size.width) / 2, cornerSize.width)
-        let minCornerHeight = min(abs(rect.size.height) / 2, cornerSize.height)
+        let halfMinDimension = min(abs(rect.size.width) / 2, abs(rect.size.height) / 2)
+        let minCornerWidth = min(halfMinDimension, cornerSize.width)
+        let minCornerHeight = min(halfMinDimension, cornerSize.height)
         let factor = 1 - cos(45 * Double.pi / 180)
         return rect.insetBy(dx: minCornerWidth * factor, dy: minCornerHeight * factor).contains(rhs.rect)
     }
