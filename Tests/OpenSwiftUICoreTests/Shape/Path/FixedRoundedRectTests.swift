@@ -172,6 +172,20 @@ struct FixedRoundedRectTests {
     }
 
     @Test
+    func containsFixedRoundedRectUsesShortestDimension() {
+        let outer = FixedRoundedRect(
+            CGRect(x: 0, y: 0, width: 100, height: 20),
+            cornerSize: CGSize(width: 50, height: 10),
+            style: .circular
+        )
+        let inner = FixedRoundedRect(
+            CGRect(x: 4, y: 4, width: 92, height: 12)
+        )
+
+        #expect(outer.contains(inner))
+    }
+
+    @Test
     func containsRect() {
         let roundedRect = FixedRoundedRect(
             CGRect(x: 0, y: 0, width: 100, height: 100),
