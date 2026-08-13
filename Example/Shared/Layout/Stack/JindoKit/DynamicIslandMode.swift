@@ -1,3 +1,7 @@
+//
+//  DynamicIslandMode.swift
+//  JindoKit
+
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else

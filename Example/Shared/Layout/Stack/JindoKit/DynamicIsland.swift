@@ -1,7 +1,10 @@
+//
+//  DynamicIsland.swift
+//  JindoKit
+
 #if OPENSWIFTUI
 @_spi(Jindo) import OpenSwiftUI
 #else
-import SwiftUI
 import SwiftUI_SPI
 #endif
 
@@ -13,7 +16,6 @@ import SwiftUI_SPI
 @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
 #endif
 @available(macOS, unavailable)
-@MainActor
 public struct DynamicIsland: View {
     private let expanded: () -> AnyView
     private let compactLeading: () -> AnyView

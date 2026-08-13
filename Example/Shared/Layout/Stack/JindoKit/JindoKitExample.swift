@@ -8,17 +8,16 @@ import OpenSwiftUI
 import SwiftUI
 #endif
 
-#if !os(macOS)
+#if OPENSWIFTUI
+@available(OpenSwiftUI_v4_1, *)
+#else
+@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+#endif
+@available(macOS, unavailable)
 struct JindoKitExample: View {
     var body: some View {
-        JindoKitOpenSwiftUIContentView()
-    }
-}
-
-private struct JindoKitOpenSwiftUIContentView: View {
-    var body: some View {
         VStack(spacing: 16) {
-            Text("JindoKit + OpenSwiftUI")
+            Text("JindoKit + Example")
                 .font(.headline)
 
             island(mode: .expanded)
@@ -81,4 +80,3 @@ private struct JindoKitOpenSwiftUIContentView: View {
         .previewMode(mode)
     }
 }
-#endif

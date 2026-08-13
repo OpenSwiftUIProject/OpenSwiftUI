@@ -1,7 +1,10 @@
+//
+//  DynamicIslandExpandedContent.swift
+//  JindoKit
+
 #if OPENSWIFTUI
 @_spi(Jindo) import OpenSwiftUI
 #else
-import SwiftUI
 import SwiftUI_SPI
 #endif
 
