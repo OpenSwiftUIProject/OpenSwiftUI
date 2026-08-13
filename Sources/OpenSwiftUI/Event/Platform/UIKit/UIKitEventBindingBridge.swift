@@ -47,9 +47,10 @@ class UIKitEventBindingBridge: EventBindingBridge {
     ) where Content: View {
         if window != nil {
             let provider = view.as(FallbackResponderProvider.self)
-            let responder = UIKitKeyPressResponder()
-            responder.eventBindingManager = eventBindingManager
-            responder.fallbackResponderProvider = provider
+            let responder = UIKitKeyPressResponder(
+                eventBindingManager: eventBindingManager,
+                fallbackResponderProvider: provider
+            )
             keyPressResponder = responder
         } else {
             keyPressResponder = nil
