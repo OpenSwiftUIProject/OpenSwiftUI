@@ -1,58 +1,120 @@
 // swift-interface-format-version: 1.0
 // swift-module-flags: -enable-objc-interop -enable-library-evolution -swift-version 5 -module-name SwiftUI_SPI -module-abi-name SwiftUI
+import CoreFoundation
 import CoreGraphics
 import QuartzCore
 import Swift
+import SwiftUICore
 @_exported import SwiftUI
 
 @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
 @available(macOS, unavailable)
-public struct JindoTripleVStack: SwiftUI.Layout {
+public struct JindoTripleVStack : SwiftUICore.Layout {
   public struct Configuration {
-    public init(
-      notchSize: CoreGraphics.CGSize,
-      horizontalSizing: JindoTripleVStack.HorizontalSizing,
-      layoutMargins: SwiftUI.EdgeInsets
-    )
+    public var notchSize: CoreFoundation.CGSize
+    @available(*, deprecated, message: "Use horizontalSizing")
+    public var mode: SwiftUI_SPI.JindoTripleVStack.HorizontalMode {
+      get
+      set
+    }
+    @available(*, deprecated, message: "Use layoutMargins")
+    public var defaultInsets: SwiftUICore.EdgeInsets {
+      get
+      set
+    }
+    public var centerAlignment: SwiftUICore.TextAlignment
+    public var bottomAlignment: SwiftUICore.TextAlignment
+    public var uniformSpacing: CoreFoundation.CGFloat?
+    @available(*, deprecated, renamed: "init(notchSize:mode:layoutMargins:)")
+    public init(notchSize: CoreFoundation.CGSize, mode: SwiftUI_SPI.JindoTripleVStack.HorizontalMode, defaultInsets: SwiftUICore.EdgeInsets)
+    public init(notchSize: CoreFoundation.CGSize, horizontalSizing: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing, layoutMargins: SwiftUICore.EdgeInsets)
   }
-
-  public struct Position {
-    public static let leading: JindoTripleVStack.Position
-    public static let center: JindoTripleVStack.Position
-    public static let trailing: JindoTripleVStack.Position
-    public static let bottom: JindoTripleVStack.Position
-    public static let notch: JindoTripleVStack.Position
+  public init(configuration: SwiftUI_SPI.JindoTripleVStack.Configuration)
+  public struct Position : Swift.Equatable {
+    public static func == (a: SwiftUI_SPI.JindoTripleVStack.Position, b: SwiftUI_SPI.JindoTripleVStack.Position) -> Swift.Bool
   }
-
-  public struct HorizontalSizing {
-    public static let split: JindoTripleVStack.HorizontalSizing
+  public struct VerticalPlacement : Swift.Equatable {
+    public static let `default`: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement
+    public static let belowNotchIfTooWide: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement
+    public static func == (a: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement, b: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement) -> Swift.Bool
   }
-
-  public init(configuration: JindoTripleVStack.Configuration)
-
-  public func sizeThatFits(
-    proposal: SwiftUI.ProposedViewSize,
-    subviews: SwiftUI.LayoutSubviews,
-    cache: inout ()
-  ) -> CoreGraphics.CGSize
-
-  public func placeSubviews(
-    in bounds: CoreGraphics.CGRect,
-    proposal: SwiftUI.ProposedViewSize,
-    subviews: SwiftUI.LayoutSubviews,
-    cache: inout ()
-  )
-
-  public typealias AnimatableData = SwiftUI.EmptyAnimatableData
+  @available(*, deprecated, message: "Use HorizontalSizing")
+  public enum HorizontalMode {
+    case split
+    case leading
+    case trailing
+    public static func == (a: SwiftUI_SPI.JindoTripleVStack.HorizontalMode, b: SwiftUI_SPI.JindoTripleVStack.HorizontalMode) -> Swift.Bool
+    public func hash(into hasher: inout Swift.Hasher)
+    public var hashValue: Swift.Int {
+      get
+    }
+  }
+  public struct HorizontalSizing : Swift.Equatable {
+    public static let automatic: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
+    public static let leading: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
+    public static let trailing: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
+    public static let split: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
+    public static func == (a: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing, b: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing) -> Swift.Bool
+  }
+  public func sizeThatFits(proposal: SwiftUICore.ProposedViewSize, subviews: SwiftUI_SPI.JindoTripleVStack.Subviews, cache: inout ()) -> CoreFoundation.CGSize
+  public func placeSubviews(in bounds: CoreFoundation.CGRect, proposal: SwiftUICore.ProposedViewSize, subviews: SwiftUI_SPI.JindoTripleVStack.Subviews, cache: inout ())
+  public typealias AnimatableData = SwiftUICore.EmptyAnimatableData
   public typealias Cache = ()
 }
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-@available(macOS, unavailable)
-extension SwiftUI.View {
-  nonisolated public func jindoPosition(
-    _ position: JindoTripleVStack.Position
-  ) -> some SwiftUI.View
+@available(watchOS 11.0, tvOS 18.0, *)
+extension SwiftUI_SPI.JindoTripleVStack.Position {
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static let leading: SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static func leading(inset: CoreFoundation.CGFloat? = nil) -> SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static let trailing: SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static func trailing(inset: CoreFoundation.CGFloat? = nil) -> SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static let center: SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static let bottom: SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static func bottom(leadingInset: CoreFoundation.CGFloat? = nil, trailingInset: CoreFoundation.CGFloat? = nil) -> SwiftUI_SPI.JindoTripleVStack.Position
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public static let notch: SwiftUI_SPI.JindoTripleVStack.Position
+}
+
+@available(watchOS 11.0, tvOS 18.0, *)
+extension SwiftUI_SPI.JindoTripleVStack {
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  public struct ContentMargins {
+    public init(top: CoreFoundation.CGFloat? = nil, leading: CoreFoundation.CGFloat? = nil, bottom: CoreFoundation.CGFloat? = nil, trailing: CoreFoundation.CGFloat? = nil)
+  }
+}
+
+extension SwiftUICore.View {
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  nonisolated public func jindoPosition(_ position: SwiftUI_SPI.JindoTripleVStack.Position) -> some SwiftUICore.View
+
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  nonisolated public func jindoVerticalPlacement(_ verticalPlacement: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement) -> some SwiftUICore.View
+
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  nonisolated public func jindoPriority(_ priority: Swift.Double?) -> some SwiftUICore.View
+
+  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
+  @available(macOS, unavailable)
+  nonisolated public func jindoContentMargins(_ contentMargins: SwiftUI_SPI.JindoTripleVStack.ContentMargins?) -> some SwiftUICore.View
 }
 
 @available(iOS 18.2, macOS 15.2, *)
