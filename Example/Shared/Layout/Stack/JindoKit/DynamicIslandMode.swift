@@ -72,13 +72,13 @@ public struct DynamicIslandPreviewMode: Equatable, Sendable {
     public static let minimal = DynamicIslandPreviewMode(.minimal)
 }
 
-/// The geometry used to render a Dynamic Island preview.
 #if OPENSWIFTUI
 @available(OpenSwiftUI_v4_1, *)
 #else
 @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
 #endif
 @available(macOS, unavailable)
+/// The geometry used to render a Dynamic Island preview.
 public struct DynamicIslandPreviewConfiguration: Equatable, Sendable {
     /// The size of the obstruction in the expanded presentation.
     public var notchSize: CGSize
