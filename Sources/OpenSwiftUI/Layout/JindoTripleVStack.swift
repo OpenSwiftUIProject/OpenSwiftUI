@@ -864,7 +864,6 @@ extension JindoTripleVStack {
             let centerIndices = indices(in: .center)
             let trailingIndices = indices(in: .trailing)
             let bottomIndices = indices(in: .bottom)
-            _ = indices(in: .notch)
             let notchIndex = indices(in: .notch).first
 
             header = Header(

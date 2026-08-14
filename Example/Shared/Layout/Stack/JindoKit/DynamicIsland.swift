@@ -94,11 +94,9 @@ public struct DynamicIsland: View {
     /// takes precedence. For example, this keeps an 8-point trailing margin and
     /// uses 20 points for all other edges:
     ///
-    /// ```swift
-    /// dynamicIsland
-    ///     .contentMargins(.trailing, 8, for: .expanded)
-    ///     .contentMargins(.all, 20, for: .expanded)
-    /// ```
+    ///     dynamicIsland
+    ///         .contentMargins(.trailing, 8, for: .expanded)
+    ///         .contentMargins(.all, 20, for: .expanded)
     ///
     /// - Parameters:
     ///   - edges: The edges that use custom content margins.
