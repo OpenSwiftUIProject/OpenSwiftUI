@@ -10,6 +10,7 @@
 //  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
 //  @available(macOS, unavailable)
 
+public import OpenCoreGraphicsShims
 @_spi(ForOpenSwiftUIOnly) public import OpenSwiftUICore
 
 // MARK: - JindoTripleVStack
