@@ -90,8 +90,17 @@ Update the dyld shim constants and tests accordingly:
 - Add iOS and macOS 26.4 and 26.5 version constants.
 - Expect `dyld_program_sdk_at_least(26.5)` to be `false`.
 - Expect `dyld_program_sdk_at_least(26.4)` to be `true`.
-- Update semantic linked-on-or-after expectations so the 2025 semantic version
-  is enabled for SDK 26.4.
+- Enable the 2025 semantic version on 26.x runtimes while keeping it disabled
+  on the macOS 15 and iOS 18.5 CI runtimes, whose dyld does not recognize the
+  2025 version-set token even though active-platform SDK checks report 26.4.
+
+### Swift Testing Exit-Test Arguments
+
+Swift Testing serializes values captured by exit-test closures as JSON, which
+cannot represent non-finite floating-point values:
+
+- Capture dimension inputs as codable floating-point bit patterns and
+  reconstruct their `CGFloat` values inside the exit-test process.
 
 ### Validation
 

@@ -93,7 +93,13 @@ struct SemanticsTests {
         #expect(isLinkedOnOrAfter(.v4) == true)
         #expect(isLinkedOnOrAfter(.v5) == true)
         #expect(isLinkedOnOrAfter(.v6) == true)
-        #expect(isLinkedOnOrAfter(.v7) == true)
+        // FIXME: Temporary compatibility for Xcode 26.6 CI running on macOS 15 and iOS 18.5.
+        let v7LinkedOnOrAfter = if #available(iOS 26.0, visionOS 26.0, *) {
+            true
+        } else {
+            false
+        }
+        #expect(isLinkedOnOrAfter(.v7) == v7LinkedOnOrAfter)
         #expect(isDeployedOnOrAfter(.v1) == true)
         #if arch(arm64)
         #expect(isDeployedOnOrAfter(.v2) == true)
@@ -153,7 +159,13 @@ struct SemanticsTests {
         #expect(isLinkedOnOrAfter(.v4) == true)
         #expect(isLinkedOnOrAfter(.v5) == true)
         #expect(isLinkedOnOrAfter(.v6) == true)
-        #expect(isLinkedOnOrAfter(.v7) == true)
+        // FIXME: Temporary compatibility for Xcode 26.6 CI running on macOS 15.
+        let v7LinkedOnOrAfter = if #available(macOS 26.0, *) {
+            true
+        } else {
+            false
+        }
+        #expect(isLinkedOnOrAfter(.v7) == v7LinkedOnOrAfter)
         #expect(isDeployedOnOrAfter(.v1) == true)
         #expect(isDeployedOnOrAfter(.v2) == true)
         #expect(isDeployedOnOrAfter(.v3) == true)
