@@ -2,10 +2,12 @@
 //  DynamicIsland.swift
 //  JindoKit
 
+#if !os(macOS)
+
 #if OPENSWIFTUI
 @_spi(Jindo) import OpenSwiftUI
 #else
-import SwiftUI_SPI
+@_spi(Jindo) import SwiftUI_SPI
 #endif
 
 /// A view that previews the layout and configuration of a Live Activity in the
@@ -304,3 +306,5 @@ private struct JindoExpandedLayout<Content>: View where Content: View {
         .padding(configuration.layoutMargins)
     }
 }
+
+#endif

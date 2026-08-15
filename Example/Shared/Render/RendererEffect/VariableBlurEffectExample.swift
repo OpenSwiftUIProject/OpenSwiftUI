@@ -5,7 +5,7 @@
 #if OPENSWIFTUI
 @_spi(Private) import OpenSwiftUI
 #else
-import SwiftUI_SPI
+@_spi(Private) import SwiftUI_SPI
 #endif
 
 struct VariableBlurEffectExample: View {

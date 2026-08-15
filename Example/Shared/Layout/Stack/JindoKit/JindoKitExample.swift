@@ -2,6 +2,8 @@
 //  JindoKitExample.swift
 //  Shared
 
+#if !os(macOS)
+
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
@@ -80,3 +82,5 @@ struct JindoKitExample: View {
         .previewMode(mode)
     }
 }
+
+#endif

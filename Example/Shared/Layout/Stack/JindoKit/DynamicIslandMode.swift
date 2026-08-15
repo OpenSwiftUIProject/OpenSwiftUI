@@ -2,6 +2,8 @@
 //  DynamicIslandMode.swift
 //  JindoKit
 
+#if !os(macOS)
+
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
@@ -166,3 +168,5 @@ struct DynamicIslandContentMargins: Equatable {
         explicitEdges.formUnion(edges)
     }
 }
+
+#endif

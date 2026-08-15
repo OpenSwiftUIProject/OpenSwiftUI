@@ -2,10 +2,12 @@
 //  DynamicIslandExpandedContent.swift
 //  JindoKit
 
+#if !os(macOS)
+
 #if OPENSWIFTUI
 @_spi(Jindo) import OpenSwiftUI
 #else
-import SwiftUI_SPI
+@_spi(Jindo) import SwiftUI_SPI
 #endif
 
 /// A view that describes the expanded presentation of a Live Activity in the
@@ -302,3 +304,5 @@ private struct JindoRegionContentMargins: Sendable {
         )
     }
 }
+
+#endif
