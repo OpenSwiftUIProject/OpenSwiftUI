@@ -8,7 +8,7 @@
 
 import Foundation
 
-protocol SafelySerializableDiscreteFormatStyle: DiscreteFormatStyle where FormatOutput: AttributedStringConvertible {
+protocol SafelySerializableDiscreteFormatStyle: DiscreteFormatStyle, Codable where FormatOutput: AttributedStringConvertible {
     static func representation<Source>(
         of resolvable: TimeDataFormatting.Resolvable<Source, Self>,
         for version: ArchivedViewInput.DeploymentVersion

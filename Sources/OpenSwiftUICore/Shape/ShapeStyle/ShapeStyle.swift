@@ -191,7 +191,34 @@ extension ShapeStyle {
         }
     }
 
-    // package func resolveGradient(in environment: EnvironmentValues, level: Int = 0) -> ResolvedGradient?
+    package func resolveGradient(
+        in environment: EnvironmentValues,
+        level: Int = 0
+    ) -> ResolvedGradient? {
+        let name = ShapeStyle.Name.foreground
+        var shape = _ShapeStyle_Shape(
+            operation: .resolveStyle(name: name, levels: level ..< level + 1),
+            environment: environment
+        )
+        _apply(to: &shape)
+        guard case let .pack(pack) = shape.result else {
+            return nil
+        }
+        let style = pack[name, level]
+        var gradient: ResolvedGradient?
+        switch style.fill {
+        case let .color(color), let .foregroundMaterial(color, _):
+            gradient = ResolvedGradient(stops: [.init(color: color, location: 0)])
+        case let .paint(paint):
+            gradient = paint.resolvedGradient
+        case .backgroundMaterial, .vibrantColor, .vibrantMatrix, .multicolor:
+            gradient = nil
+        }
+        if style.opacity != 1 {
+            gradient?.multiplyOpacity(by: style.opacity)
+        }
+        return gradient
+    }
 
     package func copyStyle(name: Name = .foreground, in env: EnvironmentValues, foregroundStyle: AnyShapeStyle? = nil) -> AnyShapeStyle {
         var shape = _ShapeStyle_Shape(operation: .copyStyle(name: name), environment: env, foregroundStyle: foregroundStyle)
