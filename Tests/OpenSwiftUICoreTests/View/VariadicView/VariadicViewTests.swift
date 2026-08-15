@@ -51,18 +51,12 @@ struct VariadicViewTests {
                 \(effect(?: #:opacity 1\.0)?
                   \(item #:identity \d+ #:version \d+
                     \(frame \([^)]+\)\)
-                    \(effect(?: #:opacity 1\.0)?
-                      \(item #:identity \d+ #:version \d+
-                        \(frame \([^)]+\)\)
-                        \(content-seed \d+\)
-                        \(color #[0-9A-F]{8}\)\)\)\)
+                    \(content-seed \d+\)
+                    \(color #[0-9A-F]{8}\)\)
                   \(item #:identity \d+ #:version \d+
                     \(frame \([^)]+\)\)
-                    \(effect(?: #:opacity 1\.0)?
-                      \(item #:identity \d+ #:version \d+
-                        \(frame \([^)]+\)\)
-                        \(content-seed \d+\)
-                        \(color #[0-9A-F]{8}\)\)\)\)\)\)\)
+                    \(content-seed \d+\)
+                    \(color #[0-9A-F]{8}\)\)\)\)\)
             """#)
         #expect(displayList.description.contains(expectRegex))
     }
@@ -99,18 +93,12 @@ struct VariadicViewTests {
             \(display-list
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
-                \(effect(?: #:opacity 1\.0)?
-                  \(item #:identity \d+ #:version \d+
-                    \(frame \([^)]+\)\)
-                    \(content-seed \d+\)
-                    \(color #[0-9A-F]{8}\)\)\)\)
+                \(content-seed \d+\)
+                \(color #[0-9A-F]{8}\)\)
               \(item #:identity \d+ #:version \d+
                 \(frame \([^)]+\)\)
-                \(effect(?: #:opacity 1\.0)?
-                  \(item #:identity \d+ #:version \d+
-                    \(frame \([^)]+\)\)
-                    \(content-seed \d+\)
-                    \(color #[0-9A-F]{8}\)\)\)\)\)
+                \(content-seed \d+\)
+                \(color #[0-9A-F]{8}\)\)\)
             """#)
         #expect(displayList.description.contains(expectRegex))
     }
