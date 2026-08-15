@@ -71,11 +71,6 @@ toolchain bump:
 - Remove compiler-version guards that are redundant once the package requires
   Swift 6.3.
 
-Keep the iOS 18.5 test runner on x86_64 until the arm64 launch path is
-separately validated with Xcode 26.6. This workaround addresses the simulator
-runner launch failure seen with the previous toolchain and is not removed by
-this bump without runtime evidence.
-
 ### SDK-Linked Test Expectations
 
 Xcode 26.6 ships an `xctest` binary linked against SDK 26.4:

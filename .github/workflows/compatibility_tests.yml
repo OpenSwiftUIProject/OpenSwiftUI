@@ -140,17 +140,14 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # Keep the iOS 18.5 test runner on x86_64 until the arm64 launch path
-          # is validated with Xcode 26.6.
           NSUnbufferedIO=YES tuist_xcodebuild "$OPENSWIFTUI_RESULT_BUNDLE_PATH" test \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -only-testing:OpenSwiftUICompatibilityTests \
             -derivedDataPath "$OPENSWIFTUI_DERIVED_DATA_PATH" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 0
@@ -158,17 +155,14 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # See the OpenSwiftUI iOS compatibility step above: force x86_64 to
-          # avoid the arm64 package test runner launch/codesigning failure.
           NSUnbufferedIO=YES tuist_xcodebuild "$SWIFTUI_RESULT_BUNDLE_PATH" test \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -only-testing:OpenSwiftUICompatibilityTests \
             -derivedDataPath "$SWIFTUI_DERIVED_DATA_PATH" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
         env:
           OPENSWIFTUI_COMPATIBILITY_TEST: 1
