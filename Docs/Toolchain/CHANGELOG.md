@@ -5,12 +5,103 @@ found while validating CI, package dependencies, and platform-specific tests.
 
 | Date | OpenSwiftUI PR | Toolchain move | Notes |
 | --- | --- | --- | --- |
+| 2026-07-27 | [#987](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/987) | Xcode 26.3 / Swift 6.2.4 to Xcode 26.6 / Swift 6.3.3 | Updated package manifests and CI, removed Swift 6.2 index-store and package-prebuilt workarounds, and refreshed SDK-linked test expectations. |
 | 2026-06-09 | [#902](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/902) | Add Xcode 27 / SDK 27 support | Added SDK 26/27 addition guards and updated UIFoundation shims while keeping Xcode 26.3 / macOS 26.2 compatibility. |
 | 2026-06-07 | [#899](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/899) | Xcode 16.4 / Swift 6.1 to Xcode 26.3 / Swift 6.2.4 | Kept `macos-15` and iOS 18.5 while documenting the Linux compiler crash, index store, prebuilt package, runtime issue, and Linux dyld shim workarounds. |
 | 2025-11-18 | [#634](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/634) | Initial Xcode 26 SDK support | Added SDK 26 compatibility without moving CI to iOS 26 or macOS 26 destinations. |
 | 2025-05-11 | [#276](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/276) | Swift 6.0 / Xcode 16.0 to Swift 6.1 / Xcode 16.3 | Added the temporary Linux SDK header patch for swift-corelibs-foundation#5211. |
 | 2025-04-05 | [#241](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/241) | Xcode version selector cleanup | `16.0` resolved to Xcode 16.3 in setup tooling, so CI was changed to use a precise Xcode version. |
 | 2024-09-17 | [#118](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/118) | Add Xcode 16 and Swift 6 support on macOS | Closed [#117](https://github.com/OpenSwiftUIProject/OpenSwiftUI/issues/117). Also updated Linux/Wasm Swift 6 nightly jobs and fixed several Swift 6 warnings and iOS 18 test issues. |
+
+## Swift 6.3
+
+OpenSwiftUI PR: [#987](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/987)
+
+Dependency PRs:
+
+- OpenSwiftUIProject/DarwinPrivateFrameworks#TBD
+- OpenSwiftUIProject/OpenAttributeGraph#234
+- OpenSwiftUIProject/OpenRenderBox#TBD
+- jcmosc/Compute#TBD
+
+Use the following dependency section in the OpenSwiftUI PR body:
+
+```markdown
+## Dependency
+
+- OpenSwiftUIProject/DarwinPrivateFrameworks#TBD
+- OpenSwiftUIProject/OpenAttributeGraph#234
+- OpenSwiftUIProject/OpenRenderBox#TBD
+- jcmosc/Compute#TBD
+```
+
+### Version Targets
+
+- Apple platforms: Xcode 26.6 / Swift 6.3.3.
+- Linux: Swift 6.3.3.
+- Swift tools version: 6.3 for the root and nested packages updated by this
+  bump.
+- Runner and destinations: require `macos-15` and `xcode-26.6` runner labels,
+  and keep iOS simulator tests on iOS 18.5.
+
+### Package Manifests
+
+Update the root and nested package entry points together:
+
+- `Package.swift`
+- `Example/Tuist/Package.swift`
+- `Renderer/Stdout/Package.swift`
+- `Renderer/Stdout/Tuist/Package.swift`
+
+The corresponding DarwinPrivateFrameworks, OpenAttributeGraph, and
+OpenRenderBox manifests also move to Swift tools version 6.3.
+
+### Removed Swift 6.2 Workarounds
+
+Swift 6.3 no longer needs the following workarounds introduced by the previous
+toolchain bump:
+
+- Remove `--disable-index-store` from OpenAttributeGraph SwiftPM test jobs.
+- Remove `COMPILER_INDEX_STORE_ENABLE=NO` from OpenAttributeGraph Xcode and
+  Tuist configurations.
+- Remove `--disable-index-store` from OpenSwiftUI documentation and Stdout
+  renderer tooling.
+- Remove `--disable-experimental-prebuilts` from OpenSwiftUI SwiftPM jobs.
+- Remove `-IDEPackageEnablePrebuilts=NO` from OpenSwiftUI Xcode jobs.
+- Remove compiler-version guards that are redundant once the package requires
+  Swift 6.3.
+
+Keep the iOS 18.5 test runner on x86_64 until the arm64 launch path is
+separately validated with Xcode 26.6. This workaround addresses the simulator
+runner launch failure seen with the previous toolchain and is not removed by
+this bump without runtime evidence.
+
+### SDK-Linked Test Expectations
+
+Xcode 26.6 ships an `xctest` binary linked against SDK 26.4:
+
+- iPhone Simulator: SDK 26.4, minimum iOS 13.0 on x86_64 and iOS 14.0 on
+  arm64.
+- macOS: SDK 26.4, minimum macOS 14.0.
+
+Update the dyld shim constants and tests accordingly:
+
+- Add iOS and macOS 26.4 and 26.5 version constants.
+- Expect `dyld_program_sdk_at_least(26.5)` to be `false`.
+- Expect `dyld_program_sdk_at_least(26.4)` to be `true`.
+- Update semantic linked-on-or-after expectations so the 2025 semantic version
+  is enabled for SDK 26.4.
+
+### Validation
+
+- Parse all changed workflow YAML files.
+- Run `swift package dump-package` with Xcode 26.6 for each updated root and
+  nested package.
+- Inspect the Xcode 26.6 `xctest` Mach-O build-version commands for SDK and
+  minimum deployment versions.
+- Run `git diff --check` in each changed repository.
+- Do not run full OpenSwiftUI builds by default for this metadata and
+  compatibility update.
 
 ## Xcode 27 SDK
 
