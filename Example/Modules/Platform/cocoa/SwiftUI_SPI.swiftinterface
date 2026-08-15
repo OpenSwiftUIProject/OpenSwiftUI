@@ -1,193 +1,37 @@
 // swift-interface-format-version: 1.0
 // swift-module-flags: -enable-objc-interop -enable-library-evolution -swift-version 5 -module-name SwiftUI_SPI -module-abi-name SwiftUI
-import CoreFoundation
 import CoreGraphics
-import QuartzCore
 import Swift
 @_exported import SwiftUI
 
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-@available(macOS, unavailable)
-public struct JindoTripleVStack : SwiftUI.Layout {
-  public struct Configuration {
-    public var notchSize: CoreFoundation.CGSize
-    @available(*, deprecated, message: "Use horizontalSizing")
-    public var mode: SwiftUI_SPI.JindoTripleVStack.HorizontalMode {
-      get
-      set
-    }
-    @available(*, deprecated, message: "Use layoutMargins")
-    public var defaultInsets: SwiftUI.EdgeInsets {
-      get
-      set
-    }
-    public var centerAlignment: SwiftUI.TextAlignment
-    public var bottomAlignment: SwiftUI.TextAlignment
-    public var uniformSpacing: CoreFoundation.CGFloat?
-    @available(*, deprecated, renamed: "init(notchSize:mode:layoutMargins:)")
-    public init(notchSize: CoreFoundation.CGSize, mode: SwiftUI_SPI.JindoTripleVStack.HorizontalMode, defaultInsets: SwiftUI.EdgeInsets)
-    public init(notchSize: CoreFoundation.CGSize, horizontalSizing: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing, layoutMargins: SwiftUI.EdgeInsets)
-  }
-  public init(configuration: SwiftUI_SPI.JindoTripleVStack.Configuration)
-  public struct Position : Swift.Equatable {
-    public static func == (a: SwiftUI_SPI.JindoTripleVStack.Position, b: SwiftUI_SPI.JindoTripleVStack.Position) -> Swift.Bool
-  }
-  public struct VerticalPlacement : Swift.Equatable {
-    public static let `default`: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement
-    public static let belowNotchIfTooWide: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement
-    public static func == (a: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement, b: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement) -> Swift.Bool
-  }
-  @available(*, deprecated, message: "Use HorizontalSizing")
-  public enum HorizontalMode {
-    case split
-    case leading
-    case trailing
-    public static func == (a: SwiftUI_SPI.JindoTripleVStack.HorizontalMode, b: SwiftUI_SPI.JindoTripleVStack.HorizontalMode) -> Swift.Bool
-    public func hash(into hasher: inout Swift.Hasher)
-    public var hashValue: Swift.Int {
-      get
-    }
-  }
-  public struct HorizontalSizing : Swift.Equatable {
-    public static let automatic: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
-    public static let leading: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
-    public static let trailing: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
-    public static let split: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing
-    public static func == (a: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing, b: SwiftUI_SPI.JindoTripleVStack.HorizontalSizing) -> Swift.Bool
-  }
-  public func sizeThatFits(proposal: SwiftUI.ProposedViewSize, subviews: SwiftUI_SPI.JindoTripleVStack.Subviews, cache: inout ()) -> CoreFoundation.CGSize
-  public func placeSubviews(in bounds: CoreFoundation.CGRect, proposal: SwiftUI.ProposedViewSize, subviews: SwiftUI_SPI.JindoTripleVStack.Subviews, cache: inout ())
-  public typealias AnimatableData = SwiftUI.EmptyAnimatableData
-  public typealias Cache = ()
-}
-
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-@available(macOS, unavailable)
-@available(*, deprecated, message: "Use HorizontalSizing")
-extension SwiftUI_SPI.JindoTripleVStack.HorizontalMode : Swift.Equatable {
-}
-
-@available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-@available(macOS, unavailable)
-@available(*, deprecated, message: "Use HorizontalSizing")
-extension SwiftUI_SPI.JindoTripleVStack.HorizontalMode : Swift.Hashable {
-}
-
-@available(watchOS 11.0, tvOS 18.0, *)
-extension SwiftUI_SPI.JindoTripleVStack.Position {
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static let leading: SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static func leading(inset: CoreFoundation.CGFloat? = nil) -> SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static let trailing: SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static func trailing(inset: CoreFoundation.CGFloat? = nil) -> SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static let center: SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static let bottom: SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static func bottom(leadingInset: CoreFoundation.CGFloat? = nil, trailingInset: CoreFoundation.CGFloat? = nil) -> SwiftUI_SPI.JindoTripleVStack.Position
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public static let notch: SwiftUI_SPI.JindoTripleVStack.Position
-}
-
-@available(watchOS 11.0, tvOS 18.0, *)
-extension SwiftUI_SPI.JindoTripleVStack {
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  public struct ContentMargins {
-    public init(top: CoreFoundation.CGFloat? = nil, leading: CoreFoundation.CGFloat? = nil, bottom: CoreFoundation.CGFloat? = nil, trailing: CoreFoundation.CGFloat? = nil)
-  }
-}
-
-extension SwiftUI.View {
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  nonisolated public func jindoPosition(_ position: SwiftUI_SPI.JindoTripleVStack.Position) -> some SwiftUI.View
-
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  nonisolated public func jindoVerticalPlacement(_ verticalPlacement: SwiftUI_SPI.JindoTripleVStack.VerticalPlacement) -> some SwiftUI.View
-
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  nonisolated public func jindoPriority(_ priority: Swift.Double?) -> some SwiftUI.View
-
-  @available(iOS 16.1, tvOS 18.0, watchOS 11.0, *)
-  @available(macOS, unavailable)
-  nonisolated public func jindoContentMargins(_ contentMargins: SwiftUI_SPI.JindoTripleVStack.ContentMargins?) -> some SwiftUI.View
-}
-
 @available(iOS 18.2, macOS 15.2, *)
-@frozen public struct TransactionalPreferenceActionModifier<Key> : SwiftUI.ViewModifier where Key : SwiftUI.PreferenceKey, Key.Value : Swift.Equatable {
+@frozen public /* package */ struct TransactionalPreferenceActionModifier<Key> : SwiftUI.ViewModifier where Key : SwiftUI.PreferenceKey, Key.Value : Swift.Equatable {
   public var action: (Key.Value, SwiftUI.Transaction) -> Swift.Void
-  @_alwaysEmitIntoClient public init(action: @escaping (Key.Value, SwiftUI.Transaction) -> Swift.Void) {
+  @_alwaysEmitIntoClient public /* package */ init(action: @escaping (Key.Value, SwiftUI.Transaction) -> Swift.Void) {
     self.action = action
   }
-  nonisolated public static func _makeView(modifier: SwiftUI._GraphValue<SwiftUI_SPI.TransactionalPreferenceActionModifier<Key>>, inputs: SwiftUI._ViewInputs, body: @escaping (SwiftUI._Graph, SwiftUI._ViewInputs) -> SwiftUI._ViewOutputs) -> SwiftUI._ViewOutputs
+  nonisolated public /* package */ static func _makeView(modifier: SwiftUI._GraphValue<SwiftUI_SPI.TransactionalPreferenceActionModifier<Key>>, inputs: SwiftUI._ViewInputs, body: @escaping (SwiftUI._Graph, SwiftUI._ViewInputs) -> SwiftUI._ViewOutputs) -> SwiftUI._ViewOutputs
   public typealias Body = Swift.Never
 }
 
-@available(iOS 18.2, macOS 15.2, *)
-extension SwiftUI.View {
-  @_alwaysEmitIntoClient nonisolated public func onPreferenceChange<Key>(_ key: Key.Type = Key.self, action: @escaping @Sendable (Key.Value, SwiftUI.Transaction) -> Swift.Void) -> some SwiftUI.View where Key : SwiftUI.PreferenceKey, Key.Value : Swift.Equatable {
-    return modifier(SwiftUI_SPI.TransactionalPreferenceActionModifier<Key>(action: action))
-  }
-}
-
-@_hasMissingDesignatedInitializers @available(iOS 18.0, macOS 15.0, tvOS 18.0, watchOS 11.0, visionOS 2.0, *)
-public class CAHostingLayer<Content> : QuartzCore.CALayer where Content : SwiftUI.View {
-  public init(rootView: Content, environment: SwiftUI.EnvironmentValues = .init())
-  @objc override dynamic public func layoutSublayers()
-  public var rootView: Content {
-    get
-    set
-  }
-}
-
-public struct DisplayList : Swift.CustomStringConvertible {
-  public struct Version {}
+public /* package */ struct DisplayList : Swift.CustomStringConvertible {
+  public /* package */ struct Version {}
   public var description: Swift.String {
     get
   }
 }
 
-public final class ViewGraph {
-  public struct Outputs : Swift.OptionSet {
-    public let rawValue: Swift.UInt8
-    public init(rawValue: Swift.UInt8)
-    public static var displayList: ViewGraph.Outputs {
+public /* package */ final class ViewGraph {
+  public /* package */ struct Outputs : Swift.OptionSet {
+    public /* package */ let rawValue: Swift.UInt8
+    public /* package */ init(rawValue: Swift.UInt8)
+    public /* package */ static var displayList: SwiftUI_SPI.ViewGraph.Outputs {
       get
     }
   }
-  public init<Root>(rootViewType: Root.Type, requestedOutputs: ViewGraph.Outputs) where Root : SwiftUI.View
-  public func instantiateOutputs()
-  public func setRootView<Root>(_ view: Root) where Root : SwiftUI.View
-  public func setProposedSize(_ size: CoreGraphics.CGSize)
-  public func displayList() -> (DisplayList, DisplayList.Version)
-}
-
-@available(iOS 17.0, macOS 14.0, tvOS 17.0, watchOS 10.0, visionOS 1.0, *)
-extension SwiftUI.View {
-  public func variableBlur(maxRadius: CoreGraphics.CGFloat, mask: SwiftUI.Image, opaque: Swift.Bool = false) -> some SwiftUI.View
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, *)
-extension SwiftUI.View {
-  nonisolated public func matchedGeometryEffect<ID, S>(id: ID, in namespace: SwiftUI.Namespace.ID, clipShape: S, properties: SwiftUI.MatchedGeometryProperties = .frame, anchor: SwiftUI.UnitPoint = .center, isSource: Swift.Bool = true) -> some SwiftUI.View where ID : Swift.Hashable, S : SwiftUI.Shape
-}
-
-@available(iOS 16.0, macOS 13.0, tvOS 16.0, watchOS 9.0, visionOS 1.0, *)
-extension SwiftUI.View {
-  public func avoidsOrphans(_ flag: Swift.Bool) -> some SwiftUI.View
+  public /* package */ init<Root>(rootViewType: Root.Type, requestedOutputs: SwiftUI_SPI.ViewGraph.Outputs) where Root : SwiftUI.View
+  public /* package */ func instantiateOutputs()
+  public /* package */ func setRootView<Root>(_ view: Root) where Root : SwiftUI.View
+  public /* package */ func setProposedSize(_ size: CoreGraphics.CGSize)
+  public /* package */ func displayList() -> (SwiftUI_SPI.DisplayList, SwiftUI_SPI.DisplayList.Version)
 }

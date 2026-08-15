@@ -5,13 +5,7 @@
 #if OPENSWIFTUI
 @_spi(Private) import OpenSwiftUI
 #else
-import SwiftUI_SPI
-extension MatchedGeometryProperties {
-    // NOTE: SwiftUI_SPI somehow not work here
-    fileprivate static var clipRect: MatchedGeometryProperties {
-        .init(rawValue: 1 << 2)
-    }
-}
+@_spi(Private) import SwiftUI_SPI
 #endif
 
 struct MatchedGeometryEffectExample: View {

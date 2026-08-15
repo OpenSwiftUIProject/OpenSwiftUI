@@ -9,7 +9,11 @@
 @_spi(ForAppKitOnly) import OpenSwiftUI
 #endif
 #else
-import SwiftUI_SPI
+#if canImport(UIKit)
+@_spi(ForUIKitOnly) import SwiftUI_SPI
+#else
+@_spi(ForAppKitOnly) import SwiftUI_SPI
+#endif
 #endif
 
 import QuartzCore
