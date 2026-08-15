@@ -33,6 +33,7 @@ package struct PlatformItemList {
         var label: NSAttributedString?
         var tooltip: String?
         var badge: String?
+        var children: PlatformItemList?
         var tint: Color?
         // TODO
 

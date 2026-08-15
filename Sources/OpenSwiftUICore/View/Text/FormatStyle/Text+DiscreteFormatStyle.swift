@@ -603,7 +603,7 @@ extension LocalizedStringKey.StringInterpolation {
 // MARK: - TimeDataFormattingStorage
 
 @available(OpenSwiftUI_v6_0, *)
-private final class TimeDataFormattingStorage<Source, Format>: AnyTextStorage, @unchecked Sendable where Source: TimeDataSourceStorage, Format: DiscreteFormatStyle, Source.Value == Format.FormatInput, Format.FormatOutput: AttributedStringConvertible {
+final package class TimeDataFormattingStorage<Source, Format>: AnyTextStorage, @unchecked Sendable where Source: TimeDataSourceStorage, Format: DiscreteFormatStyle, Source.Value == Format.FormatInput, Format.FormatOutput: AttributedStringConvertible {
     var source: Source
     var format: Format
     var reducedLuminanceBudget: Double?
