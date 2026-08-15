@@ -246,9 +246,9 @@ private struct AccessibilityLargeContentViewTransform: Rule {
         viewTransform.appendPosition(position)
         var frame = CGRect(origin: .zero, size: size.value)
         frame.convert(to: .global, transform: viewTransform)
-        let mergedContentItems = platformItemList.mergedContentItems
-        let title = mergedContentItems.text?.string ?? mergedContentItems.label?.string
-        let image = mergedContentItems.resolvedImage
+        let mergedContentItem = platformItemList.mergedContentItem
+        let title = mergedContentItem.text?.string ?? mergedContentItem.label?.string
+        let image = mergedContentItem.resolvedImage
         let behavior = behavior
         let item = AccessibilityLargeContentViewItem(
             title: title,
