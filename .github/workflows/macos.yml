@@ -27,10 +27,9 @@ jobs:
         os: [macos-15]
         xcode-version: ["26.6"]
         release: [2024]
-    # Limit to self-hosted to reduce action cost
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1

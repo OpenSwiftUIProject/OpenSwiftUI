@@ -38,10 +38,9 @@ jobs:
         include:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
-    # Limit to self-hosted to reduce action cost
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1

@@ -51,8 +51,8 @@ jobs:
             attributegraph: "0"
             compute: "1"
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
