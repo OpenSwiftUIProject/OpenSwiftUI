@@ -6,18 +6,21 @@
 //  Status: WIP
 //  ID: C320C90E4A458BC2E4049E0630068186 (SwiftUICore)
 
-import Foundation
+package import Foundation
 
 // MARK: - TimeDataFormatting
 
 @available(OpenSwiftUI_v6_0, *)
-enum TimeDataFormatting: ResolvableStringAttributeFamily {
-    static var attribute: NSAttributedString.Key {
+package enum TimeDataFormatting: ResolvableStringAttributeFamily {
+    package static var attribute: NSAttributedString.Key {
         NSAttributedString.Key("OpenSwiftUITimeDataFormatting")
     }
 
-    static func decode(from decoder: any Decoder) throws -> (any ResolvableStringAttribute)? {
-        nil
+    package static func decode(from decoder: any Decoder) throws -> (any ResolvableStringAttribute)? {
+        let value = try decoder.singleValueContainer().decode(
+            AnyCodable<SafelyCodableRequirement>.self
+        )
+        return value.value as? any ResolvableStringAttribute
     }
 
     enum UpdateFrequency: Hashable, Comparable, Codable, Sendable {
@@ -83,12 +86,20 @@ enum TimeDataFormatting: ResolvableStringAttributeFamily {
             self.sizeVariant = sizeVariant
         }
 
-        static func encode(
+        package static func encode(
             _ resolvable: Resolvable<Source, Format>,
             to encoder: any Encoder
         ) throws {
-            _ = resolvable
-            _ = encoder
+            guard let resolvable = resolvable as? any SafelyCodableResolvable else {
+                throw EncodingError.invalidValue(
+                    resolvable,
+                    EncodingError.Context(
+                        codingPath: encoder.codingPath,
+                        debugDescription: "The time-data format is not safely codable."
+                    )
+                )
+            }
+            try resolvable.serialize(to: encoder)
         }
 
         func representation(
@@ -163,5 +174,123 @@ enum TimeDataFormatting: ResolvableStringAttributeFamily {
                 exact
             )
         }
+    }
+}
+
+// MARK: - TimeDataFormattingContainer
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+public struct TimeDataFormattingContainer: Codable {
+    private let resolvable: any SafelyCodableResolvable
+
+    package init?(resolvable: Any) {
+        guard let resolvable = resolvable as? any SafelyCodableResolvable else {
+            return nil
+        }
+        self.resolvable = resolvable
+    }
+
+    public init(from decoder: any Decoder) throws {
+        guard let resolvable = try TimeDataFormatting.decode(from: decoder) as? any SafelyCodableResolvable else {
+            throw DecodingError.dataCorrupted(
+                DecodingError.Context(
+                    codingPath: decoder.codingPath,
+                    debugDescription: "The decoded value is not a safely codable time-data format."
+                )
+            )
+        }
+        self.resolvable = resolvable
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        try resolvable.serialize(to: encoder)
+    }
+
+    package var text: Text {
+        resolvable.makeText()
+    }
+
+    package func representation(
+        for version: ArchivedViewInput.DeploymentVersion
+    ) -> any ResolvableStringAttributeRepresentation {
+        resolvable._representation(for: version)
+    }
+
+    package static var attribute: NSAttributedString.Key {
+        TimeDataFormatting.attribute
+    }
+}
+
+private protocol SafelyCodableResolvable: Codable, ResolvableStringAttribute {
+    func makeText() -> Text
+
+    func serialize(to encoder: any Encoder) throws
+
+    func _representation(
+        for version: ArchivedViewInput.DeploymentVersion
+    ) -> any ResolvableStringAttributeRepresentation
+}
+
+private struct SafelyCodableRequirement: CodableRequirement {
+    static func checkedCodableType(
+        _ type: Any.Type
+    ) -> (any Codable.Type)? {
+        guard type is any SafelyCodableResolvable.Type else {
+            return nil
+        }
+        return type as? any Codable.Type
+    }
+}
+
+extension TimeDataFormatting.Resolvable: Codable where Format: SafelySerializableDiscreteFormatStyle {
+    private enum CodingKeys: String, CodingKey {
+        case source
+        case format
+        case secondsUpdateFrequencyBudget
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let source = try container.decode(Source.self, forKey: .source)
+        let format = try container.decode(Format.self, forKey: .format)
+        let budget = try container.decode(Double.self, forKey: .secondsUpdateFrequencyBudget)
+        self.init(
+            source: source,
+            format: format,
+            secondsUpdateFrequencyBudget: budget
+        )
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(source, forKey: .source)
+        try container.encode(format, forKey: .format)
+        try container.encode(
+            secondsUpdateFrequencyBudget,
+            forKey: .secondsUpdateFrequencyBudget
+        )
+    }
+}
+
+extension TimeDataFormatting.Resolvable: SafelyCodableResolvable where Format: SafelySerializableDiscreteFormatStyle {
+    fileprivate func makeText() -> Text {
+        Text(
+            anyTextStorage: TimeDataFormattingStorage(
+                source: source,
+                format: format,
+                reducedLuminanceBudget: secondsUpdateFrequencyBudget
+            )
+        )
+    }
+
+    fileprivate func serialize(to encoder: any Encoder) throws {
+        try AnyCodable<SafelyCodableRequirement>(self).encode(to: encoder)
+    }
+
+    fileprivate func _representation(
+        for version: ArchivedViewInput.DeploymentVersion
+    ) -> any ResolvableStringAttributeRepresentation {
+        Format.representation(of: self, for: version)
     }
 }
