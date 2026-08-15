@@ -49,7 +49,7 @@ struct ViewAliasTests {
         let source: Color? = sourceIsPresent ? .black : nil
         let displayList = DisplayListUtil.renderDisplayList(ContentView(source: source))
         if sourceIsPresent {
-            #expect(displayList.contains(effectColorDisplayListRegex("#000000FF")))
+            #expect(displayList.contains(singleColorDisplayListRegex("#000000FF")))
             #expect(DisplayListUtil.containsColor("#000000FF", in: displayList))
         } else {
             #expect(displayList.wholeMatch(of: emptyDisplayListRegex) != nil)
@@ -91,7 +91,7 @@ struct ViewAliasTests {
         #expect(DisplayListUtil.containsColor("#000000FF", in: staticDisplayList))
 
         let optionalPresentDisplayList = DisplayListUtil.renderDisplayList(OptionalContentView(source: .black))
-        #expect(optionalPresentDisplayList.contains(effectColorDisplayListRegex("#000000FF")))
+        #expect(optionalPresentDisplayList.contains(singleColorDisplayListRegex("#000000FF")))
         #expect(DisplayListUtil.containsColor("#000000FF", in: optionalPresentDisplayList))
 
         let optionalNilDisplayList = DisplayListUtil.renderDisplayList(OptionalContentView(source: nil))
@@ -128,15 +128,15 @@ struct ViewAliasTests {
         }
 
         let presentDisplayList = DisplayListUtil.renderDisplayList(ContentView(source: .black))
-        #expect(presentDisplayList.contains(effectColorDisplayListRegex("#000000FF")))
+        #expect(presentDisplayList.contains(singleColorDisplayListRegex("#000000FF")))
         #expect(DisplayListUtil.containsColor("#000000FF", in: presentDisplayList))
-        #expect(!presentDisplayList.contains(effectColorDisplayListRegex("#FFFFFFFF")))
+        #expect(!presentDisplayList.contains(singleColorDisplayListRegex("#FFFFFFFF")))
         #expect(!DisplayListUtil.containsColor("#FFFFFFFF", in: presentDisplayList))
 
         let nilDisplayList = DisplayListUtil.renderDisplayList(ContentView(source: nil))
-        #expect(nilDisplayList.contains(effectColorDisplayListRegex("#FFFFFFFF")))
+        #expect(nilDisplayList.contains(singleColorDisplayListRegex("#FFFFFFFF")))
         #expect(DisplayListUtil.containsColor("#FFFFFFFF", in: nilDisplayList))
-        #expect(!nilDisplayList.contains(effectColorDisplayListRegex("#000000FF")))
+        #expect(!nilDisplayList.contains(singleColorDisplayListRegex("#000000FF")))
         #expect(!DisplayListUtil.containsColor("#000000FF", in: nilDisplayList))
     }
 
@@ -172,7 +172,7 @@ struct ViewAliasTests {
         }
 
         let displayList = DisplayListUtil.renderDisplayList(ContentView())
-        #expect(displayList.contains(effectColorDisplayListRegex("#000000FF")))
+        #expect(displayList.contains(singleColorDisplayListRegex("#000000FF")))
         #expect(DisplayListUtil.containsColor("#000000FF", in: displayList))
         #expect(!DisplayListUtil.containsColor("#FF3B30FF", in: displayList))
         #expect(!DisplayListUtil.containsColor("#FFFFFFFF", in: displayList))
@@ -192,16 +192,4 @@ struct ViewAliasTests {
         """#)
     }
 
-    private func effectColorDisplayListRegex(_ color: String) -> Regex<AnyRegexOutput> {
-        try! Regex(#"""
-        \(display-list
-          \(item #:identity \d+ #:version \d+
-            \(frame \([^)]+\)\)
-            \(effect(?: #:opacity 1\.0)?
-              \(item #:identity \d+ #:version \d+
-                \(frame \([^)]+\)\)
-                \(content-seed \d+\)
-                \(color \#(color)\)\)\)\)\)
-        """#)
-    }
 }
