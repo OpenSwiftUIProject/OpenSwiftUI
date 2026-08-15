@@ -2,7 +2,7 @@
 //  ProtobufMessage.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 import Foundation
@@ -131,6 +131,11 @@ package enum ProtobufFormat {
         /// The wire type of the field.
         package var wireType: WireType {
             WireType(rawValue: rawValue & 7)
+        }
+
+        /// Whether the field has no encoded value.
+        package var _isEmpty: Bool {
+            rawValue == 0
         }
         
         /// Converts the tag to a specific type.

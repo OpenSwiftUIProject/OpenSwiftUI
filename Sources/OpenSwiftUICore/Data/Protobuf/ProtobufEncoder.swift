@@ -2,7 +2,7 @@
 //  ProtobufEncoder.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: C7B3AAD101AF9EA76FC322BD6EF713E6 (SwiftUICore)
 
@@ -112,11 +112,24 @@ package struct ProtobufEncoder {
     /// Ends a length-delimited field.
     private mutating func endLengthDelimited() {
         let lengthPosition = stack.removeLast()
-        let length = size - (lengthPosition + 1)
-        let highBit = 64 - (length | 1).leadingZeroBitCount
-        let count = (highBit + 6) / 7
+        let length = size - (lengthPosition &+ 1)
+        if length <= 0x7F, size < capacity {
+            buffer.advanced(by: lengthPosition).storeBytes(
+                of: UInt8(truncatingIfNeeded: length),
+                as: UInt8.self
+            )
+            return
+        }
+
+        let count: Int
+        if length <= 0x7F {
+            count = 1
+        } else {
+            let highBit = 64 - length.leadingZeroBitCount
+            count = (highBit + 6) / 7
+        }
         let oldSize = size
-        let newSize = size - 1 + count
+        let newSize = size + (count - 1)
         var pointer: UnsafeMutableRawPointer
         if capacity < newSize {
             pointer = growBufferSlow(to: newSize)
@@ -125,9 +138,11 @@ package struct ProtobufEncoder {
             pointer = buffer.advanced(by: oldSize)
         }
         let firstLengthBytePointer = pointer.advanced(by: -(length + 1))
-        if count != 1 {
-            memmove(firstLengthBytePointer.advanced(by: count), firstLengthBytePointer.advanced(by: 1), length)
-        }
+        memmove(
+            firstLengthBytePointer.advanced(by: count),
+            firstLengthBytePointer.advanced(by: 1),
+            length
+        )
         var currentPointer = firstLengthBytePointer
         var currentValue = length
         while currentValue >= 0x80 {
@@ -714,8 +729,18 @@ extension ProtobufEncoder {
     /// - Parameters:
     ///   - value: The value to encode.
     package mutating func encodeVarint(_ value: UInt) {
-        let highBit = 64 - (value | 1).leadingZeroBitCount
-        let count = (highBit + 6) / 7
+        if value <= 0x7F, size < capacity {
+            buffer.advanced(by: size).storeBytes(of: UInt8(value), as: UInt8.self)
+            size &+= 1
+            return
+        }
+        let count: Int
+        if value <= 0x7F {
+            count = 1
+        } else {
+            let highBit = 64 - value.leadingZeroBitCount
+            count = (highBit + 6) / 7
+        }
         let oldSize = size
         let newSize = size + count
         var pointer: UnsafeMutableRawPointer
@@ -822,7 +847,7 @@ extension ProtobufEncoder {
     package mutating func encodeData(_ dataBuffer: UnsafeRawBufferPointer) {
         // Encode LEN
         let dataBufferCount = dataBuffer.count
-        encodeVarint(UInt(bitPattern: dataBufferCount))
+        encodeVarint(UInt(dataBufferCount))
         guard let baseAddress = dataBuffer.baseAddress,
               !dataBuffer.isEmpty else {
             return

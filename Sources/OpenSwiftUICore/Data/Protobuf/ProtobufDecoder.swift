@@ -2,7 +2,7 @@
 //  ProtobufDecoder.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 //  ID: FFA06CAF6B06DC3E21EC75547A0CD421 (SwiftUICore)
 
@@ -48,7 +48,7 @@ package struct ProtobufDecoder {
         self.data = nsData
         let ptr = nsData.bytes
         self.ptr = ptr
-        self.end = ptr + nsData.length
+        self.end = ptr + data.count
         self.packedEnd = ptr
     }
 }
@@ -60,7 +60,7 @@ extension ProtobufDecoder {
             packedField = Field(rawValue: 0)
             return nil
         }
-        if packedField.rawValue != 0 {
+        if !packedField._isEmpty {
             if ptr < packedEnd {
                 return packedField
             } else if packedEnd < ptr {
@@ -69,7 +69,7 @@ extension ProtobufDecoder {
                 packedField = Field(rawValue: 0)
             }
         }
-        let result = try decodeVariant()
+        let result = try decodeVarint()
         let field = Field(rawValue: result)
         guard field.tag > 0 else {
             throw DecodingError.failed
@@ -81,11 +81,11 @@ extension ProtobufDecoder {
     package mutating func skipField(_ field: ProtobufDecoder.Field) throws {
         switch field.wireType {
         case .varint:
-            _ = try decodeVariant()
+            _ = try decodeVarint()
         case .fixed64:
             let newPtr = ptr.advanced(by: 8)
             guard newPtr <= end else {
-                return
+                throw DecodingError.failed
             }
             ptr = newPtr
         case .lengthDelimited:
@@ -93,7 +93,7 @@ extension ProtobufDecoder {
         case .fixed32:
             let newPtr = ptr.advanced(by: 4)
             guard newPtr <= end else {
-                return
+                throw DecodingError.failed
             }
             ptr = newPtr
         default:
@@ -110,7 +110,7 @@ extension ProtobufDecoder {
         case .varint:
             break
         case .lengthDelimited:
-            let offset = try decodeVariant()
+            let offset = try decodeVarint()
             let offsetPtr = ptr.advanced(by: Int(offset))
             guard offsetPtr <= end else {
                 throw DecodingError.failed
@@ -120,7 +120,7 @@ extension ProtobufDecoder {
         default:
             throw DecodingError.failed
         }
-        return try decodeVariant() != 0
+        return try decodeVarint() != 0
     }
     
     /// Decodes an unsigned integer(UInt) value field from the data.
@@ -128,23 +128,9 @@ extension ProtobufDecoder {
     /// - Parameter field: The field to decode.
     /// - Returns: An unsigned integer(UInt) value.
     package mutating func uintField(_ field: ProtobufDecoder.Field) throws -> UInt {
-        switch field.wireType {
-        case .varint:
-            break
-        case .lengthDelimited:
-            let offset = try decodeVariant()
-            let offsetPtr = ptr.advanced(by: Int(offset))
-            guard offsetPtr <= end else {
-                throw DecodingError.failed
-            }
-            packedField = Field(field.tag, wireType: .varint)
-            packedEnd = offsetPtr
-        default:
-            throw DecodingError.failed
-        }
-        return try decodeVariant()
+        try UInt(uint64Field(field))
     }
-    
+
     /// Decodes an enum field from the data.
     ///
     /// - Parameter field: The field to decode.
@@ -176,13 +162,27 @@ extension ProtobufDecoder {
     package mutating func uint32Field(_ field: ProtobufDecoder.Field) throws -> UInt32 {
         try UInt32(uintField(field))
     }
-    
+
     /// Decodes an unsigned 64-bit integer(UInt64) value field from the data.
     ///
     /// - Parameter field: The field to decode.
     /// - Returns: An unsigned 64-bit integer(UInt64) value.
     package mutating func uint64Field(_ field: ProtobufDecoder.Field) throws -> UInt64 {
-        try UInt64(uintField(field))
+        switch field.wireType {
+        case .varint:
+            break
+        case .lengthDelimited:
+            let offset = try decodeVarint()
+            let offsetPtr = ptr.advanced(by: Int(offset))
+            guard offsetPtr <= end else {
+                throw DecodingError.failed
+            }
+            packedField = Field(field.tag, wireType: .varint)
+            packedEnd = offsetPtr
+        default:
+            throw DecodingError.failed
+        }
+        return try UInt64(decodeVarint())
     }
     
     /// Decodes a signed integer(Int) value field from the data.
@@ -190,7 +190,21 @@ extension ProtobufDecoder {
     /// - Parameter field: The field to decode.
     /// - Returns: A signed integer(Int) value.
     package mutating func intField(_ field: ProtobufDecoder.Field) throws -> Int {
-        let value = Int(bitPattern: try uintField(field))
+        switch field.wireType {
+        case .varint:
+            break
+        case .lengthDelimited:
+            let offset = try decodeVarint()
+            let offsetPtr = ptr.advanced(by: Int(offset))
+            guard offsetPtr <= end else {
+                throw DecodingError.failed
+            }
+            packedField = Field(field.tag, wireType: .varint)
+            packedEnd = offsetPtr
+        default:
+            throw DecodingError.failed
+        }
+        let value = Int(bitPattern: try decodeVarint())
         return Int(bitPattern: UInt(bitPattern: (value >> 1)) ^ UInt(bitPattern: -(value & 1)))
     }
     
@@ -201,7 +215,7 @@ extension ProtobufDecoder {
     package mutating func fixed32Field(_ field: ProtobufDecoder.Field) throws -> UInt32 {
         switch field.wireType {
         case .lengthDelimited:
-            let offset = try decodeVariant()
+            let offset = try decodeVarint()
             let offsetPtr = ptr.advanced(by: Int(offset))
             guard offsetPtr <= end else {
                 throw DecodingError.failed
@@ -229,7 +243,7 @@ extension ProtobufDecoder {
     package mutating func fixed64Field(_ field: ProtobufDecoder.Field) throws -> UInt64 {
         switch field.wireType {
         case .lengthDelimited:
-            let offset = try decodeVariant()
+            let offset = try decodeVarint()
             let offsetPtr = ptr.advanced(by: Int(offset))
             guard offsetPtr <= end else {
                 throw DecodingError.failed
@@ -257,7 +271,7 @@ extension ProtobufDecoder {
     package mutating func floatField(_ field: ProtobufDecoder.Field) throws -> Float {
         switch field.wireType {
         case .lengthDelimited:
-            let offset = try decodeVariant()
+            let offset = try decodeVarint()
             let offsetPtr = ptr.advanced(by: Int(offset))
             guard offsetPtr <= end else {
                 throw DecodingError.failed
@@ -287,7 +301,7 @@ extension ProtobufDecoder {
         case .fixed64:
             break
         case .lengthDelimited:
-            let offset = try decodeVariant()
+            let offset = try decodeVarint()
             let offsetPtr = ptr.advanced(by: Int(offset))
             guard offsetPtr <= end else {
                 throw DecodingError.failed
@@ -402,27 +416,28 @@ extension ProtobufDecoder {
 }
 
 extension ProtobufDecoder {
-    /// Decodes a variant from the data.
-    private mutating func decodeVariant() throws -> UInt {
+    /// Decodes a varint from the data.
+    private mutating func decodeVarint() throws -> UInt {
         var value: UInt = 0
         var shift: UInt = 0
-        var shouldContinue = false
-        repeat {
-            guard ptr < end else {
+        while true {
+            let nextPtr = ptr + 1
+            guard nextPtr <= end else {
                 throw DecodingError.failed
             }
             let byte = ptr.loadUnaligned(as: UInt8.self)
-            ptr += 1
+            ptr = nextPtr
             value |= UInt(byte & 0x7f) << shift
-            shift += 7
-            shouldContinue = (byte & 0x80 != 0)
-        } while shouldContinue
-        return value
+            if byte < 0x80 {
+                return value
+            }
+            shift &+= 7
+        }
     }
     
     /// Decodes a data buffer from the data.
     private mutating func decodeDataBuffer() throws -> UnsafeRawBufferPointer {
-        let count = try Int(decodeVariant())
+        let count = try Int(decodeVarint())
         let oldPtr = ptr
         let newPtr = ptr.advanced(by: count)
         guard newPtr <= end else {
@@ -435,7 +450,7 @@ extension ProtobufDecoder {
     /// Begins decoding a message.
     private mutating func beginMessage() throws {
         stack.append(end)
-        let count = try Int(decodeVariant())
+        let count = try Int(decodeVarint())
         let newPtr = ptr.advanced(by: count)
         guard newPtr <= end else {
             throw DecodingError.failed
