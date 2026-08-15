@@ -18,7 +18,7 @@ package struct PlatformItemList {
         var platformIdentifier: String?
         var isExternal: Bool = false
         var hierarchicalLevel: Int = 0
-        // var imageColorResolver: mageColorResolver?
+        // var imageColorResolver: ImageColorResolver?
         var isEnabled: Bool = false
         var resolvedImage: Image.Resolved?
         var namedResolvedImage: Image.NamedResolved?
@@ -29,7 +29,7 @@ package struct PlatformItemList {
         // TODO
     }
 
-    var mergedContentItems: Item {
+    var mergedContentItem: Item {
         // FIXME
         .init()
     }
@@ -86,5 +86,15 @@ struct PlatformItemListFlagsSet: OptionSet {
 
     init(rawValue: UInt32) {
         self.rawValue = rawValue
+    }
+
+    static let widgetMetadata = PlatformItemListFlagsSet(rawValue: 0x76)
+}
+
+extension _ViewInputs {
+    mutating func addPlatformItemListKey(flags: PlatformItemListFlagsSet) {
+        preferences.add(PlatformItemList.Key.self)
+        self[PlatformItemListFlagsInput.self].formUnion(flags)
+        hasWidgetMetadata = true
     }
 }
