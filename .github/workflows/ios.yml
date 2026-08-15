@@ -92,7 +92,8 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build \
+          # Xcode 26.6 can otherwise link the host macro object into the iOS Simulator test bundle.
+          NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
@@ -104,7 +105,8 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          NSUnbufferedIO=YES tuist_xcodebuild "$TEST_RESULT_BUNDLE_PATH" test \
+          # Match the package prebuilt setting used by the build step.
+          NSUnbufferedIO=YES tuist_xcodebuild "$TEST_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \

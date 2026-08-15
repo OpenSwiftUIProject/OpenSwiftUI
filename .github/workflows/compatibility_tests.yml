@@ -57,7 +57,9 @@ jobs:
       - name: Run compatibility tests on OpenSwiftUI + macOS
         run: |
           set -o pipefail
+          # Swift 6.3.3 still crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
+            --disable-index-store \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -66,7 +68,9 @@ jobs:
       - name: Run compatibility tests on SwiftUI + macOS
         run: |
           set -o pipefail
+          # Swift 6.3.3 still crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
+            --disable-index-store \
             --filter OpenSwiftUICompatibilityTests \
             --build-path .build-compatibility-test-debug \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
@@ -140,7 +144,8 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          NSUnbufferedIO=YES tuist_xcodebuild "$OPENSWIFTUI_RESULT_BUNDLE_PATH" test \
+          # Xcode 26.6 can otherwise link the host macro object into the iOS Simulator test bundle.
+          NSUnbufferedIO=YES tuist_xcodebuild "$OPENSWIFTUI_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
@@ -155,7 +160,8 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          NSUnbufferedIO=YES tuist_xcodebuild "$SWIFTUI_RESULT_BUNDLE_PATH" test \
+          # Match the package prebuilt setting used by the OpenSwiftUI compatibility test.
+          NSUnbufferedIO=YES tuist_xcodebuild "$SWIFTUI_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
             -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \

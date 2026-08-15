@@ -5,7 +5,7 @@ found while validating CI, package dependencies, and platform-specific tests.
 
 | Date | OpenSwiftUI PR | Toolchain move | Notes |
 | --- | --- | --- | --- |
-| 2026-07-27 | [#987](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/987) | Xcode 26.3 / Swift 6.2.4 to Xcode 26.6 / Swift 6.3.3 | Updated package manifests and CI, removed Swift 6.2 index-store and package-prebuilt workarounds, and refreshed SDK-linked test expectations. |
+| 2026-07-27 | [#987](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/987) | Xcode 26.3 / Swift 6.2.4 to Xcode 26.6 / Swift 6.3.3 | Updated package manifests and CI, retained the targeted index-store and package-prebuilt workarounds required by Xcode 26.6, and refreshed SDK-linked test expectations. |
 | 2026-06-09 | [#902](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/902) | Add Xcode 27 / SDK 27 support | Added SDK 26/27 addition guards and updated UIFoundation shims while keeping Xcode 26.3 / macOS 26.2 compatibility. |
 | 2026-06-07 | [#899](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/899) | Xcode 16.4 / Swift 6.1 to Xcode 26.3 / Swift 6.2.4 | Kept `macos-15` and iOS 18.5 while documenting the Linux compiler crash, index store, prebuilt package, runtime issue, and Linux dyld shim workarounds. |
 | 2025-11-18 | [#634](https://github.com/OpenSwiftUIProject/OpenSwiftUI/pull/634) | Initial Xcode 26 SDK support | Added SDK 26 compatibility without moving CI to iOS 26 or macOS 26 destinations. |
@@ -56,20 +56,26 @@ Update the root and nested package entry points together:
 The corresponding DarwinPrivateFrameworks, OpenAttributeGraph, and
 OpenRenderBox manifests also move to Swift tools version 6.3.
 
-### Removed Swift 6.2 Workarounds
+### Swift 6.2 Workaround Audit
 
-Swift 6.3 no longer needs the following workarounds introduced by the previous
-toolchain bump:
+Xcode 26.6 and Swift 6.3.3 make several workarounds from the previous toolchain
+bump unnecessary, while CI validation shows that two targeted workarounds are
+still required:
 
-- Remove `--disable-index-store` from OpenAttributeGraph SwiftPM test jobs.
-- Remove `COMPILER_INDEX_STORE_ENABLE=NO` from OpenAttributeGraph Xcode and
-  Tuist configurations.
-- Remove `--disable-index-store` from OpenSwiftUI documentation and Stdout
-  renderer tooling.
-- Remove `--disable-experimental-prebuilts` from OpenSwiftUI SwiftPM jobs.
-- Remove `-IDEPackageEnablePrebuilts=NO` from OpenSwiftUI Xcode jobs.
-- Remove compiler-version guards that are redundant once the package requires
-  Swift 6.3.
+- Retain `--disable-index-store` in OpenSwiftUI macOS SwiftPM test jobs and the
+  Stdout renderer because Swift 6.3.3 still crashes while indexing AppKit with
+  the private framework shims.
+- Retain `-IDEPackageEnablePrebuilts=NO` in OpenSwiftUI iOS package build and
+  test jobs because Xcode 26.6 otherwise links the host macOS macro object into
+  the iOS Simulator test bundle.
+- Remove `--disable-index-store` and `COMPILER_INDEX_STORE_ENABLE=NO` from
+  OpenAttributeGraph test and Tuist configurations.
+- Remove the documentation-specific OpenSwiftUI index-store configuration and
+  the package-prebuilt override from the UI test action.
+- Remove `--disable-experimental-prebuilts` from OpenSwiftUI SwiftPM jobs and
+  remove compiler-version guards made redundant by the Swift 6.3 requirement.
+- Use the default iOS Simulator architecture rather than forcing `x86_64` and
+  `ONLY_ACTIVE_ARCH=YES`.
 
 ### SDK-Linked Test Expectations
 
