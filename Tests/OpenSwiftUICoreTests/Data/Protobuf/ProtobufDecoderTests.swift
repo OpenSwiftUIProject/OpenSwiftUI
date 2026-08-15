@@ -37,10 +37,15 @@ struct ProtobufDecoderTests {
         #expect(try "3506000000".decodePBHexString(IntegerMessage.self) == IntegerMessage(unsignedInt32Value: 6))
         #expect(try "08021002180620042d050000003506000000".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: 1, unsignedIntValue: 2, int64Value: 3, unsignedInt64Value: 4, int32Value: 5, unsignedInt32Value: 6))
         #expect(try "0890a204".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: 0x8888))
+        #expect(try "107f".decodePBHexString(IntegerMessage.self) == IntegerMessage(unsignedIntValue: 0x7F))
+        #expect(try "108001".decodePBHexString(IntegerMessage.self) == IntegerMessage(unsignedIntValue: 0x80))
+        #expect(try "20ffffffffffffffffff01".decodePBHexString(IntegerMessage.self) == IntegerMessage(unsignedInt64Value: .max))
     }
     
     @Test
     func skipInvalidTagDecode() throws {
+        #expect(try "3900000000000000000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
+        #expect(try "3d000000000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "38000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "40000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "48000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
@@ -51,6 +56,16 @@ struct ProtobufDecoderTests {
         #expect(try "70000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "78000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
         #expect(try "8001000801".decodePBHexString(IntegerMessage.self) == IntegerMessage(intValue: -1))
+    }
+
+    @Test
+    func skipTruncatedFixedFieldDecode() {
+        #expect(throws: Error.self) {
+            try "39".decodePBHexString(IntegerMessage.self)
+        }
+        #expect(throws: Error.self) {
+            try "3d".decodePBHexString(IntegerMessage.self)
+        }
     }
     
     @Test
@@ -69,6 +84,11 @@ struct ProtobufDecoderTests {
         #expect(try "".decodePBHexString(DataMessage.self) == DataMessage())
         #expect(try "0a04ffffffff".decodePBHexString(DataMessage.self) == DataMessage(data: .init(repeating: UInt8(0xFF), count: 4)))
         #expect(try "0a028888".decodePBHexString(DataMessage.self) == DataMessage(data: .init(repeating: UInt8(0x88), count: 2)))
+
+        let payload127 = String(repeating: "ff", count: 0x7F)
+        let payload128 = String(repeating: "ff", count: 0x80)
+        #expect(try "0a7f\(payload127)".decodePBHexString(DataMessage.self) == DataMessage(data: .init(repeating: 0xFF, count: 0x7F)))
+        #expect(try "0a8001\(payload128)".decodePBHexString(DataMessage.self) == DataMessage(data: .init(repeating: 0xFF, count: 0x80)))
     }
     
     @Test

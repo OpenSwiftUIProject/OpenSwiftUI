@@ -35,6 +35,9 @@ struct ProtobufEncoderTests {
         #expect((try IntegerMessage(unsignedInt32Value: 6).pbHexString) == "3506000000")
         #expect(try IntegerMessage(intValue: 1, unsignedIntValue: 2, int64Value: 3, unsignedInt64Value: 4, int32Value: 5, unsignedInt32Value: 6).pbHexString == "08021002180620042d050000003506000000")
         #expect((try IntegerMessage(intValue: 0x8888).pbHexString) == "0890a204")
+        #expect((try IntegerMessage(unsignedIntValue: 0x7F).pbHexString) == "107f")
+        #expect((try IntegerMessage(unsignedIntValue: 0x80).pbHexString) == "108001")
+        #expect((try IntegerMessage(unsignedInt64Value: .max).pbHexString) == "20ffffffffffffffffff01")
     }
     
     @Test
@@ -56,6 +59,11 @@ struct ProtobufEncoderTests {
     func dataEncode() throws {
         #expect((try DataMessage(data: .init(repeating: UInt8(0xFF), count: 4)).pbHexString) == "0a04ffffffff")
         #expect((try DataMessage(data: .init(repeating: UInt8(0x88), count: 2)).pbHexString) == "0a028888")
+
+        let payload127 = String(repeating: "ff", count: 0x7F)
+        let payload128 = String(repeating: "ff", count: 0x80)
+        #expect((try DataMessage(data: .init(repeating: 0xFF, count: 0x7F)).pbHexString) == "0a7f\(payload127)")
+        #expect((try DataMessage(data: .init(repeating: 0xFF, count: 0x80)).pbHexString) == "0a8001\(payload128)")
     }
     
     @Test
