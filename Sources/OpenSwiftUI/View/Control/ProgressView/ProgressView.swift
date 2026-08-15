@@ -156,3 +156,97 @@ public struct ProgressView<Label, CurrentValueLabel>: View where Label: View, Cu
 @available(*, unavailable)
 extension ProgressView: Sendable {}
 
+
+// MARK: - ProgressViewValue
+
+enum ProgressViewValue: Codable {
+    case absolute(fractionCompleted: Double?, alwaysIndeterminate: Bool)
+    case dateRelative(interval: ClosedRange<Date>, countdown: Bool)
+
+    private enum CodingKeys: CodingKey {
+        case absolute
+        case dateRelative
+    }
+
+    private enum AbsoluteCodingKeys: CodingKey {
+        case fractionCompleted
+        case alwaysIndeterminate
+    }
+
+    private enum DateRelativeCodingKeys: CodingKey {
+        case interval
+        case countdown
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        switch self {
+        case let .absolute(fractionCompleted, alwaysIndeterminate):
+            var nestedContainer = container.nestedContainer(
+                keyedBy: AbsoluteCodingKeys.self,
+                forKey: .absolute
+            )
+            try nestedContainer.encodeIfPresent(
+                fractionCompleted,
+                forKey: .fractionCompleted
+            )
+            try nestedContainer.encode(
+                alwaysIndeterminate,
+                forKey: .alwaysIndeterminate
+            )
+        case let .dateRelative(interval, countdown):
+            var nestedContainer = container.nestedContainer(
+                keyedBy: DateRelativeCodingKeys.self,
+                forKey: .dateRelative
+            )
+            try nestedContainer.encode(interval, forKey: .interval)
+            try nestedContainer.encode(countdown, forKey: .countdown)
+        }
+    }
+
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let keys = container.allKeys
+        guard keys.count == 1 else {
+            throw DecodingError.typeMismatch(
+                Self.self,
+                DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "Invalid number of keys found, expected one."
+                )
+            )
+        }
+        switch keys[0] {
+        case .absolute:
+            let nestedContainer = try container.nestedContainer(
+                keyedBy: AbsoluteCodingKeys.self,
+                forKey: .absolute
+            )
+            self = try .absolute(
+                fractionCompleted: nestedContainer.decodeIfPresent(
+                    Double.self,
+                    forKey: .fractionCompleted
+                ),
+                alwaysIndeterminate: nestedContainer.decode(
+                    Bool.self,
+                    forKey: .alwaysIndeterminate
+                )
+            )
+        case .dateRelative:
+            let nestedContainer = try container.nestedContainer(
+                keyedBy: DateRelativeCodingKeys.self,
+                forKey: .dateRelative
+            )
+            self = try .dateRelative(
+                interval: nestedContainer.decode(
+                    ClosedRange<Date>.self,
+                    forKey: .interval
+                ),
+                countdown: nestedContainer.decode(
+                    Bool.self,
+                    forKey: .countdown
+                )
+            )
+        }
+    }
+}
