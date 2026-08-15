@@ -250,3 +250,145 @@ enum ProgressViewValue: Codable {
         }
     }
 }
+
+// MARK: - CustomProgressView
+
+@MainActor
+@preconcurrency
+struct CustomProgressView<Label, CurrentValueLabel>: PrimitiveView, UnaryView, View where Label: View, CurrentValueLabel: View {
+    var value: ProgressViewValue
+    var label: Label?
+    var currentValueLabel: CurrentValueLabel?
+
+    init(
+        interval: ClosedRange<Date>,
+        countdown: Bool,
+        label: Label?,
+        currentValueLabel: CurrentValueLabel?
+    ) {
+        self.value = .dateRelative(interval: interval, countdown: countdown)
+        self.label = label
+        self.currentValueLabel = currentValueLabel
+    }
+
+    init(
+        fractionCompleted: Double?,
+        alwaysIndeterminate: Bool,
+        label: Label?,
+        currentValueLabel: CurrentValueLabel?
+    ) {
+        self.value = .absolute(
+            fractionCompleted: fractionCompleted,
+            alwaysIndeterminate: alwaysIndeterminate
+        )
+        self.label = label
+        self.currentValueLabel = currentValueLabel
+    }
+
+    nonisolated static func _makeView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
+        let baseValue = view.value[offset: { .of(&$0.value) }]
+        let label = view.value[offset: { .of(&$0.label) }]
+        let currentValueLabel = view.value[offset: { .of(&$0.currentValueLabel) }]
+        let child = Child(
+            baseValue: baseValue,
+            label: label,
+            currentValueLabel: currentValueLabel
+        )
+        var outputs = Child.Value._makeView(
+            view: _GraphValue(child),
+            inputs: inputs
+        )
+        if inputs.preferences.contains(WidgetAuxiliaryViewMetadata.Key.self) {
+            outputs.preferences.platformItemList = nil
+            outputs.preferences.makePreferenceWriter(
+                inputs: inputs.preferences,
+                key: WidgetAuxiliaryViewMetadata.Key.self,
+                value: Attribute(
+                    WidgetMetadataWriter(
+                        baseValue: baseValue,
+                        labelPref: Attribute(
+                            LazyWidgetAuxiliaryMetadataTextImage(
+                                flags: _AttributeType.Flags.self,
+                                content: label,
+                                inputs: inputs
+                            )
+                        ),
+                        currentValueLabelPref: Attribute(
+                            LazyWidgetAuxiliaryMetadataTextImage(
+                                flags: _AttributeType.Flags.self,
+                                content: currentValueLabel,
+                                inputs: inputs
+                            )
+                        ),
+                        environment: inputs.environment
+                    )
+                )
+            )
+        }
+        return outputs
+    }
+
+    private struct WidgetMetadataWriter: Rule {
+        @Attribute var baseValue: ProgressViewValue
+        @Attribute var labelPref: WidgetAuxiliaryTextImagePreference?
+        @Attribute var currentValueLabelPref: WidgetAuxiliaryTextImagePreference?
+        @Attribute var environment: EnvironmentValues
+
+        var value: WidgetAuxiliaryViewMetadata? {
+            let kind: WidgetAuxiliaryViewMetadata.Progress.Kind = switch baseValue {
+            case let .absolute(fractionCompleted, alwaysIndeterminate): .absolute(fractionCompleted, alwaysIndeterminate)
+            case let .dateRelative(interval, countdown): .date(interval, countdown)
+            }
+            let label = WidgetAuxiliaryViewMetadata(
+                item: labelPref?.list?.mergedContentItem,
+                url: nil,
+                accessibility: nil,
+                child: nil
+            )
+            let currentValueLabel = WidgetAuxiliaryViewMetadata(
+                item: currentValueLabelPref?.list?.mergedContentItem,
+                url: nil,
+                accessibility: nil,
+                child: nil
+            )
+            return WidgetAuxiliaryViewMetadata(
+                progress: .init(
+                    kind: kind,
+                    label: label,
+                    currentValueLabel: currentValueLabel,
+                    tint: WidgetAuxiliaryViewMetadata.tint(from: environment)
+                )
+            )
+        }
+    }
+
+    private struct Child: Rule {
+        @Attribute var baseValue: ProgressViewValue
+        @Attribute var label: Label?
+        @Attribute var currentValueLabel: CurrentValueLabel?
+
+        var value: some View {
+            ResolvedProgressView(value: baseValue)
+                .optionalViewAlias(ProgressViewStyleConfiguration.CurrentValueLabel.self) {
+                    currentValueLabel
+                }
+                .optionalViewAlias(ProgressViewStyleConfiguration.Label.self) {
+                    label
+                }
+        }
+    }
+}
+
+// FIXME
+struct FoundationProgressView: View {
+    var body: some View { EmptyView() }
+}
+
+// FIXME
+struct ResolvedProgressView: View {
+    var value: ProgressViewValue
+    var body: some View { EmptyView() }
+}
