@@ -360,6 +360,33 @@ struct TimeDataFormattingTests {
         #expect(unitsRepresentation.style.unitConfiguration?.style == .full)
     }
 
+    @Suite("Test TimeDataFormatting schedule")
+    struct ScheduleTests {
+        @Test
+        func lowFrequencyEntriesUseMinuteFallbackRedaction() {
+            let resolvable = TimeDataFormatting.Resolvable(
+                source: TimeDataFormattingTestSource(offset: 0),
+                format: TestFormat(prefix: "value:"),
+                secondsUpdateFrequencyBudget: 1.0
+            )
+            let startDate = Date(timeIntervalSinceReferenceDate: 10.0)
+
+            let entries = Array(
+                resolvable.entries(
+                    from: startDate,
+                    mode: .lowFrequency
+                ).prefix(3)
+            )
+
+            let displayOffset = 1.0 / 30.0
+            #expect(entries == [
+                startDate,
+                Date(timeIntervalSinceReferenceDate: 60.0 + displayOffset),
+                Date(timeIntervalSinceReferenceDate: 120.0 + displayOffset),
+            ])
+        }
+    }
+
     @Suite("Test AttributedString.redact API")
     struct RedactionTests {
         @Test
