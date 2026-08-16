@@ -9,7 +9,7 @@
 
 #if OPENSWIFTUI_TARGET_OS_DARWIN
 
-@implementation DateFormattingContext
+@implementation OpenSwiftUIDateFormattingContext
 
 - (instancetype)initWithReferenceDate:(NSDate * _Nullable)referenceDate
                     isLuminanceReduced:(BOOL)isLuminanceReduced {

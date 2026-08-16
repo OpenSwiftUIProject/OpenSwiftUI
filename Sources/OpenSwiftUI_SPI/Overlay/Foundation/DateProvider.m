@@ -47,13 +47,13 @@ static NSString *_removePunctuationIfNecessaryFromTextForTemplate(
     return [components componentsJoinedByString:@""];
 }
 
-@interface DateProvider ()
+@interface OpenSwiftUIDateProvider ()
 - (NSArray<NSString *> *)_completeDateTemplateSeries;
 - (NSArray<NSString *> *)_partialDateTemplateSeriesForUnits:(NSCalendarUnit)units;
 - (NSCalendarUnit)_minCalendarUnitFromFormat:(NSString *)format;
 @end
 
-@implementation DateProvider
+@implementation OpenSwiftUIDateProvider
 
 - (instancetype)initWithDate:(NSDate *)date units:(NSCalendarUnit)units {
     return [self initWithDate:date
@@ -120,7 +120,7 @@ static NSString *_removePunctuationIfNecessaryFromTextForTemplate(
     }
 }
 
-- (NSString * _Nullable)_sessionTextForIndex:(NSInteger)index context:(DateFormattingContext *)context {
+- (NSString * _Nullable)_sessionTextForIndex:(NSInteger)index context:(OpenSwiftUIDateFormattingContext *)context {
     if (_date == nil) {
         return nil;
     }

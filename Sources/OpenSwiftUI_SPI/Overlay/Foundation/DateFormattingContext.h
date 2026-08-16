@@ -15,7 +15,8 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface DateFormattingContext : NSObject {
+NS_SWIFT_NAME(DateFormattingContext)
+@interface OpenSwiftUIDateFormattingContext : NSObject {
 @private
     BOOL _isLuminanceReduced;
     NSDate *_referenceDate;

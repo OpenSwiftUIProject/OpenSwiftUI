@@ -83,8 +83,66 @@ struct TimeIntervalProviderTests {
         )
 
         let string = try #require(provider.formattedString())
-        #expect(string.contains("10:13"))
-        #expect(string.contains("11:45"))
+        #expect(string == "10:13–11:45\u{202F}PM")
+
+        let context = DateFormattingContext(
+            referenceDate: startDate,
+            isLuminanceReduced: true
+        )
+        #expect(provider.formattedString(in: context) == string)
+    }
+
+    @Test
+    func sameDayIntervalRetainsDistinctDesignators() {
+        let morning = calendar.date(
+            from: DateComponents(
+                year: 2023,
+                month: 11,
+                day: 14,
+                hour: 10,
+                minute: 13
+            )
+        )!
+        let evening = calendar.date(
+            from: DateComponents(
+                year: 2023,
+                month: 11,
+                day: 14,
+                hour: 23,
+                minute: 45
+            )
+        )!
+        let provider: BaseDateProvider = TimeIntervalProvider(
+            start: morning,
+            end: evening,
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+
+        #expect(provider.formattedString() == "10:13\u{202F}AM–11:45\u{202F}PM")
+    }
+
+    @Test
+    func sameDayIntervalWithoutDesignators() {
+        let endDate = calendar.date(
+            from: DateComponents(
+                year: 2023,
+                month: 11,
+                day: 14,
+                hour: 23,
+                minute: 45
+            )
+        )!
+        let provider: BaseDateProvider = TimeIntervalProvider(
+            start: startDate,
+            end: endDate,
+            calendar: calendar,
+            locale: Locale(identifier: "en_GB"),
+            timeZone: timeZone
+        )
+
+        #expect(provider.formattedString() == "22:13–23:45")
     }
 
     @Test
@@ -99,8 +157,7 @@ struct TimeIntervalProviderTests {
         )
 
         let string = try #require(provider.formattedString())
-        #expect(string.contains("Nov 14"))
-        #expect(string.contains("Nov 15"))
+        #expect(string == "Nov 14 – Nov 15")
     }
 }
 #endif

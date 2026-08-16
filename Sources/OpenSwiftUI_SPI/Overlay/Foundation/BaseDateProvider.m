@@ -18,9 +18,9 @@ extern NSString * const NSDateFormatterPatternStringKey;
 + (NSString *)_formatStringFromComponents:(NSArray<NSDictionary<NSString *, id> *> *)components;
 @end
 
-@interface BaseDateProvider ()
+@interface OpenSwiftUIBaseDateProvider ()
 - (void)_startSessionWithDate:(nullable NSDate *)date;
-- (nullable NSString *)_sessionTextForIndex:(NSInteger)index context:(DateFormattingContext *)context;
+- (nullable NSString *)_sessionTextForIndex:(NSInteger)index context:(OpenSwiftUIDateFormattingContext *)context;
 - (void)_endSession;
 - (NSInteger)_updateFrequency;
 - (NSString *)_timeFormatByRemovingWhitespaceAroundDesignatorOfTimeFormat:(NSString *)timeFormat
@@ -31,7 +31,7 @@ extern NSString * const NSDateFormatterPatternStringKey;
                                                         designatorExists:(nullable BOOL *)designatorExists;
 @end
 
-@implementation BaseDateProvider
+@implementation OpenSwiftUIBaseDateProvider
 
 - (instancetype)initWithCalendar:(NSCalendar *)calendar
                            locale:(NSLocale *)locale
@@ -46,10 +46,10 @@ extern NSString * const NSDateFormatterPatternStringKey;
 }
 
 - (NSString * _Nullable)formattedString {
-    return [self formattedStringInContext:[[DateFormattingContext alloc] init]];
+    return [self formattedStringInContext:[[OpenSwiftUIDateFormattingContext alloc] init]];
 }
 
-- (NSString * _Nullable)formattedStringInContext:(DateFormattingContext *)context {
+- (NSString * _Nullable)formattedStringInContext:(OpenSwiftUIDateFormattingContext *)context {
     [self _startSessionWithDate:context.referenceDate];
     NSString *string = [self _sessionTextForIndex:0 context:context];
     [self _endSession];
@@ -87,7 +87,7 @@ extern NSString * const NSDateFormatterPatternStringKey;
 
 - (void)_startSessionWithDate:(NSDate * _Nullable)date {}
 
-- (NSString * _Nullable)_sessionTextForIndex:(NSInteger)index context:(DateFormattingContext *)context {
+- (NSString * _Nullable)_sessionTextForIndex:(NSInteger)index context:(OpenSwiftUIDateFormattingContext *)context {
     return @"";
 }
 
@@ -177,7 +177,11 @@ static NSBundle *Bundle(void) {
     static NSBundle *__bundle;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        __bundle = [NSBundle bundleForClass:BaseDateProvider.class];
+        #if defined(SWIFT_PACKAGE) && defined(SWIFTPM_MODULE_BUNDLE)
+        __bundle = SWIFTPM_MODULE_BUNDLE;
+        #else
+        __bundle = [NSBundle bundleForClass:OpenSwiftUIBaseDateProvider.class];
+        #endif
     });
     return __bundle;
 }

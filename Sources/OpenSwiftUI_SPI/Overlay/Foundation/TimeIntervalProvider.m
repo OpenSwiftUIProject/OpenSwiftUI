@@ -21,14 +21,14 @@ typedef BOOL (^TimeIntervalProviderPattern)(NSString * _Nullable pattern);
 - (nullable NSAttributedString *)_attributedStringWithFieldsFromDate:(NSDate *)date;
 @end
 
-@interface BaseDateProvider (OpenSwiftUITimeIntervalProviderPrivate)
+@interface OpenSwiftUIBaseDateProvider (OpenSwiftUITimeIntervalProviderPrivate)
 - (NSString *)_timeFormatByRemovingWhitespaceAroundDesignatorOfTimeFormat:(NSString *)timeFormat
                                                          designatorExists:(nullable BOOL *)designatorExists;
 @end
 
-@interface TimeIntervalProvider ()
+@interface OpenSwiftUITimeIntervalProvider ()
 - (nullable NSString *)_sessionTextForIndex:(NSInteger)index
-                                    context:(DateFormattingContext *)context;
+                                    context:(OpenSwiftUIDateFormattingContext *)context;
 - (NSRange)_rangeOfDesignatorInAnnotatedTime:(NSAttributedString *)annotatedTime;
 - (NSRange)_rangeOfHoursInAnnotatedTime:(NSAttributedString *)annotatedTime;
 - (NSRange)_rangeOfAnnontatedTime:(NSAttributedString *)annotatedTime
@@ -56,7 +56,7 @@ static BOOL _DropLeftRedundantDesignator(NSLocale *locale) {
     return value == nil || value.boolValue;
 }
 
-@implementation TimeIntervalProvider
+@implementation OpenSwiftUITimeIntervalProvider
 
 - (instancetype)initWithStartDate:(NSDate *)startDate endDate:(NSDate *)endDate {
     return [self initWithStartDate:startDate
@@ -80,7 +80,7 @@ static BOOL _DropLeftRedundantDesignator(NSLocale *locale) {
 }
 
 - (NSString * _Nullable)_sessionTextForIndex:(NSInteger)index
-                                      context:(DateFormattingContext *)context {
+                                      context:(OpenSwiftUIDateFormattingContext *)context {
     if (_startDate == nil || _endDate == nil) {
         return nil;
     }

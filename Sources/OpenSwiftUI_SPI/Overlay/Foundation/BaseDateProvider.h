@@ -15,7 +15,8 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface BaseDateProvider : NSObject {
+NS_SWIFT_NAME(BaseDateProvider)
+@interface OpenSwiftUIBaseDateProvider : NSObject {
 @private
     NSCalendar *_calendar;
     NSLocale *_locale;
@@ -38,7 +39,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (nullable NSNumber *)updateInterval;
 
 - (nullable NSString *)formattedString;
-- (nullable NSString *)formattedStringInContext:(DateFormattingContext *)context;
+- (nullable NSString *)formattedStringInContext:(OpenSwiftUIDateFormattingContext *)context;
 
 @end
 

@@ -15,7 +15,8 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface TimeIntervalProvider : BaseDateProvider {
+NS_SWIFT_NAME(TimeIntervalProvider)
+@interface OpenSwiftUITimeIntervalProvider : OpenSwiftUIBaseDateProvider {
 @private
     NSDateFormatter *_dateFormatter;
     NSArray<NSNumber *> *_fallbackSequence;

@@ -15,7 +15,8 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface DateProvider : BaseDateProvider {
+NS_SWIFT_NAME(DateProvider)
+@interface OpenSwiftUIDateProvider : OpenSwiftUIBaseDateProvider {
 @private
     NSArray<NSString *> *_templateSeries;
     BOOL _uppercase;

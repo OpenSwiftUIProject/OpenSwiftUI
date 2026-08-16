@@ -1,7 +1,16 @@
-{
-  "DATE_WEEKDAY_DAY_REMOVE_PUNCTUATION" : "0",
-  "DESIGNATOR_REQUIRES_WHITESPACE" : "0",
-  "INTERVAL_DROP_LEFTMOST_REDUNDANT_DESIGNATOR" : "1",
-  "INTERVAL_HYPHEN_NARROW" : "–",
-  "INTERVAL_HYPHEN_WIDE" : " – "
-}
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>DATE_WEEKDAY_DAY_REMOVE_PUNCTUATION</key>
+	<string>0</string>
+	<key>DESIGNATOR_REQUIRES_WHITESPACE</key>
+	<string>0</string>
+	<key>INTERVAL_DROP_LEFTMOST_REDUNDANT_DESIGNATOR</key>
+	<string>1</string>
+	<key>INTERVAL_HYPHEN_NARROW</key>
+	<string>–</string>
+	<key>INTERVAL_HYPHEN_WIDE</key>
+	<string> – </string>
+</dict>
+</plist>

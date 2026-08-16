@@ -30,6 +30,20 @@ struct DateProviderTests {
     }
 
     @Test
+    func dateFormattingContext() {
+        let defaultContext = DateFormattingContext()
+        #expect(defaultContext.referenceDate == nil)
+        #expect(defaultContext.isLuminanceReduced == false)
+
+        let context = DateFormattingContext(
+            referenceDate: date,
+            isLuminanceReduced: true
+        )
+        #expect(context.referenceDate == date)
+        #expect(context.isLuminanceReduced == true)
+    }
+
+    @Test
     func configuration() {
         let provider: BaseDateProvider = DateProvider(
             date: date,
@@ -54,6 +68,42 @@ struct DateProviderTests {
         #expect(provider.calendar == replacementCalendar)
         #expect(provider.locale == replacementLocale)
         #expect(provider.timeZone == replacementTimeZone)
+    }
+
+    @Test
+    func dateProviderProperties() {
+        let units: NSCalendar.Unit = [.year, .month, .day]
+        let provider = DateProvider(
+            date: date,
+            units: units,
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+
+        #expect(provider.date == date)
+        #expect(provider.calendarUnits == units)
+        #expect(provider.uppercase == false)
+        #expect(provider.dateFormat == nil)
+        #expect(provider.dateFormatTemplate == nil)
+
+        let replacementDate = calendar.date(byAdding: .day, value: 1, to: date)!
+        let replacementFormatter = DateFormatter()
+        provider.date = replacementDate
+        provider.calendarUnits = [.weekday]
+        provider.uppercase = true
+        provider.dateFormat = "yyyy-MM-dd"
+        provider.dateFormatTemplate = "yMd"
+        provider.dateFormatter = replacementFormatter
+        provider.updateWallClockAlignment = .hour
+
+        #expect(provider.date == replacementDate)
+        #expect(provider.calendarUnits == .weekday)
+        #expect(provider.uppercase == true)
+        #expect(provider.dateFormat == "yyyy-MM-dd")
+        #expect(provider.dateFormatTemplate == "yMd")
+        #expect(provider.dateFormatter === replacementFormatter)
+        #expect(provider.updateWallClockAlignment == .hour)
     }
 
     @Test
@@ -97,6 +147,32 @@ struct DateProviderTests {
     }
 
     @Test
+    func dateFormatUpdateMetadataEdgeCases() {
+        let emptyFormat: BaseDateProvider = DateProvider(
+            dateFormat: "",
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+        let designatorFormat: BaseDateProvider = DateProvider(
+            dateFormat: "a",
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+        let dayFormat: BaseDateProvider = DateProvider(
+            dateFormat: "yyyy-MM-dd",
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+
+        #expect(emptyFormat.updateWallClockAlignment.isEmpty)
+        #expect(designatorFormat.updateWallClockAlignment == .hour)
+        #expect(dayFormat.updateWallClockAlignment == .day)
+    }
+
+    @Test
     func formattedString() {
         let provider: BaseDateProvider = DateProvider(
             date: date,
@@ -123,6 +199,61 @@ struct DateProviderTests {
         )
 
         #expect(provider.formattedString(in: context) == "2023-11-14 22:13:20")
+    }
+
+    @Test
+    func dateFormatTemplateFormattedStringInContext() {
+        let provider: BaseDateProvider = DateProvider(
+            dateFormatTemplate: "yMd",
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+        let context = DateFormattingContext(
+            referenceDate: date,
+            isLuminanceReduced: false
+        )
+
+        #expect(provider.formattedString(in: context) == "11/14/2023")
+    }
+
+    @Test
+    func emptyUnitsUseDayFallback() {
+        let provider: BaseDateProvider = DateProvider(
+            date: date,
+            units: [],
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+
+        #expect(provider.formattedString() == "14")
+    }
+
+    @Test
+    func englishWeekdayDayUsesExactTemplate() {
+        let provider: BaseDateProvider = DateProvider(
+            date: date,
+            units: [.weekday, .day],
+            calendar: calendar,
+            locale: locale,
+            timeZone: timeZone
+        )
+
+        #expect(provider.formattedString() == "Tuesday 14")
+    }
+
+    @Test
+    func cjkDayUsesExactTemplate() {
+        let provider: BaseDateProvider = DateProvider(
+            date: date,
+            units: [.day],
+            calendar: calendar,
+            locale: Locale(identifier: "zh_CN"),
+            timeZone: timeZone
+        )
+
+        #expect(provider.formattedString() == "14")
     }
 }
 #endif
