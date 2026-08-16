@@ -15,7 +15,11 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
-@interface DateFormattingContext : NSObject
+@interface DateFormattingContext : NSObject {
+@private
+    BOOL _isLuminanceReduced;
+    NSDate *_referenceDate;
+}
 
 - (instancetype)initWithReferenceDate:(nullable NSDate *)referenceDate
                     isLuminanceReduced:(BOOL)isLuminanceReduced
@@ -27,7 +31,12 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 @end
 
-@interface BaseDateProvider : NSObject
+@interface BaseDateProvider : NSObject {
+@private
+    NSCalendar *_calendar;
+    NSLocale *_locale;
+    NSTimeZone *_timeZone;
+}
 
 - (instancetype)initWithCalendar:(NSCalendar *)calendar
                            locale:(NSLocale *)locale
@@ -46,6 +55,46 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 - (nullable NSString *)formattedString;
 - (nullable NSString *)formattedStringInContext:(DateFormattingContext *)context;
+
+@end
+
+@interface DateProvider : BaseDateProvider {
+@private
+    NSArray<NSString *> *_templateSeries;
+    BOOL _uppercase;
+    NSCalendarUnit _updateWallClockAlignment;
+    NSDate *_date;
+    NSCalendarUnit _calendarUnits;
+    NSString *_dateFormat;
+    NSString *_dateFormatTemplate;
+    NSDateFormatter *_dateFormatter;
+}
+
+- (instancetype)initWithDate:(NSDate *)date
+                        units:(NSCalendarUnit)units;
+
+- (instancetype)initWithDate:(NSDate *)date
+                        units:(NSCalendarUnit)units
+                     calendar:(NSCalendar *)calendar
+                       locale:(NSLocale *)locale
+                     timeZone:(nullable NSTimeZone *)timeZone;
+
+- (instancetype)initWithDateFormat:(NSString *)dateFormat
+                           calendar:(NSCalendar *)calendar
+                             locale:(NSLocale *)locale
+                           timeZone:(nullable NSTimeZone *)timeZone;
+
+- (instancetype)initWithDateFormatTemplate:(NSString *)dateFormatTemplate
+                                   calendar:(NSCalendar *)calendar
+                                     locale:(NSLocale *)locale
+                                   timeZone:(nullable NSTimeZone *)timeZone;
+
+@property (nonatomic, strong) NSDate *date;
+@property (nonatomic) NSCalendarUnit calendarUnits;
+@property (nonatomic) BOOL uppercase;
+@property (nonatomic, copy, nullable) NSString *dateFormat;
+@property (nonatomic, copy, nullable) NSString *dateFormatTemplate;
+@property (nonatomic, strong) NSDateFormatter *dateFormatter;
 
 @end
 
