@@ -271,17 +271,16 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
         configuration: ${{ fromJSON(needs.prepare_uitests.outputs.configuration-matrix) }}
         include:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
-    # Limit to self-hosted to reduce action cost
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       STATUS_CONTEXT: UI Tests / iOS / ${{ matrix.configuration.id }}
       STATUS_ENABLED: ${{ needs.prepare_uitests.outputs.status-enabled }}
@@ -370,13 +369,12 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
         configuration: ${{ fromJSON(needs.prepare_uitests.outputs.configuration-matrix) }}
-    # Limit to self-hosted to reduce action cost
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       STATUS_CONTEXT: UI Tests / macOS / ${{ matrix.configuration.id }}
       STATUS_ENABLED: ${{ needs.prepare_uitests.outputs.status-enabled }}

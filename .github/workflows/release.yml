@@ -12,7 +12,9 @@ permissions:
 jobs:
   build-xcframeworks:
     name: Build and Upload XCFrameworks
-    runs-on: macos-15
+    runs-on:
+      - macos-15
+      - xcode-26.6
     outputs:
       checksum_OpenSwiftUI: ${{ steps.build.outputs.checksum_OpenSwiftUI }}
       checksum_OpenSwiftUICore: ${{ steps.build.outputs.checksum_OpenSwiftUICore }}

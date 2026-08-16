@@ -4,8 +4,8 @@ This guide walks you through the steps to integrate OpenSwiftUI into your projec
 
 ## Prerequisites
 
-- Xcode 26.3
-- Swift 6.2.4+
+- Xcode 26.6
+- Swift 6.3.3+
 
 ## Important Notes
 

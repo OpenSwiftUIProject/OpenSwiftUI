@@ -14,8 +14,8 @@ jobs:
   build:
     name: Build DocC site
     runs-on:
-      - self-hosted
       - macos-15
+      - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
@@ -36,7 +36,7 @@ jobs:
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
-          xcode-version: "26.3"
+          xcode-version: "26.6"
       - name: Set up build environment
         run: Scripts/CI/darwin_setup_build.sh
         shell: bash

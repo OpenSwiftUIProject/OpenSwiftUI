@@ -32,16 +32,15 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
         include:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
-    # Limit to self-hosted to reduce action cost
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
@@ -93,34 +92,27 @@ jobs:
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # Xcode 26.3 + iOS 18.5 fails to launch arm64 SwiftPM package test
-          # runners with CoreSimulator codesigning errors. Build the x86_64
-          # simulator slice to match the test command below until that is fixed.
-          # Swift 6.2 macro prebuilts do not support the x86_64 simulator
-          # testable macro target, so build SwiftSyntax from source instead.
+          # Xcode 26.6 can otherwise link the host macro object into the iOS Simulator test bundle.
           NSUnbufferedIO=YES tuist_xcodebuild "$BUILD_RESULT_BUNDLE_PATH" build -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -derivedDataPath "$DERIVED_DATA_PATH" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
       - name: Run test target in debug mode
         run: |
           set -o pipefail
           source Scripts/Tuist/common.sh
-          # See the build step above: force x86_64 to avoid the arm64 package
-          # test runner launch/codesigning failure on this Xcode/iOS pair.
+          # Match the package prebuilt setting used by the build step.
           NSUnbufferedIO=YES tuist_xcodebuild "$TEST_RESULT_BUNDLE_PATH" test -IDEPackageEnablePrebuilts=NO \
             -scheme OpenSwiftUI \
             -configuration Debug \
-            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }},arch=x86_64" \
+            -destination "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}" \
             -derivedDataPath "$DERIVED_DATA_PATH" \
             -skipMacroValidation \
             -skipPackagePluginValidation \
-            ONLY_ACTIVE_ARCH=YES \
             2>&1 | xcbeautify --renderer github-actions --preserve-unbeautified
       - name: Clean up isolated DerivedData
         if: always()

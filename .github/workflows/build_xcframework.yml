@@ -10,7 +10,9 @@ permissions:
 jobs:
   build_xcframework:
     name: Build XCFrameworks
-    runs-on: macos-15
+    runs-on:
+      - macos-15
+      - xcode-26.6
     env:
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
       OPENSWIFTUI_USE_LOCAL_DEPS: 1

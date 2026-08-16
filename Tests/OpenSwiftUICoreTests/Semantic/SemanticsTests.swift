@@ -83,6 +83,34 @@ struct SemanticsTests {
         #expect(isDeployedOnOrAfter(.v5) == false)
         #expect(isDeployedOnOrAfter(.v6) == false)
         #expect(isDeployedOnOrAfter(.v7) == false)
+        #elseif compiler(>=6.3)
+        // Path: Xcode-26.6.0.app Platforms/iPhoneSimulator.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: iOS 26.4
+        // min version: iOS 13.0 (x86_64) & iOS 14.0 (arm64)
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        // FIXME: Temporary compatibility for Xcode 26.6 CI running on macOS 15 and iOS 18.5.
+        let v7LinkedOnOrAfter = if #available(iOS 26.0, visionOS 26.0, *) {
+            true
+        } else {
+            false
+        }
+        #expect(isLinkedOnOrAfter(.v7) == v7LinkedOnOrAfter)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #if arch(arm64)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #else
+        #expect(isDeployedOnOrAfter(.v2) == false)
+        #endif
+        #expect(isDeployedOnOrAfter(.v3) == false)
+        #expect(isDeployedOnOrAfter(.v4) == false)
+        #expect(isDeployedOnOrAfter(.v5) == false)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
         #endif
         #elseif os(macOS)
         #if compiler(<6.2) && compiler(>=6.1)
@@ -114,6 +142,30 @@ struct SemanticsTests {
         #expect(isLinkedOnOrAfter(.v5) == true)
         #expect(isLinkedOnOrAfter(.v6) == true)
         #expect(isLinkedOnOrAfter(.v7) == false)
+        #expect(isDeployedOnOrAfter(.v1) == true)
+        #expect(isDeployedOnOrAfter(.v2) == true)
+        #expect(isDeployedOnOrAfter(.v3) == true)
+        #expect(isDeployedOnOrAfter(.v4) == true)
+        #expect(isDeployedOnOrAfter(.v5) == true)
+        #expect(isDeployedOnOrAfter(.v6) == false)
+        #expect(isDeployedOnOrAfter(.v7) == false)
+        #elseif compiler(>=6.3)
+        // Path: Xcode-26.6.0.app Platforms/MacOSX.platform/Developer/Library/Xcode/Agents/xctest
+        // SDK version: macOS 26.4
+        // min version: macOS 14.0
+        #expect(isLinkedOnOrAfter(.v1) == true)
+        #expect(isLinkedOnOrAfter(.v2) == true)
+        #expect(isLinkedOnOrAfter(.v3) == true)
+        #expect(isLinkedOnOrAfter(.v4) == true)
+        #expect(isLinkedOnOrAfter(.v5) == true)
+        #expect(isLinkedOnOrAfter(.v6) == true)
+        // FIXME: Temporary compatibility for Xcode 26.6 CI running on macOS 15.
+        let v7LinkedOnOrAfter = if #available(macOS 26.0, *) {
+            true
+        } else {
+            false
+        }
+        #expect(isLinkedOnOrAfter(.v7) == v7LinkedOnOrAfter)
         #expect(isDeployedOnOrAfter(.v1) == true)
         #expect(isDeployedOnOrAfter(.v2) == true)
         #expect(isDeployedOnOrAfter(.v3) == true)

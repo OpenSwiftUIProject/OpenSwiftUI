@@ -7,7 +7,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/DarwinPrivateFrameworks.git",
       "state" : {
         "branch" : "main",
-        "revision" : "d93839821ebebdab22081fbc0f3d0b8cb0e30b2f"
+        "revision" : "b7e6ba165f3763dd477f55cc55b4a63f51385571"
       }
     },
     {
@@ -16,7 +16,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
       "state" : {
         "branch" : "main",
-        "revision" : "49a40098fc0b41c6f9e686ef4218b4895fe513f9"
+        "revision" : "65e7cbf19c2c2797d3c5eaafcb19190130c8ad47"
       }
     },
     {

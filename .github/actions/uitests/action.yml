@@ -5,7 +5,7 @@ inputs:
   xcode-version:
     description: 'Xcode version to use'
     required: false
-    default: '26.3'
+    default: '26.6'
   platform:
     description: 'Platform to test (ios or macos)'
     required: true
@@ -230,8 +230,7 @@ runs:
         set -o pipefail
         record_status=0
         baseline_result_bundle="${RUNNER_TEMP:-/tmp}/swiftui-baseline-${GITHUB_RUN_ID}-${GITHUB_RUN_ATTEMPT:-0}-${{ inputs.artifact-name }}.xcresult"
-        # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-        NSUnbufferedIO=YES tuist_xcodebuild "$baseline_result_bundle" test -IDEPackageEnablePrebuilts=NO \
+        NSUnbufferedIO=YES tuist_xcodebuild "$baseline_result_bundle" test \
           -workspace Example.xcworkspace \
           -scheme SUI_UITests \
           -destination "${{ inputs.destination }}" \
@@ -287,8 +286,7 @@ runs:
         echo "artifact_dir=$uitest_tmp/artifacts" >> "$GITHUB_OUTPUT"
         echo "xcresult_archive=$uitest_tmp/${{ inputs.artifact-name }}.xcresult.zip" >> "$GITHUB_OUTPUT"
         set -o pipefail
-        # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-        NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test -IDEPackageEnablePrebuilts=NO \
+        NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test \
           -workspace Example.xcworkspace \
           -scheme OSUI_UITests \
           -destination "${{ inputs.destination }}" \

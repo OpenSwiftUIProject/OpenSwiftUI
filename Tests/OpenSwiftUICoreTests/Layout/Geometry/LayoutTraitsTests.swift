@@ -86,16 +86,24 @@ struct LayoutTraitsTests {
         ])
         func exitTest(_ min: CGFloat, _ ideal: CGFloat, _ max: CGFloat, _ expectedFailure: Bool) async {
             if expectedFailure {
-                #if compiler(>=6.3) // ST-12
                 #if !os(iOS) && !os(visionOS)
-                await #expect(processExitsWith: .failure) { [min, ideal, max] in
+                // Work around https://github.com/swiftlang/swift-testing/issues/1836:
+                // exit tests cannot JSON-encode captured non-finite floating-point values.
+                await #expect(processExitsWith: .failure) {
+                    [
+                        minBitPattern = Double(min).bitPattern as UInt64,
+                        idealBitPattern = Double(ideal).bitPattern as UInt64,
+                        maxBitPattern = Double(max).bitPattern as UInt64,
+                    ] in
+                    let min = CGFloat(Double(bitPattern: minBitPattern))
+                    let ideal = CGFloat(Double(bitPattern: idealBitPattern))
+                    let max = CGFloat(Double(bitPattern: maxBitPattern))
                     _ = Dimension(min: min, ideal: ideal, max: max)
                     var d = Dimension.fixed(.zero)
                     d.max = ideal
                     d.ideal = ideal
                     d.min = min
                 }
-                #endif
                 #endif
             } else {
                 _ = Dimension(min: min, ideal: ideal, max: max)

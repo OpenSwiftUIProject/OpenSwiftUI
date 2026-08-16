@@ -25,12 +25,11 @@ jobs:
       fail-fast: false
       matrix:
         os: [macos-15]
-        xcode-version: ["26.3"]
+        xcode-version: ["26.6"]
         release: [2024]
-    # Limit to self-hosted to reduce action cost
     runs-on:
-      - self-hosted
       - ${{ matrix.os }}
+      - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1
@@ -57,10 +56,8 @@ jobs:
       - name: Build and run tests in debug mode with coverage
         run: |
           set -o pipefail
-          # Swift 6.2 can duplicate-link swift-syntax macro prebuilts; Swift 6.3 fixes this.
-          # Swift 6.2 also crashes while indexing AppKit with the private framework shims.
+          # Swift 6.3.3 still crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
-            --disable-experimental-prebuilts \
             --disable-index-store \
             -c debug \
             --filter OpenSwiftUITests \
