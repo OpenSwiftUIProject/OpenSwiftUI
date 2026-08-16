@@ -16,4 +16,4 @@ if [[ "$(uname)" == "Linux" ]] && command -v swiftly &> /dev/null && [[ -z "$OPE
 fi
 
 swift test
-swift test --package-path Subpackages/OpenSwiftUIMacros
+swift test --package-path Macros

@@ -758,7 +758,7 @@ let package = Package(
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
         // Keep the host-only macro implementation outside this package so
         // target-platform tests do not link it into their test bundles.
-        .package(path: "Subpackages/OpenSwiftUIMacros"),
+        .package(name: "OpenSwiftUIMacros", path: "Macros"),
     ],
     targets: [
         openSwiftUISPITarget,
