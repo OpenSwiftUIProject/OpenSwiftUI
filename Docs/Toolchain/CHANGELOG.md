@@ -62,9 +62,11 @@ Xcode 26.6 and Swift 6.3.3 make several workarounds from the previous toolchain
 bump unnecessary, while CI validation shows that two targeted workarounds are
 still required:
 
-- Retain `--disable-index-store` in OpenSwiftUI macOS SwiftPM test jobs and the
-  Stdout renderer because Swift 6.3.3 still crashes while indexing AppKit with
-  the private framework shims.
+- Add `-index-ignore-system-modules` to the shared macOS Swift settings because
+  Swift 6.3.3 still crashes while indexing AppKit with the private framework
+  shims. This keeps OpenSwiftUI source indexing enabled, applies to both SwiftPM
+  and Xcode GUI builds, and replaces `--disable-index-store` in macOS CI and the
+  Stdout renderer.
 - Retain `-IDEPackageEnablePrebuilts=NO` in OpenSwiftUI iOS package build and
   test jobs because Xcode 26.6 otherwise links the host macOS macro object into
   the iOS Simulator test bundle.
