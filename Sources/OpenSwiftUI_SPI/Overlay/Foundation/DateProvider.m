@@ -249,21 +249,12 @@ static NSString *_removePunctuationIfNecessaryFromTextForTemplate(
 }
 
 @interface DateProvider ()
-@property (nonatomic, readwrite) NSCalendarUnit updateWallClockAlignment;
-
 - (NSArray<NSString *> *)_completeDateTemplateSeries;
 - (NSArray<NSString *> *)_partialDateTemplateSeriesForUnits:(NSCalendarUnit)units;
 - (NSCalendarUnit)_minCalendarUnitFromFormat:(NSString *)format;
 @end
 
 @implementation DateProvider
-
-@synthesize date = _date;
-@synthesize calendarUnits = _calendarUnits;
-@synthesize uppercase = _uppercase;
-@synthesize dateFormat = _dateFormat;
-@synthesize dateFormatTemplate = _dateFormatTemplate;
-@synthesize updateWallClockAlignment = _updateWallClockAlignment;
 
 - (instancetype)initWithDate:(NSDate *)date units:(NSCalendarUnit)units {
     return [self initWithDate:date

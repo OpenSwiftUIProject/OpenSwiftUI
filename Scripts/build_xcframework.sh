@@ -324,6 +324,26 @@ strip_release_metadata() {
     fi
 }
 
+copy_framework_resources() {
+    local scheme="$1"
+    local framework="$2"
+
+    if [ "$scheme" != "OpenSwiftUICore" ]; then
+        return
+    fi
+
+    local source="$PROJECT_ROOT/Sources/OpenSwiftUI_SPI/Resources/CoreDateProvider.strings"
+    local resources_path="$framework"
+    if [ -d "$framework/Versions" ]; then
+        resources_path="$framework/Versions/Current/Resources"
+    fi
+
+    mkdir -p "$resources_path"
+    /usr/bin/plutil -convert binary1 \
+        -o "$resources_path/CoreDateProvider.strings" \
+        "$source"
+}
+
 first_existing_project() {
     local candidate
     for candidate in "$@"; do
@@ -512,6 +532,7 @@ build_framework() {
         ln -s Versions/Current/Modules "$framework/Modules"
     fi
 
+    copy_framework_resources "$scheme" "$framework"
     strip_release_metadata "$modules_path"
 }
 
