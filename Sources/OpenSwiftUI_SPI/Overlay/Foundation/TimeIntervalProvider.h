@@ -3,7 +3,7 @@
 //  OpenSwiftUI_SPI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 #pragma once
 
@@ -18,7 +18,7 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @interface TimeIntervalProvider : BaseDateProvider {
 @private
     NSDateFormatter *_dateFormatter;
-    NSArray *_fallbackSequence;
+    NSArray<NSNumber *> *_fallbackSequence;
     NSDate *_startDate;
     NSDate *_endDate;
 }
