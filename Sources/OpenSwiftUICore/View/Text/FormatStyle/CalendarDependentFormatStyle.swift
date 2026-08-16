@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by WhitespaceRemovingFormatStyle/SystemFormatStyle)
+//  Status: Complete (Blocked by SystemFormatStyle)
 //  ID: 26D279F2E8972E56094553A13FA39915 (SwiftUICore)
 
 package import Foundation
@@ -56,6 +56,16 @@ extension Date.FormatStyle.Attributed: CalendarDependentFormatStyle {
     }
 }
 
+extension WhitespaceRemovingFormatStyle: CalendarDependentFormatStyle
+    where Format: CalendarDependentFormatStyle
+{
+    func withCalendar(_ calendar: Calendar) -> Self {
+        var style = self
+        style.base = base.withCalendar(calendar)
+        return style
+    }
+}
+
 @available(macOS 15, iOS 18, tvOS 18, watchOS 11, *)
 extension Date.VerbatimFormatStyle.Attributed: CalendarDependentFormatStyle {
     func withCalendar(_ calendar: Calendar) -> Self {
@@ -74,7 +84,6 @@ extension Date.AnchoredRelativeFormatStyle: CalendarDependentFormatStyle {
     }
 }
 
-// TODO: Add conformance when these concrete format styles land:
-// WhitespaceRemovingFormatStyle where A: CalendarDependentFormatStyle
+// TODO: Add conformance when this concrete format style lands:
 // SystemFormatStyle.DateReference
 #endif

@@ -148,6 +148,18 @@ extension Date.FormatStyle.Attributed: UpdateFrequencyDependentFormatStyle {
     }
 }
 
+extension WhitespaceRemovingFormatStyle: UpdateFrequencyDependentFormatStyle
+    where Format: UpdateFrequencyDependentFormatStyle
+{
+    package func updateFrequency(
+        _ frequency: TimeDataFormatting.UpdateFrequency
+    ) -> WhitespaceRemovingFormatStyle<Format, Key> {
+        var style = self
+        style.base = base.updateFrequency(frequency)
+        return style
+    }
+}
+
 @available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, *)
 extension Date.AnchoredRelativeFormatStyle: UpdateFrequencyDependentFormatStyle {
     package func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {

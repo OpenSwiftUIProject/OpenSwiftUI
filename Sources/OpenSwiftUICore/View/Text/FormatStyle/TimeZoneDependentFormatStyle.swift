@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by WhitespaceRemovingFormatStyle/SystemFormatStyle)
+//  Status: Complete (Blocked by SystemFormatStyle)
 //  ID: CB8B6A6747C7DA30909815F805FD2B45 (SwiftUICore)
 
 public import Foundation
@@ -58,7 +58,15 @@ extension Date.FormatStyle.Attributed: TimeZoneDependentFormatStyle {
     }
 }
 
-// extension WhitespaceRemovingFormatStyle: TimeZoneDependentFormatStyle where A: TimeZoneDependentFormatStyle {}
+extension WhitespaceRemovingFormatStyle: TimeZoneDependentFormatStyle
+    where Format: TimeZoneDependentFormatStyle
+{
+    func withTimeZone(_ timeZone: TimeZone) -> Self {
+        var style = self
+        style.base = base.withTimeZone(timeZone)
+        return style
+    }
+}
 
 @available(macOS 15, iOS 18, tvOS 18, watchOS 11, *)
 extension Date.VerbatimFormatStyle.Attributed: TimeZoneDependentFormatStyle {
