@@ -552,64 +552,6 @@ extension AttributedString {
     }
 }
 
-extension AttributeScopes.FoundationAttributes.DateFieldAttribute.Field {
-    var magnitude: Calendar.Component.Magnitude {
-        let interval: TimeInterval
-        if self == .era {
-            interval = 63_072_000_000.0
-        } else if self == .year || self == .relatedGregorianYear {
-            interval = 31_536_000.0
-        } else if self == .quarter {
-            interval = 7_776_000.0
-        } else if self == .month {
-            interval = 2_592_000.0
-        } else if self == .weekOfYear || self == .weekOfMonth || self == .weekdayOrdinal {
-            interval = 604_800.0
-        } else if self == .weekday || self == .day || self == .dayOfYear {
-            interval = 86400.0
-        } else if self == .amPM {
-            interval = 43200.0
-        } else if self == .hour {
-            interval = 3600.0
-        } else if self == .minute {
-            interval = 60.0
-        } else if self == .second {
-            interval = 1.0
-        } else if self == .secondFraction {
-            interval = 0.001
-        } else {
-            return .max
-        }
-        return .init(interval)
-    }
-}
-
-extension AttributeScopes.FoundationAttributes.DurationFieldAttribute.Field {
-    var magnitude: Calendar.Component.Magnitude {
-        let interval: TimeInterval
-        if self == .weeks {
-            interval = 604_800.0
-        } else if self == .days {
-            interval = 86400.0
-        } else if self == .hours {
-            interval = 3600.0
-        } else if self == .minutes {
-            interval = 60.0
-        } else if self == .seconds {
-            interval = 1.0
-        } else if self == .microseconds {
-            interval = 0.000_001
-        } else if self == .milliseconds {
-            interval = 0.001
-        } else if self == .nanoseconds {
-            interval = 0.000_000_001
-        } else {
-            return .max
-        }
-        return .init(interval)
-    }
-}
-
 // MARK: - TimeDataFormattingContainer
 
 @_spi(Private)

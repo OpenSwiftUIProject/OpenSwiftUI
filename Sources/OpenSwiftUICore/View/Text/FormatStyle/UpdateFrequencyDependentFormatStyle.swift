@@ -8,33 +8,6 @@
 
 package import Foundation
 
-extension Calendar.Component {
-    package struct Magnitude: Codable, Hashable, Comparable {
-        package var interval: TimeInterval
-
-        static let max = Magnitude(.infinity)
-        static let zero = Magnitude(Duration.zero)
-
-        package init(_ interval: TimeInterval) {
-            self.interval = interval
-        }
-
-        init(_ duration: Duration) {
-            let components = duration.components
-            interval = Double(components.seconds)
-                + Double(components.attoseconds) * 1e-18
-        }
-
-        package static func < (lhs: Magnitude, rhs: Magnitude) -> Bool {
-            lhs.interval < rhs.interval
-        }
-
-        mutating func decrementByOrderOfMagnitude() {
-            interval /= 10.0
-        }
-    }
-}
-
 extension TimeDataFormatting {
     package enum UpdateFrequency: Codable, Hashable, Comparable {
         case high
@@ -156,54 +129,6 @@ extension Duration.UnitsFormatStyle: UpdateFrequencyDependentFormatStyle {
             style.fractionalPartDisplay.maximumLength
         )
         return style
-    }
-}
-
-@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-extension Date.ComponentsFormatStyle.Field {
-    fileprivate var magnitude: Calendar.Component.Magnitude {
-        let interval: TimeInterval
-        if self == .year {
-            interval = 31_536_000.0
-        } else if self == .month {
-            interval = 2_592_000.0
-        } else if self == .week {
-            interval = 604_800.0
-        } else if self == .day {
-            interval = 86400.0
-        } else if self == .hour {
-            interval = 3600.0
-        } else if self == .minute {
-            interval = 60.0
-        } else {
-            interval = 1.0
-        }
-        return .init(interval)
-    }
-}
-
-@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
-extension Duration.UnitsFormatStyle.Unit {
-    fileprivate var magnitude: Calendar.Component.Magnitude {
-        let interval: TimeInterval
-        if self == .weeks {
-            interval = 604_800.0
-        } else if self == .days {
-            interval = 86400.0
-        } else if self == .hours {
-            interval = 3600.0
-        } else if self == .minutes {
-            interval = 60.0
-        } else if self == .seconds {
-            interval = 1.0
-        } else if self == .milliseconds {
-            interval = 0.001
-        } else if self == .microseconds {
-            interval = 0.000_001
-        } else {
-            interval = 0.000_000_001
-        }
-        return .init(interval)
     }
 }
 
