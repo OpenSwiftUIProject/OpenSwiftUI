@@ -24,7 +24,7 @@ And the API design and documentation is to stay as compatible with the original 
 
 Currently, this project is in early development.
 
-The full API [documentation](https://openswiftuiproject.github.io/OpenSwiftUI/main/documentation/openswiftui/) is hosted on GitHub Pages.
+The full API [documentation](https://docs.openswiftuiproject.org/main/documentation/openswiftui/) is available on the OpenSwiftUI documentation site.
 
 ## Notes
 

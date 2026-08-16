@@ -1,5 +1,5 @@
 {
-  "originHash" : "04350c5edb9dc1797c4fd35bff8a56c1a96895d49cedbb8278ab734d307c830d",
+  "originHash" : "54f62c02c08bb245c5bfdba8f1ac6d7d89e69bd5b95823f2a578e50dfb9b7a38",
   "pins" : [
     {
       "identity" : "darwinprivateframeworks",
@@ -43,7 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "d6db14f180068c6813a936088e767c2ca99c308d"
+        "revision" : "ec856ea3d709de2624fe1324c0ef004a7f492394"
       }
     },
     {
