@@ -43,7 +43,7 @@
       "location" : "https://github.com/OpenSwiftUIProject/OpenRenderBox",
       "state" : {
         "branch" : "main",
-        "revision" : "d6db14f180068c6813a936088e767c2ca99c308d"
+        "revision" : "ec856ea3d709de2624fe1324c0ef004a7f492394"
       }
     },
     {
@@ -71,15 +71,6 @@
       "state" : {
         "revision" : "546053c03f282df1a8270853da6692e1b078be09",
         "version" : "0.2.1"
-      }
-    },
-    {
-      "identity" : "versioneddocc",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/DocCLab/VersionedDocC.git",
-      "state" : {
-        "revision" : "ef03d94f3d8a41de9c9b9273e144de1b34c0bd64",
-        "version" : "0.1.2"
       }
     }
   ],
