@@ -19,27 +19,28 @@ struct PlatformItemListFlagsSet: OptionSet, Hashable {
 
     static var selection: PlatformItemListFlagsSet { .init(rawValue: 1 << 0) }
 
-    static var _1: PlatformItemListFlagsSet { .init(rawValue: 1 << 1) }
+    static var image: PlatformItemListFlagsSet { .init(rawValue: 1 << 1) }
 
     static var text: PlatformItemListFlagsSet { .init(rawValue: 1 << 2) }
 
     static var layout: PlatformItemListFlagsSet { .init(rawValue: 1 << 3) }
 
+    // FIXME: Infer the semantic name from a concrete consumer.
     static var _4: PlatformItemListFlagsSet { .init(rawValue: 1 << 4) }
 
-    static var _5: PlatformItemListFlagsSet { .init(rawValue: 1 << 5) }
+    static var namedImage: PlatformItemListFlagsSet { .init(rawValue: 1 << 5) }
 
-    static var _6: PlatformItemListFlagsSet { .init(rawValue: 1 << 6) }
+    static var viewThatFits: PlatformItemListFlagsSet { .init(rawValue: 1 << 6) }
 
     static var action: PlatformItemListFlagsSet { [.selection, .text, .layout] }
 
-    static var label: PlatformItemListFlagsSet { [._1, .text, ._4] }
+    static var label: PlatformItemListFlagsSet { [.image, .text, ._4] }
 
     static var toolbar: PlatformItemListFlagsSet { .label }
 
-    static var searchToken: PlatformItemListFlagsSet { [.selection, ._1, .text, .layout] }
+    static var searchToken: PlatformItemListFlagsSet { [.selection, .image, .text, .layout] }
 
-    static var widgetMetadata: PlatformItemListFlagsSet { [._1, .text, ._4, ._5, ._6] }
+    static var widgetMetadata: PlatformItemListFlagsSet { [.image, .text, ._4, .namedImage, .viewThatFits] }
 
     static var all: PlatformItemListFlagsSet { .init(rawValue: .max) }
 

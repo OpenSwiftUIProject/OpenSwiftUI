@@ -212,7 +212,7 @@ struct PlatformItemListHiddenRepresentable: PlatformHiddenRepresentable {
 struct PlatformItemListViewThatFitsRepresentable: PlatformViewThatFitsRepresentable {
     static func shouldMakeRepresentation(inputs: _ViewInputs) -> Bool {
         inputs.preferences.requiresPlatformItemList
-            && inputs.platformItemListFlags.contains(._6)
+            && inputs.platformItemListFlags.contains(.viewThatFits)
     }
 
     static func makeRepresentation(
@@ -281,7 +281,7 @@ struct PlatformItemListSpacerRepresentable: PlatformSpacerRepresentable {
 struct PlatformItemListNamedImageRepresentable: PlatformNamedImageRepresentable {
     static func shouldMakeRepresentation(inputs: _ViewInputs) -> Bool {
         inputs.preferences.requiresPlatformItemList
-            && inputs.platformItemListFlags.contains(._5)
+            && inputs.platformItemListFlags.contains(.namedImage)
     }
 
     static func makeRepresentation(
@@ -318,7 +318,7 @@ struct PlatformItemListNamedImageRepresentable: PlatformNamedImageRepresentable 
 struct PlatformItemListImageRepresentable: PlatformImageRepresentable {
     static func shouldMakeRepresentation(inputs: _ViewInputs) -> Bool {
         inputs.preferences.requiresPlatformItemList
-            && inputs.platformItemListFlags.contains(._1)
+            && inputs.platformItemListFlags.contains(.image)
     }
 
     static func makeRepresentation(
