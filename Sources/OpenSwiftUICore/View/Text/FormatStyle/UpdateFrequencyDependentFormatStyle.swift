@@ -3,166 +3,211 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by WhitespaceRemovingFormatStyle/SystemFormatStyle)
+//  Status: Complete
+//  ID: 74D4881E07CAAC047E60006F74D2CBA5 (SwiftUICore)
 
-import Foundation
+package import Foundation
 
-protocol UpdateFrequencyDependentFormatStyle: FormatStyle {
+extension TimeDataFormatting {
+    package enum UpdateFrequency: Codable, Hashable, Comparable {
+        case high
+        case second
+        case minute
+
+        package init(duration: Duration) {
+            if Duration.seconds(1.0 / 30.0) < duration {
+                self = Duration.seconds(1.0) < duration ? .minute : .second
+            } else {
+                self = .high
+            }
+        }
+
+        package var frequency: Double {
+            switch self {
+            case .high: 30.0
+            case .second: 1.0
+            case .minute: 1.0 / 60.0
+            }
+        }
+
+        package var interval: TimeInterval {
+            1.0 / frequency
+        }
+
+        package var magnitude: Calendar.Component.Magnitude {
+            .init(interval)
+        }
+
+        package var duration: Duration {
+            .seconds(interval)
+        }
+
+        package static func < (lhs: UpdateFrequency, rhs: UpdateFrequency) -> Bool {
+            lhs.frequency < rhs.frequency
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case high
+            case second
+            case minute
+        }
+
+        private enum HighCodingKeys: CodingKey {}
+
+        private enum SecondCodingKeys: CodingKey {}
+
+        private enum MinuteCodingKeys: CodingKey {}
+
+        package func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            switch self {
+            case .high:
+                _ = container.nestedContainer(
+                    keyedBy: HighCodingKeys.self,
+                    forKey: .high
+                )
+            case .second:
+                _ = container.nestedContainer(
+                    keyedBy: SecondCodingKeys.self,
+                    forKey: .second
+                )
+            case .minute:
+                _ = container.nestedContainer(
+                    keyedBy: MinuteCodingKeys.self,
+                    forKey: .minute
+                )
+            }
+        }
+
+        package init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let keys = container.allKeys
+            guard keys.count == 1 else {
+                throw DecodingError.typeMismatch(
+                    Self.self,
+                    .init(
+                        codingPath: container.codingPath,
+                        debugDescription: "Invalid number of keys found, expected one."
+                    )
+                )
+            }
+            switch keys[0] {
+            case .high:
+                _ = try container.nestedContainer(
+                    keyedBy: HighCodingKeys.self,
+                    forKey: .high
+                )
+                self = .high
+            case .second:
+                _ = try container.nestedContainer(
+                    keyedBy: SecondCodingKeys.self,
+                    forKey: .second
+                )
+                self = .second
+            case .minute:
+                _ = try container.nestedContainer(
+                    keyedBy: MinuteCodingKeys.self,
+                    forKey: .minute
+                )
+                self = .minute
+            }
+        }
+    }
+}
+
+package protocol UpdateFrequencyDependentFormatStyle: FormatStyle {
     func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self
 }
 
 #if canImport(Darwin)
-//@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-//extension Date.FormatStyle: UpdateFrequencyDependentFormatStyle {
-//    func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
-//        switch frequency {
-//        case .high:
-//            self
-//        case .second:
-//            secondFraction(.omitted)
-//        case .minute:
-//            second(.omitted).secondFraction(.omitted)
-//        }
-//    }
-//}
-//
-//@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-//extension Date.FormatStyle.Attributed: UpdateFrequencyDependentFormatStyle {
-//    func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
-//        switch frequency {
-//        case .high:
-//            self
-//        case .second:
-//            secondFraction(.omitted)
-//        case .minute:
-//            second(.omitted).secondFraction(.omitted)
-//        }
-//    }
-//}
-//
-//@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-//extension Date.AnchoredRelativeFormatStyle: UpdateFrequencyDependentFormatStyle {
-//    func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
-//        guard frequency != .high else {
-//            return self
-//        }
-//
-//        let minimumField: Date.ComponentsFormatStyle.Field = frequency == .second ? .second : .minute
-//        var style = self
-//        style.allowedFields = Set(style.allowedFields.filter { field in
-//            field.updateFrequencyOrder >= minimumField.updateFrequencyOrder
-//        })
-//        if style.allowedFields.isEmpty {
-//            style.allowedFields.insert(minimumField)
-//        }
-//        return style
-//    }
-//}
-//
-//@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-//extension Duration.UnitsFormatStyle: UpdateFrequencyDependentFormatStyle {
-//    func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
-//        guard frequency != .high else {
-//            return self
-//        }
-//
-//        let minimumUnit: Duration.UnitsFormatStyle.Unit = frequency == .second ? .seconds : .minutes
-//        var style = self
-//        style.allowedUnits = Set(style.allowedUnits.filter { unit in
-//            unit.updateFrequencyOrder >= minimumUnit.updateFrequencyOrder
-//        })
-//        if style.allowedUnits.isEmpty {
-//            style.allowedUnits.insert(minimumUnit)
-//        }
-//
-//        if let smallestUnit = style.allowedUnits.min(by: { lhs, rhs in
-//            lhs.updateFrequencyOrder < rhs.updateFrequencyOrder
-//        }) {
-//            let increment = frequency.interval / smallestUnit.seconds
-//            if increment.isFinite, increment > 0.0 {
-//                let existingIncrement = style.fractionalPartDisplay.roundingIncrement
-//                style.fractionalPartDisplay.roundingIncrement = existingIncrement.map {
-//                    min($0, increment)
-//                } ?? increment
-//            }
-//        }
-//        return style
-//    }
-//}
-//
-//@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-//private extension Date.ComponentsFormatStyle.Field {
-//    var updateFrequencyOrder: Int {
-//        if self == .second {
-//            0
-//        } else if self == .minute {
-//            1
-//        } else if self == .hour {
-//            2
-//        } else if self == .day {
-//            3
-//        } else if self == .week {
-//            4
-//        } else if self == .month {
-//            5
-//        } else if self == .year {
-//            6
-//        } else {
-//            0
-//        }
-//    }
-//}
-//
-//@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
-//private extension Duration.UnitsFormatStyle.Unit {
-//    var updateFrequencyOrder: Int {
-//        if self == .nanoseconds {
-//            0
-//        } else if self == .microseconds {
-//            1
-//        } else if self == .milliseconds {
-//            2
-//        } else if self == .seconds {
-//            3
-//        } else if self == .minutes {
-//            4
-//        } else if self == .hours {
-//            5
-//        } else if self == .days {
-//            6
-//        } else if self == .weeks {
-//            7
-//        } else {
-//            0
-//        }
-//    }
-//
-//    var seconds: Double {
-//        if self == .nanoseconds {
-//            0.000000001
-//        } else if self == .microseconds {
-//            0.000001
-//        } else if self == .milliseconds {
-//            0.001
-//        } else if self == .seconds {
-//            1.0
-//        } else if self == .minutes {
-//            60.0
-//        } else if self == .hours {
-//            3600.0
-//        } else if self == .days {
-//            86400.0
-//        } else if self == .weeks {
-//            604800.0
-//        } else {
-//            0.0
-//        }
-//    }
-//}
+@available(macOS 12.0, iOS 15.0, tvOS 15.0, watchOS 8.0, *)
+extension Date.FormatStyle: UpdateFrequencyDependentFormatStyle {
+    package func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
+        switch frequency {
+        case .high:
+            self
+        case .second:
+            secondFraction(.omitted)
+        case .minute:
+            second(.omitted).secondFraction(.omitted)
+        }
+    }
+}
 
-// TODO: Add conformance when these concrete format styles land:
-// WhitespaceRemovingFormatStyle where A: UpdateFrequencyDependentFormatStyle
-// SystemFormatStyle.DateReference
-// SystemFormatStyle.Timer
-// SystemFormatStyle.Stopwatch
+@available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, *)
+extension Date.FormatStyle.Attributed: UpdateFrequencyDependentFormatStyle {
+    package func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
+        switch frequency {
+        case .high:
+            self
+        case .second:
+            secondFraction(.omitted)
+        case .minute:
+            second(.omitted).secondFraction(.omitted)
+        }
+    }
+}
+
+extension WhitespaceRemovingFormatStyle: UpdateFrequencyDependentFormatStyle
+    where Format: UpdateFrequencyDependentFormatStyle
+{
+    package func updateFrequency(
+        _ frequency: TimeDataFormatting.UpdateFrequency
+    ) -> WhitespaceRemovingFormatStyle<Format, Key> {
+        var style = self
+        style.base = base.updateFrequency(frequency)
+        return style
+    }
+}
+
+@available(macOS 15.0, iOS 18.0, tvOS 18.0, watchOS 11.0, *)
+extension Date.AnchoredRelativeFormatStyle: UpdateFrequencyDependentFormatStyle {
+    package func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
+        guard frequency != .high else {
+            return self
+        }
+        var style = self
+        style.allowedFields.subtract(
+            style.allowedFields.filter { $0.magnitude < frequency.magnitude }
+        )
+        if style.allowedFields.isEmpty {
+            style.allowedFields.insert(frequency == .second ? .second : .minute)
+        }
+        return style
+    }
+}
+
+@available(macOS 13.0, iOS 16.0, tvOS 16.0, watchOS 9.0, *)
+extension Duration.UnitsFormatStyle: UpdateFrequencyDependentFormatStyle {
+    package func updateFrequency(_ frequency: TimeDataFormatting.UpdateFrequency) -> Self {
+        guard frequency != .high else {
+            return self
+        }
+        var style = self
+        style.allowedUnits.subtract(
+            style.allowedUnits.filter { $0.magnitude < frequency.magnitude }
+        )
+        let minimumUnit = style.allowedUnits.min { $0.magnitude < $1.magnitude }
+        let fallbackUnit: Duration.UnitsFormatStyle.Unit =
+            frequency == .second ? .seconds : .minutes
+        if minimumUnit == nil {
+            style.allowedUnits.insert(fallbackUnit)
+        }
+        let smallestUnit = minimumUnit ?? fallbackUnit
+        let increment = frequency.magnitude.ratio(to: smallestUnit.magnitude)
+        if let roundingIncrement = style.fractionalPartDisplay.roundingIncrement {
+            style.fractionalPartDisplay.roundingIncrement = min(roundingIncrement, increment)
+        }
+        let maximumLength = Int(log10(1.0 / increment))
+        style.fractionalPartDisplay.maximumLength = min(
+            style.fractionalPartDisplay.maximumLength,
+            maximumLength
+        )
+        style.fractionalPartDisplay.minimumLength = min(
+            style.fractionalPartDisplay.minimumLength,
+            style.fractionalPartDisplay.maximumLength
+        )
+        return style
+    }
+}
 #endif
