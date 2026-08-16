@@ -182,28 +182,6 @@ extension TimeDataFormatting {
         }
 
         // TBA
-        package func entries(
-            from startDate: Date,
-            mode: TimelineScheduleMode
-        ) -> AnySequence<Date> {
-            let resolved = configuration.formatAndFrequency(
-                for: startDate,
-                mode: mode
-            )
-            if let allowedFrequency = resolved.fallbackRedactionFrequency {
-                return resolved.format.fallbackRedactionEntries(
-                    from: startDate,
-                    for: source,
-                    allowedFrequency: allowedFrequency
-                )
-            }
-            return resolved.format.complyingFormatStyleEntries(
-                from: startDate,
-                for: source
-            )
-        }
-
-        // TBA
         package var invalidationConfiguration: ResolvableAttributeConfiguration {
             guard let representation = representation(for: .v5)
                 as? any ConfigurationBasedResolvableStringAttributeRepresentation else {
@@ -213,65 +191,6 @@ extension TimeDataFormatting {
         }
     }
 
-    fileprivate enum EntriesState {
-        case start(Date)
-        case previous(Date)
-        case done
-
-        mutating func next(_ nextEntry: (Date) -> Date?) -> Date? {
-            let previous: Date
-            switch self {
-            case let .start(date), let .previous(date):
-                previous = date
-            case .done:
-                return nil
-            }
-            guard let candidate = nextEntry(previous) else {
-                self = .done
-                return nil
-            }
-            let next = candidate > previous ? candidate : previous.nextUp
-            self = .previous(next)
-            return next
-        }
-    }
-
-    fileprivate struct ComplyingFormatStyleEntries<Source, Format>: Sequence, IteratorProtocol where Source: TimeDataSourceStorage, Format: DiscreteFormatStyle, Source.Value == Format.FormatInput {
-        var state: EntriesState
-        let source: Source
-        let format: Format
-
-        mutating func next() -> Date? {
-            state.next(nextEntry(for:))
-        }
-
-        func nextEntry(for date: Date) -> Date? {
-            source.withValue(for: date) { value in
-                format.discreteInput(after: value)
-            }
-        }
-    }
-
-    fileprivate struct FallbackRedactionEntries<Source, Format>: Sequence, IteratorProtocol where Source: TimeDataSourceStorage, Format: DiscreteFormatStyle, Source.Value == Format.FormatInput {
-        var state: EntriesState
-        let source: Source
-        let format: Format
-        let allowedFrequency: UpdateFrequency
-
-        mutating func next() -> Date? {
-            state.next(nextEntry(for:))
-        }
-
-        func nextEntry(for date: Date) -> Date? {
-            let allowedDate = date.addingTimeInterval(allowedFrequency.interval)
-            guard let formatDate = source.withValue(for: date, call: {
-                format.discreteInput(after: $0)
-            }), formatDate > date else {
-                return allowedDate
-            }
-            return Swift.min(formatDate, allowedDate)
-        }
-    }
 }
 
 extension DiscreteFormatStyle {
@@ -293,35 +212,6 @@ extension DiscreteFormatStyle {
         return interval < frequency.interval
     }
 
-    // TBA
-    func fallbackRedactionEntries<Source>(
-        from startDate: Date,
-        for source: Source,
-        allowedFrequency: TimeDataFormatting.UpdateFrequency
-    ) -> AnySequence<Date> where Source: TimeDataSourceStorage, FormatInput == Source.Value {
-        AnySequence(
-            TimeDataFormatting.FallbackRedactionEntries(
-                state: .start(startDate),
-                source: source,
-                format: self,
-                allowedFrequency: allowedFrequency
-            )
-        )
-    }
-
-    // TBA
-    func complyingFormatStyleEntries<Source>(
-        from startDate: Date,
-        for source: Source
-    ) -> AnySequence<Date> where Source: TimeDataSourceStorage, FormatInput == Source.Value {
-        AnySequence(
-            TimeDataFormatting.ComplyingFormatStyleEntries(
-                state: .start(startDate),
-                source: source,
-                format: self
-            )
-        )
-    }
 }
 
 // MARK: - AttributedString + TimeDataFormatting
