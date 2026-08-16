@@ -123,7 +123,7 @@ extension DisplayList {
                 /* OpenSwiftUI Addition Begin */
                 #if !OPENSWIFTUI_SWIFTUI_RENDERER
                 case let .stdout(options):
-                    let stdoutRenderer = renderer as! StdoutDisplayListRenderer
+                    let stdoutRenderer = renderer as! StdoutRenderer
                     stdoutRenderer.options = options
                     stdoutRenderer.host = host
                 #endif
@@ -147,7 +147,7 @@ extension DisplayList {
                 /* OpenSwiftUI Addition Begin */
                 #if !OPENSWIFTUI_SWIFTUI_RENDERER
                 case let .stdout(options):
-                    renderer = StdoutDisplayListRenderer(
+                    renderer = StdoutRenderer(
                         platform: platform,
                         host: host,
                         options: options

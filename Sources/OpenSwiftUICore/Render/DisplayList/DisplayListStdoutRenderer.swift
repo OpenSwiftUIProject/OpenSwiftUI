@@ -243,7 +243,7 @@ private func stdoutFormat(_ value: CGFloat) -> String {
     return String(format: "%.1f", number == -0.0 ? 0.0 : number)
 }
 
-// MARK: - Terminal support [TBA]
+// MARK: - Terminal support
 
 package enum StdoutTerminalSupport {
     package static var stdoutIsTerminal: Bool {
@@ -644,9 +644,53 @@ private func stdoutColorDistance(
     return red * red + green * green + blue * blue
 }
 
-// MARK: - StdoutDisplayListRenderer
+// MARK: - Stdout output formatting
 
-final class StdoutDisplayListRenderer: ViewRendererBase {
+private protocol StdoutOutputFormatter {
+    func format(_ list: DisplayList, version: DisplayList.Version) -> String
+}
+
+private struct StdoutDisplayListFormatter: StdoutOutputFormatter {
+    let surface: CGSize
+
+    func format(_ list: DisplayList, version: DisplayList.Version) -> String {
+        list.stdoutDescription(surface: surface, version: version)
+    }
+}
+
+private struct StdoutTerminalFormatter: StdoutOutputFormatter {
+    let surface: CGSize
+    let terminalSize: _RendererConfiguration.StdoutOptions.TerminalSize
+    let colorMode: _RendererConfiguration.StdoutOptions.ColorMode
+
+    func format(_ list: DisplayList, version: DisplayList.Version) -> String {
+        list.stdoutTerminalDescription(
+            surface: surface,
+            version: version,
+            terminalSize: terminalSize,
+            colorMode: colorMode
+        )
+    }
+}
+
+private extension _RendererConfiguration.StdoutOptions {
+    var outputFormatter: any StdoutOutputFormatter {
+        switch viewMode {
+        case .displayList:
+            StdoutDisplayListFormatter(surface: surface)
+        case .terminal:
+            StdoutTerminalFormatter(
+                surface: surface,
+                terminalSize: terminalSize ?? StdoutTerminalSupport.terminalSize(),
+                colorMode: colorMode
+            )
+        }
+    }
+}
+
+// MARK: - StdoutRenderer
+
+final class StdoutRenderer: ViewRendererBase {
     let platform: DisplayList.ViewUpdater.Platform
     weak var host: (any ViewRendererHost)?
     var options: _RendererConfiguration.StdoutOptions
@@ -681,22 +725,7 @@ final class StdoutDisplayListRenderer: ViewRendererBase {
         }
         hasRendered = true
         seed = nextSeed
-        let description: String
-        switch options.viewMode {
-        case .displayList:
-            description = list.stdoutDescription(
-                surface: options.surface,
-                version: version
-            )
-        case .terminal:
-            description = list.stdoutTerminalDescription(
-                surface: options.surface,
-                version: version,
-                terminalSize: options.terminalSize ?? StdoutTerminalSupport.terminalSize(),
-                colorMode: options.colorMode
-            )
-        }
-        print(description)
+        print(options.outputFormatter.format(list, version: version))
         if let host, let observer = host.as(ViewGraphRenderObserver.self) {
             observer.didRender()
         }
