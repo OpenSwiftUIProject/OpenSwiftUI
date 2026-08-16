@@ -58,15 +58,18 @@ jobs:
         uses: actions/cache@v6
         with:
           path: .docs/cache/versioned-docc
-          key: versioned-docc-${{ runner.os }}-${{ hashFiles('.vdc.json', 'Package.resolved') }}-${{ github.sha }}
+          key: versioned-docc-${{ runner.os }}-${{ hashFiles('.vdc.json', 'Package.resolved', 'Scripts/extract-documentation-symbol-graphs.sh') }}-${{ github.sha }}
           restore-keys: |
-            versioned-docc-${{ runner.os }}-${{ hashFiles('.vdc.json', 'Package.resolved') }}-
+            versioned-docc-${{ runner.os }}-${{ hashFiles('.vdc.json', 'Package.resolved', 'Scripts/extract-documentation-symbol-graphs.sh') }}-
             versioned-docc-${{ runner.os }}-
       - uses: oras-project/setup-oras@v1
       - name: Log in to GitHub Container Registry
         run: echo "${{ github.token }}" | oras login ghcr.io --username "${{ github.actor }}" --password-stdin
+      - name: Extract additional module symbol graphs
+        run: Scripts/extract-documentation-symbol-graphs.sh
+        shell: bash
       - name: Build versioned DocC site
-        uses: DocCLab/VersionedDocC@0.0.14
+        uses: DocCLab/VersionedDocC@0.1.2
         with:
           config: .vdc.json
           publish-oci-cache: true
@@ -79,7 +82,7 @@ jobs:
       - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v5
         with:
-          path: .docs/build/versioned-site/OpenSwiftUI
+          path: .docs/build/versioned-site
 
   deploy:
     name: Deploy DocC site

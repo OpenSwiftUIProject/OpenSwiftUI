@@ -84,7 +84,7 @@ git show --no-patch "$RELEASE_VERSION"
 
 Do not push until every preflight check succeeds. If the candidate belongs to
 one of the two newest release series, confirm that it appears in
-`.docs/build/versioned-site/OpenSwiftUI/versions.json` and that the API Changes
+`.docs/build/versioned-site/versions.json` and that the API Changes
 page contains the expected adjacent comparison.
 
 ## Publish

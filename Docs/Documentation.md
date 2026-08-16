@@ -4,11 +4,11 @@ OpenSwiftUI publishes versioned Swift-DocC documentation with
 [VersionedDocC](https://github.com/DocCLab/VersionedDocC).
 
 - Development documentation:
-  <https://openswiftuiproject.github.io/OpenSwiftUI/main/documentation/openswiftui/>
+  <https://docs.openswiftuiproject.org/main/documentation/openswiftui/>
 - API changes:
-  <https://openswiftuiproject.github.io/OpenSwiftUI/main/changes/>
+  <https://docs.openswiftuiproject.org/main/changes/>
 
-The legacy unversioned `/OpenSwiftUI/documentation/...` routes remain usable and
+The legacy unversioned `/documentation/...` routes remain usable and
 redirect in the browser to the matching `main` route.
 
 ## Version Policy
@@ -24,8 +24,8 @@ selector `main`, `0.20.1`, and `0.19.2`. A later `0.20.2` replaces `0.20.1`
 in the published site. A new `0.21.0` moves the window to `0.21.0` and
 `0.20.2` without requiring a configuration edit.
 
-Only the selected versions are assembled into GitHub Pages. Superseded release
-caches remain immutable and may still exist locally or in GHCR.
+Only the selected versions are assembled into the published site. Superseded
+release caches remain immutable and may still exist locally or in GHCR.
 
 ## CI Deployment
 
@@ -43,10 +43,12 @@ The workflow:
    `OpenSwiftUIProject/swift-docc-render-artifact@release/6.3-colorful`.
 4. Restores `.docs/cache/versioned-docc` from GitHub Actions cache.
 5. Authenticates ORAS with GHCR.
-6. Runs `DocCLab/VersionedDocC@0.0.12`, restoring immutable release
+6. Resolves the selected documentation versions and extracts matching symbol
+   graphs for every additional documentation module.
+7. Runs `DocCLab/VersionedDocC@0.1.2`, restoring immutable release
    artifacts from GHCR, building cache misses, publishing new release artifacts,
    and assembling the versioned site.
-7. Uploads `.docs/build/versioned-site/OpenSwiftUI` and deploys it with GitHub
+8. Uploads `.docs/build/versioned-site` and deploys it with GitHub
    Pages Actions.
 
 The repository's Pages source must be **GitHub Actions**. The `github-pages`
@@ -99,12 +101,14 @@ dependency repositories. Do not run it from a checkout containing unrelated
 dependency work.
 
 Open
-<http://127.0.0.1:8766/OpenSwiftUI/main/documentation/openswiftui/> or
-<http://127.0.0.1:8766/OpenSwiftUI/main/changes/>.
+<http://127.0.0.1:8766/main/documentation/openswiftui/> or
+<http://127.0.0.1:8766/main/changes/>.
 
 VersionedDocC preview serves the assembled multi-version static site; it is not
 `docc preview` and does not watch source files. Re-run the script after changing
-documentation source. Publishing an OCI cache remains an explicit CI operation.
+documentation source. Use `--rebuild` after changing public declarations in an
+additional module so its external symbol graphs are regenerated. Publishing an
+OCI cache remains an explicit CI operation.
 
 ## Release Preflight
 
@@ -135,7 +139,7 @@ swift package --disable-sandbox \
 Verify the assembled site:
 
 ```bash
-SITE_ROOT=.docs/build/versioned-site/OpenSwiftUI
+SITE_ROOT=.docs/build/versioned-site
 
 test -s "$SITE_ROOT/versions.json"
 test -s "$SITE_ROOT/main/index.html"
@@ -175,8 +179,20 @@ patch in the selector does not delete the previous patch artifact.
 
 ## Symbol Graph Policy
 
-The public site retains only `OpenSwiftUI` and `OpenSwiftUICore` symbols.
-Re-exported system and dependency modules are removed during assembly.
+The public site provides separate documentation pages for `OpenSwiftUI`,
+`OpenAttributeGraph`, and `OpenObservation`. APIs implemented by the
+`OpenSwiftUICore` source target retain the `OpenSwiftUI` symbol namespace and
+are documented under `OpenSwiftUI`, avoiding duplicate pages for the same
+precise symbol identifiers. The primary and additional modules all follow the
+same configured documentation version policy.
+
+`Scripts/extract-documentation-symbol-graphs.sh` builds and filters the
+additional module graphs before VersionedDocC converts them. For each selected
+OpenSwiftUI version, it reads that version's `Package.resolved`, checks out the
+exact OpenAttributeGraph and OpenObservation revisions, and records the
+revision alongside the graph cache. The modules use their own DocC catalogs
+and source repositories. Re-exported system and unrelated dependency modules
+are removed.
 
 VersionedDocC passes `-skip-protocol-implementations` through the Swift
 frontend. Protocol-extension APIs are represented once on their declaring
@@ -225,14 +241,15 @@ diagnose a suspected fingerprint or cache-validation problem.
 
 ### Documentation contains dependency symbols
 
-Confirm `.vdc.json` still lists only `OpenSwiftUI` and `OpenSwiftUICore` under
-`allowedModules`, then inspect the pruning summary in the VersionedDocC log.
+Confirm `.vdc.json` lists only `OpenSwiftUI`, its `OpenSwiftUICore` source
+target, and the two additional documented modules under `allowedModules`, then
+inspect the extraction and pruning summaries in the VersionedDocC log.
 
 ### CSS or JavaScript returns 404
 
-The publishing base path comes from `hostingBasePath: /OpenSwiftUI` in
-`.vdc.json`. Do not override the artifact root: Pages must upload
-`.docs/build/versioned-site/OpenSwiftUI`.
+The custom documentation domain is hosted at its root, so `.vdc.json` uses
+`hostingBasePath: /`. Do not override the artifact root: Pages must upload
+`.docs/build/versioned-site`.
 
 ### OCI restore or publish fails
 

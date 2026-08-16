@@ -1,14 +1,14 @@
 {
-  "$schema": "https://raw.githubusercontent.com/DocCLab/VersionedDocC/0.0.14/Schema/VersionedDocC.schema.json",
+  "$schema": "https://raw.githubusercontent.com/DocCLab/VersionedDocC/0.1.2/Schema/VersionedDocC.schema.json",
   "schemaVersion": 1,
   "projectName": "OpenSwiftUI",
   "moduleName": "OpenSwiftUI",
   "modulePath": "openswiftui",
   "targetName": "OpenSwiftUI",
   "catalogPath": "Sources/OpenSwiftUI/OpenSwiftUI.docc",
-  "hostingBasePath": "/OpenSwiftUI",
+  "hostingBasePath": "/",
   "defaultVersion": "main",
-  "outputPath": ".docs/build/versioned-site/OpenSwiftUI",
+  "outputPath": ".docs/build/versioned-site",
   "cachePath": ".docs/cache/versioned-docc",
   "releasePolicy": {
     "latest": 2,
@@ -20,7 +20,25 @@
   },
   "allowedModules": [
     "OpenSwiftUI",
-    "OpenSwiftUICore"
+    "OpenSwiftUICore",
+    "OpenAttributeGraph",
+    "OpenObservation"
+  ],
+  "additionalModules": [
+    {
+      "moduleName": "OpenAttributeGraph",
+      "symbolGraphPath": ".docs/external-symbol-graphs/{version}/OpenAttributeGraph-symbol-graphs",
+      "catalogPath": "Sources/OpenAttributeGraph/OpenAttributeGraph.docc",
+      "sourceRepository": "https://github.com/OpenSwiftUIProject/OpenAttributeGraph",
+      "sourceRoot": "../OpenAttributeGraph"
+    },
+    {
+      "moduleName": "OpenObservation",
+      "symbolGraphPath": ".docs/external-symbol-graphs/{version}/OpenObservation-symbol-graphs",
+      "catalogPath": "Sources/OpenObservation/OpenObservation.docc",
+      "sourceRepository": "https://github.com/OpenSwiftUIProject/OpenObservation",
+      "sourceRoot": "../OpenObservation"
+    }
   ],
   "symbolGraph": {
     "minimumAccessLevel": "public",

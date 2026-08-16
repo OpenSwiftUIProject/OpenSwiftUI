@@ -164,6 +164,17 @@ SWIFT_PLUGIN_ARGUMENTS=(
 )
 
 if [[ "$BUILD_SITE" == true ]]; then
+    if [[ "$ASSEMBLE_ONLY" == false ]]; then
+        if [[ "$REBUILD" == true ]]; then
+            VDC_CONFIG_PATH="$CONFIG_PATH" \
+                VDC_REBUILD_ADDITIONAL_SYMBOL_GRAPHS=1 \
+                "$SCRIPT_DIR/extract-documentation-symbol-graphs.sh"
+        else
+            VDC_CONFIG_PATH="$CONFIG_PATH" \
+                "$SCRIPT_DIR/extract-documentation-symbol-graphs.sh"
+        fi
+    fi
+
     BUILD_ARGUMENTS=(
         build
         --config "$CONFIG_PATH"
