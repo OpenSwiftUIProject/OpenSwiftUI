@@ -7,6 +7,20 @@
 //  ID: 80C5342B807D2151F70A20656D8D4920 (SwiftUICore)
 
 package import Foundation
+#if canImport(Darwin)
+package import OpenSwiftUI_SPI
+#endif
+
+#if canImport(Darwin)
+extension DateFormattingContext {
+    convenience init(_ context: ResolvableStringResolutionContext) {
+        self.init(
+            referenceDate: context.date,
+            isLuminanceReduced: context.environment.isLuminanceReduced
+        )
+    }
+}
+#endif
 
 // MARK: - ResolvableCurrentDate
 
