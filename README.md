@@ -162,6 +162,11 @@ Scripts/preview-documentation.sh
 See [Docs/Documentation.md](Docs/Documentation.md) for configuration, caching,
 and release details.
 
+## Contributing
+
+Contributions are welcome. See [CONTRIBUTING.md](CONTRIBUTING.md) for development
+setup, testing guidance, and pull request expectations.
+
 ## Disclaimer
 
 SwiftUI is a trademark of Apple Inc. This project is not affiliated with, endorsed by, or connected to Apple Inc. in any way. OpenSwiftUI is an independent open-source implementation created for educational and research purposes.
