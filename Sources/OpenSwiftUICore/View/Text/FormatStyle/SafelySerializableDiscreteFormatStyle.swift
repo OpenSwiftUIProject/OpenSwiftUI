@@ -104,6 +104,7 @@ extension Date.VerbatimFormatStyle.Attributed: SafelySerializableDiscreteFormatS
 
 // MARK: - Date.ComponentsFormatStyle
 
+#if canImport(Darwin)
 extension Date.ComponentsFormatStyle: SafelySerializableDiscreteFormatStyle {
     package static func representation<S>(
         of resolvable: TimeDataFormatting.Resolvable<S, Date.ComponentsFormatStyle>,
@@ -147,6 +148,7 @@ extension Date.ComponentsFormatStyle: SafelySerializableDiscreteFormatStyle {
         )
     }
 }
+#endif
 
 // MARK: - Date.AnchoredRelativeFormatStyle
 
@@ -279,6 +281,7 @@ extension Duration.UnitsFormatStyle.Attributed: SafelySerializableDiscreteFormat
 
 // MARK: - Legacy representation helpers
 
+#if canImport(Darwin)
 extension Date.ComponentsFormatStyle.Style {
     var unitsConfigurationStyle: Text.DateStyle.UnitsConfiguration.Style {
         if self == .narrow {
@@ -290,6 +293,7 @@ extension Date.ComponentsFormatStyle.Style {
         }
     }
 }
+#endif
 
 extension Date.RelativeFormatStyle.UnitsStyle {
     var unitsConfigurationStyle: Text.DateStyle.UnitsConfiguration.Style {

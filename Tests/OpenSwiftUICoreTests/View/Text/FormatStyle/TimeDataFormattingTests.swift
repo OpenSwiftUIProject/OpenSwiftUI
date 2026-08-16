@@ -259,6 +259,7 @@ struct TimeDataFormattingTests {
     @Test
     func componentAndRelativeStylesMapToLegacyUnits() throws {
         let anchor = Date(timeIntervalSinceReferenceDate: 1000)
+        #if canImport(Darwin)
         let components = Date.ComponentsFormatStyle(
             style: .narrow,
             fields: [.month, .week]
@@ -282,6 +283,7 @@ struct TimeDataFormattingTests {
                 [.month, .weekOfMonth]
         )
         #expect(componentRepresentation.style.unitConfiguration?.style == .short)
+        #endif
 
         let relative = Date.AnchoredRelativeFormatStyle(
             anchor: anchor,
