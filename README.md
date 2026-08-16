@@ -127,7 +127,9 @@ for various platforms:
 
 ### Current supported feature
 
-- Color/Image/Path rendering (Text is not supported yet)
+- Color/Image/Path rendering
+- Basic `Text` output in the macOS stdout renderer; non-Darwin text layout is
+  not supported yet
 - Layout system
 - Animation system
 - onAppear/onDisappear modifier

@@ -70,8 +70,61 @@ public struct _RendererConfiguration {
     /// Options for the `stdout` renderer.
     @_spi(StdoutRenderer)
     public struct StdoutOptions {
+        /// The representation written by the stdout renderer.
+        public enum ViewMode: Equatable {
+            /// Writes the display list as a sequence of textual render commands.
+            case displayList
+
+            /// Renders the display list into a terminal-cell canvas.
+            case terminal
+        }
+
+        /// The terminal color capability used by terminal view mode.
+        public enum ColorMode: Equatable {
+            /// Detects color support from standard output and the process
+            /// environment.
+            case automatic
+
+            /// Does not emit ANSI color escape sequences.
+            case monochrome
+
+            /// Emits colors from the 16-color ANSI palette.
+            case ansi16
+
+            /// Emits colors from the 256-color ANSI palette.
+            case ansi256
+
+            /// Emits 24-bit ANSI colors.
+            case trueColor
+        }
+
+        /// The dimensions of a terminal-cell canvas.
+        public struct TerminalSize {
+            /// The number of columns in the canvas.
+            public var columns: Int
+
+            /// The number of rows in the canvas.
+            public var rows: Int
+
+            public init(columns: Int, rows: Int) {
+                self.columns = columns
+                self.rows = rows
+            }
+        }
+
         /// The surface size reported by the stdout renderer.
         public var surface: CGSize = defaultSurfaceSize
+
+        /// The representation written by the stdout renderer.
+        public var viewMode: ViewMode = .displayList
+
+        /// The color capability used by terminal view mode.
+        public var colorMode: ColorMode = .automatic
+
+        /// An optional terminal size override. When `nil`, the renderer reads
+        /// the size from standard output and falls back to 80 columns by 24
+        /// rows.
+        public var terminalSize: TerminalSize?
 
         // TODO: Get from host platform API
         private static let defaultSurfaceSize = CGSize(width: 640.0, height: 480.0)

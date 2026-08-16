@@ -4,7 +4,7 @@
 
 import Foundation
 import OpenCoreGraphicsShims
-import OpenSwiftUICore
+@_spi(Private) @_spi(StdoutRenderer) import OpenSwiftUICore
 import Testing
 
 struct DisplayListStdoutRendererTests {
@@ -66,6 +66,138 @@ struct DisplayListStdoutRendererTests {
         rendered:
           - fill x:5.0 y:6.0 w:70.0 h:80.0 #00FF00FF
         """)
+    }
+
+    #if os(macOS)
+    @Test
+    func textContentDescription() {
+        let storage = NSMutableAttributedString(string: "Hello")
+        storage.addAttribute(
+            NSAttributedString.Key("NSColor"),
+            value: Color.Resolved.green.kitColor,
+            range: NSRange(location: 0, length: storage.length)
+        )
+        let text = StyledTextContentView(
+            text: ResolvedStyledText.styledText(
+                storage: storage,
+                layoutProperties: TextLayoutProperties()
+            )
+        )
+        let item = item(
+            .content(.init(
+                .text(text, CGSize(width: 30.0, height: 10.0)),
+                seed: .init(decodedValue: 4)
+            )),
+            frame: CGRect(x: 7.0, y: 8.0, width: 30.0, height: 10.0)
+        )
+
+        #expect(DisplayList(item).stdoutDescription(
+            surface: CGSize(width: 80.0, height: 24.0),
+            version: .init(decodedValue: 9)
+        ) == """
+        OpenSwiftUI backend: stdout
+        surface: 80.0x24.0
+        display-list-version: 9
+        rendered:
+          - text x:7.0 y:8.0 w:30.0 h:10.0 #00FF00FF:"Hello"
+        """)
+    }
+
+    @Test
+    func terminalDescriptionRendersColorAndText() {
+        let fill = item(
+            .content(.init(
+                .color(.red),
+                seed: .init(decodedValue: 1)
+            )),
+            frame: CGRect(x: 0.0, y: 0.0, width: 2.0, height: 2.0)
+        )
+        let text = StyledTextContentView(
+            text: ResolvedStyledText.styledText(
+                storage: NSAttributedString(string: "A"),
+                layoutProperties: TextLayoutProperties()
+            )
+        )
+        let textItem = item(
+            .content(.init(
+                .text(text, CGSize(width: 1.0, height: 1.0)),
+                seed: .init(decodedValue: 2)
+            )),
+            frame: CGRect(x: 2.0, y: 0.0, width: 1.0, height: 1.0),
+            identity: .init(decodedValue: 2)
+        )
+
+        let description = DisplayList([fill, textItem]).stdoutTerminalDescription(
+            surface: CGSize(width: 4.0, height: 2.0),
+            version: .init(decodedValue: 10),
+            terminalSize: .init(columns: 4, rows: 2),
+            colorMode: .trueColor
+        )
+
+        #expect(description.contains("terminal: 4x2 color:trueColor"))
+        #expect(description.contains("\u{001B}[0;48;2;255;0;0m  \u{001B}[0mA "))
+    }
+
+    @Test
+    func terminalDescriptionRemeasuresCenteredTextInCells() throws {
+        let string = "OpenSwiftUI stdout renderer"
+        let text = StyledTextContentView(
+            text: ResolvedStyledText.styledText(
+                storage: NSAttributedString(string: string),
+                layoutProperties: TextLayoutProperties()
+            )
+        )
+        let textItem = item(
+            .content(.init(
+                .text(text, CGSize(width: 174.0, height: 16.0)),
+                seed: .init(decodedValue: 1)
+            )),
+            frame: CGRect(x: 233.0, y: 0.0, width: 174.0, height: 16.0)
+        )
+
+        let description = DisplayList(textItem).stdoutTerminalDescription(
+            surface: CGSize(width: 640.0, height: 480.0),
+            version: .init(decodedValue: 5),
+            terminalSize: .init(columns: 48, rows: 16),
+            colorMode: .monochrome
+        )
+        let rendered = try #require(description.components(separatedBy: "rendered:\n").last)
+        let firstLine = try #require(rendered.split(separator: "\n", omittingEmptySubsequences: false).first)
+        let expected = Substring(
+            String(repeating: " ", count: 11) + string + String(repeating: " ", count: 10)
+        )
+
+        #expect(firstLine == expected)
+    }
+    #endif
+
+    @Test(arguments: [
+        (false, ["TERM": "xterm-256color"], _RendererConfiguration.StdoutOptions.ColorMode.monochrome),
+        (true, ["NO_COLOR": "1", "TERM": "xterm-256color"], .monochrome),
+        (true, ["COLORTERM": "truecolor", "TERM": "xterm-256color"], .trueColor),
+        (true, ["TERM": "xterm-256color"], .ansi256),
+        (true, ["TERM": "xterm"], .ansi16),
+        (true, ["TERM": "dumb"], .monochrome),
+    ])
+    func automaticTerminalColorDetection(
+        isTerminal: Bool,
+        environment: [String: String],
+        expected: _RendererConfiguration.StdoutOptions.ColorMode
+    ) {
+        #expect(StdoutTerminalSupport.resolvedColorMode(
+            .automatic,
+            environment: environment,
+            isTerminal: isTerminal
+        ) == expected)
+    }
+
+    @Test
+    func explicitTerminalColorModeOverridesDetection() {
+        #expect(StdoutTerminalSupport.resolvedColorMode(
+            .trueColor,
+            environment: ["NO_COLOR": "1", "TERM": "dumb"],
+            isTerminal: false
+        ) == .trueColor)
     }
 
     @Test
