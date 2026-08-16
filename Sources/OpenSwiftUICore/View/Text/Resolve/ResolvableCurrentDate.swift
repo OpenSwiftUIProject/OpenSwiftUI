@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 80C5342B807D2151F70A20656D8D4920 (SwiftUICore)
 
 package import Foundation
@@ -48,17 +48,61 @@ package struct ResolvableCurrentDate {
 }
 
 extension ResolvableCurrentDate: ConfigurationBasedResolvableStringAttribute {
-    package var invalidationConfiguration: ResolvableAttributeConfiguration {
-        .none
-    }
-
-    package func resolve(in context: ResolvableStringResolutionContext) -> AttributedString? {
-        nil
-    }
-
     package static let attribute = NSAttributedString.Key("SwiftUI.ResolvableCurrentDate")
 
+    #if canImport(Darwin)
+    package var provider: BaseDateProvider? {
+        switch dateFormat {
+        case let .format(format):
+            DateProvider(
+                dateFormat: format,
+                calendar: calendar,
+                locale: locale,
+                timeZone: timeZone
+            )
+        case let .template(template):
+            DateProvider(
+                dateFormatTemplate: template,
+                calendar: calendar,
+                locale: locale,
+                timeZone: timeZone
+            )
+        }
+    }
+    #else
+    package var invalidationConfiguration: ResolvableAttributeConfiguration {
+        .wallClock(alignment: .second)
+    }
+    #endif
+
+    package func resolve(
+        in context: ResolvableStringResolutionContext
+    ) -> AttributedString? {
+        #if canImport(Darwin)
+        let formattingContext = DateFormattingContext(context)
+        guard let string = provider?.formattedString(in: formattingContext) else {
+            return nil
+        }
+        return AttributedString(string)
+        #else
+        let formatter = DateFormatter()
+        formatter.calendar = calendar
+        formatter.locale = locale
+        formatter.timeZone = timeZone
+        switch dateFormat {
+        case let .format(format):
+            formatter.dateFormat = format
+        case let .template(template):
+            formatter.setLocalizedDateFormatFromTemplate(template)
+        }
+        return AttributedString(formatter.string(from: context.date))
+        #endif
+    }
 }
+
+#if canImport(Darwin)
+extension ResolvableCurrentDate: ProviderBackedResolvableStringAttribute {}
+#endif
 
 extension ResolvableCurrentDate: Codable {}
 

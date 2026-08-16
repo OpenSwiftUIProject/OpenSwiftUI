@@ -7,10 +7,44 @@
 //  ID: A318841E6831BFF835E45F725C9F7477 (SwiftUICore)
 
 package import Foundation
+#if canImport(Darwin)
+package import OpenSwiftUI_SPI
+#endif
 
 // MARK: - ConfigurationBasedResolvableStringAttribute
 
 package protocol ConfigurationBasedResolvableStringAttribute: ConfigurationBasedResolvableStringAttributeRepresentation, ResolvableStringAttribute {}
+
+#if canImport(Darwin)
+package protocol ProviderBackedResolvableStringAttribute: ConfigurationBasedResolvableStringAttribute {
+    var provider: BaseDateProvider? { get }
+}
+
+extension ProviderBackedResolvableStringAttribute {
+    package var invalidationConfiguration: ResolvableAttributeConfiguration {
+        provider?.updateConfiguration ?? .none
+    }
+}
+
+extension BaseDateProvider {
+    fileprivate var updateConfiguration: ResolvableAttributeConfiguration {
+        switch updateType {
+        case 0:
+            return .interval(delay: updateInterval()?.doubleValue)
+        case 1:
+            return .wallClock(alignment: updateWallClockAlignment)
+        case 2:
+            guard let timerEndDate else { return .none }
+            return .timer(end: timerEndDate)
+        case 3, 4:
+            guard let timerInterval else { return .none }
+            return .timerInterval(interval: timerInterval, countdown: updateType == 3)
+        default:
+            return .none
+        }
+    }
+}
+#endif
 
 // MARK: - ConfigurationBasedResolvableStringAttributeRepresentation
 
