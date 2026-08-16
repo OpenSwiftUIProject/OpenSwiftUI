@@ -221,6 +221,9 @@ var sharedSwiftSettings: [SwiftSetting] = [
 
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
     .unsafeFlags(["-Xfrontend", "-experimental-spi-only-imports"]),
+    // Swift 6.3.3 crashes while indexing AppKit with the private framework shims.
+    // Keep source indexing enabled while skipping imported system modules.
+    .unsafeFlags(["-index-ignore-system-modules"], .when(platforms: [.macOS])),
 ]
 
 if releaseVersion >= 2021 {

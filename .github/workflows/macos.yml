@@ -56,9 +56,7 @@ jobs:
       - name: Build and run tests in debug mode with coverage
         run: |
           set -o pipefail
-          # Swift 6.3.3 still crashes while indexing AppKit with the private framework shims.
           NSUnbufferedIO=YES swift test \
-            --disable-index-store \
             -c debug \
             --filter OpenSwiftUITests \
             --filter OpenSwiftUICoreTests \

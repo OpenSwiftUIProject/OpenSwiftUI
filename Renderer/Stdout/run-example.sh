@@ -4,14 +4,10 @@ set -euo pipefail
 
 cd "$(dirname "${BASH_SOURCE[0]}")"
 
-swift_run_options=()
-
 case "$(uname -s)" in
 Darwin)
     export OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH="${OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH:-1}"
     export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE="${OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE:-0}"
-    # Swift 6.3.3 still crashes while indexing AppKit with the local private framework shims.
-    swift_run_options+=(--disable-index-store)
     ;;
 *)
     export OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH="${OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH:-0}"
@@ -20,4 +16,4 @@ Darwin)
     ;;
 esac
 
-exec swift run "${swift_run_options[@]}" ExampleApp "$@"
+exec swift run ExampleApp "$@"
