@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Complete (Blocked by WhitespaceRemovingFormatStyle/SystemFormatStyle)
+//  Status: Complete
 //  ID: 74D4881E07CAAC047E60006F74D2CBA5 (SwiftUICore)
 
 package import Foundation
@@ -44,6 +44,73 @@ extension TimeDataFormatting {
 
         package static func < (lhs: UpdateFrequency, rhs: UpdateFrequency) -> Bool {
             lhs.frequency < rhs.frequency
+        }
+
+        private enum CodingKeys: String, CodingKey {
+            case high
+            case second
+            case minute
+        }
+
+        private enum HighCodingKeys: CodingKey {}
+
+        private enum SecondCodingKeys: CodingKey {}
+
+        private enum MinuteCodingKeys: CodingKey {}
+
+        package func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            switch self {
+            case .high:
+                _ = container.nestedContainer(
+                    keyedBy: HighCodingKeys.self,
+                    forKey: .high
+                )
+            case .second:
+                _ = container.nestedContainer(
+                    keyedBy: SecondCodingKeys.self,
+                    forKey: .second
+                )
+            case .minute:
+                _ = container.nestedContainer(
+                    keyedBy: MinuteCodingKeys.self,
+                    forKey: .minute
+                )
+            }
+        }
+
+        package init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            let keys = container.allKeys
+            guard keys.count == 1 else {
+                throw DecodingError.typeMismatch(
+                    Self.self,
+                    .init(
+                        codingPath: container.codingPath,
+                        debugDescription: "Invalid number of keys found, expected one."
+                    )
+                )
+            }
+            switch keys[0] {
+            case .high:
+                _ = try container.nestedContainer(
+                    keyedBy: HighCodingKeys.self,
+                    forKey: .high
+                )
+                self = .high
+            case .second:
+                _ = try container.nestedContainer(
+                    keyedBy: SecondCodingKeys.self,
+                    forKey: .second
+                )
+                self = .second
+            case .minute:
+                _ = try container.nestedContainer(
+                    keyedBy: MinuteCodingKeys.self,
+                    forKey: .minute
+                )
+                self = .minute
+            }
         }
     }
 }
@@ -131,10 +198,4 @@ extension Duration.UnitsFormatStyle: UpdateFrequencyDependentFormatStyle {
         return style
     }
 }
-
-// TODO: Add conformance when these concrete format styles land:
-// WhitespaceRemovingFormatStyle where A: UpdateFrequencyDependentFormatStyle
-// SystemFormatStyle.DateReference
-// SystemFormatStyle.Timer
-// SystemFormatStyle.Stopwatch
 #endif
