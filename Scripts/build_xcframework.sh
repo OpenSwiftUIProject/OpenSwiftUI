@@ -265,14 +265,12 @@ puts "Removed #{macro_name} archive references from #{File.dirname(path)}"
 RUBY
 }
 
-# The xcframework archive path sets OPENSWIFTUI_XCFRAMEWORK_BUILD, which expands
-# macro usages inline where needed. Avoid forcing generated macro tool targets to
-# archive for simulator SDKs, where Xcode can try to build them for the target
-# platform instead of the host platform.
+# Keep OpenObservation's same-package macro target out of archive builds. The
+# OpenSwiftUIMacros target lives in a separate package and remains available to
+# OpenSwiftUICore as a host-only compiler plugin.
 remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/Projects/OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
-remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenSwiftUIMacros"
 remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenObservationMacros"
 
 echo "SDKs: ${SDKS[*]}"
@@ -473,7 +471,9 @@ build_framework() {
         -scheme "$scheme"
         -configuration Release
         -archivePath "$archive_path"
-        -sdk "$sdk"
+        # A global -sdk overrides host-only macro targets and makes Xcode archive
+        # them for the destination platform. The destination selects the SDK for
+        # framework targets while macro executables retain their host platform.
         -destination "$destination"
         -derivedDataPath "$DERIVED_DATA_PATH"
         -skipPackagePluginValidation
