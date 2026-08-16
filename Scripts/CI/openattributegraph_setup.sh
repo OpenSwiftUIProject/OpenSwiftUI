@@ -26,6 +26,7 @@ clone_checkout_openattributegraph() {
   else
     echo "No pinned revision for OpenAttributeGraph, using default branch."
   fi
+  git submodule update --init --depth 1 -- Checkouts/swift
 }
 
 update_openattributegraph() {
