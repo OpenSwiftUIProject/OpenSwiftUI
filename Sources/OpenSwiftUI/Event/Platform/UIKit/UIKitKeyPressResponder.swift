@@ -21,7 +21,7 @@ final class UIKitKeyPressResponder: UIResponder {
 
     init(
         eventBindingManager: EventBindingManager? = nil,
-        fallbackResponderProvider: (any FallbackResponderProvider)? = nil,
+        fallbackResponderProvider: (any FallbackResponderProvider)? = nil
     ) {
         self.eventBindingManager = eventBindingManager
         self.fallbackResponderProvider = fallbackResponderProvider
@@ -81,7 +81,7 @@ final class UIKitKeyPressResponder: UIResponder {
         guard let event else {
             return
         }
-        DefaultModifierKeySource.monitor.value = EventModifiers(event.modifierFlags)
+        DefaultModifierKeySource.monitor.observe(EventModifiers(event.modifierFlags))
     }
 
     private func sendPresses(

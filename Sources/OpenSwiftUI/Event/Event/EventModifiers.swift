@@ -2,13 +2,15 @@
 //  EventModifiers.swift
 //  OpenSwiftUI
 //
-//  Audited for 3.5.2
-//  Status: Complete
+//  Audited for 6.5.4
+//  Status: WIP
 
 import OpenSwiftUICore
 
 #if os(iOS) || os(visionOS) || os(tvOS)
 import UIKit
+
+// MARK: - EventModifiers + UIKeyModifierFlags
 
 extension EventModifiers {
     init(_ flags: UIKeyModifierFlags) {
@@ -34,4 +36,5 @@ extension EventModifiers {
         self = modifiers
     }
 }
+
 #endif
