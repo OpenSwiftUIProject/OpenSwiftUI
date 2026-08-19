@@ -26,4 +26,8 @@ extension UIGestureRecognizer.State {
         }
     }
 }
+
+extension UIPress.PressType {
+    static let back: UIPress.PressType = .init(rawValue: 7)!
+}
 #endif
