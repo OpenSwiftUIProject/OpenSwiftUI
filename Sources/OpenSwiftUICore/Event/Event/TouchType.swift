@@ -2,9 +2,10 @@
 //  TouchType.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - TouchType [6.5.4]
+// MARK: - TouchType
 
 @_spi(_)
 @available(OpenSwiftUI_v5_0, *)

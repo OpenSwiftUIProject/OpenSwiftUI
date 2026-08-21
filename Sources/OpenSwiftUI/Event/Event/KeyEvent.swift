@@ -6,7 +6,7 @@
 //  Status: Complete
 
 @_spi(ForOpenSwiftUIOnly)
-import OpenSwiftUICore
+package import OpenSwiftUICore
 
 // MARK: - KeyEvent
 
