@@ -2,7 +2,7 @@
 //  ViewResponder.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Status: Complete
 //  ID: 5DC9CCF050AF89FBA971AEC7E32C63B6 (SwiftUICore)
 
 public import Foundation
@@ -42,11 +42,11 @@ extension PreferencesOutputs {
     }
 }
 
-// MARK: - ViewResponder [6.5.4] [WIP]
+// MARK: - ViewResponder [6.5.4]
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
-open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecursiveStringConvertible*/ {
+open class ViewResponder: ResponderNode, CustomStringConvertible, CustomRecursiveStringConvertible {
     final private(set) package weak var host: ViewGraphDelegate? = nil
 
     final package weak var parent: ViewResponder? = nil {
@@ -72,7 +72,7 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
 
     open var opacity: Double { 1.0 }
 
-    open var allowHitTesting: Bool { true }
+    open var allowsHitTesting: Bool { true }
 
     package struct ContainsPointsCache {
         var storage: (key: UInt32?, value: ContainsPointsResult)?
@@ -113,6 +113,8 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
 
         package static let crossingServerIDBoundary: ContainsPointsOptions = .init(rawValue: 1 << 4)
 
+        package static let uncached: ContainsPointsOptions = .init(rawValue: 1 << 5)
+
         public static var platformDefault: ViewResponder.ContainsPointsOptions { [] }
     }
 
@@ -120,6 +122,16 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
         package var mask: BitVector64
         package var priority: Double
         package var children: [ViewResponder]
+        
+        package static var stop: ContainsPointsResult {
+            ContainsPointsResult(mask: .init(), priority: 0, children: [])
+        }
+        
+        package static func passthrough(
+            to children: [ViewResponder]
+        ) -> ContainsPointsResult {
+            ContainsPointsResult(mask: .init(), priority: 0, children: children)
+        }
     }
 
     open func containsGlobalPoints(
@@ -142,18 +154,31 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
     open var children: [ViewResponder] { [] }
 
     open var descriptionName: String {
-        // recursiveDescriptionName(Self.self)
-        _openSwiftUIUnimplementedFailure()
+        recursiveDescriptionName(Self.self)
     }
 
     public var description: String {
         "node(\(self) \(descriptionName))"
     }
 
+    package var childCount: Int { children.count }
+
+    package func child(at index: Int) -> ViewResponder {
+        children[index]
+    }
+
+    package var descriptionChildren: [CustomRecursiveStringConvertible] {
+        children
+    }
+
     @inline(never)
     final package func printTree(depth: Int = 0) {
-        // Log.eventDebug
-        _openSwiftUIUnimplementedFailure()
+        var string = "\(indentString(depth))+ \(descriptionName) \(address(of: self)) "
+        extendPrintTree(string: &string)
+        Log.eventDebug(string)
+        for child in children {
+            child.printTree(depth: depth + 1)
+        }
     }
 
     open func extendPrintTree(string: inout String) {}
