@@ -79,7 +79,7 @@ var packageProductTypes: [String: ProjectDescription.Product] = [
     "OpenSwiftUICore": ProjectDescription.Product.framework,
     "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
     "COpenSwiftUI": ProjectDescription.Product.staticFramework,
-    "OpenSwiftUIMacros": ProjectDescription.Product.macro,
+    "OpenSwiftUIMacrosPlugin": ProjectDescription.Product.macro,
     "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
     "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
     "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,

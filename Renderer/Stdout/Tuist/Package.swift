@@ -26,7 +26,7 @@ let packageProductTypes: [String: ProjectDescription.Product] = [
     "OpenSwiftUICore": .staticFramework,
     "OpenSwiftUI_SPI": .staticFramework,
     "COpenSwiftUI": .staticFramework,
-    "OpenSwiftUIMacros": .macro,
+    "OpenSwiftUIMacrosPlugin": .macro,
     "OpenSwiftUITestsSupport": .staticFramework,
     "OpenSwiftUISymbolDualTestsSupport": .staticFramework,
     "OpenAttributeGraphShims": .staticFramework,

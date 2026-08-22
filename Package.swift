@@ -1,6 +1,5 @@
 // swift-tools-version: 6.3
 
-import CompilerPluginSupport
 import Foundation
 import PackageDescription
 
@@ -552,26 +551,6 @@ let openSwiftUISPITestTarget = Target.testTarget(
     swiftSettings: sharedSwiftSettings
 )
 
-// MARK: - OpenSwiftUIMacros Target
-
-let openSwiftUIMacrosTarget = Target.macro(
-    name: "OpenSwiftUIMacros",
-    dependencies: [
-        .product(name: "SwiftSyntaxMacros", package: "swift-syntax"),
-        .product(name: "SwiftCompilerPlugin", package: "swift-syntax"),
-    ],
-    swiftSettings: sharedSwiftSettings
-)
-
-let openSwiftUIMacrosTestTarget = Target.testTarget(
-    name: "OpenSwiftUIMacrosTests",
-    dependencies: [
-        "OpenSwiftUIMacros",
-        .product(name: "SwiftSyntaxMacrosTestSupport", package: "swift-syntax"),
-    ],
-    swiftSettings: sharedSwiftSettings
-)
-
 // MARK: - OpenSwiftUICore Target
 
 // NOTE:
@@ -581,7 +560,7 @@ let openSwiftUICoreTarget = Target.target(
     name: "OpenSwiftUICore",
     dependencies: [
         "OpenSwiftUI_SPI",
-        "OpenSwiftUIMacros",
+        .product(name: "OpenSwiftUIMacrosPlugin", package: "OpenSwiftUIMacros"),
         .product(name: "OpenCoreGraphicsShims", package: "OpenCoreGraphics"),
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
         .product(name: "OpenAttributeGraphShims", package: "OpenAttributeGraph"),
@@ -783,11 +762,12 @@ let package = Package(
     products: products,
     dependencies: [
         .package(url: "https://github.com/apple/swift-numerics", from: "1.0.3"),
-        .package(url: "https://github.com/swiftlang/swift-syntax.git", from: "603.0.0"),
+        // Keep the host-only macro implementation outside this package so
+        // target-platform tests do not link it into their test bundles.
+        .package(name: "OpenSwiftUIMacros", path: "Macros"),
     ],
     targets: [
         openSwiftUISPITarget,
-        openSwiftUIMacrosTarget,
         openSwiftUICoreTarget,
         cOpenSwiftUITarget,
         openSwiftUITarget,
@@ -814,7 +794,6 @@ if !compatibilityTestCondition {
     package.targets += [
         cOpenSwiftUITestTarget,
         openSwiftUISPITestTarget,
-        openSwiftUIMacrosTestTarget,
         openSwiftUICoreTestTarget,
         openSwiftUITestTarget,
         openSwiftUIBridgeTestTarget,
@@ -992,7 +971,7 @@ let packageSettings = PackageSettings(
         "OpenSwiftUICore": ProjectDescription.Product.framework,
         "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
         "COpenSwiftUI": ProjectDescription.Product.staticFramework,
-        "OpenSwiftUIMacros": ProjectDescription.Product.macro,
+        "OpenSwiftUIMacrosPlugin": ProjectDescription.Product.macro,
         "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
         "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
         "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,
