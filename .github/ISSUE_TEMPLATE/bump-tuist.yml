@@ -8,7 +8,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        Use this form to track a Tuist upgrade, the upstream changes that motivate it, and validation of both OpenSwiftUI generation environments.
+        Use this form to propose a Tuist upgrade, record the upstream motivation, and define the expected impact across both OpenSwiftUI generation environments.
+
+        When implementing the upgrade, use [`.github/PULL_REQUEST_TEMPLATE/bump-tuist.md`](https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main/.github/PULL_REQUEST_TEMPLATE/bump-tuist.md) as the pull request template.
 
   - type: input
     id: current-version
@@ -38,10 +40,10 @@ body:
       required: true
 
   - type: textarea
-    id: resolved-issues
+    id: upgrade-motivation
     attributes:
-      label: Problems solved by the upgrade
-      description: Explain why the upgrade is needed and link the affected upstream and OpenSwiftUI issues.
+      label: Upgrade motivation
+      description: Explain why the upgrade should be scheduled and link the affected upstream and OpenSwiftUI issues.
       placeholder: |
         - Fixes ...
         - Includes tuist/tuist#...
@@ -50,34 +52,25 @@ body:
       required: true
 
   - type: textarea
-    id: compatibility-notes
+    id: expected-impact
     attributes:
-      label: Compatibility and migration notes
-      description: Summarize manifest changes, generated-project differences, deprecations, or workarounds that can be removed.
-      placeholder: Describe any required migration or write "None".
+      label: Expected compatibility and migration impact
+      description: Describe anticipated manifest changes, generated-project differences, deprecations, or workarounds that may become removable.
+      placeholder: Describe the expected impact or write "None".
     validations:
       required: true
 
-  - type: checkboxes
-    id: update-scope
+  - type: textarea
+    id: acceptance-criteria
     attributes:
-      label: Update scope
-      options:
-        - label: Update the Tuist pin in `mise.toml`.
-        - label: Update the Tuist pin in `mise.compute.toml`.
-        - label: Review scripts, workflows, and documentation for version-specific behavior.
-        - label: Remove superseded workarounds when the minimum supported Tuist version allows it.
-
-  - type: checkboxes
-    id: validation
-    attributes:
-      label: Validation
-      options:
-        - label: Confirm `mise exec -- tuist version` reports the target version.
-        - label: Confirm `mise --env compute exec -- tuist version` reports the target version.
-        - label: Generate the default Example project with `Example/setup.sh`.
-        - label: Generate the Compute Example project with `Example/setup.sh --compute`.
-        - label: Build or test the generated projects affected by the upstream changes.
+      label: Acceptance criteria
+      description: Define the outcomes required before the tracking issue can be closed. Keep implementation and validation steps in the matching pull request template.
+      placeholder: |
+        - Both Tuist pins use the target version.
+        - Default and Compute project generation remain usable.
+        - Version-specific workarounds are removed or documented.
+    validations:
+      required: true
 
   - type: textarea
     id: additional-context

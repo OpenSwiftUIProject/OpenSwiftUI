@@ -8,7 +8,9 @@ body:
   - type: markdown
     attributes:
       value: |
-        IAG refers to the Compute backend used by OpenSwiftUI's attribute graph shims. Use this form to keep its binary and source revisions, generated project, CI, and documentation in sync.
+        IAG refers to the Compute backend used by OpenSwiftUI's attribute graph shims. Use this form to propose an upgrade, record its binary and source targets, and define the expected behavior and compatibility impact.
+
+        When implementing the upgrade, use [`.github/PULL_REQUEST_TEMPLATE/bump-iag.md`](https://github.com/OpenSwiftUIProject/OpenSwiftUI/blob/main/.github/PULL_REQUEST_TEMPLATE/bump-iag.md) as the pull request template.
 
   - type: input
     id: current-binary-version
@@ -56,10 +58,10 @@ body:
       required: true
 
   - type: textarea
-    id: resolved-issues
+    id: upgrade-motivation
     attributes:
-      label: Problems solved by the upgrade
-      description: Summarize fixes and compatibility changes, linking relevant Compute and OpenSwiftUI issues.
+      label: Upgrade motivation
+      description: Explain why the upgrade should be scheduled, linking relevant Compute and OpenSwiftUI issues.
       placeholder: |
         - Fixes ...
         - Includes OpenSwiftUIProject/Compute#...
@@ -68,35 +70,25 @@ body:
       required: true
 
   - type: textarea
-    id: behavior-changes
+    id: expected-impact
     attributes:
-      label: Behavior and compatibility changes
-      description: Note ABI, deployment target, Swift toolchain, snapshot, or graph behavior changes that need review.
+      label: Expected behavior and compatibility impact
+      description: Describe anticipated ABI, deployment target, Swift toolchain, snapshot, or graph behavior changes that will need review.
       placeholder: Describe the expected impact or write "None".
     validations:
       required: true
 
-  - type: checkboxes
-    id: update-scope
+  - type: textarea
+    id: acceptance-criteria
     attributes:
-      label: Update scope
-      options:
-        - label: Update the Compute binary and source versions in `mise.compute.toml`.
-        - label: Update the fallback revision in `Scripts/CI/compute_setup.sh`.
-        - label: Update Compute versions pinned directly by CI workflows.
-        - label: Regenerate `Example/Tuist/Package.resolved`.
-        - label: Update documentation that names the current Compute versions or known limitations.
-
-  - type: checkboxes
-    id: validation
-    attributes:
-      label: Validation
-      options:
-        - label: Resolve and generate the Example project with `Example/setup.sh --compute`.
-        - label: Build the affected Compute-backed OpenSwiftUI targets or XCFramework slices.
-        - label: Run the `swiftui-renderer-iag` UI test configuration on the affected platforms.
-        - label: Run the `openswiftui-renderer-iag` UI test configuration on the affected platforms.
-        - label: Review newly passing, failing, skipped, or expected-failure IAG snapshots.
+      label: Acceptance criteria
+      description: Define the outcomes required before the tracking issue can be closed. Keep implementation and validation steps in the matching pull request template.
+      placeholder: |
+        - Binary and source pins use the intended Compute release.
+        - Compute-backed targets build on supported platforms.
+        - Graph behavior and snapshot changes are reviewed and accounted for.
+    validations:
+      required: true
 
   - type: textarea
     id: additional-context
