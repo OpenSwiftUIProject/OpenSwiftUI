@@ -7,7 +7,9 @@
 //  ID: 3637F345778836D6507813342C81E489 (SwiftUICore)
 
 package import Foundation
+#if canImport(Darwin)
 import OpenSwiftUI_SPI
+#endif
 
 // MARK: - ResolvableDateInterval
 
@@ -34,6 +36,7 @@ extension ResolvableDateInterval: ResolvableStringAttribute, ResolvableStringAtt
     package func resolve(
         in context: ResolvableStringResolutionContext
     ) -> AttributedString? {
+        #if canImport(Darwin)
         let provider = TimeIntervalProvider(
             start: interval.start,
             end: interval.end,
@@ -45,6 +48,9 @@ extension ResolvableDateInterval: ResolvableStringAttribute, ResolvableStringAtt
             return nil
         }
         return AttributedString(string)
+        #else
+        nil
+        #endif
     }
 
     package var schedule: ExplicitTimelineSchedule<[Date]>? {

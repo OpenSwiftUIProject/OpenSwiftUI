@@ -7,7 +7,9 @@
 //  ID: 80C5342B807D2151F70A20656D8D4920 (SwiftUICore)
 
 package import Foundation
+#if canImport(Darwin)
 package import OpenSwiftUI_SPI
+#endif
 
 // MARK: - ResolvableCurrentDate
 
@@ -90,6 +92,7 @@ package struct ResolvableCurrentDate {
     }
 }
 
+#if canImport(Darwin)
 extension ResolvableCurrentDate: ProviderBackedResolvableStringAttribute {
     package static let attribute = NSAttributedString.Key("OpenSwiftUI.ResolvableCurrentDate")
 
@@ -122,7 +125,24 @@ extension ResolvableCurrentDate: ProviderBackedResolvableStringAttribute {
         }
         return AttributedString(string)
     }
+}
+#else
+extension ResolvableCurrentDate: ConfigurationBasedResolvableStringAttribute {
+    package static let attribute = NSAttributedString.Key("OpenSwiftUI.ResolvableCurrentDate")
 
+    package var invalidationConfiguration: ResolvableAttributeConfiguration {
+        .none
+    }
+
+    package func resolve(
+        in context: ResolvableStringResolutionContext
+    ) -> AttributedString? {
+        nil
+    }
+}
+#endif
+
+extension ResolvableCurrentDate {
     private enum CodingKeys: CodingKey {
         case dateFormat
         case calendar
@@ -149,6 +169,7 @@ extension ResolvableCurrentDate: ProviderBackedResolvableStringAttribute {
 
 extension ResolvableCurrentDate: Hashable {}
 
+#if canImport(Darwin)
 // MARK: - BaseDateProvider + updateConfiguration
 
 extension BaseDateProvider {
@@ -197,3 +218,4 @@ extension DateFormattingContext {
         )
     }
 }
+#endif

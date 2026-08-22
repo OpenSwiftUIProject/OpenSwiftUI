@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
+#if canImport(Darwin)
 import OpenSwiftUI_SPI
 
 protocol ProviderBackedResolvableStringAttribute: ConfigurationBasedResolvableStringAttribute {
@@ -16,3 +17,4 @@ extension ProviderBackedResolvableStringAttribute {
         provider?.updateConfiguration ?? .none
     }
 }
+#endif
