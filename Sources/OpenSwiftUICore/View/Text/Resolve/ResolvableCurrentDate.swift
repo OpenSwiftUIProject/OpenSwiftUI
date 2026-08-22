@@ -12,9 +12,65 @@ package import OpenSwiftUI_SPI
 // MARK: - ResolvableCurrentDate
 
 package struct ResolvableCurrentDate {
-    package enum DateFormat: Equatable, Codable {
+    package enum DateFormat: Hashable, Codable {
         case format(String)
         case template(String)
+
+        private enum CodingKeys: CodingKey {
+            case format
+            case template
+        }
+
+        private enum FormatCodingKeys: CodingKey {
+            case _0
+        }
+
+        private enum TemplateCodingKeys: CodingKey {
+            case _0
+        }
+
+        package init(from decoder: any Decoder) throws {
+            let container = try decoder.container(keyedBy: CodingKeys.self)
+            guard container.allKeys.count == 1 else {
+                let context = DecodingError.Context(
+                    codingPath: container.codingPath,
+                    debugDescription: "Invalid number of keys found, expected one."
+                )
+                throw DecodingError.typeMismatch(Self.self, context)
+            }
+            switch container.allKeys[0] {
+            case .format:
+                let nestedContainer = try container.nestedContainer(
+                    keyedBy: FormatCodingKeys.self,
+                    forKey: .format
+                )
+                self = .format(try nestedContainer.decode(String.self, forKey: ._0))
+            case .template:
+                let nestedContainer = try container.nestedContainer(
+                    keyedBy: TemplateCodingKeys.self,
+                    forKey: .template
+                )
+                self = .template(try nestedContainer.decode(String.self, forKey: ._0))
+            }
+        }
+
+        package func encode(to encoder: any Encoder) throws {
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            switch self {
+            case let .format(format):
+                var nestedContainer = container.nestedContainer(
+                    keyedBy: FormatCodingKeys.self,
+                    forKey: .format
+                )
+                try nestedContainer.encode(format, forKey: ._0)
+            case let .template(template):
+                var nestedContainer = container.nestedContainer(
+                    keyedBy: TemplateCodingKeys.self,
+                    forKey: .template
+                )
+                try nestedContainer.encode(template, forKey: ._0)
+            }
+        }
     }
 
     package let dateFormat: DateFormat
@@ -34,7 +90,7 @@ package struct ResolvableCurrentDate {
     }
 }
 
-extension ResolvableCurrentDate: ConfigurationBasedResolvableStringAttribute {
+extension ResolvableCurrentDate: ProviderBackedResolvableStringAttribute {
     package static let attribute = NSAttributedString.Key("OpenSwiftUI.ResolvableCurrentDate")
 
     package var provider: BaseDateProvider? {
@@ -67,12 +123,31 @@ extension ResolvableCurrentDate: ConfigurationBasedResolvableStringAttribute {
         return AttributedString(string)
     }
 
-    package var invalidationConfiguration: ResolvableAttributeConfiguration {
-        provider?.updateConfiguration ?? .none
+    private enum CodingKeys: CodingKey {
+        case dateFormat
+        case calendar
+        case locale
+        case timeZone
+    }
+
+    package init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        self.dateFormat = try container.decode(DateFormat.self, forKey: .dateFormat)
+        self.calendar = try container.decode(Calendar.self, forKey: .calendar)
+        self.locale = try container.decode(Locale.self, forKey: .locale)
+        self.timeZone = try container.decode(TimeZone.self, forKey: .timeZone)
+    }
+
+    package func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(dateFormat, forKey: .dateFormat)
+        try container.encode(calendar, forKey: .calendar)
+        try container.encode(locale, forKey: .locale)
+        try container.encode(timeZone, forKey: .timeZone)
     }
 }
 
-extension ResolvableCurrentDate: Equatable {}
+extension ResolvableCurrentDate: Hashable {}
 
 // MARK: - BaseDateProvider + updateConfiguration
 

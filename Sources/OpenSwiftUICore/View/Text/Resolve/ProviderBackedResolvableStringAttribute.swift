@@ -10,3 +10,9 @@ import OpenSwiftUI_SPI
 protocol ProviderBackedResolvableStringAttribute: ConfigurationBasedResolvableStringAttribute {
     var provider: BaseDateProvider? { get }
 }
+
+extension ProviderBackedResolvableStringAttribute {
+    package var invalidationConfiguration: ResolvableAttributeConfiguration {
+        provider?.updateConfiguration ?? .none
+    }
+}
