@@ -201,7 +201,7 @@ runs:
           fi
 
           existing_status="$(gh run view "$existing_run" --repo "$GITHUB_REPOSITORY" --json status --jq .status 2>/dev/null || true)"
-          if [[ "$existing_status" == "completed" ]]; then
+          if [[ "$existing_status" == "completed" ]] && [[ "$(cat "$lockfile" 2>/dev/null || true)" == "$existing_lock" ]]; then
             echo "::notice::Removing stale snapshot reference lock from completed run $existing_run."
             rm -f "$lockfile"
           fi
@@ -211,20 +211,30 @@ runs:
           ( set -o noclobber; printf '%s\n' "$lock_owner" > "$lockfile" ) 2>/dev/null
         }
 
-        lock_acquired=false
-        remove_completed_run_lock
-        if acquire_lock; then
-          lock_acquired=true
-        else
+        # Baseline images are shared by every configuration for a platform, so
+        # parallel matrix jobs must wait for the current recorder to finish.
+        lock_wait_timeout_seconds=1800
+        lock_poll_interval_seconds=10
+        lock_wait_started=$SECONDS
+        next_lock_notice_at=0
+        while true; do
           remove_completed_run_lock
           if acquire_lock; then
-            lock_acquired=true
+            break
           fi
-        fi
-        if [[ "$lock_acquired" != "true" ]]; then
-          echo "::error::Snapshot reference images are locked by $(cat "$lockfile" 2>/dev/null || echo "another UI test run")."
-          exit 1
-        fi
+
+          lock_wait_elapsed=$((SECONDS - lock_wait_started))
+          existing_lock="$(cat "$lockfile" 2>/dev/null || echo "another UI test run")"
+          if (( lock_wait_elapsed >= lock_wait_timeout_seconds )); then
+            echo "::error::Timed out after ${lock_wait_timeout_seconds}s waiting for snapshot reference images locked by $existing_lock."
+            exit 1
+          fi
+          if (( lock_wait_elapsed >= next_lock_notice_at )); then
+            echo "::notice::Snapshot reference images are locked by $existing_lock; retrying every ${lock_poll_interval_seconds}s for up to ${lock_wait_timeout_seconds}s."
+            next_lock_notice_at=$((lock_wait_elapsed + 60))
+          fi
+          sleep "$lock_poll_interval_seconds"
+        done
         trap remove_current_lock EXIT INT TERM
 
         set -o pipefail
