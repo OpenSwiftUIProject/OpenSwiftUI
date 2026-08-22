@@ -2,12 +2,12 @@
 //  MultiViewResponder.swift
 //  OpenSwiftUICore
 //
-//  Status: Blocked by children.setter
+//  Status: Complete
 //  ID: 4A74C6B0E69BD6BC864CC77E33CF2D28 (SwiftUICore)
 
 public import Foundation
 
-// MARK: - MultiViewResponder [6.5.4] [WIP]
+// MARK: - MultiViewResponder [6.5.4]
 
 @_spi(ForOpenSwiftUIOnly)
 open class MultiViewResponder: ViewResponder {
@@ -103,11 +103,51 @@ open class MultiViewResponder: ViewResponder {
 
     override final public var children: [ViewResponder] {
         get { _children }
-        set { _openSwiftUIUnimplementedFailure() }
+        set {
+            var index = 0
+            var changed = false
+            for child in newValue {
+                if child.parent === self, let oldIndex = _children[index...].firstIndex(where: { $0 === child }) {
+                    if oldIndex != index {
+                        _children.swapAt(index, oldIndex)
+                        changed = true
+                    }
+                } else {
+                    child.parent = self
+                    let oldCount = _children.count
+                    _children.append(child)
+                    if index < oldCount {
+                        _children.swapAt(index, oldCount)
+                    }
+                    changed = true
+                }
+                index += 1
+            }
+            let end = _children.count
+            if index < end {
+                for i in index..<end {
+                    let child = _children[i]
+                    if child.parent === self {
+                        child.parent = nil
+                    }
+                }
+                _children.removeSubrange(index..<end)
+                changed = true
+            }
+            if changed {
+                childrenDidChange()
+            }
+        }
     }
 
     open func childrenDidChange() {
         observers.notifyDidChange(for: self)
+    }
+
+    package func updateChildren(_ children: (value: [ViewResponder], changed: Bool)) {
+        if children.changed {
+            self.children = children.value
+        }
     }
 }
 
