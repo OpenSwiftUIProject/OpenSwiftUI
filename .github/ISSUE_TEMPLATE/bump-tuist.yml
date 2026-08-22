@@ -1,0 +1,88 @@
+name: Bump Tuist
+description: Track an upgrade of the Tuist CLI used to generate OpenSwiftUI projects.
+title: "Bump Tuist to "
+labels:
+  - "type: build"
+  - "area: tooling"
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Use this form to track a Tuist upgrade, the upstream changes that motivate it, and validation of both OpenSwiftUI generation environments.
+
+  - type: input
+    id: current-version
+    attributes:
+      label: Current version
+      description: The Tuist version currently pinned by OpenSwiftUI.
+      placeholder: "4.203.4"
+    validations:
+      required: true
+
+  - type: input
+    id: target-version
+    attributes:
+      label: Target version
+      description: The Tuist version this issue proposes adopting.
+      placeholder: "4.206.0"
+    validations:
+      required: true
+
+  - type: input
+    id: upstream-reference
+    attributes:
+      label: Upstream release or pull request
+      description: Link the Tuist release, changelog, or pull request that contains the relevant changes.
+      placeholder: "https://github.com/tuist/tuist/releases/tag/4.206.0"
+    validations:
+      required: true
+
+  - type: textarea
+    id: resolved-issues
+    attributes:
+      label: Problems solved by the upgrade
+      description: Explain why the upgrade is needed and link the affected upstream and OpenSwiftUI issues.
+      placeholder: |
+        - Fixes ...
+        - Includes tuist/tuist#...
+        - Unblocks OpenSwiftUIProject/OpenSwiftUI#...
+    validations:
+      required: true
+
+  - type: textarea
+    id: compatibility-notes
+    attributes:
+      label: Compatibility and migration notes
+      description: Summarize manifest changes, generated-project differences, deprecations, or workarounds that can be removed.
+      placeholder: Describe any required migration or write "None".
+    validations:
+      required: true
+
+  - type: checkboxes
+    id: update-scope
+    attributes:
+      label: Update scope
+      options:
+        - label: Update the Tuist pin in `mise.toml`.
+        - label: Update the Tuist pin in `mise.compute.toml`.
+        - label: Review scripts, workflows, and documentation for version-specific behavior.
+        - label: Remove superseded workarounds when the minimum supported Tuist version allows it.
+
+  - type: checkboxes
+    id: validation
+    attributes:
+      label: Validation
+      options:
+        - label: Confirm `mise exec -- tuist version` reports the target version.
+        - label: Confirm `mise --env compute exec -- tuist version` reports the target version.
+        - label: Generate the default Example project with `Example/setup.sh`.
+        - label: Generate the Compute Example project with `Example/setup.sh --compute`.
+        - label: Build or test the generated projects affected by the upstream changes.
+
+  - type: textarea
+    id: additional-context
+    attributes:
+      label: Additional context
+      description: Add logs, generated-project diffs, or other information useful during the upgrade.
+    validations:
+      required: false
