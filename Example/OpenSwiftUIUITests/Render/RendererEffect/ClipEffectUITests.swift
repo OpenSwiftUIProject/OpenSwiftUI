@@ -8,7 +8,6 @@ import SnapshotTesting
 @MainActor
 @Suite(.snapshots(record: .never, diffTool: diffTool))
 struct ClipEffectUITests {
-    // FIXME: Investigate the diff. precision should be 1.0
 
     @Test
     func clipShapeCircle() {
@@ -19,7 +18,7 @@ struct ClipEffectUITests {
                     .clipShape(Circle())
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 
     @Test
@@ -31,7 +30,7 @@ struct ClipEffectUITests {
                     .clipShape(RoundedRectangle(cornerRadius: 15))
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 
     @Test
@@ -43,7 +42,7 @@ struct ClipEffectUITests {
                     .clipShape(Capsule())
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 
     @Test
@@ -70,7 +69,6 @@ struct ClipEffectUITests {
                     .clipShape(Ellipse())
             }
         }
-        openSwiftUIAssertSnapshot(of: ContentView(), precision: 0.99)
+        openSwiftUIAssertSnapshot(of: ContentView())
     }
 }
-
