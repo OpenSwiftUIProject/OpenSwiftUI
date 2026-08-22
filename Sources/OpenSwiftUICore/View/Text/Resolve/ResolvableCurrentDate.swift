@@ -7,20 +7,7 @@
 //  ID: 80C5342B807D2151F70A20656D8D4920 (SwiftUICore)
 
 package import Foundation
-#if canImport(Darwin)
 package import OpenSwiftUI_SPI
-#endif
-
-#if canImport(Darwin)
-extension DateFormattingContext {
-    convenience init(_ context: ResolvableStringResolutionContext) {
-        self.init(
-            referenceDate: context.date,
-            isLuminanceReduced: context.environment.isLuminanceReduced
-        )
-    }
-}
-#endif
 
 // MARK: - ResolvableCurrentDate
 
@@ -48,9 +35,8 @@ package struct ResolvableCurrentDate {
 }
 
 extension ResolvableCurrentDate: ConfigurationBasedResolvableStringAttribute {
-    package static let attribute = NSAttributedString.Key("SwiftUI.ResolvableCurrentDate")
+    package static let attribute = NSAttributedString.Key("OpenSwiftUI.ResolvableCurrentDate")
 
-    #if canImport(Darwin)
     package var provider: BaseDateProvider? {
         switch dateFormat {
         case let .format(format):
@@ -69,41 +55,71 @@ extension ResolvableCurrentDate: ConfigurationBasedResolvableStringAttribute {
             )
         }
     }
-    #else
-    package var invalidationConfiguration: ResolvableAttributeConfiguration {
-        .wallClock(alignment: .second)
-    }
-    #endif
 
     package func resolve(
         in context: ResolvableStringResolutionContext
     ) -> AttributedString? {
-        #if canImport(Darwin)
+        guard let provider else { return nil }
         let formattingContext = DateFormattingContext(context)
-        guard let string = provider?.formattedString(in: formattingContext) else {
+        guard let string = provider.formattedString(in: formattingContext) else {
             return nil
         }
         return AttributedString(string)
-        #else
-        let formatter = DateFormatter()
-        formatter.calendar = calendar
-        formatter.locale = locale
-        formatter.timeZone = timeZone
-        switch dateFormat {
-        case let .format(format):
-            formatter.dateFormat = format
-        case let .template(template):
-            formatter.setLocalizedDateFormatFromTemplate(template)
-        }
-        return AttributedString(formatter.string(from: context.date))
-        #endif
+    }
+
+    package var invalidationConfiguration: ResolvableAttributeConfiguration {
+        provider?.updateConfiguration ?? .none
     }
 }
 
-#if canImport(Darwin)
-extension ResolvableCurrentDate: ProviderBackedResolvableStringAttribute {}
-#endif
-
-extension ResolvableCurrentDate: Codable {}
-
 extension ResolvableCurrentDate: Equatable {}
+
+// MARK: - BaseDateProvider + updateConfiguration
+
+extension BaseDateProvider {
+    // TODO: Add a enum for updateType
+    var updateConfiguration: ResolvableAttributeConfiguration {
+        switch updateType {
+        case 0:
+            return .interval(delay: updateInterval().map(Double.init(truncating:)) ?? .zero)
+        case 1:
+            let alignment = updateWallClockAlignment
+            guard !alignment.isEmpty else {
+                Log.internalError("No wall clock alignment provided")
+                return .none
+            }
+            return .wallClock(alignment: alignment)
+        case 2:
+            guard let timerEndDate else {
+                Log.internalError("No timer end provided")
+                return .none
+            }
+            return .timer(end: timerEndDate)
+        case 3:
+            guard let timerInterval else {
+                Log.internalError("No timer interval provided")
+                return .none
+            }
+            return .timerInterval(interval: timerInterval, countdown: true)
+        case 4:
+            guard let timerInterval else {
+                Log.internalError("No timer interval provided")
+                return .none
+            }
+            return .timerInterval(interval: timerInterval, countdown: false)
+        default:
+            return .none
+        }
+    }
+}
+
+// MARK: - DateFormattingContext + ResolvableStringResolutionContext
+
+extension DateFormattingContext {
+    convenience init(_ context: ResolvableStringResolutionContext) {
+        self.init(
+            referenceDate: context.date,
+            isLuminanceReduced: context.environment.isLuminanceReduced
+        )
+    }
+}
