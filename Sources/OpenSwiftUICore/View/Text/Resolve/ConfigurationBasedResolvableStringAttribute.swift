@@ -112,18 +112,22 @@ extension ResolvableAttributeConfiguration {
         ) -> AnySequence<Date> {
             switch alignment {
             case let .interval(period):
-                let schedule = PeriodicTimelineSchedule(
+                AnySequence(PeriodicTimelineSchedule(
                     from: startDate,
                     by: period
-                )
-                return AnySequence(schedule.entries(from: startDate, mode: mode))
+                ).entries(
+                    from: startDate,
+                    mode: mode
+                ))
             case let .timer(end):
-                return TimerTimelineSchedule(alignment: end).entries(
+                TimerTimelineSchedule(
+                    alignment: end
+                ).entries(
                     from: startDate,
                     mode: mode
                 )
             case let .timerInterval(interval, countdown):
-                return TimerIntervalTimelineSchedule(
+                TimerIntervalTimelineSchedule(
                     interval: interval,
                     countdown: countdown
                 ).entries(
@@ -131,7 +135,12 @@ extension ResolvableAttributeConfiguration {
                     mode: mode
                 )
             case let .wallClock(unit):
-                return Self.wallClockEntries(from: startDate, unit: unit)
+                AnySequence(AlignedTimelineSchedule(
+                    alignment: unit
+                ).entries(
+                    from: startDate,
+                    mode: mode
+                ))
             }
         }
 
@@ -157,69 +166,6 @@ private protocol InvalidationConfigurtaionProvider {
 extension ResolvableAttributeConfiguration.Schedule: InvalidationConfigurtaionProvider {}
 
 extension TimeDataFormatting.Resolvable: InvalidationConfigurtaionProvider {}
-
-private extension ResolvableAttributeConfiguration.Schedule {
-    static func wallClockEntries(
-        from startDate: Date,
-        unit: NSCalendar.Unit
-    ) -> AnySequence<Date> {
-        AnySequence {
-            let calendar = Calendar.current
-            let components = zeroedSmallerComponents(than: unit)
-            var nextDate: Date?
-            if calendar.date(startDate, matchesComponents: components) {
-                nextDate = startDate
-            } else {
-                nextDate = calendar.nextDate(
-                    after: startDate,
-                    matching: components,
-                    matchingPolicy: .nextTime,
-                    direction: .backward
-                ) ?? startDate
-            }
-            return AnyIterator<Date> {
-                guard let date = nextDate else { return nil }
-                nextDate = Calendar.current.nextDate(
-                    after: date,
-                    matching: components,
-                    matchingPolicy: .nextTime
-                )
-                return date
-            }
-        }
-    }
-
-    static func zeroedSmallerComponents(
-        than alignment: NSCalendar.Unit
-    ) -> DateComponents {
-        let orderedUnits: [NSCalendar.Unit] = [
-            .year,
-            .month,
-            .day,
-            .hour,
-            .minute,
-            .second,
-            .nanosecond,
-        ]
-        guard let alignmentIndex = orderedUnits.firstIndex(where: alignment.contains) else {
-            return DateComponents()
-        }
-        var components = DateComponents()
-        for unit in orderedUnits.suffix(from: alignmentIndex + 1) {
-            switch unit {
-            case .year: components.year = 0
-            case .month: components.month = 0
-            case .day: components.day = 0
-            case .hour: components.hour = 0
-            case .minute: components.minute = 0
-            case .second: components.second = 0
-            case .nanosecond: components.nanosecond = 0
-            default: break
-            }
-        }
-        return components
-    }
-}
 
 // MARK: - ResolvableAttributeConfiguration + Codable
 

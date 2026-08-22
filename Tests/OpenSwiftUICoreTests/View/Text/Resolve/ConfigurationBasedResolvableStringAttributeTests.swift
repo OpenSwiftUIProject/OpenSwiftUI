@@ -172,6 +172,10 @@ struct ConfigurationBasedResolvableStringAttributeTests {
             from: Date(timeIntervalSinceReferenceDate: 90),
             mode: .normal
         ).prefix(3)) == dates(60, 120, 180))
+        #expect(Array(wallClock.entries(
+            from: Date(timeIntervalSinceReferenceDate: 120),
+            mode: .lowFrequency
+        ).prefix(3)) == dates(120, 180, 240))
     }
 
     @Test
