@@ -15,6 +15,14 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+typedef NS_ENUM(NSInteger, OpenSwiftUIBaseDateProviderUpdateType) {
+    OpenSwiftUIBaseDateProviderUpdateTypeInterval = 0,
+    OpenSwiftUIBaseDateProviderUpdateTypeWallClock = 1,
+    OpenSwiftUIBaseDateProviderUpdateTypeTimer = 2,
+    OpenSwiftUIBaseDateProviderUpdateTypeTimerIntervalCountdown = 3,
+    OpenSwiftUIBaseDateProviderUpdateTypeTimerIntervalCountup = 4,
+} NS_SWIFT_NAME(BaseDateProvider.UpdateType);
+
 NS_SWIFT_NAME(BaseDateProvider)
 @interface OpenSwiftUIBaseDateProvider : NSObject {
 @private
@@ -31,7 +39,7 @@ NS_SWIFT_NAME(BaseDateProvider)
 @property (nonatomic, strong) NSLocale *locale;
 @property (nonatomic, strong, nullable) NSTimeZone *timeZone;
 
-@property (nonatomic, readonly) NSInteger updateType;
+@property (nonatomic, readonly) OpenSwiftUIBaseDateProviderUpdateType updateType;
 @property (nonatomic, readonly) NSCalendarUnit updateWallClockAlignment;
 @property (nonatomic, readonly, nullable) NSDateInterval *timerInterval;
 @property (nonatomic, readonly, nullable) NSDate *timerEndDate;

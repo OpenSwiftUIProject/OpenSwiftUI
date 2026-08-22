@@ -56,8 +56,8 @@ extern NSString * const NSDateFormatterPatternStringKey;
     return string;
 }
 
-- (NSInteger)updateType {
-    return 0;
+- (OpenSwiftUIBaseDateProviderUpdateType)updateType {
+    return OpenSwiftUIBaseDateProviderUpdateTypeInterval;
 }
 
 - (NSNumber * _Nullable)updateInterval {

@@ -77,31 +77,30 @@ extension ResolvableCurrentDate: Equatable {}
 // MARK: - BaseDateProvider + updateConfiguration
 
 extension BaseDateProvider {
-    // TODO: Add a enum for updateType
     var updateConfiguration: ResolvableAttributeConfiguration {
         switch updateType {
-        case 0:
+        case .interval:
             return .interval(delay: updateInterval().map(Double.init(truncating:)) ?? .zero)
-        case 1:
+        case .wallClock:
             let alignment = updateWallClockAlignment
             guard !alignment.isEmpty else {
                 Log.internalError("No wall clock alignment provided")
                 return .none
             }
             return .wallClock(alignment: alignment)
-        case 2:
+        case .timer:
             guard let timerEndDate else {
                 Log.internalError("No timer end provided")
                 return .none
             }
             return .timer(end: timerEndDate)
-        case 3:
+        case .timerIntervalCountdown:
             guard let timerInterval else {
                 Log.internalError("No timer interval provided")
                 return .none
             }
             return .timerInterval(interval: timerInterval, countdown: true)
-        case 4:
+        case .timerIntervalCountup:
             guard let timerInterval else {
                 Log.internalError("No timer interval provided")
                 return .none

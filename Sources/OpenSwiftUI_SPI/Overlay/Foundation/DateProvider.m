@@ -127,8 +127,10 @@ static NSString *_removePunctuationIfNecessaryFromTextForTemplate(
     return self;
 }
 
-- (NSInteger)updateType {
-    return (self.dateFormatTemplate != nil || self.dateFormat != nil) ? 1 : 0;
+- (OpenSwiftUIBaseDateProviderUpdateType)updateType {
+    return self.dateFormatTemplate != nil || self.dateFormat != nil
+        ? OpenSwiftUIBaseDateProviderUpdateTypeWallClock
+        : OpenSwiftUIBaseDateProviderUpdateTypeInterval;
 }
 
 - (NSCalendarUnit)updateWallClockAlignment {

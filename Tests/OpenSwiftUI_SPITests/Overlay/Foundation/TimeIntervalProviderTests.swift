@@ -42,7 +42,7 @@ struct TimeIntervalProviderTests {
         #expect(provider.calendar == calendar)
         #expect(provider.locale == locale)
         #expect(provider.timeZone == timeZone)
-        #expect(provider.updateType == 0)
+        #expect(provider.updateType == .interval)
         #expect(provider.updateWallClockAlignment.isEmpty)
         #expect(provider.updateInterval() == nil)
         #expect(provider.timerInterval == nil)

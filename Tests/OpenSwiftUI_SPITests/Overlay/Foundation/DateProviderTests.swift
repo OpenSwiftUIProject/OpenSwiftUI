@@ -44,6 +44,15 @@ struct DateProviderTests {
     }
 
     @Test
+    func updateTypeRawValues() {
+        #expect(BaseDateProvider.UpdateType.interval.rawValue == 0)
+        #expect(BaseDateProvider.UpdateType.wallClock.rawValue == 1)
+        #expect(BaseDateProvider.UpdateType.timer.rawValue == 2)
+        #expect(BaseDateProvider.UpdateType.timerIntervalCountdown.rawValue == 3)
+        #expect(BaseDateProvider.UpdateType.timerIntervalCountup.rawValue == 4)
+    }
+
+    @Test
     func configuration() {
         let provider: BaseDateProvider = DateProvider(
             date: date,
@@ -113,7 +122,7 @@ struct DateProviderTests {
             units: [.year, .month, .day]
         )
 
-        #expect(provider.updateType == 0)
+        #expect(provider.updateType == .interval)
         #expect(provider.updateWallClockAlignment.isEmpty)
         #expect(provider.updateInterval() == nil)
         #expect(provider.timerInterval == nil)
@@ -129,7 +138,7 @@ struct DateProviderTests {
             timeZone: timeZone
         )
 
-        #expect(provider.updateType == 1)
+        #expect(provider.updateType == .wallClock)
         #expect(provider.updateWallClockAlignment == .second)
     }
 
@@ -142,7 +151,7 @@ struct DateProviderTests {
             timeZone: timeZone
         )
 
-        #expect(provider.updateType == 1)
+        #expect(provider.updateType == .wallClock)
         #expect(provider.updateWallClockAlignment == .minute)
     }
 
