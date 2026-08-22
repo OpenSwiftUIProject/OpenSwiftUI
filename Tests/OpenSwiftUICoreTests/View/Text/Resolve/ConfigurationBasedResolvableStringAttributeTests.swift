@@ -141,7 +141,7 @@ struct ConfigurationBasedResolvableStringAttributeTests {
         #expect(Array(periodic.entries(
             from: Date(timeIntervalSinceReferenceDate: 10.5),
             mode: .normal
-        ).prefix(3)) == dates(10, 12, 14))
+        ).prefix(3)) == dates(10.5, 12.5, 14.5))
 
         let timer = try #require(ResolvableAttributeConfiguration.Schedule(
             config: .timer(end: Date(timeIntervalSinceReferenceDate: 100))
@@ -183,6 +183,10 @@ struct ConfigurationBasedResolvableStringAttributeTests {
             from: Date(timeIntervalSinceReferenceDate: 10),
             mode: .lowFrequency
         ).prefix(3)) == dates(35, 95, 155))
+        #expect(Array(timer.entries(
+            from: Date(timeIntervalSinceReferenceDate: 35),
+            mode: .lowFrequency
+        ).prefix(2)) == dates(95, 155))
 
         let countdown = try #require(ResolvableAttributeConfiguration.Schedule(
             config: .timerInterval(
@@ -211,6 +215,41 @@ struct ConfigurationBasedResolvableStringAttributeTests {
             from: Date(timeIntervalSinceReferenceDate: 10),
             mode: .lowFrequency
         ).prefix(3)) == dates(11, 12, 13))
+        #expect(Array(countup.entries(
+            from: Date(timeIntervalSinceReferenceDate: 70),
+            mode: .lowFrequency
+        ).prefix(3)) == dates(130, 190))
+    }
+
+    @Test
+    func lowFrequencyTimerIntervalEndBoundaries() throws {
+        let countdown = try #require(ResolvableAttributeConfiguration.Schedule(
+            config: .timerInterval(
+                interval: DateInterval(
+                    start: Date(timeIntervalSinceReferenceDate: 10),
+                    end: Date(timeIntervalSinceReferenceDate: 130.5)
+                ),
+                countdown: true
+            )
+        ))
+        #expect(Array(countdown.entries(
+            from: Date(timeIntervalSinceReferenceDate: 130),
+            mode: .lowFrequency
+        ).prefix(3)) == dates(130, 131))
+
+        let countup = try #require(ResolvableAttributeConfiguration.Schedule(
+            config: .timerInterval(
+                interval: DateInterval(
+                    start: Date(timeIntervalSinceReferenceDate: 10),
+                    end: Date(timeIntervalSinceReferenceDate: 10.5)
+                ),
+                countdown: false
+            )
+        ))
+        #expect(Array(countup.entries(
+            from: Date(timeIntervalSinceReferenceDate: 10),
+            mode: .lowFrequency
+        ).prefix(2)) == dates(11, 12))
     }
 
     @Test

@@ -118,12 +118,16 @@ extension ResolvableAttributeConfiguration {
                 )
                 return AnySequence(schedule.entries(from: startDate, mode: mode))
             case let .timer(end):
-                return Self.timerEntries(from: startDate, end: end, mode: mode)
-            case let .timerInterval(interval, countdown):
-                return Self.timerIntervalEntries(
+                return TimerTimelineSchedule(alignment: end).entries(
                     from: startDate,
+                    mode: mode
+                )
+            case let .timerInterval(interval, countdown):
+                return TimerIntervalTimelineSchedule(
                     interval: interval,
-                    countdown: countdown,
+                    countdown: countdown
+                ).entries(
+                    from: startDate,
                     mode: mode
                 )
             case let .wallClock(unit):
@@ -155,154 +159,6 @@ extension ResolvableAttributeConfiguration.Schedule: InvalidationConfigurtaionPr
 extension TimeDataFormatting.Resolvable: InvalidationConfigurtaionProvider {}
 
 private extension ResolvableAttributeConfiguration.Schedule {
-    static func timerEntries(
-        from startDate: Date,
-        end: Date,
-        mode: TimelineScheduleMode
-    ) -> AnySequence<Date> {
-        switch mode {
-        case .normal:
-            return secondEntries(from: startDate)
-        case .lowFrequency:
-            return minuteEntries(from: startDate, alignedTo: end)
-        }
-    }
-
-    static func timerIntervalEntries(
-        from startDate: Date,
-        interval: DateInterval,
-        countdown: Bool,
-        mode: TimelineScheduleMode
-    ) -> AnySequence<Date> {
-        switch mode {
-        case .normal:
-            return secondEntries(from: startDate, through: interval.end)
-        case .lowFrequency where countdown:
-            return countdownEntries(from: startDate, interval: interval)
-        case .lowFrequency:
-            return countupEntries(from: startDate, interval: interval)
-        }
-    }
-
-    static func secondEntries(
-        from startDate: Date,
-        through endDate: Date? = nil
-    ) -> AnySequence<Date> {
-        AnySequence {
-            var nextDate: Date? = startDate
-            return AnyIterator<Date> {
-                guard let date = nextDate else { return nil }
-                if let endDate, date >= endDate {
-                    nextDate = nil
-                } else {
-                    nextDate = date.addingTimeInterval(1)
-                }
-                return date
-            }
-        }
-    }
-
-    static func minuteEntries(
-        from startDate: Date,
-        alignedTo alignment: Date
-    ) -> AnySequence<Date> {
-        AnySequence {
-            var nextDate: Date? = nextMinute(
-                after: startDate,
-                alignedTo: alignment
-            )
-            return AnyIterator<Date> {
-                guard let date = nextDate else { return nil }
-                nextDate = nextMinute(after: date, alignedTo: alignment)
-                return date
-            }
-        }
-    }
-
-    static func countdownEntries(
-        from startDate: Date,
-        interval: DateInterval
-    ) -> AnySequence<Date> {
-        let calendar = Calendar.current
-        let oneMinuteBeforeEnd = calendar.date(
-            byAdding: .minute,
-            value: -1,
-            to: interval.end
-        ) ?? interval.end.addingTimeInterval(-60)
-        return AnySequence {
-            let calendar = Calendar.current
-            let alignment = calendar.dateComponents(
-                [.second, .nanosecond],
-                from: interval.end
-            )
-            var nextDate: Date? = if startDate >= oneMinuteBeforeEnd ||
-                calendar.date(startDate, matchesComponents: alignment) {
-                startDate
-            } else {
-                nextMinute(after: startDate, alignedTo: interval.end)
-            }
-            return AnyIterator<Date> {
-                guard let date = nextDate else { return nil }
-                if date >= interval.end {
-                    nextDate = nil
-                } else if date >= oneMinuteBeforeEnd {
-                    nextDate = min(date.addingTimeInterval(1), interval.end)
-                } else {
-                    nextDate = nextMinute(after: date, alignedTo: interval.end)
-                }
-                return date
-            }
-        }
-    }
-
-    static func countupEntries(
-        from startDate: Date,
-        interval: DateInterval
-    ) -> AnySequence<Date> {
-        let calendar = Calendar.current
-        let firstMinute = calendar.date(
-            byAdding: .minute,
-            value: 1,
-            to: interval.start
-        ) ?? interval.start.addingTimeInterval(60)
-        return AnySequence {
-            func nextCountupDate(after date: Date) -> Date? {
-                let nextDate: Date?
-                if date < firstMinute {
-                    nextDate = date.addingTimeInterval(1)
-                } else {
-                    nextDate = nextMinute(
-                        after: date,
-                        alignedTo: interval.start
-                    )
-                }
-                guard let nextDate, nextDate <= interval.end else {
-                    return nil
-                }
-                return nextDate
-            }
-            var nextDate = nextCountupDate(after: startDate)
-            return AnyIterator<Date> {
-                guard let date = nextDate else { return nil }
-                nextDate = nextCountupDate(after: date)
-                return date
-            }
-        }
-    }
-
-    static func nextMinute(after date: Date, alignedTo alignment: Date) -> Date? {
-        let calendar = Calendar.current
-        let components = calendar.dateComponents(
-            [.second, .nanosecond],
-            from: alignment
-        )
-        return calendar.nextDate(
-            after: date,
-            matching: components,
-            matchingPolicy: .nextTime
-        )
-    }
-
     static func wallClockEntries(
         from startDate: Date,
         unit: NSCalendar.Unit
