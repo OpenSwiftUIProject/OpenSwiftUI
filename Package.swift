@@ -528,7 +528,7 @@ let openSwiftUISPITarget = Target.target(
         .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
     resources: [
-        .copy("Resources/CoreDateProvider.strings"),
+        .process("Resources/CoreDateProvider.strings"),
     ],
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],

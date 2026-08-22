@@ -177,10 +177,15 @@ static NSBundle *Bundle(void) {
     static NSBundle *__bundle;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
-        #if defined(SWIFT_PACKAGE) && defined(SWIFTPM_MODULE_BUNDLE)
+        #if defined(SWIFTPM_MODULE_BUNDLE)
         __bundle = SWIFTPM_MODULE_BUNDLE;
-        #else
+        #elif defined(OPENSWIFTUI_XCFRAMEWORK_BUILD)
         __bundle = [NSBundle bundleForClass:OpenSwiftUIBaseDateProvider.class];
+        #else
+        NSBundle *frameworkBundle = [NSBundle bundleForClass:OpenSwiftUIBaseDateProvider.class];
+        NSURL *resourceBundleURL = [frameworkBundle URLForResource:@"OpenSwiftUI_OpenSwiftUI_SPI" withExtension:@"bundle"];
+        NSBundle *resourceBundle = resourceBundleURL != nil ? [NSBundle bundleWithURL:resourceBundleURL] : nil;
+        __bundle = resourceBundle ?: frameworkBundle;
         #endif
     });
     return __bundle;
