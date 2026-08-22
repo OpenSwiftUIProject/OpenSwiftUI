@@ -113,7 +113,7 @@ struct ConfigurationBasedResolvableStringAttributeTests {
             date: date,
             units: .day
         )
-        #expect(intervalProvider.updateConfiguration == .interval())
+        #expect(intervalProvider.updateConfiguration == .interval(delay: .zero))
 
         let wallClockProvider: BaseDateProvider = DateProvider(
             dateFormat: "HH:mm",
