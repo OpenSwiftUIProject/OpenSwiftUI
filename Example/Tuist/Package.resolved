@@ -1,10 +1,10 @@
 {
-  "originHash" : "ce85840ac666117ca10d2b5ccdece485060cdc99f62ed49e9b2bd3ba19c6bc46",
+  "originHash" : "f29d8609b7396a490f6044267bdd2085f2d5ce3aab2aed2de7c0283190c895f4",
   "pins" : [
     {
       "identity" : "compute",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/openswiftuiproject/compute",
+      "location" : "https://github.com/OpenSwiftUIProject/Compute",
       "state" : {
         "revision" : "a8387801fb54836919bec824f99049b28245d0b3",
         "version" : "0.4.1-bugfix.2"
@@ -13,7 +13,7 @@
     {
       "identity" : "equatable",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/openswiftuiproject/equatable",
+      "location" : "https://github.com/OpenSwiftUIProject/equatable",
       "state" : {
         "branch" : "main",
         "revision" : "c50e4f72fdd163a43738dfd4d92bf62c2531f367"
@@ -22,16 +22,16 @@
     {
       "identity" : "opencoregraphics",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/openswiftuiproject/opencoregraphics",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenCoreGraphics",
       "state" : {
         "branch" : "main",
-        "revision" : "050239bd42b19a4c8b1ef3936bfb9f3589ecfc46"
+        "revision" : "df5ab4c4dcd0afc8fde978f6a0ad5228bb8aee17"
       }
     },
     {
       "identity" : "openobservation",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/openswiftuiproject/openobservation",
+      "location" : "https://github.com/OpenSwiftUIProject/OpenObservation",
       "state" : {
         "branch" : "main",
         "revision" : "51c52f318eb3278b1eaa8b724f50d1af9f9f8bae"
