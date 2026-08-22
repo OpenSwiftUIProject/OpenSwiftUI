@@ -9,6 +9,11 @@
 import OpenSwiftUI_SPI
 package import Foundation
 
+#if OPENSWIFTUI_SWIFTUI_RENDERER
+@_silgen_name("_OpenSwiftUI_LinkSwiftUIRendererInterposers")
+private func linkSwiftUIRendererInterposers()
+#endif
+
 protocol ViewRendererBase: AnyObject {
     var platform: DisplayList.ViewUpdater.Platform { get }
 
@@ -173,6 +178,7 @@ extension DisplayList {
 
             // validateSwiftUIRendererABI
             #if OPENSWIFTUI_SWIFTUI_RENDERER
+            linkSwiftUIRendererInterposers()
             let message = "Unsupported SwiftUI Renderer ABI version. Supported runtime ranges: iOS/tvOS [18.5, 26.0), macOS [15.5, 26.0), watchOS [11.5, 26.0)."
             guard #available(iOS 18.5, macOS 15.5, tvOS 18.5, watchOS 11.5, *) else {
                 // Stop if below SwiftUI 6.5.4 version
