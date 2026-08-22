@@ -11,6 +11,31 @@
 
 #import <CoreFoundation/CoreFoundation.h>
 
+NSCalendarUnit NSCalendarUnitSmallestUnit(NSCalendarUnit units) {
+    static const NSCalendarUnit orderedUnits[] = {
+        NSCalendarUnitNanosecond,
+        NSCalendarUnitSecond,
+        NSCalendarUnitMinute,
+        NSCalendarUnitHour,
+        NSCalendarUnitDay,
+        NSCalendarUnitWeekday,
+        NSCalendarUnitWeekdayOrdinal,
+        NSCalendarUnitWeekOfMonth,
+        NSCalendarUnitWeekOfYear,
+        NSCalendarUnitMonth,
+        NSCalendarUnitQuarter,
+        NSCalendarUnitYear,
+        NSCalendarUnitYearForWeekOfYear,
+        NSCalendarUnitEra,
+    };
+    for (size_t index = 0; index < sizeof(orderedUnits) / sizeof(orderedUnits[0]); index += 1) {
+        if ((units & orderedUnits[index]) != 0) {
+            return orderedUnits[index];
+        }
+    }
+    return 0;
+}
+
 extern BOOL LocaleIsCJK(NSLocale *locale);
 extern BOOL RemovesPunctuationFromWeekdayDay(NSLocale *locale);
 
@@ -270,32 +295,7 @@ static NSString *_removePunctuationIfNecessaryFromTextForTemplate(
     }
     NSCalendarUnit units = (NSCalendarUnit)_CFCalendarGetUnitsFromDateFormat(skeleton);
     CFRelease(skeleton);
-    if (units == 0) {
-        return 0;
-    }
-
-    static const NSCalendarUnit orderedUnits[] = {
-        NSCalendarUnitNanosecond,
-        NSCalendarUnitSecond,
-        NSCalendarUnitMinute,
-        NSCalendarUnitHour,
-        NSCalendarUnitDay,
-        NSCalendarUnitWeekday,
-        NSCalendarUnitWeekdayOrdinal,
-        NSCalendarUnitWeekOfMonth,
-        NSCalendarUnitWeekOfYear,
-        NSCalendarUnitMonth,
-        NSCalendarUnitQuarter,
-        NSCalendarUnitYear,
-        NSCalendarUnitYearForWeekOfYear,
-        NSCalendarUnitEra,
-    };
-    for (NSUInteger index = 0; index < sizeof(orderedUnits) / sizeof(orderedUnits[0]); index += 1) {
-        if ((units & orderedUnits[index]) != 0) {
-            return orderedUnits[index];
-        }
-    }
-    return 0;
+    return NSCalendarUnitSmallestUnit(units);
 }
 
 @end

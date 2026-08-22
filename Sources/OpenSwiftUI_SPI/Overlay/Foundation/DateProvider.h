@@ -13,6 +13,9 @@
 
 #import <Foundation/Foundation.h>
 
+OPENSWIFTUI_EXPORT
+NSCalendarUnit NSCalendarUnitSmallestUnit(NSCalendarUnit units);
+
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
 NS_SWIFT_NAME(DateProvider)

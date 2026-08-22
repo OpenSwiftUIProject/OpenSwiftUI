@@ -173,6 +173,14 @@ struct DateProviderTests {
     }
 
     @Test
+    func calendarUnitSmallestUnit() {
+        #expect(NSCalendarUnitSmallestUnit([]).isEmpty)
+        #expect(NSCalendarUnitSmallestUnit([.year, .minute]) == .minute)
+        #expect(NSCalendarUnitSmallestUnit([.nanosecond, .second]) == .nanosecond)
+        #expect(NSCalendarUnitSmallestUnit(.init(rawValue: 1 << 16)).isEmpty)
+    }
+
+    @Test
     func formattedString() {
         let provider: BaseDateProvider = DateProvider(
             date: date,
