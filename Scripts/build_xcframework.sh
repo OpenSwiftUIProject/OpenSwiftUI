@@ -324,6 +324,26 @@ strip_release_metadata() {
     fi
 }
 
+flatten_framework_resource_bundles() {
+    local scheme="$1"
+    local framework="$2"
+
+    if [ "$scheme" != "OpenSwiftUICore" ]; then
+        return
+    fi
+
+    local resources_path="$framework"
+    if [ -d "$framework/Versions" ]; then
+        resources_path="$framework/Versions/Current/Resources"
+    fi
+
+    local resource_bundle
+    while IFS= read -r -d '' resource_bundle; do
+        find "$resource_bundle" -type f -name "*.strings" -exec cp -f {} "$resources_path" \;
+        rm -rf "$resource_bundle"
+    done < <(find "$resources_path" -mindepth 1 -maxdepth 1 -type d -name "*.bundle" -print0)
+}
+
 first_existing_project() {
     local candidate
     for candidate in "$@"; do
@@ -483,6 +503,7 @@ build_framework() {
         BUILD_LIBRARY_FOR_DISTRIBUTION=YES
         SWIFT_EMIT_MODULE_INTERFACE=YES
         "SWIFT_ACTIVE_COMPILATION_CONDITIONS=\$(inherited) OPENSWIFTUI_XCFRAMEWORK_BUILD"
+        "GCC_PREPROCESSOR_DEFINITIONS=\$(inherited) OPENSWIFTUI_XCFRAMEWORK_BUILD=1"
         ENABLE_USER_SCRIPT_SANDBOXING=NO
     )
 
@@ -512,6 +533,7 @@ build_framework() {
         ln -s Versions/Current/Modules "$framework/Modules"
     fi
 
+    flatten_framework_resource_bundles "$scheme" "$framework"
     strip_release_metadata "$modules_path"
 }
 

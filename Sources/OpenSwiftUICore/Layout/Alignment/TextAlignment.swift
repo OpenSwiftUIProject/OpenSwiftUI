@@ -2,13 +2,15 @@
 //  TextAlignment.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import Foundation
 
-// MARK: - TextAlignment [6.0.87]
+// MARK: - TextAlignment
 
 /// An alignment position for text along the horizontal axis.
+@available(OpenSwiftUI_v1_0, *)
 @frozen
 public enum TextAlignment: Hashable, CaseIterable {
     case leading
@@ -39,6 +41,28 @@ extension TextAlignment: ProtobufEnum {
             case 2: self = .center
             case 3: self = .trailing
             default: return nil
+        }
+    }
+}
+
+// MARK: - CodableByProxy
+
+extension TextAlignment: CodableByProxy {
+    package typealias CodingProxy = UInt8
+
+    package var codingProxy: UInt8 {
+        switch self {
+        case .leading: 0
+        case .center: 1
+        case .trailing: 2
+        }
+    }
+
+    package static func unwrap(codingProxy: UInt8) -> TextAlignment {
+        switch codingProxy {
+        case 1: .center
+        case 2: .trailing
+        default: .leading
         }
     }
 }

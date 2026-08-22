@@ -3,10 +3,11 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Missing ResolvableAttributeConfiguration implementation
+//  Status: Complete
 //  ID: A318841E6831BFF835E45F725C9F7477 (SwiftUICore)
 
 package import Foundation
+import OpenSwiftUI_SPI
 
 // MARK: - ConfigurationBasedResolvableStringAttribute
 
@@ -24,7 +25,7 @@ extension ConfigurationBasedResolvableStringAttributeRepresentation {
     }
 }
 
-// MARK: - ResolvableAttributeConfiguration [WIP]
+// MARK: - ResolvableAttributeConfiguration
 
 package enum ResolvableAttributeConfiguration: Equatable {
     case none
@@ -46,27 +47,44 @@ package enum ResolvableAttributeConfiguration: Equatable {
     mutating package func reduce(_ other: ResolvableAttributeConfiguration) {
         switch (self, other) {
         case let (.interval(lhsDelay), .interval(rhsDelay)):
-            if let lhsDelay, let rhsDelay {
-                self = .interval(delay: min(lhsDelay, rhsDelay))
+            let delay: Double? = if let lhsDelay {
+                rhsDelay.map { min(lhsDelay, $0) } ?? lhsDelay
             } else {
-                self = .interval(delay: lhsDelay ?? rhsDelay)
+                rhsDelay
             }
+            self = .interval(delay: delay)
+        case (.interval, _):
+            break
+        case (_, .interval):
+            self = other
         case let (.wallClock(alignment: lhsAlignment), .wallClock(alignment: rhsAlignment)):
-            _openSwiftUIUnimplementedFailure()
-        // WIP: handle other combinations
-        default:
+            let combinedAlignment = lhsAlignment.union(rhsAlignment)
+            self = .wallClock(alignment: NSCalendarUnitSmallestUnit(combinedAlignment))
+        case (.wallClock, _):
+            break
+        case (_, .wallClock):
+            self = other
+        case (.timerInterval, _):
+            break
+        case (_, .timerInterval):
+            self = other
+        case (.timer, _):
+            break
+        case (_, .timer):
+            self = other
+        case (.none, .none):
             break
         }
     }
 }
 
 extension ResolvableAttributeConfiguration {
-    package struct Schedule: TimelineSchedule {
-        enum Alignment {
+    package struct Schedule: TimelineSchedule, Equatable {
+        enum Alignment: Equatable {
             case interval(period: Double)
             case timer(end: Date)
             case timerInterval(interval: DateInterval, countdown: Bool)
-            case wallClock(alignment: NSCalendar.Unit)
+            case wallClock(unit: NSCalendar.Unit)
         }
 
         var alignment: Alignment
@@ -83,8 +101,8 @@ extension ResolvableAttributeConfiguration {
                 alignment = .timer(end: end)
             case .timerInterval(let interval, let countdown):
                 alignment = .timerInterval(interval: interval, countdown: countdown)
-            case .wallClock(let alignment):
-                self.alignment = .wallClock(alignment: alignment)
+            case .wallClock(let unit):
+                alignment = .wallClock(unit: unit)
             }
         }
 
@@ -92,13 +110,67 @@ extension ResolvableAttributeConfiguration {
             from startDate: Date,
             mode: TimelineScheduleMode
         ) -> AnySequence<Date> {
-            _openSwiftUIUnimplementedFailure()
+            switch alignment {
+            case let .interval(period):
+                AnySequence(PeriodicTimelineSchedule(
+                    from: startDate,
+                    by: period
+                ).entries(
+                    from: startDate,
+                    mode: mode
+                ))
+            case let .timer(end):
+                TimerTimelineSchedule(
+                    alignment: end
+                ).entries(
+                    from: startDate,
+                    mode: mode
+                )
+            case let .timerInterval(interval, countdown):
+                TimerIntervalTimelineSchedule(
+                    interval: interval,
+                    countdown: countdown
+                ).entries(
+                    from: startDate,
+                    mode: mode
+                )
+            case let .wallClock(unit):
+                AnySequence(AlignedTimelineSchedule(
+                    alignment: unit
+                ).entries(
+                    from: startDate,
+                    mode: mode
+                ))
+            }
+        }
+
+        var invalidationConfiguration: ResolvableAttributeConfiguration {
+            switch alignment {
+            case let .interval(period):
+                .interval(delay: period)
+            case let .timer(end):
+                .timer(end: end)
+            case let .timerInterval(interval, countdown):
+                .timerInterval(interval: interval, countdown: countdown)
+            case let .wallClock(unit):
+                .wallClock(alignment: unit)
+            }
         }
     }
 }
 
+private protocol InvalidationConfigurtaionProvider {
+    var invalidationConfiguration: ResolvableAttributeConfiguration { get }
+}
+
+extension ResolvableAttributeConfiguration.Schedule: InvalidationConfigurtaionProvider {}
+
+extension TimeDataFormatting.Resolvable: InvalidationConfigurtaionProvider {}
+
+// MARK: - ResolvableAttributeConfiguration + Codable
+
 extension ResolvableAttributeConfiguration: Codable {
-    enum Errors: Error {
+    enum Errors: Error, Hashable {
         case missingValue
     }
 
@@ -109,14 +181,81 @@ extension ResolvableAttributeConfiguration: Codable {
         case alignment
         case timer
         case countdowns
-        case timeInterval
+        case timerInterval
     }
 
     package func encode(to encoder: any Encoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        switch self {
+        case .none:
+            break
+        case let .interval(delay):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(true, forKey: .interval)
+            try container.encode(delay, forKey: .delay)
+        case let .timer(end):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(end, forKey: .timer)
+        case let .timerInterval(interval, countdown):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(countdown, forKey: .countdowns)
+            try container.encode(interval, forKey: .timerInterval)
+        case let .wallClock(alignment):
+            var container = encoder.container(keyedBy: CodingKeys.self)
+            try container.encode(true, forKey: .wallClock)
+            try container.encode(alignment.rawValue, forKey: .alignment)
+        }
     }
 
     package init(from decoder: any Decoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        if try container.decodeIfPresent(Bool.self, forKey: .interval) == true {
+            self = .interval(
+                delay: try container.decodeIfPresent(Double.self, forKey: .delay)
+            )
+        } else if try container.decodeIfPresent(Bool.self, forKey: .wallClock) == true {
+            guard let rawValue = try container.decodeIfPresent(
+                UInt.self,
+                forKey: .alignment
+            ) else {
+                throw Errors.missingValue
+            }
+            self = .wallClock(alignment: NSCalendar.Unit(rawValue: rawValue))
+        } else if let end = try container.decodeIfPresent(Date.self, forKey: .timer) {
+            self = .timer(end: end)
+        } else if let countdown = try container.decodeIfPresent(Bool.self, forKey: .countdowns) {
+            guard let interval = try container.decodeIfPresent(
+                DateInterval.self,
+                forKey: .timerInterval
+            ) else {
+                throw Errors.missingValue
+            }
+            self = .timerInterval(interval: interval, countdown: countdown)
+        } else {
+            self = .none
+        }
     }
 }
+
+#if !canImport(Darwin)
+private func NSCalendarUnitSmallestUnit(
+    _ units: NSCalendar.Unit
+) -> NSCalendar.Unit {
+    let orderedUnits: [NSCalendar.Unit] = [
+        .nanosecond,
+        .second,
+        .minute,
+        .hour,
+        .day,
+        .weekday,
+        .weekdayOrdinal,
+        .weekOfMonth,
+        .weekOfYear,
+        .month,
+        .quarter,
+        .year,
+        .yearForWeekOfYear,
+        .era,
+    ]
+    return orderedUnits.first(where: units.contains) ?? []
+}
+#endif

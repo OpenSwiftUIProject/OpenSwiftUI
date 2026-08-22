@@ -527,6 +527,12 @@ let openSwiftUISPITarget = Target.target(
     dependencies: [
         .product(name: "OpenRenderBoxShims", package: "OpenRenderBox"),
     ],
+    exclude: buildForDarwinPlatform ? [] : [
+        "Resources/CoreDateProvider.strings",
+    ],
+    resources: buildForDarwinPlatform ? [
+        .process("Resources/CoreDateProvider.strings"),
+    ] : [],
     publicHeadersPath: ".",
     cSettings: sharedCSettings + [.define("_GNU_SOURCE", .when(platforms: .nonDarwinPlatforms))],
     cxxSettings: sharedCxxSettings,
