@@ -28,10 +28,4 @@ clone_checkout_dpf() {
   fi
 }
 
-update_dpf() {
-  cd $REPO_ROOT/../DarwinPrivateFrameworks
-  swift package update-xcframeworks --allow-writing-to-package-directory
-}
-
 clone_checkout_dpf
-update_dpf
