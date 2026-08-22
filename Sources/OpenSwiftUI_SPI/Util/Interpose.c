@@ -23,6 +23,11 @@ static bool my_kdebug_is_enabled(uint32_t debugid) {
 #include <os/log.h>
 #include <CoreFoundation/CoreFoundation.h>
 
+// OpenSwiftUI_SPI is linked as a static framework by generated projects. Keep
+// an explicit reference to this translation unit so the linker extracts the
+// interpose registrations from the archive.
+void _OpenSwiftUI_LinkSwiftUIRendererInterposers(void) {}
+
 static os_log_t interpose_log(void) {
     static dispatch_once_t onceToken;
     static os_log_t log = NULL;
