@@ -8,6 +8,10 @@
 
 public import Foundation
 
+#if canImport(Accessibility)
+import Accessibility
+#endif
+
 // MARK: - FormatStyle + Timer
 
 @available(OpenSwiftUI_v6_0, *)
@@ -350,10 +354,528 @@ extension AttributeContainer {
     }
 }
 
+// MARK: - SystemFormatStyle + lessThanOneMinuteString
+
+@available(OpenSwiftUI_v6_0, *)
+extension SystemFormatStyle {
+    static func lessThanOneMinuteString(
+        _ string: AttributedString,
+        locale: Locale,
+        width: Duration.UnitsFormatStyle.UnitWidth
+    ) -> AttributedString {
+        #if canImport(Darwin)
+        let resource: LocalizedStringResource
+        if width == .narrow {
+            resource = LocalizedStringResource(
+                "<1m (narrow)",
+                defaultValue: "<\(string, options: [])",
+                table: "SystemFormatStyle",
+                locale: locale,
+                bundle: .atURL(Bundle.systemFormatStyle.bundleURL),
+                comment: "Less than one minute. The argument provides '1m' as localized by ICU. Ideally, the string is visually not too different compared to just '1m', but it also shouldn't appear too mathematical."
+            )
+        } else if width == .condensedAbbreviated {
+            resource = LocalizedStringResource(
+                "<1min (condensedAbbreviated)",
+                defaultValue: "<\(string, options: [])",
+                table: "SystemFormatStyle",
+                locale: locale,
+                bundle: .atURL(Bundle.systemFormatStyle.bundleURL),
+                comment: "Less than one minute. The argument provides '1min' as localized by ICU. Ideally, the string is visually not too different compared to just '1min', but it also shouldn't appear too mathematical."
+            )
+        } else {
+            resource = LocalizedStringResource(
+                "<1 minute (wide)",
+                defaultValue: "<\(string, options: [])",
+                table: "SystemFormatStyle",
+                locale: locale,
+                bundle: .atURL(Bundle.systemFormatStyle.bundleURL),
+                comment: "Less than one minute. The argument provides '1 minute' as localized by ICU. Ideally, the string is visually not too different compared to just '1 minute', but it also shouldn't appear too mathematical."
+            )
+        }
+        #if canImport(Accessibility)
+        var result = AttributedString(
+            localized: resource,
+            including: \.accessibility
+        )
+        #else
+        var result = AttributedString(localized: resource)
+        #endif
+        result.languageIdentifier = locale.language.maximalIdentifier
+        return result
+        #else
+        var result = AttributedString("<")
+        result.append(string)
+        return result
+        #endif
+    }
+}
+
+// MARK: - SystemFormatStyle.Timer + FormatStyle
+
 @available(OpenSwiftUI_v6_0, *)
 extension SystemFormatStyle.Timer: FormatStyle {
+    @inline(__always)
+    private func representedDuration(at date: Date) -> Duration {
+        let elapsed = Duration.seconds(date.timeIntervalSince(startDate))
+        let duration = switch countingMode {
+        case .timer(countsdown: true):
+            interval - elapsed
+        case .timer(countsdown: false), .stopwatch:
+            elapsed
+        }
+        return min(max(duration, .zero), interval)
+    }
+
+    private var dropSubsecondsOnRedaction: Bool {
+        guard capitalizationContext != .beginningOfSentence,
+              capitalizationContext != .listItem,
+              capitalizationContext != .middleOfSentence
+        else {
+            return false
+        }
+
+        switch textAlignment {
+        case .leading:
+            return locale.language.characterDirection == .leftToRight
+        case .trailing:
+            return locale.language.characterDirection == .rightToLeft
+        default:
+            return false
+        }
+    }
+
+    private var smallestUnit: (
+        unit: Duration.UnitsFormatStyle.Unit,
+        fractionalDigits: Int
+    ) {
+        if !(.seconds(1.0 / 30.0) < precision) {
+            return (.seconds, 2)
+        } else if !(.seconds(0.1) < precision) {
+            return (.seconds, 1)
+        } else if !(.seconds(1) < precision) {
+            return (.seconds, 0)
+        } else if !(.seconds(60) < precision) {
+            return (.minutes, 0)
+        } else if !(.seconds(3600) < precision) {
+            return (.hours, 0)
+        } else {
+            preconditionFailure("Timer encountered invalid precision of \(precision)")
+        }
+    }
+
+    private var staticString: AttributedString {
+        let unit = smallestUnit.unit
+        let width: Duration.UnitsFormatStyle.UnitWidth = switch sizeVariant {
+        case .regular: .wide
+        case .compact: .condensedAbbreviated
+        default: .narrow
+        }
+        let maximumUnitCount = if sizeVariant.rawValue > 2 {
+            max(maxFieldCount + 2 - sizeVariant.rawValue, 1)
+        } else {
+            maxFieldCount
+        }
+        let style = Duration.UnitsFormatStyle(
+            allowedUnits: [unit],
+            width: width,
+            maximumUnitCount: maximumUnitCount,
+            zeroValueUnits: .show(length: 1),
+            valueLength: nil,
+            fractionalPart: .hide(rounded: .awayFromZero)
+        )
+        .attributed
+        .locale(locale)
+        let result = style.format(max(.seconds(1), precision))
+        if unit == .minutes {
+            return SystemFormatStyle.lessThanOneMinuteString(
+                result,
+                locale: locale,
+                width: width
+            )
+        } else {
+            return result
+        }
+    }
+
+    private func increment(
+        showingHours: Bool,
+        showingMinutes: Bool,
+        constrainToPrecision: Bool
+    ) -> Duration {
+        var fieldCount = maxFieldCount
+        let usesMinimumFieldCount = sizeVariant.rawValue > 2
+        if usesMinimumFieldCount {
+            fieldCount = maxFieldCount + 2 - sizeVariant.rawValue
+        }
+
+        let naturalIncrement: Duration
+        if usesMinimumFieldCount && fieldCount <= 0 {
+            naturalIncrement = switch (showingHours, showingMinutes) {
+            case (true, true): .seconds(3600)
+            case (false, true), (true, false): .seconds(60)
+            case (false, false): .seconds(1)
+            }
+        } else {
+            if showingHours {
+                fieldCount -= 1
+            }
+            if !showingMinutes {
+                fieldCount += 1
+            }
+            naturalIncrement = switch fieldCount {
+            case 0: .seconds(3600)
+            case 1: .seconds(60)
+            case 2: .seconds(1)
+            default: precision
+            }
+        }
+        return constrainToPrecision
+            ? max(naturalIncrement, precision)
+            : naturalIncrement
+    }
+
+    private func unitsToShow(
+        greaterOrEqualTo unit: Duration.UnitsFormatStyle.Unit,
+        duration: Duration,
+        rounding: FloatingPointRoundingRule
+    ) -> [Duration.UnitsFormatStyle.Unit] {
+        var units = [unit]
+        if unit == .seconds {
+            if rounding == .awayFromZero {
+                if Duration.seconds(59) < duration {
+                    units.append(.minutes)
+                }
+            } else if !(duration < .seconds(60)) {
+                units.append(.minutes)
+            }
+        }
+
+        lazy var durationAllowsShowingHour: Bool = {
+            if rounding == .awayFromZero {
+                let threshold: Duration = unit == .seconds
+                    ? .seconds(3599)
+                    : .seconds(3540)
+                return threshold < duration
+            } else {
+                return !(duration < .seconds(3600))
+            }
+        }()
+        if unit != .hours,
+           showsHours,
+           durationAllowsShowingHour
+        {
+            units.append(.hours)
+        }
+        return units
+    }
+
+    private func timeStyle(
+        for input: Duration,
+        originalPrecision: Duration?
+    ) -> (
+        style: Duration.TimeFormatStyle.Attributed,
+        applicableRange: ClosedRange<Duration>?,
+        showsSubseconds: Bool
+    )? {
+        let maximumFieldCount = if sizeVariant.rawValue > 2 {
+            max(maxFieldCount + 2 - sizeVariant.rawValue, 1)
+        } else {
+            maxFieldCount
+        }
+        guard maximumFieldCount >= 2 else {
+            return nil
+        }
+
+        let originalPrecision = originalPrecision ?? precision
+        lazy var naturalRoundingIncrementIfRoundingTowardZero = increment(
+            showingHours: !(input < .seconds(3600)),
+            showingMinutes: true,
+            constrainToPrecision: false
+        )
+        lazy var actuallyDashesOutFields = {
+            guard case .stopwatch = countingMode,
+                  redactUsingDashes
+            else {
+                return false
+            }
+            return naturalRoundingIncrementIfRoundingTowardZero < originalPrecision
+        }()
+
+        let rounding: FloatingPointRoundingRule = switch countingMode {
+        case .timer(countsdown: true) where !actuallyDashesOutFields:
+            .awayFromZero
+        case .timer(countsdown: false), .timer(countsdown: true), .stopwatch:
+            .towardZero
+        }
+        let subHourRoundingIncrement = increment(
+            showingHours: false,
+            showingMinutes: true,
+            constrainToPrecision: true
+        )
+        let inputDoesNotRoundToHour = if rounding == .awayFromZero {
+            !((Duration.seconds(3600) - subHourRoundingIncrement) < input)
+        } else {
+            input < .seconds(3600)
+        }
+        lazy var shouldShowHoursMinutesSeconds =
+            showsHours &&
+            !(Duration.seconds(1) < subHourRoundingIncrement) &&
+            maximumFieldCount > 2
+        lazy var shouldShowHoursMinutes =
+            showsHours &&
+            !inputDoesNotRoundToHour &&
+            (
+                sizeVariant > .compact ||
+                (
+                    redactUsingDashes &&
+                    Duration.seconds(1.0 / 30.0) < subHourRoundingIncrement &&
+                    maxPrecision < subHourRoundingIncrement
+                )
+            )
+
+        let pattern: Duration.TimeFormatStyle.Pattern
+        let applicableRange: ClosedRange<Duration>?
+        let showsSubseconds: Bool
+        if shouldShowHoursMinutesSeconds {
+            let fractionalDigits = maximumFieldCount > 3
+                ? smallestUnit.fractionalDigits
+                : 0
+            let padHourToLength = countingMode == .stopwatch && !forceNoPadding
+                ? (sizeVariant <= .compact ? 2 : 1)
+                : 1
+            pattern = .hourMinuteSecond(
+                padHourToLength: padHourToLength,
+                fractionalSecondsLength: fractionalDigits,
+                roundFractionalSeconds: rounding
+            )
+            applicableRange = nil
+            showsSubseconds = fractionalDigits > 0
+        } else if shouldShowHoursMinutes {
+            if !inputDoesNotRoundToHour,
+               input < .seconds(3600)
+            {
+                pattern = .hourMinute(
+                    padHourToLength: 1,
+                    roundSeconds: rounding
+                )
+                applicableRange =
+                    (Duration.seconds(3600) - subHourRoundingIncrement)...Duration.seconds(3600)
+            } else {
+                pattern = .hourMinute(
+                    padHourToLength: 1,
+                    roundSeconds: .towardZero
+                )
+                applicableRange = nil
+            }
+            showsSubseconds = false
+        } else if !(Duration.seconds(1) < subHourRoundingIncrement) {
+            let fractionalDigits = maximumFieldCount > 3
+                ? smallestUnit.fractionalDigits
+                : 0
+            let padMinuteToLength = countingMode == .stopwatch && !forceNoPadding
+                ? (sizeVariant <= .compact ? 2 : 1)
+                : 1
+            pattern = .minuteSecond(
+                padMinuteToLength: padMinuteToLength,
+                fractionalSecondsLength: fractionalDigits,
+                roundFractionalSeconds: rounding
+            )
+            applicableRange = nil
+            showsSubseconds = fractionalDigits > 0
+        } else {
+            return nil
+        }
+
+        let style = Duration.TimeFormatStyle(pattern: pattern)
+            .locale(locale)
+            .grouping(.never)
+            .attributed
+        return (style, applicableRange, showsSubseconds)
+    }
+
+    private func unitsStyle(
+        for input: Duration
+    ) -> (
+        style: Duration.UnitsFormatStyle.Attributed,
+        applicableRange: ClosedRange<Duration>?
+    )? {
+        if input < precision,
+           Duration.seconds(1.0 / 30.0) < precision,
+           maxPrecision < precision,
+           Duration.seconds(1) < precision
+        {
+            return nil
+        }
+
+        let unit = smallestUnit.unit
+        let maximumFieldCount = if sizeVariant.rawValue > 2 {
+            max(maxFieldCount + 2 - sizeVariant.rawValue, 1)
+        } else {
+            maxFieldCount
+        }
+        lazy var isJustShowingSeconds =
+            maximumFieldCount == 1 && input < .seconds(60)
+        lazy var subHourRoundingIncrement = increment(
+            showingHours: false,
+            showingMinutes: !isJustShowingSeconds,
+            constrainToPrecision: true
+        )
+        lazy var effectiveIncrement = increment(
+            showingHours: showsHours &&
+                !(input < (Duration.seconds(3600) - subHourRoundingIncrement)),
+            showingMinutes: true,
+            constrainToPrecision: true
+        )
+        lazy var isShowingMinutesAndSecondsOrMore =
+            maximumFieldCount > 1 &&
+            !(Duration.seconds(1) < effectiveIncrement)
+        let isShowingSeconds = unit == .seconds &&
+            (isJustShowingSeconds || isShowingMinutesAndSecondsOrMore)
+        lazy var isJustNotShowingHour =
+            maximumFieldCount > 1 &&
+            input < .seconds(3600) &&
+            (Duration.seconds(3600) - subHourRoundingIncrement) < input
+        lazy var isJustNotShowingMinute =
+            maximumFieldCount == 1 &&
+            input < .seconds(60) &&
+            (Duration.seconds(60) - subHourRoundingIncrement) < input
+
+        let isCountdown: Bool = if case .timer(countsdown: true) = countingMode {
+            true
+        } else {
+            false
+        }
+        let roundsAwayFromZero = isCountdown && (
+            isShowingSeconds ||
+            (unit == .seconds && (isJustNotShowingHour || isJustNotShowingMinute))
+        )
+        let rounding: FloatingPointRoundingRule = roundsAwayFromZero
+            ? .awayFromZero
+            : .towardZero
+        let hasApplicableRange = isCountdown &&
+            unit == .seconds &&
+            (isJustNotShowingHour || isJustNotShowingMinute)
+
+        let greaterOrEqualUnit: Duration.UnitsFormatStyle.Unit
+        if isShowingSeconds {
+            greaterOrEqualUnit = .seconds
+        } else if unit == .hours {
+            greaterOrEqualUnit = .hours
+        } else {
+            greaterOrEqualUnit = .minutes
+        }
+        let allowedUnits = Set(
+            unitsToShow(
+                greaterOrEqualTo: greaterOrEqualUnit,
+                duration: input,
+                rounding: rounding
+            )
+        )
+
+        let applicableRange: ClosedRange<Duration>?
+        if hasApplicableRange {
+            let upperBound: Duration = input < .seconds(60)
+                ? .seconds(60)
+                : .seconds(3600)
+            applicableRange =
+                (upperBound - subHourRoundingIncrement)...upperBound
+        } else {
+            applicableRange = nil
+        }
+
+        let width: Duration.UnitsFormatStyle.UnitWidth = switch sizeVariant {
+        case .regular: .wide
+        case .compact: .condensedAbbreviated
+        default: .narrow
+        }
+        let style = Duration.UnitsFormatStyle(
+            allowedUnits: allowedUnits,
+            width: width,
+            maximumUnitCount: maximumFieldCount,
+            zeroValueUnits: .show(length: 1),
+            valueLength: nil,
+            fractionalPart: .hide(rounded: rounding)
+        )
+        .locale(locale)
+        .attributed
+        return (style, applicableRange)
+    }
+
+    private func format(
+        _ input: Duration,
+        originalPrecision: Duration?
+    ) -> AttributedString {
+        let originalPrecision = originalPrecision ?? precision
+        if redactUsingDashes,
+           Duration.seconds(1.0 / 30.0) < precision,
+           maxPrecision < precision
+        {
+            var style = self
+            style.precision = max(
+                maxPrecision,
+                dropSubsecondsOnRedaction
+                    ? .seconds(1)
+                    : .seconds(1.0 / 30.0)
+            )
+            if let (timeStyle, _, showsSubseconds) = style.timeStyle(
+                for: input,
+                originalPrecision: originalPrecision
+            ) {
+                var result = timeStyle.format(input)
+                monospacedDigits(&result, locale: locale)
+                adjustedColon(&result, locale: locale)
+                if showsSubseconds,
+                   case .stopwatch = countingMode,
+                   maxFieldCount >= 1
+                {
+                    superscript(&result, locale: locale)
+                }
+                result.redact(
+                    for: .init(duration: precision),
+                    locale: locale
+                )
+                return result
+            }
+        }
+
+        if let (timeStyle, _, showsSubseconds) = timeStyle(
+            for: input,
+            originalPrecision: originalPrecision
+        ) {
+            var result = timeStyle.format(input)
+            monospacedDigits(&result, locale: locale)
+            if showsSubseconds,
+               case .stopwatch = countingMode,
+               maxFieldCount >= 1
+            {
+                superscript(&result, locale: locale)
+            }
+            return result
+        } else if let (unitsStyle, _) = unitsStyle(for: input) {
+            return unitsStyle.format(input)
+        } else {
+            return staticString
+        }
+    }
+
     public func format(_ input: Date) -> AttributedString {
-        _openSwiftUIUnimplementedFailure()
+        if Duration.seconds(1.0 / 30.0) < precision,
+           maxPrecision < precision,
+           !(input >= startDate && input < startDate + .init(interval))
+        {
+            var style = self
+            style.precision = max(maxPrecision, Duration.seconds(1.0 / 30.0))
+            return style.format(
+                style.representedDuration(at: input),
+                originalPrecision: precision
+            )
+        } else {
+            return format(
+                representedDuration(at: input),
+                originalPrecision: nil
+            )
+        }
     }
 
     public func locale(_ locale: Locale) -> SystemFormatStyle.Timer {
