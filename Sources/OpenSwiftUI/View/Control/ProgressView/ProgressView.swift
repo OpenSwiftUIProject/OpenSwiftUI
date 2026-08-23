@@ -6,12 +6,6 @@
 //  Status: Complete
 //  ID: 936A47782A7E2FBE97D58CDBAEB02770 (SwiftUI)
 
-#if OPENSWIFTUI_OPENCOMBINE
-import OpenCombine
-import OpenCombineFoundation
-#else
-import Combine
-#endif
 import OpenAttributeGraphShims
 public import Foundation
 @_spi(ForOpenSwiftUIOnly)
@@ -415,7 +409,7 @@ extension ProgressView {
     }
 }
 
-// MARK: - Foundation Progress
+// MARK: - ProgressView + Foundation Progress
 
 @available(OpenSwiftUI_v2_0, *)
 extension ProgressView {
@@ -430,7 +424,7 @@ extension ProgressView {
     }
 }
 
-// MARK: - ProgressView Style Configuration
+// MARK: - ProgressView + Style Configuration
 
 @available(OpenSwiftUI_v2_0, *)
 extension ProgressView {
@@ -730,77 +724,5 @@ struct ResolvedProgressView: View {
                 currentValueLabel: currentValueLabel
             )
         )
-    }
-}
-
-// TBA
-
-// MARK: - FoundationProgressView
-
-@MainActor
-struct FoundationProgressView: View {
-    var progress: Foundation.Progress
-
-    @State
-    private var state: FoundationProgressUIState?
-
-    nonisolated init(progress: Foundation.Progress) {
-        self.progress = progress
-        _state = State(initialValue: nil)
-    }
-
-    var body: some View {
-        let state = state ?? FoundationProgressUIState(progress: progress)
-        let content = CustomProgressView(
-            fractionCompleted: state.isIndeterminate ? nil : state.fractionCompleted,
-            alwaysIndeterminate: false,
-            label: state.localizedDescription.isEmpty ? nil : Text(state.localizedDescription),
-            currentValueLabel: state.localizedAdditionalDescription.isEmpty ? nil : Text(state.localizedAdditionalDescription)
-        )
-        return content.onReceive(progress.uiStatePublisher) { state in
-            self.state = state
-        }
-    }
-}
-
-private struct FoundationProgressUIState: Equatable {
-    var fractionCompleted: Double
-    var isIndeterminate: Bool
-    var localizedDescription: String
-    var localizedAdditionalDescription: String
-
-    init(progress: Foundation.Progress) {
-        fractionCompleted = progress.fractionCompleted
-        isIndeterminate = progress.isIndeterminate
-        localizedDescription = progress.localizedDescription ?? ""
-        localizedAdditionalDescription = progress.localizedAdditionalDescription ?? ""
-    }
-}
-
-private extension Foundation.Progress {
-    var uiStatePublisher: some Publisher<FoundationProgressUIState, Never> {
-        #if OPENSWIFTUI_OPENCOMBINE
-        // [AI] OpenCombineFoundation has no KVO publisher, so sample Progress
-        // while the view is active to preserve live updates on non-Darwin hosts.
-        Foundation.Timer.publish(
-            every: 1.0 / 30.0,
-            on: .main,
-            in: .common
-        )
-            .autoconnect()
-            .map { [progress = self] _ in
-                FoundationProgressUIState(progress: progress)
-            }
-            .removeDuplicates()
-        #else
-        Publishers.CombineLatest4(
-            publisher(for: \.completedUnitCount),
-            publisher(for: \.totalUnitCount),
-            publisher(for: \.localizedDescription),
-            publisher(for: \.localizedAdditionalDescription)
-        ).map { [unowned self] _ in
-            FoundationProgressUIState(progress: self)
-        }
-        #endif
     }
 }
