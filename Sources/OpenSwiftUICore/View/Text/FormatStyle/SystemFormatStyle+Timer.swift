@@ -643,39 +643,43 @@ extension SystemFormatStyle.Timer: FormatStyle {
         let pattern: Duration.TimeFormatStyle.Pattern
         let applicableRange: ClosedRange<Duration>?
         let showsSubseconds: Bool
-        if shouldShowHoursMinutesSeconds {
-            let fractionalDigits = maximumFieldCount > 3
-                ? smallestUnit.fractionalDigits
-                : 0
-            let padHourToLength = countingMode == .stopwatch && !forceNoPadding
-                ? (sizeVariant <= .compact ? 2 : 1)
-                : 1
-            pattern = .hourMinuteSecond(
-                padHourToLength: padHourToLength,
-                fractionalSecondsLength: fractionalDigits,
-                roundFractionalSeconds: rounding
-            )
-            applicableRange = nil
-            showsSubseconds = fractionalDigits > 0
-        } else if shouldShowHoursMinutes {
-            if !inputDoesNotRoundToHour,
-               input < .seconds(3600)
-            {
-                pattern = .hourMinute(
-                    padHourToLength: 1,
-                    roundSeconds: rounding
-                )
-                applicableRange =
-                    (Duration.seconds(3600) - subHourRoundingIncrement)...Duration.seconds(3600)
-            } else {
-                pattern = .hourMinute(
-                    padHourToLength: 1,
-                    roundSeconds: .towardZero
+        if showsHours && !inputDoesNotRoundToHour {
+            if shouldShowHoursMinutesSeconds {
+                let fractionalDigits = maximumFieldCount > 3
+                    ? smallestUnit.fractionalDigits
+                    : 0
+                let padHourToLength = countingMode == .stopwatch && !forceNoPadding
+                    ? (sizeVariant <= .compact ? 2 : 1)
+                    : 1
+                pattern = .hourMinuteSecond(
+                    padHourToLength: padHourToLength,
+                    fractionalSecondsLength: fractionalDigits,
+                    roundFractionalSeconds: rounding
                 )
                 applicableRange = nil
+                showsSubseconds = fractionalDigits > 0
+            } else if shouldShowHoursMinutes {
+                if !inputDoesNotRoundToHour,
+                   input < .seconds(3600)
+                {
+                    pattern = .hourMinute(
+                        padHourToLength: 1,
+                        roundSeconds: rounding
+                    )
+                    applicableRange =
+                        (Duration.seconds(3600) - subHourRoundingIncrement)...Duration.seconds(3600)
+                } else {
+                    pattern = .hourMinute(
+                        padHourToLength: 1,
+                        roundSeconds: .towardZero
+                    )
+                    applicableRange = nil
+                }
+                showsSubseconds = false
+            } else {
+                return nil
             }
-            showsSubseconds = false
-        } else if !(Duration.seconds(1) < subHourRoundingIncrement) {
+        } else if !(Duration.seconds(3600) < subHourRoundingIncrement) {
             let fractionalDigits = maximumFieldCount > 3
                 ? smallestUnit.fractionalDigits
                 : 0
