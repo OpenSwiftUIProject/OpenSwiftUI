@@ -884,3 +884,182 @@ extension SystemFormatStyle.Timer: FormatStyle {
         return style
     }
 }
+
+// MARK: - SystemFormatStyle.Timer + DiscreteFormatStyle
+
+@available(OpenSwiftUI_v6_0, *)
+extension SystemFormatStyle.Timer: DiscreteFormatStyle {
+    private func inputDate(for duration: Duration) -> Date {
+        let offset = switch countingMode {
+        case .timer(countsdown: true):
+            interval - duration
+        case .timer(countsdown: false), .stopwatch:
+            duration
+        }
+        return startDate.addingTimeInterval(.init(offset))
+    }
+
+    private func discreteInput(after input: Duration) -> Duration? {
+        if let (style, applicableRange, _) = timeStyle(
+            for: input,
+            originalPrecision: nil
+        ) {
+            guard let result = style.discreteInput(after: input) else {
+                return applicableRange?.upperBound
+            }
+            guard let applicableRange else {
+                return result
+            }
+            return min(result, applicableRange.upperBound)
+        }
+        if let (style, applicableRange) = unitsStyle(for: input) {
+            guard let result = style.discreteInput(after: input) else {
+                return applicableRange?.upperBound
+            }
+            guard let applicableRange else {
+                return result
+            }
+            return min(result, applicableRange.upperBound)
+        }
+        return max(.seconds(1), precision)
+    }
+
+    private func discreteInput(before input: Duration) -> Duration? {
+        if let (style, applicableRange, _) = timeStyle(
+            for: input,
+            originalPrecision: nil
+        ) {
+            guard let result = style.discreteInput(before: input) else {
+                return applicableRange?.lowerBound
+            }
+            guard let applicableRange else {
+                return result
+            }
+            return max(result, applicableRange.lowerBound)
+        }
+        if let (style, applicableRange) = unitsStyle(for: input) {
+            guard let result = style.discreteInput(before: input) else {
+                return applicableRange?.lowerBound
+            }
+            guard let applicableRange else {
+                return result
+            }
+            return max(result, applicableRange.lowerBound)
+        }
+        return nil
+    }
+
+    private func nextInputRoundingLower(for duration: Duration) -> Date {
+        let date = inputDate(for: duration)
+        let representedDuration = representedDuration(at: date)
+        let requiresAdjustment = switch countingMode {
+        case .timer(countsdown: true):
+            representedDuration < duration
+        case .timer(countsdown: false), .stopwatch:
+            duration < representedDuration
+        }
+        guard requiresAdjustment else {
+            return date
+        }
+        return Date(timeIntervalSinceReferenceDate: date.timeIntervalSinceReferenceDate.nextDown)
+    }
+
+    private func nextInputRoundingHigher(for duration: Duration) -> Date {
+        let date = inputDate(for: duration)
+        let representedDuration = representedDuration(at: date)
+        let requiresAdjustment = switch countingMode {
+        case .timer(countsdown: true):
+            representedDuration < duration
+        case .timer(countsdown: false), .stopwatch:
+            duration < representedDuration
+        }
+        guard requiresAdjustment else {
+            return date
+        }
+        return Date(timeIntervalSinceReferenceDate: date.timeIntervalSinceReferenceDate.nextUp)
+    }
+
+    public func discreteInput(before input: Date) -> Date? {
+        guard input > startDate else {
+            return nil
+        }
+        let endDate = startDate + .init(interval)
+        if !(input < endDate),
+           Duration.seconds(1.0 / 30.0) < precision,
+           maxPrecision < precision {
+            return Date(timeIntervalSinceReferenceDate: endDate.timeIntervalSinceReferenceDate.nextDown)
+        }
+
+        let duration = representedDuration(at: input)
+        let result = switch countingMode {
+        case .timer(countsdown: true):
+            discreteInput(after: duration)
+        case .timer(countsdown: false), .stopwatch:
+            discreteInput(before: duration)
+        }
+        guard let result else {
+            guard Duration.seconds(1.0 / 30.0) < precision,
+               maxPrecision < precision else {
+                return nil
+            }
+            return Date(timeIntervalSinceReferenceDate: startDate.timeIntervalSinceReferenceDate.nextDown)
+        }
+        if !(Duration.seconds(1.0 / 30.0) < precision && maxPrecision < precision) {
+            switch countingMode {
+            case .timer(countsdown: true):
+                guard !(interval < result) else {
+                    return nil
+                }
+            case .timer(countsdown: false), .stopwatch:
+                guard !(result < .zero) else {
+                    return nil
+                }
+            }
+        }
+        return nextInputRoundingLower(
+            for: max(min(result, interval), .zero)
+        )
+    }
+
+    public func discreteInput(after input: Date) -> Date? {
+        let endDate = startDate + .init(interval)
+        guard input < endDate else {
+            return nil
+        }
+        if !(input >= startDate),
+           Duration.seconds(1.0 / 30.0) < precision,
+           maxPrecision < precision {
+            return startDate
+        }
+
+        let duration = representedDuration(at: input)
+        let result = switch countingMode {
+        case .timer(countsdown: true):
+            discreteInput(before: duration)
+        case .timer(countsdown: false), .stopwatch:
+            discreteInput(after: duration)
+        }
+        guard let result else {
+            guard Duration.seconds(1.0 / 30.0) < precision,
+               maxPrecision < precision else {
+                return nil
+            }
+            return Date(timeIntervalSinceReferenceDate: endDate.timeIntervalSinceReferenceDate.nextUp)
+        }
+        if !(Duration.seconds(1.0 / 30.0) < precision && maxPrecision < precision) {
+            switch countingMode {
+            case .timer(countsdown: true):
+                guard !(result < .zero) else {
+                    return nil
+                }
+            case .timer(countsdown: false), .stopwatch:
+                guard !(interval < result) else {
+                    return nil
+                }
+            }
+        }
+        return nextInputRoundingHigher(
+            for: max(min(result, interval), .zero)
+        )
+    }
+}
