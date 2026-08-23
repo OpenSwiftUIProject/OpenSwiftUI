@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP (Blocked by SymbolEffect + PlatformImageCodable) + Preference Modifier
+//  Status: WIP (Blocked by SymbolEffect + PlatformImageCodable)
 //  ID: 5D203C4BCF4ED90873E64430FDF30283 (SwiftUI)
 
 import Foundation
@@ -832,6 +832,40 @@ extension WidgetAuxiliaryViewMetadata {
 @_spi(Private)
 @available(*, unavailable)
 extension WidgetAuxiliaryViewMetadata.Key: Sendable {}
+
+// MARK: - AuxiliaryViewMetadataPreferenceWriter
+
+private struct AuxiliaryViewMetadataPreferenceWriter: Rule {
+    @OptionalAttribute var metadata: WidgetAuxiliaryViewMetadata??
+    @OptionalAttribute var url: URL??
+    @OptionalAttribute var accessibilityAttachment: AccessibilityAttachment.Tree?
+    @Attribute var environmentValues: EnvironmentValues
+    @Attribute var platformItemList: PlatformItemList
+    var idiom: AnyInterfaceIdiom
+
+    var value: WidgetAuxiliaryViewMetadata? {
+        WidgetAuxiliaryViewMetadata(
+            item: platformItemList.mergedContentItem,
+            url: url ?? nil,
+            accessibility: accessibilityAttachment?.metadataAccessibility(
+                in: environmentValues,
+                idiom: idiom
+            ),
+            child: metadata ?? nil
+        )
+    }
+}
+
+extension AccessibilityAttachment.Tree {
+    func metadataAccessibility(
+        in environment: EnvironmentValues,
+        idiom: AnyInterfaceIdiom
+    ) -> WidgetAuxiliaryViewMetadata.Accessibility? {
+        // TODO: Accessibility is not implemented
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
 
 // MARK: - WidgetAuxiliaryURLPreferenceKey
 

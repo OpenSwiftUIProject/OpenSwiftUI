@@ -79,7 +79,7 @@ package struct PlatformItemList {
 
     var mergedContentItem: Item {
         // FIXME
-        items[0]
+        items.first ?? Item()
     }
 
     mutating func modify(_ body: (inout Item) -> Void) {
