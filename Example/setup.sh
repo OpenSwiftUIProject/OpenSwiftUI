@@ -46,3 +46,10 @@ fi
 run_mise install
 run_mise exec -- tuist install
 run_mise exec -- tuist generate --no-open
+
+# Tuist currently injects Objective-C resource accessor headers into every
+# C-family source through GCC_PREFIX_HEADER. Keep the generated header inert
+# for plain C sources until Tuist scopes the injection to Objective-C sources.
+# https://github.com/tuist/tuist/issues/12559
+patch -d "$SCRIPT_DIR/.." -p1 < \
+  "$SCRIPT_DIR/Tuist/Patches/OpenSwiftUI_SPI-resource-bundle-accessor.patch"
