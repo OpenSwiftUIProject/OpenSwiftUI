@@ -6,8 +6,8 @@
 //  Status: WIP (Blocked by SymbolEffect + PlatformImageCodable)
 //  ID: 5D203C4BCF4ED90873E64430FDF30283 (SwiftUI)
 
-import Foundation
-import CoreFoundation
+public import Foundation
+public import CoreFoundation
 import OpenAttributeGraphShims
 import UIFoundation_Private
 @_spi(ForOpenSwiftUIOnly)
