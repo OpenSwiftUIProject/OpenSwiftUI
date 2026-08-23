@@ -68,6 +68,14 @@ swift test --enable-code-coverage
 swift test --list-tests
 ```
 
+## Test Authoring
+
+Follow `.agents/skills/openswiftui-test-authoring/SKILL.md`.
+
+## Pull Requests
+
+Follow `.agents/skills/openswiftui-pr-authoring/SKILL.md`.
+
 ## Dependencies Setup
 
 The project requires cloning additional repositories in the same parent directory:
