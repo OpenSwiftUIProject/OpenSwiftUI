@@ -156,7 +156,264 @@ public struct ProgressView<Label, CurrentValueLabel>: View where Label: View, Cu
 @available(*, unavailable)
 extension ProgressView: Sendable {}
 
+// MARK: - Indeterminate Initializers
 
+@available(OpenSwiftUI_v2_0, *)
+extension ProgressView where CurrentValueLabel == EmptyView {
+    /// Creates a progress view for showing indeterminate progress, without a
+    /// label.
+    nonisolated public init() where Label == EmptyView {
+        self.init(label: nil)
+    }
+
+    /// Creates a progress view for showing indeterminate progress that displays
+    /// a custom label.
+    ///
+    /// - Parameters:
+    ///     - label: A view builder that creates a view that describes the task
+    ///       in progress.
+    nonisolated public init(@ViewBuilder label: () -> Label) {
+        self.init(label: label())
+    }
+
+    /// Creates a progress view for showing indeterminate progress that
+    /// generates its label from a localized string.
+    ///
+    /// This initializer creates a ``Text`` view on your behalf, and treats the
+    /// localized key similar to ``Text/init(_:tableName:bundle:comment:)``. See
+    /// ``Text`` for more information about localizing strings. To initialize an
+    /// indeterminate progress view with a string variable, use the
+    /// corresponding initializer that takes a `StringProtocol` instance.
+    ///
+    /// - Parameters:
+    ///     - titleKey: The key for the progress view's localized title that
+    ///       describes the task in progress.
+    nonisolated public init(_ titleKey: LocalizedStringKey) where Label == Text {
+        self.init(label: Text(titleKey))
+    }
+
+    /// Creates a progress view for showing indeterminate progress that
+    /// generates its label from a string.
+    ///
+    /// - Parameters:
+    ///     - title: A string that describes the task in progress.
+    ///
+    /// This initializer creates a ``Text`` view on your behalf, and treats the
+    /// title similar to ``Text/init(verbatim:)``. See ``Text`` for more
+    /// information about localizing strings. To initialize a progress view with
+    /// a localized string key, use the corresponding initializer that takes a
+    /// `LocalizedStringKey` instance.
+    @_disfavoredOverload
+    nonisolated public init<S>(_ title: S) where Label == Text, S: StringProtocol {
+        self.init(label: Text(title))
+    }
+
+    nonisolated init(label: Label?) {
+        base = .custom(
+            CustomProgressView(
+                fractionCompleted: nil,
+                alwaysIndeterminate: true,
+                label: label,
+                currentValueLabel: nil
+            )
+        )
+    }
+}
+
+// MARK: - Value-Based Initializers
+
+@available(OpenSwiftUI_v2_0, *)
+extension ProgressView {
+    /// Creates a progress view for showing determinate progress.
+    ///
+    /// If the value is non-`nil`, but outside the range of `0.0` through
+    /// `total`, the progress view pins the value to those limits, rounding to
+    /// the nearest possible bound. A value of `nil` represents indeterminate
+    /// progress, in which case the progress view ignores `total`.
+    ///
+    /// - Parameters:
+    ///     - value: The completed amount of the task to this point, in a range
+    ///       of `0.0` to `total`, or `nil` if the progress is indeterminate.
+    ///     - total: The full amount representing the complete scope of the
+    ///       task, meaning the task is complete if `value` equals `total`. The
+    ///       default value is `1.0`.
+    nonisolated public init<V>(
+        value: V?,
+        total: V = 1.0
+    ) where Label == EmptyView, CurrentValueLabel == EmptyView, V: BinaryFloatingPoint {
+        self.init(
+            value: value,
+            total: total,
+            label: nil,
+            currentValueLabel: nil
+        )
+    }
+
+    /// Creates a progress view for showing determinate progress, with a
+    /// custom label.
+    ///
+    /// If the value is non-`nil`, but outside the range of `0.0` through
+    /// `total`, the progress view pins the value to those limits, rounding to
+    /// the nearest possible bound. A value of `nil` represents indeterminate
+    /// progress, in which case the progress view ignores `total`.
+    ///
+    /// - Parameters:
+    ///     - value: The completed amount of the task to this point, in a range
+    ///       of `0.0` to `total`, or `nil` if the progress is indeterminate.
+    ///     - total: The full amount representing the complete scope of the
+    ///       task, meaning the task is complete if `value` equals `total`. The
+    ///       default value is `1.0`.
+    ///     - label: A view builder that creates a view that describes the task
+    ///       in progress.
+    nonisolated public init<V>(
+        value: V?,
+        total: V = 1.0,
+        @ViewBuilder label: () -> Label
+    ) where CurrentValueLabel == EmptyView, V: BinaryFloatingPoint {
+        self.init(
+            value: value,
+            total: total,
+            label: label(),
+            currentValueLabel: nil
+        )
+    }
+
+    /// Creates a progress view for showing determinate progress, with a
+    /// custom label.
+    ///
+    /// If the value is non-`nil`, but outside the range of `0.0` through
+    /// `total`, the progress view pins the value to those limits, rounding to
+    /// the nearest possible bound. A value of `nil` represents indeterminate
+    /// progress, in which case the progress view ignores `total`.
+    ///
+    /// - Parameters:
+    ///     - value: The completed amount of the task to this point, in a range
+    ///       of `0.0` to `total`, or `nil` if the progress is indeterminate.
+    ///     - total: The full amount representing the complete scope of the
+    ///       task, meaning the task is complete if `value` equals `total`. The
+    ///       default value is `1.0`.
+    ///     - label: A view builder that creates a view that describes the task
+    ///       in progress.
+    ///     - currentValueLabel: A view builder that creates a view that
+    ///       describes the level of completed progress of the task.
+    nonisolated public init<V>(
+        value: V?,
+        total: V = 1.0,
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder currentValueLabel: () -> CurrentValueLabel
+    ) where V: BinaryFloatingPoint {
+        self.init(
+            value: value,
+            total: total,
+            label: label(),
+            currentValueLabel: currentValueLabel()
+        )
+    }
+
+    /// Creates a progress view for showing determinate progress that generates
+    /// its label from a localized string.
+    ///
+    /// If the value is non-`nil`, but outside the range of `0.0` through
+    /// `total`, the progress view pins the value to those limits, rounding to
+    /// the nearest possible bound. A value of `nil` represents indeterminate
+    /// progress, in which case the progress view ignores `total`.
+    ///
+    /// This initializer creates a ``Text`` view on your behalf, and treats the
+    /// localized key similar to ``Text/init(_:tableName:bundle:comment:)``. See
+    /// ``Text`` for more information about localizing strings. To initialize a
+    /// determinate progress view with a string variable, use the corresponding
+    /// initializer that takes a `StringProtocol` instance.
+    ///
+    /// - Parameters:
+    ///     - titleKey: The key for the progress view's localized title that
+    ///       describes the task in progress.
+    ///     - value: The completed amount of the task to this point, in a range
+    ///       of `0.0` to `total`, or `nil` if the progress is
+    ///       indeterminate.
+    ///     - total: The full amount representing the complete scope of the
+    ///       task, meaning the task is complete if `value` equals `total`. The
+    ///       default value is `1.0`.
+    nonisolated public init<V>(
+        _ titleKey: LocalizedStringKey,
+        value: V?,
+        total: V = 1.0
+    ) where Label == Text, CurrentValueLabel == EmptyView, V: BinaryFloatingPoint {
+        self.init(
+            value: value,
+            total: total,
+            label: Text(titleKey),
+            currentValueLabel: nil
+        )
+    }
+
+    /// Creates a progress view for showing determinate progress that generates
+    /// its label from a string.
+    ///
+    /// If the value is non-`nil`, but outside the range of `0.0` through
+    /// `total`, the progress view pins the value to those limits, rounding to
+    /// the nearest possible bound. A value of `nil` represents indeterminate
+    /// progress, in which case the progress view ignores `total`.
+    ///
+    /// This initializer creates a ``Text`` view on your behalf, and treats the
+    /// title similar to ``Text/init(verbatim:)``. See ``Text`` for more
+    /// information about localizing strings. To initialize a determinate
+    /// progress view with a localized string key, use the corresponding
+    /// initializer that takes a `LocalizedStringKey` instance.
+    ///
+    /// - Parameters:
+    ///     - title: The string that describes the task in progress.
+    ///     - value: The completed amount of the task to this point, in a range
+    ///       of `0.0` to `total`, or `nil` if the progress is
+    ///       indeterminate.
+    ///     - total: The full amount representing the complete scope of the
+    ///       task, meaning the task is complete if `value` equals `total`. The
+    ///       default value is `1.0`.
+    @_disfavoredOverload
+    nonisolated public init<S, V>(
+        _ title: S,
+        value: V?,
+        total: V = 1.0
+    ) where Label == Text, CurrentValueLabel == EmptyView, S: StringProtocol, V: BinaryFloatingPoint {
+        self.init(
+            value: value,
+            total: total,
+            label: Text(title),
+            currentValueLabel: nil
+        )
+    }
+
+    nonisolated init<V>(
+        value: V?,
+        total: V,
+        label: Label?,
+        currentValueLabel: CurrentValueLabel?
+    ) where V: BinaryFloatingPoint {
+        var fractionCompleted: Double? {
+            guard let value else {
+                return nil
+            }
+            if value < 0 || value > total {
+                Log.runtimeIssues(
+                    "ProgressView initialized with an out-of-bounds progress value. The value will be clamped to the range of `0...total`."
+                )
+            }
+            guard value >= 0,
+                  total >= 0,
+                  value != 0 || total != 0 else {
+                return nil
+            }
+            return Double(value / total).clamp(min: 0, max: 1)
+        }
+        base = .custom(
+            CustomProgressView(
+                fractionCompleted: fractionCompleted,
+                alwaysIndeterminate: false,
+                label: label,
+                currentValueLabel: currentValueLabel
+            )
+        )
+    }
+}
 // MARK: - ProgressViewValue
 
 enum ProgressViewValue: Codable {
