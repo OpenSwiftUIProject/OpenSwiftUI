@@ -17,6 +17,11 @@ extension TimeDataFormatting {
         var range: ClosedRange<FormatInput>
         var handoff: FormatInput
 
+        init(range: ClosedRange<FormatInput>, handoff: FormatInput) {
+            self.range = range
+            self.handoff = handoff
+        }
+
         private enum CodingKeys: CodingKey {
             case range
             case handoff

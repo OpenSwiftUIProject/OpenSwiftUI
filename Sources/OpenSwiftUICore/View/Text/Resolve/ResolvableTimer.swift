@@ -8,27 +8,6 @@
 
 package import Foundation
 
-extension SystemFormatStyle {
-    // FIXME
-    package struct Timer: DiscreteFormatStyle {
-        package func discreteInput(before input: Date) -> Date? {
-            nil
-        }
-        
-        package func discreteInput(after input: Date) -> Date? {
-            nil
-        }
-        
-        package func format(_ value: Date) -> String {
-            ""
-        }
-        
-        package typealias FormatInput = Date
-
-        package typealias FormatOutput = String
-    }
-}
-
 // MARK: - ResolvableTimer
 
 package struct ResolvableTimer {
@@ -63,7 +42,36 @@ package struct ResolvableTimer {
     }
 
     package var format: SystemFormatStyle.Timer {
-        _openSwiftUIUnimplementedFailure()
+        let range = interval.start..<interval.end
+        let maxPrecision: Duration
+        if units.contains(.nanosecond) {
+            maxPrecision = .milliseconds(10)
+        } else if units.contains(.second) {
+            maxPrecision = .seconds(1)
+        } else {
+            maxPrecision = .seconds(60)
+        }
+        var format: SystemFormatStyle.Timer
+        if countdown {
+            format = .init(
+                countingDownIn: range,
+                showsHours: units.contains(.hour),
+                maxFieldCount: 3,
+                maxPrecision: maxPrecision
+            )
+        } else {
+            format = .init(
+                countingUpIn: range,
+                showsHours: units.contains(.hour),
+                maxFieldCount: 3,
+                maxPrecision: maxPrecision
+            )
+            format.countingMode = .stopwatch
+            format.forceNoPadding = true
+        }
+        format.locale = locale
+        format.redactUsingDashes = true
+        return format
     }
 
     package var source: TimeDataSource<Date>.DateStorage {

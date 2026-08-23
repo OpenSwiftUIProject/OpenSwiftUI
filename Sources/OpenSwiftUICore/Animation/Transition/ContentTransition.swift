@@ -350,9 +350,30 @@ public struct ContentTransition: Equatable, Sendable {
     /// system uses an opacity transition instead.
     public static let interpolate: ContentTransition = .init(storage: .named(.init())) // FIXME
 
+    /// Creates a content transition intended to be used with `Text`
+    /// views displaying numeric text. In certain environments changes
+    /// to the text will enable a nonstandard transition tailored to
+    /// numeric characters that count up or down.
+    ///
+    /// - Parameters:
+    ///   - countsDown: true if the numbers represented by the text
+    ///     are counting downwards.
+    ///
+    /// - Returns: a new content transition.
     public static func numericText(countsDown: Bool = false) -> ContentTransition {
-        // FIXME
-        .init(storage: .named(.init(name: .numericText(.init(direction: .fixed(downwards: countsDown))))))
+        .init(
+            storage: .named(
+                .init(
+                    name: .numericText(
+                        .init(
+                            direction: .fixed(
+                                downwards: countsDown == isDeployedOnOrAfter(.v6)
+                            )
+                        )
+                    )
+                )
+            )
+        )
     }
 
     @_spi(Private)

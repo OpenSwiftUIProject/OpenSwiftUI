@@ -181,7 +181,6 @@ extension TimeDataFormatting {
             ).resolvable
         }
 
-        // TBA
         package var invalidationConfiguration: ResolvableAttributeConfiguration {
             guard let representation = representation(for: .v5)
                 as? any ConfigurationBasedResolvableStringAttributeRepresentation else {
