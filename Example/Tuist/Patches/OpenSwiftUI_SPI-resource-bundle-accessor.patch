@@ -1,0 +1,12 @@
+--- a/Derived/Sources/TuistBundle+OpenSwiftUI_SPI.h
++++ b/Derived/Sources/TuistBundle+OpenSwiftUI_SPI.h
+@@ -1 +1,3 @@
++#if __OBJC__
++
+ #import <Foundation/Foundation.h>
+@@ -13 +15,3 @@
+ #endif
+\ No newline at end of file
++
++#endif
+\ No newline at end of file
