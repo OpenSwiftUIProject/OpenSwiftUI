@@ -788,4 +788,48 @@ extension WidgetAuxiliaryViewMetadata.Graphic.Named: Equatable {}
 @available(OpenSwiftUI_v6_0, *)
 extension WidgetAuxiliaryViewMetadata.Graphic: Equatable {}
 
-// TODO: Preference
+// MARK: - WidgetAuxiliaryViewMetadata.Key
+
+@_spi(Private)
+extension WidgetAuxiliaryViewMetadata {
+    public struct Key: HostPreferenceKey {
+        public static var defaultValue: WidgetAuxiliaryViewMetadata?
+
+        public static func reduce(
+            value: inout WidgetAuxiliaryViewMetadata?,
+            nextValue: () -> WidgetAuxiliaryViewMetadata?
+        ) {
+            value = WidgetAuxiliaryViewMetadata.reduce(value, nextValue())
+        }
+    }
+
+    public static func reduce(
+        _ lhs: WidgetAuxiliaryViewMetadata?,
+        _ rhs: WidgetAuxiliaryViewMetadata?
+    ) -> WidgetAuxiliaryViewMetadata? {
+        guard var result = lhs else {
+            return rhs
+        }
+        guard let rhs else {
+            return result
+        }
+        if let graphic = rhs.graphic {
+            result.graphic = graphic
+        }
+        if let fallbacks = rhs.fallbacks {
+            result.fallbacks = fallbacks
+        }
+        if let metadataText = rhs.metadataText {
+            result.metadataText = metadataText
+        }
+        if let accessibility = rhs.accessibility {
+            result.accessibility = accessibility
+        }
+        return result
+    }
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Key: Sendable {}
+
