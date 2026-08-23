@@ -1166,7 +1166,7 @@ extension SystemFormatStyle.Timer: InterfaceIdiomDependentFormatStyle {
         _ idiom: AnyInterfaceIdiom
     ) -> SystemFormatStyle.Timer {
         var style = self
-        style.forceNoPadding = !idiom.accepts(ComplicationInterfaceIdiom.self)
+        style.redactUsingDashes = !idiom.accepts(ComplicationInterfaceIdiom.self)
         return style
     }
 }
