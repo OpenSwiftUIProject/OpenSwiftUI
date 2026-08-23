@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: WIP (Blocked by SymbolEffect + PlatformImageCodable) + Preference Modifier
 //  ID: 5D203C4BCF4ED90873E64430FDF30283 (SwiftUI)
 
 import Foundation
@@ -318,6 +318,123 @@ public struct WidgetAuxiliaryViewMetadata {
         }
     }
 
+    // MARK: - WidgetAuxiliaryViewMetadata.Progress
+
+    public struct Progress {
+        public enum Kind {
+            case absolute(Double?, Bool)
+            case date(ClosedRange<Date>, Bool)
+        }
+
+        public var kind: Kind
+
+        @MutableBox
+        private var labelBox: WidgetAuxiliaryViewMetadata?
+
+        public var label: WidgetAuxiliaryViewMetadata? {
+            get { labelBox }
+            set { labelBox = newValue }
+        }
+
+        @MutableBox
+        private var currentValueLabelBox: WidgetAuxiliaryViewMetadata?
+
+        public var currentValueLabel: WidgetAuxiliaryViewMetadata? {
+            get { currentValueLabelBox }
+            set { currentValueLabelBox = newValue }
+        }
+
+        private var _tint: ResolvedGradient?
+
+        public var tint: Gradient? {
+            _tint.map(Gradient.init)
+        }
+
+        init(
+            kind: Kind,
+            label: WidgetAuxiliaryViewMetadata?,
+            currentValueLabel: WidgetAuxiliaryViewMetadata?,
+            tint: ResolvedGradient?
+        ) {
+            self.kind = kind
+            labelBox = label
+            currentValueLabelBox = currentValueLabel
+            _tint = tint
+        }
+    }
+
+    // MARK: - WidgetAuxiliaryViewMetadata.Gauge
+
+    public struct Gauge {
+        public var value: Double
+
+        @MutableBox
+        private var labelBox: WidgetAuxiliaryViewMetadata?
+
+        public var label: WidgetAuxiliaryViewMetadata? {
+            get { labelBox }
+            set { labelBox = newValue }
+        }
+
+        @MutableBox
+        private var currentValueLabelBox: WidgetAuxiliaryViewMetadata?
+
+        public var currentValueLabel: WidgetAuxiliaryViewMetadata? {
+            get { currentValueLabelBox }
+            set { currentValueLabelBox = newValue }
+        }
+
+        @MutableBox
+        private var minimumValueLabelBox: WidgetAuxiliaryViewMetadata?
+
+        public var minimumValueLabel: WidgetAuxiliaryViewMetadata? {
+            get { minimumValueLabelBox }
+            set { minimumValueLabelBox = newValue }
+        }
+
+        @MutableBox
+        private var maximumValueLabelBox: WidgetAuxiliaryViewMetadata?
+
+        public var maximumValueLabel: WidgetAuxiliaryViewMetadata? {
+            get { maximumValueLabelBox }
+            set { maximumValueLabelBox = newValue }
+        }
+
+        private var _tint: ResolvedGradient?
+
+        public var tint: Gradient? {
+            _tint.map(Gradient.init)
+        }
+
+        init(
+            value: Double,
+            label: WidgetAuxiliaryViewMetadata?,
+            currentValueLabel: WidgetAuxiliaryViewMetadata?,
+            minimumValueLabel: WidgetAuxiliaryViewMetadata?,
+            maximumValueLabel: WidgetAuxiliaryViewMetadata?,
+            tint: ResolvedGradient?
+        ) {
+            self.value = value
+            labelBox = label
+            currentValueLabelBox = currentValueLabel
+            minimumValueLabelBox = minimumValueLabel
+            maximumValueLabelBox = maximumValueLabel
+            _tint = tint
+        }
+    }
+
+    // MARK: - WidgetAuxiliaryViewMetadata.Accessibility
+
+    public struct Accessibility {
+        public var label: String?
+
+        public var value: String?
+
+        public var identifier: String?
+
+        @available(OpenSwiftUI_v6_0, *)
+        public var hint: String?
+    }
 
     public private(set) var metadataText: WidgetAuxiliaryViewMetadata.Text?
 
@@ -325,7 +442,32 @@ public struct WidgetAuxiliaryViewMetadata {
     public private(set) var metadataSecondaryText: WidgetAuxiliaryViewMetadata.Text?
 
     public private(set) var graphic: WidgetAuxiliaryViewMetadata.Graphic?
+
+    public private(set) var fallbacks: [WidgetAuxiliaryViewMetadata]?
+
+    public private(set) var progress: Progress?
+
+    public private(set) var gauge: Gauge?
+
+    public private(set) var url: URL?
+
+    public private(set) var accessibility: Accessibility?
+
+    public init(progress: Progress?) {
+        self.progress = progress
+    }
+
+    public init(gauge: Gauge?) {
+        self.gauge = gauge
+    }
+
+    @available(*, deprecated)
+    public init(fallbacks: [WidgetAuxiliaryViewMetadata]?) {
+        self.fallbacks = fallbacks
+    }
 }
+
+// MARK: - SymbolEffectArray [TODO]
 
 //private struct SymbolEffectArray: CodableByProtobuf, Equatable {
 //    var effects: [_SymbolEffect]
@@ -353,6 +495,8 @@ public struct WidgetAuxiliaryViewMetadata {
 //    }
 //}
 
+// MARK: - TimeDataFormattingContainer + representation
+
 extension TimeDataFormattingContainer {
     public func representation(
         for version: _ArchivedViewStates.DeploymentVersion
@@ -363,6 +507,8 @@ extension TimeDataFormattingContainer {
         return WidgetAuxiliaryViewMetadata.Text.extractSpecialMetadata(from: attributes)
     }
 }
+
+// MARK: - WidgetAuxiliaryViewMetadata + tint
 
 @_spi(Private)
 extension WidgetAuxiliaryViewMetadata {
@@ -383,6 +529,16 @@ extension WidgetAuxiliaryViewMetadata {
     }
 }
 
+// MARK: - WidgetAuxiliaryViewMetadata + Sendable
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Gauge: Sendable {}
+
 @_spi(Private)
 @available(*, unavailable)
 extension WidgetAuxiliaryViewMetadata.Graphic: Sendable {}
@@ -394,6 +550,18 @@ extension WidgetAuxiliaryViewMetadata.Graphic.Named: Sendable {}
 @_spi(Private)
 @available(*, unavailable)
 extension WidgetAuxiliaryViewMetadata.Graphic.Named.Location: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Accessibility: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Progress: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Progress.Kind: Sendable {}
 
 @_spi(Private)
 @available(*, unavailable)
@@ -459,7 +627,36 @@ extension WidgetAuxiliaryViewMetadata: Codable {
     }
 }
 
-// MARK: - WidgetAuxiliaryViewMetadata + CustomDebugStringConvertible [TODO]
+// MARK: - WidgetAuxiliaryViewMetadata + CustomDebugStringConvertible
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        var content = ""
+        func append<T>(_ value: T?) where T: CustomDebugStringConvertible {
+            guard let value else {
+                return
+            }
+            content += "\n\t\(value.debugDescription)"
+        }
+        append(metadataText)
+        append(graphic)
+        append(url)
+        append(accessibility)
+        append(gauge)
+        append(progress)
+        return "WidgetAuxiliaryViewMetadata(\(content)\n)"
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Text: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "Text(\"\(text.string)\")"
+    }
+}
 
 @_spi(Private)
 @available(OpenSwiftUI_v6_0, *)
@@ -486,6 +683,43 @@ extension WidgetAuxiliaryViewMetadata.Graphic.Named: CustomDebugStringConvertibl
             locationDescription = isPublic ? "system" : "internal"
         }
         return "Named(name: \(name), location: \(locationDescription), value: \(value?.description ?? "--"), colors: \(colors?.debugDescription ?? "[]"))"
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Accessibility: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "Accessibility(label: \(label ?? "nil"), value: \(value ?? "nil"), identifier: \(identifier ?? "nil") )"
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Gauge: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "Gauge(value: \(value))"
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Progress: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        "Progress(\(kind.debugDescription))"
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Progress.Kind: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case let .absolute(completed, indeterminate):
+            "absolute(completed: \(completed?.description ?? "nil"), indeterminate: \(indeterminate))\""
+        case let .date(range, countdown):
+            "date(\(range.debugDescription), countdown: \(countdown))"
+        }
     }
 }
 

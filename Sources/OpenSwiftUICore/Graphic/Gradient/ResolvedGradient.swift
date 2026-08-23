@@ -18,4 +18,13 @@ package struct ResolvedGradient: Equatable {
 }
 
 // FIXME
-public struct Gradient {}
+public struct Gradient {
+    package init(_ resolved: ResolvedGradient) {
+//        self.init(
+//            stops: resolved.stops.map {
+//                Stop(color: Color($0.color), location: $0.location)
+//            }
+//        )
+    }
+
+}
