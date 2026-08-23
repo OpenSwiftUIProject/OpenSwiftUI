@@ -228,9 +228,15 @@ struct CodableAttributeEffect<Effect>: Codable, Hashable where Effect: Attribute
         _ string: inout AttributedString,
         locale: Locale
     ) {
+        #if canImport(Darwin)
         let attributes = attributes.map {
             AttributeContainer($0.wrappedValue)
         } ?? Effect.attributes
+        #else
+        // TODO: Use the decoded attributes once swift-foundation supports bridging NSAttributedString attributes to AttributeContainer.
+        _openSwiftUIPlatformUnimplementedWarning()
+        let attributes = Effect.attributes
+        #endif
         Effect.apply(attributes: attributes, to: &string, locale: locale)
     }
 
