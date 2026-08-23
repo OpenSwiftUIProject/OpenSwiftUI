@@ -833,6 +833,71 @@ extension WidgetAuxiliaryViewMetadata {
 @available(*, unavailable)
 extension WidgetAuxiliaryViewMetadata.Key: Sendable {}
 
+// MARK: - WidgetAuxiliaryViewMetadataModifier
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+public struct WidgetAuxiliaryViewMetadataModifier<Content>: PrimitiveViewModifier, UnaryViewModifier where Content: View {
+    var content: Content
+
+    public init(@ViewBuilder content: () -> Content) {
+        self.content = content()
+    }
+
+    nonisolated public static func _makeView(
+        modifier: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        let content = modifier.value[offset: { .of(&$0.content) }]
+        var contentInputs = inputs.withoutGeometryDependencies
+        var hostKeys = PreferenceKeys()
+        hostKeys.add(WidgetAuxiliaryViewMetadata.Key.self)
+        contentInputs.hasWidgetMetadata = true
+        contentInputs.preferences = PreferencesInputs(
+            hostKeys: inputs.intern(hostKeys, id: .defaultValue)
+        )
+        contentInputs.addPlatformItemListKey(flags: WidgetMetadataPlatformItemListFlags.self)
+        contentInputs.preferences.add(WidgetAuxiliaryViewMetadata.Key.self)
+        contentInputs.preferences.add(WidgetAuxiliaryURLPreferenceKey.self)
+        contentInputs.needsDisplayListAccessibility = true
+        contentInputs.environment = Attribute(value: contentInputs.environment.value)
+        contentInputs.preferences.add(AccessibilityAttachment.Key.self)
+
+        let contentOutputs = Content._makeView(
+            view: .init(content),
+            inputs: contentInputs
+        )
+        let platformItemList = contentOutputs.preferences.platformItemList
+            ?? inputs.intern(PlatformItemList(items: []), id: .defaultValue)
+        let preferenceWriter = AuxiliaryViewMetadataPreferenceWriter(
+            metadata: OptionalAttribute(
+                contentOutputs.preferences[WidgetAuxiliaryViewMetadata.Key.self]
+            ),
+            url: OptionalAttribute(
+                contentOutputs.preferences[WidgetAuxiliaryURLPreferenceKey.self]
+            ),
+            accessibilityAttachment: OptionalAttribute(
+                contentOutputs.preferences[AccessibilityAttachment.Key.self]
+            ),
+            environmentValues: contentInputs.environment,
+            platformItemList: platformItemList,
+            idiom: contentInputs.base.interfaceIdiom
+        )
+        var outputs = body(_Graph(), inputs)
+        outputs.preferences.makePreferenceWriter(
+            inputs: inputs.preferences,
+            key: WidgetAuxiliaryViewMetadata.Key.self,
+            value: Attribute(preferenceWriter)
+        )
+        return outputs
+    }
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadataModifier: Sendable {}
+
 // MARK: - AuxiliaryViewMetadataPreferenceWriter
 
 private struct AuxiliaryViewMetadataPreferenceWriter: Rule {
