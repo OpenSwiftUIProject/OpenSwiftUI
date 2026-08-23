@@ -133,9 +133,7 @@ extension Calendar.Component {
         var interval: TimeInterval
 
         package init(_ duration: Duration) {
-            let components = duration.components
-            interval = Double(components.seconds)
-                + Double(components.attoseconds) * 1e-18
+            interval = Double(duration)
         }
 
         package init(_ interval: TimeInterval) {
