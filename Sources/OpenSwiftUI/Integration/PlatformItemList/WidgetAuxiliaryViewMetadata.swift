@@ -857,7 +857,10 @@ public struct WidgetAuxiliaryViewMetadataModifier<Content>: PrimitiveViewModifie
         contentInputs.preferences = PreferencesInputs(
             hostKeys: inputs.intern(hostKeys, id: .defaultValue)
         )
-        contentInputs.addPlatformItemListKey(flags: WidgetMetadataPlatformItemListFlags.self)
+        contentInputs.addPlatformItemListKey(
+            flags: WidgetMetadataPlatformItemListFlags.self,
+            editOperation: .replace
+        )
         contentInputs.preferences.add(WidgetAuxiliaryViewMetadata.Key.self)
         contentInputs.preferences.add(WidgetAuxiliaryURLPreferenceKey.self)
         contentInputs.needsDisplayListAccessibility = true
@@ -947,3 +950,72 @@ public struct WidgetAuxiliaryURLPreferenceKey: PreferenceKey {
 @_spi(Private)
 @available(*, unavailable)
 extension WidgetAuxiliaryURLPreferenceKey: Sendable {}
+
+// MARK: - WidgetAuxiliaryTextImagePreference
+
+struct WidgetAuxiliaryTextImagePreference {
+    var list: PlatformItemList?
+}
+
+// MARK: - LazyWidgetAuxiliaryMetadataTextImage
+
+struct LazyWidgetAuxiliaryMetadataTextImage<Content>: StatefulRule where Content: View {
+    var subgraph: Subgraph
+    @Attribute var content: Content
+    let inputs: _ViewInputs
+    @OptionalAttribute var textImagePref: WidgetAuxiliaryTextImagePreference??
+
+    init(
+        flags _: _AttributeType.Flags.Type,
+        content: Attribute<Content>,
+        inputs: _ViewInputs
+    ) {
+        self.subgraph = Subgraph.current!
+        self._content = content
+        self.inputs = inputs
+        self._textImagePref = OptionalAttribute()
+    }
+
+    typealias Value = WidgetAuxiliaryTextImagePreference?
+
+    mutating func updateValue() {
+        if !hasValue {
+            _textImagePref = subgraph.apply {
+                makeTextImage()
+            }
+        }
+        value = textImagePref ?? nil
+    }
+
+    private func makeTextImage() -> OptionalAttribute<WidgetAuxiliaryTextImagePreference?> {
+        var inputs = inputs
+        inputs.addPlatformItemListKey(
+            flags: WidgetMetadataPlatformItemListFlags.self,
+            editOperation: .replace
+        )
+        let outputs = Content._makeView(
+            view: _GraphValue($content),
+            inputs: inputs
+        )
+        return OptionalAttribute(
+            Attribute(
+                WidgetAuxiliaryMetadataTextImageWriter(
+                    list: WeakAttribute(outputs.preferences.platformItemList)
+                )
+            )
+        )
+    }
+}
+
+// MARK: - WidgetAuxiliaryMetadataTextImageWriter
+
+struct WidgetAuxiliaryMetadataTextImageWriter: AsyncAttribute, Rule {
+    @WeakAttribute var list: PlatformItemList?
+
+    var value: WidgetAuxiliaryTextImagePreference? {
+        guard let list else {
+            return nil
+        }
+        return WidgetAuxiliaryTextImagePreference(list: list)
+    }
+}
