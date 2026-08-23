@@ -99,10 +99,10 @@ extension SystemFormatStyle {
         private var startDate: Date
         private var interval: Duration
         private var showsHours: Bool
-        private var maxFieldCount: Int
+        var maxFieldCount: Int
         private var maxPrecision: Duration
         private var precision: Duration
-        private var sizeVariant: TextSizeVariant = .regular
+        var sizeVariant: TextSizeVariant = .regular
         var locale: Locale = .autoupdatingCurrent
         var redactUsingDashes: Bool = true
         var forceNoPadding: Bool = false
@@ -1064,7 +1064,7 @@ extension SystemFormatStyle.Timer: DiscreteFormatStyle {
     }
 }
 
-// MARK: - UpdateFrequencyDependentFormatStyle
+// MARK: - SystemFormatStyle.Timer + UpdateFrequencyDependentFormatStyle
 
 extension SystemFormatStyle.Timer: UpdateFrequencyDependentFormatStyle {
     package func updateFrequency(
@@ -1076,7 +1076,7 @@ extension SystemFormatStyle.Timer: UpdateFrequencyDependentFormatStyle {
     }
 }
 
-// MARK: - ContentTransitionProvidingFormatStyle
+// MARK: - SystemFormatStyle.Timer + ContentTransitionProvidingFormatStyle
 
 extension SystemFormatStyle.Timer: ContentTransitionProvidingFormatStyle {
     package func contentTransition<Source>(
@@ -1091,7 +1091,7 @@ extension SystemFormatStyle.Timer: ContentTransitionProvidingFormatStyle {
     }
 }
 
-// MARK: - SafelySerializableDiscreteFormatStyle
+// MARK: - SystemFormatStyle.Timer + SafelySerializableDiscreteFormatStyle
 
 extension SystemFormatStyle.Timer: SafelySerializableDiscreteFormatStyle {
     package static func representation<Source>(
@@ -1153,7 +1153,7 @@ extension SystemFormatStyle.Timer: SafelySerializableDiscreteFormatStyle {
     }
 }
 
-// MARK: - InterfaceIdiomDependentFormatStyle
+// MARK: - SystemFormatStyle.Timer + InterfaceIdiomDependentFormatStyle
 
 extension SystemFormatStyle.Timer: InterfaceIdiomDependentFormatStyle {
     package func interfaceIdiom(
@@ -1165,7 +1165,7 @@ extension SystemFormatStyle.Timer: InterfaceIdiomDependentFormatStyle {
     }
 }
 
-// MARK: - VariablePrecisionDiscreteFormatStyle
+// MARK: - SystemFormatStyle.Timer + VariablePrecisionDiscreteFormatStyle
 
 extension SystemFormatStyle.Timer: VariablePrecisionDiscreteFormatStyle {
     package var precisionTransition: TimeDataFormatting.FormatTransition<Date> {
@@ -1205,7 +1205,7 @@ extension SystemFormatStyle.Timer: VariablePrecisionDiscreteFormatStyle {
     }
 }
 
-// MARK: - TextAlignmentDependentFormatStyle
+// MARK: - SystemFormatStyle.Timer + TextAlignmentDependentFormatStyle
 
 extension SystemFormatStyle.Timer: TextAlignmentDependentFormatStyle {
     package func textAlignment(
@@ -1217,7 +1217,7 @@ extension SystemFormatStyle.Timer: TextAlignmentDependentFormatStyle {
     }
 }
 
-// MARK: - CapitalizationContextDependentFormatStyle
+// MARK: - SystemFormatStyle.Timer + CapitalizationContextDependentFormatStyle
 
 extension SystemFormatStyle.Timer: CapitalizationContextDependentFormatStyle {
     package func capitalizationContext(
@@ -1231,7 +1231,7 @@ extension SystemFormatStyle.Timer: CapitalizationContextDependentFormatStyle {
     }
 }
 
-// MARK: - StyledFormatStyle
+// MARK: - SystemFormatStyle.Timer + StyledFormatStyle
 
 extension SystemFormatStyle.Timer: StyledFormatStyle {
     package mutating func makePlatformAttributes(
@@ -1240,5 +1240,229 @@ extension SystemFormatStyle.Timer: StyledFormatStyle {
         adjustedColon.makePlatformAttributes(resolver: &resolver)
         monospacedDigits.makePlatformAttributes(resolver: &resolver)
         superscript.makePlatformAttributes(resolver: &resolver)
+    }
+}
+
+// MARK: - FormatStyle + Stopwatch
+
+@available(OpenSwiftUI_v6_0, *)
+extension FormatStyle where Self == SystemFormatStyle.Stopwatch {
+    /// Create a stopwatch format style.
+    ///
+    /// A stopwatch styled display that starts counting up from zero at the given
+    /// `startDate`.
+    ///
+    /// - Parameters:
+    ///   - startDate: The date at which the stopwatch starts counting.
+    ///   - showsHours: If true, the stopwatch shows the hours as a separate element on
+    ///     the formatted string, once the duration is at least one hour. If false, the
+    ///     stopwatch displays minute values greather than sixty.
+    ///   - maxFieldCount: The number of fields that can be shown at once. For example,
+    ///     1 hour, 34 minutes is shown as `1:34:00` by default, but as `1:34` if the
+    ///     `maxFieldCount` is set to two. The style automatically excludes more significant
+    ///     fields if their value is zero and they are not necessary for the format pattern,
+    ///     making room for less significant fields.
+    ///   - maxPrecision: The precision at which the input is formatted. E.g. by
+    ///     default, two fractional digits are shown, making the maximum precision ten
+    ///     milliseconds. Setting the maximum precision to `.seconds(60)` would only allow
+    ///     hours and minutes to be shown.
+    public static func stopwatch(
+        startingAt startDate: Date,
+        showsHours: Bool = true,
+        maxFieldCount: Int = 4,
+        maxPrecision: Duration = .milliseconds(10)
+    ) -> SystemFormatStyle.Stopwatch {
+        SystemFormatStyle.Stopwatch(
+            startingAt: startDate,
+            showsHours: showsHours,
+            maxFieldCount: maxFieldCount,
+            maxPrecision: maxPrecision
+        )
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch
+
+@available(OpenSwiftUI_v6_0, *)
+extension SystemFormatStyle {
+    /// The system stopwatch format style.
+    public struct Stopwatch: Sendable {
+        public typealias FormatInput = Date
+
+        var base: SystemFormatStyle.Timer
+
+        init(base: SystemFormatStyle.Timer) {
+            self.base = base
+        }
+
+        /// Create a stopwatch format style.
+        ///
+        /// A stopwatch styled display that starts counting up from zero at the given
+        /// `startDate`.
+        ///
+        /// - Parameters:
+        ///   - startDate: The date at which the stopwatch starts counting.
+        ///   - showsHours: If true, the stopwatch shows the hours as a separate element on
+        ///     the formatted string, once the duration is at least one hour. If false, the
+        ///     stopwatch displays minute values greather than sixty.
+        ///   - maxFieldCount: The number of fields that can be shown at once. For example,
+        ///     1 hour, 34 minutes is shown as `1:34:00` by default, but as `1:34` if the
+        ///     `maxFieldCount` is set to two. The style automatically excludes more significant
+        ///     fields if their value is zero and they are not necessary for the format pattern,
+        ///     making room for less significant fields.
+        ///   - maxPrecision: The precision at which the input is formatted. E.g. by
+        ///     default, two fractional digits are shown, making the maximum precision ten
+        ///     milliseconds. Setting the maximum precision to `.seconds(60)` would only allow
+        ///     hours and minutes to be shown.
+        public init(
+            startingAt startDate: Date,
+            showsHours: Bool = true,
+            maxFieldCount: Int = 4,
+            maxPrecision: Duration = .milliseconds(10)
+        ) {
+            base = Timer(
+                countingMode: .stopwatch,
+                interval: startDate..<Date.distantFuture,
+                showsHours: showsHours,
+                maxFieldCount: maxFieldCount,
+                maxPrecision: maxPrecision
+            )
+        }
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + FormatStyle
+
+@available(OpenSwiftUI_v6_0, *)
+extension SystemFormatStyle.Stopwatch: FormatStyle {
+    public func format(_ input: Date) -> AttributedString {
+        base.format(input)
+    }
+
+    public func locale(_ locale: Locale) -> SystemFormatStyle.Stopwatch {
+        var style = self
+        style.base = base.locale(locale)
+        return style
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        base.hash(into: &hasher)
+    }
+
+    public static func == (
+        a: SystemFormatStyle.Stopwatch,
+        b: SystemFormatStyle.Stopwatch
+    ) -> Bool {
+        a.base == b.base
+    }
+
+    public func encode(to encoder: any Encoder) throws {
+        try base.encode(to: encoder)
+    }
+
+    public init(from decoder: any Decoder) throws {
+        base = try SystemFormatStyle.Timer(from: decoder)
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + DiscreteFormatStyle
+
+@available(OpenSwiftUI_v6_0, *)
+extension SystemFormatStyle.Stopwatch: DiscreteFormatStyle {
+    public func discreteInput(before input: Date) -> Date? {
+        base.discreteInput(before: input)
+    }
+
+    public func discreteInput(after input: Date) -> Date? {
+        base.discreteInput(after: input)
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + UpdateFrequencyDependentFormatStyle
+
+extension SystemFormatStyle.Stopwatch: UpdateFrequencyDependentFormatStyle {
+    package func updateFrequency(
+        _ frequency: TimeDataFormatting.UpdateFrequency
+    ) -> SystemFormatStyle.Stopwatch {
+        var style = self
+        style.base = base.updateFrequency(frequency)
+        return style
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + ContentTransitionProvidingFormatStyle
+
+extension SystemFormatStyle.Stopwatch: ContentTransitionProvidingFormatStyle {
+    package func contentTransition<Source>(
+        for source: Source
+    ) -> ContentTransition where Source: TimeDataSourceStorage, Source.Value == Date {
+        base.contentTransition(for: source)
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + SafelySerializableDiscreteFormatStyle
+
+extension SystemFormatStyle.Stopwatch: SafelySerializableDiscreteFormatStyle {
+    package static func representation<Source>(
+        of resolvable: TimeDataFormatting.Resolvable<Source, SystemFormatStyle.Stopwatch>,
+        for version: ArchivedViewInput.DeploymentVersion
+    ) -> any ResolvableStringAttributeRepresentation
+        where Source: TimeDataSourceStorage, Source.Value == Date
+    {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + InterfaceIdiomDependentFormatStyle
+
+extension SystemFormatStyle.Stopwatch: InterfaceIdiomDependentFormatStyle {
+    package func interfaceIdiom(
+        _ idiom: AnyInterfaceIdiom
+    ) -> SystemFormatStyle.Stopwatch {
+        var style = self
+        style.base = base.interfaceIdiom(idiom)
+        return style
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + VariablePrecisionDiscreteFormatStyle
+
+extension SystemFormatStyle.Stopwatch: VariablePrecisionDiscreteFormatStyle {
+    package var precisionTransition: TimeDataFormatting.FormatTransition<Date> {
+        base.precisionTransition
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + TextAlignmentDependentFormatStyle
+
+extension SystemFormatStyle.Stopwatch: TextAlignmentDependentFormatStyle {
+    package func textAlignment(
+        _ alignment: TextAlignment
+    ) -> SystemFormatStyle.Stopwatch {
+        var style = self
+        style.base = base.textAlignment(alignment)
+        return style
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + CapitalizationContextDependentFormatStyle
+
+extension SystemFormatStyle.Stopwatch: CapitalizationContextDependentFormatStyle {
+    package func capitalizationContext(
+        _ context: FormatStyleCapitalizationContext
+    ) -> SystemFormatStyle.Stopwatch {
+        var style = self
+        style.base = base.capitalizationContext(context)
+        return style
+    }
+}
+
+// MARK: - SystemFormatStyle.Stopwatch + StyledFormatStyle
+
+extension SystemFormatStyle.Stopwatch: StyledFormatStyle {
+    package mutating func makePlatformAttributes(
+        resolver: inout PlatformAttributeResolver
+    ) {
+        base.makePlatformAttributes(resolver: &resolver)
     }
 }
