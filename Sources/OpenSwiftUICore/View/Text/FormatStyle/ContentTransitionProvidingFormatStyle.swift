@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP (Blocked by SystemFormatStyle)
+//  Status: Complete
 
 package import Foundation
 
