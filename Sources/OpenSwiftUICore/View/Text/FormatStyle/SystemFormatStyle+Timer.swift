@@ -1063,3 +1063,182 @@ extension SystemFormatStyle.Timer: DiscreteFormatStyle {
         )
     }
 }
+
+// MARK: - UpdateFrequencyDependentFormatStyle
+
+extension SystemFormatStyle.Timer: UpdateFrequencyDependentFormatStyle {
+    package func updateFrequency(
+        _ frequency: TimeDataFormatting.UpdateFrequency
+    ) -> SystemFormatStyle.Timer {
+        var style = self
+        style.precision = min(maxPrecision, frequency.duration)
+        return style
+    }
+}
+
+// MARK: - ContentTransitionProvidingFormatStyle
+
+extension SystemFormatStyle.Timer: ContentTransitionProvidingFormatStyle {
+    package func contentTransition<Source>(
+        for source: Source
+    ) -> ContentTransition where Source: TimeDataSourceStorage, Source.Value == Date {
+        switch countingMode {
+        case let .timer(countsdown):
+            .numericText(countsDown: !countsdown)
+        case .stopwatch:
+            .identity
+        }
+    }
+}
+
+// MARK: - SafelySerializableDiscreteFormatStyle
+
+extension SystemFormatStyle.Timer: SafelySerializableDiscreteFormatStyle {
+    package static func representation<Source>(
+        of resolvable: TimeDataFormatting.Resolvable<Source, SystemFormatStyle.Timer>,
+        for version: ArchivedViewInput.DeploymentVersion
+    ) -> any ResolvableStringAttributeRepresentation
+        where Source: TimeDataSourceStorage, Source.Value == Date
+    {
+        guard version <= .v5 else {
+            return resolvable
+        }
+        let format = resolvable.format
+        var environment = EnvironmentValues()
+        environment.locale = format.locale
+
+        var units: NSCalendar.Unit = format.showsHours ? .hour : []
+        if Duration.seconds(60) < format.maxPrecision {
+            units.insert(.minute)
+        }
+        if Duration.seconds(1) < format.maxPrecision {
+            units.insert(.second)
+        }
+        if Duration.seconds(0.01) < format.maxPrecision {
+            units.insert(.nanosecond)
+        }
+
+        let pause: TimeInterval?
+        if case let .identityWithPause(pauseDate) =
+            resolvable.source as? TimeDataSource<Date>.DateStorage
+        {
+            switch format.countingMode {
+            case .timer(countsdown: true):
+                let endDate = format.startDate + .init(format.interval)
+                pause = endDate.timeIntervalSince(pauseDate)
+            case .timer(countsdown: false), .stopwatch:
+                pause = pauseDate.timeIntervalSince(format.startDate)
+            }
+        } else {
+            pause = nil
+        }
+
+        let interval = DateInterval(
+            start: resolvable.source.date(for: format.startDate),
+            duration: .init(format.interval)
+        )
+        let countdown = switch format.countingMode {
+        case let .timer(countsdown):
+            countsdown
+        case .stopwatch:
+            false
+        }
+        return ResolvableTimer(
+            interval: interval,
+            pause: pause,
+            countdown: countdown,
+            units: units == ResolvableTimer.defaultUnits ? nil : units,
+            in: environment
+        )
+    }
+}
+
+// MARK: - InterfaceIdiomDependentFormatStyle
+
+extension SystemFormatStyle.Timer: InterfaceIdiomDependentFormatStyle {
+    package func interfaceIdiom(
+        _ idiom: AnyInterfaceIdiom
+    ) -> SystemFormatStyle.Timer {
+        var style = self
+        style.forceNoPadding = !idiom.accepts(ComplicationInterfaceIdiom.self)
+        return style
+    }
+}
+
+// MARK: - VariablePrecisionDiscreteFormatStyle
+
+extension SystemFormatStyle.Timer: VariablePrecisionDiscreteFormatStyle {
+    package var precisionTransition: TimeDataFormatting.FormatTransition<Date> {
+        let minute = Duration.seconds(60)
+        switch countingMode {
+        case .stopwatch:
+            let oneAttosecond = Duration(
+                secondsComponent: 0,
+                attosecondsComponent: 1
+            )
+            return TimeDataFormatting.FormatTransition(
+                range: startDate...nextInputRoundingLower(
+                    for: minute - oneAttosecond
+                ),
+                handoff: nextInputRoundingHigher(for: minute)
+            )
+        case let .timer(countsdown):
+            let handoffDuration = max(
+                min(countsdown ? minute : interval - minute, interval),
+                .zero
+            )
+            let transitionDuration = max(
+                min(
+                    countsdown
+                        ? .seconds(59)
+                        : interval - .seconds(59),
+                    interval
+                ),
+                .zero
+            )
+            let endDate = startDate + .init(interval)
+            return TimeDataFormatting.FormatTransition(
+                range: nextInputRoundingHigher(for: transitionDuration)...endDate,
+                handoff: nextInputRoundingHigher(for: handoffDuration)
+            )
+        }
+    }
+}
+
+// MARK: - TextAlignmentDependentFormatStyle
+
+extension SystemFormatStyle.Timer: TextAlignmentDependentFormatStyle {
+    package func textAlignment(
+        _ alignment: TextAlignment
+    ) -> SystemFormatStyle.Timer {
+        var style = self
+        style.textAlignment = alignment
+        return style
+    }
+}
+
+// MARK: - CapitalizationContextDependentFormatStyle
+
+extension SystemFormatStyle.Timer: CapitalizationContextDependentFormatStyle {
+    package func capitalizationContext(
+        _ context: FormatStyleCapitalizationContext
+    ) -> SystemFormatStyle.Timer {
+        var style = self
+        if capitalizationContext == .unknown {
+            style.capitalizationContext = context
+        }
+        return style
+    }
+}
+
+// MARK: - StyledFormatStyle
+
+extension SystemFormatStyle.Timer: StyledFormatStyle {
+    package mutating func makePlatformAttributes(
+        resolver: inout PlatformAttributeResolver
+    ) {
+        adjustedColon.makePlatformAttributes(resolver: &resolver)
+        monospacedDigits.makePlatformAttributes(resolver: &resolver)
+        superscript.makePlatformAttributes(resolver: &resolver)
+    }
+}
