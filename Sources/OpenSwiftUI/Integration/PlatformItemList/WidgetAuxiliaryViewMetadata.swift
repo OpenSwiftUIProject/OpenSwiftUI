@@ -833,3 +833,18 @@ extension WidgetAuxiliaryViewMetadata {
 @available(*, unavailable)
 extension WidgetAuxiliaryViewMetadata.Key: Sendable {}
 
+// MARK: - WidgetAuxiliaryURLPreferenceKey
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+public struct WidgetAuxiliaryURLPreferenceKey: PreferenceKey {
+    public static var defaultValue: URL?
+
+    public static func reduce(value: inout URL?, nextValue: () -> URL?) {
+        value = value ?? nextValue()
+    }
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryURLPreferenceKey: Sendable {}
