@@ -515,6 +515,17 @@ package struct ContentTransitionEffect: _RendererEffect {
     }
 }
 
+// FIXME
+extension ContentTransition: ProtobufMessage {
+    package func encode(to encoder: inout ProtobufEncoder) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+
+    package init(from decoder: inout ProtobufDecoder) throws {
+        _openSwiftUIUnimplementedFailure()
+    }
+}
+
 // FIXME: ORB
 
 package enum ORBTransitionMethod: Int {

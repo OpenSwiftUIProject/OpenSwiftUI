@@ -7,6 +7,7 @@
 //  ID: 28161D0154DF546094400EFEC8044F4B (SwiftUI)
 
 import OpenAttributeGraphShims
+@_spi(Private)
 import OpenSwiftUICore
 
 // MARK: - AccessibilityLabeledContentModifier
@@ -129,8 +130,36 @@ struct ResolvedPresentation: Rule {
 struct AccessibilityAttachmentModifier {}
 
 // FIXME
-enum AccessibilityAttachment {
-    enum Tree {}
+enum AccessibilityAttachment {}
+
+extension AccessibilityAttachment {
+    enum Tree {
+        case leaf(AccessibilityAttachment)
+        case branch([Tree])
+        case empty
+    }
+
+    struct Key: HostPreferenceKey {
+        static let defaultValue: Tree = .empty
+
+        static func reduce(value: inout Tree, nextValue: () -> Tree) {
+            let nextValue = nextValue()
+            switch (value, nextValue) {
+            case (_, .empty):
+                break
+            case (.empty, _):
+                value = nextValue
+            case let (.branch(lhs), .branch(rhs)):
+                value = .branch(lhs + rhs)
+            case let (.branch(lhs), _):
+                value = .branch(lhs + [nextValue])
+            case let (_, .branch(rhs)):
+                value = .branch([value] + rhs)
+            default:
+                value = .branch([value, nextValue])
+            }
+        }
+    }
 }
 
 // FIXME
