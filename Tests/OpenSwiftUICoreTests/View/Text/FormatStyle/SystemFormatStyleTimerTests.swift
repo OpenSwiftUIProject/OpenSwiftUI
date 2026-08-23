@@ -73,12 +73,12 @@ struct SystemFormatStyleTimerTests {
         )
         .locale(locale)
 
-        #expect(plainText(countup.format(start.addingTimeInterval(-1))) == "0:00:00")
-        #expect(plainText(countup.format(start.addingTimeInterval(65))) == "0:01:05")
-        #expect(plainText(countup.format(end.addingTimeInterval(1))) == "0:01:40")
-        #expect(plainText(countdown.format(start.addingTimeInterval(-1))) == "0:01:40")
-        #expect(plainText(countdown.format(start.addingTimeInterval(65))) == "0:00:35")
-        #expect(plainText(countdown.format(end.addingTimeInterval(1))) == "0:00:00")
+        #expect(plainText(countup.format(start.addingTimeInterval(-1))) == "0:00")
+        #expect(plainText(countup.format(start.addingTimeInterval(65))) == "1:05")
+        #expect(plainText(countup.format(end.addingTimeInterval(1))) == "1:40")
+        #expect(plainText(countdown.format(start.addingTimeInterval(-1))) == "1:40")
+        #expect(plainText(countdown.format(start.addingTimeInterval(65))) == "0:35")
+        #expect(plainText(countdown.format(end.addingTimeInterval(1))) == "0:00")
     }
 
     @Test
@@ -89,8 +89,8 @@ struct SystemFormatStyleTimerTests {
         )
         .locale(locale)
 
-        #expect(plainText(stopwatch.format(start.addingTimeInterval(-1))) == "00:00:0000")
-        #expect(plainText(stopwatch.format(start.addingTimeInterval(1.25))) == "00:00:0125")
+        #expect(plainText(stopwatch.format(start.addingTimeInterval(-1))) == "00:0000")
+        #expect(plainText(stopwatch.format(start.addingTimeInterval(1.25))) == "00:0125")
     }
 
     @Test

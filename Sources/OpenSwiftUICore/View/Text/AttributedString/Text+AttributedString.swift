@@ -597,6 +597,7 @@ extension AttributedString {
 }
 
 extension NSAttributedString {
+    #if canImport(Darwin)
     // OpenSwiftUI Addition:
     // Foundation's unscoped bridge explicitly loads the system SwiftUI
     // attribute scope, but does not discover OpenSwiftUI's scope. Route this
@@ -619,6 +620,7 @@ extension NSAttributedString {
     package convenience init(_ attributedString: AttributedString) {
         self.init(openSwiftUIAttributedString: attributedString)
     }
+    #endif
 
     convenience init(openSwiftUIAttributedString attributedString: AttributedString) {
         #if canImport(Darwin)
