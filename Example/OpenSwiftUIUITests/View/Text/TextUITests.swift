@@ -19,6 +19,14 @@ struct TextUITests {
         openSwiftUIAssertSnapshot(of: TextFormatStyleExample())
     }
 
+    @Test
+    func systemFormatStyleExample() {
+        openSwiftUIAssertSnapshot(
+            of: TextSystemFormatStyleExample(),
+            size: CGSize(width: 320, height: 260)
+        )
+    }
+
     @Test("Verify text background height is normal")
     func textHeight() {
         openSwiftUIAssertSnapshot(of: TextBackgroundHeightExample())
