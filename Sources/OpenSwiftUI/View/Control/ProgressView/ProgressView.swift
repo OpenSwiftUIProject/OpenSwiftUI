@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 936A47782A7E2FBE97D58CDBAEB02770 (SwiftUI)
 
 #if OPENSWIFTUI_OPENCOMBINE
@@ -414,6 +414,68 @@ extension ProgressView {
         )
     }
 }
+
+// MARK: - Foundation Progress
+
+@available(OpenSwiftUI_v2_0, *)
+extension ProgressView {
+    /// Creates a progress view for visualizing the given progress instance.
+    ///
+    /// The progress view synthesizes a default label using the
+    /// `localizedDescription` of the given progress instance.
+    nonisolated public init(
+        _ progress: Foundation.Progress
+    ) where Label == EmptyView, CurrentValueLabel == EmptyView {
+        base = .observing(FoundationProgressView(progress: progress))
+    }
+}
+
+// MARK: - ProgressView Style Configuration
+
+@available(OpenSwiftUI_v2_0, *)
+extension ProgressView {
+    /// Creates a progress view based on a style configuration.
+    ///
+    /// You can use this initializer within the
+    /// ``ProgressViewStyle/makeBody(configuration:)`` method of a
+    /// ``ProgressViewStyle`` to create an instance of the styled progress view.
+    /// This is useful for custom progress view styles that only modify the
+    /// current progress view style, as opposed to implementing a brand new
+    /// style. Because this modifier style can't know how the current style
+    /// represents progress, avoid making assumptions about the view's contents,
+    /// such as whether it uses bars or other shapes.
+    ///
+    /// The following example shows a style that adds a rounded pink border to a
+    /// progress view, but otherwise preserves the progress view's current
+    /// style:
+    ///
+    ///     struct PinkBorderedProgressViewStyle: ProgressViewStyle {
+    ///         func makeBody(configuration: Configuration) -> some View {
+    ///             ProgressView(configuration)
+    ///                 .padding(4)
+    ///                 .border(.pink, width: 3)
+    ///                 .cornerRadius(4)
+    ///         }
+    ///     }
+    ///
+    /// ![Two horizontal progress views, one at 25 percent complete and the
+    /// other at 75 percent, each rendered with a rounded pink
+    /// border.](ProgressView-4-macOS)
+    ///
+    /// - Note: Progress views in widgets don't apply custom styles.
+    nonisolated public init(
+        _ configuration: ProgressViewStyleConfiguration
+    ) where Label == ProgressViewStyleConfiguration.Label, CurrentValueLabel == ProgressViewStyleConfiguration.CurrentValueLabel {
+        base = .custom(
+            CustomProgressView(
+                value: configuration.value,
+                label: configuration.label,
+                currentValueLabel: configuration.currentValueLabel
+            )
+        )
+    }
+}
+
 // MARK: - ProgressViewValue
 
 enum ProgressViewValue: Codable {
@@ -516,6 +578,16 @@ struct CustomProgressView<Label, CurrentValueLabel>: PrimitiveView, UnaryView, V
     var value: ProgressViewValue
     var label: Label?
     var currentValueLabel: CurrentValueLabel?
+
+    init(
+        value: ProgressViewValue,
+        label: Label?,
+        currentValueLabel: CurrentValueLabel?
+    ) {
+        self.value = value
+        self.label = label
+        self.currentValueLabel = currentValueLabel
+    }
 
     init(
         interval: ClosedRange<Date>,
@@ -639,13 +711,96 @@ struct CustomProgressView<Label, CurrentValueLabel>: PrimitiveView, UnaryView, V
     }
 }
 
-// FIXME
-struct FoundationProgressView: View {
-    var body: some View { EmptyView() }
-}
+// MARK: - ResolvedProgressView
 
-// FIXME
 struct ResolvedProgressView: View {
     var value: ProgressViewValue
-    var body: some View { EmptyView() }
+
+    @OptionalViewAlias
+    var label: ProgressViewStyleConfiguration.Label?
+
+    @OptionalViewAlias
+    var currentValueLabel: ProgressViewStyleConfiguration.CurrentValueLabel?
+
+    var body: ResolvedProgressViewStyle {
+        ResolvedProgressViewStyle(
+            configuration: ProgressViewStyleConfiguration(
+                value: value,
+                label: label,
+                currentValueLabel: currentValueLabel
+            )
+        )
+    }
+}
+
+// TBA
+
+// MARK: - FoundationProgressView
+
+@MainActor
+struct FoundationProgressView: View {
+    var progress: Foundation.Progress
+
+    @State
+    private var state: FoundationProgressUIState?
+
+    nonisolated init(progress: Foundation.Progress) {
+        self.progress = progress
+        _state = State(initialValue: nil)
+    }
+
+    var body: some View {
+        let state = state ?? FoundationProgressUIState(progress: progress)
+        let content = CustomProgressView(
+            fractionCompleted: state.isIndeterminate ? nil : state.fractionCompleted,
+            alwaysIndeterminate: false,
+            label: state.localizedDescription.isEmpty ? nil : Text(state.localizedDescription),
+            currentValueLabel: state.localizedAdditionalDescription.isEmpty ? nil : Text(state.localizedAdditionalDescription)
+        )
+        return content.onReceive(progress.uiStatePublisher) { state in
+            self.state = state
+        }
+    }
+}
+
+private struct FoundationProgressUIState: Equatable {
+    var fractionCompleted: Double
+    var isIndeterminate: Bool
+    var localizedDescription: String
+    var localizedAdditionalDescription: String
+
+    init(progress: Foundation.Progress) {
+        fractionCompleted = progress.fractionCompleted
+        isIndeterminate = progress.isIndeterminate
+        localizedDescription = progress.localizedDescription ?? ""
+        localizedAdditionalDescription = progress.localizedAdditionalDescription ?? ""
+    }
+}
+
+private extension Foundation.Progress {
+    var uiStatePublisher: some Publisher<FoundationProgressUIState, Never> {
+        #if OPENSWIFTUI_OPENCOMBINE
+        // [AI] OpenCombineFoundation has no KVO publisher, so sample Progress
+        // while the view is active to preserve live updates on non-Darwin hosts.
+        Foundation.Timer.publish(
+            every: 1.0 / 30.0,
+            on: .main,
+            in: .common
+        )
+            .autoconnect()
+            .map { [progress = self] _ in
+                FoundationProgressUIState(progress: progress)
+            }
+            .removeDuplicates()
+        #else
+        Publishers.CombineLatest4(
+            publisher(for: \.completedUnitCount),
+            publisher(for: \.totalUnitCount),
+            publisher(for: \.localizedDescription),
+            publisher(for: \.localizedAdditionalDescription)
+        ).map { [unowned self] _ in
+            FoundationProgressUIState(progress: self)
+        }
+        #endif
+    }
 }
