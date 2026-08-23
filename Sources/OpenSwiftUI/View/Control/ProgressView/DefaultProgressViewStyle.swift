@@ -39,29 +39,27 @@ public struct DefaultProgressViewStyle: ProgressViewStyle {
         _openSwiftUIEmptyStub()
     }
 
-    // TBA
     public func makeBody(configuration: Configuration) -> some View {
-//        Group {
-//            if configuration.alwaysIndeterminate {
-//                ProgressView(configuration)
-//                    .progressViewStyle(CircularProgressViewStyle())
-//            } else {
-//                switch configuration.value {
-//                case .dateRelative:
-//                    ProgressView(configuration)
-//                        .progressViewStyle(LinearProgressViewStyle())
-//                case .absolute:
-//                    if configuration.fractionCompleted != nil {
-//                        ProgressView(configuration)
-//                            .progressViewStyle(LinearProgressViewStyle())
-//                    } else {
-//                        ProgressView(configuration)
-//                            .progressViewStyle(CircularProgressViewStyle())
-//                    }
-//                }
-//            }
-//        }
-        _openSwiftUIUnimplementedFailure()
+        Group {
+            if configuration.alwaysIndeterminate {
+                ProgressView(configuration)
+                    .progressViewStyle(CircularProgressViewStyle())
+            } else {
+                switch configuration.value {
+                case .dateRelative:
+                    ProgressView(configuration)
+                        .progressViewStyle(LinearProgressViewStyle())
+                case .absolute:
+                    if configuration.fractionCompleted != nil {
+                        ProgressView(configuration)
+                            .progressViewStyle(LinearProgressViewStyle())
+                    } else {
+                        ProgressView(configuration)
+                            .progressViewStyle(CircularProgressViewStyle())
+                    }
+                }
+            }
+        }
     }
 }
 
