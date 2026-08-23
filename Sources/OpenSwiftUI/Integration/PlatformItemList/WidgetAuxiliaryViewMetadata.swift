@@ -465,6 +465,41 @@ public struct WidgetAuxiliaryViewMetadata {
     public init(fallbacks: [WidgetAuxiliaryViewMetadata]?) {
         self.fallbacks = fallbacks
     }
+
+    init(
+        item: PlatformItemList.Item?,
+        url: URL?,
+        accessibility: Accessibility?,
+        child: WidgetAuxiliaryViewMetadata?
+    ) {
+        self.metadataText = item?.text.map { Text(text: $0) }
+        self.metadataSecondaryText = item?.secondaryText.map { Text(text: $0) }
+        if let namedResolvedImage = item?.namedResolvedImage {
+            self.graphic = .named(.init(namedResolvedImage, item?.resolvedImage))
+        } else {
+            #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+            self.graphic = (item?.resolvedImage?.basePlatformItemImage as? NSImage).map(Graphic.image)
+            #elseif canImport(UIKit)
+            self.graphic = (item?.resolvedImage?.basePlatformItemImage as? UIImage).map(Graphic.image)
+            #else
+            self.graphic = (item?.resolvedImage?.basePlatformItemImage as? NSObject).map(Graphic.image)
+            #endif
+        }
+        self.url = url
+        self.accessibility = accessibility
+
+        guard let child else {
+            return
+        }
+        self.metadataText = metadataText ?? child.metadataText
+        self.metadataSecondaryText = metadataSecondaryText ?? child.metadataSecondaryText
+        self.graphic = graphic ?? child.graphic
+        self.fallbacks = fallbacks ?? child.fallbacks
+        self.progress = progress ?? child.progress
+        self.gauge = gauge ?? child.gauge
+        self.url = self.url ?? child.url
+        self.accessibility = self.accessibility ?? child.accessibility
+    }
 }
 
 // MARK: - SymbolEffectArray [TODO]
