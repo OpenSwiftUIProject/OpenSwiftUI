@@ -24,6 +24,9 @@ public import UIKit
 @_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
 public struct WidgetAuxiliaryViewMetadata {
+
+    // MARK: - WidgetAuxiliaryViewMetadata.Text
+
     public struct Text {
         public struct Metadata {
             public enum Kind {
@@ -164,8 +167,11 @@ public struct WidgetAuxiliaryViewMetadata {
         #endif
     }
 
-    // FIXME
+    // MARK: - WidgetAuxiliaryViewMetadata.Graphic [WIP]
+
     public enum Graphic {
+        case named(Named)
+
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
         case image(NSImage)
         #elseif canImport(UIKit)
@@ -173,7 +179,145 @@ public struct WidgetAuxiliaryViewMetadata {
         #else
         case image(NSObject)
         #endif
+
+        var isSymbol: Bool {
+            guard case let .named(named) = self else {
+                return false
+            }
+            return named.isSymbol
+        }
+
+        public struct Named {
+            public enum Location {
+                case bundle(URL)
+                case system(Bool)
+            }
+
+            public var name: String
+
+            public var location: Location
+
+            public var value: Float?
+
+            var isSymbol: Bool
+
+            fileprivate var _colors: [Color.Resolved]?
+
+            public var colors: [Color]? {
+                _colors?.map(Color.init)
+            }
+
+            fileprivate var _tintColor: Color.Resolved?
+
+            @available(OpenSwiftUI_v6_0, *)
+            public var tintColor: Color? {
+                _tintColor.map(Color.init)
+            }
+
+            private var _mode: SymbolRenderingMode.Storage?
+
+            public var symbolRenderingMode: SymbolRenderingMode? {
+                _mode.map { SymbolRenderingMode(storage: $0) }
+            }
+
+            // TODO: SymbolEffect
+//            @ProtobufCodable
+//            private var _symbolEffects: SymbolEffectArray
+//            @available(OpenSwiftUI_v6_0, *)
+//            public var symbolEffects: [SymbolEffect] {
+//                _symbolEffects.effects.map { SymbolEffect(base: $0) }
+//            }
+
+            @ProtobufCodable
+            private var _contentTransition: ContentTransition
+
+            @available(OpenSwiftUI_v6_0, *)
+            public var contentTransition: ContentTransition {
+                _contentTransition
+            }
+
+            // TBA
+            init(_ named: Image.NamedResolved, _ resolvedImage: Image.Resolved?) {
+                let environment = named.environment
+//                _symbolEffects = SymbolEffectArray(effects: environment.symbolEffects)
+                _contentTransition = environment.contentTransition
+                guard !environment.shouldRedactSymbolImages else {
+                    name = "square.fill"
+                    location = .system(false)
+                    value = nil
+                    isSymbol = true
+                    _colors = environment._effectiveForegroundColor.map {
+                        [$0.resolve(in: environment)]
+                    } ?? []
+                    _mode = .monochrome
+                    return
+                }
+                name = named.name
+                switch named.location {
+                case let .bundle(bundle):
+                    location = .bundle(bundle.bundleURL)
+                    if case .vectorGlyph? = resolvedImage?.image.contents {
+                        isSymbol = true
+                    } else {
+                        isSymbol = false
+                    }
+                case .system:
+                    location = .system(false)
+                    isSymbol = true
+                case .privateSystem:
+                    location = .system(true)
+                    isSymbol = true
+                }
+                value = named.value
+                _mode = named.symbolRenderingMode
+                if _mode == nil,
+                   case let .vectorGlyph(glyph)? = resolvedImage?.image.contents {
+                    _mode = glyph.renderingMode
+                }
+
+                if let resolvedImage {
+                    let levels: Int = {
+                        let resolverMode = resolvedImage.styleResolverMode
+                        var levels = Int(resolverMode.foregroundLevels)
+                        if !resolverMode.options.contains(.foregroundPalette) {
+                            if named.isTemplate {
+                                levels = 1
+                            } else {
+                                levels = levels == 0 ? 0 : 1
+                            }
+                        }
+                        return levels
+                    }()
+                    if levels == 0 {
+                        _colors = nil
+                    } else if let foregroundStyle = environment.foregroundStyle {
+                        var shape = _ShapeStyle_Shape(
+                            operation: .resolveStyle(
+                                name: .foreground,
+                                levels: 0 ..< levels
+                            ),
+                            environment: environment
+                        )
+                        foregroundStyle._apply(to: &shape)
+                        var colors: [Color.Resolved] = []
+                        for style in shape.stylePack[.foreground] {
+                            guard let color = style.color else {
+                                break
+                            }
+                            colors.append(color)
+                        }
+                        _colors = colors
+                    } else {
+                        _colors = []
+                    }
+                } else {
+                    _colors = named.isTemplate ? [] : nil
+                }
+                _tintColor = environment.tintColor?.resolve(in: environment)
+            }
+        }
     }
+
 
     public private(set) var metadataText: WidgetAuxiliaryViewMetadata.Text?
 
@@ -182,6 +326,32 @@ public struct WidgetAuxiliaryViewMetadata {
 
     public private(set) var graphic: WidgetAuxiliaryViewMetadata.Graphic?
 }
+
+//private struct SymbolEffectArray: CodableByProtobuf, Equatable {
+//    var effects: [_SymbolEffect]
+//
+//    init(effects: [_SymbolEffect.Identified]) {
+//        self.effects = effects.map(\.effect)
+//    }
+//
+//    func encode(to encoder: inout ProtobufEncoder) throws {
+//        for effect in effects {
+//            try encoder.messageField(1, effect)
+//        }
+//    }
+//
+//    init(from decoder: inout ProtobufDecoder) throws {
+//        effects = []
+//        while let field = try decoder.nextField() {
+//            switch field.tag {
+//            case 1:
+//                effects.append(try decoder.messageField(field))
+//            default:
+//                try decoder.skipField(field)
+//            }
+//        }
+//    }
+//}
 
 extension TimeDataFormattingContainer {
     public func representation(
@@ -195,6 +365,89 @@ extension TimeDataFormattingContainer {
 }
 
 @_spi(Private)
+extension WidgetAuxiliaryViewMetadata {
+    public var tint: Color? {
+        guard let graphic,
+              case let .named(named) = graphic else {
+            return nil
+        }
+        return named.tintColor
+    }
+
+    public var resolvedTint: Color.Resolved? {
+        guard let graphic,
+              case let .named(named) = graphic else {
+            return nil
+        }
+        return named._tintColor
+    }
+}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Graphic: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Graphic.Named: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Graphic.Named.Location: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Text: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Text.Metadata: Sendable {}
+
+@_spi(Private)
+@available(*, unavailable)
+extension WidgetAuxiliaryViewMetadata.Text.Metadata.Kind: Sendable {}
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+extension WidgetAuxiliaryViewMetadata {
+    @available(*, deprecated, message: "Use metadataText instead")
+    public var text: NSAttributedString? {
+        metadataText?.text
+    }
+
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    @available(*, deprecated, message: "Use graphic instead")
+    public var image: NSImage? {
+        guard let graphic,
+              case let .image(image) = graphic else {
+            return nil
+        }
+        return image
+    }
+    #elseif canImport(UIKit)
+    @available(*, deprecated, message: "Use graphic instead")
+    public var image: UIImage? {
+        guard let graphic,
+              case let .image(image) = graphic else {
+            return nil
+        }
+        return image
+    }
+    #else
+    @available(*, deprecated, message: "Use graphic instead")
+    public var image: NSObject? {
+        guard let graphic,
+              case let .image(image) = graphic else {
+            return nil
+        }
+        return image
+    }
+    #endif
+}
+
+// MARK: - WidgetAuxiliaryViewMetadata + Codable [TODO]
+
+@_spi(Private)
 @available(OpenSwiftUI_v4_0, *)
 extension WidgetAuxiliaryViewMetadata: Codable {
     public func encode(to encoder: any Encoder) throws {
@@ -205,3 +458,49 @@ extension WidgetAuxiliaryViewMetadata: Codable {
         _openSwiftUIUnimplementedFailure()
     }
 }
+
+// MARK: - WidgetAuxiliaryViewMetadata + CustomDebugStringConvertible [TODO]
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Graphic: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        switch self {
+        case let .named(named):
+            "Graphic(\(named.debugDescription))"
+        case let .image(image):
+            "Graphic(\(image.debugDescription))"
+        }
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Graphic.Named: CustomDebugStringConvertible {
+    public var debugDescription: String {
+        let locationDescription: String
+        switch location {
+        case let .bundle(url):
+            locationDescription = "bundle(\(url.description))"
+        case let .system(isPublic):
+            locationDescription = isPublic ? "system" : "internal"
+        }
+        return "Named(name: \(name), location: \(locationDescription), value: \(value?.description ?? "--"), colors: \(colors?.debugDescription ?? "[]"))"
+    }
+}
+
+// MARK: - WidgetAuxiliaryViewMetadata + Equatable
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Graphic.Named.Location: Equatable {}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Graphic.Named: Equatable {}
+
+@_spi(Private)
+@available(OpenSwiftUI_v6_0, *)
+extension WidgetAuxiliaryViewMetadata.Graphic: Equatable {}
+
+// TODO: Preference
