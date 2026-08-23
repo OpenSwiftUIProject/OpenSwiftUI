@@ -597,6 +597,29 @@ extension AttributedString {
 }
 
 extension NSAttributedString {
+    // OpenSwiftUI Addition:
+    // Foundation's unscoped bridge explicitly loads the system SwiftUI
+    // attribute scope, but does not discover OpenSwiftUI's scope. Route this
+    // source-compatible initializer through the explicit OpenSwiftUI bridge so
+    // attributes such as OpenSwiftUI.FontModifiers are preserved.
+    //
+    // Pseudo code in the current Foundation implementation
+    //
+    //    guard let handle = dlopen(
+    //        "/System/Library/Frameworks/SwiftUI.framework/SwiftUI",
+    //        RTLD_NOLOAD
+    //    ),
+    //    let symbol = dlsym(
+    //        handle,
+    //        "$s10Foundation15AttributeScopesO7SwiftUIE0D12UIAttributesVN"
+    //    ) else {
+    //        return nil
+    //    }
+    @inline(__always)
+    package convenience init(_ attributedString: AttributedString) {
+        self.init(openSwiftUIAttributedString: attributedString)
+    }
+
     convenience init(openSwiftUIAttributedString attributedString: AttributedString) {
         #if canImport(Darwin)
         let transformedAttributedString = CoreGlue2.shared.transformingEquivalentAttributes(attributedString)
