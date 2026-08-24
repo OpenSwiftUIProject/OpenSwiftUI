@@ -24,6 +24,12 @@ protocol TimelineProgressViewBase: TimelineProgressViewExtendedBase where Extend
     init(fractionCompleted: Double, tint: Color?)
 }
 
+extension TimelineProgressViewBase {
+    init(fractionCompleted: Double, tint: Color?, extendedState: ExtendedState) {
+        self.init(fractionCompleted: fractionCompleted, tint: tint)
+    }
+}
+
 // MARK: - _TimelineProgressViewBaseEmptyState
 
 struct _TimelineProgressViewBaseEmptyState: Codable {}
