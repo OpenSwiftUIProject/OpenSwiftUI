@@ -83,27 +83,27 @@ public struct CircularProgressViewStyle: ProgressViewStyle {
 
     @ViewBuilder
     func fractionCompletedView(configuration: Configuration) -> some View {
-        _openSwiftUIUnreachableCode()
-//        StaticIf(idiom: .widget) {
-//            ArchivableCircularProgressView(
-//                size: 58,
-//                centerFont: 30,
-//                configuration: configuration,
-//                tint: tint ?? controlTint
-//            )
-//        } else: {
-//            StaticIf(idiom: MacInterfaceIdiom.mac) {
-//                CircularUIKitProgressView(
-//                    tint: tint ?? controlTint,
-//                    useCustomWidth: false
-//                )
-//            } else: {
-//                CircularUIKitProgressView(
-//                    tint: tint ?? controlTint,
-//                    useCustomWidth: true
-//                )
-//            }
-//        }
+        StaticIf(idiom: .widget) {
+            ArchivableCircularProgressView(
+                size: 58,
+                centerFont: 30,
+                configuration: configuration,
+                tint: tint ?? controlTint,
+                metrics: .init()
+            )
+        } else: {
+            StaticIf(idiom: MacInterfaceIdiom.mac) {
+                CircularUIKitProgressView(
+                    tint: tint ?? controlTint,
+                    useCustomWidth: false
+                )
+            } else: {
+                CircularUIKitProgressView(
+                    tint: tint ?? controlTint,
+                    useCustomWidth: true
+                )
+            }
+        }
     }
 
     @ViewBuilder

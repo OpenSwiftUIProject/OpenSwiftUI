@@ -65,9 +65,9 @@ struct LinearUIKitProgressView: View {
 
 struct CircularUIKitProgressView: UIViewRepresentable {
     @Environment(\.controlSize) private var controlSize
-    @ScaledMetric private var regular: CGFloat = 20
-    @ScaledMetric private var small: CGFloat = 14
-    @ScaledMetric private var large: CGFloat = 37
+    @ScaledMetric private var regular: CGFloat = 20.0
+    @ScaledMetric private var small: CGFloat = 14.0
+    @ScaledMetric private var large: CGFloat = 37.0
     var tint: Color?
     var useCustomWidth: Bool
 

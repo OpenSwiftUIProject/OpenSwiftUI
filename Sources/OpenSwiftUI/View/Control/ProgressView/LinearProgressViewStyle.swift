@@ -63,18 +63,17 @@ public struct LinearProgressViewStyle: ProgressViewStyle {
     }
 
     private func progressBar(configuration: Configuration) -> some View {
-        _openSwiftUIUnimplementedFailure()
-//        StaticIf(idiom: .widget) {
-//            ArchivableLinearProgressView(
-//                configuration: configuration,
-//                tint: tint ?? controlTint
-//            )
-//        } else: {
-//            LinearUIKitProgressView(
-//                configuration: configuration,
-//                tint: tint ?? controlTint
-//            )
-//        }
+        StaticIf(idiom: .widget) {
+            ArchivableLinearProgressView(
+                configuration: configuration,
+                tint: tint ?? controlTint
+            )
+        } else: {
+            LinearUIKitProgressView(
+                configuration: configuration,
+                tint: tint ?? controlTint
+            )
+        }
     }
 }
 
