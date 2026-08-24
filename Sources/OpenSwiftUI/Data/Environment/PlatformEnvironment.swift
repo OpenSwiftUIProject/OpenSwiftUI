@@ -125,19 +125,7 @@ struct OpenSwiftUIFallbackFontProvider: FallbackFontProvider {
 
 extension Font {
     static func _system(controlSize: ControlSize) -> Font {
-        let nsControlSize: NSControl.ControlSize = switch controlSize {
-        case .mini: .mini
-        case .small: .small
-        case .regular: .regular
-        case .large: .large
-        case .extraLarge:
-            if #available(macOS 26, *) {
-                .extraLarge
-            } else {
-                .large
-            }
-        }
-        let size = NSFont.systemFontSize(for: nsControlSize)
+        let size = NSFont.systemFontSize(for: NSControl.ControlSize(controlSize))
         return Font.system(size: size)
     }
 }
