@@ -69,10 +69,19 @@ public struct LinearProgressViewStyle: ProgressViewStyle {
                 tint: tint ?? controlTint
             )
         } else: {
+            #if os(macOS)
+            LinearAppKitProgressView(
+                configuration: configuration,
+                tint: tint ?? controlTint
+            )
+            #elseif os(iOS) || os(visionOS)
             LinearUIKitProgressView(
                 configuration: configuration,
                 tint: tint ?? controlTint
             )
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
     }
 }

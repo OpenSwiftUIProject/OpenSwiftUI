@@ -92,6 +92,13 @@ public struct CircularProgressViewStyle: ProgressViewStyle {
                 metrics: .init()
             )
         } else: {
+            #if os(macOS)
+            AppKitProgressView(
+                fractionCompleted: configuration.fractionCompleted,
+                style: .spinning,
+                tint: tint ?? controlTint
+            )
+            #elseif os(iOS) || os(visionOS)
             StaticIf(idiom: MacInterfaceIdiom.mac) {
                 CircularUIKitProgressView(
                     tint: tint ?? controlTint,
@@ -103,6 +110,9 @@ public struct CircularProgressViewStyle: ProgressViewStyle {
                     useCustomWidth: true
                 )
             }
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
     }
 
