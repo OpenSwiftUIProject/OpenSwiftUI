@@ -49,7 +49,7 @@ struct TimelineProgressView<Base>: View where Base: TimelineProgressViewExtended
         )
     }
 
-    struct ArchivableTimelineProgressView: /*_ArchivableView*/ View {
+    struct ArchivableTimelineProgressView: _ArchivableView {
         var interval: ClosedRange<Date>
         var updateStyle: TimelineProgressViewUpdateStyle
         var countdown: Bool
