@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
@@ -89,7 +89,6 @@ public struct ProgressViewStyleConfiguration {
     /// label is equivalent to its `localizedAdditionalDescription`.
     public var currentValueLabel: CurrentValueLabel?
 
-    // TBA
     init(
         value: ProgressViewValue,
         label: Label?,
@@ -101,8 +100,8 @@ public struct ProgressViewStyleConfiguration {
             self.fractionCompleted = fractionCompleted
             self.alwaysIndeterminate = alwaysIndeterminate
         case .dateRelative:
-            fractionCompleted = nil
-            alwaysIndeterminate = false
+            self.fractionCompleted = nil
+            self.alwaysIndeterminate = false
         }
         self.label = label
         self.currentValueLabel = currentValueLabel
@@ -141,21 +140,12 @@ struct ResolvedProgressViewStyle: StyleableView {
         ProgressViewStyleModifier(style: DefaultProgressViewStyle())
     }
 
-//    typealias Body = ModifiedContent<
-//        ModifiedContent<
-//            ProgressView<
-//                ProgressViewStyleConfiguration.Label,
-//                ProgressViewStyleConfiguration.CurrentValueLabel
-//            >,
-//            (IgnoreViewRespondersModifier in _EE68159C4F54001FA5A3813EBA5DD945)
-//        >,
-//        AccessibilityAttachmentModifier
-//    >
-
     var body: some View {
-        // TODO: Apply the responder and accessibility modifiers when their
-        // corresponding OpenSwiftUI implementations are available.
-        ProgressView(configuration)
+        AccessibilityProgressViewModifier(
+            fractionCompleted: configuration.fractionCompleted
+        ).body(
+            content: ProgressView(configuration)
+        )
     }
 }
 
