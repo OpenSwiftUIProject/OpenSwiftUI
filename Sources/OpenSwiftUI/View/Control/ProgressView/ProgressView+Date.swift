@@ -7,6 +7,7 @@
 //  ID: E25B5CE50FE780022155187DDAA79ACA (SwiftUI)
 
 import Foundation
+@_spi(Private)
 import OpenSwiftUICore
 
 // MARK: - TimelineProgressViewExtendedBase
@@ -66,7 +67,7 @@ struct TimelineProgressView<Base>: View where Base: TimelineProgressViewExtended
         }
     }
 
-    private struct ConditionallyArchivableTimelineProgressView: /*ConditionallyArchivableView*/ View {
+    private struct ConditionallyArchivableTimelineProgressView: ConditionallyArchivableView {
         var interval: ClosedRange<Date>
         var updateStyle: TimelineProgressViewUpdateStyle
         var countdown: Bool

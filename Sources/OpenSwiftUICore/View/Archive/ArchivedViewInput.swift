@@ -170,3 +170,11 @@ extension _ViewListInputs {
         set { self[ArchivedViewInput.self] = newValue }
     }
 }
+
+extension _ViewListCountInputs {
+    @inline(__always)
+    package var archivedView: ArchivedViewInput.Value {
+        get { self[ArchivedViewInput.self] }
+        set { self[ArchivedViewInput.self] = newValue }
+    }
+}
