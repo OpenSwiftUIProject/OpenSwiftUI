@@ -13,6 +13,7 @@ jobs:
   build-xcframeworks:
     name: Build and Upload XCFrameworks
     runs-on:
+      - self-hosted
       - macos-15
       - xcode-26.6
     outputs:

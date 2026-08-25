@@ -51,6 +51,7 @@ jobs:
             attributegraph: "0"
             compute: "1"
     runs-on:
+      - self-hosted
       - ${{ matrix.os }}
       - xcode-26.6
     env:

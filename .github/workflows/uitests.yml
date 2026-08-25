@@ -270,7 +270,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15]
         xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
@@ -279,7 +278,6 @@ jobs:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
     runs-on:
-      - ${{ matrix.os }}
       - xcode-26.6
     env:
       STATUS_CONTEXT: UI Tests / iOS / ${{ matrix.configuration.id }}
@@ -373,6 +371,7 @@ jobs:
         release: [2024]
         configuration: ${{ fromJSON(needs.prepare_uitests.outputs.configuration-matrix) }}
     runs-on:
+      - self-hosted
       - ${{ matrix.os }}
       - xcode-26.6
     env:

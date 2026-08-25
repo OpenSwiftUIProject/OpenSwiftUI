@@ -32,6 +32,7 @@ jobs:
         xcode-version: ["26.6"]
         release: [2024]
     runs-on:
+      - self-hosted
       - ${{ matrix.os }}
       - xcode-26.6
     env:
@@ -80,7 +81,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        os: [macos-15]
         xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
@@ -88,7 +88,6 @@ jobs:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
     runs-on:
-      - ${{ matrix.os }}
       - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts

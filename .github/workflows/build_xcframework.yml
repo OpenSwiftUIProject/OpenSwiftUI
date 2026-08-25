@@ -11,6 +11,7 @@ jobs:
   build_xcframework:
     name: Build XCFrameworks
     runs-on:
+      - self-hosted
       - macos-15
       - xcode-26.6
     env:

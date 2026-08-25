@@ -28,6 +28,7 @@ jobs:
         xcode-version: ["26.6"]
         release: [2024]
     runs-on:
+      - self-hosted
       - ${{ matrix.os }}
       - xcode-26.6
     env:

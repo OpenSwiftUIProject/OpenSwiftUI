@@ -14,7 +14,7 @@ jobs:
   build:
     name: Build DocC site
     runs-on:
-      - macos-15
+      - self-hosted
       - xcode-26.6
     env:
       OPENSWIFTUI_WERROR: 0
