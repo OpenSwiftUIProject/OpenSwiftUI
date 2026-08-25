@@ -6,6 +6,7 @@
 //  Status: Complete
 //  ID: 6399EAC5515CA9566698FD9D51220283 (SwiftUI)
 
+import Foundation
 public import OpenSwiftUICore
 
 // MARK: - ProgressViewStyle + Linear
@@ -48,7 +49,14 @@ public struct LinearProgressViewStyle: ProgressViewStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
+        #if os(macOS)
+        let spacing: CGFloat = 0
+        let currentValueLabelFont: Font = .subheadline
+        #else
+        let spacing: CGFloat = 4
+        let currentValueLabelFont: Font = .caption
+        #endif
+        VStack(alignment: .leading, spacing: spacing) {
             if !isLinkedOnOrAfter(.v5) || labelsVisibility != .hidden {
                 configuration.label
             }
@@ -56,7 +64,7 @@ public struct LinearProgressViewStyle: ProgressViewStyle {
             if !isLinkedOnOrAfter(.v5) || labelsVisibility != .hidden {
                 configuration.currentValueLabel
                     .defaultForegroundColor(.secondary)
-                    .font(.caption)
+                    .font(currentValueLabelFont)
                     .monospacedDigit()
             }
         }
