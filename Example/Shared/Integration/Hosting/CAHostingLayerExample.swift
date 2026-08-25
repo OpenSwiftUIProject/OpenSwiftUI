@@ -51,3 +51,15 @@ struct CAHostingLayerExample<Content: View> {
         return vc
     }
 }
+
+#Preview("CAHostingLayerExample") {
+    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
+    let size = CGSize(width: 500, height: 300)
+    #elseif canImport(UIKit)
+    let size = UIScreen.main.bounds.size
+    #endif
+    return CAHostingLayerExample(
+        content: ContentView(),
+        size: size
+    ).makeViewController()
+}

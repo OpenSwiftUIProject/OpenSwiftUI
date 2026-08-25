@@ -273,6 +273,7 @@ remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/Projects/O
 remove_generated_macro_references "$PROJECT_ROOT/.build/tuist-derived/OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$PROJECT_ROOT/../OpenObservation/OpenObservation.xcodeproj" "OpenObservation" "OpenObservationMacros"
 remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenSwiftUIMacros"
+remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUI" "OpenSwiftUIMacros"
 remove_generated_macro_references "$XCODEPROJ" "OpenSwiftUICore" "OpenObservationMacros"
 
 echo "SDKs: ${SDKS[*]}"
