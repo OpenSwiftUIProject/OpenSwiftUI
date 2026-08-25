@@ -48,6 +48,10 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 @property(class, nonatomic, readonly) NSInteger _currentAnimationCurve_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(_currentAnimationCurve);
 @end
 
+@interface UIActivityIndicatorView (OpenSwiftUI_SPI)
+- (void)_setCustomWidth:(CGFloat)width;
+@end
+
 @interface UIResponder (OpenSwiftUI_SPI)
 - (void)_performMainMenuShortcutKeyCommand:(UIKeyCommand *)keyCommand; // FIXME
 @end

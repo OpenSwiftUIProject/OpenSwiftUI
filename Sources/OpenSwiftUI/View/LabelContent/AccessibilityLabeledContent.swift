@@ -127,10 +127,38 @@ struct ResolvedPresentation: Rule {
 }
 
 // FIXME
-struct AccessibilityAttachmentModifier {}
+class AnyAccessibilityViewModifier {}
 
 // FIXME
-enum AccessibilityAttachment {}
+struct AccessibilityChildBehavior {
+    var modifier: AnyAccessibilityViewModifier
+}
+
+// FIXME
+struct AccessibilityAttachmentModifier: PrimitiveViewModifier {
+    var storage: MutableBox<AccessibilityAttachment>
+
+    let behavior: AccessibilityChildBehavior?
+
+    nonisolated static func _makeView(
+        modifier _: _GraphValue<Self>,
+        inputs: _ViewInputs,
+        body: @escaping (_Graph, _ViewInputs) -> _ViewOutputs
+    ) -> _ViewOutputs {
+        body(_Graph(), inputs)
+    }
+
+    nonisolated static func _makeViewList(
+        modifier _: _GraphValue<Self>,
+        inputs: _ViewListInputs,
+        body: @escaping (_Graph, _ViewListInputs) -> _ViewListOutputs
+    ) -> _ViewListOutputs {
+        body(_Graph(), inputs)
+    }
+}
+
+// FIXME
+struct AccessibilityAttachment {}
 
 extension AccessibilityAttachment {
     enum Tree {

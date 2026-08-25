@@ -52,7 +52,7 @@ extension StaticIf: PrimitiveView, View where TrueBody: View, FalseBody: View {
     ///   - idiom: The interface idiom to evaluate against the current environment.
     ///   - then: A closure that returns the view to display when the current device matches the specified idiom.
     ///   - else: A closure that returns the view to display when the current device doesn't match the specified idiom.
-    init<I>(idiom: I, then: () -> TrueBody, else: () -> FalseBody) where Predicate == InterfaceIdiomPredicate<I>, I: InterfaceIdiom {
+    package init<I>(idiom: I, then: () -> TrueBody, else: () -> FalseBody) where Predicate == InterfaceIdiomPredicate<I>, I: InterfaceIdiom {
         trueBody = then()
         falseBody = `else`()
     }
