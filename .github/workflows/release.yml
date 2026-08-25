@@ -61,6 +61,7 @@ jobs:
     env:
       BINARY_REPO_PAT: ${{ secrets.BINARY_REPO_PAT }}
     steps:
+      - uses: actions/checkout@v4
       - name: Update binary repo
         env:
           VERSION: ${{ github.ref_name }}
@@ -77,6 +78,9 @@ jobs:
             exit 0
           fi
           git clone https://x-access-token:${BINARY_REPO_PAT}@github.com/OpenSwiftUIProject/OpenSwiftUI-spm.git
+          rm -rf OpenSwiftUI-spm/Sources/OpenSwiftUIMacros
+          mkdir -p OpenSwiftUI-spm/Sources
+          cp -R Sources/OpenSwiftUIMacros OpenSwiftUI-spm/Sources/OpenSwiftUIMacros
           cd OpenSwiftUI-spm
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
@@ -108,7 +112,7 @@ jobs:
 
           commit_package_if_needed() {
             local message="$1"
-            git add Package.swift README.md
+            git add -A -- Package.swift README.md Sources/OpenSwiftUIMacros
             if git diff --cached --quiet; then
               echo "No changes for $(git branch --show-current)"
               return 1
