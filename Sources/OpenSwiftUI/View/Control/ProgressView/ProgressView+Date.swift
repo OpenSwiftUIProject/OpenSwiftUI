@@ -6,9 +6,148 @@
 //  Status: Complete
 //  ID: E25B5CE50FE780022155187DDAA79ACA (SwiftUI)
 
-import Foundation
+public import Foundation
 @_spi(Private)
 import OpenSwiftUICore
+
+// MARK: - DefaultDateProgressLabel
+
+/// The default current value label used by a date-relative progress view.
+@available(OpenSwiftUI_v4_0, *)
+public struct DefaultDateProgressLabel: View {
+    var interval: ClosedRange<Date>
+    var countdown: Bool
+
+    public var body: some View {
+        Text(
+            timerInterval: interval,
+            countsDown: countdown
+        )
+    }
+}
+
+@available(*, unavailable)
+extension DefaultDateProgressLabel: Sendable {}
+
+// MARK: - Date-Relative Initializers
+
+@available(OpenSwiftUI_v4_0, *)
+extension ProgressView {
+    /// Creates a progress view that displays progress over a date interval.
+    nonisolated public init(
+        timerInterval: ClosedRange<Date>,
+        countsDown: Bool = true,
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder currentValueLabel: () -> CurrentValueLabel
+    ) {
+        base = .custom(
+            CustomProgressView(
+                interval: timerInterval,
+                countdown: countsDown,
+                label: label(),
+                currentValueLabel: currentValueLabel()
+            )
+        )
+    }
+}
+
+@_spi(_)
+@available(OpenSwiftUI_v4_0, *)
+extension ProgressView {
+    @available(*, deprecated, renamed: "init(timerInterval:countsDown:label:currentValueLabel:)")
+    nonisolated public init(
+        interval: ClosedRange<Date>,
+        countdown: Bool = true,
+        @ViewBuilder label: () -> Label,
+        @ViewBuilder currentValueLabel: () -> CurrentValueLabel
+    ) {
+        self.init(
+            timerInterval: interval,
+            countsDown: countdown,
+            label: label,
+            currentValueLabel: currentValueLabel
+        )
+    }
+}
+
+@available(OpenSwiftUI_v4_0, *)
+extension ProgressView where CurrentValueLabel == DefaultDateProgressLabel {
+    /// Creates a progress view that displays progress over a date interval and
+    /// uses the default current value label.
+    nonisolated public init(
+        timerInterval: ClosedRange<Date>,
+        countsDown: Bool = true,
+        @ViewBuilder label: () -> Label
+    ) {
+        base = .custom(
+            CustomProgressView(
+                interval: timerInterval,
+                countdown: countsDown,
+                label: label(),
+                currentValueLabel: DefaultDateProgressLabel(
+                    interval: timerInterval,
+                    countdown: countsDown
+                )
+            )
+        )
+    }
+}
+
+@_spi(_)
+@available(OpenSwiftUI_v4_0, *)
+extension ProgressView where CurrentValueLabel == DefaultDateProgressLabel {
+    @_spi(_)
+    @available(*, deprecated, renamed: "init(timerInterval:countsDown:label:)")
+    nonisolated public init(
+        interval: ClosedRange<Date>,
+        countdown: Bool = true,
+        @ViewBuilder label: () -> Label
+    ) {
+        self.init(
+            timerInterval: interval,
+            countsDown: countdown,
+            label: label
+        )
+    }
+}
+
+@available(OpenSwiftUI_v4_0, *)
+extension ProgressView where Label == EmptyView, CurrentValueLabel == DefaultDateProgressLabel {
+    /// Creates an unlabeled progress view that displays progress over a date
+    /// interval and uses the default current value label.
+    nonisolated public init(
+        timerInterval: ClosedRange<Date>,
+        countsDown: Bool = true
+    ) {
+        base = .custom(
+            CustomProgressView(
+                interval: timerInterval,
+                countdown: countsDown,
+                label: nil,
+                currentValueLabel: DefaultDateProgressLabel(
+                    interval: timerInterval,
+                    countdown: countsDown
+                )
+            )
+        )
+    }
+}
+
+@_spi(_)
+@available(OpenSwiftUI_v4_0, *)
+extension ProgressView where Label == EmptyView, CurrentValueLabel == DefaultDateProgressLabel {
+    @_spi(_)
+    @available(*, deprecated, renamed: "init(timerInterval:countsDown:)")
+    nonisolated public init(
+        interval: ClosedRange<Date>,
+        countdown: Bool = true
+    ) {
+        self.init(
+            timerInterval: interval,
+            countsDown: countdown
+        )
+    }
+}
 
 // MARK: - TimelineProgressViewExtendedBase
 

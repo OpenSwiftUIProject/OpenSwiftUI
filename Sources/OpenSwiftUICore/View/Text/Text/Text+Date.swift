@@ -157,6 +157,44 @@ extension Text {
     }
 }
 
+// MARK: - Text + Timer Interval
+
+@available(OpenSwiftUI_v4_0, *)
+extension Text {
+    /// Creates a text view that displays a timer over a date interval.
+    public init(
+        timerInterval: ClosedRange<Date>,
+        pauseTime: Date? = nil,
+        countsDown: Bool = true,
+        showsHours: Bool = true
+    ) {
+        let pause = pauseTime.map {
+            $0.timeIntervalSince(timerInterval.lowerBound)
+        }
+        let interval = DateInterval(
+            start: timerInterval.lowerBound,
+            end: timerInterval.upperBound
+        )
+        let units: NSCalendar.Unit = if showsHours {
+            ResolvableTimer.defaultUnits
+        } else {
+            [.minute, .second]
+        }
+        let timer = ResolvableTimer(
+            interval: interval,
+            pause: pause,
+            countdown: countsDown,
+            units: units,
+            in: EnvironmentValues()
+        )
+        self.init(
+            source: timer.source,
+            format: timer.format,
+            reducedLuminanceBudget: 60.0
+        )
+    }
+}
+
 // TDOO
 
 // MARK: - Text + ReferenceDate
