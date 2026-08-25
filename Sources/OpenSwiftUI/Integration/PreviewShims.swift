@@ -3,12 +3,12 @@
 //  OpenSwiftUI
 //
 //  Bridging helpers for Xcode Preview support.
-//  Wraps OpenSwiftUI views in hosting controllers
-//  so they can be used with SwiftUI's #Preview macro.
+//  Wraps OpenSwiftUI views in hosting controllers so they can be used with
+//  AppKit and UIKit's #Preview macros.
 
 import OpenSwiftUICore
 
-// Helper method before we add fully preview thunk and preview macro support for OpenSwiftUI
+// Helper method before we add native preview thunk support for OpenSwiftUI.
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 public import AppKit
