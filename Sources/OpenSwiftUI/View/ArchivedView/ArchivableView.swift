@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Blocked by ArchivableFactory
 
+public import Foundation
 public import OpenSwiftUICore
 
 // MARK: - _ArchivableView [WIP]

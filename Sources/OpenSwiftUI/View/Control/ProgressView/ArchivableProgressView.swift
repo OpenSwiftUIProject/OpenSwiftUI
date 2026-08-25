@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-import Foundation
+public import Foundation
 import OpenSwiftUICore
 
 // MARK: - ArchivableCircularPlaybackProgressView
