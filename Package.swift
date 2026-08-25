@@ -643,6 +643,7 @@ let openSwiftUITarget = Target.target(
     name: "OpenSwiftUI",
     dependencies: [
         "OpenSwiftUICore",
+        "OpenSwiftUIMacros",
         "COpenSwiftUI",
     ],
     cSettings: sharedCSettings,
