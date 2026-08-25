@@ -20,6 +20,14 @@
 - (void)_updateLayerGeometryFromView;
 - (void)_updateLayerShadowFromView;
 - (void)_updateLayerShadowColorFromView;
+
+- (void)measureMin:(CGSize * _Nonnull)min
+               max:(CGSize * _Nonnull)max
+             ideal:(CGSize * _Nonnull)ideal;
+- (void)measureMin:(CGSize * _Nonnull)min
+               max:(CGSize * _Nonnull)max
+             ideal:(CGSize * _Nonnull)ideal
+stretchingPriority:(float)stretchingPriority;
 @end
 
 #endif /* __has_include(<AppKit/AppKit.h>) */

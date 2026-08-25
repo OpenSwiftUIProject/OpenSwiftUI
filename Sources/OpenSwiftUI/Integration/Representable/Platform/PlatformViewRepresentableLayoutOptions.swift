@@ -11,6 +11,8 @@
 public struct _PlatformViewRepresentableLayoutOptions: OptionSet {
     public let rawValue: Int
 
+    static var _1: _PlatformViewRepresentableLayoutOptions { .init(rawValue: 1 << 1) }
+
     @_spi(Private)
     @available(OpenSwiftUI_v5_0, *)
     public static let propagatesSafeArea: _PlatformViewRepresentableLayoutOptions = .init(rawValue: 1 << 2)

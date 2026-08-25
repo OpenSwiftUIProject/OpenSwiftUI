@@ -126,9 +126,80 @@ where Content: PlatformViewRepresentable {
         let height = dimension(value: intrinsicContentSize.height, axis: .vertical)
         return .init(width: width, height: height)
         #elseif os(macOS)
-        let selector = Selector(("measureMin:max:ideal:stretchingPriority:"))
-        // TODO
-        return .init()
+        func validateDimension(
+            min: CGFloat,
+            ideal: CGFloat,
+            max: CGFloat
+        ) -> _LayoutTraits.Dimension {
+            let infinity = CGFloat.infinity
+            var min = min == .greatestFiniteMagnitude ? infinity : min
+            var ideal = ideal == .greatestFiniteMagnitude ? infinity : ideal
+            var max = max == .greatestFiniteMagnitude ? infinity : max
+            if !(0 <= min && min < infinity) {
+                Log.externalWarning(
+                    String(
+                        format: "%@ has a minimum length (%lf) that doesn't satisfy 0 <= min < .infinity.",
+                        self,
+                        min
+                    )
+                )
+                min = .zero
+            }
+            if !(min <= max) {
+                Log.externalWarning(
+                    String(
+                        format: "%@ has an maximum length (%lf) that doesn't satisfy min (%lf) <= max (%lf).",
+                        self,
+                        max,
+                        min,
+                        max
+                    )
+                )
+                max = min
+            }
+            if !(ideal.isFinite && min <= ideal && ideal <= max) {
+                Log.externalWarning(
+                    String(
+                        format: "%@ has an ideal length (%lf) that doesn't satisfy min (%lf) <= ideal <= max (%lf) < .infinity.",
+                        self,
+                        ideal,
+                        min,
+                        max
+                    )
+                )
+                ideal = min
+            }
+            return .init(min: min, ideal: ideal, max: max)
+        }
+
+        var min = CGSize.zero
+        var max = CGSize.zero
+        var ideal = CGSize.zero
+        let options = Content.layoutOptions(representedViewProvider)
+        let prioritySelector = #selector(
+            NSView.measureMin(_:max:ideal:stretchingPriority:)
+        )
+        if options.contains(._1), responds(to: prioritySelector) {
+            measureMin(
+                &min,
+                max: &max,
+                ideal: &ideal,
+                stretchingPriority: 500
+            )
+        } else {
+            measureMin(&min, max: &max, ideal: &ideal)
+        }
+        let width = validateDimension(
+            min: min.width,
+            ideal: ideal.width,
+            max: max.width
+        )
+        let height = validateDimension(
+            min: min.height,
+            ideal: ideal.height,
+            max: max.height
+        )
+        return .init(width: width, height: height)
         #endif
     }
 
