@@ -936,7 +936,7 @@ if useLocalDeps {
 
 if openCombineCondition {
     package.dependencies.append(
-        .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.15.0")
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.16.0")
     )
     cOpenSwiftUITarget.addOpenCombineCSettings()
     openSwiftUICoreTarget.addOpenCombineSettings()

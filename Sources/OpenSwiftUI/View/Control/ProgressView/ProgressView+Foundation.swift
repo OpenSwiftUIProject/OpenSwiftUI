@@ -36,7 +36,8 @@ extension Foundation.Progress {
         )
     }
 
-    #if !OPENSWIFTUI_OPENCOMBINE
+    #if canImport(ObjectiveC)
+    // OpenCombine also support this API on Darwin since 0.16.0
     fileprivate typealias UIStatePublisher = Publishers.Map<
         Publishers.CombineLatest4<
             NSObject.KeyValueObservingPublisher<Foundation.Progress, Int64>,
@@ -70,12 +71,11 @@ extension Foundation.Progress {
         }
     }
     #else
-    // TODO: Implement NSObject.KeyValueObservingPublisher in OpenCombine
     fileprivate typealias UIStatePublisher = AnyPublisher<UIState, Never>
 
     fileprivate var uiStatePublisher: UIStatePublisher {
-        // [AI] OpenCombineFoundation does not provide KVO publishers. Sample
-        // Progress while the graph-owned subscription is active instead.
+        // Sample Progress while the graph-owned subscription is active on
+        // platforms without Objective-C KVO support.
         Foundation.Timer.publish(
             every: 1.0 / 30.0,
             on: .main,
