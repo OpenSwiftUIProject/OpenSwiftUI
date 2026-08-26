@@ -15,3 +15,9 @@ package typealias UniqueID = OpenSwiftUICore.UniqueID
 #if canImport(CoreGraphics)
 @_exported import CoreGraphics
 #endif
+
+#if canImport(OpenCombine)
+public import OpenCombine
+public typealias Published = OpenCombine.Published
+public typealias ObservableObject = OpenCombine.ObservableObject
+#endif
