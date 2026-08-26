@@ -584,7 +584,18 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// which must be fractions between zero and one defining points
     /// linearly-interpolated along the path.
     public func trimmedPath(from: CGFloat, to: CGFloat) -> Path {
-        _openSwiftUIUnimplementedFailure()
+        guard !isEmpty else {
+            return Path()
+        }
+        guard from > 0 || to < 1 else {
+            return self
+        }
+        guard to > from else {
+            return Path()
+        }
+        // let retainedPath = retainRBPath()
+        _openSwiftUIUnimplementedWarning()
+        return self
     }
 
     package func rect() -> CGRect? {
