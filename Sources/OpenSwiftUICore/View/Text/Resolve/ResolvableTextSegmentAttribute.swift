@@ -76,7 +76,7 @@ extension ResolvableTextSegmentAttribute {
     }
 }
 
-// MARK: - PlatformAttributeResolver [TODO]
+// MARK: - PlatformAttributeResolver
 
 package struct PlatformAttributeResolver {
     let content: String
@@ -86,10 +86,38 @@ package struct PlatformAttributeResolver {
     let defaultAttributes: [NSAttributedString.Key: Any]
     var properties: Text.ResolvedProperties
 
-    func platformAttributes(
+    mutating func platformAttributes(
         for container: AttributeContainer,
         includeDefaultValueAttributes: Bool
     ) -> [NSAttributedString.Key: Any] {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(Darwin)
+        var attributes = [NSAttributedString.Key: Any](container)
+        var style = style
+        attributes.transferAttributedStringStyles(to: &style)
+        let content = content
+        let platformAttributes = style.nsAttributes(
+            content: { content },
+            environment: environment,
+            includeDefaultAttributes: true,
+            with: options,
+            properties: &properties
+        )
+        attributes.merge(platformAttributes) { _, new in new }
+        guard !includeDefaultValueAttributes else {
+            return attributes
+        }
+        for (key, defaultValue) in defaultAttributes {
+            guard let value = attributes[key],
+                  AttributeContainer([key: value]) == AttributeContainer([key: defaultValue])
+            else {
+                continue
+            }
+            attributes[key] = nil
+        }
+        return attributes
+        #else
+        _openSwiftUIPlatformUnimplementedWarning()
+        return [:]
+        #endif
     }
 }
