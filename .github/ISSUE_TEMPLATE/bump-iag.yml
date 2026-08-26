@@ -17,7 +17,7 @@ body:
     attributes:
       label: Current binary version
       description: The Compute binary version currently pinned in `mise.compute.toml`.
-      placeholder: "0.4.1"
+      placeholder: "0.5.2"
     validations:
       required: true
 
@@ -26,7 +26,7 @@ body:
     attributes:
       label: Target binary version
       description: The proposed Compute binary version. Enter "Unchanged" if this pin does not move.
-      placeholder: "0.5.0"
+      placeholder: "0.6.0"
     validations:
       required: true
 
@@ -35,7 +35,7 @@ body:
     attributes:
       label: Current source version
       description: The Compute source tag or revision currently pinned in `mise.compute.toml`.
-      placeholder: "0.4.1-bugfix.2"
+      placeholder: "0.5.2"
     validations:
       required: true
 
@@ -44,7 +44,7 @@ body:
     attributes:
       label: Target source version
       description: The proposed Compute source tag or revision. Enter "Unchanged" if this pin does not move.
-      placeholder: "0.5.0"
+      placeholder: "0.6.0"
     validations:
       required: true
 

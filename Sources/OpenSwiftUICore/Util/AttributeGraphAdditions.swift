@@ -35,11 +35,6 @@ extension Subgraph {
     }
 }
 
-// FIXME
-extension Graph {
-    package typealias TraceFlags = TraceOptions
-}
-
 // MARK: - Defaultable [6.5.4]
 
 package protocol Defaultable {
@@ -301,7 +296,7 @@ extension Graph {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package static func startTracing(options: Graph.TraceFlags? = nil) {
+    package static func startTracing(options: Graph.TraceOptions? = nil) {
         Graph.startTracing(nil, options: options ?? ProcessEnvironment.tracingOptions)
     }
 
