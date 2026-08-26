@@ -196,17 +196,6 @@ struct LinearCapsuleGauge: View {
     }
 }
 
-extension Shape {
-    @inlinable
-    nonisolated public func trim(
-        from startFraction: CGFloat = 0,
-        to endFraction: CGFloat = 1
-    ) -> some Shape {
-        // FIXME: _TrimmedShape
-        self
-    }
-}
-
 // FIXME
 typealias _ForegroundLayerViewModifier = EmptyModifier
 
