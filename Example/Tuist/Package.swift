@@ -17,9 +17,11 @@ configureOpenSwiftUIEnvironment(provider: PackageContextEnvironmentProvider())
 let exampleServerConfiguration = OpenSwiftUIExampleServerConfiguration.resolve()
 let enableLookInsideServer = exampleServerConfiguration.enableLookInsideServer
 let enableLookInServer = exampleServerConfiguration.enableLookInServer
+let openCombineCondition = envBoolValue("OPENCOMBINE")
 #else
 let enableLookInsideServer = Context.environment["OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER"] == "1"
 let enableLookInServer = Context.environment["OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER"] == "1"
+let openCombineCondition = Context.environment["OPENSWIFTUI_OPENCOMBINE"] == "1"
 #endif
 
 var dependencies: [PackageDescription.Package.Dependency] = [
@@ -34,6 +36,12 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
     .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git", exact: "1.19.3"),
 ]
+
+if openCombineCondition {
+    dependencies.append(
+        .package(url: "https://github.com/OpenSwiftUIProject/OpenCombine.git", from: "0.16.0")
+    )
+}
 
 if enableLookInsideServer {
     dependencies.append(.package(url: "https://github.com/LookInsideApp/LookInside-Release.git", from: "0.2.2"))
