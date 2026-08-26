@@ -22,12 +22,21 @@ struct TextForegroundExample: View {
 struct TextFormatStyleExample: View {
     @State private var myDate = Date(timeIntervalSince1970: 1_767_225_600)
 
+    private var calendar: Calendar {
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = TimeZone(secondsFromGMT: 0)!
+        return calendar
+    }
+
     var body: some View {
         VStack {
             Text(myDate, format: Date.FormatStyle(date: .numeric, time: .omitted))
             Text(myDate, format: Date.FormatStyle(date: .complete, time: .complete))
             Text(myDate, format: Date.FormatStyle().hour(.defaultDigitsNoAMPM).minute())
         }
+        .environment(\.locale, Locale(identifier: "en_US_POSIX"))
+        .environment(\.calendar, calendar)
+        .environment(\.timeZone, calendar.timeZone)
     }
 }
 
