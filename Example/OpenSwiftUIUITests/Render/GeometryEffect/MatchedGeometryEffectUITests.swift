@@ -8,7 +8,6 @@ import Testing
 
 @MainActor
 @Suite(
-    .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for IAG snapshot crash"),
     .snapshots(record: .never, diffTool: diffTool)
 )
 struct MatchedGeometryEffectUITests {
