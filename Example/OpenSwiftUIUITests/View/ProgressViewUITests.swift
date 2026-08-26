@@ -24,9 +24,7 @@ struct ProgressViewUITests {
         openSwiftUIAssertSnapshot(of: DefaultDateProgressLabelExample())
     }
 
-    @Test(
-        .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for IAG snapshot crash")
-    )
+    @Test
     func foundationProgress() {
         openSwiftUIAssertSnapshot(of: FoundationProgressViewExample())
     }

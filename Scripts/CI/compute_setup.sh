@@ -14,7 +14,7 @@ clone_checkout_compute() {
     revision=$(Scripts/CI/get_revision.sh compute 2>/dev/null || true)
   fi
   if [ -z "$revision" ]; then
-    revision="0.4.1-bugfix.2"
+    revision="0.5.2"
   fi
   cd ..
   if [ ! -d Compute ]; then

@@ -8,7 +8,6 @@ import SnapshotTesting
 
 @MainActor
 @Suite(
-    .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for Compute snapshot crash. It will crash when running the whole test plan"),
     .snapshots(record: .never, diffTool: diffTool),
 )
 struct ForEachUITests {

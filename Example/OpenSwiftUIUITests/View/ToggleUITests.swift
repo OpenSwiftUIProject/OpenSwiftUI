@@ -7,7 +7,6 @@ import SnapshotTesting
 
 @MainActor
 @Suite(
-    .disabled(if: attributeGraphVendor == .compute, "Temporarily disabled for Compute snapshot stack overflow. See https://github.com/jcmosc/Compute/issues/47"),
     .snapshots(record: .never, diffTool: diffTool)
 )
 struct ToggleUITests {
