@@ -39,6 +39,7 @@ jobs:
             ios-simulator-name: "iPhone 16 Pro"
     runs-on:
       - xcode-26.6
+      - ios-simulator-18.5
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 1

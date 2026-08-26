@@ -279,6 +279,7 @@ jobs:
             ios-simulator-name: "iPhone 16 Pro"
     runs-on:
       - xcode-26.6
+      - ios-simulator-18.5
     env:
       STATUS_CONTEXT: UI Tests / iOS / ${{ matrix.configuration.id }}
       STATUS_ENABLED: ${{ needs.prepare_uitests.outputs.status-enabled }}
