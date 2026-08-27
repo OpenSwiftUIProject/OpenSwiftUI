@@ -9,9 +9,12 @@
 package import OpenAttributeGraphShims
 
 extension DisplayList {
-//    package mutating func insertLayerFilters(matrices: [_ForegroundLayerLevel : _ColorMatrix], version: DisplayList.Version, premultiplied: Bool) {
-//
-//    }
+    package mutating func insertLayerFilters(
+        matrices: [_ForegroundLayerLevel: _ColorMatrix],
+        version: DisplayList.Version,
+        premultiplied: Bool
+    ) {
+    }
 
     package mutating func applyViewGraphTransform(time: Attribute<Time>, version: DisplayList.Version) {
         // TODO
