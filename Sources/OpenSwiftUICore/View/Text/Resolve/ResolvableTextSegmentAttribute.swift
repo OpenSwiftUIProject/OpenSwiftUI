@@ -24,7 +24,7 @@ package enum ResolvableTextSegmentAttribute: CodableAttributedStringKey {
         private let uuid: UUID
 
         @CodableRawRepresentable
-        private var resolvableAttributeKey: NSAttributedString.Key
+        var resolvableAttributeKey: NSAttributedString.Key
 
         private var runs: [Run]
 
