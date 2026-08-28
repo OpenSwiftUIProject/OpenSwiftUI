@@ -9,7 +9,7 @@
 public import Foundation
 package import OpenAttributeGraphShims
 
-// MARK: - Text + DateStyle [WIP]
+// MARK: - Text + DateStyle
 
 extension Text {
 
@@ -79,7 +79,7 @@ extension Text {
             )
         }
 
-        enum Storage {
+        enum Storage: Int {
             case time
             case date
             case relative
@@ -126,18 +126,101 @@ extension Text {
             }
 
         }
+
+        func text(for date: Date) -> Text {
+            switch storage {
+            case .time:
+                let format = Date.FormatStyle()
+                    .hour(.defaultDigits(amPM: .abbreviated))
+                    .minute(.defaultDigits)
+                    .attributedStyle
+                let trimmedFormat = WhitespaceRemovingFormatStyle<
+                    Date.FormatStyle.Attributed,
+                    AttributeScopes.FoundationAttributes.DateFieldAttribute
+                >(
+                    base: format,
+                    prefixValue: .minute,
+                    suffixValue: .amPM
+                )
+                return Text(date, format: trimmedFormat)
+            case .date:
+                let format = Date.FormatStyle()
+                    .year(.defaultDigits)
+                    .month(.wide)
+                    .day(.defaultDigits)
+                return Text(date, format: format)
+            case .relative, .offset, .timer:
+                #if canImport(Darwin)
+                return Text(
+                    source: TimeDataSource<Date>.DateStorage.identity,
+                    format: format(for: date)!,
+                    reducedLuminanceBudget: nil
+                )
+                #else
+                _openSwiftUIPlatformUnimplementedFailure()
+                #endif
+            }
+        }
+
+        #if canImport(Darwin)
+        func format(for date: Date) -> SystemFormatStyle.DateOffset? {
+            switch storage {
+            case .time, .date:
+                return nil
+            case .relative, .offset:
+                let allowedFields: Set<Date.ComponentsFormatStyle.Field>
+                if let units = unitConfiguration?.units {
+                    allowedFields = Set(units)
+                } else {
+                    allowedFields = [.year, .month, .day, .hour, .minute, .second]
+                }
+                let format = SystemFormatStyle.DateOffset(
+                    to: date,
+                    allowedFields: allowedFields,
+                    maxFieldCount: storage == .relative ? 2 : 1,
+                    sign: storage == .relative ? .never : .always(includingZero: true)
+                )
+                let sizeVariant: TextSizeVariant
+                if let style = unitConfiguration?.style {
+                    sizeVariant = TextSizeVariant(rawValue: 2 - style.rawValue)
+                } else {
+                    sizeVariant = storage == .relative ? .compact : .regular
+                }
+                return format.sizeVariant(sizeVariant)
+            case .timer:
+                let timerFields: Set<Date.ComponentsFormatStyle.Field> = [
+                    .hour,
+                    .minute,
+                    .second,
+                ]
+                let allowedFields: Set<Date.ComponentsFormatStyle.Field>
+                if let units = unitConfiguration?.units {
+                    allowedFields = Set(units).intersection(timerFields)
+                } else {
+                    allowedFields = timerFields
+                }
+                return SystemFormatStyle.DateOffset(
+                    to: date,
+                    allowedFields: allowedFields,
+                    maxFieldCount: allowedFields.count,
+                    sign: .never,
+                    forceUnitsAoDStyle: true
+                )
+            }
+        }
+        #endif
     }
 
     public init(_ date: Date, style: Text.DateStyle) {
-        _openSwiftUIUnimplementedFailure()
+        self = style.text(for: date)
     }
 
     public init(_ dates: ClosedRange<Date>) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(DateInterval(start: dates.lowerBound, end: dates.upperBound))
     }
 
     public init(_ interval: DateInterval) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(anyTextStorage: DateTextStorage(storage: .interval(interval: interval)))
     }
 
     @_spi(Private)
@@ -154,6 +237,52 @@ extension Text {
         timeZone: TimeZone? = nil
     ) {
         _openSwiftUIUnimplementedFailure()
+    }
+}
+
+private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
+    enum Storage: Equatable {
+        case interval(interval: DateInterval)
+    }
+
+    var storage: Storage
+
+    init(storage: Storage) {
+        self.storage = storage
+    }
+
+    override func resolve<T>(
+        into result: inout T,
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) where T: ResolvedTextContainer {
+        switch storage {
+        case let .interval(interval):
+            result.append(
+                resolvable: ResolvableDateInterval(interval, in: environment),
+                in: environment,
+                with: options,
+                transition: nil
+            )
+        }
+    }
+
+    override func resolvesToEmpty(
+        in environment: EnvironmentValues,
+        with options: Text.ResolveOptions
+    ) -> Bool {
+        false
+    }
+
+    override func isEqual(to other: AnyTextStorage) -> Bool {
+        guard let other = other as? DateTextStorage else {
+            return false
+        }
+        return storage == other.storage
+    }
+
+    override func isStyled(options: Text.ResolveOptions) -> Bool {
+        false
     }
 }
 
@@ -264,10 +393,24 @@ extension Text.DateStyle: Codable {
     }
 
     public func encode(to encoder: any Encoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(storage.rawValue, forKey: .storage)
+        try container.encodeIfPresent(
+            unitConfiguration,
+            forKey: .unitConfiguration
+        )
     }
 
     public init(from decoder: any Decoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        let rawStorage = try container.decode(Int.self, forKey: .storage)
+        guard let storage = Storage(rawValue: rawStorage) else {
+            throw Errors.unknownStorage
+        }
+        self.storage = storage
+        self.unitConfiguration = try? container.decodeIfPresent(
+            UnitsConfiguration.self,
+            forKey: .unitConfiguration
+        )
     }
 }

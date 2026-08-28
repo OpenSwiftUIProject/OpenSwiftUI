@@ -62,7 +62,7 @@ extension SystemFormatStyle {
         private var calendar: Calendar = .autoupdatingCurrent
         private var updateFrequency: TimeDataFormatting.UpdateFrequency = .high
         private var watchIdiom: Bool = false
-        private var forceUnitsAoDStyle: Bool = false
+        fileprivate var forceUnitsAoDStyle: Bool = false
 
         /// Creates a format style that describes a date's offset from an anchor date.
         public init(
@@ -83,6 +83,22 @@ extension SystemFormatStyle {
             self.allowedFields = allowedFields
             self.maxFieldCount = maxFieldCount
             self.sign = sign
+        }
+
+        init(
+            to anchor: Date,
+            allowedFields: Set<Date.ComponentsFormatStyle.Field>,
+            maxFieldCount: Int,
+            sign: NumberFormatStyleConfiguration.SignDisplayStrategy,
+            forceUnitsAoDStyle: Bool
+        ) {
+            self.init(
+                to: anchor,
+                allowedFields: allowedFields,
+                maxFieldCount: maxFieldCount,
+                sign: sign
+            )
+            self.forceUnitsAoDStyle = forceUnitsAoDStyle
         }
 
         /// Returns a copy of the style configured with the specified calendar.
@@ -157,7 +173,7 @@ extension SystemFormatStyle.DateOffset: FormatStyle {
         case .regular:
             .wide
         case .compact:
-            .condensedAbbreviated
+            watchIdiom ? .condensedAbbreviated : .abbreviated
         default:
             .narrow
         }
