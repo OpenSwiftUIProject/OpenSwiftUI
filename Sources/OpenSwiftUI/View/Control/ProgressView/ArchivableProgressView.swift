@@ -76,7 +76,7 @@ struct ArchivableCircularProgressView: View {
                 )
                 .frame(height: min(proxy.size.width, proxy.size.height) * 0.5)
                 .labelStyle(.iconOnly)
-                .modifier(_ForegroundLayerViewModifier())
+                .foregroundLayer()
                 .multilineTextAlignment(.center)
             }
         }
@@ -195,9 +195,6 @@ struct LinearCapsuleGauge: View {
         EmptyView()
     }
 }
-
-// FIXME
-typealias _ForegroundLayerViewModifier = EmptyModifier
 
 extension View {
     func labelStyle(_ style: LabelStyle) -> some View {
