@@ -1,7 +1,6 @@
 //
 //  ConfigurationBasedResolvableStringAttributeTests.swift
 //  OpenSwiftUICoreTests
-//
 
 import Foundation
 @_spi(Private) @testable import OpenSwiftUICore

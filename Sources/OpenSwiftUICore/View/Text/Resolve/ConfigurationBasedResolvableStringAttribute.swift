@@ -163,6 +163,14 @@ private protocol InvalidationConfigurtaionProvider {
     var invalidationConfiguration: ResolvableAttributeConfiguration { get }
 }
 
+extension ReducedTimelineSchedule: InvalidationConfigurtaionProvider where T1: InvalidationConfigurtaionProvider, T2: InvalidationConfigurtaionProvider {
+    var invalidationConfiguration: ResolvableAttributeConfiguration {
+        var configuration = t1.invalidationConfiguration
+        configuration.reduce(t2.invalidationConfiguration)
+        return configuration
+    }
+}
+
 extension ResolvableAttributeConfiguration.Schedule: InvalidationConfigurtaionProvider {}
 
 extension TimeDataFormatting.Resolvable: InvalidationConfigurtaionProvider {}

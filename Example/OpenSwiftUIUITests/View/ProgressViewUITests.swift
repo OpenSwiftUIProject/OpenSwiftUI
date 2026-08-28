@@ -19,7 +19,7 @@ struct ProgressViewUITests {
         openSwiftUIAssertSnapshot(of: IndeterminateProgressViewExample())
     }
 
-    @Test(.disabled("ResolvableTextSegmentAttribute is not implemented yet"))
+    @Test(.disabled("TextLayoutManager is not implemented yet"))
     func defaultDateProgressLabelInitializers() {
         openSwiftUIAssertSnapshot(of: DefaultDateProgressLabelExample())
     }
