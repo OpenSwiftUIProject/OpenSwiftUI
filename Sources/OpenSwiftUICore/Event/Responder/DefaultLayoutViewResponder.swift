@@ -54,7 +54,7 @@ open class DefaultLayoutViewResponder: MultiViewResponder {
 
     package init(inputs: _ViewInputs, viewSubgraph: Subgraph) {
         self.inputs = inputs
-        self.viewSubgraph = Subgraph.current!
+        self.viewSubgraph = viewSubgraph
         super.init()
     }
 
