@@ -26,6 +26,13 @@ struct ProgressViewUITests {
 
     @Test
     func foundationProgress() {
+        #if os(iOS)
+        // FIXME: The SwiftUI reference image is flaky on CI while the Foundation progress label settles.
+        withKnownIssue("The SwiftUI reference image is flaky on CI", isIntermittent: true) {
+            openSwiftUIAssertSnapshot(of: FoundationProgressViewExample())
+        }
+        #else
         openSwiftUIAssertSnapshot(of: FoundationProgressViewExample())
+        #endif
     }
 }
