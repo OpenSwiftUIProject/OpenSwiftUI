@@ -32,13 +32,12 @@ struct ContentPathObservers {
     mutating func notifyPathChanged(for parent: ViewResponder, changes: ContentPathChanges, transform: (old: ViewTransform, new: ViewTransform)) {
         let oldObservers = observers
         observers = []
-        var failedObservers: [Observer] = []
         for observer in oldObservers {
             var result = true
             guard let value = observer.value else { continue }
             value.contentPathDidChange(for: parent, changes: changes, transform: transform, finished: &result)
             guard !result else { continue }
-            failedObservers.append(observer)
+            observers.append(observer)
         }
     }
 }
