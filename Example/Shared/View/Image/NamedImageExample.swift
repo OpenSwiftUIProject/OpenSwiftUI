@@ -49,3 +49,19 @@ struct NamedImageRenderingModeTemplateExample: View {
         .frame(width: 200, height: 100)
     }
 }
+
+#Preview("NamedImageExample") {
+    NamedImageExample()
+}
+
+#Preview("NamedImageDecorativeExample") {
+    NamedImageDecorativeExample()
+}
+
+#Preview("NamedImageRenderingModeOriginalExample") {
+    NamedImageRenderingModeOriginalExample()
+}
+
+#Preview("NamedImageRenderingModeTemplateExample") {
+    NamedImageRenderingModeTemplateExample()
+}

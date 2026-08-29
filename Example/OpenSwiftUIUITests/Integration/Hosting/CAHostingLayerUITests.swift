@@ -14,10 +14,8 @@ struct CAHostingLayerUITests {
     #endif
     @Test
     func basicLayer() {
-        let example = CAHostingLayerExample(content: Color.red, size: defaultSize)
-        let vc = example.makeViewController()
-        openSwiftUIControllerAssertSnapshot(
-            of: vc,
+        openSwiftUIAssertSnapshot(
+            of: CAHostingLayerExample(content: Color.red),
             as: .image(drawHierarchyInKeyWindow: false, size: defaultSize)
         )
     }

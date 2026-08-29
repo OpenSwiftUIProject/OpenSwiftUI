@@ -30,3 +30,11 @@ struct LineLimitReservesSpaceExample: View {
         }
     }
 }
+
+#Preview("LineLimitExample") {
+    LineLimitExample()
+}
+
+#Preview("LineLimitReservesSpaceExample") {
+    LineLimitReservesSpaceExample()
+}

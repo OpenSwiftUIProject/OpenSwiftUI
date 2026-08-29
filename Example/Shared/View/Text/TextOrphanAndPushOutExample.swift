@@ -32,3 +32,7 @@ struct TextOrphanAndPushOutExample: View {
         }
     }
 }
+
+#Preview {
+    TextOrphanAndPushOutExample()
+}

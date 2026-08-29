@@ -22,3 +22,7 @@ struct ToggleExample: View {
         }
     }
 }
+
+#Preview {
+    ToggleExample()
+}

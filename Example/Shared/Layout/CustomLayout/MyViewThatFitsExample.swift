@@ -24,3 +24,7 @@ struct MyViewThatFitsExample: View {
         .id(showRed)
     }
 }
+
+#Preview {
+    MyViewThatFitsExample()
+}

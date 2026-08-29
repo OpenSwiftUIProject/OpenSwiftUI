@@ -51,3 +51,7 @@ struct ElasticEaseInEaseOutAnimationExample: View {
         .padding()
     }
 }
+
+#Preview {
+    ElasticEaseInEaseOutAnimationExample()
+}

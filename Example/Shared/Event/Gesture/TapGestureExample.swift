@@ -23,3 +23,7 @@ struct TapGestureExample: View {
             }
     }
 }
+
+#Preview {
+    TapGestureExample()
+}

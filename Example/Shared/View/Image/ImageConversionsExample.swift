@@ -74,3 +74,11 @@ struct ImageConversionsSystemImageExample: View {
         }.foregroundStyle(.red)
     }
 }
+
+#Preview("ImageConversionsExample") {
+    ImageConversionsExample()
+}
+
+#Preview("ImageConversionsSystemImageExample") {
+    ImageConversionsSystemImageExample()
+}

@@ -40,3 +40,7 @@ struct ConditionalContentExample: View {
         }
     }
 }
+
+#Preview {
+    ConditionalContentExample()
+}

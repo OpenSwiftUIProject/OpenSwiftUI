@@ -25,3 +25,7 @@ struct SpatialTapGestureExample: View {
             .gesture(tap)
     }
 }
+
+#Preview {
+    SpatialTapGestureExample()
+}

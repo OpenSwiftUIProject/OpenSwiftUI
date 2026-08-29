@@ -23,3 +23,7 @@ struct GeometryReaderExample: View {
         }
     }
 }
+
+#Preview {
+    GeometryReaderExample()
+}

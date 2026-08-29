@@ -15,3 +15,7 @@ struct VariableBlurEffectExample: View {
             .variableBlur(maxRadius: 10, mask: Image(systemName: "plus"))
     }
 }
+
+#Preview {
+    VariableBlurEffectExample()
+}

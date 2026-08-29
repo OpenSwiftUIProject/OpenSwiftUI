@@ -42,3 +42,7 @@ struct VariableImageExample: View {
          }
      }
  }
+
+#Preview {
+    VariableImageExample()
+}

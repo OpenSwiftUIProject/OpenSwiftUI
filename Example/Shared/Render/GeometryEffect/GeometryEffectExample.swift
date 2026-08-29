@@ -67,3 +67,19 @@ struct Rotation3DEffectExample: View {
             )
     }
 }
+
+#Preview("GeometryEffectExample") {
+    GeometryEffectExample()
+}
+
+#Preview("OffsetEffectExample") {
+    OffsetEffectExample()
+}
+
+#Preview("RotationEffectExample") {
+    RotationEffectExample()
+}
+
+#Preview("Rotation3DEffectExample") {
+    Rotation3DEffectExample()
+}

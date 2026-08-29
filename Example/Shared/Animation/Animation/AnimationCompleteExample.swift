@@ -54,3 +54,7 @@ struct AnimationCompleteExample: View {
         }
     }
 }
+
+#Preview {
+    AnimationCompleteExample()
+}

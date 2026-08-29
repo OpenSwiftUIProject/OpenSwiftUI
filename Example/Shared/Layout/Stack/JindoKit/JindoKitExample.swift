@@ -83,4 +83,8 @@ struct JindoKitExample: View {
     }
 }
 
+#Preview {
+    JindoKitExample()
+}
+
 #endif

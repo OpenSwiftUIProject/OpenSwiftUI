@@ -25,3 +25,7 @@ struct AppearanceActionModifierExample: View {
             .id(first)
     }
 }
+
+#Preview {
+    AppearanceActionModifierExample()
+}

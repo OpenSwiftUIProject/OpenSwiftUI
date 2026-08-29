@@ -129,3 +129,19 @@ struct TextBackgroundHeightExample: View {
             .background(Color.red)
     }
 }
+
+#Preview("TextForegroundExample") {
+    TextForegroundExample()
+}
+
+#Preview("TextFormatStyleExample") {
+    TextFormatStyleExample()
+}
+
+#Preview("TextSystemFormatStyleExample") {
+    TextSystemFormatStyleExample()
+}
+
+#Preview("TextBackgroundHeightExample") {
+    TextBackgroundHeightExample()
+}

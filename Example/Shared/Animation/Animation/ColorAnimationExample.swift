@@ -23,3 +23,7 @@ struct ColorAnimationExample: View {
         }
     }
 }
+
+#Preview {
+    ColorAnimationExample()
+}

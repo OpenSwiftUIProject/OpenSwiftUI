@@ -36,3 +36,7 @@ struct ObservationExample: View {
         }
     }
 }
+
+#Preview {
+    ObservationExample()
+}

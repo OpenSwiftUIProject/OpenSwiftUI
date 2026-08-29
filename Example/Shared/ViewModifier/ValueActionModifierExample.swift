@@ -23,3 +23,7 @@ struct ValueActionModifierExample: View {
             }
     }
 }
+
+#Preview {
+    ValueActionModifierExample()
+}

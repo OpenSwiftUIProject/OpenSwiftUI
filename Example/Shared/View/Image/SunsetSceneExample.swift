@@ -436,3 +436,7 @@ private struct BadgeView: View {
         }
     }
 }
+
+#Preview {
+    SunsetSceneExample()
+}

@@ -24,3 +24,7 @@ struct SpringAnimationExample: View {
         }
     }
 }
+
+#Preview {
+    SpringAnimationExample()
+}

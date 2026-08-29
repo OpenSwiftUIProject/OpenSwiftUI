@@ -62,3 +62,7 @@ struct TransactionExample: View {
         }
     }
 }
+
+#Preview {
+    TransactionExample()
+}

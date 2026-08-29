@@ -27,3 +27,7 @@ struct NamespaceExample: View {
             .id(first)
     }
 }
+
+#Preview {
+    NamespaceExample()
+}
