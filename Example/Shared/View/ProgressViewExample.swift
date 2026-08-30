@@ -77,3 +77,19 @@ struct FoundationProgressViewExample: View {
             .padding()
     }
 }
+
+#Preview("ProgressViewExample") {
+    ProgressViewExample()
+}
+
+#Preview("IndeterminateProgressViewExample") {
+    IndeterminateProgressViewExample()
+}
+
+#Preview("DefaultDateProgressLabelExample") {
+    DefaultDateProgressLabelExample()
+}
+
+#Preview("FoundationProgressViewExample") {
+    FoundationProgressViewExample()
+}

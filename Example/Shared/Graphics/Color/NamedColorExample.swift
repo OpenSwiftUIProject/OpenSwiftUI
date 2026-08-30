@@ -27,3 +27,7 @@ struct NamedColorExample: View {
         }
     }
 }
+
+#Preview {
+    NamedColorExample()
+}

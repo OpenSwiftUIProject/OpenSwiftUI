@@ -1,15 +1,6 @@
 {
-  "originHash" : "f29d8609b7396a490f6044267bdd2085f2d5ce3aab2aed2de7c0283190c895f4",
+  "originHash" : "24f27c4fa462a56a8677d83e00650415b0dae1786d37f688f3e20df30f638e7c",
   "pins" : [
-    {
-      "identity" : "compute",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/OpenSwiftUIProject/Compute",
-      "state" : {
-        "revision" : "fcea97e940b65659e4ee8dd74fffacb332d1a103",
-        "version" : "0.5.2"
-      }
-    },
     {
       "identity" : "equatable",
       "kind" : "remoteSourceControl",

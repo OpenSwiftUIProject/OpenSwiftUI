@@ -14,3 +14,7 @@ struct AsyncImageExample: View {
         AsyncImage(url: URL(string: "https://picsum.photos/200"))
     }
 }
+
+#Preview {
+    AsyncImageExample()
+}

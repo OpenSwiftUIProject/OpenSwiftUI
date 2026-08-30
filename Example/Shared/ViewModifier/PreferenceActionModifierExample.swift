@@ -25,3 +25,7 @@ struct PreferenceActionModifierExample: View {
             .onPreferenceChange(Key.self, perform: action)
     }
 }
+
+#Preview {
+    PreferenceActionModifierExample { _ in }
+}

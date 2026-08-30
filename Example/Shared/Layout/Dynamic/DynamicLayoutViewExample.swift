@@ -20,3 +20,7 @@ struct DynamicLayoutViewExample: View {
         }
     }
 }
+
+#Preview {
+    DynamicLayoutViewExample()
+}

@@ -29,3 +29,7 @@ struct GeometryActionModifierExample: View {
         .padding()
     }
 }
+
+#Preview {
+    GeometryActionModifierExample()
+}

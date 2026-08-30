@@ -93,3 +93,15 @@ struct ForEachLazyContainerNonConstantCountView: View {
 //        }
     }
 }
+
+#Preview("ForEachExample") {
+    ForEachExample()
+}
+
+#Preview("ForEachOffsetExample") {
+    ForEachOffsetExample()
+}
+
+#Preview("ForEachKeyPathExample") {
+    ForEachKeyPathExample()
+}

@@ -58,3 +58,11 @@ struct ColorViewControllerRepresentableExample: PlatformViewControllerRepresenta
     func updateNSViewController(_ nsViewController: NSViewControllerType, context: Context) {}
     #endif
 }
+
+#Preview("ColorViewRepresentableExample") {
+    ColorViewRepresentableExample()
+}
+
+#Preview("ColorViewControllerRepresentableExample") {
+    ColorViewControllerRepresentableExample()
+}

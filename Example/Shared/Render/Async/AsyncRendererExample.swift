@@ -57,3 +57,11 @@ struct AsyncRendererTransitionExample: View {
         }
     }
 }
+
+#Preview("AsyncRendererExample") {
+    AsyncRendererExample()
+}
+
+#Preview("AsyncRendererTransitionExample") {
+    AsyncRendererTransitionExample()
+}

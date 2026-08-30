@@ -24,42 +24,105 @@ import AppKit
 import UIKit
 #endif
 
-@MainActor
-struct CAHostingLayerExample<Content: View> {
-    var content: Content
-    var size: CGSize
+#if !OPENSWIFTUI
+@available(iOS 18.0, macOS 15.0, *)
+#endif
+final class CAHostingLayerExampleView: PlatformView {
+    private let hostingLayer: CALayer
 
-    #if !OPENSWIFTUI
-    @available(iOS 18.0, macOS 15.0, *)
-    #endif
-    func makeViewController() -> PlatformViewController {
-        let layer = CAHostingLayer(rootView: content)
-        layer.anchorPoint = .zero
-        layer.bounds = CGRect(origin: .zero, size: size)
-        #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-        let view = NSView(frame: CGRect(origin: .zero, size: size))
-        view.wantsLayer = true
-        view.layer?.addSublayer(layer)
-        let vc = NSViewController()
-        vc.view = view
-        #elseif canImport(UIKit)
-        let view = UIView(frame: CGRect(origin: .zero, size: size))
-        view.layer.addSublayer(layer)
-        let vc = UIViewController()
-        vc.view = view
+    init(content: some View) {
+        let hostingLayer = CAHostingLayer(rootView: content)
+        self.hostingLayer = hostingLayer
+
+        super.init(frame: .zero)
+
+        hostingLayer.anchorPoint = .zero
+        #if canImport(UIKit)
+        layer.addSublayer(hostingLayer)
+        #elseif canImport(AppKit)
+        wantsLayer = true
+        layer!.addSublayer(hostingLayer)
         #endif
-        return vc
+        updateHostingLayer()
+    }
+
+    required init?(coder: NSCoder) {
+        fatalError("init(coder:) has not been implemented")
+    }
+
+    #if canImport(UIKit)
+    override func layoutSubviews() {
+        super.layoutSubviews()
+        updateHostingLayer()
+    }
+
+    override func didMoveToWindow() {
+        super.didMoveToWindow()
+        updateHostingLayer()
+    }
+    #elseif canImport(AppKit)
+    override func layout() {
+        super.layout()
+        updateHostingLayer()
+    }
+
+    override func viewDidMoveToWindow() {
+        super.viewDidMoveToWindow()
+        updateHostingLayer()
+    }
+
+    override func viewDidChangeBackingProperties() {
+        super.viewDidChangeBackingProperties()
+        updateHostingLayer()
+    }
+    #endif
+
+    private func updateHostingLayer() {
+        #if canImport(UIKit)
+        let contentsScale = window?.screen.scale
+            ?? traitCollection.displayScale
+        #elseif canImport(AppKit)
+        let contentsScale = window?.backingScaleFactor
+            ?? NSScreen.main?.backingScaleFactor
+            ?? 1.0
+        #endif
+
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        hostingLayer.frame = bounds
+        if hostingLayer.contentsScale != contentsScale {
+            hostingLayer.contentsScale = contentsScale
+            hostingLayer.setNeedsLayout()
+        }
+        CATransaction.commit()
     }
 }
 
-#Preview("CAHostingLayerExample") {
-    #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-    let size = CGSize(width: 500, height: 300)
-    #elseif canImport(UIKit)
-    let size = UIScreen.main.bounds.size
+#Preview("CAHostingLayerExampleView") {
+    CAHostingLayerExampleView(content: ContentView())
+}
+
+#if !OPENSWIFTUI
+@available(iOS 18.0, macOS 15.0, *)
+#endif
+struct CAHostingLayerExample<Content: View>: PlatformViewRepresentable {
+    let content: Content
+
+    #if canImport(UIKit)
+    func makeUIView(context: Context) -> CAHostingLayerExampleView {
+        CAHostingLayerExampleView(content: content)
+    }
+
+    func updateUIView(_ uiView: CAHostingLayerExampleView, context: Context) {}
+    #elseif canImport(AppKit)
+    func makeNSView(context: Context) -> CAHostingLayerExampleView {
+        CAHostingLayerExampleView(content: content)
+    }
+
+    func updateNSView(_ nsView: CAHostingLayerExampleView, context: Context) {}
     #endif
-    return CAHostingLayerExample(
-        content: ContentView(),
-        size: size
-    ).makeViewController()
+}
+
+#Preview("CAHostingLayerExample") {
+    CAHostingLayerExample(content: ContentView())
 }

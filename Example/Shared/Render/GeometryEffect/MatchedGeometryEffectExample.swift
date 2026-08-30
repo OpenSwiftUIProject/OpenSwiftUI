@@ -95,3 +95,15 @@ struct MatchedGeometryEffectClipShapeModifierExample: View {
 //        .border(Color.gray, width: 3)
     }
 }
+
+#Preview("MatchedGeometryEffectExample") {
+    MatchedGeometryEffectExample()
+}
+
+#Preview("MatchedGeometryEffectModifierExample") {
+    MatchedGeometryEffectModifierExample()
+}
+
+#Preview("MatchedGeometryEffectClipShapeModifierExample") {
+    MatchedGeometryEffectClipShapeModifierExample()
+}

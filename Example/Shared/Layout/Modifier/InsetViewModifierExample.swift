@@ -25,3 +25,7 @@ struct InsetViewModifierExample: View {
             }
     }
 }
+
+#Preview {
+    InsetViewModifierExample()
+}

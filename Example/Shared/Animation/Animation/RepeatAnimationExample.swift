@@ -47,3 +47,7 @@ struct RepeatAnimationExample: View {
         }
     }
 }
+
+#Preview {
+    RepeatAnimationExample()
+}
