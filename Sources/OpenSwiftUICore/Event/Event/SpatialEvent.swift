@@ -2,11 +2,12 @@
 //  SpatialEvent.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import Foundation
 
-// MARK: - SpatialEventType [6.5.4]
+// MARK: - SpatialEventType
 
 package protocol SpatialEventType: EventType {
     var globalLocation: CGPoint { get set }
@@ -19,7 +20,7 @@ extension SpatialEventType {
     package var kind: SpatialEvent.Kind? { nil }
 }
 
-// MARK: - SpatialEvent [6.5.4]
+// MARK: - SpatialEvent
 
 package struct SpatialEvent: SpatialEventType, Equatable {
     package enum Kind: Equatable {
@@ -71,7 +72,7 @@ package func defaultConvertEventLocations<E>(
     var eventIDs: [EventID] = []
     var points: [CGPoint] = []
     for (eventID, event) in events {
-        guard var spatialEvent = event as? SpatialEventType else {
+        guard let spatialEvent = event as? SpatialEventType else {
             continue
         }
         eventIDs.append(eventID)

@@ -9,7 +9,7 @@
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
-package protocol AnyUIHostingView: AnyObject {
+protocol AnyUIHostingView: AnyObject {
     var eventBridge: UIKitEventBindingBridge { get set }
     var debugName: String? { get }
 }

@@ -2,17 +2,18 @@
 //  TappableEvent.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import Foundation
 
-// MARK: - TappableEventType [6.5.4]
+// MARK: - TappableEventType
 
 package protocol TappableEventType: EventType {}
 
 package typealias PlatformTappableSpatialEvent = TappableSpatialEvent
 
-// MARK: - TappableEvent [6.5.4]
+// MARK: - TappableEvent
 
 package struct TappableEvent: TappableEventType, Equatable {
     package var phase: EventPhase
@@ -39,7 +40,7 @@ package struct TappableEvent: TappableEventType, Equatable {
     }
 }
 
-// MARK: - TappableSpatialEvent [6.5.4]
+// MARK: - TappableSpatialEvent
 
 package struct TappableSpatialEvent: TappableEventType, SpatialEventType, Equatable {
     package var phase: EventPhase
@@ -75,7 +76,7 @@ package struct TappableSpatialEvent: TappableEventType, SpatialEventType, Equata
     }
 }
 
-// MARK: - TouchTypeProviding [6.5.4]
+// MARK: - TouchTypeProviding
 
 package protocol TouchTypeProviding {
     var touchType: TouchType { get }

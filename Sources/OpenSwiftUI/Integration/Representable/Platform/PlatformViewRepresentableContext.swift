@@ -23,6 +23,16 @@ struct RepresentableContextValues {
         case lazy(Attribute<EnvironmentValues>, AnyRuleContext)
     }
 
+    @inlinable
+    var environment: EnvironmentValues {
+        switch environmentStorage {
+        case let .eager(environmentValues):
+            environmentValues
+        case let .lazy(attribute, anyRuleContext):
+            Update.ensure { anyRuleContext[attribute] }
+        }
+    }
+
     func asCurrent<V>(do action: () -> V) -> V {
         let old = Self.current
         Self.current = self
@@ -53,11 +63,6 @@ struct PlatformViewRepresentableContext<Content: PlatformViewRepresentable> {
 
     @inlinable
     var environment: EnvironmentValues {
-        switch values.environmentStorage {
-        case let .eager(environmentValues):
-            environmentValues
-        case let .lazy(attribute, anyRuleContext):
-            Update.ensure { anyRuleContext[attribute] }
-        }
+        values.environment
     }
 }

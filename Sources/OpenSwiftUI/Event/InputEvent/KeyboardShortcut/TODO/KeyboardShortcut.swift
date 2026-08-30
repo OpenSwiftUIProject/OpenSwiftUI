@@ -48,25 +48,6 @@ public struct KeyboardShortcut {
     }
 }
 
-#if os(iOS) || os(visionOS) || os(tvOS)
-import UIKit
-
-@available(tvOS, unavailable)
-@available(watchOS, unavailable)
-extension KeyboardShortcut {
-    init?(_ command: UIKeyCommand) {
-        guard let input = command.input else {
-            return nil
-        }
-        // FIXME:
-        let key: KeyEquivalent = switch input {
-        default: .escape
-        }
-        self.init(key, modifiers: .init(command.modifierFlags), localization: .automatic)
-    }
-}
-#endif
-
 // @available(tvOS, unavailable)
 // @available(watchOS, unavailable)
 // extension View {
