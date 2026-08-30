@@ -158,6 +158,8 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
 
+    // MARK: - UIHostingView initialization [WIP]
+
     required public init(rootView: Content) {
         _rootView = rootView
         Update.begin()
@@ -183,18 +185,39 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         // TODO
         super.init(frame: .zero)
         _base.viewGraph.append(feature: HostViewGraph(host: self))
-        // TODO
+        appendViewGraphFeatures()
         let base = base
         if let host = base.host {
             host.initializeViewGraph()
             base.setupNotifications()
         }
-        // RepresentableContextValues.current =
+        if let current = RepresentableContextValues.current {
+            if let bridge = current.preferenceBridge {
+                setPreferenceBridge(bridge)
+            }
+            initialInheritedEnvironment = current.environment
+        }
         feedbackCache.host = self
+        // TODO
+        eventBindingManager.host = self
+        eventBindingManager.delegate = eventBridge
+        if let gestureRecognizer = eventBridge.gestureRecognizer {
+            addGestureRecognizer(gestureRecognizer)
+        }
+        addGestureRecognizer(eventBridge.hoverGestureRecognizer)
         // TODO
         HostingViewRegistry.shared.add(self)
         Update.end()
         // TODO
+    }
+
+    func setPreferenceBridge(_ bridge: PreferenceBridge) {
+        guard viewGraph.preferenceBridge !== bridge else { return }
+        viewGraph.preferenceBridge = bridge
+    }
+
+    func appendViewGraphFeatures() {
+        _openSwiftUIEmptyStub()
     }
     
     @available(*, unavailable)
@@ -202,8 +225,16 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         preconditionFailure("init(coder:) has not been implemented")
     }
     
+    // MARK: - UIHostingView teardown
+
     deinit {
-        _base.tearDown(uiView: self, host: self)
+        let base = _base
+        base.tearDown(uiView: self, host: self)
+        NotificationCenter.default.removeObserver(self)
+        base.cancelAsyncRendering()
+        base.displayLink?.invalidate()
+        base.displayLink = nil
+        _base.clearUpdateTimer()
         HostingViewRegistry.shared.remove(self)
     }
     
@@ -228,7 +259,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         Update.begin()
         // TODO:
         // updateKeyboardAvoidance()
-        // eventBridge.hostingView(self, didMoveToWindow: window)
+        eventBridge.hostingView(self, didMoveToWindow: window)
         if let viewController {
             // viewController._didMoveToWindow()
         }
