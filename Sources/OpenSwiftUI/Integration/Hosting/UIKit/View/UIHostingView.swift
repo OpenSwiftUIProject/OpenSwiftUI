@@ -397,7 +397,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             updateRootView()
         }
     }
-    
+
     /// The root View of the view hierarchy to display.
     var rootView: Content {
         get { _rootView }
@@ -446,7 +446,11 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         get { safeAreaRegions.contains(.keyboard) }
         set { safeAreaRegions.setValue(newValue, for: .keyboard) }
     }
-    
+
+    open override var next: UIResponder? {
+        eventBridge.keyPressResponder ?? defaultNextResponder
+    }
+
     package func makeViewDebugData() -> Data? {
         Update.ensure {
             _ViewDebug.serializedData(viewGraph.viewDebugData())

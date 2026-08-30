@@ -225,7 +225,11 @@ extension _UIHostingView: ViewRendererHost {
             // TODO: PointerHost, WindowLayoutHost,
             } else if UIView.self == type {
                 return unsafeBitCast(self as UIView, to: T.self)
-            // TODO: CurrentEventProvider, FallbackResponderProvider, ContainerBackgroundHost, RootTransformUpdater
+            } else if EventGraphHost.self == type {
+                return unsafeBitCast(self as any EventGraphHost, to: T.self)
+            // TODO: CurrentEventProvider, ContainerBackgroundHost, RootTransformUpdater
+            } else if FallbackResponderProvider.self == type {
+                return unsafeBitCast(self as any FallbackResponderProvider, to: T.self)
             } else if ViewRendererHost.self == type {
                 return unsafeBitCast(self as any ViewRendererHost, to: T.self)
             // TODO: ViewGraphRenderObserver, ToolbarInputFeatureDelegate
@@ -360,6 +364,14 @@ extension _UIHostingView {
 
     package func endAllowUIKitAnimations() {
         allowUIKitAnimations = max(allowUIKitAnimations - 1, 0)
+    }
+}
+
+// MARK: - _UIHostingView + FallbackResponderProvider
+
+extension _UIHostingView: FallbackResponderProvider {
+    package var defaultNextResponder: UIResponder? {
+        super.next
     }
 }
 
