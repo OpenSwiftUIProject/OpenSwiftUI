@@ -42,8 +42,9 @@ runs:
         xcode-version: ${{ inputs.xcode-version }}
 
     - name: Set up mise
-      uses: jdx/mise-action@v2
+      uses: jdx/mise-action@v4
       with:
+        version: 2026.8.14
         install: false
         cache: false
 
