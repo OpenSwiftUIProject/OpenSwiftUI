@@ -97,4 +97,14 @@ extension EventBindingBridge: EventBindingManagerDelegate {
             eventSource.didUpdate(gestureCategory: gestureCategory, in: self)
         }
     }
+
+    #if os(macOS)
+    package func requestHoverUpdate(
+        in eventBindingManager: EventBindingManager
+    ) {
+        for eventSource in eventSources {
+            eventSource.didRequestHoverUpdate(in: self)
+        }
+    }
+    #endif
 }
