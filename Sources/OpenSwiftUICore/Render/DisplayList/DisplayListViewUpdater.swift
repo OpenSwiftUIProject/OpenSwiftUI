@@ -286,26 +286,24 @@ extension DisplayList {
                 return
             }
             if requirements.contains(.inheritedView) {
-                var result = withUnsafePointer(to: state) { statePtr in
-                    viewCache.update(
+                var result = viewCache.update(
+                    item: item,
+                    state: parentState,
+                    tag: .inherited,
+                    in: container.id
+                ) { [platform] _, item, state in
+                    platform.makeInheritedViewInfo(
                         item: item,
-                        state: statePtr,
-                        tag: .inherited,
-                        in: container.id
-                    ) { [platform] _, item, state in
-                        platform.makeInheritedViewInfo(
-                            item: item,
-                            size: item.size,
-                            state: state
-                        )
-                    } updateView: { [platform] info, _, item, state in
-                        platform.updateInheritedViewInfo(
-                            &info,
-                            item: item,
-                            size: item.size,
-                            state: state
-                        )
-                    }
+                        size: item.size,
+                        state: state
+                    )
+                } updateView: { [platform] info, _, item, state in
+                    platform.updateInheritedViewInfo(
+                        &info,
+                        item: item,
+                        size: item.size,
+                        state: state
+                    )
                 }
                 isValid = isValid && result.isValid
                 container.platform.addSubview(
@@ -385,26 +383,22 @@ extension DisplayList {
                 return nil
             }
             if oldRequirements.contains(.inheritedView) {
-                let result = withUnsafePointer(to: oldState) { oldStatePtr in
-                    withUnsafePointer(to: newState) { newStatePtr in
-                        viewCache.updateAsync(
-                            oldItem: oldItem,
-                            oldState: oldStatePtr,
-                            newItem: newItem,
-                            newState: newStatePtr,
-                            tag: .inherited
-                        ) { [platform] layer, _, oldItem, oldState, newItem, newState in
-                            platform.updateInheritedLayerAsync(
-                                layer: &layer,
-                                oldItem: oldItem,
-                                oldSize: oldItem.size,
-                                oldState: oldState,
-                                newItem: newItem,
-                                newSize: newItem.size,
-                                newState: newState
-                            )
-                        }
-                    }
+                let result = viewCache.updateAsync(
+                    oldItem: oldItem,
+                    oldState: oldParentState,
+                    newItem: newItem,
+                    newState: newParentState,
+                    tag: .inherited
+                ) { [platform] layer, _, oldItem, oldState, newItem, newState in
+                    platform.updateInheritedLayerAsync(
+                        layer: &layer,
+                        oldItem: oldItem,
+                        oldSize: oldItem.size,
+                        oldState: oldState,
+                        newItem: newItem,
+                        newSize: newItem.size,
+                        newState: newState
+                    )
                 }
                 guard var result else {
                     return nil
