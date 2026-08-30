@@ -16,13 +16,20 @@
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
+typedef NS_ENUM(NSInteger, UITransformPhase) {
+    UITransformPhaseBegan = 1,
+    UITransformPhaseActive = 2,
+    UITransformPhaseEnded = 3,
+    UITransformPhaseFailed = 4,
+};
+
 @interface UITransformEvent : UIEvent
 
-@property (nonatomic, readonly) NSUInteger phase;
+@property (nonatomic, readonly) UITransformPhase phase;
 @property (nonatomic, readonly) CGFloat scale;
 @property (nonatomic, readonly) CGFloat rotation;
 
-- (CGPoint)locationInView:(nullable UIView *)view OPENSWIFTUI_SWIFT_NAME(location(in:));
+- (CGPoint)locationInView:(nullable UIView *)view;
 
 @end
 

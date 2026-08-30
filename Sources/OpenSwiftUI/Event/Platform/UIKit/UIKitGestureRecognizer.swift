@@ -3,7 +3,7 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 062C14327F4C9197D92807A7F4DF7F3B (SwiftUI)
 
 #if os(iOS) || os(visionOS)
@@ -12,9 +12,9 @@ import COpenSwiftUI
 import OpenSwiftUICore
 import UIKit
 
-// MARK: - UIKitGestureRecognizer [WIP]
+// MARK: - UIKitGestureRecognizer
 
-final class UIKitGestureRecognizer: UIGestureRecognizer {
+class UIKitGestureRecognizer: UIGestureRecognizer {
     weak var eventBridge: EventBindingBridge?
 
     private var initialScale: CGFloat = 1.0
@@ -28,6 +28,109 @@ final class UIKitGestureRecognizer: UIGestureRecognizer {
     private var lastInheritedPhase: _GestureInputs.InheritedPhase?
 
     private var lastState: UIGestureRecognizer.State?
+
+    @inline(__always)
+    final var shouldForwardInheritedPhase: Bool {
+        isLinkedOnOrAfter(.v6)
+            && !GestureContainerFeature.isEnabled
+            && !CoreTesting.isRunning
+    }
+
+    func didAttach(to eventBridge: EventBindingBridge?) {
+        _openSwiftUIEmptyStub()
+    }
+
+    private func updateInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
+        guard shouldForwardInheritedPhase, phase != lastInheritedPhase else {
+            return
+        }
+        eventBridge?.setInheritedPhase(phase)
+        lastInheritedPhase = phase
+    }
+
+    private func convert(
+        touches: Set<UITouch>,
+        with event: UIEvent
+    ) -> [EventID: TouchEvent] {
+        var events: [EventID: TouchEvent] = [:]
+        for touch in touches {
+            let eventID = EventID(touch, subtype: TouchEvent.self)
+            let touchEvent = withExtendedLifetime(view) {
+                let phase = EventPhase(touch.phase)
+                let globalLocation = touch.location(in: nil)
+                let timestamp = Time(seconds: touch.timestamp)
+                let radius = touch.majorRadius
+                let force = touch.force
+                let maximumPossibleForce = touch.maximumPossibleForce
+                let modifiers = EventModifiers(event.modifierFlags)
+                let altitude = Angle(radians: touch.altitudeAngle)
+                let azimuth = Angle(radians: touch.azimuthAngle(in: nil))
+                let type = TouchType(touch.type)
+                return TouchEvent(
+                    timestamp: timestamp,
+                    phase: phase,
+                    location: .zero,
+                    globalLocation: globalLocation,
+                    radius: radius,
+                    force: force,
+                    maximumPossibleForce: maximumPossibleForce,
+                    modifiers: modifiers,
+                    altitude: altitude,
+                    azimuth: azimuth,
+                    touchType: type
+                )
+            }
+            events[eventID] = touchEvent
+        }
+        return events
+    }
+
+    private func send(touches: Set<UITouch>, event: UIEvent) {
+        let events = convert(touches: touches, with: event)
+        eventBridge?.send(events, source: self)
+    }
+
+    private func convert(
+        buttonEvents: Set<UIPress>,
+        with event: UIEvent
+    ) -> [EventID: PhysicalButtonEvent] {
+        var events: [EventID: PhysicalButtonEvent] = [:]
+        for press in buttonEvents {
+            let eventID = EventID(press, subtype: PhysicalButtonEvent.self)
+            let timestamp = Time(seconds: press.timestamp)
+            let phase = EventPhase(press.phase)
+            let type = PhysicalButtonEvent.ButtonType(press.type)
+            let buttonEvent = PhysicalButtonEvent(
+                timestamp: timestamp,
+                phase: phase,
+                binding: nil,
+                type: type
+            )
+            events[eventID] = buttonEvent
+        }
+        return events
+    }
+
+    private func send(buttonEvents: Set<UIPress>, event: UIEvent) {
+        let events = convert(buttonEvents: buttonEvents, with: event)
+        eventBridge?.send(events, source: self)
+    }
+
+    func eventBindingSourceDidUpdate(
+        phase: GesturePhase<Void>,
+        in eventBridge: EventBindingBridge
+    ) {
+        let nextState = state.nextState(for: phase)
+        state = nextState
+        lastState = nextState
+    }
+
+    func eventBindingSourceDidUpdate(
+        gestureCategory: GestureCategory,
+        in eventBridge: EventBindingBridge
+    ) {
+        self.gestureCategory = gestureCategory
+    }
 
     init() {
         super.init(target: nil, action: nil)
@@ -45,15 +148,6 @@ final class UIKitGestureRecognizer: UIGestureRecognizer {
         delaysTouchesEnded = false
     }
 
-    @available(*, unavailable)
-    required init?(coder: NSCoder) {
-        fatalError("init(coder:) has not been implemented")
-    }
-    
-    // TBA
-    
-    func didAttach(to eventBridge: EventBindingBridge?) {}
-
     override func shouldReceive(_ event: UIEvent) -> Bool {
         if shouldForwardInheritedPhase, lastInheritedPhase == nil {
             updateInheritedPhase([])
@@ -61,8 +155,7 @@ final class UIKitGestureRecognizer: UIGestureRecognizer {
         return super.shouldReceive(event)
     }
 
-    @objc(_updateForActiveEvents)
-    private func updateForActiveEvents() {
+    override func _updateForActiveEvents() {
         guard shouldForwardInheritedPhase else {
             return
         }
@@ -71,8 +164,7 @@ final class UIKitGestureRecognizer: UIGestureRecognizer {
         if let lastState,
            state != lastState,
            (lastState == .possible || lastState == .ended),
-           (state == .cancelled || state == .failed)
-        {
+           (state == .failed || state == .cancelled) {
             inheritedPhase = .active
         } else {
             inheritedPhase = _hasUnmetFailureRequirements ? [] : .failed
@@ -91,206 +183,60 @@ final class UIKitGestureRecognizer: UIGestureRecognizer {
     }
 
     override func touchesBegan(_ touches: Set<UITouch>, with event: UIEvent) {
-        send(touches: touches, with: event)
+        send(touches: touches, event: event)
     }
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent) {
-        send(touches: touches, with: event)
+        send(touches: touches, event: event)
     }
 
     override func touchesEnded(_ touches: Set<UITouch>, with event: UIEvent) {
-        send(touches: touches, with: event)
+        send(touches: touches, event: event)
     }
 
     override func touchesCancelled(_ touches: Set<UITouch>, with event: UIEvent) {
-        send(touches: touches, with: event)
+        send(touches: touches, event: event)
     }
 
     override func pressesBegan(_ presses: Set<UIPress>, with event: UIPressesEvent) {
-        send(presses: presses, with: event)
+        send(buttonEvents: presses, event: event)
     }
 
     override func pressesChanged(_ presses: Set<UIPress>, with event: UIPressesEvent) {
-        send(presses: presses, with: event)
+        send(buttonEvents: presses, event: event)
     }
 
     override func pressesEnded(_ presses: Set<UIPress>, with event: UIPressesEvent) {
-        send(presses: presses, with: event)
+        send(buttonEvents: presses, event: event)
     }
 
     override func pressesCancelled(_ presses: Set<UIPress>, with event: UIPressesEvent) {
-        send(presses: presses, with: event)
+        send(buttonEvents: presses, event: event)
     }
 
-    @objc(_transformChangedWithEvent:)
-    private func transformChanged(with event: UITransformEvent) {
-        guard let eventBridge else {
-            return
+    override func _transformChanged(with event: UITransformEvent) {
+        if event.phase == .began {
+            initialScale = event.scale
+            initialAngle = Angle(radians: -event.rotation)
         }
-        let rawPhase = Int(event.phase)
-        let scale = event.scale
-        let rotation = event.rotation
         let location = event.location(in: nil)
-
-        if rawPhase == 1 {
-            initialScale = scale
-            initialAngle = Angle(radians: -rotation)
-        }
-
         let transformEvent = TransformEvent(
             timestamp: Time(seconds: event.timestamp),
-            phase: transformPhase(rawValue: rawPhase),
+            phase: .init(event.phase),
             globalLocation: location,
             location: location,
             initialScale: initialScale,
-            scaleDelta: scale,
+            scaleDelta: event.scale,
             initialAngle: initialAngle,
-            angleDelta: Angle(radians: -rotation - initialAngle.radians)
+            angleDelta: Angle(radians: -event.rotation) - initialAngle
         )
-        eventBridge.send(
-            [EventID(event, subtype: TransformEvent.self): transformEvent],
-            source: self
-        )
+        let events = [EventID(event, subtype: TransformEvent.self): transformEvent]
+        eventBridge?.send(events, source: self)
     }
 
-    @objc(_scrollingChangedWithEvent:)
-    private func scrollingChanged(with event: UIScrollEvent) {
+    override func _scrollingChanged(with event: UIScrollEvent) {
         let events = scrollConverter.convert(event, in: view?.window)
-        eventBridge?.send(
-            events.mapValues { $0 as any EventType },
-            source: self
-        )
-    }
-
-    private var shouldForwardInheritedPhase: Bool {
-        isLinkedOnOrAfter(.v6)
-            && !GestureContainerFeature.isEnabled
-            && !CoreTesting.isRunning
-    }
-
-    private func updateInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
-        guard shouldForwardInheritedPhase, phase != lastInheritedPhase else {
-            return
-        }
-        eventBridge?.setInheritedPhase(phase)
-        lastInheritedPhase = phase
-    }
-
-    private func send(touches: Set<UITouch>, with event: UIEvent) {
-        guard let eventBridge else {
-            return
-        }
-        eventBridge.send(
-            convert(touches: touches, with: event)
-                .mapValues { $0 as any EventType },
-            source: self
-        )
-    }
-
-    private func send(presses: Set<UIPress>, with event: UIPressesEvent) {
-        guard let eventBridge else {
-            return
-        }
-        eventBridge.send(
-            convert(presses: presses)
-                .mapValues { $0 as any EventType },
-            source: self
-        )
-    }
-
-    private func convert(
-        touches: Set<UITouch>,
-        with event: UIEvent
-    ) -> [EventID: TouchEvent] {
-        var events: [EventID: TouchEvent] = [:]
-        for touch in touches {
-            let touchEvent = TouchEvent(
-                timestamp: Time(seconds: touch.timestamp),
-                phase: touchPhase(rawValue: touch.phase.rawValue),
-                location: .zero,
-                globalLocation: touch.location(in: nil),
-                radius: touch.majorRadius,
-                force: touch.force,
-                maximumPossibleForce: touch.maximumPossibleForce,
-                modifiers: EventModifiers(event.modifierFlags),
-                altitude: Angle(radians: touch.altitudeAngle),
-                azimuth: Angle(radians: touch.azimuthAngle(in: nil)),
-                touchType: touchType(rawValue: touch.type.rawValue)
-            )
-            events[EventID(touch, subtype: TouchEvent.self)] = touchEvent
-        }
-        return events
-    }
-
-    private func convert(
-        presses: Set<UIPress>
-    ) -> [EventID: PhysicalButtonEvent] {
-        var events: [EventID: PhysicalButtonEvent] = [:]
-        for press in presses {
-            let buttonEvent = PhysicalButtonEvent(
-                timestamp: Time(seconds: press.timestamp),
-                phase: pressPhase(rawValue: press.phase.rawValue),
-                binding: nil,
-                type: buttonType(rawValue: press.type.rawValue)
-            )
-            events[EventID(press, subtype: PhysicalButtonEvent.self)] = buttonEvent
-        }
-        return events
-    }
-
-    private func touchPhase(rawValue: Int) -> EventPhase {
-        switch rawValue {
-        case 0: .began
-        case 1, 2, 5, 6: .active
-        case 3, 7: .ended
-        case 4: .failed
-        default: preconditionFailure("Unsupported touch phase")
-        }
-    }
-
-    private func pressPhase(rawValue: Int) -> EventPhase {
-        switch rawValue {
-        case 0: .began
-        case 1, 2: .active
-        case 3: .ended
-        case 4: .failed
-        default: preconditionFailure("Unsupported press phase")
-        }
-    }
-
-    private func transformPhase(rawValue: Int) -> EventPhase {
-        switch rawValue {
-        case 1: .began
-        case 2: .active
-        case 3: .ended
-        default: .failed
-        }
-    }
-
-    private func touchType(rawValue: Int) -> TouchType {
-        switch rawValue {
-        case 0: .direct
-        case 1: .indirect
-        case 2: .pencil
-        case 3: .indirectPointer
-        default: preconditionFailure("Unsupported touch type")
-        }
-    }
-
-    private func buttonType(rawValue: Int) -> PhysicalButtonEvent.ButtonType {
-        switch rawValue {
-        case 0: .upArrow
-        case 1: .downArrow
-        case 2: .leftArrow
-        case 3: .rightArrow
-        case 4: .select
-        case 5: .menu
-        case 6: .playPause
-        case 7: .back
-        case 30: .pageUp
-        case 31: .pageDown
-        default: preconditionFailure("Unsupported press type")
-        }
+        eventBridge?.send(events, source: self)
     }
 }
 
@@ -314,16 +260,20 @@ extension UIKitGestureRecognizer: EventBindingSource {
         phase: GesturePhase<Void>,
         in eventBridge: EventBindingBridge
     ) {
-        let nextState = state.nextState(for: phase)
-        state = nextState
-        lastState = nextState
+        eventBindingSourceDidUpdate(
+            phase: phase,
+            in: eventBridge
+        )
     }
 
     func didUpdate(
         gestureCategory: GestureCategory,
         in eventBridge: EventBindingBridge
     ) {
-        self.gestureCategory = gestureCategory
+        eventBindingSourceDidUpdate(
+            gestureCategory: gestureCategory,
+            in: eventBridge
+        )
     }
 }
 
