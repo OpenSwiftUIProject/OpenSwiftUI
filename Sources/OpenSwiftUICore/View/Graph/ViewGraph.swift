@@ -610,13 +610,24 @@ extension ViewGraph {
     }
 }
 
+// MARK: - ViewGraph event lifecycle [TBA]
+
 extension ViewGraph {
+    private func setRootPhase(_ phase: GesturePhase<Void>) {
+        if let $rootPhase {
+            _ = $rootPhase.setValue(phase)
+        } else {
+            // FIXME: crash Fatal error: attempting to create attribute with no subgraph: External<GesturePhase<()>>
+//            $rootPhase = Attribute(value: phase)
+        }
+    }
+
     package var responderNode: ResponderNode? {
-        _openSwiftUIUnimplementedFailure()
+        rootResponders?.first
     }
 
     package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
-        _openSwiftUIUnimplementedFailure()
+        inheritedPhase = phase
     }
 
     package func sendEvents(
@@ -624,11 +635,34 @@ extension ViewGraph {
         rootNode: ResponderNode,
         at time: Time
     ) -> GesturePhase<Void> {
-        _openSwiftUIUnimplementedFailure()
+        gestureTime = time
+        gestureEvents = events
+        var result = GesturePhase<Void>.failed
+//        for (identifier, event) in events {
+//            guard let binding = event.binding else {
+//                continue
+//            }
+//            let phase = binding.responder.receiveEvent(event, id: identifier)
+//            switch (result, phase) {
+//            case (_, .ended):
+//                result = phase
+//            case (.failed, .active), (.possible, .active):
+//                result = phase
+//            case (.failed, .possible):
+//                result = phase
+//            default:
+//                break
+//            }
+//        }
+//        setRootPhase(result)
+        return result
     }
 
     package func resetEvents() {
-        _openSwiftUIUnimplementedFailure()
+        gestureEvents = [:]
+        inheritedPhase = .defaultValue
+        gestureResetSeed &+= 1
+        setRootPhase(.failed)
     }
 }
 

@@ -101,9 +101,23 @@ open class MultiViewResponder: ViewResponder {
         observers.addObserver(observer)
     }
 
+    // MARK: - Child responder synchronization [TBA]
+
     override final public var children: [ViewResponder] {
         get { _children }
-        set { _openSwiftUIUnimplementedFailure() }
+        set {
+            let oldChildren = _children
+            for child in oldChildren where !newValue.contains(where: { $0 === child }) {
+                if child.parent === self {
+                    child.parent = nil
+                }
+            }
+            _children = newValue
+            for child in _children where child.parent !== self {
+                child.parent = self
+            }
+            childrenDidChange()
+        }
     }
 
     open func childrenDidChange() {

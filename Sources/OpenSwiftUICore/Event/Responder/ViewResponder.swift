@@ -6,7 +6,7 @@
 //  ID: 5DC9CCF050AF89FBA971AEC7E32C63B6 (SwiftUICore)
 
 public import Foundation
-import OpenAttributeGraphShims
+package import OpenAttributeGraphShims
 
 // MARK: - ViewRespondersKey [6.5.4]
 
@@ -22,7 +22,7 @@ package struct ViewRespondersKey: PreferenceKey {
 
 extension PreferencesInputs {
     @inline(__always)
-    var requiresViewResponders: Bool {
+    package var requiresViewResponders: Bool {
         get { contains(ViewRespondersKey.self) }
         set {
             if newValue {
@@ -36,7 +36,7 @@ extension PreferencesInputs {
 
 extension PreferencesOutputs {
     @inline(__always)
-    var viewResponders: Attribute<[ViewResponder]>? {
+    package var viewResponders: Attribute<[ViewResponder]>? {
         get { self[ViewRespondersKey.self] }
         set { self[ViewRespondersKey.self] = newValue }
     }
