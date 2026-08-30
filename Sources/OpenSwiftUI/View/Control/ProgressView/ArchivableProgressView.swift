@@ -195,17 +195,3 @@ struct LinearCapsuleGauge: View {
         EmptyView()
     }
 }
-
-extension View {
-    func labelStyle(_ style: LabelStyle) -> some View {
-        self
-    }
-}
-
-protocol LabelStyle {}
-
-struct IconOnlyLabelStyle: LabelStyle {}
-
-extension LabelStyle where Self == IconOnlyLabelStyle {
-    static var iconOnly: IconOnlyLabelStyle { .init() }
-}
