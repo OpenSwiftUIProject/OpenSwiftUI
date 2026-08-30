@@ -2,10 +2,11 @@
 //  EventBindingBridge.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: E11AC34B5BFF53E1001A61D61F5B9E0F (SwiftUICore)
 
-// MARK: - EventBindingBridge [6.5.4] [WIP]
+// MARK: - EventBindingBridge
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -29,23 +30,77 @@ open class EventBindingBridge {
 
     open var eventSources: [any EventBindingSource] { [] }
 
+    // MARK: - Event dispatch tracking
+
     @discardableResult
     open func send(
         _ events: [EventID: any EventType],
         source: any EventBindingSource
     ) -> Set<EventID> {
-        _openSwiftUIUnimplementedFailure()
+        guard !events.isEmpty else {
+            return []
+        }
+        var downstreamEvents: [EventID: any EventType] = [:]
+        let sourceID = ObjectIdentifier(source)
+        for (id, event) in events {
+            guard !(event is any NonGestureEventType) else {
+                downstreamEvents[id] = event
+                continue
+            }
+            if let trackedEvent = trackedEvents[id] {
+                if event.phase != .active {
+                    trackedEvents.removeValue(forKey: id)
+                }
+                guard !trackedEvent.reset else {
+                    continue
+                }
+                downstreamEvents[id] = event
+            } else {
+                if event.phase == .active {
+                    trackedEvents[id] = TrackedEventState(
+                        sourceID: sourceID,
+                        reset: false
+                    )
+                }
+                downstreamEvents[id] = event
+            }
+        }
+        guard !downstreamEvents.isEmpty else {
+            return []
+        }
+        return eventBindingManager?.send(downstreamEvents) ?? []
     }
+
+    // MARK: - Event source reset
 
     open func reset(
         eventSource: any EventBindingSource,
         resetForwardedEventDispatchers: Bool = false
     ) {
-        _openSwiftUIUnimplementedFailure()
+        let sourceID = ObjectIdentifier(eventSource)
+        var hasActiveEvent = false
+        for id in Array(trackedEvents.keys) {
+            guard let trackedEvent = trackedEvents[id] else {
+                continue
+            }
+            if trackedEvent.sourceID == sourceID {
+                trackedEvents.removeValue(forKey: id)
+            } else if !trackedEvent.reset {
+                hasActiveEvent = true
+            }
+        }
+        guard !hasActiveEvent else {
+            return
+        }
+        eventBindingManager?.reset(
+            resetForwardedEventDispatchers: resetForwardedEventDispatchers
+        )
     }
 
-    private func resetEvent() {
-        _openSwiftUIUnimplementedFailure()
+    private func resetEvents() {
+        for id in Array(trackedEvents.keys) {
+            trackedEvents[id]?.reset = true
+        }
     }
 
     open func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
@@ -61,7 +116,7 @@ open class EventBindingBridge {
 @available(*, unavailable)
 extension EventBindingBridge: Sendable {}
 
-// MARK: - EventBindingBridge + EventBindingManagerDelegate [6.5.4]
+// MARK: - EventBindingBridge + EventBindingManagerDelegate
 
 @_spi(ForOpenSwiftUIOnly)
 extension EventBindingBridge: EventBindingManagerDelegate {
@@ -70,8 +125,7 @@ extension EventBindingBridge: EventBindingManagerDelegate {
         id: EventID
     ) {
         if let responderWasBoundHandler {
-            // TODO: Update.enqueueAction(reason:_:)
-            Update.enqueueAction {
+            Update.enqueueAction(reason: nil) {
                 responderWasBoundHandler(newBinding.responder)
             }
         }
@@ -86,6 +140,9 @@ extension EventBindingBridge: EventBindingManagerDelegate {
     ) {
         for eventSource in eventSources {
             eventSource.didUpdate(phase: phase, in: self)
+        }
+        if phase.isTerminal {
+            resetEvents()
         }
     }
 
