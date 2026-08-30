@@ -136,12 +136,10 @@ final public class EventBindingManager {
         eventTimer = timer
     }
 
-    // TBA
     package func addForwardedEventDispatcher(_ dispatcher: any ForwardedEventDispatcher) {
         forwardedEventDispatchers[ObjectIdentifier(type(of: dispatcher).eventType)] = dispatcher
     }
 
-    // TBA
     package func rebindEvent(
         _ identifier: EventID,
         to: ResponderNode?
