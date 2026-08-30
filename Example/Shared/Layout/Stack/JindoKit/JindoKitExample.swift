@@ -62,10 +62,8 @@ struct JindoKitExample: View {
                         Spacer()
                         Text("68%")
                     }
-
-                    Capsule()
-                        .fill(Color.mint)
-                        .frame(width: 180, height: 6)
+                    ProgressView(value: 0.68)
+                        .tint(Color.mint)
                 }
             }
         } compactLeading: {
