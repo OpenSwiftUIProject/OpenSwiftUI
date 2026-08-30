@@ -11,12 +11,12 @@
 
 #include <dlfcn.h>
 
-NSInteger OpenSwiftUIGestureRecognizerContainerCompare(
+NSComparisonResult OpenSwiftUIGestureRecognizerContainerCompare(
     id gestureContainer,
     UIView *view,
     BOOL usePresentationValues
 ) {
-    typedef NSInteger (*CompareFunction)(id, UIView *, BOOL);
+    typedef NSComparisonResult (*CompareFunction)(id, UIView *, BOOL);
     static CompareFunction compare;
     static dispatch_once_t onceToken;
     dispatch_once(&onceToken, ^{
@@ -26,7 +26,7 @@ NSInteger OpenSwiftUIGestureRecognizerContainerCompare(
         );
     });
     return compare == NULL
-        ? 0
+        ? NSOrderedSame
         : compare(gestureContainer, view, usePresentationValues);
 }
 
