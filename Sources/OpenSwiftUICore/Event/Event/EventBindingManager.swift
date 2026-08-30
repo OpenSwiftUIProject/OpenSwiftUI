@@ -150,6 +150,12 @@ package protocol EventBindingManagerDelegate: AnyObject {
         gestureCategory: GestureCategory,
         in eventBindingManager: EventBindingManager
     )
+
+    #if os(macOS)
+    func requestHoverUpdate(
+        in eventBindingManager: EventBindingManager
+    )
+    #endif
 }
 
 extension EventBindingManagerDelegate {
@@ -166,4 +172,12 @@ extension EventBindingManagerDelegate {
     ) {
         _openSwiftUIEmptyStub()
     }
+
+    #if os(macOS)
+    package func requestHoverUpdate(
+        in eventBindingManager: EventBindingManager
+    ) {
+        _openSwiftUIEmptyStub()
+    }
+    #endif
 }
