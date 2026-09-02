@@ -310,6 +310,104 @@ struct Cache3Tests {
     }
 }
 
+// MARK: - DictionaryOptimisticFilterTests
+
+struct DictionaryOptimisticFilterTests {
+    @Test
+    func empty() {
+        let source: [Int: String] = [:]
+        var predicateCallCount = 0
+
+        let result = source.optimisticFilter { _ in
+            predicateCallCount += 1
+            return true
+        }
+
+        #expect(result == [:])
+        #expect(predicateCallCount == 0)
+    }
+
+    @Test
+    func allRejected() {
+        let source = [1: "one", 2: "two", 3: "three"]
+        var predicateCallCount = 0
+
+        let result = source.optimisticFilter { _ in
+            predicateCallCount += 1
+            return false
+        }
+
+        #expect(result == [:])
+        #expect(predicateCallCount == 3)
+    }
+
+    @Test
+    func allAccepted() {
+        let source = [1: "one", 2: "two", 3: "three"]
+        var predicateCallCount = 0
+
+        let result = source.optimisticFilter { _ in
+            predicateCallCount += 1
+            return true
+        }
+
+        #expect(result == source)
+        #expect(predicateCallCount == 3)
+    }
+
+    @Test
+    func mixedPredicateEvaluatedOncePerElement() {
+        let source = [1: "one", 2: "two", 3: "three", 4: "four"]
+        var callsByKey: [Int: Int] = [:]
+
+        let result = source.optimisticFilter { element in
+            callsByKey[element.key, default: 0] += 1
+            return element.key.isMultiple(of: 2)
+        }
+
+        #expect(result == [2: "two", 4: "four"])
+        #expect(callsByKey == [1: 1, 2: 1, 3: 1, 4: 1])
+    }
+
+    @Test
+    func highestMaskBit() {
+        let source = Dictionary(
+            uniqueKeysWithValues: (0 ..< 64).map { ($0, $0 * 10) }
+        )
+        let last = Array(source).last!
+        var callsByKey: [Int: Int] = [:]
+
+        let result = source.optimisticFilter { element in
+            callsByKey[element.key, default: 0] += 1
+            return element.key == last.key
+        }
+
+        #expect(result == [last.key: last.value])
+        #expect(callsByKey.count == source.count)
+        #expect(callsByKey.values.allSatisfy { $0 == 1 })
+    }
+
+    @Test(arguments: [64, 65])
+    func countBoundary(count: Int) {
+        let source = Dictionary(
+            uniqueKeysWithValues: (0 ..< count).map { ($0, $0 * 10) }
+        )
+        var callsByKey: [Int: Int] = [:]
+
+        let result = source.optimisticFilter { element in
+            callsByKey[element.key, default: 0] += 1
+            return element.key.isMultiple(of: 2)
+        }
+        let expected = Dictionary(
+            uniqueKeysWithValues: stride(from: 0, to: count, by: 2).map { ($0, $0 * 10) }
+        )
+
+        #expect(result == expected)
+        #expect(callsByKey.count == source.count)
+        #expect(callsByKey.values.allSatisfy { $0 == 1 })
+    }
+}
+
 // MARK: - RandomAccessCollection + lowerBound
 
 struct RandomAccessCollectionLowerBoundTests {
