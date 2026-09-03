@@ -557,15 +557,35 @@ package struct Cache3<Key, Value> where Key: Equatable {
 
 extension Dictionary {
     package func optimisticFilter(_ predicate: (Element) -> Bool) -> [Key: Value] {
-        guard count > 64 else {
+        guard count <= 64 else {
             return filter(predicate)
         }
-        // FIXME: Use a more efficient approach for larger dictionaries
+        var matches = BitVector64()
+        var allMatch = true
+        var noMatches = true
+        var index = 0
+        for element in self {
+            if predicate(element) {
+                noMatches = false
+                matches[index] = true
+            } else {
+                allMatch = false
+            }
+            index &+= 1
+        }
+        if noMatches {
+            return [:]
+        }
+        if allMatch {
+            return self
+        }
         var result = [Key: Value]()
+        index = 0
         for (key, value) in self {
-            if predicate((key, value)) {
+            if matches[index] {
                 result[key] = value
             }
+            index &+= 1
         }
         return result
     }
