@@ -222,11 +222,8 @@ var sharedSwiftSettings: [SwiftSetting] = [
     .define("OPENSWIFTUI_RELEASE_\(releaseVersion)"),
     .unsafeFlags(["-Xfrontend", "-experimental-spi-only-imports"]),
     // Swift 6.3.3 crashes while indexing AppKit with the private framework shims.
-    // Tuist used to duplicate unconditional settings into SDK-conditioned OTHER_SWIFT_FLAGS:
-    // https://github.com/tuist/tuist/issues/12377
-    // Fixed by https://github.com/tuist/tuist/pull/12411 in Tuist 4.206.0-canary.16.
-    // FIXME: Keep this unconditional until the project's Tuist version includes that fix.
-    .unsafeFlags(["-index-ignore-system-modules"]),
+    // Keep source indexing enabled while skipping imported system modules.
+    .unsafeFlags(["-index-ignore-system-modules"], .when(platforms: [.macOS])),
 ]
 
 if releaseVersion >= 2021 {
