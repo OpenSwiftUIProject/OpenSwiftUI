@@ -665,7 +665,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         let phase: TransitionPhase
         switch info.items[index].phase {
         case .willAppear, .identity:
-            info.items[index].resetSeed &-= 1
+            info.items[index].resetSeed.unsafeDecrement()
             phase = .identity
         case .didDisappear:
             info.removedCount &-= 1

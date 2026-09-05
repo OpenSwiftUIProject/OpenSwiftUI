@@ -2279,7 +2279,7 @@ open class _ViewList_Subgraph {
 
     @inline(__always)
     final func invalidate(isInserted: Bool) {
-        refcount &-= 1
+        refcount.unsafeDecrement()
         guard refcount == 0 else {
             return
         }
