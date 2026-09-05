@@ -215,7 +215,7 @@ extension NSAttributedString {
                     } else {
                         sourceLineCount = components.count
                     }
-                    let limitedSourceLineCount = lineLimit.map { min(sourceLineCount, $0) } ?? sourceLineCount
+                    let limitedSourceLineCount = min(sourceLineCount, ifPresent: lineLimit)
                     matchesSourceLineCount = limitedSourceLineCount == drawingContext.numberOfLineFragments
                 } else {
                     matchesSourceLineCount = true

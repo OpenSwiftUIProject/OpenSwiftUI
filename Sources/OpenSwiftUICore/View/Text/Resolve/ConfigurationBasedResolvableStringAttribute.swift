@@ -48,7 +48,7 @@ package enum ResolvableAttributeConfiguration: Equatable {
         switch (self, other) {
         case let (.interval(lhsDelay), .interval(rhsDelay)):
             let delay: Double? = if let lhsDelay {
-                rhsDelay.map { min(lhsDelay, $0) } ?? lhsDelay
+                min(lhsDelay, ifPresent: rhsDelay)
             } else {
                 rhsDelay
             }
