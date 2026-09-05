@@ -10,6 +10,7 @@
 import OpenSwiftUI_SPI
 package import OpenAttributeGraphShims
 import Foundation
+import Synchronization
 
 // MARK: - GraphDelegate
 
@@ -350,16 +351,17 @@ extension GraphHost {
     
     // MARK: - GraphHost + Transaction
     
+    @discardableResult
     package final func asyncTransaction<T>(
         _ transaction: Transaction = .init(),
         id transactionID: Transaction.ID = Transaction.id,
         mutation: T,
         style: GraphMutation.Style = .deferred,
         mayDeferUpdate: Bool = true
-    ) where T: GraphMutation {
+    ) -> UInt32 where T: GraphMutation {
         Update.locked {
             guard isValid else {
-                return
+                return 0
             }
             let shouldDeferUpdate = switch style {
                 case .immediate: isUpdating
@@ -371,12 +373,13 @@ extension GraphHost {
                 if pendingTransactions[count-1].transactionID == transactionID,
                    pendingTransactions[count-1].transaction.mayConcatenate(with: transaction) {
                     pendingTransactions[count-1].append(mutation)
+                    CustomEventTrace.transactionAppend(to: pendingTransactions[count-1].traceID)
                     if !shouldDeferUpdate {
                         let lastTransaction = pendingTransactions.removeLast()
                         flushTransactions()
                         pendingTransactions.append(lastTransaction)
                     }
-                    return
+                    return pendingTransactions.last?.traceID ?? 0
                 }
                 if !shouldDeferUpdate {
                     flushTransactions()
@@ -384,20 +387,23 @@ extension GraphHost {
             } else {
                 graphDelegate?.beginTransaction()
             }
-            pendingTransactions.append(
-                AsyncTransaction(
-                    transaction: transaction,
-                    transactionID: transactionID,
-                    mutations: [mutation])
+            let asyncTransaction = AsyncTransaction(
+                transaction: transaction,
+                transactionID: transactionID,
+                mutations: [mutation]
             )
+            CustomEventTrace.transactionEnqueue(asyncTransaction.traceID)
+            pendingTransactions.append(asyncTransaction)
+            return asyncTransaction.traceID
         }
     }
     
+    @discardableResult
     package final func asyncTransaction(
         _ transaction: Transaction = .init(),
         id transactionID: Transaction.ID = Transaction.id,
         _ body: @escaping () -> Void
-    ) {
+    ) -> UInt32 {
         asyncTransaction(
             transaction,
             id: transactionID,
@@ -405,13 +411,14 @@ extension GraphHost {
         )
     }
     
+    @discardableResult
     package final func asyncTransaction<T>(
         _ transaction: Transaction = .init(),
         id transactionID: Transaction.ID = Transaction.id,
         invalidating attribute: WeakAttribute<T>,
         style: GraphMutation.Style = .deferred,
         mayDeferUpdate: Bool = true
-    ) {
+    ) -> UInt32 {
         asyncTransaction(
             transaction,
             id: transactionID,
@@ -421,7 +428,8 @@ extension GraphHost {
         )
     }
     
-    package final func emptyTransaction(_ transaction: Transaction = .init()) {
+    @discardableResult
+    package final func emptyTransaction(_ transaction: Transaction = .init()) -> UInt32 {
         asyncTransaction(transaction, mutation: EmptyGraphMutation())
     }
 
@@ -431,7 +439,8 @@ extension GraphHost {
         while !host.inTransaction {
             guard let parent = host.parentHost else {
                 Update.enqueueAction(reason: nil) {
-                    host.asyncTransaction { body() }
+                    let id = host.asyncTransaction { body() }
+                    CustomEventTrace.transactionContinueAsNewTransaction(id)
                 }
                 return
             }
@@ -454,14 +463,13 @@ extension GraphHost {
         for asyncTransaction in asyncTransactions {
             let transaction = asyncTransaction.transaction
             let mutations = asyncTransaction.mutations
-            // TODO: Forward AsyncTransaction.traceID when queue tracing is implemented.
             runTransaction(transaction, do: {
                 withTransaction(transaction) {
                     for mutation in mutations {
                         mutation.apply()
                     }
                 }
-            }, id: nil)
+            }, id: asyncTransaction.traceID)
         }
         graphDelegate?.graphDidChange()
         mayDeferUpdate = true
@@ -666,7 +674,25 @@ private struct AsyncTransaction {
 
     let transactionID: Transaction.ID
 
-    var mutations: [GraphMutation] = []
+    let traceID: UInt32
+
+    var mutations: [GraphMutation]
+
+    private static var nextTraceID: UInt32 = 1
+
+    init(transaction: Transaction, transactionID: Transaction.ID, mutations: [GraphMutation]) {
+        self.transaction = transaction
+        self.transactionID = transactionID
+        // [AI] 6.5.4's queue uses the incremented counter, unlike the standalone trace helper.
+        let oldValue = withUnsafeMutablePointer(to: &Self.nextTraceID) { pointer in
+            pointer.withMemoryRebound(to: Atomic<UInt32>.self, capacity: 1) { atomic in
+                atomic.pointee.wrappingAdd(2, ordering: .relaxed).oldValue
+            }
+        }
+        let nextValue = UInt32(Int64(Int32(bitPattern: oldValue)) + 2)
+        self.traceID = nextValue / 2 + 1
+        self.mutations = mutations
+    }
 
     mutating func append<T>(_ mutation: T) where T: GraphMutation {
         // NOTE: use ``Array.subscript/_modify`` instead of ``Array.last/getter`` to mutate inline
