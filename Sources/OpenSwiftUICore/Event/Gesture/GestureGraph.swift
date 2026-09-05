@@ -43,7 +43,36 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
     }
 
     override package func instantiateOutputs() {
-        _openSwiftUIUnimplementedFailure()
+        guard let rootResponder else {
+            return
+        }
+        var inputs = _GestureInputs(
+            rootResponder.inputs,
+            viewSubgraph: rootResponder.viewSubgraph,
+            events: $gestureEvents,
+            time: data.$time,
+            resetSeed: $gestureResetSeed,
+            inheritedPhase: $inheritedPhase,
+            gesturePreferenceKeys: $gesturePreferenceKeys
+        )
+        inputs.options.formUnion([.skipCombiners, .gestureGraph])
+        if _eventDebugTriggers.contains(.gestures) {
+            inputs.options.insert(.includeDebugOutput)
+        }
+        inputs.preferences.add(GestureLabelKey.self)
+        inputs.preferences.add(IsCancellableGestureKey.self)
+        inputs.preferences.add(RequiredTapCountKey.self)
+        inputs.preferences.add(GestureDependency.Key.self)
+        let outputs = rootSubgraph.apply {
+            rootResponder.makeSubviewsGesture(inputs: inputs)
+        }
+        $rootPhase = outputs.phase
+        $gestureDebug = outputs.debugData
+        $gestureCategoryAttr = outputs.preferences.gestureCategory
+        $gestureLabelAttr = outputs.preferences.gestureLabel
+        $isCancellableAttr = outputs.preferences[IsCancellableGestureKey.self]
+        $requiredTapCountAttr = outputs.preferences[RequiredTapCountKey.self]
+        $gestureDependencyAttr = outputs.preferences[GestureDependency.Key.self]
     }
 
     override package func uninstantiateOutputs() {
