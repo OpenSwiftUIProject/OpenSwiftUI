@@ -62,14 +62,14 @@ package struct TextShape: Equatable {
                 if let targetWidth {
                     width = targetWidth
                 }
-                height = max(height, size.height)
+                height.formMax(size.height)
             case .right:
                 if let targetWidth {
                     width = targetWidth
                 } else {
                     width = size.width + width
                 }
-                height = max(height, size.height)
+                height.formMax(size.height)
             default: _openSwiftUIUnreachableCode()
             }
         }

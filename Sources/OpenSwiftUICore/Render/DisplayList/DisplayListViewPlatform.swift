@@ -502,8 +502,7 @@ extension DisplayList.ViewUpdater.Platform {
                     },
                     sizeChanged: viewInfo.state.size != item.size
                 )
-                viewInfo.nextUpdate = min(
-                    viewInfo.nextUpdate,
+                viewInfo.nextUpdate.formMin(
                     text.text.nextUpdate(
                         after: state.pointee.globals.pointee.time,
                         equivalentDate: .now,
@@ -526,7 +525,7 @@ extension DisplayList.ViewUpdater.Platform {
                     ),
                     sizeChanged: viewInfo.state.size != item.size
                 )
-                viewInfo.nextUpdate = min(viewInfo.nextUpdate, list.nextUpdate(after: time))
+                viewInfo.nextUpdate.formMin(list.nextUpdate(after: time))
             case let .drawing(contents, offset, options):
                 if viewInfo.state.kind != .drawing {
                     viewInfo = _makeItemView(item: item, state: state)
@@ -773,7 +772,7 @@ extension DisplayList.ViewUpdater.Platform {
                 ) else {
                     return false
                 }
-                layer.nextUpdate = min(layer.nextUpdate, newList.nextUpdate(after: time))
+                layer.nextUpdate.formMin(newList.nextUpdate(after: time))
             case let (.drawing(_, _, oldOptions), .drawing(newContents, newOffset, newOptions)):
                 guard updateDrawingViewAsync(
                     &layer,

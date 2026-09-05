@@ -213,7 +213,7 @@ extension DisplayList {
                 let savedIndex = viewCache.index.enter(identity: item.identity)
                 defer { viewCache.index.leave(index: savedIndex) }
                 let nextTime = viewCache.prepare(item: &item, parentState: parentState)
-                container.nextTime = min(container.nextTime, nextTime)
+                container.nextTime.formMin(nextTime)
                 updateInheritedView(
                     container: &container,
                     from: item,
@@ -312,7 +312,7 @@ extension DisplayList {
                     at: container.count
                 )
                 container.count &+= 1
-                container.nextTime = min(container.nextTime, result.nextUpdate)
+                container.nextTime.formMin(result.nextUpdate)
                 guard result.changed || !wasValid else {
                     if case let .effect(effect, list) = item.value {
                         viewCache.index.skip(list: list)
@@ -504,7 +504,7 @@ extension DisplayList {
                 at: container.count
             )
             container.count &+= 1
-            container.nextTime = min(container.nextTime, result.nextUpdate)
+            container.nextTime.formMin(result.nextUpdate)
             guard case let .effect(effect, list) = item.value else {
                 return
             }
@@ -541,7 +541,7 @@ extension DisplayList {
                     parentState: &localState
                 )
                 maskContainer.removeRemaining(viewCache: &viewCache)
-                nextTime = min(nextTime, maskContainer.nextTime)
+                nextTime.formMin(maskContainer.nextTime)
             }
             viewCache.setNextUpdate(nextTime, in: &result)
         }
@@ -606,7 +606,7 @@ extension DisplayList {
                 guard let maskNextTime else {
                     return nil
                 }
-                nextTime = min(nextTime, maskNextTime)
+                nextTime.formMin(maskNextTime)
             }
             viewCache.setNextUpdate(nextTime, in: &result)
             return result.nextUpdate

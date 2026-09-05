@@ -448,7 +448,7 @@ final package class _ShapeStyle_InterpolatorGroup: DisplayList.InterpolatorGroup
     override func nextUpdate(after time: Time) -> Time {
         var nextUpdate = Time.infinity
         for layer in layers {
-            nextUpdate = min(nextUpdate, layer.state.nextUpdate(after: time))
+            nextUpdate.formMin(layer.state.nextUpdate(after: time))
         }
         return nextUpdate
     }

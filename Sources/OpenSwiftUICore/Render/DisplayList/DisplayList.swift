@@ -156,7 +156,7 @@ package struct DisplayList: Equatable {
         var nextUpdate = Time.infinity
         if features.contains(.dynamicContent) {
             for item in items {
-                nextUpdate = min(nextUpdate, item.nextUpdate(after: time))
+                nextUpdate.formMin(item.nextUpdate(after: time))
                 if nextUpdate == time {
                     break
                 }
@@ -447,7 +447,7 @@ extension DisplayList {
         package init() { value = .zero }
         
         package init(decodedValue value: Int) {
-            Version.lastValue = max(Version.lastValue, value)
+            Version.lastValue.formMax(value)
             self.value = value
         }
         
@@ -457,7 +457,7 @@ extension DisplayList {
         }
         
         package mutating func combine(with other: Version) {
-            value = max(value, other.value)
+            value.formMax(other.value)
         }
 
         package static func < (lhs: Version, rhs: Version) -> Bool {
@@ -1171,22 +1171,23 @@ extension DisplayList.Item {
         case let .content(content):
             switch content.value {
             case let .text(text, _):
-                nextUpdate = min(nextUpdate, text.text.nextUpdate(after: time, equivalentDate: .now, reduceFrequency: false)
+                nextUpdate.formMin(
+                    text.text.nextUpdate(after: time, equivalentDate: .now, reduceFrequency: false)
                 )
             case let .flattened(list, _, _):
-                nextUpdate = min(nextUpdate, list.nextUpdate(after: time))
+                nextUpdate.formMin(list.nextUpdate(after: time))
             default:
                 break
             }
         case let .effect(effect, list):
-            nextUpdate = min(nextUpdate, list.nextUpdate(after: time))
+            nextUpdate.formMin(list.nextUpdate(after: time))
             switch effect {
             case let .mask(mask, _):
-                nextUpdate = min(nextUpdate, mask.nextUpdate(after: time))
+                nextUpdate.formMin(mask.nextUpdate(after: time))
             case .animation:
                 nextUpdate = time
             case let .interpolatorLayer(group, _):
-                nextUpdate = min(nextUpdate, group.nextUpdate(after: time))
+                nextUpdate.formMin(group.nextUpdate(after: time))
             default:
                 break
             }
@@ -1200,7 +1201,7 @@ extension DisplayList.Item {
                 } else {
                     nestedUpdate = .infinity
                 }
-                nextUpdate = min(nextUpdate, nestedUpdate)
+                nextUpdate.formMin(nestedUpdate)
             }
         case .empty:
             break

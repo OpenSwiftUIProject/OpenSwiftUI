@@ -115,7 +115,7 @@ private struct RepeatPhase<V>: ResettableGestureRule {
         }
         if useGestureGraph {
             let gestureGraph = GestureGraph.current
-            gestureGraph.nextUpdateTime = min(gestureGraph.nextUpdateTime, deadline)
+            gestureGraph.nextUpdateTime.formMin(deadline)
         } else {
             ViewGraph.current.nextUpdate.gestures.at(deadline)
         }

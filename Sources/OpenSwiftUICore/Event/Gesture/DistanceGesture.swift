@@ -25,7 +25,7 @@ package struct DistanceGesture: Gesture {
             let movement: CGFloat
             if let start {
                 movement = distance(start, location)
-                maxDistance = max(maxDistance, movement)
+                maxDistance.formMax(movement)
             } else {
                 start = location
                 movement = .zero
