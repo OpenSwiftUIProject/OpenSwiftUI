@@ -233,7 +233,7 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
             [
                 attribute.graph.graphIdentity(),
                 "\(Content.self)",
-                platformView.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0,
+                platformView.map { UInt(bitPattern: address(of: $0)) } ?? 0,
             ]
         ) {
             var (view, viewChanged) = $view.changedValue()
@@ -804,7 +804,7 @@ private struct PlatformViewLayoutEngine<Content>: LayoutEngine where Content: Pl
         if k == VerticalAlignment.firstTextBaseline.key {
             let baseline = view.platformView._baselineOffsets(at: viewSize.value)
             let firstTextBaseline = baseline.firstTextBaseline
-            return firstTextBaseline.isNaN ? .zero : firstTextBaseline
+            return firstTextBaseline.mappingNaN(to: .zero)
         } else if k == VerticalAlignment.lastTextBaseline.key {
             let baseline = view.platformView._baselineOffsets(at: viewSize.value)
             let lastTextBaseline = baseline.lastTextBaseline

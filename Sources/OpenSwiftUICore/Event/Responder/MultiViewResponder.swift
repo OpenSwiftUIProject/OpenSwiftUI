@@ -72,7 +72,7 @@ open class MultiViewResponder: ViewResponder {
                     options: options
                 )
                 mask.formUnion(childResult.mask)
-                priority = max(priority, childResult.priority)
+                priority.formMax(childResult.priority)
             }
             return ContainsPointsResult(mask: mask, priority: priority, children: children)
         }

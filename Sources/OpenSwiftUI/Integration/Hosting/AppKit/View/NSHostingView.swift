@@ -594,8 +594,8 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             contentMaxHeight = size.height.rounded(.up, toMultipleOf: pixelLength.height)
         }
 
-        contentMaxWidth = Swift.max(contentMaxWidth, contentMinWidth)
-        contentMaxHeight = Swift.max(contentMaxHeight, contentMinHeight)
+        contentMaxWidth.formMax(contentMinWidth)
+        contentMaxHeight.formMax(contentMinHeight)
 
         let currentMin = window.contentMinSize
         let currentMax = window.contentMaxSize
@@ -615,10 +615,10 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             var width = contentRect.width
             var height = contentRect.height
 
-            width = Swift.min(width, window.contentMaxSize.width)
-            width = Swift.max(width, window.contentMinSize.width)
-            height = Swift.min(height, window.contentMaxSize.height)
-            height = Swift.max(height, window.contentMinSize.height)
+            width.formMin(window.contentMaxSize.width)
+            width.formMax(window.contentMinSize.width)
+            height.formMin(window.contentMaxSize.height)
+            height.formMax(window.contentMinSize.height)
 
             if width != contentRect.width || height != contentRect.height {
                 window.setContentSize(CGSize(width: width, height: height))

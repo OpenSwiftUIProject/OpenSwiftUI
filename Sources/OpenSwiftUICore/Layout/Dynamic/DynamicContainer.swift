@@ -452,7 +452,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                 return
             }
         }
-        info.seed &+= 1
+        info.seed.unsafeIncrement()
         value = info
     }
 
@@ -576,7 +576,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
                         info.items.swapAt(target, reusedIndex)
                     }
                 } else {
-                    lastUniqueId &+= 1
+                    lastUniqueId.unsafeIncrement()
                     let createdItem = makeItem(
                         item,
                         uniqueId: lastUniqueId,
@@ -665,7 +665,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         let phase: TransitionPhase
         switch info.items[index].phase {
         case .willAppear, .identity:
-            info.items[index].resetSeed &-= 1
+            info.items[index].resetSeed.unsafeDecrement()
             phase = .identity
         case .didDisappear:
             info.removedCount &-= 1
@@ -710,7 +710,7 @@ struct DynamicContainerInfo<Adapter>: StatefulRule, AsyncAttribute, ObservedAttr
         if unusedCount < maxUnusedItems {
             info.items.remove(at: index)
             item.removalOrder = 0
-            item.resetSeed &+= 1
+            item.resetSeed.unsafeIncrement()
             item.phase = nil
             item.listener?.viewGraph = nil
             item.listener = nil

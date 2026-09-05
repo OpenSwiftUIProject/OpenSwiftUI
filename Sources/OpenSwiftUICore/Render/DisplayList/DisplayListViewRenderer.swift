@@ -373,7 +373,7 @@ extension DisplayList {
                     printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
                 }
                 if let printTree, printTree {
-                    print("View \(Unmanaged.passUnretained(self).toOpaque()) at \(time):\n\(list.description)")
+                    print("View \(address(of: self)) at \(time):\n\(list.description)")
                 }
                 renderer.renderDisplayList(list, at: time, in: &ctx)
                 let duration = renderer.nextTime - time

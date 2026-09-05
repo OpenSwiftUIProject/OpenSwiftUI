@@ -348,7 +348,7 @@ private final class MatchedGeometryScope: ViewInput {
         }
         keyedFrames[key] = frameIndex
         frames[frameIndex].views.insert(view, at: 0)
-        frames[frameIndex].viewsSeed &+= 1
+        frames[frameIndex].viewsSeed.unsafeIncrement()
         if needsUpdate {
             let weakFrame = WeakAttribute(frames[frameIndex].$frame)
             GraphHost.currentHost.continueTransaction {
@@ -371,7 +371,7 @@ private final class MatchedGeometryScope: ViewInput {
             keyedFrames.removeValue(forKey: frames[index].key)
             frames[index].key = AnyHashable(EmptyKey())
         } else {
-            frames[index].viewsSeed &+= 1
+            frames[index].viewsSeed.unsafeIncrement()
         }
     }
 
@@ -632,7 +632,7 @@ private struct SharedFrame: StatefulRule, AsyncAttribute, ObservedAttribute {
             if sourceIndex != 0 {
                 let sourceView = scope.frames[frameIndex].views.remove(at: sourceIndex)
                 scope.frames[frameIndex].views.insert(sourceView, at: 0)
-                scope.frames[frameIndex].viewsSeed &+= 1
+                scope.frames[frameIndex].viewsSeed.unsafeIncrement()
             }
         }
         guard let currentView = scope.frames[frameIndex].views.first else {

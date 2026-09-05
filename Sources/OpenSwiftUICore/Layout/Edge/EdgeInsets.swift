@@ -266,17 +266,17 @@ extension EdgeInsets {
     }
 
     package mutating func formPointwiseMin(_ other: EdgeInsets) {
-        top = min(top, other.top)
-        leading = min(leading, other.leading)
-        bottom = min(bottom, other.bottom)
-        trailing = min(trailing, other.trailing)
+        top.formMin(other.top)
+        leading.formMin(other.leading)
+        bottom.formMin(other.bottom)
+        trailing.formMin(other.trailing)
     }
 
     package mutating func formPointwiseMax(_ other: EdgeInsets) {
-        top = max(top, other.top)
-        leading = max(leading, other.leading)
-        bottom = max(bottom, other.bottom)
-        trailing = max(trailing, other.trailing)
+        top.formMax(other.top)
+        leading.formMax(other.leading)
+        bottom.formMax(other.bottom)
+        trailing.formMax(other.trailing)
     }
 
     @inline(__always)

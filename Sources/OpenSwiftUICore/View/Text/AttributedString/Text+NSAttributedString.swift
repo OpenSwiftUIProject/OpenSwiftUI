@@ -229,9 +229,9 @@ extension NSAttributedString {
             let font = value as! CTFont
             let fontAscender = font.ascender
             let fontDescender = font.descender
-            capHeight = max(capHeight, font.capHeight)
-            ascender = max(ascender, fontAscender)
-            descender = max(descender, fontDescender)
+            capHeight.formMax(font.capHeight)
+            ascender.formMax(fontAscender)
+            descender.formMax(fontDescender)
             leading = leading.map { max($0, font.leading) } ?? font.leading
             if hasOversizedScalars || font.mayRequireLanguageAwareOutsets {
                 var left: CGFloat = 0
@@ -239,10 +239,10 @@ extension NSAttributedString {
                 var right: CGFloat = 0
                 var bottom: CGFloat = 0
                 if CTFontGetLanguageAwareOutsets(font, &left, &top, &right, &bottom) {
-                    outsets.top = max(outsets.top, top)
-                    outsets.leading = max(outsets.leading, left)
-                    outsets.bottom = max(outsets.bottom, bottom)
-                    outsets.trailing = max(outsets.trailing, right)
+                    outsets.top.formMax(top)
+                    outsets.leading.formMax(left)
+                    outsets.bottom.formMax(bottom)
+                    outsets.trailing.formMax(right)
                     return
                 }
             }
@@ -250,8 +250,8 @@ extension NSAttributedString {
                 var clippingAscender = fontAscender
                 var clippingDescender = fontDescender
                 if CTFontGetClippingMetrics(font, &clippingAscender, &clippingDescender) {
-                    outsets.top = max(outsets.top, max(0, clippingAscender - fontAscender))
-                    outsets.bottom = max(outsets.bottom, max(0, clippingDescender - fontDescender))
+                    outsets.top.formMax(max(0, clippingAscender - fontAscender))
+                    outsets.bottom.formMax(max(0, clippingDescender - fontDescender))
                 }
             }
         }

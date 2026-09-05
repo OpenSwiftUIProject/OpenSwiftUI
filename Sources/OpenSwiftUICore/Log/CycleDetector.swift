@@ -39,7 +39,7 @@ package struct UpdateCycleDetector {
             return true
         }
         if ttl != 0 {
-            ttl &-= 1
+            ttl.unsafeDecrement()
         }
         guard ttl == 0 else {
             return true

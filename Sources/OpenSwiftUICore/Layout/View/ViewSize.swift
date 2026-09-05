@@ -129,8 +129,8 @@ extension ViewSize {
         return ViewSize(
             value: CGSize(width: newWidth, height: newHeight),
             proposal: CGSize(
-                width: newWidth.isNaN ? 0 : newWidth,
-                height: newHeight.isNaN ? 0 : newHeight
+                width: newWidth.mappingNaN(to: 0),
+                height: newHeight.mappingNaN(to: 0)
             )
         )
     }

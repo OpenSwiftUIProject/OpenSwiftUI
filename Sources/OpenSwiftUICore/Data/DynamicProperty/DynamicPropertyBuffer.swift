@@ -405,7 +405,7 @@ public struct _DynamicPropertyBuffer {
             let itemSize = Int(oldItemPointer.pointee.size)
             newBuffer += itemSize
             oldBuffer += itemSize
-            count &-= 1
+            count.unsafeDecrement()
         }
         oldBuffer = buf
         if size > 0 {

@@ -75,7 +75,7 @@ package struct _ShapeStyle_ResolverMode: Equatable {
 
     package mutating func formUnion(_ rhs: _ShapeStyle_ResolverMode) {
         bundle = bundle ?? rhs.bundle
-        foregroundLevels = max(foregroundLevels, rhs.foregroundLevels)
+        foregroundLevels.formMax(rhs.foregroundLevels)
         options.formUnion(rhs.options)
     }
 }

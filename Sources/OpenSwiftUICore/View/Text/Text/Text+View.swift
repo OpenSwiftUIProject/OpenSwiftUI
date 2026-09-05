@@ -492,10 +492,10 @@ extension NSAttributedString {
             ) else {
                 return
             }
-            margins.top = max(margins.top, top)
-            margins.leading = max(margins.leading, left)
-            margins.bottom = max(margins.bottom, bottom)
-            margins.trailing = max(margins.trailing, right)
+            margins.top.formMax(top)
+            margins.leading.formMax(left)
+            margins.bottom.formMax(bottom)
+            margins.trailing.formMax(right)
         }
     }
 }

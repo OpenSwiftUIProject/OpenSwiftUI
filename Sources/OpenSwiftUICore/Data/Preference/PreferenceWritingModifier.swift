@@ -148,7 +148,7 @@ private struct HostPreferencesWriter<K>: StatefulRule, AsyncAttribute, CustomStr
         if keyRequested {
             let (keyValue, keyValueChanged) = $keyValue.changedValue()
             if keyValueChanged {
-                delta &+= 1
+                delta.unsafeIncrement()
                 requiresUpdate = true
             }
             if keyValueChanged || requiresUpdate {

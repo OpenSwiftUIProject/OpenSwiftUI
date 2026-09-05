@@ -203,7 +203,7 @@ private struct GeometryActionBinder<Provider>: StatefulRule, AsyncAttribute wher
         if phase.resetSeed != lastResetSeed {
             reset(seed: phase.resetSeed)
         }
-        proxySeed &+= 1
+        proxySeed.unsafeIncrement()
         let proxy = GeometryProxy(
             owner: attribute.identifier,
             size: $size,

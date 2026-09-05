@@ -79,7 +79,7 @@ package struct _DisplayList_StableIdentityScope: ViewInput, _ViewTraitKey {
     }
     
     package mutating func makeIdentity() -> _DisplayList_StableIdentity {
-        serial &+= 1
+        serial.unsafeIncrement()
         return _DisplayList_StableIdentity(hash: hash, serial: serial)
     }
     

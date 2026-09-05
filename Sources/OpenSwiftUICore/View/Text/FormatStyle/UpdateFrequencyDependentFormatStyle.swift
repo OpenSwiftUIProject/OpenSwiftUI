@@ -199,12 +199,8 @@ extension Duration.UnitsFormatStyle: UpdateFrequencyDependentFormatStyle {
             style.fractionalPartDisplay.roundingIncrement = min(roundingIncrement, increment)
         }
         let maximumLength = Int(log10(1.0 / increment))
-        style.fractionalPartDisplay.maximumLength = min(
-            style.fractionalPartDisplay.maximumLength,
-            maximumLength
-        )
-        style.fractionalPartDisplay.minimumLength = min(
-            style.fractionalPartDisplay.minimumLength,
+        style.fractionalPartDisplay.maximumLength.formMin(maximumLength)
+        style.fractionalPartDisplay.minimumLength.formMin(
             style.fractionalPartDisplay.maximumLength
         )
         return style

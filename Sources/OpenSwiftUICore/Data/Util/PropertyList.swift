@@ -428,7 +428,7 @@ private func find1<Key>(
             if let result { return result }
         }
         if currentElement.keyType == Key.self {
-            return .fromOpaque(Unmanaged.passUnretained(currentElement).toOpaque())
+            return .fromOpaque(address(of: currentElement))
         }
         guard let after = currentElement.after else {
             return nil
@@ -467,10 +467,10 @@ private func findValueWithSecondaryLookup<Lookup>(
         }
         let keyType = currentElement.keyType
         if keyType == Lookup.Primary.self {
-            let element: Unmanaged<TypedElement<Lookup.Primary>> = .fromOpaque(Unmanaged.passUnretained(currentElement).toOpaque())
+            let element: Unmanaged<TypedElement<Lookup.Primary>> = .fromOpaque(address(of: currentElement))
             return element.takeUnretainedValue().value
         } else if keyType == Lookup.Secondary.self {
-            let element: Unmanaged<TypedElement<Lookup.Secondary>> = .fromOpaque(Unmanaged.passUnretained(currentElement).toOpaque())
+            let element: Unmanaged<TypedElement<Lookup.Secondary>> = .fromOpaque(address(of: currentElement))
             if let value = Lookup.lookup(in: element.takeUnretainedValue().value) {
                 return value
             }

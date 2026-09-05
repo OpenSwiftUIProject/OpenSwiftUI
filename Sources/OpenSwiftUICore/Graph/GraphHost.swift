@@ -170,7 +170,7 @@ open class GraphHost: CustomReflectable {
             guard let self else { return }
             graphInvalidation(from: attribute)
         }
-        graph.context = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
+        graph.context = address(of: self)
     }
     
     deinit {
@@ -311,7 +311,7 @@ extension GraphHost {
     
     // TODO: _ArchivedViewHost.reset()
     package final func incrementPhase() {
-        data.phase.resetSeed &+= 1
+        data.phase.resetSeed.unsafeIncrement()
         graphDelegate?.graphDidChange()
     }
     
@@ -492,7 +492,7 @@ extension GraphHost {
     
     package final func startTransactionUpdate() {
         inTransaction = true
-        data.transactionSeed &+= 1
+        data.transactionSeed.unsafeIncrement()
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {

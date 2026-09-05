@@ -160,7 +160,7 @@ package struct HostPreferencesKey: PreferenceKey {
     private static var nodeId = UInt32.zero
     
     package static func makeNodeId() -> UInt32 {
-        nodeId &+= 1
+        nodeId.unsafeIncrement()
         return nodeId
     }
 }

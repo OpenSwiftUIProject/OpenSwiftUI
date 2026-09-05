@@ -78,7 +78,7 @@ public struct GeometryReader<Content>: View, UnaryView, PrimitiveView where Cont
         typealias Value = _VariadicView.Tree<_LayoutRoot<GeometryReaderLayout>, Content>
 
         mutating func updateValue() {
-            seed &+= 1
+            seed.unsafeIncrement()
             let proxy = GeometryProxy(
                 owner: attribute.identifier,
                 size: $size,

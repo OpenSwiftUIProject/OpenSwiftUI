@@ -96,7 +96,7 @@ private struct RepeatPhase<V>: ResettableGestureRule {
                 self.value = phase
             }
         case let .ended(wrapped):
-            index &+= 1
+            index.unsafeIncrement()
             if modifier.count > Int(index) {
                 deadline = time + modifier.maximumDelay
                 value = .possible(wrapped)
@@ -115,7 +115,7 @@ private struct RepeatPhase<V>: ResettableGestureRule {
         }
         if useGestureGraph {
             let gestureGraph = GestureGraph.current
-            gestureGraph.nextUpdateTime = min(gestureGraph.nextUpdateTime, deadline)
+            gestureGraph.nextUpdateTime.formMin(deadline)
         } else {
             ViewGraph.current.nextUpdate.gestures.at(deadline)
         }

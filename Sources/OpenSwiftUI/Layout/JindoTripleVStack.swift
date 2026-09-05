@@ -538,7 +538,7 @@ extension JindoTripleVStack {
 
         mutating func updateWithSplit(at index: Int, before: CGFloat) {
             if index == 0 {
-                reserved.before = max(reserved.before, before)
+                reserved.before.formMax(before)
                 let group = groups[0]
                 groups[0] = Group(
                     count: group.count,
@@ -1548,7 +1548,7 @@ extension JindoTripleVStack {
                     )
                     children[childIndex] = child
                     let height = child.geometry.dimensions.height
-                    let consumedHeight = height.isNaN ? 0 : height
+                    let consumedHeight = height.mappingNaN(to: 0)
                     for stack in Stack.allCases {
                         if let stateIndex = children[childIndex].majorAxisGroup[stack] {
                             states[stateIndex].consume(consumedHeight)
@@ -1571,8 +1571,7 @@ extension JindoTripleVStack {
                 let stackHeader = header.stacks[stack]
                 state.currentMajorAxisPosition = stackExtents[stack]
                 if state.range.lowerBound == stackHeader.topPrefix {
-                    sharedTopPrefixPosition = max(
-                        sharedTopPrefixPosition,
+                    sharedTopPrefixPosition.formMax(
                         stackExtents[stack]
                             + distanceToPrevious(state.range.lowerBound, stack: stack)
                     )
@@ -1642,7 +1641,7 @@ extension JindoTripleVStack {
                         states[stateIndex].currentMajorAxisPosition = bottom
                     }
                 }
-                resultHeight = max(resultHeight, bottom)
+                resultHeight.formMax(bottom)
             }
 
             header.stackSize = CGSize(width: proposal.width, height: resultHeight)

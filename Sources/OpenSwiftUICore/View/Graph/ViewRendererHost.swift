@@ -62,7 +62,7 @@ extension ViewRendererHost {
             "ViewHost: (%p) initialized PlatformHost [ %p ]",
             [
                 viewGraph.graph.graphIdentity(),
-                UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
+                UInt(bitPattern: address(of: self)),
             ]
         )
         #endif
@@ -77,7 +77,7 @@ extension ViewRendererHost {
             "ViewHost: (%p) invalidated PlatformHost [ %p ]",
             [
                 viewGraph.graph.graphIdentity(),
-                UInt(bitPattern: Unmanaged.passUnretained(self).toOpaque()),
+                UInt(bitPattern: address(of: self)),
             ]
         )
         #endif

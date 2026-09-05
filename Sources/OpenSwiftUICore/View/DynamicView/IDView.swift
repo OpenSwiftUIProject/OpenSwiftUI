@@ -91,7 +91,7 @@ private struct IDPhase<ID>: StatefulRule, AsyncAttribute where ID: Hashable {
     mutating func updateValue() {
         if lastID != id {
             if lastID != nil {
-                delta &+= 1
+                delta.unsafeIncrement()
             }
             lastID = id
         }

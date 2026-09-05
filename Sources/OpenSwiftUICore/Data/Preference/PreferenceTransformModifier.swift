@@ -156,7 +156,7 @@ private struct HostPreferencesTransform<K>: StatefulRule, AsyncAttribute, Custom
         if keyRequested {
             let anyInputsChanged = Graph.anyInputsChanged(excluding: [_keys.identifier, _childValues.base.identifier])
             if anyInputsChanged {
-                delta &+= 1
+                delta.unsafeIncrement()
                 requiresUpdate = true
             }
             if anyInputsChanged || requiresUpdate {
