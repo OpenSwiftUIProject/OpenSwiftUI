@@ -1,5 +1,5 @@
 [tools]
-tuist = "4.203.4"
+tuist = "4.206.0"
 
 [env]
 TUIST_USE_SWIFTERPM=1
