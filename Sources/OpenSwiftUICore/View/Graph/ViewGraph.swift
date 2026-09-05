@@ -431,7 +431,7 @@ extension ViewGraph {
     
     private func beginNextUpdate(at time: Time) {
         setTime(time)
-        data.updateSeed &+= 1
+        data.updateSeed.unsafeIncrement()
         mainUpdates = graph.mainUpdates
     }
 

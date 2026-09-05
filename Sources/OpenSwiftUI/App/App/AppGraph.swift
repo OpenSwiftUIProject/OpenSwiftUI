@@ -105,7 +105,7 @@ package final class AppGraph: GraphHost {
     // MARK: - Override Methods
 
     override package func instantiateOutputs() {
-        data.updateSeed &+= 1
+        data.updateSeed.unsafeIncrement()
         let outputs = rootSubgraph.apply {
             var inputs = _SceneInputs(
                 base: graphInputs,
@@ -187,7 +187,7 @@ extension AppGraph: GraphDelegate {
     }
 
     package func graphDidChange() {
-        data.updateSeed &+= 1
+        data.updateSeed.unsafeIncrement()
         runTransaction()
         let phaseChanged = $rootScenePhase.changedValue().changed
         let commandsChanged = $rootCommandsList?.changedValue().changed ?? false

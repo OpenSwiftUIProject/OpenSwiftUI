@@ -120,7 +120,7 @@ extension DisplayList.ViewUpdater {
             }
             removed.removeAll()
             animators = animators.filter { $0.value.deadline >= time }
-            cacheSeed &+= 1
+            cacheSeed.unsafeIncrement()
         }
 
         /// Removes a managed subview from the cache and recursively

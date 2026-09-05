@@ -553,7 +553,7 @@ extension DisplayList {
         package init() {}
         package mutating func enter(identity: Identity) -> Index {
             if identity == .none {
-                self.serial &+= 1
+                self.serial.unsafeIncrement()
                 let copy = self
                 self.restored = []
                 return copy

@@ -140,7 +140,7 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
         startTransactionUpdate()
         if data.time != time {
             data.time = time
-            data.updateSeed &+= 1 // not setTime due to this
+            data.updateSeed.unsafeIncrement() // not setTime due to this
             timeDidChange()
         }
         gestureEvents = events

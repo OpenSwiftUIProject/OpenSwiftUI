@@ -345,7 +345,7 @@ private class ForEachState<Data, ID, Content> where Data: RandomAccessCollection
         }
         contentID = UniqueID().value
         let oldSeed = seed
-        seed &+= 1
+        seed.unsafeIncrement()
         invalidateViewCounts()
         if self.view != nil, self.view!.idGenerator.isConstant {
             if self.view!.data.count != view.data.count {
@@ -1561,7 +1561,7 @@ private struct ForEachList<Data, ID, Content>: ViewList where Data: RandomAccess
 
         mutating func updateValue() {
             info.state.invalidateViewCounts()
-            seed &+= 1
+            seed.unsafeIncrement()
             value = ForEachList(state: info.state, seed: seed)
         }
 

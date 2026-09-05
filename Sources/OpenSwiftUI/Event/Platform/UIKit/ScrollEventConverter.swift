@@ -39,14 +39,14 @@ struct ScrollEventConverter {
             in: view
         )
         if rawPhase == 4 || rawPhase == 5 {
-            scrollSeed &+= 1
+            scrollSeed.unsafeIncrement()
             accumulatedScrollDelta = .zero
         }
         return [eventID: panEvent]
     }
 
     mutating func reset() {
-        scrollSeed &+= 1
+        scrollSeed.unsafeIncrement()
         accumulatedScrollDelta = .zero
     }
 }

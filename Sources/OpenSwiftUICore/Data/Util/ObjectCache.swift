@@ -58,7 +58,7 @@ final package class ObjectCache<Key, Value> where Key: Hashable {
                 let index = bucket + offset
                 if let itemData = data.table[index].data {
                     if itemData.hash == hash, itemData.key == key {
-                        data.clock &+= 1
+                        data.clock.unsafeIncrement()
                         data.table[index].used = data.clock
                         return itemData.value
                     } else {

@@ -292,7 +292,7 @@ private struct PlaceholderInfo: StatefulRule, ObservedAttribute, AsyncAttribute 
             as: PlaceholderViewPhase.self,
             invalidating: true
         ) { phase in
-            phase.resetDelta &+= 1
+            phase.resetDelta.unsafeIncrement()
         }
         secondaryRelease = placeholder.elements.retain()
         info.id = placeholder.id
