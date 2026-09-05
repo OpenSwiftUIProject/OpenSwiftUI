@@ -1,25 +1,33 @@
 name: Stdout Renderer
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'Sources/**'
-      - 'Package.swift'
-      - 'Renderer/Stdout/**'
-      - 'Scripts/CI/**'
-      - '.github/workflows/stdout_renderer.yml'
-  pull_request:
-    branches: [main]
-    paths:
-      - 'Sources/**'
-      - 'Package.swift'
-      - 'Renderer/Stdout/**'
-      - 'Scripts/CI/**'
-      - '.github/workflows/stdout_renderer.yml'
   workflow_dispatch:
+    inputs:
+      backend:
+        description: Attribute graph backend to run
+        required: true
+        default: all
+        type: choice
+        options:
+          - all
+          - AttributeGraph
+          - Compute
+  issue_comment:
+    types: [created]
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
 
 jobs:
+  prepare_stdout_renderer:
+    uses: ./.github/workflows/prepare_optional_ci.yml
+    with:
+      command: /stdout-renderer
+      target: ${{ inputs.backend || 'all' }}
+      status-contexts: '{"AttributeGraph":"Stdout Renderer / macOS / AttributeGraph","Compute":"Stdout Renderer / macOS / Compute"}'
+
   # Disable on Linux for now
   # stdout_renderer_linux:
   #   name: Run stdout renderer on Linux
@@ -36,33 +44,50 @@ jobs:
 
   stdout_renderer_macos:
     name: Run stdout renderer on macOS (${{ matrix.backend }})
+    needs: prepare_stdout_renderer
+    if: needs.prepare_stdout_renderer.outputs.ref != ''
     strategy:
       fail-fast: false
       matrix:
         os: [macos-15]
         xcode-version: ["26.6"]
         release: [2024]
-        backend: [AttributeGraph, Compute]
-        include:
-          - backend: AttributeGraph
-            attributegraph: "1"
-            compute: "0"
-          - backend: Compute
-            attributegraph: "0"
-            compute: "1"
+        backend: ${{ fromJSON(needs.prepare_stdout_renderer.outputs.targets || '[]') }}
     runs-on:
       - self-hosted
       - ${{ matrix.os }}
       - xcode-26.6
     env:
+      STATUS_CONTEXT: Stdout Renderer / macOS / ${{ matrix.backend }}
+      STATUS_ENABLED: ${{ needs.prepare_stdout_renderer.outputs.status-enabled }}
+      STATUS_SHA: ${{ needs.prepare_stdout_renderer.outputs.ref }}
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
-      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.attributegraph }}
-      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.compute }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.backend == 'AttributeGraph' && '1' || '0' }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.backend == 'Compute' && '1' || '0' }}
       OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 1
       GH_TOKEN: ${{ github.token }}
     steps:
+      - name: Mark PR status running
+        if: env.STATUS_ENABLED == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.STATUS_SHA,
+              state: "pending",
+              target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              description: "Stdout Renderer is running.",
+              context: process.env.STATUS_CONTEXT,
+            });
       - uses: actions/checkout@v4
+        with:
+          repository: ${{ needs.prepare_stdout_renderer.outputs.repository }}
+          ref: ${{ needs.prepare_stdout_renderer.outputs.ref }}
+          persist-credentials: false
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
@@ -72,3 +97,22 @@ jobs:
         shell: bash
       - name: Run stdout renderer example
         run: Renderer/Stdout/run-example.sh
+      - name: Complete PR status
+        if: always() && env.STATUS_ENABLED == 'true'
+        uses: actions/github-script@v7
+        env:
+          JOB_STATUS: ${{ job.status }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const state = process.env.JOB_STATUS === "success" ? "success" :
+              process.env.JOB_STATUS === "cancelled" ? "error" : "failure";
+            await github.rest.repos.createCommitStatus({
+              owner,
+              repo,
+              sha: process.env.STATUS_SHA,
+              state,
+              target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+              description: `Stdout Renderer completed with ${process.env.JOB_STATUS}.`,
+              context: process.env.STATUS_CONTEXT,
+            });

@@ -1,17 +1,6 @@
 name: UI Tests
 
 on:
-  push:
-    branches: [main]
-    paths:
-      - 'Sources/**'
-      - 'Package.swift'
-      - 'Example/**'
-      - 'Scripts/CI/**'
-      - 'Scripts/Tuist/**'
-      - 'mise*.toml'
-      - '.github/workflows/uitests.yml'
-      - '.github/actions/uitests/**'
   workflow_dispatch:
     inputs:
       platform:
@@ -52,6 +41,12 @@ permissions:
 jobs:
   prepare_uitests:
     name: Prepare UI tests
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+       contains(github.event.comment.body, '/uitest'))
     runs-on: ubuntu-latest
     outputs:
       repository: ${{ steps.prepare.outputs.repository }}
@@ -154,12 +149,6 @@ jobs:
               outputs["update-reference"] = String(updateRequested);
               outputs["configuration-matrix"] = JSON.stringify(configurationMatrix);
             };
-
-            if (context.eventName === "push") {
-              applyRequest(requestPlatforms("all"), requestConfigurations("default"), false);
-              setOutputs();
-              return;
-            }
 
             if (context.eventName === "workflow_dispatch") {
               const inputs = context.payload.inputs ?? {};

@@ -2,11 +2,13 @@
 
 The UI test workflow is defined in `.github/workflows/uitests.yml` and uses the shared action in `.github/actions/uitests/action.yml`.
 
+UI tests run only through manual dispatch or a trusted PR comment. Pushes and pull request updates do not run them automatically. See [Optional CI workflows](README.md) for the other optional checks.
+
 The workflow uses the same Example setup entry point as local development. Non-Compute configurations run `Example/setup.sh`, and Compute configurations run `Example/setup.sh --compute`.
 
 ## Default Matrix
 
-Pushes to `main` run the default matrix on both iOS Simulator and macOS:
+Requests without a platform or configuration selection run the default matrix on both iOS Simulator and macOS:
 
 | Configuration | Renderer | Attribute graph backend |
 | --- | --- | --- |

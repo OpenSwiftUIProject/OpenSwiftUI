@@ -1,0 +1,131 @@
+name: Prepare optional CI
+
+on:
+  workflow_call:
+    inputs:
+      command:
+        description: PR comment command
+        required: true
+        type: string
+      target:
+        description: Target selected by manual dispatch
+        default: all
+        type: string
+      status-contexts:
+        description: JSON object that maps target names to commit status contexts
+        required: true
+        type: string
+    outputs:
+      repository:
+        value: ${{ jobs.prepare.outputs.repository }}
+      ref:
+        value: ${{ jobs.prepare.outputs.ref }}
+      targets:
+        value: ${{ jobs.prepare.outputs.targets }}
+      status-enabled:
+        value: ${{ jobs.prepare.outputs.status-enabled }}
+
+permissions:
+  contents: read
+  pull-requests: read
+  statuses: write
+
+jobs:
+  prepare:
+    if: >-
+      github.event_name == 'workflow_dispatch' ||
+      (github.event_name == 'issue_comment' &&
+       github.event.issue.pull_request &&
+       contains(fromJSON('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) &&
+       contains(github.event.comment.body, inputs.command))
+    runs-on: ubuntu-latest
+    outputs:
+      repository: ${{ steps.prepare.outputs.repository }}
+      ref: ${{ steps.prepare.outputs.ref }}
+      targets: ${{ steps.prepare.outputs.targets }}
+      status-enabled: ${{ steps.prepare.outputs.status-enabled }}
+    steps:
+      - name: Prepare requested targets
+        id: prepare
+        uses: actions/github-script@v7
+        env:
+          COMMAND: ${{ inputs.command }}
+          TARGET: ${{ inputs.target }}
+          STATUS_CONTEXTS: ${{ inputs.status-contexts }}
+        with:
+          script: |
+            const { owner, repo } = context.repo;
+            const allowedAssociations = new Set(["OWNER", "MEMBER", "COLLABORATOR"]);
+            const statusContexts = JSON.parse(process.env.STATUS_CONTEXTS);
+            const command = process.env.COMMAND;
+            const outputs = {
+              repository: "",
+              ref: "",
+              targets: "[]",
+              "status-enabled": "false",
+            };
+            const setOutputs = () => {
+              for (const [name, value] of Object.entries(outputs)) {
+                core.setOutput(name, value);
+              }
+            };
+            setOutputs();
+
+            let requested = process.env.TARGET || "all";
+            const issue = context.payload.issue;
+            const comment = context.payload.comment;
+            if (context.eventName === "issue_comment") {
+              if (!issue?.pull_request || !comment || !allowedAssociations.has(comment.author_association)) {
+                return;
+              }
+              const args = comment.body.trim().split(/\s+/);
+              if (args[0] !== command) {
+                return;
+              }
+              if (args.length > 2) {
+                core.warning(`Expected ${command} [target].`);
+                return;
+              }
+              requested = args[1] || "all";
+            } else if (context.eventName !== "workflow_dispatch") {
+              return;
+            }
+
+            requested = requested.toLowerCase();
+            const targets = Object.keys(statusContexts).filter((target) =>
+              requested === "all" || target.toLowerCase() === requested
+            );
+            if (targets.length === 0) {
+              core.warning(`Unsupported ${command} target: ${requested}`);
+              return;
+            }
+
+            if (context.eventName === "issue_comment") {
+              const { data: pull } = await github.rest.pulls.get({ owner, repo, pull_number: issue.number });
+              if (pull.state !== "open" || !pull.head.repo) {
+                core.warning("The requested PR must be open and its head repository must exist.");
+                return;
+              }
+              outputs.repository = pull.head.repo.full_name;
+              outputs.ref = pull.head.sha;
+              outputs["status-enabled"] = String(outputs.repository === `${owner}/${repo}`);
+            } else {
+              outputs.repository = `${owner}/${repo}`;
+              outputs.ref = context.sha;
+            }
+            outputs.targets = JSON.stringify(targets);
+
+            if (outputs["status-enabled"] === "true") {
+              for (const target of targets) {
+                await github.rest.repos.createCommitStatus({
+                  owner,
+                  repo,
+                  sha: outputs.ref,
+                  state: "pending",
+                  target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
+                  description: `Queued by @${comment.user.login} with ${comment.body.trim()}.`.slice(0, 140),
+                  context: statusContexts[target],
+                });
+              }
+            }
+            setOutputs();
