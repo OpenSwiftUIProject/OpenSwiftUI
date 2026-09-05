@@ -52,6 +52,20 @@ struct GestureLabelKey: PreferenceKey {
 
 extension PreferencesInputs {
     @inline(__always)
+    var requiresGestureLabel: Bool {
+        get {
+            contains(GestureLabelKey.self)
+        }
+        set {
+            if newValue {
+                add(GestureLabelKey.self)
+            } else {
+                remove(GestureLabelKey.self)
+            }
+        }
+    }
+
+    @inline(__always)
     var containsGestureLabel: Bool {
         contains(GestureLabelKey.self)
     }

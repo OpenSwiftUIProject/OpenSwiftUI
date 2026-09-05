@@ -112,3 +112,31 @@ extension GesturePhase {
         }
     }
 }
+
+// MARK: - PreferencesInputs + GestureDependency
+
+extension PreferencesInputs {
+    @inline(__always)
+    var requiresGestureDependency: Bool {
+        get {
+            contains(GestureDependency.Key.self)
+        }
+        set {
+            if newValue {
+                add(GestureDependency.Key.self)
+            } else {
+                remove(GestureDependency.Key.self)
+            }
+        }
+    }
+}
+
+// MARK: - PreferencesOutputs + GestureDependency
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var gestureDependency: Attribute<GestureDependency>? {
+        get { self[GestureDependency.Key.self] }
+        set { self[GestureDependency.Key.self] = newValue }
+    }
+}

@@ -316,11 +316,17 @@ private class GestureResponder<Modifier>: DefaultLayoutViewResponder, AnyGesture
 
     var label: String? {
         guard viewSubgraph.isValid else { return nil }
-        return Graph.withoutUpdate {
+        if let value = Graph.withoutUpdate({
             viewSubgraph.apply {
                 modifier.name.value
             }
-        } ?? gestureGraph.gestureLabel
+        }) {
+            return value
+        } else if gestureGraph.isInstantiated {
+            return gestureGraph.gestureLabel
+        } else {
+            return nil
+        }
     }
 
     var isValid: Bool {

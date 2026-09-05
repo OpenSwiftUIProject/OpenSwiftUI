@@ -70,3 +70,31 @@ struct RequiredTapCountKey: PreferenceKey {
         }
     }
 }
+
+// MARK: - PreferencesInputs + RequiredTapCount
+
+extension PreferencesInputs {
+    @inline(__always)
+    var requiresRequiredTapCount: Bool {
+        get {
+            contains(RequiredTapCountKey.self)
+        }
+        set {
+            if newValue {
+                add(RequiredTapCountKey.self)
+            } else {
+                remove(RequiredTapCountKey.self)
+            }
+        }
+    }
+}
+
+// MARK: - PreferencesOutputs + RequiredTapCount
+
+extension PreferencesOutputs {
+    @inline(__always)
+    var requiredTapCount: Attribute<Int?>? {
+        get { self[RequiredTapCountKey.self] }
+        set { self[RequiredTapCountKey.self] = newValue }
+    }
+}

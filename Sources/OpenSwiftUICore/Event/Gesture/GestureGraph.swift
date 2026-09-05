@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 import OpenAttributeGraphShims
 
@@ -13,12 +13,12 @@ package protocol GestureGraphDelegate: AnyObject {
     func enqueueAction(_ action: @escaping () -> Void)
 }
 
-// MARK: - GestureGraph [WIP]
+// MARK: - GestureGraph
 
 final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvertible {
     weak var rootResponder: AnyGestureResponder?
     weak var delegate: GestureGraphDelegate?
-    package let eventBindingManager: EventBindingManager
+    package let eventBindingManager = EventBindingManager()
     @Attribute private var gestureTime: Time
     @Attribute private var gestureEvents: [EventID: any EventType]
     @Attribute private var inheritedPhase: _GestureInputs.InheritedPhase
@@ -31,15 +31,31 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
     @OptionalAttribute private var requiredTapCountAttr: Int??
     @OptionalAttribute private var gestureDependencyAttr: GestureDependency?
     @Attribute private var gesturePreferenceKeys: PreferenceKeys
-    var nextUpdateTime: Time
+    var nextUpdateTime: Time = .infinity
 
     init(rootResponder: AnyGestureResponder) {
+        precondition(GestureContainerFeature.isEnabled, "Feature flag is disabled.")
         self.rootResponder = rootResponder
-        _openSwiftUIUnimplementedFailure()
+        let data = GraphHost.Data()
+        let oldSubgraph = Subgraph.current
+        Subgraph.current = data.globalSubgraph
+        defer { Subgraph.current = oldSubgraph }
+        _gestureTime = Attribute(value: .zero)
+        _gestureEvents = Attribute(value: [:])
+        _inheritedPhase = Attribute(value: .failed)
+        _gestureResetSeed = Attribute(value: .zero)
+        _gesturePreferenceKeys = Attribute(value: PreferenceKeys())
+        super.init(data: data)
+        eventBindingManager.host = self
     }
 
     package var description: String {
-        "GestureGraph<\(rootResponder.map { String(describing: $0.gestureType) } ?? "nil")> \(self)"
+        let gestureType = if let rootResponder {
+            String(describing: rootResponder.gestureType)
+        } else {
+            "nil"
+        }
+        return "GestureGraph<\(gestureType)> \(address(of: self))"
     }
 
     override package func instantiateOutputs() {
@@ -55,24 +71,24 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
             inheritedPhase: $inheritedPhase,
             gesturePreferenceKeys: $gesturePreferenceKeys
         )
-        inputs.options.formUnion([.skipCombiners, .gestureGraph])
+        inputs.options = [.skipCombiners, .gestureGraph]
         if _eventDebugTriggers.contains(.gestures) {
-            inputs.options.insert(.includeDebugOutput)
+            inputs.options = [.skipCombiners, .includeDebugOutput, .gestureGraph]
         }
-        inputs.preferences.add(GestureLabelKey.self)
-        inputs.preferences.add(IsCancellableGestureKey.self)
-        inputs.preferences.add(RequiredTapCountKey.self)
-        inputs.preferences.add(GestureDependency.Key.self)
+        inputs.preferences.requiresGestureLabel = true
+        inputs.preferences.requiresIsCancellable = true
+        inputs.preferences.requiresRequiredTapCount = true
+        inputs.preferences.requiresGestureDependency = true
         let outputs = rootSubgraph.apply {
-            rootResponder.makeSubviewsGesture(inputs: inputs)
+            rootResponder.makeGesture(inputs: inputs)
         }
         $rootPhase = outputs.phase
         $gestureDebug = outputs.debugData
         $gestureCategoryAttr = outputs.preferences.gestureCategory
         $gestureLabelAttr = outputs.preferences.gestureLabel
-        $isCancellableAttr = outputs.preferences[IsCancellableGestureKey.self]
-        $requiredTapCountAttr = outputs.preferences[RequiredTapCountKey.self]
-        $gestureDependencyAttr = outputs.preferences[GestureDependency.Key.self]
+        $isCancellableAttr = outputs.preferences.isCancellable
+        $requiredTapCountAttr = outputs.preferences.requiredTapCount
+        $gestureDependencyAttr = outputs.preferences.gestureDependency
     }
 
     override package func uninstantiateOutputs() {
@@ -120,7 +136,29 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
         guard let rootResponder, rootResponder.isValid else {
             return .failed
         }
-        _openSwiftUIUnimplementedFailure()
+        instantiateIfNeeded()
+        startTransactionUpdate()
+        if data.time != time {
+            data.time = time
+            data.updateSeed &+= 1 // not setTime due to this
+            timeDidChange()
+        }
+        gestureEvents = events
+        var phase: GesturePhase<Void> = .failed
+        finishTransactionUpdate(in: globalSubgraph) { again in
+            guard rootResponder.isValid else {
+                return
+            }
+            if again {
+                if !events.isEmpty {
+                    gestureEvents = [:]
+                }
+            } else {
+                phase = rootPhase!
+            }
+        }
+        printGestures(data: gestureDebug, host: self)
+        return phase
     }
 
     package func resetEvents() {
@@ -148,12 +186,7 @@ final package class GestureGraph: GraphHost, EventGraphHost, CustomStringConvert
 
     @inline(__always)
     var gestureLabel: String? {
-        guard isInstantiated else {
-            return nil
-        }
-        return Update.perform {
-            gestureLabelAttr ?? nil
-        }
+        access(gestureLabelAttr ?? nil)
     }
 
     @inline(__always)
