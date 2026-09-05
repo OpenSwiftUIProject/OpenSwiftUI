@@ -492,7 +492,7 @@ extension GraphHost {
     
     package final func startTransactionUpdate() {
         inTransaction = true
-        data.transactionSeed += 1
+        data.transactionSeed &+= 1
     }
 
     package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
