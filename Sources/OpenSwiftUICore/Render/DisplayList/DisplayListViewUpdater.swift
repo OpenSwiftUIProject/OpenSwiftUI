@@ -86,7 +86,7 @@ extension DisplayList {
                 printTree = ProcessEnvironment.bool(forKey: "OPENSWIFTUI_PRINT_TREE")
             }
             if let printTree, printTree {
-                print("View \(Unmanaged.passUnretained(rootView).toOpaque()) at \(time):\n\(list.description)")
+                print("View \(address(of: rootView)) at \(time):\n\(list.description)")
             }
             let globals = Model.State.Globals(
                 updater: self,

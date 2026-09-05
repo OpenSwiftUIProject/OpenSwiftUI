@@ -233,7 +233,7 @@ struct PlatformViewChild<Content: PlatformViewRepresentable>: StatefulRule {
             [
                 attribute.graph.graphIdentity(),
                 "\(Content.self)",
-                platformView.map { UInt(bitPattern: Unmanaged.passUnretained($0).toOpaque()) } ?? 0,
+                platformView.map { UInt(bitPattern: address(of: $0)) } ?? 0,
             ]
         ) {
             var (view, viewChanged) = $view.changedValue()

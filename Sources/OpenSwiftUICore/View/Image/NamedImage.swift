@@ -368,7 +368,7 @@ package enum NamedImage {
                     CGImageSetProperty(
                         cgImage,
                         "org.OpenSwiftUIProject.OpenSwiftUI.ObjectToRetain" as CFString,
-                        Unmanaged.passUnretained(cat).toOpaque()
+                        address(of: cat)
                     )
                 }
                 contents = .cgImage(cgImage)

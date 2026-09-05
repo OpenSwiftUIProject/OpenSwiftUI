@@ -509,7 +509,7 @@ extension CGImageSource {
         guard let properties = CGImageSourceCopyPropertiesAtIndex(self, index, nil),
               let orientationResult = CFDictionaryGetValue(
                 properties,
-                Unmanaged.passUnretained(kCGImagePropertyOrientation).toOpaque()
+                address(of: kCGImagePropertyOrientation)
               ),
               let orientation = unsafeBitCast(orientationResult, to: NSNumber.self) as? Int
         else {

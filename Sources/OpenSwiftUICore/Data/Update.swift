@@ -77,7 +77,7 @@ package enum Update {
                 "ViewHost: (%p) update began PlatformHost [ %p ]",
                 [
                     0,
-                    UInt(bitPattern: Unmanaged.passUnretained(trackHost).toOpaque()),
+                    UInt(bitPattern: address(of: trackHost)),
                 ]
             )
             #endif
@@ -94,7 +94,7 @@ package enum Update {
                 "ViewHost: (%p) update ended PlatformHost [ %p ]",
                 [
                     0,
-                    UInt(bitPattern: Unmanaged.passUnretained(trackHost).toOpaque()),
+                    UInt(bitPattern: address(of: trackHost)),
                 ]
             )
             #endif

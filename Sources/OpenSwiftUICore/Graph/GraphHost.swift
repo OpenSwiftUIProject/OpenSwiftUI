@@ -170,7 +170,7 @@ open class GraphHost: CustomReflectable {
             guard let self else { return }
             graphInvalidation(from: attribute)
         }
-        graph.context = UnsafeRawPointer(Unmanaged.passUnretained(self).toOpaque())
+        graph.context = address(of: self)
     }
     
     deinit {
