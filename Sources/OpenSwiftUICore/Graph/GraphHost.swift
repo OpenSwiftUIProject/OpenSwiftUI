@@ -2,8 +2,8 @@
 //  GraphHost.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: Blocked by transactions
+//  Audited for 6.5.4
+//  Status: WIP
 //  ID: 30C09FF16BC95EC5173809B57186CAC3 (SwiftUI)
 //  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (SwiftUICore)
 
@@ -260,7 +260,9 @@ extension GraphHost {
         guard !isInstantiated else {
             return
         }
-        graphDelegate?.updateGraph { _ in }
+        graphDelegate?.updateGraph { _ in
+            _openSwiftUIEmptyStub()
+        }
         instantiateOutputs()
         isInstantiated = true
     }
@@ -269,7 +271,25 @@ extension GraphHost {
         guard isInstantiated else {
             return
         }
-        _openSwiftUIUnimplementedFailure()
+        data.inputs.resetCaches()
+        uninstantiateOutputs()
+        rootSubgraph.willRemove()
+        if !data.isRemoved {
+            globalSubgraph.removeChild(rootSubgraph)
+        }
+        rootSubgraph.willInvalidate(isInserted: false)
+        if immediately {
+            rootSubgraph.invalidate()
+        } else {
+            Update.enqueueAction(reason: nil) { [rootSubgraph] in
+                rootSubgraph.invalidate()
+            }
+        }
+        data.rootSubgraph = Subgraph(graph: graph)
+        if !data.isRemoved {
+            globalSubgraph.addChild(rootSubgraph)
+        }
+        isInstantiated = false
     }
     
     package final func uninstantiate() {
@@ -458,18 +478,18 @@ extension GraphHost {
         guard isValid, hasPendingTransactions else {
             return
         }
-        let asyncTransactions = pendingTransactions
+        let oldPendingTransactions = pendingTransactions
         pendingTransactions = []
-        for asyncTransaction in asyncTransactions {
-            let transaction = asyncTransaction.transaction
-            let mutations = asyncTransaction.mutations
+        for pendingTransaction in oldPendingTransactions {
+            let transaction = pendingTransaction.transaction
+            let mutations = pendingTransaction.mutations
             runTransaction(transaction, do: {
                 withTransaction(transaction) {
                     for mutation in mutations {
                         mutation.apply()
                     }
                 }
-            }, id: asyncTransaction.traceID)
+            }, id: pendingTransaction.traceID)
         }
         graphDelegate?.graphDidChange()
         mayDeferUpdate = true
@@ -538,7 +558,18 @@ extension GraphHost {
     private static var pendingGlobalTransactions: [GlobalTransaction] = []
 
     private static func flushGlobalTransactions() {
-        _openSwiftUIUnimplementedFailure()
+        guard !pendingGlobalTransactions.isEmpty else { return }
+        let transactions = pendingGlobalTransactions
+        pendingGlobalTransactions = []
+        for transaction in transactions {
+            let base = transaction.base
+            if let host = transaction.hostProvider.mutationHost {
+                host.runTransaction(base.transaction, do: base.apply, id: base.traceID)
+                host.graphDelegate?.graphDidChange()
+            } else {
+                base.apply()
+            }
+        }
     }
     
     package static func globalTransaction<T>(
@@ -547,11 +578,35 @@ extension GraphHost {
         mutation: T,
         hostProvider: any TransactionHostProvider
     ) where T: GraphMutation {
-        _openSwiftUIUnimplementedFailure()
+        Update.locked {
+            let count = pendingGlobalTransactions.count
+            if count != 0 {
+                let didAppend = withUnsafeMutablePointer(to: &pendingGlobalTransactions[count - 1]) { last in
+                    guard last.pointee.hostProvider === hostProvider,
+                          last.pointee.base.transactionID == transactionID,
+                          last.pointee.base.transaction.mayConcatenate(with: transaction)
+                    else { return false }
+                    last.pointee.base.append(mutation)
+                    return true
+                }
+                if didAppend { return }
+            }
+            if count == 0 {
+                onMainThread {
+                    RunLoop.addObserver(flushGlobalTransactions)
+                }
+            }
+            let base = AsyncTransaction(
+                transaction: transaction,
+                transactionID: transactionID,
+                mutations: [mutation]
+            )
+            pendingGlobalTransactions.append(GlobalTransaction(hostProvider: hostProvider, base: base))
+        }
     }
 }
 
-// MARK: GraphHost + preference [6.5.4]
+// MARK: GraphHost + preference
 
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
@@ -683,7 +738,6 @@ private struct AsyncTransaction {
     init(transaction: Transaction, transactionID: Transaction.ID, mutations: [GraphMutation]) {
         self.transaction = transaction
         self.transactionID = transactionID
-        // [AI] 6.5.4's queue uses the incremented counter, unlike the standalone trace helper.
         let oldValue = withUnsafeMutablePointer(to: &Self.nextTraceID) { pointer in
             pointer.withMemoryRebound(to: Atomic<UInt32>.self, capacity: 1) { atomic in
                 atomic.pointee.wrappingAdd(2, ordering: .relaxed).oldValue
@@ -711,25 +765,22 @@ private struct AsyncTransaction {
     }
 }
 
-// MARK: - GlobalTransaction [TODO]
+// MARK: - GlobalTransaction
 
-private final class GlobalTransaction {
+private struct GlobalTransaction {
     let hostProvider: TransactionHostProvider
-
-    init(transaction _: Transaction, hostProvider: TransactionHostProvider) {
-        self.hostProvider = hostProvider
-    }
+    var base: AsyncTransaction
 }
 
 // MARK: - Graph + GraphHost
 
 extension Graph {
     package func graphHost() -> GraphHost {
-        unsafeBitCast(context, to: GraphHost.self)
+        Unmanaged<GraphHost>.fromOpaque(context!).takeUnretainedValue()
     }
 }
 
-// MARK: - Preview [6.5.4]
+// MARK: - Preview
 
 private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 // NOTE: In SwiftUI, PreviewsInjection.framework's DYLDDynamicProductLoader calls
