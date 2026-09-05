@@ -1548,7 +1548,7 @@ extension JindoTripleVStack {
                     )
                     children[childIndex] = child
                     let height = child.geometry.dimensions.height
-                    let consumedHeight = height.isNaN ? 0 : height
+                    let consumedHeight = height.mappingNaN(to: 0)
                     for stack in Stack.allCases {
                         if let stateIndex = children[childIndex].majorAxisGroup[stack] {
                             states[stateIndex].consume(consumedHeight)
