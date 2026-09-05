@@ -5,6 +5,16 @@ description: Route OpenSwiftUI test authoring and review work to the appropriate
 
 # OpenSwiftUI Test Authoring
 
+## Testing and Verification
+
+- Do not write tests for reversible, low-impact changes that only mirror the
+  implementation. Add tests when they provide meaningful and necessary
+  verification of observable behavior, boundaries, failures, or regression risks.
+- Run the narrowest relevant tests permitted by `AGENTS.md` and complete required
+  checks. Once those pass, broaden or repeat testing only when new changes,
+  failures, or unresolved concerns justify it; otherwise, continue toward
+  completing the task.
+
 ## Shared Conventions
 
 - Follow the organization and naming of the nearest tests in the same target.
