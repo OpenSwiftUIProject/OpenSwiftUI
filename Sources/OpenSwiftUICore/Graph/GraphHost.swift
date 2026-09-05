@@ -367,7 +367,7 @@ extension GraphHost {
                 case .immediate: isUpdating
                 case .deferred: true
             }
-            self.mayDeferUpdate = self.mayDeferUpdate || mayDeferUpdate
+            self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
             if hasPendingTransactions {
                 let count = pendingTransactions.count
                 if pendingTransactions[count-1].transactionID == transactionID,
