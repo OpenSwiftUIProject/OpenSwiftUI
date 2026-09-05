@@ -67,6 +67,7 @@ open class GraphHost: CustomReflectable {
         package init() {
             let graph = Graph(shared: GraphHost.sharedGraph)
             let globalSubgraph = Subgraph(graph: graph)
+            let oldCurrent = Subgraph.current
             Subgraph.current = globalSubgraph
             let time = Attribute(value: Time.zero)
             let environment = Attribute(value: EnvironmentValues())
@@ -81,14 +82,12 @@ open class GraphHost: CustomReflectable {
                 environment: environment,
                 transaction: transaction
             )
-            
-            let rootSubgrph = Subgraph(graph: graph)
-            globalSubgraph.addChild(rootSubgrph)
-            Subgraph.current = nil
-            
+            let rootSubgraph = Subgraph(graph: graph)
+            globalSubgraph.addChild(rootSubgraph)
+            Subgraph.current = oldCurrent
             self.graph = graph
             self.globalSubgraph = globalSubgraph
-            self.rootSubgraph = rootSubgrph
+            self.rootSubgraph = rootSubgraph
             self.isRemoved = false
             self.isHiddenForReuse = false
             self._time = time
