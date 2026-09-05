@@ -500,7 +500,7 @@ private struct MakeViewRoot: _VariadicView.ImplicitRootVisitor {
     var outputs: _ViewOutputs?
 
     mutating func visit<R>(type: R.Type) where R : _VariadicView_ImplicitRoot {
-        let attribute = inputs.intern(R.implicitRoot, id: .implicitRoot)
+        let attribute = inputs.intern(R.implicitRoot, id: .implicitViewRoot)
         inputs.viewListOptions = R.viewListOptions
         outputs = R._makeView(
             root: _GraphValue(attribute),
@@ -522,7 +522,7 @@ private struct MakeModifiedRoot<Modifier>: _VariadicView.ImplicitRootVisitor whe
     var outputs: _ViewOutputs?
 
     mutating func visit<R>(type: R.Type) where R : _VariadicView_ImplicitRoot {
-        let attribute = inputs.intern(R.implicitRoot, id: .implicitRoot)
+        let attribute = inputs.intern(R.implicitRoot, id: .implicitViewRoot)
         inputs.viewListOptions = R.viewListOptions
         let body = body
         outputs = Modifier.makeDebuggableView(

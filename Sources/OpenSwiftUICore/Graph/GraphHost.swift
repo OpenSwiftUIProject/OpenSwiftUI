@@ -207,7 +207,7 @@ open class GraphHost: CustomReflectable {
     
     package enum ConstantID: Int8, Hashable {
         case defaultValue
-        case implicitRoot
+        case implicitViewRoot
         case trueValue
         case defaultValue3D
         case failedValue
