@@ -197,7 +197,7 @@ open class GraphHost: CustomReflectable {
     package final func setNeedsUpdate(mayDeferUpdate: Bool, values: ViewRendererHostProperties) {
         self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
         if let graph = data.graph {
-            // TODO: Trace
+            CustomEventTrace.setNeedsUpdate(values: values)
             graph.setNeedsUpdate()
         }
     }
@@ -308,7 +308,6 @@ extension GraphHost {
         data.phase = phase
     }
     
-    // TODO: _ArchivedViewHost.reset()
     package final func incrementPhase() {
         data.phase.resetSeed.unsafeIncrement()
         graphDelegate?.graphDidChange()
@@ -321,7 +320,7 @@ extension GraphHost {
         if self.removedState.isEmpty {
             if let parentHost {
                 let state = parentHost.removedState
-                isRemoved = state.contains(.unattached)
+                isRemoved = state.contains(.hiddenForReuse)
                 removedState = state
             } else {
                 isRemoved = false
@@ -426,7 +425,6 @@ extension GraphHost {
         asyncTransaction(transaction, mutation: EmptyGraphMutation())
     }
 
-    // Audited for 6.5.4
     package final func continueTransaction(_ body: @escaping () -> Void) {
         Update.assertIsLocked()
         var host = self
@@ -439,7 +437,7 @@ extension GraphHost {
             }
             host = parent
         }
-        // TODO: CustomEventTrace
+        CustomEventTrace.transactionContinueAsContinuation(host)
         host.continuations.append(body)
     }
     
@@ -456,45 +454,59 @@ extension GraphHost {
         for asyncTransaction in asyncTransactions {
             let transaction = asyncTransaction.transaction
             let mutations = asyncTransaction.mutations
-            runTransaction(transaction) {
+            // TODO: Forward AsyncTransaction.traceID when queue tracing is implemented.
+            runTransaction(transaction, do: {
                 withTransaction(transaction) {
                     for mutation in mutations {
                         mutation.apply()
                     }
                 }
-            }
+            }, id: nil)
         }
         graphDelegate?.graphDidChange()
         mayDeferUpdate = true
     }
 
-    package final func runTransaction(_ transaction: Transaction? = nil, do body: () -> Void) {
+    package final func runTransaction(
+        _ transaction: Transaction? = nil,
+        do body: () -> Void,
+        id: UInt32? = nil
+    ) {
         instantiateIfNeeded()
         if let transaction, !transaction.isEmpty {
             data.transaction = transaction
         }
-        startTransactionUpdate()
+        startTransactionUpdate(id: id)
         body()
-        finishTransactionUpdate(in: globalSubgraph)
+        finishTransactionUpdate(in: globalSubgraph, id: id)
         if let transaction, !transaction.isEmpty {
             data.transaction = .init()
         }
     }
     
     package final func runTransaction() {
-        runTransaction(nil) {}
+        runTransaction(nil, do: {}, id: nil)
     }
     
     package final var needsTransaction: Bool {
         globalSubgraph.isDirty(flags: .transactional)
     }
     
-    package final func startTransactionUpdate() {
+    package final func startTransactionUpdate(
+        id: UInt32? = nil
+    ) {
         inTransaction = true
+        if let id {
+            CustomEventTrace.transactionBegin(id)
+        }
         data.transactionSeed.unsafeIncrement()
     }
 
-    package final func finishTransactionUpdate(in subgraph: Subgraph, postUpdate: (_ again: Bool) -> Void = { _ in }) {
+    package final func finishTransactionUpdate(
+        in subgraph: Subgraph,
+        postUpdate: (_ again: Bool) -> Void = { _ in },
+        id: UInt32? = nil
+    ) {
         var counter = 0
         repeat {
             let oldContinuations = continuations
@@ -506,6 +518,9 @@ extension GraphHost {
             subgraph.update(flags: .transactional)
             postUpdate(!continuations.isEmpty)
         } while counter != 8 && !continuations.isEmpty
+        if let id {
+            CustomEventTrace.transactionEnd(id)
+        }
         inTransaction = false
     }
 }
