@@ -228,10 +228,10 @@ open class GraphHost: CustomReflectable {
     
     open var graphDelegate: GraphDelegate? { nil }
     open var parentHost: GraphHost? { nil }
-    open func instantiateOutputs() {}
-    open func uninstantiateOutputs() {}
-    open func timeDidChange() {}
-    open func isHiddenForReuseDidChange() {}
+    open func instantiateOutputs() { _openSwiftUIEmptyStub() }
+    open func uninstantiateOutputs() { _openSwiftUIEmptyStub() }
+    open func timeDidChange() { _openSwiftUIEmptyStub() }
+    open func isHiddenForReuseDidChange() { _openSwiftUIEmptyStub() }
 }
 
 @_spi(ForOpenSwiftUIOnly)
