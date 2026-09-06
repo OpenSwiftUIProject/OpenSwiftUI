@@ -58,6 +58,12 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
     }
     
     #if OPENSWIFTUI_EMBEDDED
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool {
+        switch storage {
+        case let .trueContent(content): content._handlePhyicButton(button)
+        case let .falseContent(content): content._handlePhyicButton(button)
+        }
+    }
     public var _layoutCount: Int {
         switch storage {
         case let .trueContent(content): content._layoutCount

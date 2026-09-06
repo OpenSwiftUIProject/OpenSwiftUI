@@ -16,6 +16,7 @@ public struct _EmbeddedViewPair<First: View, Second: View>: PrimitiveView {
         if index < first._layoutCount { first._placeChild(index, in: rect, to: &sink) }
         else { second._placeChild(index - first._layoutCount, in: rect, to: &sink) }
     }
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { first._handlePhyicButton(button) || second._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         ZStack { self }._sizeThatFits(proposal, using: &sink)
     }
