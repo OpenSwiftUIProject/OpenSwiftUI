@@ -7,19 +7,19 @@
 
 // MARK: - Never + View
 
-#if !OPENSWIFTUI_EMBEDDED && canImport(CoreTransferable)
+#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded)) && canImport(CoreTransferable)
 public import CoreTransferable
 #endif
 
 @available(OpenSwiftUI_v1_0, *)
 extension Never: View {
-    #if OPENSWIFTUI_EMBEDDED || !canImport(CoreTransferable)
+    #if (OPENSWIFTUI_LVGL && hasFeature(Embedded)) || !canImport(CoreTransferable)
     public typealias Body = Never
 
     public var body: Never { self }
     #endif
 
-    #if OPENSWIFTUI_EMBEDDED
+    #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize { switch self {} }
     public func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink) {
         switch self {}

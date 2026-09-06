@@ -32,7 +32,7 @@ public struct EmptyView: PrimitiveView {
     @inlinable
     public init() {}
     
-    #if OPENSWIFTUI_EMBEDDED
+    #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
     public var _layoutCount: Int { 0 }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize { .zero }
     public func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink) {}

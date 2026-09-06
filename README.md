@@ -43,6 +43,26 @@ The author of this project is not responsible for any consequences that may aris
 
 ## Usage
 
+### Embedded LVGL (`embed/folotoy`)
+
+This branch includes an Embedded Swift profile for FoloToy AI Passport, with
+measured layouts, `Color`/`Image`/`Text`, retained root `@State`, and physical
+button closures. It builds directly from this repository's selected Swift
+sources, without OpenAttributeGraph, OpenRenderBox, other sibling repositories,
+or the default SwiftPM dependency graph.
+
+With the Swift 6.3.1 RELEASE toolchain on `PATH`, Python 3, and host build tools:
+
+```sh
+python3 Scripts/build_embedded.py --target host --output ../build/host
+Scripts/test_embedded.sh
+```
+
+See [Embedded/README.md](Embedded/README.md) for cloning this branch, selecting
+the toolchain, building for ESP32-C3, writing a `ContentView`, and linking the
+module to a platform renderer. The following desktop integration and example
+instructions describe the default framework build.
+
 ### Integration Guide
 
 To integrate OpenSwiftUI into your own Xcode project, see **[INTEGRATION.md](INTEGRATION.md)** for detailed step-by-step instructions.

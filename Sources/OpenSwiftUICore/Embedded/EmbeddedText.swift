@@ -2,7 +2,7 @@
 //  EmbeddedText.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Static UTF-8 text rendered with the platform's built-in font.
 public struct Text: PrimitiveView {
     public let content: StaticString

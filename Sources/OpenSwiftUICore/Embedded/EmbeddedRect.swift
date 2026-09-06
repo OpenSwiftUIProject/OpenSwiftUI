@@ -2,7 +2,7 @@
 //  EmbeddedRect.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Integer pixel coordinates used by the static Embedded rendering profile.
 public struct EmbeddedRect: Equatable, Sendable {
     public var x: Int32

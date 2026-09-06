@@ -2,7 +2,7 @@
 //  EmbeddedLayout.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Embedded measure/place contract with a typed cache and generic child access.
 /// Integer geometry and index-based subviews are specific to this profile.
 public protocol Layout {

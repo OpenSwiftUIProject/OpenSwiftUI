@@ -37,7 +37,7 @@ public struct ViewBuilder {
         content
     }
 
-    #if !OPENSWIFTUI_EMBEDDED
+    #if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
     /// Rejects incompatible expressions within the builder.
     @available(*, unavailable, message: "this expression does not conform to 'View'")
     @_disfavoredOverload
@@ -63,7 +63,7 @@ public struct ViewBuilder {
         content
     }
 
-    #if OPENSWIFTUI_EMBEDDED
+    #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
     public static func buildPartialBlock<Content: View>(first: Content) -> Content { first }
 
     public static func buildPartialBlock<Accumulated: View, Next: View>(
@@ -111,7 +111,7 @@ extension ViewBuilder {
 extension ViewBuilder {
     /// Processes view content for a conditional compiler-control
     /// statement that performs an availability check.
-    #if OPENSWIFTUI_EMBEDDED
+    #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
     public static func buildLimitedAvailability<Content: View>(_ content: Content) -> Content { content }
     #else
     @_alwaysEmitIntoClient

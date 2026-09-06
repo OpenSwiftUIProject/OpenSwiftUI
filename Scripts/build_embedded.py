@@ -20,7 +20,7 @@ def main():
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
     command = [args.swiftc, "-enable-experimental-feature", "Embedded", "-wmo", "-Osize",
-               "-parse-as-library", "-DOPENSWIFTUI_EMBEDDED", "-package-name", "OpenSwiftUI",
+               "-parse-as-library", "-DOPENSWIFTUI_LVGL", "-package-name", "OpenSwiftUI",
                "-module-name", "OpenSwiftUI", "-Xfrontend", "-function-sections",
                "-Xfrontend", "-enable-single-module-llvm-emission"]
     # Use the same availability macro names as the normal package. This profile

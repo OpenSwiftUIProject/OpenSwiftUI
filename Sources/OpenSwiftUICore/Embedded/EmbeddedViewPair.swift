@@ -2,7 +2,7 @@
 //  EmbeddedViewPair.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Builder list storage: flatten siblings for the enclosing Layout container.
 public struct _EmbeddedViewPair<First: View, Second: View>: PrimitiveView {
     let first: First

@@ -2,7 +2,7 @@
 //  EmbeddedViewHost.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Retains a root value and its state between synchronous input and render passes.
 ///
 /// Construct content inside the builder so its state can invalidate this host.
