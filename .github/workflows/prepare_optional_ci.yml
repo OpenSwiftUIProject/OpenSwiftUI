@@ -7,6 +7,10 @@ on:
         description: PR comment command
         required: true
         type: string
+      ref:
+        description: Commit SHA supplied by a reusable workflow caller
+        default: ''
+        type: string
       target:
         description: Target selected by manual dispatch
         default: all
@@ -33,6 +37,7 @@ permissions:
 jobs:
   prepare:
     if: >-
+      (inputs.ref != '' && github.event_name != 'issue_comment') ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
@@ -51,6 +56,7 @@ jobs:
         env:
           COMMAND: ${{ inputs.command }}
           TARGET: ${{ inputs.target }}
+          REQUESTED_REF: ${{ inputs.ref }}
           STATUS_CONTEXTS: ${{ inputs.status-contexts }}
         with:
           script: |
@@ -72,9 +78,14 @@ jobs:
             setOutputs();
 
             let requested = process.env.TARGET || "all";
+            const requestedRef = process.env.REQUESTED_REF || "";
             const issue = context.payload.issue;
             const comment = context.payload.comment;
-            if (context.eventName === "issue_comment") {
+            if (requestedRef && context.eventName !== "issue_comment") {
+              if (requestedRef.length !== 40 || !/^[0-9a-f]+$/.test(requestedRef)) {
+                throw new Error("Reusable CI requires a full commit SHA.");
+              }
+            } else if (context.eventName === "issue_comment") {
               if (!issue?.pull_request || !comment || !allowedAssociations.has(comment.author_association)) {
                 return;
               }
@@ -111,7 +122,7 @@ jobs:
               outputs["status-enabled"] = String(outputs.repository === `${owner}/${repo}`);
             } else {
               outputs.repository = `${owner}/${repo}`;
-              outputs.ref = context.sha;
+              outputs.ref = requestedRef || context.sha;
             }
             outputs.targets = JSON.stringify(targets);
 

@@ -1,6 +1,17 @@
 name: macOS 
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+    outputs:
+      verified-sha:
+        value: ${{ jobs.macos_test.outputs.sha }}
   push:
     branches: [main]
     paths:
@@ -21,6 +32,8 @@ on:
 jobs:
   macos_test:
     name: Execute tests on macOS
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
     strategy:
       fail-fast: false
       matrix:
@@ -45,6 +58,9 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:
@@ -68,7 +84,7 @@ jobs:
             -instr-profile=.build-test-debug/debug/codecov/default.profdata \
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest/Contents/MacOS/OpenSwiftUIPackageTests \
             > coverage.txt
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true

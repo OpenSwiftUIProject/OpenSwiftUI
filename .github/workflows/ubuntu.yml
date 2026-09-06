@@ -1,6 +1,17 @@
 name: Ubuntu 
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+    outputs:
+      verified-sha:
+        value: ${{ jobs.ubuntu_test.outputs.sha }}
   push:
     branches: [main]
     paths:
@@ -19,6 +30,8 @@ on:
 jobs:
   ubuntu_test:
     name: Execute tests on Ubuntu
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
     strategy:
       fail-fast: false
       matrix:
@@ -34,6 +47,9 @@ jobs:
     container: swift:${{ matrix.swift_version }}-jammy
     steps:
       - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - name: Building and running tests in debug mode with coverage
         run: |
           swift test \
@@ -47,7 +63,7 @@ jobs:
             .build-test-debug/debug/OpenSwiftUIPackageTests.xctest \
             > coverage.txt
         id: debug-test
-      - uses: codecov/codecov-action@v3
+      - uses: codecov/codecov-action@v5
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           verbose: true

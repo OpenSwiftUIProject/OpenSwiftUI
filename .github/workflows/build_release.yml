@@ -1,0 +1,82 @@
+name: Build release artifacts
+
+on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      version:
+        required: true
+        type: string
+    secrets:
+      SIGNING_CERTIFICATE_BASE_64:
+        required: true
+      SIGNING_CERTIFICATE_PASSWORD:
+        required: true
+    outputs:
+      artifact-id:
+        value: ${{ jobs.build.outputs.artifact-id }}
+      sha:
+        value: ${{ jobs.build.outputs.sha }}
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  build:
+    runs-on: [self-hosted, macos-15, xcode-26.6]
+    outputs:
+      artifact-id: ${{ steps.upload.outputs.artifact-id }}
+      sha: ${{ steps.checkout.outputs.commit }}
+    env:
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_DANCEUIGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 0
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      GH_TOKEN: ${{ github.token }}
+    steps:
+      - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ inputs.ref }}
+          persist-credentials: false
+      - name: Validate release build inputs
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ inputs.version }}
+          EXPECTED_SHA: ${{ inputs.ref }}
+          CHECKOUT_SHA: ${{ steps.checkout.outputs.commit }}
+          SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
+          SIGNING_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+        with:
+          script: |
+            const { validateVersion, validateSHA } = require('./Scripts/CI/release.js');
+            validateVersion(process.env.VERSION);
+            validateSHA(process.env.EXPECTED_SHA);
+            if (process.env.CHECKOUT_SHA !== process.env.EXPECTED_SHA) throw new Error('Release checkout SHA mismatch.');
+            if (!process.env.SIGNING_CERTIFICATE || !process.env.SIGNING_PASSWORD) throw new Error('Release signing secrets are required.');
+      - name: Build and sign XCFrameworks
+        uses: ./.github/actions/build-xcframework
+        with:
+          tag-name: ${{ inputs.version }}
+          signing-certificate-base64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
+          signing-certificate-password: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+      - name: Record artifact digests and source commit
+        env:
+          VERSION: ${{ inputs.version }}
+          CANDIDATE_SHA: ${{ inputs.ref }}
+        run: node Scripts/CI/release.js manifest build "$VERSION" "$CANDIDATE_SHA"
+      - name: Store release artifacts
+        id: upload
+        uses: actions/upload-artifact@v7
+        with:
+          name: release-${{ inputs.version }}-${{ github.run_attempt }}
+          path: |
+            build/*.xcframework.zip
+            build/release-manifest.json
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 14

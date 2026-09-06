@@ -1,6 +1,14 @@
 name: iOS 
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+    outputs:
+      verified-sha:
+        value: ${{ jobs.ios_test.outputs.sha }}
   push:
     branches: [main]
     paths:
@@ -25,6 +33,8 @@ on:
 jobs:
   ios_test:
     name: Execute tests on iOS
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
     permissions:
       contents: read
       id-token: write
@@ -55,6 +65,9 @@ jobs:
       GH_TOKEN: ${{ github.token }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
+        with:
+          ref: ${{ inputs.ref || github.sha }}
       - name: Setup Xcode
         uses: OpenSwiftUIProject/setup-xcode@v2
         with:

@@ -1,0 +1,117 @@
+name: Pre-release checks
+
+on:
+  workflow_dispatch:
+  workflow_call:
+    inputs:
+      ref:
+        description: Full commit SHA to verify
+        required: true
+        type: string
+    secrets:
+      CODECOV_TOKEN:
+        required: false
+    outputs:
+      verified-sha:
+        value: ${{ jobs.verify.outputs.sha }}
+
+permissions:
+  contents: read
+  issues: read
+  pull-requests: read
+  statuses: write
+  id-token: write
+
+jobs:
+  prepare:
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.prepare.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Pin candidate commit
+        id: prepare
+        uses: actions/github-script@v7
+        env:
+          CANDIDATE_SHA: ${{ inputs.ref || github.sha }}
+        with:
+          script: |
+            const { validateSHA } = require('./Scripts/CI/release.js');
+            const sha = validateSHA(process.env.CANDIDATE_SHA);
+            const { data: commit } = await github.rest.repos.getCommit({ ...context.repo, ref: sha });
+            if (commit.sha !== sha) throw new Error('Candidate commit did not resolve to the requested SHA.');
+            core.setOutput('sha', sha);
+
+  macos:
+    needs: prepare
+    uses: ./.github/workflows/macos.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  ios:
+    needs: prepare
+    uses: ./.github/workflows/ios.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+
+  ubuntu:
+    needs: prepare
+    uses: ./.github/workflows/ubuntu.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  ui:
+    needs: prepare
+    uses: ./.github/workflows/uitests.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+      platform: all
+      configuration: all
+      update_reference: false
+
+  compatibility:
+    needs: prepare
+    uses: ./.github/workflows/compatibility_tests.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+      platform: all
+
+  stdout:
+    needs: prepare
+    uses: ./.github/workflows/stdout_renderer.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+      backend: all
+
+  verify:
+    name: Verify all required checks
+    if: always()
+    needs: [prepare, macos, ios, ubuntu, ui, compatibility, stdout]
+    runs-on: ubuntu-latest
+    outputs:
+      sha: ${{ steps.verify.outputs.sha }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Require successful checks on the candidate commit
+        id: verify
+        uses: actions/github-script@v7
+        env:
+          CHECK_RESULTS: ${{ toJSON(needs) }}
+          CANDIDATE_SHA: ${{ needs.prepare.outputs.sha }}
+        with:
+          script: |
+            const { assertChecks } = require('./Scripts/CI/release.js');
+            const sha = process.env.CANDIDATE_SHA;
+            assertChecks(JSON.parse(process.env.CHECK_RESULTS), sha);
+            core.setOutput('sha', sha);
+            await core.summary.addHeading('Pre-release checks passed')
+              .addRaw(`All required checks verified commit ${sha}. No tag or release was created.`)
+              .write();

@@ -1,0 +1,149 @@
+name: Create release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Stable version to release, without a v prefix
+        required: true
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: release-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  prepare:
+    name: Validate release request
+    runs-on: ubuntu-latest
+    environment: release
+    outputs:
+      sha: ${{ steps.prepare.outputs.sha }}
+      version: ${{ steps.prepare.outputs.version }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Validate release configuration and pin the commit
+        id: prepare
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ inputs.version }}
+          PIPELINE_ENABLED: ${{ vars.RELEASE_PIPELINE_ENABLED }}
+          APP_ID: ${{ vars.RELEASE_APP_ID }}
+          HAS_APP_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY != '' }}
+          HAS_SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 != '' }}
+          HAS_SIGNING_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD != '' }}
+          HAS_BINARY_REPO_TOKEN: ${{ secrets.BINARY_REPO_PAT != '' }}
+        with:
+          script: |
+            const { validateVersion, validateSHA, validateReleaseRef, getTagSHA } = require('./Scripts/CI/release.js');
+            if (process.env.PIPELINE_ENABLED !== 'true') throw new Error('Configure the release App and tag rulesets, then enable RELEASE_PIPELINE_ENABLED.');
+            if (!process.env.APP_ID || ['HAS_APP_KEY', 'HAS_SIGNING_CERTIFICATE', 'HAS_SIGNING_PASSWORD', 'HAS_BINARY_REPO_TOKEN'].some(name => process.env[name] !== 'true')) {
+              throw new Error('Release App, signing, and binary repository credentials must be configured.');
+            }
+            const version = validateVersion(process.env.VERSION);
+            validateReleaseRef(version, context.ref);
+            const sha = validateSHA(context.sha);
+            const existing = await getTagSHA(github, context.repo, version);
+            if (existing && existing !== sha) throw new Error(`Tag ${version} already points to ${existing}.`);
+            core.setOutput('version', version);
+            core.setOutput('sha', sha);
+            await core.summary.addHeading('Release candidate').addTable([
+              ['Version', version], ['Commit', sha],
+            ]).write();
+
+  checks:
+    needs: prepare
+    uses: ./.github/workflows/pre_release.yml
+    permissions:
+      contents: read
+      issues: read
+      pull-requests: read
+      statuses: write
+      id-token: write
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+    secrets:
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+
+  build:
+    needs: [prepare, checks]
+    uses: ./.github/workflows/build_release.yml
+    permissions:
+      contents: read
+      id-token: write
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+      version: ${{ needs.prepare.outputs.version }}
+    secrets:
+      SIGNING_CERTIFICATE_BASE_64: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 }}
+      SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
+
+  tag:
+    name: Tag the verified commit
+    needs: [prepare, checks, build]
+    runs-on: ubuntu-latest
+    environment: release
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ needs.prepare.outputs.sha }}
+          persist-credentials: false
+      - name: Require matching checks and artifacts
+        uses: actions/github-script@v7
+        env:
+          CANDIDATE_SHA: ${{ needs.prepare.outputs.sha }}
+          VERIFIED_SHA: ${{ needs.checks.outputs.verified-sha }}
+          BUILT_SHA: ${{ needs.build.outputs.sha }}
+          ARTIFACT_ID: ${{ needs.build.outputs.artifact-id }}
+        with:
+          script: |
+            const { validateSHA } = require('./Scripts/CI/release.js');
+            const sha = validateSHA(process.env.CANDIDATE_SHA);
+            if (process.env.VERIFIED_SHA !== sha || process.env.BUILT_SHA !== sha || !process.env.ARTIFACT_ID) {
+              throw new Error('Checks and stored release artifacts must refer to the candidate commit.');
+            }
+      - name: Create release App token
+        id: app-token
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.RELEASE_APP_ID }}
+          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
+          permission-contents: write
+      - name: Create version tag
+        uses: actions/github-script@v7
+        env:
+          VERSION: ${{ needs.prepare.outputs.version }}
+          CANDIDATE_SHA: ${{ needs.prepare.outputs.sha }}
+        with:
+          github-token: ${{ steps.app-token.outputs.token }}
+          script: |
+            const { ensureTag } = require('./Scripts/CI/release.js');
+            await ensureTag({ github, repo: context.repo, version: process.env.VERSION, sha: process.env.CANDIDATE_SHA });
+
+  publish:
+    needs: [prepare, build, tag]
+    uses: ./.github/workflows/publish_release.yml
+    permissions:
+      contents: write
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+      version: ${{ needs.prepare.outputs.version }}
+      artifact-id: ${{ needs.build.outputs.artifact-id }}
+    secrets:
+      BINARY_REPO_PAT: ${{ secrets.BINARY_REPO_PAT }}
+      COPILOT_GITHUB_TOKEN: ${{ secrets.COPILOT_GITHUB_TOKEN }}
+
+  documentation:
+    needs: publish
+    uses: ./.github/workflows/documentation.yml
+    permissions:
+      contents: read
+      packages: write
+      pages: write
+      id-token: write

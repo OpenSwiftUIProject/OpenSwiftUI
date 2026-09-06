@@ -1,6 +1,6 @@
 # Optional CI workflows
 
-UI tests, compatibility tests, and Stdout Renderer run only through manual dispatch or a trusted PR comment. Pushes and pull request updates do not run these workflows automatically.
+UI tests, compatibility tests, and Stdout Renderer run through manual dispatch, a trusted PR comment, or the shared pre-release workflow. Pushes and pull request updates do not run these workflows automatically.
 
 ## PR comments
 
@@ -48,3 +48,17 @@ gh workflow run stdout_renderer.yml --ref main -f backend=Compute
 ```
 
 Manual dispatch runs the selected branch or tag. See [UI Test CI](UITest.md) for its dispatch inputs and configuration aliases.
+
+## Pre-release checks
+
+Run all regular and optional checks on one commit with:
+
+```shell
+gh workflow run pre_release.yml --ref main
+```
+
+This runs macOS, iOS, Ubuntu, all UI test configurations on both platforms,
+compatibility tests on both platforms, and both Stdout Renderer backends.
+The standalone workflow creates no tag or release. The release entry calls the
+same workflow before building signed artifacts and creating the version tag.
+See [Releases](../Release.md) for setup, publication, and retry instructions.

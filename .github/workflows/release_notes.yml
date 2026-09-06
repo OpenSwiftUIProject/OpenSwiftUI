@@ -8,6 +8,10 @@ on:
         required: true
   workflow_call:
     inputs:
+      ref:
+        description: Source commit for the release
+        required: true
+        type: string
       tag-name:
         description: 'Tag name for the release'
         required: true
@@ -28,7 +32,14 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
+          ref: ${{ inputs.ref || github.sha }}
           fetch-depth: 0
+          persist-credentials: false
+
+      - name: Require an existing release
+        env:
+          TAG_NAME: ${{ inputs.tag-name }}
+        run: gh release view "$TAG_NAME" > /dev/null
 
       - name: Generate changelog from GitHub
         env:
@@ -102,7 +113,7 @@ jobs:
             echo "No highlights generated."
           fi
 
-      - name: Create or update release notes
+      - name: Update release notes
         env:
           TAG_NAME: ${{ inputs.tag-name }}
         run: |
@@ -126,10 +137,4 @@ jobs:
           cat /tmp/release_notes.md
           echo "=========================="
 
-          if gh release view "${TAG_NAME}" > /dev/null 2>&1; then
-            gh release edit "${TAG_NAME}" --notes-file /tmp/release_notes.md
-          else
-            gh release create "${TAG_NAME}" \
-              --title "${TAG_NAME}" \
-              --notes-file /tmp/release_notes.md
-          fi
+          gh release edit "${TAG_NAME}" --notes-file /tmp/release_notes.md

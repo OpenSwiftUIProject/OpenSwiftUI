@@ -1,6 +1,17 @@
 name: Stdout Renderer
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      backend:
+        default: all
+        type: string
+    outputs:
+      verified-sha:
+        value: ${{ jobs.stdout_renderer_macos.outputs.sha }}
   workflow_dispatch:
     inputs:
       backend:
@@ -25,6 +36,7 @@ jobs:
     uses: ./.github/workflows/prepare_optional_ci.yml
     with:
       command: /stdout-renderer
+      ref: ${{ inputs.ref || '' }}
       target: ${{ inputs.backend || 'all' }}
       status-contexts: '{"AttributeGraph":"Stdout Renderer / macOS / AttributeGraph","Compute":"Stdout Renderer / macOS / Compute"}'
 
@@ -44,6 +56,8 @@ jobs:
 
   stdout_renderer_macos:
     name: Run stdout renderer on macOS (${{ matrix.backend }})
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
     needs: prepare_stdout_renderer
     if: needs.prepare_stdout_renderer.outputs.ref != ''
     strategy:
@@ -84,6 +98,7 @@ jobs:
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
+        id: checkout
         with:
           repository: ${{ needs.prepare_stdout_renderer.outputs.repository }}
           ref: ${{ needs.prepare_stdout_renderer.outputs.ref }}

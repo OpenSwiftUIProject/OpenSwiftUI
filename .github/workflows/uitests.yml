@@ -1,6 +1,24 @@
 name: UI Tests
 
 on:
+  workflow_call:
+    inputs:
+      ref:
+        required: true
+        type: string
+      platform:
+        default: all
+        type: string
+      configuration:
+        default: default
+        type: string
+      update_reference:
+        default: false
+        type: boolean
+    outputs:
+      verified-sha:
+        description: Commit verified on both platforms
+        value: ${{ jobs.ios_uitest.outputs.sha == jobs.macos_uitest.outputs.sha && jobs.ios_uitest.outputs.sha || '' }}
   workflow_dispatch:
     inputs:
       platform:
@@ -42,6 +60,7 @@ jobs:
   prepare_uitests:
     name: Prepare UI tests
     if: >-
+      (inputs.ref != '' && github.event_name != 'issue_comment') ||
       github.event_name == 'workflow_dispatch' ||
       (github.event_name == 'issue_comment' &&
        github.event.issue.pull_request &&
@@ -60,6 +79,11 @@ jobs:
       - name: Prepare requested UI tests
         id: prepare
         uses: actions/github-script@v7
+        env:
+          REQUESTED_REF: ${{ inputs.ref || '' }}
+          PLATFORM: ${{ inputs.platform || 'all' }}
+          CONFIGURATION: ${{ inputs.configuration || 'default' }}
+          UPDATE_REFERENCE: ${{ inputs.update_reference && 'true' || 'false' }}
         with:
           script: |
             const { owner, repo } = context.repo;
@@ -150,15 +174,20 @@ jobs:
               outputs["configuration-matrix"] = JSON.stringify(configurationMatrix);
             };
 
-            if (context.eventName === "workflow_dispatch") {
-              const inputs = context.payload.inputs ?? {};
-              const platforms = requestPlatforms(inputs.platform ?? "all");
-              const configurationMatrix = requestConfigurations(inputs.configuration ?? "default");
+            const requestedRef = process.env.REQUESTED_REF || "";
+            if (context.eventName !== "issue_comment" && (requestedRef || context.eventName === "workflow_dispatch")) {
+              if (requestedRef && (requestedRef.length !== 40 || !/^[0-9a-f]+$/.test(requestedRef))) {
+                throw new Error("Reusable CI requires a full commit SHA.");
+              }
+              const platforms = requestPlatforms(process.env.PLATFORM);
+              const configurationMatrix = requestConfigurations(process.env.CONFIGURATION);
               if (platforms.length === 0 || configurationMatrix.length === 0) {
                 setOutputs();
                 return;
               }
-              applyRequest(platforms, configurationMatrix, inputs.update_reference === "true");
+              outputs.repository = `${owner}/${repo}`;
+              outputs.ref = requestedRef || context.sha;
+              applyRequest(platforms, configurationMatrix, process.env.UPDATE_REFERENCE === "true");
               setOutputs();
               return;
             }
@@ -247,6 +276,8 @@ jobs:
 
   ios_uitest:
     name: Execute UI tests on iOS (${{ matrix.configuration.id }})
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
     needs: prepare_uitests
     permissions:
       contents: read
@@ -302,6 +333,7 @@ jobs:
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
+        id: checkout
         with:
           repository: ${{ needs.prepare_uitests.outputs.repository || github.repository }}
           ref: ${{ needs.prepare_uitests.outputs.ref || github.sha }}
@@ -315,8 +347,8 @@ jobs:
           artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}-${{ matrix.configuration.id }}
           update-reference: ${{ needs.prepare_uitests.outputs.update-reference == 'true' }}
           compute: ${{ matrix.configuration.compute == 1 }}
-      - name: Fail if tests failed
-        if: steps.run-tests.outputs.test-result == 'failure'
+      - name: Require successful tests
+        if: steps.run-tests.outputs.test-result != 'success'
         run: exit 1
       - name: Complete PR status
         if: always() && github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
@@ -344,6 +376,8 @@ jobs:
 
   macos_uitest:
     name: Execute UI tests on macOS (${{ matrix.configuration.id }})
+    outputs:
+      sha: ${{ steps.checkout.outputs.commit }}
     needs: prepare_uitests
     permissions:
       contents: read
@@ -396,6 +430,7 @@ jobs:
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
+        id: checkout
         with:
           repository: ${{ needs.prepare_uitests.outputs.repository || github.repository }}
           ref: ${{ needs.prepare_uitests.outputs.ref || github.sha }}
@@ -409,8 +444,8 @@ jobs:
           artifact-name: macos-uitest-snapshots-${{ matrix.configuration.id }}
           update-reference: ${{ needs.prepare_uitests.outputs.update-reference == 'true' }}
           compute: ${{ matrix.configuration.compute == 1 }}
-      - name: Fail if tests failed
-        if: steps.run-tests.outputs.test-result == 'failure'
+      - name: Require successful tests
+        if: steps.run-tests.outputs.test-result != 'success'
         run: exit 1
       - name: Complete PR status
         if: always() && github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''

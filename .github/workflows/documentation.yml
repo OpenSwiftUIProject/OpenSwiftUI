@@ -5,6 +5,7 @@ on:
     tags:
       - '[0-9]*.[0-9]*.[0-9]*'
   workflow_dispatch:
+  workflow_call:
 
 permissions:
   contents: read
@@ -13,6 +14,7 @@ permissions:
 jobs:
   build:
     name: Build DocC site
+    if: github.event_name != 'push' || vars.RELEASE_PIPELINE_ENABLED != 'true'
     runs-on:
       - self-hosted
       - xcode-26.6
