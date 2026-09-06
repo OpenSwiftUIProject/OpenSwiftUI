@@ -59,6 +59,7 @@ public protocol View {
     #if OPENSWIFTUI_EMBEDDED
     /// Synchronously render a statically specialized tree into a platform sink.
     /// The caller provides platform serialization (for example, the LVGL lock).
+    func _handlePhyicButton(_ button: PhysicalButton) -> Bool
     func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink)
     func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize
     var _layoutCount: Int { get }
@@ -132,6 +133,7 @@ extension View {
 
 #if OPENSWIFTUI_EMBEDDED
 extension PrimitiveView {
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { false }
     public var _layoutCount: Int { 1 }
     public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         precondition(index == 0)
@@ -143,6 +145,7 @@ extension PrimitiveView {
     }
 }
 extension View {
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { body._handlePhyicButton(button) }
     public var _layoutCount: Int { body._layoutCount }
     public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         body._measureChild(index, proposal: proposal, using: &sink)

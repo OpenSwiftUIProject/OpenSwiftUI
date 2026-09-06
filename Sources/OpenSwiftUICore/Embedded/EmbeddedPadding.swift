@@ -6,6 +6,7 @@
 public struct _EmbeddedPadding<Content: View>: PrimitiveView {
     let content: Content
     let insets: EdgeInsets
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         let w = insets.leading + insets.trailing, h = insets.top + insets.bottom
         let child = content._sizeThatFits(.init(width: proposal.width.map { max(0, $0 - w) }, height: proposal.height.map { max(0, $0 - h) }), using: &sink)

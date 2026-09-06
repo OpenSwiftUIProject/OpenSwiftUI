@@ -6,6 +6,7 @@
 public struct _EmbeddedLayoutView<L: Layout, Content: View>: PrimitiveView {
     let layout: L
     let content: Content
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         var subviews = LayoutSubviews(content: content, sink: sink)
         var cache = layout.makeCache(subviews: &subviews)

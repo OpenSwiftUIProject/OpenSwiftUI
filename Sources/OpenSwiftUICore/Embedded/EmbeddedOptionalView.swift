@@ -13,6 +13,7 @@ extension Optional: View where Wrapped: View {
     public func _placeChild<Sink: EmbeddedRenderSink>(_ index: Int, in rect: EmbeddedRect, to sink: inout Sink) {
         if let content = self { content._placeChild(index, in: rect, to: &sink) }
     }
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { self?._handlePhyicButton(button) ?? false }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         if let content = self { return content._sizeThatFits(proposal, using: &sink) }
         return .zero

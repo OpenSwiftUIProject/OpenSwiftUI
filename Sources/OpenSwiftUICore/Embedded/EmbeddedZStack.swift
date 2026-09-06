@@ -10,6 +10,7 @@ public struct ZStack<Content: View>: PrimitiveView {
     public init(alignment: Alignment = .center, @ViewBuilder content: () -> Content) {
         self.alignment = alignment; self.content = content()
     }
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         var subviews = LayoutSubviews(content: content, sink: sink)
         var result = EmbeddedSize.zero

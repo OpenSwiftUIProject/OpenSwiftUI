@@ -6,6 +6,7 @@
 public struct _EmbeddedBackground<Content: View, Background: View>: PrimitiveView {
     let content: Content
     let background: Background
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) || background._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         content._sizeThatFits(proposal, using: &sink)
     }

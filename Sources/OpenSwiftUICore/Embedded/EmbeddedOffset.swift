@@ -8,6 +8,7 @@ public struct _EmbeddedOffset<Content: View>: PrimitiveView {
     let x: Int32
     let y: Int32
 
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         content._sizeThatFits(proposal, using: &sink)
     }

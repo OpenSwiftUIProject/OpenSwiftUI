@@ -19,5 +19,5 @@ public enum EmbeddedRenderer {
     }
 }
 @_cdecl("openswiftui_embedded_version")
-public func openSwiftUIEmbeddedVersion() -> UInt32 { 2 }
+public func openSwiftUIEmbeddedVersion() -> UInt32 { 3 }
 #endif

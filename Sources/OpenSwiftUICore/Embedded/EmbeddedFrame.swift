@@ -8,6 +8,7 @@ public struct _EmbeddedFrame<Content: View>: PrimitiveView {
     let width: Int32?
     let height: Int32?
     let alignment: Alignment
+    public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         let child = content._sizeThatFits(.init(width: width ?? proposal.width, height: height ?? proposal.height), using: &sink)
         return .init(width: width ?? child.width, height: height ?? child.height)

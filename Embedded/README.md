@@ -1,4 +1,4 @@
-# Embedded static display profile
+# Embedded display and input profile
 
 This experiment compiles selected OpenSwiftUICore sources into a single
 `OpenSwiftUI` module for Embedded Swift. It retains the declarative
@@ -25,7 +25,7 @@ The selected source list participates in CMake dependency tracking.
 Embedded Swift specializes generic declarations into their clients. A small
 archive therefore does not imply that all rendering code executes from that
 archive. The source module and archive together are the build interface. The
-C-callable `openswiftui_embedded_version()` reports profile ABI version 2.
+C-callable `openswiftui_embedded_version()` reports profile ABI version 3.
 
 ## Source selection and semantics
 
@@ -66,8 +66,8 @@ compiled here. Baseline/RTL alignment, layout priorities, Spacer, full safe-area
 propagation, intrinsic spacing negotiation and desktop cache invalidation remain
 unsupported. The profile is synchronous and the root insets are host-configured.
 
-Foundation, AttributeGraph, RenderBox, existential view trees, dynamic state,
-observation, diffing, animations, platform App/Scene, input, accessibility,
+Foundation, AttributeGraph, RenderBox, existential view trees, full dynamic state,
+observation, diffing, animations, platform App/Scene, accessibility,
 SF Symbols and asset-catalog/runtime image decoding are excluded. Other
 workspace repositories are available for further work but are not linked here.
 
@@ -75,13 +75,55 @@ A sink runs synchronously under platform-controlled serialization. It must clip
 to its viewport, bound allocations/text/assets, and report unsupported assets.
 No framebuffer or UI object storage is owned by the generic View layer.
 
+## Physical buttons and retained state
+
+`view.onPhyicButton(.up/.down/.ok) { ... }` installs a synchronous click closure.
+The spelling is intentional. Host dispatch evaluates the current body and invokes
+one matching handler: outermost modifier first, otherwise children in declaration
+order. Conditional/optional branches only participate when present. The modifier
+preserves layout child counts and geometry. There is no focus or hit-test layer.
+Actions are not registered or retained between passes, so captures reflect the
+current body and there is no stale closure table to clear on rerender.
+
+    struct ContentView: View {
+        @State private var blue = false
+        var body: some View {
+            (blue ? Color.blue : Color.red)
+                .onPhyicButton(.up) { blue = false }
+                .onPhyicButton(.down) { blue = true }
+                .onPhyicButton(.ok) { blue.toggle() }
+        }
+    }
+    let host = EmbeddedViewHost { ContentView() }
+    host.send(.down)
+    if host.needsRender {
+        host.render(rootGeometry: geometry, to: &sink)
+    }
+
+The builder is required: it associates newly constructed state boxes with this
+host. The host retains the root value, and copying a State wrapper shares its
+storage. Each write invalidates only its owning host; repeated writes coalesce
+until the next render. `invalidate()` also permits retry after a sink failure.
+All construction, input, state access and rendering must be platform-serialized.
+State writes during rendering and reentrant host dispatch/render fail explicitly.
+The platform releases its host on exit and is responsible for dropping old input.
+
+This is retained-root State, not the default GraphHost/DynamicProperty runtime.
+State in stored children constructed with the root is supported. State in new
+children created by `body` is unsupported: without structural identity such state
+would reset, so initialization outside a host builder fails explicitly instead.
+Binding projection (`$state`), dynamic child identity and asynchronous scheduling
+are not provided. The normal platform's State implementation is unchanged.
+No additional framework repository is required by this profile.
+
 ## Validation
 
 `Scripts/test_embedded.sh` compiles the real module and a separate Embedded
 client executable, testing nested body traversal, conditional/optional
 branches, draw order, color bounds, root geometry, changing screen proposals,
 stack alignment/flexibility/remainders, text wrapping, intrinsic images, modifiers
-and a client-defined Layout. It does not
+a client-defined Layout, State lifetime/host isolation, handler precedence,
+conditional routing, fresh captures and teardown. It does not
 invoke XCTest or Swift Testing, whose runtimes are outside this target profile.
 
 FoloToy integration additionally verifies its actual ContentView and C boundary,

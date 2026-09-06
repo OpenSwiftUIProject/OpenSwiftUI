@@ -30,3 +30,6 @@ Sources/OpenSwiftUICore/Embedded/EmbeddedVStack.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedHStack.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedPadding.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedBackground.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedState.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedViewHost.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedPhysicalButton.swift
