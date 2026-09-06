@@ -6,6 +6,9 @@
 //  Status: Complete
 //  ID: 82B2D47816BC992595021D60C278AFF0 (SwiftUICore)
 
+#if os(Linux)
+import Dispatch
+#endif
 import Foundation
 
 // MARK: - ThreadSpecific
@@ -56,25 +59,50 @@ final package class ThreadSpecific<T> {
 
 // MARK: - Thread + Global helper function
 
+#if os(Linux)
+// Identify the main queue even when it runs on a different thread.
+// https://github.com/swiftlang/swift-corelibs-libdispatch/issues/846
+private let mainQueueKey: DispatchSpecificKey<Void> = {
+    let key = DispatchSpecificKey<Void>()
+    DispatchQueue.main.setSpecific(key: key, value: ())
+    return key
+}()
+#endif
+
+package func isMainThreadOrMainQueue() -> Bool {
+    #if os(WASI)
+    return true
+    #elseif os(Linux)
+    return Thread.isMainThread || DispatchQueue.getSpecific(key: mainQueueKey) != nil
+    #else
+    return Thread.isMainThread
+    #endif
+}
+
 package func onMainThread(do body: @escaping () -> Void) {
     #if os(WASI)
     // See #76: Thread and RunLoopMode.common is not available on WASI currently
     body()
     #else
-    if Thread.isMainThread {
+    if isMainThreadOrMainQueue() {
         body()
     } else {
+        #if os(Linux)
+        // The default Linux main executor does not run a CFRunLoop.
+        DispatchQueue.main.async(execute: body)
+        #else
         RunLoop.main.perform(inModes: [.common]) {
             // Workaround the @Senable warning
             body()
         }
+        #endif
     }
     #endif
 }
 
 package func mainThreadPrecondition() {
     #if !os(WASI)
-    precondition(Thread.isMainThread, "calling into OpenSwiftUI on a non-main thread is not supported")
+    precondition(isMainThreadOrMainQueue(), "calling into OpenSwiftUI on a non-main thread is not supported")
     #endif
 }
 
