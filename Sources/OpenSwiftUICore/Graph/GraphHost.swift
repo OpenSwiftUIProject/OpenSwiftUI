@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete (Blocked by TraceRecorder)
 //  ID: 30C09FF16BC95EC5173809B57186CAC3 (SwiftUI)
 //  ID: F9F204BD2F8DB167A76F17F3FB1B3335 (SwiftUICore)
 
@@ -47,12 +47,12 @@ extension GraphDelegate {
 open class GraphHost: CustomReflectable {
     private static let sharedGraph: Graph = {
         let graph = Graph()
-        // TODO
+        // TODO: TraceRecorder
         return graph
     }()
 
     // MARK: - GraphHost.Data
-    
+
     package struct Data {
         package var graph: Graph?
         package var globalSubgraph: Subgraph
@@ -67,7 +67,7 @@ open class GraphHost: CustomReflectable {
         @Attribute package var updateSeed: UInt32
         @Attribute package var transactionSeed: UInt32
         package var inputs: _GraphInputs
-        
+
         package init() {
             let graph = Graph(shared: GraphHost.sharedGraph)
             let globalSubgraph = Subgraph(graph: graph)
@@ -103,7 +103,7 @@ open class GraphHost: CustomReflectable {
             self._transactionSeed = transactionSeed
             self.inputs = inputs
         }
-        
+
         package mutating func invalidate() {
             guard let graph else { return }
             Update.perform {
@@ -114,60 +114,85 @@ open class GraphHost: CustomReflectable {
             }
         }
     }
-    
+
     package final var data: Data
-    package final var isValid: Bool { data.graph != nil }
-    package final var graph: Graph { data.graph! }
-    package final var graphInputs: _GraphInputs { data.inputs }
-    package final var globalSubgraph: Subgraph { data.globalSubgraph }
-    package final var rootSubgraph: Subgraph { data.rootSubgraph }
+
+    package final var isValid: Bool {
+        data.graph != nil
+    }
+
+    package final var graph: Graph {
+        data.graph!
+    }
+
+    package final var graphInputs: _GraphInputs {
+        data.inputs
+    }
+
+    package final var globalSubgraph: Subgraph {
+        data.globalSubgraph
+    }
+
+    package final var rootSubgraph: Subgraph {
+        data.rootSubgraph
+    }
+
     private var constants: [ConstantKey: AnyAttribute] = [:]
+
     private(set) package final var isInstantiated: Bool = false
-    package final var hostPreferenceValues: WeakAttribute<PreferenceValues> = WeakAttribute()
+
+    package final var hostPreferenceValues: WeakAttribute<PreferenceValues> = .init()
+
     package final var lastHostPreferencesSeed: VersionSeed = .invalid
+
     private final var pendingTransactions: [AsyncTransaction] = []
+
     package final var inTransaction: Bool = false
+
     package final var continuations: [() -> Void] = []
+
     private(set) package final var mayDeferUpdate: Bool = true
-    
+
     // MARK: - GraphHost.RemovedState
-    
+
     package struct RemovedState: OptionSet {
         package let rawValue: UInt8
         
         package init(rawValue: UInt8) {
             self.rawValue = rawValue
         }
-        
+
         package static let unattached = RemovedState(rawValue: 1 << 0)
-        
+
         package static let hiddenForReuse = RemovedState(rawValue: 1 << 1)
     }
-    
+
     package final var removedState: RemovedState = [] {
         didSet {
             updateRemovedState()
         }
     }
-    
+
     package static var currentHost: GraphHost {
+        let graph: Graph
         if let currentAttribute = AnyAttribute.current {
-            currentAttribute.graph.graphHost()
+            graph = currentAttribute.graph
         } else if let currentSubgraph = Subgraph.current {
-            currentSubgraph.graph.graphHost()
+            graph = currentSubgraph.graph
         } else {
             preconditionFailure("no current graph host")
         }
+        return graph.graphHost()
     }
-    
+
     package init(data: Data) {
         mainThreadPrecondition()
         self.data = data
         graph.onUpdate { [weak self] in
-            guard let self,
-                  let graphDelegate
-            else { return }
-            graphDelegate.updateGraph { _ in }
+            guard let self, let graphDelegate else { return }
+            graphDelegate.updateGraph { _ in
+                _openSwiftUIEmptyStub()
+            }
         }
         graph.onInvalidation { [weak self] attribute in
             guard let self else { return }
@@ -175,12 +200,14 @@ open class GraphHost: CustomReflectable {
         }
         graph.context = address(of: self)
     }
-    
+
     deinit {
         invalidate()
-        blockedGraphHosts.removeAll { $0.takeUnretainedValue() === self }
+        blockedGraphHosts.removeAll {
+            $0.takeUnretainedValue() === self
+        }
     }
-    
+
     package final func invalidate() {
         if isInstantiated {
             globalSubgraph.willInvalidate(isInserted: false)
@@ -188,26 +215,29 @@ open class GraphHost: CustomReflectable {
         }
         data.invalidate()
     }
-    
+
     package static var isUpdating: Bool {
         sharedGraph.counter(for: .threadUpdating) != 0
     }
-    
+
     package final var isUpdating: Bool {
-        guard isValid else { return false }
+        guard let graph = data.graph else {
+            return false
+        }
         return graph.counter(for: .contextThreadUpdating) != 0
     }
-    
+
     package final func setNeedsUpdate(mayDeferUpdate: Bool, values: ViewRendererHostProperties) {
         self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
-        if let graph = data.graph {
-            CustomEventTrace.setNeedsUpdate(values: values)
-            graph.setNeedsUpdate()
+        guard let graph = data.graph else {
+            return
         }
+        CustomEventTrace.setNeedsUpdate(values: values)
+        graph.setNeedsUpdate()
     }
 
     // MARK: - GraphHost.ConstantID
-    
+
     package enum ConstantID: Int8, Hashable {
         case defaultValue
         case implicitViewRoot
@@ -217,9 +247,9 @@ open class GraphHost: CustomReflectable {
         case placeholder
         case preferenceKeyDefault
     }
-    
+
     package final func intern<T>(_ value: T, for type: Any.Type = T.self, id: ConstantID) -> Attribute<T> {
-        if let attribute = constants[ConstantKey(type: type , id: id)] {
+        if let attribute = constants[ConstantKey(type: type, id: id)] {
             return Attribute(identifier: attribute)
         } else {
             let result = globalSubgraph.apply { Attribute(value: value) }
@@ -227,40 +257,58 @@ open class GraphHost: CustomReflectable {
             return result
         }
     }
-    
-    public final var customMirror: Mirror { Mirror(self, children: []) }
-    
-    open var graphDelegate: GraphDelegate? { nil }
-    open var parentHost: GraphHost? { nil }
-    open func instantiateOutputs() { _openSwiftUIEmptyStub() }
-    open func uninstantiateOutputs() { _openSwiftUIEmptyStub() }
-    open func timeDidChange() { _openSwiftUIEmptyStub() }
-    open func isHiddenForReuseDidChange() { _openSwiftUIEmptyStub() }
+
+    public final var customMirror: Mirror {
+        Mirror(self, children: [])
+    }
+
+    // MARK: - GraphHost Open API
+
+    open var graphDelegate: GraphDelegate? {
+        nil
+    }
+
+    open var parentHost: GraphHost? {
+        nil
+    }
+
+    open func instantiateOutputs() {
+        _openSwiftUIEmptyStub()
+    }
+
+    open func uninstantiateOutputs() {
+        _openSwiftUIEmptyStub()
+    }
+
+    open func timeDidChange() {
+        _openSwiftUIEmptyStub()
+    }
+
+    open func isHiddenForReuseDidChange() {
+        _openSwiftUIEmptyStub()
+    }
 }
 
 @_spi(ForOpenSwiftUIOnly)
 @available(*, unavailable)
 extension GraphHost: Sendable {}
 
-// MARK: - GraphHost + Updates [TBA]
+// MARK: - GraphHost + Lifecycle and Updates
 
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
     package final func graphInvalidation(from src: AnyAttribute?) {
-        guard let src else {
-            graphDelegate?.graphDidChange()
-            return
+        if let src {
+            let srcHost = src.graph.graphHost()
+            let transaction = srcHost.data.transaction
+            mayDeferUpdate = mayDeferUpdate && srcHost.mayDeferUpdate
+            if !transaction.isEmpty {
+                emptyTransaction(transaction)
+            }
         }
-        let host = src.graph.graphHost()
-        let transaction = host.data.transaction
-        mayDeferUpdate = mayDeferUpdate && host.mayDeferUpdate
-        guard !transaction.isEmpty else {
-            graphDelegate?.graphDidChange()
-            return
-        }
-        emptyTransaction(transaction)
+        graphDelegate?.graphDidChange()
     }
-    
+
     package final func instantiate() {
         guard !isInstantiated else {
             return
@@ -271,7 +319,7 @@ extension GraphHost {
         instantiateOutputs()
         isInstantiated = true
     }
-    
+
     package final func uninstantiate(immediately: Bool) {
         guard isInstantiated else {
             return
@@ -296,7 +344,7 @@ extension GraphHost {
         }
         isInstantiated = false
     }
-    
+
     package final func uninstantiate() {
         uninstantiate(immediately: false)
     }
@@ -313,7 +361,7 @@ extension GraphHost {
             instantiate()
         }
     }
-    
+
     package final func setTime(_ time: Time) {
         guard data.time != time else {
             return
@@ -321,43 +369,40 @@ extension GraphHost {
         data.time = time
         timeDidChange()
     }
-    
+
     package final var environment: EnvironmentValues {
         data.environment
     }
-    
+
     package final func setEnvironment(_ environment: EnvironmentValues) {
         data.environment = environment
     }
-    
+
     package final func setPhase(_ phase: _GraphInputs.Phase) {
         data.phase = phase
     }
-    
+
     package final func incrementPhase() {
         data.phase.resetSeed.unsafeIncrement()
         graphDelegate?.graphDidChange()
     }
-    
+
     package final func updateRemovedState() {
+        var state: RemovedState
         let isRemoved: Bool
-        let removedState: RemovedState
-        
-        if self.removedState.isEmpty {
+        if removedState.isEmpty {
             if let parentHost {
-                let state = parentHost.removedState
+                state = parentHost.removedState
                 isRemoved = state.contains(.hiddenForReuse)
-                removedState = state
             } else {
+                state = []
                 isRemoved = false
-                removedState = []
             }
         } else {
+            state = removedState
             isRemoved = true
-            removedState = self.removedState
         }
-        let isHiddenForReuse = removedState.contains(.hiddenForReuse)
-        
+        state.formIntersection(.hiddenForReuse)
         if isRemoved != data.isRemoved {
             if isRemoved {
                 rootSubgraph.willRemove()
@@ -368,14 +413,15 @@ extension GraphHost {
             }
             data.isRemoved = isRemoved
         }
+        let isHiddenForReuse = state.contains(.hiddenForReuse)
         if isHiddenForReuse != data.isHiddenForReuse {
             data.isHiddenForReuse = isHiddenForReuse
             isHiddenForReuseDidChange()
         }
     }
-    
+
     // MARK: - GraphHost + Transaction
-    
+
     @discardableResult
     package final func asyncTransaction<T>(
         _ transaction: Transaction = .init(),
@@ -389,16 +435,21 @@ extension GraphHost {
                 return 0
             }
             let shouldDeferUpdate = switch style {
-                case .immediate: isUpdating
-                case .deferred: true
+            case .immediate: isUpdating
+            case .deferred: true
             }
             self.mayDeferUpdate = self.mayDeferUpdate && mayDeferUpdate
             if hasPendingTransactions {
                 let count = pendingTransactions.count
-                if pendingTransactions[count-1].transactionID == transactionID,
-                   pendingTransactions[count-1].transaction.mayConcatenate(with: transaction) {
-                    pendingTransactions[count-1].append(mutation)
-                    CustomEventTrace.transactionAppend(to: pendingTransactions[count-1].traceID)
+                let didAppend = withUnsafeMutablePointer(to: &pendingTransactions[count - 1]) { last in
+                    guard last.pointee.transactionID == transactionID,
+                          last.pointee.transaction.mayConcatenate(with: transaction)
+                    else { return false }
+                    last.pointee.append(mutation)
+                    CustomEventTrace.transactionAppend(to: last.pointee.traceID)
+                    return true
+                }
+                if didAppend {
                     if !shouldDeferUpdate {
                         let lastTransaction = pendingTransactions.removeLast()
                         flushTransactions()
@@ -422,7 +473,7 @@ extension GraphHost {
             return asyncTransaction.traceID
         }
     }
-    
+
     @discardableResult
     package final func asyncTransaction(
         _ transaction: Transaction = .init(),
@@ -435,7 +486,7 @@ extension GraphHost {
             mutation: CustomGraphMutation(body)
         )
     }
-    
+
     @discardableResult
     package final func asyncTransaction<T>(
         _ transaction: Transaction = .init(),
@@ -452,7 +503,7 @@ extension GraphHost {
             mayDeferUpdate: mayDeferUpdate
         )
     }
-    
+
     @discardableResult
     package final func emptyTransaction(_ transaction: Transaction = .init()) -> UInt32 {
         asyncTransaction(transaction, mutation: EmptyGraphMutation())
@@ -474,7 +525,7 @@ extension GraphHost {
         CustomEventTrace.transactionContinueAsContinuation(host)
         host.continuations.append(body)
     }
-    
+
     package final var hasPendingTransactions: Bool {
         !pendingTransactions.isEmpty
     }
@@ -516,15 +567,15 @@ extension GraphHost {
             data.transaction = .init()
         }
     }
-    
+
     package final func runTransaction() {
         runTransaction(nil, do: {}, id: nil)
     }
-    
+
     package final var needsTransaction: Bool {
         globalSubgraph.isDirty(flags: .transactional)
     }
-    
+
     package final func startTransactionUpdate(
         id: UInt32? = nil
     ) {
@@ -558,7 +609,7 @@ extension GraphHost {
     }
 }
 
-// MARK: - GraphHost + Global Transactions [TBA]
+// MARK: - GraphHost + Global Transactions
 
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
@@ -783,7 +834,7 @@ private struct GlobalTransaction {
 
 extension Graph {
     package func graphHost() -> GraphHost {
-        Unmanaged<GraphHost>.fromOpaque(context!).takeUnretainedValue()
+        unsafeBitCast(context!, to: GraphHost.self)
     }
 }
 
