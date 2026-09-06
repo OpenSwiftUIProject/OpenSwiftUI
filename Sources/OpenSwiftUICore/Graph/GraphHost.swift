@@ -515,7 +515,7 @@ extension GraphHost {
         while !host.inTransaction {
             guard let parent = host.parentHost else {
                 Update.enqueueAction(reason: nil) {
-                    let id = host.asyncTransaction { body() }
+                    let id = self.asyncTransaction { body() }
                     CustomEventTrace.transactionContinueAsNewTransaction(id)
                 }
                 return
