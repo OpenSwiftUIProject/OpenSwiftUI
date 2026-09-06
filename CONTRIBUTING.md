@@ -82,6 +82,32 @@ A useful issue report includes:
 For crashes or platform-specific behavior, note whether the issue occurs with
 OpenSwiftUI, SwiftUI, or both.
 
+## Commit messages and pull request titles
+
+All new commit messages and pull request titles must follow
+[Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/).
+Use this format for the commit subject or pull request title:
+
+```text
+<type>[optional scope][!]: <description>
+```
+
+Use `feat` for new features and `fix` for bug fixes. Other common types include
+`docs`, `refactor`, `perf`, `test`, `build`, `ci`, `style`, and `chore`.
+Keep the description concise. Add a scope when it helps identify the affected
+component. Commit bodies and footers are optional and follow a blank line.
+
+Mark breaking changes with `!` before `:` in the subject or pull request title.
+A commit message can use a `BREAKING CHANGE: <description>` footer instead.
+
+Examples:
+
+```text
+feat(text): add text alignment support
+fix(layout): preserve child spacing
+docs: require Conventional Commits
+```
+
 ## Pull requests
 
 Pull requests should:

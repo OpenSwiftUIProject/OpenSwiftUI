@@ -72,7 +72,10 @@ swift test --list-tests
 
 Follow `.agents/skills/openswiftui-test-authoring/SKILL.md`.
 
-## Pull Requests
+## Commits and Pull Requests
+
+Use Conventional Commits for all new commit messages and PR titles. Follow the
+[contributor guide](CONTRIBUTING.md#commit-messages-and-pull-request-titles).
 
 Follow `.agents/skills/openswiftui-pr-authoring/SKILL.md`.
 

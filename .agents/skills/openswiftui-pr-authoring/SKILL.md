@@ -6,7 +6,8 @@ description: Draft or review public OpenSwiftUI pull request titles and bodies. 
 # OpenSwiftUI Pull Request Authoring
 
 - Write PR titles and bodies in English and scope them to the committed diff.
-- Use a concise sentence-case title that describes the outcome.
+- Use a concise Conventional Commits title that describes the outcome. Follow
+  the [contributor guide](../../../CONTRIBUTING.md#commit-messages-and-pull-request-titles).
 - Use `## Summary` for the main body. Start the first word of every summary
   bullet with a capital letter, and keep the bullets parallel and
   outcome-focused.
