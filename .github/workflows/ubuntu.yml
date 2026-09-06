@@ -50,6 +50,10 @@ jobs:
         id: checkout
         with:
           ref: ${{ inputs.ref || github.sha }}
+      - name: Install Codecov dependencies
+        run: |
+          apt-get update
+          apt-get install -y --no-install-recommends curl
       - name: Building and running tests in debug mode with coverage
         run: |
           swift test \
