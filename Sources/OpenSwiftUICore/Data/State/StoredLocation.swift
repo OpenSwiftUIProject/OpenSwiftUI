@@ -89,7 +89,7 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
         _openSwiftUIBaseClassAbstractMethod()
     }
 
-    fileprivate func commit(transaction: Transaction, mutation: BeginUpdate) {
+    fileprivate func commit(transaction: Transaction, id: Transaction.ID, mutation: BeginUpdate) {
         _openSwiftUIBaseClassAbstractMethod()
     }
 
@@ -139,12 +139,13 @@ package class StoredLocationBase<Value>: AnyLocation<Value>, Location, @unchecke
             return
         }
         let transaction = transaction.current
+        let id = Transaction.id
         onMainThread { [weak self] in
             guard let self else {
                 return
             }
             let update = BeginUpdate(box: self)
-            commit(transaction: transaction, mutation: update)
+            commit(transaction: transaction, id: id, mutation: update)
         }
     }
 
@@ -174,14 +175,78 @@ final package class StoredLocation<Value>: StoredLocationBase<Value>, @unchecked
         host?.isUpdating ?? false
     }
 
-    override fileprivate func commit(transaction: Transaction, mutation: StoredLocationBase<Value>.BeginUpdate) {
+    override fileprivate func commit(
+        transaction: Transaction,
+        id: Transaction.ID,
+        mutation: StoredLocationBase<Value>.BeginUpdate
+    ) {
         host?.asyncTransaction(
             transaction,
+            id: id,
             mutation: mutation
         )
     }
 
     override fileprivate func notifyObservers() {
         $signal?.invalidateValue()
+    }
+}
+
+// MARK: - ObservableLocation
+
+final package class ObservableLocation<Value>: StoredLocationBase<Value>, TransactionHostProvider, @unchecked Sendable {
+    private struct Observer {
+        weak var host: GraphHost?
+        var signal: WeakAttribute<Void>
+    }
+
+    private var observers: [Observer] = []
+
+    package func addObserver(host: GraphHost, signal: WeakAttribute<Void>) {
+        observers.append(Observer(host: host, signal: signal))
+    }
+
+    package func removeObserver(signal: WeakAttribute<Void>) {
+        if let index = observers.firstIndex(where: { $0.signal == signal }) {
+            observers.remove(at: index)
+        }
+    }
+
+    override fileprivate var isUpdating: Bool {
+        GraphHost.isUpdating
+    }
+
+    override fileprivate func commit(
+        transaction: Transaction,
+        id: Transaction.ID,
+        mutation: StoredLocationBase<Value>.BeginUpdate
+    ) {
+        GraphHost.globalTransaction(
+            transaction,
+            id: id,
+            mutation: mutation,
+            hostProvider: self
+        )
+    }
+
+    override fileprivate func notifyObservers() {
+        var index = 0
+        var count = observers.count
+        while index < count {
+            if let signal = observers[index].signal.attribute {
+                signal.invalidateValue()
+                index += 1
+            } else {
+                count -= 1
+                if index != count {
+                    observers.swapAt(index, count)
+                }
+                observers.remove(at: count)
+            }
+        }
+    }
+
+    package var mutationHost: GraphHost? {
+        observers.reduce(nil) { $0 ?? $1.host }
     }
 }

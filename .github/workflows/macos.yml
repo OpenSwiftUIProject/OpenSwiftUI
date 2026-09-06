@@ -21,7 +21,6 @@ on:
       - 'Scripts/CI/**'
       - '.github/workflows/macos.yml'
   pull_request:
-    branches: [main]
     paths:
       - 'Sources/**'
       - 'Tests/**'

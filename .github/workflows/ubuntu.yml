@@ -20,7 +20,6 @@ on:
       - 'Package.swift'
       - '.github/workflows/ubuntu.yml'
   pull_request:
-    branches: [main]
     paths:
       - 'Sources/**'
       - 'Tests/**'

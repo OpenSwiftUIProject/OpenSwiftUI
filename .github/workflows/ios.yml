@@ -20,7 +20,6 @@ on:
       - 'mise*.toml'
       - '.github/workflows/ios.yml'
   pull_request:
-    branches: [main]
     paths:
       - 'Sources/**'
       - 'Tests/**'
