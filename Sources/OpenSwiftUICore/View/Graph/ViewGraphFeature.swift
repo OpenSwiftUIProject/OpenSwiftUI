@@ -27,6 +27,10 @@ extension ViewGraphFeature {
 }
 
 struct ViewGraphFeatureBuffer: Collection {
+    init(contents: UnsafeHeterogeneousBuffer = .init()) {
+        self.contents = contents
+    }
+
     var contents: UnsafeHeterogeneousBuffer
 
     @discardableResult
