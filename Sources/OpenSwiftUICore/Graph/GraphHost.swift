@@ -106,12 +106,12 @@ open class GraphHost: CustomReflectable {
         
         package mutating func invalidate() {
             guard let graph else { return }
-            Update.begin()
-            globalSubgraph.invalidate()
-            graph.context = nil
-            graph.invalidate()
-            self.graph = nil
-            Update.end()
+            Update.perform {
+                globalSubgraph.invalidate()
+                graph.context = nil
+                graph.invalidate()
+                self.graph = nil
+            }
         }
     }
     
