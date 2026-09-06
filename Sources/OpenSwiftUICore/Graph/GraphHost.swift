@@ -664,59 +664,43 @@ extension GraphHost {
     }
 }
 
-// MARK: GraphHost + preference
+// MARK: - GraphHost + preference
 
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
     package final func addPreference<K>(_ key: K.Type) where K: HostPreferenceKey {
         Graph.withoutUpdate {
-            data.hostPreferenceKeys.add(key)
+            data.hostPreferenceKeys.add(K.self)
         }
     }
-    
+
     package final func removePreference<K>(_ key: K.Type) where K: HostPreferenceKey {
         Graph.withoutUpdate {
-            data.hostPreferenceKeys.remove(key)
+            data.hostPreferenceKeys.remove(K.self)
         }
     }
-    
+
     package final func preferenceValues() -> PreferenceValues {
         instantiateIfNeeded()
         return hostPreferenceValues.value ?? PreferenceValues()
     }
-    
+
     package final func preferenceValue<K>(_ key: K.Type) -> K.Value where K: HostPreferenceKey {
-        if data.hostPreferenceKeys.contains(key) {
-            return preferenceValues()[key].value
+        if data.hostPreferenceKeys.contains(K.self) {
+            return preferenceValues()[K.self].value
         } else {
-            defer { removePreference(key) }
-            addPreference(key)
-            return preferenceValues()[key].value
+            defer { removePreference(K.self) }
+            addPreference(K.self)
+            return preferenceValues()[K.self].value
         }
     }
-    
+
     package final func updatePreferences() -> Bool {
         let seed = hostPreferenceValues.value?.seed ?? .empty
         let didUpdate = !seed.matches(lastHostPreferencesSeed)
         lastHostPreferencesSeed = seed
         return didUpdate
     }
-}
-
-// MARK: - ConstantKey
-
-private struct ConstantKey: Hashable {
-    static func == (lhs: ConstantKey, rhs: ConstantKey) -> Bool {
-        lhs.type == rhs.type && lhs.id == rhs.id
-    }
-    
-    func hash(into hasher: inout Hasher) {
-        hasher.combine(ObjectIdentifier(type))
-        hasher.combine(id.rawValue)
-    }
-    
-    var type: Any.Type
-    var id: GraphHost.ConstantID
 }
 
 // MARK: - GraphMutation
@@ -726,7 +710,7 @@ package protocol GraphMutation {
 
     func apply()
 
-    mutating func combine<T>(with other: T) -> Bool where T: GraphMutation
+    mutating func combine(with other: some GraphMutation) -> Bool
 }
 
 // MARK: GraphMutation.Style
@@ -740,37 +724,17 @@ package enum _GraphMutation_Style {
 
 package struct CustomGraphMutation: GraphMutation {
     let body: () -> Void
+
     package init(_ body: @escaping () -> Void) {
         self.body = body
     }
-    package func apply() { body() }
-    package func combine<T>(with other: T) -> Bool where T: GraphMutation { false }
-}
 
-// MARK: - InvalidatingGraphMutation
-
-struct InvalidatingGraphMutation: GraphMutation {
-    let attribute: AnyWeakAttribute
-    
-    func apply() {
-        attribute.attribute?.invalidateValue()
+    package func apply() {
+        body()
     }
-    
-    func combine(with mutation: some GraphMutation) -> Bool {
-        guard let mutation = mutation as? InvalidatingGraphMutation else {
-            return false
-        }
-        return mutation.attribute == attribute
-    }
-}
 
-// MARK: - EmptyGraphMutation
-
-private struct EmptyGraphMutation: GraphMutation {
-    package init() {}
-    package func apply() {}
     package func combine<T>(with other: T) -> Bool where T: GraphMutation {
-        T.self == EmptyGraphMutation.self
+        false
     }
 }
 
@@ -806,20 +770,71 @@ private struct AsyncTransaction {
         self.mutations = mutations
     }
 
-    mutating func append<T>(_ mutation: T) where T: GraphMutation {
+    mutating func append(_ mutation: some GraphMutation) {
         // NOTE: use ``Array.subscript/_modify`` instead of ``Array.last/getter`` to mutate inline
         guard mutations.isEmpty || !mutations[mutations.count - 1].combine(with: mutation) else {
             return
         }
         mutations.append(mutation)
     }
-    
+
     func apply() {
         withTransaction(transaction) {
             for mutation in mutations {
                 mutation.apply()
             }
         }
+    }
+}
+
+// MARK: - ConstantKey
+
+private struct ConstantKey: Hashable {
+    var type: Any.Type
+
+    var id: GraphHost.ConstantID
+
+    static func == (lhs: ConstantKey, rhs: ConstantKey) -> Bool {
+        lhs.type == rhs.type && lhs.id == rhs.id
+    }
+
+    func hash(into hasher: inout Hasher) {
+        hasher.combine(ObjectIdentifier(type))
+        hasher.combine(id.rawValue)
+    }
+}
+
+
+// MARK: - InvalidatingGraphMutation
+
+struct InvalidatingGraphMutation: GraphMutation {
+    let attribute: AnyWeakAttribute
+
+    func apply() {
+        attribute.attribute?.invalidateValue()
+    }
+
+    func combine(with mutation: some GraphMutation) -> Bool {
+        guard let mutation = mutation as? InvalidatingGraphMutation else {
+            return false
+        }
+        return mutation.attribute == attribute
+    }
+}
+
+// MARK: - EmptyGraphMutation
+
+private struct EmptyGraphMutation: GraphMutation {
+    init() {
+        _openSwiftUIEmptyStub()
+    }
+
+    func apply() {
+        _openSwiftUIEmptyStub()
+    }
+
+    func combine<T: GraphMutation>(with other: T) -> Bool {
+        T.self == EmptyGraphMutation.self
     }
 }
 
