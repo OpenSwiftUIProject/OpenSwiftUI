@@ -2,8 +2,8 @@
 //  TracingTests.swift
 //  OpenSwiftUICoreTests
 
-@testable import OpenSwiftUICore
 import OpenAttributeGraphShims
+@testable import OpenSwiftUICore
 import Testing
 
 @Suite(.disabled(if: attributeGraphVendor == .oag, "Not implemented in OAG yet"))
@@ -21,6 +21,15 @@ struct TracingTests {
         #expect(Tracing.nominalTypeName(type) == nominalName)
     }
     
+    #if os(Linux)
+    @Test(
+        arguments: [
+            (type: Int.self as Any.Type, libraryNames: ["libswiftCore.so"]),
+            (type: String.self as Any.Type, libraryNames: ["libswiftCore.so"]),
+            (type: Demo.self as Any.Type, libraryNames: ["OpenSwiftUIPackageTests.xctest"]),
+        ]
+    )
+    #else
     @Test(
         arguments: [
             (type: Int.self as Any.Type, libraryNames: ["libswiftCore.dylib"]),
@@ -28,6 +37,7 @@ struct TracingTests {
             (type: Demo.self as Any.Type, libraryNames: ["OpenSwiftUICoreTests", "OpenSwiftUIPackageTests"]),
         ]
     )
+    #endif
     func library(type: Any.Type, libraryNames: [String]) {
         #expect(libraryNames.contains(Tracing.libraryName(defining: type)))
     }
