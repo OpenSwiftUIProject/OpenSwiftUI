@@ -1,3 +1,4 @@
+#if !OPENSWIFTUI_EMBEDDED
 //
 //  Image.swift
 //  OpenSwiftUICore
@@ -611,3 +612,5 @@ extension _SymbolEffect.ReplaceConfiguration {
         ]
     }
 }
+
+#endif // !OPENSWIFTUI_EMBEDDED

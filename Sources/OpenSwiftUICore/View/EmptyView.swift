@@ -32,6 +32,11 @@ public struct EmptyView: PrimitiveView {
     @inlinable
     public init() {}
     
+    #if OPENSWIFTUI_EMBEDDED
+    public var _layoutCount: Int { 0 }
+    public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize { .zero }
+    public func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink) {}
+    #else
     nonisolated public static func _makeView(view: _GraphValue<EmptyView>, inputs: _ViewInputs) -> _ViewOutputs {
         _ViewOutputs()
     }
@@ -44,4 +49,5 @@ public struct EmptyView: PrimitiveView {
     nonisolated public static func _viewListCount(inputs: _ViewListCountInputs) -> Int? {
         inputs.options.contains(.isNonEmptyParent) ? 1 : 0
     }
+    #endif
 }

@@ -1,3 +1,4 @@
+#if !OPENSWIFTUI_EMBEDDED
 //
 //  Color.swift
 //  OpenSwiftUICore
@@ -326,3 +327,5 @@ private struct CustomColorProvider<P>: ColorProvider where P: Hashable, P: Shape
         String(describing: base)
     }
 }
+
+#endif // !OPENSWIFTUI_EMBEDDED

@@ -5,7 +5,9 @@
 //  Status: Complete
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C (SwiftUI)
 
+#if !OPENSWIFTUI_EMBEDDED
 package import OpenAttributeGraphShims
+#endif
 
 // MARK: - ConditionalContent [6.4.41]
 
@@ -55,6 +57,38 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
         self.storage = storage
     }
     
+    #if OPENSWIFTUI_EMBEDDED
+    public var _layoutCount: Int {
+        switch storage {
+        case let .trueContent(content): content._layoutCount
+        case let .falseContent(content): content._layoutCount
+        }
+    }
+    public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
+        switch storage {
+        case let .trueContent(content): content._measureChild(index, proposal: proposal, using: &sink)
+        case let .falseContent(content): content._measureChild(index, proposal: proposal, using: &sink)
+        }
+    }
+    public func _placeChild<Sink: EmbeddedRenderSink>(_ index: Int, in rect: EmbeddedRect, to sink: inout Sink) {
+        switch storage {
+        case let .trueContent(content): content._placeChild(index, in: rect, to: &sink)
+        case let .falseContent(content): content._placeChild(index, in: rect, to: &sink)
+        }
+    }
+    public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
+        switch storage {
+        case let .trueContent(content): content._sizeThatFits(proposal, using: &sink)
+        case let .falseContent(content): content._sizeThatFits(proposal, using: &sink)
+        }
+    }
+    public func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink) {
+        switch storage {
+        case let .trueContent(content): content._render(in: rect, to: &sink)
+        case let .falseContent(content): content._render(in: rect, to: &sink)
+        }
+    }
+    #else
     nonisolated public static func _makeView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
         if _SemanticFeature_v2.isEnabled {
             return makeImplicitRoot(view: view, inputs: inputs)
@@ -77,8 +111,10 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
         }
         return trueCount
     }
+    #endif
 }
 
+#if !OPENSWIFTUI_EMBEDDED
 // MARK: - ConditionalContent + DynamicView [6.0.87]
 
 extension _ConditionalContent: DynamicView where TrueContent: View, FalseContent: View {
@@ -247,3 +283,5 @@ package protocol ConditionalContentProvider {
     func makeTrueOutputs(child: Attribute<TrueContent>, inputs: Inputs) -> Outputs
     func makeFalseOutputs(child: Attribute<FalseContent>, inputs: Inputs) -> Outputs
 }
+
+#endif // !OPENSWIFTUI_EMBEDDED

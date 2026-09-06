@@ -37,6 +37,7 @@ public struct ViewBuilder {
         content
     }
 
+    #if !OPENSWIFTUI_EMBEDDED
     /// Rejects incompatible expressions within the builder.
     @available(*, unavailable, message: "this expression does not conform to 'View'")
     @_disfavoredOverload
@@ -44,6 +45,8 @@ public struct ViewBuilder {
     public static func buildExpression(_ invalid: Any) -> some View {
         fatalError()
     }
+
+    #endif
 
     /// Builds an empty view from a block containing no statements.
     @_alwaysEmitIntoClient
@@ -60,11 +63,21 @@ public struct ViewBuilder {
         content
     }
 
+    #if OPENSWIFTUI_EMBEDDED
+    public static func buildPartialBlock<Content: View>(first: Content) -> Content { first }
+
+    public static func buildPartialBlock<Accumulated: View, Next: View>(
+        accumulated: Accumulated, next: Next
+    ) -> _EmbeddedViewPair<Accumulated, Next> {
+        _EmbeddedViewPair(first: accumulated, second: next)
+    }
+    #else
     @_disfavoredOverload
     @_alwaysEmitIntoClient
     public static func buildBlock<each Content>(_ content: repeat each Content) -> TupleView<(repeat each Content)> where repeat each Content: View {
         TupleView((repeat each content))
     }
+    #endif
 }
 
 @available(*, unavailable)
@@ -98,8 +111,12 @@ extension ViewBuilder {
 extension ViewBuilder {
     /// Processes view content for a conditional compiler-control
     /// statement that performs an availability check.
+    #if OPENSWIFTUI_EMBEDDED
+    public static func buildLimitedAvailability<Content: View>(_ content: Content) -> Content { content }
+    #else
     @_alwaysEmitIntoClient
     public static func buildLimitedAvailability<Content>(_ content: Content) -> AnyView where Content: View {
         .init(content)
     }
+    #endif
 }
