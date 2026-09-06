@@ -180,7 +180,7 @@ private func installObservationSlow<T>(
                 let _ = viewGraph.asyncTransaction(
                     Transaction.current,
                     mutation: mutation,
-                    style: Thread.isMainThread ? .immediate : .deferred,
+                    style: isMainThreadOrMainQueue() ? .immediate : .deferred,
                 )
                 // TODO: AGGraphAddTraceEvent
             }
