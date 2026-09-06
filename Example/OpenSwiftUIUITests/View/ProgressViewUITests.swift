@@ -16,10 +16,7 @@ struct ProgressViewUITests {
 
     @Test(.tags(.org_openswiftuiproject_openswiftui.localization))
     func indeterminateInitializers() {
-        openSwiftUIAssertSnapshot(
-            of: IndeterminateProgressViewExample(),
-            size: CGSize(width: 400, height: 400)
-        )
+        openSwiftUIAssertSnapshot(of: IndeterminateProgressViewExample())
     }
 
     @Test(.disabled("TextLayoutManager is not implemented yet"))

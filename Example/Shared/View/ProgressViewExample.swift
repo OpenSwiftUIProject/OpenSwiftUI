@@ -37,20 +37,6 @@ struct IndeterminateProgressViewExample: View {
             }
             ProgressView(localizedTitle)
             ProgressView(title)
-            VStack(alignment: .leading, spacing: 8) {
-                HStack {
-                    Text(verbatim: "Key:")
-                    Text(localizedTitle)
-                }
-                HStack {
-                    Text(verbatim: "Literal:")
-                    Text("Localized label")
-                }
-                HStack {
-                    Text(verbatim: "Verbatim:")
-                    Text(verbatim: "Localized label")
-                }
-            }
         }
         .padding()
     }
