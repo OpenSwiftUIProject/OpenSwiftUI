@@ -6,7 +6,9 @@
 //  Status: Complete
 //  ID: 1ABF77B82C037C602A176AE349787FED (SwiftUICore)
 
+#if !OPENSWIFTUI_EMBEDDED
 import OpenSwiftUI_SPI
+#endif
 
 /// A type that represents part of your app's user interface and provides
 /// modifiers that you use to configure views.
@@ -45,13 +47,24 @@ import OpenSwiftUI_SPI
 /// You can also collect groups of default modifiers into new,
 /// custom view modifiers for easy reuse.
 @available(OpenSwiftUI_v1_0, *)
+#if !OPENSWIFTUI_EMBEDDED
 #if OPENSWIFTUI_SUPPORT_2025_API
 @_typeEraser(DebugReplaceableView)
 #endif
 @_typeEraser(AnyView)
 @preconcurrency
 @MainActor
+#endif
 public protocol View {
+    #if OPENSWIFTUI_EMBEDDED
+    /// Synchronously render a statically specialized tree into a platform sink.
+    /// The caller provides platform serialization (for example, the LVGL lock).
+    func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink)
+    func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize
+    var _layoutCount: Int { get }
+    func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize
+    func _placeChild<Sink: EmbeddedRenderSink>(_ index: Int, in rect: EmbeddedRect, to sink: inout Sink)
+    #else
     /// Instantiates the view using `view` as its source value, and
     /// `inputs` as its input values. Returns the view's output values.
     /// This should never be called directly, instead use the
@@ -65,6 +78,8 @@ public protocol View {
     @available(OpenSwiftUI_v2_0, *)
     nonisolated static func _viewListCount(inputs: _ViewListCountInputs) -> Int?
     
+    #endif
+
     /// The type of view representing the body of this view.
     ///
     /// When you create a custom view, Swift infers this type from your
@@ -87,8 +102,10 @@ public protocol View {
     /// For more information about composing views and a view hierarchy,
     /// see <doc:Declaring-a-Custom-View>.
     @ViewBuilder
+    #if !OPENSWIFTUI_EMBEDDED
     @MainActor
     @preconcurrency
+    #endif
     var body: Body { get }
 }
 
@@ -105,10 +122,42 @@ extension PrimitiveView {
 
 extension View {
     package func bodyError() -> Never {
+        #if OPENSWIFTUI_EMBEDDED
+        preconditionFailure("Primitive views do not have a body")
+        #else
         preconditionFailure("body() should not be called on \(Self.self).")
+        #endif
     }
 }
 
+#if OPENSWIFTUI_EMBEDDED
+extension PrimitiveView {
+    public var _layoutCount: Int { 1 }
+    public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
+        precondition(index == 0)
+        return _sizeThatFits(proposal, using: &sink)
+    }
+    public func _placeChild<Sink: EmbeddedRenderSink>(_ index: Int, in rect: EmbeddedRect, to sink: inout Sink) {
+        precondition(index == 0)
+        _render(in: rect, to: &sink)
+    }
+}
+extension View {
+    public var _layoutCount: Int { body._layoutCount }
+    public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
+        body._measureChild(index, proposal: proposal, using: &sink)
+    }
+    public func _placeChild<Sink: EmbeddedRenderSink>(_ index: Int, in rect: EmbeddedRect, to sink: inout Sink) {
+        body._placeChild(index, in: rect, to: &sink)
+    }
+    public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
+        body._sizeThatFits(proposal, using: &sink)
+    }
+    public func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink) {
+        body._render(in: rect, to: &sink)
+    }
+}
+#else
 // MARK: - UnaryView
 
 package protocol UnaryView: View {}
@@ -202,3 +251,5 @@ extension TypeConformance where P == ViewDescriptor {
         visitor.pointee.visit(type: unsafeExistentialMetatype((any View.Type).self))
     }
 }
+
+#endif // OPENSWIFTUI_EMBEDDED

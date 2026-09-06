@@ -1,3 +1,4 @@
+#if !OPENSWIFTUI_EMBEDDED
 //
 //  ZStack.swift
 //  OpenSwiftUICore
@@ -265,3 +266,5 @@ extension ZStackLayout: DerivedLayout {
     @available(OpenSwiftUI_v4_0, *)
     package typealias Base = _ZStackLayout
 }
+
+#endif // !OPENSWIFTUI_EMBEDDED
