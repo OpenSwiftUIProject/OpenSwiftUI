@@ -59,6 +59,8 @@ gh workflow run pre_release.yml --ref main
 
 This runs macOS, iOS, Ubuntu, all UI test configurations on both platforms,
 compatibility tests on both platforms, and both Stdout Renderer backends.
-The standalone workflow creates no tag or release. The release entry calls the
-same workflow before building signed artifacts and creating the version tag.
+The standalone workflow creates no tag or release. Version tag pushes start
+the release entry, which calls the same checks before building signed artifacts
+and publishing. Manual release requests run these checks by default and can
+create the version tag after the signed build succeeds.
 See [Releases](../Release.md) for setup, publication, and retry instructions.

@@ -53,7 +53,7 @@ async function request(workflowName, options = {}) {
   const context = {
     repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' },
     eventName: options.event ?? 'issue_comment',
-    payload: { issue: { number: 42, ...(options.issue ? {} : { pull_request: {} }) }, comment },
+    payload: options.payload ?? { issue: { number: 42, ...(options.issue ? {} : { pull_request: {} }) }, comment },
     sha: dispatchSha,
     runId: 123,
   };
@@ -248,14 +248,18 @@ test('UI dispatch and existing comment options still work; pushes no longer requ
 });
 
 for (const name of ['compatibility_tests', 'stdout_renderer']) {
-  test(`${name}: reusable calls use the supplied SHA and run every target`, async () => {
-    const result = await request(name, { event: 'workflow_dispatch', ref: headSha });
-    assert.equal(result.outputs.ref, headSha);
-    assert.equal(JSON.parse(result.outputs.targets).length, 2);
-    assert.equal(result.outputs['status-enabled'], 'false');
-    assert.equal(result.lookups.length, 0);
-    await assert.rejects(request(name, { event: 'workflow_dispatch', ref: headSha + '\n' }), /full commit SHA/);
-  });
+  for (const event of ['workflow_dispatch', 'push']) {
+    test(`${name}: reusable calls from ${event} use the supplied SHA and run every target`, async () => {
+      const options = { event, ref: headSha, payload: event === 'push' ? { ref: 'refs/tags/0.20.0' } : { inputs: { version: '0.20.0' } } };
+      const result = await request(name, options);
+      assert.equal(result.admitted, true);
+      assert.equal(result.outputs.ref, headSha);
+      assert.equal(JSON.parse(result.outputs.targets).length, 2);
+      assert.equal(result.outputs['status-enabled'], 'false');
+      assert.equal(result.lookups.length, 0);
+      await assert.rejects(request(name, { ...options, ref: headSha + '\n' }), /full commit SHA/);
+    });
+  }
 
   test(`${name}: a reusable ref cannot bypass comment authorization`, async () => {
     const result = await request(name, { association: 'NONE', ref: headSha });
@@ -265,19 +269,23 @@ for (const name of ['compatibility_tests', 'stdout_renderer']) {
   });
 }
 
-test('reusable UI checks use their own inputs despite the caller dispatch payload', async () => {
-  const job = workflows.uitests.jobs.prepare_uitests;
-  const context = {
-    repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, sha: dispatchSha,
-    eventName: 'workflow_dispatch', payload: { inputs: { version: '0.20.0', platform: 'ios', update_reference: 'true' } },
-  };
-  const env = { REQUESTED_REF: headSha, PLATFORM: 'all', CONFIGURATION: 'all', UPDATE_REFERENCE: 'false' };
-  const result = await scriptRun(job.steps[0].with.script, context, env);
-  assert.equal(result.outputs.ref, headSha);
-  assert.equal(result.outputs['ios-requested'], 'true');
-  assert.equal(result.outputs['macos-requested'], 'true');
-  assert.equal(result.outputs['update-reference'], 'false');
-  assert.equal(JSON.parse(result.outputs['configuration-matrix']).length, 4);
-  assert.equal(result.statuses.length, 0);
-  await assert.rejects(scriptRun(job.steps[0].with.script, context, { ...env, REQUESTED_REF: 'main' }), /full commit SHA/);
-});
+for (const event of ['workflow_dispatch', 'push']) {
+  test(`reusable UI checks use their own inputs despite the caller ${event} payload`, async () => {
+    const job = workflows.uitests.jobs.prepare_uitests;
+    const context = {
+      repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, sha: dispatchSha,
+      eventName: event,
+      payload: event === 'push' ? { ref: 'refs/tags/0.20.0' } : { inputs: { version: '0.20.0', platform: 'ios', update_reference: 'true' } },
+    };
+    const env = { REQUESTED_REF: headSha, PLATFORM: 'all', CONFIGURATION: 'all', UPDATE_REFERENCE: 'false' };
+    assert.equal(Boolean(expression(job.if, { inputs: { ref: headSha }, github: { event_name: event, event: context.payload } })), true);
+    const result = await scriptRun(job.steps[0].with.script, context, env);
+    assert.equal(result.outputs.ref, headSha);
+    assert.equal(result.outputs['ios-requested'], 'true');
+    assert.equal(result.outputs['macos-requested'], 'true');
+    assert.equal(result.outputs['update-reference'], 'false');
+    assert.equal(JSON.parse(result.outputs['configuration-matrix']).length, 4);
+    assert.equal(result.statuses.length, 0);
+    await assert.rejects(scriptRun(job.steps[0].with.script, context, { ...env, REQUESTED_REF: 'main' }), /full commit SHA/);
+  });
+}

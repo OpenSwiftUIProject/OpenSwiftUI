@@ -1,30 +1,43 @@
 name: Create release
+run-name: Release ${{ inputs.version || github.ref_name }}${{ inputs.skip_checks && ' (checks skipped)' || '' }}
 
 on:
+  push:
+    tags:
+      - '[0-9]+.[0-9]+.[0-9]+'
   workflow_dispatch:
     inputs:
       version:
         description: Stable version to release, without a v prefix
         required: true
         type: string
+      skip_checks:
+        description: Skip pre-release tests for this release
+        default: false
+        type: boolean
+      skip_checks_reason:
+        description: Reason for skipping checks (required when skip_checks is true)
+        default: ''
+        type: string
 
 permissions:
   contents: read
 
 concurrency:
-  group: release-${{ inputs.version }}
+  group: release-${{ inputs.version || github.ref_name }}
   cancel-in-progress: false
 
 jobs:
   prepare:
     name: Validate release request
+    if: ${{ github.event_name != 'push' || !github.event.deleted }}
     runs-on: ubuntu-latest
-    environment: release
     outputs:
       sha: ${{ steps.prepare.outputs.sha }}
       version: ${{ steps.prepare.outputs.version }}
     steps:
       - uses: actions/checkout@v4
+        id: checkout
         with:
           ref: ${{ github.sha }}
           persist-credentials: false
@@ -32,32 +45,49 @@ jobs:
         id: prepare
         uses: actions/github-script@v7
         env:
-          VERSION: ${{ inputs.version }}
-          PIPELINE_ENABLED: ${{ vars.RELEASE_PIPELINE_ENABLED }}
-          APP_ID: ${{ vars.RELEASE_APP_ID }}
-          HAS_APP_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY != '' }}
+          VERSION: ${{ inputs.version || github.ref_name }}
+          CHECKOUT_SHA: ${{ steps.checkout.outputs.commit }}
+          SKIP_CHECKS: ${{ inputs.skip_checks }}
+          SKIP_CHECKS_REASON: ${{ inputs.skip_checks_reason }}
           HAS_SIGNING_CERTIFICATE: ${{ secrets.SIGNING_CERTIFICATE_BASE_64 != '' }}
           HAS_SIGNING_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD != '' }}
           HAS_BINARY_REPO_TOKEN: ${{ secrets.BINARY_REPO_PAT != '' }}
         with:
           script: |
             const { validateVersion, validateSHA, validateReleaseRef, getTagSHA } = require('./Scripts/CI/release.js');
-            if (process.env.PIPELINE_ENABLED !== 'true') throw new Error('Configure the release App and tag rulesets, then enable RELEASE_PIPELINE_ENABLED.');
-            if (!process.env.APP_ID || ['HAS_APP_KEY', 'HAS_SIGNING_CERTIFICATE', 'HAS_SIGNING_PASSWORD', 'HAS_BINARY_REPO_TOKEN'].some(name => process.env[name] !== 'true')) {
-              throw new Error('Release App, signing, and binary repository credentials must be configured.');
+            if (['HAS_SIGNING_CERTIFICATE', 'HAS_SIGNING_PASSWORD', 'HAS_BINARY_REPO_TOKEN'].some(name => process.env[name] !== 'true')) {
+              throw new Error('Signing and binary repository credentials must be configured.');
             }
             const version = validateVersion(process.env.VERSION);
-            validateReleaseRef(version, context.ref);
-            const sha = validateSHA(context.sha);
+            const isTagPush = context.eventName === 'push';
+            if (isTagPush) {
+              if (context.ref !== `refs/tags/${version}`) throw new Error('Push must refer to the requested version tag.');
+            } else {
+              validateReleaseRef(version, context.ref);
+            }
+            const sha = validateSHA(process.env.CHECKOUT_SHA);
+            if (!isTagPush && sha !== context.sha) throw new Error('The checked-out commit must match the dispatch commit.');
+            const skipChecks = process.env.SKIP_CHECKS === 'true';
+            const skipReason = (process.env.SKIP_CHECKS_REASON || '').trim();
+            if (skipChecks && !skipReason) throw new Error('A reason is required when skipping pre-release checks.');
             const existing = await getTagSHA(github, context.repo, version);
+            if (isTagPush && !existing) throw new Error(`Tag ${version} no longer exists.`);
             if (existing && existing !== sha) throw new Error(`Tag ${version} already points to ${existing}.`);
             core.setOutput('version', version);
             core.setOutput('sha', sha);
             await core.summary.addHeading('Release candidate').addTable([
               ['Version', version], ['Commit', sha],
+              ['Pre-release checks', skipChecks ? 'Skipped by request' : 'Required'],
             ]).write();
+            if (skipChecks) {
+              core.warning('Pre-release checks were explicitly skipped for this release.');
+              await core.summary.addHeading('Pre-release checks skipped')
+                .addTable([['Requested by', context.actor]])
+                .addCodeBlock(skipReason, 'text').write();
+            }
 
   checks:
+    if: ${{ !inputs.skip_checks }}
     needs: prepare
     uses: ./.github/workflows/pre_release.yml
     permissions:
@@ -73,6 +103,10 @@ jobs:
 
   build:
     needs: [prepare, checks]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' &&
+      ((inputs.skip_checks && needs.checks.result == 'skipped') ||
+       (!inputs.skip_checks && needs.checks.result == 'success'))
     uses: ./.github/workflows/build_release.yml
     permissions:
       contents: read
@@ -85,18 +119,24 @@ jobs:
       SIGNING_CERTIFICATE_PASSWORD: ${{ secrets.SIGNING_CERTIFICATE_PASSWORD }}
 
   tag:
-    name: Tag the verified commit
+    name: Create or verify the release tag
+    permissions:
+      contents: write
     needs: [prepare, checks, build]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' && needs.build.result == 'success' &&
+      ((inputs.skip_checks && needs.checks.result == 'skipped') ||
+       (!inputs.skip_checks && needs.checks.result == 'success'))
     runs-on: ubuntu-latest
-    environment: release
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ needs.prepare.outputs.sha }}
           persist-credentials: false
-      - name: Require matching checks and artifacts
+      - name: Validate tag prerequisites
         uses: actions/github-script@v7
         env:
+          SKIP_CHECKS: ${{ inputs.skip_checks }}
           CANDIDATE_SHA: ${{ needs.prepare.outputs.sha }}
           VERIFIED_SHA: ${{ needs.checks.outputs.verified-sha }}
           BUILT_SHA: ${{ needs.build.outputs.sha }}
@@ -105,29 +145,36 @@ jobs:
           script: |
             const { validateSHA } = require('./Scripts/CI/release.js');
             const sha = validateSHA(process.env.CANDIDATE_SHA);
-            if (process.env.VERIFIED_SHA !== sha || process.env.BUILT_SHA !== sha || !process.env.ARTIFACT_ID) {
-              throw new Error('Checks and stored release artifacts must refer to the candidate commit.');
+            if (process.env.SKIP_CHECKS !== 'true' && process.env.VERIFIED_SHA !== sha) {
+              throw new Error('Checks must refer to the candidate commit.');
             }
-      - name: Create release App token
-        id: app-token
-        uses: actions/create-github-app-token@v2
-        with:
-          app-id: ${{ vars.RELEASE_APP_ID }}
-          private-key: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
-          permission-contents: write
-      - name: Create version tag
+            if (process.env.BUILT_SHA !== sha || !process.env.ARTIFACT_ID) {
+              throw new Error('Stored release artifacts must refer to the candidate commit.');
+            }
+      - name: Create or verify version tag
         uses: actions/github-script@v7
         env:
           VERSION: ${{ needs.prepare.outputs.version }}
           CANDIDATE_SHA: ${{ needs.prepare.outputs.sha }}
         with:
-          github-token: ${{ steps.app-token.outputs.token }}
+          github-token: ${{ github.token }}
           script: |
-            const { ensureTag } = require('./Scripts/CI/release.js');
-            await ensureTag({ github, repo: context.repo, version: process.env.VERSION, sha: process.env.CANDIDATE_SHA });
+            const { ensureTag, getTagSHA } = require('./Scripts/CI/release.js');
+            const version = process.env.VERSION;
+            const sha = process.env.CANDIDATE_SHA;
+            if (context.eventName === 'push') {
+              if (await getTagSHA(github, context.repo, version) !== sha) {
+                throw new Error('The release tag must still point to the candidate commit.');
+              }
+            } else {
+              await ensureTag({ github, repo: context.repo, version, sha });
+            }
 
   publish:
     needs: [prepare, build, tag]
+    if: >-
+      !cancelled() && needs.prepare.result == 'success' &&
+      needs.build.result == 'success' && needs.tag.result == 'success'
     uses: ./.github/workflows/publish_release.yml
     permissions:
       contents: write
@@ -141,6 +188,7 @@ jobs:
 
   documentation:
     needs: publish
+    if: ${{ !cancelled() && needs.publish.result == 'success' }}
     uses: ./.github/workflows/documentation.yml
     permissions:
       contents: read
