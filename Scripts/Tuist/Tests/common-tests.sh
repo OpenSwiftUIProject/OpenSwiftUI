@@ -38,26 +38,14 @@ configure_test_environment() {
 
     TEST_COMMAND_LOG="$temporary_directory/commands.log"
     TEST_OUTPUT_LOG="$temporary_directory/output.log"
-    TEST_CACHE_READY_FLAG="$temporary_directory/cache-ready"
-    TUIST_CACHE_SOCKET_PATH="$temporary_directory/cache.sock"
-    TUIST_CACHE_DAEMON_STDERR_PATH="$temporary_directory/cache-daemon.stderr.log"
     export CI=1
     export GITHUB_ACTIONS=true
 
     : >"$TEST_COMMAND_LOG"
-    echo "cache daemon test failure" >"$TUIST_CACHE_DAEMON_STDERR_PATH"
 }
 
 tuist_trust_mise_configuration() {
     :
-}
-
-tuist_cache_service_is_ready() {
-    [[ -e "$TEST_CACHE_READY_FLAG" ]]
-}
-
-tuist_wait_for_cache_service() {
-    tuist_cache_service_is_ready || return 69
 }
 
 tuist_mise() {
@@ -67,72 +55,55 @@ tuist_mise() {
         return 1
     fi
 
-    if [[ "$*" == "exec -- tuist setup cache --path $TUIST_REPOSITORY_ROOT" && "${TEST_SETUP_SHOULD_FAIL:-false}" == "true" ]]; then
-        return 1
-    fi
-
     if [[ "$*" == "exec -- tuist auth login" && "${TEST_AUTH_SHOULD_FAIL:-false}" == "true" ]]; then
         return 1
     fi
 }
 
-test_healthy_cache_uses_remote_compilation_cache() (
+test_ci_setup_does_not_start_cache() (
     local temporary_directory
     temporary_directory="$(mktemp -d)"
     trap 'rm -rf "$temporary_directory"' EXIT
     configure_test_environment "$temporary_directory"
-    touch "$TEST_CACHE_READY_FLAG"
 
     tuist_ci_setup >"$TEST_OUTPUT_LOG" 2>&1
-    tuist_xcodebuild "$temporary_directory/result.xcresult" build -scheme Example >"$TEST_OUTPUT_LOG" 2>&1
 
-    assert_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_ENABLE_CACHING=YES"
-    assert_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_REMOTE_SERVICE_PATH=$TUIST_CACHE_SOCKET_PATH"
-    assert_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_ENABLE_PLUGIN=YES"
-    assert_not_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_ENABLE_CACHING=NO"
+    assert_contains "$TEST_COMMAND_LOG" "install"
+    assert_contains "$TEST_COMMAND_LOG" "tuist auth login"
+    assert_not_contains "$TEST_COMMAND_LOG" "tuist setup cache"
 )
 
-test_cache_setup_failure_is_non_fatal_and_reports_diagnostics() (
-    local temporary_directory
-    temporary_directory="$(mktemp -d)"
-    trap 'rm -rf "$temporary_directory"' EXIT
-    configure_test_environment "$temporary_directory"
-    TEST_SETUP_SHOULD_FAIL=true
-
-    tuist_ci_setup >"$TEST_OUTPUT_LOG" 2>&1
-
-    assert_contains "$TEST_OUTPUT_LOG" "::warning::Tuist Xcode cache setup failed; continuing without compilation caching."
-    assert_contains "$TEST_OUTPUT_LOG" "cache daemon test failure"
-)
-
-test_cache_readiness_failure_is_non_fatal_and_reports_diagnostics() (
+test_build_disables_remote_cache_locally_and_in_ci() (
     local temporary_directory
     temporary_directory="$(mktemp -d)"
     trap 'rm -rf "$temporary_directory"' EXIT
     configure_test_environment "$temporary_directory"
 
-    tuist_ci_setup >"$TEST_OUTPUT_LOG" 2>&1
+    local environment
+    for environment in local ci; do
+        if [[ "$environment" == local ]]; then
+            unset CI GITHUB_ACTIONS
+        else
+            export CI=1
+            export GITHUB_ACTIONS=true
+        fi
 
-    assert_contains "$TEST_OUTPUT_LOG" "::warning::Tuist Xcode cache daemon did not become ready; continuing without compilation caching."
-    assert_contains "$TEST_OUTPUT_LOG" "cache daemon test failure"
-)
+        : >"$TEST_COMMAND_LOG"
+        tuist_xcodebuild "$temporary_directory/result.xcresult" build -scheme Example \
+            COMPILATION_CACHE_ENABLE_CACHING=YES \
+            COMPILATION_CACHE_REMOTE_SERVICE_PATH=/tmp/old-tuist-cache.sock \
+            COMPILATION_CACHE_ENABLE_PLUGIN=YES >"$TEST_OUTPUT_LOG" 2>&1
 
-test_disappearing_cache_socket_disables_compilation_cache() (
-    local temporary_directory
-    temporary_directory="$(mktemp -d)"
-    trap 'rm -rf "$temporary_directory"' EXIT
-    configure_test_environment "$temporary_directory"
-    touch "$TEST_CACHE_READY_FLAG"
-
-    tuist_ci_setup >"$TEST_OUTPUT_LOG" 2>&1
-    rm "$TEST_CACHE_READY_FLAG"
-    tuist_xcodebuild "$temporary_directory/result.xcresult" test -scheme Example >>"$TEST_OUTPUT_LOG" 2>&1
-
-    assert_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_ENABLE_CACHING=NO"
-    assert_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_ENABLE_PLUGIN=NO"
-    assert_not_contains "$TEST_COMMAND_LOG" "COMPILATION_CACHE_ENABLE_CACHING=YES"
-    assert_contains "$TEST_OUTPUT_LOG" "::warning::Tuist Xcode cache service is unavailable"
-    assert_contains "$TEST_OUTPUT_LOG" "cache daemon test failure"
+        assert_contains "$TEST_COMMAND_LOG" "tuist xcodebuild build -resultBundlePath $temporary_directory/result.xcresult -scheme Example"
+        local build_command
+        build_command="$(tail -n 1 "$TEST_COMMAND_LOG")"
+        if [[ "$build_command" != *"COMPILATION_CACHE_ENABLE_CACHING=NO COMPILATION_CACHE_REMOTE_SERVICE_PATH= COMPILATION_CACHE_ENABLE_PLUGIN=NO" ]]; then
+            echo "Expected the $environment build to override remote cache settings." >&2
+            return 1
+        fi
+        assert_not_contains "$TEST_OUTPUT_LOG" "::warning::"
+        assert_not_contains "$TEST_OUTPUT_LOG" "tuist setup cache"
+    done
 )
 
 test_authentication_failure_remains_fatal() (
@@ -196,9 +167,7 @@ run_test() {
     fi
 }
 
-run_test test_healthy_cache_uses_remote_compilation_cache
-run_test test_cache_setup_failure_is_non_fatal_and_reports_diagnostics
-run_test test_cache_readiness_failure_is_non_fatal_and_reports_diagnostics
-run_test test_disappearing_cache_socket_disables_compilation_cache
+run_test test_ci_setup_does_not_start_cache
+run_test test_build_disables_remote_cache_locally_and_in_ci
 run_test test_authentication_failure_remains_fatal
 run_test test_mise_install_failure_remains_fatal
