@@ -16,16 +16,20 @@ import Foundation
 /// clicks or taps the button. The label is a view that describes the button's action -- for example, by showing text, an icon or both.
 /// 
 /// The label of a button can be any kind of view, such as Text view for text-only tables
-public struct Button<Label> where Label: View {
-
-    public init(action: @escaping () -> Void, @ViewBuilder label: () -> Label) {
-        self.label = label();
+nonisolated
+public struct Button<ButtonLabel> where ButtonLabel: View {
+    private init(action: @escaping () -> Void, label: ButtonLabel) {
         self.action = action;
+        self.label = label;
     }
 
-    public init(role: ButtonRole?, action: @escaping () -> Void, @ViewBuilder label: () -> Label) {
-        self.label = label()
-        self.action = action;
+    public init(action: @escaping () -> Void, @ViewBuilder label: () -> ButtonLabel) {
+        self.init(action: action, label: label())
+    }
+
+    public init(role: ButtonRole?, action: @escaping () -> Void, @ViewBuilder label: () -> ButtonLabel) {
+        self.init(action: action, label: label())
+        // TODO : update style.configuration role
     }
 
     public var body: some View { 
@@ -40,39 +44,72 @@ public struct Button<Label> where Label: View {
         }
     }
 
-    var label: Label;
+    /// The descriptor for the ``action`` triggered by the Button.
+    var label: ButtonLabel;
+
+    /// The ``action`` take whenever the button is interacted with.
     var action: () -> Void;
 
+    /// The enabled or disabled state.
     @Environment(\.isEnabled)
     var isEnabled: Bool;
 
+    /// The active ``ButtonStyle``
     @Environment(\.buttonStyle)
     var style: AnyButtonStyle;
 }
 
-extension Button where Label == Text {
+extension Button where ButtonLabel == Image {
+    init(_ image: Image, action: @escaping () -> Void) {
+        self.init(action: action, label: image,);
+    }
+}
+
+extension Button where ButtonLabel == Text {
     @preconcurrency
     nonisolated
-    init(_ labelResource: LocalizedStringResource, action: @escaping () -> Void) {
-        self.label = Text(labelResource);
-        self.action = action;
+    init(_ label: LocalizedStringResource, action: @escaping () -> Void) {
+       self.init(action: action, label: Text(label));
     }
 
     @preconcurrency
     nonisolated
-    init(_ labelKey: LocalizedStringKey, action: @escaping () -> Void) {
-        self.label = Text(labelKey);
-        self.action = action;
+    init(_ label: LocalizedStringKey, action: @escaping () -> Void) {
+        self.init(action: action, label: Text(label));
     }
 
     @preconcurrency
     nonisolated
     init<S>(_ label: S, action: @escaping () -> Void) where S:StringProtocol{
-        self.action = action;
-        self.label = Text(label)
+        self.init(action: action, label: Text(label));
     }
 }
 
+extension Button where ButtonLabel == Label<Text, Image> {
+    @preconcurrency
+    nonisolated
+    init(_ title: LocalizedStringResource, image: ImageResource, action: @escaping () -> Void) {
+        self.init(action: action, label: Label(title, image: image));
+    }
 
+    @preconcurrency
+    nonisolated
+    init(_ title: LocalizedStringKey, image: ImageResource, action: @escaping () -> Void) {
+        self.init(action: action, label: Label(title, image: image))
+    }
 
-#Preview("Create a button: text", body: {Button("Example Text Button"){}.body})
+    @preconcurrency
+    nonisolated
+    init<S>(_ title: S, image: ImageResource, action: @escaping () -> Void) where S:StringProtocol {
+        self.init(action: action, label: Label(title, image: image));
+    }
+
+    @preconcurrency
+    nonisolated
+    init<S>(_ title: S, systemImage: String, action: @escaping () -> Void) where S: StringProtocol {
+        self.init(action: action, label: Label(title, image: systemImage));
+    }
+}
+
+#Preview("Creating a button: text", body: {Button("Example Text Button"){}.body})
+#Preview("Creating a button: icon", body: {Button(Image("add")){}.body})
