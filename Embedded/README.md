@@ -79,8 +79,9 @@ builds the module and archive for RISC-V, adds the Swift import path, and links
 the archive. Source and build-script changes trigger a rebuild. Compile Swift
 clients in Embedded mode with the same compiler as the framework.
 
-The reference board application lives in the companion `ai-passport` repository
-on `embed/folotoy`. Its README covers toolchain installation, the real LVGL sink,
+The reference board application lives in the companion
+[OpenSwiftUIProject/ai-passport](https://github.com/OpenSwiftUIProject/ai-passport)
+repository on `main`. Its README covers toolchain installation, the real LVGL sink,
 host pixel previews, the complete firmware gate, and device-specific deployment.
 Point it at any standalone OpenSwiftUI checkout:
 
