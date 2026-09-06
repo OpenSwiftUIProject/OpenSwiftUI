@@ -59,6 +59,8 @@ final package class ThreadSpecific<T> {
 
 // MARK: - Thread + Global helper function
 
+// OpenSwiftUI Addition begin
+
 #if os(Linux)
 // Identify the main queue even when it runs on a different thread.
 // https://github.com/swiftlang/swift-corelibs-libdispatch/issues/846
@@ -78,6 +80,8 @@ package func isMainThreadOrMainQueue() -> Bool {
     return Thread.isMainThread
     #endif
 }
+
+// OpenSwiftUI Addition end
 
 package func onMainThread(do body: @escaping () -> Void) {
     #if os(WASI)
