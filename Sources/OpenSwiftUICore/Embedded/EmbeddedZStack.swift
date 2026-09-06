@@ -2,7 +2,7 @@
 //  EmbeddedZStack.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Measures all children with the same proposal, then aligns their fitted sizes.
 public struct ZStack<Content: View>: PrimitiveView {
     public let content: Content

@@ -2,7 +2,7 @@
 //  EmbeddedVStack.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 public struct VStack<Content: View>: View {
     let content: Content
     let layout: VStackLayout

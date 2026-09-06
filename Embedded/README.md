@@ -7,20 +7,90 @@ the dynamic graph renderer with a synchronous, generic `EmbeddedRenderSink`.
 
 This is an explicit source profile, not a regular SwiftPM target with all
 framework dependencies made optional. `sources.txt` is the authoritative list.
-Do not pass `OPENSWIFTUI_EMBEDDED` to the full default package source set.
+The LVGL profile is selected by `#if OPENSWIFTUI_LVGL && hasFeature(Embedded)`.
+`build_embedded.py` passes `-DOPENSWIFTUI_LVGL` and
+`-enable-experimental-feature Embedded` for both host and RISC-V builds.
+The custom flag selects the LVGL integration; `hasFeature(Embedded)` checks the
+compiler's active language mode. Both are required to select these branches.
+Do not enable this combination with the full default package source set.
 
-## Build and integrate
+## Standalone checkout and host build
 
-Use Swift 6.3.1 RELEASE with Embedded RISC-V libraries. ESP32-C3 also needs the
-ESP-IDF 5.5.3 toolchain on PATH. Output belongs in the containing workspace:
+This profile needs only this OpenSwiftUI repository. It does not use sibling
+OpenAttributeGraph (OAG), OpenRenderBox, OpenCoreGraphics, OpenObservation,
+Compute, or DarwinPrivateFrameworks checkouts. OpenSwiftUI-Mono and its workspace
+setup are optional. There are no additional framework repositories for a
+`setup_embedded.sh` script to clone.
 
-    python3 Scripts/build_embedded.py --target riscv32 --output ../build/riscv32
+Use the URL of the repository or fork that publishes `embed/folotoy`:
+
+    git clone --single-branch --branch embed/folotoy <repository-url> OpenSwiftUI
+    cd OpenSwiftUI
+
+The validated host is macOS arm64 with Swift 6.3.1 RELEASE, Python 3.9 or later,
+and Xcode Command Line Tools (`xcrun` and `ar`). Install the Embedded-capable
+Swift toolchain first. On macOS, select the installed release in this shell:
+
+    export SWIFTC="$HOME/Library/Developer/Toolchains/swift-6.3.1-RELEASE.xctoolchain/usr/bin/swiftc"
+    export PATH="$(dirname "$SWIFTC"):$PATH"
+    "$SWIFTC" --version
+    python3 --version
+
+On another host, set `SWIFTC` to that host's Embedded-capable compiler. The
+scripts include a non-Darwin path, but Linux has not been validated for this
+profile. The Python build helper uses only the standard library.
+
+From the checkout, build the module and run the three executable test suites:
+
+    python3 Scripts/build_embedded.py --target host --output ../build/host
     Scripts/test_embedded.sh
 
-`idf.cmake` exposes `openswiftui_link_embedded(target)` after the ESP-IDF Swift
-component is configured. It builds an independent `.swiftmodule` and `.a`, adds
-the import path to Swift compilation, and links the archive into the firmware.
-The selected source list participates in CMake dependency tracking.
+The output contains `OpenSwiftUI.swiftmodule` and `libOpenSwiftUI.a`.
+Tests compile separate clients and exercise rendering, layout, and state/input.
+These host tests use recording sinks and require neither LVGL nor an ESP32
+device. The Embedded build uses `Embedded/sources.txt` directly; the normal
+`swift build`, `swift test`, and desktop setup commands select a different
+framework configuration.
+
+## ESP32-C3 build and integration
+
+Use Swift 6.3.1 RELEASE with `riscv32-none-none-eabi` Embedded libraries and the
+ESP-IDF 5.5.3 ESP32-C3 tools. After installing IDF and its `esp32c3` toolchain,
+activate IDF and put the selected Swift compiler on PATH:
+
+    . /absolute/path/to/esp-idf-v5.5.3/export.sh
+    export SWIFTC=/absolute/path/to/swift-toolchain/usr/bin/swiftc
+    export PATH="$(dirname "$SWIFTC"):$PATH"
+    idf.py --version
+    python3 Scripts/build_embedded.py --target riscv32 --output ../build/riscv32
+
+Cross-compilation uses `riscv32-esp-elf-ar` and `riscv32-esp-elf-objcopy` from
+IDF. This creates a framework module and archive; a firmware application must
+supply the display, input drivers, assets, and an `EmbeddedRenderSink`.
+
+For an ESP-IDF application, configure `espressif/idf_swift` 1.0.1 and register
+the application's Swift sources before including the helper:
+
+    include("${OPENSWIFTUI_SOURCE_DIR}/Embedded/idf.cmake")
+    openswiftui_link_embedded(${COMPONENT_LIB})
+
+Here `OPENSWIFTUI_SOURCE_DIR` is the absolute path to this checkout. The helper
+builds the module and archive for RISC-V, adds the Swift import path, and links
+the archive. Source and build-script changes trigger a rebuild. Compile Swift
+clients in Embedded mode with the same compiler as the framework.
+
+The reference board application lives in the companion `ai-passport` repository
+on `embed/folotoy`. Its README covers toolchain installation, the real LVGL sink,
+host pixel previews, the complete firmware gate, and device-specific deployment.
+Point it at any standalone OpenSwiftUI checkout:
+
+    cd /absolute/path/to/ai-passport
+    export OPENSWIFTUI_SOURCE_DIR=/absolute/path/to/OpenSwiftUI
+    tools/with-env.sh ./tools/validate.sh
+    tools/with-env.sh ./tools/preview-openswiftui.sh ../work/openswiftui-preview.png
+
+The firmware resolves LVGL and the ESP-IDF Swift integration through its pinned
+Managed Components. They are not dependencies of the standalone Swift module.
 
 Embedded Swift specializes generic declarations into their clients. A small
 archive therefore does not imply that all rendering code executes from that
@@ -94,11 +164,20 @@ current body and there is no stale closure table to clear on rerender.
                 .onPhyicButton(.ok) { blue.toggle() }
         }
     }
+    let geometry = RootGeometry(screenSize: .init(width: 240, height: 320))
     let host = EmbeddedViewHost { ContentView() }
+    host.render(rootGeometry: geometry, to: &sink)
     host.send(.down)
     if host.needsRender {
         host.render(rootGeometry: geometry, to: &sink)
     }
+
+Add `import OpenSwiftUI` to application sources. In this example, `sink` is the
+application's value conforming to `EmbeddedRenderSink`; implement its image/text
+measurement and fill/image/text drawing methods using the platform renderer.
+Render once after constructing the host. For each button click, call `send`,
+then render when `needsRender` is true. Configure screen size and any content
+insets in `RootGeometry`, and release the host when leaving the screen.
 
 The builder is required: it associates newly constructed state boxes with this
 host. The host retains the root value, and copying a State wrapper shares its

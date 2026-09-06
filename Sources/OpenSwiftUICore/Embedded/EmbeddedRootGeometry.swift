@@ -2,7 +2,7 @@
 //  EmbeddedRootGeometry.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Configures the physical screen and the area offered to the root view.
 /// Mirrors the inset -> measure -> center flow of ViewGraph.RootGeometry,
 /// without its AttributeGraph rule or layout-direction dependencies.

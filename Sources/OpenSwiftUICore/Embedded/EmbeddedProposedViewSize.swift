@@ -2,7 +2,7 @@
 //  EmbeddedProposedViewSize.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// A size proposal; nil asks for the child's ideal size on that axis.
 /// The Embedded profile uses integer pixels and a finite maximum probe.
 public struct ProposedViewSize: Equatable, Sendable {

@@ -2,7 +2,7 @@
 //  EmbeddedState.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Mutable storage for content constructed and retained by an EmbeddedViewHost.
 ///
 /// Declare state in the host's root view or its stored children. State in children

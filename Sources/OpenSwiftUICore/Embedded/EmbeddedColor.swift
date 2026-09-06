@@ -2,7 +2,7 @@
 //  EmbeddedColor.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// A constant sRGB color. Dynamic providers and color spaces are not included.
 public struct Color: PrimitiveView, Equatable, Sendable {
     public let rgb: UInt32

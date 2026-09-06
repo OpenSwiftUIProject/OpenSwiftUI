@@ -2,7 +2,7 @@
 //  EmbeddedOptionalView.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 extension Optional: View where Wrapped: View {
     public var body: Never { preconditionFailure("Optional views are primitive") }
     public var _layoutCount: Int { self?._layoutCount ?? 0 }

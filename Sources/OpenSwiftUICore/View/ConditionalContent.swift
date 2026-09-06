@@ -5,7 +5,7 @@
 //  Status: Complete
 //  ID: 1A625ACC143FD8524C590782FD8F4F8C (SwiftUI)
 
-#if !OPENSWIFTUI_EMBEDDED
+#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
 package import OpenAttributeGraphShims
 #endif
 
@@ -57,7 +57,7 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
         self.storage = storage
     }
     
-    #if OPENSWIFTUI_EMBEDDED
+    #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool {
         switch storage {
         case let .trueContent(content): content._handlePhyicButton(button)
@@ -120,7 +120,7 @@ extension _ConditionalContent: View, PrimitiveView where TrueContent: View, Fals
     #endif
 }
 
-#if !OPENSWIFTUI_EMBEDDED
+#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
 // MARK: - ConditionalContent + DynamicView [6.0.87]
 
 extension _ConditionalContent: DynamicView where TrueContent: View, FalseContent: View {
@@ -290,4 +290,4 @@ package protocol ConditionalContentProvider {
     func makeFalseOutputs(child: Attribute<FalseContent>, inputs: Inputs) -> Outputs
 }
 
-#endif // !OPENSWIFTUI_EMBEDDED
+#endif // !(OPENSWIFTUI_LVGL && hasFeature(Embedded))

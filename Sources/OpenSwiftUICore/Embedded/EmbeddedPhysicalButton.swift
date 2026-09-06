@@ -2,7 +2,7 @@
 //  EmbeddedPhysicalButton.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// Logical board buttons, independent of GPIO/ADC encodings.
 public enum PhysicalButton: Equatable {
     case up, down, ok

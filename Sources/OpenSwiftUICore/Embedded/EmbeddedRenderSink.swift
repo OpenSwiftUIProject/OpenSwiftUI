@@ -2,7 +2,7 @@
 //  EmbeddedRenderSink.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 /// A platform renderer. Calls are synchronous, in back-to-front order.
 /// Names and text are static literals, with no bundle or Foundation dependency.
 /// A sink must clip to its viewport and report unsupported/missing assets.

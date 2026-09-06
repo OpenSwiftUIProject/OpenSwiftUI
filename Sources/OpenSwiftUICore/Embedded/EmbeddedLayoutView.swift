@@ -2,7 +2,7 @@
 //  EmbeddedLayoutView.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 public struct _EmbeddedLayoutView<L: Layout, Content: View>: PrimitiveView {
     let layout: L
     let content: Content

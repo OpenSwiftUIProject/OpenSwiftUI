@@ -2,7 +2,7 @@
 //  EmbeddedFrame.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 public struct _EmbeddedFrame<Content: View>: PrimitiveView {
     let content: Content
     let width: Int32?

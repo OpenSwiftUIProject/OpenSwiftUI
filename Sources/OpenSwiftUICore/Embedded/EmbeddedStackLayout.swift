@@ -2,7 +2,7 @@
 //  EmbeddedStackLayout.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_EMBEDDED
+#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
 public struct _EmbeddedStackCache {
     var sizes: [EmbeddedSize] = []
     var proposals: [ProposedViewSize] = []
