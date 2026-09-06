@@ -110,6 +110,34 @@ struct LocationTests {
     #endif
 
     @Test
+    func projectedWriteForwardsValueAndTransaction() {
+        struct Value: Equatable {
+            var count = 0
+            var name = "value"
+        }
+
+        var value = Value()
+        var receivedTransaction: Transaction?
+        var writes = 0
+        let location = LocationBox(FunctionalLocation {
+            value
+        } setValue: { newValue, transaction in
+            value = newValue
+            receivedTransaction = transaction
+            writes += 1
+        })
+        let projection = location.projecting(\Value.count)
+        var transaction = Transaction()
+        transaction.disablesAnimations = true
+
+        projection.set(3, transaction: transaction)
+
+        #expect(value == Value(count: 3))
+        #expect(receivedTransaction?.disablesAnimations == true)
+        #expect(writes == 1)
+    }
+
+    @Test
     func constantLocation() throws {
         let location = ConstantLocation(value: 0)
         #expect(location.wasRead == true)

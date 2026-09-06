@@ -5,8 +5,8 @@
 //  Author: Claude Code with Claude Sonnet 4.5
 
 import Foundation
-import Testing
 @testable import OpenSwiftUICore
+import Testing
 
 struct BindingOperationsTests {
 
@@ -37,10 +37,8 @@ struct BindingOperationsTests {
 
             let optionalBinding: Binding<Int?> = Binding(baseBinding)
             optionalBinding.wrappedValue = 20
-            #expect(optionalBinding.wrappedValue == 10)
-
-            storage = 20
             #expect(optionalBinding.wrappedValue == 20)
+            #expect(storage == 20)
         }
 
         @Test
@@ -86,10 +84,8 @@ struct BindingOperationsTests {
 
             let anyHashableBinding: Binding<AnyHashable> = Binding(baseBinding)
             anyHashableBinding.wrappedValue = AnyHashable(20)
-            #expect(anyHashableBinding.wrappedValue == AnyHashable(10))
-
-            storage = 20
             #expect(anyHashableBinding.wrappedValue == AnyHashable(20))
+            #expect(storage == 20)
         }
 
         @Test
@@ -105,10 +101,8 @@ struct BindingOperationsTests {
             #expect(anyHashableBinding.wrappedValue == AnyHashable("hello"))
 
             anyHashableBinding.wrappedValue = AnyHashable("world")
-            #expect(anyHashableBinding.wrappedValue == AnyHashable("hello"))
-
-            storage = "world"
             #expect(anyHashableBinding.wrappedValue == AnyHashable("world"))
+            #expect(storage == "world")
         }
     }
 
@@ -157,10 +151,8 @@ struct BindingOperationsTests {
             }
 
             unwrappedBinding.wrappedValue = 20
-            #expect(unwrappedBinding.wrappedValue == 10)
-
-            storage = 20
             #expect(unwrappedBinding.wrappedValue == 20)
+            #expect(storage == 20)
         }
     }
 
@@ -218,10 +210,8 @@ struct BindingOperationsTests {
             #expect(nilCoalescingBinding.wrappedValue == 100)
 
             nilCoalescingBinding.wrappedValue = 50
-            #expect(nilCoalescingBinding.wrappedValue == 100)
-
-            storage.value = 50
             #expect(nilCoalescingBinding.wrappedValue == 50)
+            #expect(storage.value == 50)
         }
 
         @Test
@@ -272,10 +262,8 @@ struct BindingOperationsTests {
 
             let doubleBinding: Binding<Double> = Binding(baseBinding)
             doubleBinding.wrappedValue = 2.5
-            #expect(doubleBinding.wrappedValue.isApproximatelyEqual(to: 1.0, absoluteTolerance: 0.001))
-
-            storage = 2.5
             #expect(doubleBinding.wrappedValue.isApproximatelyEqual(to: 2.5, absoluteTolerance: 0.001))
+            #expect(storage == 2.5)
         }
 
         @Test
@@ -302,10 +290,8 @@ struct BindingOperationsTests {
 
             let doubleBinding: Binding<Double> = Binding(baseBinding)
             doubleBinding.wrappedValue = 2.71828
-            #expect(doubleBinding.wrappedValue.isApproximatelyEqual(to: 1.0))
-
-            storage = 2.71828
             #expect(doubleBinding.wrappedValue.isApproximatelyEqual(to: 2.71828))
+            #expect(storage == 2.71828)
         }
     }
 
@@ -336,10 +322,8 @@ struct BindingOperationsTests {
 
             let doubleBinding: Binding<Double> = Binding(baseBinding)
             doubleBinding.wrappedValue = 25.7
-            #expect(doubleBinding.wrappedValue == 10.0)
-
-            storage = 25
             #expect(doubleBinding.wrappedValue == 25.0)
+            #expect(storage == 25)
         }
 
         @Test
@@ -355,10 +339,8 @@ struct BindingOperationsTests {
             #expect(doubleBinding.wrappedValue == 100.0)
 
             doubleBinding.wrappedValue = 200.5
-            #expect(doubleBinding.wrappedValue == 100.0)
-
-            storage = 200
             #expect(doubleBinding.wrappedValue == 200.0)
+            #expect(storage == 200)
         }
     }
 
@@ -404,10 +386,8 @@ struct BindingOperationsTests {
             #expect(resultBinding.wrappedValue == false)
 
             resultBinding.wrappedValue = true
-            #expect(resultBinding.wrappedValue == false)
-
-            storage = 42
             #expect(resultBinding.wrappedValue == true)
+            #expect(storage == 42)
         }
 
         @Test
@@ -443,10 +423,8 @@ struct BindingOperationsTests {
             #expect(resultBinding2.wrappedValue == false)
 
             resultBinding2.wrappedValue = true
-            #expect(resultBinding2.wrappedValue == false)
-
-            storage = "world"
             #expect(resultBinding2.wrappedValue == true)
+            #expect(storage == "world")
 
             resultBinding2.wrappedValue = false
             #expect(resultBinding2.wrappedValue == true)

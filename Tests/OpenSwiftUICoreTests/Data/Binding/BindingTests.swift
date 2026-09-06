@@ -85,7 +85,8 @@ struct BindingTests {
         #expect(optionalBinding.wrappedValue == 0)
             
         optionalBinding.wrappedValue = 10
-        #expect(optionalBinding.wrappedValue == 0)
+        #expect(optionalBinding.wrappedValue == 10)
+        #expect(storage == 10)
         storage = 20
         #expect(optionalBinding.wrappedValue == 20)
         optionalBinding.wrappedValue = nil
@@ -233,7 +234,8 @@ struct BindingTests {
         let anyHashableBinding: Binding<AnyHashable> = Binding(baseBinding)
         #expect(anyHashableBinding.wrappedValue == AnyHashable(0))
         anyHashableBinding.wrappedValue = 10
-        #expect(anyHashableBinding.wrappedValue == AnyHashable(0))
+        #expect(anyHashableBinding.wrappedValue == AnyHashable(10))
+        #expect(storage == 10)
         storage = 20
         #expect(anyHashableBinding.wrappedValue == AnyHashable(20))
         // #expectCrash(optionalBinding.wrappedValue = 0.0)

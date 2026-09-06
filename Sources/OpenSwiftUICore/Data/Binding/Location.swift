@@ -390,9 +390,10 @@ private struct ProjectedLocation<L: Location, P: Projection>: Location where P.B
         projection.get(base: location.get())
     }
 
-    func set(_ value: Value, transaction _: Transaction) {
+    func set(_ value: Value, transaction: Transaction) {
         var base = location.get()
         projection.set(base: &base, newValue: value)
+        location.set(base, transaction: transaction)
     }
 
     func update() -> (Value, Bool) {
