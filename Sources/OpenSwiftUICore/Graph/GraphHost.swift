@@ -242,6 +242,8 @@ open class GraphHost: CustomReflectable {
 @available(*, unavailable)
 extension GraphHost: Sendable {}
 
+// MARK: - GraphHost + Updates [TBA]
+
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
     package final func graphInvalidation(from src: AnyAttribute?) {
@@ -555,6 +557,8 @@ extension GraphHost {
         inTransaction = false
     }
 }
+
+// MARK: - GraphHost + Global Transactions [TBA]
 
 @_spi(ForOpenSwiftUIOnly)
 extension GraphHost {
