@@ -15,6 +15,7 @@ import Synchronization
 // MARK: - GraphDelegate
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 public protocol GraphDelegate: AnyObject {
     func updateGraph<T>(body: (GraphHost) -> T) -> T
     func graphDidChange()
@@ -23,6 +24,7 @@ public protocol GraphDelegate: AnyObject {
 }
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 extension GraphDelegate {
     public func beginTransaction() {
         onMainThread { [weak self] in
@@ -41,6 +43,7 @@ extension GraphDelegate {
 // MARK: - GraphHost
 
 @_spi(ForOpenSwiftUIOnly)
+@available(OpenSwiftUI_v6_0, *)
 open class GraphHost: CustomReflectable {
     private static let sharedGraph: Graph = {
         let graph = Graph()
@@ -791,6 +794,7 @@ private var blockedGraphHosts: [Unmanaged<GraphHost>] = []
 // TODO: Re-enable when OpenSwiftUI implements its own preview thunk registration system.
 private var waitingForPreviewThunks = false // EnvironmentHelper.bool(for: "XCODE_RUNNING_FOR_PREVIEWS")
 
+@available(OpenSwiftUI_v1_0, *)
 public func __previewThunksHaveFinishedLoading() {
     guard waitingForPreviewThunks else { return }
     waitingForPreviewThunks = false
