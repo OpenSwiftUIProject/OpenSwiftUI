@@ -1,4 +1,4 @@
-name: Create release
+name: Release / Create
 run-name: Release ${{ inputs.version || github.ref_name }}${{ inputs.skip_checks && ' (checks skipped)' || '' }}
 
 on:
@@ -89,7 +89,7 @@ jobs:
   checks:
     if: ${{ !inputs.skip_checks }}
     needs: prepare
-    uses: ./.github/workflows/pre_release.yml
+    uses: ./.github/workflows/release_checks.yml
     permissions:
       contents: read
       issues: read
@@ -107,7 +107,7 @@ jobs:
       !cancelled() && needs.prepare.result == 'success' &&
       ((inputs.skip_checks && needs.checks.result == 'skipped') ||
        (!inputs.skip_checks && needs.checks.result == 'success'))
-    uses: ./.github/workflows/build_release.yml
+    uses: ./.github/workflows/release_build.yml
     permissions:
       contents: read
       id-token: write
@@ -175,7 +175,7 @@ jobs:
     if: >-
       !cancelled() && needs.prepare.result == 'success' &&
       needs.build.result == 'success' && needs.tag.result == 'success'
-    uses: ./.github/workflows/publish_release.yml
+    uses: ./.github/workflows/release_publish.yml
     permissions:
       contents: write
     with:

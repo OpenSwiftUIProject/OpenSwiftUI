@@ -1,4 +1,4 @@
-name: Pre-release checks
+name: Release / Checks
 
 on:
   workflow_dispatch:

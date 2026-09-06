@@ -54,7 +54,7 @@ Manual dispatch runs the selected branch or tag. See [UI Test CI](UITest.md) for
 Run all regular and optional checks on one commit with:
 
 ```shell
-gh workflow run pre_release.yml --ref main
+gh workflow run release_checks.yml --ref main
 ```
 
 This runs macOS, iOS, Ubuntu, all UI test configurations on both platforms,

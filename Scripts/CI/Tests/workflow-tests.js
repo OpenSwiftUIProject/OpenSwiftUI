@@ -5,7 +5,7 @@ const test = require("node:test");
 const vm = require("node:vm");
 const release = require("../release.js");
 
-const names = ["pre_release", "create_release", "documentation"];
+const names = ["release_checks", "release_create", "documentation"];
 const workflows = Object.fromEntries(names.map(name => [name, JSON.parse(execFileSync("ruby", [
   "-ryaml", "-rjson", "-e", 'doc = YAML.load_file(ARGV[0]); puts JSON.generate(doc)',
   path.join(__dirname, "../../../.github/workflows", `${name}.yml`),
@@ -31,7 +31,7 @@ async function script(step, env, context = {}, github = {}, observations = {}) {
 }
 
 test("pre-release covers all six check families at one SHA and all optional configurations", () => {
-  const { jobs } = workflows.pre_release;
+  const { jobs } = workflows.release_checks;
   assert.deepEqual(jobs.verify.needs, ["prepare", ...release.requiredChecks]);
   assert.equal(jobs.verify.if, "always()");
   for (const name of release.requiredChecks) {
@@ -46,12 +46,12 @@ test("pre-release covers all six check families at one SHA and all optional conf
 });
 
 function canRun(jobId, results, overrides = {}, cancelled = false, github = { event_name: "workflow_dispatch", event: {} }) {
-  const { jobs } = workflows.create_release;
+  const { jobs } = workflows.release_create;
   const job = jobs[jobId];
   const dependencies = [].concat(job.needs || []);
   const succeeded = id => results[id] === "success" && [].concat(jobs[id].needs || []).every(succeeded);
   const success = () => dependencies.every(succeeded);
-  const defaults = workflows.create_release.true.workflow_dispatch.inputs;
+  const defaults = workflows.release_create.true.workflow_dispatch.inputs;
   const inputs = { ...Object.fromEntries(Object.entries(defaults).map(([key, value]) => [key, value.default])), ...overrides };
   const needs = Object.fromEntries(dependencies.map(id => [id, { result: results[id] }]));
   const condition = (job.if || "success()").replace(/^\$\{\{\s*|\s*\}\}$/g, "");
@@ -86,7 +86,7 @@ test("explicit check skipping permits the complete publication chain", () => {
 });
 
 test("skipping checks requires a reason and records the explicit bypass", async () => {
-  const step = workflows.create_release.jobs.prepare.steps.find(step => step.id === "prepare");
+  const step = workflows.release_create.jobs.prepare.steps.find(step => step.id === "prepare");
   const env = {
     VERSION: "0.20.0", CHECKOUT_SHA: sha,
     HAS_SIGNING_CERTIFICATE: "true", HAS_SIGNING_PASSWORD: "true", HAS_BINARY_REPO_TOKEN: "true",
@@ -111,7 +111,7 @@ test("skipping checks requires a reason and records the explicit bypass", async 
 });
 
 test("explicit check skipping still requires the candidate build and stored artifacts before tagging", async () => {
-  const step = workflows.create_release.jobs.tag.steps.find(step => step.name === "Validate tag prerequisites");
+  const step = workflows.release_create.jobs.tag.steps.find(step => step.name === "Validate tag prerequisites");
   assert.ok(step);
   const env = { CANDIDATE_SHA: sha, VERIFIED_SHA: "", BUILT_SHA: sha, ARTIFACT_ID: "123", SKIP_CHECKS: "true" };
   await script(step, env);
@@ -122,7 +122,7 @@ test("explicit check skipping still requires the candidate build and stored arti
 });
 
 test("pre-release cannot report success if a child workflow was skipped or checked another SHA", async () => {
-  const step = workflows.pre_release.jobs.verify.steps.find(step => step.id === "verify");
+  const step = workflows.release_checks.jobs.verify.steps.find(step => step.id === "verify");
   const results = Object.fromEntries(release.requiredChecks.map(name => [name, {
     result: "success", outputs: { "verified-sha": sha },
   }]));
@@ -136,7 +136,7 @@ test("pre-release cannot report success if a child workflow was skipped or check
 });
 
 test("release preflight needs only signing and binary credentials and rejects unsupported requests", async () => {
-  const step = workflows.create_release.jobs.prepare.steps.find(step => step.id === "prepare");
+  const step = workflows.release_create.jobs.prepare.steps.find(step => step.id === "prepare");
   const env = {
     VERSION: "0.20.0", CHECKOUT_SHA: sha,
     HAS_SIGNING_CERTIFICATE: "true", HAS_SIGNING_PASSWORD: "true", HAS_BINARY_REPO_TOKEN: "true",
@@ -158,7 +158,7 @@ test("release preflight needs only signing and binary credentials and rejects un
 });
 
 test("tag pushes pin the checked-out commit for lightweight and annotated tags", async () => {
-  const { steps } = workflows.create_release.jobs.prepare;
+  const { steps } = workflows.release_create.jobs.prepare;
   const checkout = steps.find(step => step.uses === "actions/checkout@v4");
   const step = steps.find(step => step.id === "prepare");
   assert.equal(checkout.id, "checkout");
@@ -186,7 +186,7 @@ test("tag pushes pin the checked-out commit for lightweight and annotated tags",
 });
 
 test("tag preflight rejects missing or changed tags and invalid tag requests", async () => {
-  const step = workflows.create_release.jobs.prepare.steps.find(step => step.id === "prepare");
+  const step = workflows.release_create.jobs.prepare.steps.find(step => step.id === "prepare");
   const env = {
     VERSION: "0.20.0", CHECKOUT_SHA: sha,
     HAS_SIGNING_CERTIFICATE: "true", HAS_SIGNING_PASSWORD: "true", HAS_BINARY_REPO_TOKEN: "true",
@@ -221,7 +221,7 @@ test("tag deletion skips preparation and tag pushes require the complete check g
 });
 
 test("tag-triggered publication verifies the existing tag without recreating or moving it", async () => {
-  const step = workflows.create_release.jobs.tag.steps.find(step => step.name === "Create or verify version tag");
+  const step = workflows.release_create.jobs.tag.steps.find(step => step.name === "Create or verify version tag");
   assert.ok(step);
   const env = { VERSION: "0.20.0", CANDIDATE_SHA: sha };
   let current = sha;
@@ -245,7 +245,7 @@ test("tag-triggered publication verifies the existing tag without recreating or 
 });
 
 test("tagging has repository write permission and validates checks and artifacts before creating a tag", async () => {
-  const { jobs } = workflows.create_release;
+  const { jobs } = workflows.release_create;
   assert.deepEqual(jobs.build.needs, ["prepare", "checks"]);
   assert.deepEqual(jobs.tag.needs, ["prepare", "checks", "build"]);
   assert.equal(jobs.tag.permissions.contents, "write");
@@ -261,7 +261,7 @@ test("tagging has repository write permission and validates checks and artifacts
 });
 
 test("tag pushes and manual requests share the release entry and version concurrency group", () => {
-  const workflow = workflows.create_release;
+  const workflow = workflows.release_create;
   assert.deepEqual(Object.keys(workflow.true).sort(), ["push", "workflow_dispatch"]);
   assert.deepEqual(workflow.true.push, { tags: ["[0-9]+.[0-9]+.[0-9]+"] });
   const step = workflow.jobs.prepare.steps.find(step => step.id === "prepare");
@@ -276,7 +276,7 @@ test("tag pushes and manual requests share the release entry and version concurr
   }
   assert.equal(workflow.concurrency["cancel-in-progress"], false);
   assert.deepEqual(Object.keys(workflows.documentation.true).sort(), ["workflow_call", "workflow_dispatch"]);
-  assert.equal(workflows.create_release.jobs.documentation.uses, "./.github/workflows/documentation.yml");
+  assert.equal(workflows.release_create.jobs.documentation.uses, "./.github/workflows/documentation.yml");
   const deploy = workflows.documentation.jobs.deploy;
   assert.equal(deploy.needs, "build");
   assert.equal(vm.runInNewContext(deploy.if || "success()", { success: () => true }), true);

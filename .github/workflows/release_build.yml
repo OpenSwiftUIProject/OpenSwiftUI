@@ -1,4 +1,4 @@
-name: Build release artifacts
+name: Release / Build
 
 on:
   workflow_call:

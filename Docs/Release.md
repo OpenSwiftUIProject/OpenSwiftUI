@@ -1,11 +1,11 @@
 # Releases
 
-Use **Create release** to publish a stable `major.minor.patch` version. It pins
+Use **Release / Create** to publish a stable `major.minor.patch` version. It pins
 the selected branch or pushed tag's commit, runs all required checks by default,
 builds and signs the XCFrameworks, then publishes those same artifacts.
 It accepts versions such as `0.22.0`, without a `v` prefix or prerelease suffix.
 
-Push a version tag to start `create_release.yml` automatically, or dispatch it
+Push a version tag to start `release_create.yml` automatically, or dispatch it
 manually to create the tag after checks and the signed build succeed. Both
 entries use the same pipeline and concurrency group for the version.
 
@@ -13,10 +13,10 @@ entries use the same pipeline and concurrency group for the version.
 
 | Workflow | Responsibility |
 | --- | --- |
-| `pre_release.yml` | Run every required test workflow at one commit. Can also run independently. |
-| `create_release.yml` | Handle version tag pushes and manual requests; coordinate checks and build, then verify or create the tag. |
-| `build_release.yml` | Build and sign seven XCFramework archives; store them with their version, source SHA, and SHA-256 digests. |
-| `publish_release.yml` | Verify stored artifacts, prepare a draft, add assets and notes, publish it, then update `OpenSwiftUI-spm`. |
+| `release_checks.yml` | Run every required test workflow at one commit. Can also run independently. |
+| `release_create.yml` | Handle version tag pushes and manual requests; coordinate checks and build, then verify or create the tag. |
+| `release_build.yml` | Build and sign seven XCFramework archives; store them with their version, source SHA, and SHA-256 digests. |
+| `release_publish.yml` | Verify stored artifacts, prepare a draft, add assets and notes, publish it, then update `OpenSwiftUI-spm`. |
 | `release_notes.yml` | Update notes for an existing release. Cannot create a release or tag. |
 | `documentation.yml` | Assemble and deploy versioned documentation after publication. Also supports manual dispatch. |
 
@@ -88,7 +88,7 @@ Pushing a tag on an older commit uses that commit's workflows.
 For a full check without a tag, release, or signed XCFramework build:
 
 ```shell
-gh workflow run pre_release.yml \
+gh workflow run release_checks.yml \
   --repo OpenSwiftUIProject/OpenSwiftUI --ref main
 ```
 
@@ -106,7 +106,7 @@ git push origin refs/tags/0.22.0
 ```
 
 Replace `COMMIT_SHA` and the example version. Lightweight and annotated tags
-are supported. The push starts **Create release**, derives the version from the
+are supported. The push starts **Release / Create**, derives the version from the
 tag name, and runs the full checks. The workflow checks the tag's commit before
 tests and again before publication. It does not recreate a deleted tag or move
 an existing tag. Tag deletion does not start a release. A local tag alone does
@@ -119,14 +119,14 @@ To create the tag only after validation, use manual dispatch instead.
 Make sure the intended changes are on `main`, then submit the new version:
 
 ```shell
-gh workflow run create_release.yml \
+gh workflow run release_create.yml \
   --repo OpenSwiftUIProject/OpenSwiftUI --ref main -f version=0.22.0
-gh run list --repo OpenSwiftUIProject/OpenSwiftUI --workflow create_release.yml
+gh run list --repo OpenSwiftUIProject/OpenSwiftUI --workflow release_create.yml
 gh run watch RUN_ID --repo OpenSwiftUIProject/OpenSwiftUI
 ```
 
 Replace the example version and `RUN_ID`. The Actions UI provides the same
-operation through **Create release > Run workflow**. The branch head at
+operation through **Release / Create > Run workflow**. The branch head at
 dispatch time is the candidate; later branch updates do not change it.
 The workflow creates the tag with `GITHUB_TOKEN`, which does not start another
 tag-push run. Publication and documentation continue in the current run.
@@ -145,7 +145,7 @@ or after a workflow failure has been fixed and verified separately. A nonempty
 summary. The run title also identifies releases with skipped checks.
 
 ```shell
-gh workflow run create_release.yml --ref main -f version=0.22.0 \
+gh workflow run release_create.yml --ref main -f version=0.22.0 \
   -f skip_checks=true \
   -f skip_checks_reason='Known UI test failure accepted for this release.'
 ```
@@ -171,7 +171,7 @@ branch from an exact reviewed commit, or from the series' last published tag,
 and ensure it contains the release workflows. Use the same entry:
 
 ```shell
-gh workflow run create_release.yml \
+gh workflow run release_create.yml \
   --repo OpenSwiftUIProject/OpenSwiftUI --ref release/0.21 -f version=0.21.1
 ```
 
