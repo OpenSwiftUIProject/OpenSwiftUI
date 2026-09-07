@@ -9,6 +9,28 @@
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
+// MARK: - Label inputs
+
+struct MultiViewLabel: ViewInputBoolFlag {}
+
+// MARK: - LabelItemRole
+
+enum LabelItemRole: Hashable {
+    case icon
+    case title
+
+    struct ContainerKey: ContainerValueKey {
+        static var defaultValue: LabelItemRole? { nil }
+    }
+}
+
+extension ContainerValues {
+    var labelItemRole: LabelItemRole? {
+        get { self[LabelItemRole.ContainerKey.self] }
+        set { self[LabelItemRole.ContainerKey.self] = newValue }
+    }
+}
+
 // MARK: - LabelStyle
 
 /// A type that applies a custom appearance to all labels within a view.

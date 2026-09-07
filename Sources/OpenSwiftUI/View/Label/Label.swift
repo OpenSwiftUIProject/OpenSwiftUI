@@ -9,6 +9,16 @@
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
+// MARK: - Accessibility label inputs
+
+struct AccessibilityHidesLabelIcon: ViewInputPredicate {
+    static func evaluate(inputs _: _GraphInputs) -> Bool {
+        false
+    }
+}
+
+struct AccessibilityShowsLabelIcon: ViewInputBoolFlag {}
+
 // MARK: - Label
 
 /// A standard label for user interface items, consisting of an icon with a

@@ -140,6 +140,11 @@ struct AccessibilityAttachmentModifier: PrimitiveViewModifier {
 
     let behavior: AccessibilityChildBehavior?
 
+    init() {
+        storage = MutableBox(AccessibilityAttachment())
+        behavior = nil
+    }
+
     nonisolated static func _makeView(
         modifier _: _GraphValue<Self>,
         inputs: _ViewInputs,

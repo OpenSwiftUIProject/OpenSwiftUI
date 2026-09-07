@@ -7,6 +7,10 @@
 
 public import OpenSwiftUICore
 
+// MARK: - LabelIconPlatformItemModifier
+
+struct LabelIconPlatformItemModifier: EmptyViewModifier {}
+
 // MARK: - LabelStyle + IconOnlyLabelStyle
 
 @available(OpenSwiftUI_v2_0, *)
