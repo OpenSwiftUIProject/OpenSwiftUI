@@ -2,9 +2,10 @@
 //  ResponderNode.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - ResponderNode [6.5.4]
+// MARK: - ResponderNode
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -48,8 +49,7 @@ open class ResponderNode {
     }
 
     final package func firstAncestor<T>(ofType type: T.Type = T.self) -> T? {
-        Swift.sequence(first: self) { $0.nextResponder }
-            .first(ofType: type)
+        sequence.first(ofType: type)
     }
 }
 
@@ -57,7 +57,7 @@ open class ResponderNode {
 @available(*, unavailable)
 extension ResponderNode: Sendable {}
 
-// MARK: - ResponderVisitorResult [6.5.4]
+// MARK: - ResponderVisitorResult
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
