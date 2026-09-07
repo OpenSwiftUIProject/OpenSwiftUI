@@ -184,7 +184,7 @@ extension Attribute {
 
 extension WeakAttribute {
     package var uncheckedIdentifier: Attribute<Value> {
-        Attribute(identifier: AnyWeakAttribute(self)._details.identifier)
+        Attribute(identifier: base._details.identifier)
     }
 
     package func allowsAsyncUpdate() -> Bool {

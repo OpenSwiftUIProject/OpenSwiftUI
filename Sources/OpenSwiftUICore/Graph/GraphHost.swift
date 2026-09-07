@@ -498,7 +498,7 @@ extension GraphHost {
         asyncTransaction(
             transaction,
             id: transactionID,
-            mutation: InvalidatingGraphMutation(attribute: .init(attribute)),
+            mutation: InvalidatingGraphMutation(attribute: attribute.base),
             style: style,
             mayDeferUpdate: mayDeferUpdate
         )
