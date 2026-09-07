@@ -59,10 +59,38 @@ public struct TitleAndIconLabelStyle: LabelStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        HStack {
-            configuration.icon
-            configuration.title
-                .multilineTextAlignment(.leading)
+        StaticIf(MultiViewLabel.self) {
+            TupleView((
+                configuration.icon
+                    .containerValue(\.labelItemRole, .icon),
+                configuration.title
+                    .containerValue(\.labelItemRole, .title)
+            ))
+        } else: {
+            #if OPENSWIFTUI_SUPPORT_2024_API
+            StaticIf(idiom: .vision) {
+                HStack(alignment: ._firstTextLineCenter) {
+                    configuration.icon
+                        .modifier(LabelIconPlatformItemModifier())
+                    configuration.title
+                        .multilineTextAlignment(.leading)
+                }
+            } else: {
+                HStack(alignment: ._firstTextLineCenter) {
+                    configuration.icon
+                        .modifier(LabelIconPlatformItemModifier())
+                    configuration.title
+                        .multilineTextAlignment(.leading)
+                }
+            }
+            #else
+            HStack(alignment: ._firstTextLineCenter) {
+                configuration.icon
+                    .modifier(LabelIconPlatformItemModifier())
+                configuration.title
+                    .multilineTextAlignment(.leading)
+            }
+            #endif
         }
     }
 }

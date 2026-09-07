@@ -9,7 +9,7 @@
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
-// MARK: - Label inputs
+// MARK: - Label Inputs
 
 struct MultiViewLabel: ViewInputBoolFlag {}
 

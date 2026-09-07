@@ -41,6 +41,22 @@ public struct IconOnlyLabelStyle: LabelStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         configuration.icon
+            .containerValue(\.labelItemRole, .icon)
+            .modifier(AccessibilityAttachmentModifier())
+            .modifier(DisableDeferredAccessibilityAttachmentModifier())
+            .background {
+                configuration.title
+                    .modifier(DetachedGeometryModifier())
+                    .modifier(AccessibilityRepresentableStyleModifier())
+                    .modifier(EnableDeferredAccessibilityAttachmentModifier())
+                    .hidden()
+                    .transformPreference(AccessibilityAttachment.Key.self) { _ in }
+            }
+            .modifier(AccessibilityAttachmentModifier())
+            .modifier(DetachDeferredAccessibilityAttachmentModifier())
+            .modifier(EnableDeferredAccessibilityAttachmentModifier())
+            .input(AccessibilityShowsLabelIcon.self)
+            .modifier(LabelIconPlatformItemModifier())
     }
 }
 

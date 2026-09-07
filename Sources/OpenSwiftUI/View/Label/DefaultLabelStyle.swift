@@ -34,11 +34,12 @@ public struct DefaultLabelStyle: LabelStyle {
     }
 
     public func makeBody(configuration: Configuration) -> some View {
-        HStack {
-            configuration.icon
-            configuration.title
-                .multilineTextAlignment(.leading)
-        }
+        Label(configuration)
+            .modifier(
+                LabelStyleModifier(style: AccessibilityLabelStyle())
+                    .requiring(AccessibilityRepresentableStyleContext.self)
+            )
+            .modifier(LabelStyleModifier(style: TitleAndIconLabelStyle()))
     }
 }
 

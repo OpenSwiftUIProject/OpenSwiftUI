@@ -34,6 +34,7 @@ public struct TitleOnlyLabelStyle: LabelStyle {
 
     public func makeBody(configuration: Configuration) -> some View {
         configuration.title
+            .containerValue(\.labelItemRole, .title)
     }
 }
 

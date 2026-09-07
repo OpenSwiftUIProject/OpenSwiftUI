@@ -9,7 +9,7 @@
 @_spi(ForOpenSwiftUIOnly)
 public import OpenSwiftUICore
 
-// MARK: - Accessibility label inputs
+// MARK: - Accessibility Label Inputs
 
 struct AccessibilityHidesLabelIcon: ViewInputPredicate {
     static func evaluate(inputs _: _GraphInputs) -> Bool {
@@ -31,7 +31,7 @@ struct AccessibilityShowsLabelIcon: ViewInputBoolFlag {}
 ///
 /// You create a label, in its simplest form, by providing a title and the name
 /// of an image, such as an icon from the
-/// <doc://com.apple.documentation/design/human-interface-guidelines/sf-symbols>
+/// [SF Symbols](https://developer.apple.com/design/human-interface-guidelines/sf-symbols)
 /// collection:
 ///
 ///     Label("Lightning", systemImage: "bolt.fill")
@@ -117,7 +117,10 @@ public struct Label<Title, Icon>: View where Title: View, Icon: View {
     public var body: some View {
         ResolvedLabelStyle(configuration: .init())
             .viewAlias(LabelStyleConfiguration.Icon.self) {
-                icon
+                icon.modifier(
+                    AccessibilityAttachmentModifier()
+                        .requiring(AccessibilityHidesLabelIcon.self)
+                )
             }
             .viewAlias(LabelStyleConfiguration.Title.self) {
                 title
@@ -264,6 +267,29 @@ private struct ResolvedLabelStyle: StyleableView {
     }
 
     var body: some View {
-        Label(configuration)
+        StaticIf(MultiViewLabel.self) {
+            Label(configuration)
+        } else: {
+            PlatformItemLabelView(
+                flags: TextPlatformItemListFlags(),
+                label: configuration.title,
+                content: Label(configuration)
+                    .modifier(AccessibilityFrameModifier())
+            )
+        }
+    }
+}
+
+// MARK: - PlatformItemLabelView
+
+private struct PlatformItemLabelView<Flags, Label, Content>: View where Flags: PlatformItemListFlags, Label: View, Content: View {
+    var flags: Flags
+
+    var label: Label
+
+    var content: Content
+
+    var body: some View {
+        content
     }
 }

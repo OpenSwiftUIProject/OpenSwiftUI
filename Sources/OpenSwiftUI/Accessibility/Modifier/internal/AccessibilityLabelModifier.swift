@@ -23,7 +23,7 @@ extension EmptyViewModifier {
     }
 }
 
-// MARK: - Deferred accessibility attachment modifiers
+// MARK: - Deferred Accessibility Attachment Modifiers
 
 struct DetachDeferredAccessibilityAttachmentModifier: EmptyViewModifier {}
 
@@ -36,6 +36,26 @@ struct DisableDeferredAccessibilityAttachmentModifier: EmptyViewModifier {}
 // MARK: - AccessibilityRepresentableStyleModifier
 
 struct AccessibilityRepresentableStyleModifier: EmptyViewModifier {}
+
+// MARK: - AccessibilityLabelStyle
+
+struct AccessibilityLabelStyle: LabelStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.title
+            .modifier(DisableDeferredAccessibilityAttachmentModifier())
+            .background {
+                configuration.icon
+                    .modifier(DetachedGeometryModifier())
+                    .modifier(AccessibilityRepresentableStyleModifier())
+                    .modifier(EnableDeferredAccessibilityAttachmentModifier())
+                    .hidden()
+                    .transformPreference(AccessibilityAttachment.Key.self) { _ in }
+            }
+            .modifier(AccessibilityAttachmentModifier())
+            .modifier(DetachDeferredAccessibilityAttachmentModifier())
+            .modifier(EnableDeferredAccessibilityAttachmentModifier())
+    }
+}
 
 // MARK: - AccessibilityLabelModifier
 
