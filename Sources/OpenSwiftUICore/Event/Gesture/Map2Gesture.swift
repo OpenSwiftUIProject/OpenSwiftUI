@@ -59,7 +59,7 @@ extension Gesture {
         combined(with: other) { phase, otherPhase in
             switch otherPhase {
             case .possible:
-                if advanceImmediately || !(CoreTesting.isRunning || GestureContainerFeature.isEnabled) {
+                if advanceImmediately || !EndedGestureWaitsForActiveFeature.isEnabled {
                     switch phase {
                     case let .ended(value):
                         return .active(value)
