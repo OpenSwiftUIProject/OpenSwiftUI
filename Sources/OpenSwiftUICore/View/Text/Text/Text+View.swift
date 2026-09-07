@@ -688,9 +688,8 @@ package class ResolvedStyledText: CustomStringConvertible {
         size(in: request)
     }
 
-    // FIXME
-    package func _deleteMethod1() {
-        _openSwiftUIUnimplementedFailure()
+    package func truncates(in proposedSize: _ProposedSize) -> Bool {
+        _openSwiftUIBaseClassAbstractMethod()
     }
 
     package func metrics(
