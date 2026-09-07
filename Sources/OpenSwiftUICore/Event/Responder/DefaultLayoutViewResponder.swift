@@ -2,11 +2,12 @@
 //  DefaultLayoutViewResponder.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import OpenAttributeGraphShims
 
-// MARK: - DefaultLayoutResponderFilter [6.5.4]
+// MARK: - DefaultLayoutResponderFilter
 
 package struct DefaultLayoutResponderFilter: StatefulRule {
     @Attribute
@@ -35,7 +36,7 @@ package struct DefaultLayoutResponderFilter: StatefulRule {
     }
 }
 
-// MARK: - DefaultLayoutViewResponder [6.5.4]
+// MARK: - DefaultLayoutViewResponder
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
@@ -78,7 +79,7 @@ open class DefaultLayoutViewResponder: MultiViewResponder {
             let gesture = Attribute(value: DefaultLayoutGesture(responder: self))
             let weakGesture = WeakAttribute(gesture)
             invalidateChildren = {
-                Update.enqueueAction { // TODO: enqueAction(reason: 0x5)
+                Update.enqueueAction(reason: nil) {
                     weakGesture.attribute?.invalidateValue()
                 }
             }

@@ -2,9 +2,10 @@
 //  EventBinding.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - EventBinding [6.5.4]
+// MARK: - EventBinding
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)

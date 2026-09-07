@@ -2,18 +2,19 @@
 //  HitTestableEvent.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
 package import Foundation
 
-// MARK: - HitTestableEventType [6.5.4]
+// MARK: - HitTestableEventType
 
 package protocol HitTestableEventType: EventType {
     var hitTestLocation: CGPoint { get }
     var hitTestRadius: CGFloat { get }
 }
 
-// MARK: - HitTestableEvent [6.5.4]
+// MARK: - HitTestableEvent
 
 package struct HitTestableEvent: HitTestableEventType, Equatable {
     package var phase: EventPhase

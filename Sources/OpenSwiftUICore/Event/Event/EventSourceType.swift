@@ -2,9 +2,10 @@
 //  EventSourceType.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - EventSourceType [6.5.4]
+// MARK: - EventSourceType
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)

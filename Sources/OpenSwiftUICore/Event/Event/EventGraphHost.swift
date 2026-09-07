@@ -2,9 +2,10 @@
 //  EventGraphHost.swift
 //  OpenSwiftUICore
 //
+//  Audited for 6.5.4
 //  Status: Complete
 
-// MARK: - EventGraphHost [6.5.4]
+// MARK: - EventGraphHost
 
 package protocol EventGraphHost: AnyObject {
     var eventBindingManager: EventBindingManager { get }
