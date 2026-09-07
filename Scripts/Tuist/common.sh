@@ -67,11 +67,13 @@ tuist_xcodebuild() (
     fi
 
     rm -rf "$result_bundle_path"
-    # Override remote cache settings from existing generated projects.
+    # Keep local compilation artifacts outside temporary CI build directories.
     tuist_mise exec -- tuist xcodebuild "$action" \
         -resultBundlePath "$result_bundle_path" \
         "$@" \
-        COMPILATION_CACHE_ENABLE_CACHING=NO \
+        COMPILATION_CACHE_ENABLE_CACHING=YES \
+        COMPILATION_CACHE_CAS_PATH="$HOME/Library/Developer/Xcode/DerivedData/CompilationCache.noindex" \
+        COMPILATION_CACHE_KEEP_CAS_DIRECTORY=YES \
         COMPILATION_CACHE_REMOTE_SERVICE_PATH= \
         COMPILATION_CACHE_ENABLE_PLUGIN=NO
 )

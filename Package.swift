@@ -1029,6 +1029,16 @@ let packageSettings = PackageSettings(
         "SymbolLocator": ProjectDescription.Product.staticFramework,
     ],
     baseProductType: ProjectDescription.Product.staticFramework,
+    baseSettings: .settings(
+        base: [
+            // Keep local compilation artifacts outside temporary CI build directories.
+            "COMPILATION_CACHE_ENABLE_CACHING": "YES",
+            "COMPILATION_CACHE_CAS_PATH": "$(HOME)/Library/Developer/Xcode/DerivedData/CompilationCache.noindex",
+            "COMPILATION_CACHE_KEEP_CAS_DIRECTORY": "YES",
+            "COMPILATION_CACHE_REMOTE_SERVICE_PATH": "",
+            "COMPILATION_CACHE_ENABLE_PLUGIN": "NO",
+        ]
+    ),
     targetSettings: [
         "OpenSwiftUI": .settings(base: openSwiftUITargetSettings),
         "OpenSwiftUICore": .settings(base: openSwiftUICoreTargetSettings),

@@ -475,6 +475,14 @@ let project = Project(
         developmentRegion: "en"
     ),
     settings: .settings(
+        base: [
+            // Keep local compilation artifacts outside temporary CI build directories.
+            "COMPILATION_CACHE_ENABLE_CACHING": "YES",
+            "COMPILATION_CACHE_CAS_PATH": "$(HOME)/Library/Developer/Xcode/DerivedData/CompilationCache.noindex",
+            "COMPILATION_CACHE_KEEP_CAS_DIRECTORY": "YES",
+            "COMPILATION_CACHE_REMOTE_SERVICE_PATH": "",
+            "COMPILATION_CACHE_ENABLE_PLUGIN": "NO",
+        ],
         configurations: projectConfigurations,
         defaultSettings: .essential,
         defaultConfiguration: "OpenSwiftUIDebug"

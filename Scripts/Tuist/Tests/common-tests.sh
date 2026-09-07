@@ -73,7 +73,7 @@ test_ci_setup_does_not_start_cache() (
     assert_not_contains "$TEST_COMMAND_LOG" "tuist setup cache"
 )
 
-test_build_disables_remote_cache_locally_and_in_ci() (
+test_build_keeps_local_cache_locally_and_in_ci() (
     local temporary_directory
     temporary_directory="$(mktemp -d)"
     trap 'rm -rf "$temporary_directory"' EXIT
@@ -90,15 +90,18 @@ test_build_disables_remote_cache_locally_and_in_ci() (
 
         : >"$TEST_COMMAND_LOG"
         tuist_xcodebuild "$temporary_directory/result.xcresult" build -scheme Example \
-            COMPILATION_CACHE_ENABLE_CACHING=YES \
+            -derivedDataPath "$temporary_directory/DerivedData" \
+            COMPILATION_CACHE_ENABLE_CACHING=NO \
+            COMPILATION_CACHE_CAS_PATH="$temporary_directory/old-cache" \
+            COMPILATION_CACHE_KEEP_CAS_DIRECTORY=NO \
             COMPILATION_CACHE_REMOTE_SERVICE_PATH=/tmp/old-tuist-cache.sock \
             COMPILATION_CACHE_ENABLE_PLUGIN=YES >"$TEST_OUTPUT_LOG" 2>&1
 
         assert_contains "$TEST_COMMAND_LOG" "tuist xcodebuild build -resultBundlePath $temporary_directory/result.xcresult -scheme Example"
         local build_command
         build_command="$(tail -n 1 "$TEST_COMMAND_LOG")"
-        if [[ "$build_command" != *"COMPILATION_CACHE_ENABLE_CACHING=NO COMPILATION_CACHE_REMOTE_SERVICE_PATH= COMPILATION_CACHE_ENABLE_PLUGIN=NO" ]]; then
-            echo "Expected the $environment build to override remote cache settings." >&2
+        if [[ "$build_command" != *"COMPILATION_CACHE_ENABLE_CACHING=YES COMPILATION_CACHE_CAS_PATH=$HOME/Library/Developer/Xcode/DerivedData/CompilationCache.noindex COMPILATION_CACHE_KEEP_CAS_DIRECTORY=YES COMPILATION_CACHE_REMOTE_SERVICE_PATH= COMPILATION_CACHE_ENABLE_PLUGIN=NO" ]]; then
+            echo "Expected the $environment build to keep a persistent local cache with remote caching disabled." >&2
             return 1
         fi
         assert_not_contains "$TEST_OUTPUT_LOG" "::warning::"
@@ -168,6 +171,6 @@ run_test() {
 }
 
 run_test test_ci_setup_does_not_start_cache
-run_test test_build_disables_remote_cache_locally_and_in_ci
+run_test test_build_keeps_local_cache_locally_and_in_ci
 run_test test_authentication_failure_remains_fatal
 run_test test_mise_install_failure_remains_fatal
