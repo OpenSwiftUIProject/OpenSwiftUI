@@ -141,7 +141,7 @@ package enum Update {
         // FIXME: See #76
         body()
         #else
-        if Thread.isMainThread {
+        if isMainThreadOrMainQueue() {
             body()
         } else {
             withoutActuallyEscaping(body) { escapableBody in

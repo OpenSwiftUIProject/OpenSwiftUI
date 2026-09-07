@@ -11,9 +11,15 @@ import Testing
 struct DynamicPropertyCacheTests {
     @Test
     func size() {
+        #if os(Linux)
+        #expect(MemoryLayout<DynamicPropertyCache.Fields>.size == 20)
+        #expect(MemoryLayout<DynamicPropertyCache.Fields.Layout>.size == 16)
+        #expect(MemoryLayout<DynamicPropertyCache.Fields?>.size == 20)
+        #else
         #expect(MemoryLayout<DynamicPropertyCache.Fields>.size == 24)
         #expect(MemoryLayout<DynamicPropertyCache.Fields.Layout>.size == 17)
         #expect(MemoryLayout<DynamicPropertyCache.Fields?>.size == 24)
+        #endif
         #expect(MemoryLayout<DynamicPropertyBehaviors>.size == 4)
     }
 

@@ -307,19 +307,20 @@ record a failure if the expected runtime issue never appears.
 ### MainActor and Main Thread Checks
 
 `@MainActor` isolation is not the same thing as `Thread.isMainThread` on every
-platform. On Linux, swift-testing can execute an `@MainActor` test body on a
-Swift executor that is not Foundation's main thread. Code that checks
-`Thread.isMainThread` can therefore record a runtime issue even inside an
-`@MainActor` test.
+platform. On Linux, the main dispatch queue can execute on a thread that is not
+Foundation's main thread. `isMainThreadOrMainQueue()` accepts both contexts on
+Linux. The legacy `MainActor.assumeIsolatedIfLinkedOnOrAfter` fallback uses this
+helper to avoid false warnings. The modern path uses `MainActor.assumeIsolated`
+to check actor isolation.
 
 For `MainActor.assumeIsolatedIfLinkedOnOrAfter` tests:
 
 - Use a linked-on-or-after semantic such as `.firstRelease` to test the
   `MainActor.assumeIsolated` path.
-- Use `.maximal` to test the fallback path, but wrap expected warnings with the
-  runtime issue handler.
-- Keep Darwin-only assertions guarded with `#if canImport(Darwin)` when they
-  rely on `@MainActor` being backed by the OS main thread.
+- Use `.maximal` to test the fallback path. Calls on the main actor must pass
+  without a warning on both Darwin and Linux.
+- Use the runtime issue handler for expected warnings from background calls
+  to the fallback path.
 
 ### Exit Tests
 

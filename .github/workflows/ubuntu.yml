@@ -28,17 +28,21 @@ on:
 
 jobs:
   ubuntu_test:
-    name: Execute tests on Ubuntu
+    name: Execute tests on Ubuntu (${{ matrix.backend }}, Swift ${{ matrix.swift_version }})
     outputs:
       sha: ${{ steps.checkout.outputs.commit }}
     strategy:
       fail-fast: false
       matrix:
         swift_version: ["6.3.3"]
+        backend: ["OAG", "IAG"]
     runs-on: ubuntu-22.04
     env:
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.backend == 'IAG' && '1' || '0' }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_VERSION: "0.5.2-bugfix.1"
       OPENSWIFTUI_COMPATIBILITY_TEST: 0
       OPENSWIFTUI_SWIFT_LOG: 1
       OPENSWIFTUI_SWIFT_CRYPTO: 1
@@ -53,6 +57,9 @@ jobs:
         run: |
           apt-get update
           apt-get install -y --no-install-recommends curl
+      - name: Install Compute dependencies
+        if: matrix.backend == 'IAG'
+        run: apt-get install -y --no-install-recommends libssl-dev uuid-dev
       - name: Building and running tests in debug mode with coverage
         run: |
           swift test \

@@ -5,6 +5,54 @@
 import OpenSwiftUICore
 import Testing
 
+// MARK: - ThreadUtilsTests
+
+#if !os(WASI)
+struct ThreadUtilsTests {
+    @Test
+    @MainActor
+    func mainActor() {
+        mainThreadPrecondition()
+    }
+
+    @Test
+    @MainActor
+    func onMainThreadRunsImmediately() {
+        var ran = false
+        onMainThread {
+            mainThreadPrecondition()
+            ran = true
+        }
+        #expect(ran)
+    }
+
+    #if os(Linux)
+    @Test(.timeLimit(.minutes(1)))
+    func onMainThreadFromDetachedTask() async {
+        await Task.detached {
+            await withCheckedContinuation { continuation in
+                onMainThread {
+                    mainThreadPrecondition()
+                    continuation.resume()
+                }
+            }
+        }.value
+    }
+    #endif
+
+    #if !os(iOS) && !os(visionOS)
+    @Test
+    func detachedTask() async {
+        await #expect(processExitsWith: .failure) {
+            await Task.detached {
+                mainThreadPrecondition()
+            }.value
+        }
+    }
+    #endif
+}
+#endif
+
 // MARK: - ThreadSpecificTests
 
 struct ThreadSpecificTests {

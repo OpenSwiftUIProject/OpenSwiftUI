@@ -31,16 +31,11 @@ struct MainActorUtilsTests {
         Self.assumeWithFirstRelease()
     }
 
-    // On non-Darwin platforms, Swift Testing may run @MainActor tests on a
-    // Swift executor that is not Thread.isMainThread, which intentionally
-    // records a runtime issue in the fallback path.
-    #if canImport(Darwin)
     @Test
     @MainActor
     func mainActorAssumeFail() {
         Self.assumeWithMaximal()
     }
-    #endif
 
     #if !os(iOS) && !os(visionOS)
     @Test
