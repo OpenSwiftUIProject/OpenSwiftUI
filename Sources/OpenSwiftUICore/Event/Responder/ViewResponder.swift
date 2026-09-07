@@ -2,13 +2,14 @@
 //  ViewResponder.swift
 //  OpenSwiftUICore
 //
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 5DC9CCF050AF89FBA971AEC7E32C63B6 (SwiftUICore)
 
 public import Foundation
-import OpenAttributeGraphShims
+package import OpenAttributeGraphShims
 
-// MARK: - ViewRespondersKey [6.5.4]
+// MARK: - ViewRespondersKey
 
 package struct ViewRespondersKey: PreferenceKey {
     package static var defaultValue: [ViewResponder] { [] }
@@ -22,7 +23,7 @@ package struct ViewRespondersKey: PreferenceKey {
 
 extension PreferencesInputs {
     @inline(__always)
-    var requiresViewResponders: Bool {
+    package var requiresViewResponders: Bool {
         get { contains(ViewRespondersKey.self) }
         set {
             if newValue {
@@ -36,34 +37,34 @@ extension PreferencesInputs {
 
 extension PreferencesOutputs {
     @inline(__always)
-    var viewResponders: Attribute<[ViewResponder]>? {
+    package var viewResponders: Attribute<[ViewResponder]>? {
         get { self[ViewRespondersKey.self] }
         set { self[ViewRespondersKey.self] = newValue }
     }
 }
 
-// MARK: - ViewResponder [6.5.4] [WIP]
+// MARK: - ViewResponder
 
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
-open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecursiveStringConvertible*/ {
-    final private(set) package weak var host: ViewGraphDelegate? = nil
+open class ViewResponder: ResponderNode, CustomStringConvertible, CustomRecursiveStringConvertible {
+    final package private(set) weak var host: (any ViewGraphDelegate)? = nil
+
+    override public init() {
+        host = ViewGraph.current.delegate
+    }
 
     final package weak var parent: ViewResponder? = nil {
         willSet {
-            guard parent != nil, newValue == nil else {
-                return
-            }
-            guard let host, let eventGraphHost = host.as(EventGraphHost.self) else {
+            guard parent != nil,
+                  newValue == nil,
+                  let host,
+                  let eventGraphHost = host.as(EventGraphHost.self) else {
                 return
             }
             eventGraphHost.eventBindingManager.willRemoveResponder(self)
             resetGesture()
         }
-    }
-
-    override public init() {
-        host = ViewGraph.current.delegate
     }
 
     override final public var nextResponder: ResponderNode? { parent }
@@ -72,7 +73,7 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
 
     open var opacity: Double { 1.0 }
 
-    open var allowHitTesting: Bool { true }
+    open var allowsHitTesting: Bool { true }
 
     package struct ContainsPointsCache {
         var storage: (key: UInt32?, value: ContainsPointsResult)?
@@ -113,13 +114,29 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
 
         package static let crossingServerIDBoundary: ContainsPointsOptions = .init(rawValue: 1 << 4)
 
-        public static var platformDefault: ViewResponder.ContainsPointsOptions { [] }
+        package static let uncached: ContainsPointsOptions = .init(rawValue: 1 << 5)
+
+        public static var platformDefault: ContainsPointsOptions { [] }
     }
 
     public struct ContainsPointsResult {
         package var mask: BitVector64
         package var priority: Double
         package var children: [ViewResponder]
+
+        package init(mask: BitVector64, priority: Double, children: [ViewResponder]) {
+            self.mask = mask
+            self.priority = priority
+            self.children = children
+        }
+
+        package static func passthrough(to children: [ViewResponder]) -> ContainsPointsResult {
+            ContainsPointsResult(mask: .init(), priority: 0, children: children)
+        }
+
+        package static var stop: ContainsPointsResult {
+            ContainsPointsResult(mask: .init(), priority: 0, children: [])
+        }
     }
 
     open func containsGlobalPoints(
@@ -127,7 +144,7 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
         cacheKey: UInt32?,
         options: ContainsPointsOptions
     ) -> ContainsPointsResult {
-        ContainsPointsResult(mask: .init(), priority: 0, children: children)
+        .passthrough(to: children)
     }
 
     open func addContentPath(
@@ -135,36 +152,54 @@ open class ViewResponder: ResponderNode, CustomStringConvertible/*, CustomRecurs
         kind: ContentShapeKinds,
         in space: CoordinateSpace,
         observer: (any ContentPathObserver)?
-    ) {}
+    ) {
+        _openSwiftUIEmptyStub()
+    }
 
-    open func addObserver(_ observer: any ContentPathObserver) {}
+    open func addObserver(_ observer: any ContentPathObserver) {
+        _openSwiftUIEmptyStub()
+    }
 
     open var children: [ViewResponder] { [] }
 
+    final public var childCount: Int { children.count }
+
+    final public func child(at index: Int) -> ViewResponder {
+        children[index]
+    }
+
     open var descriptionName: String {
-        // recursiveDescriptionName(Self.self)
-        _openSwiftUIUnimplementedFailure()
+        recursiveDescriptionName(Self.self)
     }
 
     public var description: String {
-        "node(\(self) \(descriptionName))"
+        "node(\(address(of: self)) \(descriptionName))"
+    }
+
+    final package var descriptionChildren: [any CustomRecursiveStringConvertible] {
+        children
     }
 
     @inline(never)
     final package func printTree(depth: Int = 0) {
-        // Log.eventDebug
-        _openSwiftUIUnimplementedFailure()
+        var string = "\(indentString(depth))+"
+        string += " \(descriptionName) \(address(of: self)) "
+        extendPrintTree(string: &string)
+        Log.eventDebug(string)
+        for child in children {
+            child.printTree(depth: depth + 1)
+        }
     }
 
-    open func extendPrintTree(string: inout String) {}
+    open func extendPrintTree(string: inout String) {
+        _openSwiftUIEmptyStub()
+    }
 }
 
 private func indentString(_ depth: Int) -> String {
     var result = ""
-    var depth = depth
-    while depth > 0 {
+    for _ in 0..<depth {
         result.append("| ")
-        depth -= 1
     }
     return result
 }
