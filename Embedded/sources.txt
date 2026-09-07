@@ -33,3 +33,7 @@ Sources/OpenSwiftUICore/Embedded/EmbeddedBackground.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedState.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedViewHost.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedPhysicalButton.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedAnimation.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedTransition.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedIdentity.swift
+Sources/OpenSwiftUICore/Embedded/EmbeddedDisplayList.swift

@@ -13,6 +13,8 @@ public final class EmbeddedViewHost<Content: View> {
     private let context: EmbeddedStateContext
     private var renderedRevision: UInt64?
     private var isDispatching = false
+    private var animator = EmbeddedAnimationState()
+    private var geometry: RootGeometry?
 
     public init(@ViewBuilder content: () -> Content) {
         let context = EmbeddedStateContext()
@@ -23,10 +25,26 @@ public final class EmbeddedViewHost<Content: View> {
         self.content = content()
     }
 
-    public var needsRender: Bool { renderedRevision != context.revision }
+    public var needsRender: Bool { renderedRevision != context.revision || animator.dirty }
+
+    public var isAnimating: Bool { animator.isAnimating }
+
+    /// Advance with actual elapsed time, under the same serialization as input.
+    public func advanceAnimation(byMilliseconds milliseconds: UInt32) {
+        precondition(!context.isRendering && !isDispatching)
+        animator.advance(by: milliseconds)
+    }
+
+    /// Apply a synchronous update to retained content (for platform events).
+    public func update<Result>(_ body: (Content) -> Result) -> Result {
+        precondition(!context.isRendering && !isDispatching, "Update must not reenter a host")
+        isDispatching = true
+        defer { isDispatching = false }
+        return body(content)
+    }
 
     /// Requests another pass, for example after a platform sink failure.
-    public func invalidate() { context.revision &+= 1 }
+    public func invalidate() { context.revision &+= 1; context.animation = nil }
 
     /// Delivers one click to the first matching modifier in the current tree.
     @discardableResult
@@ -41,9 +59,16 @@ public final class EmbeddedViewHost<Content: View> {
         precondition(!context.isRendering && !isDispatching, "Rendering must not reenter a host")
         context.isRendering = true
         defer { context.isRendering = false }
-        let revision = context.revision
-        EmbeddedRenderer.render(content, rootGeometry: rootGeometry, to: &sink)
-        renderedRevision = revision
+        if renderedRevision != context.revision || geometry != rootGeometry {
+            var recorder = EmbeddedRecordingSink(base: sink)
+            EmbeddedRenderer.render(content, rootGeometry: rootGeometry, to: &recorder)
+            sink = recorder.base
+            animator.setTarget(recorder.commands, animation: geometry == rootGeometry ? context.animation : nil)
+            context.animation = nil
+            renderedRevision = context.revision
+            geometry = rootGeometry
+        }
+        animator.draw(to: &sink)
     }
 }
 #endif

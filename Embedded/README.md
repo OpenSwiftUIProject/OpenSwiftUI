@@ -40,7 +40,7 @@ On another host, set `SWIFTC` to that host's Embedded-capable compiler. The
 scripts include a non-Darwin path, but Linux has not been validated for this
 profile. The Python build helper uses only the standard library.
 
-From the checkout, build the module and run the three executable test suites:
+From the checkout, build the module and run the four executable test suites:
 
     python3 Scripts/build_embedded.py --target host --output ../build/host
     Scripts/test_embedded.sh
@@ -96,7 +96,7 @@ Managed Components. They are not dependencies of the standalone Swift module.
 Embedded Swift specializes generic declarations into their clients. A small
 archive therefore does not imply that all rendering code executes from that
 archive. The source module and archive together are the build interface. The
-C-callable `openswiftui_embedded_version()` reports profile ABI version 3.
+C-callable `openswiftui_embedded_version()` reports profile ABI version 4.
 
 ## Source selection and semantics
 
@@ -138,7 +138,7 @@ propagation, intrinsic spacing negotiation and desktop cache invalidation remain
 unsupported. The profile is synchronous and the root insets are host-configured.
 
 Foundation, AttributeGraph, RenderBox, existential view trees, full dynamic state,
-observation, diffing, animations, platform App/Scene, accessibility,
+observation, general view diffing, desktop animations, platform App/Scene, accessibility,
 SF Symbols and asset-catalog/runtime image decoding are excluded. Other
 workspace repositories are available for further work but are not linked here.
 
@@ -195,6 +195,44 @@ would reset, so initialization outside a host builder fails explicitly instead.
 Binding projection (`$state`), dynamic child identity and asynchronous scheduling
 are not provided. The normal platform's State implementation is unchanged.
 No additional framework repository is required by this profile.
+
+## Animation subset
+
+`withAnimation(.linear(duration: ...)) { ... }` and
+`withAnimation(.easeOut(duration: ...)) { ... }` attach a duration to synchronous
+State writes. `withAnimation(nil)` applies an immediate change. Nested scopes
+restore their predecessor; coalesced writes use the last write's animation.
+Durations are finite, from 0 to 60 seconds; zero completes immediately.
+
+The host records up to 128 fill/image/text commands after normal Layout resolves
+the target geometry. It retains source and target rectangles and interpolates
+presentation frames without reevaluating body or running Layout each frame.
+Color channels and alpha interpolate for fills/text. Image position and size
+animate, but image opacity is not provided by the current sink contract.
+A new change during animation starts from the current presentation; changing
+RootGeometry cancels the old geometry animation and resolves the new bounds.
+
+Use `.id(UInt32)` with a nonzero, host-wide unique ID for content that moves
+between positions. Identity modifiers nest to a maximum depth of 16; inner IDs
+are also host-wide. Unidentified commands match by drawing order and kind, so
+changing conditional structure requires explicit IDs. This is drawing identity;
+it does not add persistent State to children constructed in body.
+
+Identified insertions support `.transition(.opacity)`, `.transition(.scale)` and
+`.scale.combined(with: .opacity)`. Scale grows from 75% to the final primitive
+geometry; text keeps its font size and can fade using opacity. Removed commands
+are removed immediately. Initial render is immediate, including insertion
+transitions. A subsequently inserted view animates even when the previous
+frame was empty. The standalone `EmbeddedRenderer` remains immediate.
+
+The platform owns scheduling. While `host.isAnimating`, advance using actual
+elapsed time with `host.advanceAnimation(byMilliseconds:)`, then render when
+`host.needsRender` is true. `host.update { content in ... }` delivers other
+synchronous events to retained content. Stop the platform timer before releasing
+the host. There are no threads, clocks or retained completion callbacks inside
+the framework. This subset does not implement `.animation(_:value:)`, springs,
+repeat/delay, completion closures, arbitrary Animatable values or removal
+transitions. Client and framework must be rebuilt together for profile 4.
 
 ## Validation
 

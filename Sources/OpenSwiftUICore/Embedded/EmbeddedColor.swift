@@ -17,7 +17,7 @@ public struct Color: PrimitiveView, Equatable, Sendable {
         self.init(red: white, green: white, blue: white, opacity: opacity)
     }
 
-    private init(rgb: UInt32, alpha: UInt8 = 255) {
+    package init(rgb: UInt32, alpha: UInt8 = 255) {
         self.rgb = rgb
         self.alpha = alpha
     }

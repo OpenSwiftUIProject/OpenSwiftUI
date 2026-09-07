@@ -26,6 +26,7 @@ public struct State<Value> {
             precondition(!storage.context.isRendering, "Do not mutate @State during rendering")
             storage.value = newValue
             storage.context.revision &+= 1
+            storage.context.animation = EmbeddedAnimationTransaction.current
         }
     }
 }
@@ -43,6 +44,7 @@ package final class EmbeddedStateContext {
     // Only set while a serialized host builder constructs retained content.
     nonisolated(unsafe) static var constructing: EmbeddedStateContext?
     var revision: UInt64 = 0
+    var animation: Animation?
     var isRendering = false
 }
 #endif
