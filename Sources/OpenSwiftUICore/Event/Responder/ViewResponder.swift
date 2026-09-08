@@ -116,7 +116,13 @@ open class ViewResponder: ResponderNode, CustomStringConvertible, CustomRecursiv
 
         package static let uncached: ContainsPointsOptions = .init(rawValue: 1 << 5)
 
-        public static var platformDefault: ContainsPointsOptions { [] }
+        public static var platformDefault: ContainsPointsOptions {
+            #if os(visionOS)
+            [.useZDistanceAsPriority, .disablePointCloudHitTesting]
+            #else
+            []
+            #endif
+        }
     }
 
     public struct ContainsPointsResult {
