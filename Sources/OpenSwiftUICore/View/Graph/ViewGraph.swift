@@ -210,10 +210,10 @@ package final class ViewGraph: GraphHost {
         features.contents.destroy()
     }
         
-    override package var graphDelegate: GraphDelegate? { delegate }
+    override public var graphDelegate: GraphDelegate? { delegate }
     
-    override package var parentHost: GraphHost? { preferenceBridge?.viewGraph }
-    
+    override public var parentHost: GraphHost? { preferenceBridge?.viewGraph }
+
     package func append<T>(feature: T) where T: ViewGraphFeature {
         features.append(feature)
     }
@@ -610,13 +610,15 @@ extension ViewGraph {
     }
 }
 
+// MARK: - ViewGraph event lifecycle [6.5.4]
+
 extension ViewGraph {
     package var responderNode: ResponderNode? {
-        _openSwiftUIUnimplementedFailure()
+        rootResponders?.first
     }
 
     package func setInheritedPhase(_ phase: _GestureInputs.InheritedPhase) {
-        _openSwiftUIUnimplementedFailure()
+        inheritedPhase = phase
     }
 
     package func sendEvents(
@@ -624,11 +626,69 @@ extension ViewGraph {
         rootNode: ResponderNode,
         at time: Time
     ) -> GesturePhase<Void> {
-        _openSwiftUIUnimplementedFailure()
+        startTransactionUpdate()
+        if gestureTime != time {
+            gestureTime = time
+            data.updateSeed.unsafeIncrement()
+            nextUpdate.gestures = .init()
+        }
+        gestureEvents = events
+        if $rootPhase == nil {
+            eventSubgraph = Subgraph(graph: graph)
+            var viewInputs = _ViewInputs(
+                graphInputs,
+                position: $position,
+                size: $dimensions,
+                transform: $transform,
+                containerPosition: $zeroPoint,
+                hostPreferenceKeys: data.$hostPreferenceKeys
+            )
+            viewInputs.copyCaches()
+            var gestureInputs = _GestureInputs(
+                viewInputs,
+                viewSubgraph: rootSubgraph,
+                events: $gestureEvents,
+                time: $gestureTime,
+                resetSeed: $gestureResetSeed,
+                inheritedPhase: $inheritedPhase,
+                gesturePreferenceKeys: $gesturePreferenceKeys
+            )
+            let gestureOutputs = eventSubgraph!.apply {
+                if _eventDebugTriggers.contains(.gestures) {
+                    gestureInputs.options = [.includeDebugOutput]
+                }
+                return rootNode.makeGesture(inputs: gestureInputs)
+            }
+            $rootPhase = gestureOutputs.phase
+            $gestureDebug = gestureOutputs.debugData
+            $gestureCategory = gestureOutputs.preferences.gestureCategory
+        }
+        var pendingEvents = events
+        var phase: GesturePhase<Void> = .failed
+        finishTransactionUpdate(in: eventSubgraph!) { again in
+            if again {
+                if !pendingEvents.isEmpty {
+                    gestureEvents = [:]
+                    pendingEvents = [:]
+                }
+            } else {
+                phase = rootPhase!
+            }
+        }
+        printGestures(data: gestureDebug, host: delegate)
+        return phase
     }
 
     package func resetEvents() {
-        _openSwiftUIUnimplementedFailure()
+        guard let subgraph = eventSubgraph else {
+            return
+        }
+        eventSubgraph = nil
+        $rootPhase = nil
+        inheritedPhase = .failed
+        subgraph.willInvalidate(isInserted: true)
+        subgraph.invalidate()
+        responderNode?.resetGesture()
     }
 }
 
