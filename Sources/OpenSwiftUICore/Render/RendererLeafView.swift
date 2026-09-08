@@ -21,7 +21,7 @@ extension RendererLeafView {
         false
     }
     
-    func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
+    func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
         _openSwiftUIUnimplementedFailure()
     }
     

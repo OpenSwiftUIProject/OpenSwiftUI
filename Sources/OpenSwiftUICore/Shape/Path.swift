@@ -857,7 +857,7 @@ extension Path {
     }
 
     package mutating func formTrivialUnion(_ path: Path) {
-        _openSwiftUIUnimplementedFailure()
+        _openSwiftUIUnimplementedWarning()
     }
 
     public func applying(_ transform: CGAffineTransform) -> Path {
