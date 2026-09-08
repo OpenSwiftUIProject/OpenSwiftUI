@@ -23,7 +23,7 @@ package struct ColorView: RendererLeafView, Animatable {
         _openSwiftUIUnimplementedFailure()
     }
     
-    package func contains(points: [PlatformPoint], size: CGSize) -> BitVector64 {
+    package func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
         _openSwiftUIUnimplementedFailure()
     }
     
