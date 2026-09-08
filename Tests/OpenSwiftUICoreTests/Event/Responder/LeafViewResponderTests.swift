@@ -6,7 +6,8 @@ import Foundation
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
 import Testing
 
-struct LeafViewResponderTests {
+@Suite
+struct ContentResponderTests {
     @Test(arguments: [
         CGSize(width: -10, height: 10),
         CGSize(width: 10, height: -10),
