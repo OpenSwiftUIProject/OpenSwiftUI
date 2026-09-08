@@ -7,7 +7,7 @@ import Testing
 
 struct BitVector64Tests {
     @Test
-    func testInit() {
+    func zero() {
         let bitVector = BitVector64()
         #expect(bitVector.rawValue == 0)
     }
@@ -24,7 +24,7 @@ struct BitVector64Tests {
         (rawValue: 0x100, index: 8),
         (rawValue: 0x200, index: 9),
     ])
-    func testSubscriptGetter(rawValue: UInt64, index: Int) {
+    func subscriptGetter(rawValue: UInt64, index: Int) {
         let bitVector = BitVector64(rawValue: rawValue)
         for i in 0..<64 {
             if i == index {
@@ -36,7 +36,7 @@ struct BitVector64Tests {
     }
 
     @Test
-    func testSubscriptSetter() {
+    func subscriptSetter() {
         var bitVector = BitVector64(rawValue: 0)
         bitVector.rawValue = 4
         #expect(bitVector[0] == false)
@@ -63,7 +63,7 @@ struct BitVector64Tests {
     }
     
     @Test
-    func testMapBool() {
+    func mapBool() {
         let array = [Bool.random(), Bool.random(), Bool.random(), Bool.random()]
         let bitVector = array.mapBool { $0 }
         for i in 0..<array.count {
@@ -72,8 +72,16 @@ struct BitVector64Tests {
     }
 
     @Test
-    func testMapBoolWithNonArrayCollection() {
+    func mapBoolWithNonArrayCollection() {
         let bitVector = "01001010".mapBool { $0 == "1" }
         #expect(bitVector.rawValue == 0b0101_0010)
+    }
+
+    @Test
+    func invalidIndex() {
+        var bitVector = BitVector64(rawValue: 0)
+        bitVector[64] = true
+        #expect(bitVector[64] == false)
+        #expect(bitVector.rawValue == 0)
     }
 }
