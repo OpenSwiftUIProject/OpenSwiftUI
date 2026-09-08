@@ -208,6 +208,7 @@ let privateFrameworkDependencies: [TargetDependency] = [
     .external(name: "CoreUI"),
     .external(name: "CoreSVG"),
     .external(name: "SFSymbols"),
+    .external(name: "FeatureFlags", condition: .when([.ios, .macos])),
     .external(name: "BacklightServices", condition: .when([.ios, .visionos])),
 ]
 

@@ -44,6 +44,7 @@ let privateFrameworkDependencies: [TargetDependency] = [
     .external(name: "CoreUI"),
     .external(name: "CoreSVG"),
     .external(name: "SFSymbols"),
+    .external(name: "FeatureFlags"),
 ]
 
 let target = Target.target(

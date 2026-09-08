@@ -39,6 +39,7 @@ let packageProductTypes: [String: ProjectDescription.Product] = [
     "CoreUI": .framework,
     "CoreSVG": .framework,
     "SFSymbols": .framework,
+    "FeatureFlags": .framework,
     "BacklightServices": .framework,
     "SymbolLocator": .staticFramework,
 ]
@@ -60,6 +61,7 @@ let packageProductDestinations: [String: Destinations] = [
     "CoreUI": packageDestinations,
     "CoreSVG": packageDestinations,
     "SFSymbols": packageDestinations,
+    "FeatureFlags": packageDestinations,
     "SymbolLocator": packageDestinations,
 ]
 

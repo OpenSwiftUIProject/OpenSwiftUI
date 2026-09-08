@@ -5,7 +5,7 @@
 //  Audited for 6.5.4
 //  Status: Complete
 
-#if canImport(FeatureFlags)
+#if OPENSWIFTUI_LINK_FEATUREFLAGS
 import FeatureFlags
 #endif
 
@@ -65,7 +65,7 @@ package struct GestureContainerFeature: Feature {
     package static var isEnabledOverride: Bool?
 
     package static func _isFeatureEnabled() -> Bool {
-        #if canImport(FeatureFlags)
+        #if OPENSWIFTUI_LINK_FEATUREFLAGS
         FeatureFlags.isFeatureEnabled(Self()) && Semantics.UnifiedHitTesting.isEnabled
         #else
         Semantics.UnifiedHitTesting.isEnabled
@@ -73,7 +73,7 @@ package struct GestureContainerFeature: Feature {
     }
 }
 
-#if canImport(FeatureFlags)
+#if OPENSWIFTUI_LINK_FEATUREFLAGS
 extension GestureContainerFeature: FeatureFlagsKey {
     package var domain: StaticString {
         "OpenSwiftUI"
