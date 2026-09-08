@@ -10,7 +10,9 @@
 @_spi(ForOpenSwiftUIOnly)
 @available(OpenSwiftUI_v6_0, *)
 open class ResponderNode {
-    public init() {}
+    public init() {
+        _openSwiftUIEmptyStub()
+    }
 
     open var nextResponder: ResponderNode? {
         _openSwiftUIBaseClassAbstractMethod()
