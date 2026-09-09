@@ -240,11 +240,17 @@ struct GestureDebugDualTests {
             }
             .filter {
                 if isOpenSwiftUI {
-                    ($0.subsystem == "com.apple.diagnostics.events" && $0.category == "OpenSwiftUI")
-                    || ($0.subsystem == "org.OpenSwiftUIProject.OpenSwiftUI" && $0.category == "Events")
+                    #if OPENSWIFTUI_SUPPORT_2025_API
+                    $0.subsystem == "org.OpenSwiftUIProject.OpenSwiftUI" && $0.category == "Events"
+                    #else
+                    $0.subsystem == "com.apple.diagnostics.events" && $0.category == "OpenSwiftUI"
+                    #endif
                 } else {
-                    ($0.subsystem == "com.apple.diagnostics.events" && $0.category == "SwiftUI")
-                    || ($0.subsystem == "com.apple.SwiftUI" && $0.category == "Events")
+                    if #available(iOS 26, macOS 26, *) {
+                        $0.subsystem == "com.apple.SwiftUI" && $0.category == "Events"
+                    } else {
+                        $0.subsystem == "com.apple.diagnostics.events" && $0.category == "SwiftUI"
+                    }
                 }
             }
             .reversed()

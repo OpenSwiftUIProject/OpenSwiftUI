@@ -242,7 +242,11 @@ struct GestureDebugLogTests {
                 $0 as? OSLogEntryLog
             }
             .filter {
+                #if OPENSWIFTUI_SUPPORT_2025_API
+                $0.subsystem == "org.OpenSwiftUIProject.OpenSwiftUI" && $0.category == "Events"
+                #else
                 $0.subsystem == "com.apple.diagnostics.events" && $0.category == "OpenSwiftUI"
+                #endif
             }
             .reversed()
             .prefix(count)
