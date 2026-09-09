@@ -27,10 +27,10 @@ package struct ColorView: RendererLeafView, Animatable {
         return [(name: "color", value: "\((color.red, color.green, color.blue, color.opacity))")]
     }
 
-    package func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
+    package func contains(points: UnsafeBufferPointer<PlatformPoint>, size: CGSize) -> BitVector64 {
         guard color.opacity > 0 else { return BitVector64() }
         return points.mapBool {
-            $0.x >= 0 && $0.y >= 0 && $0.x < size.width && $0.y < size.height
+            min($0.x, $0.y) >= 0 && $0.x < size.width && $0.y < size.height
         }
     }
 

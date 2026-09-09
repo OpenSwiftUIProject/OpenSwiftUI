@@ -13,13 +13,13 @@ import OpenSwiftUI_SPI
 // MARK: - ContentResponder
 
 package protocol ContentResponder {
-    func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64
+    func contains(points: UnsafeBufferPointer<PlatformPoint>, size: CGSize) -> BitVector64
     func contentPath(size: CGSize) -> Path
     func contentPath(size: CGSize, kind: ContentShapeKinds) -> Path
 }
 
 extension ContentResponder {
-    package func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
+    package func contains(points: UnsafeBufferPointer<PlatformPoint>, size: CGSize) -> BitVector64 {
         points.mapBool { size.contains(point: $0) }
     }
 

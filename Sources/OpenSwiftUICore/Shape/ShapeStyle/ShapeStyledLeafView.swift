@@ -40,7 +40,7 @@ extension ShapeStyledLeafView {
         styles.isClear(name: .foreground) && styles.isClear(name: .background)
     }
 
-    package func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
+    package func contains(points: UnsafeBufferPointer<PlatformPoint>, size: CGSize) -> BitVector64 {
         _openSwiftUIUnimplementedFailure()
     }
 
@@ -111,7 +111,7 @@ extension ShapeStyledLeafView where ShapeUpdateData == () {
 }
 
 package struct ShapeStyledResponderData<V>: ContentResponder where V: ShapeStyledLeafView {
-    package func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
+    package func contains(points: UnsafeBufferPointer<PlatformPoint>, size: CGSize) -> BitVector64 {
         _openSwiftUIUnimplementedFailure()
     }
 

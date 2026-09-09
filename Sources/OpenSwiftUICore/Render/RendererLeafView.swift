@@ -22,7 +22,7 @@ extension RendererLeafView {
     }
     
     package func contains(
-        points: UnsafeBufferPointer<CGPoint>,
+        points: UnsafeBufferPointer<PlatformPoint>,
         size: CGSize
     ) -> BitVector64 {
         points.mapBool { size.contains(point: $0) }
