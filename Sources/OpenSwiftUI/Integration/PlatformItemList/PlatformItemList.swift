@@ -415,3 +415,9 @@ struct PlatformItemListTextRepresentable: PlatformTextRepresentable {
         }
     }
 }
+
+// MARK: - IsPlatformItemListSourceInput
+
+struct IsPlatformItemListSourceInput: ViewInput {
+    static var defaultValue: Bool { false }
+}
