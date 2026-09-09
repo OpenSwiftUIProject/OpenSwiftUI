@@ -5,15 +5,15 @@
 
 import Foundation
 import OpenAttributeGraphShims
-#if !OPENSWIFTUI_SWIFT_LOG
-import OSLog
-#endif
 @_spi(ForOpenSwiftUIOnly)
 @testable
 #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
 @_private(sourceFile: "GestureDebug.swift")
 #endif
 import OpenSwiftUICore
+#if !OPENSWIFTUI_SWIFT_LOG
+import OSLog
+#endif
 import Testing
 
 #if arch(x86_64)
@@ -33,6 +33,8 @@ private let printTreeCases: [PrintTreeCase] = [
     .emptyRoot,
     .combinerWithSameFrameChild,
     .primitiveWithFrameDeltaChildren,
+    .nestedKindsWithSiblings,
+    .heapBackedChildrenAndProperties,
 ]
 
 private extension PrintTreeCase {
@@ -147,6 +149,58 @@ private extension PrintTreeCase {
                 "EmptyGesture<Void> (failed) {(3.0, 4.0)} @(1.0, 2.0)",
                 "EmptyGesture<Void> (active) {(5.0, 6.0)}",
                 ".(EmptyGesture<Void>) (ended) @(7.0, 8.0)",
+            ]
+        )
+    }
+
+    static var nestedKindsWithSiblings: PrintTreeCase {
+        let leaf = makeData(kind: .empty, phase: .possible(nil))
+        let modifier = makeData(
+            kind: .modifier,
+            children: GestureDebug.Data.Children(leaf),
+            phase: .ended(())
+        )
+        let gesture = makeData(
+            kind: .gesture,
+            children: GestureDebug.Data.Children(modifier, makeData(phase: .active(()))),
+            phase: .possible(())
+        )
+        let root = makeData(
+            kind: .combiner,
+            children: GestureDebug.Data.Children(gesture, makeData())
+        )
+        return PrintTreeCase(
+            root: root,
+            expected: [
+                "+ EmptyGesture<Void> (failed)",
+                "| + EmptyGesture<Void> (possible(some))",
+                "| | * .(EmptyGesture<Void>) (ended)",
+                "| | * (empty) ()",
+                "| | * EmptyGesture<Void> (active)",
+                "| + EmptyGesture<Void> (failed)",
+            ]
+        )
+    }
+
+    static var heapBackedChildrenAndProperties: PrintTreeCase {
+        var children = GestureDebug.Data.Children()
+        children.append(makeData(phase: .possible(nil), resetSeed: 7))
+        children.append(makeData(phase: .active(()), resetSeed: 0))
+        children.append(makeData(phase: .ended(()), resetSeed: .max))
+
+        var properties = GestureDebug.Properties()
+        properties.append(("zeta", "last"))
+        properties.append(("alpha", "first"))
+        properties.append(("middle", "second"))
+
+        let root = makeData(children: children, resetSeed: 7, properties: properties)
+        return PrintTreeCase(
+            root: root,
+            expected: [
+                "EmptyGesture<Void> (failed) reset:7 [zeta: last, alpha: first, middle: second]",
+                "EmptyGesture<Void> ()",
+                "EmptyGesture<Void> (active)",
+                "EmptyGesture<Void> (ended) reset:4294967295",
             ]
         )
     }

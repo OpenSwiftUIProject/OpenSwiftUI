@@ -4,9 +4,9 @@
 
 #if canImport(SwiftUI, _underlyingVersion: 6.5.4)
 import Foundation
-import OSLog
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
+import OSLog
 import Testing
 
 extension GestureDebug.Data {
@@ -31,6 +31,8 @@ private let printTreeCases: [PrintTreeCase] = [
     .emptyRoot,
     .combinerWithSameFrameChild,
     .primitiveWithFrameDeltaChildren,
+    .nestedKindsWithSiblings,
+    .heapBackedChildrenAndProperties,
 ]
 
 private extension PrintTreeCase {
@@ -148,6 +150,58 @@ private extension PrintTreeCase {
             ]
         )
     }
+
+    static var nestedKindsWithSiblings: PrintTreeCase {
+        let leaf = makeData(kind: .empty, phase: .possible(nil))
+        let modifier = makeData(
+            kind: .modifier,
+            children: GestureDebug.Data.Children(leaf),
+            phase: .ended(())
+        )
+        let gesture = makeData(
+            kind: .gesture,
+            children: GestureDebug.Data.Children(modifier, makeData(phase: .active(()))),
+            phase: .possible(())
+        )
+        let root = makeData(
+            kind: .combiner,
+            children: GestureDebug.Data.Children(gesture, makeData())
+        )
+        return PrintTreeCase(
+            root: root,
+            expected: [
+                "+ EmptyGesture<Void> (failed)",
+                "| + EmptyGesture<Void> (possible(some))",
+                "| | * .(EmptyGesture<Void>) (ended)",
+                "| | * (empty) ()",
+                "| | * EmptyGesture<Void> (active)",
+                "| + EmptyGesture<Void> (failed)",
+            ]
+        )
+    }
+
+    static var heapBackedChildrenAndProperties: PrintTreeCase {
+        var children = GestureDebug.Data.Children()
+        children.append(makeData(phase: .possible(nil), resetSeed: 7))
+        children.append(makeData(phase: .active(()), resetSeed: 0))
+        children.append(makeData(phase: .ended(()), resetSeed: .max))
+
+        var properties = GestureDebug.Properties()
+        properties.append(("zeta", "last"))
+        properties.append(("alpha", "first"))
+        properties.append(("middle", "second"))
+
+        let root = makeData(children: children, resetSeed: 7, properties: properties)
+        return PrintTreeCase(
+            root: root,
+            expected: [
+                "EmptyGesture<Void> (failed) reset:7 [zeta: last, alpha: first, middle: second]",
+                "EmptyGesture<Void> ()",
+                "EmptyGesture<Void> (active)",
+                "EmptyGesture<Void> (ended) reset:4294967295",
+            ]
+        )
+    }
 }
 
 private func makeData(
@@ -176,7 +230,7 @@ private func makeData(
 struct GestureDebugDualTests {
     // NOTE: entry.date has some range diff. So we can't use $0.date > date. Use count instead.
     @available(iOS 15, macOS 12, *)
-    private func getLogEntries(count: Int) throws -> [String] {
+    private func getLogEntries(count: Int, isOpenSwiftUI: Bool) throws -> [String] {
         let store = try OSLogStore(scope: .currentProcessIdentifier)
         let entries = try store
             .getEntries() // NOTE: options and position are not respected consistently.
@@ -185,7 +239,13 @@ struct GestureDebugDualTests {
                 $0 as? OSLogEntryLog
             }
             .filter {
-                $0.subsystem == "com.apple.diagnostics.events" && $0.category == "SwiftUI"
+                if isOpenSwiftUI {
+                    ($0.subsystem == "com.apple.diagnostics.events" && $0.category == "OpenSwiftUI")
+                    || ($0.subsystem == "org.OpenSwiftUIProject.OpenSwiftUI" && $0.category == "Events")
+                } else {
+                    ($0.subsystem == "com.apple.diagnostics.events" && $0.category == "SwiftUI")
+                    || ($0.subsystem == "com.apple.SwiftUI" && $0.category == "Events")
+                }
             }
             .reversed()
             .prefix(count)
@@ -196,9 +256,12 @@ struct GestureDebugDualTests {
     @available(iOS 15, macOS 12, *)
     @Test(arguments: printTreeCases)
     func printTreeAcceptsOpenSwiftUIGestureDebugData(_ testCase: PrintTreeCase) throws {
+        testCase.root.printTree()
+        let openSwiftUILogs = try getLogEntries(count: testCase.expected.count, isOpenSwiftUI: true)
         testCase.root.swiftUI_printTree()
-        let logs = try getLogEntries(count: testCase.expected.count)
-        #expect(logs == testCase.expected)
+        let swiftUILogs = try getLogEntries(count: testCase.expected.count, isOpenSwiftUI: false)
+        #expect(openSwiftUILogs == swiftUILogs)
+        #expect(swiftUILogs == testCase.expected)
     }
 }
 #endif

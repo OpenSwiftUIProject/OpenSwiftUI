@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: 40D5679141F478561068F8E300838A67 (SwiftUICore)
 
 package import Foundation
@@ -259,7 +259,7 @@ extension GesturePhase {
     }
 }
 
-// MARK: - GestureDebug.Data + printTree [TBA]
+// MARK: - GestureDebug.Data + printTree
 
 extension GestureDebug.Data {
     package func printTree() {
@@ -322,7 +322,6 @@ extension GestureDebug.Data {
             line += " [\(items.joined(separator: ", "))]"
         }
         Log.eventDebug(line)
-
         let childIndent = Indent(indent.childText, kind: kind)
         for child in children {
             child.printSubtree(parent: self, indent: childIndent)
