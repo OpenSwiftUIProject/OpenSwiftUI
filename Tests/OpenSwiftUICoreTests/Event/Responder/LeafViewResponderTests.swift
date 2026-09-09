@@ -34,7 +34,7 @@ struct ContentResponderTests {
                 CGPoint(x: -1, y: 5),
                 CGPoint(x: 5, y: -1),
             ],
-            expectedRawValue: 0b0000_0011
+            expectedRawValue: UInt64(0b0000_0011)
         ),
     ])
     func containmentReturnsExpectedMask(points: [CGPoint], expectedRawValue: UInt64) {
