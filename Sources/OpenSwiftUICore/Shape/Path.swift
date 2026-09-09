@@ -533,7 +533,21 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         _openSwiftUIUnimplementedFailure()
     }
 
-    package func contains(points: [CGPoint], eoFill: Bool = false, origin: CGPoint = .zero) -> BitVector64 {
+    package func contains(
+        points: [PlatformPoint],
+        eoFill: Bool = false,
+        origin: CGPoint = .zero
+    ) -> BitVector64 {
+        points.withUnsafeBufferPointer {
+            contains(points: $0, eoFill: eoFill, origin: origin)
+        }
+    }
+
+    package func contains(
+        points: UnsafeBufferPointer<PlatformPoint>,
+        eoFill: Bool = false,
+        origin: CGPoint = .zero
+    ) -> BitVector64 {
         _openSwiftUIUnimplementedFailure()
     }
 
