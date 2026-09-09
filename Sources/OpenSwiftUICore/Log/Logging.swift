@@ -141,10 +141,18 @@ package enum Log {
     }
 
     package static func eventDebug(_ message: String) {
+        #if OPENSWIFTUI_SUPPORT_2025_API
+        #if OPENSWIFTUI_SWIFT_LOG
+        events.log("\(message)")
+        #else
+        os_log(log: events, "\(message)")
+        #endif
+        #else
         #if OPENSWIFTUI_SWIFT_LOG
         eventDebuggingLog.log("\(message)")
         #else
         os_log(log: eventDebuggingLog, "\(message)")
+        #endif
         #endif
     }
     
@@ -215,12 +223,19 @@ package enum Log {
 
     @usableFromInline
     package static var eventDebuggingLog: Logger = Logger(subsystem: "org.OpenSwiftUIProject.diagnostics.events", category: "OpenSwiftUI")
+
+    // Added in v7 to replace eventDebuggingLog
+    package static var events: Logger = Logger(subsystem: subsystem, category: "Events")
     #else
     @usableFromInline
     package static var internalErrorsLog: OSLog = OSLog(subsystem: subsystem, category: "OpenSwiftUI")
 
     @usableFromInline
     package static var eventDebuggingLog: OSLog = OSLog(subsystem: "com.apple.diagnostics.events", category: "OpenSwiftUI")
+
+    // Added in v7 to replace eventDebuggingLog
+    @usableFromInline
+    package static var events: OSLog = OSLog(subsystem: subsystem, category: "Events")
     #endif
     
     package static let archiving: Logger = Logger(subsystem: subsystem, category: "Archiving")
