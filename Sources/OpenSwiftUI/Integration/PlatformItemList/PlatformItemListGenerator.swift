@@ -36,27 +36,29 @@ struct PlatformItemListGenerator<Flags, Content>: StatefulRule where Flags: Plat
 
     mutating func updateValue() {
         if !hasValue {
-            _itemList = subgraph.apply(makeItemList)
+            _itemList = subgraph.apply {
+                makeItemList()
+            }
         }
         value = itemList ?? PlatformItemList(items: [])
     }
 
     private func makeItemList() -> OptionalAttribute<PlatformItemList> {
         let flags = Flags.flags
-        var inputs = inputs
+        var newInputs = inputs
         if inputsIncludeGeometry {
-            inputs = inputs.withoutGeometryDependencies
-            inputs.preferences = PreferencesInputs(
-                hostKeys: self.inputs.intern(PreferenceKeys(), id: .defaultValue)
+            newInputs = newInputs.withoutGeometryDependencies
+            newInputs.preferences = PreferencesInputs(
+                hostKeys: inputs.intern(PreferenceKeys(), id: .defaultValue)
             )
         }
-        inputs.addPlatformItemListKey(flags: Flags.self, editOperation: .replace)
-        inputs[IsPlatformItemListSourceInput.self] = true
+        newInputs.addPlatformItemListKey(flags: Flags.self, editOperation: .replace)
+        newInputs[IsPlatformItemListSourceInput.self] = true
         if flags.contains(.accessibility),
-           self.inputs.preferences.contains(AccessibilityNodesKey.self) {
-            inputs.preferences.add(AccessibilityAttachment.Key.self)
+           inputs.preferences.contains(AccessibilityNodesKey.self) {
+            newInputs.preferences.add(AccessibilityAttachment.Key.self)
         }
-        let outputs = Content._makeView(view: _GraphValue($content), inputs: inputs)
+        let outputs = Content._makeView(view: _GraphValue($content), inputs: newInputs)
         return OptionalAttribute(outputs.preferences.platformItemList)
     }
 }
