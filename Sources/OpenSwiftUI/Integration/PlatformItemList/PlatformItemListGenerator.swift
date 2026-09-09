@@ -52,7 +52,7 @@ struct PlatformItemListGenerator<Flags, Content>: StatefulRule where Flags: Plat
         }
         inputs.addPlatformItemListKey(flags: Flags.self, editOperation: .replace)
         inputs[IsPlatformItemListSourceInput.self] = true
-        if flags.contains(._4),
+        if flags.contains(.accessibility),
            self.inputs.preferences.contains(AccessibilityNodesKey.self) {
             inputs.preferences.add(AccessibilityAttachment.Key.self)
         }
