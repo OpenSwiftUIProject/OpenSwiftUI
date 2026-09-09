@@ -81,7 +81,7 @@ extension View {
     nonisolated public func keyboardShortcut(_ shortcut: KeyboardShortcut?) -> some View {
         environment(\.keyboardShortcut, shortcut)
             .input(HasKeyboardShortcut.self)
-            .pickerKeyboardShortcut(shortcut)
+            ._trait(KeyboardShortcutPickerOptionTraitKey.self, shortcut)
     }
 }
 

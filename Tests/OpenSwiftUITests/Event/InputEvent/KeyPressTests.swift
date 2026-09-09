@@ -185,3 +185,23 @@ struct KeyPressTests {
         var binding: EventBinding?
     }
 }
+
+extension KeyPress {
+    fileprivate init?(for event: any EventType) {
+        guard let event = event as? KeyEvent,
+              let character = event.keys.first else {
+            return nil
+        }
+        let phase: Phases = switch event.phase {
+        case .began: .down
+        case .active: .repeat
+        case .ended, .failed: .up
+        }
+        self.init(
+            phase: phase,
+            key: KeyEquivalent(character),
+            characters: event.keys,
+            modifiers: event.modifiers
+        )
+    }
+}
