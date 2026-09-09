@@ -60,7 +60,7 @@ extension _PreferenceTransformModifier: _SceneModifier {
 @available(OpenSwiftUI_v4_0, *)
 extension Scene {
     @inlinable
-    func transformPreference<K>(
+    nonisolated func transformPreference<K>(
         _ key: K.Type = K.self,
         _ callback: @escaping (inout K.Value) -> Void
     ) -> some Scene where K: PreferenceKey {
