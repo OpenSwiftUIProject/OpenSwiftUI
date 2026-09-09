@@ -2,14 +2,14 @@
 //  RendererLeafView.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: 65609C35608651F66D749EB1BD9D2226 (SwiftUICore)
-//  Status: WIP
 
 package import Foundation
 import OpenAttributeGraphShims
 
-// MARK: - RendererLeafView [TODO]
+// MARK: - RendererLeafView
 
 package protocol RendererLeafView: ContentResponder, PrimitiveView, UnaryView {
     static var requiresMainThread: Bool { get }
@@ -21,24 +21,40 @@ extension RendererLeafView {
         false
     }
     
-    func contains(points: UnsafeBufferPointer<CGPoint>, size: CGSize) -> BitVector64 {
-        _openSwiftUIUnimplementedFailure()
+    package func contains(
+        points: UnsafeBufferPointer<CGPoint>,
+        size: CGSize
+    ) -> BitVector64 {
+        points.mapBool { size.contains(point: $0) }
     }
     
-    package static func makeLeafView(view: _GraphValue<Self>, inputs: _ViewInputs) -> _ViewOutputs {
-        // TODO
+    package static func makeLeafView(
+        view: _GraphValue<Self>,
+        inputs: _ViewInputs
+    ) -> _ViewOutputs {
         var outputs = _ViewOutputs()
-        // FIXME
         if inputs.preferences.requiresDisplayList {
+            let identity = DisplayList.Identity()
+            inputs.pushIdentity(identity)
             outputs.preferences.displayList = Attribute(
                 LeafDisplayList(
-                    identity: .init(),
+                    identity: identity,
                     view: view.value,
                     position: inputs.animatedPosition(),
                     size: inputs.animatedCGSize(),
                     containerPosition: inputs.containerPosition,
-                    options: .defaultValue,
+                    options: inputs.displayListOptions,
                     contentSeed: .init()
+                )
+            )
+        }
+        if inputs.preferences.requiresViewResponders {
+            outputs.preferences.viewResponders = Attribute(
+                LeafResponderFilter(
+                    data: view.value,
+                    size: inputs.animatedSize(),
+                    position: inputs.animatedPosition(),
+                    transform: inputs.transform
                 )
             )
         }
@@ -106,7 +122,7 @@ package struct LeafLayoutEngine<V>: LayoutEngine where V: LeafViewLayout {
     }
 }
 
-// MARK: - LeafDisplayList [WIP]
+// MARK: - LeafDisplayList
 
 private struct LeafDisplayList<V>: StatefulRule, CustomStringConvertible where V: RendererLeafView {
     let identity: DisplayList.Identity
