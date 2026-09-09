@@ -29,12 +29,25 @@ package struct PlatformItemList {
         var namedResolvedImage: Image.NamedResolved?
         var systemItem: SystemItem?
         var selectionBehavior: SelectionBehavior?
+        var keyboardShortcut: KeyboardShortcut?
+        var onHover: ((Bool) -> ())?
+        var buttonRole: ButtonRole?
         var accessibility: Accessibility?
+        var secondaryNavigationBehavior: SecondaryNavigationBehavior?
         var label: NSAttributedString?
         var tooltip: String?
         var badge: String?
+        var children: PlatformItemList?
+        var labelGroupChildren: PlatformItemList?
+        var menuIndicatorVisibility: Visibility?
+        var controlSize: ControlSize?
+        var toggleState: ToggleState?
+        var commandOperation: CommandOperation?
+        var scaleDownMenuImage: Bool = false
+        var keepsMenuPresented: Bool = false
+        var isPopUpButton: Bool?
+        // var menuOrder: MenuOrder = .automatic
         var tint: Color?
-        // TODO
 
         init(
             text: NSAttributedString? = nil,
@@ -57,6 +70,8 @@ package struct PlatformItemList {
         }
 
         struct SelectionBehavior {}
+
+        struct SecondaryNavigationBehavior {}
 
         struct Accessibility {}
 
@@ -207,7 +222,7 @@ struct PlatformItemListHiddenRepresentable: PlatformHiddenRepresentable {
     }
 }
 
-// MARK: - PlatformItemListViewThatFitsRepresentable [WIP]
+// MARK: - PlatformItemListViewThatFitsRepresentable
 
 struct PlatformItemListViewThatFitsRepresentable: PlatformViewThatFitsRepresentable {
     static func shouldMakeRepresentation(inputs: _ViewInputs) -> Bool {
@@ -231,7 +246,19 @@ struct PlatformItemListViewThatFitsRepresentable: PlatformViewThatFitsRepresenta
         let state: SizeFittingState
 
         var value: (inout PlatformItemList) -> Void {
-            _openSwiftUIUnimplementedFailure()
+            { list in
+                list.items = []
+                var children = PlatformItemList(items: [])
+                state.applyChildren(selectLast: false) { outputs, _ in
+                    if let childList = outputs.preferences.platformItemList {
+                        children.items.append(childList.value.mergedContentItem)
+                    }
+                    return false
+                }
+                var item = PlatformItemList.Item()
+                item.children = children
+                list.items = [item]
+            }
         }
     }
 }
