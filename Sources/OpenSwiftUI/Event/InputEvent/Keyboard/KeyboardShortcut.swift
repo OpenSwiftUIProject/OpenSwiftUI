@@ -249,6 +249,7 @@ extension Scene {
             var items: [SceneList.Item] = []
             for item in list.items {
                 var item = item
+                // TODO: Verify the nil behavior
                 item.keyboardShortcut = item.keyboardShortcut ?? shortcut
                 items.append(item)
             }

@@ -111,8 +111,8 @@ private func expectApproximatelyEqual(
     }
 }
 
-// Semantic version overrides are process wide, so the tests below must not run
-// concurrently with each other.
+// Serialize this suite's reads of process-wide semantic overrides.
+// Override tests also use the main actor to exclude graph tests in other suites.
 @Suite(.serialized)
 struct NSAttributedStringTests {
     // MARK: - Max font metrics
@@ -132,6 +132,7 @@ struct NSAttributedStringTests {
             #expect(metrics.outsets == .zero)
         }
 
+        @MainActor
         @Test(arguments: [true, false])
         func maxFontMetricsOutsetsFollowTextRenderingMetrics(isTextRenderingMetricsEnabled: Bool) {
             let semantics = isTextRenderingMetricsEnabled
@@ -305,6 +306,7 @@ struct NSAttributedStringTests {
             )
         }
 
+        @MainActor
         @Test(arguments: [true, false])
         func textSpacingWithStandardSizing(isTextSpacingV2Enabled: Bool) {
             let semantics = isTextSpacingV2Enabled
@@ -372,6 +374,7 @@ struct NSAttributedStringTests {
             )
         }
 
+        @MainActor
         @Test
         func textSpacingWithVerticalWritingModeUsesSideEdges() {
             Semantics.TextSpacingUIKit0059v2.introduced.test(as: \.sdk) {

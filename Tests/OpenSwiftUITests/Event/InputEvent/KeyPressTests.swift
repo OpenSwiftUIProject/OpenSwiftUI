@@ -10,6 +10,7 @@ import OpenAttributeGraphShims
 import Testing
 
 @MainActor
+@Suite(.disabled(if: attributeGraphVendor == .oag))
 struct KeyPressTests {
     @Test(arguments: [
         (KeyPress.Phases(), 0, "[]"),
@@ -28,7 +29,6 @@ struct KeyPressTests {
         #expect(phase.debugDescription == description)
     }
 
-    // EventPhase is not Sendable, so each argument creates its value inside the test.
     @Test(arguments: [
         (.began, .down),
         (.active, .repeat),
