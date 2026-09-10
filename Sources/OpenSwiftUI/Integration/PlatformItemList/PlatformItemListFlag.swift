@@ -25,8 +25,7 @@ struct PlatformItemListFlagsSet: OptionSet, Hashable {
 
     static var layout: PlatformItemListFlagsSet { .init(rawValue: 1 << 3) }
 
-    // FIXME: Infer the semantic name from a concrete consumer.
-    static var _4: PlatformItemListFlagsSet { .init(rawValue: 1 << 4) }
+    static var accessibility: PlatformItemListFlagsSet { .init(rawValue: 1 << 4) }
 
     static var namedImage: PlatformItemListFlagsSet { .init(rawValue: 1 << 5) }
 
@@ -34,13 +33,13 @@ struct PlatformItemListFlagsSet: OptionSet, Hashable {
 
     static var action: PlatformItemListFlagsSet { [.selection, .text, .layout] }
 
-    static var label: PlatformItemListFlagsSet { [.image, .text, ._4] }
+    static var label: PlatformItemListFlagsSet { [.image, .text, .accessibility] }
 
     static var toolbar: PlatformItemListFlagsSet { .label }
 
     static var searchToken: PlatformItemListFlagsSet { [.selection, .image, .text, .layout] }
 
-    static var widgetMetadata: PlatformItemListFlagsSet { [.image, .text, ._4, .namedImage, .viewThatFits] }
+    static var widgetMetadata: PlatformItemListFlagsSet { [.image, .text, .accessibility, .namedImage, .viewThatFits] }
 
     static var all: PlatformItemListFlagsSet { .init(rawValue: .max) }
 

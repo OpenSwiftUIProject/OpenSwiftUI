@@ -48,6 +48,7 @@ extension SceneList {
         var connectionOptionPayloadStorage: ConnectionOptionPayloadStorage = .init()
         #elseif os(macOS)
         // TODO: macOS specific properties
+        var keyboardShortcut: KeyboardShortcut?
         #endif
 
         // MARK: - SceneList.Item.Summary
