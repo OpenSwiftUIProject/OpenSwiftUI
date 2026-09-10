@@ -20,14 +20,14 @@ extension RendererLeafView {
     package static var requiresMainThread: Bool {
         false
     }
-    
+
     package func contains(
-        points: UnsafeBufferPointer<CGPoint>,
+        points: UnsafeBufferPointer<PlatformPoint>,
         size: CGSize
     ) -> BitVector64 {
         points.mapBool { size.contains(point: $0) }
     }
-    
+
     package static func makeLeafView(
         view: _GraphValue<Self>,
         inputs: _ViewInputs
