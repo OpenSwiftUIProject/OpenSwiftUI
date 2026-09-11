@@ -91,15 +91,15 @@ class UIKitGestureContainer: UIResponder, _UIGestureRecognizerContainer {
         _proxyView?.window
     }
 
-    func add(_ gestureRecognizer: UIGestureRecognizer) {
+    func addGestureRecognizer(_ gestureRecognizer: UIGestureRecognizer) {
         _openSwiftUIEmptyStub()
     }
 
-    func remove(_ gestureRecognizer: UIGestureRecognizer) {
+    func removeGestureRecognizer(_ gestureRecognizer: UIGestureRecognizer) {
         _openSwiftUIEmptyStub()
     }
 
-    func _compare(_ container: any _UIGestureRecognizerContainer) -> ComparisonResult {
+    func _compareGestureRecognizerContainer(_ container: any _UIGestureRecognizerContainer) -> ComparisonResult {
         _UIGestureRecognizerContainerCompare(self, container, false)
     }
 

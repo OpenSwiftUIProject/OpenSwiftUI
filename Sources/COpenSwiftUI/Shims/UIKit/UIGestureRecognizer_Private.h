@@ -19,14 +19,15 @@
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
 @protocol _UIGestureRecognizerContainer <NSObject>
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer OPENSWIFTUI_SWIFT_NAME(addGestureRecognizer(_:));
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer OPENSWIFTUI_SWIFT_NAME(removeGestureRecognizer(_:));
+- (NSComparisonResult)_compareGestureRecognizerContainer:(id<_UIGestureRecognizerContainer>)container OPENSWIFTUI_SWIFT_NAME(_compareGestureRecognizerContainer(_:));
 @property (nonatomic, readonly) NSArray<UIGestureRecognizer *> *gestureRecognizers;
 @property (nonatomic, readonly, nullable) id<_UIGestureRecognizerContainer> _parentGestureRecognizerContainer OPENSWIFTUI_SWIFT_NAME(_parentContainer);
 @property (nonatomic, readonly) NSArray<id<_UIGestureRecognizerContainer>> *_childGestureRecognizerContainers OPENSWIFTUI_SWIFT_NAME(_childContainers);
-@property (nonatomic, strong, nullable) id<_UIGestureRecognizerContainer> _actingParentGestureRecognizerContainer OPENSWIFTUI_SWIFT_NAME(_actingParentContainer);
+@property (nonatomic, readonly, nullable) id<_UIGestureRecognizerContainer> _actingParentGestureRecognizerContainer OPENSWIFTUI_SWIFT_NAME(_actingParentContainer);
 @property (nonatomic, readonly, nullable) UIWindow *_eventReceivingWindow;
-- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
-- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer;
-- (NSComparisonResult)_compareGestureRecognizerContainer:(id<_UIGestureRecognizerContainer>)container;
+@property (nonatomic, readonly, nullable) UIView *_proxyView;
 @end
 
 @interface UIView (OpenSwiftUI_GestureRecognizerContainer) <_UIGestureRecognizerContainer>
