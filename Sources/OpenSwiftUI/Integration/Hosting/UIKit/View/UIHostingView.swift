@@ -604,7 +604,7 @@ extension _UIHostingView {
     }
 }
 
-// MARK: _UIHostingView.HostViewGraph [6.5.4] [Blocked by Gesture System]
+// MARK: - _UIHostingView.HostViewGraph [6.5.4]
 
 extension _UIHostingView {
     private struct HostViewGraph: ViewGraphFeature {
@@ -614,23 +614,23 @@ extension _UIHostingView {
             guard let host else {
                 return
             }
-            // inputs.eventBindingBridgeFactory = UIKitResponderEventBindingBridge.Factory.self
-            // inputs.gestureContainerFactory = UIKitGestureContainerFactory.self
-            // host.delegate?.xx
-            var idiom = inputs[InterfaceIdiomInput.self]
-            if idiom == nil {
+            inputs.eventBindingBridgeFactory = UIKitResponderEventBindingBridge.Factory.self
+            inputs.gestureContainerFactory = UIKitGestureContainerFactory.self
+            host.delegate?.hostingView(host, willModifyViewInputs: &inputs)
+            if inputs[InterfaceIdiomInput.self] == nil {
+                var idiom: AnyInterfaceIdiom?
                 Update.syncMain {
-                    idiom = host.traitCollection.userInterfaceIdiom.idiom ?? UIDevice.current.userInterfaceIdiom.idiom
+                    idiom = host.traitCollection.userInterfaceIdiom.idiom
+                        ?? UIDevice.current.userInterfaceIdiom.idiom
                 }
+                idiom.map { inputs[InterfaceIdiomInput.self] = $0 }
             }
-            idiom.map { inputs[InterfaceIdiomInput.self] = $0 }
-            let box: WeakBox<UIView> = WeakBox(host)
-            let boxAttr = Attribute(value: box)
-            // inputs[UIKitHostContainerFocusItemInput.self] = boxAttr
+            let box = WeakBox<UIView>(host)
+            inputs[UIKitHostContainerFocusItemInput.self] = OptionalAttribute(Attribute(value: box))
             #if OPENSWIFTUI_LINK_BACKLIGHTSERVICES
             inputs.textAlwaysOnProvider = OpenSwiftUITextAlwaysOnProvider.self
             #endif
-            // navigationBridge?.updateViewInputs(&inputs)
+            host.navigationBridge?.updateViewInputs(&inputs)
         }
     }
 }
