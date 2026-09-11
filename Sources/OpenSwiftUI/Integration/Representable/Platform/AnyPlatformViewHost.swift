@@ -55,7 +55,10 @@ struct PlatformViewLayoutInvalidator {
 // FIXME: Gesture System
 
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
-class NSViewResponder {}
+class NSViewResponder: ViewResponder {}
 #elseif canImport(UIKit)
-class UIViewResponder {}
+import UIKit
+class UIViewResponder: ViewResponder {
+    weak var hostView: UIView?
+}
 #endif

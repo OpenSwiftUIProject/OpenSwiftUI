@@ -206,8 +206,8 @@ extension AnyGestureResponder {
               let gestureContainer else {
             return nil
         }
-        let result = OpenSwiftUIGestureRecognizerContainerCompare(
-            gestureContainer,
+        let result = _UIGestureRecognizerContainerCompare(
+            gestureContainer as! any _UIGestureRecognizerContainer,
             view,
             false
         )
