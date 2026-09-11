@@ -18,6 +18,21 @@
 
 NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
+@protocol _UIGestureRecognizerContainer <NSObject>
+- (void)addGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer OPENSWIFTUI_SWIFT_NAME(addGestureRecognizer(_:));
+- (void)removeGestureRecognizer:(UIGestureRecognizer *)gestureRecognizer OPENSWIFTUI_SWIFT_NAME(removeGestureRecognizer(_:));
+- (NSComparisonResult)_compareGestureRecognizerContainer:(id<_UIGestureRecognizerContainer>)container OPENSWIFTUI_SWIFT_NAME(_compareGestureRecognizerContainer(_:));
+@property (nonatomic, readonly) NSArray<UIGestureRecognizer *> *gestureRecognizers;
+@property (nonatomic, readonly, nullable) id<_UIGestureRecognizerContainer> _parentGestureRecognizerContainer OPENSWIFTUI_SWIFT_NAME(_parentContainer);
+@property (nonatomic, readonly) NSArray<id<_UIGestureRecognizerContainer>> *_childGestureRecognizerContainers OPENSWIFTUI_SWIFT_NAME(_childContainers);
+@property (nonatomic, readonly, nullable) id<_UIGestureRecognizerContainer> _actingParentGestureRecognizerContainer OPENSWIFTUI_SWIFT_NAME(_actingParentContainer);
+@property (nonatomic, readonly, nullable) UIWindow *_eventReceivingWindow;
+@property (nonatomic, readonly, nullable) UIView *_proxyView;
+@end
+
+@interface UIView (OpenSwiftUI_GestureRecognizerContainer) <_UIGestureRecognizerContainer>
+@end
+
 @protocol UIGestureRecognizerDelegatePrivate <UIGestureRecognizerDelegate>
 
 @optional
@@ -77,10 +92,22 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
 OPENSWIFTUI_EXPORT
 NSComparisonResult OpenSwiftUIGestureRecognizerContainerCompare(
-    id gestureContainer,
-    UIView *view,
+    id<_UIGestureRecognizerContainer> gestureContainer,
+    id<_UIGestureRecognizerContainer> otherContainer,
     BOOL usePresentationValues
-);
+) OPENSWIFTUI_SWIFT_NAME(_UIGestureRecognizerContainerCompare(_:_:_:));
+
+OPENSWIFTUI_EXPORT
+void OpenSwiftUIGestureRecognizerRegisterInContainer(UIGestureRecognizer *recognizer, id<_UIGestureRecognizerContainer> container) OPENSWIFTUI_SWIFT_NAME(_UIGestureRecognizerRegisterInContainer(_:_:));
+
+OPENSWIFTUI_EXPORT
+void OpenSwiftUIGestureRecognizerUnregisterFromContainer(UIGestureRecognizer *recognizer, id<_UIGestureRecognizerContainer> container) OPENSWIFTUI_SWIFT_NAME(_UIGestureRecognizerUnregisterFromContainer(_:_:));
+
+OPENSWIFTUI_EXPORT
+NSString *OpenSwiftUIGestureRecognizerContainerAncestralDescription(
+    id<_UIGestureRecognizerContainer> container,
+    NSString * _Nullable (^description)(id<_UIGestureRecognizerContainer>)
+) OPENSWIFTUI_SWIFT_NAME(_UIGestureRecognizerContainerAncestralDescription(_:_:));
 
 NS_HEADER_AUDIT_END(nullability, sendability)
 

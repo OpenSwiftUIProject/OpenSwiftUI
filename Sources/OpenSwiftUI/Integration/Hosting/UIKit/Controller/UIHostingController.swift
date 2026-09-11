@@ -12,6 +12,8 @@ open class UIHostingController<Content>: UIViewController where Content : View {
     var alwaysOnBridge: AlwaysOnBridge<Content>?
     #endif
 
+    var navigationBridge: NavigationBridge_PhoneTV<Content>?
+
     override open dynamic var keyCommands: [UIKeyCommand]? {
         // TODO
         nil
