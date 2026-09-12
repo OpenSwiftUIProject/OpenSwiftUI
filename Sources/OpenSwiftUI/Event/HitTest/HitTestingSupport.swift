@@ -249,18 +249,4 @@ extension ResponderNode {
         return nextResponder?.effectiveIsDraggable ?? false
     }
 }
-#elseif os(iOS) || os(visionOS)
-extension _UIHostingView: HitTestingLeafPlatformView {
-    var usesResponderForHitTesting: Bool {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    var foreignSubviewsForHitTesting: [PlatformView] {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    var isTransparentForHitTesting: Bool {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
 #endif

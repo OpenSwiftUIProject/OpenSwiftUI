@@ -4,6 +4,7 @@
 //
 //  Audited for 6.0.87
 //  Status: WIP
+//  ID: 32B6F54841135BB466A5C1362EB89D05 (SwiftUI)
 
 #if os(macOS)
 @_spi(ForOpenSwiftUIOnly)
@@ -472,7 +473,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         }
     }
 
-    private lazy var foreignSubviews: NSHashTable<NSView>? = NSHashTable.weakObjects()
+    private lazy var foreignSubviews: NSHashTable<NSView> = NSHashTable.weakObjects()
 
     private var isInsertingRenderedSubview: Bool = false
 
@@ -907,6 +908,32 @@ extension NSHostingView {
     }
 }
 
+// MARK: - NSHostingView + HitTestingLeafPlatformView [6.5.4]
+
+extension NSHostingView: HitTestingLeafPlatformView {
+    var usesResponderForHitTesting: Bool {
+        ResponderBasedHitTesting.isEnabled || !UnifiedHitTestingFeature.isEnabled
+    }
+
+    var foreignSubviewsForHitTesting: [PlatformView] {
+        foreignSubviews.allObjects
+    }
+
+    var isTransparentForHitTesting: Bool {
+        !UnifiedHitTestingFeature.isEnabled
+    }
+
+    func hitTest(_ point: PlatformPoint, cacheKey: UInt32?) -> PlatformView? {
+        let result = defaultHitTest(point, radius: 1, cacheKey: cacheKey) {
+            super.hitTest(point)
+        }
+        if !UnifiedHitTestingFeature.isEnabled, result === self, ignoreHitTest {
+            return nil
+        }
+        return result
+    }
+}
+
 @available(iOS, unavailable)
 @available(tvOS, unavailable)
 @available(watchOS, unavailable)
@@ -987,6 +1014,16 @@ extension NSHostingView: ViewRendererHost {
                 requestUpdate(after: delay)
             }
         }
+    }
+}
+
+extension NSHostingView: EventGraphHost {
+    package var eventBindingManager: EventBindingManager {
+        _openSwiftUIUnimplementedFailure()
+    }
+    
+    package var focusedResponder: ResponderNode? {
+        _openSwiftUIUnimplementedFailure()
     }
 }
 
