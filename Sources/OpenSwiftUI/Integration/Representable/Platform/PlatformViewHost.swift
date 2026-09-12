@@ -9,6 +9,7 @@
 #if canImport(Darwin)
 import Foundation
 import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
 #if os(iOS) || os(visionOS)
@@ -301,6 +302,35 @@ where Content: PlatformViewRepresentable {
     #endif
 
     #if os(iOS) || os(visionOS)
+    override func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        guard UnifiedHitTestingFeature.isEnabled else {
+            return super.hitTest(point, with: event)
+        }
+        let result = super.hitTest(point, with: event)
+        return result === self ? nil : result
+    }
+    #elseif os(macOS)
+    override func hitTest(_ point: CGPoint) -> NSView? {
+        hitTest(point, cacheKey: nil)
+    }
+
+    override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
+        if ResponderBasedHitTesting.isEnabled {
+            return defaultAcceptsFirstMouse(for: event) {
+                super.acceptsFirstMouse(for: event)
+            }
+        }
+        return effectiveAcceptsFirstMouse ?? super.acceptsFirstMouse(for: event)
+    }
+
+    override func shouldDelayWindowOrdering(for event: NSEvent) -> Bool {
+        defaultShouldDelayWindowOrdering(for: event) {
+            super.shouldDelayWindowOrdering(for: event)
+        }
+    }
+    #endif
+
+    #if os(iOS) || os(visionOS)
     private func layoutHostedView() {
         let enableUnifiedLayout =  enableUnifiedLayout()
         guard let hostedView else {
@@ -415,6 +445,58 @@ extension PlatformViewHost: SafeAreaHelperDelegate {
         Content.shouldEagerlyUpdateSafeArea(representedViewProvider)
     }
 }
+
+// MARK: - PlatformViewHost + HitTest
+
+extension PlatformViewHost: HitTestingLeafPlatformView {
+    var usesResponderForHitTesting: Bool {
+        #if os(macOS)
+        ResponderBasedHitTesting.isEnabled
+        #else
+        _openSwiftUIUnreachableCode()
+        #endif
+    }
+
+    var foreignSubviewsForHitTesting: [PlatformView] {
+        #if os(macOS)
+        []
+        #else
+        _openSwiftUIUnreachableCode()
+        #endif
+    }
+
+    var isTransparentForHitTesting: Bool {
+        #if os(macOS)
+        true
+        #else
+        _openSwiftUIUnreachableCode()
+        #endif
+    }
+
+    #if os(macOS)
+    func hitTest(_ point: PlatformPoint, cacheKey: UInt32?) -> PlatformView? {
+        if ResponderBasedHitTesting.isEnabled {
+            return defaultHitTest(point, radius: 1, cacheKey: cacheKey) {
+                super.hitTest(point)
+            }
+        } else if UnifiedHitTestingFeature.isEnabled {
+            guard !recursiveIgnoreHitTest,
+                  alphaValue >= ViewResponder.minOpacityForHitTest else {
+                return nil
+            }
+            let result = super.hitTest(point)
+            return result === self ? nil : result
+        } else {
+            return super.hitTest(point)
+        }
+    }
+    #endif
+}
+
+extension PlatformViewHost: AcceptsFirstMouseCustomizing {}
+
+extension PlatformViewHost: RecursiveIgnoreHitTestCustomizing {}
+
 #endif
 
 func enableUnifiedLayout() -> Bool {
