@@ -18,4 +18,5 @@ description: Draft or review public OpenSwiftUI pull request titles and bodies. 
 - For stacked PRs, describe only the current layer. Add a `## Stack` section to
   a dependent PR and identify its direct dependency as `Depends on #<number>`.
 - Drafting a PR does not authorize pushing branches or creating or updating a
-  PR. Obtain the required approval before changing remote state.
+  PR. Present the title and body for review. Once the user explicitly approves
+  the relevant remote actions, proceed without asking for the same approval again.

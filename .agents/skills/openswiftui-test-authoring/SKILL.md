@@ -20,6 +20,12 @@ description: Route OpenSwiftUI test authoring and review work to the appropriate
 - Follow the organization and naming of the nearest tests in the same target.
 - Sort import declarations alphabetically by imported module name, preserving any
   attributes attached to each declaration.
+- In Swift Testing, prefer `@Test(arguments:)` when cases share the same test
+  body. Keep different behaviors in separate tests.
+- Give argument collections explicit types when inference is ambiguous,
+  especially tuple elements with integer literals or empty collections. A test
+  parameter type does not necessarily constrain the macro's argument expression;
+  use a typed fixture or values such as `UInt64(0b0011)` when needed.
 - Start each new Swift test file with this header, substituting the actual file
   name and the actual test target name:
 

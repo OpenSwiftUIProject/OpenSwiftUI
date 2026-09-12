@@ -11,6 +11,23 @@ OpenSwiftUI is an open source implementation of Apple's SwiftUI framework, desig
 
 This project is in active development and contains multiple Swift packages with extensive environment-based configuration.
 
+## Verification Scope
+
+- The commands below are references, not a checklist to run after every edit.
+- Use source inspection and `git diff --check` for small Swift-only edits and
+  implementation audits. Do not run package, Xcode, Tuist, XCFramework, or DocC
+  builds by default. Run a build when the user asks for it or when a
+  header/interface-affecting change needs build verification.
+- For Swift-only test changes that need execution, use
+  `swift test --filter <SuiteName>`. Use an Xcode scheme or simulator only when
+  requested or when SwiftPM cannot exercise the change. Honor an explicit
+  instruction to skip builds or tests.
+- Keep throwaway probes under `/tmp`, run with `swift <file>`, rather than
+  adding temporary files to `Tests/`. A probe or syntax check does not establish
+  that package tests passed.
+- Complete the checks required for the change. Repeat or broaden them only for
+  new changes, failures, or unresolved concerns.
+
 ## Build Commands
 
 ### Standard Build
@@ -78,6 +95,11 @@ Use Conventional Commits for all new commit messages and PR titles. Follow the
 [contributor guide](CONTRIBUTING.md#commit-messages-and-pull-request-titles).
 
 Follow `.agents/skills/openswiftui-pr-authoring/SKILL.md`.
+
+For CI fixes, inspect the failing job and prepare local changes first. Present
+the diff and validation results before committing or pushing, unless the user
+has already explicitly authorized those actions for the fix. A request to
+investigate or fix CI alone does not authorize a commit or push.
 
 ## Dependencies Setup
 
