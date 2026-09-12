@@ -635,6 +635,20 @@ extension _UIHostingView {
     }
 }
 
+extension _UIHostingView: HitTestingLeafPlatformView {
+    var usesResponderForHitTesting: Bool {
+        _openSwiftUIUnreachableCode()
+    }
+
+    var foreignSubviewsForHitTesting: [PlatformView] {
+        _openSwiftUIUnreachableCode()
+    }
+
+    var isTransparentForHitTesting: Bool {
+        _openSwiftUIUnreachableCode()
+    }
+}
+
 // MARK: - UIHostingViewDelegate
 
 package protocol UIHostingViewDelegate: AnyObject {
