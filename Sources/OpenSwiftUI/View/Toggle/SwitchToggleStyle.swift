@@ -155,7 +155,7 @@ private final class PlatformSwitch: NSSwitch, AcceptsFirstMouseCustomizing {
     var customAcceptsFirstMouse: Bool?
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
-        if ResponderBasedHitTesting.enabled {
+        if ResponderBasedHitTesting.isEnabled {
             customAcceptsFirstMouse ?? super.acceptsFirstMouse(for: event)
         } else {
             effectiveAcceptsFirstMouse ?? super.acceptsFirstMouse(for: event)

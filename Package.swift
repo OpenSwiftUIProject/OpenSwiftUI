@@ -920,6 +920,7 @@ if linkSFSymbols {
 
 if linkFeatureFlags {
     openSwiftUICoreTarget.addFeatureFlagsSettings()
+    openSwiftUITarget.addFeatureFlagsSettings()
 }
 
 if linkBacklightServices {

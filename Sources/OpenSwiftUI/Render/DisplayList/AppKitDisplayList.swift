@@ -97,7 +97,7 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     }
 
     override static func setIgnoresEvents(_ state: Bool, of view: AnyObject) {
-        guard !ResponderBasedHitTesting.enabled else { return }
+        guard !ResponderBasedHitTesting.isEnabled else { return }
         if UnifiedHitTestingFeature.isEnabled {
             if let customizing = view as? RecursiveIgnoreHitTestCustomizing {
                 customizing.recursiveIgnoreHitTest = state
@@ -109,14 +109,14 @@ final class NSViewPlatformViewDefinition: PlatformViewDefinition, @unchecked Sen
     }
 
     override static func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) {
-        guard !ResponderBasedHitTesting.enabled else { return }
+        guard !ResponderBasedHitTesting.isEnabled else { return }
         if let customizing = view as? AcceptsFirstMouseCustomizing {
             customizing.customAcceptsFirstMouse = value
         }
     }
 
     override static func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) {
-        guard !ResponderBasedHitTesting.enabled else { return }
+        guard !ResponderBasedHitTesting.isEnabled else { return }
         if let customizing = view as? HitTestsAsOpaqueCustomizing {
             customizing.hitTestsAsOpaque = value
         }
@@ -165,7 +165,7 @@ class _NSGraphicsView: NSView, RecursiveIgnoreHitTestCustomizing, AcceptsFirstMo
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
-        guard !ResponderBasedHitTesting.enabled else {
+        guard !ResponderBasedHitTesting.isEnabled else {
             return super.hitTest(point)
         }
         if UnifiedHitTestingFeature.isEnabled {
@@ -187,7 +187,7 @@ class _NSGraphicsView: NSView, RecursiveIgnoreHitTestCustomizing, AcceptsFirstMo
     }
 
     override func acceptsFirstMouse(for event: NSEvent?) -> Bool {
-        guard !ResponderBasedHitTesting.enabled,
+        guard !ResponderBasedHitTesting.isEnabled,
               let value = effectiveAcceptsFirstMouse else {
             return super.acceptsFirstMouse(for: event)
         }
@@ -211,7 +211,7 @@ class _NSInheritedView: _NSGraphicsView, HitTestsAsOpaqueCustomizing {
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
-        guard !ResponderBasedHitTesting.enabled,
+        guard !ResponderBasedHitTesting.isEnabled,
               UnifiedHitTestingFeature.isEnabled else {
             return super.hitTest(point)
         }
@@ -271,7 +271,7 @@ private class _NSShapeHitTestingView: _NSGraphicsView {
     }
 
     override func hitTest(_ point: NSPoint) -> NSView? {
-        guard !ResponderBasedHitTesting.enabled else {
+        guard !ResponderBasedHitTesting.isEnabled else {
             return super.hitTest(point)
         }
         if UnifiedHitTestingFeature.isEnabled, super.hitTest(point) == nil {
