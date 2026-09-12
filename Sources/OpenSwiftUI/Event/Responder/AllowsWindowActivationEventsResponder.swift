@@ -7,8 +7,13 @@
 //  ID: 302179F1EB9AE99B83C6A183C0B4143E (?)
 
 #if os(macOS)
-// TODO
-class AllowsWindowActivationEventsResponder {}
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
+
+// TODO: AllowsWindowActivationEventsResponder
+class AllowsWindowActivationEventsResponder: DefaultLayoutViewResponder {
+    var value: Bool?
+}
 
 // MARK: - AllowsWindowActivationEventsKey
 
