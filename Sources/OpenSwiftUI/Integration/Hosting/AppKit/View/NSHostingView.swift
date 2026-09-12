@@ -1021,7 +1021,7 @@ extension NSHostingView: EventGraphHost {
     package var eventBindingManager: EventBindingManager {
         _openSwiftUIUnimplementedFailure()
     }
-    
+
     package var focusedResponder: ResponderNode? {
         _openSwiftUIUnimplementedFailure()
     }
