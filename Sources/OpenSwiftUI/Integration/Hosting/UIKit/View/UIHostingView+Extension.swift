@@ -227,7 +227,9 @@ extension _UIHostingView: ViewRendererHost {
                 return unsafeBitCast(self as UIView, to: T.self)
             } else if EventGraphHost.self == type {
                 return unsafeBitCast(self as any EventGraphHost, to: T.self)
-            // TODO: CurrentEventProvider, ContainerBackgroundHost, RootTransformUpdater
+            } else if CurrentEventProvider.self == type {
+                return unsafeBitCast(self as any CurrentEventProvider, to: T.self)
+            // TODO: ContainerBackgroundHost, RootTransformUpdater
             } else if FallbackResponderProvider.self == type {
                 return unsafeBitCast(self as any FallbackResponderProvider, to: T.self)
             } else if ViewRendererHost.self == type {
