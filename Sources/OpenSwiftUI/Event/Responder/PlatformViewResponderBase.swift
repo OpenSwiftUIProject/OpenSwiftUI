@@ -5,6 +5,7 @@
 //  Audited for 6.5.4
 //  Status: WIP
 
+import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 

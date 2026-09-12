@@ -57,11 +57,13 @@ protocol HitTestingLeafPlatformView: PlatformView {
     #endif
 }
 
+#if canImport(Darwin)
 extension HitTestingLeafPlatformView where Self: AnyPlatformViewHost {
     var responderForHitTesting: ViewResponder? {
         responder
     }
 }
+#endif
 
 extension HitTestingLeafPlatformView where Self: EventGraphHost {
     var responderForHitTesting: ViewResponder? {
