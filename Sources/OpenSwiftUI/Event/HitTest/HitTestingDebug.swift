@@ -1,0 +1,380 @@
+//
+//  HitTestingDebug.swift
+//  OpenSwiftUI
+//
+//  Audited for 6.5.4
+//  Status: Complete
+//  ID: DB5E6F06E13FF0259F656B4E03BE4F79 (SwiftUI)
+
+import Foundation
+import COpenSwiftUI
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
+
+// MARK: - HitTestTracing
+
+private protocol HitTestTracing {
+    var propertiesAffectingHitTest: [(key: String?, value: String)] { get }
+    func isEqual(to other: Self) -> Bool
+}
+
+// MARK: - HitTestTrace
+
+private struct HitTestTrace<Value> where Value: HitTestTracing {
+    let value: Value
+    let name: String
+    let identifier: String
+    let point: CGPoint
+    let result: Value?
+    let children: [HitTestTrace<Value>]
+
+    func map<Other: HitTestTracing>(_ transform: (Value) -> Other) -> HitTestTrace<Other> {
+        HitTestTrace<Other>(
+            value: transform(value),
+            name: name,
+            identifier: identifier,
+            point: point,
+            result: result.map(transform),
+            children: children.map { $0.map(transform) }
+        )
+    }
+
+    func recursiveDescription(annotating values: [Value], depth: Int = 0) -> String {
+        let annotated = values.contains { value.isEqual(to: $0) }
+        let prefix = String(repeating: annotated ? "├─" : "│ ", count: depth)
+            + (annotated ? "▶" : result == nil ? "✕" : "✓")
+        let properties = value.propertiesAffectingHitTest.map { key, value in
+            key.map { "\($0): \(value)" } ?? value
+        }
+        let description = "\(name)(\(([identifier] + properties).joined(separator: ", ")))"
+        return (["\(prefix) \(point) \(description)"] + children.map {
+            $0.recursiveDescription(annotating: values, depth: depth + 1)
+        }).joined(separator: "\n")
+    }
+}
+
+#if os(iOS) || os(visionOS)
+import UIKit
+
+// MARK: - UIView + HitTestTracing
+
+extension UIView: HitTestTracing {
+    func printHitTest(_ point: CGPoint, radius: CGFloat = 1.0) {
+        guard let hitView = hitTest(point, with: nil) else { return }
+        let context = _UIHitTestContext(point: convert(point, to: nil), radius: radius)
+        let hit = hitView._hitTest(with: context)
+        let resolvedHitView = (hit as? UIView) ?? hitView
+        let hitResponder = (hit as? UIKitGestureContainer)?.responder
+        let description = {
+            if GestureContainerFeature.isEnabled {
+                let result = hitResponder.map { ResponderBasedHitTestTracing.responder($0) } ?? .view(resolvedHitView)
+                return ResponderBasedHitTestTracing.view(self)
+                    .traceHitTest(point: point, radius: radius, options: .platformDefault, result: result)
+                    .recursiveDescription(annotating: [result, .view(resolvedHitView)])
+            } else {
+                return traceHitTest(point: point, radius: radius, result: resolvedHitView)
+                    .recursiveDescription(annotating: [resolvedHitView])
+            }
+        }()
+        Log.eventDebug("HIT TEST\n\(description)\n")
+    }
+
+    fileprivate var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        var properties: [(key: String?, value: String)] = [("frame", "\(frame)")]
+        if isHidden {
+            properties.append(("isHidden", "true"))
+        }
+        if alpha < ViewResponder.minOpacityForHitTest {
+            properties.append(("alpha", "\(alpha)"))
+        }
+        if !isUserInteractionEnabled {
+            properties.append(("isUserInteractionEnabled", "false"))
+        }
+        return properties
+    }
+
+    fileprivate func isEqual(to other: UIView) -> Bool {
+        self === other
+    }
+
+    fileprivate func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        result: UIView?
+    ) -> HitTestTrace<UIView> {
+        let name = String(describing: type(of: self))
+        let identifier = String(format: "%p", self)
+        let hit = hitTest(point, with: nil)
+        let children = subviews.compactMap { child -> HitTestTrace<UIView>? in
+            let childPoint = child.convert(point, from: self)
+            guard child.bounds.contains(childPoint) || result?.isDescendant(of: child) == true else {
+                return nil
+            }
+            return child.traceHitTest(point: childPoint, radius: radius, result: result)
+        }
+        return HitTestTrace(
+            value: self, name: name, identifier: identifier, point: point, result: hit, children: children
+        )
+    }
+}
+#elseif os(macOS)
+import AppKit
+
+// MARK: - NSView + HitTestTracing
+
+extension NSView: HitTestTracing {
+    func printHitTest(_ point: CGPoint, radius: CGFloat = 1.0) {
+        guard let hitView = hitTest(convert(point, to: superview)) else { return }
+        let hitResponder: ViewResponder? = {
+            guard let leaf = hitView as? any HitTestingLeafPlatformView,
+                  leaf.usesResponderForHitTesting else {
+                return nil
+            }
+            return Update.perform {
+                guard let responder = leaf.responderForHitTesting else { return nil }
+                var globalPoint = convert(point, to: nil)
+                if _SemanticFeature_v3.isEnabled {
+                    globalPoint.y = (window?.frame.height ?? 0) - globalPoint.y
+                }
+                return responder.hitTest(globalPoint: globalPoint, radius: radius)
+            }
+        }()
+        let description = {
+            if ResponderBasedHitTesting.isEnabled {
+                let result = hitResponder.map { ResponderBasedHitTestTracing.responder($0) } ?? .view(hitView)
+                return ResponderBasedHitTestTracing.view(self)
+                    .traceHitTest(point: point, radius: radius, options: .platformDefault, result: result)
+                    .recursiveDescription(annotating: [result, .view(hitView)])
+            } else {
+                return traceHitTest(point: point, radius: radius, result: hitView)
+                    .recursiveDescription(annotating: [hitView])
+            }
+        }()
+        Log.eventDebug("HIT TEST\n\(description)\n")
+    }
+
+    fileprivate var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        var properties: [(key: String?, value: String)] = [("frame", "\(frame)")]
+        if isHidden {
+            properties.append(("isHidden", "true"))
+        }
+        if alphaValue < ViewResponder.minOpacityForHitTest {
+            properties.append(("alpha", "\(alphaValue)"))
+        }
+        if let customizing = self as? any RecursiveIgnoreHitTestCustomizing,
+           customizing.recursiveIgnoreHitTest {
+            properties.append(("isUserInteractionEnabled", "false"))
+        }
+        if let customizing = self as? any HitTestsAsOpaqueCustomizing {
+            properties.append(("hitTestsAsOpaque", "\(customizing.hitTestsAsOpaque)"))
+        }
+        if let customizing = self as? any AcceptsFirstMouseCustomizing,
+           let value = customizing.customAcceptsFirstMouse {
+            properties.append(("acceptsFirstMouse", "\(value)"))
+        }
+        if self is any HostingViewProtocol, AXIsClientMakingRequest() {
+            properties.append(("isAccessibilityRequest", "true"))
+        }
+        return properties
+    }
+
+    fileprivate func isEqual(to other: NSView) -> Bool {
+        self === other
+    }
+
+    fileprivate func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        result: NSView?
+    ) -> HitTestTrace<NSView> {
+        let name = String(describing: type(of: self))
+        let identifier = String(format: "%p", self)
+        let hit = hitTest(convert(point, to: superview))
+        let children = subviews.compactMap { child -> HitTestTrace<NSView>? in
+            let childPoint = child.convert(point, from: self)
+            guard child.bounds.contains(childPoint) || result?.isDescendant(of: child) == true else {
+                return nil
+            }
+            return child.traceHitTest(point: childPoint, radius: radius, result: result)
+        }
+        return HitTestTrace(
+            value: self, name: name, identifier: identifier, point: point, result: hit, children: children
+        )
+    }
+}
+#endif
+
+// MARK: - ViewResponder + HitTestTracing
+
+extension ViewResponder: HitTestTracing {
+    fileprivate var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        var properties: [(key: String?, value: String)] = []
+        if self is any AnyGestureContainingResponder, let container = gestureContainer {
+            properties.append(contentsOf: [
+                ("gestureRecognizerContainer", "\(type(of: container))(\(address(of: container)))")
+            ])
+        }
+        if !(self is any AnyGestureResponder) {
+            var string = ""
+            extendPrintTree(string: &string)
+            if !string.isEmpty {
+                properties.append(contentsOf: [(nil, string)])
+            }
+        }
+        return properties
+    }
+
+    fileprivate func isEqual(to other: ViewResponder) -> Bool {
+        self === other
+    }
+
+    fileprivate func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        options: ContainsPointsOptions,
+        result: ViewResponder?
+    ) -> HitTestTrace<ViewResponder> {
+        let name = String(describing: type(of: self))
+        let identifier = "\(address(of: self))"
+        let hit = hitTest(globalPoint: point, radius: radius, cacheKey: nil, options: options)
+        let children = children.compactMap { child -> HitTestTrace<ViewResponder>? in
+            let containment = child.containsGlobalPoints([point], cacheKey: nil, options: [])
+            guard containment.mask != [] || result?.isDescendant(of: self) == true else {
+                return nil
+            }
+            return child.traceHitTest(
+                point: point,
+                radius: radius,
+                options: .platformDefault,
+                result: result
+            )
+        }
+        return HitTestTrace(
+            value: self,
+            name: name,
+            identifier: identifier,
+            point: point,
+            result: hit,
+            children: children
+        )
+    }
+}
+
+// MARK: - ResponderBasedHitTestTracing
+
+#if canImport(Darwin)
+private enum ResponderBasedHitTestTracing: HitTestTracing {
+    case view(PlatformView)
+    case responder(ViewResponder)
+
+    var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        switch self {
+        case let .view(view): view.propertiesAffectingHitTest
+        case let .responder(responder): responder.propertiesAffectingHitTest
+        }
+    }
+
+    func isEqual(to other: Self) -> Bool {
+        switch (self, other) {
+        case let (.view(lhs), .view(rhs)): lhs === rhs
+        case let (.responder(lhs), .responder(rhs)): lhs === rhs
+        default: false
+        }
+    }
+
+    func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        options: ViewResponder.ContainsPointsOptions,
+        result: Self?
+    ) -> HitTestTrace<Self> {
+        let trace: HitTestTrace<Self>
+        switch self {
+        case let .view(view):
+            let viewResult: PlatformView? = if case let .view(value) = result {
+                value
+            } else {
+                nil
+            }
+            trace = view.traceHitTest(point: point, radius: radius, result: viewResult).map(Self.view)
+        case let .responder(responder):
+            let responderResult: ViewResponder? = if case let .responder(value) = result {
+                value
+            } else {
+                nil
+            }
+            trace = responder.traceHitTest(
+                point: point, radius: radius, options: options, result: responderResult
+            ).map(Self.responder)
+        }
+        let children: [HitTestTrace<Self>]? = {
+            switch self {
+            case let .view(view):
+                if let leaf = view as? any HitTestingLeafPlatformView {
+                    return Update.perform {
+                        guard let responder = leaf.responderForHitTesting else {
+                            return nil
+                        }
+                        // [AI] Both identity operands read the responder's host view.
+                        if let viewResponder = responder as? PlatformViewResponder,
+                           let hostView = viewResponder.hostView,
+                           hostView === viewResponder.hostView
+                        {
+                            return nil
+                        }
+                        #if os(macOS)
+                        var globalPoint = view.convert(point, to: nil)
+                        if _SemanticFeature_v3.isEnabled {
+                            globalPoint.y = (view.window?.frame.height ?? 0) - globalPoint.y
+                        }
+                        #else
+                        let globalPoint = view.convert(point, to: nil)
+                        #endif
+                        return [Self.responder(responder).traceHitTest(
+                            point: globalPoint, radius: radius, options: options, result: result
+                        )]
+                    }
+                }
+            case let .responder(responder):
+                if let viewResponder = responder as? PlatformViewResponder,
+                   let hostView = viewResponder.hostView,
+                   hostView.window != nil
+                {
+                    #if os(macOS)
+                    var point = point
+                    if _SemanticFeature_v3.isEnabled {
+                        point.y = (hostView.window?.frame.height ?? 0) - point.y
+                    }
+                    #else
+                    if !trace.children.isEmpty {
+                        guard case let .view(resultView) = result else {
+                            break
+                        }
+                        if let hitResponder = responder.hitTest(
+                            globalPoint: point, radius: radius, cacheKey: nil, options: options
+                        ) as? PlatformViewResponder,
+                           hitResponder !== responder,
+                           let hitView = hitResponder.hostView,
+                           resultView.isDescendant(of: hitView)
+                        {
+                            break
+                        }
+                    }
+                    #endif
+                    return [Self.view(hostView).traceHitTest(
+                        point: hostView.convert(point, from: nil), radius: radius, options: options, result: result
+                    )]
+                }
+            }
+            return nil
+        }()
+        return HitTestTrace(
+            value: trace.value, name: trace.name, identifier: trace.identifier,
+            point: trace.point, result: trace.result,
+            children: children ?? trace.children.map {
+                $0.value.traceHitTest(point: $0.point, radius: radius, options: options, result: result)
+            }
+        )
+    }
+}
+#endif
