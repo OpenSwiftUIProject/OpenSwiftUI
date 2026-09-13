@@ -114,6 +114,51 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     package final let viewGraph: ViewGraph
 
+    package let eventBindingManager = EventBindingManager()
+
+    private lazy var eventBindingSource = BindingSource(hostingView: self)
+
+    private lazy var eventBridge = AppKitEventBindingBridge(
+        hostingViewBindingSource: eventBindingSource,
+        eventBindingManager: eventBindingManager
+    )
+
+    private final class BindingSource: EventBindingSource {
+        weak var hostingView: NSHostingView?
+
+        init(hostingView: NSHostingView) {
+            self.hostingView = hostingView
+        }
+
+        func attach(to eventBridge: EventBindingBridge) {
+            preconditionFailure("Event bridge is already attached.")
+        }
+
+        func didBind(to newBinding: EventBinding, id: EventID, in eventBridge: EventBindingBridge) {
+            guard GestureRecognizerBasedEvents.isEnabled, eventBridge === self else {
+                return
+            }
+            hostingView?.didBind(to: newBinding)
+        }
+
+        func didRequestHoverUpdate(in eventBridge: EventBindingBridge) {
+            guard GestureRecognizerBasedEvents.isEnabled, eventBridge === self else {
+                return
+            }
+            hostingView?.didRequestHoverUpdate()
+        }
+    }
+
+    private func didBind(to newBinding: EventBinding) {
+        // TODO: FocusBridge
+        _openSwiftUIUnimplementedWarning()
+    }
+
+    private func didRequestHoverUpdate() {
+        // TODO: hover
+        _openSwiftUIUnimplementedWarning()
+    }
+
     package final let renderer = DisplayList.ViewRenderer(platform: .init(definition: NSViewPlatformViewDefinition.self))
 
     package var currentTimestamp: Time = .zero
@@ -231,6 +276,13 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         wantsLayer = true
         // TODO
         renderer.host = self
+        eventBindingManager.host = self
+        if GestureRecognizerBasedEvents.isEnabled {
+            eventBindingManager.delegate = eventBridge
+            addGestureRecognizer(eventBridge.recognizer)
+        } else {
+            eventBindingManager.delegate = self
+        }
         HostingViewRegistry.shared.add(self)
         // TODO
         Update.end()
@@ -389,6 +441,11 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             Update.locked {
                 cancelAsyncRendering()
             }
+            if GestureRecognizerBasedEvents.isEnabled {
+                eventBridge.reset(eventSource: eventBindingSource, resetForwardedEventDispatchers: true)
+            } else {
+                eventBindingManager.reset(resetForwardedEventDispatchers: true)
+            }
         }
         updateRemovedState()
         // TODO: initialInheritedEnvironment / inferredGraphTraits
@@ -397,7 +454,12 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     }
 
     open override func prepareForReuse() {
-        // TODO
+        // TODO: Clear the hover-active flag when hover tracking is implemented.
+        if GestureRecognizerBasedEvents.isEnabled {
+            eventBridge.reset(eventSource: eventBindingSource, resetForwardedEventDispatchers: true)
+        } else {
+            eventBindingManager.reset(resetForwardedEventDispatchers: true)
+        }
     }
 
     open override func didChangeValue(forKey key: String) {
@@ -978,6 +1040,8 @@ extension NSHostingView: ViewRendererHost {
             return unsafeBitCast(self as any ViewGraphRenderDelegate, to: T.self)
         } else if DisplayList.ViewRenderer.self == T.self {
             return unsafeBitCast(renderer, to: T.self)
+        } else if EventGraphHost.self == T.self {
+            return unsafeBitCast(self as any EventGraphHost, to: T.self)
         } else {
             return nil
         }
@@ -1017,16 +1081,6 @@ extension NSHostingView: ViewRendererHost {
     }
 }
 
-extension NSHostingView: EventGraphHost {
-    package var eventBindingManager: EventBindingManager {
-        _openSwiftUIUnimplementedFailure()
-    }
-
-    package var focusedResponder: ResponderNode? {
-        _openSwiftUIUnimplementedFailure()
-    }
-}
-
 @_spi(Private)
 @available(iOS, unavailable)
 @available(tvOS, unavailable)
@@ -1050,6 +1104,41 @@ extension NSHostingView/*: TestHost*/ {
             proxy.adjustment = adjustment
             body(proxy)
         }
+    }
+}
+
+// MARK: - NSHostingView + EventGraphHost [TBA]
+
+extension NSHostingView: EventGraphHost {
+    package var focusedResponder: ResponderNode? {
+        // TODO: Return focusBridge.focusedItem?.responder when FocusBridge is available.
+        _openSwiftUIUnimplementedWarning()
+        return nil
+    }
+}
+
+// MARK: - NSHostingView + EventBindingManagerDelegate [TBA]
+
+extension NSHostingView: EventBindingManagerDelegate {
+    package func didBind(to newBinding: EventBinding, id: EventID) {
+        guard !GestureRecognizerBasedEvents.isEnabled else { return }
+        didBind(to: newBinding)
+    }
+
+    package func didUpdate(phase: GesturePhase<Void>, in eventBindingManager: EventBindingManager) {
+        guard !GestureRecognizerBasedEvents.isEnabled else { return }
+        switch phase {
+        case .ended, .failed:
+            // TODO: Reset the legacy mouse and hover event state.
+            _openSwiftUIUnimplementedWarning()
+        default:
+            break
+        }
+    }
+
+    package func requestHoverUpdate(in eventBindingManager: EventBindingManager) {
+        guard !GestureRecognizerBasedEvents.isEnabled else { return }
+        didRequestHoverUpdate()
     }
 }
 
