@@ -3,9 +3,10 @@
 //  OpenSwiftUI
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: DB5E6F06E13FF0259F656B4E03BE4F79 (SwiftUI)
 
+import Foundation
 import COpenSwiftUI
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
@@ -261,6 +262,7 @@ extension ViewResponder: HitTestTracing {
 
 // MARK: - ResponderBasedHitTestTracing
 
+#if canImport(Darwin)
 private enum ResponderBasedHitTestTracing: HitTestTracing {
     case view(PlatformView)
     case responder(ViewResponder)
@@ -375,3 +377,4 @@ private enum ResponderBasedHitTestTracing: HitTestTracing {
         )
     }
 }
+#endif
