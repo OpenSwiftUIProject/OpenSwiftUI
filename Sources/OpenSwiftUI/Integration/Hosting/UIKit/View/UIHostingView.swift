@@ -649,6 +649,8 @@ extension _UIHostingView: HitTestingLeafPlatformView {
     }
 }
 
+extension _UIHostingView: CurrentEventProvider {}
+
 // MARK: - UIHostingViewDelegate
 
 package protocol UIHostingViewDelegate: AnyObject {
