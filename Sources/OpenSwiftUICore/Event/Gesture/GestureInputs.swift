@@ -83,6 +83,15 @@ public struct _GestureInputs {
         }
     }
 
+    package var position: Attribute<ViewOrigin> {
+        let defaultPosition = intern(ViewOrigin.zero, id: .defaultValue)
+        return viewSubgraph.apply {
+            let position = IndirectAttribute(source: defaultPosition)
+            position.source = viewInputs.position
+            return position.projectedValue
+        }
+    }
+
     package var size: Attribute<ViewSize> {
         let defaultSize = intern(ViewSize.zero, id: .defaultValue)
         return viewSubgraph.apply {
