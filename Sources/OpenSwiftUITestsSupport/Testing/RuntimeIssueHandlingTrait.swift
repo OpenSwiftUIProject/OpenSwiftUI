@@ -1,20 +1,20 @@
 //
 //  RuntimeIssueHandlingTrait.swift
-//  OpenSwiftUICoreTests
+//  OpenSwiftUITestsSupport
 
 import Foundation
-import Testing
+package import Testing
 
-func containsRuntimeIssue(_ message: String) -> ContainsRuntimeIssueTrait {
+package func containsRuntimeIssue(_ message: String) -> ContainsRuntimeIssueTrait {
     ContainsRuntimeIssueTrait(message: message)
 }
 
-struct ContainsRuntimeIssueTrait: TestTrait, TestScoping {
-    typealias TestScopeProvider = ContainsRuntimeIssueTrait
+package struct ContainsRuntimeIssueTrait: TestTrait, TestScoping {
+    package typealias TestScopeProvider = ContainsRuntimeIssueTrait
 
     var message: String
 
-    func provideScope(
+    package func provideScope(
         for test: Test,
         testCase: Test.Case?,
         performing function: @Sendable () async throws -> Void
@@ -29,12 +29,16 @@ struct ContainsRuntimeIssueTrait: TestTrait, TestScoping {
             }
         }
         try await issueHandler.provideScope(for: test, testCase: testCase, performing: function)
+        #if !OPENSWIFTUI_LINK_TESTING
+        Issue.record("ContainsRuntimeIssueTrait requires OPENSWIFTUI_LINK_TESTING to be set", severity: .warning)
+        #else
         if !state.hasMatch {
             Issue.record(
                 #"Expected runtime issue was not recorded: "\#(message)""#,
                 sourceLocation: test.sourceLocation
             )
         }
+        #endif
     }
 }
 

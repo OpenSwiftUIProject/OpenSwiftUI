@@ -3,6 +3,7 @@
 //  OpenSwiftUICoreTests
 
 import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
 struct MainActorUtilsTests {

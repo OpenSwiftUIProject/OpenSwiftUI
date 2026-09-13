@@ -539,6 +539,34 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     private var isInsertingRenderedSubview: Bool = false
 
+    // Audited for 6.5.4
+    override dynamic open func didAddSubview(_ subview: NSView) {
+        super.didAddSubview(subview)
+        guard !isInsertingRenderedSubview else { return }
+        foreignSubviews.add(subview)
+        if isLinkedOnOrAfter(.v7) {
+            let hostName = if viewController == nil {
+                "NSHostingView"
+            } else {
+                "NSHostingController.view"
+            }
+            Log.runtimeIssues(
+                "Adding '%s' as a subview of %s is not supported and may result in a broken view hierarchy. Add your view above %s in a common superview or insert it into your OpenSwiftUI content in a NSViewRepresentable instead.",
+                [
+                    "\(type(of: subview))",
+                    hostName,
+                    hostName,
+                ]
+            )
+        }
+    }
+
+    // Audited for 6.5.4
+    override dynamic open func willRemoveSubview(_ subview: NSView) {
+        super.willRemoveSubview(subview)
+        foreignSubviews.remove(subview)
+    }
+
     private var sizeConstraints: SizeConstraints?
 
     private struct SizeConstraints {
