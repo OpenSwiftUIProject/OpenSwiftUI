@@ -50,3 +50,5 @@ extension Label where Title == Text, Icon == Image {
         self.init(title: Text(titleResource), icon: Image(resource))
     }
 }
+
+#Preview("Creating a label", body: {Label("label text", image: "add").body})
