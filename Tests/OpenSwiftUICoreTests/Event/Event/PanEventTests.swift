@@ -6,9 +6,10 @@ import Foundation
 @_spi(ForOpenSwiftUIOnly)
 @_spi(_)
 @testable import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
-@Suite
+@Suite(.tags(.aigc))
 struct PanEventTests {
     @Test
     func initializationFromValues() {

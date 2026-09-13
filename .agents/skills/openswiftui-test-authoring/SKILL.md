@@ -20,6 +20,8 @@ description: Route OpenSwiftUI test authoring and review work to the appropriate
 - Follow the organization and naming of the nearest tests in the same target.
 - Sort import declarations alphabetically by imported module name, preserving any
   attributes attached to each declaration.
+- Mark suites/tests that contain AI-generated Swift Testing tests with `.tags(.aigc)`
+  on `@Suite` or `@Test`. Also add `import OpenSwiftUITestsSupport` if not imported yet.
 - In Swift Testing, prefer `@Test(arguments:)` when cases share the same test
   body. Keep different behaviors in separate tests.
 - Give argument collections explicit types when inference is ambiguous,

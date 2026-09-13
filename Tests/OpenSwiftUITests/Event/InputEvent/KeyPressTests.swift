@@ -7,10 +7,11 @@ import OpenAttributeGraphShims
 @_spi(_)
 @testable import OpenSwiftUI
 @_spi(ForOpenSwiftUIOnly) import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
 @MainActor
-@Suite(.disabled(if: attributeGraphVendor == .oag))
+@Suite(.disabled(if: attributeGraphVendor == .oag), .tags(.aigc))
 struct KeyPressTests {
     @Test(arguments: [
         (KeyPress.Phases(), 0, "[]"),
