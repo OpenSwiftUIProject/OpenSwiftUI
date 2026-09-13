@@ -96,16 +96,12 @@ private struct EventListenerPhase<Event>: ResettableGestureRule, CustomStringCon
         value = Value(phase: .possible(nil), trackingID: nil, failureReason: nil)
     }
 
-    // TBA
     mutating func updateValue() {
         guard resetIfNeeded() else {
             return
         }
-
-        var matchedEventID: EventID?
-        var matchedEvent: Event?
+        var matchedEvent: (any EventType)?
         var failureReason: FailureReason?
-
         for (eventID, rawEvent) in events {
             guard rawEvent.binding != nil else {
                 if trackingID == eventID {
@@ -114,45 +110,31 @@ private struct EventListenerPhase<Event>: ResettableGestureRule, CustomStringCon
                 }
                 continue
             }
-
             if !allowsIncompleteEventSequences {
                 if trackingID != eventID && rawEvent.phase != .began {
-                    if trackingID != nil, listener.ignoresOtherEvents {
-                        continue
+                    if trackingID == nil || !listener.ignoresOtherEvents {
+                        failureReason = .eventArrivedMidstream
+                        break
                     }
-                    failureReason = .eventArrivedMidstream
-                    break
                 }
             }
-
-            guard let event = Event(rawEvent) else {
+            guard Event(rawEvent) != nil else {
                 if trackingID != nil, listener.ignoresOtherEvents {
                     continue
                 }
                 failureReason = .unexpectedEvent
                 break
             }
-
             if let trackingID {
-                guard trackingID == eventID else {
-                    if listener.ignoresOtherEvents {
-                        continue
-                    }
+                if trackingID != eventID && !listener.ignoresOtherEvents {
                     failureReason = .multipleMatchingEvents
                     break
                 }
             } else {
                 trackingID = eventID
             }
-
-            guard matchedEvent == nil else {
-                failureReason = .multipleMatchingEvents
-                break
-            }
-            matchedEventID = eventID
-            matchedEvent = event
+            matchedEvent = rawEvent
         }
-
         guard failureReason == nil else {
             value = Value(
                 phase: .failed,
@@ -161,8 +143,7 @@ private struct EventListenerPhase<Event>: ResettableGestureRule, CustomStringCon
             )
             return
         }
-
-        guard var matchedEvent, let matchedEventID else {
+        guard var matchedEvent else {
             guard !hasValue else {
                 return
             }
@@ -173,37 +154,31 @@ private struct EventListenerPhase<Event>: ResettableGestureRule, CustomStringCon
             )
             return
         }
-
         if !preconvertedEventLocations {
-            var events = [matchedEventID: matchedEvent]
-            let resolvedTransform = Graph.withoutUpdate { transform }
-            let resolvedPosition = Graph.withoutUpdate { position }
-            let convertedTransform = resolvedTransform.withPosition(resolvedPosition)
+            let convertedTransform = Graph.withoutUpdate { transform.withPosition(position) }
+            let trackingID = trackingID!
+            var events = [trackingID: matchedEvent]
             defaultConvertEventLocations(&events) { points in
                 convertedTransform.convert(
                     ViewTransform.Conversion.globalToSpace(.local),
                     points: &points
                 )
             }
-            matchedEvent = events[matchedEventID] ?? matchedEvent
+            matchedEvent = events[trackingID]!
         }
-
+        guard let event = Event(matchedEvent) else {
+            return
+        }
         switch matchedEvent.phase {
-        case .began:
+        case .began, .active:
             value = Value(
-                phase: .possible(matchedEvent),
-                trackingID: trackingID,
-                failureReason: nil
-            )
-        case .active:
-            value = Value(
-                phase: .active(matchedEvent),
+                phase: .active(event),
                 trackingID: trackingID,
                 failureReason: nil
             )
         case .ended:
             value = Value(
-                phase: .ended(matchedEvent),
+                phase: .ended(event),
                 trackingID: trackingID,
                 failureReason: nil
             )
