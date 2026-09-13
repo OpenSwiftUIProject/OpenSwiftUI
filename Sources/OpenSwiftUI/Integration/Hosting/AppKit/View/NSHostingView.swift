@@ -116,6 +116,8 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     package let eventBindingManager = EventBindingManager()
 
+    private var hitTestEventMonitor: Any?
+
     private lazy var eventBindingSource = BindingSource(hostingView: self)
 
     private lazy var eventBridge = AppKitEventBindingBridge(
@@ -284,7 +286,20 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
             eventBindingManager.delegate = self
         }
         HostingViewRegistry.shared.add(self)
-        // TODO
+        if _eventDebugTriggers.contains(.hitTest) {
+            hitTestEventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+                guard let self, event.window === self.window else {
+                    return event
+                }
+                guard sequence(first: self as NSView, next: { $0.superview })
+                    .dropFirst().first(ofType: HostingViewProtocol.self) == nil else {
+                    return event
+                }
+                let point = self.convert(event.locationInWindow, from: nil)
+                self.printHitTest(point)
+                return event
+            }
+        }
         Update.end()
         // TODO
         setNeedsUpdate()
@@ -307,6 +322,9 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         updateRemovedState()
         // TODO
         HostingViewRegistry.shared.remove(self)
+        if let hitTestEventMonitor {
+            NSEvent.removeMonitor(hitTestEventMonitor)
+        }
     }
 
     /// The renderer configuration of the hosting view.
