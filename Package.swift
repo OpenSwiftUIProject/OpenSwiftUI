@@ -641,7 +641,10 @@ let cOpenSwiftUITarget = Target.target(
         .headerSearchPath("../OpenSwiftUI_SPI"),
     ],
     cxxSettings: sharedCxxSettings,
-    swiftSettings: sharedSwiftSettings
+    swiftSettings: sharedSwiftSettings,
+    linkerSettings: [
+        .linkedFramework("ApplicationServices", .when(platforms: [.macOS])),
+    ]
 )
 
 let cOpenSwiftUITestTarget = Target.testTarget(

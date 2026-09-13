@@ -58,7 +58,7 @@ import UIKit
 // MARK: - UIView + HitTestTracing
 
 extension UIView: HitTestTracing {
-    func printHitTest(_ point: CGPoint, radius: CGFloat) {
+    func printHitTest(_ point: CGPoint, radius: CGFloat = 1.0) {
         guard let hitView = hitTest(point, with: nil) else { return }
         let context = _UIHitTestContext(point: convert(point, to: nil), radius: radius)
         let hit = hitView._hitTest(with: context)
@@ -117,7 +117,90 @@ extension UIView: HitTestTracing {
     }
 }
 #elseif os(macOS)
-// TODO: NSView
+import AppKit
+
+// MARK: - NSView + HitTestTracing
+
+extension NSView: HitTestTracing {
+    func printHitTest(_ point: CGPoint, radius: CGFloat = 1.0) {
+        guard let hitView = hitTest(convert(point, to: superview)) else { return }
+        let hitResponder: ViewResponder? = {
+            guard let leaf = hitView as? any HitTestingLeafPlatformView,
+                  leaf.usesResponderForHitTesting else {
+                return nil
+            }
+            return Update.perform {
+                guard let responder = leaf.responderForHitTesting else { return nil }
+                var globalPoint = convert(point, to: nil)
+                if _SemanticFeature_v3.isEnabled {
+                    globalPoint.y = (window?.frame.height ?? 0) - globalPoint.y
+                }
+                return responder.hitTest(globalPoint: globalPoint, radius: radius)
+            }
+        }()
+        let description = {
+            if ResponderBasedHitTesting.isEnabled {
+                let result = hitResponder.map { ResponderBasedHitTestTracing.responder($0) } ?? .view(hitView)
+                return ResponderBasedHitTestTracing.view(self)
+                    .traceHitTest(point: point, radius: radius, options: .platformDefault, result: result)
+                    .recursiveDescription(annotating: [result, .view(hitView)])
+            } else {
+                return traceHitTest(point: point, radius: radius, result: hitView)
+                    .recursiveDescription(annotating: [hitView])
+            }
+        }()
+        Log.eventDebug("HIT TEST\n\(description)\n")
+    }
+
+    fileprivate var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        var properties: [(key: String?, value: String)] = [("frame", "\(frame)")]
+        if isHidden {
+            properties.append(("isHidden", "true"))
+        }
+        if alphaValue < ViewResponder.minOpacityForHitTest {
+            properties.append(("alpha", "\(alphaValue)"))
+        }
+        if let customizing = self as? any RecursiveIgnoreHitTestCustomizing,
+           customizing.recursiveIgnoreHitTest {
+            properties.append(("isUserInteractionEnabled", "false"))
+        }
+        if let customizing = self as? any HitTestsAsOpaqueCustomizing {
+            properties.append(("hitTestsAsOpaque", "\(customizing.hitTestsAsOpaque)"))
+        }
+        if let customizing = self as? any AcceptsFirstMouseCustomizing,
+           let value = customizing.customAcceptsFirstMouse {
+            properties.append(("acceptsFirstMouse", "\(value)"))
+        }
+        if self is any HostingViewProtocol, AXIsClientMakingRequest() {
+            properties.append(("isAccessibilityRequest", "true"))
+        }
+        return properties
+    }
+
+    fileprivate func isEqual(to other: NSView) -> Bool {
+        self === other
+    }
+
+    fileprivate func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        result: NSView?
+    ) -> HitTestTrace<NSView> {
+        let name = String(describing: type(of: self))
+        let identifier = String(format: "%p", self)
+        let hit = hitTest(convert(point, to: superview))
+        let children = subviews.compactMap { child -> HitTestTrace<NSView>? in
+            let childPoint = child.convert(point, from: self)
+            guard child.bounds.contains(childPoint) || result?.isDescendant(of: child) == true else {
+                return nil
+            }
+            return child.traceHitTest(point: childPoint, radius: radius, result: result)
+        }
+        return HitTestTrace(
+            value: self, name: name, identifier: identifier, point: point, result: hit, children: children
+        )
+    }
+}
 #endif
 
 // MARK: - ViewResponder + HitTestTracing
@@ -237,8 +320,16 @@ private enum ResponderBasedHitTestTracing: HitTestTracing {
                         {
                             return nil
                         }
+                        #if os(macOS)
+                        var globalPoint = view.convert(point, to: nil)
+                        if _SemanticFeature_v3.isEnabled {
+                            globalPoint.y = (view.window?.frame.height ?? 0) - globalPoint.y
+                        }
+                        #else
+                        let globalPoint = view.convert(point, to: nil)
+                        #endif
                         return [Self.responder(responder).traceHitTest(
-                            point: view.convert(point, to: nil), radius: radius, options: options, result: result
+                            point: globalPoint, radius: radius, options: options, result: result
                         )]
                     }
                 }
@@ -247,6 +338,12 @@ private enum ResponderBasedHitTestTracing: HitTestTracing {
                    let hostView = viewResponder.hostView,
                    hostView.window != nil
                 {
+                    #if os(macOS)
+                    var point = point
+                    if _SemanticFeature_v3.isEnabled {
+                        point.y = (hostView.window?.frame.height ?? 0) - point.y
+                    }
+                    #else
                     if !trace.children.isEmpty {
                         guard case let .view(resultView) = result else {
                             break
@@ -261,6 +358,7 @@ private enum ResponderBasedHitTestTracing: HitTestTracing {
                             break
                         }
                     }
+                    #endif
                     return [Self.view(hostView).traceHitTest(
                         point: hostView.convert(point, from: nil), radius: radius, options: options, result: result
                     )]
