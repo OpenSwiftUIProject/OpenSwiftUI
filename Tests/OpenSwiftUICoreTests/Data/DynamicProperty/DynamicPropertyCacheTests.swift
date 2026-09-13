@@ -4,6 +4,7 @@
 
 import OpenAttributeGraphShims
 @testable import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
 // FIXME: Remove after we implement forEachField

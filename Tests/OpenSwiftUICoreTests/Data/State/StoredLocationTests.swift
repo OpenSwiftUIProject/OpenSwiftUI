@@ -5,6 +5,7 @@
 import Foundation
 import OpenAttributeGraphShims
 @_spi(ForOpenSwiftUIOnly) @testable import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
 @MainActor

@@ -193,11 +193,7 @@ package enum Log {
         #if OPENSWIFTUI_LINK_TESTING
         if Test.current != nil {
             let comment: Comment = #"[Runtime Issue] message: \#(message.description) args: \#(args)"#
-            #if swift(>=6.3)
             Issue.record(comment, severity: .warning)
-            #else
-            Issue.record(comment)
-            #endif
         }
         #endif
 
