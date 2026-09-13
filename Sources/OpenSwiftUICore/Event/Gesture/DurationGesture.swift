@@ -85,7 +85,6 @@ private struct DurationPhase<BodyValue>: ResettableGestureRule {
         if let start {
             elapsed = time - start
         } else {
-            let childPhase = childPhase
             if childPhase.isActive || modifier.trackFromEventStart {
                 start = time
                 elapsed = .zero

@@ -131,7 +131,7 @@ struct Map2Gesture<InputValue, Content, OutputValue>: GestureModifier where Cont
             inputs: inputs
         )
         let phase = Attribute(Map2Phase(
-            body: modifier[offset: { .of(&$0.body) }].value,
+            body: modifier[\.body].value,
             phase1: outputs1.phase,
             phase2: outputs2.phase,
             resetSeed: inputs.resetSeed,
