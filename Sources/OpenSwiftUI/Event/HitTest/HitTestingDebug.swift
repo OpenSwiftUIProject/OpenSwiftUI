@@ -52,3 +52,104 @@ private struct HitTestTrace<Value> where Value: HitTestTracing {
     }
 }
 
+// MARK: - ResponderBasedHitTestTracing
+
+private enum ResponderBasedHitTestTracing: HitTestTracing {
+    case view(PlatformView)
+    case responder(ViewResponder)
+
+    var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        switch self {
+        case let .view(view): view.propertiesAffectingHitTest
+        case let .responder(responder): responder.propertiesAffectingHitTest
+        }
+    }
+
+    func isEqual(to other: Self) -> Bool {
+        switch (self, other) {
+        case let (.view(lhs), .view(rhs)): lhs === rhs
+        case let (.responder(lhs), .responder(rhs)): lhs === rhs
+        default: false
+        }
+    }
+
+    func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        options: ViewResponder.ContainsPointsOptions,
+        result: Self?
+    ) -> HitTestTrace<Self> {
+        let trace: HitTestTrace<Self>
+        switch self {
+        case let .view(view):
+            let viewResult: PlatformView? = if case let .view(value) = result {
+                value
+            } else {
+                nil
+            }
+            trace = view.traceHitTest(point: point, radius: radius, result: viewResult).map(Self.view)
+        case let .responder(responder):
+            let responderResult: ViewResponder? = if case let .responder(value) = result {
+                value
+            } else {
+                nil
+            }
+            trace = responder.traceHitTest(
+                point: point, radius: radius, options: options, result: responderResult
+            ).map(Self.responder)
+        }
+        let children: [HitTestTrace<Self>]? = {
+            switch self {
+            case let .view(view):
+                if let leaf = view as? any HitTestingLeafPlatformView {
+                    return Update.perform {
+                        guard let responder = leaf.responderForHitTesting else {
+                            return nil
+                        }
+                        // [AI] Both identity operands read the responder's host view.
+                        if let viewResponder = responder as? PlatformViewResponder,
+                           let hostView = viewResponder.hostView,
+                           hostView === viewResponder.hostView
+                        {
+                            return nil
+                        }
+                        return [Self.responder(responder).traceHitTest(
+                            point: view.convert(point, to: nil), radius: radius, options: options, result: result
+                        )]
+                    }
+                }
+            case let .responder(responder):
+                if let viewResponder = responder as? PlatformViewResponder,
+                   let hostView = viewResponder.hostView,
+                   hostView.window != nil
+                {
+                    if !trace.children.isEmpty {
+                        guard case let .view(resultView) = result else {
+                            break
+                        }
+                        if let hitResponder = responder.hitTest(
+                            globalPoint: point, radius: radius, cacheKey: nil, options: options
+                        ) as? PlatformViewResponder,
+                           hitResponder !== responder,
+                           let hitView = hitResponder.hostView,
+                           resultView.isDescendant(of: hitView)
+                        {
+                            break
+                        }
+                    }
+                    return [Self.view(hostView).traceHitTest(
+                        point: hostView.convert(point, from: nil), radius: radius, options: options, result: result
+                    )]
+                }
+            }
+            return nil
+        }()
+        return HitTestTrace(
+            value: trace.value, name: trace.name, identifier: trace.identifier,
+            point: trace.point, result: trace.result,
+            children: children ?? trace.children.map {
+                $0.value.traceHitTest(point: $0.point, radius: radius, options: options, result: result)
+            }
+        )
+    }
+}
