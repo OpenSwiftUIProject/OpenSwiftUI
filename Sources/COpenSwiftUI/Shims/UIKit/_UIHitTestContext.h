@@ -27,7 +27,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 @end
 
 OPENSWIFTUI_EXPORT
-_UIHitTestContext * _Nullable _UICurrentHitTestContext(void) OPENSWIFTUI_SWIFT_NAME(getter:_UIHitTestContext.current);
+_UIHitTestContext * _Nullable _UICurrentHitTestContext(void) OPENSWIFTUI_SWIFT_NAME(getter:_UIHitTestContext.current());
 
 NS_HEADER_AUDIT_END(nullability, sendability)
 

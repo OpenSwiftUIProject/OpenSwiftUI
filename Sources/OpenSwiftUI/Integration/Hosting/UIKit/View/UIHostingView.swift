@@ -445,6 +445,45 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         foreignSubviews.remove(subview)
     }
 
+    // Audited for 6.5.4
+    override dynamic open func hitTest(_ point: CGPoint, with event: UIEvent?) -> UIView? {
+        printHitTestIfNeeded(at: point, with: event)
+        let result = super.hitTest(point, with: event)
+        guard GestureContainerFeature.isEnabled,
+              _UIHitTestContext.current != nil || CoreTesting.isRunning
+        else {
+            return result
+        }
+        if let result, foreignSubviews.allObjects.contains(where: { result.isDescendant(of: $0) }) {
+            return result
+        }
+        currentEvent = event
+        guard !UIViewIgnoresTouchEvents(self), self.point(inside: point, with: event) else {
+            return nil
+        }
+        return self
+    }
+
+    // Audited for 6.5.4
+    private func printHitTestIfNeeded(at point: CGPoint, with event: UIEvent?) {
+        guard _eventDebugTriggers.contains(.hitTest), let event, event.type == .touches else {
+            return
+        }
+        guard sequence(first: self as UIView, next: { $0.superview })
+            .dropFirst().first(ofType: HostingViewProtocol.self) == nil
+        else {
+            return
+        }
+        let usesGestureContainer = GestureContainerFeature.isEnabled
+        let context = _UIHitTestContext.current
+        if usesGestureContainer {
+            guard let context else { return }
+            printHitTest(point, radius: context.radius)
+        } else {
+            guard context == nil else { return }
+            printHitTest(point)
+        }
+    }
     
     /// The UIKit notion of the safe area insets.
     open override var safeAreaInsets: UIEdgeInsets {
