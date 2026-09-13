@@ -151,7 +151,7 @@ struct StyledTextResponderFilter: StatefulRule {
 
     typealias Value = [ViewResponder]
 
-    mutating func updateValue() {
+    func updateValue() {
         responder.update()
         if !hasValue {
             value = [responder]
