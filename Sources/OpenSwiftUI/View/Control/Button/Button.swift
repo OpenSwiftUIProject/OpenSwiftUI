@@ -113,3 +113,4 @@ extension Button where ButtonLabel == Label<Text, Image> {
 
 #Preview("Creating a button: text", body: {Button("Example Text Button"){}.body})
 #Preview("Creating a button: icon", body: {Button(Image("add")){}.body})
+#Preview("Creating a button: Label<Text,Image>", body: { Button("Text", systemImage: "add"){}.body })
