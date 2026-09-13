@@ -926,8 +926,18 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         // TODO: handle screen change
     }
 
-    @objc(swiftui_addRenderedSubview:positioned:relativeTo:) // FIXME: ViewUpdater -> AppKitAddSubview
-    private func openswiftui_addRenderedSubview(_ view: NSView, positioned place: NSWindow.OrderingMode, relativeTo otherView: NSView?) {
+    @_spi(ForOpenSwiftUIOnly)
+    #if OPENSWIFTUI_SWIFTUI_RENDERER
+    @objc(swiftui_addRenderedSubview:positioned:relativeTo:)
+    #endif
+    override public func openswiftui_addRenderedSubview(
+        _ subview: Any,
+        positioned place: Int,
+        relativeTo otherView: Any?
+    ) {
+        let view = subview as! NSView
+        let place = NSWindow.OrderingMode(rawValue: place)!
+        let otherView = otherView as! NSView
         isInsertingRenderedSubview = true
         addSubview(view, positioned: place, relativeTo: otherView)
         isInsertingRenderedSubview = false
