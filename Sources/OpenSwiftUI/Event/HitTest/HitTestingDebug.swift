@@ -52,6 +52,74 @@ private struct HitTestTrace<Value> where Value: HitTestTracing {
     }
 }
 
+#if os(iOS) || os(visionOS)
+import UIKit
+
+// MARK: - UIView + HitTestTracing
+
+extension UIView: HitTestTracing {
+    func printHitTest(_ point: CGPoint, radius: CGFloat) {
+        guard let hitView = hitTest(point, with: nil) else { return }
+        let context = _UIHitTestContext(point: convert(point, to: nil), radius: radius)
+        let hit = hitView._hitTest(with: context)
+        let resolvedHitView = (hit as? UIView) ?? hitView
+        let hitResponder = (hit as? UIKitGestureContainer)?.responder
+        let description = {
+            if GestureContainerFeature.isEnabled {
+                let result = hitResponder.map { ResponderBasedHitTestTracing.responder($0) } ?? .view(resolvedHitView)
+                return ResponderBasedHitTestTracing.view(self)
+                    .traceHitTest(point: point, radius: radius, options: .platformDefault, result: result)
+                    .recursiveDescription(annotating: [result, .view(resolvedHitView)])
+            } else {
+                return traceHitTest(point: point, radius: radius, result: resolvedHitView)
+                    .recursiveDescription(annotating: [resolvedHitView])
+            }
+        }()
+        Log.eventDebug("HIT TEST\n\(description)\n")
+    }
+
+    fileprivate var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        var properties: [(key: String?, value: String)] = [("frame", "\(frame)")]
+        if isHidden {
+            properties.append(("isHidden", "true"))
+        }
+        if alpha < ViewResponder.minOpacityForHitTest {
+            properties.append(("alpha", "\(alpha)"))
+        }
+        if !isUserInteractionEnabled {
+            properties.append(("isUserInteractionEnabled", "false"))
+        }
+        return properties
+    }
+
+    fileprivate func isEqual(to other: UIView) -> Bool {
+        self === other
+    }
+
+    fileprivate func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        result: UIView?
+    ) -> HitTestTrace<UIView> {
+        let name = String(describing: type(of: self))
+        let identifier = String(format: "%p", self)
+        let hit = hitTest(point, with: nil)
+        let children = subviews.compactMap { child -> HitTestTrace<UIView>? in
+            let childPoint = child.convert(point, from: self)
+            guard child.bounds.contains(childPoint) || result?.isDescendant(of: child) == true else {
+                return nil
+            }
+            return child.traceHitTest(point: childPoint, radius: radius, result: result)
+        }
+        return HitTestTrace(
+            value: self, name: name, identifier: identifier, point: point, result: hit, children: children
+        )
+    }
+}
+#elseif os(macOS)
+// TODO: NSView
+#endif
+
 // MARK: - ViewResponder + HitTestTracing
 
 extension ViewResponder: HitTestTracing {
