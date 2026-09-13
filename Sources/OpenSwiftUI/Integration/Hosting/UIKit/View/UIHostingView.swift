@@ -413,9 +413,38 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
     
-    private lazy var foreignSubviews: NSHashTable<UIView>? = NSHashTable.weakObjects()
+    private lazy var foreignSubviews: NSHashTable<UIView> = NSHashTable.weakObjects()
 
     private var isInsertingRenderedSubview: Bool = false
+
+    // Audited for 6.5.4
+    override dynamic open func didAddSubview(_ subview: UIView) {
+        super.didAddSubview(subview)
+        guard !isInsertingRenderedSubview else { return }
+        foreignSubviews.add(subview)
+        if isLinkedOnOrAfter(.v7) {
+            let hostName = if _OpenSwiftUIIsAppleInternalBuild(), viewController == nil {
+                "_UIHostingView"
+            } else {
+                "UIHostingController.view"
+            }
+            Log.runtimeIssues(
+                "Adding '%s' as a subview of %s is not supported and may result in a broken view hierarchy. Add your view above %s in a common superview or insert it into your OpenSwiftUI content in a UIViewRepresentable instead.",
+                [
+                    "\(type(of: subview))",
+                    hostName,
+                    hostName,
+                ]
+            )
+        }
+    }
+
+    // Audited for 6.5.4
+    override dynamic open func willRemoveSubview(_ subview: UIView) {
+        super.willRemoveSubview(subview)
+        foreignSubviews.remove(subview)
+    }
+
     
     /// The UIKit notion of the safe area insets.
     open override var safeAreaInsets: UIEdgeInsets {
@@ -486,8 +515,12 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
 
-    @objc(swiftui_insertRenderedSubview:atIndex:) // FIXME: ViewUpdater -> CoreViewAddSubview
-    private func openswiftui_insertRenderedSubview(_ view: UIView, at index: Int) {
+    @_spi(ForOpenSwiftUIOnly)
+    #if OPENSWIFTUI_SWIFTUI_RENDERER
+    @objc(swiftui_insertRenderedSubview:atIndex:)
+    #endif
+    override public func openswiftui_insertRenderedSubview(_ subview: Any, at index: Int) {
+        let view = subview as! UIView
         isInsertingRenderedSubview = true
         insertSubview(view, at: index)
         isInsertingRenderedSubview = false
