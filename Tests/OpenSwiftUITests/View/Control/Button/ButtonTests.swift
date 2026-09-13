@@ -13,9 +13,7 @@ struct ButtonTests {
             clicked = true;
         }
 
-        var button = Button ("Run") {
-            cb()
-        }
+        var button = Button ("Run", cb)
         // TODO: Trigger attempt to press button.
 
         expect(clicked, true);
@@ -27,9 +25,7 @@ struct ButtonTests {
             clicked = true;
         };
 
-        var button = Button ("Run") {
-            cb()
-        }
+        var button = Button ("Run", cb)
 
         // TODO: Attempt to trigger the button.
         expect(clicked, false);
