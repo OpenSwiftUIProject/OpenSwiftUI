@@ -6,6 +6,7 @@
 import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import OSLog
 import Testing
 
@@ -226,7 +227,7 @@ private func makeData(
 }
 
 @MainActor
-@Suite(.disabled(if: isX86_64, "OSLogStore does not reliably return current-process log entries on x86_64 simulator."))
+@Suite(.disabled(if: isX86_64, "OSLogStore does not reliably return current-process log entries on x86_64 simulator."), .tags(.aigc))
 struct GestureDebugDualTests {
     // NOTE: entry.date has some range diff. So we can't use $0.date > date. Use count instead.
     @available(iOS 15, macOS 12, *)

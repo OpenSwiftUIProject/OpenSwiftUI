@@ -11,6 +11,7 @@ import OpenAttributeGraphShims
 @_private(sourceFile: "GestureDebug.swift")
 #endif
 import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 #if !OPENSWIFTUI_SWIFT_LOG
 import OSLog
 #endif
@@ -229,7 +230,10 @@ private func makeData(
 
 #if !OPENSWIFTUI_SWIFT_LOG
 @MainActor
-@Suite(.disabled(if: isX86_64, "OSLogStore does not reliably return current-process log entries on x86_64 simulator."))
+@Suite(
+    .disabled(if: isX86_64, "OSLogStore does not reliably return current-process log entries on x86_64 simulator."),
+    .tags(.aigc)
+)
 struct GestureDebugLogTests {
     // NOTE: entry.date has some range diff. So we can't use $0.date > date. Use count instead.
     @available(iOS 15, macOS 12, *)
@@ -290,6 +294,7 @@ struct GestureDebugLogTests {
 #endif
 
 #if OPENSWIFTUI_ENABLE_PRIVATE_IMPORTS
+@Suite(.tags(.aigc))
 struct GestureDebugTests {
     @Test
     func frameDescriptionWithoutParent() {

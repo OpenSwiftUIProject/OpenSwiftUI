@@ -3,9 +3,10 @@
 //  OpenSwiftUICoreTests
 
 @_spi(ForOpenSwiftUIOnly) @testable import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
-@Suite(.serialized)
+@Suite(.serialized, .tags(.aigc))
 struct EventDebugTriggersTests {
     @Test
     func rawValues() {
@@ -60,6 +61,7 @@ struct EventDebugTriggersTests {
     }
 }
 
+@Suite(.tags(.aigc))
 struct InheritedPhaseDescriptionTests {
     @Test(arguments: [
         (0, "[ ]"),

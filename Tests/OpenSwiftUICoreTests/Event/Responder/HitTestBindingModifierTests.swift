@@ -11,10 +11,11 @@ import OpenAttributeGraphShims
 @_private(sourceFile: "HitTestBindingModifier.swift")
 #endif
 import OpenSwiftUICore
+import OpenSwiftUITestsSupport
 import Testing
 
 @MainActor
-@Suite(.disabled(if: attributeGraphVendor == .oag))
+@Suite(.disabled(if: attributeGraphVendor == .oag), .tags(.aigc))
 struct HitTestBindingModifierTests {
     // MARK: - Point Sampling
 
