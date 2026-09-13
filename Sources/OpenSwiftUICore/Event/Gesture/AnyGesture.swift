@@ -129,16 +129,17 @@ private struct AnyGestureInfo<V>: StatefulRule {
     ) -> Value {
         let childGraph = Subgraph(graph: parentSubgraph.graph)
         parentSubgraph.addChild(childGraph)
+        let info = attribute
         return childGraph.apply {
             var childInputs = inputs
             childInputs.copyCaches()
             childInputs.resetSeed = Attribute(AnyResetSeed<V>(
                 resetSeed: inputs.resetSeed,
-                info: attribute
+                info: info
             ))
             let childOutputs = storage.makeChild(
                 uniqueId: uniqueId,
-                container: attribute,
+                container: info,
                 inputs: childInputs
             )
             outputs.attachIndirectOutputs(childOutputs)
