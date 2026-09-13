@@ -52,6 +52,62 @@ private struct HitTestTrace<Value> where Value: HitTestTracing {
     }
 }
 
+// MARK: - ViewResponder + HitTestTracing
+
+extension ViewResponder: HitTestTracing {
+    fileprivate var propertiesAffectingHitTest: [(key: String?, value: String)] {
+        var properties: [(key: String?, value: String)] = []
+        if self is any AnyGestureContainingResponder, let container = gestureContainer {
+            properties.append(contentsOf: [
+                ("gestureRecognizerContainer", "\(type(of: container))(\(address(of: container)))")
+            ])
+        }
+        if !(self is any AnyGestureResponder) {
+            var string = ""
+            extendPrintTree(string: &string)
+            if !string.isEmpty {
+                properties.append(contentsOf: [(nil, string)])
+            }
+        }
+        return properties
+    }
+
+    fileprivate func isEqual(to other: ViewResponder) -> Bool {
+        self === other
+    }
+
+    fileprivate func traceHitTest(
+        point: CGPoint,
+        radius: CGFloat,
+        options: ContainsPointsOptions,
+        result: ViewResponder?
+    ) -> HitTestTrace<ViewResponder> {
+        let name = String(describing: type(of: self))
+        let identifier = "\(address(of: self))"
+        let hit = hitTest(globalPoint: point, radius: radius, cacheKey: nil, options: options)
+        let children = children.compactMap { child -> HitTestTrace<ViewResponder>? in
+            let containment = child.containsGlobalPoints([point], cacheKey: nil, options: [])
+            guard containment.mask != [] || result?.isDescendant(of: self) == true else {
+                return nil
+            }
+            return child.traceHitTest(
+                point: point,
+                radius: radius,
+                options: .platformDefault,
+                result: result
+            )
+        }
+        return HitTestTrace(
+            value: self,
+            name: name,
+            identifier: identifier,
+            point: point,
+            result: hit,
+            children: children
+        )
+    }
+}
+
 // MARK: - ResponderBasedHitTestTracing
 
 private enum ResponderBasedHitTestTracing: HitTestTracing {
