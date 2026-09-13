@@ -255,6 +255,17 @@ package struct StyledTextContentView: UnaryView, PrimitiveView, ShapeStyledLeafV
             )
         }
         // TODO: Text.Layout.Key
+        if inputs.preferences.requiresViewResponders {
+            outputs.preferences.viewResponders = Attribute(
+                StyledTextResponderFilter(
+                    responder: StyledTextResponder(
+                        view: view.value,
+                        styles: shapeStyles,
+                        inputs: inputs
+                    )
+                )
+            )
+        }
         return outputs
     }
 

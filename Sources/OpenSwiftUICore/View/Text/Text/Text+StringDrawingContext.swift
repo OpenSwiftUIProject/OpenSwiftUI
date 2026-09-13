@@ -588,26 +588,3 @@ extension ResolvedStyledText {
     // FIXME
     package class TextLayoutManager: ResolvedStyledText {}
 }
-
-// FIXME
-extension NSAttributedString {
-    var hasLinkAttributes: Bool {
-        var result = false
-        enumerateAttribute(.kitLink, in: NSRange(location: 0, length: length)) { value, _, stop in
-            // FIXME: URL.init()
-            let link: URL?
-            if let value = value as? URL {
-                link = value
-            } else if let value = value as? String {
-                link = URL(string: value)
-            } else {
-                link = nil
-            }
-            if link != nil {
-                result = true
-                stop.pointee = true
-            }
-        }
-        return result
-    }
-}
