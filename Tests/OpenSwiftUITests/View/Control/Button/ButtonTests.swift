@@ -5,6 +5,8 @@
 @testable import OpenSwiftUI
 import Testing
 
+@MainActor
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct ButtonTests {
     @Test
     func enabledButtonInvokesAction() {
@@ -15,7 +17,6 @@ struct ButtonTests {
 
         var button = Button ("Run", cb)
         // TODO: Trigger attempt to press button.
-
         expect(clicked, true);
     }
     @Test

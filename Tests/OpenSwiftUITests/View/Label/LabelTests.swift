@@ -1,6 +1,8 @@
 @testable import OpenSwiftUI
 import Testing
 
+@MainActor
+@Suite(.snapshots(record: .never, diffTool: diffTool))
 struct LabelTests {
     @Test
     func hasTheExpectedChildren() {
