@@ -17,6 +17,7 @@
 @property (nonatomic) BOOL ignoreHitTest_openswiftui_safe_wrapper OPENSWIFTUI_SWIFT_NAME(ignoreHitTest);
 
 - (nullable NSResponder *)_nextResponderForEvent:(nullable NSEvent *)event;
+- (nonnull id)_observerForChangesInGeometryInWindow:(void (^ _Nonnull)(NSView * _Nonnull view))block;
 - (void)_updateLayerGeometryFromView;
 - (void)_updateLayerShadowFromView;
 - (void)_updateLayerShadowColorFromView;
