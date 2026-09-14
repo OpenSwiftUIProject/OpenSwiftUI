@@ -1,0 +1,49 @@
+name: Swift SDK for Android
+on:
+  workflow_call:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/android_sdk.yaml'
+  pull_request:
+    branches: [main]
+    paths:
+      - '.github/workflows/android_sdk.yaml'
+
+jobs:
+  # Generic versioning support of https://www.swift.org/documentation/articles/swift-sdk-for-android-getting-started.html
+  # Downloads the Android SDK for the active SDK version, determines the checksum, installs the sdk and configures the Android NDK.
+  # Finally runs build.
+  android_test:
+    name: Build with Swift SDK for Android on Ubuntu
+    strategy:
+      fail-fast: false
+      matrix:
+        swift_version: ["6.3.3"]
+    runs-on: ubuntu-22.04
+    env:
+      OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 1
+      OPENSWIFTUI_SWIFT_CRYPTO: 1
+      OPENSWIFTUI_LINK_TESTING: 1
+      ANDROID_NDK_HOME: ''
+    container: swift:${{ matrix.swift_version }}-jammy
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download ${{ matrix.swift_version }} SDK artifact
+        run: curl -o https://download.swift.org/swift-${{ matrix.swift_version }}-release/android-sdk/swift-${{ matrix.swift_version }}-RELEASE/swift-${{ matrix.swift_version }}-RELEASE_android.artifactbundle.tar.gz
+      - name: Configure Swift SDK for Android
+        run: |
+          echo "$(swift package compute-checksum swift-${{ matrix.swift_version }}-RELEASE_android.artifactbundle.tar.gz)" | \
+          swift sdk install swift-${{ matrix.swift_version }}-RELEASE_android.artifactbundle.tar.gz --checksum 
+      - name: Install & Confgure Android
+        working-directory: ~/.swiftpm/swift-sdks/swift-${{ matrix.swift_version }}-RELEASE_android.artifactbundle/swift-android/
+        run: |
+          curl -fSL -o ndk.zip "https://dl.google.com/android/repository/android-ndk-r27d-$(uname -s).zip"
+          unzip -qo ndk.zip
+          echo "ANDROID_NDK_HOME=$PWD/android-ndk-r27d" >> $GITHUB_ENV
+          ./scripts/setup-android-sdk.sh
+      - name: Build artifacts
+        run: swift build --swift-sdk x86_64-unknown-linux-android28 --static-swift-stdlib
