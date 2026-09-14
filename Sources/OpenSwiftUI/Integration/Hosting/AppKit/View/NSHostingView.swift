@@ -118,6 +118,10 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
 
     private var hitTestEventMonitor: Any?
 
+    private var geometryChangeRegistrationPhase: HostingViewGeometryRegistrationPhase = .unregistered
+
+    private var geometryChangeObserver: Any?
+
     private lazy var eventBindingSource = BindingSource(hostingView: self)
 
     private lazy var eventBridge = AppKitEventBindingBridge(
@@ -484,6 +488,17 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         super.didChangeValue(forKey: key)
         if key == "safeAreaInsets" {
             invalidateSafeAreaInsets()
+        }
+    }
+
+    private func geometryInWindowDidChange() {
+        switch geometryChangeRegistrationPhase {
+        case .unregistered:
+            Log.internalError("Received geometry change with no registration for \(self).")
+        case .registering:
+            break
+        case .registered:
+            invalidateProperties(.transform, mayDeferUpdate: false)
         }
     }
 
@@ -1064,6 +1079,13 @@ extension NSHostingView: ViewRendererHost {
         viewGraph.setEnvironment(environment)
     }
 
+    package func updateTransform() {
+        if !viewGraph.invalidateTransform(), geometryChangeRegistrationPhase != .unregistered {
+            geometryChangeObserver = nil
+            geometryChangeRegistrationPhase = .unregistered
+        }
+    }
+
     package func updateSize() {
         viewGraph.setProposedSize(bounds.size)
     }
@@ -1088,6 +1110,8 @@ extension NSHostingView: ViewRendererHost {
             return unsafeBitCast(renderer, to: T.self)
         } else if EventGraphHost.self == T.self {
             return unsafeBitCast(self as any EventGraphHost, to: T.self)
+        } else if RootTransformProvider.self == T.self {
+            return unsafeBitCast(self as any RootTransformProvider, to: T.self)
         } else {
             return nil
         }
@@ -1125,6 +1149,63 @@ extension NSHostingView: ViewRendererHost {
             }
         }
     }
+}
+
+// MARK: - NSHostingView + RootTransformProvider [6.5.4]
+
+extension NSHostingView: RootTransformProvider {
+    package func rootTransform() -> ViewTransform {
+        if geometryChangeRegistrationPhase == .unregistered {
+            geometryChangeRegistrationPhase = .registering
+            geometryChangeObserver = _observerForChangesInGeometry { view in
+                (view as! Self).geometryInWindowDidChange()
+            }
+            geometryChangeRegistrationPhase = .registered
+        }
+        guard window != nil else {
+            return ViewTransform()
+        }
+
+        var buffer = ViewTransform.UnsafeBuffer()
+        let usesRootGeometry = _SemanticFeature_v6.isEnabled
+        if !usesRootGeometry {
+            buffer.appendCoordinateSpace(id: hostingViewCoordinateSpace)
+        }
+        var origin = convert(CGPoint.zero, to: nil)
+        if _SemanticFeature_v3.isEnabled {
+            if _SemanticFeature_v3.isEnabled {
+                origin.y = (window?.frame.height ?? 0) - origin.y
+            }
+            buffer.appendTranslation(CGSize(width: -origin.x, height: -origin.y))
+        } else {
+            buffer.appendAffineTransform(
+                CGAffineTransform(a: 1, b: 0, c: 0, d: -1, tx: -origin.x, ty: origin.y),
+                inverse: false
+            )
+        }
+        if usesRootGeometry {
+            buffer.appendScrollGeometry(
+                .rootViewTransform(contentOffset: .zero, containerSize: convert(bounds, to: nil).size),
+                isClipped: true
+            )
+            buffer.appendScrollGeometry(
+                .rootViewTransform(contentOffset: .zero, containerSize: bounds.size),
+                isClipped: clipsToBounds
+            )
+            buffer.appendCoordinateSpace(id: hostingViewCoordinateSpace)
+        } else {
+            _ = clipsToBounds
+        }
+        var transform = ViewTransform()
+        transform.append(movingContentsOf: &buffer)
+        return transform
+    }
+}
+
+private enum HostingViewGeometryRegistrationPhase: Hashable {
+    case unregistered
+    case registering
+    case registered
 }
 
 @_spi(Private)
