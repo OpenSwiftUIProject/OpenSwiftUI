@@ -937,7 +937,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
     ) {
         let view = subview as! NSView
         let place = NSWindow.OrderingMode(rawValue: place)!
-        let otherView = otherView as! NSView
+        let otherView = otherView as! NSView?
         isInsertingRenderedSubview = true
         addSubview(view, positioned: place, relativeTo: otherView)
         isInsertingRenderedSubview = false
