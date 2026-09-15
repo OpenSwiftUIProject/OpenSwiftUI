@@ -9,9 +9,6 @@
 #if os(macOS)
 import Foundation
 import OpenSwiftUICore
-#if OPENSWIFTUI_LINK_FEATUREFLAGS
-import FeatureFlags
-#endif
 
 struct ResponderBasedHitTesting: Feature {
     static var isEnabled: Bool {
@@ -30,16 +27,12 @@ struct ResponderBasedHitTesting: Feature {
         Bundle.main.bundleIdentifier == "com.apple.ScreenContinuity" ? false : nil
     }()
 
-    #if OPENSWIFTUI_LINK_FEATUREFLAGS
     fileprivate struct Key: FeatureFlagsKey {
         let domain: StaticString = "OpenSwiftUI"
         let feature: StaticString = "ResponderBasedHitTesting"
     }
     private static let featureFlagValue: Bool = {
-        FeatureFlags.isFeatureEnabled(Key())
+        isFeatureEnabled(Key())
     }()
-    #else
-    private static let featureFlagValue: Bool = false
-    #endif
 }
 #endif
