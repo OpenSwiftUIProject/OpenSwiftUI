@@ -171,14 +171,16 @@ private final class LayoutGestureBox {
                     debugData = .reset(attribute.value)
                 }
                 phase = nil
-                subgraph?.willInvalidate(isInserted: true)
-                subgraph?.invalidate()
+                if let subgraph {
+                    subgraph.willInvalidate(isInserted: true)
+                    subgraph.invalidate()
+                }
                 subgraph = nil
                 responder.resetGesture()
             }
             events = [:]
             seenEventIDs = []
-            resetDelta &+= 1
+            resetDelta.unsafeIncrement()
         }
     }
 
@@ -194,8 +196,7 @@ private final class LayoutGestureBox {
         }
         self.resetSeed = resetSeed
         for index in children.indices {
-            children[index].reset()
-            seed &+= 1
+            resetChild(at: index)
         }
         seed &+= 1
     }
@@ -223,8 +224,7 @@ private final class LayoutGestureBox {
         }
         while index < count {
             count -= 1
-            children[count].reset()
-            seed &+= 1
+            resetChild(at: count)
             children.removeLast()
             changed = true
         }
@@ -292,9 +292,21 @@ private final class LayoutGestureBox {
                   children[index].phase!.value.isTerminal else {
                 continue
             }
-            children[index].reset()
-            seed &+= 1
+            resetChild(at: index)
         }
+    }
+
+    private func resetChild(at index: Int) {
+        // OpenSwiftUI Addition:
+        // SwiftUI's original implementation will trigger a crash with
+        // SWIFTUI_GESTURE_CONTAINER=0 && SWIFTUI_EVENT_DEBUG=G
+        //
+        //    children[index].reset()
+        var child = children[index]
+        child.reset()
+        children[index] = child
+
+        seed.unsafeIncrement()
     }
 }
 
