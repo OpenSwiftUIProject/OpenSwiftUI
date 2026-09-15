@@ -216,6 +216,49 @@ struct LayoutGestureTests {
         }
     }
 
+    @Test(arguments: ResetTrigger.allCases)
+    func childResetEvaluatesLazyDebugInputs(trigger: ResetTrigger) {
+        withFixture(debugOutput: true) { fixture in
+            let child = LazyDebugResponder(phase: trigger == .terminal ? .ended(()) : .active(()))
+            fixture.setChildren([child])
+            fixture.send(to: child)
+
+            if trigger != .terminal {
+                #expect(fixture.outputs.phase.value.isActive)
+                #expect(child.debugData == nil)
+                switch trigger {
+                case .terminal: break
+                case .seed: fixture.resetSeed.value = 1
+                case .removal: fixture.setChildren([])
+                }
+            }
+
+            let resetsBeforeEvaluation = child.resetCount
+            let phase = fixture.outputs.phase.value
+            switch trigger {
+            case .terminal: #expect(phase.isEnded)
+            case .seed: #expect(phase.isActive)
+            case .removal: #expect(phase.isFailed)
+            }
+            #expect(child.resetCount - resetsBeforeEvaluation == 1)
+            #expect(child.debugData?.resetSeed == (trigger == .seed ? 1 : 0))
+            #expect(child.debugEventCount == 1)
+
+            if trigger == .terminal {
+                let data = fixture.outputs.debugData!.value
+                #expect(data.children.count == 1)
+                #expect(data.children[0].phase.isEnded)
+                #expect(data.children[0].resetSeed == 0)
+            }
+        }
+    }
+
+    enum ResetTrigger: CaseIterable {
+        case terminal
+        case seed
+        case removal
+    }
+
     @Test(arguments: [
         ({ @Sendable in [] }, "failed"),
         ({ @Sendable in [.failed, .failed] }, "failed"),
@@ -403,6 +446,56 @@ private final class TestResponder: ViewResponder {
             responder.events = events
             responder.resetSeed = resetSeed
             return responder.phase
+        }
+    }
+}
+
+private final class LazyDebugResponder: ViewResponder {
+    let phase: GesturePhase<Void>
+    var debugData: GestureDebug.Data?
+    var debugEventCount: Int?
+    var resetCount = 0
+
+    init(phase: GesturePhase<Void>) {
+        self.phase = phase
+        super.init()
+    }
+
+    override func makeGesture(inputs: _GestureInputs) -> _GestureOutputs<Void> {
+        var outputs = _GestureOutputs(phase: Attribute(value: phase))
+        outputs.debugData = Attribute(Debug(
+            responder: self,
+            phase: outputs.phase,
+            events: inputs.events,
+            resetSeed: inputs.resetSeed
+        ))
+        return outputs
+    }
+
+    override func resetGesture() {
+        resetCount += 1
+    }
+
+    private struct Debug: Rule {
+        let responder: LazyDebugResponder
+        @Attribute var phase: GesturePhase<Void>
+        @Attribute var events: [EventID: any EventType]
+        @Attribute var resetSeed: UInt32
+
+        var value: GestureDebug.Data {
+            let data = GestureDebug.Data(
+                kind: .primitive,
+                type: TestGesture.self,
+                children: .init(),
+                phase: phase,
+                attribute: $phase.identifier,
+                resetSeed: resetSeed,
+                frame: .zero,
+                properties: .init()
+            )
+            responder.debugEventCount = events.count
+            responder.debugData = data
+            return data
         }
     }
 }
