@@ -29,10 +29,8 @@ struct ObservationExample: View {
                 .frame(width: showRed ? 200 : 400, height: showRed ? 200 : 400)
         }
         .animation(.spring, value: showRed)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                showRed.toggle()
-            }
+        .onTapGesture {
+            showRed.toggle()
         }
     }
 }

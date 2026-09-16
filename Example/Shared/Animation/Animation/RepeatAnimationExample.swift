@@ -42,7 +42,7 @@ struct RepeatAnimationExample: View {
                     )
             }
         }
-        .onAppear {
+        .onTapGesture {
             smaller.toggle()
         }
     }

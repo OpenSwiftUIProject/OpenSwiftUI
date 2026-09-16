@@ -22,7 +22,7 @@ struct AnimationCompleteExample: View {
         var body: some View {
             VStack {
                 Color(platformColor: showRed ? .red : .blue)
-                    .onAppear {
+                    .onTapGesture {
                         let animation = Animation.linear(duration: 5)
                             .logicallyComplete(after: 1)
                         withAnimation(animation, completionCriteria: .logicallyComplete) {
@@ -41,7 +41,7 @@ struct AnimationCompleteExample: View {
         var body: some View {
             VStack {
                 Color(platformColor: showRed ? .red : .blue)
-                    .onAppear {
+                    .onTapGesture {
                         let animation = Animation.linear(duration: 5)
                             .logicallyComplete(after: 1)
                         withAnimation(animation, completionCriteria: .removed) {

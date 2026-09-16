@@ -40,7 +40,7 @@ struct ElasticEaseInEaseOutAnimationExample: View {
         VStack(alignment: isActive ? .trailing : .leading) {
             Color.red
                 .frame(width: 100.0, height: 100.0)
-                .onAppear {
+                .onTapGesture {
                     withAnimation(.elasticEaseInEaseOut(duration: 5.0)) {
                         isActive.toggle()
                     }

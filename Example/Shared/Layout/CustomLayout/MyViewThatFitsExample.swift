@@ -16,10 +16,8 @@ struct MyViewThatFitsExample: View {
             Color.blue.frame(width: 200, height: 100)
         }
         .frame(width: 100, height: showRed ? 200 : 100)
-        .onAppear {
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
-                showRed.toggle()
-            }
+        .onTapGesture {
+            showRed.toggle()
         }
         .id(showRed)
     }

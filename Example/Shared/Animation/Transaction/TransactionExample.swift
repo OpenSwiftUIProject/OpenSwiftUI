@@ -45,7 +45,7 @@ struct TransactionExample: View {
             //                    self.flag.toggle()
             //                }
             //            }
-            .onAppear {
+            .onTapGesture {
                 toggle(first: true)
             }
         }

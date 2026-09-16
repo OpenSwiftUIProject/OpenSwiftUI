@@ -16,7 +16,7 @@ struct ColorAnimationExample: View {
                 .frame(width: showRed ? 200 : 400, height: showRed ? 200 : 400)
         }
         .animation(.easeInOut(duration: 5), value: showRed)
-        .onAppear {
+        .onTapGesture {
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
                 showRed.toggle()
             }
