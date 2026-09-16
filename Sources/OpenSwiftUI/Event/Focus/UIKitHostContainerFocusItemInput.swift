@@ -12,6 +12,10 @@ import OpenAttributeGraphShims
 import OpenSwiftUICore
 import UIKit
 
+// MARK: - UIKitHostContainerCoordinateSpace
+
+let UIKitHostContainerCoordinateSpace: CoordinateSpace.ID = .init()
+
 // MARK: - UIKitHostContainerFocusItemInput
 
 struct UIKitHostContainerFocusItemInput: ViewInput {
