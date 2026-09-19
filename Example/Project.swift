@@ -189,7 +189,7 @@ let uiTestsSettings = hostedTestsSettings.merging([
 ])
 
 let uxTestsSettings = hostedTestsSettings.merging([
-    "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator",
+    "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator macosx",
     "TARGETED_DEVICE_FAMILY": "1,2",
 ])
 
@@ -354,17 +354,17 @@ let targets: [Target] = [
     ),
     .target(
         name: "OpenSwiftUIUXTests",
-        destinations: [.iPhone, .iPad],
+        destinations: [.iPhone, .iPad, .mac],
         product: .unitTests,
         bundleId: "org.openswiftuiproject.openswiftui.$(OPENSWIFTUI_TARGET_BUNDLE_ID).OpenSwiftUIUXTests",
-        deploymentTargets: .iOS("18.0"),
+        deploymentTargets: .multiplatform(iOS: "18.0", macOS: "15.0"),
         infoPlist: .default,
         sources: [
             "OpenSwiftUIUXTests/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
-            .external(name: "Hammer"),
+            .external(name: "Hammer", condition: .when([.ios])),
         ] + privateFrameworkDependencies,
         settings: settings(base: uxTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUXTests.xcconfig")
     ),
