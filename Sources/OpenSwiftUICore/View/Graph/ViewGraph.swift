@@ -1,9 +1,9 @@
 //
 //  ViewGraph.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for 6.0.87
-//  Status: WIP
+//  Audited for 6.5.4
+//  Status: Complete
 //  ID: D63C4EB7F2B205694B6515509E76E98B (SwiftUI)
 //  ID: 7D9EDEF832940A362646A6E979F296C8 (SwiftUICore)
 
@@ -15,22 +15,30 @@ package import Foundation
 #endif
 import OpenSwiftUI_SPI
 
+// MARK: - ViewGraph
+
 package final class ViewGraph: GraphHost {
     package struct Outputs: OptionSet {
         package let rawValue: UInt8
-        
+
         package init(rawValue: UInt8) {
             self.rawValue = rawValue
         }
-        
+
         package static let displayList: ViewGraph.Outputs = .init(rawValue: 1 << 0)
+
         package static let platformItemList: ViewGraph.Outputs = .init(rawValue: 1 << 1)
+
         package static let viewResponders: ViewGraph.Outputs = .init(rawValue: 1 << 2)
+
         package static let layout: ViewGraph.Outputs = .init(rawValue: 1 << 4)
+
         package static let focus: ViewGraph.Outputs = .init(rawValue: 1 << 5)
-        package static let all: ViewGraph.Outputs = .init(rawValue: 0xFF)
+
+        package static let all: ViewGraph.Outputs = .init(rawValue: .max)
+
         package static let defaults: ViewGraph.Outputs = [.displayList, .viewResponders, .layout, .focus]
-        
+
         @inline(__always)
         fileprivate func addRequestedPreferences(to inputs: inout _ViewInputs) {
             inputs.preferences.add(HostPreferencesKey.self)
@@ -42,55 +50,80 @@ package final class ViewGraph: GraphHost {
             }
         }
     }
-    
+
     let rootViewType: Any.Type
+
     let makeRootView: (AnyAttribute, _ViewInputs) -> _ViewOutputs
-    
+
     package weak var delegate: (any ViewGraphDelegate)? = nil
-    
-    private var features: ViewGraphFeatureBuffer = .init(contents: .init())
-    
+
+    private var features: ViewGraphFeatureBuffer = .init()
+
     package var centersRootView: Bool = true
-    
+
     package let rootView: AnyAttribute
-    
+
     @Attribute var rootTransform: ViewTransform
+
     @Attribute package var transform: ViewTransform
+
     @Attribute package var zeroPoint: ViewOrigin
+
     @Attribute package var proposedSize: ViewSize
+
     @Attribute package var safeAreaInsets: _SafeAreaInsetsModifier
-    
+
     @Attribute var rootGeometry: ViewGeometry
+
     @Attribute var position: ViewOrigin
+
     @Attribute var dimensions: ViewSize
-    
+
     @OptionalAttribute var containerSize: ViewSize?
-    
+
     @Attribute var gestureTime: Time
+
     @Attribute var gestureEvents: [EventID : EventType]
+
     @Attribute var inheritedPhase: _GestureInputs.InheritedPhase
+
     @Attribute var gestureResetSeed: UInt32
+
     @OptionalAttribute var rootPhase: GesturePhase<Void>?
+
     @OptionalAttribute package var gestureDebug: GestureDebug.Data?
+
     @OptionalAttribute package var gestureCategory: GestureCategory?
+
     @Attribute package var gesturePreferenceKeys: PreferenceKeys
-    var eventSubgraph: Subgraph?
-    
+
+    private var eventSubgraph: Subgraph?
+
     @Attribute package var defaultLayoutComputer: LayoutComputer
+
     @WeakAttribute var rootResponders: [ViewResponder]?
+
     @WeakAttribute var rootLayoutComputer: LayoutComputer?
+
     @WeakAttribute var rootDisplayList: (DisplayList, DisplayList.Version)?
-    
+
     package var sizeThatFitsObservers: ViewGraphGeometryObservers<SizeThatFitsMeasurer> = .init()
-    
+
     package var accessibilityEnabled: Bool = false
-    
-    package var requestedOutputs: Outputs
+
+    package var requestedOutputs: Outputs {
+        didSet {
+            if oldValue != requestedOutputs {
+                uninstantiate()
+            }
+        }
+    }
+
     var disabledOutputs: Outputs = []
-    
+
     private var mainUpdates: Int = 0
-    
-    // MARK: - ViewGraph + NextUpdate [6.5.4]
+
+    // MARK: - ViewGraph + NextUpdate
 
     package struct NextUpdate {
         package private(set) var time: Time = .infinity
@@ -106,28 +139,28 @@ package final class ViewGraph: GraphHost {
         package private(set) var reasons: Set<UInt32> = []
 
         package mutating func at(_ next: Time) {
-            time = next < time ? next : time
+            time.formMin(next)
         }
-        
+
         package mutating func maxVelocity(_ velocity: CGFloat) {
             guard velocity >= 160 else {
                 return
             }
             let interval = velocity < 320 ? 1 / 80.0 : 1 / 120.0
             let highFrameRateReason: UInt32 = _HighFrameRateReasonMake(0)
-            var newInterval = min(interval, _interval)
+            var newInterval = min(_interval, interval)
             if _defaultIntervalWasRequested && newInterval > 1 / 60.0 {
                 newInterval = .infinity
             }
             _interval = newInterval
             reasons.insert(highFrameRateReason)
         }
-        
+
         package mutating func interval(_ interval: Double, reason: UInt32? = nil) {
             if interval == .zero {
                 _defaultIntervalWasRequested = true
             } else {
-                _interval = min(interval, _interval)
+                _interval.formMin(interval)
             }
             if _defaultIntervalWasRequested && _interval > 1 / 60 {
                 _interval = .infinity
@@ -137,24 +170,28 @@ package final class ViewGraph: GraphHost {
             }
         }
     }
-    
+
     package var nextUpdate: (views: NextUpdate, gestures: NextUpdate) = (NextUpdate(), NextUpdate())
-    
+
     private weak var _preferenceBridge: PreferenceBridge?
-    
+
     package var preferenceBridge: PreferenceBridge? {
         get { _preferenceBridge }
         set { setPreferenceBridge(to: newValue) }
     }
 
-    var bridgedPreferences: [(any PreferenceKey.Type, AnyAttribute)] = []
+    private var bridgedPreferences: [(any PreferenceKey.Type, AnyAttribute)] = []
 
     package static var current: ViewGraph { GraphHost.currentHost as! ViewGraph }
-    
-    package init<Root>(rootViewType: Root.Type = Root.self, requestedOutputs: ViewGraph.Outputs = Outputs.defaults) where Root: View {
+
+    package init<Root>(
+        rootViewType: Root.Type = Root.self,
+        requestedOutputs: ViewGraph.Outputs = Outputs.defaults
+    ) where Root: View {
         self.rootViewType = rootViewType
         self.requestedOutputs = requestedOutputs
         let data = GraphHost.Data()
+        let oldCurrent = Subgraph.current
         Subgraph.current = data.globalSubgraph
         rootView = Attribute(type: Root.self).identifier
         _rootTransform = Attribute(RootTransform())
@@ -195,7 +232,7 @@ package final class ViewGraph: GraphHost {
             }
         }
         super.init(data: data)
-        Subgraph.current = nil
+        Subgraph.current = oldCurrent
     }
 
     convenience init<Root: View>(rootView: Root, environment: EnvironmentValues) {
@@ -205,26 +242,24 @@ package final class ViewGraph: GraphHost {
     }
 
     deinit {
-        // FIXME
         removePreferenceOutlets(isInvalidating: true)
         features.contents.destroy()
     }
-        
+
     override public var graphDelegate: GraphDelegate? { delegate }
-    
+
     override public var parentHost: GraphHost? { preferenceBridge?.viewGraph }
 
     package func append<T>(feature: T) where T: ViewGraphFeature {
         features.append(feature)
     }
-    
+
     package subscript<T>(feature: T.Type) -> UnsafeMutablePointer<T>? where T: ViewGraphFeature {
         features[feature]
     }
 
     override package func instantiateOutputs() {
         let outputs = rootSubgraph.apply {
-            // Audited for 6.5.4
             var inputs = _ViewInputs(
                 graphInputs,
                 position: $position,
@@ -283,7 +318,7 @@ package final class ViewGraph: GraphHost {
         hostPreferenceValues = WeakAttribute(outputs.preferences.hostPreferenceValues)
         makePreferenceOutlets(outputs: outputs)
     }
-    
+
     override package func uninstantiateOutputs() {
         removePreferenceOutlets(isInvalidating: false)
         for feature in features {
@@ -301,61 +336,100 @@ package final class ViewGraph: GraphHost {
         $rootDisplayList = nil
         hostPreferenceValues = WeakAttribute()
     }
-    
+
     override package func timeDidChange() {
         nextUpdate.views = NextUpdate()
     }
-    
+
     override package func isHiddenForReuseDidChange() {
-        _openSwiftUIUnimplementedFailure()
-    }
-    
-    private func makePreferenceOutlets(outputs: _ViewOutputs) {
-        // TODO
-    }
-    
-    @inline(__always)
-    private func removePreferenceOutlets(isInvalidating: Bool) {
-        // TODO
+        if let preferenceBridge {
+            if data.isHiddenForReuse {
+                for (key, value) in bridgedPreferences {
+                    preferenceBridge.removeValue(value, for: key)
+                }
+                preferenceBridge.removeHostValues(for: data.$hostPreferenceKeys)
+            } else {
+                for (key, value) in bridgedPreferences {
+                    preferenceBridge.addValue(value, for: key)
+                }
+                if hostPreferenceValues != WeakAttribute() {
+                    preferenceBridge.addHostValues(hostPreferenceValues, for: data.$hostPreferenceKeys)
+                }
+            }
+        }
+        for feature in features {
+            feature.isHiddenForReuseDidChange(graph: self)
+        }
+        if isInstantiated || !data.isHiddenForReuse {
+            delegate?.graphDidChange()
+        }
     }
 
-    // FIXME
-    package func updatePreferenceBridge(
-        environment: EnvironmentValues,
-        deferredUpdate: () -> Void
-    ) {
-        _openSwiftUIUnimplementedFailure()
+    package func requestImmediateUpdate() {
+        delegate?.requestUpdate(after: .zero)
+    }
+
+    private func makePreferenceOutlets(outputs: _ViewOutputs) {
+        guard let preferenceBridge else {
+            return
+        }
+        for key in preferenceBridge.requestedPreferences {
+            guard let value = outputs.preferences[anyKey: key] else {
+                continue
+            }
+            if !data.isHiddenForReuse {
+                preferenceBridge.addValue(value, for: key)
+            }
+            bridgedPreferences.append((key, value))
+        }
+        if !data.isHiddenForReuse, let hostValues = outputs.preferences.hostPreferenceValues {
+            preferenceBridge.addHostValues(WeakAttribute(hostValues), for: data.$hostPreferenceKeys)
+        }
+    }
+
+    private func removePreferenceOutlets(isInvalidating: Bool) {
+        guard let preferenceBridge else {
+            return
+        }
+        for (key, value) in bridgedPreferences {
+            preferenceBridge.removeValue(value, for: key, isInvalidating: isInvalidating)
+        }
+        bridgedPreferences = []
+        preferenceBridge.removeHostValues(for: data.$hostPreferenceKeys, isInvalidating: isInvalidating)
+        preferenceBridge.removeChild(self)
     }
 }
+
+// MARK: - ViewGraph + Root Inputs
 
 extension ViewGraph {
     package func setRootView<Root>(_ view: Root) where Root: View {
         rootView.unsafeCast(to: Root.self).value = view
     }
-    
+
     package func setSize(_ size: ViewSize) {
         let hasChange = $proposedSize.setValue(size)
         if hasChange {
             delegate?.graphDidChange()
         }
     }
-    
+
     package func setProposedSize(_ size: CGSize) {
         let hasChange = $proposedSize.setValue(ViewSize.fixed(size))
         if hasChange {
             delegate?.graphDidChange()
         }
     }
-    
+
     package var size: ViewSize {
         proposedSize
     }
-    
+
     @discardableResult
     package func setSafeAreaInsets(_ insets: EdgeInsets) -> Bool {
         setSafeAreaInsets([.init(regions: .container, insets: insets)])
     }
-    
+
     @discardableResult
     package func setSafeAreaInsets(_ elts: [SafeAreaInsets.Element]) -> Bool {
         let hasChange = $safeAreaInsets.setValue(.init(elements: elts))
@@ -364,7 +438,7 @@ extension ViewGraph {
         }
         return hasChange
     }
-    
+
     package func setContainerSize(_ size: ViewSize) {
         guard let $containerSize else {
             return
@@ -374,7 +448,7 @@ extension ViewGraph {
             delegate?.graphDidChange()
         }
     }
-    
+
     @discardableResult
     package func invalidateTransform() -> Bool {
         let rootTransform = $rootTransform
@@ -387,13 +461,13 @@ extension ViewGraph {
     }
 }
 
-// MARK: - ViewGraph + Update [6.5.4]
+// MARK: - ViewGraph + Update
 
 extension ViewGraph {
     package var updateRequiredMainThread: Bool {
         graph.mainUpdates != mainUpdates
     }
-    
+
     package func updateOutputs(at time: Time) {
         beginNextUpdate(at: time)
         updateOutputs(async: false)
@@ -424,11 +498,11 @@ extension ViewGraph {
         }
         return result
     }
-    
+
     package func displayList() -> (DisplayList, DisplayList.Version) {
         $rootDisplayList?.value ?? (.init(), .init())
     }
-    
+
     private func beginNextUpdate(at time: Time) {
         setTime(time)
         data.updateSeed.unsafeIncrement()
@@ -534,11 +608,9 @@ extension ViewGraph {
     }
 
     fileprivate var rootViewInsets: EdgeInsets {
-        guard !safeAreaInsets.elements.isEmpty else {
-            return .zero
-        }
-        // FIXME
-        return .zero
+        var insets = safeAreaInsets.elements.reduce(.zero) { $0 + $1.insets }
+        insets.xFlipIfRightToLeft { data.environment.layoutDirection }
+        return insets
     }
 
     static func sizeThatFits(
@@ -547,12 +619,12 @@ extension ViewGraph {
         insets: EdgeInsets
     ) -> CGSize {
         var proposal = proposal
-        proposal.width = proposal.width.map { max($0 - insets.horizontal, .zero) }
-        proposal.height = proposal.width.map { max($0 - insets.vertical, .zero) }
+        proposal.width = proposal.width.map { max(.zero, $0 - insets.horizontal) }
+        proposal.height = proposal.height.map { max(.zero, $0 - insets.vertical) }
         let fittingSize = if let layoutComputer {
             layoutComputer.sizeThatFits(proposal)
         } else {
-            CGSize(width: 10.0, height: 10.0)
+            proposal.fixingUnspecifiedDimensions()
         }
         return fittingSize.outset(by: insets)
     }
@@ -562,42 +634,76 @@ extension ViewGraph {
     }
 
     package func explicitAlignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        guard let layoutComputer else {
+            return nil
+        }
+        let insets = rootViewInsets
+        let size = ViewSize.fixed(size.inset(by: insets))
+        return layoutComputer.explicitAlignment(guide.key, at: size).map { $0 + insets.top }
     }
-    
+
     package func explicitAlignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat? {
-        _openSwiftUIUnimplementedFailure()
+        guard let layoutComputer else {
+            return nil
+        }
+        let insets = rootViewInsets
+        let size = ViewSize.fixed(size.inset(by: insets))
+        return layoutComputer.explicitAlignment(guide.key, at: size).map { $0 + insets.leading }
     }
-    
+
     package func alignment(of guide: VerticalAlignment, at size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        let layoutComputer = layoutComputer ?? .defaultValue
+        let insets = rootViewInsets
+        let dimensions = ViewDimensions(
+            guideComputer: layoutComputer,
+            size: .fixed(size.inset(by: insets))
+        )
+        return dimensions[explicit: guide] ?? (insets.top + guide.key.id.defaultValue(in: dimensions))
     }
-    
+
     package func alignment(of guide: HorizontalAlignment, at size: CGSize) -> CGFloat {
-        _openSwiftUIUnimplementedFailure()
+        let layoutComputer = layoutComputer ?? .defaultValue
+        let insets = rootViewInsets
+        let dimensions = ViewDimensions(
+            guideComputer: layoutComputer,
+            size: .fixed(size.inset(by: insets))
+        )
+        return dimensions[explicit: guide] ?? (insets.leading + guide.key.id.defaultValue(in: dimensions))
     }
-    
+
     package func viewDebugData() -> [_ViewDebug.Data] {
         _ViewDebug.makeDebugData(subgraph: rootSubgraph)
     }
 }
 
+// MARK: - ViewGraph + PreferenceBridge
+
 extension ViewGraph {
+    package func updatePreferenceBridge(
+        environment: EnvironmentValues,
+        deferredUpdate: @escaping () -> Void
+    ) {
+        guard let preferenceBridge = environment.preferenceBridge,
+              preferenceBridge !== _preferenceBridge
+        else {
+            return
+        }
+        if GraphHost.isUpdating {
+            Update.enqueueAction(reason: nil) {
+                deferredUpdate()
+            }
+        } else {
+            self.preferenceBridge = preferenceBridge
+        }
+    }
+
     package func invalidatePreferenceBridge() {
         setPreferenceBridge(to: nil, isInvalidating: true)
     }
-    
-    @inline(__always)
+
     private func setPreferenceBridge(to preferenceBridge: PreferenceBridge?, isInvalidating: Bool = false) {
         guard _preferenceBridge !== preferenceBridge else { return }
-        if let preferenceBridge = _preferenceBridge {
-            for (src, key) in bridgedPreferences {
-                preferenceBridge.removeValue(key, for: src, isInvalidating: isInvalidating)
-            }
-            bridgedPreferences = []
-            preferenceBridge.removeHostValues(for: data.$hostPreferenceKeys, isInvalidating: isInvalidating)
-            preferenceBridge.removeChild(self)
-        }
+        removePreferenceOutlets(isInvalidating: isInvalidating)
         _preferenceBridge = nil
         if isInstantiated {
             uninstantiate(immediately: isInvalidating)
@@ -610,7 +716,7 @@ extension ViewGraph {
     }
 }
 
-// MARK: - ViewGraph event lifecycle [6.5.4]
+// MARK: - ViewGraph event lifecycle
 
 extension ViewGraph {
     package var responderNode: ResponderNode? {
@@ -816,7 +922,7 @@ package struct RootGeometry: Rule, AsyncAttribute {
 
 extension Graph {
     package func viewGraph() -> ViewGraph {
-        unsafeBitCast(context, to: ViewGraph.self)
+        unsafeBitCast(context!, to: ViewGraph.self)
     }
 }
 
@@ -836,11 +942,11 @@ private struct RootDisplayList: Rule, AsyncAttribute {
         var displayList = content
         let version = DisplayList.Version(forUpdate: ())
         displayList.applyViewGraphTransform(time: $time, version: version)
-        return (content, version)
+        return (displayList, version)
     }
 }
 
-// MARK: - RootTransform [6.5.4]
+// MARK: - RootTransform
 
 private struct RootTransform: Rule {
     var value: ViewTransform {
