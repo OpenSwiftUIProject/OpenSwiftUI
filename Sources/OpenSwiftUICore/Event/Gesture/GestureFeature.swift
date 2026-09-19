@@ -61,9 +61,7 @@ package struct GestureContainerFeature: Feature {
     package static var isEnabledOverride: Bool?
 
     package static func _isFeatureEnabled() -> Bool {
-        // FIXME:
-        // isFeatureEnabled(Self()) && Semantics.UnifiedHitTesting.isEnabled
-        return false
+        isFeatureEnabled(Self()) && Semantics.UnifiedHitTesting.isEnabled
     }
 }
 
