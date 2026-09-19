@@ -97,8 +97,8 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 
 `OpenSwiftUIUXTests` uses Swift Testing to test interactions with views inside
 `TestingHost`. It supports iPhone, iPad, and Mac destinations. On iOS, Hammer
-injects touch events. On macOS, AppKit mouse events enter the application event
-queue and pass through hit testing and gesture recognition.
+injects touch events. On macOS, AppKit mouse events pass through the application's
+event dispatcher, hit testing, and gesture recognition.
 
 - Choose `OSUI_UXTests` to test OpenSwiftUI.
 - Choose `SUI_UXTests` to run the same tests with SwiftUI.

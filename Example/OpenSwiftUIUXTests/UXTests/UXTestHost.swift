@@ -23,6 +23,9 @@ func withUXTestHost<Content: View>(
 ) async throws {
     #if os(macOS)
     let previousKeyWindow = NSApp.keyWindow
+    let previousWindows = NSApp.orderedWindows.filter(\.isVisible)
+    // Hide the host app's placeholder windows during the interaction test.
+    previousWindows.forEach { $0.orderOut(nil) }
     let controller = TestingHost.PlatformHostingController(rootView: content)
     // Keep the test surface fixed instead of adopting the content's ideal size.
     controller.sizingOptions = []
@@ -43,6 +46,7 @@ func withUXTestHost<Content: View>(
     window.center()
     defer {
         window.close()
+        previousWindows.reversed().forEach { $0.orderFront(nil) }
         previousKeyWindow?.makeKey()
     }
 
@@ -127,9 +131,10 @@ struct UXTestHost {
         ) else {
             throw UXTestError.couldNotCreateMouseEvent
         }
-        // Use the application queue so AppKit performs hit testing and gesture recognition.
-        NSApp.postEvent(down, atStart: false)
-        defer { NSApp.postEvent(up, atStart: false) }
+        // Use AppKit's event dispatcher for hit testing and gesture recognition.
+        // Queued events can have incorrect coordinates while a new window is being presented.
+        NSApp.sendEvent(down)
+        defer { NSApp.sendEvent(up) }
         try await Task.sleep(for: .milliseconds(50))
         #else
         try await onMainRunLoop { try events.fingerTap() }
