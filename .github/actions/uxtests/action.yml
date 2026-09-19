@@ -1,0 +1,101 @@
+name: Run UX Tests
+description: Run gesture tests with SwiftUI and OpenSwiftUI using Compute
+
+inputs:
+  xcode-version:
+    description: Xcode version to use
+    required: true
+  destination:
+    description: xcodebuild destination parameter
+    required: true
+  artifact-name:
+    description: Name for the test logs and result bundles
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Setup Xcode
+      uses: OpenSwiftUIProject/setup-xcode@v2
+      with:
+        xcode-version: ${{ inputs.xcode-version }}
+
+    - name: Set up mise
+      uses: jdx/mise-action@v4
+      with:
+        version: 2026.8.14
+        install: false
+        cache: false
+
+    - name: Set up build environment
+      run: Scripts/CI/darwin_setup_build.sh
+      shell: bash
+
+    - name: Set up Tuist
+      shell: bash
+      run: |
+        set -euo pipefail
+        source Scripts/Tuist/common.sh
+        tuist_ci_setup
+
+    - name: Generate Example project with Compute
+      shell: bash
+      run: |
+        set -euo pipefail
+        cd Example
+        ./setup.sh --compute
+
+    - name: Prepare isolated test directories
+      id: paths
+      shell: bash
+      run: |
+        test_root="$(mktemp -d "${RUNNER_TEMP:-/tmp}/uxtests.XXXXXX")"
+        mkdir -p "$test_root/Artifacts" "$test_root/DerivedData"
+        echo "root=$test_root" >> "$GITHUB_OUTPUT"
+        echo "artifacts=$test_root/Artifacts" >> "$GITHUB_OUTPUT"
+
+    - name: Run SwiftUI then OpenSwiftUI UX tests
+      shell: bash
+      env:
+        UXTEST_ROOT: ${{ steps.paths.outputs.root }}
+        UXTEST_DESTINATION: ${{ inputs.destination }}
+      run: |
+        set -euo pipefail
+        source Scripts/Tuist/common.sh
+        cd Example
+        test_status=0
+        for scheme in SUI_UXTests OSUI_UXTests; do
+          result_bundle="$UXTEST_ROOT/Artifacts/$scheme.xcresult"
+          test_log="$UXTEST_ROOT/Artifacts/$scheme.log"
+          # Run both frameworks to keep comparison results when either suite fails.
+          if ! NSUnbufferedIO=YES tuist_xcodebuild "$result_bundle" test \
+            -workspace Example.xcworkspace \
+            -scheme "$scheme" \
+            -destination "$UXTEST_DESTINATION" \
+            -parallel-testing-enabled NO \
+            -skipMacroValidation \
+            -skipPackagePluginValidation \
+            -derivedDataPath "$UXTEST_ROOT/DerivedData/$scheme" \
+            2>&1 | tee "$test_log"; then
+            test_status=1
+          elif ! bash ../Scripts/CI/check_uitest_selection.sh "$result_bundle" "$scheme" 2>&1 | tee -a "$test_log"; then
+            test_status=1
+          fi
+        done
+        exit "$test_status"
+
+    - name: Upload test logs and result bundles
+      if: always() && steps.paths.outputs.artifacts != ''
+      uses: actions/upload-artifact@v4
+      with:
+        name: ${{ inputs.artifact-name }}
+        path: ${{ steps.paths.outputs.artifacts }}
+        if-no-files-found: error
+        retention-days: 7
+
+    - name: Clean up isolated test directories
+      if: always() && steps.paths.outputs.root != ''
+      shell: bash
+      env:
+        UXTEST_ROOT: ${{ steps.paths.outputs.root }}
+      run: rm -rf "$UXTEST_ROOT"

@@ -28,6 +28,7 @@ By default, the release gate requires all of these checks:
 | iOS tests | Existing iOS test matrix |
 | Ubuntu tests | Existing Linux test matrix |
 | UI tests | iOS and macOS; all four renderer and attribute graph configurations |
+| UX tests | iOS and macOS; SwiftUI, then OpenSwiftUI with the OpenSwiftUI renderer and Compute (IAG) |
 | Compatibility tests | iOS and macOS |
 | Stdout Renderer | AttributeGraph and Compute on macOS |
 
@@ -138,7 +139,7 @@ outside this workflow, and the published documentation selector.
 
 ## Skip Pre-release Checks
 
-Set `skip_checks=true` to bypass all six pre-release test workflows for one
+Set `skip_checks=true` to bypass all pre-release test workflows for one
 release request. Use this for a known failure that is accepted for the release,
 or after a workflow failure has been fixed and verified separately. A nonempty
 `skip_checks_reason` is required and is recorded with the requester in the run

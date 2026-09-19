@@ -110,3 +110,8 @@ The helper runs Hammer's synchronous waits on the main run loop so UIKit can
 process callbacks while the test task is suspended. Keep gesture tests on the
 main actor in serialized suites because they share application windows and
 Hammer settings. Hammer is linked only to the iOS UX test target.
+
+CI runs `SUI_UXTests` before `OSUI_UXTests` on each platform. The OpenSwiftUI
+configuration uses the OpenSwiftUI renderer with Compute (IAG).
+See [Optional CI workflows](../Docs/CI/README.md#ux-tests) for dispatch and PR
+comment commands.

@@ -92,6 +92,7 @@ for various platforms:
 |-|:-|
 | **SwiftUI Compatibility** | [![Compatibility tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/compatibility_tests.yml) |
 | **UI Tests** | [![UI Tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/uitests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/uitests.yml) |
+| **UX Tests** | [![UX Tests](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/uxtests.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/uxtests.yml) |
 
 ### Platform Support
 

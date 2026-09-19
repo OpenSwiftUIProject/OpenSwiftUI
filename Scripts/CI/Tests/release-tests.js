@@ -92,6 +92,22 @@ test("every required check must succeed on the candidate SHA", () => {
   }
 });
 
+test("UX checks cannot be omitted from a release or verify another commit", () => {
+  const results = Object.fromEntries(release.requiredChecks.map(name => [name, {
+    result: "success", outputs: { "verified-sha": sha },
+  }]));
+  delete results.ux;
+  assert.throws(() => release.assertChecks(results, sha), /ux/);
+  for (const result of ["failure", "cancelled", "skipped"]) {
+    results.ux = { result, outputs: { "verified-sha": sha } };
+    assert.throws(() => release.assertChecks(results, sha), /ux/);
+  }
+  results.ux = { result: "success", outputs: { "verified-sha": otherSHA } };
+  assert.throws(() => release.assertChecks(results, sha), /ux/);
+  results.ux.outputs["verified-sha"] = sha;
+  release.assertChecks(results, sha);
+});
+
 test("tag creation is idempotent and cannot move an existing tag", async () => {
   const mock = client();
   await release.ensureTag({ ...mock, repo, version, sha });
