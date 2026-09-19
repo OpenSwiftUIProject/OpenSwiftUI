@@ -18,6 +18,15 @@ OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 - (void)invalidate;
 @end
 
+OPENSWIFTUI_EXPORT
+void CALayerMapGeometry(
+    CALayer * _Nullable fromLayer,
+    CALayer * _Nullable toLayer,
+    void (*map)(void *context, const CATransform3D *transform),
+    void (*unmap)(void *context, const CATransform3D *transform),
+    void *context
+);
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 #endif /* __has_include(<QuartzCore/QuartzCore.h>) */

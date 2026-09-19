@@ -19,11 +19,12 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 
 @interface _UIHitTestContext : NSObject
 + (instancetype)contextWithPoint:(CGPoint)point radius:(CGFloat)radius;
+@property (nonatomic, readonly) CGPoint point;
 @property (nonatomic, readonly) CGFloat radius;
 @end
 
 @interface UIView (OpenSwiftUI_HitTesting)
-- (nullable id<_UIGestureRecognizerContainer>)_hitTestWithContext:(_UIHitTestContext *)context;
+- (nullable UIResponder<_UIGestureRecognizerContainer> *)_hitTestWithContext:(nullable _UIHitTestContext *)context;
 @end
 
 OPENSWIFTUI_EXPORT

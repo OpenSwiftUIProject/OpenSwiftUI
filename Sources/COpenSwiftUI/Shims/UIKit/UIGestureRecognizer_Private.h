@@ -31,6 +31,7 @@ NS_HEADER_AUDIT_BEGIN(nullability, sendability)
 @end
 
 @interface UIView (OpenSwiftUI_GestureRecognizerContainer) <_UIGestureRecognizerContainer>
+@property (nonatomic, readonly) NSArray<id<_UIGestureRecognizerContainer>> *_childGestureRecognizerContainers OPENSWIFTUI_SWIFT_NAME(_childContainers);
 @end
 
 @protocol UIGestureRecognizerDelegatePrivate <UIGestureRecognizerDelegate>

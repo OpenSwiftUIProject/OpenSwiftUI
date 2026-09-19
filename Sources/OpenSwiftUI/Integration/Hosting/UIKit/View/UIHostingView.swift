@@ -15,7 +15,7 @@ public import OpenSwiftUICore
 #if OPENSWIFTUI_SWIFTUI_RENDERER
 import OpenSwiftUISymbolDualTestsSupport
 #endif
-import COpenSwiftUI
+@_spiOnly public import COpenSwiftUI
 
 /// A UIView which hosts an OpenSwiftUI View hierarchy.
 @available(macOS, unavailable)
@@ -462,6 +462,73 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
             return nil
         }
         return self
+    }
+
+    // Audited for 6.5.4
+    @_spi(_)
+    override dynamic open func _hitTest(with context: _UIHitTestContext?) -> (UIResponder & _UIGestureRecognizerContainer)? {
+        defer { currentEvent = nil }
+        guard GestureContainerFeature.isEnabled else { return nil }
+        return Update.perform {
+            updateTransformWithoutGeometryObservation()
+            let context = context!
+            let point = context.point
+            guard let hit = (responderNode as? ViewResponder)?.hitTest(
+                globalPoint: point,
+                radius: context.radius
+            ) else {
+                return self
+            }
+            let cacheKey = ViewResponder.hitTestKey
+            if let responder = hit as? UIViewResponder, let hostView = responder.hostView {
+                let hitView: UIView? = {
+                    if let result = responder.lastResult, result.key == cacheKey {
+                        return result.hitView
+                    }
+                    return hostView.hitTest(hostView.convert(point, from: nil), with: currentEvent)
+                }()
+                guard let hitView else { return self }
+                let container = hitView._hitTest(with: context) ?? hitView
+                if _eventDebugTriggers.contains(.gestures) {
+                    printGestureContainerAncestors(container)
+                }
+                return container
+            }
+            if hit is any AnyGestureContainingResponder, let container = hit.gestureContainer {
+                let container = container as! (UIResponder & _UIGestureRecognizerContainer)
+                if _eventDebugTriggers.contains(.gestures) {
+                    printGestureContainerAncestors(container)
+                }
+                return container
+            }
+            var parent = hit.parent
+            var container: (UIResponder & _UIGestureRecognizerContainer)?
+            while let responder = parent {
+                if let gestureContainer = responder.gestureContainer {
+                    container = (gestureContainer as! (UIResponder & _UIGestureRecognizerContainer))
+                    break
+                } else if let representedView = (responder as? UIViewResponder)?.representedView {
+                    container = representedView
+                    break
+                }
+                parent = responder.parent
+            }
+            if container == nil {
+                container = hit.host?.as(UIView.self)
+            }
+            guard let container, container !== self else { return self }
+            if _eventDebugTriggers.contains(.gestures) {
+                printGestureContainerAncestors(container)
+            }
+            return container
+        }
+    }
+
+    // Audited for 6.5.4
+    @_spi(_)
+    override dynamic open var _childContainers: [any _UIGestureRecognizerContainer] {
+        guard GestureContainerFeature.isEnabled else { return super._childContainers }
+        return (responderNode as? ViewResponder)?.childGestureContainers ?? []
     }
 
     // Audited for 6.5.4

@@ -45,7 +45,7 @@ package struct PreferencesInputs {
         var outputs = PreferencesOutputs()
         for key in keys {
             func project<K>(_ key: K.Type) where K: PreferenceKey {
-                let source = ViewGraph.current.intern(key.defaultValue, id: .preferenceKeyDefault)
+                let source = GraphHost.currentHost.intern(key.defaultValue, id: .preferenceKeyDefault)
                 outputs.appendPreference(key: key, value: IndirectAttribute(source: source).projectedValue)
             }
             project(key)
