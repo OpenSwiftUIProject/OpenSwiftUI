@@ -103,8 +103,11 @@ event dispatcher, hit testing, and gesture recognition.
 - Choose `OSUI_UXTests` to test OpenSwiftUI.
 - Choose `SUI_UXTests` to run the same tests with SwiftUI.
 
-Use `withUXTestHost(of:)` to present test content and release its window after
-the test. Call the helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`.
+Use `withUXTestHost(of:)` to present test content and clean up after the test.
+On macOS, the helper activates and reuses the host window. It restores the
+window's content, frame, and first responder when the test ends, including when
+it throws. If the test host is still active, it returns focus to the previous app.
+Call the helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`.
 On macOS, `tap()` sends a left mouse click at the center of the hosted view.
 The helper runs Hammer's synchronous waits on the main run loop so UIKit can
 process callbacks while the test task is suspended. Keep gesture tests on the

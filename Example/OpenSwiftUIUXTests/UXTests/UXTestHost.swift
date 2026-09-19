@@ -22,34 +22,48 @@ func withUXTestHost<Content: View>(
     _ body: @MainActor (UXTestHost) async throws -> Void
 ) async throws {
     #if os(macOS)
+    guard let window = NSApp.mainWindow
+        ?? NSApp.orderedWindows.first(where: { $0.canBecomeMain && $0.isVisible }) else {
+        throw UXTestError.windowNotReady
+    }
     let previousKeyWindow = NSApp.keyWindow
-    let previousWindows = NSApp.orderedWindows.filter(\.isVisible)
-    // Hide the host app's placeholder windows during the interaction test.
-    previousWindows.forEach { $0.orderOut(nil) }
+    let previousApplication = NSWorkspace.shared.frontmostApplication
+    let previousController = window.contentViewController
+    let previousView = window.contentView
+    let previousFrame = window.frame
+    let previousFirstResponder = window.firstResponder
+    let wasVisible = window.isVisible
+    defer {
+        if let previousController {
+            window.contentViewController = previousController
+        } else {
+            window.contentView = previousView
+        }
+        window.setFrame(previousFrame, display: true)
+        window.makeFirstResponder(previousFirstResponder)
+        if !wasVisible {
+            window.orderOut(nil)
+        }
+        previousKeyWindow?.makeKey()
+        // Restore application focus only if the test still owns it.
+        if NSApp.isActive,
+           let previousApplication,
+           previousApplication.processIdentifier != ProcessInfo.processInfo.processIdentifier {
+            NSApp.yieldActivation(to: previousApplication)
+            previousApplication.activate(options: [])
+        }
+    }
+
     let controller = TestingHost.PlatformHostingController(rootView: content)
     // Keep the test surface fixed instead of adopting the content's ideal size.
     controller.sizingOptions = []
     let size = NSSize(width: 400, height: 400)
-    // A nonactivating panel can receive events while the test host is in the background.
-    let window = NSPanel(
-        contentRect: NSRect(origin: .zero, size: size),
-        styleMask: [.titled, .nonactivatingPanel],
-        backing: .buffered,
-        defer: false
-    )
-    window.isReleasedWhenClosed = false
-    // Synthetic events must use the final window coordinates during presentation.
-    window.animationBehavior = .none
     window.contentViewController = controller
     // Installing the controller adopts its initial view size, which can be zero.
     window.setContentSize(size)
-    window.center()
-    defer {
-        window.close()
-        previousWindows.reversed().forEach { $0.orderFront(nil) }
-        previousKeyWindow?.makeKey()
-    }
 
+    // A background test host has no activation handoff from the foreground app.
+    NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
     window.makeKeyAndOrderFront(nil)
     let host = UXTestHost(window: window, view: controller.view)
     do {
