@@ -92,3 +92,18 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 
 - Choose `SwiftUIDebug` configuration to run with SwiftUI
 - Choose `OpenSwiftUIDebug` configuration to run with OpenSwiftUI
+
+## UX Tests
+
+`OpenSwiftUIUXTests` uses Swift Testing and Hammer to send touch events to views
+inside `TestingHost`. It supports iPhone and iPad destinations.
+
+- Choose `OSUI_UXTests` to test OpenSwiftUI.
+- Choose `SUI_UXTests` to run the same tests with SwiftUI.
+
+Use `withUXTestHost(of:)` to present test content and release its window after
+the test. Call the helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`.
+The helper runs Hammer's synchronous waits on the main run loop so UIKit can
+process callbacks while the test task is suspended. Keep gesture tests on the
+main actor in serialized suites because they share application windows and
+Hammer settings. Hammer is linked only to the UX test target.

@@ -156,7 +156,7 @@ let testingHostSettings = commonAppSettings.merging([
     "REGISTER_APP_GROUPS": "YES",
 ])
 
-let uiTestsSettings: SettingsDictionary = [
+let hostedTestsSettings: SettingsDictionary = [
     "BUNDLE_LOADER": "$(TEST_HOST)",
     "CODE_SIGN_STYLE": "Automatic",
     "FRAMEWORK_SEARCH_PATHS": [
@@ -179,11 +179,19 @@ let uiTestsSettings: SettingsDictionary = [
         "$(inherited)",
         "$(SRCROOT)/Modules/Platform/cocoa",
     ],
-    "SWIFT_OBJC_BRIDGING_HEADER": "OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h",
     "SWIFT_VERSION": "5.0",
     "TARGETED_DEVICE_FAMILY": "1,2,7",
     "TEST_HOST": "$(BUILT_PRODUCTS_DIR)/TestingHost.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/TestingHost",
 ]
+
+let uiTestsSettings = hostedTestsSettings.merging([
+    "SWIFT_OBJC_BRIDGING_HEADER": "OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h",
+])
+
+let uxTestsSettings = hostedTestsSettings.merging([
+    "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator",
+    "TARGETED_DEVICE_FAMILY": "1,2",
+])
 
 let sharedSources: SourceFilesList = [
     "Shared/**/*.swift",
@@ -344,6 +352,22 @@ let targets: [Target] = [
         ] + privateFrameworkDependencies,
         settings: settings(base: uiTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUITests.xcconfig")
     ),
+    .target(
+        name: "OpenSwiftUIUXTests",
+        destinations: [.iPhone, .iPad],
+        product: .unitTests,
+        bundleId: "org.openswiftuiproject.openswiftui.$(OPENSWIFTUI_TARGET_BUNDLE_ID).OpenSwiftUIUXTests",
+        deploymentTargets: .iOS("18.0"),
+        infoPlist: .default,
+        sources: [
+            "OpenSwiftUIUXTests/**/*.swift",
+        ],
+        dependencies: [
+            .target(name: "TestingHost"),
+            .external(name: "Hammer"),
+        ] + privateFrameworkDependencies,
+        settings: settings(base: uxTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUXTests.xcconfig")
+    ),
 ]
 
 // MARK: - Schemes
@@ -457,6 +481,32 @@ let schemes: [Scheme] = [
         buildAction: .buildAction(targets: ["OpenSwiftUIUITests"]),
         testAction: .targets(
             [.testableTarget(target: "OpenSwiftUIUITests", parallelization: .enabled)],
+            arguments: testArguments,
+            configuration: swiftUIDebug,
+            expandVariableFromTarget: "TestingHost",
+            options: testOptions
+        ),
+        analyzeAction: .analyzeAction(configuration: swiftUIDebug)
+    ),
+    .scheme(
+        name: "OSUI_UXTests",
+        shared: true,
+        buildAction: .buildAction(targets: ["OpenSwiftUIUXTests"]),
+        testAction: .targets(
+            [.testableTarget(target: "OpenSwiftUIUXTests", parallelization: .disabled)],
+            arguments: testArguments,
+            configuration: openSwiftUIDebug,
+            expandVariableFromTarget: "TestingHost",
+            options: testOptions
+        ),
+        analyzeAction: .analyzeAction(configuration: openSwiftUIDebug)
+    ),
+    .scheme(
+        name: "SUI_UXTests",
+        shared: true,
+        buildAction: .buildAction(targets: ["OpenSwiftUIUXTests"]),
+        testAction: .targets(
+            [.testableTarget(target: "OpenSwiftUIUXTests", parallelization: .disabled)],
             arguments: testArguments,
             configuration: swiftUIDebug,
             expandVariableFromTarget: "TestingHost",

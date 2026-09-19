@@ -1,5 +1,5 @@
 {
-  "originHash" : "66279b215cb99eb47bdac725597d43be9340f035c6c2a5b876fed46c7963faa3",
+  "originHash" : "753f3f53d345e467123a99b13d4c52288a1d35a45442cbb4f29f84af93b3e0c7",
   "pins" : [
     {
       "identity" : "equatable",
@@ -8,6 +8,15 @@
       "state" : {
         "branch" : "main",
         "revision" : "c50e4f72fdd163a43738dfd4d92bf62c2531f367"
+      }
+    },
+    {
+      "identity" : "hammer",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/lyft/Hammer",
+      "state" : {
+        "revision" : "90af16da2d2756d2d297c005486b88b3e9971803",
+        "version" : "0.18.0"
       }
     },
     {

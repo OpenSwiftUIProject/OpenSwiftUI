@@ -35,6 +35,7 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/OpenSwiftUIProject/equatable.git", branch: "main"),
     .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
     .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git", exact: "1.19.3"),
+    .package(url: "https://github.com/lyft/Hammer.git", exact: "0.18.0"),
 ]
 
 if openCombineCondition {
@@ -83,6 +84,7 @@ let openSwiftUICoreTargetSettings: SettingsDictionary = [
 ]
 
 var packageProductTypes: [String: ProjectDescription.Product] = [
+    "Hammer": ProjectDescription.Product.staticFramework,
     "OpenSwiftUI": ProjectDescription.Product.framework,
     "OpenSwiftUICore": ProjectDescription.Product.framework,
     "OpenSwiftUI_SPI": ProjectDescription.Product.staticFramework,
@@ -99,6 +101,7 @@ var packageProductTypes: [String: ProjectDescription.Product] = [
 ]
 
 var packageProductDestinations: [String: Destinations] = [
+    "Hammer": [.iPhone, .iPad],
     "OpenSwiftUI": examplePackageDestinations,
     "OpenSwiftUICore": examplePackageDestinations,
     "OpenSwiftUI_SPI": examplePackageDestinations,
@@ -137,6 +140,12 @@ let packageSettings = PackageSettings(
         defaultConfiguration: "OpenSwiftUIDebug"
     ),
     targetSettings: [
+        "Hammer": .settings(
+            base: ["ENABLE_TESTING_SEARCH_PATHS": "YES"],
+            configurations: openSwiftUIPackageConfigurations,
+            defaultSettings: .essential,
+            defaultConfiguration: "OpenSwiftUIDebug"
+        ),
         "OpenSwiftUI": .settings(
             base: openSwiftUITargetSettings,
             configurations: openSwiftUIPackageConfigurations,
