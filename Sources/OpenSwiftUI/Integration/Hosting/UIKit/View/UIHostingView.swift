@@ -273,7 +273,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         base.layoutSubviews()
     }
 
-    @_spi(_)
+    @_implementationOnly
     override dynamic open func _geometryChanged(
         _ geometry: UnsafeRawPointer,
         forAncestor ancestor: UIView?
@@ -465,7 +465,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
 
     // Audited for 6.5.4
-    @_spi(_)
+    @_implementationOnly
     override dynamic open func _hitTest(with context: _UIHitTestContext?) -> (UIResponder & _UIGestureRecognizerContainer)? {
         defer { currentEvent = nil }
         guard GestureContainerFeature.isEnabled else { return nil }
@@ -525,7 +525,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
     }
 
     // Audited for 6.5.4
-    @_spi(_)
+    @_implementationOnly
     override dynamic open var _childContainers: [any _UIGestureRecognizerContainer] {
         guard GestureContainerFeature.isEnabled else { return super._childContainers }
         return (responderNode as? ViewResponder)?.childGestureContainers ?? []
@@ -621,7 +621,7 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
 
-    @_spi(ForOpenSwiftUIOnly)
+    @_implementationOnly
     #if OPENSWIFTUI_SWIFTUI_RENDERER
     @objc(swiftui_insertRenderedSubview:atIndex:)
     #endif
