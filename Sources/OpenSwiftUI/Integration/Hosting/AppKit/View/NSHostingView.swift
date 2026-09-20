@@ -941,7 +941,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         // TODO: handle screen change
     }
 
-    @_spi(ForOpenSwiftUIOnly)
+    @_implementationOnly
     #if OPENSWIFTUI_SWIFTUI_RENDERER
     @objc(swiftui_addRenderedSubview:positioned:relativeTo:)
     #endif
