@@ -175,6 +175,10 @@ struct FlexFrameLayoutTests {
             }
         }
         let viewController = PlatformHostingController(rootView: ContentView())
+        #if os(iOS) || os(visionOS)
+        // Measure the frame without the window's safe area.
+        viewController.safeAreaRegions = []
+        #endif
         viewController.triggerLayout()
         let size = viewController.sizeThatFits(in: .zero)
         #expect(size == CGSize(width: 200, height: 200))

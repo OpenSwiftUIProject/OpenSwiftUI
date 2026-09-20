@@ -9,6 +9,7 @@ import OpenSwiftUITestsSupport
 import OpenSwiftUI_SPI
 import Testing
 
+@MainActor
 @Suite(.tags(.aigc))
 struct ViewGraphTests {
     @Test(arguments: [
