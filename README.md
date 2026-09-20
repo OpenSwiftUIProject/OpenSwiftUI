@@ -100,7 +100,7 @@ for various platforms:
 | **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ | [@Kyle-Ye](https://github.com/Kyle-Ye), [@Mx-Iris](https://github.com/Mx-Iris) |
 | **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
 | **visionOS** | None | ⭐️ *[^4] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
-| **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ✅[^3] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
 | **Android** | None | Not supported yet | ❌ | ❌ | ❌ | |
 | **Windows** | None | Not supported yet | ❌ | ❌ | ❌ | |
 
@@ -108,7 +108,7 @@ for various platforms:
 
 [^2]: UIKit intergration is partly implemented.
 
-[^3]: Build and test is supported. But some feature is cut due to known Swift compiler issue.
+[^3]: Build, test, and deployment with the [stdout renderer](Renderer/Stdout/README.md) are supported. Linux UI framework integration is not available yet.
 
 [^4]: Build is supported. Test is not supported yet dut to upstream issue.
 
@@ -117,10 +117,7 @@ for various platforms:
 > [!NOTE]
 > The cross-platform OpenAttributeGraph is not fully implemented.
 >
-> It is only API compatible with AttributeGraph now.
->
-> So most of the core feature is only available on Apple platform built with
-> AttributeGraph varient.
+> The Linux stdout example uses the Compute backend to run its view graph.
 
 > [!NOTE]
 > To request platform ownership, please first contribute to the target platform and then contact the project owner.
