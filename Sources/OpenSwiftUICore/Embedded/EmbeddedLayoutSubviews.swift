@@ -2,7 +2,7 @@
 //  EmbeddedLayoutSubviews.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Statically typed child access. No existential views or heap-owned view graph.
 /// Index-based measurement/placement replaces desktop LayoutSubview proxies.
 public struct LayoutSubviews<Content: View, Sink: EmbeddedRenderSink> {

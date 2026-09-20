@@ -8,18 +8,7 @@
 // MARK: - PhysicalButtonEvent
 
 package struct PhysicalButtonEvent: EventType, Equatable {
-    package enum ButtonType: Hashable {
-        case upArrow
-        case downArrow
-        case leftArrow
-        case rightArrow
-        case select
-        case menu
-        case playPause
-        case pageUp
-        case pageDown
-        case back
-    }
+    package typealias ButtonType = PhysicalButton
 
     package var timestamp: Time
     package var phase: EventPhase

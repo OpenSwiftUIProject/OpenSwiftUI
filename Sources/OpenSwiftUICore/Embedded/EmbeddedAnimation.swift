@@ -2,7 +2,7 @@
 //  EmbeddedAnimation.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// A bounded, time-based animation for the Embedded renderer.
 /// Springs, repeat/delay and desktop animation transactions are not included.
 public struct Animation: Equatable, Sendable {

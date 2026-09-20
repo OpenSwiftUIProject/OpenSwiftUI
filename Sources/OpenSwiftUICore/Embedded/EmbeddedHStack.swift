@@ -2,7 +2,7 @@
 //  EmbeddedHStack.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 public struct HStack<Content: View>: View {
     let content: Content
     let layout: HStackLayout

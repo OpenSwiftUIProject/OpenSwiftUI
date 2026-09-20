@@ -2,13 +2,15 @@
 //  EmbeddedFrame.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 public struct _EmbeddedFrame<Content: View>: PrimitiveView {
     let content: Content
     let width: Int32?
     let height: Int32?
     let alignment: Alignment
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         let child = content._sizeThatFits(.init(width: width ?? proposal.width, height: height ?? proposal.height), using: &sink)
         return .init(width: width ?? child.width, height: height ?? child.height)

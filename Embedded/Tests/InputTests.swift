@@ -22,13 +22,13 @@ struct InteractiveView: View {
         let previousWidth = width
         VStack(spacing: 3) {
             Color.red.frame(width: width, height: 5)
-                .onPhyicButton(.up) { width = previousWidth + 1 }
+                .onPhyicButton(.upArrow) { width = previousWidth + 1 }
                 .frame(height: 5).padding(0).offset()
                 .background(Color.clear)
             if visible {
                 HStack {
                     Color.green.frame(width: 2, height: 5)
-                        .onPhyicButton(.down) { width -= 1 }
+                        .onPhyicButton(.downArrow) { width -= 1 }
                 }
             }
             if visible {
@@ -36,10 +36,10 @@ struct InteractiveView: View {
             } else {
                 ZStack {
                     Color.yellow.frame(width: 1, height: 5)
-                        .onPhyicButton(.down) { width = 20 }
+                        .onPhyicButton(.downArrow) { width = 20 }
                 }
             }
-        }.onPhyicButton(.ok) { visible.toggle() }
+        }.onPhyicButton(.select) { visible.toggle() }
     }
 }
 
@@ -52,7 +52,7 @@ final class LifetimeToken {
 struct LifetimeView: View {
     @State private var token: LifetimeToken
     init(_ counter: Counter) { _token = State(wrappedValue: LifetimeToken(counter)) }
-    var body: some View { Color.red.onPhyicButton(.ok) { _ = token.counter.value } }
+    var body: some View { Color.red.onPhyicButton(.select) { _ = token.counter.value } }
 }
 struct PairView: View {
     var body: some View {
@@ -77,15 +77,15 @@ enum InputTests {
         precondition(render(host).rects[0].width == 10)
         _ = render(other)
         for expected: Int32 in [11, 12, 13] {
-            precondition(host.send(.up) && host.needsRender && !other.needsRender)
+            precondition(host.send(.upArrow) && host.needsRender && !other.needsRender)
             precondition(render(host).rects[0].width == expected)
         }
-        precondition(host.send(.down))
+        precondition(host.send(.downArrow))
         precondition(render(host).rects[0].width == 12)
-        precondition(host.send(.ok))
+        precondition(host.send(.select))
         let hidden = render(host)
         precondition(hidden.rects.count == 2 && hidden.colors[1] == 0xffff00)
-        precondition(host.send(.down))
+        precondition(host.send(.downArrow))
         precondition(render(host).rects[0].width == 20) // Only the active branch ran.
         precondition(render(other).rects[0].width == 10)
         host.invalidate()
@@ -95,34 +95,34 @@ enum InputTests {
         let counter = Counter()
         let priority = EmbeddedViewHost {
             VStack {
-                Color.red.onPhyicButton(.up) { counter.value += 1 }
-                Color.blue.onPhyicButton(.up) { counter.value += 100 }
+                Color.red.onPhyicButton(.upArrow) { counter.value += 1 }
+                Color.blue.onPhyicButton(.upArrow) { counter.value += 100 }
             }
-            .onPhyicButton(.ok) { counter.value += 10 }
-            .onPhyicButton(.ok) { counter.value += 1000 }
+            .onPhyicButton(.select) { counter.value += 10 }
+            .onPhyicButton(.select) { counter.value += 1000 }
         }
         _ = render(priority)
-        precondition(!priority.send(.down) && !priority.needsRender)
-        precondition(priority.send(.up) && counter.value == 1)
-        precondition(priority.send(.ok) && counter.value == 1001)
+        precondition(!priority.send(.downArrow) && !priority.needsRender)
+        precondition(priority.send(.upArrow) && counter.value == 1)
+        precondition(priority.send(.select) && counter.value == 1001)
         precondition(!priority.needsRender) // Closures without State writes don't redraw.
 
         let transparent = EmbeddedViewHost {
-            VStack(spacing: 3) { PairView().onPhyicButton(.up) {} }
+            VStack(spacing: 3) { PairView().onPhyicButton(.upArrow) {} }
         }
         let pair = render(transparent)
         precondition(pair.rects.count == 2)
         precondition(pair.rects[1].y - pair.rects[0].y == 8)
         // Long-lived repeated actions must retain state without retaining body closures.
         for _ in 0..<500 {
-            precondition(host.send(.ok))
+            precondition(host.send(.select))
             _ = render(host)
         }
         precondition(render(host).rects[0].width == 20)
         let destroyed = Counter()
         for _ in 0..<100 {
             let transient = EmbeddedViewHost { LifetimeView(destroyed) }
-            precondition(transient.send(.ok))
+            precondition(transient.send(.select))
             _ = render(transient)
         }
         precondition(destroyed.value == 100)

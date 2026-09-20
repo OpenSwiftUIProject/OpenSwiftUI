@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Build the explicit static-display Embedded profile, without SwiftPM deps."""
+"""Build the standalone LVGL profile with optional FoloToy input, without SwiftPM deps."""
 import argparse
 import os
 from pathlib import Path
@@ -10,19 +10,30 @@ import subprocess
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--target", choices=("host", "riscv32"), required=True)
+    parser.add_argument("--platform", choices=("generic", "folotoy"), default="generic")
+    parser.add_argument("--swift-mode", choices=("embedded", "standard"), default="embedded")
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--swiftc", default=os.environ.get("SWIFTC", "swiftc"))
     parser.add_argument("--arch", default="rv32imc_zicsr_zifencei")
     parser.add_argument("--ar")
     args = parser.parse_args()
+    if args.target != "host" and args.swift_mode != "embedded":
+        parser.error("Bare-metal targets require --swift-mode embedded")
     root = Path(__file__).resolve().parents[1]
-    sources = [root / line for line in (root / "Embedded/sources.txt").read_text().splitlines() if line]
+    manifests = [root / "Embedded/sources.txt"]
+    if args.platform == "folotoy":
+        manifests.append(root / "Embedded/folotoy-sources.txt")
+    sources = [root / line for manifest in manifests for line in manifest.read_text().splitlines() if line]
     output = args.output.resolve()
     output.mkdir(parents=True, exist_ok=True)
-    command = [args.swiftc, "-enable-experimental-feature", "Embedded", "-wmo", "-Osize",
+    command = [args.swiftc, "-wmo", "-Osize",
                "-parse-as-library", "-DOPENSWIFTUI_LVGL", "-package-name", "OpenSwiftUI",
                "-module-name", "OpenSwiftUI", "-Xfrontend", "-function-sections",
                "-Xfrontend", "-enable-single-module-llvm-emission"]
+    if args.swift_mode == "embedded":
+        command += ["-enable-experimental-feature", "Embedded"]
+    if args.platform == "folotoy":
+        command += ["-DOPENSWIFTUI_PLATFORM_FOLOTOY"]
     # Use the same availability macro names as the normal package. This profile
     # has no Apple platform deployment dependency; the macros keep shared files
     # parseable in both profiles without deleting their normal annotations.
@@ -44,7 +55,7 @@ def main():
     archive.unlink(missing_ok=True)
     ar = args.ar or ("riscv32-esp-elf-ar" if args.target == "riscv32" else "ar")
     subprocess.run([ar, "rcs", str(archive), str(object_file)], check=True)
-    print(f"Embedded OpenSwiftUI: {args.target}, {len(sources)} source files, {archive.stat().st_size} archive bytes")
+    print(f"LVGL OpenSwiftUI: {args.target}, {args.swift_mode}, {args.platform}, {len(sources)} source files, {archive.stat().st_size} archive bytes")
 
 
 if __name__ == "__main__":

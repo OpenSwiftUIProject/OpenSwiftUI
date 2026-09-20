@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 1ABF77B82C037C602A176AE349787FED (SwiftUICore)
 
-#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#if !OPENSWIFTUI_LVGL
 import OpenSwiftUI_SPI
 #endif
 
@@ -47,7 +47,7 @@ import OpenSwiftUI_SPI
 /// You can also collect groups of default modifiers into new,
 /// custom view modifiers for easy reuse.
 @available(OpenSwiftUI_v1_0, *)
-#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#if !OPENSWIFTUI_LVGL
 #if OPENSWIFTUI_SUPPORT_2025_API
 @_typeEraser(DebugReplaceableView)
 #endif
@@ -56,10 +56,12 @@ import OpenSwiftUI_SPI
 @MainActor
 #endif
 public protocol View {
-    #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+    #if OPENSWIFTUI_LVGL
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
+    func _handlePhyicButton(_ button: PhysicalButton) -> Bool
+    #endif
     /// Synchronously render a statically specialized tree into a platform sink.
     /// The caller provides platform serialization (for example, the LVGL lock).
-    func _handlePhyicButton(_ button: PhysicalButton) -> Bool
     func _render<Sink: EmbeddedRenderSink>(in rect: EmbeddedRect, to sink: inout Sink)
     func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize
     var _layoutCount: Int { get }
@@ -103,7 +105,7 @@ public protocol View {
     /// For more information about composing views and a view hierarchy,
     /// see <doc:Declaring-a-Custom-View>.
     @ViewBuilder
-    #if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+    #if !OPENSWIFTUI_LVGL
     @MainActor
     @preconcurrency
     #endif
@@ -123,7 +125,7 @@ extension PrimitiveView {
 
 extension View {
     package func bodyError() -> Never {
-        #if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+        #if OPENSWIFTUI_LVGL
         preconditionFailure("Primitive views do not have a body")
         #else
         preconditionFailure("body() should not be called on \(Self.self).")
@@ -131,9 +133,11 @@ extension View {
     }
 }
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 extension PrimitiveView {
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { false }
+    #endif
     public var _layoutCount: Int { 1 }
     public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         precondition(index == 0)
@@ -145,7 +149,9 @@ extension PrimitiveView {
     }
 }
 extension View {
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { body._handlePhyicButton(button) }
+    #endif
     public var _layoutCount: Int { body._layoutCount }
     public func _measureChild<Sink: EmbeddedRenderSink>(_ index: Int, proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         body._measureChild(index, proposal: proposal, using: &sink)
@@ -255,4 +261,4 @@ extension TypeConformance where P == ViewDescriptor {
     }
 }
 
-#endif // OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#endif // OPENSWIFTUI_LVGL

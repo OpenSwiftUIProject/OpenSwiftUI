@@ -2,7 +2,7 @@
 //  EmbeddedRenderer.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Resolves root geometry, then renders the measured and placed tree.
 public enum EmbeddedRenderer {
     public static func render<Content: View, Sink: EmbeddedRenderSink>(
@@ -19,5 +19,5 @@ public enum EmbeddedRenderer {
     }
 }
 @_cdecl("openswiftui_embedded_version")
-public func openSwiftUIEmbeddedVersion() -> UInt32 { 4 }
+public func openSwiftUIEmbeddedVersion() -> UInt32 { 5 }
 #endif

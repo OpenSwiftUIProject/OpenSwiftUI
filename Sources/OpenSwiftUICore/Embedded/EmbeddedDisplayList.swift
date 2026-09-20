@@ -2,7 +2,7 @@
 //  EmbeddedDisplayList.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 package struct EmbeddedDrawCommand {
     enum Kind { case fill, image, text }
     var key: UInt64

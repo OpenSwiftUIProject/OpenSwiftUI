@@ -2,7 +2,7 @@
 //  EmbeddedOptionalView.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 extension Optional: View where Wrapped: View {
     public var body: Never { preconditionFailure("Optional views are primitive") }
     public var _layoutCount: Int { self?._layoutCount ?? 0 }
@@ -13,7 +13,9 @@ extension Optional: View where Wrapped: View {
     public func _placeChild<Sink: EmbeddedRenderSink>(_ index: Int, in rect: EmbeddedRect, to sink: inout Sink) {
         if let content = self { content._placeChild(index, in: rect, to: &sink) }
     }
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { self?._handlePhyicButton(button) ?? false }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         if let content = self { return content._sizeThatFits(proposal, using: &sink) }
         return .zero

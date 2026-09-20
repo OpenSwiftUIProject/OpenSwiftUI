@@ -2,7 +2,7 @@
 //  EmbeddedSize.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// A nonnegative size in physical pixels. No Foundation geometry is required.
 public struct EmbeddedSize: Equatable, Sendable {
     public var width: Int32

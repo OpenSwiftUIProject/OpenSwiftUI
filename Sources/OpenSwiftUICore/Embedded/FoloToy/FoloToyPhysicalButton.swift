@@ -1,14 +1,9 @@
 //
-//  EmbeddedPhysicalButton.swift
+//  FoloToyPhysicalButton.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
-/// Logical board buttons, independent of GPIO/ADC encodings.
-public enum PhysicalButton: Equatable {
-    case up, down, ok
-}
-
-/// A layout-transparent handler for one physical button click.
+#if OPENSWIFTUI_LVGL && OPENSWIFTUI_PLATFORM_FOLOTOY
+/// A layout-transparent handler for a FoloToy button action.
 public struct _EmbeddedPhysicalButton<Content: View>: PrimitiveView {
     let content: Content
     let button: PhysicalButton

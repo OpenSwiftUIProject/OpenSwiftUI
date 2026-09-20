@@ -2,11 +2,13 @@
 //  EmbeddedBackground.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 public struct _EmbeddedBackground<Content: View, Background: View>: PrimitiveView {
     let content: Content
     let background: Background
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) || background._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         content._sizeThatFits(proposal, using: &sink)
     }

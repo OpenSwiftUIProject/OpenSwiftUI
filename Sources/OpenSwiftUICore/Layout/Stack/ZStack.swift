@@ -1,4 +1,4 @@
-#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#if !OPENSWIFTUI_LVGL
 //
 //  ZStack.swift
 //  OpenSwiftUICore
@@ -267,4 +267,4 @@ extension ZStackLayout: DerivedLayout {
     package typealias Base = _ZStackLayout
 }
 
-#endif // !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#endif // !OPENSWIFTUI_LVGL

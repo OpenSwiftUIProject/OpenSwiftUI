@@ -2,7 +2,7 @@
 //  EmbeddedViewHost.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Retains a root value and its state between synchronous input and render passes.
 ///
 /// Construct content inside the builder so its state can invalidate this host.
@@ -46,7 +46,8 @@ public final class EmbeddedViewHost<Content: View> {
     /// Requests another pass, for example after a platform sink failure.
     public func invalidate() { context.revision &+= 1; context.animation = nil }
 
-    /// Delivers one click to the first matching modifier in the current tree.
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
+    /// Delivers one FoloToy button action to the first matching modifier.
     @discardableResult
     public func send(_ button: PhysicalButton) -> Bool {
         precondition(!context.isRendering && !isDispatching, "Input must not reenter a host")
@@ -54,6 +55,7 @@ public final class EmbeddedViewHost<Content: View> {
         defer { isDispatching = false }
         return content._handlePhyicButton(button)
     }
+    #endif
 
     public func render<Sink: EmbeddedRenderSink>(rootGeometry: RootGeometry, to sink: inout Sink) {
         precondition(!context.isRendering && !isDispatching, "Rendering must not reenter a host")

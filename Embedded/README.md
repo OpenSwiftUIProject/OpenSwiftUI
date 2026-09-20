@@ -1,18 +1,27 @@
-# Embedded display and input profile
+# LVGL display profile and FoloToy input
 
 This experiment compiles selected OpenSwiftUICore sources into a single
-`OpenSwiftUI` module for Embedded Swift. It retains the declarative
+`OpenSwiftUI` module for Embedded or ordinary Swift. It retains the declarative
 `struct ContentView: View` and `@ViewBuilder` composition path while replacing
 the dynamic graph renderer with a synchronous, generic `EmbeddedRenderSink`.
 
 This is an explicit source profile, not a regular SwiftPM target with all
-framework dependencies made optional. `sources.txt` is the authoritative list.
-The LVGL profile is selected by `#if OPENSWIFTUI_LVGL && hasFeature(Embedded)`.
-`build_embedded.py` passes `-DOPENSWIFTUI_LVGL` and
-`-enable-experimental-feature Embedded` for both host and RISC-V builds.
-The custom flag selects the LVGL integration; `hasFeature(Embedded)` checks the
-compiler's active language mode. Both are required to select these branches.
-Do not enable this combination with the full default package source set.
+framework dependencies made optional. `sources.txt` selects the generic sources;
+`folotoy-sources.txt` adds the FoloToy input adapter and the shared button enum.
+
+| Flag | Responsibility |
+| --- | --- |
+| `OPENSWIFTUI_LVGL` | Synchronous rendering, layout, retained State and animation through a platform sink. No FoloToy input dependency. |
+| `OPENSWIFTUI_PLATFORM_FOLOTOY` | Adds `PhysicalButton`, `onPhyicButton` and `EmbeddedViewHost.send`. Requires the LVGL profile. |
+
+The language mode is independent: `hasFeature(Embedded)` is not required by the
+LVGL profile. `build_embedded.py` defaults to `--platform generic --swift-mode
+embedded`; `--platform folotoy` adds the board flag and source manifest, while
+`--swift-mode standard` enables ordinary Swift on the host. Passport firmware
+and its WASM preview define both flags and use Embedded Swift. Another platform
+can use LVGL alone and supply its own sink and events via `host.update`.
+Use the explicit manifests; defining these flags on the full default SwiftPM
+source set is not supported.
 
 ## Standalone checkout and host build
 
@@ -40,15 +49,25 @@ On another host, set `SWIFTC` to that host's Embedded-capable compiler. The
 scripts include a non-Darwin path, but Linux has not been validated for this
 profile. The Python build helper uses only the standard library.
 
-From the checkout, build the module and run the four executable test suites:
+From the checkout, build the module and run the host test matrix:
 
     python3 Scripts/build_embedded.py --target host --output ../build/host
     Scripts/test_embedded.sh
 
+For ordinary Swift on macOS, without FoloToy input:
+
+    python3 Scripts/build_embedded.py --target host --swift-mode standard --output ../build/macos-lvgl
+
+Add `--platform folotoy` when the host also needs the Passport input adapter.
+Compile clients with the same language mode and flags as their module:
+`-DOPENSWIFTUI_LVGL`, plus `-DOPENSWIFTUI_PLATFORM_FOLOTOY` for that adapter.
+This produces a module for a host-provided sink; it does not create an AppKit
+window or configure a native LVGL display driver.
+
 The output contains `OpenSwiftUI.swiftmodule` and `libOpenSwiftUI.a`.
 Tests compile separate clients and exercise rendering, layout, and state/input.
 These host tests use recording sinks and require neither LVGL nor an ESP32
-device. The Embedded build uses `Embedded/sources.txt` directly; the normal
+device. The builds use the explicit source manifests directly; the normal
 `swift build`, `swift test`, and desktop setup commands select a different
 framework configuration.
 
@@ -62,7 +81,7 @@ activate IDF and put the selected Swift compiler on PATH:
     export SWIFTC=/absolute/path/to/swift-toolchain/usr/bin/swiftc
     export PATH="$(dirname "$SWIFTC"):$PATH"
     idf.py --version
-    python3 Scripts/build_embedded.py --target riscv32 --output ../build/riscv32
+    python3 Scripts/build_embedded.py --target riscv32 --platform folotoy --output ../build/riscv32
 
 Cross-compilation uses `riscv32-esp-elf-ar` and `riscv32-esp-elf-objcopy` from
 IDF. This creates a framework module and archive; a firmware application must
@@ -72,12 +91,14 @@ For an ESP-IDF application, configure `espressif/idf_swift` 1.0.1 and register
 the application's Swift sources before including the helper:
 
     include("${OPENSWIFTUI_SOURCE_DIR}/Embedded/idf.cmake")
-    openswiftui_link_embedded(${COMPONENT_LIB})
+    openswiftui_link_embedded(${COMPONENT_LIB} PLATFORM folotoy)
 
 Here `OPENSWIFTUI_SOURCE_DIR` is the absolute path to this checkout. The helper
 builds the module and archive for RISC-V, adds the Swift import path, and links
-the archive. Source and build-script changes trigger a rebuild. Compile Swift
-clients in Embedded mode with the same compiler as the framework.
+the archive. It also passes both flags to Swift clients. Omit `PLATFORM folotoy`
+to select generic LVGL without board input. Source, manifest and build-script
+changes trigger a rebuild. Compile clients in Embedded mode with the same
+compiler as the framework.
 
 The reference board application lives in the companion
 [OpenSwiftUIProject/ai-passport](https://github.com/OpenSwiftUIProject/ai-passport)
@@ -96,7 +117,9 @@ Managed Components. They are not dependencies of the standalone Swift module.
 Embedded Swift specializes generic declarations into their clients. A small
 archive therefore does not imply that all rendering code executes from that
 archive. The source module and archive together are the build interface. The
-C-callable `openswiftui_embedded_version()` reports profile ABI version 4.
+C-callable `openswiftui_embedded_version()` reports profile ABI version 5.
+Rebuild clients with the same profile flags; version 5 separates board input
+and replaces the old `.up` / `.down` / `.ok` API with the upstream names.
 
 ## Source selection and semantics
 
@@ -146,10 +169,17 @@ A sink runs synchronously under platform-controlled serialization. It must clip
 to its viewport, bound allocations/text/assets, and report unsupported assets.
 No framebuffer or UI object storage is owned by the generic View layer.
 
-## Physical buttons and retained state
+## FoloToy physical buttons and retained state
 
-`view.onPhyicButton(.up/.down/.ok) { ... }` installs a synchronous click closure.
-The spelling is intentional. Host dispatch evaluates the current body and invokes
+With both flags enabled, `view.onPhyicButton(.upArrow) { ... }` installs a
+synchronous click closure. UP, DOWN and OK map to `.upArrow`, `.downArrow` and
+`.select`. `PhysicalButton` shares its declaration with the main framework's
+`PhysicalButtonEvent.ButtonType`; the full event model keeps that name as a
+typealias. The other upstream cases remain available, but the three-button
+FoloToy adapter does not emit them. The LVGL profile does not include the full
+gesture, focus or keyboard event pipeline.
+
+The `onPhyicButton` spelling is intentional. Host dispatch evaluates the current body and invokes
 one matching handler: outermost modifier first, otherwise children in declaration
 order. Conditional/optional branches only participate when present. The modifier
 preserves layout child counts and geometry. There is no focus or hit-test layer.
@@ -160,15 +190,15 @@ current body and there is no stale closure table to clear on rerender.
         @State private var blue = false
         var body: some View {
             (blue ? Color.blue : Color.red)
-                .onPhyicButton(.up) { blue = false }
-                .onPhyicButton(.down) { blue = true }
-                .onPhyicButton(.ok) { blue.toggle() }
+                .onPhyicButton(.upArrow) { blue = false }
+                .onPhyicButton(.downArrow) { blue = true }
+                .onPhyicButton(.select) { blue.toggle() }
         }
     }
     let geometry = RootGeometry(screenSize: .init(width: 240, height: 320))
     let host = EmbeddedViewHost { ContentView() }
     host.render(rootGeometry: geometry, to: &sink)
-    host.send(.down)
+    host.send(.downArrow)
     if host.needsRender {
         host.render(rootGeometry: geometry, to: &sink)
     }
@@ -232,12 +262,15 @@ synchronous events to retained content. Stop the platform timer before releasing
 the host. There are no threads, clocks or retained completion callbacks inside
 the framework. This subset does not implement `.animation(_:value:)`, springs,
 repeat/delay, completion closures, arbitrary Animatable values or removal
-transitions. Client and framework must be rebuilt together for profile 4.
+transitions. Client and framework must be rebuilt together for profile 5.
 
 ## Validation
 
-`Scripts/test_embedded.sh` compiles the real module and a separate Embedded
-client executable, testing nested body traversal, conditional/optional
+`Scripts/test_embedded.sh` compiles the real module and separate clients for
+all four combinations of Embedded/ordinary Swift and generic/FoloToy. Generic
+builds must reject the board type, modifier and `send` API at compile time;
+FoloToy builds must accept them. Executable tests cover nested body traversal,
+conditional/optional
 branches, draw order, color bounds, root geometry, changing screen proposals,
 stack alignment/flexibility/remainders, text wrapping, intrinsic images, modifiers
 a client-defined Layout, State lifetime/host isolation, handler precedence,

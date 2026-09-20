@@ -1,4 +1,4 @@
-#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#if !OPENSWIFTUI_LVGL
 //
 //  Image.swift
 //  OpenSwiftUICore
@@ -613,4 +613,4 @@ extension _SymbolEffect.ReplaceConfiguration {
     }
 }
 
-#endif // !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#endif // !OPENSWIFTUI_LVGL

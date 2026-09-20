@@ -2,7 +2,7 @@
 //  EmbeddedViewPair.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Builder list storage: flatten siblings for the enclosing Layout container.
 public struct _EmbeddedViewPair<First: View, Second: View>: PrimitiveView {
     let first: First
@@ -16,7 +16,9 @@ public struct _EmbeddedViewPair<First: View, Second: View>: PrimitiveView {
         if index < first._layoutCount { first._placeChild(index, in: rect, to: &sink) }
         else { second._placeChild(index - first._layoutCount, in: rect, to: &sink) }
     }
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { first._handlePhyicButton(button) || second._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         ZStack { self }._sizeThatFits(proposal, using: &sink)
     }

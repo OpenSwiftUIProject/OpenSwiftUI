@@ -2,7 +2,7 @@
 //  EmbeddedTransition.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Insertion effects for identified Embedded views. Removal is immediate.
 /// Scale changes primitive geometry; the platform's fixed text font is retained.
 public struct AnyTransition: Equatable, Sendable {
@@ -19,7 +19,9 @@ public struct AnyTransition: Equatable, Sendable {
 public struct _EmbeddedTransition<Content: View>: PrimitiveView {
     let content: Content
     let transition: AnyTransition
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         content._sizeThatFits(proposal, using: &sink)
     }

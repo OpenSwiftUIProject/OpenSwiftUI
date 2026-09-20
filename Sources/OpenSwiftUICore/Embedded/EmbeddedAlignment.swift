@@ -2,7 +2,7 @@
 //  EmbeddedAlignment.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 public enum HorizontalAlignment: Sendable { case leading, center, trailing }
 public enum VerticalAlignment: Sendable { case top, center, bottom }
 public struct Alignment: Sendable {

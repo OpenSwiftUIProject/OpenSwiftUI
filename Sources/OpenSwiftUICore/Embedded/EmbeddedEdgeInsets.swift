@@ -2,7 +2,7 @@
 //  EmbeddedEdgeInsets.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 public struct EdgeInsets: Equatable, Sendable {
     public var top: Int32
     public var leading: Int32

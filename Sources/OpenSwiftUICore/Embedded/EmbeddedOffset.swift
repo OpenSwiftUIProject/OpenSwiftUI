@@ -2,13 +2,15 @@
 //  EmbeddedOffset.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 public struct _EmbeddedOffset<Content: View>: PrimitiveView {
     let content: Content
     let x: Int32
     let y: Int32
 
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         content._sizeThatFits(proposal, using: &sink)
     }

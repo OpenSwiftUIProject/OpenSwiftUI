@@ -1,4 +1,4 @@
-#if !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#if !OPENSWIFTUI_LVGL
 //
 //  Color.swift
 //  OpenSwiftUICore
@@ -328,4 +328,4 @@ private struct CustomColorProvider<P>: ColorProvider where P: Hashable, P: Shape
     }
 }
 
-#endif // !(OPENSWIFTUI_LVGL && hasFeature(Embedded))
+#endif // !OPENSWIFTUI_LVGL

@@ -2,13 +2,15 @@
 //  EmbeddedIdentity.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Explicit render identity. IDs must be nonzero and unique across a host.
 /// This preserves drawing identity across layout changes, not child State.
 public struct _EmbeddedIdentity<Content: View>: PrimitiveView {
     let content: Content
     let id: UInt32
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         content._sizeThatFits(proposal, using: &sink)
     }

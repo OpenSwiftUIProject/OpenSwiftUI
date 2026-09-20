@@ -2,7 +2,7 @@
 //  EmbeddedZStack.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// Measures all children with the same proposal, then aligns their fitted sizes.
 public struct ZStack<Content: View>: PrimitiveView {
     public let content: Content
@@ -10,7 +10,9 @@ public struct ZStack<Content: View>: PrimitiveView {
     public init(alignment: Alignment = .center, @ViewBuilder content: () -> Content) {
         self.alignment = alignment; self.content = content()
     }
+    #if OPENSWIFTUI_PLATFORM_FOLOTOY
     public func _handlePhyicButton(_ button: PhysicalButton) -> Bool { content._handlePhyicButton(button) }
+    #endif
     public func _sizeThatFits<Sink: EmbeddedRenderSink>(_ proposal: ProposedViewSize, using sink: inout Sink) -> EmbeddedSize {
         var subviews = LayoutSubviews(content: content, sink: sink)
         var result = EmbeddedSize.zero

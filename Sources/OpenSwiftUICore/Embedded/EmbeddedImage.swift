@@ -2,7 +2,7 @@
 //  EmbeddedImage.swift
 //  OpenSwiftUICore
 
-#if OPENSWIFTUI_LVGL && hasFeature(Embedded)
+#if OPENSWIFTUI_LVGL
 /// A named static asset. Defaults to intrinsic size; resizable adopts proposals.
 public struct Image: PrimitiveView {
     public let name: StaticString

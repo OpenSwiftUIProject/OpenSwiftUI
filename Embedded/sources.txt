@@ -1,3 +1,4 @@
+Sources/OpenSwiftUICore/Embedded/EmbeddedConfiguration.swift
 Sources/OpenSwiftUICore/View/View.swift
 Sources/OpenSwiftUICore/View/ViewBuilder.swift
 Sources/OpenSwiftUICore/View/EmptyView.swift
@@ -32,7 +33,6 @@ Sources/OpenSwiftUICore/Embedded/EmbeddedPadding.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedBackground.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedState.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedViewHost.swift
-Sources/OpenSwiftUICore/Embedded/EmbeddedPhysicalButton.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedAnimation.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedTransition.swift
 Sources/OpenSwiftUICore/Embedded/EmbeddedIdentity.swift
