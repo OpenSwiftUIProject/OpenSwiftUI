@@ -12,6 +12,34 @@ enabled. The Swift package depends on the local OpenSwiftUI checkout at `../..`.
 The script selects AttributeGraph on macOS and Compute on other platforms,
 then runs `swift run ExampleApp`.
 
+## Linux
+
+Linux supports deployment with the stdout renderer. It does not have UI
+framework integration yet, so the example renders one terminal frame without
+opening a window.
+
+Use Swift 6.3.3 and install the Compute dependencies on Ubuntu:
+
+```sh
+sudo apt-get update
+sudo apt-get install -y libssl-dev uuid-dev
+./run-example.sh
+```
+
+The launcher supports Swift installed with swiftly or the official Swift
+container. It sets the Swift header, linker, and runtime library paths for the
+selected toolchain without changing the package's linker settings.
+When running the executable directly, include the toolchain's `usr/lib` in
+`LD_LIBRARY_PATH` if it is outside the system library directories.
+
+Compute is built from source at `0.5.2-bugfix.1` by default, matching
+`mise.compute.toml`. Set `OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_SOURCE_VERSION`
+to select another version. With local dependencies enabled, check out that
+version in the sibling Compute repository instead.
+
+The example includes `Text` only when Darwin is available. Linux currently
+renders the red and blue color regions; text layout is not supported yet.
+
 ## macOS Xcode
 
 Use the Tuist project when running the demo from Xcode on macOS:
