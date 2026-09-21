@@ -4,11 +4,12 @@
 
 #if canImport(Darwin)
 import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#else
+#error("Unsupported platform")
 #endif
 import Foundation
-#if canImport(Glibc)
-import Glibc
-#endif
 @_spi(StdoutRenderer) import OpenSwiftUI
 import OpenSwiftUITestsSupport
 import Testing
