@@ -18,8 +18,12 @@ description: Route OpenSwiftUI test authoring and review work to the appropriate
 ## Shared Conventions
 
 - Follow the organization and naming of the nearest tests in the same target.
-- Sort import declarations alphabetically by imported module name, preserving any
-  attributes attached to each declaration.
+- Sort unconditional imports and conditional import blocks alphabetically by
+  imported module name, treating each block as one unit. Use the first import
+  in the block's first branch as its sort key.
+- Group mutually exclusive imports in one `#if` / `#elseif` / `#else` block.
+  Never split the block or reorder its branches to alphabetize individual
+  imports. Preserve its conditions, fallback behavior, and import attributes.
 - Mark suites/tests that contain AI-generated Swift Testing tests with `.tags(.aigc)`
   on `@Suite` or `@Test`. Also add `import OpenSwiftUITestsSupport` if not imported yet.
 - In Swift Testing, prefer `@Test(arguments:)` when cases share the same test
@@ -40,6 +44,38 @@ description: Route OpenSwiftUI test authoring and review work to the appropriate
 
   Leave one blank line after the target name. Do not add a closing decorative
   `//` line, and do not copy a target name from an unrelated example.
+
+## Conditional Import Blocks
+
+For example, the following blocks sort by `Darwin`, `OpenCombine`, and `UIKit`,
+respectively, not by modules in their alternative branches. `Foundation` belongs
+after the entire Darwin/Glibc block, never between its branches:
+
+```swift
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#else
+#error("Unsupported platform")
+#endif
+```
+
+```swift
+#if OPENSWIFTUI_OPENCOMBINE
+import OpenCombine
+#else
+import Combine
+#endif
+```
+
+```swift
+#if os(iOS) || os(visionOS)
+import UIKit
+#elseif os(macOS)
+import AppKit
+#endif
+```
 
 ## Test-Type Guides
 
