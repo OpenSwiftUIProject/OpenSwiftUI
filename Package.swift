@@ -789,7 +789,8 @@ default:
 }
 
 var products: [PackageDescription.Product] = [
-    .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"])
+    .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"]),
+    .library(name: "OpenSwiftUITestsSupport", targets: ["OpenSwiftUITestsSupport"]),
 ]
 if supportMultiProducts {
     products += [

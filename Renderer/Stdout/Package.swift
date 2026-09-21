@@ -19,5 +19,12 @@ let package = Package(
             ],
             path: "ExampleApp"
         ),
+        .testTarget(
+            name: "StdoutRendererTests",
+            dependencies: [
+                .product(name: "OpenSwiftUI", package: "OpenSwiftUI"),
+                .product(name: "OpenSwiftUITestsSupport", package: "OpenSwiftUI"),
+            ]
+        ),
     ]
 )

@@ -12,6 +12,19 @@ enabled. The Swift package depends on the local OpenSwiftUI checkout at `../..`.
 The script selects AttributeGraph on macOS and Compute on other platforms,
 then runs `swift run ExampleApp`.
 
+## Tests
+
+```sh
+./run-tests.sh --filter StdoutRendererTests
+```
+
+The test target uses Swift Testing exit tests to run a fixed color-stack app
+through the real app lifecycle and capture stdout. It verifies the display-list
+and terminal output with `OPENSWIFTUI_PRINT_TREE` unset, `0`, and `1`, including
+the tree's frames and colors. Only addresses, timestamps, and internal graph
+identifiers are normalized. The test script uses the same toolchain setup as
+`run-example.sh` and forwards its arguments to `swift test`.
+
 ## Linux
 
 Linux supports deployment with the stdout renderer. It does not have UI
