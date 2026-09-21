@@ -789,13 +789,13 @@ default:
 }
 
 var products: [PackageDescription.Product] = [
-    .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"]),
-    .library(name: "OpenSwiftUITestsSupport", targets: ["OpenSwiftUITestsSupport"]),
+    .library(name: "OpenSwiftUI", type: libraryType, targets: ["OpenSwiftUI"])
 ]
 if supportMultiProducts {
     products += [
         .library(name: "OpenSwiftUICore", type: libraryType, targets: ["OpenSwiftUICore"]),
         .library(name: "OpenSwiftUI_SPI", targets: ["OpenSwiftUI_SPI"]),
+        .library(name: "OpenSwiftUITestsSupport", targets: ["OpenSwiftUITestsSupport"]),
         .library(name: "OpenSwiftUIExtension", targets: ["OpenSwiftUIExtension"]),
         .library(name: "OpenSwiftUIBridge", targets: ["OpenSwiftUIBridge"])
     ]
