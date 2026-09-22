@@ -15,7 +15,7 @@ import UIFoundation_Private
 import OpenSwiftUICore
 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
 public import AppKit
-#elseif canImport(UIKit)
+#elseif !os(Android) && canImport(UIKit)
 public import UIKit
 #endif
 
@@ -75,7 +75,7 @@ public struct WidgetAuxiliaryViewMetadata {
                 }
                 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
                 let color = (attributes[.foregroundColor] as? NSColor).map(Color.init)
-                #elseif canImport(UIKit)
+                #elseif !os(Android) && canImport(UIKit)
                 let color = (attributes[.foregroundColor] as? UIColor).map(Color.init)
                 #else
                 let color: Color? = nil
@@ -83,7 +83,7 @@ public struct WidgetAuxiliaryViewMetadata {
                 #if canImport(AppKit) && !targetEnvironment(macCatalyst)
                 let font = attributes[.font] as? NSFont
                 let features = font?.fontDescriptor.object(forKey: .featureSettings) as? [NSDictionary]
-                #elseif canImport(UIKit)
+                #elseif !os(Android) && canImport(UIKit)
                 let font = attributes[.font] as? UIFont
                 let features = font?.fontDescriptor.object(forKey: .featureSettings) as? [NSDictionary]
                 #else
@@ -106,7 +106,7 @@ public struct WidgetAuxiliaryViewMetadata {
         fileprivate static func extractSpecialMetadata(
             from attributes: [NSAttributedString.Key: Any]
         ) -> Metadata.Kind? {
-            #if canImport(AppKit) || canImport(UIKit)
+            #if canImport(AppKit) || (!os(Android) && canImport(UIKit))
             if let attachment = attributes[.attachment] as? NSTextAttachment {
                 return metadataKind(from: attachment)
             }
@@ -141,7 +141,7 @@ public struct WidgetAuxiliaryViewMetadata {
             return nil
         }
 
-        #if canImport(AppKit) || canImport(UIKit)
+        #if canImport(AppKit) || (!os(Android) && canImport(UIKit))
         private static func metadataKind(
             from attachment: NSTextAttachment
         ) -> Metadata.Kind? {
@@ -174,7 +174,7 @@ public struct WidgetAuxiliaryViewMetadata {
 
         #if canImport(AppKit) && !targetEnvironment(macCatalyst)
         case image(NSImage)
-        #elseif canImport(UIKit)
+        #elseif !os(Android) && canImport(UIKit)
         case image(UIImage)
         #else
         case image(NSObject)
@@ -479,7 +479,7 @@ public struct WidgetAuxiliaryViewMetadata {
         } else {
             #if canImport(AppKit) && !targetEnvironment(macCatalyst)
             self.graphic = (item?.resolvedImage?.basePlatformItemImage as? NSImage).map(Graphic.image)
-            #elseif canImport(UIKit)
+            #elseif !os(Android) && canImport(UIKit)
             self.graphic = (item?.resolvedImage?.basePlatformItemImage as? UIImage).map(Graphic.image)
             #else
             self.graphic = (item?.resolvedImage?.basePlatformItemImage as? NSObject).map(Graphic.image)
@@ -643,7 +643,7 @@ extension WidgetAuxiliaryViewMetadata {
         }
         return image
     }
-    #elseif canImport(UIKit)
+    #elseif !os(Android) && canImport(UIKit)
     @available(*, deprecated, message: "Use graphic instead")
     public var image: UIImage? {
         guard let graphic,

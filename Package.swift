@@ -754,6 +754,7 @@ let openSwiftUIAndroidDemoTarget = Target.target(
     name: "OpenSwiftUIAndroidDemo",
     dependencies: [
         "OpenSwiftUI",
+        "OpenSwiftUIDemoContent",
         "OpenSwiftUICore",
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
     ],
@@ -767,6 +768,7 @@ let openSwiftUILinuxDemoTarget = Target.executableTarget(
     name: "OpenSwiftUILinuxDemo",
     dependencies: [
         "OpenSwiftUI",
+        "OpenSwiftUIDemoContent",
     ],
     swiftSettings: sharedSwiftSettings + (androidUIKitCondition ? [
         .interoperabilityMode(.Cxx, .when(platforms: [.android])),
@@ -928,6 +930,13 @@ if renderGTKCondition {
 
 if !buildForDarwinPlatform {
     package.targets.append(openSwiftUILinuxDemoTarget)
+}
+if !buildForDarwinPlatform || androidUIKitCondition {
+    package.targets.append(.target(
+        name: "OpenSwiftUIDemoContent",
+        dependencies: ["OpenSwiftUI"],
+        swiftSettings: sharedSwiftSettings
+    ))
 }
 if androidUIKitCondition {
     package.targets.append(openSwiftUIAndroidRuntimeShimsTarget)

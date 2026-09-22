@@ -69,6 +69,24 @@ open class PlatformViewDefinition: @unchecked Sendable {
     open class func setIgnoresEvents(_ state: Bool, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
     open class func setAllowsWindowActivationEvents(_ value: Bool?, for view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
     open class func setHitTestsAsOpaque(_ value: Bool, for view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+
+    #if !canImport(QuartzCore)
+    // Non-QuartzCore backends share the updater's traversal, state, and view cache.
+    open class func viewLayer(_ view: AnyObject) -> CALayer { _openSwiftUIBaseClassAbstractMethod() }
+    open class func subviews(_ view: AnyObject) -> [AnyObject] { _openSwiftUIBaseClassAbstractMethod() }
+    open class func removeFromSuperview(_ view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func addSubview(_ child: AnyObject, to parent: AnyObject, at index: Int) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setFrame(_ frame: CGRect, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func frame(of view: AnyObject) -> CGRect? { _openSwiftUIBaseClassAbstractMethod() }
+    open class func bounds(of view: AnyObject) -> CGRect? { _openSwiftUIBaseClassAbstractMethod() }
+    open class func maskView(_ view: AnyObject) -> AnyObject? { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setClipsToBounds(_ clips: Bool, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setGeometry(position: CGPoint, bounds: CGRect, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setTransform(_ transform: CGAffineTransform, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setBackgroundColor(_ color: Color.Resolved, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setOpacity(_ opacity: Float, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    open class func setCornerRadius(_ radius: CGFloat, of view: AnyObject) { _openSwiftUIBaseClassAbstractMethod() }
+    #endif
 }
 
 // MARK: - DisplayList.ViewUpdater.Platform Definition
@@ -208,7 +226,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(QuartzCore)
         CoreViewLayer(system: viewSystem, view: view)
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.viewLayer(view)
         #endif
     }
     
@@ -217,7 +235,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(QuartzCore)
         CoreViewSubviews(system: viewSystem, view: view) as [AnyObject]
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.subviews(view)
         #endif
     }
     
@@ -226,7 +244,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(QuartzCore)
         CoreViewRemoveFromSuperview(system: viewSystem, view: view)
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.removeFromSuperview(view)
         #endif
     }
 
@@ -240,7 +258,7 @@ extension DisplayList.ViewUpdater.Platform {
             index: UInt(index)
         )
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.addSubview(child, to: parent, at: index)
         #endif
     }
 
@@ -249,7 +267,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(QuartzCore)
         CoreViewSetFrame(system: viewSystem, view: view, frame: frame)
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.setFrame(frame, of: view)
         #endif
     }
 
@@ -258,7 +276,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(QuartzCore)
         CoreViewGetFrame(system: viewSystem, view: view)
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.frame(of: view)
         #endif
     }
 
@@ -267,7 +285,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(Darwin)
         view.bounds
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.bounds(of: view)
         #endif
     }
 
@@ -276,7 +294,7 @@ extension DisplayList.ViewUpdater.Platform {
         #if canImport(QuartzCore)
         CoreViewMaskView(system: viewSystem, view: view) as AnyObject?
         #else
-        _openSwiftUIPlatformUnimplementedFailure()
+        definition.maskView(view)
         #endif
     }
 
@@ -290,7 +308,7 @@ extension DisplayList.ViewUpdater.Platform {
             onLayer: onLayer
         )
         #else
-        _openSwiftUIPlatformUnimplementedWarning()
+        definition.setClipsToBounds(clips, of: view)
         #endif
     }
 
@@ -316,7 +334,7 @@ extension DisplayList.ViewUpdater.Platform {
             bounds: bounds
         )
         #else
-        _openSwiftUIPlatformUnimplementedWarning()
+        definition.setGeometry(position: position, bounds: bounds, of: view)
         #endif
     }
 
@@ -415,7 +433,7 @@ extension DisplayList.ViewUpdater.Platform {
                 #if canImport(QuartzCore)
                 viewInfo.layer.backgroundColor = color.cgColor
                 #else
-                _openSwiftUIPlatformUnimplementedWarning()
+                definition.setBackgroundColor(color, of: viewInfo.view)
                 #endif
             case .chameleonColor:
                 if viewInfo.state.kind != .chameleonColor {
@@ -1023,15 +1041,19 @@ extension DisplayList.ViewUpdater.Platform {
         size: CGSize,
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>
     ) {
-        #if canImport(QuartzCore)
         if viewInfo.seeds.opacity != state.pointee.versions.opacity.seed {
+            #if canImport(QuartzCore)
             CoreViewSetOpacity(
                 system: viewSystem,
                 view: viewInfo.view,
                 opacity: CGFloat(state.pointee.opacity)
             )
+            #else
+            definition.setOpacity(state.pointee.opacity, of: viewInfo.view)
+            #endif
             viewInfo.seeds.opacity = state.pointee.versions.opacity.seed
         }
+        #if canImport(QuartzCore)
         if viewInfo.seeds.blend != state.pointee.versions.blend.seed {
             CoreViewSetCompositingFilter(
                 system: viewSystem,
@@ -1053,6 +1075,11 @@ extension DisplayList.ViewUpdater.Platform {
             )
             viewInfo.seeds.filters = state.pointee.versions.filters.seed
         }
+        #else
+        if state.pointee.blend != .normal || !state.pointee.filters.isEmpty {
+            _openSwiftUIPlatformUnimplementedWarning()
+        }
+        #endif
 
         let clipRectChanged: Bool
         if viewInfo.seeds.clips != state.pointee.versions.clips.seed ||
@@ -1085,9 +1112,6 @@ extension DisplayList.ViewUpdater.Platform {
         default:
             viewInfo.layer.contentsScale = state.pointee.globals.pointee.environment.contentsScale
         }
-        #else
-        _openSwiftUIPlatformUnimplementedWarning()
-        #endif
     }
 
     private func updateStateAsync(
@@ -1604,7 +1628,13 @@ extension DisplayList.ViewUpdater.Platform {
             }
         }
         #else
-        _openSwiftUIPlatformUnimplementedWarning()
+        let clipRect = state.pointee.clipRect()
+        viewInfo.state.isClipRectEnabled = clipRect != nil
+        definition.setClipsToBounds(clipRect != nil, of: viewInfo.view)
+        definition.setCornerRadius(clipRect?.clampedCornerRadius ?? 0, of: viewInfo.view)
+        if clipRect == nil && !state.pointee.clips.isEmpty {
+            _openSwiftUIPlatformUnimplementedWarning()
+        }
         #endif
     }
 
@@ -1615,7 +1645,6 @@ extension DisplayList.ViewUpdater.Platform {
         state: UnsafePointer<DisplayList.ViewUpdater.Model.State>,
         clipRectChanged: Bool
     ) -> Bool {
-        #if canImport(QuartzCore)
         let sizeChanged = viewInfo.state.size != size
         let transformSeed = DisplayList.Seed(state.pointee.versions.transform)
         let transformChanged = viewInfo.seeds.transform != transformSeed
@@ -1660,7 +1689,11 @@ extension DisplayList.ViewUpdater.Platform {
 
         if usesProjection {
             if boundsChanged {
+                #if canImport(QuartzCore)
                 CoreViewSetSize(system: viewSystem, view: viewInfo.view, size: bounds.size)
+                #else
+                definition.setGeometry(position: position, bounds: bounds, of: viewInfo.view)
+                #endif
             }
             viewLayer(viewInfo.view).contentsScale = state.pointee.globals.pointee.environment.contentsScale
             if boundsChanged, viewInfo.state.kind == .mask {
@@ -1674,11 +1707,15 @@ extension DisplayList.ViewUpdater.Platform {
         affineTransform.ty = 0
         let hasAffineTransform = affineTransform != .identity
         if transformChanged && (hadAffineTransform || hasAffineTransform) {
+            #if canImport(QuartzCore)
             CoreViewSetTransform(
                 system: viewSystem,
                 view: viewInfo.view,
                 transform: affineTransform
             )
+            #else
+            definition.setTransform(affineTransform, of: viewInfo.view)
+            #endif
             if hasAffineTransform {
                 viewInfo.state.isAffineTransformEnabled = true
             } else {
@@ -1717,10 +1754,6 @@ extension DisplayList.ViewUpdater.Platform {
             setMaskGeometry(of: viewInfo.view, bounds: bounds)
         }
         return boundsChanged
-        #else
-        _openSwiftUIPlatformUnimplementedWarning()
-        return false
-        #endif
     }
 
     private func updateShadow(
@@ -1793,7 +1826,9 @@ extension DisplayList.ViewUpdater.Platform {
             )
         }
         #else
-        _openSwiftUIPlatformUnimplementedWarning()
+        if state.pointee.shadow != nil {
+            _openSwiftUIPlatformUnimplementedWarning()
+        }
         #endif
     }
 
@@ -1810,7 +1845,9 @@ extension DisplayList.ViewUpdater.Platform {
         // TODO: Add CALayerDisableUpdateMask enum in the future
         viewLayer(viewInfo.view).disableUpdateMask = properties.contains(.screencaptureProhibited) ? 0x12 : 0
         #else
-        _openSwiftUIPlatformUnimplementedWarning()
+        if properties.contains(.screencaptureProhibited) {
+            _openSwiftUIPlatformUnimplementedWarning()
+        }
         #endif
     }
 

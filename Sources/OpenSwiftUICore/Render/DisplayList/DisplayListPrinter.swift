@@ -8,6 +8,25 @@
 
 // MARK: - DisplayList + print
 
+private extension Path {
+    var displayListDescription: String {
+        #if canImport(Darwin)
+        description
+        #else
+        // Diagnostic only: Path's lossless serializer currently requires CoreGraphics.
+        switch storage {
+        case .empty: " empty"
+        case let .rect(rect): " rect \(rect)"
+        case let .ellipse(rect): " ellipse \(rect)"
+        case let .roundedRect(rect): " rounded-rect \(rect.rect) radius \(rect.clampedCornerRadius) style \(rect.style)"
+        case .stroked: " stroked (description unavailable)"
+        case .trimmed: " trimmed (description unavailable)"
+        case .path: " custom (description unavailable)"
+        }
+        #endif
+    }
+}
+
 extension DisplayList: CustomStringConvertible {
     public var description: String {
         var printer = SExpPrinter(tag: "display-list")
@@ -128,13 +147,13 @@ extension DisplayList.Content.Value {
             printer.pop()
         case let .shape(path, paint, style):
             printer.push("shape")
-            printer.print("(path\(path.description))")
+            printer.print("(path\(path.displayListDescription))")
             printer.print("(paint \(paint))")
             printer.print("(style \(style))")
             printer.pop()
         case let .shadow(path, shadow):
             printer.push("shadow")
-            printer.print("(path\(path.description))")
+            printer.print("(path\(path.displayListDescription))")
             printer.print("(shadow \(shadow))")
             printer.pop()
         case .platformView:
@@ -254,7 +273,7 @@ extension DisplayList.Effect {
             printer.print("#:blend-mode \(mode)", newline: false)
         case let .clip(path, style, options):
             printer.push("clip")
-            printer.print("(path\(path.description))")
+            printer.print("(path\(path.displayListDescription))")
             printer.print("(style \(style))")
             if !options.isEmpty {
                 printer.print("(options \(options))")

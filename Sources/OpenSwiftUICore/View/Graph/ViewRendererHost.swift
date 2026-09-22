@@ -313,7 +313,7 @@ extension ViewRendererHost {
             // TODO: CustomEventTrace
             return delegate.withMainThreadRender(wasAsync: false) {
                 renderer.render(
-                    rootView: self,
+                    rootView: rootView,
                     from: list,
                     time: time,
                     nextTime: nextTime,

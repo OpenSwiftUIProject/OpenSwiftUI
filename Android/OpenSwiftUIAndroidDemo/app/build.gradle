@@ -7,7 +7,7 @@ android {
 
     defaultConfig {
         applicationId 'org.openswiftui.androiddemo'
-        minSdkVersion 24
+        minSdkVersion 28
         targetSdkVersion 34
         versionCode 1
         versionName '1.0'

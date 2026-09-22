@@ -11,6 +11,8 @@ import Foundation
 import Darwin
 #elseif canImport(Glibc)
 import Glibc
+#elseif os(Android)
+import Android
 #else
 #error("Unsupported Platform")
 #endif
