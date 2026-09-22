@@ -1,16 +1,10 @@
 #if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
-import Bionic
+import Android
 import Foundation
 import JNI
 import UIKit
 @_spi(DisplayList_ViewSystem) import OpenSwiftUICore
 import OpenQuartzCoreShims
-
-@_silgen_name("SDLJNI_OnLoad")
-private func SDLJNI_OnLoad(
-    _ vm: UnsafeMutablePointer<JavaVM?>,
-    _ reserved: UnsafeMutableRawPointer?
-) -> JavaInt
 
 nonisolated(unsafe) private var didConfigureNativeLoaders = false
 
@@ -23,20 +17,19 @@ public func OpenSwiftUIAndroidDemoConfigureUIKit() {
 
 @_cdecl("Java_org_openswiftui_androiddemo_MainActivity_configureOpenSwiftUI")
 func OpenSwiftUIAndroidDemoConfigureFromJava(
-    _ env: UnsafeMutablePointer<JNIEnv?>?,
+    _ env: UnsafeMutablePointer<JNIEnv>?,
     _ activity: JavaObject?
 ) {
     configureNativeLoaders(env: env)
     OpenSwiftUIAndroidDemoConfigureUIKit()
 }
 
-private func configureNativeLoaders(env: UnsafeMutablePointer<JNIEnv?>?) {
+private func configureNativeLoaders(env: UnsafeMutablePointer<JNIEnv>?) {
     guard !didConfigureNativeLoaders, let env else {
         return
     }
-    var vm: UnsafeMutablePointer<JavaVM?>?
-    _ = env.pointee!.pointee.GetJavaVM(env, &vm)
-    guard let vm else {
+    var vm: UnsafeMutablePointer<JavaVM>?
+    guard env.pointee.GetJavaVM(&vm) == JNI_OK, let vm else {
         return
     }
     _ = SwiftJNI_OnLoad(vm, nil)

@@ -79,7 +79,9 @@ def getSwiftBuildCommand(abi) {
         export OPENATTRIBUTEGRAPH_USE_LOCAL_DEPS=1
         export OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE=1
         export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE=1
+        export OPENATTRIBUTEGRAPH_OPENATTRIBUTESHIMS_COMPUTE_BINARY=0
         export OPENSWIFTUI_ANDROID_UIKIT=1
+        export OPENSWIFTUI_RENDER_GTK=0
         export OPENRENDERBOX_LIB_SWIFT_PATH='${sdk}/swift-resources/usr/lib/swift_static-aarch64'
         export OPENSWIFTUI_ANDROID_SWIFT_STATIC_LIB_DIR='${swiftStaticLibDir}'
         swiftly run swift build \\

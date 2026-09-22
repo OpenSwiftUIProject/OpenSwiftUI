@@ -757,7 +757,9 @@ let openSwiftUIAndroidDemoTarget = Target.target(
         "OpenSwiftUICore",
         .product(name: "OpenQuartzCoreShims", package: "OpenCoreGraphics"),
     ],
-    swiftSettings: sharedSwiftSettings,
+    swiftSettings: sharedSwiftSettings + [
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ],
     linkerSettings: openSwiftUIAndroidDemoLinkerSettings
 )
 
@@ -766,7 +768,9 @@ let openSwiftUILinuxDemoTarget = Target.executableTarget(
     dependencies: [
         "OpenSwiftUI",
     ],
-    swiftSettings: sharedSwiftSettings,
+    swiftSettings: sharedSwiftSettings + (androidUIKitCondition ? [
+        .interoperabilityMode(.Cxx, .when(platforms: [.android])),
+    ] : []),
     linkerSettings: [
         .linkedLibrary("ssl", .when(platforms: [.android])),
         .linkedLibrary("crypto", .when(platforms: [.android])),
@@ -1081,7 +1085,7 @@ if swiftCryptoCondition {
 
 if androidUIKitCondition {
     package.dependencies.append(.package(path: "../UIKit-cross-platform"))
-    package.dependencies.append(.package(url: "https://github.com/SwiftAndroid/swift-jni", branch: "devel"))
+    package.dependencies.append(.package(url: "https://github.com/SwiftAndroid/swift-jni", from: "3.0.0"))
     openSwiftUIAndroidDemoTarget.dependencies.append("OpenSwiftUIAndroidRuntimeShims")
     openSwiftUIAndroidDemoTarget.dependencies.append(
         .product(name: "UIKit", package: "UIKit-cross-platform", condition: .when(platforms: [.android]))

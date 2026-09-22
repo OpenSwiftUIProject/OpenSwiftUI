@@ -2,7 +2,7 @@ import Foundation
 import OpenSwiftUI
 
 #if os(Android)
-import Bionic
+import Android
 #elseif canImport(Darwin)
 import Darwin
 #elseif canImport(Glibc)
@@ -41,7 +41,6 @@ struct BreathingColorView: View {
 }
 
 #if os(Android) && OPENSWIFTUI_ANDROID_UIKIT
-import Android
 import OpenSwiftUIAndroidDemo
 
 @main
