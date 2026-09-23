@@ -193,6 +193,8 @@ extension AnyGestureResponder {
             let subgraph = (childViewSubgraph ?? childSubgraph)!
             var childInputs = inputs
             childInputs.viewInputs = self.inputs
+            // Preserve the gesture clock when adopting the responder's geometry.
+            childInputs.viewInputs.time = inputs.viewInputs.time
             childInputs.copyCaches()
             childInputs.viewSubgraph = subgraph
             let childOutputs = makeChild(childInputs)

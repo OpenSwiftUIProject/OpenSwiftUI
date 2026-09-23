@@ -291,6 +291,17 @@ extension ViewRendererHost {
         version: DisplayList.Version,
         maxVersion: DisplayList.Version
     ) -> Time {
+        if let host = self.as(ViewGraphRenderHost.self) {
+            return host.renderDisplayList(
+                list,
+                asynchronous: asynchronously,
+                time: time,
+                nextTime: nextTime,
+                targetTimestamp: targetTimestamp,
+                version: version,
+                maxVersion: maxVersion
+            )
+        }
         guard let delegate = self.as(ViewGraphRenderDelegate.self),
               let renderer = self.as(DisplayList.ViewRenderer.self)
         else { return .infinity }

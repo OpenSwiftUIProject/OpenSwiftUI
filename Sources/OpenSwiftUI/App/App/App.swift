@@ -160,7 +160,11 @@ extension App {
         }
         #endif
         /* OpenSwiftUI Addition End */
+        #if OPENSWIFTUI_SDL3
+        runSDLApp(app)
+        #else
         runApp(app)
+        #endif
     }
 
     /* OpenSwiftUI Addition Begin */

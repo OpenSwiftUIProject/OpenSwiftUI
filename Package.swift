@@ -169,6 +169,8 @@ let swiftCryptoCondition = envBoolValue("SWIFT_CRYPTO", default: !buildForDarwin
 let renderGTKCondition = envBoolValue("RENDER_GTK", default: !buildForDarwinPlatform)
 
 let swiftUIRenderCondition = envBoolValue("SWIFTUI_RENDERER", default: false)
+let sdl3Condition = envStringValue("UI_FRAMEWORK")?.lowercased() == "sdl3"
+precondition(!sdl3Condition || !swiftUIRenderCondition, "SDL3 requires OpenSwiftUI's own renderer")
 
 let ignoreAvailability = envBoolValue("IGNORE_AVAILABILITY", default: !isVDCDocGenerationBuild && !compatibilityTestCondition)
 
@@ -820,6 +822,21 @@ let package = Package(
         openSwiftUIBridgeTarget,
     ]
 )
+
+if sdl3Condition {
+    package.dependencies.append(.package(path: "../SwiftSDL3"))
+    openSwiftUITarget.dependencies.append(.product(name: "SwiftSDL3", package: "SwiftSDL3"))
+    openSwiftUITarget.swiftSettings = (openSwiftUITarget.swiftSettings ?? []) + [.define("OPENSWIFTUI_SDL3")]
+    openSwiftUITestTarget.dependencies.append(.product(name: "SwiftSDL3", package: "SwiftSDL3"))
+    openSwiftUITestTarget.swiftSettings = (openSwiftUITestTarget.swiftSettings ?? []) + [.define("OPENSWIFTUI_SDL3")]
+    package.products.append(.executable(name: "OpenSwiftUISDL3Demo", targets: ["OpenSwiftUISDL3Demo"]))
+    package.targets.append(.executableTarget(
+        name: "OpenSwiftUISDL3Demo",
+        dependencies: ["OpenSwiftUI"],
+        path: "Renderer/SDL3/Example",
+        swiftSettings: sharedSwiftSettings
+    ))
+}
 
 if versionedDocCPlugin {
     package.dependencies.append(

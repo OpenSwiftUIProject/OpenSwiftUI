@@ -86,6 +86,8 @@ open class DefaultLayoutViewResponder: MultiViewResponder {
             let subgraph = (childViewSubgraph ?? childSubgraph)!
             var childInputs = inputs
             childInputs.viewInputs = self.inputs
+            // Event time must advance even while the view graph is not rendering.
+            childInputs.viewInputs.time = inputs.viewInputs.time
             childInputs.copyCaches()
             childInputs.viewSubgraph = subgraph
             let childOutputs = DefaultLayoutGesture.makeDebuggableGesture(

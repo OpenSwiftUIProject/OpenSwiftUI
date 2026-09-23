@@ -165,8 +165,8 @@ private struct ExclusivePhase<First, Second>: Rule where First: Gesture, Second:
             .ended(.first(value1))
         case let (.failed, .active(value2)):
             .active(.second(value2))
-        case let (.failed, .possible(.some(value2))):
-            .possible(.second(value2))
+        case let (.failed, .possible(value2)):
+            .possible(value2.map { .second($0) })
         case let (.failed, .ended(value2)):
             .ended(.second(value2))
         case (.failed, _):
