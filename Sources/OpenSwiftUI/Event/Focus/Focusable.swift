@@ -345,6 +345,110 @@ struct IOSFocusEnabledFlag: ViewInputBoolFlag {
 }
 #endif
 
+// MARK: - UpdateViewFocusItem
+
+private struct UpdateViewFocusItem: StatefulRule, ObservedAttribute {
+    @Attribute var modifier: _FocusableModifier
+    @Attribute var options: FocusableOptions
+    @Attribute var phase: ViewPhase
+    @Attribute var isEnabled: Bool
+    @Attribute var focusDisabled: Bool
+    #if os(macOS)
+    @OptionalAttribute var focusedItem: FocusItem??
+    @Attribute var delegatesFocusEffect: Bool
+    #endif
+    weak var viewGraph: ViewGraph? = .current
+    var identityTracker: ViewIdentity.Tracker = .init()
+    var isFocused = false
+
+    init(
+        modifier: Attribute<_FocusableModifier>,
+        options: Attribute<FocusableOptions>,
+        inputs: _ViewInputs
+    ) {
+        _modifier = modifier
+        _options = options
+        _phase = inputs.viewPhase
+        _isEnabled = inputs.base.isEnabled
+        #if os(macOS)
+        _focusedItem = .init(inputs.focusedItem)
+        #endif
+        _focusDisabled = inputs.base.focusDisabled
+        #if os(macOS)
+        _delegatesFocusEffect = inputs.base.delegatesFocusEffect
+        #endif
+    }
+
+    typealias Value = FocusItem.ViewItem
+
+    mutating func updateValue() {
+        let (modifier, modifierChanged) = $modifier.changedValue()
+        let (options, optionsChanged) = $options.changedValue()
+        let (isEnabled, enabledChanged) = $isEnabled.changedValue()
+        #if os(macOS)
+        let (focusDisabled, disabledChanged) = $focusDisabled.changedValue()
+        let oldID = identityTracker.id
+        #else
+        _ = $focusDisabled.changedValue()
+        #endif
+        let (id, identityChanged) = identityTracker.update(for: phase)
+        #if os(macOS)
+        let (focusedItem, focusChanged) = _focusedItem.changedValue() ?? (nil, false)
+        if identityChanged || focusChanged || modifierChanged || optionsChanged || enabledChanged || disabledChanged || !hasValue {
+            if let focusedItem, case let .view(focusedView) = focusedItem.base {
+                if focusedView.id == id {
+                    isFocused = true
+                    if !modifier.isFocusable || focusDisabled {
+                        viewGraph?[FocusViewGraph.self]?.pointee.needsFocusUpdate = true
+                    }
+                } else {
+                    isFocused = false
+                    if focusedView.id == oldID {
+                        viewGraph?[FocusViewGraph.self]?.pointee.needsFocusUpdate = true
+                    }
+                }
+            }
+        }
+        #endif
+        if identityChanged || modifierChanged || optionsChanged || enabledChanged || !hasValue {
+            #if os(macOS)
+            value = .init(
+                id: id,
+                isFocusable: modifier.isFocusable && isEnabled,
+                options: options,
+                onFocusChange: modifier.onFocusChange,
+                delegatesFocusEffect: false
+            )
+            #else
+            value = .init(
+                id: id,
+                isFocusable: modifier.isFocusable && isEnabled,
+                options: options,
+                onFocusChange: modifier.onFocusChange
+            )
+            #endif
+        }
+        #if os(macOS)
+        value.delegatesFocusEffect = delegatesFocusEffect
+        #endif
+    }
+
+    func destroy() {
+        _openSwiftUIEmptyStub()
+    }
+}
+
+// MARK: - ResolvedOptions
+
+private struct ResolvedOptions: Rule {
+    @Attribute var modifier: _FocusableModifier
+    @Attribute var environment: EnvironmentValues
+
+    var value: FocusableOptions {
+        modifier.configuration.resolve(in: environment)
+    }
+}
+
 // MARK: - EnvironmentValues + Focus
 
 extension EnvironmentValues {
@@ -383,6 +487,23 @@ extension EnvironmentValues {
     var focusDisabled: Bool {
         get { self[FocusDisabledKey.self] }
         set { self[FocusDisabledKey.self] = newValue }
+    }
+}
+
+extension CachedEnvironment.ID {
+    static let focusDisabled: CachedEnvironment.ID = .init()
+    static let isPlatformFocusSystemEnabled: CachedEnvironment.ID = .init()
+    static let focusGroupID: CachedEnvironment.ID = .init()
+    static let evaluateDefaultFocus: CachedEnvironment.ID = .init()
+}
+
+extension _GraphInputs {
+    var focusDisabled: Attribute<Bool> {
+        mapEnvironment(id: .focusDisabled) { $0.focusDisabled }
+    }
+
+    var isPlatformFocusSystemEnabled: Attribute<Bool> {
+        mapEnvironment(id: .isPlatformFocusSystemEnabled) { $0.isPlatformFocusSystemEnabled }
     }
 }
 
