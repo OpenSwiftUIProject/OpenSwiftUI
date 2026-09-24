@@ -126,15 +126,20 @@ for various platforms:
 > [!NOTE]
 > To request platform ownership, please first contribute to the target platform and then contact the project owner.
 
-### Current supported feature
+### Current supported features
 
 - Color/Image/Path rendering
-- Basic `Text` output in the macOS stdout renderer; non-Darwin text layout is
-  not supported yet
+- `Text` layout and rendering on Darwin, including rich attributes and attachments
+- Text localization and formatted text (`LocalizedStringKey`, `FormatStyle`,
+  dates, timers, and formatters)
 - Layout system
 - Animation system
+- Gesture system, including composition, state, hit testing, and UIKit/AppKit integration
 - onAppear/onDisappear modifier
 - Basic geometry effect
+
+Non-Darwin text layout is not supported yet. See
+[SwiftUI Compatibility Gaps](Docs/SwiftUICompatibilityGaps.md) for remaining gaps.
 
 ## Architecture
 
