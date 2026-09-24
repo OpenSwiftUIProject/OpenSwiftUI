@@ -23,7 +23,7 @@ To use Compute instead, run setup with the Compute mise environment:
 ./setup.sh --compute
 ```
 
-The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses the Compute 0.5.2 binary release by default. The same release is pinned for source-based builds.
+The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses the Compute binary configured there.
 
 ## Generate Project
 
@@ -92,3 +92,27 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 
 - Choose `SwiftUIDebug` configuration to run with SwiftUI
 - Choose `OpenSwiftUIDebug` configuration to run with OpenSwiftUI
+
+## UX Tests
+
+`OpenSwiftUIUXTests` runs Swift Testing suites in `TestingHost` on iPhone, iPad,
+and Mac. It uses the
+[OpenSwiftUIProject Hammer fork](https://github.com/OpenSwiftUIProject/Hammer)
+to send touch events on iOS and mouse events on macOS.
+
+- Choose `OSUI_UXTests` to test OpenSwiftUI.
+- Choose `SUI_UXTests` to run the same tests with SwiftUI.
+
+Use `withUXTestHost(of:)` to host a view and clean up after the test. Call the
+helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`. Keep gesture tests
+on the main actor in serialized suites because they share application windows
+and Hammer settings.
+
+On macOS, tests use an offscreen window to preserve application focus. Set
+`HAMMER_SHOW_TEST_WINDOW=1` in the test scheme's environment to show the window
+while debugging.
+
+CI runs `SUI_UXTests` before `OSUI_UXTests` on each platform. The OpenSwiftUI
+configuration uses the OpenSwiftUI renderer with Compute (IAG).
+See [Optional CI workflows](../Docs/CI/README.md#ux-tests) for dispatch and PR
+comment commands.

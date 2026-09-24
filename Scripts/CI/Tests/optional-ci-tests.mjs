@@ -6,7 +6,9 @@ import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
-const files = ['uitests', 'compatibility_tests', 'stdout_renderer', 'prepare_optional_ci'];
+const optionalWorkflows = ['uitests', 'uxtests', 'compatibility_tests', 'stdout_renderer'];
+const sharedPreparationWorkflows = ['uxtests', 'compatibility_tests', 'stdout_renderer'];
+const files = [...optionalWorkflows, 'prepare_optional_ci'];
 const workflows = Object.fromEntries(files.map(name => [name, JSON.parse(execFileSync('ruby', [
   '-ryaml', '-rjson', '-e',
   'doc = YAML.load_file(ARGV[0]); doc["on"] = doc.delete(true); puts JSON.generate(doc)',
@@ -88,13 +90,13 @@ function expandMatrix(matrix, targets) {
 }
 
 test('pushes and PR updates cannot start any optional workflow', () => {
-  for (const name of files.slice(0, 3)) {
+  for (const name of optionalWorkflows) {
     assert.deepEqual(Object.keys(workflows[name].on).sort(), ['issue_comment', 'workflow_call', 'workflow_dispatch']);
     assert.deepEqual(workflows[name].on.issue_comment.types, ['created']);
   }
 });
 
-for (const name of ['compatibility_tests', 'stdout_renderer']) {
+for (const name of sharedPreparationWorkflows) {
   const workflow = workflows[name];
   const caller = Object.values(workflow.jobs).find(job => job.uses);
   const command = caller.with.command;
@@ -219,20 +221,69 @@ test('stdout Linux runs only for Compute requests and checks out the resolved co
   })), false);
 });
 
-test('compatibility platform selection gates jobs and checkout uses the resolved PR head', async () => {
-  const workflow = workflows.compatibility_tests;
-  for (const platform of ['ios', 'macos', 'all']) {
-    const result = await request('compatibility_tests', { body: `/compatibilitytest ${platform}` });
-    const needs = { prepare_compatibility_tests: { outputs: result.outputs } };
-    for (const job of [workflow.jobs.compatibility_tests_ios, workflow.jobs.compatibility_tests_macos]) {
-      assert.equal(Boolean(expression(job.if, { needs })), platform === 'all' || job.name.endsWith(platform === 'ios' ? 'iOS' : 'macOS'));
-      const checkout = job.steps.find(step => step.uses === 'actions/checkout@v4');
-      assert.equal(expression(checkout.with.repository, { needs }), repository);
-      assert.equal(expression(checkout.with.ref, { needs }), headSha);
+for (const name of ['uxtests', 'compatibility_tests']) {
+  test(`${name}: platform selection gates jobs and checkout uses the resolved PR head`, async () => {
+    const workflow = workflows[name];
+    const [prepareName, caller] = Object.entries(workflow.jobs).find(([, job]) => job.uses);
+    const jobs = Object.values(workflow.jobs).filter(job => !job.uses);
+    for (const platform of ['ios', 'macos', 'all']) {
+      const result = await request(name, { body: `${caller.with.command} ${platform}` });
+      const needs = { [prepareName]: { outputs: result.outputs } };
+      for (const job of jobs) {
+        assert.equal(Boolean(expression(job.if, { needs })), platform === 'all' || job.name.endsWith(platform === 'ios' ? 'iOS' : 'macOS'));
+        const checkout = job.steps.find(step => step.uses === 'actions/checkout@v4');
+        assert.equal(expression(checkout.with.repository, { needs }), repository);
+        assert.equal(expression(checkout.with.ref, { needs }), headSha);
+        assert.equal(checkout.with['persist-credentials'], false);
+      }
+    }
+    for (const job of jobs) {
+      assert.equal(Boolean(expression(job.if, { needs: { [prepareName]: { outputs: {} } } })), false);
+    }
+  });
+}
+
+test('UX verification requires successful checks on both platforms at the same SHA', () => {
+  const workflow = workflows.uxtests;
+  const output = workflow.on.workflow_call.outputs['verified-sha'].value;
+  const platformSHA = (name, outcome, sha) => expression(workflow.jobs[name].outputs.sha, {
+    steps: { tests: { outcome }, checkout: { outputs: { commit: sha } } },
+  });
+  const jobs = {
+    ios_uxtest: { outputs: { sha: platformSHA('ios_uxtest', 'success', headSha) } },
+    macos_uxtest: { outputs: { sha: platformSHA('macos_uxtest', 'success', headSha) } },
+  };
+  assert.equal(expression(output, { jobs }), headSha);
+  for (const name of Object.keys(jobs)) {
+    for (const result of ['failure', 'cancelled', 'skipped', '']) {
+      const changed = structuredClone(jobs);
+      changed[name].outputs.sha = platformSHA(name, result, headSha);
+      assert.equal(expression(output, { jobs: changed }), '');
+    }
+    for (const sha of [dispatchSha, '']) {
+      const changed = structuredClone(jobs);
+      changed[name].outputs.sha = platformSHA(name, 'success', sha);
+      assert.equal(expression(output, { jobs: changed }), '');
     }
   }
-  for (const job of [workflow.jobs.compatibility_tests_ios, workflow.jobs.compatibility_tests_macos]) {
-    assert.equal(Boolean(expression(job.if, { needs: { prepare_compatibility_tests: { outputs: {} } } })), false);
+});
+
+test('UX checks use OpenSwiftUI rendering with Compute and the toolchain Testing module', () => {
+  const workflow = workflows.uxtests;
+  for (const [key, value] of Object.entries({
+    OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0,
+    OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1,
+    OPENSWIFTUI_SWIFTUI_RENDERER: 0,
+    OPENSWIFTUI_LINK_TESTING: 0,
+    TUIST_MISE_ENVIRONMENT: 'compute',
+  })) {
+    assert.equal(workflow.env[key], value);
+  }
+  assert.deepEqual(Object.keys(workflow.on.workflow_call.inputs).sort(), ['platform', 'ref']);
+  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ['platform']);
+  for (const job of Object.values(workflow.jobs).filter(job => !job.uses)) {
+    assert.equal(job.permissions['id-token'], 'write');
+    assert.ok(job.steps.some(step => step.uses === './.github/actions/uxtests'));
   }
 });
 
@@ -270,7 +321,7 @@ test('UI dispatch and existing comment options still work; pushes no longer requ
   }
 });
 
-for (const name of ['compatibility_tests', 'stdout_renderer']) {
+for (const name of sharedPreparationWorkflows) {
   for (const event of ['workflow_dispatch', 'push']) {
     test(`${name}: reusable calls from ${event} use the supplied SHA and run every target`, async () => {
       const options = { event, ref: headSha, payload: event === 'push' ? { ref: 'refs/tags/0.20.0' } : { inputs: { version: '0.20.0' } } };

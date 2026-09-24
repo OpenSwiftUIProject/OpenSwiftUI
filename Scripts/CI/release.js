@@ -7,7 +7,7 @@ const frameworks = [
   "OpenSwiftUI", "OpenSwiftUICore", "OpenAttributeGraphShims",
   "OpenCoreGraphicsShims", "OpenObservation", "OpenQuartzCoreShims", "OpenRenderBoxShims",
 ];
-const requiredChecks = ["macos", "ios", "ubuntu", "ui", "compatibility", "stdout"];
+const requiredChecks = ["macos", "ios", "ubuntu", "ui", "ux", "compatibility", "stdout"];
 const manifestName = "release-manifest.json";
 
 function validateVersion(version) {

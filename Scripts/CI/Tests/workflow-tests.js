@@ -30,8 +30,9 @@ async function script(step, env, context = {}, github = {}, observations = {}) {
   return outputs;
 }
 
-test("pre-release covers all six check families at one SHA and all optional configurations", () => {
+test("pre-release covers every check family at one SHA and all optional configurations", () => {
   const { jobs } = workflows.release_checks;
+  assert.deepEqual(release.requiredChecks, ["macos", "ios", "ubuntu", "ui", "ux", "compatibility", "stdout"]);
   assert.deepEqual(jobs.verify.needs, ["prepare", ...release.requiredChecks]);
   assert.equal(jobs.verify.if, "always()");
   for (const name of release.requiredChecks) {
@@ -41,6 +42,8 @@ test("pre-release covers all six check families at one SHA and all optional conf
   assert.equal(jobs.ui.with.platform, "all");
   assert.equal(jobs.ui.with.configuration, "all");
   assert.equal(jobs.ui.with.update_reference, false);
+  assert.equal(jobs.ux.uses, "./.github/workflows/uxtests.yml");
+  assert.equal(jobs.ux.with.platform, "all");
   assert.equal(jobs.compatibility.with.platform, "all");
   assert.equal(jobs.stdout.with.backend, "all");
 });

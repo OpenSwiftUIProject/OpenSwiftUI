@@ -75,6 +75,13 @@ jobs:
       configuration: all
       update_reference: false
 
+  ux:
+    needs: prepare
+    uses: ./.github/workflows/uxtests.yml
+    with:
+      ref: ${{ needs.prepare.outputs.sha }}
+      platform: all
+
   compatibility:
     needs: prepare
     uses: ./.github/workflows/compatibility_tests.yml
@@ -92,7 +99,7 @@ jobs:
   verify:
     name: Verify all required checks
     if: always()
-    needs: [prepare, macos, ios, ubuntu, ui, compatibility, stdout]
+    needs: [prepare, macos, ios, ubuntu, ui, ux, compatibility, stdout]
     runs-on: ubuntu-latest
     outputs:
       sha: ${{ steps.verify.outputs.sha }}
