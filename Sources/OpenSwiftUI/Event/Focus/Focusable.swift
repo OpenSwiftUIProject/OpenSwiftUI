@@ -294,6 +294,57 @@ extension FocusableOptions: _FocusableModifier_Configuration {
     }
 }
 
+// MARK: - FocusableOptionsKey
+
+struct FocusableOptionsKey: PreferenceKey {
+    static var defaultValue: FocusableOptions { [] }
+
+    static func reduce(value: inout FocusableOptions, nextValue: () -> FocusableOptions) {
+        value.formUnion(nextValue())
+    }
+}
+
+// MARK: - IsFocusedEnvironmentChild
+
+struct IsFocusedEnvironmentChild: Rule {
+    @Attribute var item: FocusItem.ViewItem
+    @Attribute var environment: EnvironmentValues
+    #if os(iOS) || os(visionOS)
+    @Attribute var isPlatformItemFocused: Bool
+    #elseif os(macOS)
+    @OptionalAttribute var focusedItem: FocusItem??
+    #endif
+
+    var value: EnvironmentValues {
+        var env = environment
+        #if os(iOS) || os(visionOS)
+        if !item.options.contains(.platformContainerHandlesFocus) {
+            env.isFocused = isPlatformItemFocused
+        }
+        #elseif os(macOS)
+        if let focusedItem = focusedItem ?? nil,
+           case let .view(focusedView) = focusedItem.base {
+            env.isFocused = focusedView.id == item.id
+        } else {
+            env.isFocused = false
+        }
+        #endif
+        return env
+    }
+}
+
+// MARK: - IOSFocusEnabledFlag
+
+#if os(iOS) || os(visionOS)
+struct IOSFocusEnabledFlag: ViewInputBoolFlag {
+    static func evaluate(inputs: _GraphInputs) -> Bool {
+        inputs[Self.self] == value
+            && (inputs.interfaceIdiom.accepts(.pad)
+                || inputs.interfaceIdiom.accepts(.carPlay))
+    }
+}
+#endif
+
 // MARK: - EnvironmentValues + Focus
 
 extension EnvironmentValues {
