@@ -22,7 +22,7 @@ package struct ViewIdentity: Hashable {
     package init() {
         let seed = ViewIdentity.nextSeed
         let next = seed &+ 1
-        ViewIdentity.nextSeed = seed <= 1 ? 1 : next
+        ViewIdentity.nextSeed = next <= 1 ? 1 : next
         self.init(seed: seed)
     }
 
@@ -49,8 +49,18 @@ package struct ViewIdentity: Hashable {
 
 // MARK: - IdentityLink
 
+@propertyWrapper
 package struct IdentityLink: DynamicProperty {
     var _value: ViewIdentity
+
+    package init() {
+        _value = .invalid
+    }
+
+    package var wrappedValue: ViewIdentity {
+        precondition(_value != .invalid, "Reading IdentityLink outside View.body")
+        return _value
+    }
 
     package static func _makeProperty<Value>(
         in buffer: inout _DynamicPropertyBuffer,
