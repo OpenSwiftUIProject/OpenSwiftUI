@@ -100,28 +100,28 @@ for various platforms:
 |-|:-|-|-|-|-|-|
 | **macOS** | [![macOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/macos.yml) | ⭐️⭐️⭐️ *[^1] | ✅ | ✅ | ✅ | [@Kyle-Ye](https://github.com/Kyle-Ye), [@Mx-Iris](https://github.com/Mx-Iris) |
 | **iOS** | [![iOS](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ios.yml) | ⭐️⭐️⭐️⭐️ *[^2] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
-| **visionOS** | None | ⭐️ *[^4] | ✅ | ✅ | ✅[^5] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
-| **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ❌ | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **Ubuntu 22.04** | [![Ubuntu](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml/badge.svg)](https://github.com/OpenSwiftUIProject/OpenSwiftUI/actions/workflows/ubuntu.yml) | ⭐️⭐️ *[^3] | ✅ | ✅ | ✅[^3] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
+| **visionOS** | None | ⭐️ *[^4] | ✅ | Not tested in CI | ✅[^4] | [@Kyle-Ye](https://github.com/Kyle-Ye) |
 | **Android** | None | Not supported yet | ❌ | ❌ | ❌ | |
 | **Windows** | None | Not supported yet | ❌ | ❌ | ❌ | |
+| **Embedded** | None | Preview[^6] | ✅ | ✅ | ✅ | [@Kyle-Ye](https://github.com/Kyle-Ye) |
 
-[^1]: AppKit intergration is partly implemented. Other UI framework backend is not intergrated yet.
+[^1]: AppKit integration is partially implemented.
 
-[^2]: UIKit intergration is partly implemented.
+[^2]: UIKit integration is partially implemented.
 
-[^3]: Build and test is supported. But some feature is cut due to known Swift compiler issue.
+[^3]: Build, test, and deployment with the [stdout renderer](Renderer/Stdout/README.md) are supported. Linux UI framework integration is not available yet.
 
-[^4]: Build is supported. Test is not supported yet dut to upstream issue.
+[^4]: visionOS Simulator support is experimental and has no CI coverage. Physical device support has not been verified.
 
-[^5]: Only Simulator is supported. Real device support is not available yet due to the link issue of AttributeGraph.
+[^5]: iOS Simulator is supported. iOS device builds require the Compute backend. Apple's AttributeGraph backend is limited to the simulator because required device symbols are missing.
+
+[^6]: Build and host tests are supported on the [`embed/folotoy`](https://github.com/OpenSwiftUIProject/OpenSwiftUI/tree/embed/folotoy) branch. For the ESP32-C3 deployment example, see [OpenSwiftUI on ESP32-C3](https://openswiftuiproject.org/blog/openswiftui-on-esp32-c3/).
 
 > [!NOTE]
 > The cross-platform OpenAttributeGraph is not fully implemented.
 >
-> It is only API compatible with AttributeGraph now.
->
-> So most of the core feature is only available on Apple platform built with
-> AttributeGraph varient.
+> The Linux stdout example uses the Compute backend to run its view graph.
 
 > [!NOTE]
 > To request platform ownership, please first contribute to the target platform and then contact the project owner.

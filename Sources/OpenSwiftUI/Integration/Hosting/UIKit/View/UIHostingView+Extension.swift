@@ -227,6 +227,8 @@ extension _UIHostingView: ViewRendererHost {
                 return unsafeBitCast(self as UIView, to: T.self)
             } else if EventGraphHost.self == type {
                 return unsafeBitCast(self as any EventGraphHost, to: T.self)
+            } else if RootTransformProvider.self == type {
+                return unsafeBitCast(self as any RootTransformProvider, to: T.self)
             } else if CurrentEventProvider.self == type {
                 return unsafeBitCast(self as any CurrentEventProvider, to: T.self)
             // TODO: ContainerBackgroundHost, RootTransformUpdater
@@ -377,7 +379,7 @@ extension _UIHostingView: FallbackResponderProvider {
     }
 }
 
-// MARK: - _UIHostingView + RootTransformProvider [WIP]
+// MARK: - _UIHostingView + RootTransformProvider [6.5.4]
 
 extension _UIHostingView: RootTransformProvider {
     package func rootTransform() -> ViewTransform {
@@ -385,9 +387,45 @@ extension _UIHostingView: RootTransformProvider {
             _base.registeredForGeometryChanges = true
             _registerForGeometryChanges()
         }
-        // TODO
-        _openSwiftUIUnimplementedWarning()
-        return .init()
+        var buffer = ViewTransform.UnsafeBuffer()
+        withUnsafeMutablePointer(to: &buffer) { buffer in
+            CALayerMapGeometry(
+                window?.layer,
+                layer,
+                { context, transform in
+                    context.assumingMemoryBound(to: ViewTransform.UnsafeBuffer.self).pointee
+                        .appendProjectionTransform(ProjectionTransform(transform.pointee), inverse: true)
+                },
+                { context, transform in
+                    context.assumingMemoryBound(to: ViewTransform.UnsafeBuffer.self).pointee
+                        .appendProjectionTransform(ProjectionTransform(transform.pointee), inverse: false)
+                },
+                buffer
+            )
+        }
+        let bounds = bounds
+        if _SemanticFeature_v6.isEnabled {
+            if let window {
+                buffer.appendScrollGeometry(
+                    .rootViewTransform(
+                        contentOffset: bounds.origin,
+                        containerSize: convert(bounds, to: window as any UICoordinateSpace).size
+                    ),
+                    isClipped: true
+                )
+            }
+            buffer.appendScrollGeometry(
+                .rootViewTransform(contentOffset: bounds.origin, containerSize: bounds.size),
+                isClipped: clipsToBounds
+            )
+        } else {
+            _ = clipsToBounds
+        }
+        buffer.appendCoordinateSpace(id: hostingViewCoordinateSpace)
+        buffer.appendCoordinateSpace(id: UIKitHostContainerCoordinateSpace)
+        var transform = ViewTransform()
+        transform.append(movingContentsOf: &buffer)
+        return transform
     }
 }
 

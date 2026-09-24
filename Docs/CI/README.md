@@ -11,7 +11,7 @@ Post one command in a new PR comment:
 | [UI tests](UITest.md) | `/uitest [platform] [configuration] [update]` | iOS and macOS, default configurations |
 | UX tests | `/uxtest [all\|ios\|macos]` | iOS and macOS |
 | Compatibility tests | `/compatibilitytest [all\|ios\|macos]` | iOS and macOS |
-| Stdout Renderer | `/stdout-renderer [all\|attributegraph\|compute]` | AttributeGraph and Compute on macOS |
+| Stdout Renderer | `/stdout-renderer [all\|attributegraph\|compute]` | AttributeGraph and Compute on macOS, Compute on Linux |
 
 Examples:
 
@@ -37,6 +37,10 @@ The workflows check out the PR head commit resolved when the command is accepted
 - `Compatibility tests / macOS`
 - `Stdout Renderer / macOS / AttributeGraph`
 - `Stdout Renderer / macOS / Compute`
+- `Stdout Renderer / Linux / Compute`
+
+The `compute` and `all` selections include the Linux stdout example. Linux uses
+the source Compute package in the official Swift 6.3.3 container.
 
 As with UI tests, fork PRs can run after a trusted comment, but do not receive commit statuses. Open the workflow run to see their results.
 
@@ -82,7 +86,8 @@ gh workflow run release_checks.yml --ref main
 ```
 
 This runs macOS, iOS, Ubuntu, all UI test configurations on both platforms,
-UX and compatibility tests on both platforms, and both Stdout Renderer backends.
+UX and compatibility tests on both platforms, both Stdout Renderer backends on macOS,
+and the Compute Stdout Renderer on Linux.
 The standalone workflow creates no tag or release. Version tag pushes start
 the release entry, which calls the same checks before building signed artifacts
 and publishing. Manual release requests run these checks by default and can

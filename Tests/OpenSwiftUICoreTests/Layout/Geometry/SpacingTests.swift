@@ -10,6 +10,8 @@ import Numerics
 import OpenSwiftUICore
 import Testing
 
+@MainActor
+@Suite
 struct SpacingTests {
     // MARK: - Category Tests
 
@@ -79,6 +81,8 @@ struct SpacingTests {
 
     // MARK: - TextMetrics Tests
 
+    @MainActor
+    @Suite
     struct TextMetricsTests {
         typealias TextMetrics = Spacing.TextMetrics
 
@@ -127,6 +131,8 @@ struct SpacingTests {
 
     // MARK: - Value Tests
 
+    @MainActor
+    @Suite
     struct ValueTests {
         typealias TextMetrics = Spacing.TextMetrics
         typealias Value = Spacing.Value

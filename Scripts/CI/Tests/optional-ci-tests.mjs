@@ -198,6 +198,29 @@ for (const backend of ['AttributeGraph', 'Compute']) {
   });
 }
 
+test('stdout Linux runs only for Compute requests and checks out the resolved commit', async () => {
+  const job = workflows.stdout_renderer.jobs.stdout_renderer_linux;
+  for (const backend of ['all', 'Compute', 'AttributeGraph']) {
+    for (const fork of [false, true]) {
+      const result = await request('stdout_renderer', { body: `/stdout-renderer ${backend}`, fork });
+      const needs = { prepare_stdout_renderer: { outputs: result.outputs } };
+      assert.equal(Boolean(expression(job.if, { needs })), backend !== 'AttributeGraph');
+      const checkout = job.steps.find(step => step.uses === 'actions/checkout@v4');
+      assert.equal(expression(checkout.with.repository, { needs }), fork ? 'contributor/OpenSwiftUI' : repository);
+      assert.equal(expression(checkout.with.ref, { needs }), headSha);
+      assert.equal(job.env.STATUS_ENABLED, '${{ needs.prepare_stdout_renderer.outputs.status-enabled }}');
+      for (const step of job.steps.filter(step => step.uses === 'actions/github-script@v7')) {
+        assert.equal(Boolean(expression(step.if, {
+          env: { STATUS_ENABLED: result.outputs['status-enabled'] }, always: () => true,
+        })), !fork);
+      }
+    }
+  }
+  assert.equal(Boolean(expression(job.if, {
+    needs: { prepare_stdout_renderer: { outputs: { ref: '', targets: '[]' } } },
+  })), false);
+});
+
 for (const name of ['uxtests', 'compatibility_tests']) {
   test(`${name}: platform selection gates jobs and checkout uses the resolved PR head`, async () => {
     const workflow = workflows[name];

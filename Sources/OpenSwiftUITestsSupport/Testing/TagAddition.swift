@@ -2,8 +2,8 @@
 //  TagAddition.swift
 //  OpenSwiftUITestsSupport
 
-package import Testing
+public import Testing
 
 extension Tag {
-    @Tag package static var aigc: Tag
+    @Tag public static var aigc: Tag
 }
