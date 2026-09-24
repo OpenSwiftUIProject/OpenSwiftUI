@@ -55,10 +55,10 @@ extension GesturePhase {
     }
 
     package var isActive: Bool {
-        guard case .active = self else {
-            return false
+        switch self {
+        case .possible, .failed: false
+        case .active, .ended: true
         }
-        return true
     }
 
     package var isTerminal: Bool {
