@@ -1,5 +1,5 @@
 {
-  "originHash" : "753f3f53d345e467123a99b13d4c52288a1d35a45442cbb4f29f84af93b3e0c7",
+  "originHash" : "a6e7ee6424276cc941aa6f911f2217c55cdabbd01be5b7dd013a2297d945a0f8",
   "pins" : [
     {
       "identity" : "equatable",
@@ -13,10 +13,10 @@
     {
       "identity" : "hammer",
       "kind" : "remoteSourceControl",
-      "location" : "https://github.com/lyft/Hammer",
+      "location" : "https://github.com/OpenSwiftUIProject/Hammer",
       "state" : {
-        "revision" : "90af16da2d2756d2d297c005486b88b3e9971803",
-        "version" : "0.18.0"
+        "revision" : "e23d66765da53f44de267c75fe061f1a2cbaa2ac",
+        "version" : "0.19.1"
       }
     },
     {

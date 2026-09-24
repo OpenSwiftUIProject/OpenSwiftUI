@@ -23,7 +23,7 @@ To use Compute instead, run setup with the Compute mise environment:
 ./setup.sh --compute
 ```
 
-The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses the Compute 0.5.2 binary release by default. The same release is pinned for source-based builds.
+The Compute environment is defined in the repository's root `mise.compute.toml`. It disables the private AttributeGraph framework and uses the Compute binary configured there.
 
 ## Generate Project
 
@@ -95,24 +95,22 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 
 ## UX Tests
 
-`OpenSwiftUIUXTests` uses Swift Testing to test interactions with views inside
-`TestingHost`. It supports iPhone, iPad, and Mac destinations. On iOS, Hammer
-injects touch events. On macOS, AppKit mouse events pass through the application's
-event dispatcher, hit testing, and gesture recognition.
+`OpenSwiftUIUXTests` runs Swift Testing suites in `TestingHost` on iPhone, iPad,
+and Mac. It uses the
+[OpenSwiftUIProject Hammer fork](https://github.com/OpenSwiftUIProject/Hammer)
+to send touch events on iOS and mouse events on macOS.
 
 - Choose `OSUI_UXTests` to test OpenSwiftUI.
 - Choose `SUI_UXTests` to run the same tests with SwiftUI.
 
-Use `withUXTestHost(of:)` to present test content and clean up after the test.
-On macOS, the helper activates and reuses the host window. It restores the
-window's content, frame, and first responder when the test ends, including when
-it throws. If the test host is still active, it returns focus to the previous app.
-Call the helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`.
-On macOS, `tap()` sends a left mouse click at the center of the hosted view.
-The helper runs Hammer's synchronous waits on the main run loop so UIKit can
-process callbacks while the test task is suspended. Keep gesture tests on the
-main actor in serialized suites because they share application windows and
-Hammer settings. Hammer is linked only to the iOS UX test target.
+Use `withUXTestHost(of:)` to host a view and clean up after the test. Call the
+helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`. Keep gesture tests
+on the main actor in serialized suites because they share application windows
+and Hammer settings.
+
+On macOS, tests use an offscreen window to preserve application focus. Set
+`HAMMER_SHOW_TEST_WINDOW=1` in the test scheme's environment to show the window
+while debugging.
 
 CI runs `SUI_UXTests` before `OSUI_UXTests` on each platform. The OpenSwiftUI
 configuration uses the OpenSwiftUI renderer with Compute (IAG).

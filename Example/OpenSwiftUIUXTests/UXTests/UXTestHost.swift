@@ -5,10 +5,10 @@
 #if os(macOS)
 import AppKit
 #elseif os(iOS)
-import Hammer
 import UIKit
 #endif
 import Foundation
+import Hammer
 #if OPENSWIFTUI
 import OpenSwiftUI
 #else
@@ -22,36 +22,11 @@ func withUXTestHost<Content: View>(
     _ body: @MainActor (UXTestHost) async throws -> Void
 ) async throws {
     #if os(macOS)
-    guard let window = NSApp.mainWindow
-        ?? NSApp.orderedWindows.first(where: { $0.canBecomeMain && $0.isVisible }) else {
-        throw UXTestError.windowNotReady
-    }
-    let previousKeyWindow = NSApp.keyWindow
-    let previousApplication = NSWorkspace.shared.frontmostApplication
-    let previousController = window.contentViewController
-    let previousView = window.contentView
-    let previousFrame = window.frame
-    let previousFirstResponder = window.firstResponder
-    let wasVisible = window.isVisible
+    let window = UXTestWindow.shared
     defer {
-        if let previousController {
-            window.contentViewController = previousController
-        } else {
-            window.contentView = previousView
-        }
-        window.setFrame(previousFrame, display: true)
-        window.makeFirstResponder(previousFirstResponder)
-        if !wasVisible {
-            window.orderOut(nil)
-        }
-        previousKeyWindow?.makeKey()
-        // Restore application focus only if the test still owns it.
-        if NSApp.isActive,
-           let previousApplication,
-           previousApplication.processIdentifier != ProcessInfo.processInfo.processIdentifier {
-            NSApp.yieldActivation(to: previousApplication)
-            previousApplication.activate(options: [])
-        }
+        window.makeFirstResponder(nil)
+        window.contentViewController = nil
+        window.contentView = nil
     }
 
     let controller = TestingHost.PlatformHostingController(rootView: content)
@@ -62,18 +37,8 @@ func withUXTestHost<Content: View>(
     // Installing the controller adopts its initial view size, which can be zero.
     window.setContentSize(size)
 
-    // A background test host has no activation handoff from the foreground app.
-    NSRunningApplication.current.activate(options: [.activateAllWindows, .activateIgnoringOtherApps])
-    window.makeKeyAndOrderFront(nil)
-    let host = UXTestHost(window: window, view: controller.view)
-    do {
-        try await host.waitUntil(window.isKeyWindow && window.isVisible && !controller.view.bounds.isEmpty)
-    } catch UXTestError.conditionTimedOut {
-        throw UXTestError.windowNotReady
-    }
-    controller.view.layoutSubtreeIfNeeded()
-    window.displayIfNeeded()
-    try await body(host)
+    let events = try EventGenerator(viewController: controller)
+    try await events.waitUntilWindowIsReady()
     #else
     let previousSettings = EventGenerator.settings
     let previousKeyWindow = UIApplication.shared.connectedScenes
@@ -92,64 +57,24 @@ func withUXTestHost<Content: View>(
         return try EventGenerator(viewController: controller)
     }
     events.showTouches = false
+    #endif
+    let host = UXTestHost(events: events)
     do {
-        try await body(UXTestHost(events: events))
+        try await body(host)
     } catch {
-        // Release a finger left down if an interaction throws.
-        try? await onMainRunLoop { try events.fingerUp() }
+        try? await host.release()
         throw error
     }
-    try? await onMainRunLoop { try events.fingerUp() }
-    #endif
+    try? await host.release()
 }
 
 @MainActor
 struct UXTestHost {
-    #if os(macOS)
-    fileprivate let window: NSWindow
-    fileprivate let view: NSView
-    private static var eventNumber = 0
-    #else
     fileprivate let events: EventGenerator
-    #endif
 
     func tap() async throws {
         #if os(macOS)
-        try Task.checkCancellation()
-        let location = view.convert(
-            NSPoint(x: view.bounds.midX, y: view.bounds.midY),
-            to: nil
-        )
-        Self.eventNumber &+= 1
-        let timestamp = ProcessInfo.processInfo.systemUptime
-        guard let down = NSEvent.mouseEvent(
-            with: .leftMouseDown,
-            location: location,
-            modifierFlags: [],
-            timestamp: timestamp,
-            windowNumber: window.windowNumber,
-            context: nil,
-            eventNumber: Self.eventNumber,
-            clickCount: 1,
-            pressure: 1
-        ), let up = NSEvent.mouseEvent(
-            with: .leftMouseUp,
-            location: location,
-            modifierFlags: [],
-            timestamp: timestamp + 0.05,
-            windowNumber: window.windowNumber,
-            context: nil,
-            eventNumber: Self.eventNumber,
-            clickCount: 1,
-            pressure: 0
-        ) else {
-            throw UXTestError.couldNotCreateMouseEvent
-        }
-        // Use AppKit's event dispatcher for hit testing and gesture recognition.
-        // Queued events can have incorrect coordinates while a new window is being presented.
-        NSApp.sendEvent(down)
-        defer { NSApp.sendEvent(up) }
-        try await Task.sleep(for: .milliseconds(50))
+        try await events.mouseClick()
         #else
         try await onMainRunLoop { try events.fingerTap() }
         #endif
@@ -160,27 +85,33 @@ struct UXTestHost {
         timeout: TimeInterval = 3
     ) async throws {
         #if os(macOS)
-        let clock = ContinuousClock()
-        let deadline = clock.now.advanced(by: .seconds(timeout))
-        while !condition() {
-            guard clock.now < deadline else {
-                throw UXTestError.conditionTimedOut(timeout)
-            }
-            try await Task.sleep(for: .milliseconds(10))
-        }
+        try await events.waitUntil(condition(), timeout: timeout)
         #else
         try await onMainRunLoop {
             try events.waitUntil(condition(), timeout: timeout)
         }
         #endif
     }
+
+    fileprivate func release() async throws {
+        #if os(macOS)
+        try await events.mouseUp()
+        #else
+        try await onMainRunLoop { try events.fingerUp() }
+        #endif
+    }
 }
 
 #if os(macOS)
-private enum UXTestError: Error {
-    case couldNotCreateMouseEvent
-    case conditionTimedOut(TimeInterval)
-    case windowNotReady
+@MainActor
+private enum UXTestWindow {
+    static let shared: HammerWindow = {
+        // Hide the scene's placeholder once. Each test replaces only the test window's content.
+        for window in NSApp.windows where window.canBecomeMain && window.isVisible {
+            window.orderOut(nil)
+        }
+        return HammerWindow(size: NSSize(width: 400, height: 400))
+    }()
 }
 #else
 @MainActor

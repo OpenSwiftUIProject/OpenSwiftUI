@@ -35,7 +35,7 @@ var dependencies: [PackageDescription.Package.Dependency] = [
     .package(url: "https://github.com/OpenSwiftUIProject/equatable.git", branch: "main"),
     .package(url: "https://github.com/OpenSwiftUIProject/SymbolLocator.git", from: "0.2.0"),
     .package(url: "https://github.com/OpenSwiftUIProject/swift-snapshot-testing.git", exact: "1.19.3"),
-    .package(url: "https://github.com/lyft/Hammer.git", exact: "0.18.0"),
+    .package(url: "https://github.com/OpenSwiftUIProject/Hammer.git", exact: "0.19.1"),
 ]
 
 if openCombineCondition {
@@ -101,7 +101,7 @@ var packageProductTypes: [String: ProjectDescription.Product] = [
 ]
 
 var packageProductDestinations: [String: Destinations] = [
-    "Hammer": [.iPhone, .iPad],
+    "Hammer": [.iPhone, .iPad, .mac],
     "OpenSwiftUI": examplePackageDestinations,
     "OpenSwiftUICore": examplePackageDestinations,
     "OpenSwiftUI_SPI": examplePackageDestinations,

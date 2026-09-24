@@ -364,7 +364,7 @@ let targets: [Target] = [
         ],
         dependencies: [
             .target(name: "TestingHost"),
-            .external(name: "Hammer", condition: .when([.ios])),
+            .external(name: "Hammer"),
         ] + privateFrameworkDependencies,
         settings: settings(base: uxTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUXTests.xcconfig")
     ),
