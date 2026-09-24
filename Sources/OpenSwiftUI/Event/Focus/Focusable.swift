@@ -333,6 +333,24 @@ struct IsFocusedEnvironmentChild: Rule {
     }
 }
 
+// MARK: - FocusCoordinateSpaceTransform
+
+#if os(macOS)
+let focusCoordinateSpace: CoordinateSpace.ID = .init()
+
+struct FocusCoordinateSpaceTransform: Rule {
+    @Attribute var transform: ViewTransform
+    @Attribute var position: CGPoint
+
+    var value: ViewTransform {
+        var transform = transform
+        transform.appendPosition(position)
+        transform.appendCoordinateSpace(id: focusCoordinateSpace)
+        return transform
+    }
+}
+#endif
+
 // MARK: - IOSFocusEnabledFlag
 
 #if os(iOS) || os(visionOS)
