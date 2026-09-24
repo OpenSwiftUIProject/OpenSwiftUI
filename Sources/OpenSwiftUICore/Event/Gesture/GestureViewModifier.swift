@@ -192,9 +192,7 @@ extension AnyGestureResponder {
         childSubgraph!.apply {
             let subgraph = (childViewSubgraph ?? childSubgraph)!
             var childInputs = inputs
-            childInputs.viewInputs = self.inputs
-            childInputs.copyCaches()
-            childInputs.viewSubgraph = subgraph
+            childInputs.mergeViewInputs(self.inputs, viewSubgraph: subgraph)
             let childOutputs = makeChild(childInputs)
             outputs.overrideDefaultValues(childOutputs)
         }
