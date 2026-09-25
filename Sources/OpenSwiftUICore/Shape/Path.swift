@@ -534,7 +534,30 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
     /// If `eoFill` is true, this method uses the even-odd rule to define which
     /// points are inside the path. Otherwise, it uses the non-zero rule.
     public func contains(_ p: CGPoint, eoFill: Bool = false) -> Bool {
-        _openSwiftUIUnimplementedFailure()
+        switch storage {
+        case .empty:
+            return false
+        case let .rect(rect):
+            return rect.contains(p)
+        case let .ellipse(rect):
+            return ellipseContains(in: rect, contains: p)
+        case let .roundedRect(rect):
+            #if canImport(Darwin)
+            return rect.contains(p)
+            #else
+            // FIXME
+            let path = retainRBPath()
+            defer { path.release() }
+            return path.contains(point: p, eoFill: false)
+            #endif
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case let .path(box):
+            let path = box.retainRBPath()
+            // TBA
+            defer { path.release() }
+            return path.contains(point: p, eoFill: eoFill)
+        }
     }
 
     package func contains(
@@ -552,7 +575,12 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         eoFill: Bool = false,
         origin: CGPoint = .zero
     ) -> BitVector64 {
-        _openSwiftUIUnimplementedFailure()
+        // FIXME:
+        // The RenderBox shim currently declares the batched mask result as Bool.
+        // Use scalar containment to preserve every bit until that ABI is corrected.
+        points.mapBool {
+            contains(CGPoint(x: $0.x - origin.x, y: $0.y - origin.y), eoFill: eoFill)
+        }
     }
 
     /// An element of a path.
@@ -587,7 +615,28 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
 
     /// Calls `body` with each element in the path.
     public func forEach(_ body: (Path.Element) -> Void) {
-        _openSwiftUIUnimplementedFailure()
+        #if canImport(CoreGraphics)
+        // FIXME: Use RB API instead of CG API
+        cgPath.applyWithBlock { element in
+            let element = element.pointee
+            switch element.type {
+            case .moveToPoint:
+                body(.move(to: element.points[0]))
+            case .addLineToPoint:
+                body(.line(to: element.points[0]))
+            case .addQuadCurveToPoint:
+                body(.quadCurve(to: element.points[1], control: element.points[0]))
+            case .addCurveToPoint:
+                body(.curve(to: element.points[2], control1: element.points[0], control2: element.points[1]))
+            case .closeSubpath:
+                body(.closeSubpath)
+            @unknown default:
+                break
+            }
+        }
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
 
     /// Returns a stroked copy of the path using `style` to define how the
@@ -814,7 +863,18 @@ extension Path {
         _ path: Path,
         transform: CGAffineTransform = .identity
     ) {
-        _openSwiftUIUnimplementedFailure()
+        // FIXME: Use RB instead of CG
+        if case .empty = storage {
+            self = path.applying(transform)
+        } else if !path.isEmpty {
+            #if canImport(CoreGraphics)
+            let result = cgPath.mutableCopy()!
+            result.addPath(path.cgPath, transform: transform)
+            self = Path(result)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        }
     }
 
     public var currentPoint: CGPoint? {
@@ -875,7 +935,20 @@ extension Path {
     }
 
     package mutating func formTrivialUnion(_ path: Path) {
-        _openSwiftUIUnimplementedWarning()
+        // TBA
+        guard !path.isEmpty else {
+            return
+        }
+        if let lhs = roundedRect(), let rhs = path.roundedRect() {
+            if lhs.contains(rhs) {
+                return
+            }
+            if rhs.contains(lhs) {
+                self = path
+                return
+            }
+        }
+        addPath(path)
     }
 
     public func applying(_ transform: CGAffineTransform) -> Path {
@@ -891,8 +964,16 @@ extension Path {
             return Path(ellipseIn: rect.applying(transform))
         case let .roundedRect(fixedRoundedRect) where transform.isRectilinear:
             return Path(storage: .roundedRect(fixedRoundedRect.applying(transform)))
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
         default:
-            _openSwiftUIUnimplementedFailure()
+            // TBA
+            #if canImport(CoreGraphics)
+            var transform = transform
+            return Path(cgPath.copy(using: &transform)!)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
         }
     }
 
@@ -904,10 +985,107 @@ extension Path {
     }
 
     func mapPoints(_ body: (inout [CGPoint]) -> ()) -> Path {
-        // TODO
-        _openSwiftUIUnimplementedWarning()
-        return self
+        // TBA
+        switch storage {
+        case .empty:
+            return self
+        case let .rect(rect):
+            var points = rect.cornerPoints
+            body(&points)
+            if let rect = CGRect(exactCornerPoints: points) {
+                return Path(rect)
+            }
+            #if canImport(CoreGraphics)
+            let result = CGMutablePath()
+            result.move(to: points[0])
+            for point in points[1..<4] {
+                result.addLine(to: point)
+            }
+            result.closeSubpath()
+            return Path(result)
+            #else
+            _openSwiftUIPlatformUnimplementedFailure()
+            #endif
+        case let .ellipse(rect):
+            var points = rect.cornerPoints
+            body(&points)
+            if let mapped = CGRect(exactCornerPoints: points),
+               mapped.width == rect.width,
+               mapped.height == rect.height {
+                return Path(ellipseIn: mapped)
+            }
+        case let .roundedRect(rect):
+            var points = rect.rect.cornerPoints
+            body(&points)
+            if let mapped = CGRect(exactCornerPoints: points),
+               mapped.width == rect.rect.width,
+               mapped.height == rect.rect.height {
+                return Path(storage: .roundedRect(FixedRoundedRect(
+                    mapped,
+                    cornerSize: rect.cornerSize,
+                    style: rect.style
+                )))
+            }
+        case .stroked, .trimmed:
+            _openSwiftUIUnreachableCode()
+        case .path:
+            break
+        }
+        #if canImport(CoreGraphics)
+        var points: [CGPoint] = []
+        forEach { element in
+            switch element {
+            case let .move(point), let .line(point):
+                points.append(point)
+            case let .quadCurve(point, control):
+                points.append(contentsOf: [point, control])
+            case let .curve(point, control1, control2):
+                points.append(contentsOf: [point, control1, control2])
+            case .closeSubpath:
+                break
+            }
+        }
+        body(&points)
+        let result = CGMutablePath()
+        var index = 0
+        forEach { element in
+            switch element {
+            case .move:
+                result.move(to: points[index])
+                index += 1
+            case .line:
+                result.addLine(to: points[index])
+                index += 1
+            case .quadCurve:
+                result.addQuadCurve(to: points[index], control: points[index + 1])
+                index += 2
+            case .curve:
+                result.addCurve(to: points[index], control1: points[index + 1], control2: points[index + 2])
+                index += 3
+            case .closeSubpath:
+                result.closeSubpath()
+            }
+        }
+        return Path(result)
+        #else
+        _openSwiftUIPlatformUnimplementedFailure()
+        #endif
     }
+}
+
+private func ellipseContains(in rect: CGRect, contains point: CGPoint) -> Bool {
+    var rect = rect
+    var point = point
+    if rect.width != rect.height {
+        let scale = rect.height / rect.width
+        rect.origin.x *= scale
+        rect.size.width *= scale
+        point.x *= scale
+    }
+    let dx = point.x - (rect.origin.x + rect.width / 2)
+    let dy = point.y - (rect.origin.y + rect.height / 2)
+    let radius = rect.width / 2
+    return dx * dx + dy * dy < radius * radius
 }
 
 // MARK: - RenderBox
