@@ -72,11 +72,11 @@ func withUXTestHost<Content: View>(
 struct UXTestHost {
     fileprivate let events: EventGenerator
 
-    func tap() async throws {
+    func tap(count: Int = 1) async throws {
         #if os(macOS)
-        try await events.mouseClick()
+        try await events.mouseClick(numberOfTimes: count)
         #else
-        try await onMainRunLoop { try events.fingerTap() }
+        try await onMainRunLoop { try events.fingerTap(numberOfTimes: count) }
         #endif
     }
 

@@ -1,5 +1,5 @@
 {
-  "originHash" : "a6e7ee6424276cc941aa6f911f2217c55cdabbd01be5b7dd013a2297d945a0f8",
+  "originHash" : "e40a454d054006bfb9fba5316a61732e012af8ee4612808f1c5360eea48c825a",
   "pins" : [
     {
       "identity" : "equatable",
@@ -15,8 +15,8 @@
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/OpenSwiftUIProject/Hammer",
       "state" : {
-        "revision" : "e23d66765da53f44de267c75fe061f1a2cbaa2ac",
-        "version" : "0.19.1"
+        "revision" : "cdde65d489d3792052e5b386784e9f939588b1b2",
+        "version" : "0.19.2"
       }
     },
     {

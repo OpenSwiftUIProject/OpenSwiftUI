@@ -72,7 +72,9 @@ public struct _GestureInputs {
         _ other: _ViewInputs,
         viewSubgraph: Subgraph
     ) {
+        let time = viewInputs.time
         self.viewInputs = other
+        self.viewInputs.time = time
         self.viewInputs.copyCaches()
         self.viewSubgraph = viewSubgraph
     }

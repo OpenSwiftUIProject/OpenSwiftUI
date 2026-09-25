@@ -9,6 +9,7 @@ import OpenObservation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
+@MainActor
 @Suite("ObservationUtil Tests")
 struct ObservationUtilTests {
     
@@ -38,7 +39,6 @@ struct ObservationUtilTests {
     }
 
     #if canImport(Darwin)
-    @MainActor
     @Test("_withObservation with attribute installation")
     func withObservationAttribute() {
         let model = TestModel()
