@@ -621,10 +621,14 @@ open class _UIHostingView<Content>: UIView, XcodeViewDebugDataProvider where Con
         }
     }
 
-    @_implementationOnly
     #if OPENSWIFTUI_SWIFTUI_RENDERER
-    @objc(swiftui_insertRenderedSubview:atIndex:)
+    @_implementationOnly
+    override public func swiftui_insertRenderedSubview(_ subview: Any, at index: Int) {
+        openswiftui_insertRenderedSubview(subview, at: index)
+    }
     #endif
+
+    @_implementationOnly
     override public func openswiftui_insertRenderedSubview(_ subview: Any, at index: Int) {
         let view = subview as! UIView
         isInsertingRenderedSubview = true

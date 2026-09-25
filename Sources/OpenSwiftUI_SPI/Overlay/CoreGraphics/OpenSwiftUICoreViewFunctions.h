@@ -18,6 +18,12 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+#if OPENSWIFTUI_SWIFTUI_RENDERER
+@interface NSObject (SwiftUICore_Additions)
+- (void)swiftui_insertRenderedSubview:(id)subview atIndex:(NSInteger)index;
+- (void)swiftui_addRenderedSubview:(id)subview positioned:(NSInteger)place relativeTo:(nullable id)otherView;
+@end
+#endif
 @interface NSObject (OpenSwiftUICore_Additions)
 - (void)openswiftui_insertRenderedSubview:(id)subview atIndex:(NSInteger)index;
 - (void)openswiftui_addRenderedSubview:(id)subview positioned:(NSInteger)place relativeTo:(nullable id)otherView;
