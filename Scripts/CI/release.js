@@ -123,9 +123,11 @@ async function findRelease(github, repo, version) {
   try {
     return (await github.rest.repos.getReleaseByTag({ ...repo, tag: version })).data;
   } catch (error) {
-    if (error.status === 404) return null;
-    throw error;
+    if (error.status !== 404) throw error;
   }
+  // The tag endpoint returns published releases only.
+  const releases = await github.paginate(github.rest.repos.listReleases, { ...repo, per_page: 100 });
+  return releases.find(release => release.tag_name === version) ?? null;
 }
 
 async function missingAssets(github, repo, releaseId, files) {
@@ -160,8 +162,14 @@ async function prepareRelease({ github, repo, version, sha, directory }) {
 async function publishRelease({ github, repo, plan }) {
   validateManifest(plan.manifest, plan.version, plan.sha);
   if (await getTagSHA(github, repo, plan.version) !== plan.sha) throw new Error("Release tag changed before publication.");
-  const release = await findRelease(github, repo, plan.version);
-  if (!release || release.id !== plan.releaseId) throw new Error("The prepared release no longer exists.");
+  let release;
+  try {
+    ({ data: release } = await github.rest.repos.getRelease({ ...repo, release_id: plan.releaseId }));
+  } catch (error) {
+    if (error.status === 404) throw new Error("The prepared release no longer exists.");
+    throw error;
+  }
+  if (release.tag_name !== plan.version) throw new Error("The prepared release tag changed before publication.");
   const missing = await missingAssets(github, repo, release.id, plan.files);
   if (missing.length) throw new Error(`Missing release assets: ${missing.join(", ")}`);
   if (release.draft) {

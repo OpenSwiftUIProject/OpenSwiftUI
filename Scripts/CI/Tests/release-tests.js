@@ -14,7 +14,7 @@ const notFound = () => Object.assign(new Error("Not found"), { status: 404 });
 function client({ tag = null, published = false, assets = [] } = {}) {
   const writes = [];
   let currentTag = tag;
-  let currentRelease = published ? { id: 7, draft: false } : null;
+  let currentRelease = published ? { id: 7, tag_name: version, draft: false } : null;
   const github = { rest: {
     git: {
       getRef: async () => {
@@ -24,20 +24,25 @@ function client({ tag = null, published = false, assets = [] } = {}) {
       createRef: async args => { writes.push(args); currentTag = args.sha; },
     },
     repos: {
-      getReleaseByTag: async () => {
-        if (!currentRelease) throw notFound();
+      getReleaseByTag: async ({ tag }) => {
+        if (!currentRelease || currentRelease.draft || currentRelease.tag_name !== tag) throw notFound();
         return { data: currentRelease };
       },
+      getRelease: async ({ release_id }) => {
+        if (!currentRelease || currentRelease.id !== release_id) throw notFound();
+        return { data: currentRelease };
+      },
+      listReleases: async () => ({ data: currentRelease ? [currentRelease] : [] }),
       createRelease: async args => {
         writes.push(args);
-        currentRelease = { id: 7, draft: args.draft };
+        currentRelease = { id: 7, tag_name: args.tag_name, draft: args.draft };
         return { data: currentRelease };
       },
       listReleaseAssets: async () => ({ data: assets }),
       updateRelease: async args => { writes.push(args); currentRelease.draft = args.draft; },
     },
   } };
-  github.paginate = async method => (await method()).data;
+  github.paginate = async (method, args) => (await method(args)).data;
   return { github, writes, assets };
 }
 
@@ -174,6 +179,59 @@ test("draft publication resumes without replacing matching assets", async t => {
   const writeCount = mock.writes.length;
   await release.publishRelease({ ...mock, repo, plan: retry });
   assert.equal(mock.writes.length, writeCount);
+});
+
+test("publication finds a prepared draft by ID when tag lookup returns 404", async t => {
+  const directory = await artifacts(t);
+  const mock = client({ tag: sha });
+  const plan = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  for (const [name, digest] of Object.entries(plan.files)) {
+    mock.assets.push({ name, state: "uploaded", digest: `sha256:${digest}` });
+  }
+  await release.publishRelease({ ...mock, repo, plan });
+  assert.equal(mock.writes.at(-1).release_id, 7);
+  assert.equal(mock.writes.at(-1).draft, false);
+});
+
+test("draft preparation ignores releases for other tags", async t => {
+  const directory = await artifacts(t);
+  const mock = client({ tag: sha });
+  const plan = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  const listReleases = mock.github.rest.repos.listReleases;
+  mock.github.rest.repos.listReleases = async () => ({ data: [
+    { id: 8, tag_name: "0.19.0", draft: true },
+    ...(await listReleases()).data,
+  ] });
+  const retry = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  assert.equal(retry.releaseId, plan.releaseId);
+  assert.equal(mock.writes.length, 1);
+});
+
+test("publication rejects a missing or retagged prepared release", async t => {
+  const directory = await artifacts(t);
+  const mock = client({ tag: sha });
+  const plan = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  await assert.rejects(
+    release.publishRelease({ ...mock, repo, plan: { ...plan, releaseId: 8 } }),
+    /prepared release no longer exists/,
+  );
+  mock.github.rest.repos.getRelease = async () => ({ data: {
+    id: 7, tag_name: "0.19.0", draft: true,
+  } });
+  await assert.rejects(release.publishRelease({ ...mock, repo, plan }), /tag/i);
+  assert.equal(mock.writes.length, 1);
+});
+
+test("release API failures do not create or publish a release", async t => {
+  const directory = await artifacts(t);
+  const mock = client({ tag: sha });
+  const plan = await release.prepareRelease({ ...mock, repo, version, sha, directory });
+  const forbidden = async () => { throw Object.assign(new Error("Forbidden"), { status: 403 }); };
+  mock.github.rest.repos.listReleases = forbidden;
+  await assert.rejects(release.prepareRelease({ ...mock, repo, version, sha, directory }), /Forbidden/);
+  mock.github.rest.repos.getRelease = forbidden;
+  await assert.rejects(release.publishRelease({ ...mock, repo, plan }), /Forbidden/);
+  assert.equal(mock.writes.length, 1);
 });
 
 test("conflicting published assets are never overwritten", async t => {
