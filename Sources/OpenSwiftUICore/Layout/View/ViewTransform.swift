@@ -907,11 +907,11 @@ extension CGRect: ViewTransformable {
 
 extension Path: ViewTransformable {
     package mutating func convert(to space: CoordinateSpace, transform: ViewTransform) {
-        mapPoints { $0.convert(to: space, transform: transform) }
+        self = mapPoints { $0.convert(to: space, transform: transform) }
     }
 
     package mutating func convert(from space: CoordinateSpace, transform: ViewTransform) {
-        mapPoints { $0.convert(from: space, transform: transform) }
+        self = mapPoints { $0.convert(from: space, transform: transform) }
     }
 }
 

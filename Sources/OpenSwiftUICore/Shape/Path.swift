@@ -37,14 +37,18 @@ public struct Path: Equatable, LosslessStringConvertible, @unchecked Sendable {
         #if canImport(CoreGraphics) || !OPENSWIFTUI_CF_CGTYPES
         @inline(__always)
         init(_ path: CGPath) {
+            var data = PathData()
             kind = .cgPath
-            data = PathData(cgPath: .passUnretained(path))
+            data.cgPath = .passRetained(path)
+            self.data = data
         }
         #endif
 
         package init(takingPath path: ORBPath) {
+            var data = PathData()
             kind = .rbPath
-            data = PathData(rbPath: path)
+            data.rbPath = path
+            self.data = data
         }
 
         deinit {
