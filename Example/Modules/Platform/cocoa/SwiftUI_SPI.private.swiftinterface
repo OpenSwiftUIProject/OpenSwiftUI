@@ -218,3 +218,9 @@ extension SwiftUI.View {
 extension SwiftUI.View {
   public func avoidsOrphans(_ flag: Swift.Bool) -> some SwiftUI.View
 }
+
+@_spi(Private)
+@available(iOS 14.0, macOS 11.0, tvOS 14.0, watchOS 7.0, *)
+extension SwiftUI.View {
+  nonisolated public func unanimatable() -> some SwiftUI.View
+}
