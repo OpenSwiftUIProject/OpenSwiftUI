@@ -39,11 +39,18 @@ extension View {
 
 // MARK: - _ContentShapeKindModifier
 
+/// A modifier that defines the content shape for a view.
 @available(OpenSwiftUI_v3_0, *)
 @frozen
 public struct _ContentShapeKindModifier<ContentShape>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where ContentShape: Shape {
+    /// The content shape.
     public var shape: ContentShape
+
+    /// If true, the shape is interpreted using the even-odd winding
+    /// number rule, otherwise using the non-zero winding number rule.
     public var eoFill: Bool
+
+    /// The kind assigned for the given shape.
     public var kind: ContentShapeKinds
 
     @inlinable

@@ -13,10 +13,16 @@ public import OpenSwiftUICore
 
 // MARK: - _ContentShapeModifier
 
+/// View subtype to define the hit-region for a content view as an
+/// arbitrary shape.
 @available(OpenSwiftUI_v1_0, *)
 @frozen
 public struct _ContentShapeModifier<ContentShape>: ViewModifier, MultiViewModifier, PrimitiveViewModifier where ContentShape: Shape {
+    /// The content shape.
     public var shape: ContentShape
+
+    /// If true, the shape is interpreted using the even-odd winding
+    /// number rule, otherwise using the non-zero winding number rule.
     public var eoFill: Bool
 
     @inlinable
