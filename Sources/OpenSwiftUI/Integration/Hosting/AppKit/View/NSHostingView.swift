@@ -275,6 +275,7 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         )
         // TODO
         super.init(frame: .zero)
+        appendViewGraphFeatures()
         initializeViewGraph()
         // TODO
         clipsToBounds = false
@@ -329,6 +330,11 @@ open class NSHostingView<Content>: NSView, XcodeViewDebugDataProvider where Cont
         if let hitTestEventMonitor {
             NSEvent.removeMonitor(hitTestEventMonitor)
         }
+    }
+
+    func appendViewGraphFeatures() {
+        viewGraph.append(feature: FocusViewGraph(graph: viewGraph))
+        // TODO
     }
 
     /// The renderer configuration of the hosting view.
