@@ -294,6 +294,18 @@ extension FocusableOptions: _FocusableModifier_Configuration {
     }
 }
 
+// TODO: - FocusableViewResponder
+
+#if os(macOS)
+// MARK: - FocusRingDelegate
+
+protocol FocusRingDelegate: AnyObject {
+    var focused: Bool { get set }
+
+    var canShowFocusRing: Bool { get }
+}
+#endif
+
 // MARK: - FocusableOptionsKey
 
 struct FocusableOptionsKey: PreferenceKey {
