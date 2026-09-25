@@ -11,6 +11,15 @@
 
 #import <objc/runtime.h>
 
+Class _Nullable AXNSTableViewCellMockElementClass(void) {
+    static Class tableViewCellMockElementClass;
+    static dispatch_once_t onceToken;
+    dispatch_once(&onceToken, ^{
+        tableViewCellMockElementClass = NSClassFromString(@"NSTableViewCellMockElement");
+    });
+    return tableViewCellMockElementClass;
+}
+
 @implementation NSApplication (OpenSwiftUI_SPI)
 
 - (void)markAppLaunchComplete_openswiftui_safe_wrapper {

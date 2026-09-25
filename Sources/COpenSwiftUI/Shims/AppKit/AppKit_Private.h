@@ -15,6 +15,22 @@
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
+OPENSWIFTUI_EXTERN_C_BEGIN
+
+OPENSWIFTUI_EXPORT
+Class _Nullable AXNSTableViewCellMockElementClass(void);
+
+OPENSWIFTUI_EXPORT
+void NSAccessibilityBeginInternalAccessors(void);
+
+OPENSWIFTUI_EXPORT
+void NSAccessibilityEndInternalAccessors(void);
+
+OPENSWIFTUI_EXPORT
+id _Nullable NSAccessibilityEntryPointValueForAttribute(id element, NSAccessibilityAttributeName attribute);
+
+OPENSWIFTUI_EXTERN_C_END
+
 @interface NSApplication (OpenSwiftUI_SPI)
 
 - (BOOL)_shouldLoadMainNibNamed:(nullable NSString *)name;
