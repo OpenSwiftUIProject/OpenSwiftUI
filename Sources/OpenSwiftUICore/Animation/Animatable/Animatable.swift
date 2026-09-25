@@ -2,8 +2,9 @@
 //  Animatable.swift
 //  OpenSwiftUICore
 //
-//  Audited for 6.4.41
+//  Audited for 6.5.4
 //  Status: Complete
+//  ID: 2DFC163B2FD0FA7B91FDE1127AAEDE04 (SwiftUICore)
 
 public import Foundation
 package import OpenAttributeGraphShims
@@ -24,7 +25,7 @@ public protocol Animatable {
     static func _makeAnimatable(value: inout _GraphValue<Self>, inputs: _GraphInputs)
 }
 
-// MARK: - Animateble + Extension
+// MARK: - Animatable + Extension
 
 @available(OpenSwiftUI_v1_0, *)
 extension Animatable where Self: VectorArithmetic {
@@ -43,7 +44,9 @@ extension Animatable where AnimatableData == EmptyAnimatableData {
         set {}
     }
 
-    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {}
+    public static func _makeAnimatable(value _: inout _GraphValue<Self>, inputs _: _GraphInputs) {
+        _openSwiftUIEmptyStub()
+    }
 }
 
 extension Animatable {
@@ -126,4 +129,22 @@ extension Double: Animatable {
 @available(OpenSwiftUI_v5_0, *)
 extension CGFloat: Animatable {
     public typealias AnimatableData = CGFloat
+}
+
+// MARK: - View + Unanimatable
+
+@_spi(Private)
+@available(OpenSwiftUI_v2_0, *)
+extension View {
+    nonisolated public func unanimatable() -> some View {
+        modifier(UnanimatableModifier())
+    }
+}
+
+// MARK: - UnanimatableModifier
+
+private struct UnanimatableModifier: PrimitiveViewModifier, _GraphInputsModifier {
+    static func _makeInputs(modifier: _GraphValue<Self>, inputs: inout _GraphInputs) {
+        inputs.animationsDisabled = true
+    }
 }
