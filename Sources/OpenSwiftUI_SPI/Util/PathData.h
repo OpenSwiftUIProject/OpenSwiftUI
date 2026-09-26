@@ -35,6 +35,13 @@ typedef union PathData {
     uint8_t buffer[0x60];
 } PathData;
 
+static inline PathData PathDataMakeEmpty(void) OPENSWIFTUI_SWIFT_NAME(PathData.init());
+
+static inline PathData PathDataMakeEmpty(void) {
+    PathData data = {.buffer = {0}};
+    return data;
+}
+
 OPENSWIFTUI_ASSUME_NONNULL_END
 
 OPENSWIFTUI_IMPLICIT_BRIDGING_DISABLED
