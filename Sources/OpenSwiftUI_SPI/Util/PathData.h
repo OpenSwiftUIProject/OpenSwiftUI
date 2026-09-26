@@ -13,11 +13,7 @@
 #include <CoreGraphics/CoreGraphics.h>
 #endif
 
-#if OPENSWIFTUI_RENDERBOX
-#include <RenderBox/RenderBox.h>
-#else
-#include <OpenRenderBox/OpenRenderBox.h>
-#endif
+#include <OpenRenderBoxShims/OpenRenderBoxShims.h>
 
 OPENSWIFTUI_ASSUME_NONNULL_BEGIN
 
@@ -27,11 +23,7 @@ typedef union PathData {
     #if OPENSWIFTUI_TARGET_OS_DARWIN
     CGPathRef cgPath;
     #endif
-    #if OPENSWIFTUI_RENDERBOX
-    RBPath rbPath;
-    #else
     ORBPath rbPath;
-    #endif
     uint8_t buffer[0x60];
 } PathData;
 
