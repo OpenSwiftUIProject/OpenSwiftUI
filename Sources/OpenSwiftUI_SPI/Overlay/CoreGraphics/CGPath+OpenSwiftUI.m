@@ -10,11 +10,7 @@
 #import <CoreGraphics/CoreGraphics.h>
 #import <xlocale.h>
 
-#if OPENSWIFTUI_RENDERBOX
-#include <RenderBox/RenderBox.h>
-#else
-#include <OpenRenderBox/OpenRenderBox.h>
-#endif
+#include <OpenRenderBoxShims/OpenRenderBoxShims.h>
 
 BOOL _CGPathParseString(CGMutablePathRef path, const char *utf8CString) {
     double numbers[6];
@@ -228,17 +224,10 @@ CGPathRef _CGPathCreateRoundedRect(CGRect rect, CGFloat cornerWidth, CGFloat cor
     }
 
     if (style == PathRoundedCornerStyleContinuous) {
-        #if OPENSWIFTUI_RENDERBOX
-        RBPath rbPath = RBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, RBPathRoundedCornerStyleContinuous, NULL);
-        CGPathRef cgPath = RBPathCopyCGPath(rbPath);
-        RBPathRelease(rbPath);
-        return cgPath;
-        #else
         ORBPath rbPath = ORBPathMakeRoundedRect(rect, cornerWidth, cornerHeight, ORBPathRoundedCornerStyleContinuous, NULL);
         CGPathRef cgPath = ORBPathCopyCGPath(rbPath);
         ORBPathRelease(rbPath);
         return cgPath;
-        #endif
     }
 
     // Use CoreGraphics path creation (circular style)
