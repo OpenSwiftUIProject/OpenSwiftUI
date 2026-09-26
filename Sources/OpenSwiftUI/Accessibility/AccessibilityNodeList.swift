@@ -32,6 +32,20 @@ struct AccessibilityNodesKey: PreferenceKey {
     }
 }
 
+extension PreferencesInputs {
+    @inline(__always)
+    var requiresAccessibilityNodes: Bool {
+        get { contains(AccessibilityNodesKey.self) }
+        set {
+            if newValue {
+                add(AccessibilityNodesKey.self)
+            } else {
+                remove(AccessibilityNodesKey.self)
+            }
+        }
+    }
+}
+
 extension _ViewOutputs {
     @inline(__always)
     var accessibilityNodes: Attribute<AccessibilityNodeList>? {

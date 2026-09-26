@@ -1,8 +1,8 @@
 //
 //  ContentShapeKinds.swift
-//  OpenSwiftUI
+//  OpenSwiftUICore
 //
-//  Audited for 6.0.87
+//  Audited for 6.5.4
 //  Status: Complete
 
 import Foundation
@@ -11,6 +11,7 @@ import Foundation
 ///
 /// The kind is used by the system to influence various effects, hit-testing,
 /// and more.
+@available(OpenSwiftUI_v3_0, *)
 public struct ContentShapeKinds: OptionSet, Sendable {
 
     /// The corresponding value of the raw type.
@@ -70,6 +71,15 @@ public struct ContentShapeKinds: OptionSet, Sendable {
     @available(watchOS, unavailable)
     public static let hoverEffect: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 3)
 
+    /// The kind for focus effects.
+    @available(iOS, unavailable)
+    @available(tvOS, unavailable)
+    @available(visionOS, unavailable)
+    public static let focusEffect: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 4)
+
+    @available(tvOS, unavailable)
+    package static let _focusEffect: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 4)
+
     /// The kind for accessibility visuals and sorting.
     ///
     /// Setting a content shape with this kind causes the accessibility frame
@@ -81,5 +91,21 @@ public struct ContentShapeKinds: OptionSet, Sendable {
     /// shape of the view.
     ///
     /// To control the shape for accessibility and hit-testing, use the `interaction` kind.
-    public static let accessibility: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 4)
+    @available(OpenSwiftUI_v5_0, *)
+    public static let accessibility: ContentShapeKinds = ContentShapeKinds(rawValue: 1 << 6)
+
+    package var description: String {
+        var result = "[ "
+        for (bit, name) in [
+            (0, "interaction"),
+            (1, "dragPreview"),
+            (2, "contextMenuPreview"),
+            (3, "hoverEffect"),
+            (4, "focusEffect"),
+            (6, "accessibility"),
+        ] where rawValue & (1 << bit) != 0 {
+            result += name + " "
+        }
+        return result + "]"
+    }
 }
