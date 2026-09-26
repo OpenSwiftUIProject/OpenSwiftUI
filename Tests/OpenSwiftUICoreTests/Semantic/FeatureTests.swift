@@ -2,9 +2,9 @@
 //  FeatureTests.swift
 //  OpenSwiftUICoreTests
 
+import Foundation
 import OpenSwiftUICore
 import Testing
-import Foundation
 
 @MainActor
 struct FeatureTests {
@@ -26,19 +26,27 @@ struct FeatureTests {
     @Test
     func userDefaults() {
         struct Feature1: UserDefaultKeyedFeature {
-            static var key: String { "org.OpenSwiftUIProject.OpenSwiftUICoreTests.Feature1" }
+            static let key = "Feature1"
+            static let defaults = UserDefaults(
+                suiteName: "org.OpenSwiftUIProject.OpenSwiftUICoreTests"
+            )!
             static var cachedValue: Bool?
+        }
+        Feature1.defaults.removeObject(forKey: Feature1.key)
+        Feature1.cachedValue = nil
+        defer {
+            Feature1.defaults.removeObject(forKey: Feature1.key)
+            Feature1.cachedValue = nil
         }
         #expect(Feature1.isEnabled == false)
         Feature1.test(enabled: true) {
             #expect(Feature1.isEnabled == true)
         }
         #expect(Feature1.isEnabled == false)
-        UserDefaults.standard.set(true, forKey: Feature1.key)
+        Feature1.defaults.set(true, forKey: Feature1.key)
         #expect(Feature1.isEnabled == false)
         Feature1.cachedValue = nil
         #expect(Feature1.isEnabled == true)
-        UserDefaults.standard.removeObject(forKey: Feature1.key)
     }
     #endif
 }
