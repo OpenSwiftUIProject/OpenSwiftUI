@@ -93,10 +93,11 @@ var packageProductTypes: [String: ProjectDescription.Product] = [
     "OpenSwiftUITestsSupport": ProjectDescription.Product.staticFramework,
     "OpenSwiftUISymbolDualTestsSupport": ProjectDescription.Product.staticFramework,
     "OpenAttributeGraphShims": ProjectDescription.Product.staticFramework,
-    "OpenCoreGraphicsShims": ProjectDescription.Product.staticFramework,
-    "OpenObservation": ProjectDescription.Product.staticFramework,
-    "OpenQuartzCoreShims": ProjectDescription.Product.staticFramework,
-    "OpenRenderBoxShims": ProjectDescription.Product.staticFramework,
+    "OpenCoreGraphicsShims": ProjectDescription.Product.framework,
+    "OpenObservation": ProjectDescription.Product.framework,
+    "OpenObservationCxx": ProjectDescription.Product.staticFramework,
+    "OpenQuartzCoreShims": ProjectDescription.Product.framework,
+    "OpenRenderBoxShims": ProjectDescription.Product.framework,
     "SymbolLocator": ProjectDescription.Product.staticFramework,
 ]
 
