@@ -147,6 +147,12 @@ let packageSettings = PackageSettings(
             defaultSettings: .essential,
             defaultConfiguration: "OpenSwiftUIDebug"
         ),
+        "OpenSwiftUITestsSupport": .settings(
+            base: ["ENABLE_TESTING_SEARCH_PATHS": "YES"],
+            configurations: openSwiftUIPackageConfigurations,
+            defaultSettings: .essential,
+            defaultConfiguration: "OpenSwiftUIDebug"
+        ),
         "OpenSwiftUI": .settings(
             base: openSwiftUITargetSettings,
             configurations: openSwiftUIPackageConfigurations,
