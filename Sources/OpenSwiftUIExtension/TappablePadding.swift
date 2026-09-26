@@ -2,11 +2,13 @@
 //  TappablePadding.swift
 //  OpenSwiftUIExtension
 
-import Foundation
+public import Foundation
 
-// FIXME: import OpenSwiftUI
-#if canImport(SwiftUI)
+#if OPENSWIFTUI
+public import OpenSwiftUI
+#else
 public import SwiftUI
+#endif
 
 struct TappablePadding: ViewModifier {
     let edges: Edge.Set
@@ -73,6 +75,7 @@ extension View {
     }
 }
 
+#if canImport(DeveloperToolsSupport)
 @available(iOS 15, macOS 12, *)
 #Preview {
     HStack(spacing: 20) {
