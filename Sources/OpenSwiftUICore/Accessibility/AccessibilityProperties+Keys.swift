@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 
 package import Foundation
 package import libAccessibilityPrivate
@@ -42,8 +42,6 @@ extension AccessibilityProperties {
         set { self[ChildBehaviorKind.self] = newValue }
     }
 
-    // TODO: Add AccessibilityCustomContentList.
-    #if false
     package struct CustomContentListKey: AccessibilityPropertiesKey {
         package static let defaultValue: AccessibilityCustomContentList = []
     }
@@ -52,7 +50,6 @@ extension AccessibilityProperties {
         get { self[CustomContentListKey.self] }
         set { self[CustomContentListKey.self] = newValue }
     }
-    #endif
 
     package struct CustomAttributesKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityCustomAttributes.self
