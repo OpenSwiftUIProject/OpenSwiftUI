@@ -218,8 +218,6 @@ extension AccessibilityProperties {
         set { self[ValueKey.self] = newValue }
     }
 
-    // TODO: Add AccessibilityVisibilityStorage.
-    #if false
     package struct VisibilityKey: AccessibilityPropertiesKey {
         package static let defaultValue: AccessibilityVisibilityStorage = .init()
     }
@@ -228,5 +226,4 @@ extension AccessibilityProperties {
         get { self[VisibilityKey.self] }
         set { self[VisibilityKey.self] = newValue }
     }
-    #endif
 }
