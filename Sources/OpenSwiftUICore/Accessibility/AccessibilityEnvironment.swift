@@ -6,7 +6,7 @@
 //  Status: Complete
 //  ID: 1E80A5D8CD82563C298D64AC1337E839 (SwiftUICore)
 
-// MARK: - Accessibility Environment Values [WIP]
+// MARK: - Accessibility Environment Values
 
 private struct AccessibilityEnabledKey: EnvironmentKey {
     static var defaultValue: Bool { false }
