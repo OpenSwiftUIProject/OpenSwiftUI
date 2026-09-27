@@ -101,6 +101,17 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
           persist-credentials: false
+      - name: Read the pinned OpenObservation revision
+        id: observation
+        run: |
+          revision=$(bash Scripts/CI/get_revision.sh openobservation)
+          echo "revision=$revision" >> "$GITHUB_OUTPUT"
+      - uses: actions/checkout@v4
+        with:
+          repository: OpenSwiftUIProject/OpenObservation
+          ref: ${{ steps.observation.outputs.revision }}
+          path: observation-repo
+          persist-credentials: false
       - uses: actions/checkout@v4
         with:
           repository: OpenSwiftUIProject/OpenSwiftUI-spm
@@ -112,4 +123,4 @@ jobs:
         env:
           RELEASE_MANIFEST: ${{ needs.assets.outputs.manifest }}
           VERSION: ${{ inputs.version }}
-        run: bash Scripts/CI/update_binary_package.sh "$PWD" "$PWD/binary-repo"
+        run: bash Scripts/CI/update_binary_package.sh "$PWD" "$PWD/binary-repo" "$PWD/observation-repo"
