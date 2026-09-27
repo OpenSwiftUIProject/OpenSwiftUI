@@ -1221,6 +1221,9 @@ private struct ResolvedTextFilter: StatefulRule, AsyncAttribute {
 
     typealias Value = ResolvedStyledText
 
+    // NOTE: Forces the output’s mainRef to false, regardless of those inputs.
+    static var flags: Flags { .asyncThread }
+
     mutating func updateValue() {
         let (text, textChanged) = $text.changedValue()
         let (environment, environmentChanged) = $environment.changedValue()
@@ -1459,6 +1462,9 @@ struct ResolvedOptionalTextFilter: StatefulRule, AsyncAttribute {
 
     typealias Value = ResolvedStyledText?
 
+    // NOTE: Forces the output’s mainRef to false, regardless of those inputs.
+    static var flags: Flags { .asyncThread }
+
     mutating func updateValue() {
         let (text, textChanged) = $text.changedValue()
         let (environment, environmentChanged) = $environment.changedValue()
@@ -1512,7 +1518,7 @@ struct ResolvedOptionalTextFilter: StatefulRule, AsyncAttribute {
 
 // MARK: - DynamicTextView [WIP]
 
-struct DynamicTextView: PrimitiveView, UnaryView {
+private struct DynamicTextView: PrimitiveView, UnaryView {
     var text: ResolvedStyledText
     var size: CGSize
 
@@ -1521,6 +1527,18 @@ struct DynamicTextView: PrimitiveView, UnaryView {
         inputs: _ViewInputs
     ) -> _ViewOutputs {
         _openSwiftUIUnimplementedFailure()
+    }
+
+    // FIXME
+    private struct DynamicTextFilter: StatefulRule, AsyncAttribute {
+        struct Value {}
+
+        // NOTE: Forces the output’s mainRef to false, regardless of those inputs.
+        static var flags: Flags { .asyncThread }
+
+        func updateValue() {
+            _openSwiftUIUnimplementedFailure()
+        }
     }
 }
 
