@@ -54,8 +54,6 @@ extension AccessibilityProperties {
     }
     #endif
 
-    // TODO: Add AccessibilityCustomAttributes.
-    #if false
     package struct CustomAttributesKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityCustomAttributes.self
     }
@@ -64,7 +62,6 @@ extension AccessibilityProperties {
         get { self[CustomAttributesKey.self] }
         set { self[CustomAttributesKey.self] = newValue }
     }
-    #endif
 
     // TODO: Add AccessibilityDataSeriesConfiguration.
     #if false
