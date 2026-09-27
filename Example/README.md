@@ -112,7 +112,12 @@ On macOS, tests use an offscreen window to preserve application focus. Set
 `HAMMER_SHOW_TEST_WINDOW=1` in the test scheme's environment to show the window
 while debugging.
 
-CI runs `SUI_UXTests` before `OSUI_UXTests` on each platform. The OpenSwiftUI
-configuration uses the OpenSwiftUI renderer with Compute (IAG).
+CI runs `OSUI_UXTests` with persistent references. Request `update` or set
+`update_reference=true` to run `SUI_UXTests` first, including for the initial
+baseline. UI and UX tests share platform and configuration choices, test
+filters, reference storage, and recording locks. The default configurations use
+the SwiftUI renderer with AttributeGraph and the OpenSwiftUI renderer with
+Compute. CI accepts recording issues only when no other failures are present;
+a recording failure stops verification.
 See [Optional CI workflows](../Docs/CI/README.md#ux-tests) for dispatch and PR
 comment commands.

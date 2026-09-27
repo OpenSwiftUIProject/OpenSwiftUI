@@ -4,15 +4,23 @@ on:
   workflow_call:
     inputs:
       ref:
-        description: Full commit SHA to verify
         required: true
         type: string
       platform:
         default: all
         type: string
+      configuration:
+        default: default
+        type: string
+      update_reference:
+        default: false
+        type: boolean
+      only-testing:
+        default: ''
+        type: string
     outputs:
       verified-sha:
-        description: Commit verified with both frameworks on both platforms
+        description: Commit verified on both platforms
         value: ${{ jobs.ios_uxtest.outputs.sha == jobs.macos_uxtest.outputs.sha && jobs.ios_uxtest.outputs.sha || '' }}
   workflow_dispatch:
     inputs:
@@ -25,59 +33,95 @@ on:
           - all
           - ios
           - macos
+      update_reference:
+        description: Update reference images before running UX tests
+        required: false
+        default: false
+        type: boolean
+      only-testing:
+        description: 'Optional test identifier (e.g. OpenSwiftUIUXTests/TapGestureUXTests)'
+        required: false
+        default: ''
+        type: string
+      configuration:
+        description: UX test configuration set
+        required: false
+        default: default
+        type: choice
+        options:
+          - default
+          - all
+          - swiftui-renderer-ag
+          - swiftui-renderer-iag
+          - openswiftui-renderer-ag
+          - openswiftui-renderer-iag
   issue_comment:
     types: [created]
 
 permissions:
   contents: read
+  issues: read
   pull-requests: read
   statuses: write
 
-env:
-  OPENSWIFTUI_WERROR: 0
-  OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0
-  OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1
-  OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE_BINARY: 1
-  OPENSWIFTUI_SWIFTUI_RENDERER: 0
-  OPENSWIFTUI_COMPATIBILITY_TEST: 0
-  OPENSWIFTUI_SWIFT_LOG: 0
-  OPENSWIFTUI_SWIFT_CRYPTO: 0
-  OPENSWIFTUI_TARGET_RELEASE: 2024
-  OPENSWIFTUI_USE_LOCAL_DEPS: 1
-  OPENSWIFTUI_LINK_TESTING: 0
-  OPENSWIFTUI_EXAMPLE_LOOKINSIDE_SERVER: 0
-  OPENSWIFTUI_EXAMPLE_LOOKIN_SERVER: 0
-  TUIST_MISE_ENVIRONMENT: compute
-  GH_TOKEN: ${{ github.token }}
-
 jobs:
   prepare_uxtests:
-    uses: ./.github/workflows/prepare_optional_ci.yml
+    uses: ./.github/workflows/prepare_snapshot_tests.yml
     with:
       command: /uxtest
+      status-context-prefix: UX Tests
       ref: ${{ inputs.ref || '' }}
-      target: ${{ inputs.platform || 'all' }}
-      status-contexts: '{"ios":"UX Tests / iOS","macos":"UX Tests / macOS"}'
+      platform: ${{ inputs.platform || 'all' }}
+      configuration: ${{ inputs.configuration || 'default' }}
+      update_reference: ${{ inputs.update_reference || false }}
+      only-testing: ${{ inputs.only-testing || '' }}
 
   ios_uxtest:
-    name: Execute UX tests on iOS
-    needs: prepare_uxtests
-    if: contains(fromJSON(needs.prepare_uxtests.outputs.targets || '[]'), 'ios')
+    name: Execute UX tests on iOS (${{ matrix.configuration.id }})
     outputs:
-      sha: ${{ steps.tests.outcome == 'success' && steps.checkout.outputs.commit || '' }}
+      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_uxtests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+    needs: prepare_uxtests
     permissions:
       contents: read
+      issues: read
+      pull-requests: read
       statuses: write
       id-token: write
-    runs-on: [xcode-26.6, ios-simulator-18.5]
+    if: >-
+      needs.prepare_uxtests.outputs.ios-requested == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        xcode-version: ["26.6"]
+        release: [2024]
+        ios-version: ["18.5"]
+        configuration: ${{ fromJSON(needs.prepare_uxtests.outputs.configuration-matrix) }}
+        include:
+          - ios-version: "18.5"
+            ios-simulator-name: "iPhone 16 Pro"
     timeout-minutes: 90
+    runs-on:
+      - xcode-26.6
+      - ios-simulator-18.5
     env:
-      STATUS_CONTEXT: UX Tests / iOS
+      STATUS_CONTEXT: UX Tests / iOS / ${{ matrix.configuration.id }}${{ needs.prepare_uxtests.outputs.only-testing != '' && ' / Selected' || '' }}
       STATUS_ENABLED: ${{ needs.prepare_uxtests.outputs.status-enabled }}
       STATUS_SHA: ${{ needs.prepare_uxtests.outputs.ref }}
+      CONFIGURATION_NAME: ${{ matrix.configuration.id }}
+      OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.configuration.attributegraph }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.configuration.compute }}
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LINK_TESTING: 0
+      OPENSWIFTUI_SWIFTUI_RENDERER: ${{ matrix.configuration.swiftui_renderer }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Mark PR status running
-        if: env.STATUS_ENABLED == 'true'
+        if: github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -88,24 +132,31 @@ jobs:
               sha: process.env.STATUS_SHA,
               state: "pending",
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: "iOS UX tests are running.",
+              description: `iOS UX tests (${process.env.CONFIGURATION_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
         id: checkout
         with:
-          repository: ${{ needs.prepare_uxtests.outputs.repository }}
-          ref: ${{ needs.prepare_uxtests.outputs.ref }}
+          repository: ${{ needs.prepare_uxtests.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_uxtests.outputs.ref || github.sha }}
           persist-credentials: false
-      - name: Run UX tests
-        id: tests
+      - name: Run UX Tests
+        id: run-tests
         uses: ./.github/actions/uxtests
         with:
-          xcode-version: '26.6'
-          destination: 'platform=iOS Simulator,OS=18.5,name=iPhone 16 Pro'
-          artifact-name: ios-uxtests
+          xcode-version: ${{ matrix.xcode-version }}
+          platform: ios
+          destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
+          artifact-name: ios-uxtest-snapshots-${{ matrix.ios-version }}-${{ matrix.configuration.id }}
+          update-reference: ${{ needs.prepare_uxtests.outputs.update-reference == 'true' }}
+          only-testing: ${{ needs.prepare_uxtests.outputs.only-testing }}
+          compute: ${{ matrix.configuration.compute == 1 }}
+      - name: Require successful tests
+        if: steps.run-tests.outputs.test-result != 'success'
+        run: exit 1
       - name: Complete PR status
-        if: always() && env.STATUS_ENABLED == 'true'
+        if: always() && github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         env:
           JOB_STATUS: ${{ job.status }}
@@ -113,36 +164,65 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const state = process.env.JOB_STATUS === "success" ? "success" :
-              process.env.JOB_STATUS === "cancelled" ? "error" : "failure";
+              process.env.JOB_STATUS === "cancelled" ? "error" :
+              "failure";
+            const description = process.env.JOB_STATUS === "cancelled" ?
+              "iOS UX tests were cancelled." :
+              `iOS UX tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
               sha: process.env.STATUS_SHA,
               state,
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: `iOS UX tests completed with ${process.env.JOB_STATUS}.`,
+              description,
               context: process.env.STATUS_CONTEXT,
             });
 
   macos_uxtest:
-    name: Execute UX tests on macOS
-    needs: prepare_uxtests
-    if: contains(fromJSON(needs.prepare_uxtests.outputs.targets || '[]'), 'macos')
+    name: Execute UX tests on macOS (${{ matrix.configuration.id }})
     outputs:
-      sha: ${{ steps.tests.outcome == 'success' && steps.checkout.outputs.commit || '' }}
+      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_uxtests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+    needs: prepare_uxtests
     permissions:
       contents: read
+      issues: read
+      pull-requests: read
       statuses: write
       id-token: write
-    runs-on: [self-hosted, macos-15, xcode-26.6]
+    if: >-
+      needs.prepare_uxtests.outputs.macos-requested == 'true'
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [macos-15]
+        xcode-version: ["26.6"]
+        release: [2024]
+        configuration: ${{ fromJSON(needs.prepare_uxtests.outputs.configuration-matrix) }}
     timeout-minutes: 90
+    runs-on:
+      - self-hosted
+      - ${{ matrix.os }}
+      - xcode-26.6
     env:
-      STATUS_CONTEXT: UX Tests / macOS
+      STATUS_CONTEXT: UX Tests / macOS / ${{ matrix.configuration.id }}${{ needs.prepare_uxtests.outputs.only-testing != '' && ' / Selected' || '' }}
       STATUS_ENABLED: ${{ needs.prepare_uxtests.outputs.status-enabled }}
       STATUS_SHA: ${{ needs.prepare_uxtests.outputs.ref }}
+      CONFIGURATION_NAME: ${{ matrix.configuration.id }}
+      OPENSWIFTUI_WERROR: 0
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.configuration.attributegraph }}
+      OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: ${{ matrix.configuration.compute }}
+      OPENSWIFTUI_COMPATIBILITY_TEST: 0
+      OPENSWIFTUI_SWIFT_LOG: 0
+      OPENSWIFTUI_SWIFT_CRYPTO: 0
+      OPENSWIFTUI_TARGET_RELEASE: ${{ matrix.release }}
+      OPENSWIFTUI_USE_LOCAL_DEPS: 1
+      OPENSWIFTUI_LINK_TESTING: 0
+      OPENSWIFTUI_SWIFTUI_RENDERER: ${{ matrix.configuration.swiftui_renderer }}
+      GH_TOKEN: ${{ github.token }}
     steps:
       - name: Mark PR status running
-        if: env.STATUS_ENABLED == 'true'
+        if: github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         with:
           script: |
@@ -153,24 +233,31 @@ jobs:
               sha: process.env.STATUS_SHA,
               state: "pending",
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: "macOS UX tests are running.",
+              description: `macOS UX tests (${process.env.CONFIGURATION_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
         id: checkout
         with:
-          repository: ${{ needs.prepare_uxtests.outputs.repository }}
-          ref: ${{ needs.prepare_uxtests.outputs.ref }}
+          repository: ${{ needs.prepare_uxtests.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_uxtests.outputs.ref || github.sha }}
           persist-credentials: false
-      - name: Run UX tests
-        id: tests
+      - name: Run UX Tests
+        id: run-tests
         uses: ./.github/actions/uxtests
         with:
-          xcode-version: '26.6'
-          destination: 'platform=macOS'
-          artifact-name: macos-uxtests
+          xcode-version: ${{ matrix.xcode-version }}
+          platform: macos
+          destination: "platform=macOS"
+          artifact-name: macos-uxtest-snapshots-${{ matrix.configuration.id }}
+          update-reference: ${{ needs.prepare_uxtests.outputs.update-reference == 'true' }}
+          only-testing: ${{ needs.prepare_uxtests.outputs.only-testing }}
+          compute: ${{ matrix.configuration.compute == 1 }}
+      - name: Require successful tests
+        if: steps.run-tests.outputs.test-result != 'success'
+        run: exit 1
       - name: Complete PR status
-        if: always() && env.STATUS_ENABLED == 'true'
+        if: always() && github.event_name == 'issue_comment' && env.STATUS_ENABLED == 'true' && env.STATUS_SHA != ''
         uses: actions/github-script@v7
         env:
           JOB_STATUS: ${{ job.status }}
@@ -178,13 +265,17 @@ jobs:
           script: |
             const { owner, repo } = context.repo;
             const state = process.env.JOB_STATUS === "success" ? "success" :
-              process.env.JOB_STATUS === "cancelled" ? "error" : "failure";
+              process.env.JOB_STATUS === "cancelled" ? "error" :
+              "failure";
+            const description = process.env.JOB_STATUS === "cancelled" ?
+              "macOS UX tests were cancelled." :
+              `macOS UX tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
               sha: process.env.STATUS_SHA,
               state,
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: `macOS UX tests completed with ${process.env.JOB_STATUS}.`,
+              description,
               context: process.env.STATUS_CONTEXT,
             });

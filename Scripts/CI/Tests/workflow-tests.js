@@ -44,6 +44,8 @@ test("pre-release covers every check family at one SHA and all optional configur
   assert.equal(jobs.ui.with.update_reference, false);
   assert.equal(jobs.ux.uses, "./.github/workflows/uxtests.yml");
   assert.equal(jobs.ux.with.platform, "all");
+  assert.equal(jobs.ux.with.configuration, "all");
+  assert.equal(jobs.ux.with.update_reference, false);
   assert.equal(jobs.compatibility.with.platform, "all");
   assert.equal(jobs.stdout.with.backend, "all");
 });

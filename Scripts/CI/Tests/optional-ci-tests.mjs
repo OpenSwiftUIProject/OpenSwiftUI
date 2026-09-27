@@ -7,14 +7,20 @@ import { fileURLToPath } from 'node:url';
 
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../../..');
 const optionalWorkflows = ['uitests', 'uxtests', 'compatibility_tests', 'stdout_renderer'];
-const sharedPreparationWorkflows = ['uxtests', 'compatibility_tests', 'stdout_renderer'];
-const files = [...optionalWorkflows, 'prepare_optional_ci'];
+const sharedPreparationWorkflows = ['compatibility_tests', 'stdout_renderer'];
+const files = [...optionalWorkflows, 'prepare_optional_ci', 'prepare_snapshot_tests'];
 const workflows = Object.fromEntries(files.map(name => [name, JSON.parse(execFileSync('ruby', [
   '-ryaml', '-rjson', '-e',
   'doc = YAML.load_file(ARGV[0]); doc["on"] = doc.delete(true); puts JSON.generate(doc)',
   `${root}/.github/workflows/${name}.yml`,
 ], { encoding: 'utf8' }))]));
 const prepare = workflows.prepare_optional_ci.jobs.prepare;
+
+test('UX dispatch supports the UI snapshot options', () => {
+  assert.deepEqual(Object.keys(workflows.uxtests.on.workflow_dispatch.inputs).sort(), [
+    'configuration', 'only-testing', 'platform', 'update_reference',
+  ]);
+});
 const repository = 'OpenSwiftUIProject/OpenSwiftUI';
 const headSha = 'a'.repeat(40);
 const dispatchSha = 'b'.repeat(40);
@@ -22,7 +28,7 @@ const contains = (haystack, needle) => Array.isArray(haystack)
   ? haystack.some(value => String(value).toLowerCase() === String(needle).toLowerCase())
   : String(haystack ?? '').toLowerCase().includes(String(needle).toLowerCase());
 const expression = (source, bindings) => vm.runInNewContext(
-  source.replace(/^\$\{\{\s*|\s*\}\}$/g, ''),
+  source.replace(/^\$\{\{\s*|\s*\}\}$/g, '').replace(/\.([A-Za-z_][\w-]*-[\w-]+)/g, (_, name) => `[${JSON.stringify(name)}]`),
   { contains, fromJSON: JSON.parse, ...bindings },
 );
 
@@ -33,7 +39,7 @@ async function scriptRun(script, context, env, pull) {
   const warnings = [];
   await vm.runInNewContext(`(async () => { ${script}\n })()`, {
     context,
-    process: { env: { GITHUB_SERVER_URL: 'https://github.com', ...env } },
+    process: { env: { GITHUB_SERVER_URL: 'https://github.com', COMMAND: '/uitest', STATUS_CONTEXT_PREFIX: 'UI Tests', ...env } },
     core: { setOutput: (name, value) => { outputs[name] = value; }, warning: value => warnings.push(value) },
     github: { rest: {
       pulls: { get: async args => { lookups.push(args); return { data: pull }; } },
@@ -221,7 +227,7 @@ test('stdout Linux runs only for Compute requests and checks out the resolved co
   })), false);
 });
 
-for (const name of ['uxtests', 'compatibility_tests']) {
+for (const name of ['compatibility_tests']) {
   test(`${name}: platform selection gates jobs and checkout uses the resolved PR head`, async () => {
     const workflow = workflows[name];
     const [prepareName, caller] = Object.entries(workflow.jobs).find(([, job]) => job.uses);
@@ -247,7 +253,8 @@ test('UX verification requires successful checks on both platforms at the same S
   const workflow = workflows.uxtests;
   const output = workflow.on.workflow_call.outputs['verified-sha'].value;
   const platformSHA = (name, outcome, sha) => expression(workflow.jobs[name].outputs.sha, {
-    steps: { tests: { outcome }, checkout: { outputs: { commit: sha } } },
+    steps: { 'run-tests': { outputs: { 'test-result': outcome } }, checkout: { outputs: { commit: sha } } },
+    needs: { prepare_uxtests: { outputs: { 'only-testing': '' } } },
   });
   const jobs = {
     ios_uxtest: { outputs: { sha: platformSHA('ios_uxtest', 'success', headSha) } },
@@ -268,22 +275,30 @@ test('UX verification requires successful checks on both platforms at the same S
   }
 });
 
-test('UX checks use OpenSwiftUI rendering with Compute and the toolchain Testing module', () => {
-  const workflow = workflows.uxtests;
-  for (const [key, value] of Object.entries({
-    OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: 0,
-    OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE: 1,
-    OPENSWIFTUI_SWIFTUI_RENDERER: 0,
-    OPENSWIFTUI_LINK_TESTING: 0,
-    TUIST_MISE_ENVIRONMENT: 'compute',
-  })) {
-    assert.equal(workflow.env[key], value);
+test('UI and UX expose the same snapshot inputs and configuration matrix', () => {
+  for (const event of ['workflow_call', 'workflow_dispatch']) {
+    const ui = workflows.uitests.on[event].inputs;
+    const ux = workflows.uxtests.on[event].inputs;
+    assert.deepEqual(Object.keys(ux).sort(), Object.keys(ui).sort());
+    for (const name of Object.keys(ui)) {
+      assert.equal(ux[name].default, ui[name].default);
+      assert.deepEqual(ux[name].options, ui[name].options);
+    }
   }
-  assert.deepEqual(Object.keys(workflow.on.workflow_call.inputs).sort(), ['platform', 'ref']);
-  assert.deepEqual(Object.keys(workflow.on.workflow_dispatch.inputs), ['platform']);
-  for (const job of Object.values(workflow.jobs).filter(job => !job.uses)) {
-    assert.equal(job.permissions['id-token'], 'write');
-    assert.ok(job.steps.some(step => step.uses === './.github/actions/uxtests'));
+  for (const name of ['uitests', 'uxtests']) {
+    const [prepareName, caller] = Object.entries(workflows[name].jobs).find(([, job]) => job.uses);
+    assert.equal(caller.uses, './.github/workflows/prepare_snapshot_tests.yml');
+    for (const job of Object.values(workflows[name].jobs).filter(job => !job.uses)) {
+      assert.equal(job.env.OPENSWIFTUI_LINK_TESTING, 0);
+      assert.equal(job.permissions['id-token'], 'write');
+      assert.equal(job.strategy['fail-fast'], false);
+      const step = job.steps.find(step => step.uses === `./.github/actions/${name}`);
+      for (const key of ['only-testing', 'update-reference']) assert.ok(step.with[key].includes(`needs.${prepareName}.outputs.${key}`));
+      assert.equal(step.with.compute, '${{ matrix.configuration.compute == 1 }}');
+      assert.equal(job.env.OPENSWIFTUI_SWIFTUI_RENDERER, '${{ matrix.configuration.swiftui_renderer }}');
+      assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH, '${{ matrix.configuration.attributegraph }}');
+      assert.equal(job.env.OPENSWIFTUI_OPENATTRIBUTESHIMS_COMPUTE, '${{ matrix.configuration.compute }}');
+    }
   }
 });
 
@@ -296,7 +311,7 @@ test('reusable workflow outputs reach callers through the prepare job', () => {
 });
 
 test('UI dispatch and existing comment options still work; pushes no longer request tests', async () => {
-  const job = workflows.uitests.jobs.prepare_uitests;
+  const job = workflows.prepare_snapshot_tests.jobs.prepare;
   const context = {
     repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, runId: 123,
     sha: dispatchSha, eventName: 'workflow_dispatch', payload: { inputs: { platform: 'ios', configuration: 'openswiftui-renderer-iag', update_reference: 'true' } },
@@ -313,8 +328,8 @@ test('UI dispatch and existing comment options still work; pushes no longer requ
   for (const body of ['/uitest', '/uitest ios', '/uitest macos osui-iag', '/uitest all all-configs', '/uitest ios config=openswiftui-renderer-iag', '/uitest macos update osui-ag']) {
     context.eventName = 'issue_comment';
     context.payload = { issue: { number: 42, pull_request: {} }, comment: { body, author_association: 'MEMBER', user: { login: 'maintainer' } } };
-    assert.equal(Boolean(expression(job.if, { inputs: { ref: '' }, github: { event_name: context.eventName, event: context.payload } })), true);
-    result = await scriptRun(job.steps[0].with.script, context, {}, { head: { repo: { full_name: repository }, sha: headSha } });
+    assert.equal(Boolean(expression(job.if, { inputs: { ref: '', command: '/uitest' }, github: { event_name: context.eventName, event: context.payload } })), true);
+    result = await scriptRun(job.steps[0].with.script, context, {}, { state: 'open', head: { repo: { full_name: repository }, sha: headSha } });
     assert.equal(result.outputs.ref, headSha);
     assert.equal(result.outputs['status-enabled'], 'true');
     assert.ok(result.statuses.length > 0);
@@ -345,7 +360,7 @@ for (const name of sharedPreparationWorkflows) {
 
 for (const event of ['workflow_dispatch', 'push']) {
   test(`reusable UI checks use their own inputs despite the caller ${event} payload`, async () => {
-    const job = workflows.uitests.jobs.prepare_uitests;
+    const job = workflows.prepare_snapshot_tests.jobs.prepare;
     const context = {
       repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, sha: dispatchSha,
       eventName: event,
@@ -362,4 +377,130 @@ for (const event of ['workflow_dispatch', 'push']) {
     assert.equal(result.statuses.length, 0);
     await assert.rejects(scriptRun(job.steps[0].with.script, context, { ...env, REQUESTED_REF: 'main' }), /full commit SHA/);
   });
+}
+
+async function snapshotRequest(name, options = {}) {
+  const caller = Object.values(workflows[name].jobs).find(job => job.uses);
+  const job = workflows.prepare_snapshot_tests.jobs.prepare;
+  const command = caller.with.command;
+  const context = {
+    repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, runId: 123, sha: dispatchSha,
+    eventName: options.event ?? 'issue_comment',
+    payload: {
+      issue: { number: 42, ...(options.issue ? {} : { pull_request: {} }) },
+      comment: { body: options.body ?? command, author_association: options.association ?? 'OWNER', user: { login: 'maintainer' } },
+    },
+  };
+  const inputs = { command, ref: options.ref ?? '' };
+  const admitted = Boolean(expression(job.if, { inputs, github: { event_name: context.eventName, event: context.payload } }));
+  const result = await scriptRun(job.steps[0].with.script, context, {
+    COMMAND: command, STATUS_CONTEXT_PREFIX: caller.with['status-context-prefix'],
+    REQUESTED_REF: inputs.ref, PLATFORM: options.platform ?? 'all', CONFIGURATION: options.configuration ?? 'default',
+    UPDATE_REFERENCE: String(options.update ?? false), UITEST_ONLY_TESTING: options.onlyTesting ?? '',
+  }, {
+    state: options.closed ? 'closed' : 'open',
+    head: { sha: headSha, repo: options.deleted ? null : { full_name: options.fork ? 'contributor/OpenSwiftUI' : repository } },
+  });
+  return { ...result, admitted };
+}
+
+for (const name of ['uitests', 'uxtests']) {
+  const command = name === 'uitests' ? '/uitest' : '/uxtest';
+  const label = name === 'uitests' ? 'UI Tests' : 'UX Tests';
+  const target = name === 'uitests' ? 'OpenSwiftUIUITests/TextUITests/dateFormatStyleExample()' : 'OpenSwiftUIUXTests/TapGestureUXTests/snapshotsBeforeAndAfterTap(tapCount:)';
+  for (const platform of ['all', 'ios', 'macos']) {
+    test(`${command}: selects ${platform} with the default configurations and reuses references`, async () => {
+      const result = await snapshotRequest(name, { body: `${command} ${platform.toUpperCase()}` });
+      assert.equal(result.admitted, true);
+      assert.equal(result.outputs['ios-requested'], String(platform !== 'macos'));
+      assert.equal(result.outputs['macos-requested'], String(platform !== 'ios'));
+      assert.equal(result.outputs['update-reference'], 'false');
+      assert.equal(result.outputs['only-testing'], '');
+      const configs = JSON.parse(result.outputs['configuration-matrix']);
+      assert.deepEqual(configs.map(row => row.id), ['swiftui-renderer-ag', 'openswiftui-renderer-iag']);
+      assert.equal(result.outputs.ref, headSha);
+      assert.equal(result.statuses.length, platform === 'all' ? 4 : 2);
+      const [prepareName] = Object.entries(workflows[name].jobs).find(([, job]) => job.uses);
+      for (const [jobName, job] of Object.entries(workflows[name].jobs).filter(([, job]) => !job.uses)) {
+        const needs = { [prepareName]: { outputs: result.outputs } };
+        const requested = platform === 'all' || jobName.startsWith(platform);
+        assert.equal(Boolean(expression(job.if, { needs })), requested);
+        const checkout = job.steps.find(step => step.uses === 'actions/checkout@v4');
+        assert.equal(expression(checkout.with.repository, { needs }), repository);
+        assert.equal(expression(checkout.with.ref, { needs }), headSha);
+        assert.equal(checkout.with['persist-credentials'], false);
+      }
+    });
+  }
+  const selections = {
+    'sui-ag': ['swiftui-renderer-ag'], 'sui-iag': ['swiftui-renderer-iag'],
+    'osui-ag': ['openswiftui-renderer-ag'], 'osui-iag': ['openswiftui-renderer-iag'],
+    'config=swiftui-renderer-iag': ['swiftui-renderer-iag'],
+    'configuration=openswiftui-renderer-ag': ['openswiftui-renderer-ag'],
+    'all-configs': ['swiftui-renderer-ag', 'swiftui-renderer-iag', 'openswiftui-renderer-ag', 'openswiftui-renderer-iag'],
+  };
+  for (const [selection, expected] of Object.entries(selections)) {
+    test(`${command}: ${selection}, update, and only-testing preserve selection and status scope`, async () => {
+      const result = await snapshotRequest(name, { body: `${command} ios ${selection} update only-testing=${target}` });
+      assert.deepEqual(JSON.parse(result.outputs['configuration-matrix']).map(row => row.id), expected);
+      assert.equal(result.outputs['update-reference'], 'true');
+      assert.equal(result.outputs['only-testing'], target);
+      assert.deepEqual(result.statuses.map(row => row.context), expected.map(id => `${label} / iOS / ${id} / Selected`));
+      for (const row of result.statuses) assert.equal(row.sha, headSha);
+      const job = workflows[name].jobs[name === 'uitests' ? 'ios_uitest' : 'ios_uxtest'];
+      const prepareName = name === 'uitests' ? 'prepare_uitests' : 'prepare_uxtests';
+      assert.equal(expression(job.outputs.sha, {
+        steps: { 'run-tests': { outputs: { 'test-result': 'success' } }, checkout: { outputs: { commit: headSha } } },
+        needs: { [prepareName]: { outputs: result.outputs } },
+      }), '');
+    });
+  }
+  for (const options of [
+    { association: 'NONE' }, { association: 'CONTRIBUTOR', ref: headSha }, { issue: true },
+    { event: 'push' }, { event: 'pull_request' }, { closed: true }, { deleted: true },
+    ...['-extra', ' only-testing=', ' config=invalid', ' all extra', ' all\nplease run this', ' $(touch /tmp/ci-probe)'].map(suffix => ({ body: command + suffix })),
+  ]) {
+    test(`${command}: rejects invalid request ${JSON.stringify(options)}`, async () => {
+      const result = await snapshotRequest(name, options);
+      assert.equal(result.outputs.ref, '');
+      assert.equal(result.outputs['ios-requested'], 'false');
+      assert.equal(result.outputs['macos-requested'], 'false');
+      assert.equal(result.statuses.length, 0);
+    });
+  }
+  test(`${command}: trusted fork runs keep the head SHA without commit statuses`, async () => {
+    const result = await snapshotRequest(name, { fork: true, body: `${command} ios osui-iag update only-testing=${target}` });
+    assert.equal(result.outputs.repository, 'contributor/OpenSwiftUI');
+    assert.equal(result.outputs.ref, headSha);
+    assert.equal(result.outputs['status-enabled'], 'false');
+    assert.equal(result.outputs['update-reference'], 'true');
+    assert.equal(result.statuses.length, 0);
+  });
+  for (const event of ['workflow_dispatch', 'push']) {
+    test(`${command}: reusable inputs on ${event} keep filters, configuration, and update policy`, async () => {
+      const result = await snapshotRequest(name, { event, ref: headSha, platform: 'macos', configuration: 'all', update: true, onlyTesting: target });
+      assert.equal(result.outputs.ref, headSha);
+      assert.equal(result.outputs['ios-requested'], 'false');
+      assert.equal(result.outputs['macos-requested'], 'true');
+      assert.equal(result.outputs['update-reference'], 'true');
+      assert.equal(result.outputs['only-testing'], target);
+      assert.equal(JSON.parse(result.outputs['configuration-matrix']).length, 4);
+      assert.equal(result.statuses.length, 0);
+      await assert.rejects(snapshotRequest(name, { event, ref: 'main' }), /full commit SHA/);
+    });
+  }
+  for (const job of Object.values(workflows[name].jobs).filter(job => !job.uses)) {
+    for (const status of ['success', 'failure', 'cancelled']) {
+      test(`${job.name}: reports ${status} on the selected configuration status`, async () => {
+        const step = job.steps.find(step => step.name === 'Complete PR status');
+        const statusContext = `${label} / iOS / openswiftui-renderer-iag / Selected`;
+        const result = await scriptRun(step.with.script, { repo: { owner: 'OpenSwiftUIProject', repo: 'OpenSwiftUI' }, runId: 123 }, {
+          STATUS_SHA: headSha, STATUS_CONTEXT: statusContext, JOB_STATUS: status, CONFIGURATION_NAME: 'openswiftui-renderer-iag',
+        });
+        assert.equal(result.statuses[0].sha, headSha);
+        assert.equal(result.statuses[0].context, statusContext);
+        assert.equal(result.statuses[0].state, status === 'cancelled' ? 'error' : status);
+      });
+    }
+  }
 }

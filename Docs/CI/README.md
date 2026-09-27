@@ -9,7 +9,7 @@ Post one command in a new PR comment:
 | Workflow | Command | Default selection |
 | --- | --- | --- |
 | [UI tests](UITest.md) | `/uitest [platform] [configuration] [update]` | iOS and macOS, default configurations |
-| UX tests | `/uxtest [all\|ios\|macos]` | iOS and macOS |
+| UX tests | `/uxtest [platform] [configuration] [update] [only-testing=<identifier>]` | iOS and macOS, default configurations |
 | Compatibility tests | `/compatibilitytest [all\|ios\|macos]` | iOS and macOS |
 | Stdout Renderer | `/stdout-renderer [all\|attributegraph\|compute]` | AttributeGraph and Compute on macOS, Compute on Linux |
 
@@ -19,6 +19,8 @@ Examples:
 /uxtest
 /uxtest ios
 /uxtest macos
+/uxtest ios osui-iag update
+/uxtest macos all-configs only-testing=OpenSwiftUIUXTests/TapGestureUXTests
 /compatibilitytest
 /compatibilitytest ios
 /compatibilitytest macos
@@ -27,12 +29,12 @@ Examples:
 /stdout-renderer attributegraph
 ```
 
-Only comments from repository owners, members, and collaborators are accepted. Ordinary issue comments and unsupported commands do not run the checks. The UX, compatibility, and Stdout Renderer commands require an open PR and accept at most one target. Their target names are case-insensitive.
+Only comments from repository owners, members, and collaborators are accepted. Ordinary issue comments and unsupported commands do not run the checks. All commands require an open PR. Compatibility and Stdout Renderer commands accept at most one target. Platform, target, and configuration names are case-insensitive; test identifiers retain their case.
 
 The workflows check out the PR head commit resolved when the command is accepted. Same-repository PRs receive pending and final commit statuses for each selected target:
 
-- `UX Tests / iOS`
-- `UX Tests / macOS`
+- `UX Tests / iOS / <configuration>`
+- `UX Tests / macOS / <configuration>`
 - `Compatibility tests / iOS`
 - `Compatibility tests / macOS`
 - `Stdout Renderer / macOS / AttributeGraph`
@@ -53,29 +55,42 @@ Use the GitHub Actions **Run workflow** control or the GitHub CLI:
 ```shell
 gh workflow run uxtests.yml --ref main -f platform=all
 gh workflow run uxtests.yml --ref main -f platform=ios
+gh workflow run uxtests.yml --ref main -f platform=ios -f configuration=openswiftui-renderer-iag -f update_reference=true -f 'only-testing=OpenSwiftUIUXTests/TapGestureUXTests'
 gh workflow run compatibility_tests.yml --ref main -f platform=all
 gh workflow run compatibility_tests.yml --ref main -f platform=ios
 gh workflow run stdout_renderer.yml --ref main -f backend=all
 gh workflow run stdout_renderer.yml --ref main -f backend=Compute
 ```
 
-Manual dispatch runs the selected branch or tag. See [UI Test CI](UITest.md) for its dispatch inputs and configuration aliases.
+Manual dispatch runs the selected branch or tag. UI and UX tests use the same dispatch inputs and configuration aliases described in [UI Test CI](UITest.md).
 
 ## UX tests
 
-Each selected platform runs `SUI_UXTests` first, then `OSUI_UXTests`. Both use
-the same interaction tests in `OpenSwiftUIUXTests`. The OpenSwiftUI configuration
-uses the OpenSwiftUI renderer with Compute (IAG), pinned by `mise.compute.toml`.
-UX tests do not record snapshot reference images or offer renderer selection.
+Each selected platform runs `OSUI_UXTests` against persistent SnapshotTesting
+reference images. Only `update` or `update_reference=true` runs `SUI_UXTests`
+first to record references. Use update for the first run and when expected
+images change. Missing references fail verification without starting SwiftUI.
 
-Both schemes run even if the first fails. A test failure or zero executed tests
-in either scheme fails the platform check. Test execution is serial, and each
-scheme has a separate DerivedData directory. Logs and `.xcresult` bundles are
-uploaded for seven days after successful and failed runs.
+UX tests share UI test command parsing, configuration matrices, reference
+storage, recording locks, and failure collection. The default configurations
+are `swiftui-renderer-ag` and `openswiftui-renderer-iag`; `all-configs` selects
+all four renderer and graph combinations. Compute uses `mise.compute.toml`.
+The same `only-testing` identifier applies to recording and verification.
+Selected runs append ` / Selected` to their commit status context and cannot
+report a full-suite `verified-sha`.
+
+SnapshotTesting reports recording issues as test failures. CI accepts exit
+status 65 from SwiftUI only when every failure is a recording issue and
+reference images exist. A successful interaction test without snapshots does
+not need to produce images. Other recording failures stop verification.
+Missing results, zero executed tests, and skipped-only selections fail the
+check. Test execution is serial. Failed runs upload logs, snapshot differences,
+and zipped `.xcresult` bundles for seven days; temporary build files are removed.
 
 Other workflows can call `.github/workflows/uxtests.yml` with a full commit SHA
-in `ref` and `platform: all`, `ios`, or `macos`. The `verified-sha` output is set
-only when both platforms pass on the same commit.
+in `ref`, plus `platform`, `configuration`, `update_reference`, and
+`only-testing`. The `verified-sha` output is set only when full suites pass on
+both platforms at the same commit.
 
 ## Pre-release checks
 
@@ -85,8 +100,8 @@ Run all regular and optional checks on one commit with:
 gh workflow run release_checks.yml --ref main
 ```
 
-This runs macOS, iOS, Ubuntu, all UI test configurations on both platforms,
-UX and compatibility tests on both platforms, both Stdout Renderer backends on macOS,
+This runs macOS, iOS, Ubuntu, all UI and UX test configurations on both platforms,
+compatibility tests on both platforms, both Stdout Renderer backends on macOS,
 and the Compute Stdout Renderer on Linux.
 The standalone workflow creates no tag or release. Version tag pushes start
 the release entry, which calls the same checks before building signed artifacts

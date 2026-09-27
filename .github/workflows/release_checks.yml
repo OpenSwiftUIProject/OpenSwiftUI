@@ -81,6 +81,8 @@ jobs:
     with:
       ref: ${{ needs.prepare.outputs.sha }}
       platform: all
+      configuration: all
+      update_reference: false
 
   compatibility:
     needs: prepare

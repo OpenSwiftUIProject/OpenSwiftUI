@@ -8,10 +8,16 @@ When the UI tests run locally without `SNAPSHOT_REFERENCE_DIR`, the test helper 
 Example/ReferenceImages/macOS/15.7.4
 ```
 
-GitHub Actions uses a persistent machine-local reference image store instead:
+UI and UX test jobs in GitHub Actions use a persistent machine-local reference image store instead:
 
 ```text
 /Volumes/Workspace/OpenSwiftUI_CI/ReferenceImages/
 ```
 
-The workflow injects that absolute path into the generated test schemes only while running UI tests in CI. The generated snapshots remain ignored by git so local or CI recording does not add image churn to normal commits.
+The workflow passes that root to the test process with `TEST_RUNNER_SNAPSHOT_REFERENCE_DIR`. UI and UX snapshots use separate test module directories below the platform and OS version. The generated snapshots remain ignored by git so local or CI recording does not add image churn to normal commits.
+
+UX test jobs reuse these references by default. An explicit `update` request
+records SwiftUI references before OpenSwiftUI verification, including for the
+initial baseline. UI test jobs also record when their references are missing.
+Both test families use the same recording lock. Failed runs upload reference
+and failed images found in the test log, along with logs and result bundles.
