@@ -1,6 +1,6 @@
 # UI Tests
 
-Follow the nearest test under `Example/OpenSwiftUIUITests`.
+Follow the nearest test under `Example/Tests/OpenSwiftUIUITests`.
 
 ## Coverage
 

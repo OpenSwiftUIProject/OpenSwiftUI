@@ -1,4 +1,4 @@
-name: UI Tests
+name: Interaction Tests
 
 on:
   workflow_call:
@@ -21,7 +21,7 @@ on:
     outputs:
       verified-sha:
         description: Commit verified on both platforms
-        value: ${{ jobs.ios_uitest.outputs.sha == jobs.macos_uitest.outputs.sha && jobs.ios_uitest.outputs.sha || '' }}
+        value: ${{ jobs.ios_interaction_test.outputs.sha == jobs.macos_interaction_test.outputs.sha && jobs.ios_interaction_test.outputs.sha || '' }}
   workflow_dispatch:
     inputs:
       platform:
@@ -34,17 +34,17 @@ on:
           - ios
           - macos
       update_reference:
-        description: Update reference images before running UI tests
+        description: Update reference images before running interaction tests
         required: false
         default: false
         type: boolean
       only-testing:
-        description: 'Optional test identifier (e.g. OpenSwiftUIUITests/TextUITests/dateFormatStyleExample())'
+        description: 'Optional test identifier (e.g. OpenSwiftUIInteractionTests/TapGestureInteractionTests)'
         required: false
         default: ''
         type: string
       configuration:
-        description: UI test configuration set
+        description: interaction test configuration set
         required: false
         default: default
         type: choice
@@ -65,22 +65,22 @@ permissions:
   statuses: write
 
 jobs:
-  prepare_uitests:
+  prepare_interaction_tests:
     uses: ./.github/workflows/prepare_snapshot_tests.yml
     with:
-      command: /uitest
-      status-context-prefix: UI Tests
+      command: /interactiontest
+      status-context-prefix: Interaction Tests
       ref: ${{ inputs.ref || '' }}
       platform: ${{ inputs.platform || 'all' }}
       configuration: ${{ inputs.configuration || 'default' }}
       update_reference: ${{ inputs.update_reference || false }}
       only-testing: ${{ inputs.only-testing || '' }}
 
-  ios_uitest:
-    name: Execute UI tests on iOS (${{ matrix.configuration.id }})
+  ios_interaction_test:
+    name: Execute interaction tests on iOS (${{ matrix.configuration.id }})
     outputs:
-      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_uitests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
-    needs: prepare_uitests
+      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_interaction_tests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+    needs: prepare_interaction_tests
     permissions:
       contents: read
       issues: read
@@ -88,24 +88,25 @@ jobs:
       statuses: write
       id-token: write
     if: >-
-      needs.prepare_uitests.outputs.ios-requested == 'true'
+      needs.prepare_interaction_tests.outputs.ios-requested == 'true'
     strategy:
       fail-fast: false
       matrix:
         xcode-version: ["26.6"]
         release: [2024]
         ios-version: ["18.5"]
-        configuration: ${{ fromJSON(needs.prepare_uitests.outputs.configuration-matrix) }}
+        configuration: ${{ fromJSON(needs.prepare_interaction_tests.outputs.configuration-matrix) }}
         include:
           - ios-version: "18.5"
             ios-simulator-name: "iPhone 16 Pro"
+    timeout-minutes: 90
     runs-on:
       - xcode-26.6
       - ios-simulator-18.5
     env:
-      STATUS_CONTEXT: UI Tests / iOS / ${{ matrix.configuration.id }}${{ needs.prepare_uitests.outputs.only-testing != '' && ' / Selected' || '' }}
-      STATUS_ENABLED: ${{ needs.prepare_uitests.outputs.status-enabled }}
-      STATUS_SHA: ${{ needs.prepare_uitests.outputs.ref }}
+      STATUS_CONTEXT: Interaction Tests / iOS / ${{ matrix.configuration.id }}${{ needs.prepare_interaction_tests.outputs.only-testing != '' && ' / Selected' || '' }}
+      STATUS_ENABLED: ${{ needs.prepare_interaction_tests.outputs.status-enabled }}
+      STATUS_SHA: ${{ needs.prepare_interaction_tests.outputs.ref }}
       CONFIGURATION_NAME: ${{ matrix.configuration.id }}
       OPENSWIFTUI_WERROR: 0 # Disable it to avoid enable OAG's werror and hit conflicts
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.configuration.attributegraph }}
@@ -131,25 +132,25 @@ jobs:
               sha: process.env.STATUS_SHA,
               state: "pending",
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: `iOS UI tests (${process.env.CONFIGURATION_NAME}) are running.`,
+              description: `iOS interaction tests (${process.env.CONFIGURATION_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
         id: checkout
         with:
-          repository: ${{ needs.prepare_uitests.outputs.repository || github.repository }}
-          ref: ${{ needs.prepare_uitests.outputs.ref || github.sha }}
+          repository: ${{ needs.prepare_interaction_tests.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_interaction_tests.outputs.ref || github.sha }}
           persist-credentials: false
-      - name: Run UI Tests
+      - name: Run Interaction Tests
         id: run-tests
-        uses: ./.github/actions/uitests
+        uses: ./.github/actions/interactiontests
         with:
           xcode-version: ${{ matrix.xcode-version }}
           platform: ios
           destination: "platform=iOS Simulator,OS=${{ matrix.ios-version }},name=${{ matrix.ios-simulator-name }}"
-          artifact-name: ios-uitest-snapshots-${{ matrix.ios-version }}-${{ matrix.configuration.id }}
-          update-reference: ${{ needs.prepare_uitests.outputs.update-reference == 'true' }}
-          only-testing: ${{ needs.prepare_uitests.outputs.only-testing }}
+          artifact-name: ios-interactiontest-snapshots-${{ matrix.ios-version }}-${{ matrix.configuration.id }}
+          update-reference: ${{ needs.prepare_interaction_tests.outputs.update-reference == 'true' }}
+          only-testing: ${{ needs.prepare_interaction_tests.outputs.only-testing }}
           compute: ${{ matrix.configuration.compute == 1 }}
       - name: Require successful tests
         if: steps.run-tests.outputs.test-result != 'success'
@@ -166,8 +167,8 @@ jobs:
               process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
             const description = process.env.JOB_STATUS === "cancelled" ?
-              "iOS UI tests were cancelled." :
-              `iOS UI tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
+              "iOS interaction tests were cancelled." :
+              `iOS interaction tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,
@@ -178,11 +179,11 @@ jobs:
               context: process.env.STATUS_CONTEXT,
             });
 
-  macos_uitest:
-    name: Execute UI tests on macOS (${{ matrix.configuration.id }})
+  macos_interaction_test:
+    name: Execute interaction tests on macOS (${{ matrix.configuration.id }})
     outputs:
-      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_uitests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
-    needs: prepare_uitests
+      sha: ${{ steps.run-tests.outputs.test-result == 'success' && needs.prepare_interaction_tests.outputs.only-testing == '' && steps.checkout.outputs.commit || '' }}
+    needs: prepare_interaction_tests
     permissions:
       contents: read
       issues: read
@@ -190,22 +191,23 @@ jobs:
       statuses: write
       id-token: write
     if: >-
-      needs.prepare_uitests.outputs.macos-requested == 'true'
+      needs.prepare_interaction_tests.outputs.macos-requested == 'true'
     strategy:
       fail-fast: false
       matrix:
         os: [macos-15]
         xcode-version: ["26.6"]
         release: [2024]
-        configuration: ${{ fromJSON(needs.prepare_uitests.outputs.configuration-matrix) }}
+        configuration: ${{ fromJSON(needs.prepare_interaction_tests.outputs.configuration-matrix) }}
+    timeout-minutes: 90
     runs-on:
       - self-hosted
       - ${{ matrix.os }}
       - xcode-26.6
     env:
-      STATUS_CONTEXT: UI Tests / macOS / ${{ matrix.configuration.id }}${{ needs.prepare_uitests.outputs.only-testing != '' && ' / Selected' || '' }}
-      STATUS_ENABLED: ${{ needs.prepare_uitests.outputs.status-enabled }}
-      STATUS_SHA: ${{ needs.prepare_uitests.outputs.ref }}
+      STATUS_CONTEXT: Interaction Tests / macOS / ${{ matrix.configuration.id }}${{ needs.prepare_interaction_tests.outputs.only-testing != '' && ' / Selected' || '' }}
+      STATUS_ENABLED: ${{ needs.prepare_interaction_tests.outputs.status-enabled }}
+      STATUS_SHA: ${{ needs.prepare_interaction_tests.outputs.ref }}
       CONFIGURATION_NAME: ${{ matrix.configuration.id }}
       OPENSWIFTUI_WERROR: 0
       OPENSWIFTUI_OPENATTRIBUTESHIMS_ATTRIBUTEGRAPH: ${{ matrix.configuration.attributegraph }}
@@ -231,25 +233,25 @@ jobs:
               sha: process.env.STATUS_SHA,
               state: "pending",
               target_url: `${process.env.GITHUB_SERVER_URL}/${owner}/${repo}/actions/runs/${context.runId}`,
-              description: `macOS UI tests (${process.env.CONFIGURATION_NAME}) are running.`,
+              description: `macOS interaction tests (${process.env.CONFIGURATION_NAME}) are running.`,
               context: process.env.STATUS_CONTEXT,
             });
       - uses: actions/checkout@v4
         id: checkout
         with:
-          repository: ${{ needs.prepare_uitests.outputs.repository || github.repository }}
-          ref: ${{ needs.prepare_uitests.outputs.ref || github.sha }}
+          repository: ${{ needs.prepare_interaction_tests.outputs.repository || github.repository }}
+          ref: ${{ needs.prepare_interaction_tests.outputs.ref || github.sha }}
           persist-credentials: false
-      - name: Run UI Tests
+      - name: Run Interaction Tests
         id: run-tests
-        uses: ./.github/actions/uitests
+        uses: ./.github/actions/interactiontests
         with:
           xcode-version: ${{ matrix.xcode-version }}
           platform: macos
           destination: "platform=macOS"
-          artifact-name: macos-uitest-snapshots-${{ matrix.configuration.id }}
-          update-reference: ${{ needs.prepare_uitests.outputs.update-reference == 'true' }}
-          only-testing: ${{ needs.prepare_uitests.outputs.only-testing }}
+          artifact-name: macos-interactiontest-snapshots-${{ matrix.configuration.id }}
+          update-reference: ${{ needs.prepare_interaction_tests.outputs.update-reference == 'true' }}
+          only-testing: ${{ needs.prepare_interaction_tests.outputs.only-testing }}
           compute: ${{ matrix.configuration.compute == 1 }}
       - name: Require successful tests
         if: steps.run-tests.outputs.test-result != 'success'
@@ -266,8 +268,8 @@ jobs:
               process.env.JOB_STATUS === "cancelled" ? "error" :
               "failure";
             const description = process.env.JOB_STATUS === "cancelled" ?
-              "macOS UI tests were cancelled." :
-              `macOS UI tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
+              "macOS interaction tests were cancelled." :
+              `macOS interaction tests (${process.env.CONFIGURATION_NAME}) completed with ${state}.`;
             await github.rest.repos.createCommitStatus({
               owner,
               repo,

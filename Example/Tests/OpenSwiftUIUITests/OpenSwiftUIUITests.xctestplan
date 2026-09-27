@@ -1,0 +1,41 @@
+{
+  "configurations" : [
+    {
+      "id" : "55659600-65E0-446F-B082-2A5E90444231",
+      "name" : "Configuration 1",
+      "options" : {
+
+      }
+    }
+  ],
+  "defaultOptions" : {
+    "environmentVariableEntries" : [
+      {
+        "enabled" : false,
+        "key" : "SWIFTUI_PRINT_TREE",
+        "value" : "1"
+      },
+      {
+        "key" : "SNAPSHOT_REFERENCE_DIR",
+        "value" : "$(PROJECT_DIR)\/Tests\/ReferenceImages"
+      }
+    ],
+    "language" : "en",
+    "region" : "US",
+    "targetForVariableExpansion" : {
+      "containerPath" : "container:Example.xcodeproj",
+      "identifier" : "832C2848F3ED250E86C0402A",
+      "name" : "TestingHost"
+    }
+  },
+  "testTargets" : [
+    {
+      "target" : {
+        "containerPath" : "container:Example.xcodeproj",
+        "identifier" : "E3439414A64A65510C1A69E1",
+        "name" : "OpenSwiftUIUITests"
+      }
+    }
+  ],
+  "version" : 1
+}

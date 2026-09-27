@@ -20,7 +20,7 @@ Example/Example.xcodeproj/project.xcworkspace
 Example/Example.xcodeproj/xcshareddata
 
 __Snapshots__
-Example/ReferenceImages/**/*.png
+Example/Tests/ReferenceImages/**/*.png
 
 .claude/*
 !.claude/skills/

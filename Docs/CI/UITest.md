@@ -2,6 +2,8 @@
 
 The UI test workflow is defined in `.github/workflows/uitests.yml` and uses the shared action in `.github/actions/uitests/action.yml`.
 
+UI and interaction tests share command parsing in `.github/workflows/prepare_snapshot_tests.yml` and the same test action. interaction tests expose these parameters through `/interactiontest` and `interaction_tests.yml`, but require an explicit update to record references, including the first run.
+
 UI tests run only through manual dispatch or a trusted PR comment. Pushes and pull request updates do not run them automatically. See [Optional CI workflows](README.md) for the other optional checks.
 
 The workflow uses the same Example setup entry point as local development. Non-Compute configurations run `Example/setup.sh`, and Compute configurations run `Example/setup.sh --compute`.

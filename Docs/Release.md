@@ -28,7 +28,7 @@ By default, the release gate requires all of these checks:
 | iOS tests | Existing iOS test matrix |
 | Ubuntu tests | Existing Linux test matrix |
 | UI tests | iOS and macOS; all four renderer and attribute graph configurations |
-| UX tests | iOS and macOS; SwiftUI, then OpenSwiftUI with the OpenSwiftUI renderer and Compute (IAG) |
+| interaction tests | iOS and macOS; SwiftUI, then OpenSwiftUI with the OpenSwiftUI renderer and Compute (IAG) |
 | Compatibility tests | iOS and macOS |
 | Stdout Renderer | AttributeGraph and Compute on macOS |
 

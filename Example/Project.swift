@@ -185,10 +185,10 @@ let hostedTestsSettings: SettingsDictionary = [
 ]
 
 let uiTestsSettings = hostedTestsSettings.merging([
-    "SWIFT_OBJC_BRIDGING_HEADER": "OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h",
+    "SWIFT_OBJC_BRIDGING_HEADER": "Tests/OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h",
 ])
 
-let uxTestsSettings = hostedTestsSettings.merging([
+let interactionTestsSettings = hostedTestsSettings.merging([
     "SUPPORTED_PLATFORMS": "iphoneos iphonesimulator macosx",
     "TARGETED_DEVICE_FAMILY": "1,2",
 ])
@@ -341,9 +341,10 @@ let targets: [Target] = [
         deploymentTargets: deploymentTargets,
         infoPlist: .default,
         sources: [
-            "OpenSwiftUIUITests/**/*.swift",
-            "OpenSwiftUIUITests/**/*.m",
-            "OpenSwiftUIUITests/**/*.c",
+            "Tests/OpenSwiftUIUITests/**/*.swift",
+            "Tests/OpenSwiftUIUITests/**/*.m",
+            "Tests/OpenSwiftUIUITests/**/*.c",
+            "Tests/Shared/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
@@ -353,21 +354,23 @@ let targets: [Target] = [
         settings: settings(base: uiTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUITests.xcconfig")
     ),
     .target(
-        name: "OpenSwiftUIUXTests",
+        name: "OpenSwiftUIInteractionTests",
         destinations: [.iPhone, .iPad, .mac],
         product: .unitTests,
-        bundleId: "org.openswiftuiproject.openswiftui.$(OPENSWIFTUI_TARGET_BUNDLE_ID).OpenSwiftUIUXTests",
+        bundleId: "org.openswiftuiproject.openswiftui.$(OPENSWIFTUI_TARGET_BUNDLE_ID).OpenSwiftUIInteractionTests",
         deploymentTargets: .multiplatform(iOS: "18.0", macOS: "15.0"),
         infoPlist: .default,
         sources: [
-            "OpenSwiftUIUXTests/**/*.swift",
+            "Tests/OpenSwiftUIInteractionTests/**/*.swift",
+            "Tests/Shared/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
             .external(name: "Hammer"),
             .external(name: "OpenSwiftUITestsSupport"),
+            .external(name: "SnapshotTesting"),
         ] + privateFrameworkDependencies,
-        settings: settings(base: uxTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUXTests.xcconfig")
+        settings: settings(base: interactionTestsSettings, xcconfig: "../Configurations/OpenSwiftUIInteractionTests.xcconfig")
     ),
 ]
 
@@ -490,11 +493,11 @@ let schemes: [Scheme] = [
         analyzeAction: .analyzeAction(configuration: swiftUIDebug)
     ),
     .scheme(
-        name: "OSUI_UXTests",
+        name: "OSUI_InteractionTests",
         shared: true,
-        buildAction: .buildAction(targets: ["OpenSwiftUIUXTests"]),
+        buildAction: .buildAction(targets: ["OpenSwiftUIInteractionTests"]),
         testAction: .targets(
-            [.testableTarget(target: "OpenSwiftUIUXTests", parallelization: .disabled)],
+            [.testableTarget(target: "OpenSwiftUIInteractionTests", parallelization: .disabled)],
             arguments: testArguments,
             configuration: openSwiftUIDebug,
             expandVariableFromTarget: "TestingHost",
@@ -503,11 +506,11 @@ let schemes: [Scheme] = [
         analyzeAction: .analyzeAction(configuration: openSwiftUIDebug)
     ),
     .scheme(
-        name: "SUI_UXTests",
+        name: "SUI_InteractionTests",
         shared: true,
-        buildAction: .buildAction(targets: ["OpenSwiftUIUXTests"]),
+        buildAction: .buildAction(targets: ["OpenSwiftUIInteractionTests"]),
         testAction: .targets(
-            [.testableTarget(target: "OpenSwiftUIUXTests", parallelization: .disabled)],
+            [.testableTarget(target: "OpenSwiftUIInteractionTests", parallelization: .disabled)],
             arguments: testArguments,
             configuration: swiftUIDebug,
             expandVariableFromTarget: "TestingHost",
@@ -544,7 +547,8 @@ let project = Project(
         "../Configurations/OpenSwiftUI-Info.plist",
         "../Configurations/Shared/basic/**",
         "Modules/**",
-        "ReferenceImages/**",
-        "OpenSwiftUIUITests/OpenSwiftUIUITests.xctestplan",
+        "Tests/README.md",
+        "Tests/ReferenceImages/**",
+        "Tests/OpenSwiftUIUITests/OpenSwiftUIUITests.xctestplan",
     ]
 )

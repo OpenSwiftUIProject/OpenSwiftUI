@@ -97,19 +97,19 @@ test("every required check must succeed on the candidate SHA", () => {
   }
 });
 
-test("UX checks cannot be omitted from a release or verify another commit", () => {
+test("Interaction checks cannot be omitted from a release or verify another commit", () => {
   const results = Object.fromEntries(release.requiredChecks.map(name => [name, {
     result: "success", outputs: { "verified-sha": sha },
   }]));
-  delete results.ux;
-  assert.throws(() => release.assertChecks(results, sha), /ux/);
+  delete results.interaction;
+  assert.throws(() => release.assertChecks(results, sha), /interaction/);
   for (const result of ["failure", "cancelled", "skipped"]) {
-    results.ux = { result, outputs: { "verified-sha": sha } };
-    assert.throws(() => release.assertChecks(results, sha), /ux/);
+    results.interaction = { result, outputs: { "verified-sha": sha } };
+    assert.throws(() => release.assertChecks(results, sha), /interaction/);
   }
-  results.ux = { result: "success", outputs: { "verified-sha": otherSHA } };
-  assert.throws(() => release.assertChecks(results, sha), /ux/);
-  results.ux.outputs["verified-sha"] = sha;
+  results.interaction = { result: "success", outputs: { "verified-sha": otherSHA } };
+  assert.throws(() => release.assertChecks(results, sha), /interaction/);
+  results.interaction.outputs["verified-sha"] = sha;
   release.assertChecks(results, sha);
 });
 
