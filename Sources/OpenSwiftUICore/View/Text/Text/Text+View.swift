@@ -1139,17 +1139,72 @@ extension ResolvedStyledText {
     }
 }
 
-// MARK: - CodableResolvedStyledText [WIP]
+// MARK: - CodableResolvedStyledText
 
 struct CodableResolvedStyledText: ProtobufMessage {
     var base: ResolvedStyledText
 
     init(from decoder: inout ProtobufDecoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var storage: NSAttributedString?
+        var stylePadding = EdgeInsets.zero
+        var layoutMargins = EdgeInsets.zero
+        var layoutProperties = TextLayoutProperties()
+        var transitions: [Text.ResolvedProperties.Transition] = []
+        var features = Text.ResolvedProperties.Features()
+        // Configuration (tag 4) is encode-only metadata.
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                let value: CodableAttributedString = try decoder.messageField(field)
+                storage = value.base
+            case 2:
+                stylePadding = try decoder.messageField(field)
+            case 3:
+                layoutMargins = try decoder.messageField(field)
+            case 5:
+                layoutProperties = try decoder.messageField(field)
+            case 6:
+                let transition: ContentTransition = try decoder.messageField(field)
+                transitions.append(.init(transition: transition))
+            case 7:
+                features = .init(rawValue: UInt16(truncatingIfNeeded: try decoder.uintField(field)))
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        guard let storage else {
+            throw ProtobufDecoder.DecodingError.failed
+        }
+        base = ResolvedStyledText.styledText(
+            storage: storage,
+            layoutProperties: layoutProperties,
+            layoutMargins: layoutMargins,
+            stylePadding: stylePadding,
+            archiveOptions: .isArchived,
+            isCollapsible: false,
+            features: features,
+            suffix: .none,
+            attachments: .init(),
+            styles: [],
+            transitions: transitions,
+            scaleFactorOverride: nil
+        )
     }
 
     func encode(to encoder: inout ProtobufEncoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        if let storage = base.storage {
+            try encoder.messageField(1, CodableAttributedString(storage))
+        }
+        try encoder.messageField(2, base.stylePadding, defaultValue: .zero)
+        try encoder.messageField(3, base.layoutMargins, defaultValue: .zero)
+        if let storage = base.storage {
+            try encoder.codableField(4, storage.resolvableAttributeConfiguration)
+        }
+        try encoder.messageField(5, base.layoutProperties)
+        for transition in base.transitions {
+            try encoder.messageField(6, transition.transition)
+        }
+        encoder.uintField(7, UInt(base.features.rawValue))
     }
 }
 

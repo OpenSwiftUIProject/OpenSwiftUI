@@ -175,6 +175,21 @@ extension ResolvableAttributeConfiguration.Schedule: InvalidationConfigurtaionPr
 
 extension TimeDataFormatting.Resolvable: InvalidationConfigurtaionProvider {}
 
+extension NSAttributedString {
+    package var resolvableAttributeConfiguration: ResolvableAttributeConfiguration {
+        guard isDynamic else {
+            return .none
+        }
+        return updateSchedule.legacyInvalidationConfiguration ?? .none
+    }
+}
+
+extension TimelineSchedule {
+    fileprivate var legacyInvalidationConfiguration: ResolvableAttributeConfiguration? {
+        (self as? any InvalidationConfigurtaionProvider)?.invalidationConfiguration
+    }
+}
+
 // MARK: - ResolvableAttributeConfiguration + Codable
 
 extension ResolvableAttributeConfiguration: Codable {
