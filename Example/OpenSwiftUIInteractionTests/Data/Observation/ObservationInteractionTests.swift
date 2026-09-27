@@ -12,7 +12,7 @@ import SwiftUI
 import Testing
 
 @MainActor
-@Suite
+@Suite(.tags(.interaction))
 struct ObservationInteractionTests {
     @Test
     func stateModelMutationUpdatesBody() async throws {

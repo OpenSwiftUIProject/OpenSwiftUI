@@ -100,6 +100,8 @@ and Mac. It uses the
 [OpenSwiftUIProject Hammer fork](https://github.com/OpenSwiftUIProject/Hammer)
 to send touch events on iOS and mouse events on macOS.
 
+Mark interaction test suites with `.tags(.interaction)`.
+
 1. Run `SUI_InteractionTests` to create or update reference images with SwiftUI.
 2. Run `OSUI_InteractionTests` on the same destination to verify OpenSwiftUI against those images.
 

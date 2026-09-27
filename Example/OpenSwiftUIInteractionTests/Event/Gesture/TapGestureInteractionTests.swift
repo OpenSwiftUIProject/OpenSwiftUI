@@ -12,7 +12,7 @@ import SnapshotTesting
 import Testing
 
 @MainActor
-@Suite(.snapshots(record: .never, diffTool: diffTool))
+@Suite(.tags(.interaction), .snapshots(record: .never, diffTool: diffTool))
 struct TapGestureInteractionTests {
     @Test(arguments: [1, 2])
     func onTapGestureIncrementsCount(tapCount: Int) async throws {
