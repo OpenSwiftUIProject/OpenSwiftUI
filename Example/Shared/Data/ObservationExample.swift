@@ -10,31 +10,55 @@ import Observation
 import SwiftUI
 #endif
 
+struct ObservationExample: View {
+    var body: some View {
+        VStack {
+            ObservationColorExample()
+            Divider()
+            ObservationCounterExample()
+        }
+    }
+}
+
 @Observable
-private class Model {
+private class ColorModel {
     var showRed = false
 }
 
-struct ObservationExample: View {
-    @State private var model = Model()
-
-    private var showRed: Bool {
-        get { model.showRed }
-        nonmutating set { model.showRed = newValue }
-    }
+struct ObservationColorExample: View {
+    @State private var model = ColorModel()
 
     var body: some View {
         VStack {
-            Color(platformColor: showRed ? .red : .blue)
-                .frame(width: showRed ? 200 : 400, height: showRed ? 200 : 400)
-        }
-        .animation(.spring, value: showRed)
-        .onTapGesture {
-            showRed.toggle()
+            Color(model.showRed ? .red : .blue)
+            Text("Toggle")
+                .onTapGesture {
+                    model.showRed.toggle()
+                }
         }
     }
 }
 
 #Preview {
-    ObservationExample()
+    ObservationColorExample()
+}
+
+@Observable
+private final class CounterModel {
+    var count = 0
+}
+
+struct ObservationCounterExample: View {
+    @State private var model = CounterModel()
+
+    var body: some View {
+        Text("Tap to increase: \(model.count)")
+            .onTapGesture {
+                model.count += 1
+            }
+    }
+}
+
+#Preview {
+    ObservationCounterExample()
 }

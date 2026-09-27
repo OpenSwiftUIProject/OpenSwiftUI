@@ -140,7 +140,7 @@ private func installObservationSlow<T>(
     accessList: ObservationTracking._AccessList,
     attribute: Attribute<T>
 ) {
-    guard let subgraph = attribute.identifier.subgraph2 else {
+    guard let subgraph = attribute.identifier.subgraphOrNil else {
         return
     }
     let weakViewGraph = WeakUncheckedSendable(ViewGraph.current)
