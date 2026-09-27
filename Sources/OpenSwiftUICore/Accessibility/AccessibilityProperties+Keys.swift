@@ -6,6 +6,7 @@
 //  Status: WIP
 
 package import Foundation
+package import libAccessibilityPrivate
 
 // MARK: - AccessibilityProperties + Keys
 
@@ -80,8 +81,6 @@ extension AccessibilityProperties {
     }
     #endif
 
-    // TODO: Add AXAutomationType.
-    #if false
     package struct AutomationTypeKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AXAutomationType.self
     }
@@ -90,7 +89,6 @@ extension AccessibilityProperties {
         get { self[AutomationTypeKey.self] }
         set { self[AutomationTypeKey.self] = newValue }
     }
-    #endif
 
     package struct IdentifierKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityIdentifierStorage.self
