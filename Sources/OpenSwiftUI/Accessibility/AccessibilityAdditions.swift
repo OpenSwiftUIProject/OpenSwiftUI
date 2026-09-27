@@ -11,13 +11,14 @@ import OpenSwiftUICore
 #if canImport(ObjectiveC)
 import ObjectiveC
 #endif
+import COpenSwiftUI
 
 // MARK: - NSObject + AccessibilityNode
 
+#if canImport(ObjectiveC)
+@objc(OpenSwiftUIAccessibilityPrivate)
+#endif
 extension NSObject {
-    #if canImport(ObjectiveC)
-    @objc
-    #endif
     var accessibilityNodeForPlatformElement: AccessibilityNode? {
         get {
             #if canImport(ObjectiveC)
