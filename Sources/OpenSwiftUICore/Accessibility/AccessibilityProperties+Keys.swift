@@ -137,8 +137,6 @@ extension AccessibilityProperties {
         set { self[LocaleKey.self] = newValue }
     }
 
-    // TODO: Add LinkDestination in OpenSwiftUICore.
-    #if false
     package struct LinkDestinationKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = LinkDestination.Configuration.self
     }
@@ -147,7 +145,6 @@ extension AccessibilityProperties {
         get { self[LinkDestinationKey.self] }
         set { self[LinkDestinationKey.self] = newValue }
     }
-    #endif
 
     package struct RoleDescriptionKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = Text.self
