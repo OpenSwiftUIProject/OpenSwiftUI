@@ -39,7 +39,8 @@ extension Text: UnaryView, PrimitiveView {
         inputs: _ViewInputs
     ) -> _ViewOutputs {
         var newInputs = inputs
-        let allowsSelection = false // TODO: TextAllowsSelection
+        let allowsSelection = inputs.base[TextAllowsSelection.self] &&
+            !inputs.base[TextSelectionForbidden.self]
         let options = inputs.base.options
         let textRenderer = inputs.textRenderer
         var features: ResolvedProperties.Features = inputs.archivedView.isArchived ? [] : .useTextSuffix
@@ -81,8 +82,12 @@ extension Text: UnaryView, PrimitiveView {
         }
         newInputs.base.options.formUnion(.doNotScrape)
         var outputs: _ViewOutputs
-        if allowsSelection {
-            _openSwiftUIUnimplementedFailure()
+        if allowsSelection,
+           let representation = newInputs.textSelectionRepresentation {
+            outputs = representation.makeSelectableText(
+                resolvedText: resolvedText,
+                inputs: newInputs
+            )
         } else {
             outputs = makeTextChildQuery(
                 newInputs.textAccessibilityProvider,
