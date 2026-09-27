@@ -93,54 +93,7 @@ A UIKit/AppKit hosting example that manually sets up the application lifecycle a
 - Choose `SwiftUIDebug` configuration to run with SwiftUI
 - Choose `OpenSwiftUIDebug` configuration to run with OpenSwiftUI
 
-## Interaction Tests
+## Tests
 
-`OpenSwiftUIInteractionTests` runs Swift Testing suites in `TestingHost` on iPhone, iPad,
-and Mac. It uses the
-[OpenSwiftUIProject Hammer fork](https://github.com/OpenSwiftUIProject/Hammer)
-to send touch events on iOS and mouse events on macOS.
-
-Mark interaction test suites with `.tags(.interaction)`.
-
-1. Run `SUI_InteractionTests` to create or update reference images with SwiftUI.
-2. Run `OSUI_InteractionTests` on the same destination to verify OpenSwiftUI against those images.
-
-Use `withInteractionTestHost(of:)` to host a view and clean up after the test. Call the
-helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`. Keep gesture tests
-on the main actor in serialized suites because they share application windows
-and Hammer settings.
-
-Call `try await host.assertSnapshot(named:)` to compare the current hosted view
-with a reference image. It captures the same view used for interactions, so it
-preserves view state and supports more interactions after each snapshot:
-
-```swift
-try await withInteractionTestHost(of: content) { host in
-    try await host.assertSnapshot(named: "before")
-    try await host.tap()
-    try await host.waitUntil(count == 1)
-    try await host.assertSnapshot(named: "after")
-}
-```
-
-Use `.snapshots(record: .never, diffTool: diffTool)` on snapshot test suites,
-as in the UI tests. The helper uses the same recording defaults: `SUI_InteractionTests`
-records reference images and reports recording issues; `OSUI_InteractionTests` compares
-against those references. Pass `record:` to override this behavior. Reference
-images use `SNAPSHOT_REFERENCE_DIR` or `Example/ReferenceImages`, followed by the
-platform, OS version, and test file ID. Snapshot names include the hosted view's
-size. Give each case a distinct name in parameterized tests.
-
-On macOS, tests use an offscreen window to preserve application focus. Set
-`HAMMER_SHOW_TEST_WINDOW=1` in the test scheme's environment to show the window
-while debugging.
-
-CI runs `OSUI_InteractionTests` with persistent references. Request `update` or set
-`update_reference=true` to run `SUI_InteractionTests` first, including for the initial
-baseline. UI and interaction tests share platform and configuration choices, test
-filters, reference storage, and recording locks. The default configurations use
-the SwiftUI renderer with AttributeGraph and the OpenSwiftUI renderer with
-Compute. CI accepts recording issues only when no other failures are present;
-a recording failure stops verification.
-See [Optional CI workflows](../Docs/CI/README.md#interaction-tests) for dispatch and PR
-comment commands.
+See [Tests](Tests/README.md) for UI and interaction test targets, shared tags,
+snapshot recording, and reference images.

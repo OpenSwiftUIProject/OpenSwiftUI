@@ -14,7 +14,7 @@ struct ProgressViewUITests {
         openSwiftUIAssertSnapshot(of: ProgressViewExample())
     }
 
-    @Test(.tags(.org_openswiftuiproject_openswiftui.localization))
+    @Test(.tags(.localization))
     func indeterminateInitializers() {
         openSwiftUIAssertSnapshot(of: IndeterminateProgressViewExample())
     }

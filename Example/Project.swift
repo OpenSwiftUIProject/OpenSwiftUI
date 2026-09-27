@@ -185,7 +185,7 @@ let hostedTestsSettings: SettingsDictionary = [
 ]
 
 let uiTestsSettings = hostedTestsSettings.merging([
-    "SWIFT_OBJC_BRIDGING_HEADER": "OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h",
+    "SWIFT_OBJC_BRIDGING_HEADER": "Tests/OpenSwiftUIUITests/OpenSwiftUIUITests-Bridging-Header.h",
 ])
 
 let interactionTestsSettings = hostedTestsSettings.merging([
@@ -341,10 +341,10 @@ let targets: [Target] = [
         deploymentTargets: deploymentTargets,
         infoPlist: .default,
         sources: [
-            "OpenSwiftUIUITests/**/*.swift",
-            "OpenSwiftUIUITests/**/*.m",
-            "OpenSwiftUIUITests/**/*.c",
-            "TestSupport/**/*.swift",
+            "Tests/OpenSwiftUIUITests/**/*.swift",
+            "Tests/OpenSwiftUIUITests/**/*.m",
+            "Tests/OpenSwiftUIUITests/**/*.c",
+            "Tests/Shared/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
@@ -361,8 +361,8 @@ let targets: [Target] = [
         deploymentTargets: .multiplatform(iOS: "18.0", macOS: "15.0"),
         infoPlist: .default,
         sources: [
-            "OpenSwiftUIInteractionTests/**/*.swift",
-            "TestSupport/**/*.swift",
+            "Tests/OpenSwiftUIInteractionTests/**/*.swift",
+            "Tests/Shared/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
@@ -547,7 +547,8 @@ let project = Project(
         "../Configurations/OpenSwiftUI-Info.plist",
         "../Configurations/Shared/basic/**",
         "Modules/**",
-        "ReferenceImages/**",
-        "OpenSwiftUIUITests/OpenSwiftUIUITests.xctestplan",
+        "Tests/README.md",
+        "Tests/ReferenceImages/**",
+        "Tests/OpenSwiftUIUITests/OpenSwiftUIUITests.xctestplan",
     ]
 )

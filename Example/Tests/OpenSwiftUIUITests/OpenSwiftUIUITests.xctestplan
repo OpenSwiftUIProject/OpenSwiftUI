@@ -17,22 +17,22 @@
       },
       {
         "key" : "SNAPSHOT_REFERENCE_DIR",
-        "value" : "$(PROJECT_DIR)\/ReferenceImages"
+        "value" : "$(PROJECT_DIR)\/Tests\/ReferenceImages"
       }
     ],
     "language" : "en",
     "region" : "US",
     "targetForVariableExpansion" : {
-      "containerPath" : "container:Example_Legacy.xcodeproj",
-      "identifier" : "275751E22DEE1441003E467C",
+      "containerPath" : "container:Example.xcodeproj",
+      "identifier" : "832C2848F3ED250E86C0402A",
       "name" : "TestingHost"
     }
   },
   "testTargets" : [
     {
       "target" : {
-        "containerPath" : "container:Example_Legacy.xcodeproj",
-        "identifier" : "279283B82DFF11CE00234D64",
+        "containerPath" : "container:Example.xcodeproj",
+        "identifier" : "E3439414A64A65510C1A69E1",
         "name" : "OpenSwiftUIUITests"
       }
     }

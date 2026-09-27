@@ -1,6 +1,6 @@
 //
 //  SnapshotTesting.swift
-//  TestSupport
+//  Shared
 
 import Foundation
 import SnapshotTesting
