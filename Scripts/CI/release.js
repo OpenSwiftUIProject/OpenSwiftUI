@@ -177,7 +177,7 @@ async function publishRelease({ github, repo, plan }) {
   }
 }
 
-async function renderBinaryPackage(source, binary, manifest) {
+async function renderBinaryPackage(source, binary, observation, manifest) {
   validateManifest(manifest, manifest.version, manifest.sha);
   const template = await fs.readFile(path.join(binary, "Package.swift.template"), "utf8");
   const values = { VERSION: manifest.version };
@@ -193,9 +193,11 @@ async function renderBinaryPackage(source, binary, manifest) {
     /(\.package\(url:\s*"https:\/\/github\.com\/OpenSwiftUIProject\/OpenSwiftUI-spm",\s*from:\s*")[^"]+("\))/g,
     (_, prefix, suffix) => `${prefix}${manifest.version}${suffix}`,
   ));
-  const macros = path.join(binary, "Sources/OpenSwiftUIMacros");
-  await fs.rm(macros, { recursive: true, force: true });
-  await fs.cp(path.join(source, "Sources/OpenSwiftUIMacros"), macros, { recursive: true });
+  for (const [name, repository] of [["OpenSwiftUIMacros", source], ["OpenObservationMacros", observation]]) {
+    const macros = path.join(binary, "Sources", name);
+    await fs.rm(macros, { recursive: true, force: true });
+    await fs.cp(path.join(repository, "Sources", name), macros, { recursive: true });
+  }
 }
 
 module.exports = {

@@ -20,12 +20,15 @@ async function fixture(t) {
   const root = await fs.mkdtemp(path.join(os.tmpdir(), "openswiftui-binary-release-"));
   t.after(() => fs.rm(root, { recursive: true, force: true }));
   const source = path.join(root, "source");
+  const observation = path.join(root, "observation");
   const remote = path.join(root, "remote.git");
   const binary = path.join(root, "binary");
   await fs.mkdir(path.join(source, "Scripts/CI"), { recursive: true });
   await fs.mkdir(path.join(source, "Sources/OpenSwiftUIMacros"), { recursive: true });
   await fs.copyFile(path.join(__dirname, "../release.js"), path.join(source, "Scripts/CI/release.js"));
   await fs.writeFile(path.join(source, "Sources/OpenSwiftUIMacros/Macro.swift"), "// Current macros\n");
+  await fs.mkdir(path.join(observation, "Sources/OpenObservationMacros"), { recursive: true });
+  await fs.writeFile(path.join(observation, "Sources/OpenObservationMacros/Macro.swift"), "// Observation macros\n");
   await fs.mkdir(remote);
   git(remote, "init", "--bare", "--initial-branch=main");
   git(root, "clone", remote, binary);
@@ -41,13 +44,31 @@ async function fixture(t) {
     files: Object.fromEntries(frameworks.map(name => [`${name}.xcframework.zip`, "b".repeat(64)])),
   };
   const run = (overrides = {}) => execFileSync("bash", [
-    path.join(__dirname, "../update_binary_package.sh"), source, binary,
+    path.join(__dirname, "../update_binary_package.sh"), source, binary, observation,
   ], {
     env: { ...gitEnvironment, VERSION: version, RELEASE_MANIFEST: JSON.stringify(manifest), ...overrides },
     encoding: "utf8", stdio: ["ignore", "pipe", "pipe"],
   });
-  return { root, source, remote, binary, manifest, run };
+  return { root, source, observation, remote, binary, manifest, run };
 }
+
+test("binary package publication replaces observation macros and detects mismatched retries", async t => {
+  const { observation, remote, binary, run } = await fixture(t);
+  const macros = "Sources/OpenObservationMacros";
+  await fs.mkdir(path.join(binary, macros), { recursive: true });
+  await fs.writeFile(path.join(binary, macros, "Obsolete.swift"), "// Removed macro\n");
+  git(binary, "add", ".");
+  git(binary, "commit", "-m", "Add an obsolete macro");
+  run();
+  const published = git(remote, "rev-parse", `refs/tags/${version}`);
+  assert.equal(git(remote, "show", `${version}:${macros}/Macro.swift`), "// Observation macros");
+  assert.throws(() => git(remote, "show", `${version}:${macros}/Obsolete.swift`));
+  run();
+  assert.equal(git(remote, "rev-parse", "main"), published);
+  await fs.appendFile(path.join(observation, macros, "Macro.swift"), "// Changed\n");
+  assert.throws(run, /different artifacts or macros/);
+  assert.equal(git(remote, "rev-parse", `refs/tags/${version}`), published);
+});
 
 test("binary package publication creates matching refs and retries without another commit", async t => {
   const { source, remote, binary, run } = await fixture(t);

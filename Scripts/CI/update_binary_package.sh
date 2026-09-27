@@ -4,8 +4,10 @@ set -euo pipefail
 
 source_root="$1"
 binary_root="$2"
+observation_root="$3"
 source_root="$(cd "$source_root" && pwd -P)"
 binary_root="$(cd "$binary_root" && pwd -P)"
+observation_root="$(cd "$observation_root" && pwd -P)"
 
 node -e 'require(process.argv[1]).validateVersion(process.env.VERSION)' "$source_root/Scripts/CI/release.js"
 cd "$binary_root"
@@ -18,8 +20,8 @@ if git show-ref --verify --quiet "refs/tags/$VERSION"; then
   git checkout --detach "$VERSION"
 fi
 
-node "$source_root/Scripts/CI/release.js" render-package "$source_root" "$binary_root"
-git add -A -- Package.swift README.md Sources/OpenSwiftUIMacros
+node "$source_root/Scripts/CI/release.js" render-package "$source_root" "$binary_root" "$observation_root"
+git add -A -- Package.swift README.md Sources/OpenSwiftUIMacros Sources/OpenObservationMacros
 
 if [[ "$tag_exists" == true ]]; then
   if ! git diff --cached --quiet; then
