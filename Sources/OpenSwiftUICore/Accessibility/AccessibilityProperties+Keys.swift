@@ -10,8 +10,6 @@ package import Foundation
 // MARK: - AccessibilityProperties + Keys
 
 extension AccessibilityProperties {
-    // TODO: Add AccessibilityActivationPointStorage and AccessibilityActivationPoint.
-    #if false
     package struct ActivationPointKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityActivationPointStorage.self
     }
@@ -24,7 +22,6 @@ extension AccessibilityProperties {
     package var activationPoint: AccessibilityActivationPoint.Location? {
         activationPointStorage?.activate
     }
-    #endif
 
     // TODO: Add AccessibilityChartDescriptorStorage.
     #if false
