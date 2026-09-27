@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: Blocked by Text.Style
+//  Status: Complete
 
 package import Foundation
 
