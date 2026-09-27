@@ -15,7 +15,7 @@ import UIFoundation_Private
 package import CoreText
 #endif
 
-// MARK: - Text + View [WIP]
+// MARK: - Text + View
 
 @available(OpenSwiftUI_v1_0, *)
 extension Text: UnaryView, PrimitiveView {
@@ -27,7 +27,38 @@ extension Text: UnaryView, PrimitiveView {
            representation.shouldMakeRepresentation(inputs: inputs) {
             var outputs = makeCommonAttributes(view: view, inputs: inputs)
             let options = representation.representationOptions(inputs: inputs)
-            _openSwiftUIUnimplementedWarning()
+            let helper = ResolvedTextHelper(
+                time: inputs.time,
+                referenceDate: inputs.referenceDate,
+                includeDefaultAttributes: options.contains(.includeStyledText),
+                allowsKeyColors: false,
+                archiveOptions: inputs.archivedView,
+                features: [],
+                attachmentsAsAuxiliaryMetadata: inputs.hasWidgetMetadata,
+                idiom: inputs.base.interfaceIdiom,
+                lastText: nil,
+                nextUpdate: .time(.zero),
+                sizeVariant: .regular
+            )
+            let resolvedText = Attribute(
+                ResolvedTextFilter(
+                    text: view.value,
+                    environment: inputs.environment,
+                    helper: helper
+                )
+            )
+            let context = Attribute(
+                MakeRepresentableContext(
+                    text: resolvedText,
+                    referenceDate: inputs.referenceDate,
+                    environment: inputs.environment
+                )
+            )
+            representation.makeRepresentation(
+                inputs: inputs,
+                context: context,
+                outputs: &outputs
+            )
             return outputs
         } else {
             return makeCommonAttributes(view: view, inputs: inputs)
@@ -41,7 +72,6 @@ extension Text: UnaryView, PrimitiveView {
         var newInputs = inputs
         let allowsSelection = inputs.base[TextAllowsSelection.self] &&
             !inputs.base[TextSelectionForbidden.self]
-        let options = inputs.base.options
         let textRenderer = inputs.textRenderer
         var features: ResolvedProperties.Features = inputs.archivedView.isArchived ? [] : .useTextSuffix
         if textRenderer.attribute != nil {
@@ -55,9 +85,31 @@ extension Text: UnaryView, PrimitiveView {
             features.formUnion(.useTextLayoutManager)
         }
         let resolvedText: Attribute<ResolvedStyledText>
+        let sizeFittingLayoutComputer: Attribute<LayoutComputer>?
         if inputs.variantThatFits {
-            // TODO
-            _openSwiftUIUnimplementedFailure()
+            let filter = SizeFittingTextFilter(
+                size: inputs.size,
+                text: view.value,
+                environment: inputs.environment,
+                time: inputs.time,
+                referenceDate: inputs.referenceDate,
+                includeDefaultAttributes: true,
+                allowsKeyColors: true,
+                archiveOptions: inputs.archivedView,
+                features: features,
+                attachmentsAsAuxiliaryMetadata: inputs.hasWidgetMetadata,
+                idiom: inputs.base.interfaceIdiom
+            )
+            resolvedText = Attribute(filter)
+            sizeFittingLayoutComputer = Attribute(
+                SizeFittingTextLayoutComputer(
+                    text: view.value,
+                    environment: inputs.environment,
+                    renderer: textRenderer,
+                    cache: filter.cache
+                )
+            )
+            newInputs.requestsLayoutComputer = false
         } else {
             let helper = ResolvedTextHelper(
                 time: inputs.time,
@@ -79,15 +131,19 @@ extension Text: UnaryView, PrimitiveView {
                     helper: helper
                 )
             )
+            sizeFittingLayoutComputer = nil
         }
         newInputs.base.options.formUnion(.doNotScrape)
         var outputs: _ViewOutputs
-        if allowsSelection,
-           let representation = newInputs.textSelectionRepresentation {
-            outputs = representation.makeSelectableText(
-                resolvedText: resolvedText,
-                inputs: newInputs
-            )
+        if allowsSelection {
+            if let representation = newInputs.textSelectionRepresentation {
+                outputs = representation.makeSelectableText(
+                    resolvedText: resolvedText,
+                    inputs: newInputs
+                )
+            } else {
+                outputs = _ViewOutputs()
+            }
         } else {
             outputs = makeTextChildQuery(
                 newInputs.textAccessibilityProvider,
@@ -105,7 +161,9 @@ extension Text: UnaryView, PrimitiveView {
                 outputs: &outputs
             )
         }
-        // FIXME
+        if let sizeFittingLayoutComputer {
+            outputs.layoutComputer = sizeFittingLayoutComputer
+        }
         return outputs
     }
 
@@ -138,8 +196,21 @@ extension Text: UnaryView, PrimitiveView {
         )
     }
 
-    // TODO
-    private struct MakeRepresentableContext {}
+    private struct MakeRepresentableContext: Rule, AsyncAttribute {
+        @Attribute var text: ResolvedStyledText
+        @WeakAttribute var referenceDate: Date??
+        @Attribute var environment: EnvironmentValues
+
+        var value: PlatformTextRepresentableContext {
+            let context = ResolvableStringResolutionContext(
+                referenceDate: referenceDate ?? nil,
+                environment: environment
+            )
+            return PlatformTextRepresentableContext(
+                text: text.resolvedContent(in: context) ?? text.storage
+            )
+        }
+    }
 }
 
 // MARK: - AccessibilityStyledTextContentView

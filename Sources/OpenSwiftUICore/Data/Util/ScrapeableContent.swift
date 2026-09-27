@@ -30,10 +30,7 @@ package struct ScrapeableID: Hashable {
 extension _ViewInputs {
     package var isScrapeable: Bool {
         get {
-            guard needsGeometry else {
-                return false
-            }
-            return preferences.contains(DisplayList.Key.self)
+            needsGeometry && preferences.requiresDisplayList && !base.options.contains(.doNotScrape)
         }
         set {
             base.options.setValue(!newValue, for: .doNotScrape)
