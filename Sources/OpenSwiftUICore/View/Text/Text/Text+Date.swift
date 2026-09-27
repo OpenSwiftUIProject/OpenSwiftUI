@@ -11,6 +11,7 @@ package import OpenAttributeGraphShims
 
 // MARK: - Text + DateStyle
 
+@available(OpenSwiftUI_v2_0, *)
 extension Text {
 
     /// A predefined style used to display a `Date`.
@@ -211,14 +212,34 @@ extension Text {
         #endif
     }
 
+    /// Creates an instance that displays localized dates and times using a
+    /// specific style.
+    ///
+    /// - Parameters:
+    ///     - date: The target date to display.
+    ///     - style: The style used when displaying a date.
     public init(_ date: Date, style: Text.DateStyle) {
         self = style.text(for: date)
     }
 
+    /// Creates an instance that displays a localized range between two dates.
+    ///
+    /// - Parameters:
+    ///     - dates: The range of dates to display
     public init(_ dates: ClosedRange<Date>) {
         self.init(DateInterval(start: dates.lowerBound, end: dates.upperBound))
     }
 
+    /// Creates an instance that displays a localized time interval.
+    ///
+    ///     Text(DateInterval(start: event.startDate, duration: event.duration))
+    ///
+    /// Example output:
+    ///
+    ///     9:30AM - 3:30PM
+    ///
+    /// - Parameters:
+    ///     - interval: The date interval to display
     public init(_ interval: DateInterval) {
         self.init(anyTextStorage: DateTextStorage(storage: .interval(interval: interval)))
     }
@@ -290,7 +311,23 @@ private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
 
 @available(OpenSwiftUI_v4_0, *)
 extension Text {
-    /// Creates a text view that displays a timer over a date interval.
+    /// Creates an instance that displays a timer counting within the provided
+    /// interval.
+    ///
+    ///     Text(
+    ///         timerInterval: Date.now...Date(timeInterval: 12 * 60, since: .now),
+    ///         pauseTime: Date.now + (10 * 60))
+    ///
+    /// The example above shows a text that displays a timer counting down
+    /// from "12:00" and will pause when reaching "10:00".
+    ///
+    /// - Parameters:
+    ///     - timerInterval: The interval between where to run the timer.
+    ///     - pauseTime: If present, the date at which to pause the timer.
+    ///         The default is `nil` which indicates to never pause.
+    ///     - countsDown: Whether to count up or down. The default is `true`.
+    ///     - showsHours: Whether to include an hours component if there are
+    ///         more than 60 minutes left on the timer. The default is `true`.
     public init(
         timerInterval: ClosedRange<Date>,
         pauseTime: Date? = nil,
