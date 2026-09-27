@@ -188,8 +188,6 @@ extension AccessibilityProperties {
         set { self[TextHeadingLevelKey.self] = newValue }
     }
 
-    // TODO: Add AccessibilityTraitStorage and AccessibilityTrait.
-    #if false
     package struct TraitsKey: AccessibilityPropertiesKey {
         package static let defaultValue: AccessibilityTraitStorage = .init()
     }
@@ -207,7 +205,6 @@ extension AccessibilityProperties {
     package subscript(trait trait: AccessibilityTrait, default defaultValue: Bool) -> Bool {
         traits[trait, default: defaultValue]
     }
-    #endif
 
     package struct ValueKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityValueStorage.self
