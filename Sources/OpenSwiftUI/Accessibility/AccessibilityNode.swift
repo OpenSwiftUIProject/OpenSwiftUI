@@ -6,10 +6,12 @@
 //  Status: WIP
 //  ID: 2F6327E72581B7F866C81F7546545BE8 (SwiftUI)
 
+import Foundation
 @_spi(ForOpenSwiftUIOnly)
 import OpenSwiftUICore
 
 #if canImport(UIKit)
+import UIKit
 typealias AccessibilityNodeBase = UIResponder
 #else
 typealias AccessibilityNodeBase = NSObject
