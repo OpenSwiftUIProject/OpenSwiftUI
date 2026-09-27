@@ -24,7 +24,7 @@ package struct PreviewMacro: DeclarationMacro {
         }
 
         guard let sourceLocation = context.location(
-            of: node,
+            of: node.pound,
             at: .afterLeadingTrivia,
             filePathMode: .fileID
         ) else {
@@ -106,6 +106,6 @@ package struct PreviewMacro: DeclarationMacro {
         wrappedBody.statements = CodeBlockItemListSyntax([
             CodeBlockItemSyntax(item: .expr(ExprSyntax(previewVC)))
         ])
-        return wrappedBody
+        return wrappedBody.formatted().cast(ClosureExprSyntax.self)
     }
 }

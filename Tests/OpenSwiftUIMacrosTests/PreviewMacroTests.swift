@@ -49,6 +49,77 @@ final class PreviewMacroTests: XCTestCase {
         )
     }
 
+    func testPreviewExpansionPreservesSourceLineAfterAvailability() {
+        assertMacroExpansion(
+            """
+            @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *)
+            #Preview {
+                CounterView()
+            }
+            """,
+            expandedSource:
+            """
+            @available(macOS 14.0, iOS 17.0, watchOS 10.0, tvOS 17.0, *) @available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
+            struct __macro_local_15PreviewRegistryfMu_: DeveloperToolsSupport::PreviewRegistry {
+                static var fileID: Swift::String {
+                    "TestModule/test.swift"
+                }
+                static var line: Swift::Int {
+                    2
+                }
+                static var column: Swift::Int {
+                    1
+                }
+
+                static func makePreview() throws -> DeveloperToolsSupport::Preview {
+                    DeveloperToolsSupport::Preview {
+                        OpenSwiftUI::Group {
+                            CounterView()
+                        }
+                        ._previewVC()
+                    }
+                }
+            }
+            """,
+            macros: previewMacros
+        )
+    }
+
+    func testPreviewExpansionPreservesSourceColumnAfterAvailability() {
+        assertMacroExpansion(
+            """
+            @available(macOS 14.0, *) #Preview {
+                ContentView()
+            }
+            """,
+            expandedSource:
+            """
+            @available(macOS 14.0, *) @available(iOS 17.0, macOS 14.0, tvOS 17.0, visionOS 1.0, watchOS 10.0, *)
+            struct __macro_local_15PreviewRegistryfMu_: DeveloperToolsSupport::PreviewRegistry {
+                static var fileID: Swift::String {
+                    "TestModule/test.swift"
+                }
+                static var line: Swift::Int {
+                    1
+                }
+                static var column: Swift::Int {
+                    27
+                }
+
+                static func makePreview() throws -> DeveloperToolsSupport::Preview {
+                    DeveloperToolsSupport::Preview {
+                        OpenSwiftUI::Group {
+                            ContentView()
+                        }
+                        ._previewVC()
+                    }
+                }
+            }
+            """,
+            macros: previewMacros
+        )
+    }
+
     func testPreviewExpansionPreservesViewBuilderBody() {
         assertMacroExpansion(
             """
