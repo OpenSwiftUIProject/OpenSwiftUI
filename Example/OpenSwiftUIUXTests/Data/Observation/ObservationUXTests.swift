@@ -16,15 +16,15 @@ import Testing
 struct ObservationUXTests {
     @Test
     func stateModelMutationUpdatesBody() async throws {
-        var displayedCounts: [Int] = []
-        let content = CounterView { displayedCounts.append($0) }
+        let model = CounterModel()
+        let content = CounterView(model: model)
 
         try await withUXTestHost(of: content) { host in
-            try await host.waitUntil(displayedCounts == [0])
+            try await host.assertSnapshot(named: "tap-\(model.count)")
             for count in 1...2 {
                 try await host.tap()
-                try await host.waitUntil(displayedCounts.last == count)
-                #expect(displayedCounts == Array(0...count))
+                #expect(model.count == count)
+                try await host.assertSnapshot(named: "tap-\(count)")
             }
         }
     }
@@ -36,17 +36,17 @@ private final class CounterModel {
 }
 
 private struct CounterView: View {
-    @State private var model = CounterModel()
-    let onChange: (Int) -> Void
+    @State private var model: CounterModel
+
+    init(model: CounterModel) {
+        self.model = model
+    }
 
     var body: some View {
         let count = model.count
         Text("\(count)")
             .onTapGesture {
                 model.count += 1
-            }
-            .onChange(of: count, initial: true) { _, newValue in
-                onChange(newValue)
             }
     }
 }
