@@ -24,8 +24,6 @@ extension AccessibilityProperties {
         activationPointStorage?.activate
     }
 
-    // TODO: Add AccessibilityChartDescriptorStorage.
-    #if false
     package struct ChartDescriptorKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityChartDescriptorStorage.self
     }
@@ -34,7 +32,6 @@ extension AccessibilityProperties {
         get { self[ChartDescriptorKey.self] }
         set { self[ChartDescriptorKey.self] = newValue }
     }
-    #endif
 
     package struct ChildBehaviorKind: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityChildBehaviorKind.self
