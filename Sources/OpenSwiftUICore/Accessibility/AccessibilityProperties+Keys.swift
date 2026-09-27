@@ -63,8 +63,6 @@ extension AccessibilityProperties {
         set { self[CustomAttributesKey.self] = newValue }
     }
 
-    // TODO: Add AccessibilityDataSeriesConfiguration.
-    #if false
     package struct DataSeriesConfigurationKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AccessibilityDataSeriesConfiguration.self
     }
@@ -73,7 +71,6 @@ extension AccessibilityProperties {
         get { self[DataSeriesConfigurationKey.self] }
         set { self[DataSeriesConfigurationKey.self] = newValue }
     }
-    #endif
 
     package struct AutomationTypeKey: AccessibilityOptionalPropertiesKey {
         package static let valueType = AXAutomationType.self

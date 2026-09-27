@@ -185,6 +185,49 @@ extension AccessibilityText: ProtobufMessage {
 
 extension AccessibilityText: CodableByProtobuf {}
 
+// MARK: - CodableAccessibilityVersionStorage
+
+extension CodableAccessibilityVersionStorage where V2 == CodableResolvedStyledText, V3 == AccessibilityText {
+    var text: Text {
+        switch self {
+        case let .v2(text): text.base.accessibilityText
+        case let .v3(text): text.text
+        }
+    }
+
+    init?(texts: [Text]?, in environment: EnvironmentValues, optional: Bool, idiom: AnyInterfaceIdiom?) {
+        guard let texts else {
+            return nil
+        }
+        switch CodableAccessibilityVersion.current {
+        case .v2:
+            guard let storage = AccessibilityCore.textsResolvedToAttributedText(
+                texts,
+                in: environment,
+                includeResolvableAttributes: false,
+                includeDefaultAttributes: true,
+                updateResolvableAttributes: false,
+                resolveSuffix: false,
+                idiom: idiom
+            ) else {
+                return nil
+            }
+            let text = ResolvedStyledText.styledText(
+                storage: storage,
+                environment: environment,
+                isCollapsible: texts.contains { $0.isCollapsible() },
+                writingMode: nil
+            )
+            self = .v2(CodableResolvedStyledText(base: text))
+        case .v3:
+            guard let text = AccessibilityText(texts: texts, environment: environment, optional: optional, idiom: idiom) else {
+                return nil
+            }
+            self = .v3(text)
+        }
+    }
+}
+
 // MARK: - AccessibilityTextAttributes
 
 package struct AccessibilityTextAttributes: Equatable {

@@ -1210,8 +1210,6 @@ extension DisplayList.Item {
     }
 }
 
-package struct AccessibilityNodeAttachment {}
-
 extension DisplayList.Item {
     func addDrawingGroup(contentSeed: DisplayList.Seed) {
         _openSwiftUIUnimplementedWarning()
