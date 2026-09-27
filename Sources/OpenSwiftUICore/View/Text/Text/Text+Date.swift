@@ -3,7 +3,7 @@
 //  OpenSwiftUICore
 //
 //  Audited for 6.5.4
-//  Status: WIP
+//  Status: Complete
 //  ID: AEE0E21EC7C6B2D1204F94F94CBF7389 (SwiftUICore)
 
 public import Foundation
@@ -249,7 +249,10 @@ extension Text {
         dateFormat: String,
         timeZone: TimeZone? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(anyTextStorage: DateTextStorage(storage: .current(
+            dateFormat: .format(dateFormat),
+            timeZone: timeZone
+        )))
     }
 
     @_spi(Private)
@@ -257,13 +260,17 @@ extension Text {
         dateFormatTemplate: String,
         timeZone: TimeZone? = nil
     ) {
-        _openSwiftUIUnimplementedFailure()
+        self.init(anyTextStorage: DateTextStorage(storage: .current(
+            dateFormat: .template(dateFormatTemplate),
+            timeZone: timeZone
+        )))
     }
 }
 
 private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
     enum Storage: Equatable {
         case interval(interval: DateInterval)
+        case current(dateFormat: ResolvableCurrentDate.DateFormat, timeZone: TimeZone?)
         case progress(interval: ClosedRange<Date>, countdown: Bool)
     }
 
@@ -294,6 +301,17 @@ private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
                 in: environment,
                 with: options,
                 transition: nil
+            )
+        case let .current(dateFormat, timeZone):
+            result.append(
+                resolvable: ResolvableCurrentDate(
+                    dateFormat: dateFormat,
+                    timeZone: timeZone,
+                    in: environment
+                ),
+                in: environment,
+                with: options,
+                transition: defaultContentTransition(false)
             )
         case let .progress(interval, countdown):
             result.append(

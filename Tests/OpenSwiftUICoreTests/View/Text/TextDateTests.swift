@@ -133,6 +133,26 @@ struct TextDateStyleTests {
     }
 
     @Test
+    func currentDateTextEqualityIncludesFormatAndTimeZone() {
+        let utc = TimeZone(secondsFromGMT: 0)!
+        let offset = TimeZone(secondsFromGMT: 3_600)!
+        let format = Text(dateFormat: "HH:mm")
+        let template = Text(dateFormatTemplate: "HH:mm")
+
+        #expect(format == Text(dateFormat: "HH:mm"))
+        #expect(template == Text(dateFormatTemplate: "HH:mm"))
+        #expect(format != template)
+        #expect(format != Text(dateFormat: "HH:mm:ss"))
+        #expect(template != Text(dateFormatTemplate: "HHmmss"))
+        #expect(format != Text(dateFormat: "HH:mm", timeZone: utc))
+        #expect(template != Text(dateFormatTemplate: "HH:mm", timeZone: utc))
+        #expect(Text(dateFormat: "HH:mm", timeZone: utc) == Text(dateFormat: "HH:mm", timeZone: utc))
+        #expect(Text(dateFormat: "HH:mm", timeZone: utc) != Text(dateFormat: "HH:mm", timeZone: offset))
+        #expect(Text(dateFormatTemplate: "HH:mm", timeZone: utc) == Text(dateFormatTemplate: "HH:mm", timeZone: utc))
+        #expect(Text(dateFormatTemplate: "HH:mm", timeZone: utc) != Text(dateFormatTemplate: "HH:mm", timeZone: offset))
+    }
+
+    @Test
     func progressTextDefaultsToCountingUp() {
         let end = start.addingTimeInterval(600)
         let range = start...end
@@ -145,6 +165,42 @@ struct TextDateStyleTests {
     }
 
     #if canImport(Darwin)
+    @Test
+    func currentDateFormatUsesResolutionDateAndTimeZone() {
+        var environment = currentDateEnvironment()
+        let text = Text(dateFormat: "yyyy-MM-dd HH:mm:ss")
+
+        #expect(text._resolveText(in: environment) == "2001-01-01 00:00:00")
+
+        environment.stringResolutionDate = Date(timeIntervalSinceReferenceDate: 3_661)
+        #expect(text._resolveText(in: environment) == "2001-01-01 01:01:01")
+
+        environment.timeZone = TimeZone(secondsFromGMT: 3_600)!
+        #expect(text._resolveText(in: environment) == "2001-01-01 02:01:01")
+        #expect(Text(
+            dateFormat: "yyyy-MM-dd HH:mm:ss",
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )._resolveText(in: environment) == "2001-01-01 01:01:01")
+    }
+
+    @Test
+    func currentDateTemplateUsesLocaleAndTimeZone() {
+        var environment = currentDateEnvironment()
+        let text = Text(dateFormatTemplate: "yMMMMd")
+
+        #expect(text._resolveText(in: environment) == "January 1, 2001")
+
+        environment.locale = Locale(identifier: "fr_FR")
+        #expect(text._resolveText(in: environment) == "1 janvier 2001")
+
+        environment.timeZone = TimeZone(secondsFromGMT: -3_600)!
+        #expect(text._resolveText(in: environment) == "31 décembre 2000")
+        #expect(Text(
+            dateFormatTemplate: "yMMMMd",
+            timeZone: TimeZone(secondsFromGMT: 0)!
+        )._resolveText(in: environment) == "1 janvier 2001")
+    }
+
     @Test(arguments: [false, true])
     func deprecatedTimerIntervalsPreservePauseAndCountdown(countdown: Bool) {
         let end = start.addingTimeInterval(7_200)
@@ -326,6 +382,18 @@ struct TextDateStyleTests {
         .locale(Locale(identifier: "en_US_POSIX"))
 
         #expect(String(format.format(start.addingTimeInterval(3_900)).characters) == expected)
+    }
+
+    private func currentDateEnvironment() -> EnvironmentValues {
+        let utc = TimeZone(secondsFromGMT: 0)!
+        var calendar = Calendar(identifier: .gregorian)
+        calendar.timeZone = utc
+        var environment = EnvironmentValues()
+        environment.calendar = calendar
+        environment.locale = Locale(identifier: "en_US_POSIX")
+        environment.timeZone = utc
+        environment.stringResolutionDate = Date(timeIntervalSinceReferenceDate: 0)
+        return environment
     }
 
     private func encodedForceUnitsAoDStyle(
