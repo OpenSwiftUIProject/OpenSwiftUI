@@ -344,6 +344,7 @@ let targets: [Target] = [
             "OpenSwiftUIUITests/**/*.swift",
             "OpenSwiftUIUITests/**/*.m",
             "OpenSwiftUIUITests/**/*.c",
+            "TestSupport/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
@@ -361,11 +362,13 @@ let targets: [Target] = [
         infoPlist: .default,
         sources: [
             "OpenSwiftUIUXTests/**/*.swift",
+            "TestSupport/**/*.swift",
         ],
         dependencies: [
             .target(name: "TestingHost"),
             .external(name: "Hammer"),
             .external(name: "OpenSwiftUITestsSupport"),
+            .external(name: "SnapshotTesting"),
         ] + privateFrameworkDependencies,
         settings: settings(base: uxTestsSettings, xcconfig: "../Configurations/OpenSwiftUIUXTests.xcconfig")
     ),

@@ -100,13 +100,34 @@ and Mac. It uses the
 [OpenSwiftUIProject Hammer fork](https://github.com/OpenSwiftUIProject/Hammer)
 to send touch events on iOS and mouse events on macOS.
 
-- Choose `OSUI_UXTests` to test OpenSwiftUI.
-- Choose `SUI_UXTests` to run the same tests with SwiftUI.
+1. Run `SUI_UXTests` to create or update reference images with SwiftUI.
+2. Run `OSUI_UXTests` on the same destination to verify OpenSwiftUI against those images.
 
 Use `withUXTestHost(of:)` to host a view and clean up after the test. Call the
 helper, `tap()`, and `waitUntil(_:timeout:)` with `try await`. Keep gesture tests
 on the main actor in serialized suites because they share application windows
 and Hammer settings.
+
+Call `try await host.assertSnapshot(named:)` to compare the current hosted view
+with a reference image. It captures the same view used for interactions, so it
+preserves view state and supports more interactions after each snapshot:
+
+```swift
+try await withUXTestHost(of: content) { host in
+    try await host.assertSnapshot(named: "before")
+    try await host.tap()
+    try await host.waitUntil(count == 1)
+    try await host.assertSnapshot(named: "after")
+}
+```
+
+Use `.snapshots(record: .never, diffTool: diffTool)` on snapshot test suites,
+as in the UI tests. The helper uses the same recording defaults: `SUI_UXTests`
+records reference images and reports recording issues; `OSUI_UXTests` compares
+against those references. Pass `record:` to override this behavior. Reference
+images use `SNAPSHOT_REFERENCE_DIR` or `Example/ReferenceImages`, followed by the
+platform, OS version, and test file ID. Snapshot names include the hosted view's
+size. Give each case a distinct name in parameterized tests.
 
 On macOS, tests use an offscreen window to preserve application focus. Set
 `HAMMER_SHOW_TEST_WINDOW=1` in the test scheme's environment to show the window

@@ -1,8 +1,8 @@
-# UI Test Reference Images
+# UI and UX Test Reference Images
 
-This directory is the default local reference image store for OpenSwiftUI UI snapshot tests.
+This directory is the default local reference image store for OpenSwiftUI UI and UX snapshot tests.
 
-When the UI tests run locally without `SNAPSHOT_REFERENCE_DIR`, the test helper resolves reference images under this directory and then appends the current platform and OS version, for example:
+When tests run without `SNAPSHOT_REFERENCE_DIR`, the shared test helper resolves reference images under this directory and then appends the current platform and OS version, for example:
 
 ```text
 Example/ReferenceImages/macOS/15.7.4

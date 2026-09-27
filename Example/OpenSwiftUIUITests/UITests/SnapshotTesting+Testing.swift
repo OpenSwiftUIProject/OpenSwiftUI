@@ -2,51 +2,16 @@
 //  SnapshotTesting+Testing.swift
 //  OpenSwiftUIUITests
 
-import SnapshotTesting
-import Testing
-import TestingHost
+#if os(macOS)
+import AppKit
+#endif
 import Foundation
+import SnapshotTesting
+import TestingHost
 
 let defaultSize = CGSize(width: 200, height: 200)
 
-private let defaultSnapshotReferenceRoot: String = {
-    URL(fileURLWithPath: #filePath)
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .deletingLastPathComponent()
-        .appendingPathComponent("ReferenceImages")
-        .path
-}()
-
-let snapshotReferenceDirectory: String = {
-    #if os(macOS)
-    let os = "macOS"
-    #elseif os(iOS)
-    #if targetEnvironment(simulator)
-    let os = "iOS_Simulator"
-    #else
-    let os = "iOS"
-    #endif
-    #else
-    #error("Unsupported UI test platform")
-    #endif
-    let version = ProcessInfo.processInfo.operatingSystemVersion
-    let osVersion = "\(version.majorVersion).\(version.minorVersion).\(version.patchVersion)"
-    let configuredRoot = ProcessInfo.processInfo.environment["SNAPSHOT_REFERENCE_DIR"]
-    let referenceRoot: String
-    if let configuredRoot, !configuredRoot.isEmpty, !configuredRoot.contains("$(") {
-        referenceRoot = configuredRoot
-    } else {
-        referenceRoot = defaultSnapshotReferenceRoot
-    }
-    let directory = referenceRoot + "/\(os)/\(osVersion)"
-    print("SNAPSHOT_REFERENCE_DIR: \(directory)")
-    return directory
-}()
-
 #if os(macOS)
-import AppKit
-
 extension Snapshotting where Value == NSViewController, Format == NSImage {
     /// drawHierarchyInKeyWindow is iOS only parameter, here for compatibility
     static func image(
@@ -75,7 +40,7 @@ func openSwiftUIAssertSnapshot<V: View>(
     line: UInt = #line,
     column: UInt = #column
 ) {
-    openSwiftUIAssertSnapshot(
+    openSwiftUIAssertSnapshotValue(
         of: PlatformHostingController(rootView: value()),
         as: .image(drawHierarchyInKeyWindow: drawHierarchyInKeyWindow, precision: precision, perceptualPrecision: perceptualPrecision, size: size),
         named: (name.map { ".\($0)" } ?? "") + "\(Int(size.width))x\(Int(size.height))",
@@ -101,7 +66,7 @@ func openSwiftUIAssertSnapshot<V: View>(
     line: UInt = #line,
     column: UInt = #column
 ) {
-    openSwiftUIAssertSnapshot(
+    openSwiftUIAssertSnapshotValue(
         of: PlatformHostingController(rootView: value()),
         as: snapshotting,
         named: name,
@@ -127,7 +92,7 @@ func openSwiftUIAssertSnapshot<V: View, Format>(
     line: UInt = #line,
     column: UInt = #column
 ) {
-    openSwiftUIAssertSnapshot(
+    openSwiftUIAssertSnapshotValue(
         of: PlatformHostingController(rootView: value()),
         as: snapshotting,
         named: name,
@@ -154,7 +119,7 @@ func openSwiftUIControllerAssertSnapshot<V: PlatformViewController, Format>(
     line: UInt = #line,
     column: UInt = #column
 ) {
-    openSwiftUIAssertSnapshot(
+    openSwiftUIAssertSnapshotValue(
         of: value(),
         as: snapshotting,
         named: name,
@@ -165,45 +130,6 @@ func openSwiftUIControllerAssertSnapshot<V: PlatformViewController, Format>(
         testName: testName,
         line: line,
         column: column
-    )
-}
-
-// FIXME: Should be internal, private due to conflict infer
-private func openSwiftUIAssertSnapshot<Value, Format>(
-    of value: @autoclosure () -> Value,
-    as snapshotting: Snapshotting<Value, Format>,
-    named name: String? = nil,
-    record recording: SnapshotTestingConfiguration.Record? = shouldRecord,
-    timeout: TimeInterval = 5,
-    fileID: StaticString = #fileID,
-    file filePath: StaticString = #filePath,
-    testName: String = #function,
-    line: UInt = #line,
-    column: UInt = #column
-) {
-    let snapshotDirectory = snapshotReferenceDirectory + "/" + fileID.description
-    let failure = verifySnapshot(
-        of: value(),
-        as: snapshotting,
-        named: name,
-        record: recording,
-        snapshotDirectory: snapshotDirectory,
-        timeout: timeout,
-        fileID: fileID,
-        file: filePath,
-        testName: testName,
-        line: line,
-        column: column
-    )
-    guard let message = failure else { return }
-    Issue.record(
-        Comment(rawValue: message),
-        sourceLocation: SourceLocation(
-            fileID: fileID.description,
-            filePath: filePath.description,
-            line: Int(line),
-            column: Int(column)
-        )
     )
 }
 
@@ -238,7 +164,7 @@ func openSwiftUIAssertAnimationSnapshot<V: AnimationTestView>(
         default:
             vc.advance(interval: interval)
         }
-        openSwiftUIAssertSnapshot(
+        openSwiftUIAssertSnapshotValue(
             of: vc,
             as: .image(precision: precision, perceptualPrecision: perceptualPrecision, size: size),
             named: "\(index)_\(model.intervals.count).\(Int(size.width))x\(Int(size.height))",

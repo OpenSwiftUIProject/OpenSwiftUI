@@ -14,6 +14,8 @@ import OpenSwiftUI
 #else
 import SwiftUI
 #endif
+import SnapshotTesting
+import Testing
 import TestingHost
 
 @MainActor
@@ -91,6 +93,74 @@ struct UXTestHost {
             try events.waitUntil(condition(), timeout: timeout)
         }
         #endif
+    }
+
+    private func screenshot() async throws -> PlatformImage {
+        // Capture the existing view without moving it out of Hammer's window.
+        #if os(macOS)
+        try await events.waitUntilWindowIsReady()
+        let view = events.mainView
+        let bitmap = try #require(
+            view.bitmapImageRepForCachingDisplay(in: view.bounds),
+            "Unable to create a bitmap for the hosted view."
+        )
+        view.cacheDisplay(in: view.bounds, to: bitmap)
+        let image = NSImage(size: view.bounds.size)
+        image.addRepresentation(bitmap)
+        return image
+        #else
+        return try await onMainRunLoop {
+            try events.waitUntilWindowIsReady()
+            let view = events.mainView
+            try #require(!view.bounds.isEmpty, "The hosted view has no drawable bounds.")
+            let renderer = UIGraphicsImageRenderer(
+                bounds: view.bounds,
+                format: .init(for: view.traitCollection)
+            )
+            var didDraw = false
+            let image = renderer.image { _ in
+                didDraw = view.drawHierarchy(in: view.bounds, afterScreenUpdates: true)
+            }
+            try #require(didDraw, "Unable to draw the hosted view.")
+            return image
+        }
+        #endif
+    }
+
+    func assertSnapshot(
+        precision: Float = 1,
+        perceptualPrecision: Float = 1,
+        named name: String? = nil,
+        record recording: SnapshotTestingConfiguration.Record? = shouldRecord,
+        timeout: TimeInterval = 5,
+        fileID: StaticString = #fileID,
+        file filePath: StaticString = #filePath,
+        testName: String = #function,
+        line: UInt = #line,
+        column: UInt = #column
+    ) async throws {
+        let image = try await screenshot()
+        #if os(macOS)
+        let snapshotting = Snapshotting<PlatformImage, PlatformImage>.image(
+            precision: precision, perceptualPrecision: perceptualPrecision
+        )
+        #else
+        let snapshotting = Snapshotting<PlatformImage, PlatformImage>.image(
+            precision: precision, perceptualPrecision: perceptualPrecision, scale: image.scale
+        )
+        #endif
+        openSwiftUIAssertSnapshotValue(
+            of: image,
+            as: snapshotting,
+            named: (name.map { "\($0)." } ?? "") + "\(Int(image.size.width))x\(Int(image.size.height))",
+            record: recording,
+            timeout: timeout,
+            fileID: fileID,
+            file: filePath,
+            testName: testName,
+            line: line,
+            column: column
+        )
     }
 
     fileprivate func release() async throws {

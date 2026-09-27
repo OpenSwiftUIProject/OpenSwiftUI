@@ -3,15 +3,12 @@
 //  OpenSwiftUIUITests
 
 import XCTest
-import SnapshotTesting
 
 #if OPENSWIFTUI
 @_exported import OpenSwiftUI
 @_exported import OpenAttributeGraphShims
-let shouldRecord: SnapshotTestingConfiguration.Record? = nil
 #else
 @_exported import SwiftUI
-let shouldRecord: SnapshotTestingConfiguration.Record? = .all
 
 public struct ViewRendererVendor: RawRepresentable, Hashable, CaseIterable {
     public let rawValue: String
@@ -47,10 +44,3 @@ public struct AttributeGraphVendor: RawRepresentable, Hashable, CaseIterable {
 }
 public let attributeGraphVendor = AttributeGraphVendor.ag
 #endif
-let diffTool: SnapshotTestingConfiguration.DiffTool = .odiff
-
-extension SnapshotTestingConfiguration.DiffTool {
-    static let odiff = Self {
-        "odiff \"\($0)\" \"\($1)\""
-    }
-}
