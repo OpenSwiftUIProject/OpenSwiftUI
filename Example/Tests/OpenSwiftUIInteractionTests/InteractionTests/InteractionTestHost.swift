@@ -31,10 +31,12 @@ func withInteractionTestHost<Content: View>(
         window.contentView = nil
     }
 
-    let controller = TestingHost.PlatformHostingController(rootView: content)
     // Keep the test surface fixed instead of adopting the content's ideal size.
-    controller.sizingOptions = []
     let size = NSSize(width: 400, height: 400)
+    let controller = TestingHost.PlatformHostingController(
+        rootView: content.frame(width: size.width, height: size.height)
+    )
+    controller.sizingOptions = []
     window.contentViewController = controller
     // Installing the controller adopts its initial view size, which can be zero.
     window.setContentSize(size)
