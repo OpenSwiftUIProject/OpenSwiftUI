@@ -1139,17 +1139,72 @@ extension ResolvedStyledText {
     }
 }
 
-// MARK: - CodableResolvedStyledText [WIP]
+// MARK: - CodableResolvedStyledText
 
 struct CodableResolvedStyledText: ProtobufMessage {
     var base: ResolvedStyledText
 
     init(from decoder: inout ProtobufDecoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        var storage: NSAttributedString?
+        var stylePadding = EdgeInsets.zero
+        var layoutMargins = EdgeInsets.zero
+        var layoutProperties = TextLayoutProperties()
+        var transitions: [Text.ResolvedProperties.Transition] = []
+        var features = Text.ResolvedProperties.Features()
+        // Configuration (tag 4) is encode-only metadata.
+        while let field = try decoder.nextField() {
+            switch field.tag {
+            case 1:
+                let value: CodableAttributedString = try decoder.messageField(field)
+                storage = value.base
+            case 2:
+                stylePadding = try decoder.messageField(field)
+            case 3:
+                layoutMargins = try decoder.messageField(field)
+            case 5:
+                layoutProperties = try decoder.messageField(field)
+            case 6:
+                let transition: ContentTransition = try decoder.messageField(field)
+                transitions.append(.init(transition: transition))
+            case 7:
+                features = .init(rawValue: UInt16(truncatingIfNeeded: try decoder.uintField(field)))
+            default:
+                try decoder.skipField(field)
+            }
+        }
+        guard let storage else {
+            throw ProtobufDecoder.DecodingError.failed
+        }
+        base = ResolvedStyledText.styledText(
+            storage: storage,
+            layoutProperties: layoutProperties,
+            layoutMargins: layoutMargins,
+            stylePadding: stylePadding,
+            archiveOptions: .isArchived,
+            isCollapsible: false,
+            features: features,
+            suffix: .none,
+            attachments: .init(),
+            styles: [],
+            transitions: transitions,
+            scaleFactorOverride: nil
+        )
     }
 
     func encode(to encoder: inout ProtobufEncoder) throws {
-        _openSwiftUIUnimplementedFailure()
+        if let storage = base.storage {
+            try encoder.messageField(1, CodableAttributedString(storage))
+        }
+        try encoder.messageField(2, base.stylePadding, defaultValue: .zero)
+        try encoder.messageField(3, base.layoutMargins, defaultValue: .zero)
+        if let storage = base.storage {
+            try encoder.codableField(4, storage.resolvableAttributeConfiguration)
+        }
+        try encoder.messageField(5, base.layoutProperties)
+        for transition in base.transitions {
+            try encoder.messageField(6, transition.transition)
+        }
+        encoder.uintField(7, UInt(base.features.rawValue))
     }
 }
 
@@ -1516,7 +1571,7 @@ struct ResolvedOptionalTextFilter: StatefulRule, AsyncAttribute {
     }
 }
 
-// MARK: - DynamicTextView [WIP]
+// MARK: - DynamicTextView
 
 private struct DynamicTextView: PrimitiveView, UnaryView {
     var text: ResolvedStyledText
@@ -1526,18 +1581,286 @@ private struct DynamicTextView: PrimitiveView, UnaryView {
         view: _GraphValue<DynamicTextView>,
         inputs: _ViewInputs
     ) -> _ViewOutputs {
-        _openSwiftUIUnimplementedFailure()
+        let frame = Attribute(DynamicTextFrame(
+            view: view.value,
+            position: inputs.position
+        ))
+        let filtered = Attribute(DynamicTextFilter(
+            environment: inputs.environment,
+            referenceDate: inputs.referenceDate,
+            time: inputs.time,
+            size: frame.size,
+            view: view.value
+        ))
+        var newInputs = inputs
+        newInputs.position = frame.origin
+        newInputs.size = frame.size
+        newInputs.environment = Attribute(DynamicTextEnvironment(
+            environment: inputs.environment,
+            transaction: inputs.transaction,
+            date: filtered.date,
+            lastDate: .distantPast
+        ))
+        var outputs = StyledTextContentView._makeView(
+            view: .init(filtered.view),
+            inputs: newInputs
+        )
+        if let textAlwaysOnProvider = inputs.textAlwaysOnProvider {
+            textAlwaysOnProvider.makeAlwaysOn(
+                inputs: inputs,
+                schedule: filtered.schedule,
+                outputs: &outputs
+            )
+        }
+        return outputs
     }
 
-    // FIXME
+    private struct DynamicTextHelper: SizeFittingTextResolver {
+        let view: DynamicTextView
+        lazy var widthAdaptedText: ResolvedStyledText = {
+            var isUniqueSizeVariant = sizeVariant == .regular
+            let storage: NSMutableAttributedString?
+            if view.text.layoutProperties.sizeFitting {
+                storage = view.text.storage.map { storage in
+                    let result = NSMutableAttributedString(attributedString: storage)
+                    result.enumerateAttribute(.resolvableTextSegment, in: result.range) { value, range, _ in
+                        guard let value = value as? ResolvableTextSegmentAttribute.Value,
+                              let resolvable = result.attribute(
+                                  value.resolvableAttributeKey,
+                                  at: range.location,
+                                  effectiveRange: nil
+                              ) as? any ResolvableStringAttribute else {
+                            return
+                        }
+                        let variant = resolvable.sizeVariant(sizeVariant)
+                        isUniqueSizeVariant = isUniqueSizeVariant || variant.exact
+                        result.addAttribute(
+                            value.resolvableAttributeKey,
+                            value: variant.resolvable,
+                            range: range
+                        )
+                    }
+                    return result
+                }
+                _ = storage?.resolveUpdateSchedule(recalculate: true)
+            } else {
+                storage = nil
+            }
+            var features = view.text.features
+            features.setValue(isUniqueSizeVariant, for: .isUniqueSizeVariant)
+            return ResolvedStyledText.styledText(
+                storage: storage ?? view.text.storage,
+                layoutProperties: view.text.layoutProperties,
+                layoutMargins: view.text.layoutMargins,
+                stylePadding: view.text.stylePadding,
+                archiveOptions: view.text.archiveOptions,
+                isCollapsible: view.text.isCollapsible,
+                features: features,
+                suffix: .none,
+                attachments: .init(),
+                styles: view.text.styles,
+                transitions: view.text.transitions,
+                scaleFactorOverride: view.text.scaleFactorOverride
+            )
+        }()
+        var sizeVariant: TextSizeVariant = .regular
+
+        func shouldUpdate(
+            for input: ResolvableStringResolutionContext,
+            inputChanged: Bool
+        ) -> Bool {
+            inputChanged
+        }
+
+        mutating func value(
+            for input: ResolvableStringResolutionContext
+        ) -> SizeFittingTextCacheValue<StyledTextLayoutEngine> {
+            let text = widthAdaptedText.resolvingContent(in: input)
+            var archiveOptions = text.archiveOptions
+            archiveOptions.flags.subtract(.isArchived)
+            let layoutText = ResolvedStyledText.styledText(
+                storage: text.storage,
+                layoutProperties: text.layoutProperties,
+                layoutMargins: text.layoutMargins,
+                stylePadding: text.stylePadding,
+                archiveOptions: archiveOptions,
+                isCollapsible: text.isCollapsible,
+                features: text.features,
+                suffix: .none,
+                attachments: .init(),
+                styles: text.styles,
+                transitions: text.transitions,
+                scaleFactorOverride: text.scaleFactorOverride
+            )
+            return SizeFittingTextCacheValue(
+                text: text,
+                engine: StyledTextLayoutEngine(text: layoutText, renderer: nil),
+                renderer: nil
+            )
+        }
+
+        var narrowerVariant: DynamicTextHelper {
+            DynamicTextHelper(view: view, sizeVariant: sizeVariant.nextDown)
+        }
+    }
+
     private struct DynamicTextFilter: StatefulRule, AsyncAttribute {
-        struct Value {}
+        struct Value {
+            var view: StyledTextContentView
+            var date: Date
+            var schedule: (any TimelineSchedule)?
+        }
+
+        @Attribute var environment: EnvironmentValues
+        @WeakAttribute var referenceDate: Date??
+        @Attribute var time: Time
+        @Attribute var size: ViewSize
+        @Attribute var view: DynamicTextView
+        lazy var textManager = makeTextManager()
+        let tracker: PropertyList.Tracker
+        var nextTime: Time
+        var lastDate: Date
 
         // NOTE: Forces the output’s mainRef to false, regardless of those inputs.
         static var flags: Flags { .asyncThread }
 
-        func updateValue() {
-            _openSwiftUIUnimplementedFailure()
+        init(
+            environment: Attribute<EnvironmentValues>,
+            referenceDate: WeakAttribute<Date?>,
+            time: Attribute<Time>,
+            size: Attribute<ViewSize>,
+            view: Attribute<DynamicTextView>
+        ) {
+            _environment = environment
+            _referenceDate = referenceDate
+            _time = time
+            _size = size
+            _view = view
+            tracker = .init()
+            nextTime = .zero
+            lastDate = .distantPast
+        }
+
+        func makeTextManager() -> TextManager {
+            TextManager(
+                sizeFittingTextCache: SizeFittingTextCache(
+                    resolver: DynamicTextHelper(view: view),
+                    logic: StickyTextSizeFittingLogic(),
+                    initialInput: ResolvableStringResolutionContext(environment: environment)
+                )
+            )
+        }
+
+        mutating func updateValue() {
+            let (environment, environmentChanged) = $environment.changedValue()
+            let (view, viewChanged) = $view.changedValue()
+            let inputsChanged = viewChanged || (
+                environmentChanged && tracker.hasDifferentUsedValues(environment.plist)
+            )
+            let isDynamic = view.text.isDynamic
+            let date: Date
+            if isDynamic {
+                if let referenceDate = referenceDate ?? nil {
+                    date = referenceDate
+                } else if time < nextTime {
+                    date = lastDate
+                } else if let resolutionDate = environment.stringResolutionDate {
+                    date = resolutionDate
+                } else {
+                    _ = time
+                    date = .now
+                }
+            } else {
+                date = lastDate
+            }
+            if inputsChanged {
+                textManager = makeTextManager()
+            }
+            if inputsChanged || date != lastDate || !hasValue {
+                tracker.reset()
+                let resolved: ResolvedStyledText
+                if isDynamic {
+                    var trackedEnvironment = EnvironmentValues(environment.plist, tracker: tracker)
+                    trackedEnvironment.stringResolutionDate = date
+                    if view.text.features.contains(.sensitive) {
+                        trackedEnvironment.sensitiveContent = true
+                    }
+                    let context = ResolvableStringResolutionContext(
+                        referenceDate: referenceDate ?? nil,
+                        environment: trackedEnvironment,
+                        maximumWidth: size.width
+                    )
+                    resolved = textManager.resolve(in: context, for: size)
+                    nextTime = resolved.nextUpdate(
+                        after: time,
+                        equivalentDate: date,
+                        reduceFrequency: environment.isLuminanceReduced
+                    )
+                } else {
+                    resolved = view.text
+                }
+                lastDate = date
+                value = Value(
+                    view: StyledTextContentView(
+                        text: resolved,
+                        renderer: nil,
+                        needsDrawingGroup: false
+                    ),
+                    date: date,
+                    schedule: resolved.schedule
+                )
+            }
+            if isDynamic, time < nextTime {
+                ViewGraph.current.nextUpdate.views.at(nextTime)
+            }
+        }
+    }
+
+    private struct TextManager {
+        let sizeFittingTextCache: SizeFittingTextCache<DynamicTextHelper, StickyTextSizeFittingLogic>
+
+        func resolve(
+            in context: ResolvableStringResolutionContext,
+            for size: ViewSize
+        ) -> ResolvedStyledText {
+            sizeFittingTextCache.input = (context, true)
+            let text = sizeFittingTextCache.withValue(for: size.proposal) { $0.text }
+            sizeFittingTextCache.withResolver(for: size.proposal) { resolver in
+                sizeFittingTextCache.logic.committedValue = (resolver.sizeVariant, size.proposal)
+            }
+            return text
+        }
+    }
+
+    private struct DynamicTextEnvironment: StatefulRule, AsyncAttribute {
+        @Attribute var environment: EnvironmentValues
+        @Attribute var transaction: Transaction
+        @Attribute var date: Date
+        var lastDate: Date
+
+        typealias Value = EnvironmentValues
+
+        mutating func updateValue() {
+            var environment = environment
+            if date != lastDate {
+                let transaction = Graph.withoutUpdate { self.transaction }
+                environment.contentTransitionState.applyDynamicTextAnimation(in: transaction)
+            }
+            lastDate = date
+            value = environment
+        }
+    }
+
+    private struct DynamicTextFrame: Rule, AsyncAttribute {
+        @Attribute var view: DynamicTextView
+        @Attribute var position: CGPoint
+
+        var value: ViewFrame {
+            let frame = view.text.frame(in: view.size, renderer: nil)
+            return ViewFrame(
+                origin: CGPoint(x: position.x - frame.origin.x, y: position.y - frame.origin.y),
+                size: .fixed(view.size)
+            )
         }
     }
 }
