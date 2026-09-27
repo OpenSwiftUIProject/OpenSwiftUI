@@ -120,7 +120,124 @@ struct TextDateStyleTests {
         #expect(Text(start, style: .time) == Text(start, format: format))
     }
 
+    @Test
+    func dateInterpolationsPreserveTextStorage() {
+        let end = start.addingTimeInterval(3_600)
+        let range = start...end
+        let interval = DateInterval(start: start, end: end)
+        let actual: LocalizedStringKey = "Date: \(start, style: .date); range: \(range); interval: \(interval)"
+        let expected: LocalizedStringKey = "Date: \(Text(start, style: .date)); range: \(Text(range)); interval: \(Text(interval))"
+
+        #expect(actual == expected)
+        #expect(actual.key == "Date: %@; range: %@; interval: %@")
+    }
+
+    @Test
+    func progressTextDefaultsToCountingUp() {
+        let end = start.addingTimeInterval(600)
+        let range = start...end
+        let text = Text(progressInterval: range)
+
+        #expect(text == Text(progressInterval: range, countsDown: false))
+        #expect(text != Text(progressInterval: range, countsDown: true))
+        #expect(text != Text(progressInterval: start...end.addingTimeInterval(1)))
+        #expect(text != Text(range))
+    }
+
     #if canImport(Darwin)
+    @Test(arguments: [false, true])
+    func deprecatedTimerIntervalsPreservePauseAndCountdown(countdown: Bool) {
+        let end = start.addingTimeInterval(7_200)
+        let range = start...end
+        let interval = DateInterval(start: start, end: end)
+        let text = Text(
+            interval: range,
+            pauseAt: 120,
+            countdown: countdown,
+            units: [.minute, .second]
+        )
+
+        #expect(text == Text(
+            interval: interval,
+            pauseAt: 120,
+            countdown: countdown,
+            units: [.minute, .second]
+        ))
+        #expect(text == Text(
+            timerInterval: range,
+            pauseTime: start.addingTimeInterval(120),
+            countsDown: countdown,
+            showsHours: false
+        ))
+        #expect(text != Text(
+            interval: range,
+            pauseAt: 121,
+            countdown: countdown,
+            units: [.minute, .second]
+        ))
+    }
+
+    @Test
+    func deprecatedTimerDefaultsPreserveCountdownAndUnits() {
+        let end = start.addingTimeInterval(7_200)
+        let range = start...end
+        let interval = DateInterval(start: start, end: end)
+        let text = Text(interval: range)
+
+        #expect(text == Text(interval: interval))
+        #expect(text == Text(interval: range, pauseAt: nil, countdown: true, units: nil))
+        #expect(text == Text(interval: range, units: [.hour, .minute, .second]))
+        #expect(text == Text(timerInterval: range))
+        #expect(text != Text(interval: range, countdown: false))
+        #expect(text != Text(interval: range, units: []))
+        #expect(text != Text(interval: range, units: [.hour]))
+        #expect(Text(interval: range, units: [.minute, .second]) == Text(
+            timerInterval: range,
+            showsHours: false
+        ))
+        #expect(Text(interval: range, units: [.minute, .second, .nanosecond]) != Text(
+            interval: range,
+            units: [.minute, .second]
+        ))
+    }
+
+    @Test
+    func timerInterpolationPreservesDefaultsAndPause() {
+        let range = start...start.addingTimeInterval(7_200)
+        let pause = start.addingTimeInterval(120)
+        let actual: LocalizedStringKey = "Default: \(timerInterval: range); paused: \(timerInterval: range, pauseTime: pause, countsDown: false, showsHours: false)"
+        let expected: LocalizedStringKey = "Default: \(Text(timerInterval: range)); paused: \(Text(timerInterval: range, pauseTime: pause, countsDown: false, showsHours: false))"
+
+        #expect(actual == expected)
+        #expect(actual.key == "Default: %@; paused: %@")
+    }
+
+    @Test
+    func deprecatedTimerInterpolationsDefaultToCountingUp() {
+        let end = start.addingTimeInterval(7_200)
+        let range = start...end
+        let interval = DateInterval(start: start, end: end)
+        let actual: LocalizedStringKey = "Range: \(interval: range, pauseAt: nil); interval: \(interval: interval, pauseAt: nil)"
+        let expected: LocalizedStringKey = "Range: \(Text(interval: range, countdown: false)); interval: \(Text(interval: interval, countdown: false))"
+        let countdown: LocalizedStringKey = "Range: \(Text(interval: range)); interval: \(Text(interval: interval))"
+
+        #expect(actual == expected)
+        #expect(actual != countdown)
+        #expect(actual.key == "Range: %@; interval: %@")
+    }
+
+    @Test(arguments: [false, true])
+    func deprecatedTimerInterpolationsPreserveParameters(countdown: Bool) {
+        let end = start.addingTimeInterval(7_200)
+        let range = start...end
+        let interval = DateInterval(start: start, end: end)
+        let units: NSCalendar.Unit = [.minute, .second, .nanosecond]
+        let actual: LocalizedStringKey = "Range: \(interval: range, pauseAt: 120, countdown: countdown, units: units); interval: \(interval: interval, pauseAt: 120, countdown: countdown, units: units)"
+        let expected: LocalizedStringKey = "Range: \(Text(interval: range, pauseAt: 120, countdown: countdown, units: units)); interval: \(Text(interval: interval, pauseAt: 120, countdown: countdown, units: units))"
+
+        #expect(actual == expected)
+    }
+
     @Test
     func dateOffsetFormatsUseExpectedConfiguration() throws {
         let relative = try #require(Text.DateStyle.relative.format(for: start))

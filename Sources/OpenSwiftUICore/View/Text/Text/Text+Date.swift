@@ -264,6 +264,7 @@ extension Text {
 private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
     enum Storage: Equatable {
         case interval(interval: DateInterval)
+        case progress(interval: ClosedRange<Date>, countdown: Bool)
     }
 
     var storage: Storage
@@ -277,6 +278,15 @@ private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
         in environment: EnvironmentValues,
         with options: Text.ResolveOptions
     ) where T: ResolvedTextContainer {
+        func defaultContentTransition(_ countdown: Bool) -> ContentTransition? {
+            if environment.contentTransitionStyle == .sessionWidget ||
+                !Semantics.TextContentTransitionDisabled.isEnabled {
+                .numericText(countsDown: countdown)
+            } else {
+                .identity
+            }
+        }
+
         switch storage {
         case let .interval(interval):
             result.append(
@@ -284,6 +294,13 @@ private final class DateTextStorage: AnyTextStorage, @unchecked Sendable {
                 in: environment,
                 with: options,
                 transition: nil
+            )
+        case let .progress(interval, countdown):
+            result.append(
+                resolvable: ResolvableProgress(interval: interval, countdown: countdown),
+                in: environment,
+                with: options,
+                transition: defaultContentTransition(countdown)
             )
         }
     }
@@ -361,7 +378,136 @@ extension Text {
     }
 }
 
-// TDOO
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+extension Text {
+    @available(*, deprecated, renamed: "init(timerInterval:pauseTime:countsDown:showsHours:)")
+    public init(
+        interval: ClosedRange<Date>,
+        pauseAt: TimeInterval? = nil,
+        countdown: Bool = true,
+        units: NSCalendar.Unit? = nil
+    ) {
+        self.init(
+            interval: DateInterval(start: interval.lowerBound, end: interval.upperBound),
+            pauseAt: pauseAt,
+            countdown: countdown,
+            units: units
+        )
+    }
+
+    @available(*, deprecated, renamed: "init(timerInterval:pauseTime:countsDown:showsHours:)")
+    public init(
+        interval: DateInterval,
+        pauseAt: TimeInterval? = nil,
+        countdown: Bool = true,
+        units: NSCalendar.Unit? = nil
+    ) {
+        let timer = ResolvableTimer(
+            interval: interval,
+            pause: pauseAt,
+            countdown: countdown,
+            units: units,
+            in: EnvironmentValues()
+        )
+        self.init(
+            source: timer.source,
+            format: timer.format,
+            reducedLuminanceBudget: 60.0
+        )
+    }
+}
+
+// MARK: - LocalizedStringKey.StringInterpolation + Date
+
+@available(OpenSwiftUI_v2_0, *)
+extension LocalizedStringKey.StringInterpolation {
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(_ date: Date, style: Text.DateStyle) {
+        appendInterpolation(Text(date, style: style))
+    }
+
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(_ dates: ClosedRange<Date>) {
+        appendInterpolation(Text(dates))
+    }
+
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(_ interval: DateInterval) {
+        appendInterpolation(Text(interval))
+    }
+}
+
+@_spi(Private)
+@available(OpenSwiftUI_v4_0, *)
+extension LocalizedStringKey.StringInterpolation {
+    @available(*, deprecated, renamed: "appendInterpolation(timerInterval:pauseTime:countsDown:showsHours:)")
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(
+        interval: ClosedRange<Date>,
+        pauseAt: TimeInterval?,
+        countdown: Bool = false,
+        units: NSCalendar.Unit? = nil
+    ) {
+        appendInterpolation(Text(
+            interval: interval,
+            pauseAt: pauseAt,
+            countdown: countdown,
+            units: units
+        ))
+    }
+
+    @available(*, deprecated, renamed: "appendInterpolation(timerInterval:pauseTime:countsDown:showsHours:)")
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(
+        interval: DateInterval,
+        pauseAt: TimeInterval?,
+        countdown: Bool = false,
+        units: NSCalendar.Unit? = nil
+    ) {
+        appendInterpolation(Text(
+            interval: interval,
+            pauseAt: pauseAt,
+            countdown: countdown,
+            units: units
+        ))
+    }
+}
+
+@available(OpenSwiftUI_v4_0, *)
+extension LocalizedStringKey.StringInterpolation {
+    @_semantics("openswiftui.localized.appendInterpolation_@_specifier")
+    @_semantics("swiftui.localized.appendInterpolation_@_specifier")
+    public mutating func appendInterpolation(
+        timerInterval: ClosedRange<Date>,
+        pauseTime: Date? = nil,
+        countsDown: Bool = true,
+        showsHours: Bool = true
+    ) {
+        appendInterpolation(Text(
+            timerInterval: timerInterval,
+            pauseTime: pauseTime,
+            countsDown: countsDown,
+            showsHours: showsHours
+        ))
+    }
+}
+
+// MARK: - Text + Progress Interval
+
+extension Text {
+    package init(progressInterval: ClosedRange<Date>, countsDown: Bool = false) {
+        self.init(anyTextStorage: DateTextStorage(storage: .progress(
+            interval: progressInterval,
+            countdown: countsDown
+        )))
+    }
+}
 
 // MARK: - Text + ReferenceDate
 
