@@ -1,26 +1,22 @@
-import OpenAttributeGraphShims
+//
+//  AccessibilityNodeList.swift
+//  OpenSwiftUI
+//
+//  Audited for 6.5.4
+//  Status: Complete
 
-// FIXME
-struct AccessibilityNodeList {
+import OpenAttributeGraphShims
+@_spi(ForOpenSwiftUIOnly)
+import OpenSwiftUICore
+
+// MARK: - AccessibilityNodeList
+
+struct AccessibilityNodeList: Equatable {
     var nodes: [AccessibilityNode]
     var version: DisplayList.Version
 }
 
-class AccessibilityNode {
-    // TODO
-}
-
-// TODO
-struct AccessibilityNodeProxy {
-    static func makeProxyForIdentifiedView(
-        with list: AccessibilityNodeList?,
-        environment: EnvironmentValues
-    ) -> AccessibilityNodeProxy? {
-        nil
-    }
-}
-
-// MARK: - AccessibilityNodesKey [6.4.41]
+// MARK: - AccessibilityNodesKey
 
 struct AccessibilityNodesKey: PreferenceKey {
     static let defaultValue = AccessibilityNodeList(nodes: [], version: .init())
